@@ -1,15 +1,20 @@
-from enum import Enum
+from datetime import timedelta
 
+from colour import Color
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
     ForeignKey, Integer, Interval, JSON, Sequence, SmallInteger, Unicode
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import backref, relationship, validates
+from sqlalchemy_utils import ColorType
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.resources.model import STR_SIZE, Thing, check_range
-from ereuse_devicehub.resources.user.model import User
+from ereuse_devicehub.resources.event.enums import Appearance, Bios, Functionality, Orientation, \
+    SoftwareType, StepTypes, TestHardDriveLength
+from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing, \
+    check_range
+from ereuse_devicehub.resources.user.models import User
 from teal.db import CASCADE, CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, POLYMORPHIC_ON
 
 
@@ -21,10 +26,12 @@ class JoinedTableMixin:
 
 class Event(Thing):
     id = Column(BigInteger, Sequence('event_seq'), primary_key=True)
+    title = Column(Unicode(STR_BIG_SIZE), default='', nullable=False)
     date = Column(DateTime)
     secured = Column(Boolean, default=False, nullable=False)
     type = Column(Unicode)
     incidence = Column(Boolean, default=False, nullable=False)
+    description = Column(Unicode, default='', nullable=False)
 
     snapshot_id = Column(BigInteger, ForeignKey('snapshot.id',
                                                 use_alter=True,
@@ -33,7 +40,7 @@ class Event(Thing):
                             backref=backref('events', lazy=True, cascade=CASCADE),
                             primaryjoin='Event.snapshot_id == Snapshot.id')
 
-    author_id = Column(BigInteger, ForeignKey(User.id), nullable=False)
+    author_id = Column(UUID(as_uuid=True), ForeignKey(User.id), nullable=False)
     author = relationship(User,
                           backref=backref('events', lazy=True),
                           primaryjoin=author_id == User.id)
@@ -94,13 +101,15 @@ class Remove(EventWithOneDevice):
 
 
 class Allocate(JoinedTableMixin, EventWithMultipleDevices):
-    to_id = Column(BigInteger, ForeignKey(User.id))
+    to_id = Column(UUID, ForeignKey(User.id))
     to = relationship(User, primaryjoin=User.id == to_id)
+    organization = Column(Unicode(STR_SIZE))
 
 
 class Deallocate(JoinedTableMixin, EventWithMultipleDevices):
-    from_id = Column(BigInteger, ForeignKey(User.id))
+    from_id = Column(UUID, ForeignKey(User.id))
     from_rel = relationship(User, primaryjoin=User.id == from_id)
+    organization = Column(Unicode(STR_SIZE))
 
 
 class EraseBasic(JoinedTableMixin, EventWithOneDevice):
@@ -116,14 +125,9 @@ class EraseSectors(EraseBasic):
     pass
 
 
-class StepTypes(Enum):
-    Zeros = 1
-    Random = 2
-
-
 class Step(db.Model):
     id = Column(BigInteger, Sequence('step_seq'), primary_key=True)
-    num = Column(SmallInteger, primary_key=True)
+    num = Column(SmallInteger, nullable=False)
     type = Column(DBEnum(StepTypes), nullable=False)
     success = Column(Boolean, nullable=False)
     starting_time = Column(DateTime, nullable=False)
@@ -136,55 +140,37 @@ class Step(db.Model):
     erasure = relationship(EraseBasic, backref=backref('steps', cascade=CASCADE_OWN))
 
 
-class SoftwareType(Enum):
-    Workbench = 'Workbench'
-    AndroidApp = 'AndroidApp'
-    Web = 'Web'
-    DesktopApp = 'DesktopApp'
-
-
-class Appearance(Enum):
-    """Grades the imperfections that aesthetically affect the device, but not its usage."""
-    Z = '0. The device is new.'
-    A = 'A. Is like new (without visual damage)'
-    B = 'B. Is in really good condition (small visual damage in difficult places to spot)'
-    C = 'C. Is in good condition (small visual damage in parts that are easy to spot, not screens)'
-    D = 'D. Is acceptable (visual damage in visible parts, not ¬screens)'
-    E = 'E. Is unacceptable (considerable visual damage that can affect usage)'
-
-
-class Functionality(Enum):
-    A = 'A. Everything works perfectly (buttons, and in case of screens there are no scratches)'
-    B = 'B. There is a button difficult to press or a small scratch in an edge of a screen'
-    C = 'C. A non-important button (or similar) doesn\'t work; screen has multiple scratches in edges'
-    D = 'D. Multiple buttons don\'t work; screen has visual damage resulting in uncomfortable usage'
-
-
-class Bios(Enum):
-    A = 'A. If by pressing a key you could access a boot menu with the network boot'
-    B = 'B. You had to get into the BIOS, and in less than 5 steps you could set the network boot'
-    C = 'C. Like B, but with more than 5 steps'
-    D = 'D. Like B or C, but you had to unlock the BIOS (i.e. by removing the battery)'
-    E = 'E. The device could not be booted through the network.'
-
-
 class Snapshot(JoinedTableMixin, EventWithOneDevice):
-    uuid = Column(UUID(as_uuid=True), nullable=False, unique=True)
-    version = Column(Unicode, nullable=False)
-    snapshot_software = Column(DBEnum(SoftwareType), nullable=False)
-    appearance = Column(DBEnum(Appearance), nullable=False)
-    appearance_score = Column(SmallInteger, nullable=False)
-    functionality = Column(DBEnum(Functionality), nullable=False)
-    functionality_score = Column(SmallInteger, check_range('functionality_score', min=0, max=5),
-                                 nullable=False)
-    labelling = Column(Boolean, nullable=False)
-    bios = Column(DBEnum(Bios), nullable=False)
-    condition = Column(SmallInteger, check_range('condition', min=0, max=5), nullable=False)
-    elapsed = Column(Interval, nullable=False)
-    install_name = Column(Unicode)
-    install_elapsed = Column(Interval)
-    install_success = Column(Boolean)
-    inventory_elapsed = Column(Interval)
+    uuid = Column(UUID(as_uuid=True), nullable=False, unique=True)  # type: UUID
+    version = Column(Unicode(STR_SM_SIZE), nullable=False)  # type: str
+    software = Column(DBEnum(SoftwareType), nullable=False)  # type: SoftwareType
+    appearance = Column(DBEnum(Appearance), nullable=False)  # type: Appearance
+    appearance_score = Column(SmallInteger,
+                              check_range('appearance_score', -3, 5),
+                              nullable=False)  # type: int
+    functionality = Column(DBEnum(Functionality), nullable=False)  # type: Functionality
+    functionality_score = Column(SmallInteger,
+                                 check_range('functionality_score', min=-3, max=5),
+                                 nullable=False)  # type: int
+    labelling = Column(Boolean)  # type: bool
+    bios = Column(DBEnum(Bios))  # type: Bios
+    condition = Column(SmallInteger,
+                       check_range('condition', min=0, max=5),
+                       nullable=False)  # type: int
+    elapsed = Column(Interval, nullable=False)  # type: timedelta
+    install_name = Column(Unicode(STR_BIG_SIZE))  # type: str
+    install_elapsed = Column(Interval)  # type: timedelta
+    install_success = Column(Boolean)  # type: bool
+    inventory_elapsed = Column(Interval)  # type: timedelta
+    color = Column(ColorType)  # type: Color
+    orientation = DBEnum(Orientation)  # type: Orientation
+
+    @validates('components')
+    def validate_components_only_workbench(self, _, components):
+        if self.software != SoftwareType.Workbench:
+            if components:
+                raise ValueError('Only Snapshots from Workbench can have components.')
+        return components
 
 
 class SnapshotRequest(db.Model):
@@ -200,11 +186,6 @@ class Test(JoinedTableMixin, EventWithOneDevice):
     success = Column(Boolean, nullable=False)
 
     snapshot = relationship(Snapshot, backref=backref('tests', lazy=True, cascade=CASCADE_OWN))
-
-
-class TestHardDriveLength(Enum):
-    Short = 'Short'
-    Extended = 'Extended'
 
 
 class TestHardDrive(Test):

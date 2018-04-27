@@ -1,9 +1,13 @@
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
-from ereuse_devicehub.resources.device.models import Desktop, GraphicCard, NetworkAdapter, Device
+from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, NetworkAdapter
+from ereuse_devicehub.resources.device.schemas import Device as DeviceS
 
 
 def test_device_model(app: Devicehub):
+    """
+    Tests that the correctness of the device model and its relationships.
+    """
     with app.test_request_context():
         pc = Desktop(model='p1mo', manufacturer='p1ma', serial_number='p1s')
         pc.components = components = [
@@ -38,3 +42,11 @@ def test_device_model(app: Devicehub):
         assert NetworkAdapter.query.first() is not None, 'We removed the network adaptor'
         assert gcard.id == 3, 'We should still hold a reference to a zombie graphic card'
         assert GraphicCard.query.first() is None, 'We should have deleted it –it was inside the pc'
+
+
+def test_device_schema():
+    """Ensures the user does not upload non-writable or extra fields."""
+    device_s = DeviceS()
+    device_s.load({'serial_number': 'foo1', 'model': 'foo', 'manufacturer': 'bar2'})
+
+    device_s.dump({'id': 1})
