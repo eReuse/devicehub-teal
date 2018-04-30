@@ -1,4 +1,3 @@
-import json as stdlib_json
 from pathlib import Path
 
 import pytest
@@ -42,6 +41,12 @@ def client(app: Devicehub) -> Client:
 
 
 @pytest.fixture()
+def app_context(app: Devicehub):
+    with app.app_context():
+        yield
+
+
+@pytest.fixture()
 def user(app: Devicehub) -> UserClient:
     """Gets a client with a logged-in dummy user."""
     with app.app_context():
@@ -59,6 +64,20 @@ def create_user(email='foo@foo.com', password='foo') -> User:
     db.session.add(user)
     db.session.commit()
     return user
+
+
+@pytest.fixture()
+def auth_app_context(app: Devicehub):
+    """Creates an app context with a set user."""
+    with app.app_context():
+        user = create_user()
+
+        class Auth:  # Mock
+            username = user.token
+            password = ''
+
+        app.auth.perform_auth(Auth())
+        yield
 
 
 def file(name: str) -> dict:

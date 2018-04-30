@@ -1,6 +1,6 @@
 from distutils.version import StrictVersion
 
-from flask import request
+from flask import request, Response
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.sync import Sync
@@ -21,13 +21,19 @@ SUPPORTED_WORKBENCH = StrictVersion('11.0')
 class SnapshotView(View):
     def post(self):
         """Creates a Snapshot."""
-        snapshot = Snapshot(**request.get_json())  # todo put this in schema.load()?
+        s = request.get_json()
+        # Note that if we set the device / components into the snapshot
+        # model object, when we flush them to the db we will flush
+        # snapshot, and we want to wait to flush snapshot at the end
+        device = s.pop('device')
+        components = s.pop('components') if s['software'] == SoftwareType.Workbench else None
         # noinspection PyArgumentList
-        c = snapshot.components if snapshot.software == SoftwareType.Workbench else None
-        snapshot.device, snapshot.components, snapshot.events = Sync.run(snapshot.device, c)
+        del s['type']
+        snapshot = Snapshot(**s)
+        snapshot.device, snapshot.events = Sync.run(device, components, snapshot.force_creation)
         db.session.add(snapshot)
         # transform it back
-        return self.schema.jsonify(snapshot)
+        return Response(status=201)
 
 
 class TestHardDriveView(View):

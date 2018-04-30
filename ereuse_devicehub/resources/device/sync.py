@@ -1,3 +1,4 @@
+import re
 from contextlib import suppress
 from itertools import groupby
 from typing import Iterable, List, Set
@@ -18,7 +19,7 @@ class Sync:
     @classmethod
     def run(cls, device: Device,
             components: Iterable[Component] or None,
-            force_creation: bool = False) -> (Device, List[Component], List[Add or Remove]):
+            force_creation: bool = False) -> (Device, List[Add or Remove]):
         """
         Synchronizes the device and components with the database.
 
@@ -40,39 +41,41 @@ class Sync:
                                it doesn't generate HID or have an ID?
                                Only for the device param.
         :return: A tuple of:
-                 1. The device from the database (with an ID).
-                 2. The same passed-in components from the database (with
-                    ids).
-                 3. A list of Add / Remove (not yet added to session).
+                 1. The device from the database (with an ID) whose
+                    ``components`` field contain the db version
+                    of the passed-in components.
+                 2. A list of Add / Remove (not yet added to session).
         """
-        blacklist = set()  # Helper for execute_register()
-        db_device = cls.execute_register(device, blacklist, force_creation)
-        if id(device) != id(db_device):
-            # Did I get another device from db?
-            # In such case update the device from db with new stuff
-            cls.merge(device, db_device)
-        db_components = []
-        for component in components:
-            db_component = cls.execute_register(component, blacklist, parent=db_device)
-            if id(component) != id(db_component):
-                cls.merge(component, db_component)
+        db_device, _ = cls.execute_register(device, force_creation=force_creation)
+        db_components, events = [], []
+        if components is not None:  # We have component info (see above)
+            blacklist = set()  # type: Set[int]
+            not_new_components = set()
+            for component in components:
+                db_component, is_new = cls.execute_register(component, blacklist, parent=db_device)
                 db_components.append(db_component)
-        events = tuple()
-        if components is not None:
-            # Only perform Add / Remove when
-            events = cls.add_remove(db_device, set(db_components))
-        return db_device, db_components, events
+                if not is_new:
+                    not_new_components.add(db_component)
+            # We only want to perform Add/Remove to not new components
+            events = cls.add_remove(db_device, not_new_components)
+            db_device.components = db_components
+        return db_device, events
 
-    @staticmethod
-    def execute_register(device: Device,
-                         blacklist: Set[int],
+    @classmethod
+    def execute_register(cls, device: Device,
+                         blacklist: Set[int] = None,
                          force_creation: bool = False,
-                         parent: Computer = None) -> Device:
+                         parent: Computer = None) -> (Device, bool):
         """
         Synchronizes one device to the DB.
 
-        This method tries to update the device in the database if it
-        already exists, otherwise it creates a new one.
+        This method tries to create a device into the database, and
+        if it already exists it returns a "local synced version",
+        this is the same ``device`` you passed-in but with updated
+        values from the database one (like the id value).
+
+        When we say "local" we mean that if, the device existed on the
+        database, we do not "touch" any of its values on the DB.
 
         :param device: The device to synchronize to the DB.
         :param blacklist: A set of components already found by
@@ -85,8 +88,11 @@ class Sync:
                                S/N).
         :param parent: For components, the computer that contains them.
                        Helper used by Component.similar_one().
-        :return: A synchronized device with the DB. It can be a new
-                 device or an already existing one.
+        :return: A tuple with:
+                 1. A synchronized device with the DB. It can be a new
+                   device or an already existing one.
+                 2. A flag stating if the device is new or it existed
+                    already in the DB.
         :raise NeedsId: The device has not any identifier we can use.
                         To still create the device use
                         ``force_creation``.
@@ -103,56 +109,73 @@ class Sync:
                     # ensure we don't get it again for another component
                     # with the same physical properties
                     blacklist.add(db_component.id)
-                    return db_component
+                    return cls.merge(device, db_component), False
             elif not force_creation:
                 raise NeedsId()
-        db.session.begin_nested()  # Create transaction savepoint to auto-rollback on insertion err
         try:
-            # Let's try to insert or update
-            db.session.insert(device)
-            db.session.flush()
+            with db.session.begin_nested():
+                # Create transaction savepoint to auto-rollback on insertion err
+                # Let's try to insert or update
+                db.session.add(device)
+                db.session.flush()
         except IntegrityError as e:
             if e.orig.diag.sqlstate == UNIQUE_VIOLATION:
+                db.session.rollback()
                 # This device already exists in the DB
-                field, value = 'az'  # todo get from e.orig.diag
-                return Device.query.find(getattr(device.__class__, field) == value).one()
+                field, value = re.findall('\(.*?\)', e.orig.diag.message_detail)  # type: str
+                field = field.replace('(', '').replace(')', '')
+                value = value.replace('(', '').replace(')', '')
+                db_device = Device.query.filter(getattr(device.__class__, field) == value).one()
+                return cls.merge(device, db_device), False
             else:
                 raise e
         else:
-            return device  # Our device is new
+            return device, True  # Our device is new
 
     @classmethod
     def merge(cls, device: Device, db_device: Device):
         """
         Copies the physical properties of the device to the db_device.
         """
-        for field, value in device.physical_properties:
+        for field_name, value in device.physical_properties.items():
             if value is not None:
-                setattr(db_device, field.name, value)
+                setattr(db_device, field_name, value)
         return db_device
 
     @classmethod
     def add_remove(cls, device: Device,
-                   new_components: Set[Component]) -> List[Add or Remove]:
+                   components: Set[Component]) -> List[Add or Remove]:
         """
-        Generates the Add and Remove events by evaluating the
-        differences between the components the
-        :param device:
-        :param new_components:
-        :return:
+        Generates the Add and Remove events (but doesn't add them to
+        session).
+
+        :param device: A device which ``components`` attribute contains
+                       the old list of components. The components that
+                       are not in ``components`` will be Removed.
+        :param components: List of components that are potentially to
+                           be Added. Some of them can already exist
+                           on the device, in which case they won't
+                           be re-added.
+        :return: A list of Add / Remove events.
         """
+        events = []
         old_components = set(device.components)
-        add = Add(device=Device, components=list(new_components - old_components))
-        events = [
-            Remove(device=device, components=list(old_components - new_components)),
-            add
-        ]
 
-        # For the components we are adding, let's remove them from their old parents
-        def get_parent(component: Component):
-            return component.parent
+        adding = components - old_components
+        if adding:
+            add = Add(device=device, components=list(adding))
 
-        for parent, components in groupby(sorted(add.components, key=get_parent), key=get_parent):
-            if parent is not None:
-                events.append(Remove(device=parent, components=list(components)))
+            # For the components we are adding, let's remove them from their old parents
+            def g_parent(component: Component) -> int:
+                return component.parent or Computer(id=0)  # Computer with id 0 is our Identity
+
+            for parent, _components in groupby(sorted(add.components, key=g_parent), key=g_parent):
+                if parent.id != 0:
+                    events.append(Remove(device=parent, components=list(_components)))
+            events.append(add)
+
+        removing = old_components - components
+        if removing:
+            events.append(Remove(device=device, components=list(removing)))
+
         return events

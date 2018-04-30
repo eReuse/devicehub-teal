@@ -1,5 +1,5 @@
 from flask import current_app as app
-from marshmallow import ValidationError, validates_schema
+from marshmallow import ValidationError, post_load, validates_schema
 from marshmallow.fields import Boolean, DateTime, Integer, Nested, String, TimeDelta, UUID
 from marshmallow.validate import Length, Range
 from marshmallow_enum import EnumField
@@ -137,6 +137,7 @@ class Snapshot(EventWithOneDevice):
     inventory = Nested(Inventory)
     color = Color(description='Main color of the device.')
     orientation = EnumField(Orientation, description='Is the device main stand wider or larger?')
+    force_creation = Boolean(data_key='forceCreation')
 
     @validates_schema
     def validate_workbench_version(self, data: dict):
@@ -153,6 +154,14 @@ class Snapshot(EventWithOneDevice):
             if data['components'] is not None:
                 raise ValidationError('Only Workbench can add component info',
                                       field_names=['components'])
+
+    @post_load
+    def normalize_nested(self, data: dict):
+        data.update(data.pop('condition'))
+        data['condition'] = data.pop('general', None)
+        data.update({'install_' + key: value for key, value in data.pop('install', {})})
+        data['inventory_elapsed'] = data.get('inventory', {}).pop('elapsed', None)
+        return data
 
 
 class Test(EventWithOneDevice):

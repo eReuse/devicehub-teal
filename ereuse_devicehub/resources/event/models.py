@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from colour import Color
+from flask import g
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
     ForeignKey, Integer, Interval, JSON, Sequence, SmallInteger, Unicode
 from sqlalchemy.dialects.postgresql import UUID
@@ -15,7 +16,8 @@ from ereuse_devicehub.resources.event.enums import Appearance, Bios, Functionali
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing, \
     check_range
 from ereuse_devicehub.resources.user.models import User
-from teal.db import CASCADE, CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, POLYMORPHIC_ON
+from teal.db import CASCADE, CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, POLYMORPHIC_ON, \
+    StrictVersionType
 
 
 class JoinedTableMixin:
@@ -40,7 +42,10 @@ class Event(Thing):
                             backref=backref('events', lazy=True, cascade=CASCADE),
                             primaryjoin='Event.snapshot_id == Snapshot.id')
 
-    author_id = Column(UUID(as_uuid=True), ForeignKey(User.id), nullable=False)
+    author_id = Column(UUID(as_uuid=True),
+                       ForeignKey(User.id),
+                       nullable=False,
+                       default=lambda: g.user.id)
     author = relationship(User,
                           backref=backref('events', lazy=True),
                           primaryjoin=author_id == User.id)
@@ -142,28 +147,26 @@ class Step(db.Model):
 
 class Snapshot(JoinedTableMixin, EventWithOneDevice):
     uuid = Column(UUID(as_uuid=True), nullable=False, unique=True)  # type: UUID
-    version = Column(Unicode(STR_SM_SIZE), nullable=False)  # type: str
+    version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)  # type: str
     software = Column(DBEnum(SoftwareType), nullable=False)  # type: SoftwareType
-    appearance = Column(DBEnum(Appearance), nullable=False)  # type: Appearance
+    appearance = Column(DBEnum(Appearance))  # type: Appearance
     appearance_score = Column(SmallInteger,
-                              check_range('appearance_score', -3, 5),
-                              nullable=False)  # type: int
-    functionality = Column(DBEnum(Functionality), nullable=False)  # type: Functionality
+                              check_range('appearance_score', -3, 5))  # type: int
+    functionality = Column(DBEnum(Functionality))  # type: Functionality
     functionality_score = Column(SmallInteger,
-                                 check_range('functionality_score', min=-3, max=5),
-                                 nullable=False)  # type: int
+                                 check_range('functionality_score', min=-3, max=5))  # type: int
     labelling = Column(Boolean)  # type: bool
     bios = Column(DBEnum(Bios))  # type: Bios
     condition = Column(SmallInteger,
-                       check_range('condition', min=0, max=5),
-                       nullable=False)  # type: int
+                       check_range('condition', min=0, max=5))  # type: int
     elapsed = Column(Interval, nullable=False)  # type: timedelta
     install_name = Column(Unicode(STR_BIG_SIZE))  # type: str
     install_elapsed = Column(Interval)  # type: timedelta
     install_success = Column(Boolean)  # type: bool
     inventory_elapsed = Column(Interval)  # type: timedelta
     color = Column(ColorType)  # type: Color
-    orientation = DBEnum(Orientation)  # type: Orientation
+    orientation = Column(DBEnum(Orientation))  # type: Orientation
+    force_creation = Column(Boolean)
 
     @validates('components')
     def validate_components_only_workbench(self, _, components):

@@ -5,7 +5,7 @@ from ereuse_utils.naming import Naming
 from sqlalchemy import BigInteger, Column, Float, ForeignKey, Integer, Sequence, SmallInteger, \
     Unicode, inspect
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import ColumnProperty, backref, relationship
 
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing, \
     check_range
@@ -28,8 +28,13 @@ class Device(Thing):
     height = Column(Float(precision=3, decimal_return_scale=3),
                     check_range('height', 0.1, 3))  # type: float
 
+    def __init__(self, *args, **kw) -> None:
+        super().__init__(*args, **kw)
+        with suppress(TypeError):
+            self.hid = Naming.hid(self.manufacturer, self.serial_number, self.model)  # type: str
+
     @property
-    def physical_properties(self) -> Dict[Column, object or None]:
+    def physical_properties(self) -> Dict[str, object or None]:
         """
         Fields that describe the physical properties of a device.
 
@@ -39,9 +44,11 @@ class Device(Thing):
         """
         # todo ensure to remove materialized values when start using them
         # todo or self.__table__.columns if inspect fails
-        return {c: getattr(self, c.name, None)
+        return {c.key: getattr(self, c.key, None)
                 for c in inspect(self.__class__).attrs
-                if not c.foreign_keys and c not in {self.id, self.type}}
+                if isinstance(c, ColumnProperty)
+                and not getattr(c, 'foreign_keys', None)
+                and c.key not in {'id', 'type', 'created', 'updated', 'parent_id', 'hid'}}
 
     @declared_attr
     def __mapper_args__(cls):
@@ -57,10 +64,8 @@ class Device(Thing):
             args[POLYMORPHIC_ON] = cls.type
         return args
 
-    def __init__(self, *args, **kw) -> None:
-        super().__init__(*args, **kw)
-        with suppress(TypeError):
-            self.hid = Naming.hid(self.manufacturer, self.serial_number, self.model)
+    def __lt__(self, other):
+        return self.id < other.id
 
 
 class Computer(Device):
