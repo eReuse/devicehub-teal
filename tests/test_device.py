@@ -1,10 +1,11 @@
 import pytest
 
+from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Component, Computer, Desktop, Device, \
-    GraphicCard, Motherboard, NetworkAdapter
+    GraphicCard, Laptop, Microtower, Motherboard, NetworkAdapter
 from ereuse_devicehub.resources.device.schemas import Device as DeviceS
 from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.event.models import Add, Remove
@@ -12,46 +13,47 @@ from teal.db import ResourceNotFound
 from tests.conftest import file
 
 
-def test_device_model(app: Devicehub):
+@pytest.mark.usefixtures('app_context')
+def test_device_model():
     """
     Tests that the correctness of the device model and its relationships.
     """
-    with app.test_request_context():
-        pc = Desktop(model='p1mo', manufacturer='p1ma', serial_number='p1s')
-        pc.components = components = [
-            NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
-            GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
-        ]
-        db.session.add(pc)
-        db.session.commit()
-        pc = Desktop.query.one()
-        assert pc.serial_number == 'p1s'
-        assert pc.components == components
-        network_adapter = NetworkAdapter.query.one()
-        assert network_adapter.parent == pc
+    pc = Desktop(model='p1mo', manufacturer='p1ma', serial_number='p1s')
+    pc.components = components = [
+        NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
+        GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
+    ]
+    db.session.add(pc)
+    db.session.commit()
+    pc = Desktop.query.one()
+    assert pc.serial_number == 'p1s'
+    assert pc.components == components
+    network_adapter = NetworkAdapter.query.one()
+    assert network_adapter.parent == pc
 
-        # Removing a component from pc doesn't delete the component
-        del pc.components[0]
-        db.session.commit()
-        pc = Device.query.first()  # this is the same as querying for Desktop directly
-        assert pc.components[0].type == GraphicCard.__name__
-        network_adapter = NetworkAdapter.query.one()
-        assert network_adapter not in pc.components
-        assert network_adapter.parent is None
+    # Removing a component from pc doesn't delete the component
+    del pc.components[0]
+    db.session.commit()
+    pc = Device.query.first()  # this is the same as querying for Desktop directly
+    assert pc.components[0].type == GraphicCard.__name__
+    network_adapter = NetworkAdapter.query.one()
+    assert network_adapter not in pc.components
+    assert network_adapter.parent is None
 
-        # Deleting the pc deletes everything
-        gcard = GraphicCard.query.one()
-        db.session.delete(pc)
-        assert pc.id == 1
-        assert Desktop.query.first() is None
-        db.session.commit()
-        assert Desktop.query.first() is None
-        assert network_adapter.id == 2
-        assert NetworkAdapter.query.first() is not None, 'We removed the network adaptor'
-        assert gcard.id == 3, 'We should still hold a reference to a zombie graphic card'
-        assert GraphicCard.query.first() is None, 'We should have deleted it –it was inside the pc'
+    # Deleting the pc deletes everything
+    gcard = GraphicCard.query.one()
+    db.session.delete(pc)
+    assert pc.id == 1
+    assert Desktop.query.first() is None
+    db.session.commit()
+    assert Desktop.query.first() is None
+    assert network_adapter.id == 2
+    assert NetworkAdapter.query.first() is not None, 'We removed the network adaptor'
+    assert gcard.id == 3, 'We should still hold a reference to a zombie graphic card'
+    assert GraphicCard.query.first() is None, 'We should have deleted it –it was inside the pc'
 
 
+@pytest.mark.usefixtures('app_context')
 def test_device_schema():
     """Ensures the user does not upload non-writable or extra fields."""
     device_s = DeviceS()
@@ -172,3 +174,44 @@ def test_execute_register_computer_no_hid():
     # 2: device has no HID and we force it
     db_pc, _ = Sync.execute_register(pc, set(), force_creation=True)
     assert pc.physical_properties == db_pc.physical_properties
+
+
+def test_get_device(app: Devicehub, user: UserClient):
+    """Checks GETting a Desktop with its components."""
+    with app.app_context():
+        pc = Desktop(model='p1mo', manufacturer='p1ma', serial_number='p1s')
+        pc.components = [
+            NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
+            GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
+        ]
+        db.session.add(pc)
+        db.session.commit()
+    pc, _ = user.get(res=Device, item=1)
+    assert pc['events'] == []
+    assert 'events_components' not in pc, 'events_components are internal use only'
+    assert 'events_one' not in pc, 'they are internal use only'
+    assert 'author' not in pc
+    assert tuple(c['id'] for c in pc['components']) == (2, 3)
+    assert pc['hid'] == 'p1ma-p1s-p1mo'
+    assert pc['model'] == 'p1mo'
+    assert pc['manufacturer'] == 'p1ma'
+    assert pc['serialNumber'] == 'p1s'
+    assert pc['type'] == 'Desktop'
+
+
+def test_get_devices(app: Devicehub, user: UserClient):
+    """Checks GETting multiple devices."""
+    with app.app_context():
+        pc = Desktop(model='p1mo', manufacturer='p1ma', serial_number='p1s')
+        pc.components = [
+            NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
+            GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
+        ]
+        pc1 = Microtower(model='p2mo', manufacturer='p2ma', serial_number='p2s')
+        pc2 = Laptop(model='p3mo', manufacturer='p3ma', serial_number='p3s')
+        db.session.add_all((pc, pc1, pc2))
+        db.session.commit()
+    devices, _ = user.get(res=Device)
+    assert tuple(d['id'] for d in devices) == (1, 2, 3, 4, 5)
+    assert tuple(d['type'] for d in devices) == ('Desktop', 'Microtower',
+                                                 'Laptop', 'NetworkAdapter', 'GraphicCard')

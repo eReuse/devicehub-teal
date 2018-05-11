@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from flask import current_app as app, request
+from flask import g, request
 
 from ereuse_devicehub.resources.user.exceptions import WrongCredentials
 from ereuse_devicehub.resources.user.models import User
@@ -14,10 +14,13 @@ class UserView(View):
 
 
 def login():
-    user_s = app.resources['User'].schema  # type: UserS
-    u = user_s.load(request.get_json(), partial=('email', 'password'))
+    # We use custom schema as we only want to parse a subset of user
+    user_s = g.resource_def.SCHEMA(only=('email', 'password'))  # type: UserS
+    # noinspection PyArgumentList
+    u = request.get_json(schema=user_s)
     user = User.query.filter_by(email=u['email']).one_or_none()
     if user and user.password == u['password']:
-        return user_s.jsonify(user)
+        schema_with_token = g.resource_def.SCHEMA(exclude=set())
+        return schema_with_token.jsonify(user)
     else:
         raise WrongCredentials()

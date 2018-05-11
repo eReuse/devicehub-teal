@@ -5,4 +5,10 @@ from teal.resource import View
 class DeviceView(View):
     def one(self, id: int):
         """Gets one device."""
-        return Device.query.filter_by(id=id).one()
+        device = Device.query.filter_by(id=id).one()
+        return self.schema.jsonify_polymorphic(device)
+
+    def find(self, args: dict):
+        """Gets many devices"""
+        devices = Device.query.all()
+        return self.schema.jsonify_polymorphic_many(devices)

@@ -1,0 +1,17 @@
+device:
+  manufactuer: 'p1'
+  serialNumber: 'p1'
+  model: 'p1'
+  type: 'Desktop'
+secured: False
+components:
+  - manufacturer: 'p1c2m'
+    serialNumber: 'p1c2s'
+    model: 'p1'
+    type: 'Processor'
+    cores: 2
+    speed: 1.23
+  - manufacturer: 'p1c3m'
+    serialNumber: 'p1c3s'
+    type: 'GraphicCard'
+    memory: 1.5

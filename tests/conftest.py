@@ -28,7 +28,6 @@ def _app(config: TestConfig) -> Devicehub:
 
 @pytest.fixture()
 def app(request, _app: Devicehub) -> Devicehub:
-    db.drop_all(app=_app)  # In case the test before was killed
     db.create_all(app=_app)
     # More robust than 'yield'
     request.addfinalizer(lambda *args, **kw: db.drop_all(app=_app))

@@ -1,0 +1,15 @@
+device:
+  manufactuer: 'p1'
+  serialNumber: 'p1'
+  model: 'p1'
+  type: 'Desktop'
+secured: False
+components:
+  - manufacturer: 'p1c4m'
+    serialNumber: 'p1c4s'
+    type: 'NetworkAdapter'
+    speed: 1000
+  - manufacturer: 'p1c3m'
+    serialNumber: 'p1c3s'
+    type: 'GraphicCard'
+    memory: 1.5

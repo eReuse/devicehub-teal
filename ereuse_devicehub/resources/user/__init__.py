@@ -28,9 +28,10 @@ class UserDef(Resource):
         """
         Creates an user.
         """
-        with self.app.test_request_context():
-            self.schema.load({'email': email, 'password': password})
+        with self.app.app_context():
+            self.SCHEMA(only={'email', 'password'}, exclude=('token',)) \
+                .load({'email': email, 'password': password})
             user = User(email=email, password=password)
             db.session.add(user)
             db.session.commit()
-            return user.dump()
+            return self.schema.dump(user)

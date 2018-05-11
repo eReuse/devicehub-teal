@@ -1,7 +1,9 @@
 from enum import Enum
 
-from marshmallow.fields import DateTime, List, Nested, URL, String
+from marshmallow import post_load
+from marshmallow.fields import DateTime, List, String, URL
 
+from ereuse_devicehub.marshmallow import NestedOn
 from teal.resource import Schema
 
 
@@ -22,4 +24,8 @@ class Thing(Schema):
     same_as = List(URL(dump_only=True), dump_only=True, data_key='sameAs')
     updated = DateTime('iso', dump_only=True)
     created = DateTime('iso', dump_only=True)
-    author = Nested('User', only='id', dump_only=True)
+    author = NestedOn('User', dump_only=True, exclude=('token',))
+
+    @post_load
+    def remove_type(self, data: dict):
+        data.pop('type', None)

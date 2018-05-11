@@ -30,17 +30,17 @@ class Event(Thing):
                                   'hardware without margin of doubt.')
     incidence = Boolean(default=False,
                         description='Was something wrong in this event?')
-    snapshot = Nested('Snapshot', dump_only=True, only='id')
+    snapshot = NestedOn('Snapshot', dump_only=True, only='id')
     description = String(default='', description='A comment about the event.')
-    components = Nested(Component, dump_only=True, only='id', many=True)
+    components = NestedOn(Component, dump_only=True, many=True)
 
 
 class EventWithOneDevice(Event):
-    device = Nested(Device, only='id')
+    device = NestedOn(Device, only='id')
 
 
 class EventWithMultipleDevices(Event):
-    device = Nested(Device, many=True, only='id')
+    device = NestedOn(Device, many=True, only='id')
 
 
 class Add(EventWithOneDevice):
@@ -52,14 +52,14 @@ class Remove(EventWithOneDevice):
 
 
 class Allocate(EventWithMultipleDevices):
-    to = Nested(User, only='id',
-                description='The user the devices are allocated to.')
+    to = NestedOn(User,
+                  description='The user the devices are allocated to.')
     organization = String(validate=Length(STR_SIZE),
                           description='The organization where the user was when this happened.')
 
 
 class Deallocate(EventWithMultipleDevices):
-    from_rel = Nested(User, only='id',
+    from_rel = Nested(User,
                       data_key='from',
                       description='The user where the devices are not allocated to anymore.')
     organization = String(validate=Length(STR_SIZE),
@@ -138,6 +138,7 @@ class Snapshot(EventWithOneDevice):
     color = Color(description='Main color of the device.')
     orientation = EnumField(Orientation, description='Is the device main stand wider or larger?')
     force_creation = Boolean(data_key='forceCreation')
+    events = NestedOn(Event, many=True)
 
     @validates_schema
     def validate_workbench_version(self, data: dict):

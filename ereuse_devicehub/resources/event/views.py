@@ -1,6 +1,6 @@
 from distutils.version import StrictVersion
 
-from flask import request, Response
+from flask import request
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.sync import Sync
@@ -28,12 +28,14 @@ class SnapshotView(View):
         device = s.pop('device')
         components = s.pop('components') if s['software'] == SoftwareType.Workbench else None
         # noinspection PyArgumentList
-        del s['type']
         snapshot = Snapshot(**s)
         snapshot.device, snapshot.events = Sync.run(device, components, snapshot.force_creation)
+        snapshot.components = snapshot.device.components
         db.session.add(snapshot)
-        # transform it back
-        return Response(status=201)
+        db.session.flush()  # Take to DB so we get db-generated values
+        ret = self.schema.jsonify(snapshot)  # transform it back
+        ret.status_code = 201
+        return ret
 
 
 class TestHardDriveView(View):

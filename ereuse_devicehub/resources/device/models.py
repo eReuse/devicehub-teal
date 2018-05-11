@@ -144,6 +144,13 @@ class NetworkAdapter(Component):
     speed = Column(SmallInteger, check_range('speed', min=10, max=10000))  # type: int
 
 
+class Processor(Component):
+    id = Column(BigInteger, ForeignKey(Component.id), primary_key=True)  # type: int
+    speed = Column(Float, check_range('speed', 0.1, 15))
+    cores = Column(SmallInteger, check_range('cores', 1, 10))
+    address = Column(SmallInteger, check_range('address', 8, 256))
+
+
 class RamModule(Component):
     id = Column(BigInteger, ForeignKey(Component.id), primary_key=True)  # type: int
     size = Column(SmallInteger, check_range('size', min=128, max=17000))

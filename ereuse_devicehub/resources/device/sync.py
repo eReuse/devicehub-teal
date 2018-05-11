@@ -160,7 +160,6 @@ class Sync:
         """
         events = []
         old_components = set(device.components)
-
         adding = components - old_components
         if adding:
             add = Add(device=device, components=list(adding))
@@ -177,5 +176,4 @@ class Sync:
         removing = old_components - components
         if removing:
             events.append(Remove(device=device, components=list(removing)))
-
         return events

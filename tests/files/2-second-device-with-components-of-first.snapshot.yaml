@@ -1,0 +1,16 @@
+device:
+  manufacturer: 'p2m'
+  serialNumber: 'p2s'
+  model: 'p2'
+  type: 'Microtower'
+secured: False
+components:
+  - manufacturer: 'p2c1m'
+    serialNumber: 'p2c1s'
+    type: 'Motherboard'
+  - manufacturer: 'p1c2m'
+    serialNumber: 'p1c2s'
+    model: 'p1'
+    speed: 1.23
+    cores: 2
+    type: 'Processor'

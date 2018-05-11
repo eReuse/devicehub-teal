@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import List
 from uuid import uuid4
 
 import pytest
@@ -11,6 +12,44 @@ from ereuse_devicehub.resources.event.models import Appearance, Bios, Functional
     SnapshotRequest, SoftwareType
 from ereuse_devicehub.resources.user.models import User
 from tests.conftest import file
+
+
+def assert_similar_device(device1: dict, device2: dict):
+    """
+    Like Model.is_similar() but adapted for testing.
+    """
+    assert isinstance(device1, dict) and device1
+    assert isinstance(device2, dict) and device2
+    for key in 'serialNumber', 'model', 'manufacturer', 'type':
+        assert device1.get(key, None) == device2.get(key, None)
+
+
+def assert_similar_components(components1: List[dict], components2: List[dict]):
+    """
+    Asserts that the components in components1 are
+    similar than the components in components2.
+    """
+    assert len(components1) == len(components2)
+    for c1, c2 in zip(components1, components2):
+        assert_similar_device(c1, c2)
+
+
+def snapshot_and_check(user: UserClient,
+                       input_snapshot: dict,
+                       num_events: int = 0,
+                       perform_second_snapshot=True) -> dict:
+    """
+
+    """
+    snapshot, _ = user.post(res=Snapshot, data=input_snapshot)
+    assert len(snapshot['events']) == num_events
+    assert input_snapshot['device']
+    assert_similar_device(input_snapshot['device'], snapshot['device'])
+    assert_similar_components(input_snapshot['components'], snapshot['components'])
+    if perform_second_snapshot:
+        return snapshot_and_check(user, input_snapshot, num_events, False)
+    else:
+        return snapshot
 
 
 @pytest.mark.usefixtures('auth_app_context')
@@ -56,6 +95,25 @@ def test_snapshot_schema(app: Devicehub):
 
 
 def test_snapshot_post(user: UserClient):
-    """Tests the post snapshot endpoint (validation, etc)."""
-    s = file('basic.snapshot')
-    snapshot, _ = user.post(s, res=Snapshot.__name__)
+    """
+    Tests the post snapshot endpoint (validation, etc)
+    and data correctness.
+    """
+    snapshot = snapshot_and_check(user, file('basic.snapshot'))
+    assert snapshot['software'] == 'Workbench'
+    assert snapshot['version'] == '11.0'
+    assert snapshot['uuid'] == 'f5efd26e-8754-46bc-87bf-fbccc39d60d9'
+    assert snapshot['events'] == []
+    assert snapshot['elapsed'] == 4
+    assert snapshot['author']['id'] == user.user['id']
+    assert 'events' not in snapshot['device']
+    assert 'author' not in snapshot['device']
+
+
+def test_snapshot_add_remove(user: UserClient):
+    s1 = file('1-device-with-components.snapshot')
+    snapshot_and_check(user, s1)
+
+    s2 = file('2-second-device-with-components-of-first.snapshot')
+    s3 = file('3-first-device-but-removing-motherboard-and-adding-processor-from-2.snapshot')
+    s4 = file('4-first-device-but-removing-processor.snapshot-and-adding-graphic-card')

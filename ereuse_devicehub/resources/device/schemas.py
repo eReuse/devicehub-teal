@@ -1,6 +1,8 @@
-from marshmallow.fields import Float, Integer, Nested, Str
-from marshmallow.validate import Length, Range
+from marshmallow import post_dump
+from marshmallow.fields import Float, Integer, Str
+from marshmallow.validate import Length, OneOf, Range
 
+from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 
@@ -29,11 +31,21 @@ class Device(Thing):
     height = Float(validate=Range(0.1, 3),
                    unit=UnitCodes.m,
                    description='The height of the device in meters.')
-    events = Nested('Event', many=True, dump_only=True, only='id')
+    events = NestedOn('Event', many=True, dump_only=True)
+    events_one = NestedOn('Event', many=True, dump_only=True, description='Not used.')
+    events_components = NestedOn('Event', many=True, dump_only=True, description='Not used.')
+
+    @post_dump
+    def merge_events(self, data: dict) -> dict:
+        if isinstance(data.get('events_one', None), list):
+            data.setdefault('events', []).extend(data.pop('events_one'))
+        if isinstance(data.get('events_components', None), list):
+            data.setdefault('events', []).extend(data.pop('events_components'))
+        return data
 
 
 class Computer(Device):
-    components = Nested('Component', many=True, dump_only=True, only='id')
+    components = NestedOn('Component', many=True, dump_only=True)
     pass
 
 
@@ -58,7 +70,7 @@ class Microtower(Computer):
 
 
 class Component(Device):
-    parent = Nested(Device, dump_only=True, only='id')
+    parent = NestedOn(Device, dump_only=True)
 
 
 class GraphicCard(Component):
@@ -71,9 +83,9 @@ class HardDrive(Component):
     size = Integer(validate=Range(0, 10 ** 8),
                    unit=UnitCodes.mbyte,
                    description='The size of the hard-drive in MB.')
-    erasure = Nested('EraseBasic', load_only=True)
-    tests = Nested('TestHardDrive', many=True, load_only=True)
-    benchmarks = Nested('BenchmarkHardDrive', load_only=True, many=True)
+    erasure = NestedOn('EraseBasic', load_only=True)
+    tests = NestedOn('TestHardDrive', many=True, load_only=True)
+    benchmarks = NestedOn('BenchmarkHardDrive', load_only=True, many=True)
 
 
 class Motherboard(Component):
@@ -88,6 +100,12 @@ class NetworkAdapter(Component):
     speed = Integer(validate=Range(min=10, max=10000),
                     unit=UnitCodes.mbps,
                     description='The maximum speed this network adapter can handle, in mbps.')
+
+
+class Processor(Component):
+    speed = Float(validate=Range(min=0.1, max=15), unit=UnitCodes.ghz)
+    cores = Integer(validate=Range(min=1, max=10))  # todo from numberOfCores
+    address = Integer(validate=OneOf({8, 16, 32, 64, 128, 256}))
 
 
 class RamModule(Component):
