@@ -1,5 +1,5 @@
 device:
-  manufactuer: 'p1'
+  manufacturer: 'p1'
   serialNumber: 'p1'
   model: 'p1'
   type: 'Desktop'
@@ -13,3 +13,10 @@ components:
     serialNumber: 'p1c3s'
     type: 'GraphicCard'
     memory: 1.5
+condition:
+  appearance: 'A'
+  functionality: 'A'
+elapsed: 25
+software: 'Workbench'
+uuid: 'fd007eb4-48e3-454a-8763-169491904c6e'
+version: '11.0'

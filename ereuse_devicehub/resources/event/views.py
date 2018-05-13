@@ -12,7 +12,8 @@ from teal.resource import View
 class EventView(View):
     def one(self, id: int):
         """Gets one event."""
-        return Event.query.filter_by(id=id).one()
+        event = Event.query.filter_by(id=id).one()
+        return self.schema.jsonify(event)
 
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
@@ -20,7 +21,11 @@ SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
 class SnapshotView(View):
     def post(self):
-        """Creates a Snapshot."""
+        """
+        Performs a Snapshot.
+
+        See `Snapshot` section in docs for more info.
+        """
         s = request.get_json()
         # Note that if we set the device / components into the snapshot
         # model object, when we flush them to the db we will flush
@@ -31,8 +36,18 @@ class SnapshotView(View):
         snapshot = Snapshot(**s)
         snapshot.device, snapshot.events = Sync.run(device, components, snapshot.force_creation)
         snapshot.components = snapshot.device.components
+        # commit will change the order of the components by what
+        # the DB wants. Let's get a copy of the list so we preserve
+        # order
+        ordered_components = [c for c in snapshot.components]
         db.session.add(snapshot)
-        db.session.flush()  # Take to DB so we get db-generated values
+        db.session.commit()
+        # todo we are setting snapshot dirty again with this components but
+        # we do not want to update it.
+        # The real solution is https://stackoverflow.com/questions/
+        # 24480581/set-the-insert-order-of-a-many-to-many-sqlalchemy-
+        # flask-app-sqlite-db?noredirect=1&lq=1
+        snapshot.components = ordered_components
         ret = self.schema.jsonify(snapshot)  # transform it back
         ret.status_code = 201
         return ret

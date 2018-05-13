@@ -24,3 +24,6 @@ class User(Thing):
     """
     name = Column(Unicode(length=STR_SIZE))
     token = Column(UUID(as_uuid=True), default=uuid4, unique=True)
+
+    def __repr__(self) -> str:
+        return '<{0.t} {0.id!r} email={0.email!r}>'.format(self)

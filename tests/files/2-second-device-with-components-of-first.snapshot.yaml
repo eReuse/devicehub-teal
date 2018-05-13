@@ -10,7 +10,14 @@ components:
     type: 'Motherboard'
   - manufacturer: 'p1c2m'
     serialNumber: 'p1c2s'
-    model: 'p1'
+    model: 'p1c2'
     speed: 1.23
     cores: 2
     type: 'Processor'
+condition:
+  appearance: 'A'
+  functionality: 'B'
+elapsed: 25
+software: 'Workbench'
+uuid: 'f2e02261-87a1-4a50-b9b7-92c0e476e5f2'
+version: '11.0'

@@ -30,7 +30,7 @@ class Event(Thing):
                                   'hardware without margin of doubt.')
     incidence = Boolean(default=False,
                         description='Was something wrong in this event?')
-    snapshot = NestedOn('Snapshot', dump_only=True, only='id')
+    snapshot = NestedOn('Snapshot', dump_only=True)
     description = String(default='', description='A comment about the event.')
     components = NestedOn(Component, dump_only=True, many=True)
 
@@ -40,7 +40,7 @@ class EventWithOneDevice(Event):
 
 
 class EventWithMultipleDevices(Event):
-    device = NestedOn(Device, many=True, only='id')
+    devices = NestedOn(Device, many=True, only='id')
 
 
 class Add(EventWithOneDevice):
@@ -124,8 +124,19 @@ class Inventory(Schema):
 
 
 class Snapshot(EventWithOneDevice):
+    """
+    The Snapshot updates the state of the device with information about
+    its components and events performed at them.
+
+    See docs for more info.
+    """
     device = NestedOn(Device)  # todo and when dumping?
-    components = NestedOn(Component, many=True)
+    components = NestedOn(Component,
+                          many=True,
+                          description='A list of components that are inside of the device'
+                                      'at the moment of this Snapshot.'
+                                      'Order is preserved, so the component num 0 when'
+                                      'submitting is the component num 0 when returning it back.')
     uuid = UUID(required=True)
     version = Version(required=True, description='The version of the SnapshotSoftware.')
     software = EnumField(SoftwareType,
@@ -138,7 +149,7 @@ class Snapshot(EventWithOneDevice):
     color = Color(description='Main color of the device.')
     orientation = EnumField(Orientation, description='Is the device main stand wider or larger?')
     force_creation = Boolean(data_key='forceCreation')
-    events = NestedOn(Event, many=True)
+    events = NestedOn(Event, many=True, dump_only=True)
 
     @validates_schema
     def validate_workbench_version(self, data: dict):

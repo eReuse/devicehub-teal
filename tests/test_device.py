@@ -1,3 +1,6 @@
+from datetime import timedelta
+from uuid import UUID
+
 import pytest
 
 from ereuse_devicehub.client import UserClient
@@ -8,7 +11,8 @@ from ereuse_devicehub.resources.device.models import Component, Computer, Deskto
     GraphicCard, Laptop, Microtower, Motherboard, NetworkAdapter
 from ereuse_devicehub.resources.device.schemas import Device as DeviceS
 from ereuse_devicehub.resources.device.sync import Sync
-from ereuse_devicehub.resources.event.models import Add, Remove
+from ereuse_devicehub.resources.event.models import Remove, Test
+from ereuse_devicehub.resources.user import User
 from teal.db import ResourceNotFound
 from tests.conftest import file
 
@@ -58,7 +62,7 @@ def test_device_schema():
     """Ensures the user does not upload non-writable or extra fields."""
     device_s = DeviceS()
     device_s.load({'serialNumber': 'foo1', 'model': 'foo', 'manufacturer': 'bar2'})
-    device_s.dump({'id': 1})
+    device_s.dump(Device(id=1))
 
 
 @pytest.mark.usefixtures('app_context')
@@ -132,16 +136,12 @@ def test_add_remove():
     # Test:
     # pc has only c3
     events = Sync.add_remove(device=pc, components={c3, c4})
-    assert len(events) == 3
+    db.session.add_all(events)
+    db.session.commit()  # We enforce the appliance of order_by
+    assert len(events) == 1
     assert isinstance(events[0], Remove)
     assert events[0].device == pc2
     assert events[0].components == [c3]
-    assert isinstance(events[1], Add)
-    assert events[1].device == pc
-    assert set(events[1].components) == {c3, c4}
-    assert isinstance(events[2], Remove)
-    assert events[2].device == pc
-    assert set(events[2].components) == {c1, c2}
 
 
 @pytest.mark.usefixtures('app_context')
@@ -185,9 +185,19 @@ def test_get_device(app: Devicehub, user: UserClient):
             GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
         ]
         db.session.add(pc)
+        db.session.add(Test(device=pc,
+                            elapsed=timedelta(seconds=4),
+                            success=True,
+                            author=User(email='bar@bar.com')))
         db.session.commit()
     pc, _ = user.get(res=Device, item=1)
-    assert pc['events'] == []
+    assert len(pc['events']) == 1
+    assert pc['events'][0]['type'] == 'Test'
+    assert pc['events'][0]['id'] == 1
+    assert pc['events'][0]['device'] == 1
+    assert pc['events'][0]['elapsed'] == 4
+    assert pc['events'][0]['success'] == True
+    assert UUID(pc['events'][0]['author'])
     assert 'events_components' not in pc, 'events_components are internal use only'
     assert 'events_one' not in pc, 'they are internal use only'
     assert 'author' not in pc

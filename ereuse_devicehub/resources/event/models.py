@@ -10,7 +10,7 @@ from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy_utils import ColorType
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Device
+from ereuse_devicehub.resources.device.models import Component, Device
 from ereuse_devicehub.resources.event.enums import Appearance, Bios, Functionality, Orientation, \
     SoftwareType, StepTypes, TestHardDriveLength
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing, \
@@ -49,10 +49,12 @@ class Event(Thing):
     author = relationship(User,
                           backref=backref('events', lazy=True),
                           primaryjoin=author_id == User.id)
-
-    components = relationship(Device,
-                              backref=backref('events_components', lazy=True),
-                              secondary=lambda: EventComponent.__table__)
+    components = relationship(Component,
+                              backref=backref('events_components',
+                                              lazy=True,
+                                              order_by=lambda: Event.id),
+                              secondary=lambda: EventComponent.__table__,
+                              order_by=lambda: Device.id)
 
     @declared_attr
     def __mapper_args__(cls):
@@ -63,8 +65,8 @@ class Event(Thing):
         extensions/declarative/api.html
         #sqlalchemy.ext.declarative.declared_attr>`_
         """
-        args = {POLYMORPHIC_ID: cls.__name__}
-        if cls.__name__ == 'Event':
+        args = {POLYMORPHIC_ID: cls.t}
+        if cls.t == 'Event':
             args[POLYMORPHIC_ON] = cls.type
         if JoinedTableMixin in cls.mro():
             args[INHERIT_COND] = cls.id == Event.id
@@ -79,8 +81,14 @@ class EventComponent(db.Model):
 class EventWithOneDevice(Event):
     device_id = Column(BigInteger, ForeignKey(Device.id), nullable=False)
     device = relationship(Device,
-                          backref=backref('events_one', lazy=True, cascade=CASCADE),
+                          backref=backref('events_one',
+                                          lazy=True,
+                                          cascade=CASCADE,
+                                          order_by=lambda: EventWithOneDevice.id),
                           primaryjoin=Device.id == device_id)
+
+    def __repr__(self) -> str:
+        return '<{0.t} {0.id!r} device={0.device!r}>'.format(self)
 
 
 class EventWithMultipleDevices(Event):
@@ -88,8 +96,14 @@ class EventWithMultipleDevices(Event):
     Note that these events are not deleted when a device is deleted.
     """
     devices = relationship(Device,
-                           backref=backref('events', lazy=True),
-                           secondary=lambda: EventDevice.__table__)
+                           backref=backref('events_multiple',
+                                           lazy=True,
+                                           order_by=lambda: EventWithMultipleDevices.id),
+                           secondary=lambda: EventDevice.__table__,
+                           order_by=lambda: Device.id)
+
+    def __repr__(self) -> str:
+        return '<{0.t} {0.id!r} devices={0.devices!r}>'.format(self)
 
 
 class EventDevice(db.Model):
@@ -192,6 +206,7 @@ class Test(JoinedTableMixin, EventWithOneDevice):
 
 
 class TestHardDrive(Test):
+    id = Column(BigInteger, ForeignKey(Test.id), primary_key=True)
     length = Column(DBEnum(TestHardDriveLength), nullable=False)  # todo from type
     status = Column(Unicode(STR_SIZE), nullable=False)
     lifetime = Column(Interval, nullable=False)

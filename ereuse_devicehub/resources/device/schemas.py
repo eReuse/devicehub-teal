@@ -1,4 +1,3 @@
-from marshmallow import post_dump
 from marshmallow.fields import Float, Integer, Str
 from marshmallow.validate import Length, OneOf, Range
 
@@ -32,16 +31,6 @@ class Device(Thing):
                    unit=UnitCodes.m,
                    description='The height of the device in meters.')
     events = NestedOn('Event', many=True, dump_only=True)
-    events_one = NestedOn('Event', many=True, dump_only=True, description='Not used.')
-    events_components = NestedOn('Event', many=True, dump_only=True, description='Not used.')
-
-    @post_dump
-    def merge_events(self, data: dict) -> dict:
-        if isinstance(data.get('events_one', None), list):
-            data.setdefault('events', []).extend(data.pop('events_one'))
-        if isinstance(data.get('events_components', None), list):
-            data.setdefault('events', []).extend(data.pop('events_components'))
-        return data
 
 
 class Computer(Device):

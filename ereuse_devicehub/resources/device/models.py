@@ -1,4 +1,5 @@
 from contextlib import suppress
+from operator import attrgetter
 from typing import Dict, Set
 
 from ereuse_utils.naming import Naming
@@ -27,6 +28,14 @@ class Device(Thing):
                    check_range('width', 0.1, 3))  # type: float
     height = Column(Float(precision=3, decimal_return_scale=3),
                     check_range('height', 0.1, 3))  # type: float
+
+    @property
+    def events(self) -> list:
+        """All the events performed to the device."""
+        # Tried to use chain() but Marshmallow doesn't like it :-(
+        events = self.events_multiple + self.events_one
+        events.sort(key=attrgetter('id'))
+        return events
 
     def __init__(self, *args, **kw) -> None:
         super().__init__(*args, **kw)
@@ -59,13 +68,16 @@ class Device(Thing):
         extensions/declarative/api.html
         #sqlalchemy.ext.declarative.declared_attr>`_
         """
-        args = {POLYMORPHIC_ID: cls.__name__}
-        if cls.__name__ == 'Device':
+        args = {POLYMORPHIC_ID: cls.t}
+        if cls.t == 'Device':
             args[POLYMORPHIC_ON] = cls.type
         return args
 
     def __lt__(self, other):
         return self.id < other.id
+
+    def __repr__(self) -> str:
+        return '<{0.t} {0.id!r} model={0.model!r} S/N={0.serial_number!r}>'.format(self)
 
 
 class Computer(Device):
@@ -97,7 +109,10 @@ class Component(Device):
 
     parent_id = Column(BigInteger, ForeignKey('computer.id'))
     parent = relationship(Computer,
-                          backref=backref('components', lazy=True, cascade=CASCADE),
+                          backref=backref('components',
+                                          lazy=True,
+                                          cascade=CASCADE,
+                                          order_by=lambda: Component.id),
                           primaryjoin='Component.parent_id == Computer.id')  # type: Device
 
     def similar_one(self, parent: Computer, blacklist: Set[int]) -> 'Component':
@@ -119,19 +134,29 @@ class Component(Device):
             raise ResourceNotFound(self.type)
         return component
 
+    @property
+    def events(self) -> list:
+        events = super().events
+        events.extend(self.events_components)
+        events.sort(key=attrgetter('id'))
+        return events
 
-class GraphicCard(Component):
-    id = Column(BigInteger, ForeignKey(Component.id), primary_key=True)  # type: int
+
+class JoinedComponentTableMixin:
+    @declared_attr
+    def id(cls):
+        return Column(BigInteger, ForeignKey(Component.id), primary_key=True)
+
+
+class GraphicCard(JoinedComponentTableMixin, Component):
     memory = Column(SmallInteger, check_range('memory', min=1, max=10000))  # type: int
 
 
-class HardDrive(Component):
-    id = Column(BigInteger, ForeignKey(Component.id), primary_key=True)  # type: int
+class HardDrive(JoinedComponentTableMixin, Component):
     size = Column(Integer, check_range('size', min=1, max=10 ** 8))  # type: int
 
 
-class Motherboard(Component):
-    id = Column(BigInteger, ForeignKey(Component.id), primary_key=True)  # type: int
+class Motherboard(JoinedComponentTableMixin, Component):
     slots = Column(SmallInteger, check_range('slots'))  # type: int
     usb = Column(SmallInteger, check_range('usb'))  # type: int
     firewire = Column(SmallInteger, check_range('firewire'))  # type: int
@@ -139,19 +164,16 @@ class Motherboard(Component):
     pcmcia = Column(SmallInteger, check_range('pcmcia'))  # type: int
 
 
-class NetworkAdapter(Component):
-    id = Column(BigInteger, ForeignKey(Component.id), primary_key=True)  # type: int
+class NetworkAdapter(JoinedComponentTableMixin, Component):
     speed = Column(SmallInteger, check_range('speed', min=10, max=10000))  # type: int
 
 
-class Processor(Component):
-    id = Column(BigInteger, ForeignKey(Component.id), primary_key=True)  # type: int
+class Processor(JoinedComponentTableMixin, Component):
     speed = Column(Float, check_range('speed', 0.1, 15))
     cores = Column(SmallInteger, check_range('cores', 1, 10))
     address = Column(SmallInteger, check_range('address', 8, 256))
 
 
-class RamModule(Component):
-    id = Column(BigInteger, ForeignKey(Component.id), primary_key=True)  # type: int
+class RamModule(JoinedComponentTableMixin, Component):
     size = Column(SmallInteger, check_range('size', min=128, max=17000))
     speed = Column(Float, check_range('speed', min=100, max=10000))

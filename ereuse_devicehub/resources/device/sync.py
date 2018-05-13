@@ -158,22 +158,17 @@ class Sync:
                            be re-added.
         :return: A list of Add / Remove events.
         """
+        # Note that we create the Remove events before the Add ones
         events = []
         old_components = set(device.components)
+
         adding = components - old_components
         if adding:
-            add = Add(device=device, components=list(adding))
-
             # For the components we are adding, let's remove them from their old parents
             def g_parent(component: Component) -> int:
                 return component.parent or Computer(id=0)  # Computer with id 0 is our Identity
 
-            for parent, _components in groupby(sorted(add.components, key=g_parent), key=g_parent):
-                if parent.id != 0:
+            for parent, _components in groupby(sorted(adding, key=g_parent), key=g_parent):
+                if parent.id != 0:  # Is not Computer Identity
                     events.append(Remove(device=parent, components=list(_components)))
-            events.append(add)
-
-        removing = old_components - components
-        if removing:
-            events.append(Remove(device=device, components=list(removing)))
         return events
