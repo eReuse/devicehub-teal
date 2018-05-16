@@ -1,4 +1,4 @@
-from marshmallow import ValidationError
+from teal.marshmallow import ValidationError
 
 
 class MismatchBetweenIds(ValidationError):

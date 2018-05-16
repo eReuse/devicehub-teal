@@ -171,10 +171,6 @@ def test_execute_register_computer_no_hid():
     with pytest.raises(NeedsId):
         Sync.execute_register(pc, set())
 
-    # 2: device has no HID and we force it
-    db_pc, _ = Sync.execute_register(pc, set(), force_creation=True)
-    assert pc.physical_properties == db_pc.physical_properties
-
 
 def test_get_device(app: Devicehub, user: UserClient):
     """Checks GETting a Desktop with its components."""

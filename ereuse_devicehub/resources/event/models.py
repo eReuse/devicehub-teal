@@ -180,7 +180,6 @@ class Snapshot(JoinedTableMixin, EventWithOneDevice):
     inventory_elapsed = Column(Interval)  # type: timedelta
     color = Column(ColorType)  # type: Color
     orientation = Column(DBEnum(Orientation))  # type: Orientation
-    force_creation = Column(Boolean)
 
     @validates('components')
     def validate_components_only_workbench(self, _, components):

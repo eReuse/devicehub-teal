@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 from werkzeug.exceptions import Unauthorized
 
-from ereuse_devicehub.client import UserClient, Client
+from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.devicehub import Devicehub
 from tests.conftest import create_user
 

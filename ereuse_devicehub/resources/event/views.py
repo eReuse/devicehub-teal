@@ -34,7 +34,7 @@ class SnapshotView(View):
         components = s.pop('components') if s['software'] == SoftwareType.Workbench else None
         # noinspection PyArgumentList
         snapshot = Snapshot(**s)
-        snapshot.device, snapshot.events = Sync.run(device, components, snapshot.force_creation)
+        snapshot.device, snapshot.events = Sync.run(device, components)
         snapshot.components = snapshot.device.components
         # commit will change the order of the components by what
         # the DB wants. Let's get a copy of the list so we preserve

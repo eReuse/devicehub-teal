@@ -7,6 +7,7 @@ import pytest
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device, Microtower
 from ereuse_devicehub.resources.event.models import Appearance, Bios, Event, Functionality, \
     Snapshot, SnapshotRequest, SoftwareType
@@ -120,7 +121,12 @@ def test_snapshot_post(user: UserClient):
     assert 'author' not in snapshot['device']
 
 
-def test_snapshot_add_remove(user: UserClient):
+def test_snapshot_component_add_remove(user: UserClient):
+    """
+    Tests adding and removing components and some don't generate HID.
+    All computers generate HID.
+    """
+
     def get_events_info(events: List[dict]) -> tuple:
         return tuple(
             (
@@ -156,7 +162,7 @@ def test_snapshot_add_remove(user: UserClient):
     # Events PC1: Snapshot, Remove. PC2: Snapshot
     s2 = file('2-second-device-with-components-of-first.snapshot')
     # num_events = 2 = Remove, Add
-    snapshot2 = snapshot_and_check(user, s2, event_types=('Remove', ),
+    snapshot2 = snapshot_and_check(user, s2, event_types=('Remove',),
                                    perform_second_snapshot=False)
     pc2_id = snapshot2['device']['id']
     pc1, _ = user.get(res=Device, item=pc1_id)
@@ -168,7 +174,7 @@ def test_snapshot_add_remove(user: UserClient):
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p1c2s', 'p2c1s')
     assert all(c['parent'] == pc2_id for c in pc2['components'])
-    assert tuple(e['type'] for e in pc2['events']) == ('Snapshot', )
+    assert tuple(e['type'] for e in pc2['events']) == ('Snapshot',)
     # p1c2s has two Snapshots, a Remove and an Add
     p1c2s, _ = user.get(res=Device, item=pc2['components'][0]['id'])
     assert tuple(e['type'] for e in p1c2s['events']) == ('Snapshot', 'Snapshot', 'Remove')
@@ -178,7 +184,7 @@ def test_snapshot_add_remove(user: UserClient):
     # We have created 1 Remove (from PC2's processor back to PC1)
     # PC 0: p1c2s, p1c3s. PC 1: p2c1s
     s3 = file('3-first-device-but-removing-motherboard-and-adding-processor-from-2.snapshot')
-    snapshot_and_check(user, s3, ('Remove', ), perform_second_snapshot=False)
+    snapshot_and_check(user, s3, ('Remove',), perform_second_snapshot=False)
     pc1, _ = user.get(res=Device, item=pc1_id)
     pc2, _ = user.get(res=Device, item=pc2_id)
     # PC1
@@ -222,3 +228,24 @@ def test_snapshot_add_remove(user: UserClient):
     # We haven't changed PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
     assert all(c['parent'] == pc2_id for c in pc2['components'])
+
+
+def _test_snapshot_computer_no_hid(user: UserClient):
+    """
+    Tests inserting a computer that doesn't generate a HID, neither
+    some of its components.
+    """
+    # PC with 2 components. PC doesn't have HID and neither 1st component
+    s = file('basic.snapshot')
+    del s['device']['model']
+    del s['components'][0]['model']
+    user.post(s, res=Snapshot, status=NeedsId)
+    # The system tells us that it could not register the device because
+    # the device (computer) cannot generate a HID.
+    # In such case we need to specify an ``id`` so the system can
+    # recognize the device. The ``id`` can reference to the same
+    # device, it already existed in the DB, or to a placeholder,
+    # if the device is new in the DB.
+    user.post(s, res=Device)
+    s['device']['id'] = 1  # Assign the ID of the placeholder
+    user.post(s, res=Snapshot)

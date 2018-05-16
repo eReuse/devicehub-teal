@@ -2,13 +2,15 @@ from base64 import b64decode
 from uuid import UUID
 
 from sqlalchemy_utils import Password
-from werkzeug.exceptions import NotFound, Unauthorized, UnprocessableEntity
+from werkzeug.exceptions import NotFound
 
 from ereuse_devicehub.client import Client
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.user import UserDef
+from ereuse_devicehub.resources.user.exceptions import WrongCredentials
 from ereuse_devicehub.resources.user.models import User
+from teal.marshmallow import ValidationError
 from tests.conftest import create_user
 
 
@@ -72,11 +74,11 @@ def test_login_failure(client: Client, app: Devicehub):
         create_user()
     client.post({'email': 'foo@foo.com', 'password': 'wrong pass'},
                 uri='/users/login',
-                status=Unauthorized)
+                status=WrongCredentials)
     # Wrong URI
     client.post({}, uri='/wrong-uri', status=NotFound)
     # Malformed data
-    client.post({}, uri='/users/login', status=UnprocessableEntity)
+    client.post({}, uri='/users/login', status=ValidationError)
     client.post({'email': 'this is not an email', 'password': 'nope'},
                 uri='/users/login',
-                status=UnprocessableEntity)
+                status=ValidationError)

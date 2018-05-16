@@ -148,7 +148,6 @@ class Snapshot(EventWithOneDevice):
     inventory = Nested(Inventory)
     color = Color(description='Main color of the device.')
     orientation = EnumField(Orientation, description='Is the device main stand wider or larger?')
-    force_creation = Boolean(data_key='forceCreation')
     events = NestedOn(Event, many=True, dump_only=True)
 
     @validates_schema

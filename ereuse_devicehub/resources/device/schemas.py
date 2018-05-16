@@ -7,8 +7,8 @@ from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 
 
 class Device(Thing):
-    id = Integer(dump_only=True,
-                 description='The identifier of the device for this database.')
+    # todo id is dump_only except when in Snapshot
+    id = Integer(description='The identifier of the device for this database.')
     hid = Str(dump_only=True,
               description='The Hardware ID is the unique ID traceability systems '
                           'use to ID a device globally.')

@@ -18,8 +18,7 @@ class Sync:
 
     @classmethod
     def run(cls, device: Device,
-            components: Iterable[Component] or None,
-            force_creation: bool = False) -> (Device, List[Add or Remove]):
+            components: Iterable[Component] or None) -> (Device, List[Add or Remove]):
         """
         Synchronizes the device and components with the database.
 
@@ -37,16 +36,13 @@ class Sync:
                            no info about components and the already
                            existing components of the device (in case
                            the device already exists) won't be touch.
-        :param force_creation: Shall we create the device even if
-                               it doesn't generate HID or have an ID?
-                               Only for the device param.
         :return: A tuple of:
                  1. The device from the database (with an ID) whose
                     ``components`` field contain the db version
                     of the passed-in components.
                  2. A list of Add / Remove (not yet added to session).
         """
-        db_device, _ = cls.execute_register(device, force_creation=force_creation)
+        db_device, _ = cls.execute_register(device)
         db_components, events = [], []
         if components is not None:  # We have component info (see above)
             blacklist = set()  # type: Set[int]
@@ -64,7 +60,6 @@ class Sync:
     @classmethod
     def execute_register(cls, device: Device,
                          blacklist: Set[int] = None,
-                         force_creation: bool = False,
                          parent: Computer = None) -> (Device, bool):
         """
         Synchronizes one device to the DB.
@@ -80,12 +75,6 @@ class Sync:
         :param device: The device to synchronize to the DB.
         :param blacklist: A set of components already found by
                           Component.similar_one(). Pass-in an empty Set.
-        :param force_creation: Allow creating a device even if it
-                               doesn't generate HID or doesn't have an
-                               ID. Only valid for non-components.
-                               Usually used when creating non-branded
-                               custom computers (as they don't have
-                               S/N).
         :param parent: For components, the computer that contains them.
                        Helper used by Component.similar_one().
         :return: A tuple with:
@@ -110,7 +99,7 @@ class Sync:
                     # with the same physical properties
                     blacklist.add(db_component.id)
                     return cls.merge(device, db_component), False
-            elif not force_creation:
+            else:
                 raise NeedsId()
         try:
             with db.session.begin_nested():
@@ -122,10 +111,11 @@ class Sync:
             if e.orig.diag.sqlstate == UNIQUE_VIOLATION:
                 db.session.rollback()
                 # This device already exists in the DB
-                field, value = re.findall('\(.*?\)', e.orig.diag.message_detail)  # type: str
-                field = field.replace('(', '').replace(')', '')
-                value = value.replace('(', '').replace(')', '')
-                db_device = Device.query.filter(getattr(device.__class__, field) == value).one()
+                field, value = (
+                    x.replace('(', '').replace(')', '')
+                    for x in re.findall('\(.*?\)', e.orig.diag.message_detail)
+                )
+                db_device = Device.query.filter_by(**{field: value}).one()  # type: Device
                 return cls.merge(device, db_device), False
             else:
                 raise e

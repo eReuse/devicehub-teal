@@ -7,30 +7,57 @@ from werkzeug.exceptions import HTTPException
 
 from ereuse_devicehub.resources.models import Thing
 from teal.client import Client as TealClient
+from teal.marshmallow import ValidationError
 
 
 class Client(TealClient):
-    def __init__(self, application, response_wrapper=None, use_cookies=False,
+    """A client suited for Devicehub main usage."""
+
+    def __init__(self, application,
+                 response_wrapper=None,
+                 use_cookies=False,
                  allow_subdomain_redirects=False):
         super().__init__(application, response_wrapper, use_cookies, allow_subdomain_redirects)
 
-    def open(self, uri: str, res: str or Type[Thing] = None, status: int or HTTPException = 200,
-             query: dict = {}, accept=JSON, content_type=JSON, item=None, headers: dict = None,
-             token: str = None, **kw) -> (dict or str, Response):
+    def open(self,
+             uri: str,
+             res: str or Type[Thing] = None,
+             status: Union[int, Type[HTTPException], Type[ValidationError]] = 200,
+             query: dict = {},
+             accept=JSON,
+             content_type=JSON,
+             item=None,
+             headers: dict = None,
+             token: str = None,
+             **kw) -> (dict or str, Response):
         if issubclass(res, Thing):
             res = res.__name__
         return super().open(uri, res, status, query, accept, content_type, item, headers, token,
                             **kw)
 
-    def get(self, uri: str = '', res: Union[Type[Thing], str] = None, query: dict = {},
-            status: int or HTTPException = 200, item: Union[int, str] = None, accept: str = JSON,
-            headers: dict = None, token: str = None, **kw) -> (dict or str, Response):
+    def get(self,
+            uri: str = '',
+            res: Union[Type[Thing], str] = None,
+            query: dict = {},
+            status: Union[int, Type[HTTPException], Type[ValidationError]] = 200,
+            item: Union[int, str] = None,
+            accept: str = JSON,
+            headers: dict = None,
+            token: str = None,
+            **kw) -> (dict or str, Response):
         return super().get(uri, res, query, status, item, accept, headers, token, **kw)
 
-    def post(self, data: str or dict, uri: str = '', res: Union[Type[Thing], str] = None,
-             query: dict = {}, status: int or HTTPException = 201, content_type: str = JSON,
-             accept: str = JSON, headers: dict = None, token: str = None, **kw) -> (
-            dict or str, Response):
+    def post(self,
+             data: str or dict,
+             uri: str = '',
+             res: Union[Type[Thing], str] = None,
+             query: dict = {},
+             status: Union[int, Type[HTTPException], Type[ValidationError]] = 201,
+             content_type: str = JSON,
+             accept: str = JSON,
+             headers: dict = None,
+             token: str = None,
+             **kw) -> (dict or str, Response):
         return super().post(data, uri, res, query, status, content_type, accept, headers, token,
                             **kw)
 
@@ -58,8 +85,16 @@ class UserClient(Client):
         self.password = password  # type: str
         self.user = None  # type: dict
 
-    def open(self, uri: str, res: str = None, status: int or HTTPException = 200, query: dict = {},
-             accept=JSON, content_type=JSON, item=None, headers: dict = None, token: str = None,
+    def open(self,
+             uri: str,
+             res: str = None,
+             status: int or HTTPException = 200,
+             query: dict = {},
+             accept=JSON,
+             content_type=JSON,
+             item=None,
+             headers: dict = None,
+             token: str = None,
              **kw) -> (dict or str, Response):
         return super().open(uri, res, status, query, accept, content_type, item, headers,
                             self.user['token'] if self.user else token, **kw)
