@@ -8,6 +8,7 @@ from teal.marshmallow import NestedOn as TealNestedOn
 class NestedOn(TealNestedOn):
     __doc__ = TealNestedOn.__doc__
 
-    def __init__(self, nested, polymorphic_on='type', db: SQLAlchemy = db, default=missing_,
-                 exclude=tuple(), only=None, **kwargs):
-        super().__init__(nested, polymorphic_on, db, default, exclude, only, **kwargs)
+    def __init__(self, nested, polymorphic_on='type', db: SQLAlchemy = db, collection_class=list,
+                 default=missing_, exclude=tuple(), only=None, **kwargs):
+        super().__init__(nested, polymorphic_on, db, collection_class, default, exclude, only,
+                         **kwargs)

@@ -9,8 +9,10 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device, Microtower
+from ereuse_devicehub.resources.device.sync import MismatchBetweenTagsAndHid
 from ereuse_devicehub.resources.event.models import Appearance, Bios, Event, Functionality, \
     Snapshot, SnapshotRequest, SoftwareType
+from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 from tests.conftest import file
 
@@ -249,3 +251,31 @@ def _test_snapshot_computer_no_hid(user: UserClient):
     user.post(s, res=Device)
     s['device']['id'] = 1  # Assign the ID of the placeholder
     user.post(s, res=Snapshot)
+
+
+def test_snapshot_mismatch_id():
+    """Tests uploading a device with an ID from another device."""
+    # Note that this won't happen as in this new version
+    # the ID is not used in the Snapshot process
+    pass
+
+
+def test_snapshot_tag_inner_tag(tag_id: str, user: UserClient, app: Devicehub):
+    """Tests a posting Snapshot with a local tag."""
+    b = file('basic.snapshot')
+    b['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
+    snapshot_and_check(user, b)
+    with app.app_context():
+        tag, *_ = Tag.query.all()  # type: Tag
+        assert tag.device_id == 1, 'Tag should be linked to the first device'
+
+
+def test_snapshot_tag_inner_tag_mismatch_between_tags_and_hid(user: UserClient, tag_id: str):
+    """Ensures one device cannot 'steal' the tag from another one."""
+    pc1 = file('basic.snapshot')
+    pc1['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
+    user.post(pc1, res=Snapshot)
+    pc2 = file('1-device-with-components.snapshot')
+    user.post(pc2, res=Snapshot)  # PC2 uploads well
+    pc2['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]  # Set tag from pc1 to pc2
+    user.post(pc2, res=Snapshot, status=MismatchBetweenTagsAndHid)

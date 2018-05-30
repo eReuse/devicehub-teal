@@ -12,3 +12,16 @@ class NeedsId(ValidationError):
     def __init__(self):
         message = 'We couldn\'t get an ID for this device. Is this a custom PC?'
         super().__init__(message)
+
+
+class DeviceIsInAnotherDevicehub(ValidationError):
+    def __init__(self,
+                 tag_id,
+                 message=None,
+                 field_names=None,
+                 fields=None,
+                 data=None,
+                 valid_data=None,
+                 **kwargs):
+        message = message or 'Device {} is from another Devicehub.'.format(tag_id)
+        super().__init__(message, field_names, fields, data, valid_data, **kwargs)

@@ -34,10 +34,11 @@ def test_create_user_email_insensitive(app: Devicehub):
     with app.app_context():
         user = User(email='FOO@foo.com')
         db.session.add(user)
+        db.session.commit()
         # We search in case insensitive manner
         u1 = User.query.filter_by(email='foo@foo.com').one()
         assert u1 == user
-        assert u1.email == 'FOO@foo.com'
+        assert u1.email == 'foo@foo.com'
 
 
 def test_hash_password(app: Devicehub):

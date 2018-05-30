@@ -7,17 +7,17 @@ from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, E
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship, validates
+from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Component, Device
 from ereuse_devicehub.resources.event.enums import Appearance, Bios, Functionality, Orientation, \
     SoftwareType, StepTypes, TestHardDriveLength
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing, \
-    check_range
+from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 from teal.db import CASCADE, CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, POLYMORPHIC_ON, \
-    StrictVersionType
+    StrictVersionType, check_range
 
 
 class JoinedTableMixin:
@@ -39,7 +39,10 @@ class Event(Thing):
                                                 use_alter=True,
                                                 name='snapshot_events'))
     snapshot = relationship('Snapshot',
-                            backref=backref('events', lazy=True, cascade=CASCADE),
+                            backref=backref('events',
+                                            lazy=True,
+                                            cascade=CASCADE,
+                                            collection_class=OrderedSet),
                             primaryjoin='Event.snapshot_id == Snapshot.id')
 
     author_id = Column(UUID(as_uuid=True),
@@ -47,14 +50,16 @@ class Event(Thing):
                        nullable=False,
                        default=lambda: g.user.id)
     author = relationship(User,
-                          backref=backref('events', lazy=True),
+                          backref=backref('events', lazy=True, collection_class=set),
                           primaryjoin=author_id == User.id)
     components = relationship(Component,
                               backref=backref('events_components',
                                               lazy=True,
-                                              order_by=lambda: Event.id),
+                                              order_by=lambda: Event.id,
+                                              collection_class=OrderedSet),
                               secondary=lambda: EventComponent.__table__,
-                              order_by=lambda: Device.id)
+                              order_by=lambda: Device.id,
+                              collection_class=OrderedSet)
 
     @declared_attr
     def __mapper_args__(cls):
@@ -84,7 +89,8 @@ class EventWithOneDevice(Event):
                           backref=backref('events_one',
                                           lazy=True,
                                           cascade=CASCADE,
-                                          order_by=lambda: EventWithOneDevice.id),
+                                          order_by=lambda: EventWithOneDevice.id,
+                                          collection_class=OrderedSet),
                           primaryjoin=Device.id == device_id)
 
     def __repr__(self) -> str:
@@ -98,7 +104,8 @@ class EventWithMultipleDevices(Event):
     devices = relationship(Device,
                            backref=backref('events_multiple',
                                            lazy=True,
-                                           order_by=lambda: EventWithMultipleDevices.id),
+                                           order_by=lambda: EventWithMultipleDevices.id,
+                                           collection_class=OrderedSet),
                            secondary=lambda: EventDevice.__table__,
                            order_by=lambda: Device.id)
 
@@ -193,15 +200,22 @@ class SnapshotRequest(db.Model):
     id = Column(BigInteger, ForeignKey(Snapshot.id), primary_key=True)
     request = Column(JSON, nullable=False)
 
-    snapshot = relationship(Snapshot, backref=backref('request', lazy=True, uselist=False,
-                                                      cascade=CASCADE_OWN))
+    snapshot = relationship(Snapshot,
+                            backref=backref('request',
+                                            lazy=True,
+                                            uselist=False,
+                                            cascade=CASCADE_OWN))
 
 
 class Test(JoinedTableMixin, EventWithOneDevice):
     elapsed = Column(Interval, nullable=False)
     success = Column(Boolean, nullable=False)
 
-    snapshot = relationship(Snapshot, backref=backref('tests', lazy=True, cascade=CASCADE_OWN))
+    snapshot = relationship(Snapshot, backref=backref('tests',
+                                                      lazy=True,
+                                                      cascade=CASCADE_OWN,
+                                                      order_by=Event.id,
+                                                      collection_class=OrderedSet))
 
 
 class TestHardDrive(Test):

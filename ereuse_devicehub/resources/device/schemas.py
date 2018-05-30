@@ -1,5 +1,6 @@
 from marshmallow.fields import Float, Integer, Str
 from marshmallow.validate import Length, OneOf, Range
+from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
@@ -12,6 +13,7 @@ class Device(Thing):
     hid = Str(dump_only=True,
               description='The Hardware ID is the unique ID traceability systems '
                           'use to ID a device globally.')
+    tags = NestedOn('Tag', many=True, collection_class=OrderedSet)
     pid = Str(description='The PID identifies a device under a circuit or platform.',
               validate=Length(max=STR_SIZE))
     gid = Str(description='The Giver ID links the device to the giver\'s (donor, seller)'
@@ -34,7 +36,7 @@ class Device(Thing):
 
 
 class Computer(Device):
-    components = NestedOn('Component', many=True, dump_only=True)
+    components = NestedOn('Component', many=True, dump_only=True, collection_class=OrderedSet)
     pass
 
 

@@ -2,6 +2,9 @@ from datetime import timedelta
 from uuid import UUID
 
 import pytest
+from ereuse_utils.naming import Naming
+from pytest import raises
+from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
@@ -10,8 +13,10 @@ from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Component, Computer, Desktop, Device, \
     GraphicCard, Laptop, Microtower, Motherboard, NetworkAdapter
 from ereuse_devicehub.resources.device.schemas import Device as DeviceS
-from ereuse_devicehub.resources.device.sync import Sync
+from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, MismatchBetweenTagsAndHid, \
+    Sync
 from ereuse_devicehub.resources.event.models import Remove, Test
+from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
 from teal.db import ResourceNotFound
 from tests.conftest import file
@@ -23,23 +28,23 @@ def test_device_model():
     Tests that the correctness of the device model and its relationships.
     """
     pc = Desktop(model='p1mo', manufacturer='p1ma', serial_number='p1s')
-    pc.components = components = [
-        NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
-        GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
-    ]
+    net = NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s')
+    graphic = GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
+    pc.components.add(net)
+    pc.components.add(graphic)
     db.session.add(pc)
     db.session.commit()
     pc = Desktop.query.one()
     assert pc.serial_number == 'p1s'
-    assert pc.components == components
+    assert pc.components == OrderedSet([net, graphic])
     network_adapter = NetworkAdapter.query.one()
     assert network_adapter.parent == pc
 
     # Removing a component from pc doesn't delete the component
-    del pc.components[0]
+    pc.components.remove(net)
     db.session.commit()
     pc = Device.query.first()  # this is the same as querying for Desktop directly
-    assert pc.components[0].type == GraphicCard.__name__
+    assert pc.components == {graphic}
     network_adapter = NetworkAdapter.query.one()
     assert network_adapter not in pc.components
     assert network_adapter.parent is None
@@ -47,6 +52,7 @@ def test_device_model():
     # Deleting the pc deletes everything
     gcard = GraphicCard.query.one()
     db.session.delete(pc)
+    db.session.flush()
     assert pc.id == 1
     assert Desktop.query.first() is None
     db.session.commit()
@@ -74,7 +80,8 @@ def test_physical_properties():
                     manufacturer='mr',
                     width=2.0,
                     pid='abc')
-    pc = Computer(components=[c])
+    pc = Computer()
+    pc.components.add(c)
     db.session.add(pc)
     db.session.commit()
     assert c.physical_properties == {
@@ -99,9 +106,10 @@ def test_component_similar_one():
     snapshot = file('pc-components.db')
     d = snapshot['device']
     snapshot['components'][0]['serial_number'] = snapshot['components'][1]['serial_number'] = None
-    pc = Computer(**d, components=[Component(**c) for c in snapshot['components']])
+    pc = Computer(**d, components=OrderedSet(Component(**c) for c in snapshot['components']))
     component1, component2 = pc.components  # type: Component
     db.session.add(pc)
+    db.session.flush()
     # Let's create a new component named 'A' similar to 1
     componentA = Component(model=component1.model, manufacturer=component1.manufacturer)
     similar_to_a = componentA.similar_one(pc, set())
@@ -124,10 +132,10 @@ def test_add_remove():
     values = file('pc-components.db')
     pc = values['device']
     c1, c2 = [Component(**c) for c in values['components']]
-    pc = Computer(**pc, components=[c1, c2])
+    pc = Computer(**pc, components=OrderedSet([c1, c2]))
     db.session.add(pc)
     c3 = Component(serial_number='nc1')
-    pc2 = Computer(serial_number='s2', components=[c3])
+    pc2 = Computer(serial_number='s2', components=OrderedSet([c3]))
     c4 = Component(serial_number='c4s')
     db.session.add(pc2)
     db.session.add(c4)
@@ -141,45 +149,212 @@ def test_add_remove():
     assert len(events) == 1
     assert isinstance(events[0], Remove)
     assert events[0].device == pc2
-    assert events[0].components == [c3]
+    assert events[0].components == OrderedSet([c3])
 
 
 @pytest.mark.usefixtures('app_context')
-def test_execute_register_computer():
+def test_sync_run_components_empty():
+    """
+    Syncs a device that has an empty components list. The system should
+    remove all the components from the device.
+    """
+    s = file('pc-components.db')
+    pc = Computer(**s['device'], components=OrderedSet(Component(**c) for c in s['components']))
+    db.session.add(pc)
+    db.session.commit()
+
+    # Create a new transient non-db synced object
+    pc = Computer(**s['device'])
+    db_pc, _ = Sync().run(pc, components=OrderedSet())
+    assert not db_pc.components
+    assert not pc.components
+
+
+@pytest.mark.usefixtures('app_context')
+def test_sync_run_components_none():
+    """
+    Syncs a device that has a None components. The system should
+    keep all the components from the device.
+    """
+    s = file('pc-components.db')
+    pc = Computer(**s['device'], components=OrderedSet(Component(**c) for c in s['components']))
+    db.session.add(pc)
+    db.session.commit()
+
+    # Create a new transient non-db synced object
+    transient_pc = Computer(**s['device'])
+    db_pc, _ = Sync().run(transient_pc, components=None)
+    assert db_pc.components
+    assert db_pc.components == pc.components
+
+
+@pytest.mark.usefixtures('app_context')
+def test_sync_execute_register_computer_new_computer_no_tag():
+    """
+    Syncs a new computer with HID and without a tag, creating it.
+    :return:
+    """
     # Case 1: device does not exist on DB
     pc = Computer(**file('pc-components.db')['device'])
-    db_pc, _ = Sync.execute_register(pc, set())
+    db_pc = Sync().execute_register(pc)
     assert pc.physical_properties == db_pc.physical_properties
 
 
 @pytest.mark.usefixtures('app_context')
-def test_execute_register_computer_existing():
+def test_sync_execute_register_computer_existing_no_tag():
+    """
+    Syncs an existing computer with HID and without a tag.
+    """
     pc = Computer(**file('pc-components.db')['device'])
     db.session.add(pc)
-    db.session.commit()  # We need two separate sessions
-    pc = Computer(**file('pc-components.db')['device'])
+    db.session.commit()
+
+    pc = Computer(**file('pc-components.db')['device'])  # Create a new transient non-db object
     # 1: device exists on DB
-    db_pc, _ = Sync.execute_register(pc, set())
+    db_pc = Sync().execute_register(pc)
     assert pc.physical_properties == db_pc.physical_properties
 
 
 @pytest.mark.usefixtures('app_context')
-def test_execute_register_computer_no_hid():
+def test_sync_execute_register_computer_no_hid_no_tag():
+    """
+    Syncs a computer without HID and no tag.
+
+    This should fail as we don't have a way to identify it.
+    """
     pc = Computer(**file('pc-components.db')['device'])
     # 1: device has no HID
     pc.hid = pc.model = None
     with pytest.raises(NeedsId):
-        Sync.execute_register(pc, set())
+        Sync().execute_register(pc)
+
+
+@pytest.mark.usefixtures('app_context')
+def test_sync_execute_register_computer_tag_not_linked():
+    """
+    Syncs a new computer with HID and a non-linked tag.
+
+    It is OK if the tag was not linked, it will be linked in this process.
+    """
+    tag = Tag(id='FOO')
+    db.session.add(tag)
+    db.session.commit()
+
+    # Create a new transient non-db object
+    pc = Computer(**file('pc-components.db')['device'], tags=OrderedSet([Tag(id='FOO')]))
+    returned_pc = Sync().execute_register(pc)
+    assert returned_pc == pc
+    assert tag.device == pc, 'Tag has to be linked'
+    assert Computer.query.one() == pc, 'Computer had to be set to db'
+
+
+@pytest.mark.usefixtures('app_context')
+def test_sync_execute_register_no_hid_tag_not_linked(tag_id: str):
+    """
+    Validates registering a computer without HID and a non-linked tag.
+
+    In this case it is ok still, as the non-linked tag proves that
+    the computer was not existing before (otherwise the tag would
+    be linked), and thus it creates a new computer.
+    """
+    tag = Tag(id=tag_id)
+    pc = Computer(**file('pc-components.db')['device'], tags=OrderedSet([tag]))
+    returned_pc = Sync().execute_register(pc)
+    db.session.commit()
+    assert returned_pc == pc
+    db_tag = next(iter(returned_pc.tags))
+    # they are not the same tags though
+    # tag is a transient obj and db_tag the one from the db
+    # they have the same pk though
+    assert tag != db_tag, 'They are not the same tags though'
+    assert db_tag.id == tag.id
+    assert Computer.query.one() == pc, 'Computer had to be set to db'
+
+
+@pytest.mark.usefixtures('app_context')
+def test_sync_execute_register_tag_does_not_exist():
+    """
+    Ensures not being able to register if the tag does not exist,
+    even if the device has HID or it existed before.
+
+    Tags have to be created before trying to link them through a Snapshot.
+    """
+    pc = Computer(**file('pc-components.db')['device'], tags=OrderedSet([Tag()]))
+    with raises(ResourceNotFound):
+        Sync().execute_register(pc)
+
+
+@pytest.mark.usefixtures('app_context')
+def test_sync_execute_register_tag_linked_same_device():
+    """
+    If the tag is linked to the device, regardless if it has HID,
+    the system should match the device through the tag.
+    (If it has HID it validates both HID and tag point at the same
+    device, this his checked in ).
+    """
+    orig_pc = Computer(**file('pc-components.db')['device'])
+    db.session.add(Tag(id='foo', device=orig_pc))
+    db.session.commit()
+
+    pc = Computer(**file('pc-components.db')['device'])  # Create a new transient non-db object
+    pc.tags.add(Tag(id='foo'))
+    db_pc = Sync().execute_register(pc)
+    assert db_pc.id == orig_pc.id
+    assert len(db_pc.tags) == 1
+    assert next(iter(db_pc.tags)).id == 'foo'
+
+
+@pytest.mark.usefixtures('app_context')
+def test_sync_execute_register_tag_linked_other_device_mismatch_between_tags():
+    """
+    Checks that sync raises an error if finds that at least two passed-in
+    tags are not linked to the same device.
+    """
+    pc1 = Computer(**file('pc-components.db')['device'])
+    db.session.add(Tag(id='foo-1', device=pc1))
+    pc2 = Computer(**file('pc-components.db')['device'])
+    pc2.serial_number = 'pc2-serial'
+    pc2.hid = Naming.hid(pc2.manufacturer, pc2.serial_number, pc2.model)
+    db.session.add(Tag(id='foo-2', device=pc2))
+    db.session.commit()
+
+    pc1 = Computer(**file('pc-components.db')['device'])  # Create a new transient non-db object
+    pc1.tags.add(Tag(id='foo-1'))
+    pc1.tags.add(Tag(id='foo-2'))
+    with raises(MismatchBetweenTags):
+        Sync().execute_register(pc1)
+
+
+@pytest.mark.usefixtures('app_context')
+def test_sync_execute_register_mismatch_between_tags_and_hid():
+    """
+    Checks that sync raises an error if it finds that the HID does
+    not point at the same device as the tag does.
+
+    In this case we set HID -> pc1 but tag -> pc2
+    """
+    pc1 = Computer(**file('pc-components.db')['device'])
+    db.session.add(Tag(id='foo-1', device=pc1))
+    pc2 = Computer(**file('pc-components.db')['device'])
+    pc2.serial_number = 'pc2-serial'
+    pc2.hid = Naming.hid(pc2.manufacturer, pc2.serial_number, pc2.model)
+    db.session.add(Tag(id='foo-2', device=pc2))
+    db.session.commit()
+
+    pc1 = Computer(**file('pc-components.db')['device'])  # Create a new transient non-db object
+    pc1.tags.add(Tag(id='foo-2'))
+    with raises(MismatchBetweenTagsAndHid):
+        Sync().execute_register(pc1)
 
 
 def test_get_device(app: Devicehub, user: UserClient):
     """Checks GETting a Desktop with its components."""
     with app.app_context():
         pc = Desktop(model='p1mo', manufacturer='p1ma', serial_number='p1s')
-        pc.components = [
+        pc.components = OrderedSet([
             NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
             GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
-        ]
+        ])
         db.session.add(pc)
         db.session.add(Test(device=pc,
                             elapsed=timedelta(seconds=4),
@@ -209,10 +384,10 @@ def test_get_devices(app: Devicehub, user: UserClient):
     """Checks GETting multiple devices."""
     with app.app_context():
         pc = Desktop(model='p1mo', manufacturer='p1ma', serial_number='p1s')
-        pc.components = [
+        pc.components = OrderedSet([
             NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
             GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
-        ]
+        ])
         pc1 = Microtower(model='p2mo', manufacturer='p2ma', serial_number='p2s')
         pc2 = Laptop(model='p3mo', manufacturer='p3ma', serial_number='p3s')
         db.session.add_all((pc, pc1, pc2))

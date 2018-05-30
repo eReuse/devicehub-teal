@@ -7,6 +7,7 @@ from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 
 
@@ -14,6 +15,8 @@ class TestConfig(DevicehubConfig):
     SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/dh_test'
     SCHEMA = 'test'
     TESTING = True
+    ORGANIZATION_NAME = 'FooOrg'
+    ORGANIZATION_TAX_ID = 'FooOrgId'
 
 
 @pytest.fixture(scope='module')
@@ -28,7 +31,8 @@ def _app(config: TestConfig) -> Devicehub:
 
 @pytest.fixture()
 def app(request, _app: Devicehub) -> Devicehub:
-    db.create_all(app=_app)
+    with _app.app_context():
+        _app.init_db()
     # More robust than 'yield'
     request.addfinalizer(lambda *args, **kw: db.drop_all(app=_app))
     return _app
@@ -80,6 +84,16 @@ def auth_app_context(app: Devicehub):
 
 
 def file(name: str) -> dict:
-    """Opens and parses a JSON file from the ``files`` subdir."""
+    """Opens and parses a YAML file from the ``files`` subdir."""
     with Path(__file__).parent.joinpath('files').joinpath(name + '.yaml').open() as f:
         return yaml.load(f)
+
+
+@pytest.fixture()
+def tag_id(app: Devicehub) -> str:
+    """Creates a tag and returns its id."""
+    with app.app_context():
+        t = Tag(id='foo')
+        db.session.add(t)
+        db.session.commit()
+        return t.id

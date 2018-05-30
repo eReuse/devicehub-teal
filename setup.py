@@ -14,11 +14,15 @@ setup(
         'marshmallow_enum',
         'ereuse-utils [Naming]',
         'psycopg2-binary',
-        'sqlalchemy-utils'
+        'sqlalchemy-utils',
+        'requests',
+        'requests-toolbelt',
+        'hashids'
     ],
     tests_requires=[
         'pytest',
-        'pytest-datadir'
+        'pytest-datadir',
+        'requests_mock'
     ],
     classifiers={
         'Development Status :: 4 - Beta',

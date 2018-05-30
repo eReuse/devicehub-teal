@@ -1,4 +1,5 @@
 from contextlib import suppress
+from itertools import chain
 from operator import attrgetter
 from typing import Dict, Set
 
@@ -7,10 +8,10 @@ from sqlalchemy import BigInteger, Column, Float, ForeignKey, Integer, Sequence,
     Unicode, inspect
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import ColumnProperty, backref, relationship
+from sqlalchemy.util import OrderedSet
 
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing, \
-    check_range
-from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound
+from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
+from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, check_range
 
 
 class Device(Thing):
@@ -32,10 +33,7 @@ class Device(Thing):
     @property
     def events(self) -> list:
         """All the events performed to the device."""
-        # Tried to use chain() but Marshmallow doesn't like it :-(
-        events = self.events_multiple + self.events_one
-        events.sort(key=attrgetter('id'))
-        return events
+        return sorted(chain(self.events_multiple, self.events_one), key=attrgetter('id'))
 
     def __init__(self, *args, **kw) -> None:
         super().__init__(*args, **kw)
@@ -107,13 +105,14 @@ class Microtower(Computer):
 class Component(Device):
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)  # type: int
 
-    parent_id = Column(BigInteger, ForeignKey('computer.id'))
+    parent_id = Column(BigInteger, ForeignKey(Computer.id))
     parent = relationship(Computer,
                           backref=backref('components',
                                           lazy=True,
                                           cascade=CASCADE,
-                                          order_by=lambda: Component.id),
-                          primaryjoin='Component.parent_id == Computer.id')  # type: Device
+                                          order_by=lambda: Component.id,
+                                          collection_class=OrderedSet),
+                          primaryjoin=parent_id == Computer.id)  # type: Device
 
     def similar_one(self, parent: Computer, blacklist: Set[int]) -> 'Component':
         """
@@ -136,10 +135,7 @@ class Component(Device):
 
     @property
     def events(self) -> list:
-        events = super().events
-        events.extend(self.events_components)
-        events.sort(key=attrgetter('id'))
-        return events
+        return sorted(chain(super().events, self.events_components), key=attrgetter('id'))
 
 
 class JoinedComponentTableMixin:

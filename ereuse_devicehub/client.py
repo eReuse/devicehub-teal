@@ -1,4 +1,4 @@
-from typing import Type, Union
+from typing import Any, Iterable, Tuple, Type, Union
 
 from boltons.typeutils import issubclass
 from ereuse_utils.test import JSON
@@ -23,7 +23,7 @@ class Client(TealClient):
              uri: str,
              res: str or Type[Thing] = None,
              status: Union[int, Type[HTTPException], Type[ValidationError]] = 200,
-             query: dict = {},
+             query: Iterable[Tuple[str, Any]] = tuple(),
              accept=JSON,
              content_type=JSON,
              item=None,
@@ -38,7 +38,7 @@ class Client(TealClient):
     def get(self,
             uri: str = '',
             res: Union[Type[Thing], str] = None,
-            query: dict = {},
+            query: Iterable[Tuple[str, Any]] = tuple(),
             status: Union[int, Type[HTTPException], Type[ValidationError]] = 200,
             item: Union[int, str] = None,
             accept: str = JSON,
@@ -51,7 +51,7 @@ class Client(TealClient):
              data: str or dict,
              uri: str = '',
              res: Union[Type[Thing], str] = None,
-             query: dict = {},
+             query: Iterable[Tuple[str, Any]] = tuple(),
              status: Union[int, Type[HTTPException], Type[ValidationError]] = 201,
              content_type: str = JSON,
              accept: str = JSON,
@@ -89,7 +89,7 @@ class UserClient(Client):
              uri: str,
              res: str = None,
              status: int or HTTPException = 200,
-             query: dict = {},
+             query: Iterable[Tuple[str, Any]] = tuple(),
              accept=JSON,
              content_type=JSON,
              item=None,

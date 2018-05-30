@@ -1,9 +1,10 @@
 from distutils.version import StrictVersion
 
 from flask import request
+from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.sync import Sync
+from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.event.enums import SoftwareType
 from ereuse_devicehub.resources.event.models import Event, Snapshot, TestHardDrive
 from teal.resource import View
@@ -30,16 +31,15 @@ class SnapshotView(View):
         # Note that if we set the device / components into the snapshot
         # model object, when we flush them to the db we will flush
         # snapshot, and we want to wait to flush snapshot at the end
-        device = s.pop('device')
+        device = s.pop('device')  # type: Device
         components = s.pop('components') if s['software'] == SoftwareType.Workbench else None
         # noinspection PyArgumentList
         snapshot = Snapshot(**s)
-        snapshot.device, snapshot.events = Sync.run(device, components)
+        snapshot.device, snapshot.events = self.resource_def.sync.run(device, components)
         snapshot.components = snapshot.device.components
         # commit will change the order of the components by what
-        # the DB wants. Let's get a copy of the list so we preserve
-        # order
-        ordered_components = [c for c in snapshot.components]
+        # the DB wants. Let's get a copy of the list so we preserve order
+        ordered_components = OrderedSet(x for x in snapshot.components)
         db.session.add(snapshot)
         db.session.commit()
         # todo we are setting snapshot dirty again with this components but
