@@ -5,6 +5,7 @@ from ereuse_devicehub.db import db
 STR_SIZE = 64
 STR_BIG_SIZE = 128
 STR_SM_SIZE = 32
+STR_XSM_SIZE = 16
 
 
 class Thing(db.Model):

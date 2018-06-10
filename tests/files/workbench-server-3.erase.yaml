@@ -1,0 +1,21 @@
+# A Snapshot Phase 1 with a device
+# and 1 GraphicCard, 2 RamModule, 1 Processor, 1 SSD, 1 HDD, 1 Motherboard
+# Prerequisites:
+#  - workbench-server-1.snapshot.yaml
+# Requisites:
+# - Set the ``snapshot`` field to ``workbench-server-1...``
+# All numbers are invented
+
+type: 'EraseSectors'
+error: False
+snapshot: None # fulfill!
+device: None # fulfill!
+cleanWithZeros: False
+startTime: 2018-01-01T10:10:10
+endTime: 2018-01-01T12:10:10
+secureRandomSteps: 0
+steps:
+  - type: 'StepRandom'
+    startTime: '2018-01-01T10:10:10'
+    endTime: '2018-01-01T12:10:10'
+    error: False

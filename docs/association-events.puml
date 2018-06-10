@@ -1,0 +1,72 @@
+@startuml
+ChangeAssociation <|-- Organize
+ChangeAssociation <|-- Transfer
+Organize <|-- Plan
+Organize <|-- Allocate
+Allocate <|-- Accept
+Allocate <|-- Reject
+Allocate <|-- Assign
+Allocate <|-- Authorize
+Plan <|-- Reserve
+Plan <|-- Cancel
+Transfer <|-- Receive
+ChangeAssociation <|-- Trade
+Trade <|-- Sell
+Trade <|-- Donate
+Trade <|-- Pay
+Trade <|-- Rent
+Trade <|-- DisposeProduct
+
+class ChangeAssociation {
+    agent: who did it
+}
+
+class Receive {
+    sender
+    recipient
+}
+
+class Reserve {
+    reservee
+}
+
+class Cancel {
+    reservee
+}
+
+class Trade {
+
+}
+
+class Allocate {
+    purpose
+}
+
+class Sell {
+    buyer
+}
+
+class Donate {
+    recipient
+}
+
+class Pay {
+    purpose
+    recipient
+}
+
+class Rent {
+    recipient
+}
+
+
+Association <|-- PhysicalPossessor
+Association <|-- TradeAssociation
+TradeAssociation <|-- Usufructuary
+TradeAssociation <|-- Ownership
+
+Sell - TradeAssociation
+Donate - TradeAssociation
+Rent -- Usufructuary : Sure?
+Receive - PhysicalPossessor
+@enduml

@@ -1,12 +1,13 @@
-uuid: 'f5efd26e-8754-46bc-87bf-fbccc39d60d9'
 type: 'Snapshot'
+uuid: 'f5efd26e-8754-46bc-87bf-fbccc39d60d9'
 version: '11.0'
 software: 'Workbench'
-condition:
-  appearance: 'A'
-  functionality: 'B'
-  labelling: True
-  bios: 'B'
+events:
+  - type: 'WorkbenchRate'
+    appearanceRange: 'A'
+    functionalityRange: 'B'
+    labelling: True
+    bios: 'B'
 elapsed: 4
 device:
   type: 'Microtower'

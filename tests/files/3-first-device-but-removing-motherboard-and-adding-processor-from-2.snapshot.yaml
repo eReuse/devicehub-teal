@@ -3,7 +3,6 @@ device:
   serialNumber: 'p1'
   model: 'p1'
   type: 'Desktop'
-secured: False
 components:
   - manufacturer: 'p1c2m'
     serialNumber: 'p1c2s'
@@ -15,9 +14,6 @@ components:
     serialNumber: 'p1c3s'
     type: 'GraphicCard'
     memory: 1.5
-condition:
-  appearance: 'C'
-  functionality: 'C'
 elapsed: 30
 software: 'Workbench'
 uuid: '3be271b6-5ef4-47d8-8237-5e1133eebfc6'

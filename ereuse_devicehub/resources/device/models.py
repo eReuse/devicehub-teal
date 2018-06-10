@@ -3,37 +3,38 @@ from itertools import chain
 from operator import attrgetter
 from typing import Dict, Set
 
-from ereuse_utils.naming import Naming
 from sqlalchemy import BigInteger, Column, Float, ForeignKey, Integer, Sequence, SmallInteger, \
     Unicode, inspect
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import ColumnProperty, backref, relationship
 from sqlalchemy.util import OrderedSet
+from sqlalchemy_utils import ColorType
 
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
+from ereuse_utils.naming import Naming
 from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, check_range
 
 
 class Device(Thing):
-    id = Column(BigInteger, Sequence('device_seq'), primary_key=True)  # type: int
+    id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
-    hid = Column(Unicode(STR_BIG_SIZE), unique=True)  # type: str
-    pid = Column(Unicode(STR_SIZE))  # type: str
-    gid = Column(Unicode(STR_SIZE))  # type: str
-    model = Column(Unicode(STR_BIG_SIZE))  # type: str
-    manufacturer = Column(Unicode(STR_SIZE))  # type: str
-    serial_number = Column(Unicode(STR_SIZE))  # type: str
-    weight = Column(Float(precision=3, decimal_return_scale=3),
-                    check_range('weight', 0.1, 3))  # type: float
-    width = Column(Float(precision=3, decimal_return_scale=3),
-                   check_range('width', 0.1, 3))  # type: float
-    height = Column(Float(precision=3, decimal_return_scale=3),
-                    check_range('height', 0.1, 3))  # type: float
+    hid = Column(Unicode(STR_BIG_SIZE), unique=True)
+    model = Column(Unicode(STR_BIG_SIZE))
+    manufacturer = Column(Unicode(STR_SIZE))
+    serial_number = Column(Unicode(STR_SIZE))
+    weight = Column(Float(decimal_return_scale=3), check_range('weight', 0.1, 3))
+    width = Column(Float(decimal_return_scale=3), check_range('width', 0.1, 3))
+    height = Column(Float(decimal_return_scale=3), check_range('height', 0.1, 3))
+    depth = Column(Float(decimal_return_scale=3), check_range('depth', 0.1, 3))
+    color = Column(ColorType)
 
     @property
     def events(self) -> list:
-        """All the events performed to the device."""
-        return sorted(chain(self.events_multiple, self.events_one), key=attrgetter('id'))
+        """
+        All the events performed to the device,
+        ordered by ascending creation time.
+        """
+        return sorted(chain(self.events_multiple, self.events_one), key=attrgetter('created'))
 
     def __init__(self, *args, **kw) -> None:
         super().__init__(*args, **kw)
@@ -79,7 +80,7 @@ class Device(Thing):
 
 
 class Computer(Device):
-    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)  # type: int
+    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
 
 
 class Desktop(Computer):
@@ -103,7 +104,7 @@ class Microtower(Computer):
 
 
 class Component(Device):
-    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)  # type: int
+    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
 
     parent_id = Column(BigInteger, ForeignKey(Computer.id))
     parent = relationship(Computer,
@@ -145,23 +146,31 @@ class JoinedComponentTableMixin:
 
 
 class GraphicCard(JoinedComponentTableMixin, Component):
-    memory = Column(SmallInteger, check_range('memory', min=1, max=10000))  # type: int
+    memory = Column(SmallInteger, check_range('memory', min=1, max=10000))
 
 
-class HardDrive(JoinedComponentTableMixin, Component):
-    size = Column(Integer, check_range('size', min=1, max=10 ** 8))  # type: int
+class DataStorage(JoinedComponentTableMixin, Component):
+    size = Column(Integer, check_range('size', min=1, max=10 ** 8))
+
+
+class HardDrive(DataStorage):
+    pass
+
+
+class SolidStateDrive(DataStorage):
+    pass
 
 
 class Motherboard(JoinedComponentTableMixin, Component):
-    slots = Column(SmallInteger, check_range('slots'))  # type: int
-    usb = Column(SmallInteger, check_range('usb'))  # type: int
-    firewire = Column(SmallInteger, check_range('firewire'))  # type: int
-    serial = Column(SmallInteger, check_range('serial'))  # type: int
-    pcmcia = Column(SmallInteger, check_range('pcmcia'))  # type: int
+    slots = Column(SmallInteger, check_range('slots'))
+    usb = Column(SmallInteger, check_range('usb'))
+    firewire = Column(SmallInteger, check_range('firewire'))
+    serial = Column(SmallInteger, check_range('serial'))
+    pcmcia = Column(SmallInteger, check_range('pcmcia'))
 
 
 class NetworkAdapter(JoinedComponentTableMixin, Component):
-    speed = Column(SmallInteger, check_range('speed', min=10, max=10000))  # type: int
+    speed = Column(SmallInteger, check_range('speed', min=10, max=10000))
 
 
 class Processor(JoinedComponentTableMixin, Component):

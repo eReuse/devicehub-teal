@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import pytest
 
 from ereuse_devicehub.config import DevicehubConfig
@@ -13,4 +15,4 @@ def test_default_org_exists(config: DevicehubConfig):
     """
     assert Organization.query.filter_by(name=config.ORGANIZATION_NAME,
                                         tax_id=config.ORGANIZATION_TAX_ID).one()
-    assert Organization.get_default_org().name == config.ORGANIZATION_NAME
+    assert isinstance(Organization.get_default_org_id(), UUID)

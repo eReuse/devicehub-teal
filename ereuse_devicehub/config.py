@@ -1,27 +1,34 @@
 from distutils.version import StrictVersion
+from typing import Set
 
-from ereuse_devicehub.resources.device import ComponentDef, ComputerDef, DesktopDef, DeviceDef, \
-    GraphicCardDef, HardDriveDef, LaptopDef, MicrotowerDef, MotherboardDef, NetbookDef, \
-    NetworkAdapterDef, ProcessorDef, RamModuleDef, ServerDef
-from ereuse_devicehub.resources.event import AddDef, EventDef, RemoveDef, SnapshotDef, TestDef, \
-    TestHardDriveDef
+from ereuse_devicehub.resources.device import ComponentDef, ComputerDef, DataStorageDef, \
+    DesktopDef, DeviceDef, GraphicCardDef, HardDriveDef, LaptopDef, MicrotowerDef, \
+    MotherboardDef, NetbookDef, NetworkAdapterDef, ProcessorDef, RamModuleDef, ServerDef, \
+    SolidStateDriveDef
+from ereuse_devicehub.resources.event import AddDef, AggregateRateDef, EventDef, InstallDef, \
+    PhotoboxSystemRateDef, PhotoboxUserDef, RateDef, RemoveDef, SnapshotDef, StepDef, \
+    StepRandomDef, StepZeroDef, TestDataStorageDef, TestDef, WorkbenchRateDef, EraseBasicDef, \
+    EraseSectorsDef
 from ereuse_devicehub.resources.tag import TagDef
 from ereuse_devicehub.resources.user import OrganizationDef, UserDef
 from teal.config import Config
 
 
 class DevicehubConfig(Config):
-    RESOURCE_DEFINITIONS = (
+    RESOURCE_DEFINITIONS = {
         DeviceDef, ComputerDef, DesktopDef, LaptopDef, NetbookDef, ServerDef,
-        MicrotowerDef, ComponentDef, GraphicCardDef, HardDriveDef, MotherboardDef,
-        NetworkAdapterDef, RamModuleDef, ProcessorDef, UserDef, OrganizationDef, TagDef, EventDef,
-        AddDef, RemoveDef, SnapshotDef, TestDef, TestHardDriveDef
-    )
-    PASSWORD_SCHEMES = {'pbkdf2_sha256'}
-    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/dh-db1'
-    MIN_WORKBENCH = StrictVersion('11.0')
+        MicrotowerDef, ComponentDef, GraphicCardDef, DataStorageDef, SolidStateDriveDef,
+        HardDriveDef, MotherboardDef, NetworkAdapterDef, RamModuleDef, ProcessorDef, UserDef,
+        OrganizationDef, TagDef, EventDef, AddDef, RemoveDef, EraseBasicDef, EraseSectorsDef,
+        StepDef, StepZeroDef, StepRandomDef, RateDef, AggregateRateDef, WorkbenchRateDef,
+        PhotoboxUserDef, PhotoboxSystemRateDef, InstallDef, SnapshotDef, TestDef,
+        TestDataStorageDef, WorkbenchRateDef
+    }
+    PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
+    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/dh-db1'  # type: str
+    MIN_WORKBENCH = StrictVersion('11.0')  # type: StrictVersion
     """
-    The minimum version of eReuse.org Workbench that this Devicehub
+    The minimum algorithm_version of eReuse.org Workbench that this Devicehub
     accepts. We recommend not changing this value.
     """
     ORGANIZATION_NAME = None  # type: str

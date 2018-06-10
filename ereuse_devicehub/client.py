@@ -1,11 +1,11 @@
-from typing import Any, Iterable, Tuple, Type, Union
+from typing import Any, Dict, Iterable, Tuple, Type, Union, Generator
 
 from boltons.typeutils import issubclass
-from ereuse_utils.test import JSON
 from flask import Response
 from werkzeug.exceptions import HTTPException
 
 from ereuse_devicehub.resources.models import Thing
+from ereuse_utils.test import JSON
 from teal.client import Client as TealClient
 from teal.marshmallow import ValidationError
 
@@ -21,7 +21,7 @@ class Client(TealClient):
 
     def open(self,
              uri: str,
-             res: str or Type[Thing] = None,
+             res: Union[str, Type[Thing]] = None,
              status: Union[int, Type[HTTPException], Type[ValidationError]] = 200,
              query: Iterable[Tuple[str, Any]] = tuple(),
              accept=JSON,
@@ -29,7 +29,7 @@ class Client(TealClient):
              item=None,
              headers: dict = None,
              token: str = None,
-             **kw) -> (dict or str, Response):
+             **kw) -> Tuple[Union[Dict[str, Any], str], Response]:
         if issubclass(res, Thing):
             res = res.__name__
         return super().open(uri, res, status, query, accept, content_type, item, headers, token,
@@ -44,7 +44,7 @@ class Client(TealClient):
             accept: str = JSON,
             headers: dict = None,
             token: str = None,
-            **kw) -> (dict or str, Response):
+            **kw) -> Tuple[Union[Dict[str, Any], str], Response]:
         return super().get(uri, res, query, status, item, accept, headers, token, **kw)
 
     def post(self,
@@ -57,7 +57,7 @@ class Client(TealClient):
              accept: str = JSON,
              headers: dict = None,
              token: str = None,
-             **kw) -> (dict or str, Response):
+             **kw) -> Tuple[Union[Dict[str, Any], str], Response]:
         return super().post(data, uri, res, query, status, content_type, accept, headers, token,
                             **kw)
 
@@ -65,6 +65,20 @@ class Client(TealClient):
         assert isinstance(email, str)
         assert isinstance(password, str)
         return self.post({'email': email, 'password': password}, '/users/login', status=200)
+
+    def get_many(self,
+                 res: Union[Type[Thing], str],
+                 resources: Iterable[dict],
+                 key: str = None,
+                 headers: dict = None,
+                 token: str = None,
+                 accept: str = JSON,
+                 **kw) -> Iterable[Union[Dict[str, Any], str]]:
+        """Like :meth:`.get` but with many resources."""
+        return (
+            self.get(res=res, item=r['key'] if key else r, headers=headers, token=token, **kw)[0]
+            for r in resources
+        )
 
 
 class UserClient(Client):
@@ -87,7 +101,7 @@ class UserClient(Client):
 
     def open(self,
              uri: str,
-             res: str = None,
+             res: Union[str, Type[Thing]] = None,
              status: int or HTTPException = 200,
              query: Iterable[Tuple[str, Any]] = tuple(),
              accept=JSON,
@@ -95,6 +109,6 @@ class UserClient(Client):
              item=None,
              headers: dict = None,
              token: str = None,
-             **kw) -> (dict or str, Response):
+             **kw) -> Tuple[Union[Dict[str, Any], str], Response]:
         return super().open(uri, res, status, query, accept, content_type, item, headers,
                             self.user['token'] if self.user else token, **kw)

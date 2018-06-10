@@ -1,0 +1,42 @@
+uuid: '74caa7eb-2bad-4333-94f6-6f1b031d0775'
+type: 'Snapshot'
+version: '11.0'
+software: 'Workbench'
+elapsed: 4
+device:
+  type: 'Microtower'
+  serialNumber: 'pc1s'
+  model: 'pc1ml'
+  manufacturer: 'pc1mr'
+components:
+  - type: 'SolidStateDrive'
+    serialNumber: 'c1s'
+    model: 'c1ml'
+    manufacturer: 'pc1mr'
+    erasure:
+      type: 'EraseSectors'
+      cleanWithZeros: True
+      startTime: '2018-06-01T08:12:06'
+      endTime: '2018-06-01T09:12:06'
+      secureRandomSteps: 20
+      steps:
+        - type: 'StepZero'
+          error: False
+          startTime: '2018-06-01T08:15:00'
+          endTime: '2018-06-01T09:16:00'
+          secureRandomSteps: 1
+          cleanWithZeros: True
+        - type: 'StepZero'
+          error: False
+          startTime: '2018-06-01T08:16:00'
+          endTime: '2018-06-01T09:17:00'
+          secureRandomSteps: 1
+          cleanWithZeros: True
+  - type: 'GraphicCard'
+    serialNumber: 'gc1s'
+    model: 'gc1ml'
+    manufacturer: 'gc1mr'
+  - type: 'RamModule'
+    serialNumber: 'rm1s'
+    model: 'rm1ml'
+    manufacturer: 'rm1mr'

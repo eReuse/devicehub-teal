@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from typing import List
+from distutils.version import StrictVersion
+from typing import List, Tuple
 from uuid import uuid4
 
 import pytest
@@ -8,10 +9,11 @@ from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device.exceptions import NeedsId
-from ereuse_devicehub.resources.device.models import Device, Microtower
+from ereuse_devicehub.resources.device.models import Device, Microtower, SolidStateDrive
 from ereuse_devicehub.resources.device.sync import MismatchBetweenTagsAndHid
-from ereuse_devicehub.resources.event.models import Appearance, Bios, Event, Functionality, \
-    Snapshot, SnapshotRequest, SoftwareType
+from ereuse_devicehub.resources.enums import Bios, RatingSoftware, SnapshotSoftware
+from ereuse_devicehub.resources.event.models import EraseBasic, Event, Snapshot, SnapshotRequest, \
+    WorkbenchRate
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 from tests.conftest import file
@@ -19,7 +21,8 @@ from tests.conftest import file
 
 def assert_similar_device(device1: dict, device2: dict):
     """
-    Like Model.is_similar() but adapted for testing.
+    Like :class:`ereuse_devicehub.resources.device.models.Device.
+    is_similar()` but adapted for testing.
     """
     assert isinstance(device1, dict) and device1
     assert isinstance(device2, dict) and device2
@@ -39,10 +42,21 @@ def assert_similar_components(components1: List[dict], components2: List[dict]):
 
 def snapshot_and_check(user: UserClient,
                        input_snapshot: dict,
-                       event_types: tuple or list = tuple(),
+                       event_types: Tuple[str] = tuple(),
                        perform_second_snapshot=True) -> dict:
     """
-        P
+        Performs a Snapshot and then checks if the result is ok:
+
+        - There have been performed the types of events and in the same
+          order as described in the passed-in ``event_types``.
+        - The inputted devices are similar to the resulted ones.
+        - There is no Remove event after the first Add.
+        - All input components are now inside the parent device.
+
+        Optionally, it can perform a second Snapshot which should
+        perform an exact result, except for the events.
+
+        :return: The last resulting snapshot.
     """
     snapshot, _ = user.post(res=Snapshot, data=input_snapshot)
     assert tuple(e['type'] for e in snapshot['events']) == event_types
@@ -76,22 +90,25 @@ def test_snapshot_model():
     snapshot = Snapshot(uuid=uuid4(),
                         date=datetime.now(),
                         version='1.0',
-                        software=SoftwareType.DesktopApp,
-                        appearance=Appearance.A,
-                        appearance_score=5,
-                        functionality=Functionality.A,
-                        functionality_score=5,
-                        labelling=False,
-                        bios=Bios.C,
-                        condition=5,
+                        software=SnapshotSoftware.DesktopApp,
                         elapsed=timedelta(seconds=25))
     snapshot.device = device
     snapshot.request = SnapshotRequest(request={'foo': 'bar'})
-
+    snapshot.events.add(WorkbenchRate(processor=0.1,
+                                      ram=1.0,
+                                      bios=Bios.A,
+                                      labelling=False,
+                                      graphic_card=0.1,
+                                      data_storage=4.1,
+                                      algorithm_software=RatingSoftware.Ereuse,
+                                      algorithm_version=StrictVersion('1.0'),
+                                      device=device))
     db.session.add(snapshot)
     db.session.commit()
     device = Microtower.query.one()  # type: Microtower
-    assert device.events_one[0].type == Snapshot.__name__
+    e1, e2 = device.events
+    assert isinstance(e1, Snapshot), 'Creation order must be preserved: 1. snapshot, 2. WR'
+    assert isinstance(e2, WorkbenchRate)
     db.session.delete(device)
     db.session.commit()
     assert Snapshot.query.one_or_none() is None
@@ -137,7 +154,7 @@ def test_snapshot_component_add_remove(user: UserClient):
                 [c['serialNumber'] for c in e['components']],
                 e.get('snapshot', {}).get('id', None)
             )
-            for e in (user.get(res=Event, item=e['id'])[0] for e in events)
+            for e in user.get_many(res=Event, resources=events, key='id')
         )
 
     # We add the first device (2 times). The distribution of components
@@ -255,7 +272,7 @@ def _test_snapshot_computer_no_hid(user: UserClient):
 
 def test_snapshot_mismatch_id():
     """Tests uploading a device with an ID from another device."""
-    # Note that this won't happen as in this new version
+    # Note that this won't happen as in this new algorithm_version
     # the ID is not used in the Snapshot process
     pass
 
@@ -279,3 +296,30 @@ def test_snapshot_tag_inner_tag_mismatch_between_tags_and_hid(user: UserClient, 
     user.post(pc2, res=Snapshot)  # PC2 uploads well
     pc2['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]  # Set tag from pc1 to pc2
     user.post(pc2, res=Snapshot, status=MismatchBetweenTagsAndHid)
+
+
+def test_erase(user: UserClient):
+    """Tests a Snapshot with EraseSectors."""
+    s = file('erase-sectors.snapshot')
+    snapshot = snapshot_and_check(user, s, ('EraseSectors',), perform_second_snapshot=True)
+    storage, *_ = snapshot['components']
+    assert storage['type'] == 'SolidStateDrive', 'Components must be ordered by input order'
+    storage, _ = user.get(res=SolidStateDrive, item=storage['id'])  # Let's get storage events too
+    _snapshot1, _snapshot2, erasure = storage['events']
+    assert erasure['type'] == 'EraseSectors'
+    assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
+    assert snapshot == _snapshot2
+    erasure, _ = user.get(res=EraseBasic, item=erasure['id'])
+    assert len(erasure['steps']) == 2
+    assert erasure['steps'][0]['startingTime'] == '2018-06-01T08:15:00'
+    assert erasure['steps'][0]['endingTime'] == '2018-06-01T09:16:00'
+    assert erasure['steps'][1]['endingTime'] == '2018-06-01T08:16:00'
+    assert erasure['steps'][1]['endingTime'] == '2018-06-01T09:17:00'
+    assert erasure['device']['id'] == storage['id']
+    for step in erasure['steps']:
+        assert step['type'] == 'StepZero'
+        assert step['error'] is False
+        assert step['secureRandomSteps'] == 1
+        assert step['cleanWithZeros'] is True
+        assert 'num' not in step
+        assert step['erasure'] == erasure['id']

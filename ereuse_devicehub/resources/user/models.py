@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from flask import current_app as app
+from flask import current_app as app, g
 from sqlalchemy import Column, Unicode, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import CountryType, EmailType, PasswordType
@@ -42,9 +42,12 @@ class Organization(Thing):
     )
 
     @classmethod
-    def get_default_org(cls) -> 'Organization':
+    def get_default_org_id(cls) -> UUID:
         """Retrieves the default organization."""
-        return Organization.query.filter_by(**app.config.get_namespace('ORGANIZATION_')).one()
+        return g.setdefault('org_id',
+                            Organization.query.filter_by(
+                                **app.config.get_namespace('ORGANIZATION_')
+                            ).one().id)
 
     def __repr__(self) -> str:
         return '<Org {0.id}: {0.name}>'.format(self)

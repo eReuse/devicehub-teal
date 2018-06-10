@@ -17,7 +17,7 @@ class Tag(Thing):
                     # If we link with the Organization object this instance
                     # will be set as persistent and added to session
                     # which is something we don't want to enforce by default
-                    default=lambda: Organization.get_default_org().id)
+                    default=lambda: Organization.get_default_org_id())
     org = relationship(Organization,
                        backref=backref('tags', lazy=True),
                        primaryjoin=Organization.id == org_id,

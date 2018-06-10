@@ -47,13 +47,14 @@ class Sync:
         :return: A tuple of:
 
                  1. The device from the database (with an ID) whose
-                    ``components`` field contain the db version
+                    ``components`` field contain the db algorithm_version
                     of the passed-in components.
                  2. A list of Add / Remove (not yet added to session).
         """
         db_device = self.execute_register(device)
         db_components, events = OrderedSet(), OrderedSet()
         if components is not None:  # We have component info (see above)
+            assert isinstance(db_device, Computer)
             blacklist = set()  # type: Set[int]
             not_new_components = set()
             for component in components:
@@ -122,7 +123,7 @@ class Sync:
         This method tries to get an existing device using the HID
         or one of the tags, and...
 
-        - if it already exists it returns a "local synced version"
+        - if it already exists it returns a "local synced algorithm_version"
           –the same ``device`` you passed-in but with updated values
           from the database. In this case we do not
           "touch" any of its values on the DB.
@@ -187,7 +188,7 @@ class Sync:
                 setattr(db_device, field_name, value)
 
     @staticmethod
-    def add_remove(device: Device,
+    def add_remove(device: Computer,
                    components: Set[Component]) -> OrderedSet:
         """
         Generates the Add and Remove events (but doesn't add them to
@@ -209,7 +210,7 @@ class Sync:
         adding = components - old_components
         if adding:
             # For the components we are adding, let's remove them from their old parents
-            def g_parent(component: Component) -> int:
+            def g_parent(component: Component) -> Device:
                 return component.parent or Computer(id=0)  # Computer with id 0 is our Identity
 
             for parent, _components in groupby(sorted(adding, key=g_parent), key=g_parent):

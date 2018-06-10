@@ -1,48 +1,55 @@
-from datetime import timedelta
+from uuid import uuid4
 
-from colour import Color
 from flask import g
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
-    ForeignKey, Integer, Interval, JSON, Sequence, SmallInteger, Unicode
+    Float, ForeignKey, Interval, JSON, SmallInteger, Unicode, event
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import backref, relationship, validates
+from sqlalchemy.ext.orderinglist import ordering_list
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.util import OrderedSet
-from sqlalchemy_utils import ColorType
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Component, Device
-from ereuse_devicehub.resources.event.enums import Appearance, Bios, Functionality, Orientation, \
-    SoftwareType, StepTypes, TestHardDriveLength
+from ereuse_devicehub.resources.device.models import Component, DataStorage, Device
+from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RATE_5, Bios, \
+    FunctionalityRange, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
+    SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
+from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
-from teal.db import CASCADE, CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, POLYMORPHIC_ON, \
-    StrictVersionType, check_range
+from teal.db import ArrayOfEnum, CASCADE, CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, \
+    POLYMORPHIC_ON, StrictVersionType, check_range
 
 
 class JoinedTableMixin:
+    # noinspection PyMethodParameters
     @declared_attr
     def id(cls):
-        return Column(BigInteger, ForeignKey(Event.id), primary_key=True)
+        return Column(UUID(as_uuid=True), ForeignKey(Event.id), primary_key=True)
 
 
 class Event(Thing):
-    id = Column(BigInteger, Sequence('event_seq'), primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     title = Column(Unicode(STR_BIG_SIZE), default='', nullable=False)
-    date = Column(DateTime)
-    secured = Column(Boolean, default=False, nullable=False)
     type = Column(Unicode)
     incidence = Column(Boolean, default=False, nullable=False)
+    closed = Column(Boolean, default=True, nullable=False)
+    """
+    Whether the author has finished the event.
+    After this is set to True, no modifications are allowed.
+    """
+    error = Column(Boolean, default=False, nullable=False)
     description = Column(Unicode, default='', nullable=False)
+    date = Column(DateTime)
 
-    snapshot_id = Column(BigInteger, ForeignKey('snapshot.id',
-                                                use_alter=True,
-                                                name='snapshot_events'))
+    snapshot_id = Column(UUID(as_uuid=True), ForeignKey('snapshot.id',
+                                                        use_alter=True,
+                                                        name='snapshot_events'))
     snapshot = relationship('Snapshot',
                             backref=backref('events',
                                             lazy=True,
-                                            cascade=CASCADE,
-                                            collection_class=OrderedSet),
+                                            cascade=CASCADE_OWN,
+                                            collection_class=set),
                             primaryjoin='Event.snapshot_id == Snapshot.id')
 
     author_id = Column(UUID(as_uuid=True),
@@ -55,12 +62,23 @@ class Event(Thing):
     components = relationship(Component,
                               backref=backref('events_components',
                                               lazy=True,
-                                              order_by=lambda: Event.id,
+                                              order_by=lambda: Event.created,
                                               collection_class=OrderedSet),
                               secondary=lambda: EventComponent.__table__,
-                              order_by=lambda: Device.id,
+                              order_by=lambda: Component.id,
                               collection_class=OrderedSet)
+    """
+    The components that are affected by the event.
+    
+    When performing events to parent devices their components are
+    affected too.
+    
+    For example: an ``Allocate`` is performed to a Computer and this
+    relationship is filled with the components the computer had
+    at the time of the event.
+    """
 
+    # noinspection PyMethodParameters
     @declared_attr
     def __mapper_args__(cls):
         """
@@ -79,8 +97,8 @@ class Event(Thing):
 
 
 class EventComponent(db.Model):
-    device_id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
-    event_id = Column(BigInteger, ForeignKey(Event.id), primary_key=True)
+    device_id = Column(BigInteger, ForeignKey(Component.id), primary_key=True)
+    event_id = Column(UUID(as_uuid=True), ForeignKey(Event.id), primary_key=True)
 
 
 class EventWithOneDevice(Event):
@@ -89,22 +107,19 @@ class EventWithOneDevice(Event):
                           backref=backref('events_one',
                                           lazy=True,
                                           cascade=CASCADE,
-                                          order_by=lambda: EventWithOneDevice.id,
+                                          order_by=lambda: EventWithOneDevice.created,
                                           collection_class=OrderedSet),
                           primaryjoin=Device.id == device_id)
 
     def __repr__(self) -> str:
-        return '<{0.t} {0.id!r} device={0.device!r}>'.format(self)
+        return '<{0.t} {0.id!r} device={0.device_id}>'.format(self)
 
 
 class EventWithMultipleDevices(Event):
-    """
-    Note that these events are not deleted when a device is deleted.
-    """
     devices = relationship(Device,
                            backref=backref('events_multiple',
                                            lazy=True,
-                                           order_by=lambda: EventWithMultipleDevices.id,
+                                           order_by=lambda: EventWithMultipleDevices.created,
                                            collection_class=OrderedSet),
                            secondary=lambda: EventDevice.__table__,
                            order_by=lambda: Device.id)
@@ -115,7 +130,8 @@ class EventWithMultipleDevices(Event):
 
 class EventDevice(db.Model):
     device_id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
-    event_id = Column(BigInteger, ForeignKey(EventWithMultipleDevices.id), primary_key=True)
+    event_id = Column(UUID(as_uuid=True), ForeignKey(EventWithMultipleDevices.id),
+                      primary_key=True)
 
 
 class Add(EventWithOneDevice):
@@ -139,11 +155,11 @@ class Deallocate(JoinedTableMixin, EventWithMultipleDevices):
 
 
 class EraseBasic(JoinedTableMixin, EventWithOneDevice):
-    starting_time = Column(DateTime, nullable=False)
-    ending_time = Column(DateTime, nullable=False)
-    secure_random_steps = Column(SmallInteger, check_range('secure_random_steps', min=0),
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, CheckConstraint('end_time > start_time'), nullable=False)
+    secure_random_steps = Column(SmallInteger,
+                                 check_range('secure_random_steps', min=0),
                                  nullable=False)
-    success = Column(Boolean, nullable=False)
     clean_with_zeros = Column(Boolean, nullable=False)
 
 
@@ -152,54 +168,63 @@ class EraseSectors(EraseBasic):
 
 
 class Step(db.Model):
-    id = Column(BigInteger, Sequence('step_seq'), primary_key=True)
-    num = Column(SmallInteger, nullable=False)
-    type = Column(DBEnum(StepTypes), nullable=False)
-    success = Column(Boolean, nullable=False)
-    starting_time = Column(DateTime, nullable=False)
-    ending_time = Column(DateTime, CheckConstraint('ending_time > starting_time'), nullable=False)
-    secure_random_steps = Column(SmallInteger, check_range('secure_random_steps', min=0),
+    erasure_id = Column(UUID(as_uuid=True), ForeignKey(EraseBasic.id), primary_key=True)
+    type = Column(Unicode(STR_SM_SIZE), nullable=False)
+    num = Column(SmallInteger, primary_key=True)
+    error = Column(Boolean, default=False, nullable=False)
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, CheckConstraint('end_time > start_time'), nullable=False)
+    secure_random_steps = Column(SmallInteger,
+                                 check_range('secure_random_steps', min=0),
                                  nullable=False)
     clean_with_zeros = Column(Boolean, nullable=False)
 
-    erasure_id = Column(BigInteger, ForeignKey(EraseBasic.id))
-    erasure = relationship(EraseBasic, backref=backref('steps', cascade=CASCADE_OWN))
+    erasure = relationship(EraseBasic,
+                           backref=backref('steps',
+                                           cascade=CASCADE_OWN,
+                                           order_by=num,
+                                           collection_class=ordering_list('num')))
+
+    # noinspection PyMethodParameters
+    @declared_attr
+    def __mapper_args__(cls):
+        """
+        Defines inheritance.
+
+        From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
+        extensions/declarative/api.html
+        #sqlalchemy.ext.declarative.declared_attr>`_
+        """
+        args = {POLYMORPHIC_ID: cls.t}
+        if cls.t == 'Step':
+            args[POLYMORPHIC_ON] = cls.type
+        return args
+
+
+class StepZero(Step):
+    pass
+
+
+class StepRandom(Step):
+    pass
 
 
 class Snapshot(JoinedTableMixin, EventWithOneDevice):
-    uuid = Column(UUID(as_uuid=True), nullable=False, unique=True)  # type: UUID
-    version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)  # type: str
-    software = Column(DBEnum(SoftwareType), nullable=False)  # type: SoftwareType
-    appearance = Column(DBEnum(Appearance))  # type: Appearance
-    appearance_score = Column(SmallInteger,
-                              check_range('appearance_score', -3, 5))  # type: int
-    functionality = Column(DBEnum(Functionality))  # type: Functionality
-    functionality_score = Column(SmallInteger,
-                                 check_range('functionality_score', min=-3, max=5))  # type: int
-    labelling = Column(Boolean)  # type: bool
-    bios = Column(DBEnum(Bios))  # type: Bios
-    condition = Column(SmallInteger,
-                       check_range('condition', min=0, max=5))  # type: int
-    elapsed = Column(Interval, nullable=False)  # type: timedelta
-    install_name = Column(Unicode(STR_BIG_SIZE))  # type: str
-    install_elapsed = Column(Interval)  # type: timedelta
-    install_success = Column(Boolean)  # type: bool
-    inventory_elapsed = Column(Interval)  # type: timedelta
-    color = Column(ColorType)  # type: Color
-    orientation = Column(DBEnum(Orientation))  # type: Orientation
+    uuid = Column(UUID(as_uuid=True), nullable=False, unique=True)
+    version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)
+    software = Column(DBEnum(SnapshotSoftware), nullable=False)
+    elapsed = Column(Interval, nullable=False)
+    expected_events = Column(ArrayOfEnum(DBEnum(SnapshotExpectedEvents)))
 
-    @validates('components')
-    def validate_components_only_workbench(self, _, components):
-        if self.software != SoftwareType.Workbench:
-            if components:
-                raise ValueError('Only Snapshots from Workbench can have components.')
-        return components
+
+class Install(JoinedTableMixin, EventWithOneDevice):
+    name = Column(Unicode(STR_BIG_SIZE), nullable=False)
+    elapsed = Column(Interval, nullable=False)
 
 
 class SnapshotRequest(db.Model):
-    id = Column(BigInteger, ForeignKey(Snapshot.id), primary_key=True)
+    id = Column(UUID(as_uuid=True), ForeignKey(Snapshot.id), primary_key=True)
     request = Column(JSON, nullable=False)
-
     snapshot = relationship(Snapshot,
                             backref=backref('request',
                                             lazy=True,
@@ -207,25 +232,132 @@ class SnapshotRequest(db.Model):
                                             cascade=CASCADE_OWN))
 
 
+class Rate(JoinedTableMixin, EventWithOneDevice):
+    rating = Column(Float(decimal_return_scale=2), check_range('rating', *RATE_POSITIVE))
+    algorithm_software = Column(DBEnum(RatingSoftware), nullable=False)
+    algorithm_version = Column(StrictVersionType, nullable=False)
+    appearance = Column(Float(decimal_return_scale=2), check_range('appearance', *RATE_NEGATIVE))
+    functionality = Column(Float(decimal_return_scale=2),
+                           check_range('functionality', *RATE_NEGATIVE))
+
+    @property
+    def rating_range(self) -> RatingRange:
+        return RatingRange.from_score(self.rating)
+
+
+class IndividualRate(Rate):
+    pass
+
+
+class AggregateRate(Rate):
+    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+    ratings = relationship(IndividualRate,
+                           backref=backref('aggregated_ratings',
+                                           lazy=True,
+                                           order_by=lambda: IndividualRate.created,
+                                           collection_class=OrderedSet),
+                           secondary=lambda: RateAggregateRate.__table__,
+                           order_by=lambda: IndividualRate.created,
+                           collection_class=OrderedSet)
+    """The ratings this aggregateRate aggregates."""
+
+
+class RateAggregateRate(db.Model):
+    """
+    Represents the ``many to many`` relationship between
+    ``Rate`` and ``AggregateRate``.
+    """
+    rate_id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+    aggregate_rate_id = Column(UUID(as_uuid=True),
+                               ForeignKey(AggregateRate.id),
+                               primary_key=True)
+
+
+class WorkbenchRate(IndividualRate):
+    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+    processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE))
+    ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE))
+    data_storage = Column(Float(decimal_return_scale=2),
+                          check_range('data_storage', *RATE_POSITIVE))
+    graphic_card = Column(Float(decimal_return_scale=2),
+                          check_range('graphic_card', *RATE_POSITIVE))
+    labelling = Column(Boolean)
+    bios = Column(DBEnum(Bios))
+    appearance_range = Column(DBEnum(AppearanceRange))
+    functionality_range = Column(DBEnum(FunctionalityRange))
+
+
+class PhotoboxRate(IndividualRate):
+    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+    image_id = Column(UUID(as_uuid=True), ForeignKey(Image.id), nullable=False)
+    image = relationship(Image,
+                         uselist=False,
+                         cascade=CASCADE_OWN,
+                         single_parent=True,
+                         primaryjoin=Image.id == image_id)
+
+    # todo how to ensure phtoboxrate.device == image.image_list.device?
+
+
+class PhotoboxUserRate(PhotoboxRate):
+    id = Column(UUID(as_uuid=True), ForeignKey(PhotoboxRate.id), primary_key=True)
+    assembling = Column(SmallInteger, check_range('assembling', *BOX_RATE_5), nullable=False)
+    parts = Column(SmallInteger, check_range('parts', *BOX_RATE_5), nullable=False)
+    buttons = Column(SmallInteger, check_range('buttons', *BOX_RATE_5), nullable=False)
+    dents = Column(SmallInteger, check_range('dents', *BOX_RATE_5), nullable=False)
+    decolorization = Column(SmallInteger,
+                            check_range('decolorization', *BOX_RATE_5),
+                            nullable=False)
+    scratches = Column(SmallInteger, check_range('scratches', *BOX_RATE_5), nullable=False)
+    tag_alignment = Column(SmallInteger,
+                           check_range('tag_alignment', *BOX_RATE_3),
+                           nullable=False)
+    tag_adhesive = Column(SmallInteger, check_range('tag_adhesive', *BOX_RATE_3), nullable=False)
+    dirt = Column(SmallInteger, check_range('dirt', *BOX_RATE_3), nullable=False)
+
+
+class PhotoboxSystemRate(PhotoboxRate):
+    id = Column(UUID(as_uuid=True), ForeignKey(PhotoboxRate.id), primary_key=True)
+
+
 class Test(JoinedTableMixin, EventWithOneDevice):
     elapsed = Column(Interval, nullable=False)
-    success = Column(Boolean, nullable=False)
-
-    snapshot = relationship(Snapshot, backref=backref('tests',
-                                                      lazy=True,
-                                                      cascade=CASCADE_OWN,
-                                                      order_by=Event.id,
-                                                      collection_class=OrderedSet))
 
 
-class TestHardDrive(Test):
-    id = Column(BigInteger, ForeignKey(Test.id), primary_key=True)
+class TestDataStorage(Test):
+    id = Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
     length = Column(DBEnum(TestHardDriveLength), nullable=False)  # todo from type
     status = Column(Unicode(STR_SIZE), nullable=False)
     lifetime = Column(Interval, nullable=False)
-    first_error = Column(Integer)
-    # todo error becomes Test.success
+    first_error = Column(SmallInteger, nullable=False, default=0)
+    passed_lifetime = Column(Interval)
+    assessment = Column(Boolean)
+    reallocated_sector_count = Column(SmallInteger)
+    power_cycle_count = Column(SmallInteger)
+    reported_uncorrectable_errors = Column(SmallInteger)
+    command_timeout = Column(SmallInteger)
+    current_pending_sector_count = Column(SmallInteger)
+    offline_uncorrectable = Column(SmallInteger)
+    remaining_lifetime_percentage = Column(SmallInteger)
+
+    # todo remove lifetime / passed_lifetime as I think they are the same
 
 
 class StressTest(Test):
     pass
+
+
+# Listeners
+@event.listens_for(TestDataStorage.device, 'set', retval=True, propagate=True)
+@event.listens_for(Install.device, 'set', retval=True, propagate=True)
+@event.listens_for(EraseBasic.device, 'set', retval=True, propagate=True)
+def validate_device_is_data_storage(target, value, old_value, initiator):
+    if not isinstance(value, DataStorage):
+        raise TypeError('{} must be a DataStorage but you passed {}'.format(initiator.impl, value))
+    return value
+
+# todo finish adding events
+# @event.listens_for(Install.snapshot, 'before_insert', propagate=True)
+# def validate_required_snapshot(mapper, connection, target: Event):
+#    if not target.snapshot:
+#        raise ValidationError('{0!r} must be linked to a Snapshot.'.format(target))

@@ -14,11 +14,6 @@ class Device(Thing):
               description='The Hardware ID is the unique ID traceability systems '
                           'use to ID a device globally.')
     tags = NestedOn('Tag', many=True, collection_class=OrderedSet)
-    pid = Str(description='The PID identifies a device under a circuit or platform.',
-              validate=Length(max=STR_SIZE))
-    gid = Str(description='The Giver ID links the device to the giver\'s (donor, seller)'
-                          'internal inventory.',
-              validate=Length(max=STR_SIZE))
     model = Str(validate=Length(max=STR_BIG_SIZE))
     manufacturer = Str(validate=Length(max=STR_SIZE))
     serial_number = Str(data_key='serialNumber')
@@ -70,13 +65,21 @@ class GraphicCard(Component):
                      description='The amount of memory of the Graphic Card in MB.')
 
 
-class HardDrive(Component):
+class DataStorage(Component):
     size = Integer(validate=Range(0, 10 ** 8),
                    unit=UnitCodes.mbyte,
                    description='The size of the hard-drive in MB.')
     erasure = NestedOn('EraseBasic', load_only=True)
     tests = NestedOn('TestHardDrive', many=True, load_only=True)
     benchmarks = NestedOn('BenchmarkHardDrive', load_only=True, many=True)
+
+
+class HardDrive(DataStorage):
+    pass
+
+
+class SolidStateDrive(DataStorage):
+    pass
 
 
 class Motherboard(Component):

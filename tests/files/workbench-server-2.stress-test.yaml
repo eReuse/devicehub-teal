@@ -1,0 +1,12 @@
+# A Snapshot Phase 1 with a device
+# and 1 GraphicCard, 2 RamModule, 1 Processor, 1 SSD, 1 HDD, 1 Motherboard
+# Prerequisites:
+#  - workbench-server-1.snapshot.yaml
+# Requisites:
+# - Set the ``snapshot`` field to ``workbench-server-1...``
+# All numbers are invented
+
+type: 'StressTest'
+elapsed: 300
+error: False
+snapshot: None # fulfill!

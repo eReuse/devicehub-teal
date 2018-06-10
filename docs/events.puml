@@ -1,0 +1,101 @@
+@startuml
+abstract class Rate
+abstract class Event
+abstract class Test
+abstract class Allocate
+abstract class Transfer
+abstract class Trade
+abstract class EventWithOneDevice
+abstract class EventWithMultipleDevices
+abstract class Organize
+abstract class Plan
+abstract class Step
+abstract class PhotoboxRate
+
+
+package "Devices" {
+    abstract class Device
+    abstract class Component
+    Device <|- Component
+}
+
+
+IndividualRate "1..*" -- "1..*" AggregateRate : ratings <
+
+Event <|-- EventWithOneDevice
+Event <|-- EventWithMultipleDevices
+EventWithOneDevice <|--- Snapshot
+EventWithOneDevice <|--- Install
+EventWithOneDevice <|-- Rate
+Rate <|-- AggregateRate
+Rate <|- IndividualRate
+IndividualRate <|- PhotoboxRate
+IndividualRate <|-- WorkbenchRate
+EventWithOneDevice <|-- Test
+Test <|-- TestDataStorage
+Test <|-- StressTest
+EventWithOneDevice <|--- EraseBasic
+EraseBasic <|- EraseSectors
+
+Step <|-- StepZero
+Step <|-- StepRandom
+Snapshot "1" -- "1" SnapshotRequest
+Event "*" -> "0..1" Snapshot : InSnapshot >
+Event "*" -> "0..1" Component : affectedComponents >
+Device "1" *-- "*" EventWithOneDevice : EventOn <
+Device "1..*" *-- "1" EventWithMultipleDevices : EventOn <
+EraseBasic "1" *-- "1..*" Step
+PhotoboxRate <|-- PhotoboxSystemRate
+PhotoboxRate <|-- PhotoboxPersonRate
+
+package Images{
+    ImageList "1" *- "1..*" Image : In <
+    Device "1" *-- "*" ImageList
+    Image "1" *-- "*" PhotoboxRate
+}
+
+EventWithMultipleDevices <|- Organize
+EventWithMultipleDevices <|-- Transfer
+EventWithMultipleDevices <|-- Trade
+EventWithMultipleDevices <|--- ToDispose
+EventWithMultipleDevices <|--- Locate
+EventWithMultipleDevices <|--- Migrate
+EventWithMultipleDevices <|--- Prepare
+EventWithMultipleDevices <|--- ReadyToUse
+EventWithMultipleDevices <|--- Recycle
+EventWithMultipleDevices <|--- Repair
+EventWithMultipleDevices <|--- ToPrepare
+EventWithMultipleDevices <|--- ToRepair
+EventWithMultipleDevices <|--- DisposeWaste
+EventWithMultipleDevices <|--- Recover
+Transfer <|-- Receive
+Trade <|-- Sell
+Trade <|-- DisposeProduct
+Trade <|-- Donate
+Trade <|-- Pay
+Trade <|-- Rent
+Organize <|-- Allocate
+Allocate <|-- Accept
+Allocate <|-- Reject
+Allocate <|-- Assign
+Organize <|-- Plan
+Plan <|-- Reserve
+Plan <|-- CancelReservation
+
+
+package Agents {
+    abstract class User
+    abstract class Agent
+    Event "*" -> "1" User : Author >
+    Event "*" - "0..1" Agent : agent >
+
+    Agent <|-- User
+
+    User <|-- Person
+    User <|-- System
+    Agent <|-- Organization
+    User "*" -o "0..1" Organization : WorksIn >
+    User "*" -o "0..1" Organization : activeOrganization >
+}
+
+@enduml

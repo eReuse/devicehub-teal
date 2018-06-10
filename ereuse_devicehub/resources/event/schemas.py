@@ -1,17 +1,17 @@
 from flask import current_app as app
-from marshmallow import ValidationError, post_load, validates_schema
-from marshmallow.fields import Boolean, DateTime, Integer, Nested, String, TimeDelta, UUID
+from marshmallow import ValidationError, validates_schema
+from marshmallow.fields import Boolean, DateTime, Float, Integer, Nested, String, TimeDelta, UUID
 from marshmallow.validate import Length, Range
 from marshmallow_enum import EnumField
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device.schemas import Component, Device
-from ereuse_devicehub.resources.event.enums import Appearance, Bios, Functionality, Orientation, \
-    SoftwareType, StepTypes, TestHardDriveLength
+from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
+    RATE_POSITIVE, RatingSoftware, SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user.schemas import User
-from teal.marshmallow import Color, Version
+from teal.marshmallow import Version
 from teal.resource import Schema
 
 
@@ -23,16 +23,12 @@ class Event(Thing):
     date = DateTime('iso', description='When this event happened. '
                                        'Leave it blank if it is happening now. '
                                        'This is used when creating events retroactively.')
-    secured = Boolean(default=False,
-                      description='Can we ensure the info in this event is totally correct?'
-                                  'Devicehub will automatically set this too for some events,'
-                                  'for example in snapshots if it could detect the ids of the'
-                                  'hardware without margin of doubt.')
+    error = Boolean(default=False, description='Did the event fail?')
     incidence = Boolean(default=False,
-                        description='Was something wrong in this event?')
+                        description='Should this event be reviewed due some anomaly?')
     snapshot = NestedOn('Snapshot', dump_only=True)
-    description = String(default='', description='A comment about the event.')
     components = NestedOn(Component, dump_only=True, many=True)
+    description = String(default='', description='A comment about the event.')
 
 
 class EventWithOneDevice(Event):
@@ -67,12 +63,12 @@ class Deallocate(EventWithMultipleDevices):
 
 
 class EraseBasic(EventWithOneDevice):
-    starting_time = DateTime(required=True, data_key='startingTime')
-    ending_time = DateTime(required=True, data_key='endingTime')
+    start_time = DateTime(required=True, data_key='startTime')
+    end_time = DateTime(required=True, data_key='endTime')
     secure_random_steps = Integer(validate=Range(min=0), required=True,
                                   data_key='secureRandomSteps')
-    success = Boolean(required=True)
     clean_with_zeros = Boolean(required=True, data_key='cleanWithZeros')
+    steps = NestedOn('Step', many=True, required=True)
 
 
 class EraseSectors(EraseBasic):
@@ -81,45 +77,93 @@ class EraseSectors(EraseBasic):
 
 class Step(Schema):
     id = Integer(dump_only=True)
-    type = EnumField(StepTypes, required=True)
-    starting_time = DateTime(required=True, data_key='startingTime')
-    ending_time = DateTime(required=True, data_key='endingTime')
+    type = String(description='Only required when it is nested.')
+    start_time = DateTime(required=True, data_key='startTime')
+    end_time = DateTime(required=True, data_key='endTime')
     secure_random_steps = Integer(validate=Range(min=0),
                                   required=True,
                                   data_key='secureRandomSteps')
-    success = Boolean(required=True)
     clean_with_zeros = Boolean(required=True, data_key='cleanWithZeros')
+    error = Boolean(default=False, description='Did the event fail?')
 
 
-class Condition(Schema):
-    appearance = EnumField(Appearance,
-                           required=True,
-                           description='Grades the imperfections that aesthetically '
-                                       'affect the device, but not its usage.')
-    appearance_score = Integer(validate=Range(-3, 5), dump_only=True)
-    functionality = EnumField(Functionality,
-                              required=True,
-                              description='Grades the defects of a device that affect its usage.')
-    functionality_score = Integer(validate=Range(-3, 5),
-                                  dump_only=True,
-                                  data_key='functionalityScore')
+class StepZero(Step):
+    pass
+
+
+class StepRandom(Step):
+    pass
+
+
+class Rate(EventWithOneDevice):
+    rating = Integer(validate=Range(*RATE_POSITIVE),
+                     dump_only=True,
+                     data_key='ratingValue',
+                     description='The rating for the content.')
+    algorithm_software = EnumField(RatingSoftware,
+                                   dump_only=True,
+                                   data_key='algorithmSoftware',
+                                   description='The algorithm used to produce this rating.')
+    algorithm_version = Version(dump_only=True,
+                                data_key='algorithmVersion',
+                                description='The algorithm_version of the algorithm_software.')
+    appearance = Integer(validate=Range(-3, 5), dump_only=True)
+    functionality = Integer(validate=Range(-3, 5),
+                            dump_only=True,
+                            data_key='functionalityScore')
+
+
+class IndividualRate(Rate):
+    pass
+
+
+class AggregateRate(Rate):
+    ratings = NestedOn(IndividualRate, many=True)
+
+
+class PhotoboxRate(IndividualRate):
+    num = Integer(dump_only=True)
+    # todo Image
+
+
+class PhotoboxUserRate(PhotoboxRate):
+    assembling = Integer()
+    parts = Integer()
+    buttons = Integer()
+    dents = Integer()
+    decolorization = Integer()
+    scratches = Integer()
+    tag_adhesive = Integer()
+    dirt = Integer()
+
+
+class PhotoboxSystemRate(PhotoboxRate):
+    pass
+
+
+class WorkbenchRate(IndividualRate):
+    processor = Float()
+    ram = Float()
+    data_storage = Float()
+    graphic_card = Float()
     labelling = Boolean(description='Sets if there are labels stuck that should be removed.')
     bios = EnumField(Bios, description='How difficult it has been to set the bios to '
                                        'boot from the network.')
-    general = Integer(dump_only=True,
-                      validate=Range(0, 5),
-                      description='The grade of the device.')
+    appearance_range = EnumField(AppearanceRange,
+                                 required=True,
+                                 data_key='appearanceRange',
+                                 description='Grades the imperfections that aesthetically '
+                                             'affect the device, but not its usage.')
+    functionality_range = EnumField(FunctionalityRange,
+                                    required=True,
+                                    data_key='functionalityRange',
+                                    description='Grades the defects of a device that affect its usage.')
 
 
-class Installation(Schema):
+class Install(EventWithOneDevice):
     name = String(validate=Length(STR_BIG_SIZE),
                   required=True,
                   description='The name of the OS installed.')
-    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
-    success = Boolean(required=True)
-
-
-class Inventory(Schema):
     elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
 
 
@@ -130,57 +174,50 @@ class Snapshot(EventWithOneDevice):
 
     See docs for more info.
     """
-    device = NestedOn(Device)  # todo and when dumping?
+    uuid = UUID(required=True)
+    software = EnumField(SnapshotSoftware,
+                         required=True,
+                         description='The software that generated this Snapshot.')
+    version = Version(required=True, description='The version of the software.')
+    events = NestedOn(Event, many=True)  # todo ensure only specific events are submitted
+    expected_events = EnumField(SnapshotExpectedEvents,
+                                many=True,
+                                data_key='expectedEvents',
+                                description='Keep open this Snapshot until the following events'
+                                            'are performed. Setting this value will activate'
+                                            'the async Snapshot.')
+    device = NestedOn(Device)
+    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
     components = NestedOn(Component,
                           many=True,
                           description='A list of components that are inside of the device'
                                       'at the moment of this Snapshot.'
                                       'Order is preserved, so the component num 0 when'
                                       'submitting is the component num 0 when returning it back.')
-    uuid = UUID(required=True)
-    version = Version(required=True, description='The version of the SnapshotSoftware.')
-    software = EnumField(SoftwareType,
-                         required=True,
-                         description='The software that generated this Snapshot.')
-    condition = Nested(Condition, required=True)
-    install = Nested(Installation)
-    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
-    inventory = Nested(Inventory)
-    color = Color(description='Main color of the device.')
-    orientation = EnumField(Orientation, description='Is the device main stand wider or larger?')
-    events = NestedOn(Event, many=True, dump_only=True)
 
     @validates_schema
     def validate_workbench_version(self, data: dict):
-        if data['software'] == SoftwareType.Workbench:
+        if data['software'] == SnapshotSoftware.Workbench:
             if data['version'] < app.config['MIN_WORKBENCH']:
                 raise ValidationError(
-                    'Min. supported Workbench version is {}'.format(app.config['MIN_WORKBENCH']),
+                    'Min. supported Workbench algorithm_version is '
+                    '{}'.format(app.config['MIN_WORKBENCH']),
                     field_names=['version']
                 )
 
     @validates_schema
     def validate_components_only_workbench(self, data: dict):
-        if data['software'] != SoftwareType.Workbench:
+        if data['software'] != SnapshotSoftware.Workbench:
             if data['components'] is not None:
                 raise ValidationError('Only Workbench can add component info',
                                       field_names=['components'])
 
-    @post_load
-    def normalize_nested(self, data: dict):
-        data.update(data.pop('condition'))
-        data['condition'] = data.pop('general', None)
-        data.update({'install_' + key: value for key, value in data.pop('install', {})})
-        data['inventory_elapsed'] = data.get('inventory', {}).pop('elapsed', None)
-        return data
-
 
 class Test(EventWithOneDevice):
     elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
-    success = Boolean(required=True)
 
 
-class TestHardDrive(Test):
+class TestDataStorage(Test):
     length = EnumField(TestHardDriveLength, required=True)
     status = String(validate=Length(max=STR_SIZE), required=True)
     lifetime = TimeDelta(precision=TimeDelta.DAYS, required=True)

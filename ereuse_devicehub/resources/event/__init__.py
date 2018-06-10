@@ -1,8 +1,9 @@
 from typing import Callable, Iterable, Tuple
 
 from ereuse_devicehub.resources.device.sync import Sync
-from ereuse_devicehub.resources.event.schemas import Add, Event, Remove, Snapshot, Test, \
-    TestHardDrive
+from ereuse_devicehub.resources.event.schemas import Add, AggregateRate, EraseBasic, Event, \
+    Install, PhotoboxSystemRate, PhotoboxUserRate, Rate, Remove, Snapshot, Step, StepRandom, \
+    StepZero, Test, TestDataStorage, WorkbenchRate, EraseSectors
 from ereuse_devicehub.resources.event.views import EventView, SnapshotView
 from teal.resource import Converters, Resource
 
@@ -22,6 +23,50 @@ class RemoveDef(EventDef):
     SCHEMA = Remove
 
 
+class EraseBasicDef(EventDef):
+    SCHEMA = EraseBasic
+
+
+class EraseSectorsDef(EraseBasicDef):
+    SCHEMA = EraseSectors
+
+
+class StepDef(Resource):
+    SCHEMA = Step
+
+
+class StepZeroDef(StepDef):
+    SCHEMA = StepZero
+
+
+class StepRandomDef(StepDef):
+    SCHEMA = StepRandom
+
+
+class RateDef(EventDef):
+    SCHEMA = Rate
+
+
+class AggregateRateDef(RateDef):
+    SCHEMA = AggregateRate
+
+
+class WorkbenchRateDef(RateDef):
+    SCHEMA = WorkbenchRate
+
+
+class PhotoboxUserDef(RateDef):
+    SCHEMA = PhotoboxUserRate
+
+
+class PhotoboxSystemRateDef(RateDef):
+    SCHEMA = PhotoboxSystemRate
+
+
+class InstallDef(EventDef):
+    SCHEMA = Install
+
+
 class SnapshotDef(EventDef):
     SCHEMA = Snapshot
     VIEW = SnapshotView
@@ -38,5 +83,5 @@ class TestDef(EventDef):
     SCHEMA = Test
 
 
-class TestHardDriveDef(TestDef):
-    SCHEMA = TestHardDrive
+class TestDataStorageDef(TestDef):
+    SCHEMA = TestDataStorage

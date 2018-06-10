@@ -3,7 +3,6 @@ device:
   serialNumber: 'p2s'
   model: 'p2'
   type: 'Microtower'
-secured: False
 components:
   - manufacturer: 'p2c1m'
     serialNumber: 'p2c1s'
@@ -14,9 +13,6 @@ components:
     speed: 1.23
     cores: 2
     type: 'Processor'
-condition:
-  appearance: 'A'
-  functionality: 'B'
 elapsed: 25
 software: 'Workbench'
 uuid: 'f2e02261-87a1-4a50-b9b7-92c0e476e5f2'

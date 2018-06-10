@@ -1,6 +1,6 @@
-from ereuse_devicehub.resources.device.schemas import Component, Computer, Desktop, Device, \
-    GraphicCard, HardDrive, Laptop, Microtower, Motherboard, Netbook, NetworkAdapter, Processor, \
-    RamModule, Server
+from ereuse_devicehub.resources.device.schemas import Component, Computer, DataStorage, Desktop, \
+    Device, GraphicCard, HardDrive, Laptop, Microtower, Motherboard, Netbook, NetworkAdapter, \
+    Processor, RamModule, Server, SolidStateDrive
 from ereuse_devicehub.resources.device.views import DeviceView
 from teal.resource import Converters, Resource
 
@@ -44,8 +44,16 @@ class GraphicCardDef(ComponentDef):
     SCHEMA = GraphicCard
 
 
-class HardDriveDef(ComponentDef):
+class DataStorageDef(ComponentDef):
+    SCHEMA = DataStorage
+
+
+class HardDriveDef(DataStorageDef):
     SCHEMA = HardDrive
+
+
+class SolidStateDriveDef(DataStorageDef):
+    SCHEMA = SolidStateDrive
 
 
 class MotherboardDef(ComponentDef):

@@ -2,6 +2,8 @@ from datetime import timedelta
 from uuid import UUID
 
 import pytest
+from colour import Color
+
 from ereuse_utils.naming import Naming
 from pytest import raises
 from sqlalchemy.util import OrderedSet
@@ -79,15 +81,13 @@ def test_physical_properties():
                     model='ml',
                     manufacturer='mr',
                     width=2.0,
-                    pid='abc')
+                    color=Color())
     pc = Computer()
     pc.components.add(c)
     db.session.add(pc)
     db.session.commit()
     assert c.physical_properties == {
-        'gid': None,
         'usb': 3,
-        'pid': 'abc',
         'serial_number': 'sn',
         'pcmcia': None,
         'model': 'ml',
@@ -97,7 +97,9 @@ def test_physical_properties():
         'manufacturer': 'mr',
         'weight': None,
         'height': None,
-        'width': 2.0
+        'width': 2.0,
+        'color': Color(),
+        'depth': None
     }
 
 
@@ -358,16 +360,15 @@ def test_get_device(app: Devicehub, user: UserClient):
         db.session.add(pc)
         db.session.add(Test(device=pc,
                             elapsed=timedelta(seconds=4),
-                            success=True,
+                            error=False,
                             author=User(email='bar@bar.com')))
         db.session.commit()
     pc, _ = user.get(res=Device, item=1)
     assert len(pc['events']) == 1
     assert pc['events'][0]['type'] == 'Test'
-    assert pc['events'][0]['id'] == 1
     assert pc['events'][0]['device'] == 1
     assert pc['events'][0]['elapsed'] == 4
-    assert pc['events'][0]['success'] == True
+    assert not pc['events'][0]['error']
     assert UUID(pc['events'][0]['author'])
     assert 'events_components' not in pc, 'events_components are internal use only'
     assert 'events_one' not in pc, 'they are internal use only'
