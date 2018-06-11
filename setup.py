@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="ereuse-devicehub",
-    version='0.2.0a2',
+    version='0.2.0a3',
     packages=find_packages(),
     url='https://github.com/ereuse/devicehub-teal',
     license='Affero',
@@ -10,9 +10,9 @@ setup(
     author_email='x.bustamante@ereuse.org',
     description='A system to manage devices focusing reuse.',
     install_requires=[
-        'teal',
+        'teal>=0.2.0a1',
         'marshmallow_enum',
-        'ereuse-utils [Naming] >= 0.3.0b1',
+        'ereuse-utils [Naming]>=0.3.0b1',
         'psycopg2-binary',
         'sqlalchemy-utils',
         'requests',
