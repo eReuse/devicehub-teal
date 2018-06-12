@@ -17,9 +17,10 @@ from teal.db import Model
 
 class Event(Thing):
     id = ...  # type: Column
-    title = ...  # type: Column
+    name = ...  # type: Column
     date = ...  # type: Column
     type = ...  # type: Column
+    error = ... # type: Column
     incidence = ...  # type: Column
     description = ...  # type: Column
     finalized = ...  # type: Column
@@ -32,7 +33,7 @@ class Event(Thing):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.id = ...  # type: UUID
-        self.title = ...  # type: str
+        self.name = ...  # type: str
         self.type = ...  # type: str
         self.incidence = ...  # type: bool
         self.closed = ...  # type: bool
@@ -108,6 +109,9 @@ class SnapshotRequest(Model):
 
 
 class Rate(EventWithOneDevice):
+    rating = ... # type: Column
+    appearance = ... # type: Column
+    functionality = ... # type: Column
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.rating = ...  # type: float

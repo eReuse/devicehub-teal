@@ -1,8 +1,10 @@
 from marshmallow.fields import Float, Integer, Str
 from marshmallow.validate import Length, OneOf, Range
+from marshmallow_enum import EnumField
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.marshmallow import NestedOn
+from ereuse_devicehub.resources.enums import RamInterface, RamFormat
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 
@@ -105,3 +107,5 @@ class Processor(Component):
 class RamModule(Component):
     size = Integer(validate=Range(min=128, max=17000), unit=UnitCodes.mbyte)
     speed = Float(validate=Range(min=100, max=10000), unit=UnitCodes.mhz)
+    interface = EnumField(RamInterface)
+    format = EnumField(RamFormat)

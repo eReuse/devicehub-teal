@@ -8,6 +8,7 @@ setup(
     license='Affero',
     author='eReuse.org team',
     author_email='x.bustamante@ereuse.org',
+    include_package_data=True,
     description='A system to manage devices focusing reuse.',
     install_requires=[
         'teal>=0.2.0a1',
@@ -34,5 +35,5 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: HTTP Servers',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'License :: OSI Approved :: GNU Affero General Public License v3'
-    ],
+    ]
 )

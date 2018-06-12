@@ -9,6 +9,7 @@ from ereuse_devicehub.resources.event import AddDef, AggregateRateDef, EventDef,
     PhotoboxSystemRateDef, PhotoboxUserDef, RateDef, RemoveDef, SnapshotDef, StepDef, \
     StepRandomDef, StepZeroDef, TestDataStorageDef, TestDef, WorkbenchRateDef, EraseBasicDef, \
     EraseSectorsDef
+from ereuse_devicehub.resources.inventory import InventoryDef
 from ereuse_devicehub.resources.tag import TagDef
 from ereuse_devicehub.resources.user import OrganizationDef, UserDef
 from teal.config import Config
@@ -22,7 +23,7 @@ class DevicehubConfig(Config):
         OrganizationDef, TagDef, EventDef, AddDef, RemoveDef, EraseBasicDef, EraseSectorsDef,
         StepDef, StepZeroDef, StepRandomDef, RateDef, AggregateRateDef, WorkbenchRateDef,
         PhotoboxUserDef, PhotoboxSystemRateDef, InstallDef, SnapshotDef, TestDef,
-        TestDataStorageDef, WorkbenchRateDef
+        TestDataStorageDef, WorkbenchRateDef, InventoryDef
     }
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
     SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/dh-db1'  # type: str

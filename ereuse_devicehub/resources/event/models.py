@@ -30,18 +30,37 @@ class JoinedTableMixin:
 
 class Event(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    title = Column(Unicode(STR_BIG_SIZE), default='', nullable=False)
+    name = Column(Unicode(STR_BIG_SIZE), default='', nullable=False)
+    name.comment = """
+        A name or title for the event. Used when searching for events.
+    """
     type = Column(Unicode)
     incidence = Column(Boolean, default=False, nullable=False)
-    closed = Column(Boolean, default=True, nullable=False)
+    incidence.comment = """
+        Should this event be reviewed due some anomaly?
     """
-    Whether the author has finished the event.
-    After this is set to True, no modifications are allowed.
+    closed = Column(Boolean, default=True, nullable=False)
+    closed.comment = """
+        Whether the author has finished the event.
+        After this is set to True, no modifications are allowed.
     """
     error = Column(Boolean, default=False, nullable=False)
+    error.comment = """
+        Did the event fail?
+        For example, a failure in ``Erase`` means that the data storage
+        unit did not erase correctly.
+    """
     description = Column(Unicode, default='', nullable=False)
+    description.comment = """
+        A comment about the event.
+    """
     date = Column(DateTime)
-
+    date.comment = """
+        When this event happened.
+        Leave it blank if it is happening now
+        (the field ``created`` is used instead).
+        This is used for example when creating events retroactively.
+    """
     snapshot_id = Column(UUID(as_uuid=True), ForeignKey('snapshot.id',
                                                         use_alter=True,
                                                         name='snapshot_events'))
@@ -344,6 +363,31 @@ class TestDataStorage(Test):
 
 
 class StressTest(Test):
+    pass
+
+
+class Benchmark(EventWithOneDevice):
+    pass
+
+
+class BenchmarkDataStorage(Benchmark):
+    readSpeed = Column(Float(decimal_return_scale=2), nullable=False)
+    writeSpeed = Column(Float(decimal_return_scale=2), nullable=False)
+
+
+class BenchmarkWithRate(Benchmark):
+    rate = Column(SmallInteger, nullable=False)
+
+
+class BenchmarkProcessor(BenchmarkWithRate):
+    pass
+
+
+class BenchmarkProcessorSysbench(BenchmarkProcessor):
+    pass
+
+
+class BenchmarkRamSysbench(BenchmarkWithRate):
     pass
 
 

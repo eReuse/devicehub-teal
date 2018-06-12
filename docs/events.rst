@@ -139,12 +139,12 @@ is as follows:
    ``Snapshot``.
 3. In **T3**, WorkbenchServer submits the ``Erase`` with the ``Snapshot``
    and ``component`` IDs from 1, linking it to them. It repeats
-   this for all the erased data storage devices; **T2+Tn** being
+   this for all the erased data storage devices; **T3+Tn** being
    *n* the erased data storage devices.
 4. WorkbenchServer does like in 3. but for the event ``Install``,
-   finishing in **T2+Tn+Tx**, being *x* the number of data storage
+   finishing in **T3+Tn+Tx**, being *x* the number of data storage
    devices with an OS installed into.
-5. In **T2+Tn+Tx**, when all *expected events* have been performed,
+5. In **T3+Tn+Tx**, when all *expected events* have been performed,
    Devicehub **closes** the ``Snapshot`` from 1.
 
 Optionally, Devicehub understands receiving a ``Snapshot`` with all

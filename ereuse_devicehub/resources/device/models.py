@@ -4,12 +4,13 @@ from operator import attrgetter
 from typing import Dict, Set
 
 from sqlalchemy import BigInteger, Column, Float, ForeignKey, Integer, Sequence, SmallInteger, \
-    Unicode, inspect
+    Unicode, inspect, Enum as DBEnum
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import ColumnProperty, backref, relationship
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 
+from ereuse_devicehub.resources.enums import DataStorageInterface, RamInterface, RamFormat
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
 from ereuse_utils.naming import Naming
 from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, check_range
@@ -151,6 +152,7 @@ class GraphicCard(JoinedComponentTableMixin, Component):
 
 class DataStorage(JoinedComponentTableMixin, Component):
     size = Column(Integer, check_range('size', min=1, max=10 ** 8))
+    interface = Column(DBEnum(DataStorageInterface))
 
 
 class HardDrive(DataStorage):
@@ -182,3 +184,5 @@ class Processor(JoinedComponentTableMixin, Component):
 class RamModule(JoinedComponentTableMixin, Component):
     size = Column(SmallInteger, check_range('size', min=128, max=17000))
     speed = Column(Float, check_range('speed', min=100, max=10000))
+    interface = Column(DBEnum(RamInterface))
+    format = Column(DBEnum(RamFormat))

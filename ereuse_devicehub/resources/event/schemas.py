@@ -8,6 +8,7 @@ from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device.schemas import Component, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
     RATE_POSITIVE, RatingSoftware, SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
+from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user.schemas import User
@@ -17,18 +18,14 @@ from teal.resource import Schema
 
 class Event(Thing):
     id = Integer(dump_only=True)
-    title = String(default='',
-                   validate=Length(STR_BIG_SIZE),
-                   description='A name or title for the event. Used when searching for events.')
-    date = DateTime('iso', description='When this event happened. '
-                                       'Leave it blank if it is happening now. '
-                                       'This is used when creating events retroactively.')
-    error = Boolean(default=False, description='Did the event fail?')
-    incidence = Boolean(default=False,
-                        description='Should this event be reviewed due some anomaly?')
+    name = String(default='', validate=Length(STR_BIG_SIZE), description=m.Event.name.comment)
+    date = DateTime('iso', description=m.Event.date.comment)
+    error = Boolean(default=False, description=m.Event.error.comment)
+    incidence = Boolean(default=False, description=m.Event.incidence.comment)
     snapshot = NestedOn('Snapshot', dump_only=True)
     components = NestedOn(Component, dump_only=True, many=True)
-    description = String(default='', description='A comment about the event.')
+    description = String(default='', description=m.Event.description.comment)
+    author = NestedOn(User, dump_only=True, exclude=('token',))
 
 
 class EventWithOneDevice(Event):

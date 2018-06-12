@@ -3,7 +3,6 @@ from enum import Enum, IntEnum, unique
 from typing import Union
 
 
-
 @unique
 class SnapshotSoftware(Enum):
     """The algorithm_software used to perform the Snapshot."""
@@ -125,3 +124,28 @@ class SnapshotExpectedEvents(Enum):
 
 BOX_RATE_5 = 1, 5
 BOX_RATE_3 = 1, 3
+
+
+# After looking at own databases
+
+@unique
+class RamInterface(Enum):
+    DDR = 'DDR'
+    DDR2 = 'DDR2'
+    DDR3 = 'DDR3'
+    DDR4 = 'DDR4'
+    DDR5 = 'DDR5'
+    DDR6 = 'DDR6'
+
+
+@unique
+class RamFormat(Enum):
+    DIMM = 'DIMM'
+    SODIMM = 'SODIMM'
+
+
+@unique
+class DataStorageInterface(Enum):
+    ATA = 'ATA'
+    USB = 'USB'
+    PCI = 'PCI'
