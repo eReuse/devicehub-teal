@@ -2,9 +2,9 @@ Events
 ======
 
 ..  toctree::
-:maxdepth: 4
+    :maxdepth: 4
 
-        event-diagram
+    event-diagram
 
 
 Rate
@@ -12,8 +12,8 @@ Rate
 Devicehub generates an rating for a device taking into consideration the
 visual, functional, and performance.
 
-.. todo:: add performance as a result of component fusion + general tests in https://
-github.com/eReuse/Rdevicescore/blob/master/img/input_process_output.png
+.. todo:: add performance as a result of component fusion + general tests in `here <https://
+   github.com/eReuse/Rdevicescore/blob/master/img/input_process_output.png>`_.
 
 A Workflow is as follows:
 
@@ -172,12 +172,10 @@ There are four events for getting rid of devices:
       been recovered under a new product.
 
 .. note:: For usability purposes, users might not directly perform
-``Dispose``, but this could automatically be done when
-          performing ``ToDispose`` + ``Receive`` to a
-          ``RecyclingCenter``.
+   ``Dispose``, but this could automatically be done when
+   performing ``ToDispose`` + ``Receive`` to a ``RecyclingCenter``.
 
 .. todo:: Ensure that ``Dispose`` is a ``Trade`` event. An Org could
-``Sell`` or ``Donate`` a device with the objective of
-          disposing them. Is ``Dispose`` ok, or do we want to keep
-          that extra ``Sell`` or ``Donate`` event? Could dispose
-          be a synonym of any of those?
+    ``Sell`` or ``Donate`` a device with the objective of disposing them.
+    Is ``Dispose`` ok, or do we want to keep that extra ``Sell`` or
+    ``Donate`` event? Could dispose be a synonym of any of those?

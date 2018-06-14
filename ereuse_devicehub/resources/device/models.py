@@ -3,14 +3,14 @@ from itertools import chain
 from operator import attrgetter
 from typing import Dict, Set
 
-from sqlalchemy import BigInteger, Column, Float, ForeignKey, Integer, Sequence, SmallInteger, \
-    Unicode, inspect, Enum as DBEnum
+from sqlalchemy import BigInteger, Column, Enum as DBEnum, Float, ForeignKey, Integer, Sequence, \
+    SmallInteger, Unicode, inspect
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import ColumnProperty, backref, relationship
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 
-from ereuse_devicehub.resources.enums import DataStorageInterface, RamInterface, RamFormat
+from ereuse_devicehub.resources.enums import DataStorageInterface, RamFormat, RamInterface
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
 from ereuse_utils.naming import Naming
 from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, check_range

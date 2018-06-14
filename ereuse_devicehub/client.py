@@ -1,10 +1,10 @@
-from typing import Any, Dict, Iterable, Tuple, Type, Union, Generator
+from inspect import isclass
+from typing import Any, Dict, Iterable, Tuple, Type, Union
 
-from boltons.typeutils import issubclass
 from flask import Response
 from werkzeug.exceptions import HTTPException
 
-from ereuse_devicehub.resources.models import Thing
+from ereuse_devicehub.resources import models, schemas
 from ereuse_utils.test import JSON
 from teal.client import Client as TealClient
 from teal.marshmallow import ValidationError
@@ -21,7 +21,7 @@ class Client(TealClient):
 
     def open(self,
              uri: str,
-             res: Union[str, Type[Thing]] = None,
+             res: Union[str, Type[Union[models.Thing, schemas.Thing]]] = None,
              status: Union[int, Type[HTTPException], Type[ValidationError]] = 200,
              query: Iterable[Tuple[str, Any]] = tuple(),
              accept=JSON,
@@ -30,14 +30,14 @@ class Client(TealClient):
              headers: dict = None,
              token: str = None,
              **kw) -> Tuple[Union[Dict[str, Any], str], Response]:
-        if issubclass(res, Thing):
-            res = res.__name__
+        if isclass(res) and issubclass(res, (models.Thing, schemas.Thing)):
+            res = res.t
         return super().open(uri, res, status, query, accept, content_type, item, headers, token,
                             **kw)
 
     def get(self,
             uri: str = '',
-            res: Union[Type[Thing], str] = None,
+            res: Union[Type[Union[models.Thing, schemas.Thing]], str] = None,
             query: Iterable[Tuple[str, Any]] = tuple(),
             status: Union[int, Type[HTTPException], Type[ValidationError]] = 200,
             item: Union[int, str] = None,
@@ -50,7 +50,7 @@ class Client(TealClient):
     def post(self,
              data: str or dict,
              uri: str = '',
-             res: Union[Type[Thing], str] = None,
+             res: Union[Type[Union[models.Thing, schemas.Thing]], str] = None,
              query: Iterable[Tuple[str, Any]] = tuple(),
              status: Union[int, Type[HTTPException], Type[ValidationError]] = 201,
              content_type: str = JSON,
@@ -67,7 +67,7 @@ class Client(TealClient):
         return self.post({'email': email, 'password': password}, '/users/login', status=200)
 
     def get_many(self,
-                 res: Union[Type[Thing], str],
+                 res: Union[Type[Union[models.Thing, schemas.Thing]], str],
                  resources: Iterable[dict],
                  key: str = None,
                  headers: dict = None,
@@ -101,7 +101,7 @@ class UserClient(Client):
 
     def open(self,
              uri: str,
-             res: Union[str, Type[Thing]] = None,
+             res: Union[str, Type[Union[models.Thing, schemas.Thing]]] = None,
              status: int or HTTPException = 200,
              query: Iterable[Tuple[str, Any]] = tuple(),
              accept=JSON,

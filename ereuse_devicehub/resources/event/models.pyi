@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship
 
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    RatingSoftware, SnapshotSoftware, TestHardDriveLength, SnapshotExpectedEvents
+    RatingSoftware, SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
 from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user import User
@@ -20,7 +20,7 @@ class Event(Thing):
     name = ...  # type: Column
     date = ...  # type: Column
     type = ...  # type: Column
-    error = ... # type: Column
+    error = ...  # type: Column
     incidence = ...  # type: Column
     description = ...  # type: Column
     finalized = ...  # type: Column
@@ -90,7 +90,7 @@ class Snapshot(EventWithOneDevice):
         self.elapsed = ...  # type: timedelta
         self.device = ...  # type: Computer
         self.events = ...  # type: Set[Event]
-        self.expected_events = ... # type: List[SnapshotExpectedEvents]
+        self.expected_events = ...  # type: List[SnapshotExpectedEvents]
 
 
 class Install(EventWithOneDevice):
@@ -109,9 +109,10 @@ class SnapshotRequest(Model):
 
 
 class Rate(EventWithOneDevice):
-    rating = ... # type: Column
-    appearance = ... # type: Column
-    functionality = ... # type: Column
+    rating = ...  # type: Column
+    appearance = ...  # type: Column
+    functionality = ...  # type: Column
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.rating = ...  # type: float
@@ -216,3 +217,37 @@ class EraseBasic(EventWithOneDevice):
 class EraseSectors(EraseBasic):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+
+
+class Benchmark(EventWithOneDevice):
+    pass
+
+
+class BenchmarkDataStorage(Benchmark):
+    read_speed = ...  # type: Column
+    write_speed = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.read_speed = ...  # type: float
+        self.write_speed = ...  # type: float
+
+
+class BenchmarkWithRate(Benchmark):
+    rate = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.rate = ...  # type: int
+
+
+class BenchmarkProcessor(BenchmarkWithRate):
+    pass
+
+
+class BenchmarkProcessorSysbench(BenchmarkProcessor):
+    pass
+
+
+class BenchmarkRamSysbench(BenchmarkWithRate):
+    pass

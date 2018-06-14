@@ -366,16 +366,18 @@ class StressTest(Test):
     pass
 
 
-class Benchmark(EventWithOneDevice):
+class Benchmark(JoinedTableMixin, EventWithOneDevice):
     pass
 
 
 class BenchmarkDataStorage(Benchmark):
-    readSpeed = Column(Float(decimal_return_scale=2), nullable=False)
-    writeSpeed = Column(Float(decimal_return_scale=2), nullable=False)
+    id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
+    read_speed = Column(Float(decimal_return_scale=2), nullable=False)
+    write_speed = Column(Float(decimal_return_scale=2), nullable=False)
 
 
 class BenchmarkWithRate(Benchmark):
+    id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
     rate = Column(SmallInteger, nullable=False)
 
 
@@ -395,7 +397,7 @@ class BenchmarkRamSysbench(BenchmarkWithRate):
 @event.listens_for(TestDataStorage.device, 'set', retval=True, propagate=True)
 @event.listens_for(Install.device, 'set', retval=True, propagate=True)
 @event.listens_for(EraseBasic.device, 'set', retval=True, propagate=True)
-def validate_device_is_data_storage(target, value, old_value, initiator):
+def validate_device_is_data_storage(target: Event, value: DataStorage, old_value, initiator):
     if not isinstance(value, DataStorage):
         raise TypeError('{} must be a DataStorage but you passed {}'.format(initiator.impl, value))
     return value

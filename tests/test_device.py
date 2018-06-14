@@ -3,8 +3,6 @@ from uuid import UUID
 
 import pytest
 from colour import Color
-
-from ereuse_utils.naming import Naming
 from pytest import raises
 from sqlalchemy.util import OrderedSet
 
@@ -20,6 +18,7 @@ from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, Mismatch
 from ereuse_devicehub.resources.event.models import Remove, Test
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
+from ereuse_utils.naming import Naming
 from teal.db import ResourceNotFound
 from tests.conftest import file
 
@@ -133,7 +132,7 @@ def test_add_remove():
     # c4 is not with any pc
     values = file('pc-components.db')
     pc = values['device']
-    c1, c2 = [Component(**c) for c in values['components']]
+    c1, c2 = (Component(**c) for c in values['components'])
     pc = Computer(**pc, components=OrderedSet([c1, c2]))
     db.session.add(pc)
     c3 = Component(serial_number='nc1')
