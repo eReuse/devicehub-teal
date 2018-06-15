@@ -1,4 +1,5 @@
 from distutils.version import StrictVersion
+from uuid import UUID
 
 from flask import request
 from sqlalchemy.util import OrderedSet
@@ -11,7 +12,7 @@ from teal.resource import View
 
 
 class EventView(View):
-    def one(self, id: int):
+    def one(self, id: UUID):
         """Gets one event."""
         event = Event.query.filter_by(id=id).one()
         return self.schema.jsonify(event)

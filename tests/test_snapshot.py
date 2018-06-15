@@ -149,10 +149,8 @@ def test_snapshot_component_add_remove(user: UserClient):
     def get_events_info(events: List[dict]) -> tuple:
         return tuple(
             (
-                e['id'],
                 e['type'],
-                [c['serialNumber'] for c in e['components']],
-                e.get('snapshot', {}).get('id', None)
+                [c['serialNumber'] for c in e['components']]
             )
             for e in user.get_many(res=Event, resources=events, key='id')
         )
@@ -209,11 +207,11 @@ def test_snapshot_component_add_remove(user: UserClient):
     # PC1
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c2s', 'p1c3s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    assert get_events_info(pc1['events']) == (
+    assert tuple(get_events_info(pc1['events'])) == (
         # id, type, components, snapshot
-        (1, 'Snapshot', ['p1c1s', 'p1c2s', 'p1c3s'], None),  # first Snapshot1
-        (3, 'Remove', ['p1c2s'], 2),  # Remove Processor in Snapshot2
-        (4, 'Snapshot', ['p1c2s', 'p1c3s'], None)  # This Snapshot3
+        ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # first Snapshot1
+        ('Remove', ['p1c2s']),  # Remove Processor in Snapshot2
+        ('Snapshot', ['p1c2s', 'p1c3s'])  # This Snapshot3
     )
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
@@ -224,12 +222,12 @@ def test_snapshot_component_add_remove(user: UserClient):
     )
     # p1c2s has Snapshot, Remove and Add
     p1c2s, _ = user.get(res=Device, item=pc1['components'][0]['id'])
-    assert get_events_info(p1c2s['events']) == (
-        (1, 'Snapshot', ['p1c1s', 'p1c2s', 'p1c3s'], None),  # First Snapshot to PC1
-        (2, 'Snapshot', ['p1c2s', 'p2c1s'], None),  # Second Snapshot to PC2
-        (3, 'Remove', ['p1c2s'], 2),  # ...which caused p1c2s to be removed form PC1
-        (4, 'Snapshot', ['p1c2s', 'p1c3s'], None),  # The third Snapshot to PC1
-        (5, 'Remove', ['p1c2s'], 4)  # ...which caused p1c2 to be removed from PC2
+    assert tuple(get_events_info(p1c2s['events'])) == (
+        ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # First Snapshot to PC1
+        ('Snapshot', ['p1c2s', 'p2c1s']),  # Second Snapshot to PC2
+        ('Remove', ['p1c2s']),  # ...which caused p1c2s to be removed form PC1
+        ('Snapshot', ['p1c2s', 'p1c3s']),  # The third Snapshot to PC1
+        ('Remove', ['p1c2s'])  # ...which caused p1c2 to be removed from PC2
     )
 
     # We register the first device but without the processor,
@@ -242,7 +240,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c3s', 'p1c4s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
     # This last Snapshot only
-    assert get_events_info(pc1['events'])[-1] == (6, 'Snapshot', ['p1c3s', 'p1c4s'], None)
+    assert get_events_info(pc1['events'])[-1] == ('Snapshot', ['p1c3s', 'p1c4s'])
     # PC2
     # We haven't changed PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)

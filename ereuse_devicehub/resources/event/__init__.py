@@ -12,7 +12,7 @@ class EventDef(Resource):
     SCHEMA = Event
     VIEW = EventView
     AUTH = True
-    ID_CONVERTER = Converters.int
+    ID_CONVERTER = Converters.uuid
 
 
 class AddDef(EventDef):

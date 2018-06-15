@@ -37,10 +37,10 @@ class Device(Thing):
         """
         return sorted(chain(self.events_multiple, self.events_one), key=attrgetter('created'))
 
-    def __init__(self, *args, **kw) -> None:
-        super().__init__(*args, **kw)
+    def __init__(self, **kw) -> None:
+        super().__init__(**kw)
         with suppress(TypeError):
-            self.hid = Naming.hid(self.manufacturer, self.serial_number, self.model)  # type: str
+            self.hid = Naming.hid(self.manufacturer, self.serial_number, self.model)
 
     @property
     def physical_properties(self) -> Dict[str, object or None]:
@@ -114,7 +114,7 @@ class Component(Device):
                                           cascade=CASCADE,
                                           order_by=lambda: Component.id,
                                           collection_class=OrderedSet),
-                          primaryjoin=parent_id == Computer.id)  # type: Device
+                          primaryjoin=parent_id == Computer.id)
 
     def similar_one(self, parent: Computer, blacklist: Set[int]) -> 'Component':
         """
@@ -137,7 +137,7 @@ class Component(Device):
 
     @property
     def events(self) -> list:
-        return sorted(chain(super().events, self.events_components), key=attrgetter('id'))
+        return sorted(chain(super().events, self.events_components), key=attrgetter('created'))
 
 
 class JoinedComponentTableMixin:

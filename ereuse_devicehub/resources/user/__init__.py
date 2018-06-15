@@ -13,7 +13,7 @@ from teal.resource import Converters, Resource
 class UserDef(Resource):
     SCHEMA = UserS
     VIEW = UserView
-    ID_CONVERTER = Converters.uid
+    ID_CONVERTER = Converters.uuid
     AUTH = True
 
     def __init__(self, app: 'devicehub.Devicehub', import_name=__package__, static_folder=None,
@@ -40,7 +40,7 @@ class UserDef(Resource):
 
 class OrganizationDef(Resource):
     __type__ = 'Organization'
-    ID_CONVERTER = Converters.uid
+    ID_CONVERTER = Converters.uuid
     AUTH = True
 
     def __init__(self, app, import_name=__package__, static_folder=None, static_url_path=None,

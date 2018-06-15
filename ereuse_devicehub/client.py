@@ -68,15 +68,12 @@ class Client(TealClient):
 
     def get_many(self,
                  res: Union[Type[Union[models.Thing, schemas.Thing]], str],
-                 resources: Iterable[dict],
+                 resources: Iterable[Union[dict, int]],
                  key: str = None,
-                 headers: dict = None,
-                 token: str = None,
-                 accept: str = JSON,
                  **kw) -> Iterable[Union[Dict[str, Any], str]]:
         """Like :meth:`.get` but with many resources."""
         return (
-            self.get(res=res, item=r['key'] if key else r, headers=headers, token=token, **kw)[0]
+            self.get(res=res, item=r[key] if key else r, **kw)[0]
             for r in resources
         )
 

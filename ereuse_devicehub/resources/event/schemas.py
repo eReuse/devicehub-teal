@@ -17,7 +17,7 @@ from teal.resource import Schema
 
 
 class Event(Thing):
-    id = Integer(dump_only=True)
+    id = UUID(dump_only=True)
     name = String(default='', validate=Length(STR_BIG_SIZE), description=m.Event.name.comment)
     date = DateTime('iso', description=m.Event.date.comment)
     error = Boolean(default=False, description=m.Event.error.comment)
