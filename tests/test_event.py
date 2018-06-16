@@ -2,13 +2,14 @@ from datetime import datetime, timedelta
 
 import pytest
 from flask import g
+from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Device, GraphicCard, HardDrive, \
-    SolidStateDrive
+from ereuse_devicehub.resources.device.models import Device, GraphicCard, HardDrive, Microtower, \
+    RamModule, SolidStateDrive
 from ereuse_devicehub.resources.enums import TestHardDriveLength
-from ereuse_devicehub.resources.event.models import EraseBasic, EraseSectors, \
-    EventWithOneDevice, Install, StepZero, TestDataStorage
+from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, EraseBasic, EraseSectors, \
+    EventWithOneDevice, Install, Ready, StepZero, StressTest, TestDataStorage
 from tests.conftest import create_user
 
 
@@ -125,3 +126,71 @@ def test_install():
                       device=hdd)
     db.session.add(install)
     db.session.commit()
+
+
+@pytest.mark.usefixtures('auth_app_context')
+def test_update_components_event_one():
+    computer = Microtower(serial_number='sn1', model='ml1', manufacturer='mr1')
+    hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
+    computer.components.add(hdd)
+
+    # Add event
+    test = StressTest(elapsed=timedelta(seconds=1))
+    computer.events_one.add(test)
+    assert test.device == computer
+    assert next(iter(test.components)) == hdd, 'Event has to have new components'
+
+    # Remove event
+    computer.events_one.clear()
+    assert not test.device
+    assert not test.components, 'Event has to loose the components'
+
+    # If we add a component to a device AFTER assigning the event
+    # to the device, the event doesn't get the new component
+    computer.events_one.add(test)
+    ram = RamModule()
+    computer.components.add(ram)
+    assert len(test.components) == 1
+
+
+@pytest.mark.usefixtures('auth_app_context')
+def test_update_components_event_multiple():
+    computer = Microtower(serial_number='sn1', model='ml1', manufacturer='mr1')
+    hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
+    computer.components.add(hdd)
+
+    ready = Ready()
+    assert not ready.devices
+    assert not ready.components
+
+    # Add
+    computer.events_multiple.add(ready)
+    assert ready.devices == OrderedSet([computer])
+    assert next(iter(ready.components)) == hdd
+
+    # Remove
+    computer.events_multiple.remove(ready)
+    assert not ready.devices
+    assert not ready.components
+
+    # init / replace collection
+    ready.devices = OrderedSet([computer])
+    assert ready.devices
+    assert ready.components
+
+
+@pytest.mark.usefixtures('auth_app_context')
+def test_update_parent():
+    computer = Microtower(serial_number='sn1', model='ml1', manufacturer='mr1')
+    hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
+    computer.components.add(hdd)
+
+    # Add
+    benchmark = BenchmarkDataStorage()
+    benchmark.device = hdd
+    assert benchmark.parent == computer
+    assert not benchmark.components
+
+    # Remove
+    benchmark.device = None
+    assert not benchmark.parent

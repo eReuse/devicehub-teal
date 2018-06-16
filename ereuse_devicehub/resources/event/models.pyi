@@ -29,6 +29,8 @@ class Event(Thing):
     author_id = ...  # type: Column
     author = ...  # type: relationship
     components = ...  # type: relationship
+    parent_id = ...  # type: Column
+    parent = ...  # type: relationship
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -45,6 +47,8 @@ class Event(Thing):
         self.author_id = ...  # type: UUID
         self.author = ...  # type: User
         self.components = ...  # type: Set[Component]
+        self.parent_id = ...  # type: Computer
+        self.parent = ...  # type: Computer
 
 
 class EventWithOneDevice(Event):
@@ -212,6 +216,10 @@ class EraseBasic(EventWithOneDevice):
         self.steps = ...  # type: List[Step]
         self.clean_with_zeros = ...  # type: bool
         self.success = ...  # type: bool
+
+
+class Ready(EventWithMultipleDevices):
+    pass
 
 
 class EraseSectors(EraseBasic):

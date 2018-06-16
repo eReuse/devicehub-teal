@@ -1,5 +1,5 @@
 Inventory
-=======
+#########
 
 Devicehub uses the same path to get devices and lots.
 
@@ -17,7 +17,7 @@ groups in a page. Select the actual page by ``GET /inventory?page=3``.
 By default you get the page number ``1``.
 
 Query
------
+*****
 The query consists of 4 optional params:
 
 - **search**: Filters devices by performing a full-text search over their
@@ -47,7 +47,7 @@ The query consists of 4 optional params:
   By default is ``1``; the first page.
 
 Result
-------
+******
 The result is a JSON object with the following fields:
 
 - **devices**: A list of devices.

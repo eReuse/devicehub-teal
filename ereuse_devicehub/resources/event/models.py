@@ -1,3 +1,5 @@
+from collections import Iterable
+from typing import Set, Union
 from uuid import uuid4
 
 from flask import g
@@ -7,10 +9,11 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Component, DataStorage, Device
+from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RATE_5, Bios, \
     FunctionalityRange, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
     SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
@@ -96,6 +99,20 @@ class Event(Thing):
     relationship is filled with the components the computer had
     at the time of the event.
     """
+    parent_id = Column(BigInteger, ForeignKey(Computer.id))
+    parent = relationship(Computer,
+                          backref=backref('events_parent',
+                                          lazy=True,
+                                          order_by=lambda: Event.created,
+                                          collection_class=OrderedSet),
+                          primaryjoin=parent_id == Computer.id)
+    """
+    For events that are performed to components, the device parent
+    at that time.
+    
+    For example: for a ``EraseBasic`` performed on a data storage, this
+    would point to the computer that contained this data storage, if any.
+    """
 
     # noinspection PyMethodParameters
     @declared_attr
@@ -131,7 +148,7 @@ class EventWithOneDevice(Event):
                           primaryjoin=Device.id == device_id)
 
     def __repr__(self) -> str:
-        return '<{0.t} {0.id!r} device={0.device_id}>'.format(self)
+        return '<{0.t} {0.id!r} device={0.device!r}>'.format(self)
 
 
 class EventWithMultipleDevices(Event):
@@ -141,7 +158,8 @@ class EventWithMultipleDevices(Event):
                                            order_by=lambda: EventWithMultipleDevices.created,
                                            collection_class=OrderedSet),
                            secondary=lambda: EventDevice.__table__,
-                           order_by=lambda: Device.id)
+                           order_by=lambda: Device.id,
+                           collection_class=OrderedSet)
 
     def __repr__(self) -> str:
         return '<{0.t} {0.id!r} devices={0.devices!r}>'.format(self)
@@ -180,6 +198,10 @@ class EraseBasic(JoinedTableMixin, EventWithOneDevice):
                                  check_range('secure_random_steps', min=0),
                                  nullable=False)
     clean_with_zeros = Column(Boolean, nullable=False)
+
+
+class Ready(EventWithMultipleDevices):
+    pass
 
 
 class EraseSectors(EraseBasic):
@@ -394,16 +416,70 @@ class BenchmarkRamSysbench(BenchmarkWithRate):
 
 
 # Listeners
-@event.listens_for(TestDataStorage.device, 'set', retval=True, propagate=True)
-@event.listens_for(Install.device, 'set', retval=True, propagate=True)
-@event.listens_for(EraseBasic.device, 'set', retval=True, propagate=True)
-def validate_device_is_data_storage(target: Event, value: DataStorage, old_value, initiator):
-    if not isinstance(value, DataStorage):
-        raise TypeError('{} must be a DataStorage but you passed {}'.format(initiator.impl, value))
-    return value
+# Listeners validate values and keep relationships synced
 
-# todo finish adding events
-# @event.listens_for(Install.snapshot, 'before_insert', propagate=True)
-# def validate_required_snapshot(mapper, connection, target: Event):
-#    if not target.snapshot:
-#        raise ValidationError('{0!r} must be linked to a Snapshot.'.format(target))
+@event.listens_for(TestDataStorage.device, Events.set.__name__, propagate=True)
+@event.listens_for(Install.device, Events.set.__name__, propagate=True)
+@event.listens_for(EraseBasic.device, Events.set.__name__, propagate=True)
+def validate_device_is_data_storage(target: Event, value: DataStorage, old_value, initiator):
+    """Validates that the device for data-storage events is effectively a data storage."""
+    if value and not isinstance(value, DataStorage):
+        raise TypeError('{} must be a DataStorage but you passed {}'.format(initiator.impl, value))
+
+
+# The following listeners keep relationships with device <-> components synced with the event
+# So, if you add or remove devices from events these listeners will
+# automatically add/remove the ``components`` and ``parent`` of such events
+# See the tests for examples
+
+@event.listens_for(EventWithOneDevice.device, Events.set.__name__, propagate=True)
+def update_components_event_one(target: EventWithOneDevice, device: Device, __, ___):
+    """
+    Syncs the :attr:`.Event.components` with the components in
+    :attr:`ereuse_devicehub.resources.device.models.Computer.components`.
+    """
+    target.components.clear()
+    if isinstance(device, Computer):
+        target.components |= device.components
+
+
+@event.listens_for(EventWithMultipleDevices.devices, Events.init_collection.__name__,
+                   propagate=True)
+@event.listens_for(EventWithMultipleDevices.devices, Events.bulk_replace.__name__, propagate=True)
+@event.listens_for(EventWithMultipleDevices.devices, Events.append.__name__, propagate=True)
+def update_components_event_multiple(target: EventWithMultipleDevices,
+                                     value: Union[Set[Device], Device], _):
+    """
+    Syncs the :attr:`.Event.components` with the components in
+    :attr:`ereuse_devicehub.resources.device.models.Computer.components`.
+    """
+    target.components.clear()
+    devices = value if isinstance(value, Iterable) else {value}
+    for device in devices:
+        if isinstance(device, Computer):
+            target.components |= device.components
+
+
+@event.listens_for(EventWithMultipleDevices.devices, Events.remove.__name__, propagate=True)
+def remove_components_event_multiple(target: EventWithMultipleDevices, device: Device, __):
+    """
+    Syncs the :attr:`.Event.components` with the components in
+    :attr:`ereuse_devicehub.resources.device.models.Computer.components`.
+    """
+    target.components.clear()
+    for device in target.devices - {device}:
+        if isinstance(device, Computer):
+            target.components |= device.components
+
+
+@event.listens_for(EraseBasic.device, Events.set.__name__, propagate=True)
+@event.listens_for(Test.device, Events.set.__name__, propagate=True)
+@event.listens_for(Install.device, Events.set.__name__, propagate=True)
+@event.listens_for(Benchmark.device, Events.set.__name__, propagate=True)
+def update_parent(target: Union[EraseBasic, Test, Install], device: Device, _, __):
+    """
+    Syncs the :attr:`Event.parent` with the parent of the device.
+    """
+    target.parent = None
+    if isinstance(device, Component):
+        target.parent = device.parent

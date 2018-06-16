@@ -83,6 +83,10 @@ class Device(Thing):
 class Computer(Device):
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
 
+    @property
+    def events(self) -> list:
+        return sorted(chain(super().events, self.events_parent), key=attrgetter('created'))
+
 
 class Desktop(Computer):
     pass

@@ -74,7 +74,7 @@ def snapshot_and_check(user: UserClient,
         'Components must be in their parent'
     if perform_second_snapshot:
         input_snapshot['uuid'] = uuid4()
-        return snapshot_and_check(user, input_snapshot, perform_second_snapshot=False)
+        return snapshot_and_check(user, input_snapshot, event_types, perform_second_snapshot=False)
     else:
         return snapshot
 
@@ -126,18 +126,27 @@ def test_snapshot_schema(app: Devicehub):
 
 def test_snapshot_post(user: UserClient):
     """
-    Tests the post snapshot endpoint (validation, etc)
-    and data correctness.
+    Tests the post snapshot endpoint (validation, etc), data correctness,
+    and relationship correctness.
     """
-    snapshot = snapshot_and_check(user, file('basic.snapshot'), perform_second_snapshot=False)
+    snapshot = snapshot_and_check(user, file('basic.snapshot'),
+                                  event_types=('WorkbenchRate',),
+                                  perform_second_snapshot=False)
     assert snapshot['software'] == 'Workbench'
     assert snapshot['version'] == '11.0'
     assert snapshot['uuid'] == 'f5efd26e-8754-46bc-87bf-fbccc39d60d9'
-    assert snapshot['events'] == []
     assert snapshot['elapsed'] == 4
     assert snapshot['author']['id'] == user.user['id']
     assert 'events' not in snapshot['device']
     assert 'author' not in snapshot['device']
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert snapshot['components'] == device['components']
+
+    assert tuple(c['type'] for c in snapshot['components']) == ('GraphicCard', 'RamModule')
+    rate, _ = user.get(res=Event, item=snapshot['events'][0]['id'])
+    assert rate['device']['id'] == snapshot['device']['id']
+    assert rate['components'] == snapshot['components']
+    assert rate['snapshot']['id'] == snapshot['id']
 
 
 def test_snapshot_component_add_remove(user: UserClient):
@@ -279,7 +288,7 @@ def test_snapshot_tag_inner_tag(tag_id: str, user: UserClient, app: Devicehub):
     """Tests a posting Snapshot with a local tag."""
     b = file('basic.snapshot')
     b['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
-    snapshot_and_check(user, b)
+    snapshot_and_check(user, b, event_types=('WorkbenchRate',))
     with app.app_context():
         tag, *_ = Tag.query.all()  # type: Tag
         assert tag.device_id == 1, 'Tag should be linked to the first device'
@@ -303,16 +312,17 @@ def test_erase(user: UserClient):
     storage, *_ = snapshot['components']
     assert storage['type'] == 'SolidStateDrive', 'Components must be ordered by input order'
     storage, _ = user.get(res=SolidStateDrive, item=storage['id'])  # Let's get storage events too
-    _snapshot1, _snapshot2, erasure = storage['events']
-    assert erasure['type'] == 'EraseSectors'
+    # order: creation time descending
+    _snapshot1, erasure1, _snapshot2, erasure2 = storage['events']
+    assert erasure1['type'] == erasure2['type'] == 'EraseSectors'
     assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
-    assert snapshot == _snapshot2
-    erasure, _ = user.get(res=EraseBasic, item=erasure['id'])
+    assert snapshot == user.get(res=Event, item=_snapshot2['id'])[0]
+    erasure, _ = user.get(res=EraseBasic, item=erasure1['id'])
     assert len(erasure['steps']) == 2
-    assert erasure['steps'][0]['startingTime'] == '2018-06-01T08:15:00'
-    assert erasure['steps'][0]['endingTime'] == '2018-06-01T09:16:00'
-    assert erasure['steps'][1]['endingTime'] == '2018-06-01T08:16:00'
-    assert erasure['steps'][1]['endingTime'] == '2018-06-01T09:17:00'
+    assert erasure['steps'][0]['startTime'] == '2018-06-01T08:15:00+00:00'
+    assert erasure['steps'][0]['endTime'] == '2018-06-01T09:16:00+00:00'
+    assert erasure['steps'][1]['startTime'] == '2018-06-01T08:16:00+00:00'
+    assert erasure['steps'][1]['endTime'] == '2018-06-01T09:17:00+00:00'
     assert erasure['device']['id'] == storage['id']
     for step in erasure['steps']:
         assert step['type'] == 'StepZero'
@@ -320,4 +330,3 @@ def test_erase(user: UserClient):
         assert step['secureRandomSteps'] == 1
         assert step['cleanWithZeros'] is True
         assert 'num' not in step
-        assert step['erasure'] == erasure['id']

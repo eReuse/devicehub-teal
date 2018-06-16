@@ -3,7 +3,7 @@ from typing import Dict, List, Set
 from colour import Color
 from sqlalchemy import Column
 
-from ereuse_devicehub.resources.enums import RamInterface, RamFormat, DataStorageInterface
+from ereuse_devicehub.resources.enums import DataStorageInterface, RamFormat, RamInterface
 from ereuse_devicehub.resources.event.models import Event, EventWithMultipleDevices, \
     EventWithOneDevice
 from ereuse_devicehub.resources.image.models import ImageList
@@ -49,6 +49,7 @@ class Computer(Device):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.components = ...  # type: Set[Component]
+        self.events_parent = ...  # type: Set[Event]
 
 
 class Desktop(Computer):
@@ -92,12 +93,12 @@ class GraphicCard(Component):
 
 class DataStorage(Component):
     size = ...  # type: Column
-    interface = ... # type: Column
+    interface = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.size = ...  # type: int
-        self.interface = ... # type: DataStorageInterface
+        self.interface = ...  # type: DataStorageInterface
 
 
 class HardDrive(DataStorage):
@@ -147,12 +148,12 @@ class Processor(Component):
 class RamModule(Component):
     size = ...  # type: Column
     speed = ...  # type: Column
-    interface = ... # type: Column
-    format = ... # type: Column
+    interface = ...  # type: Column
+    format = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.size = ...  # type: int
         self.speed = ...  # type: float
-        self.interface = ... # type: RamInterface
-        self.format = ... # type: RamFormat
+        self.interface = ...  # type: RamInterface
+        self.format = ...  # type: RamFormat

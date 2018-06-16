@@ -1,5 +1,5 @@
 Events
-======
+######
 
 ..  toctree::
     :maxdepth: 4
@@ -8,7 +8,7 @@ Events
 
 
 Rate
-----
+****
 Devicehub generates an rating for a device taking into consideration the
 visual, functional, and performance.
 
@@ -73,7 +73,7 @@ The same ``ImageSet`` can be rated multiple times, generating a new
 .. todo:: which info does photobox provide for each picture?
 
 Snapshot
---------
+********
 The Snapshot sets the physical information of the device (S/N, model...)
 and updates it with erasures, benchmarks, ratings, and tests; updates the
 composition of its components (adding / removing them), and links tags
@@ -106,10 +106,16 @@ a device:
    perform ``Remove`` on the old parent.
 
 Snapshots from Workbench
-~~~~~~~~~~~~~~~~~~~~~~~~
+========================
 When processing a device from the Workbench, this one performs a Snapshot
 and then performs more events (like testings, benchmarking...).
 
+There are two ways of sending this information. In an async way,
+this is, submitting events as soon as Workbench performs then, or
+submitting only one Snapshot event with all the other events embedded.
+
+Asynced
+-------
 The use case, which is represented in the ``test_workbench_phases``,
 is as follows:
 
@@ -121,10 +127,11 @@ is as follows:
 
        - Identification information about the device and components
          (S/N, model, physical characteristics...)
-       - Tags.
-       - Rate.
-       - Benchmarks.
-       - TestDataStorage.
+       - ``Tags`` in a ``tags`` property in the ``device``.
+       - ``Rate`` in an ``events`` property in the ``device``.
+       - ``Benchmarks`` in an ``events`` property in each ``component``
+         or ``device``.
+       - ``TestDataStorage`` as in ``Benchmarks``.
    - An ordered set of **expected events**, defining which are the next
      events that Workbench will perform to the device in ideal
      conditions (device doesn't fail, no Internet drop...).
@@ -147,18 +154,14 @@ is as follows:
 5. In **T3+Tn+Tx**, when all *expected events* have been performed,
    Devicehub **closes** the ``Snapshot`` from 1.
 
+Synced
+------
 Optionally, Devicehub understands receiving a ``Snapshot`` with all
-the events the following way:
-
-- ``Install`` embedded in a ``installation`` field in its respective
-  ``DataStorage`` component in the ``Snapshot``.
-- ``Erase`` embedded in ``erasure`` field in its respective
-  ``DataStorage`` in the ``Snapshot``.
-- ``StressTest`` in an ``events`` field in the ``Snapshot``.
-
+the events in an ``events`` property inside each affected ``component``
+or ``device``.
 
 ToDispose and DisposeProduct
-----------------------------
+****************************
 There are four events for getting rid of devices:
 
 - ``ToDispose``: The device is marked to be disposed.

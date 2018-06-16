@@ -108,7 +108,7 @@ class Sync:
                 blacklist.add(db_component.id)
         except ResourceNotFound:
             db.session.add(component)
-            db.session.flush()
+            # db.session.flush()
             db_component = component
             is_new = True
         else:

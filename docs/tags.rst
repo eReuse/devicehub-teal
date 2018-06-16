@@ -1,5 +1,5 @@
 Tags
-====
+####
 Devicehub can generate tags, which are synthetic identifiers that
 identify a device in an organization. A tag has minimally two fields:
 the ID and the Registration Number of the organization that generated
@@ -26,7 +26,7 @@ Note that these virtual tags don't have to forcefully be printed or
 have a physical representation (this is not imposed at system level).
 
 The eReuse.org tags (eTag)
---------------------------
+**************************
 We recognize a special type of tag, the **eReuse.org tags (eTag)**.
 These are tags defined by eReuse.org and that can be issued only
 by tag providers that comply with the eReuse.org requisites.
@@ -41,7 +41,7 @@ software, eReuse.org certified tag providers can create and manage
 the tags, and send them to Devicehubs of their choice.
 
 Tag ID design
-~~~~~~~~~~~~~
+=============
 The eTag has a fixed schema for its ID: ``XXX-YYYYYYYYYYYYYY``, where:
 
 - *XX* is the **eReuse.org Tag Provider ID (eTagPId)**.
@@ -59,7 +59,7 @@ As an example, ``FO-A4CZ2`` is a tag from the ``FO`` tag provider
 and ID ``A4CZ2``.
 
 Creating tags
--------------
+*************
 You need to create a tag before linking it to a device. There are
 two ways of creating a tag:
 
@@ -74,7 +74,7 @@ two ways of creating a tag:
 Note that tags cannot have a slash ``/``.
 
 Linking a tag
--------------
+*************
 Linking a tag is joining the tag with the device.
 
 In Devicehub this process is done when performing a Snapshot (POST
@@ -91,14 +91,14 @@ too in finding devices when these don't generate a ``HID``. Find more
 in the ``Snapshot`` docs.
 
 Getting a device through its tag
---------------------------------
+********************************
 When performing ``GET /tags/<tag-id>/device`` you will get directly the
 device of such tag, as long as there are not two tags with the same
 tag-id. In such case you should use ``GET /tags/<ngo>/<tag-id>/device``
 to inequivocally get the correct device (to develop).
 
 Tags and migrations
--------------------
+*******************
 Tags travel with the devices they are linked when migrating them. Future
 implementations can parameterize this.
 

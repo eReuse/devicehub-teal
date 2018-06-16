@@ -1,12 +1,14 @@
+from marshmallow import post_load, pre_load
 from marshmallow.fields import Float, Integer, Str
 from marshmallow.validate import Length, OneOf, Range
 from marshmallow_enum import EnumField
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.marshmallow import NestedOn
-from ereuse_devicehub.resources.enums import RamInterface, RamFormat
+from ereuse_devicehub.resources.enums import RamFormat, RamInterface
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing, UnitCodes
+from teal.marshmallow import ValidationError
 
 
 class Device(Thing):
@@ -30,6 +32,31 @@ class Device(Thing):
                    unit=UnitCodes.m,
                    description='The height of the device in meters.')
     events = NestedOn('Event', many=True, dump_only=True)
+    events_one = NestedOn('Event', many=True, load_only=True, collection_class=OrderedSet)
+
+    @pre_load
+    def from_events_to_events_one(self, data: dict):
+        """
+        Not an elegant way of allowing submitting events to a device
+        (in the context of Snapshots) without creating an ``events``
+        field at the model (which is not possible).
+        :param data:
+        :return:
+        """
+        # Note that it is secure to allow uploading events_one
+        # as the only time an user can send a device object is
+        # in snapshots.
+        data['events_one'] = data.pop('events', [])
+        return data
+
+    @post_load
+    def validate_snapshot_events(self, data):
+        """Validates that only snapshot-related events can be uploaded."""
+        from ereuse_devicehub.resources.event.models import EraseBasic, Test, Rate, Install
+        for event in data['events_one']:
+            if not isinstance(event, (Install, EraseBasic, Rate, Test)):
+                raise ValidationError('You cannot upload {}'.format(event['type']),
+                                      field_names='events')
 
 
 class Computer(Device):

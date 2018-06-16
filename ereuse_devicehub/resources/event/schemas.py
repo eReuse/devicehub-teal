@@ -29,11 +29,11 @@ class Event(Thing):
 
 
 class EventWithOneDevice(Event):
-    device = NestedOn(Device, only='id')
+    device = NestedOn(Device)
 
 
 class EventWithMultipleDevices(Event):
-    devices = NestedOn(Device, many=True, only='id')
+    devices = NestedOn(Device, many=True)
 
 
 class Add(EventWithOneDevice):
@@ -73,7 +73,6 @@ class EraseSectors(EraseBasic):
 
 
 class Step(Schema):
-    id = Integer(dump_only=True)
     type = String(description='Only required when it is nested.')
     start_time = DateTime(required=True, data_key='startTime')
     end_time = DateTime(required=True, data_key='endTime')
@@ -176,7 +175,7 @@ class Snapshot(EventWithOneDevice):
                          required=True,
                          description='The software that generated this Snapshot.')
     version = Version(required=True, description='The version of the software.')
-    events = NestedOn(Event, many=True)  # todo ensure only specific events are submitted
+    events = NestedOn(Event, many=True, dump_only=True)
     expected_events = EnumField(SnapshotExpectedEvents,
                                 many=True,
                                 data_key='expectedEvents',
