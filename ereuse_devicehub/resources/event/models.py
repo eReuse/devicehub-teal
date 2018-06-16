@@ -98,6 +98,9 @@ class Event(Thing):
     For example: an ``Allocate`` is performed to a Computer and this
     relationship is filled with the components the computer had
     at the time of the event.
+    
+    For Add and Remove though, this has another meaning: the components
+    that are added or removed.
     """
     parent_id = Column(BigInteger, ForeignKey(Computer.id))
     parent = relationship(Computer,
@@ -438,9 +441,12 @@ def update_components_event_one(target: EventWithOneDevice, device: Device, __, 
     Syncs the :attr:`.Event.components` with the components in
     :attr:`ereuse_devicehub.resources.device.models.Computer.components`.
     """
-    target.components.clear()
-    if isinstance(device, Computer):
-        target.components |= device.components
+    # For Add and Remove, ``components`` have different meanings
+    # see Event.components for more info
+    if not isinstance(target, (Add, Remove)):
+        target.components.clear()
+        if isinstance(device, Computer):
+            target.components |= device.components
 
 
 @event.listens_for(EventWithMultipleDevices.devices, Events.init_collection.__name__,
