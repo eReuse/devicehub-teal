@@ -9,6 +9,6 @@
 type: 'Install'
 elapsed: 420
 error: False
-snapshot: None # fulfill!
-device: None # fulfill!
+# snapshot: None fulfill!
+# device: None fulfill!
 name: 'LinuxMint 18.01 32b'

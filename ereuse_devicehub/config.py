@@ -5,10 +5,11 @@ from ereuse_devicehub.resources.device import ComponentDef, ComputerDef, DataSto
     DesktopDef, DeviceDef, GraphicCardDef, HardDriveDef, LaptopDef, MicrotowerDef, \
     MotherboardDef, NetbookDef, NetworkAdapterDef, ProcessorDef, RamModuleDef, ServerDef, \
     SolidStateDriveDef
-from ereuse_devicehub.resources.event import AddDef, AggregateRateDef, EventDef, InstallDef, \
+from ereuse_devicehub.resources.event import AddDef, AggregateRateDef, BenchmarkDataStorageDef, \
+    BenchmarkDef, BenchmarkProcessorDef, BenchmarkProcessorSysbenchDef, BenchmarkRamSysbenchDef, \
+    BenchmarkWithRateDef, EraseBasicDef, EraseSectorsDef, EventDef, InstallDef, \
     PhotoboxSystemRateDef, PhotoboxUserDef, RateDef, RemoveDef, SnapshotDef, StepDef, \
-    StepRandomDef, StepZeroDef, TestDataStorageDef, TestDef, WorkbenchRateDef, EraseBasicDef, \
-    EraseSectorsDef
+    StepRandomDef, StepZeroDef, StressTestDef, TestDataStorageDef, TestDef, WorkbenchRateDef
 from ereuse_devicehub.resources.inventory import InventoryDef
 from ereuse_devicehub.resources.tag import TagDef
 from ereuse_devicehub.resources.user import OrganizationDef, UserDef
@@ -23,7 +24,9 @@ class DevicehubConfig(Config):
         OrganizationDef, TagDef, EventDef, AddDef, RemoveDef, EraseBasicDef, EraseSectorsDef,
         StepDef, StepZeroDef, StepRandomDef, RateDef, AggregateRateDef, WorkbenchRateDef,
         PhotoboxUserDef, PhotoboxSystemRateDef, InstallDef, SnapshotDef, TestDef,
-        TestDataStorageDef, WorkbenchRateDef, InventoryDef
+        TestDataStorageDef, StressTestDef, WorkbenchRateDef, InventoryDef, BenchmarkDef,
+        BenchmarkDataStorageDef, BenchmarkWithRateDef, BenchmarkProcessorDef,
+        BenchmarkProcessorSysbenchDef, BenchmarkRamSysbenchDef
     }
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
     SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/dh-db1'  # type: str

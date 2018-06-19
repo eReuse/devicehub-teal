@@ -9,8 +9,8 @@ type: 'Snapshot'
 uuid: 'cb8ce6b5-6a1b-4084-b5b9-d8fadad2a015'
 version: '11.0'
 software: 'Workbench'
-startTime: '2018-06-08T17:52:00'
 expectedEvents: ['TestDataStorage', 'StressTest', 'EraseSectors', 'Install']
+elapsed: 500
 device:
   type: 'Microtower'
   serialNumber: 'd1s'
@@ -19,14 +19,12 @@ device:
   tags:
     - type: 'Tag'
       id: 'tag1'
-    - type: 'Tag'
-      id: 'tag2'
-events:
-  - type: 'WorkbenchRate'
-    appearanceRange: 'A'
-    functionalityRange: 'B'
-  - type: 'BenchmarkRamSysbench'
-    rate: 2444
+  events:
+    - type: 'WorkbenchRate'
+      appearanceRange: 'A'
+      functionalityRange: 'B'
+    - type: 'BenchmarkRamSysbench'
+      rate: 2444
 components:
   - type: 'GraphicCard'
     serialNumber: 'gc1-1s'
@@ -43,7 +41,7 @@ components:
   - type: 'Processor'
     model: 'p1-1s'
     manufacturer: 'p1-1mr'
-    benchmarks:
+    events:
       - type: 'BenchmarkProcessor'
         rate: 2410
       - type: 'BenchmarkProcessorSysbench'
@@ -52,35 +50,36 @@ components:
     serialNumber: 'ssd1-1s'
     model: 'ssd1-1ml'
     manufacturer: 'ssd1-1mr'
-    benchmark:
-      type: 'BenchmarkDataStorage'
-      readingSpeed: 20
-      writingSpeed: 15
-    test:
-      type: 'TestDataStorage'
-      firstError: 0
-      error: False
-      status: 'Completed without error'
-      length: 'Short'
-      lifetime: 99
-      passedLifeTime: 99
-      assessment: True
-      powerCycleCount: 11
-      reallocatedSectorCount: 2
-      powerCycleCount: 4
-      reportedUncorrectableErrors: 1
-      commandTimeout: 11
-      currentPendingSectorCount: 1
-      offlineUncorrectable: 33
-      remainingLifetimePercentage: 1
+    events:
+      - type: 'BenchmarkDataStorage'
+        readSpeed: 20
+        writeSpeed: 15
+        elapsed: 21
+      - type: 'TestDataStorage'
+        elapsed: 233
+        firstError: 0
+        error: False
+        status: 'Completed without error'
+        length: 'Short'
+        lifetime: 99
+        passedLifetime: 99
+        assessment: True
+        powerCycleCount: 11
+        reallocatedSectorCount: 2
+        powerCycleCount: 4
+        reportedUncorrectableErrors: 1
+        commandTimeout: 11
+        currentPendingSectorCount: 1
+        offlineUncorrectable: 33
+        remainingLifetimePercentage: 1
   - type: 'HardDrive'
     serialNumber: 'hdd1-1s'
     model: 'hdd1-1ml'
     manufacturer: 'hdd1-1mr'
-    benchmark:
-      type: 'BenchmarkDataStorage'
-      readingSpeed: 10
-      writingSpeed: 5
+    events:
+      - type: 'BenchmarkDataStorage'
+        readSpeed: 10
+        writeSpeed: 5
   - type: 'Motherboard'
     serialNumber: 'mb1-1s'
     model: 'mb1-1ml'

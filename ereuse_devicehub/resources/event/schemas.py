@@ -1,9 +1,3 @@
-from flask import current_app as app
-from marshmallow import ValidationError, validates_schema
-from marshmallow.fields import Boolean, DateTime, Float, Integer, Nested, String, TimeDelta, UUID
-from marshmallow.validate import Length, Range
-from marshmallow_enum import EnumField
-
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device.schemas import Component, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
@@ -12,6 +6,13 @@ from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user.schemas import User
+from flask import current_app as app
+from marshmallow import ValidationError, validates_schema
+from marshmallow.fields import Boolean, DateTime, Float, Integer, List, Nested, String, TimeDelta, \
+    UUID
+from marshmallow.validate import Length, Range
+from marshmallow_enum import EnumField
+
 from teal.marshmallow import Version
 from teal.resource import Schema
 
@@ -26,6 +27,7 @@ class Event(Thing):
     components = NestedOn(Component, dump_only=True, many=True)
     description = String(default='', description=m.Event.description.comment)
     author = NestedOn(User, dump_only=True, exclude=('token',))
+    closed = Boolean(missing=True, description=m.Event.closed.comment)
 
 
 class EventWithOneDevice(Event):
@@ -157,7 +159,7 @@ class WorkbenchRate(IndividualRate):
 
 
 class Install(EventWithOneDevice):
-    name = String(validate=Length(STR_BIG_SIZE),
+    name = String(validate=Length(min=4, max=STR_BIG_SIZE),
                   required=True,
                   description='The name of the OS installed.')
     elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
@@ -176,12 +178,12 @@ class Snapshot(EventWithOneDevice):
                          description='The software that generated this Snapshot.')
     version = Version(required=True, description='The version of the software.')
     events = NestedOn(Event, many=True, dump_only=True)
-    expected_events = EnumField(SnapshotExpectedEvents,
-                                many=True,
-                                data_key='expectedEvents',
-                                description='Keep open this Snapshot until the following events'
-                                            'are performed. Setting this value will activate'
-                                            'the async Snapshot.')
+    expected_events = List(EnumField(SnapshotExpectedEvents),
+                           data_key='expectedEvents',
+                           description='Keep open this Snapshot until the following events'
+                                       'are performed. Setting this value will activate'
+                                       'the async Snapshot.')
+
     device = NestedOn(Device)
     elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
     components = NestedOn(Component,
@@ -217,8 +219,42 @@ class TestDataStorage(Test):
     length = EnumField(TestHardDriveLength, required=True)
     status = String(validate=Length(max=STR_SIZE), required=True)
     lifetime = TimeDelta(precision=TimeDelta.DAYS, required=True)
-    first_error = Integer()
+    first_error = Integer(missing=0, data_key='firstError')
+    passed_lifetime = TimeDelta(precision=TimeDelta.DAYS, data_key='passedLifetime')
+    assessment = Boolean()
+    reallocated_sector_count = Integer(data_key='reallocatedSectorCount')
+    power_cycle_count = Integer(data_key='powerCycleCount')
+    reported_uncorrectable_errors = Integer(data_key='reportedUncorrectableErrors')
+    command_timeout = Integer(data_key='commandTimeout')
+    current_pending_sector_count = Integer(data_key='currentPendingSectorCount')
+    offline_uncorrectable = Integer(data_key='offlineUncorrectable')
+    remaining_lifetime_percentage = Integer(data_key='remainingLifetimePercentage')
 
 
 class StressTest(Test):
+    pass
+
+
+class Benchmark(EventWithOneDevice):
+    elapsed = TimeDelta(precision=TimeDelta.SECONDS)
+
+
+class BenchmarkDataStorage(Benchmark):
+    read_speed = Float(required=True, data_key='readSpeed')
+    write_speed = Float(required=True, data_key='writeSpeed')
+
+
+class BenchmarkWithRate(Benchmark):
+    rate = Integer(required=True)
+
+
+class BenchmarkProcessor(BenchmarkWithRate):
+    pass
+
+
+class BenchmarkProcessorSysbench(BenchmarkProcessor):
+    pass
+
+
+class BenchmarkRamSysbench(BenchmarkWithRate):
     pass

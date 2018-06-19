@@ -2,6 +2,14 @@ from collections import Iterable
 from typing import Set, Union
 from uuid import uuid4
 
+from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Device
+from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RATE_5, Bios, \
+    FunctionalityRange, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
+    SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
+from ereuse_devicehub.resources.image.models import Image
+from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
+from ereuse_devicehub.resources.user.models import User
 from flask import g
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
     Float, ForeignKey, Interval, JSON, SmallInteger, Unicode, event
@@ -12,14 +20,6 @@ from sqlalchemy.orm import backref, relationship
 from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
 
-from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Device
-from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RATE_5, Bios, \
-    FunctionalityRange, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
-    SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
-from ereuse_devicehub.resources.image.models import Image
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
-from ereuse_devicehub.resources.user.models import User
 from teal.db import ArrayOfEnum, CASCADE, CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, \
     POLYMORPHIC_ON, StrictVersionType, check_range
 
@@ -46,6 +46,8 @@ class Event(Thing):
     closed.comment = """
         Whether the author has finished the event.
         After this is set to True, no modifications are allowed.
+        
+        By default are events are closed when performed.
     """
     error = Column(Boolean, default=False, nullable=False)
     error.comment = """
@@ -392,7 +394,7 @@ class StressTest(Test):
 
 
 class Benchmark(JoinedTableMixin, EventWithOneDevice):
-    pass
+    elapsed = Column(Interval)
 
 
 class BenchmarkDataStorage(Benchmark):

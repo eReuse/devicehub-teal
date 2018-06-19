@@ -2,14 +2,15 @@ from contextlib import suppress
 from itertools import groupby
 from typing import Iterable, Set
 
-from sqlalchemy import inspect
-from sqlalchemy.util import OrderedSet
-
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.event.models import Remove
 from ereuse_devicehub.resources.tag.model import Tag
+from sqlalchemy import inspect
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.util import OrderedSet
+
 from teal.db import ResourceNotFound
 from teal.marshmallow import ValidationError
 
@@ -153,7 +154,10 @@ class Sync:
         if device.hid:
             with suppress(ResourceNotFound):
                 db_device = Device.query.filter_by(hid=device.hid).one()
-        tags = {Tag.query.filter_by(id=tag.id).one() for tag in device.tags}  # type: Set[Tag]
+        try:
+            tags = {Tag.query.filter_by(id=tag.id).one() for tag in device.tags}  # type: Set[Tag]
+        except ResourceNotFound:
+            raise ResourceNotFound('tag you are linking to device {}'.format(device))
         linked_tags = {tag for tag in tags if tag.device_id}  # type: Set[Tag]
         if linked_tags:
             sample_tag = next(iter(linked_tags))
@@ -172,7 +176,18 @@ class Sync:
             db.session.add(device)
             db_device = device
         db_device.tags |= tags  # Union of tags the device had plus the (potentially) new ones
-        db.session.flush()
+        try:
+            db.session.flush()
+        except IntegrityError as e:
+            # Manage 'one tag per organization' unique constraint
+            if 'One tag per organization' in e.args[0]:
+                # todo test for this
+                id = int(e.args[0][135:e.args[0].index(',', 135)])
+                raise ValidationError('The device is already linked to tag {} '
+                                      'from the same organization.'.format(id),
+                                      field_names=['device.tags'])
+            else:
+                raise
         assert db_device is not None
         return db_device
 

@@ -29,7 +29,7 @@ class Client(TealClient):
              item=None,
              headers: dict = None,
              token: str = None,
-             **kw) -> Tuple[Union[Dict[str, Any], str], Response]:
+             **kw) -> Tuple[Union[Dict[str, object], str], Response]:
         if isclass(res) and issubclass(res, (models.Thing, schemas.Thing)):
             res = res.t
         return super().open(uri, res, status, query, accept, content_type, item, headers, token,
@@ -44,7 +44,7 @@ class Client(TealClient):
             accept: str = JSON,
             headers: dict = None,
             token: str = None,
-            **kw) -> Tuple[Union[Dict[str, Any], str], Response]:
+            **kw) -> Tuple[Union[Dict[str, object], str], Response]:
         return super().get(uri, res, query, status, item, accept, headers, token, **kw)
 
     def post(self,
@@ -57,7 +57,7 @@ class Client(TealClient):
              accept: str = JSON,
              headers: dict = None,
              token: str = None,
-             **kw) -> Tuple[Union[Dict[str, Any], str], Response]:
+             **kw) -> Tuple[Union[Dict[str, object], str], Response]:
         return super().post(data, uri, res, query, status, content_type, accept, headers, token,
                             **kw)
 
@@ -70,7 +70,7 @@ class Client(TealClient):
                  res: Union[Type[Union[models.Thing, schemas.Thing]], str],
                  resources: Iterable[Union[dict, int]],
                  key: str = None,
-                 **kw) -> Iterable[Union[Dict[str, Any], str]]:
+                 **kw) -> Iterable[Union[Dict[str, object], str]]:
         """Like :meth:`.get` but with many resources."""
         return (
             self.get(res=res, item=r[key] if key else r, **kw)[0]
@@ -106,6 +106,6 @@ class UserClient(Client):
              item=None,
              headers: dict = None,
              token: str = None,
-             **kw) -> Tuple[Union[Dict[str, Any], str], Response]:
+             **kw) -> Tuple[Union[Dict[str, object], str], Response]:
         return super().open(uri, res, status, query, accept, content_type, item, headers,
                             self.user['token'] if self.user else token, **kw)
