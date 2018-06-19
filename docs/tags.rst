@@ -25,8 +25,8 @@ parametrizing an ID generator.
 Note that these virtual tags don't have to forcefully be printed or
 have a physical representation (this is not imposed at system level).
 
-The eReuse.org tags (eTag)
-**************************
+eTags
+*****
 We recognize a special type of tag, the **eReuse.org tags (eTag)**.
 These are tags defined by eReuse.org and that can be issued only
 by tag providers that comply with the eReuse.org requisites.

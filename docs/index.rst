@@ -15,6 +15,7 @@ This is the documentation and API of the `eReuse.org DeviceHub
     events
     tags
     inventory
+    etag
 
 * :ref:`genindex`
 * :ref:`modindex`

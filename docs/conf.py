@@ -41,7 +41,8 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.plantuml'
+    'sphinxcontrib.plantuml',
+    'sphinx.ext.autosectionlabel'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -170,3 +171,6 @@ plantuml_output_format = 'svg'
 
 # favicon
 html_favicon = 'img/favicon.ico'
+
+# autosectionlabel
+autosectionlabel_prefix_document = True
