@@ -18,7 +18,7 @@ Our main objectives are:
 Devicehub is built with [Teal](https://github.com/bustawin/teal) and
 [Flask](http://flask.pocoo.org).
 
-## Installation
+## Installing
 The requirements are:
 
 - Python 3.5 or higher.
@@ -27,7 +27,7 @@ The requirements are:
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
 
 ## Running
-To use it create a python file with the following and call it `app.py`:
+Create a python file with the following and call it `app.py`:
 ```python
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.config import DevicehubConfig
@@ -38,28 +38,28 @@ class MyConfig(DevicehubConfig):
 
 app = Devicehub(MyConfig())
 ```
-Create a PostgreSQL database:
-```bash
-$ sudo -u postgres -i
-postgres$ createdb dh-db1
-```
+Create a PostgreSQL database called *dh-db1*:
 
-Then execute, in the same directory where `app.py` is:
+- In Ubuntu: `# postgres -i` and then `createdb dh-db1`.
+- In Debian: `$ createdb dh-db1`
+
+Create the tables in the database by executing in the same directory 
+where `app.py` is:
+
 ```bash
 $ flask init-db
 ```
 
-This creates the tables in the database you created before.
-
 Finally, run the app:
+
 ```bash
 $ flask run
 ```
 
-
 See the [Flask quickstart](http://flask.pocoo.org/docs/1.0/quickstart/)
 for more info.
 
+## Administrating
 Devicehub has many commands that allows you to administrate it. You
 can, for example, create a dummy database of devices with ``flask dummy``
 or create users with ``flask create-user``. See all the
