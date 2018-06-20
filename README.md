@@ -24,7 +24,7 @@ The requirements are:
 - Python 3.5 or higher.
 - PostgreSQL 9.6 or higher.
 
-Install Devicehub with *pip*: `pip3 install ereuse-devicehub`.
+Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
 
 ## Running
 To use it create a python file with the following and call it `app.py`:
@@ -38,10 +38,13 @@ class MyConfig(DevicehubConfig):
 
 app = Devicehub(MyConfig())
 ```
-Crate a PostgreSQL database:
+Create a PostgreSQL database:
 ```bash
-$ createdb dh-db1
+$ sudo -u postgres -i
+postgres$ createdb dh-db1
 ```
+
+
 
 And then execute, in the same directory where `app.py` is:
 ```bash
