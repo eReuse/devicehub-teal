@@ -10,7 +10,8 @@ from sqlalchemy.orm import ColumnProperty, backref, relationship
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 
-from ereuse_devicehub.resources.enums import DataStorageInterface, RamFormat, RamInterface
+from ereuse_devicehub.resources.enums import ComputerMonitorTechnologies, DataStorageInterface, \
+    RamFormat, RamInterface
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
 from ereuse_utils.naming import Naming
 from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, check_range
@@ -18,14 +19,30 @@ from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, c
 
 class Device(Thing):
     id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
+    id.comment = """
+        The identifier of the device for this database.
+    """
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     hid = Column(Unicode(STR_BIG_SIZE), unique=True)
+    hid.comment = """
+        The Hardware ID (HID) is the unique ID traceability systems 
+        use to ID a device globally.
+    """
     model = Column(Unicode(STR_BIG_SIZE))
     manufacturer = Column(Unicode(STR_SIZE))
     serial_number = Column(Unicode(STR_SIZE))
     weight = Column(Float(decimal_return_scale=3), check_range('weight', 0.1, 3))
+    weight.comment = """
+        The weight of the device in Kgm.
+    """
     width = Column(Float(decimal_return_scale=3), check_range('width', 0.1, 3))
+    width.comment = """
+        The width of the device in meters.
+    """
     height = Column(Float(decimal_return_scale=3), check_range('height', 0.1, 3))
+    height.comment = """
+        The height of the device in meters.
+    """
     depth = Column(Float(decimal_return_scale=3), check_range('depth', 0.1, 3))
     color = Column(ColorType)
 
@@ -106,6 +123,28 @@ class Server(Computer):
 
 class Microtower(Computer):
     pass
+
+
+class ComputerMonitor(Device):
+    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
+    size = Column(Float(decimal_return_scale=2), check_range('size', 2, 150))
+    size.comment = """
+        The size of the monitor in inches.
+    """
+    technology = Column(DBEnum(ComputerMonitorTechnologies))
+    technology.comment = """
+        The technology the monitor uses to display the image.
+    """
+    resolution_width = Column(SmallInteger, check_range('resolution_width', 10, 20000))
+    resolution_width.comment = """
+        The maximum horizontal resolution the monitor can natively support
+        in pixels.
+    """
+    resolution_height = Column(SmallInteger, check_range('resolution_height', 10, 20000))
+    resolution_height.comment = """
+        The maximum vertical resolution the monitor can natively support
+        in pixels.
+    """
 
 
 class Component(Device):

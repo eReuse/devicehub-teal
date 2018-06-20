@@ -1,7 +1,6 @@
 from click import argument, option
 from flask import current_app as app
 
-from ereuse_devicehub import devicehub
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.user.models import Organization, User
 from ereuse_devicehub.resources.user.schemas import User as UserS
@@ -16,7 +15,7 @@ class UserDef(Resource):
     ID_CONVERTER = Converters.uuid
     AUTH = True
 
-    def __init__(self, app: 'devicehub.Devicehub', import_name=__package__, static_folder=None,
+    def __init__(self, app, import_name=__package__, static_folder=None,
                  static_url_path=None, template_folder=None, url_prefix=None, subdomain=None,
                  url_defaults=None, root_path=None):
         cli_commands = ((self.create_user, 'create-user'),)

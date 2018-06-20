@@ -1,3 +1,10 @@
+from flask import current_app as app
+from marshmallow import ValidationError, validates_schema
+from marshmallow.fields import Boolean, DateTime, Float, Integer, List, Nested, String, TimeDelta, \
+    UUID
+from marshmallow.validate import Length, Range
+from marshmallow_enum import EnumField
+
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device.schemas import Component, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
@@ -6,13 +13,6 @@ from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user.schemas import User
-from flask import current_app as app
-from marshmallow import ValidationError, validates_schema
-from marshmallow.fields import Boolean, DateTime, Float, Integer, List, Nested, String, TimeDelta, \
-    UUID
-from marshmallow.validate import Length, Range
-from marshmallow_enum import EnumField
-
 from teal.marshmallow import Version
 from teal.resource import Schema
 
@@ -124,7 +124,7 @@ class PhotoboxRate(IndividualRate):
     # todo Image
 
 
-class PhotoboxUserRate(PhotoboxRate):
+class PhotoboxUserRate(IndividualRate):
     assembling = Integer()
     parts = Integer()
     buttons = Integer()
@@ -135,18 +135,11 @@ class PhotoboxUserRate(PhotoboxRate):
     dirt = Integer()
 
 
-class PhotoboxSystemRate(PhotoboxRate):
+class PhotoboxSystemRate(IndividualRate):
     pass
 
 
-class WorkbenchRate(IndividualRate):
-    processor = Float()
-    ram = Float()
-    data_storage = Float()
-    graphic_card = Float()
-    labelling = Boolean(description='Sets if there are labels stuck that should be removed.')
-    bios = EnumField(Bios, description='How difficult it has been to set the bios to '
-                                       'boot from the network.')
+class ManualRate(IndividualRate):
     appearance_range = EnumField(AppearanceRange,
                                  required=True,
                                  data_key='appearanceRange',
@@ -156,6 +149,20 @@ class WorkbenchRate(IndividualRate):
                                     required=True,
                                     data_key='functionalityRange',
                                     description='Grades the defects of a device that affect its usage.')
+    labelling = Boolean(description='Sets if there are labels stuck that should be removed.')
+
+
+class AppRate(ManualRate):
+    pass
+
+
+class WorkbenchRate(ManualRate):
+    processor = Float()
+    ram = Float()
+    data_storage = Float()
+    graphic_card = Float()
+    bios = EnumField(Bios, description='How difficult it has been to set the bios to '
+                                       'boot from the network.')
 
 
 class Install(EventWithOneDevice):
@@ -172,7 +179,7 @@ class Snapshot(EventWithOneDevice):
 
     See docs for more info.
     """
-    uuid = UUID(required=True)
+    uuid = UUID()
     software = EnumField(SnapshotSoftware,
                          required=True,
                          description='The software that generated this Snapshot.')
@@ -185,7 +192,7 @@ class Snapshot(EventWithOneDevice):
                                        'the async Snapshot.')
 
     device = NestedOn(Device)
-    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
+    elapsed = TimeDelta(precision=TimeDelta.SECONDS)
     components = NestedOn(Component,
                           many=True,
                           description='A list of components that are inside of the device'
@@ -206,9 +213,28 @@ class Snapshot(EventWithOneDevice):
     @validates_schema
     def validate_components_only_workbench(self, data: dict):
         if data['software'] != SnapshotSoftware.Workbench:
-            if data['components'] is not None:
+            if data.get('components', None) is not None:
                 raise ValidationError('Only Workbench can add component info',
                                       field_names=['components'])
+
+    @validates_schema
+    def validate_only_workbench_fields(self, data: dict):
+        """Ensures workbench has ``elapsed`` and ``uuid`` and no others."""
+        # todo test
+        if data['software'] == SnapshotSoftware.Workbench:
+            if not data.get('uuid', None):
+                raise ValidationError('Snapshots from Workbench must have uuid',
+                                      field_names=['uuid'])
+            if not data.get('elapsed', None):
+                raise ValidationError('Snapshots from Workbench must have elapsed',
+                                      field_names=['elapsed'])
+        else:
+            if data.get('uuid', None):
+                raise ValidationError('Only Snapshots from Workbench can have uuid',
+                                      field_names=['uuid'])
+            if data.get('elapsed', None):
+                raise ValidationError('Only Snapshots from Workbench can have elapsed',
+                                      field_names=['elapsed'])
 
 
 class Test(EventWithOneDevice):

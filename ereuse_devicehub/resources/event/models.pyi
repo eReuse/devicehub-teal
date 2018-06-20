@@ -139,17 +139,26 @@ class AggregateRate(Rate):
         self.ratings = ...  # type: Set[IndividualRate]
 
 
-class WorkbenchRate(IndividualRate):
+class ManualRate(IndividualRate):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.labelling = ...  # type: bool
+        self.appearance_range = ...  # type: AppearanceRange
+        self.functionality_range = ...  # type: FunctionalityRange
+
+
+class WorkbenchRate(ManualRate):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.processor = ...  # type: float
         self.ram = ...  # type: float
         self.data_storage = ...  # type: float
         self.graphic_card = ...  # type: float
-        self.labelling = ...  # type: bool
         self.bios = ...  # type: Bios
-        self.appearance_range = ...  # type: AppearanceRange
-        self.functionality_range = ...  # type: FunctionalityRange
+
+
+class AppRate(ManualRate):
+    pass
 
 
 class PhotoboxRate(IndividualRate):

@@ -53,11 +53,12 @@ def app_context(app: Devicehub):
 def user(app: Devicehub) -> UserClient:
     """Gets a client with a logged-in dummy user."""
     with app.app_context():
-        user = create_user()
+        password = 'foo'
+        user = create_user(password=password)
         client = UserClient(application=app,
                             response_wrapper=app.response_class,
                             email=user.email,
-                            password='foo')
+                            password=password)
         client.user, _ = client.login(client.email, client.password)
         return client
 

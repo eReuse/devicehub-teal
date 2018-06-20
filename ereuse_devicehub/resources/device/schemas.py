@@ -1,36 +1,28 @@
-from ereuse_devicehub.marshmallow import NestedOn
-from ereuse_devicehub.resources.enums import RamFormat, RamInterface
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
-from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 from marshmallow import post_load, pre_load
 from marshmallow.fields import Float, Integer, Str
 from marshmallow.validate import Length, OneOf, Range
 from marshmallow_enum import EnumField
 from sqlalchemy.util import OrderedSet
 
+from ereuse_devicehub.marshmallow import NestedOn
+from ereuse_devicehub.resources.device import models as m
+from ereuse_devicehub.resources.enums import ComputerMonitorTechnologies, RamFormat, RamInterface
+from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
+from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 from teal.marshmallow import ValidationError
 
 
 class Device(Thing):
-    # todo id is dump_only except when in Snapshot
-    id = Integer(description='The identifier of the device for this database.')
-    hid = Str(dump_only=True,
-              description='The Hardware ID is the unique ID traceability systems '
-                          'use to ID a device globally.')
+    id = Integer(description=m.Device.id, dump_only=True)
+    hid = Str(dump_only=True, description=m.Device.hid)
     tags = NestedOn('Tag', many=True, collection_class=OrderedSet)
     model = Str(validate=Length(max=STR_BIG_SIZE))
     manufacturer = Str(validate=Length(max=STR_SIZE))
     serial_number = Str(data_key='serialNumber')
     product_id = Str(data_key='productId')
-    weight = Float(validate=Range(0.1, 3),
-                   unit=UnitCodes.kgm,
-                   description='The weight of the device in Kgm.')
-    width = Float(validate=Range(0.1, 3),
-                  unit=UnitCodes.m,
-                  description='The width of the device in meters.')
-    height = Float(validate=Range(0.1, 3),
-                   unit=UnitCodes.m,
-                   description='The height of the device in meters.')
+    weight = Float(validate=Range(0.1, 3), unit=UnitCodes.kgm, description=m.Device.weight)
+    width = Float(validate=Range(0.1, 3), unit=UnitCodes.m, description=m.Device.width)
+    height = Float(validate=Range(0.1, 3), unit=UnitCodes.m, description=m.Device.height)
     events = NestedOn('Event', many=True, dump_only=True)
     events_one = NestedOn('Event', many=True, load_only=True, collection_class=OrderedSet)
 
@@ -61,7 +53,6 @@ class Device(Thing):
 
 class Computer(Device):
     components = NestedOn('Component', many=True, dump_only=True, collection_class=OrderedSet)
-    pass
 
 
 class Desktop(Computer):
@@ -82,6 +73,18 @@ class Server(Computer):
 
 class Microtower(Computer):
     pass
+
+
+class ComputerMonitor(Device):
+    size = Float(description=m.ComputerMonitor.size.comment, validate=Range(2, 150))
+    technology = EnumField(ComputerMonitorTechnologies,
+                           description=m.ComputerMonitor.technology.comment)
+    resolution_width = Integer(data_key='resolutionWidth',
+                               validate=Range(10, 20000),
+                               description=m.ComputerMonitor.resolution_width.comment)
+    resolution_height = Integer(data_key='resolutionHeight',
+                                validate=Range(10, 20000),
+                                description=m.ComputerMonitor.resolution_height.comment)
 
 
 class Component(Device):

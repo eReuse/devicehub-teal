@@ -1,0 +1,118 @@
+# A Snapshot Phase 1 with a device
+# and 1 GraphicCard, 2 RamModule, 1 Processor, 1 SSD, 1 HDD, 1 Motherboard
+# Prerequisites:
+#  - 2 tags: tag1 and tag2 from the default org
+# All numbers are invented
+
+
+type: Snapshot
+uuid: cb8ce6b5-6a1b-4084-b5b9-d8fadad2a015
+version: '11.0'
+software: Workbench
+elapsed: 500
+device:
+  type: Microtower
+  serialNumber: d1s
+  model: d1ml
+  manufacturer: d1mr
+  tags:
+    - type: Tag
+      id: tag1
+  events:
+    - type: WorkbenchRate
+      appearanceRange: A
+      functionalityRange: B
+    - type: BenchmarkRamSysbench
+      rate: 2444
+    - type: StressTest
+      elapsed: 300
+      error: False
+components:
+  - type: GraphicCard
+    serialNumber: gc1-1s
+    model: gc1-1ml
+    manufacturer: gc1-1mr
+  - type: RamModule
+    serialNumber: rm1-1s
+    model: rm1-1ml
+    manufacturer: rm1-1mr
+  - type: RamModule
+    serialNumber: rm2-1s
+    model: rm2-1ml
+    manufacturer: rm2-1mr
+  - type: Processor
+    model: p1-1s
+    manufacturer: p1-1mr
+    events:
+      - type: BenchmarkProcessor
+        rate: 2410
+      - type: BenchmarkProcessorSysbench
+        rate: 4400
+  - type: SolidStateDrive
+    serialNumber: ssd1-1s
+    model: ssd1-1ml
+    manufacturer: ssd1-1mr
+    events:
+      - type: BenchmarkDataStorage
+        readSpeed: 20
+        writeSpeed: 15
+        elapsed: 21
+      - type: TestDataStorage
+        elapsed: 233
+        firstError: 0
+        error: False
+        status: Completed without error
+        length: Short
+        lifetime: 99
+        passedLifetime: 99
+        assessment: True
+        powerCycleCount: 11
+        reallocatedSectorCount: 2
+        powerCycleCount: 4
+        reportedUncorrectableErrors: 1
+        commandTimeout: 11
+        currentPendingSectorCount: 1
+        offlineUncorrectable: 33
+        remainingLifetimePercentage: 1
+      - type: EraseSectors
+        error: False
+        cleanWithZeros: False
+        startTime: 2018-01-01T10:10:10
+        endTime: 2018-01-01T12:10:10
+        secureRandomSteps: 0
+        steps:
+          - type: StepRandom
+            startTime: 2018-01-01T10:10:10
+            endTime: 2018-01-01T12:10:10
+            error: False
+            cleanWithZeros: False
+            secureRandomSteps: 0
+  - type: HardDrive
+    serialNumber: hdd1-1s
+    model: hdd1-1ml
+    manufacturer: hdd1-1mr
+    events:
+      - type: BenchmarkDataStorage
+        readSpeed: 10
+        writeSpeed: 5
+      - type: EraseSectors
+        error: False
+        cleanWithZeros: False
+        startTime: 2018-01-01T10:10:10
+        endTime: 2018-01-01T12:10:10
+        secureRandomSteps: 0
+        steps:
+          - type: StepRandom
+            startTime: 2018-01-01T10:10:10
+            endTime: 2018-01-01T12:10:10
+            error: False
+            cleanWithZeros: False
+            secureRandomSteps: 0
+      - type: Install
+        elapsed: 420
+        error: False
+        name: LinuxMint 18.01 32b
+  - type: Motherboard
+    serialNumber: mb1-1s
+    model: mb1-1ml
+    manufacturer: mb1-1mr

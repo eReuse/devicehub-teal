@@ -1,14 +1,14 @@
 from distutils.version import StrictVersion
 from typing import Set
 
-from ereuse_devicehub.resources.device import ComponentDef, ComputerDef, DataStorageDef, \
-    DesktopDef, DeviceDef, GraphicCardDef, HardDriveDef, LaptopDef, MicrotowerDef, \
+from ereuse_devicehub.resources.device import ComponentDef, ComputerDef, ComputerMonitorDef, \
+    DataStorageDef, DesktopDef, DeviceDef, GraphicCardDef, HardDriveDef, LaptopDef, MicrotowerDef, \
     MotherboardDef, NetbookDef, NetworkAdapterDef, ProcessorDef, RamModuleDef, ServerDef, \
     SolidStateDriveDef
-from ereuse_devicehub.resources.event import AddDef, AggregateRateDef, BenchmarkDataStorageDef, \
-    BenchmarkDef, BenchmarkProcessorDef, BenchmarkProcessorSysbenchDef, BenchmarkRamSysbenchDef, \
-    BenchmarkWithRateDef, EraseBasicDef, EraseSectorsDef, EventDef, InstallDef, \
-    PhotoboxSystemRateDef, PhotoboxUserDef, RateDef, RemoveDef, SnapshotDef, StepDef, \
+from ereuse_devicehub.resources.event import AddDef, AggregateRateDef, AppRateDef, \
+    BenchmarkDataStorageDef, BenchmarkDef, BenchmarkProcessorDef, BenchmarkProcessorSysbenchDef, \
+    BenchmarkRamSysbenchDef, BenchmarkWithRateDef, EraseBasicDef, EraseSectorsDef, EventDef, \
+    InstallDef, PhotoboxSystemRateDef, PhotoboxUserDef, RateDef, RemoveDef, SnapshotDef, StepDef, \
     StepRandomDef, StepZeroDef, StressTestDef, TestDataStorageDef, TestDef, WorkbenchRateDef
 from ereuse_devicehub.resources.inventory import InventoryDef
 from ereuse_devicehub.resources.tag import TagDef
@@ -19,13 +19,14 @@ from teal.config import Config
 class DevicehubConfig(Config):
     RESOURCE_DEFINITIONS = {
         DeviceDef, ComputerDef, DesktopDef, LaptopDef, NetbookDef, ServerDef,
-        MicrotowerDef, ComponentDef, GraphicCardDef, DataStorageDef, SolidStateDriveDef,
+        MicrotowerDef, ComputerMonitorDef, ComponentDef, GraphicCardDef, DataStorageDef,
+    SolidStateDriveDef,
         HardDriveDef, MotherboardDef, NetworkAdapterDef, RamModuleDef, ProcessorDef, UserDef,
         OrganizationDef, TagDef, EventDef, AddDef, RemoveDef, EraseBasicDef, EraseSectorsDef,
         StepDef, StepZeroDef, StepRandomDef, RateDef, AggregateRateDef, WorkbenchRateDef,
         PhotoboxUserDef, PhotoboxSystemRateDef, InstallDef, SnapshotDef, TestDef,
         TestDataStorageDef, StressTestDef, WorkbenchRateDef, InventoryDef, BenchmarkDef,
-        BenchmarkDataStorageDef, BenchmarkWithRateDef, BenchmarkProcessorDef,
+        BenchmarkDataStorageDef, BenchmarkWithRateDef, AppRateDef, BenchmarkProcessorDef,
         BenchmarkProcessorSysbenchDef, BenchmarkRamSysbenchDef
     }
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]

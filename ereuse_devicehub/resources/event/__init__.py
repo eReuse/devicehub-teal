@@ -1,7 +1,7 @@
 from typing import Callable, Iterable, Tuple
 
 from ereuse_devicehub.resources.device.sync import Sync
-from ereuse_devicehub.resources.event.schemas import Add, AggregateRate, Benchmark, \
+from ereuse_devicehub.resources.event.schemas import Add, AggregateRate, AppRate, Benchmark, \
     BenchmarkDataStorage, BenchmarkProcessor, BenchmarkProcessorSysbench, BenchmarkRamSysbench, \
     BenchmarkWithRate, EraseBasic, EraseSectors, Event, Install, PhotoboxSystemRate, \
     PhotoboxUserRate, Rate, Remove, Snapshot, Step, StepRandom, StepZero, StressTest, Test, \
@@ -63,6 +63,10 @@ class PhotoboxUserDef(RateDef):
 
 class PhotoboxSystemRateDef(RateDef):
     SCHEMA = PhotoboxSystemRate
+
+
+class AppRateDef(RateDef):
+    SCHEMA = AppRate
 
 
 class InstallDef(EventDef):

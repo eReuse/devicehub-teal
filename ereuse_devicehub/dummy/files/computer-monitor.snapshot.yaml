@@ -1,0 +1,17 @@
+type: Snapshot
+software: AndroidApp
+version: '1.0'
+device:
+  type: ComputerMonitor
+  technology: LCD
+  manufacturer: Dell
+  model: 1707FPF
+  serialNumber: CN0FP446728728541C8S
+  resolutionWidth: 1920
+  resolutionHeight: 1080
+  size: 21.5
+  events:
+    - type: AppRate
+      appearanceRange: A
+      functionalityRange: C
+      labelling: False

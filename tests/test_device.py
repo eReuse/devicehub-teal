@@ -10,11 +10,12 @@ from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device.exceptions import NeedsId
-from ereuse_devicehub.resources.device.models import Component, Computer, Desktop, Device, \
-    GraphicCard, Laptop, Microtower, Motherboard, NetworkAdapter
+from ereuse_devicehub.resources.device.models import Component, Computer, ComputerMonitor, Desktop, \
+    Device, GraphicCard, Laptop, Microtower, Motherboard, NetworkAdapter
 from ereuse_devicehub.resources.device.schemas import Device as DeviceS
 from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, MismatchBetweenTagsAndHid, \
     Sync
+from ereuse_devicehub.resources.enums import ComputerMonitorTechnologies
 from ereuse_devicehub.resources.event.models import Remove, Test
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
@@ -396,3 +397,16 @@ def test_get_devices(app: Devicehub, user: UserClient):
     assert tuple(d['id'] for d in devices) == (1, 2, 3, 4, 5)
     assert tuple(d['type'] for d in devices) == ('Desktop', 'Microtower',
                                                  'Laptop', 'NetworkAdapter', 'GraphicCard')
+
+
+@pytest.mark.usefixtures('app_context')
+def test_computer_monitor():
+    m = ComputerMonitor(technology=ComputerMonitorTechnologies.LCD,
+                        manufacturer='foo',
+                        model='bar',
+                        serial_number='foo-bar',
+                        resolution_width=1920,
+                        resolution_height=1080,
+                        size=14.5)
+    db.session.add(m)
+    db.session.commit()

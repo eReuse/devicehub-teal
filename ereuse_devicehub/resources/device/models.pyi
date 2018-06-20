@@ -1,9 +1,10 @@
 from typing import Dict, List, Set
 
 from colour import Color
-from sqlalchemy import Column
+from sqlalchemy import Column, Integer
 
-from ereuse_devicehub.resources.enums import DataStorageInterface, RamFormat, RamInterface
+from ereuse_devicehub.resources.enums import ComputerMonitorTechnologies, DataStorageInterface, \
+    RamFormat, RamInterface
 from ereuse_devicehub.resources.event.models import Event, EventWithMultipleDevices, \
     EventWithOneDevice
 from ereuse_devicehub.resources.image.models import ImageList
@@ -70,6 +71,20 @@ class Server(Computer):
 
 class Microtower(Computer):
     pass
+
+
+class ComputerMonitor(Device):
+    technology = ...  # type: Column
+    size = ...  # type: Column
+    resolution_width = ...  # type: Column
+    resolution_height = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        technology = ...  # type: ComputerMonitorTechnologies
+        size = ...  # type: Integer
+        resolution_width = ...  # type: int
+        resolution_height = ...  # type: int
 
 
 class Component(Device):

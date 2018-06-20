@@ -149,3 +149,14 @@ class DataStorageInterface(Enum):
     ATA = 'ATA'
     USB = 'USB'
     PCI = 'PCI'
+
+
+@unique
+class ComputerMonitorTechnologies(Enum):
+    CRT = 'Cathode ray tube (CRT)'
+    TFT = 'Thin-film-transistor liquid-crystal (TFT)'
+    LED = 'LED-backlit (LED)'
+    PDP = 'Plasma display panel (Plasma)'
+    LCD = 'Liquid-crystal display (any of TFT, LED, Blue Phase, IPS)'
+    OLED = 'Organic light-emitting diode (OLED)'
+    AMOLED = 'Organic light-emitting diode (AMOLED)'

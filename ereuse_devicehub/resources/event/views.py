@@ -8,7 +8,8 @@ from sqlalchemy.util import OrderedSet
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import RatingSoftware, SnapshotSoftware
-from ereuse_devicehub.resources.event.models import Event, Snapshot, TestDataStorage, WorkbenchRate
+from ereuse_devicehub.resources.event.models import Event, ManualRate, Snapshot, TestDataStorage, \
+    WorkbenchRate
 from teal.resource import View
 
 
@@ -40,14 +41,15 @@ class SnapshotView(View):
 
         # Remove new events from devices so they don't interfere with sync
         events_device = set(e for e in device.events_one)
-        events_components = tuple(set(e for e in component.events_one) for component in components)
         device.events_one.clear()
-        for component in components:
-            component.events_one.clear()
+        if components:
+            events_components = tuple(set(e for e in c.events_one) for c in components)
+            for component in components:
+                component.events_one.clear()
 
         # noinspection PyArgumentList
         assert not device.events_one
-        assert all(not c.events_one for c in components)
+        assert all(not c.events_one for c in components) if components else True
         db_device, remove_events = self.resource_def.sync.run(device, components)
         snapshot.device = db_device
         snapshot.events |= remove_events | events_device
@@ -56,19 +58,21 @@ class SnapshotView(View):
         ordered_components = OrderedSet(x for x in snapshot.components)
 
         for event in events_device:
+            if isinstance(event, ManualRate):
+                event.algorithm_software = RatingSoftware.Ereuse
+                event.algorithm_version = StrictVersion('1.0')
             if isinstance(event, WorkbenchRate):
                 # todo process workbench rate
                 event.data_storage = 2
                 event.graphic_card = 4
                 event.processor = 1
-                event.algorithm_software = RatingSoftware.Ereuse
-                event.algorithm_version = StrictVersion('1.0')
 
         # Add the new events to the db-existing devices and components
         db_device.events_one |= events_device
-        for component, events in zip(ordered_components, events_components):
-            component.events_one |= events
-            snapshot.events |= events
+        if components:
+            for component, events in zip(ordered_components, events_components):
+                component.events_one |= events
+                snapshot.events |= events
 
         db.session.add(snapshot)
         db.session.commit()

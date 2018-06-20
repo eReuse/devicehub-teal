@@ -44,12 +44,23 @@ $ sudo -u postgres -i
 postgres$ createdb dh-db1
 ```
 
+Then execute, in the same directory where `app.py` is:
+```bash
+$ flask init-db
+```
 
+This creates the tables in the database you created before.
 
-And then execute, in the same directory where `app.py` is:
+Finally, run the app:
 ```bash
 $ flask run
 ```
 
+
 See the [Flask quickstart](http://flask.pocoo.org/docs/1.0/quickstart/)
 for more info.
+
+Devicehub has many commands that allows you to administrate it. You
+can, for example, create a dummy database of devices with ``flask dummy``
+or create users with ``flask create-user``. See all the
+available commands by just executing ``flask``.

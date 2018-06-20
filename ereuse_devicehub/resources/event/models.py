@@ -2,14 +2,6 @@ from collections import Iterable
 from typing import Set, Union
 from uuid import uuid4
 
-from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Device
-from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RATE_5, Bios, \
-    FunctionalityRange, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
-    SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
-from ereuse_devicehub.resources.image.models import Image
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
-from ereuse_devicehub.resources.user.models import User
 from flask import g
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
     Float, ForeignKey, Interval, JSON, SmallInteger, Unicode, event
@@ -20,6 +12,14 @@ from sqlalchemy.orm import backref, relationship
 from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
 
+from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Device
+from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RATE_5, Bios, \
+    FunctionalityRange, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
+    SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
+from ereuse_devicehub.resources.image.models import Image
+from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
+from ereuse_devicehub.resources.user.models import User
 from teal.db import ArrayOfEnum, CASCADE, CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, \
     POLYMORPHIC_ON, StrictVersionType, check_range
 
@@ -256,15 +256,18 @@ class StepRandom(Step):
 
 
 class Snapshot(JoinedTableMixin, EventWithOneDevice):
-    uuid = Column(UUID(as_uuid=True), nullable=False, unique=True)
+    uuid = Column(UUID(as_uuid=True), unique=True)
     version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)
     software = Column(DBEnum(SnapshotSoftware), nullable=False)
-    elapsed = Column(Interval, nullable=False)
+    elapsed = Column(Interval)
+    elapsed.comment = """
+        For Snapshots made with Workbench, the total amount of time
+        it took to complete.
+    """
     expected_events = Column(ArrayOfEnum(DBEnum(SnapshotExpectedEvents)))
 
 
 class Install(JoinedTableMixin, EventWithOneDevice):
-    name = Column(Unicode(STR_BIG_SIZE), nullable=False)
     elapsed = Column(Interval, nullable=False)
 
 
@@ -289,6 +292,20 @@ class Rate(JoinedTableMixin, EventWithOneDevice):
     @property
     def rating_range(self) -> RatingRange:
         return RatingRange.from_score(self.rating)
+
+    @declared_attr
+    def __mapper_args__(cls):
+        """
+        Defines inheritance.
+
+        From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
+        extensions/declarative/api.html
+        #sqlalchemy.ext.declarative.declared_attr>`_
+        """
+        args = {POLYMORPHIC_ID: cls.t}
+        if cls.t == 'Rate':
+            args[POLYMORPHIC_ON] = cls.type
+        return args
 
 
 class IndividualRate(Rate):
@@ -319,18 +336,26 @@ class RateAggregateRate(db.Model):
                                primary_key=True)
 
 
-class WorkbenchRate(IndividualRate):
+class ManualRate(IndividualRate):
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+    labelling = Column(Boolean)
+    appearance_range = Column(DBEnum(AppearanceRange))
+    functionality_range = Column(DBEnum(FunctionalityRange))
+
+
+class WorkbenchRate(ManualRate):
+    id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id), primary_key=True)
     processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE))
     ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE))
     data_storage = Column(Float(decimal_return_scale=2),
                           check_range('data_storage', *RATE_POSITIVE))
     graphic_card = Column(Float(decimal_return_scale=2),
                           check_range('graphic_card', *RATE_POSITIVE))
-    labelling = Column(Boolean)
     bios = Column(DBEnum(Bios))
-    appearance_range = Column(DBEnum(AppearanceRange))
-    functionality_range = Column(DBEnum(FunctionalityRange))
+
+
+class AppRate(ManualRate):
+    pass
 
 
 class PhotoboxRate(IndividualRate):
@@ -369,6 +394,20 @@ class PhotoboxSystemRate(PhotoboxRate):
 class Test(JoinedTableMixin, EventWithOneDevice):
     elapsed = Column(Interval, nullable=False)
 
+    @declared_attr
+    def __mapper_args__(cls):
+        """
+        Defines inheritance.
+
+        From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
+        extensions/declarative/api.html
+        #sqlalchemy.ext.declarative.declared_attr>`_
+        """
+        args = {POLYMORPHIC_ID: cls.t}
+        if cls.t == 'Test':
+            args[POLYMORPHIC_ON] = cls.type
+        return args
+
 
 class TestDataStorage(Test):
     id = Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
@@ -395,6 +434,20 @@ class StressTest(Test):
 
 class Benchmark(JoinedTableMixin, EventWithOneDevice):
     elapsed = Column(Interval)
+
+    @declared_attr
+    def __mapper_args__(cls):
+        """
+        Defines inheritance.
+
+        From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
+        extensions/declarative/api.html
+        #sqlalchemy.ext.declarative.declared_attr>`_
+        """
+        args = {POLYMORPHIC_ID: cls.t}
+        if cls.t == 'Benchmark':
+            args[POLYMORPHIC_ON] = cls.type
+        return args
 
 
 class BenchmarkDataStorage(Benchmark):

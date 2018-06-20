@@ -11,14 +11,16 @@ setup(
     include_package_data=True,
     description='A system to manage devices focusing reuse.',
     install_requires=[
-        'teal>=0.2.0a1',
+        'teal>=0.2.0a2',
         'marshmallow_enum',
-        'ereuse-utils [Naming]>=0.3.0b1',
+        'ereuse-utils [Naming]>=0.3.0b2',
         'psycopg2-binary',
         'sqlalchemy-utils',
         'requests',
         'requests-toolbelt',
-        'hashids'
+        'hashids',
+        'tqdm',
+        'click-spinner'
     ],
     tests_requires=[
         'pytest',

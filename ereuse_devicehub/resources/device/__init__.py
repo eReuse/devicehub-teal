@@ -1,6 +1,6 @@
-from ereuse_devicehub.resources.device.schemas import Component, Computer, DataStorage, Desktop, \
-    Device, GraphicCard, HardDrive, Laptop, Microtower, Motherboard, Netbook, NetworkAdapter, \
-    Processor, RamModule, Server, SolidStateDrive
+from ereuse_devicehub.resources.device.schemas import Component, Computer, ComputerMonitor, \
+    DataStorage, Desktop, Device, GraphicCard, HardDrive, Laptop, Microtower, Motherboard, Netbook, \
+    NetworkAdapter, Processor, RamModule, Server, SolidStateDrive
 from ereuse_devicehub.resources.device.views import DeviceView
 from teal.resource import Converters, Resource
 
@@ -34,6 +34,10 @@ class ServerDef(ComputerDef):
 
 class MicrotowerDef(ComputerDef):
     SCHEMA = Microtower
+
+
+class ComputerMonitorDef(DeviceDef):
+    SCHEMA = ComputerMonitor
 
 
 class ComponentDef(DeviceDef):

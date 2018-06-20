@@ -69,11 +69,13 @@ def snapshot_and_check(user: UserClient,
             assert event['type'] != 'Receive', 'All Remove events must be before the Add ones'
     assert input_snapshot['device']
     assert_similar_device(input_snapshot['device'], snapshot['device'])
-    assert_similar_components(input_snapshot['components'], snapshot['components'])
+    if input_snapshot.get('components', None):
+        assert_similar_components(input_snapshot['components'], snapshot['components'])
     assert all(c['parent'] == snapshot['device']['id'] for c in snapshot['components']), \
         'Components must be in their parent'
     if perform_second_snapshot:
-        input_snapshot['uuid'] = uuid4()
+        if 'uuid' in input_snapshot:
+            input_snapshot['uuid'] = uuid4()
         return snapshot_and_check(user, input_snapshot, event_types, perform_second_snapshot=False)
     else:
         return snapshot
@@ -330,3 +332,24 @@ def test_erase(user: UserClient):
         assert step['secureRandomSteps'] == 1
         assert step['cleanWithZeros'] is True
         assert 'num' not in step
+
+
+def test_snapshot_computer_monitor(user: UserClient):
+    s = file('computer-monitor.snapshot')
+    snapshot_and_check(user, s, event_types=('AppRate',))
+
+
+def test_snapshot_components_none():
+    """
+    Tests that a snapshot without components does not
+    remove them from the computer.
+    """
+    # todo test
+    pass
+
+
+def test_snapshot_components_empty():
+    """
+    Tests that a snapshot whose components are an empty list remove
+    all its components.
+    """
