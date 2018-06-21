@@ -31,6 +31,12 @@ $ apt-get install python3-pip postgresql postgresql-client python3.5
 
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
 
+`flask` is needed for running the server.
+
+```bash
+$ pip3 install flask
+```
+
 ## Running
 Create a python file with the following and call it `app.py`:
 ```python
