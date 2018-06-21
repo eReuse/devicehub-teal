@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="ereuse-devicehub",
-    version='0.2.0a5',
+    version='0.2.0a6',
     packages=find_packages(),
     url='https://github.com/ereuse/devicehub-teal',
     license='Affero',
