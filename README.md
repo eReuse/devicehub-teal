@@ -45,8 +45,11 @@ app = Devicehub(MyConfig())
 ```
 Create a PostgreSQL database called *dh-db1*:
 
-- In Ubuntu: `# postgres -i` and then `createdb dh-db1`.
-- In Debian: `$ createdb dh-db1`
+```bash
+$ sudo -u postgres psql postgres
+postgres=# createdb dh-db1
+postgres=# \q
+```
 
 Create the tables in the database by executing in the same directory 
 where `app.py` is:
