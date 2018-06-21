@@ -21,9 +21,9 @@ Devicehub is built with [Teal](https://github.com/bustawin/teal) and
 ## Installing
 The requirements are:
 
-- Python 3.5 or higher.
-- PostgreSQL 9.6 or higher.
-- passlib. In debian is ``apt install python3-passlib``.
+- Python 3.5.3 or higher. In debian is `# apt install python3-pip`.
+- PostgreSQL 9.6 or higher. In debian is `# apt install postgresql`
+- passlib. In debian is `# apt install python3-passlib`.
 
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
 
