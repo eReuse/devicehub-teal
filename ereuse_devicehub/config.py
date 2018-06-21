@@ -30,7 +30,7 @@ class DevicehubConfig(Config):
         BenchmarkProcessorSysbenchDef, BenchmarkRamSysbenchDef
     }
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
-    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/dh-db1'  # type: str
+    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/devicehub'  # type: str
     MIN_WORKBENCH = StrictVersion('11.0')  # type: StrictVersion
     """
     The minimum algorithm_version of eReuse.org Workbench that this Devicehub

@@ -23,6 +23,7 @@ The requirements are:
 
 - Python 3.5 or higher.
 - PostgreSQL 9.6 or higher.
+- passlib. In debian is ``apt install python3-passlib``.
 
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
 
@@ -38,10 +39,15 @@ class MyConfig(DevicehubConfig):
 
 app = Devicehub(MyConfig())
 ```
-Create a PostgreSQL database called *dh-db1*:
+Create a PostgreSQL database called *devicehub*:
 
-- In Ubuntu: `# postgres -i` and then `createdb dh-db1`.
-- In Debian: `$ createdb dh-db1`
+```bash
+# su - postgres
+postgres $ createdb devicehub
+postgres $ psql devicehub
+postgres $ GRANT ALL PRIVILEGES ON DATABASE devicehub TO dhub;
+postgres $ \q
+```
 
 Create the tables in the database by executing in the same directory 
 where `app.py` is:
@@ -63,4 +69,5 @@ for more info.
 Devicehub has many commands that allows you to administrate it. You
 can, for example, create a dummy database of devices with ``flask dummy``
 or create users with ``flask create-user``. See all the
-available commands by just executing ``flask``.
+available commands by just executing ``flask`` and get more information
+per command by executing ``flask command --help``.
