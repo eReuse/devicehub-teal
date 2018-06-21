@@ -21,7 +21,7 @@ Devicehub is built with [Teal](https://github.com/bustawin/teal) and
 ## Installing
 The requirements are:
 
-- Python 3.5 or higher.
+- Python 3.5.3 or higher.
 - PostgreSQL 9.6 or higher.
 
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
