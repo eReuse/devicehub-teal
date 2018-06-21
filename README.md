@@ -25,6 +25,10 @@ The requirements are:
 - Python Pip 3
 - PostgreSQL 9.6 or higher.
 
+```bash
+$ apt-get install python3-pip postgresql postgresql-client python3.5
+```
+
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
 
 ## Running
