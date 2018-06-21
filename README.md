@@ -61,13 +61,13 @@ Create the tables in the database by executing in the same directory
 where `app.py` is:
 
 ```bash
-$ flask init-db
+$ python3.5 -m flask init-db
 ```
 
 Finally, run the app:
 
 ```bash
-$ flask run
+$ python3.5 -m flask run
 ```
 
 See the [Flask quickstart](http://flask.pocoo.org/docs/1.0/quickstart/)
