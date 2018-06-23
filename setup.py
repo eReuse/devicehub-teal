@@ -1,8 +1,11 @@
 from setuptools import find_packages, setup
 
+with open('README.md') as f:
+    long_description = f.read()
+
 setup(
-    name="ereuse-devicehub",
-    version='0.2.0a6',
+    name='ereuse-devicehub',
+    version='0.2.0a7',
     packages=find_packages(),
     url='https://github.com/ereuse/devicehub-teal',
     license='Affero',
@@ -10,20 +13,19 @@ setup(
     author_email='x.bustamante@ereuse.org',
     include_package_data=True,
     description='A system to manage devices focusing reuse.',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     install_requires=[
-        'teal>=0.2.0a2',
+        'teal>=0.2.0a4',
         'marshmallow_enum',
-        'ereuse-utils [Naming]>=0.3.0b2',
+        'ereuse-utils[Naming]>=0.3.0b2',
         'psycopg2-binary',
         'requests',
         'requests-toolbelt',
         'hashids',
         'tqdm',
         'click-spinner',
-        'sqlalchemy-utils',
-        'sqlalchemy-utils [password]',
-        'sqlalchemy-utils [color]',
-        'sqlalchemy-utils [babel]',
+        'sqlalchemy-utils[password, color, babel]',
         'PyYAML'
     ],
     tests_requires=[

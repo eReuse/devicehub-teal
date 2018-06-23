@@ -21,9 +21,9 @@ Devicehub is built with [Teal](https://github.com/bustawin/teal) and
 ## Installing
 The requirements are:
 
-- Python 3.5.3 or higher. In debian is `# apt install python3-pip`.
-- PostgreSQL 9.6 or higher. In debian is `# apt install postgresql`
-- passlib. In debian is `# apt install python3-passlib`.
+- Python 3.5.3 or higher. In debian 9 is `# apt install python3-pip`.
+- PostgreSQL 9.6 or higher. In debian 9 is `# apt install postgresql`
+- passlib. In debian 9 is `# apt install python3-passlib`.
 
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
 
@@ -42,11 +42,13 @@ app = Devicehub(MyConfig())
 Create a PostgreSQL database called *devicehub*:
 
 ```bash
-# su - postgres
-postgres $ createdb devicehub
-postgres $ psql devicehub
-postgres $ GRANT ALL PRIVILEGES ON DATABASE devicehub TO dhub;
+sudo su - postgres  # Change to Postgres main user
+postgres $ createdb devicehub  # Create main database
+postgres $ psql devicehub  # Access to the database
+postgres $ CREATE USER dhub WITH PASSWORD 'ereuse';  # Create user devicehub uses to access db
+postgres $ GRANT ALL PRIVILEGES ON DATABASE devicehub TO dhub;  # Give access to the db
 postgres $ \q
+exit
 ```
 
 Create the tables in the database by executing in the same directory 
@@ -61,6 +63,9 @@ Finally, run the app:
 ```bash
 $ flask run
 ```
+
+The error `flask: command not found` can happen when you are not in a 
+*virtual environment*. Try executing then `python3 -m flask`. 
 
 See the [Flask quickstart](http://flask.pocoo.org/docs/1.0/quickstart/)
 for more info.
