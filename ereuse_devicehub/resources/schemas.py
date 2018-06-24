@@ -22,8 +22,8 @@ class Thing(Schema):
     type = String(description='Only required when it is nested.')
     url = URL(dump_only=True, description='The URL of the resource.')
     same_as = List(URL(dump_only=True), dump_only=True, data_key='sameAs')
-    updated = DateTime('iso', dump_only=True, description=m.Thing.updated)
-    created = DateTime('iso', dump_only=True, description=m.Thing.created)
+    updated = DateTime('iso', dump_only=True, description=m.Thing.updated.comment.strip())
+    created = DateTime('iso', dump_only=True, description=m.Thing.created.comment.strip())
 
     @post_load
     def remove_type(self, data: dict):

@@ -18,6 +18,10 @@ from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, c
 
 
 class Device(Thing):
+    """
+    Base class for any type of physical object that can be identified.
+    """
+
     id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
     id.comment = """
         The identifier of the device for this database.
@@ -45,12 +49,18 @@ class Device(Thing):
     """
     depth = Column(Float(decimal_return_scale=3), check_range('depth', 0.1, 3))
     color = Column(ColorType)
+    color.comment = """
+    
+    """
 
     @property
     def events(self) -> list:
         """
-        All the events performed to the device,
-        ordered by ascending creation time.
+        All the events where the device participated, including
+        1) events performed directly to the device, 2) events performed
+        to a component, and 3) events performed to a parent device.
+
+        Events are returned by ascending creation time.
         """
         return sorted(chain(self.events_multiple, self.events_one), key=attrgetter('created'))
 

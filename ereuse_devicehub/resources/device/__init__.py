@@ -13,64 +13,80 @@ class DeviceDef(Resource):
 
 
 class ComputerDef(DeviceDef):
+    VIEW = None
     SCHEMA = Computer
 
 
 class DesktopDef(ComputerDef):
+    VIEW = None
     SCHEMA = Desktop
 
 
 class LaptopDef(ComputerDef):
+    VIEW = None
     SCHEMA = Laptop
 
 
 class NetbookDef(ComputerDef):
+    VIEW = None
     SCHEMA = Netbook
 
 
 class ServerDef(ComputerDef):
+    VIEW = None
     SCHEMA = Server
 
 
 class MicrotowerDef(ComputerDef):
+    VIEW = None
     SCHEMA = Microtower
 
 
 class ComputerMonitorDef(DeviceDef):
+    VIEW = None
     SCHEMA = ComputerMonitor
 
 
 class ComponentDef(DeviceDef):
+    VIEW = None
     SCHEMA = Component
 
 
 class GraphicCardDef(ComponentDef):
+    VIEW = None
     SCHEMA = GraphicCard
 
 
 class DataStorageDef(ComponentDef):
+    VIEW = None
     SCHEMA = DataStorage
 
 
 class HardDriveDef(DataStorageDef):
+    VIEW = None
     SCHEMA = HardDrive
 
 
 class SolidStateDriveDef(DataStorageDef):
+    VIEW = None
     SCHEMA = SolidStateDrive
 
 
 class MotherboardDef(ComponentDef):
+    VIEW = None
     SCHEMA = Motherboard
 
 
 class NetworkAdapterDef(ComponentDef):
+    VIEW = None
     SCHEMA = NetworkAdapter
 
 
 class RamModuleDef(ComponentDef):
+    VIEW = None
     SCHEMA = RamModule
 
 
 class ProcessorDef(ComponentDef):
+    VIEW = None
     SCHEMA = Processor

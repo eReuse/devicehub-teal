@@ -18,62 +18,77 @@ class EventDef(Resource):
 
 
 class AddDef(EventDef):
+    VIEW = None
     SCHEMA = Add
 
 
 class RemoveDef(EventDef):
+    VIEW = None
     SCHEMA = Remove
 
 
 class EraseBasicDef(EventDef):
+    VIEW = None
     SCHEMA = EraseBasic
 
 
 class EraseSectorsDef(EraseBasicDef):
+    VIEW = None
     SCHEMA = EraseSectors
 
 
 class StepDef(Resource):
+    VIEW = None
     SCHEMA = Step
 
 
 class StepZeroDef(StepDef):
+    VIEW = None
     SCHEMA = StepZero
 
 
 class StepRandomDef(StepDef):
+    VIEW = None
     SCHEMA = StepRandom
 
 
 class RateDef(EventDef):
+    VIEW = None
     SCHEMA = Rate
 
 
 class AggregateRateDef(RateDef):
+    VIEW = None
     SCHEMA = AggregateRate
 
 
 class WorkbenchRateDef(RateDef):
+    VIEW = None
     SCHEMA = WorkbenchRate
 
 
 class PhotoboxUserDef(RateDef):
+    VIEW = None
     SCHEMA = PhotoboxUserRate
 
 
 class PhotoboxSystemRateDef(RateDef):
+    VIEW = None
     SCHEMA = PhotoboxSystemRate
 
 
 class AppRateDef(RateDef):
+    VIEW = None
     SCHEMA = AppRate
 
 
 class InstallDef(EventDef):
+    VIEW = None
     SCHEMA = Install
 
 
 class SnapshotDef(EventDef):
+    VIEW = None
     SCHEMA = Snapshot
     VIEW = SnapshotView
 
@@ -86,36 +101,45 @@ class SnapshotDef(EventDef):
 
 
 class TestDef(EventDef):
+    VIEW = None
     SCHEMA = Test
 
 
 class TestDataStorageDef(TestDef):
+    VIEW = None
     SCHEMA = TestDataStorage
 
 
 class StressTestDef(TestDef):
+    VIEW = None
     SCHEMA = StressTest
 
 
 class BenchmarkDef(EventDef):
+    VIEW = None
     SCHEMA = Benchmark
 
 
 class BenchmarkDataStorageDef(BenchmarkDef):
+    VIEW = None
     SCHEMA = BenchmarkDataStorage
 
 
 class BenchmarkWithRateDef(BenchmarkDef):
+    VIEW = None
     SCHEMA = BenchmarkWithRate
 
 
 class BenchmarkProcessorDef(BenchmarkWithRateDef):
+    VIEW = None
     SCHEMA = BenchmarkProcessor
 
 
 class BenchmarkProcessorSysbenchDef(BenchmarkProcessorDef):
+    VIEW = None
     SCHEMA = BenchmarkProcessorSysbench
 
 
 class BenchmarkRamSysbenchDef(BenchmarkWithRateDef):
+    VIEW = None
     SCHEMA = BenchmarkRamSysbench

@@ -13,6 +13,7 @@ from ereuse_devicehub.resources.event import AddDef, AggregateRateDef, AppRateDe
 from ereuse_devicehub.resources.inventory import InventoryDef
 from ereuse_devicehub.resources.tag import TagDef
 from ereuse_devicehub.resources.user import OrganizationDef, UserDef
+from teal.auth import TokenAuth
 from teal.config import Config
 
 
@@ -20,7 +21,7 @@ class DevicehubConfig(Config):
     RESOURCE_DEFINITIONS = {
         DeviceDef, ComputerDef, DesktopDef, LaptopDef, NetbookDef, ServerDef,
         MicrotowerDef, ComputerMonitorDef, ComponentDef, GraphicCardDef, DataStorageDef,
-    SolidStateDriveDef,
+        SolidStateDriveDef,
         HardDriveDef, MotherboardDef, NetworkAdapterDef, RamModuleDef, ProcessorDef, UserDef,
         OrganizationDef, TagDef, EventDef, AddDef, RemoveDef, EraseBasicDef, EraseSectorsDef,
         StepDef, StepZeroDef, StepRandomDef, RateDef, AggregateRateDef, WorkbenchRateDef,
@@ -43,6 +44,14 @@ class DevicehubConfig(Config):
     
     It is used by default, for example, when creating tags.
     """
+    API_DOC_CONFIG_TITLE = 'Devicehub'
+    API_DOC_CONFIG_VERSION = '0.2'
+    API_DOC_CONFIG_COMPONENTS = {
+        'securitySchemes': {
+            'bearerAuth': TokenAuth.API_DOCS
+        }
+    }
+    API_DOC_CLASS_DISCRIMINATOR = 'type'
 
     def __init__(self, db: str = None) -> None:
         if not self.ORGANIZATION_NAME or not self.ORGANIZATION_TAX_ID:

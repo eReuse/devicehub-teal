@@ -58,13 +58,39 @@ class InventoryView(View):
         sort = Nested(Sorting, missing=[Device.created.desc()])
         page = Integer(validate=Range(min=1), missing=1)
 
-    def find(self, args: dict):
+    def get(self, id):
+        """Inventory view
+        ---
+        description: Supports the inventory view of ``devicehub-client``; returns
+                     all the devices, groups and widgets of this Devicehub instance.
+        responses:
+          200:
+            description: The inventory.
+            schema:
+              type: object
+              properties:
+                devices:
+                  type: array
+                  items:
+                    $ref: '#/definitions/Device'
+                pagination:
+                  type: object
+                  properties:
+                    page:
+                      type: integer
+                      minimum: 0
+                    perPage:
+                      type: integer
+                      minimum: 0
+                    total:
+                      type: integer
+                      minimum: 0
         """
-        Supports the inventory view of ``devicehub-client``; returns
-        all the devices, groups and widgets of this Devicehub instance.
+        # todo .format(yaml.load(schema2parameters(self.FindArgs, default_in='path', name='path')))
+        return super().get(id)
 
-        The result can be filtered, sorted, and paginated.
-        """
+    def find(self, args: dict):
+        """See :meth:`.get` above."""
         devices = Device.query \
             .filter(*args['filter']) \
             .order_by(*args['sort']) \

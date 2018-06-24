@@ -46,8 +46,7 @@ class Event(Thing):
     closed.comment = """
         Whether the author has finished the event.
         After this is set to True, no modifications are allowed.
-        
-        By default are events are closed when performed.
+        By default events are closed when performed.
     """
     error = Column(Boolean, default=False, nullable=False)
     error.comment = """

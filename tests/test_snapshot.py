@@ -313,13 +313,13 @@ def test_erase(user: UserClient):
     snapshot = snapshot_and_check(user, s, ('EraseSectors',), perform_second_snapshot=True)
     storage, *_ = snapshot['components']
     assert storage['type'] == 'SolidStateDrive', 'Components must be ordered by input order'
-    storage, _ = user.get(res=SolidStateDrive, item=storage['id'])  # Let's get storage events too
+    storage, _ = user.get(res=Device, item=storage['id'])  # Let's get storage events too
     # order: creation time descending
     _snapshot1, erasure1, _snapshot2, erasure2 = storage['events']
     assert erasure1['type'] == erasure2['type'] == 'EraseSectors'
     assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
     assert snapshot == user.get(res=Event, item=_snapshot2['id'])[0]
-    erasure, _ = user.get(res=EraseBasic, item=erasure1['id'])
+    erasure, _ = user.get(res=Event, item=erasure1['id'])
     assert len(erasure['steps']) == 2
     assert erasure['steps'][0]['startTime'] == '2018-06-01T08:15:00+00:00'
     assert erasure['steps'][0]['endTime'] == '2018-06-01T09:16:00+00:00'

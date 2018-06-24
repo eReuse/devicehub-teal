@@ -3,7 +3,6 @@ from marshmallow import ValidationError, validates_schema
 from marshmallow.fields import Boolean, DateTime, Float, Integer, List, Nested, String, TimeDelta, \
     UUID
 from marshmallow.validate import Length, Range
-from marshmallow_enum import EnumField
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device.schemas import Component, Device
@@ -13,21 +12,23 @@ from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user.schemas import User
-from teal.marshmallow import Version
+from teal.marshmallow import EnumField, Version
 from teal.resource import Schema
 
 
 class Event(Thing):
     id = UUID(dump_only=True)
-    name = String(default='', validate=Length(STR_BIG_SIZE), description=m.Event.name.comment)
-    date = DateTime('iso', description=m.Event.date.comment)
-    error = Boolean(default=False, description=m.Event.error.comment)
-    incidence = Boolean(default=False, description=m.Event.incidence.comment)
+    name = String(default='',
+                  validate=Length(STR_BIG_SIZE),
+                  description=m.Event.name.comment.strip())
+    date = DateTime('iso', description=m.Event.date.comment.strip())
+    error = Boolean(default=False, description=m.Event.error.comment.strip())
+    incidence = Boolean(default=False, description=m.Event.incidence.comment.strip())
     snapshot = NestedOn('Snapshot', dump_only=True)
     components = NestedOn(Component, dump_only=True, many=True)
-    description = String(default='', description=m.Event.description.comment)
+    description = String(default='', description=m.Event.description.comment.strip())
     author = NestedOn(User, dump_only=True, exclude=('token',))
-    closed = Boolean(missing=True, description=m.Event.closed.comment)
+    closed = Boolean(missing=True, description=m.Event.closed.comment.strip())
 
 
 class EventWithOneDevice(Event):

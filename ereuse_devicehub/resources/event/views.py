@@ -8,8 +8,7 @@ from sqlalchemy.util import OrderedSet
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import RatingSoftware, SnapshotSoftware
-from ereuse_devicehub.resources.event.models import Event, ManualRate, Snapshot, TestDataStorage, \
-    WorkbenchRate
+from ereuse_devicehub.resources.event.models import Event, ManualRate, Snapshot, WorkbenchRate
 from teal.resource import View
 
 
@@ -85,16 +84,3 @@ class SnapshotView(View):
         ret = self.schema.jsonify(snapshot)  # transform it back
         ret.status_code = 201
         return ret
-
-
-class TestHardDriveView(View):
-    def post(self):
-        t = request.get_json()  # type: dict
-        # noinspection PyArgumentList
-        test = TestDataStorage(snapshot_id=t.pop('snapshot'), device_id=t.pop('device'), **t)
-        return test
-
-
-class StressTestView(View):
-    def post(self):
-        t = request.get_json()  # type: dict
