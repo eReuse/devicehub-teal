@@ -5,7 +5,7 @@ with open('README.md') as f:
 
 setup(
     name='ereuse-devicehub',
-    version='0.2.0a7',
+    version='0.2.0a8',
     packages=find_packages(),
     url='https://github.com/ereuse/devicehub-teal',
     license='Affero',
@@ -16,7 +16,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=[
-        'teal>=0.2.0a4',
+        'teal>=0.2.0a5',
         'marshmallow_enum',
         'ereuse-utils[Naming]>=0.3.0b2',
         'psycopg2-binary',
