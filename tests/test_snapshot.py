@@ -9,10 +9,11 @@ from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device.exceptions import NeedsId
-from ereuse_devicehub.resources.device.models import Device, Microtower, SolidStateDrive
+from ereuse_devicehub.resources.device.models import Computer, Device
 from ereuse_devicehub.resources.device.sync import MismatchBetweenTagsAndHid
-from ereuse_devicehub.resources.enums import Bios, RatingSoftware, SnapshotSoftware
-from ereuse_devicehub.resources.event.models import EraseBasic, Event, Snapshot, SnapshotRequest, \
+from ereuse_devicehub.resources.enums import Bios, RatingSoftware, SnapshotSoftware, \
+    ComputerChassis
+from ereuse_devicehub.resources.event.models import Event, Snapshot, SnapshotRequest, \
     WorkbenchRate
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
@@ -87,7 +88,7 @@ def test_snapshot_model():
     Tests creating a Snapshot with its relationships ensuring correct
     DB mapping.
     """
-    device = Microtower(serial_number='a1')
+    device = Computer(serial_number='a1', chassis=ComputerChassis.Tower)
     # noinspection PyArgumentList
     snapshot = Snapshot(uuid=uuid4(),
                         date=datetime.now(),
@@ -107,7 +108,7 @@ def test_snapshot_model():
                                       device=device))
     db.session.add(snapshot)
     db.session.commit()
-    device = Microtower.query.one()  # type: Microtower
+    device = Computer.query.one()  # type: Computer
     e1, e2 = device.events
     assert isinstance(e1, Snapshot), 'Creation order must be preserved: 1. snapshot, 2. WR'
     assert isinstance(e2, WorkbenchRate)
@@ -116,7 +117,7 @@ def test_snapshot_model():
     assert Snapshot.query.one_or_none() is None
     assert SnapshotRequest.query.one_or_none() is None
     assert User.query.one() is not None
-    assert Microtower.query.one_or_none() is None
+    assert Computer.query.one_or_none() is None
     assert Device.query.one_or_none() is None
 
 

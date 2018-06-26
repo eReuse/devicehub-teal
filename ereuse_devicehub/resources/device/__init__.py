@@ -1,6 +1,7 @@
-from ereuse_devicehub.resources.device.schemas import Component, Computer, ComputerMonitor, \
-    DataStorage, Desktop, Device, GraphicCard, HardDrive, Laptop, Microtower, Motherboard, Netbook, \
-    NetworkAdapter, Processor, RamModule, Server, SolidStateDrive
+from ereuse_devicehub.resources.device.schemas import Cellphone, Component, Computer, \
+    ComputerMonitor, DataStorage, Desktop, Device, Display, GraphicCard, HardDrive, Laptop, Mobile, \
+    Monitor, Motherboard, NetworkAdapter, Processor, RamModule, Server, Smartphone, \
+    SolidStateDrive, Tablet, TelevisionSet
 from ereuse_devicehub.resources.device.views import DeviceView
 from teal.resource import Converters, Resource
 
@@ -27,24 +28,44 @@ class LaptopDef(ComputerDef):
     SCHEMA = Laptop
 
 
-class NetbookDef(ComputerDef):
-    VIEW = None
-    SCHEMA = Netbook
-
-
 class ServerDef(ComputerDef):
     VIEW = None
     SCHEMA = Server
 
 
-class MicrotowerDef(ComputerDef):
+class MonitorDef(DeviceDef):
     VIEW = None
-    SCHEMA = Microtower
+    SCHEMA = Monitor
 
 
-class ComputerMonitorDef(DeviceDef):
+class ComputerMonitorDef(MonitorDef):
     VIEW = None
     SCHEMA = ComputerMonitor
+
+
+class TelevisionSetDef(MonitorDef):
+    VIEW = None
+    SCHEMA = TelevisionSet
+
+
+class MobileDef(DeviceDef):
+    VIEW = None
+    SCHEMA = Mobile
+
+
+class SmartphoneDef(MobileDef):
+    VIEW = None
+    SCHEMA = Smartphone
+
+
+class TabletDef(MobileDef):
+    VIEW = None
+    SCHEMA = Tablet
+
+
+class CellphoneDef(MobileDef):
+    VIEW = None
+    SCHEMA = Cellphone
 
 
 class ComponentDef(DeviceDef):
@@ -90,3 +111,8 @@ class RamModuleDef(ComponentDef):
 class ProcessorDef(ComponentDef):
     VIEW = None
     SCHEMA = Processor
+
+
+class DisplayDef(ComponentDef):
+    VIEW = None
+    SCHEMA = Display

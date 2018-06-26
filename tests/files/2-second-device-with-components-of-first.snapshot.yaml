@@ -1,19 +1,20 @@
 device:
-  manufacturer: 'p2m'
-  serialNumber: 'p2s'
-  model: 'p2'
-  type: 'Microtower'
+  manufacturer: p2m
+  serialNumber: p2s
+  model: p2
+  type: Computer
+  chassis: Microtower
 components:
-  - manufacturer: 'p2c1m'
-    serialNumber: 'p2c1s'
-    type: 'Motherboard'
-  - manufacturer: 'p1c2m'
-    serialNumber: 'p1c2s'
-    model: 'p1c2'
+  - manufacturer: p2c1m
+    serialNumber: p2c1s
+    type: Motherboard
+  - manufacturer: p1c2m
+    serialNumber: p1c2s
+    model: p1c2
     speed: 1.23
     cores: 2
-    type: 'Processor'
+    type: Processor
 elapsed: 25
-software: 'Workbench'
-uuid: 'f2e02261-87a1-4a50-b9b7-92c0e476e5f2'
+software: Workbench
+uuid: f2e02261-87a1-4a50-b9b7-92c0e476e5f2
 version: '11.0'

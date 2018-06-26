@@ -3,7 +3,7 @@ from typing import Dict, List, Set
 from colour import Color
 from sqlalchemy import Column, Integer
 
-from ereuse_devicehub.resources.enums import ComputerMonitorTechnologies, DataStorageInterface, \
+from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
     RamFormat, RamInterface
 from ereuse_devicehub.resources.event.models import Event, EventWithMultipleDevices, \
     EventWithOneDevice
@@ -46,16 +46,39 @@ class Device(Thing):
         self.tags = ...  # type: Set[Tag]
 
 
-class Computer(Device):
+class DisplayMixin:
+    technology = ...  # type: Column
+    size = ...  # type: Column
+    resolution_width = ...  # type: Column
+    resolution_height = ...  # type: Column
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.technology = ...  # type: DisplayTech
+        self.size = ...  # type: Integer
+        self.resolution_width = ...  # type: int
+        self.resolution_height = ...  # type: int
+
+
+class Computer(DisplayMixin, Device):
+    components = ...  # type: Column
+    chassis = ...  # type: Column
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.components = ...  # type: Set[Component]
         self.events_parent = ...  # type: Set[Event]
 
-
 class Desktop(Computer):
     pass
 
+
+class ComputerMonitor(Monitor):
+    pass
+
+
+class TelevisionSet(Monitor):
+    pass
 
 class Laptop(Computer):
     pass

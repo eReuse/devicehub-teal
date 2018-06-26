@@ -1,10 +1,11 @@
 from distutils.version import StrictVersion
 from typing import Set
 
-from ereuse_devicehub.resources.device import ComponentDef, ComputerDef, ComputerMonitorDef, \
-    DataStorageDef, DesktopDef, DeviceDef, GraphicCardDef, HardDriveDef, LaptopDef, MicrotowerDef, \
-    MotherboardDef, NetbookDef, NetworkAdapterDef, ProcessorDef, RamModuleDef, ServerDef, \
-    SolidStateDriveDef
+from ereuse_devicehub.resources.device import CellphoneDef, ComponentDef, ComputerDef, \
+    ComputerMonitorDef, DataStorageDef, DesktopDef, DeviceDef, DisplayDef, GraphicCardDef, \
+    HardDriveDef, LaptopDef, MobileDef, MonitorDef, MotherboardDef, NetworkAdapterDef, \
+    ProcessorDef, RamModuleDef, ServerDef, SmartphoneDef, SolidStateDriveDef, TabletDef, \
+    TelevisionSetDef
 from ereuse_devicehub.resources.event import AddDef, AggregateRateDef, AppRateDef, \
     BenchmarkDataStorageDef, BenchmarkDef, BenchmarkProcessorDef, BenchmarkProcessorSysbenchDef, \
     BenchmarkRamSysbenchDef, BenchmarkWithRateDef, EraseBasicDef, EraseSectorsDef, EventDef, \
@@ -19,9 +20,9 @@ from teal.config import Config
 
 class DevicehubConfig(Config):
     RESOURCE_DEFINITIONS = {
-        DeviceDef, ComputerDef, DesktopDef, LaptopDef, NetbookDef, ServerDef,
-        MicrotowerDef, ComputerMonitorDef, ComponentDef, GraphicCardDef, DataStorageDef,
-        SolidStateDriveDef,
+        DeviceDef, ComputerDef, DesktopDef, LaptopDef, ServerDef, MonitorDef, TelevisionSetDef,
+        ComputerMonitorDef, ComponentDef, GraphicCardDef, DataStorageDef,
+        SolidStateDriveDef, MobileDef, DisplayDef, SmartphoneDef, TabletDef, CellphoneDef,
         HardDriveDef, MotherboardDef, NetworkAdapterDef, RamModuleDef, ProcessorDef, UserDef,
         OrganizationDef, TagDef, EventDef, AddDef, RemoveDef, EraseBasicDef, EraseSectorsDef,
         StepDef, StepZeroDef, StepRandomDef, RateDef, AggregateRateDef, WorkbenchRateDef,

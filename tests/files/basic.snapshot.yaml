@@ -1,25 +1,26 @@
-type: 'Snapshot'
-uuid: 'f5efd26e-8754-46bc-87bf-fbccc39d60d9'
+type: Snapshot
+uuid: f5efd26e-8754-46bc-87bf-fbccc39d60d9
 version: '11.0'
-software: 'Workbench'
+software: Workbench
 elapsed: 4
 device:
-  type: 'Microtower'
-  serialNumber: 'd1s'
-  model: 'd1ml'
-  manufacturer: 'd1mr'
+  type: Computer
+  chassis: Microtower
+  serialNumber: d1s
+  model: d1ml
+  manufacturer: d1mr
   events:
-    - type: 'WorkbenchRate'
-      appearanceRange: 'A'
-      functionalityRange: 'B'
+    - type: WorkbenchRate
+      appearanceRange: A
+      functionalityRange: B
       labelling: True
-      bios: 'B'
+      bios: B
 components:
-  - type: 'GraphicCard'
-    serialNumber: 'gc1s'
-    model: 'gc1ml'
-    manufacturer: 'gc1mr'
-  - type: 'RamModule'
-    serialNumber: 'rm1s'
-    model: 'rm1ml'
-    manufacturer: 'rm1mr'
+  - type: GraphicCard
+    serialNumber: gc1s
+    model: gc1ml
+    manufacturer: gc1mr
+  - type: RamModule
+    serialNumber: rm1s
+    model: rm1ml
+    manufacturer: rm1mr

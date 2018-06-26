@@ -11,7 +11,8 @@ version: '11.0'
 software: Workbench
 elapsed: 500
 device:
-  type: Microtower
+  type: Desktop
+  chassis: Tower
   serialNumber: d1s
   model: d1ml
   manufacturer: d1mr

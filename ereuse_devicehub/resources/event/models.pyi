@@ -31,6 +31,7 @@ class Event(Thing):
     components = ...  # type: relationship
     parent_id = ...  # type: Column
     parent = ...  # type: relationship
+    closed = ... # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -62,6 +63,14 @@ class EventWithMultipleDevices(Event):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.devices = ...  # type: Set[Device]
+
+
+class Add(EventWithOneDevice):
+    pass
+
+
+class Remove(EventWithOneDevice):
+    pass
 
 
 class Step(Model):

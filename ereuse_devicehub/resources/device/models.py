@@ -141,7 +141,7 @@ class ComputerMonitor(Device):
     size.comment = """
         The size of the monitor in inches.
     """
-    technology = Column(DBEnum(ComputerMonitorTechnologies))
+    technology = Column(DBEnum(DisplayTech))
     technology.comment = """
         The technology the monitor uses to display the image.
     """
@@ -224,8 +224,15 @@ class Motherboard(JoinedComponentTableMixin, Component):
     pcmcia = Column(SmallInteger, check_range('pcmcia'))
 
 
-class NetworkAdapter(JoinedComponentTableMixin, Component):
+class NetworkMixin:
     speed = Column(SmallInteger, check_range('speed', min=10, max=10000))
+    speed.comment = """
+        The maximum speed this network adapter can handle, in mbps.
+    """
+
+
+class NetworkAdapter(JoinedComponentTableMixin, NetworkMixin, Component):
+    pass
 
 
 class Processor(JoinedComponentTableMixin, Component):

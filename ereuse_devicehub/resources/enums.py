@@ -152,7 +152,7 @@ class DataStorageInterface(Enum):
 
 
 @unique
-class ComputerMonitorTechnologies(Enum):
+class DisplayTech(Enum):
     CRT = 'Cathode ray tube (CRT)'
     TFT = 'Thin-film-transistor liquid-crystal (TFT)'
     LED = 'LED-backlit (LED)'

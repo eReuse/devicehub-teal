@@ -6,6 +6,7 @@ from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device.models import Computer
+from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.tag.view import CannotCreateETag, TagNotLinked
 from ereuse_devicehub.resources.user import Organization
@@ -86,7 +87,7 @@ def test_tag_get_device_from_tag_endpoint(app: Devicehub, user: UserClient):
     with app.app_context():
         # Create a pc with a tag
         tag = Tag(id='foo-bar')
-        pc = Computer(serial_number='sn1')
+        pc = Computer(serial_number='sn1', chassis=ComputerChassis.Tower)
         pc.tags.add(tag)
         db.session.add(pc)
         db.session.commit()

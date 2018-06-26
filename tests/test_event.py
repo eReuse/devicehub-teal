@@ -5,7 +5,7 @@ from flask import g
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Device, GraphicCard, HardDrive, Microtower, \
+from ereuse_devicehub.resources.device.models import Computer, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
 from ereuse_devicehub.resources.enums import TestHardDriveLength
 from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, EraseBasic, EraseSectors, \
@@ -130,7 +130,7 @@ def test_install():
 
 @pytest.mark.usefixtures('auth_app_context')
 def test_update_components_event_one():
-    computer = Microtower(serial_number='sn1', model='ml1', manufacturer='mr1')
+    computer = Computer(serial_number='sn1', model='ml1', manufacturer='mr1')
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 
@@ -155,7 +155,7 @@ def test_update_components_event_one():
 
 @pytest.mark.usefixtures('auth_app_context')
 def test_update_components_event_multiple():
-    computer = Microtower(serial_number='sn1', model='ml1', manufacturer='mr1')
+    computer = Computer(serial_number='sn1', model='ml1', manufacturer='mr1')
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 
@@ -181,7 +181,7 @@ def test_update_components_event_multiple():
 
 @pytest.mark.usefixtures('auth_app_context')
 def test_update_parent():
-    computer = Microtower(serial_number='sn1', model='ml1', manufacturer='mr1')
+    computer = Computer(serial_number='sn1', model='ml1', manufacturer='mr1')
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 

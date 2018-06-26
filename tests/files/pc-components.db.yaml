@@ -1,14 +1,15 @@
 device:
-  type: 'Microtower'
-  serial_number: 'd1s'
-  model: 'd1ml'
-  manufacturer: 'd1mr'
+  type: Desktop
+  chassis: Microtower
+  serial_number: d1s
+  model: d1ml
+  manufacturer: d1mr
 components:
-  - type: 'GraphicCard'
-    serial_number: 'gc1s'
-    model: 'gc1ml'
-    manufacturer: 'gc1mr'
-  - type: 'RamModule'
-    serial_number: 'rm1s'
-    model: 'rm1ml'
-    manufacturer: 'rm1mr'
+  - type: GraphicCard
+    serial_number: gc1s
+    model: gc1ml
+    manufacturer: gc1mr
+  - type: RamModule
+    serial_number: rm1s
+    model: rm1ml
+    manufacturer: rm1mr
