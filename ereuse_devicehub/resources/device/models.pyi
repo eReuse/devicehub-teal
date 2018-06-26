@@ -68,8 +68,22 @@ class Computer(DisplayMixin, Device):
         super().__init__(**kwargs)
         self.components = ...  # type: Set[Component]
         self.events_parent = ...  # type: Set[Event]
+        self.chassis = ...  # type: ComputerChassis
+
 
 class Desktop(Computer):
+    pass
+
+
+class Laptop(Computer):
+    pass
+
+
+class Server(Computer):
+    pass
+
+
+class Monitor(DisplayMixin, Device):
     pass
 
 
@@ -80,34 +94,27 @@ class ComputerMonitor(Monitor):
 class TelevisionSet(Monitor):
     pass
 
-class Laptop(Computer):
-    pass
 
-
-class Netbook(Computer):
-    pass
-
-
-class Server(Computer):
-    pass
-
-
-class Microtower(Computer):
-    pass
-
-
-class ComputerMonitor(Device):
-    technology = ...  # type: Column
-    size = ...  # type: Column
-    resolution_width = ...  # type: Column
-    resolution_height = ...  # type: Column
+class Mobile(Device):
+    imei = ...  # type: Column
+    meid = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        technology = ...  # type: ComputerMonitorTechnologies
-        size = ...  # type: Integer
-        resolution_width = ...  # type: int
-        resolution_height = ...  # type: int
+        self.imei = ...  # type: int
+        self.meid = ...  # type: str
+
+
+class Smartphone(Mobile):
+    pass
+
+
+class Tablet(Mobile):
+    pass
+
+
+class Cellphone(Mobile):
+    pass
 
 
 class Component(Device):
@@ -195,3 +202,7 @@ class RamModule(Component):
         self.speed = ...  # type: float
         self.interface = ...  # type: RamInterface
         self.format = ...  # type: RamFormat
+
+
+class Display(DisplayMixin, Component):
+    pass

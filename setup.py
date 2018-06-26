@@ -26,7 +26,8 @@ setup(
         'tqdm',
         'click-spinner',
         'sqlalchemy-utils[password, color, babel]',
-        'PyYAML'
+        'PyYAML',
+        'python-stdnum'
     ],
     tests_requires=[
         'pytest',

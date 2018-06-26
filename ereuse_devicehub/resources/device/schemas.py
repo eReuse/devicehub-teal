@@ -157,10 +157,8 @@ class Motherboard(Component):
     pcmcia = Integer(validate=Range(0, 20))
 
 
-class NetworkAdapter(Component):
-    speed = Integer(validate=Range(min=10, max=10000),
-                    unit=UnitCodes.mbps,
-                    description='The maximum speed this network adapter can handle, in mbps.')
+class NetworkAdapter(NetworkMixin, Component):
+    pass
 
 
 class Processor(Component):
@@ -174,3 +172,7 @@ class RamModule(Component):
     speed = Float(validate=Range(min=100, max=10000), unit=UnitCodes.mhz)
     interface = EnumField(RamInterface)
     format = EnumField(RamFormat)
+
+
+class Display(DisplayMixin, Component):
+    pass

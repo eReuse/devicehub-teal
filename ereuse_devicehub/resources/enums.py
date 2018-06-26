@@ -160,3 +160,21 @@ class DisplayTech(Enum):
     LCD = 'Liquid-crystal display (any of TFT, LED, Blue Phase, IPS)'
     OLED = 'Organic light-emitting diode (OLED)'
     AMOLED = 'Organic light-emitting diode (AMOLED)'
+
+
+@unique
+class ComputerChassis(Enum):
+    """The chassis of a computer."""
+    Tower = 'Tower'
+    Docking = 'Docking'
+    AllInOne = 'AllInOne'
+    Microtower = 'Microtower'
+    PizzaBox = 'PizzaBox'
+    Lunchbox = 'Lunchbox'
+    Stick = 'Stick'
+    Netbook = 'Netbook'
+    Handheld = 'Handheld'
+    Laptop = 'Laptop'
+    Convertible = 'Convertible'
+    Detachable = 'Detachable'
+    Tablet = 'Tablet'

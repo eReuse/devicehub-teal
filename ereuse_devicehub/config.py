@@ -35,8 +35,8 @@ class DevicehubConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/devicehub'  # type: str
     MIN_WORKBENCH = StrictVersion('11.0')  # type: StrictVersion
     """
-    The minimum algorithm_version of eReuse.org Workbench that this Devicehub
-    accepts. We recommend not changing this value.
+    the minimum algorithm_version of ereuse.org workbench that this devicehub
+    accepts. we recommend not changing this value.
     """
     ORGANIZATION_NAME = None  # type: str
     ORGANIZATION_TAX_ID = None  # type: str

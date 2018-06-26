@@ -6,15 +6,17 @@ from typing import Dict, Set
 from sqlalchemy import BigInteger, Column, Enum as DBEnum, Float, ForeignKey, Integer, Sequence, \
     SmallInteger, Unicode, inspect
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import ColumnProperty, backref, relationship
+from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
+from stdnum import imei, meid
 
-from ereuse_devicehub.resources.enums import ComputerMonitorTechnologies, DataStorageInterface, \
+from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
     RamFormat, RamInterface
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
 from ereuse_utils.naming import Naming
 from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, check_range
+from teal.marshmallow import ValidationError
 
 
 class Device(Thing):
@@ -107,36 +109,7 @@ class Device(Thing):
         return '<{0.t} {0.id!r} model={0.model!r} S/N={0.serial_number!r}>'.format(self)
 
 
-class Computer(Device):
-    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
-
-    @property
-    def events(self) -> list:
-        return sorted(chain(super().events, self.events_parent), key=attrgetter('created'))
-
-
-class Desktop(Computer):
-    pass
-
-
-class Laptop(Computer):
-    pass
-
-
-class Netbook(Computer):
-    pass
-
-
-class Server(Computer):
-    pass
-
-
-class Microtower(Computer):
-    pass
-
-
-class ComputerMonitor(Device):
-    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
+class DisplayMixin:
     size = Column(Float(decimal_return_scale=2), check_range('size', 2, 150))
     size.comment = """
         The size of the monitor in inches.
@@ -155,6 +128,74 @@ class ComputerMonitor(Device):
         The maximum vertical resolution the monitor can natively support
         in pixels.
     """
+
+
+class Computer(Device):
+    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
+    chassis = Column(DBEnum(ComputerChassis), nullable=False)
+
+    @property
+    def events(self) -> list:
+        return sorted(chain(super().events, self.events_parent), key=attrgetter('created'))
+
+
+class Desktop(Computer):
+    pass
+
+
+class Laptop(Computer):
+    pass
+
+
+class Server(Computer):
+    pass
+
+
+class Monitor(DisplayMixin, Device):
+    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
+
+
+class ComputerMonitor(Monitor):
+    pass
+
+
+class TelevisionSet(Monitor):
+    pass
+
+
+class Mobile(Device):
+    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
+    imei = Column(BigInteger)
+    imei.comment = """
+        The International Mobile Equipment Identity of the smartphone
+        as an integer.
+    """
+    meid = Column(Unicode)
+    meid.comment = """
+        The Mobile Equipment Identifier as a hexadecimal string.
+    """
+
+    @validates('imei')
+    def validate_imei(self, _, value: int):
+        if not imei.is_valid(value):
+            raise ValidationError('{} is not a valid imei.'.format(value))
+
+    @validates('meid')
+    def validate_meid(self, _, value: str):
+        if not meid.is_valid(value):
+            raise ValidationError('{} is not a valid meid.'.format(value))
+
+
+class Smartphone(Mobile):
+    pass
+
+
+class Tablet(Mobile):
+    pass
+
+
+class Cellphone(Mobile):
+    pass
 
 
 class Component(Device):
@@ -201,10 +242,16 @@ class JoinedComponentTableMixin:
 
 class GraphicCard(JoinedComponentTableMixin, Component):
     memory = Column(SmallInteger, check_range('memory', min=1, max=10000))
+    memory.comment = """
+        The amount of memory of the Graphic Card in MB.
+    """
 
 
 class DataStorage(JoinedComponentTableMixin, Component):
     size = Column(Integer, check_range('size', min=1, max=10 ** 8))
+    size.comment = """
+        The size of the data-storage in MB.
+    """
     interface = Column(DBEnum(DataStorageInterface))
 
 
@@ -218,6 +265,9 @@ class SolidStateDrive(DataStorage):
 
 class Motherboard(JoinedComponentTableMixin, Component):
     slots = Column(SmallInteger, check_range('slots'))
+    slots.comment = """
+        PCI slots the motherboard has.
+    """
     usb = Column(SmallInteger, check_range('usb'))
     firewire = Column(SmallInteger, check_range('firewire'))
     serial = Column(SmallInteger, check_range('serial'))
@@ -246,3 +296,13 @@ class RamModule(JoinedComponentTableMixin, Component):
     speed = Column(Float, check_range('speed', min=100, max=10000))
     interface = Column(DBEnum(RamInterface))
     format = Column(DBEnum(RamFormat))
+
+
+class Display(JoinedComponentTableMixin, DisplayMixin, Component):
+    """
+    The display of a device. This is used in all devices that have
+    displays but that it is not their main treat, like laptops,
+    mobiles, smart-watches, and so on; excluding then ComputerMonitor
+    and Television Set.
+    """
+    pass
