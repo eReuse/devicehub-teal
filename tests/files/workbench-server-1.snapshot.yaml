@@ -63,7 +63,6 @@ components:
         status: Completed without error
         length: Short
         lifetime: 99
-        passedLifetime: 99
         assessment: True
         powerCycleCount: 11
         reallocatedSectorCount: 2

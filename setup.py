@@ -5,7 +5,7 @@ with open('README.md') as f:
 
 setup(
     name='ereuse-devicehub',
-    version='0.2.0a8',
+    version='0.2.0a9',
     packages=find_packages(),
     url='https://github.com/ereuse/devicehub-teal',
     license='Affero',

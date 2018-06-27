@@ -178,3 +178,4 @@ class ComputerChassis(Enum):
     Convertible = 'Convertible'
     Detachable = 'Detachable'
     Tablet = 'Tablet'
+    Virtual = 'Virtual: A device with no chassis, probably non-physical.'

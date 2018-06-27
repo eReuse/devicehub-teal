@@ -414,7 +414,6 @@ class TestDataStorage(Test):
     status = Column(Unicode(STR_SIZE), nullable=False)
     lifetime = Column(Interval, nullable=False)
     first_error = Column(SmallInteger, nullable=False, default=0)
-    passed_lifetime = Column(Interval)
     assessment = Column(Boolean)
     reallocated_sector_count = Column(SmallInteger)
     power_cycle_count = Column(SmallInteger)

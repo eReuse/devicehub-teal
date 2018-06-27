@@ -245,7 +245,6 @@ class TestDataStorage(Test):
     status = String(validate=Length(max=STR_SIZE), required=True)
     lifetime = TimeDelta(precision=TimeDelta.DAYS, required=True)
     first_error = Integer(missing=0, data_key='firstError')
-    passed_lifetime = TimeDelta(precision=TimeDelta.DAYS, data_key='passedLifetime')
     assessment = Boolean()
     reallocated_sector_count = Integer(data_key='reallocatedSectorCount')
     power_cycle_count = Integer(data_key='powerCycleCount')
