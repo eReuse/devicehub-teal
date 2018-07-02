@@ -1,15 +1,14 @@
 from datetime import datetime, timedelta
 
 import pytest
-from flask import g
-from sqlalchemy.util import OrderedSet
-
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Computer, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
 from ereuse_devicehub.resources.enums import TestHardDriveLength
 from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, EraseBasic, EraseSectors, \
-    EventWithOneDevice, Install, Ready, StepZero, StressTest, TestDataStorage
+    EventWithOneDevice, Install, Ready, StepRandom, StepZero, StressTest, TestDataStorage
+from flask import g
+from sqlalchemy.util import OrderedSet
 from tests.conftest import create_user
 
 
@@ -34,10 +33,9 @@ def test_author():
 def test_erase_basic():
     erasure = EraseBasic(
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
-        clean_with_zeros=True,
+        zeros=True,
         start_time=datetime.now(),
         end_time=datetime.now(),
-        secure_random_steps=25,
         error=False
     )
     db.session.add(erasure)
@@ -59,7 +57,6 @@ def test_validate_device_data_storage():
             clean_with_zeros=True,
             start_time=datetime.now(),
             end_time=datetime.now(),
-            secure_random_steps=25,
             error=False
         )
 
@@ -68,38 +65,28 @@ def test_validate_device_data_storage():
 def test_erase_sectors_steps():
     erasure = EraseSectors(
         device=SolidStateDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
-        clean_with_zeros=True,
+        zeros=True,
         start_time=datetime.now(),
         end_time=datetime.now(),
-        secure_random_steps=25,
         error=False,
         steps=[
             StepZero(error=False,
                      start_time=datetime.now(),
-                     end_time=datetime.now(),
-                     secure_random_steps=1,
-                     clean_with_zeros=True),
+                     end_time=datetime.now()),
+            StepRandom(error=False,
+                       start_time=datetime.now(),
+                       end_time=datetime.now()),
             StepZero(error=False,
                      start_time=datetime.now(),
-                     end_time=datetime.now(),
-                     secure_random_steps=2,
-                     clean_with_zeros=True),
-            StepZero(error=False,
-                     start_time=datetime.now(),
-                     end_time=datetime.now(),
-                     secure_random_steps=3,
-                     clean_with_zeros=True)
+                     end_time=datetime.now())
         ]
     )
     db.session.add(erasure)
     db.session.commit()
     db_erasure = EraseSectors.query.one()
     # Steps are in order
-    assert db_erasure.steps[0].secure_random_steps == 1
     assert db_erasure.steps[0].num == 0
-    assert db_erasure.steps[1].secure_random_steps == 2
     assert db_erasure.steps[1].num == 1
-    assert db_erasure.steps[2].secure_random_steps == 3
     assert db_erasure.steps[2].num == 2
 
 

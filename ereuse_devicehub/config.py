@@ -5,7 +5,7 @@ from ereuse_devicehub.resources.device import CellphoneDef, ComponentDef, Comput
     ComputerMonitorDef, DataStorageDef, DesktopDef, DeviceDef, DisplayDef, GraphicCardDef, \
     HardDriveDef, LaptopDef, MobileDef, MonitorDef, MotherboardDef, NetworkAdapterDef, \
     ProcessorDef, RamModuleDef, ServerDef, SmartphoneDef, SolidStateDriveDef, TabletDef, \
-    TelevisionSetDef
+    TelevisionSetDef, SoundCardDef
 from ereuse_devicehub.resources.event import AddDef, AggregateRateDef, AppRateDef, \
     BenchmarkDataStorageDef, BenchmarkDef, BenchmarkProcessorDef, BenchmarkProcessorSysbenchDef, \
     BenchmarkRamSysbenchDef, BenchmarkWithRateDef, EraseBasicDef, EraseSectorsDef, EventDef, \
@@ -23,7 +23,8 @@ class DevicehubConfig(Config):
         DeviceDef, ComputerDef, DesktopDef, LaptopDef, ServerDef, MonitorDef, TelevisionSetDef,
         ComputerMonitorDef, ComponentDef, GraphicCardDef, DataStorageDef,
         SolidStateDriveDef, MobileDef, DisplayDef, SmartphoneDef, TabletDef, CellphoneDef,
-        HardDriveDef, MotherboardDef, NetworkAdapterDef, RamModuleDef, ProcessorDef, UserDef,
+        HardDriveDef, MotherboardDef, NetworkAdapterDef, RamModuleDef, ProcessorDef, SoundCardDef,
+        UserDef,
         OrganizationDef, TagDef, EventDef, AddDef, RemoveDef, EraseBasicDef, EraseSectorsDef,
         StepDef, StepZeroDef, StepRandomDef, RateDef, AggregateRateDef, WorkbenchRateDef,
         PhotoboxUserDef, PhotoboxSystemRateDef, InstallDef, SnapshotDef, TestDef,
@@ -33,7 +34,7 @@ class DevicehubConfig(Config):
     }
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/devicehub'  # type: str
-    MIN_WORKBENCH = StrictVersion('11.0')  # type: StrictVersion
+    MIN_WORKBENCH = StrictVersion('11.0a1')  # type: StrictVersion
     """
     the minimum algorithm_version of ereuse.org workbench that this devicehub
     accepts. we recommend not changing this value.

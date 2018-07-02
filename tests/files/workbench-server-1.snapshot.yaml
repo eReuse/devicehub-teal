@@ -58,7 +58,6 @@ components:
         elapsed: 21
       - type: TestDataStorage
         elapsed: 233
-        firstError: 0
         error: False
         status: Completed without error
         length: Short

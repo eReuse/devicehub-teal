@@ -116,9 +116,11 @@ class ImageMimeTypes(Enum):
 @unique
 class SnapshotExpectedEvents(Enum):
     """Events that Workbench can perform when processing a device."""
+    Benchmark = 'Benchmark'
     TestDataStorage = 'TestDataStorage'
     StressTest = 'StressTest'
     EraseSectors = 'EraseSectors'
+    SmartTest = 'SmartTest'
     Install = 'Install'
 
 

@@ -76,3 +76,16 @@ can, for example, create a dummy database of devices with ``flask dummy``
 or create users with ``flask create-user``. See all the
 available commands by just executing ``flask`` and get more information
 per command by executing ``flask command --help``.
+
+## Understand the software
+See the [docs](docs/index.rst) to understand how the software works and 
+the design principles.
+
+### Use the API
+Checkout [Swagger](https://app.swaggerhub.com/apis/ereuse/devicehub/0.2)
+to see the schemas and endpoints (we are working  in making it 
+interactive).
+
+Use postman as an example of how to use the API.
+
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://documenter.getpostman.com/view/254251/RWEnmFPs)

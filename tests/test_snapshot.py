@@ -330,8 +330,6 @@ def test_erase(user: UserClient):
     for step in erasure['steps']:
         assert step['type'] == 'StepZero'
         assert step['error'] is False
-        assert step['secureRandomSteps'] == 1
-        assert step['cleanWithZeros'] is True
         assert 'num' not in step
 
 

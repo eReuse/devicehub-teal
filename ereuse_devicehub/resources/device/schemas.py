@@ -1,15 +1,14 @@
+from ereuse_devicehub.marshmallow import NestedOn
+from ereuse_devicehub.resources.device import models as m
+from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
+    RamFormat, RamInterface
+from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
+from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 from marshmallow import post_load, pre_load
 from marshmallow.fields import Float, Integer, Str
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
-
-from ereuse_devicehub.marshmallow import NestedOn
-from ereuse_devicehub.resources.device import models as m
-from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech, \
-    RamFormat, RamInterface
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
-from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 from teal.marshmallow import EnumField, ValidationError
 
 
@@ -138,6 +137,7 @@ class DataStorage(Component):
     size = Integer(validate=Range(0, 10 ** 8),
                    unit=UnitCodes.mbyte,
                    description=m.DataStorage.size.comment)
+    interface = EnumField(DataStorageInterface)
 
 
 class HardDrive(DataStorage):
@@ -149,7 +149,7 @@ class SolidStateDrive(DataStorage):
 
 
 class Motherboard(Component):
-    slots = Integer(validate=Range(1, 20),
+    slots = Integer(validate=Range(0, 20),
                     description=m.Motherboard.slots.comment)
     usb = Integer(validate=Range(0, 20))
     firewire = Integer(validate=Range(0, 20))
@@ -172,6 +172,10 @@ class RamModule(Component):
     speed = Float(validate=Range(min=100, max=10000), unit=UnitCodes.mhz)
     interface = EnumField(RamInterface)
     format = EnumField(RamFormat)
+
+
+class SoundCard(Component):
+    pass
 
 
 class Display(DisplayMixin, Component):

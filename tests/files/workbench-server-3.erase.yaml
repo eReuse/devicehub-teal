@@ -10,14 +10,11 @@ type: 'EraseSectors'
 error: False
 # snapshot: None fulfill!
 # device: None fulfill!
-cleanWithZeros: False
+zeros: False
 startTime: 2018-01-01T10:10:10
 endTime: 2018-01-01T12:10:10
-secureRandomSteps: 0
 steps:
   - type: 'StepRandom'
     startTime: '2018-01-01T10:10:10'
     endTime: '2018-01-01T12:10:10'
     error: False
-    cleanWithZeros: False
-    secureRandomSteps: 0

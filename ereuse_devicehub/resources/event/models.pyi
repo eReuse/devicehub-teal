@@ -81,8 +81,6 @@ class Step(Model):
         self.success = ...  # type: bool
         self.start_time = ...  # type: datetime
         self.end_time = ...  # type: datetime
-        self.secure_random_steps = ...  # type: int
-        self.clean_with_zeros = ...  # type: bool
         self.erasure = ...  # type: EraseBasic
 
 
@@ -230,9 +228,8 @@ class EraseBasic(EventWithOneDevice):
         super().__init__(**kwargs)
         self.start_time = ...  # type: datetime
         self.end_time = ...  # type: datetime
-        self.secure_random_steps = ...  # type: int
         self.steps = ...  # type: List[Step]
-        self.clean_with_zeros = ...  # type: bool
+        self.zeros = ...  # type: bool
         self.success = ...  # type: bool
 
 

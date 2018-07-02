@@ -16,23 +16,18 @@ components:
     manufacturer: c1mr
     events:
       - type: EraseSectors
-        cleanWithZeros: True
+        zeros: True
         startTime: 2018-06-01T08:12:06
         endTime: 2018-06-01T09:12:06
-        secureRandomSteps: 20
         steps:
           - type: StepZero
             error: False
             startTime: 2018-06-01T08:15:00
             endTime: 2018-06-01T09:16:00
-            secureRandomSteps: 1
-            cleanWithZeros: True
           - type: StepZero
             error: False
             startTime: 2018-06-01T08:16:00
             endTime: 2018-06-01T09:17:00
-            secureRandomSteps: 1
-            cleanWithZeros: True
   - type: GraphicCard
     serialNumber: gc1s
     model: gc1ml

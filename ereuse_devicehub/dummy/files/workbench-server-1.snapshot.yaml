@@ -60,7 +60,6 @@ components:
         elapsed: 21
       - type: TestDataStorage
         elapsed: 233
-        firstError: 0
         error: False
         status: Completed without error
         length: Short
@@ -76,17 +75,14 @@ components:
         remainingLifetimePercentage: 1
       - type: EraseSectors
         error: False
-        cleanWithZeros: False
+        zeros: False
         startTime: 2018-01-01T10:10:10
         endTime: 2018-01-01T12:10:10
-        secureRandomSteps: 0
         steps:
           - type: StepRandom
             startTime: 2018-01-01T10:10:10
             endTime: 2018-01-01T12:10:10
             error: False
-            cleanWithZeros: False
-            secureRandomSteps: 0
   - type: HardDrive
     serialNumber: hdd1-1s
     model: hdd1-1ml
@@ -97,17 +93,14 @@ components:
         writeSpeed: 5
       - type: EraseSectors
         error: False
-        cleanWithZeros: False
+        zeros: False
         startTime: 2018-01-01T10:10:10
         endTime: 2018-01-01T12:10:10
-        secureRandomSteps: 0
         steps:
           - type: StepRandom
             startTime: 2018-01-01T10:10:10
             endTime: 2018-01-01T12:10:10
             error: False
-            cleanWithZeros: False
-            secureRandomSteps: 0
       - type: Install
         elapsed: 420
         error: False

@@ -3,11 +3,10 @@ from pathlib import Path
 import click
 import click_spinner
 import yaml
-from tqdm import tqdm
-
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.event.models import Snapshot
+from ereuse_devicehub.resources.inventory import Inventory
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
 
@@ -32,16 +31,21 @@ class Dummy:
     @click.confirmation_option(prompt='This command deletes the DB in the process. '
                                       'Do you want to continue?')
     def run(self):
-        print('Preparing the database...')
+        print('Preparing the database...'.ljust(30), end='')
         with click_spinner.spinner():
             self.app.init_db(erase=True)
             user = self.user_client('user@dhub.com', '1234')
             user.post(res=Tag, query=[('ids', i) for i in self.TAGS], data={})
-        print('Creating devices...')
-        for file_name in tqdm(self.SNAPSHOTS):
-            snapshot = self.file(file_name)
-            user.post(res=Snapshot, data=snapshot)
-        print('Done :-)')
+        files = tuple(Path(__file__).parent.joinpath('files').iterdir())
+        print('done.')
+        with click.progressbar(files, label='Creating devices...'.ljust(28)) as bar:
+            for path in bar:
+                with path.open() as f:
+                    snapshot = yaml.load(f)
+                user.post(res=Snapshot, data=snapshot)
+        inventory, _ = user.get(res=Inventory)
+        assert len(inventory['devices'])
+        print('⭐ Done.')
 
     def user_client(self, email: str, password: str):
         user = User(email=email, password=password)
@@ -53,10 +57,3 @@ class Dummy:
                             password=password)
         client.user, _ = client.login(client.email, client.password)
         return client
-
-    def file(self, name: str):
-        with Path(__file__) \
-                .parent \
-                .joinpath('files') \
-                .joinpath(name + '.snapshot.yaml').open() as f:
-            return yaml.load(f)

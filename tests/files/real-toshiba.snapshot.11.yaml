@@ -1,0 +1,139 @@
+{
+  "expectedEvents": [
+    "SmartTest",
+    "Benchmark",
+    "StressTest"
+  ],
+  "date": "2018-06-29T15:29:29.322424",
+  "elapsed": 391,
+  "software": "Workbench",
+  "components": [
+    {
+      "serialNumber": null,
+      "interface": "DDR",
+      "size": 1024,
+      "manufacturer": null,
+      "format": "SODIMM",
+      "events": [
+      ],
+      "speed": 533.0,
+      "type": "RamModule",
+      "model": null
+    },
+    {
+      "serialNumber": null,
+      "manufacturer": "Intel Corporation",
+      "events": [],
+      "type": "SoundCard",
+      "model": "NM10/ICH7 Family High Definition Audio Controller"
+    },
+    {
+      "serialNumber": null,
+      "manufacturer": "Chicony Electronics Co., Ltd.",
+      "events": [],
+      "type": "SoundCard",
+      "model": "USB2.0 UVC WebCam"
+    },
+    {
+      "serialNumber": "00:23:08:a5:07:6d",
+      "manufacturer": "Qualcomm Atheros",
+      "events": [],
+      "type": "NetworkAdapter",
+      "model": "AR9285 Wireless Network Adapter"
+    },
+    {
+      "serialNumber": "00:23:5a:fe:d7:14",
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "events": [],
+      "speed": 100,
+      "type": "NetworkAdapter",
+      "model": "RTL810xE PCI Express Fast Ethernet controller"
+    },
+    {
+      "serialNumber": null,
+      "address": 32,
+      "manufacturer": "Intel Corp.",
+      "events": [
+        {
+          "rate": 171.3049,
+          "type": "BenchmarkProcessorSysbench",
+          "elapsed": 171
+        },
+        {
+          "rate": 6383.9,
+          "type": "BenchmarkProcessor",
+          "elapsed": 1
+        }
+      ],
+      "speed": 1.3330000000000002,
+      "type": "Processor",
+      "model": "Intel Atom CPU N270 @ 1.60GHz"
+    },
+    {
+      "memory": 256.0,
+      "serialNumber": null,
+      "manufacturer": "Intel Corporation",
+      "events": [],
+      "type": "GraphicCard",
+      "model": "Mobile 945GSE Express Integrated Graphics Controller"
+    },
+    {
+      "serialNumber": "090623PB5B00QCGREMAH",
+      "interface": "ATA",
+      "size": 152627,
+      "manufacturer": "Hitachi",
+      "events": [
+        {
+          "elapsed": 71,
+          "readSpeed": 19.1,
+          "type": "BenchmarkDataStorage",
+          "writeSpeed": 4.7
+        },
+        {
+          "elapsed": 2,
+          "status": "Unspecified Error. Self-test not started.",
+          "type": "TestDataStorage",
+          "length": Short,
+          "error": true
+        }
+      ],
+      "type": "HardDrive",
+      "model": "HTS54501"
+    },
+    {
+      "slots": 0,
+      "serialNumber": "0123456789AB",
+      "manufacturer": "TOSHIBA",
+      "firewire": 0,
+      "events": [],
+      "pcmcia": 0,
+      "usb": 5,
+      "serial": 1,
+      "type": "Motherboard",
+      "model": "KAVAA"
+    }
+  ],
+  "version": "11.0a1",
+  "device": {
+    "serialNumber": "79545417K",
+    "manufacturer": "TOSHIBA",
+    "events": [
+      {
+        "type": "StressTest",
+        "error": false,
+        "elapsed": 120
+      },
+      {
+                "rate": 19.0443,
+                "type": "BenchmarkRamSysbench",
+                "elapsed": 19
+              }
+    ],
+    "type": "Laptop",
+    "chassis": "Netbook",
+    "model": "NB200"
+  },
+  "uuid": "918726ae-c6bc-40aa-97cf-ad80d69268f9",
+  "closed": false,
+  "type": "Snapshot"
+}

@@ -1,7 +1,7 @@
 from ereuse_devicehub.resources.device.schemas import Cellphone, Component, Computer, \
     ComputerMonitor, DataStorage, Desktop, Device, Display, GraphicCard, HardDrive, Laptop, Mobile, \
     Monitor, Motherboard, NetworkAdapter, Processor, RamModule, Server, Smartphone, \
-    SolidStateDrive, Tablet, TelevisionSet
+    SolidStateDrive, SoundCard, Tablet, TelevisionSet
 from ereuse_devicehub.resources.device.views import DeviceView
 from teal.resource import Converters, Resource
 
@@ -111,6 +111,11 @@ class RamModuleDef(ComponentDef):
 class ProcessorDef(ComponentDef):
     VIEW = None
     SCHEMA = Processor
+
+
+class SoundCardDef(ComponentDef):
+    VIEW = None
+    SCHEMA = SoundCard
 
 
 class DisplayDef(ComponentDef):

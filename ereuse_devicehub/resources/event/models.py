@@ -1,16 +1,7 @@
 from collections import Iterable
+from datetime import timedelta
 from typing import Set, Union
 from uuid import uuid4
-
-from flask import g
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
-    Float, ForeignKey, Interval, JSON, SmallInteger, Unicode, event
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.orm import backref, relationship
-from sqlalchemy.orm.events import AttributeEvents as Events
-from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Device
@@ -20,6 +11,15 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RA
 from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
+from flask import g
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
+    Float, ForeignKey, Interval, JSON, SmallInteger, Unicode, event
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.orderinglist import ordering_list
+from sqlalchemy.orm import backref, relationship, validates
+from sqlalchemy.orm.events import AttributeEvents as Events
+from sqlalchemy.util import OrderedSet
 from teal.db import ArrayOfEnum, CASCADE, CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, \
     POLYMORPHIC_ON, StrictVersionType, check_range
 
@@ -198,10 +198,11 @@ class Deallocate(JoinedTableMixin, EventWithMultipleDevices):
 class EraseBasic(JoinedTableMixin, EventWithOneDevice):
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, CheckConstraint('end_time > start_time'), nullable=False)
-    secure_random_steps = Column(SmallInteger,
-                                 check_range('secure_random_steps', min=0),
-                                 nullable=False)
-    clean_with_zeros = Column(Boolean, nullable=False)
+    zeros = Column(Boolean, nullable=False)
+    zeros.comment = """
+        Whether this erasure had a first erasure step consisting of
+        only writing zeros.
+    """
 
 
 class Ready(EventWithMultipleDevices):
@@ -219,10 +220,6 @@ class Step(db.Model):
     error = Column(Boolean, default=False, nullable=False)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, CheckConstraint('end_time > start_time'), nullable=False)
-    secure_random_steps = Column(SmallInteger,
-                                 check_range('secure_random_steps', min=0),
-                                 nullable=False)
-    clean_with_zeros = Column(Boolean, nullable=False)
 
     erasure = relationship(EraseBasic,
                            backref=backref('steps',
@@ -412,8 +409,7 @@ class TestDataStorage(Test):
     id = Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
     length = Column(DBEnum(TestHardDriveLength), nullable=False)  # todo from type
     status = Column(Unicode(STR_SIZE), nullable=False)
-    lifetime = Column(Interval, nullable=False)
-    first_error = Column(SmallInteger, nullable=False, default=0)
+    lifetime = Column(Interval)
     assessment = Column(Boolean)
     reallocated_sector_count = Column(SmallInteger)
     power_cycle_count = Column(SmallInteger)
@@ -428,6 +424,10 @@ class TestDataStorage(Test):
 
 class StressTest(Test):
     pass
+
+    @validates('elapsed')
+    def bigger_than_a_minute(self, _, value: timedelta):
+        assert value.total_seconds() >= 60
 
 
 class Benchmark(JoinedTableMixin, EventWithOneDevice):
@@ -481,6 +481,13 @@ def validate_device_is_data_storage(target: Event, value: DataStorage, old_value
     """Validates that the device for data-storage events is effectively a data storage."""
     if value and not isinstance(value, DataStorage):
         raise TypeError('{} must be a DataStorage but you passed {}'.format(initiator.impl, value))
+
+
+@event.listens_for(BenchmarkRamSysbench.device, Events.set.__name__, propagate=True)
+def events_not_for_components(target: Event, value: Device, old_value, initiator):
+    """Validates events that cannot be performed to components."""
+    if isinstance(value, Component):
+        raise TypeError('{!r} cannot be performed to a component ({!r}).'.format(target, value))
 
 
 # The following listeners keep relationships with device <-> components synced with the event

@@ -1,0 +1,160 @@
+{
+  "closed": false,
+  "uuid": "f9e5e587-baee-44e1-9a94-255d216bbda9",
+  "components": [
+    {
+      "events": [],
+      "serialNumber": "6c:62:6d:81:22:9f",
+      "type": "NetworkAdapter",
+      "manufacturer": "Intel Corporation",
+      "speed": 1000,
+      "model": "82578DM Gigabit Network Connection"
+    },
+    {
+      "format": "DIMM",
+      "events": [
+      ],
+      "interface": "DDR3",
+      "serialNumber": "B4012F30",
+      "size": 2048,
+      "type": "RamModule",
+      "manufacturer": "JEDEC ID:80 2C",
+      "speed": 1333.0,
+      "model": "16JTF25664AZ-1G4F"
+    },
+    {
+      "format": "DIMM",
+      "events": [],
+      "interface": "DDR3",
+      "serialNumber": "8E9F2E29",
+      "size": 2048,
+      "type": "RamModule",
+      "manufacturer": "JEDEC ID:80 2C",
+      "speed": 1333.0,
+      "model": "16JTF25664AZ-1G4F"
+    },
+    {
+      "format": "DIMM",
+      "events": [],
+      "interface": "DDR3",
+      "serialNumber": "9A012F30",
+      "size": 2048,
+      "type": "RamModule",
+      "manufacturer": "JEDEC ID:80 2C",
+      "speed": 1333.0,
+      "model": "16JTF25664AZ-1G4F"
+    },
+    {
+      "format": "DIMM",
+      "events": [
+      ],
+      "interface": "DDR3",
+      "serialNumber": "8F9F2E29",
+      "size": 2048,
+      "type": "RamModule",
+      "manufacturer": "JEDEC ID:80 2C",
+      "speed": 1333.0,
+      "model": "16JTF25664AZ-1G4F"
+    },
+    {
+      "cores": 2,
+      "events": [
+        {
+          "rate": 23410.76,
+          "type": "BenchmarkProcessor",
+          "elapsed": 1
+        },
+        {
+          "rate": 17.0186,
+          "type": "BenchmarkProcessorSysbench",
+          "elapsed": 18
+        }
+      ],
+      "serialNumber": null,
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "address": 64,
+      "speed": 1.199,
+      "model": "Intel Core i3 CPU 530 @ 2.93GHz"
+    },
+    {
+      "events": [
+        {
+          "writeSpeed": 24.5,
+          "readSpeed": 111.0,
+          "type": "BenchmarkDataStorage",
+          "elapsed": 14
+        },
+        {
+          "status": "Unspecified Error. Self-test not started.",
+          "error": true,
+          "type": "TestDataStorage",
+          "elapsed": 1,
+          "length": Short
+        }
+      ],
+      "interface": "ATA",
+      "serialNumber": "WD-WCAV2U909540",
+      "size": 305245,
+      "type": "HardDrive",
+      "manufacturer": "Western Digital",
+      "model": "WDC WD3200AAJS-6"
+    },
+    {
+      "events": [],
+      "serialNumber": null,
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "5 Series/3400 Series Chipset High Definition Audio"
+    },
+    {
+      "memory": 256.0,
+      "events": [],
+      "serialNumber": null,
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "model": "Core Processor Integrated Graphics Controller"
+    },
+    {
+      "events": [],
+      "firewire": 0,
+      "pcmcia": 0,
+      "serialNumber": "CZC0408YJG",
+      "slots": 0,
+      "type": "Motherboard",
+      "manufacturer": "Hewlett-Packard",
+      "usb": 2,
+      "serial": 0,
+      "model": "304Ah"
+    }
+  ],
+  "software": "Workbench",
+  "elapsed": 96,
+  "version": "11.0a1",
+  "expectedEvents": [
+    "StressTest",
+    "Benchmark",
+    "SmartTest"
+  ],
+  "device": {
+    "events": [
+      {
+        "type": "StressTest",
+        "elapsed": 60,
+        "error": false
+      },
+      {
+        "rate": 0.9759,
+        "type": "BenchmarkRamSysbench",
+        "elapsed": 1
+      }
+    ],
+    "serialNumber": "CZC0408YJG",
+    "type": "Desktop",
+    "manufacturer": "Hewlett-Packard",
+    "chassis": "Tower",
+    "model": "HP Compaq 8100 Elite SFF"
+  },
+  "type": "Snapshot",
+  "date": "2018-06-29T12:28:54.508266"
+}

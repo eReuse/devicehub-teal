@@ -63,9 +63,7 @@ class Deallocate(EventWithMultipleDevices):
 class EraseBasic(EventWithOneDevice):
     start_time = DateTime(required=True, data_key='startTime')
     end_time = DateTime(required=True, data_key='endTime')
-    secure_random_steps = Integer(validate=Range(min=0), required=True,
-                                  data_key='secureRandomSteps')
-    clean_with_zeros = Boolean(required=True, data_key='cleanWithZeros')
+    zeros = Boolean(required=True, description=m.EraseBasic.zeros.comment)
     steps = NestedOn('Step', many=True, required=True)
 
 
@@ -77,10 +75,6 @@ class Step(Schema):
     type = String(description='Only required when it is nested.')
     start_time = DateTime(required=True, data_key='startTime')
     end_time = DateTime(required=True, data_key='endTime')
-    secure_random_steps = Integer(validate=Range(min=0),
-                                  required=True,
-                                  data_key='secureRandomSteps')
-    clean_with_zeros = Boolean(required=True, data_key='cleanWithZeros')
     error = Boolean(default=False, description='Did the event fail?')
 
 
@@ -243,8 +237,7 @@ class Test(EventWithOneDevice):
 class TestDataStorage(Test):
     length = EnumField(TestHardDriveLength, required=True)
     status = String(validate=Length(max=STR_SIZE), required=True)
-    lifetime = TimeDelta(precision=TimeDelta.DAYS, required=True)
-    first_error = Integer(missing=0, data_key='firstError')
+    lifetime = TimeDelta(precision=TimeDelta.DAYS)
     assessment = Boolean()
     reallocated_sector_count = Integer(data_key='reallocatedSectorCount')
     power_cycle_count = Integer(data_key='powerCycleCount')

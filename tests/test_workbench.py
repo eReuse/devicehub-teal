@@ -112,3 +112,24 @@ def test_workbench_server_phases(user: UserClient):
 
     pc, _ = user.get(res=Device, item=snapshot['id'])
     assert len(pc['events']) == 10  # todo shall I add child events?
+
+
+def test_real_hp_11(user: UserClient):
+    s = file('real-hp.snapshot.11')
+    snapshot, _ = user.post(res=Snapshot, data=s)
+    assert snapshot['device']['hid'] == 'hewlett-packard-czc0408yjg-hp_compaq_8100_elite_sff'
+    assert snapshot['device']['chassis'] == 'Tower'
+    assert set(e['type'] for e in snapshot['events']) == {
+        'BenchmarkDataStorage',
+        'BenchmarkProcessor',
+        'BenchmarkProcessorSysbench',
+        'TestDataStorage',
+        'BenchmarkRamSysbench',
+        'StressTest'
+    }
+    assert len(list(e['type'] for e in snapshot['events'])) == 6
+
+
+def test_real_toshiba_11(user: UserClient):
+    s = file('real-toshiba.snapshot.11')
+    snapshot, _ = user.post(res=Snapshot, data=s)

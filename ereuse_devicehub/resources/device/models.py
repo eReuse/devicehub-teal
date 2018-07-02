@@ -1,8 +1,11 @@
 from contextlib import suppress
-from itertools import chain
 from operator import attrgetter
 from typing import Dict, Set
 
+from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
+    RamFormat, RamInterface
+from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
+from itertools import chain
 from sqlalchemy import BigInteger, Column, Enum as DBEnum, Float, ForeignKey, Integer, Sequence, \
     SmallInteger, Unicode, inspect
 from sqlalchemy.ext.declarative import declared_attr
@@ -10,13 +13,10 @@ from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
-
-from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
-    RamFormat, RamInterface
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
-from ereuse_utils.naming import Naming
 from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, check_range
 from teal.marshmallow import ValidationError
+
+from ereuse_utils.naming import Naming
 
 
 class Device(Thing):
@@ -264,14 +264,14 @@ class SolidStateDrive(DataStorage):
 
 
 class Motherboard(JoinedComponentTableMixin, Component):
-    slots = Column(SmallInteger, check_range('slots'))
+    slots = Column(SmallInteger, check_range('slots', min=0))
     slots.comment = """
         PCI slots the motherboard has.
     """
-    usb = Column(SmallInteger, check_range('usb'))
-    firewire = Column(SmallInteger, check_range('firewire'))
-    serial = Column(SmallInteger, check_range('serial'))
-    pcmcia = Column(SmallInteger, check_range('pcmcia'))
+    usb = Column(SmallInteger, check_range('usb', min=0))
+    firewire = Column(SmallInteger, check_range('firewire', min=0))
+    serial = Column(SmallInteger, check_range('serial', min=0))
+    pcmcia = Column(SmallInteger, check_range('pcmcia', min=0))
 
 
 class NetworkMixin:
@@ -296,6 +296,10 @@ class RamModule(JoinedComponentTableMixin, Component):
     speed = Column(Float, check_range('speed', min=100, max=10000))
     interface = Column(DBEnum(RamInterface))
     format = Column(DBEnum(RamFormat))
+
+
+class SoundCard(JoinedComponentTableMixin, Component):
+    pass
 
 
 class Display(JoinedComponentTableMixin, DisplayMixin, Component):
