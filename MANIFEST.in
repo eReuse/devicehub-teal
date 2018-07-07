@@ -1,1 +1,2 @@
 recursive-include ereuse_devicehub/dummy/files *.yaml
+recursive-include ereuse_devicehub/ *.pyi
