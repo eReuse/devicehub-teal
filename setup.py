@@ -9,6 +9,12 @@ with open('README.md', encoding='utf8') as f:
 with open('ereuse_devicehub/__init__.py', 'rt', encoding='utf8') as f:
     version = re.search(r'__version__ = \'(.*?)\'', f.read()).group(1)
 
+test_requires = [
+    'pytest',
+    'pytest-datadir',
+    'requests_mock'
+]
+
 setup(
     name='ereuse-devicehub',
     version=version,
@@ -31,7 +37,6 @@ setup(
     install_requires=[
         'teal>=0.2.0a6',
         'marshmallow_enum',
-        'marshmallow==3.0.0b9',
         'ereuse-utils[Naming]>=0.4b1',
         'psycopg2-binary',
         'requests',
@@ -49,12 +54,12 @@ setup(
             'sphinxcontrib-httpdomain >= 1.5.0',
             'sphinxcontrib-plantuml >= 0.11',
             'sphinxcontrib-websupport >= 1.0.1'
-        ]
+        ],
+        'test': test_requires
     },
-    tests_requires=[
-        'pytest',
-        'pytest-datadir',
-        'requests_mock'
+    tests_requires=test_requires,
+    setup_requires=[
+        'pytest-runner'
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
