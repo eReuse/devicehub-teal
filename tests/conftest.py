@@ -12,7 +12,7 @@ from ereuse_devicehub.resources.user.models import User
 
 
 class TestConfig(DevicehubConfig):
-    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/dh_test'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/dh_test'
     SCHEMA = 'test'
     TESTING = True
     ORGANIZATION_NAME = 'FooOrg'
