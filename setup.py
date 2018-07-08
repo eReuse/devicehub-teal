@@ -31,7 +31,7 @@ setup(
     install_requires=[
         'teal>=0.2.0a6',
         'marshmallow_enum',
-        'marshmallow==3.0.0b9'
+        'marshmallow==3.0.0b9',
         'ereuse-utils[Naming]>=0.4b1',
         'psycopg2-binary',
         'requests',
