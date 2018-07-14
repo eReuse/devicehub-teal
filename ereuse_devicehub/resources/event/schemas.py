@@ -1,5 +1,5 @@
 from flask import current_app as app
-from marshmallow import ValidationError, validates_schema
+from marshmallow import Schema as MarshmallowSchema, ValidationError, validates_schema
 from marshmallow.fields import Boolean, DateTime, Float, Integer, List, Nested, String, TimeDelta, \
     UUID
 from marshmallow.validate import Length, Range
@@ -7,11 +7,13 @@ from marshmallow.validate import Length, Range
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device.schemas import Component, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    RATE_POSITIVE, RatingSoftware, SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
+    PriceSoftware, RATE_POSITIVE, RatingSoftware, SnapshotExpectedEvents, SnapshotSoftware, \
+    TestHardDriveLength
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user.schemas import User
+from teal.currency import Currency
 from teal.marshmallow import EnumField, Version
 from teal.resource import Schema
 
@@ -91,13 +93,11 @@ class Rate(EventWithOneDevice):
                      dump_only=True,
                      data_key='ratingValue',
                      description='The rating for the content.')
-    algorithm_software = EnumField(RatingSoftware,
-                                   dump_only=True,
-                                   data_key='algorithmSoftware',
-                                   description='The algorithm used to produce this rating.')
-    algorithm_version = Version(dump_only=True,
-                                data_key='algorithmVersion',
-                                description='The algorithm_version of the algorithm_software.')
+    software = EnumField(RatingSoftware,
+                         dump_only=True,
+                         description='The algorithm used to produce this rating.')
+    version = Version(dump_only=True,
+                      description='The version of the software.')
     appearance = Integer(validate=Range(-3, 5), dump_only=True)
     functionality = Integer(validate=Range(-3, 5),
                             dump_only=True,
@@ -141,7 +141,7 @@ class ManualRate(IndividualRate):
     functionality_range = EnumField(FunctionalityRange,
                                     required=True,
                                     data_key='functionalityRange',
-                                    description='Grades the defects of a device that affect its usage.')
+                                    description='Grades the defects of a device affecting usage.')
     labelling = Boolean(description='Sets if there are labels stuck that should be removed.')
 
 
@@ -156,6 +156,29 @@ class WorkbenchRate(ManualRate):
     graphic_card = Float()
     bios = EnumField(Bios, description='How difficult it has been to set the bios to '
                                        'boot from the network.')
+
+
+class Price(EventWithOneDevice):
+    currency = EnumField(Currency, required=True)
+    price = Float(required=True)
+    software = EnumField(PriceSoftware, dump_only=True)
+    version = Version(dump_only=True)
+    rating = NestedOn(AggregateRate, dump_only=True)
+
+
+class EreusePrice(Price):
+    class Service(MarshmallowSchema):
+        class Type(MarshmallowSchema):
+            amount = Float()
+            percentage = Float()
+
+        standard = Nested(Type)
+        warranty2 = Nested(Type)
+
+    warranty2 = Float()
+    refurbisher = Nested(Service)
+    retailer = Nested(Service)
+    platform = Nested(Service)
 
 
 class Install(EventWithOneDevice):
@@ -198,7 +221,7 @@ class Snapshot(EventWithOneDevice):
         if data['software'] == SnapshotSoftware.Workbench:
             if data['version'] < app.config['MIN_WORKBENCH']:
                 raise ValidationError(
-                    'Min. supported Workbench algorithm_version is '
+                    'Min. supported Workbench version is '
                     '{}'.format(app.config['MIN_WORKBENCH']),
                     field_names=['version']
                 )

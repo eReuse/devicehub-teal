@@ -18,3 +18,8 @@ class Thing(db.Model):
     created.comment = """
         When Devicehub created this.
     """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        if not self.created:
+            self.created = datetime.utcnow()

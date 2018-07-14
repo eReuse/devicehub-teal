@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from sqlalchemy.exc import ProgrammingError
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.config import DevicehubConfig
@@ -31,10 +32,20 @@ def _app(config: TestConfig) -> Devicehub:
 
 @pytest.fixture()
 def app(request, _app: Devicehub) -> Devicehub:
-    with _app.app_context():
-        _app.init_db()
     # More robust than 'yield'
-    request.addfinalizer(lambda *args, **kw: db.drop_all(app=_app))
+    def _drop(*args, **kwargs):
+        with _app.app_context():
+            db.drop_all()
+
+    with _app.app_context():
+        try:
+            _app.init_db()
+        except ProgrammingError:
+            print('Database was not correctly emptied. Re-empty and re-installing...')
+            _drop()
+            _app.init_db()
+
+    request.addfinalizer(_drop)
     return _app
 
 

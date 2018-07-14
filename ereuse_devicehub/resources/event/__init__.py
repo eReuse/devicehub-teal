@@ -3,8 +3,8 @@ from typing import Callable, Iterable, Tuple
 from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.event.schemas import Add, AggregateRate, AppRate, Benchmark, \
     BenchmarkDataStorage, BenchmarkProcessor, BenchmarkProcessorSysbench, BenchmarkRamSysbench, \
-    BenchmarkWithRate, EraseBasic, EraseSectors, Event, Install, PhotoboxSystemRate, \
-    PhotoboxUserRate, Rate, Remove, Snapshot, Step, StepRandom, StepZero, StressTest, Test, \
+    BenchmarkWithRate, EraseBasic, EraseSectors, EreusePrice, Event, Install, PhotoboxSystemRate, \
+    PhotoboxUserRate, Price, Rate, Remove, Snapshot, Step, StepRandom, StepZero, StressTest, Test, \
     TestDataStorage, WorkbenchRate
 from ereuse_devicehub.resources.event.views import EventView, SnapshotView
 from teal.resource import Converters, Resource
@@ -80,6 +80,16 @@ class PhotoboxSystemRateDef(RateDef):
 class AppRateDef(RateDef):
     VIEW = None
     SCHEMA = AppRate
+
+
+class PriceDef(EventDef):
+    VIEW = None
+    SCHEMA = Price
+
+
+class EreusePriceDef(EventDef):
+    VIEW = None
+    SCHEMA = EreusePrice
 
 
 class InstallDef(EventDef):

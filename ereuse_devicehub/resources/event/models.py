@@ -3,23 +3,26 @@ from datetime import timedelta
 from typing import Set, Union
 from uuid import uuid4
 
-from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Device
-from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RATE_5, Bios, \
-    FunctionalityRange, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
-    SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
-from ereuse_devicehub.resources.image.models import Image
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
-from ereuse_devicehub.resources.user.models import User
-from flask import g
+from flask import current_app as app, g
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
-    Float, ForeignKey, Interval, JSON, SmallInteger, Unicode, event
+    Float, ForeignKey, Interval, JSON, SmallInteger, Unicode, event, orm
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
+
+from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Desktop, \
+    Device, Laptop, Server
+from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RATE_5, Bios, \
+    FunctionalityRange, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
+    SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
+from ereuse_devicehub.resources.image.models import Image
+from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
+from ereuse_devicehub.resources.user.models import User
+from teal.currency import Currency
 from teal.db import ArrayOfEnum, CASCADE, CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, \
     POLYMORPHIC_ON, StrictVersionType, check_range
 
@@ -279,8 +282,8 @@ class SnapshotRequest(db.Model):
 
 class Rate(JoinedTableMixin, EventWithOneDevice):
     rating = Column(Float(decimal_return_scale=2), check_range('rating', *RATE_POSITIVE))
-    algorithm_software = Column(DBEnum(RatingSoftware), nullable=False)
-    algorithm_version = Column(StrictVersionType, nullable=False)
+    software = Column(DBEnum(RatingSoftware))
+    version = Column(StrictVersionType)
     appearance = Column(Float(decimal_return_scale=2), check_range('appearance', *RATE_NEGATIVE))
     functionality = Column(Float(decimal_return_scale=2),
                            check_range('functionality', *RATE_NEGATIVE))
@@ -349,6 +352,17 @@ class WorkbenchRate(ManualRate):
                           check_range('graphic_card', *RATE_POSITIVE))
     bios = Column(DBEnum(Bios))
 
+    # todo ensure for WorkbenchRate version and software are not None when inserting them
+
+    def ratings(self) -> Set['WorkbenchRate']:
+        """
+        Computes all the possible rates taking this rating as a model.
+
+        Returns a set of ratings, including this one, which is mutated.
+        """
+        from ereuse_rate.main import main
+        return main(self, **app.config.get_namespace('WORKBENCH_RATE_'))
+
 
 class AppRate(ManualRate):
     pass
@@ -385,6 +399,102 @@ class PhotoboxUserRate(PhotoboxRate):
 
 class PhotoboxSystemRate(PhotoboxRate):
     id = Column(UUID(as_uuid=True), ForeignKey(PhotoboxRate.id), primary_key=True)
+
+
+class Price(JoinedTableMixin, EventWithOneDevice):
+    currency = Column(DBEnum(Currency), nullable=False)
+    price = Column(Float(decimal_return_scale=2), check_range('price', 0), nullable=False)
+    software = Column(DBEnum(PriceSoftware))
+    version = Column(StrictVersionType)
+    rating_id = Column(UUID(as_uuid=True), ForeignKey(AggregateRate.id))
+    rating = relationship(AggregateRate,
+                          backref=backref('price',
+                                          lazy=True,
+                                          cascade=CASCADE_OWN,
+                                          uselist=False),
+                          primaryjoin=AggregateRate.id == rating_id)
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.currency = self.currency or app.config['PRICE_CURRENCY']
+
+
+class EreusePrice(Price):
+    """A Price class that auto-computes its amount by"""
+    MULTIPLIER = {
+        Desktop: 20,
+        Laptop: 30
+    }
+
+    class Type:
+        def __init__(self, percentage, price) -> None:
+            # see https://stackoverflow.com/a/29651462 for the - 0.005
+            self.amount = round(price * percentage - 0.005, 2)
+            self.percentage = round(percentage - 0.005, 2)
+
+    class Service:
+        REFURBISHER, PLATFORM, RETAILER = 0, 1, 2
+        STANDARD, WARRANTY2 = 'STD', 'WR2'
+        SCHEMA = {
+            Desktop: {
+                RatingRange.HIGH: {
+                    STANDARD: (0.35125, 0.204375, 0.444375),
+                    WARRANTY2: (0.47425, 0.275875, 0.599875)
+                },
+                RatingRange.MEDIUM: {
+                    STANDARD: (0.385, 0.2558333333, 0.3591666667),
+                    WARRANTY2: (0.539, 0.3581666667, 0.5028333333)
+                },
+                RatingRange.LOW: {
+                    STANDARD: (0.5025, 0.30875, 0.18875),
+                },
+            },
+            Laptop: {
+                RatingRange.HIGH: {
+                    STANDARD: (0.3469230769, 0.195, 0.4580769231),
+                    WARRANTY2: (0.4522307692, 0.2632307692, 0.6345384615)
+                },
+                RatingRange.MEDIUM: {
+                    STANDARD: (0.382, 0.1735, 0.4445),
+                    WARRANTY2: (0.5108, 0.2429, 0.6463)
+                },
+                RatingRange.LOW: {
+                    STANDARD: (0.4528571429, 0.2264285714, 0.3207142857),
+                }
+            }
+        }
+        SCHEMA[Server] = SCHEMA[Desktop]
+
+        def __init__(self, device, rating_range, role, price) -> None:
+            cls = device.__class__ if device.__class__ != Server else Desktop
+            rate = self.SCHEMA[cls][rating_range]
+            self.standard = EreusePrice.Type(rate['STD'][role], price)
+            self.warranty2 = EreusePrice.Type(rate['WR2'][role], price)
+
+    def __init__(self, rating: AggregateRate, **kwargs) -> None:
+        if rating.rating_range == RatingRange.VERY_LOW:
+            raise ValueError('Cannot compute price for Range.VERY_LOW')
+        self.price = round(rating.rating * self.MULTIPLIER[rating.device.__class__], 2)
+        super().__init__(rating=rating, device=rating.device, **kwargs)
+        self._compute()
+        self.software = self.software or app.config['PRICE_SOFTWARE']
+        self.version = self.version or app.config['PRICE_VERSION']
+
+    @orm.reconstructor
+    def _compute(self):
+        """
+        Calculates eReuse.org prices when initializing the
+        instance from the price and other properties.
+        """
+        self.refurbisher = self._service(self.Service.REFURBISHER)
+        self.retailer = self._service(self.Service.RETAILER)
+        self.platform = self._service(self.Service.PLATFORM)
+        self.warranty2 = round(self.refurbisher.warranty2.amount
+                               + self.retailer.warranty2.amount
+                               + self.platform.warranty2.amount, 2)
+
+    def _service(self, role):
+        return self.Service(self.device, self.rating.rating_range, role, self.price)
 
 
 class Test(JoinedTableMixin, EventWithOneDevice):
@@ -473,6 +583,9 @@ class BenchmarkRamSysbench(BenchmarkWithRate):
 
 # Listeners
 # Listeners validate values and keep relationships synced
+
+# The following listeners avoids setting values to events that
+# do not make sense. For example, EraseBasic to a graphic card.
 
 @event.listens_for(TestDataStorage.device, Events.set.__name__, propagate=True)
 @event.listens_for(Install.device, Events.set.__name__, propagate=True)

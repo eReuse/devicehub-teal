@@ -1,3 +1,4 @@
+from contextlib import suppress
 from distutils.version import StrictVersion
 from typing import List
 from uuid import UUID
@@ -7,8 +8,8 @@ from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Component, Computer
-from ereuse_devicehub.resources.enums import RatingSoftware, SnapshotSoftware
-from ereuse_devicehub.resources.event.models import Event, ManualRate, Snapshot, WorkbenchRate
+from ereuse_devicehub.resources.enums import SnapshotSoftware
+from ereuse_devicehub.resources.event.models import Event, Snapshot, WorkbenchRate
 from teal.resource import View
 
 
@@ -51,20 +52,10 @@ class SnapshotView(View):
         assert all(not c.events_one for c in components) if components else True
         db_device, remove_events = self.resource_def.sync.run(device, components)
         snapshot.device = db_device
-        snapshot.events |= remove_events | events_device
+        snapshot.events |= remove_events | events_device  # Set events to snapshot
         # commit will change the order of the components by what
         # the DB wants. Let's get a copy of the list so we preserve order
         ordered_components = OrderedSet(x for x in snapshot.components)
-
-        for event in events_device:
-            if isinstance(event, ManualRate):
-                event.algorithm_software = RatingSoftware.Ereuse
-                event.algorithm_version = StrictVersion('1.0')
-            if isinstance(event, WorkbenchRate):
-                # todo process workbench rate
-                event.data_storage = 2
-                event.graphic_card = 4
-                event.processor = 1
 
         # Add the new events to the db-existing devices and components
         db_device.events_one |= events_device
@@ -72,6 +63,13 @@ class SnapshotView(View):
             for component, events in zip(ordered_components, events_components):
                 component.events_one |= events
                 snapshot.events |= events
+
+        # Compute ratings
+        with suppress(StopIteration):
+            # todo are we sure we want to have snapshots without rates?
+            snapshot.events |= next(
+                e.ratings() for e in events_device if isinstance(e, WorkbenchRate)
+            )
 
         db.session.add(snapshot)
         db.session.commit()

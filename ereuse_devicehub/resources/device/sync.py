@@ -2,15 +2,15 @@ from contextlib import suppress
 from itertools import groupby
 from typing import Iterable, Set
 
+from sqlalchemy import inspect
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.util import OrderedSet
+
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.event.models import Remove
 from ereuse_devicehub.resources.tag.model import Tag
-from sqlalchemy import inspect
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.util import OrderedSet
-
 from teal.db import ResourceNotFound
 from teal.marshmallow import ValidationError
 
@@ -48,7 +48,7 @@ class Sync:
         :return: A tuple of:
 
                  1. The device from the database (with an ID) whose
-                    ``components`` field contain the db algorithm_version
+                    ``components`` field contain the db version
                     of the passed-in components.
                  2. A list of Add / Remove (not yet added to session).
         """
@@ -124,7 +124,7 @@ class Sync:
         This method tries to get an existing device using the HID
         or one of the tags, and...
 
-        - if it already exists it returns a "local synced algorithm_version"
+        - if it already exists it returns a "local synced version"
           –the same ``device`` you passed-in but with updated values
           from the database. In this case we do not
           "touch" any of its values on the DB.

@@ -4,7 +4,7 @@ version: '11.0'
 software: Workbench
 elapsed: 4
 device:
-  type: Computer
+  type: Desktop
   chassis: Microtower
   serialNumber: pc1s
   model: pc1ml
@@ -28,10 +28,10 @@ components:
             error: False
             startTime: 2018-06-01T08:16:00
             endTime: 2018-06-01T09:17:00
-  - type: GraphicCard
-    serialNumber: gc1s
-    model: gc1ml
-    manufacturer: gc1mr
+  - type: Processor
+    serialNumber: p1s
+    model: p1ml
+    manufacturer: p1mr
   - type: RamModule
     serialNumber: rm1s
     model: rm1ml

@@ -4,7 +4,7 @@ version: '11.0'
 software: Workbench
 elapsed: 4
 device:
-  type: Computer
+  type: Desktop
   chassis: Microtower
   serialNumber: d1s
   model: d1ml
@@ -24,3 +24,12 @@ components:
     serialNumber: rm1s
     model: rm1ml
     manufacturer: rm1mr
+    speed: 1333
+  - type: Processor
+    serialNumber: p1s
+    model: p1ml
+    manufacturer: p1mr
+    speed: 1.6
+    events:
+      - type: BenchmarkProcessor
+        rate: 2410

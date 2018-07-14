@@ -5,7 +5,7 @@ from typing import Union
 
 @unique
 class SnapshotSoftware(Enum):
-    """The algorithm_software used to perform the Snapshot."""
+    """The software used to perform the Snapshot."""
     Workbench = 'Workbench'
     AndroidApp = 'AndroidApp'
     Web = 'Web'
@@ -14,8 +14,16 @@ class SnapshotSoftware(Enum):
 
 @unique
 class RatingSoftware(Enum):
-    """The algorithm_software used to compute the Score."""
-    Ereuse = 'Ereuse'
+    """The software used to compute the Score."""
+    ECost = 'ECost'
+    """
+    The eReuse.org rate algorithm that focuses maximizing refurbishment
+    of devices in general, specially penalizing very low and very high
+    devices in order to stimulate medium-range devices.
+    
+    This model is cost-oriented. 
+    """
+    EMarket = 'EMarket'
 
 
 RATE_POSITIVE = 0, 10
@@ -49,12 +57,17 @@ class RatingRange(IntEnum):
 
 
 @unique
+class PriceSoftware(Enum):
+    Ereuse = 'Ereuse'
+
+
+@unique
 class AggregateRatingVersions(Enum):
     v1 = StrictVersion('1.0')
     """
-    This algorithm_version is set to aggregate :class:`ereuse_devicehub.resources.
-    event.models.WorkbenchRate` algorithm_version X and :class:`ereuse_devicehub.
-    resources.event.models.PhotoboxRate` algorithm_version Y.
+    This version is set to aggregate :class:`ereuse_devicehub.resources.
+    event.models.WorkbenchRate` version X and :class:`ereuse_devicehub.
+    resources.event.models.PhotoboxRate` version Y.
     """
 
 

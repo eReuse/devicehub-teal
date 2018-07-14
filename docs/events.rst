@@ -2,9 +2,9 @@ Events
 ######
 
 ..  toctree::
-    :maxdepth: 4
+:maxdepth: 4
 
-    event-diagram
+        event-diagram
 
 
 Rate
@@ -12,8 +12,9 @@ Rate
 Devicehub generates an rating for a device taking into consideration the
 visual, functional, and performance.
 
-.. todo:: add performance as a result of component fusion + general tests in `here <https://
-   github.com/eReuse/Rdevicescore/blob/master/img/input_process_output.png>`_.
+.. todo:: add performance as a result of component fusion + general
+tests in `here <https://github.com/eReuse/Rdevicescore/blob/master/
+   img/input_process_output.png>`_.
 
 A Workflow is as follows:
 
@@ -27,28 +28,29 @@ A Workflow is as follows:
 3. Devicehub aggregates different rates and computes a final score for
    the device by performing a new ``AggregateRating`` event.
 
-There are two **types** of ``Rate``: ``WorkbenchRate`` and
-``PhotoboxRate``. Moreover, each rate can have different **versions**,
-or different revisions of the algorithm used to compute the final score,
-and Devicehub generates a rate event for **each** version. So, if
-an agent fulfills a ``WorkbenchRate`` and there are 3 versions, Devicehub
-generates 3 ``WorkbenchRate``. Devicehub understands that only one
-version is the **official** and it will generate an ``AggregateRating``
-only from the **official** version.
+There are three **types** of ``Rate``: ``WorkbenchRate``,
+``AppRate``, and ``PhotoboxRate``. ``WorkbenchRate`` can have different
+**software** algorithms, and each software algorithm can have several
+**versions**. So, we have 3 dimensions for ``WorkbenchRate``:
+type, software, version.
 
-.. todo:: we should be able to disable a version without destroying code
-
-In the future, Devicehub will be able to use different and independent
-algorithms to calculate a ``Rate`` (not only changed by versions).
+Devicehub generates a rate event for each software and version. So,
+if an agent fulfills a ``WorkbenchRate`` and there are 2 software
+algorithms and each has two versions, Devicehub will generate 4 rates.
+Devicehub understands that only one software and version are the
+**oficial** (set in the settings of each inventory),
+and it will generate an ``AggregateRating`` for only the official
+versions. At the same time, ``Price`` only computes the price of
+the **oficial** version.
 
 The technical Workflow in Devicehub is as follows:
 
 1. In **T1**, the user performs a ``Snapshot`` by processing the device
    through the Workbench. From the benchmarks and the visual and
    functional ratings the user does in the device, the system generates
-   a ``WorkbenchRate``. With only this information,
-   the system generates an ``AggregateRating``, which is the event
-   that the user will see in the web.
+   many ``WorkbenchRate`` (as many as software and versions defined).
+   With only this information, the system generates an ``AggregateRating``,
+   which is the event that the user will see in the web.
 2. In **T2**, the user takes pictures from the device through the
    Photobox, and DeviceHub crates an ``ImageSet`` with multiple
    ``Image`` with information from the photobox.
@@ -71,6 +73,17 @@ The same ``ImageSet`` can be rated multiple times, generating a new
 ``AggregateRating`` each time.
 
 .. todo:: which info does photobox provide for each picture?
+
+Price
+*****
+Price states a selling price for the device, but not necessariliy the
+final price this was sold (which is set in the Sell event).
+
+Devicehub automatically computes a price from ``AggregateRating``
+events. As in a **Rate**, price can have **software** and **version**,
+and there is an **official** price that is used to automatically
+compute the price from an ``AggregateRating``. Only the official price
+is computed from an ``AggregateRating``.
 
 Snapshot
 ********
@@ -175,10 +188,10 @@ There are four events for getting rid of devices:
       been recovered under a new product.
 
 .. note:: For usability purposes, users might not directly perform
-   ``Dispose``, but this could automatically be done when
+``Dispose``, but this could automatically be done when
    performing ``ToDispose`` + ``Receive`` to a ``RecyclingCenter``.
 
 .. todo:: Ensure that ``Dispose`` is a ``Trade`` event. An Org could
-    ``Sell`` or ``Donate`` a device with the objective of disposing them.
+``Sell`` or ``Donate`` a device with the objective of disposing them.
     Is ``Dispose`` ok, or do we want to keep that extra ``Sell`` or
     ``Donate`` event? Could dispose be a synonym of any of those?

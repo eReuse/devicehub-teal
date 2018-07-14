@@ -35,7 +35,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=[
-        'teal>=0.2.0a6',
+        'teal>=0.2.0a8',
         'marshmallow_enum',
         'ereuse-utils[Naming]>=0.4b1',
         'psycopg2-binary',
@@ -46,7 +46,8 @@ setup(
         'click-spinner',
         'sqlalchemy-utils[password, color, babel]',
         'PyYAML',
-        'python-stdnum'
+        'python-stdnum',
+        'ereuse-rate==0.0.2'
     ],
     extras_require={
         'docs': [

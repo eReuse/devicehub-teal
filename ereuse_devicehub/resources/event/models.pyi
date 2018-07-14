@@ -1,14 +1,15 @@
 from datetime import datetime, timedelta
 from distutils.version import StrictVersion
-from typing import List, Set
+from typing import Dict, List, Set
 from uuid import UUID
 
 from sqlalchemy import Column
 from sqlalchemy.orm import relationship
+from sqlalchemy_utils import Currency
 
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    RatingSoftware, SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
+    PriceSoftware, RatingSoftware, SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
 from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user import User
@@ -31,7 +32,7 @@ class Event(Thing):
     components = ...  # type: relationship
     parent_id = ...  # type: Column
     parent = ...  # type: relationship
-    closed = ... # type: Column
+    closed = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -127,8 +128,8 @@ class Rate(EventWithOneDevice):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.rating = ...  # type: float
-        self.algorithm_software = ...  # type: RatingSoftware
-        self.algorithm_version = ...  # type: StrictVersion
+        self.software = ...  # type: RatingSoftware
+        self.version = ...  # type: StrictVersion
         self.appearance = ...  # type: float
         self.functionality = ...  # type: float
         self.rating_range = ...  # type: str
@@ -144,6 +145,7 @@ class AggregateRate(Rate):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.ratings = ...  # type: Set[IndividualRate]
+        self.price = ...  # type: Price
 
 
 class ManualRate(IndividualRate):
@@ -191,6 +193,31 @@ class PhotoboxUserRate(PhotoboxRate):
 
 class PhotoboxSystemRate(PhotoboxRate):
     pass
+
+
+class Price(EventWithOneDevice):
+    currency = ...  # type: Column
+    price = ...  # type: Column
+    software = ...  # type: Column
+    version = ...  # type: Column
+    rating_id = ...  # type: Column
+    rating = ...  # type: relationship
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.currency = ...  # type: Currency
+        self.price = ...  # type: float
+        self.software = ...  # type: PriceSoftware
+        self.version = ...  # type: StrictVersion
+        self.rating_id = ...  # type: UUID
+        self.rating = ...  # type: AggregateRate
+
+
+class EreusePrice(Price):
+    MULTIPLIER = ...  # type: Dict
+
+    def __init__(self, rating: AggregateRate, **kwargs) -> None:
+        super().__init__(**kwargs)
 
 
 class Test(EventWithOneDevice):

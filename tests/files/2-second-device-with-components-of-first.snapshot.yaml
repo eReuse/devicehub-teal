@@ -2,7 +2,7 @@ device:
   manufacturer: p2m
   serialNumber: p2s
   model: p2
-  type: Computer
+  type: Desktop
   chassis: Microtower
 components:
   - manufacturer: p2c1m
