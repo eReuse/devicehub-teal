@@ -28,17 +28,9 @@ The requirements are:
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
 
 ## Running
-Create a python file with the following and call it `app.py`:
-```python
-from ereuse_devicehub.devicehub import Devicehub
-from ereuse_devicehub.config import DevicehubConfig
-class MyConfig(DevicehubConfig):
-    ORGANIZATION_NAME = 'My org'
-    ORGANIZATION_TAX_ID = 'foo-bar'
+Download, or copy the contents, of [this file](example/app.py), and
+call the new file ``app.py``.
 
-
-app = Devicehub(MyConfig())
-```
 Create a PostgreSQL database called *devicehub*:
 
 ```bash
@@ -89,3 +81,14 @@ interactive).
 Use postman as an example of how to use the API.
 
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://documenter.getpostman.com/view/254251/RWEnmFPs)
+
+## Testing
+To run the tests you will need to:
+
+1. `git clone` this project.
+2. Create a database for testing. By default the database used is 
+   `dh_test`. Execute to create it:
+   1. `postgres $ createdb dh_test`.
+   2. `postgres $ psql devicehub`.
+   3. `postgres $ GRANT ALL PRIVILEGES ON DATABASE dh_test TO dhub;`.
+3. Execute at the root folder of the project ``python3 setup.py test``.
