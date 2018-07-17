@@ -67,7 +67,7 @@ setup(
         'Environment :: Web Environment',
         'Framework :: Flask',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU Affero General Public License v3'
+        'License :: OSI Approved :: GNU Affero General Public License v3',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.5',

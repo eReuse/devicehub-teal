@@ -5,8 +5,10 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device.models import Desktop, Device, Laptop, SolidStateDrive
 from ereuse_devicehub.resources.enums import ComputerChassis
+from ereuse_devicehub.resources.event.models import Snapshot
 from ereuse_devicehub.resources.inventory import Filters, Inventory, Sorting
 from teal.utils import compiled
+from tests.conftest import file
 
 
 @pytest.mark.usefixtures('app_context')
@@ -69,7 +71,7 @@ def inventory_query_dummy(app: Devicehub):
         db.session.commit()
 
 
-@pytest.mark.usefixtures('inventory_query_dummy')
+@pytest.mark.usefixtures(inventory_query_dummy.__name__)
 def test_inventory_query_no_filters(user: UserClient):
     i, _ = user.get(res=Inventory)
     assert tuple(d['type'] for d in i['devices']) == (
@@ -77,16 +79,26 @@ def test_inventory_query_no_filters(user: UserClient):
     )
 
 
-@pytest.mark.usefixtures('inventory_query_dummy')
+@pytest.mark.usefixtures(inventory_query_dummy.__name__)
 def test_inventory_query_filter_type(user: UserClient):
     i, _ = user.get(res=Inventory, query=[('filter', {'type': ['Desktop', 'Laptop']})])
     assert tuple(d['type'] for d in i['devices']) == ('Desktop', 'Laptop', 'Desktop')
 
 
-@pytest.mark.usefixtures('inventory_query_dummy')
+@pytest.mark.usefixtures(inventory_query_dummy.__name__)
 def test_inventory_query_filter_sort(user: UserClient):
     i, _ = user.get(res=Inventory, query=[
         ('sort', {'created': Sorting.ASCENDING}),
         ('filter', {'type': ['Computer']})
     ])
     assert tuple(d['type'] for d in i['devices']) == ('Desktop', 'Laptop', 'Desktop')
+
+
+def test_inventory_query(user: UserClient):
+    """Checks result of inventory."""
+    user.post(file('basic.snapshot'), res=Snapshot)
+    i, _ = user.get(res=Inventory)
+    pc = next(d for d in i['devices'] if d['type'] == 'Desktop')
+    assert len(pc['events']) == 4
+    assert len(pc['components']) == 3
+    assert not pc['tags']

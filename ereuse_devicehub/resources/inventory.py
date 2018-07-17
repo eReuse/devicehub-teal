@@ -96,7 +96,7 @@ class InventoryView(View):
             .order_by(*args['sort']) \
             .paginate(page=args['page'], per_page=30)  # type: Pagination
         inventory = {
-            'devices': app.resources[Device.t].schema.dump(devices.items, many=True),
+            'devices': app.resources[Device.t].schema.dump(devices.items, many=True, nested=1),
             'groups': [],
             'widgets': {},
             'pagination': {
