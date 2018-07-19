@@ -132,6 +132,7 @@ class SnapshotExpectedEvents(Enum):
     Benchmark = 'Benchmark'
     TestDataStorage = 'TestDataStorage'
     StressTest = 'StressTest'
+    EraseBasic = 'EraseBasic'
     EraseSectors = 'EraseSectors'
     SmartTest = 'SmartTest'
     Install = 'Install'

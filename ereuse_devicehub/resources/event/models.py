@@ -113,7 +113,7 @@ class Event(Thing):
                                           order_by=lambda: Event.created,
                                           collection_class=OrderedSet),
                           primaryjoin=parent_id == Computer.id)
-    """
+    parent_id.comment = """
     For events that are performed to components, the device parent
     at that time.
     

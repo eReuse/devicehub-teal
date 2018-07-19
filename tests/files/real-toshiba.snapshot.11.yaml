@@ -39,6 +39,7 @@
       "manufacturer": "Qualcomm Atheros",
       "events": [],
       "type": "NetworkAdapter",
+      "wireless": true,
       "model": "AR9285 Wireless Network Adapter"
     },
     {
@@ -47,6 +48,7 @@
       "events": [],
       "speed": 100,
       "type": "NetworkAdapter",
+      "wireless": false,
       "model": "RTL810xE PCI Express Fast Ethernet controller"
     },
     {

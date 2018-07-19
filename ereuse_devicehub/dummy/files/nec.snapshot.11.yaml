@@ -1,0 +1,153 @@
+{
+  "software": "Workbench",
+  "uuid": "94eafe86-a99f-4507-8716-0a3a7adf1134",
+  "device": {
+    "serialNumber": "SN 123456789ABC",
+    "manufacturer": "NEC Computers SAS",
+    "events": [
+      {
+        "error": false,
+        "elapsed": 60,
+        "type": "StressTest"
+      },
+      {
+        "rate": 0.9323,
+        "elapsed": 1,
+        "type": "BenchmarkRamSysbench"
+      }
+    ],
+    "type": "Desktop",
+    "chassis": "Tower",
+    "model": "Powermate MLxxx"
+  },
+  "components": [
+    {
+      "serialNumber": "00:24:21:7a:90:02",
+      "manufacturer": "Intel Corporation",
+      "speed": 1000,
+      "events": [],
+      "type": "NetworkAdapter",
+      "wireless": false,
+      "model": "82566DM-2 Gigabit Network Connection"
+    },
+    {
+      "serialNumber": null,
+      "manufacturer": "Intel Corp.",
+      "speed": 3.0,
+      "cores": 2,
+      "events": [
+        {
+          "rate": 20.1309,
+          "elapsed": 20,
+          "type": "BenchmarkProcessorSysbench"
+        },
+        {
+          "rate": 11999.24,
+          "elapsed": 0,
+          "type": "BenchmarkProcessor"
+        }
+      ],
+      "type": "Processor",
+      "model": "Intel Core2 Duo CPU E8400 @ 3.00GHz",
+      "address": 64
+    },
+    {
+      "serialNumber": null,
+      "manufacturer": "Intel Corporation",
+      "memory": 256.0,
+      "events": [],
+      "type": "GraphicCard",
+      "model": "82Q35 Express Integrated Graphics Controller"
+    },
+    {
+      "serialNumber": null,
+      "manufacturer": "Intel Corporation",
+      "events": [],
+      "type": "SoundCard",
+      "model": "82801I HD Audio Controller"
+    },
+    {
+      "serialNumber": "253C8F0C",
+      "manufacturer": "Samsung",
+      "speed": 667.0,
+      "interface": "DDR2",
+      "format": "DIMM",
+      "size": 1024,
+      "events": [],
+      "type": "RamModule",
+      "model": "M3 78T2863QZS-CE6"
+    },
+    {
+      "serialNumber": "253C8DE7",
+      "manufacturer": "Samsung",
+      "speed": 667.0,
+      "interface": "DDR2",
+      "format": "DIMM",
+      "size": 1024,
+      "events": [],
+      "type": "RamModule",
+      "model": "M3 78T2863QZS-CE6"
+    },
+    {
+      "serialNumber": "STA2L7MV39LL6D",
+      "manufacturer": "Hitachi",
+      "interface": "ATA",
+      "size": 305245,
+      "events": [
+        {
+          "error": false,
+          "endTime": "2018-07-11T11:33:41.531918",
+          "startTime": "2018-07-11T10:30:35.643855",
+          "zeros": false,
+          "type": "EraseBasic",
+          "steps": [
+            {
+              "type": "StepRandom",
+              "endTime": "2018-07-11T11:33:41.529224",
+              "startTime": "2018-07-11T10:30:35.644043",
+              "error": false
+            }
+          ]
+        },
+        {
+          "writeSpeed": 24.1,
+          "elapsed": 14,
+          "type": "BenchmarkDataStorage",
+          "readSpeed": 105.0
+        },
+        {
+          "type": "TestDataStorage",
+          "length": "Short",
+          "elapsed": 1,
+          "error": true,
+          "status": "Unspecified Error. Self-test not started."
+        }
+      ],
+      "type": "HardDrive",
+      "model": "HDT72103"
+    },
+    {
+      "serialNumber": "9516777584",
+      "manufacturer": "Micro-Star International Co Ltd",
+      "serial": 1,
+      "pcmcia": 0,
+      "usb": 8,
+      "events": [],
+      "type": "Motherboard",
+      "model": "MS-7377",
+      "firewire": 1,
+      "slots": 4
+    }
+  ],
+  "version": "11.0a3",
+  "expectedEvents": [
+    "Benchmark",
+    "SmartTest",
+    "StressTest",
+    "EraseBasic"
+  ],
+  "date": "2018-07-11T10:28:55.879745",
+  "type": "Snapshot",
+  "elapsed": 3886,
+  "closed": false
+}

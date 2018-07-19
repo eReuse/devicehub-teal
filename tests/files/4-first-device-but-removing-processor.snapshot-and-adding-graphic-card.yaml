@@ -9,6 +9,7 @@ components:
     serialNumber: p1c4s
     type: NetworkAdapter
     speed: 1000
+    wireless: False
   - manufacturer: p1c3m
     serialNumber: p1c3s
     type: GraphicCard

@@ -5,7 +5,7 @@ from marshmallow.fields import Boolean, DateTime, Float, Integer, List, Nested, 
 from marshmallow.validate import Length, Range
 
 from ereuse_devicehub.marshmallow import NestedOn
-from ereuse_devicehub.resources.device.schemas import Component, Device
+from ereuse_devicehub.resources.device.schemas import Component, Device, Computer
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
     PriceSoftware, RATE_POSITIVE, RatingSoftware, SnapshotExpectedEvents, SnapshotSoftware, \
     TestHardDriveLength
@@ -29,6 +29,7 @@ class Event(Thing):
     description = String(default='', description=m.Event.description.comment)
     author = NestedOn(User, dump_only=True, exclude=('token',))
     closed = Boolean(missing=True, description=m.Event.closed.comment)
+    parent = NestedOn(Computer, dump_only=True, description=m.Event.parent_id.comment)
 
 
 class EventWithOneDevice(Event):

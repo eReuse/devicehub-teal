@@ -1,0 +1,180 @@
+{
+  "type": "Snapshot",
+  "uuid": "1ced0f87-9e6e-4452-92a6-7a529df76738",
+  "components": [
+    {
+      "speed": 1.199,
+      "cores": 2,
+      "model": "Intel Core i3 CPU 530 @ 2.93GHz",
+      "manufacturer": "Intel Corp.",
+      "type": "Processor",
+      "serialNumber": null,
+      "address": 64,
+      "events": [
+        {
+          "elapsed": 0,
+          "rate": 23408.76,
+          "type": "BenchmarkProcessor"
+        },
+        {
+          "elapsed": 17,
+          "rate": 17.0164,
+          "type": "BenchmarkProcessorSysbench"
+        }
+      ]
+    },
+    {
+      "model": "Core Processor Integrated Graphics Controller",
+      "manufacturer": "Intel Corporation",
+      "type": "GraphicCard",
+      "serialNumber": null,
+      "memory": 256.0,
+      "events": []
+    },
+    {
+      "speed": 1000,
+      "model": "82578DM Gigabit Network Connection",
+      "manufacturer": "Intel Corporation",
+      "type": "NetworkAdapter",
+      "wireless": false,
+      "serialNumber": "6c:62:6d:81:21:7f",
+      "events": []
+    },
+    {
+      "model": "5 Series/3400 Series Chipset High Definition Audio",
+      "manufacturer": "Intel Corporation",
+      "type": "SoundCard",
+      "serialNumber": null,
+      "events": []
+    },
+    {
+      "interface": "DDR3",
+      "size": 2048,
+      "serialNumber": "E1482E29",
+      "model": "16JTF25664AZ-1G4F",
+      "format": "DIMM",
+      "manufacturer": "JEDEC ID:80 2C",
+      "type": "RamModule",
+      "speed": 1333.0,
+      "events": []
+    },
+    {
+      "interface": "ATA",
+      "size": 78533,
+      "model": "HDS72168",
+      "manufacturer": "Hitachi",
+      "type": "HardDrive",
+      "serialNumber": "PVB200Z30JWXRF",
+      "events": [
+        {
+          "elapsed": 1,
+          "type": "TestDataStorage",
+          "error": true,
+          "status": "Unspecified Error. Self-test not started.",
+          "length": "Short"
+        },
+        {
+          "writeSpeed": 25.3,
+          "elapsed": 14,
+          "type": "BenchmarkDataStorage",
+          "readSpeed": 77.7
+        },
+        {
+          "startTime": "2018-07-11T10:32:14.445306",
+          "zeros": false,
+          "type": "EraseBasic",
+          "error": false,
+          "endTime": "2018-07-11T10:53:46.442123",
+          "steps": [
+            {
+              "startTime": "2018-07-11T10:32:14.445496",
+              "type": "StepRandom",
+              "error": false,
+              "endTime": "2018-07-11T10:53:46.438901"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interface": "ATA",
+      "size": 76324,
+      "model": "ST380815AS",
+      "manufacturer": "Seagate",
+      "type": "HardDrive",
+      "serialNumber": "9QZCVLJX",
+      "events": [
+        {
+          "elapsed": 0,
+          "type": "TestDataStorage",
+          "error": true,
+          "status": "Unspecified Error. Self-test not started.",
+          "length": "Short"
+        },
+        {
+          "startTime": "2018-07-11T10:53:46.442187",
+          "zeros": false,
+          "type": "EraseBasic",
+          "error": false,
+          "endTime": "2018-07-11T11:16:28.469899",
+          "steps": [
+            {
+              "startTime": "2018-07-11T10:53:46.442343",
+              "type": "StepRandom",
+              "error": false,
+              "endTime": "2018-07-11T11:16:28.463789"
+            }
+          ]
+        },
+        {
+          "writeSpeed": 22.8,
+          "elapsed": 15,
+          "type": "BenchmarkDataStorage",
+          "readSpeed": 74.7
+        }
+      ]
+    },
+    {
+      "firewire": 0,
+      "pcmcia": 0,
+      "model": "304Ah",
+      "serial": 0,
+      "manufacturer": "Hewlett-Packard",
+      "type": "Motherboard",
+      "serialNumber": "CZC0408YP6",
+      "slots": 0,
+      "usb": 2,
+      "events": []
+    }
+  ],
+  "closed": false,
+  "version": "11.0a3",
+  "device": {
+    "model": "HP Compaq 8100 Elite SFF",
+    "manufacturer": "Hewlett-Packard",
+    "type": "Desktop",
+    "serialNumber": "CZC0408YP6",
+    "chassis": "Tower",
+    "events": [
+      {
+        "error": false,
+        "elapsed": 60,
+        "type": "StressTest"
+      },
+      {
+        "elapsed": 1,
+        "rate": 0.9783,
+        "type": "BenchmarkRamSysbench"
+      }
+    ]
+  },
+  "expectedEvents": [
+    "Benchmark",
+    "SmartTest",
+    "StressTest",
+    "EraseBasic"
+  ],
+  "software": "Workbench",
+  "date": "2018-07-11T10:30:22.395958",
+  "elapsed": 2766
+}

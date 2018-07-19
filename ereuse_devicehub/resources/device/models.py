@@ -7,7 +7,7 @@ from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterfa
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
 from itertools import chain
 from sqlalchemy import BigInteger, Column, Enum as DBEnum, Float, ForeignKey, Integer, Sequence, \
-    SmallInteger, Unicode, inspect
+    SmallInteger, Unicode, inspect, Boolean
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
@@ -279,6 +279,10 @@ class NetworkMixin:
     speed.comment = """
         The maximum speed this network adapter can handle, in mbps.
     """
+    wireless = Column(Boolean)
+    wireless.comment = """
+        Whether it is a wireless interface.
+    """
 
 
 class NetworkAdapter(JoinedComponentTableMixin, NetworkMixin, Component):
@@ -288,12 +292,13 @@ class NetworkAdapter(JoinedComponentTableMixin, NetworkMixin, Component):
 class Processor(JoinedComponentTableMixin, Component):
     speed = Column(Float, check_range('speed', 0.1, 15))
     cores = Column(SmallInteger, check_range('cores', 1, 10))
+    threads = Column(SmallInteger, check_range('threads', 1, 20))
     address = Column(SmallInteger, check_range('address', 8, 256))
 
 
 class RamModule(JoinedComponentTableMixin, Component):
     size = Column(SmallInteger, check_range('size', min=128, max=17000))
-    speed = Column(Float, check_range('speed', min=100, max=10000))
+    speed = Column(SmallInteger, check_range('speed', min=100, max=10000))
     interface = Column(DBEnum(RamInterface))
     format = Column(DBEnum(RamFormat))
 

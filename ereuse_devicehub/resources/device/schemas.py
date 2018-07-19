@@ -5,7 +5,7 @@ from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterfa
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 from marshmallow import post_load, pre_load
-from marshmallow.fields import Float, Integer, Str
+from marshmallow.fields import Float, Integer, Str, Boolean
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
@@ -86,6 +86,7 @@ class NetworkMixin:
     speed = Integer(validate=Range(min=10, max=10000),
                     unit=UnitCodes.mbps,
                     description=m.NetworkAdapter.speed.comment)
+    wireless = Boolean(required=True)
 
 
 class Monitor(DisplayMixin, Device):
@@ -163,13 +164,14 @@ class NetworkAdapter(NetworkMixin, Component):
 
 class Processor(Component):
     speed = Float(validate=Range(min=0.1, max=15), unit=UnitCodes.ghz)
-    cores = Integer(validate=Range(min=1, max=10))  # todo from numberOfCores
+    cores = Integer(validate=Range(min=1, max=10))
+    threads = Integer(validate=Range(min=1, max=20))
     address = Integer(validate=OneOf({8, 16, 32, 64, 128, 256}))
 
 
 class RamModule(Component):
     size = Integer(validate=Range(min=128, max=17000), unit=UnitCodes.mbyte)
-    speed = Float(validate=Range(min=100, max=10000), unit=UnitCodes.mhz)
+    speed = Integer(validate=Range(min=100, max=10000), unit=UnitCodes.mhz)
     interface = EnumField(RamInterface)
     format = EnumField(RamFormat)
 

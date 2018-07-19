@@ -4,7 +4,6 @@ from typing import List, Tuple
 from uuid import uuid4
 
 import pytest
-
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
@@ -251,6 +250,34 @@ def test_snapshot_tag_inner_tag_mismatch_between_tags_and_hid(user: UserClient, 
     user.post(pc2, res=Snapshot)  # PC2 uploads well
     pc2['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]  # Set tag from pc1 to pc2
     user.post(pc2, res=Snapshot, status=MismatchBetweenTagsAndHid)
+
+
+@pytest.mark.xfail(reason='There is no attribute checking for tag-matching devices')
+def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
+    """
+    Tests a snapshot performed to device 1 with tag A and then to
+    device 2 with tag B. Both don't have HID but are different type.
+    Devicehub must fail the Snapshot.
+    """
+    # 1. Upload PC1 without hid but with tag
+    pc1 = file('basic.snapshot')
+    pc1['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
+    del pc1['device']['serialNumber']
+    user.post(pc1, res=Snapshot)
+    # 2. Upload PC2 without hid, a different characteristic than PC1, but with same tag
+    pc2 = file('basic.snapshot')
+    pc2['uuid'] = uuid4()
+    pc2['device']['tags'] = pc1['device']['tags']
+    del pc2['device'][
+        'model']  # pc2 model is unknown but pc1 model is set = different characteristic
+    user.post(pc2, res=Snapshot, status=422)
+
+
+@pytest.mark.xfail(reason='duplicate Snapshot is a human error and needs a nice error message.')
+def test_snapshot_upload_twice_uuid_error(user: UserClient):
+    pc1 = file('basic.snapshot')
+    user.post(pc1, res=Snapshot)
+    user.post(pc1, res=Snapshot, status=422)
 
 
 def test_erase(user: UserClient):

@@ -1,0 +1,128 @@
+{
+  "version": "11.0a3",
+  "expectedEvents": [
+    "Benchmark",
+    "TestDataStorage",
+    "StressTest"
+  ],
+  "uuid": "16467238-64bb-48e0-9058-0cba687d7db0",
+  "components": [
+    {
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false,
+      "manufacturer": "Marvell Technology Group Ltd.",
+      "serialNumber": "e0:cb:4e:0b:e4:11",
+      "model": "88E8056 PCI-E Gigabit Ethernet Controller"
+    },
+    {
+      "events": [
+        {
+          "rate": 4.8652,
+          "elapsed": 5,
+          "type": "BenchmarkProcessorSysbench"
+        },
+        {
+          "rate": 56928.88,
+          "elapsed": 0,
+          "type": "BenchmarkProcessor"
+        }
+      ],
+      "type": "Processor",
+      "speed": 1.6,
+      "manufacturer": "Intel Corp.",
+      "serialNumber": null,
+      "cores": 4,
+      "threads": 8,
+      "model": "Intel Core i7 CPU 920 @ 2.67GHz",
+      "address": 64
+    },
+    {
+      "events": [],
+      "type": "SoundCard",
+      "manufacturer": "Advanced Micro Devices, Inc. AMD/ATI",
+      "serialNumber": null,
+      "model": "Barts HDMI Audio Radeon HD 6790/6850/6870 / 7720"
+    },
+    {
+      "events": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "serialNumber": null,
+      "model": "82801JI HD Audio Controller"
+    },
+    {
+      "events": [],
+      "type": "GraphicCard",
+      "memory": 256.0,
+      "manufacturer": "Advanced Micro Devices, Inc. AMD/ATI",
+      "serialNumber": null,
+      "model": "Barts XT Radeon HD 6870"
+    },
+    {
+      "events": [
+        {
+          "elapsed": 2,
+          "type": "BenchmarkDataStorage",
+          "writeSpeed": 151.0,
+          "readSpeed": 7270.4
+        },
+        {
+          "remainingLifetimePercentage": 98,
+          "assessment": true,
+          "reallocatedSectorCount": 0,
+          "elapsed": 54,
+          "type": "TestDataStorage",
+          "status": "Self-test routine in progress",
+          "powerCycleCount": 648,
+          "length": "Short",
+          "error": false,
+          "lifetime": 202
+        }
+      ],
+      "type": "SolidStateDrive",
+      "interface": "ATA",
+      "manufacturer": null,
+      "serialNumber": "1609F017A70F",
+      "model": "CT240BX200SSD1",
+      "size": 228936
+    },
+    {
+      "events": [],
+      "type": "Motherboard",
+      "slots": 6,
+      "pcmcia": 0,
+      "manufacturer": "ASUSTeK Computer INC.",
+      "serialNumber": "102743030000221",
+      "serial": 1,
+      "firewire": 0,
+      "model": "P6T DELUXE V2",
+      "usb": 9
+    }
+  ],
+  "elapsed": 7339,
+  "device": {
+    "events": [
+      {
+        "rate": 16.5946,
+        "elapsed": 17,
+        "type": "BenchmarkRamSysbench"
+      },
+      {
+        "error": false,
+        "elapsed": 60,
+        "type": "StressTest"
+      }
+    ],
+    "type": "Desktop",
+    "manufacturer": null,
+    "serialNumber": null,
+    "chassis": "Tower",
+    "model": null
+  },
+  "type": "Snapshot",
+  "software": "Workbench",
+  "date": "2018-07-19T15:48:40.635776",
+  "closed": false
+}

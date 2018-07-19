@@ -8,6 +8,7 @@
       "type": "NetworkAdapter",
       "manufacturer": "Intel Corporation",
       "speed": 1000,
+      "wireless": false,
       "model": "82578DM Gigabit Network Connection"
     },
     {
