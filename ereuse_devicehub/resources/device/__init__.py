@@ -1,13 +1,10 @@
-from ereuse_devicehub.resources.device.schemas import Cellphone, Component, Computer, \
-    ComputerMonitor, DataStorage, Desktop, Device, Display, GraphicCard, HardDrive, Laptop, Mobile, \
-    Monitor, Motherboard, NetworkAdapter, Processor, RamModule, Server, Smartphone, \
-    SolidStateDrive, SoundCard, Tablet, TelevisionSet
+from ereuse_devicehub.resources.device import schemas
 from ereuse_devicehub.resources.device.views import DeviceView
 from teal.resource import Converters, Resource
 
 
 class DeviceDef(Resource):
-    SCHEMA = Device
+    SCHEMA = schemas.Device
     VIEW = DeviceView
     ID_CONVERTER = Converters.int
     AUTH = True
@@ -15,109 +12,109 @@ class DeviceDef(Resource):
 
 class ComputerDef(DeviceDef):
     VIEW = None
-    SCHEMA = Computer
+    SCHEMA = schemas.Computer
 
 
 class DesktopDef(ComputerDef):
     VIEW = None
-    SCHEMA = Desktop
+    SCHEMA = schemas.Desktop
 
 
 class LaptopDef(ComputerDef):
     VIEW = None
-    SCHEMA = Laptop
+    SCHEMA = schemas.Laptop
 
 
 class ServerDef(ComputerDef):
     VIEW = None
-    SCHEMA = Server
+    SCHEMA = schemas.Server
 
 
 class MonitorDef(DeviceDef):
     VIEW = None
-    SCHEMA = Monitor
+    SCHEMA = schemas.Monitor
 
 
 class ComputerMonitorDef(MonitorDef):
     VIEW = None
-    SCHEMA = ComputerMonitor
+    SCHEMA = schemas.ComputerMonitor
 
 
 class TelevisionSetDef(MonitorDef):
     VIEW = None
-    SCHEMA = TelevisionSet
+    SCHEMA = schemas.TelevisionSet
 
 
 class MobileDef(DeviceDef):
     VIEW = None
-    SCHEMA = Mobile
+    SCHEMA = schemas.Mobile
 
 
 class SmartphoneDef(MobileDef):
     VIEW = None
-    SCHEMA = Smartphone
+    SCHEMA = schemas.Smartphone
 
 
 class TabletDef(MobileDef):
     VIEW = None
-    SCHEMA = Tablet
+    SCHEMA = schemas.Tablet
 
 
 class CellphoneDef(MobileDef):
     VIEW = None
-    SCHEMA = Cellphone
+    SCHEMA = schemas.Cellphone
 
 
 class ComponentDef(DeviceDef):
     VIEW = None
-    SCHEMA = Component
+    SCHEMA = schemas.Component
 
 
 class GraphicCardDef(ComponentDef):
     VIEW = None
-    SCHEMA = GraphicCard
+    SCHEMA = schemas.GraphicCard
 
 
 class DataStorageDef(ComponentDef):
     VIEW = None
-    SCHEMA = DataStorage
+    SCHEMA = schemas.DataStorage
 
 
 class HardDriveDef(DataStorageDef):
     VIEW = None
-    SCHEMA = HardDrive
+    SCHEMA = schemas.HardDrive
 
 
 class SolidStateDriveDef(DataStorageDef):
     VIEW = None
-    SCHEMA = SolidStateDrive
+    SCHEMA = schemas.SolidStateDrive
 
 
 class MotherboardDef(ComponentDef):
     VIEW = None
-    SCHEMA = Motherboard
+    SCHEMA = schemas.Motherboard
 
 
 class NetworkAdapterDef(ComponentDef):
     VIEW = None
-    SCHEMA = NetworkAdapter
+    SCHEMA = schemas.NetworkAdapter
 
 
 class RamModuleDef(ComponentDef):
     VIEW = None
-    SCHEMA = RamModule
+    SCHEMA = schemas.RamModule
 
 
 class ProcessorDef(ComponentDef):
     VIEW = None
-    SCHEMA = Processor
+    SCHEMA = schemas.Processor
 
 
 class SoundCardDef(ComponentDef):
     VIEW = None
-    SCHEMA = SoundCard
+    SCHEMA = schemas.SoundCard
 
 
 class DisplayDef(ComponentDef):
     VIEW = None
-    SCHEMA = Display
+    SCHEMA = schemas.Display

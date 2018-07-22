@@ -1,16 +1,15 @@
 from click import argument, option
-from flask import current_app as app
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.user import schemas
 from ereuse_devicehub.resources.user.models import Organization, User
-from ereuse_devicehub.resources.user.schemas import User as UserS
 from ereuse_devicehub.resources.user.views import UserView, login
 from teal.db import SQLAlchemy
 from teal.resource import Converters, Resource
 
 
 class UserDef(Resource):
-    SCHEMA = UserS
+    SCHEMA = schemas.User
     VIEW = UserView
     ID_CONVERTER = Converters.uuid
     AUTH = True
@@ -64,5 +63,6 @@ class OrganizationDef(Resource):
 
     def init_db(self, db: SQLAlchemy):
         """Creates the default organization."""
+        from flask import current_app as app
         org = Organization(**app.config.get_namespace('ORGANIZATION_'))
         db.session.add(org)

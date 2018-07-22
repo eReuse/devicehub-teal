@@ -1,4 +1,4 @@
-from flask import current_app, current_app as app, jsonify
+from flask import current_app as app, jsonify
 from flask_sqlalchemy import Pagination
 from marshmallow import Schema as MarshmallowSchema
 from marshmallow.fields import Float, Integer, Nested, Str
@@ -35,7 +35,7 @@ class OfType(Str):
 
     def _deserialize(self, value, attr, data):
         v = super()._deserialize(value, attr, data)
-        return self.column.in_(current_app.resources[v].subresources_types)
+        return self.column.in_(app.resources[v].subresources_types)
 
 
 class Filters(Query):

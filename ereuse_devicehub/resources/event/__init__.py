@@ -1,17 +1,13 @@
 from typing import Callable, Iterable, Tuple
 
 from ereuse_devicehub.resources.device.sync import Sync
-from ereuse_devicehub.resources.event.schemas import Add, AggregateRate, AppRate, Benchmark, \
-    BenchmarkDataStorage, BenchmarkProcessor, BenchmarkProcessorSysbench, BenchmarkRamSysbench, \
-    BenchmarkWithRate, EraseBasic, EraseSectors, EreusePrice, Event, Install, PhotoboxSystemRate, \
-    PhotoboxUserRate, Price, Rate, Remove, Snapshot, Step, StepRandom, StepZero, StressTest, Test, \
-    TestDataStorage, WorkbenchRate
+from ereuse_devicehub.resources.event import schemas
 from ereuse_devicehub.resources.event.views import EventView, SnapshotView
 from teal.resource import Converters, Resource
 
 
 class EventDef(Resource):
-    SCHEMA = Event
+    SCHEMA = schemas.Event
     VIEW = EventView
     AUTH = True
     ID_CONVERTER = Converters.uuid
@@ -19,87 +15,87 @@ class EventDef(Resource):
 
 class AddDef(EventDef):
     VIEW = None
-    SCHEMA = Add
+    SCHEMA = schemas.Add
 
 
 class RemoveDef(EventDef):
     VIEW = None
-    SCHEMA = Remove
+    SCHEMA = schemas.Remove
 
 
 class EraseBasicDef(EventDef):
     VIEW = None
-    SCHEMA = EraseBasic
+    SCHEMA = schemas.EraseBasic
 
 
 class EraseSectorsDef(EraseBasicDef):
     VIEW = None
-    SCHEMA = EraseSectors
+    SCHEMA = schemas.EraseSectors
 
 
 class StepDef(Resource):
     VIEW = None
-    SCHEMA = Step
+    SCHEMA = schemas.Step
 
 
 class StepZeroDef(StepDef):
     VIEW = None
-    SCHEMA = StepZero
+    SCHEMA = schemas.StepZero
 
 
 class StepRandomDef(StepDef):
     VIEW = None
-    SCHEMA = StepRandom
+    SCHEMA = schemas.StepRandom
 
 
 class RateDef(EventDef):
     VIEW = None
-    SCHEMA = Rate
+    SCHEMA = schemas.Rate
 
 
 class AggregateRateDef(RateDef):
     VIEW = None
-    SCHEMA = AggregateRate
+    SCHEMA = schemas.AggregateRate
 
 
 class WorkbenchRateDef(RateDef):
     VIEW = None
-    SCHEMA = WorkbenchRate
+    SCHEMA = schemas.WorkbenchRate
 
 
 class PhotoboxUserDef(RateDef):
     VIEW = None
-    SCHEMA = PhotoboxUserRate
+    SCHEMA = schemas.PhotoboxUserRate
 
 
 class PhotoboxSystemRateDef(RateDef):
     VIEW = None
-    SCHEMA = PhotoboxSystemRate
+    SCHEMA = schemas.PhotoboxSystemRate
 
 
 class AppRateDef(RateDef):
     VIEW = None
-    SCHEMA = AppRate
+    SCHEMA = schemas.AppRate
 
 
 class PriceDef(EventDef):
     VIEW = None
-    SCHEMA = Price
+    SCHEMA = schemas.Price
 
 
 class EreusePriceDef(EventDef):
     VIEW = None
-    SCHEMA = EreusePrice
+    SCHEMA = schemas.EreusePrice
 
 
 class InstallDef(EventDef):
     VIEW = None
-    SCHEMA = Install
+    SCHEMA = schemas.Install
 
 
 class SnapshotDef(EventDef):
     VIEW = None
-    SCHEMA = Snapshot
+    SCHEMA = schemas.Snapshot
     VIEW = SnapshotView
 
     def __init__(self, app, import_name=__package__, static_folder=None, static_url_path=None,
@@ -112,44 +108,74 @@ class SnapshotDef(EventDef):
 
 class TestDef(EventDef):
     VIEW = None
-    SCHEMA = Test
+    SCHEMA = schemas.Test
 
 
 class TestDataStorageDef(TestDef):
     VIEW = None
-    SCHEMA = TestDataStorage
+    SCHEMA = schemas.TestDataStorage
 
 
 class StressTestDef(TestDef):
     VIEW = None
-    SCHEMA = StressTest
+    SCHEMA = schemas.StressTest
 
 
 class BenchmarkDef(EventDef):
     VIEW = None
-    SCHEMA = Benchmark
+    SCHEMA = schemas.Benchmark
 
 
 class BenchmarkDataStorageDef(BenchmarkDef):
     VIEW = None
-    SCHEMA = BenchmarkDataStorage
+    SCHEMA = schemas.BenchmarkDataStorage
 
 
 class BenchmarkWithRateDef(BenchmarkDef):
     VIEW = None
-    SCHEMA = BenchmarkWithRate
+    SCHEMA = schemas.BenchmarkWithRate
 
 
 class BenchmarkProcessorDef(BenchmarkWithRateDef):
     VIEW = None
-    SCHEMA = BenchmarkProcessor
+    SCHEMA = schemas.BenchmarkProcessor
 
 
 class BenchmarkProcessorSysbenchDef(BenchmarkProcessorDef):
     VIEW = None
-    SCHEMA = BenchmarkProcessorSysbench
+    SCHEMA = schemas.BenchmarkProcessorSysbench
 
 
 class BenchmarkRamSysbenchDef(BenchmarkWithRateDef):
     VIEW = None
-    SCHEMA = BenchmarkRamSysbench
+    SCHEMA = schemas.BenchmarkRamSysbench
+
+
+class ToRepairDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.ToRepair
+
+
+class RepairDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.Repair
+
+
+class ToPrepareDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.ToPrepare
+
+
+class PrepareDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.Prepare
+
+
+class ToDisposeDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.ToDispose
+
+
+class DisposeDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.Dispose

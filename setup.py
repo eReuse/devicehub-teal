@@ -35,7 +35,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=[
-        'teal>=0.2.0a8',
+        'teal>=0.2.0a9',
         'marshmallow_enum',
         'ereuse-utils[Naming]>=0.4b1',
         'psycopg2-binary',

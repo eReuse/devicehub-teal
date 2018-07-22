@@ -301,3 +301,27 @@ class BenchmarkProcessorSysbench(BenchmarkProcessor):
 
 class BenchmarkRamSysbench(BenchmarkWithRate):
     pass
+
+
+class ToRepair(EventWithMultipleDevices):
+    pass
+
+
+class Repair(EventWithMultipleDevices):
+    pass
+
+
+class ToPrepare(EventWithMultipleDevices):
+    pass
+
+
+class Prepare(EventWithMultipleDevices):
+    pass
+
+
+class ToDispose(EventWithMultipleDevices):
+    pass
+
+
+class Dispose(EventWithMultipleDevices):
+    pass

@@ -3,15 +3,15 @@ from typing import Tuple
 from click import argument, option
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.tag import schema
 from ereuse_devicehub.resources.tag.model import Tag
-from ereuse_devicehub.resources.tag.schema import Tag as TagS
 from ereuse_devicehub.resources.tag.view import TagView, get_device_from_tag
 from teal.resource import Resource
 from teal.teal import Teal
 
 
 class TagDef(Resource):
-    SCHEMA = TagS
+    SCHEMA = schema.Tag
     VIEW = TagView
 
     def __init__(self, app: Teal, import_name=__package__, static_folder=None,
@@ -37,7 +37,7 @@ class TagDef(Resource):
     @argument('ids', nargs=-1, required=True)
     def create_tags(self, ids: Tuple[str], org: str = None, provider: str = None):
         """Create TAGS and associates them to a specific PROVIDER."""
-        tag_schema = TagS(only=('id', 'provider', 'org'))
+        tag_schema = schema.Tag(only=('id', 'provider', 'org'))
 
         db.session.add_all(
             Tag(**tag_schema.load({'id': tag_id, 'provider': provider, 'org': org}))

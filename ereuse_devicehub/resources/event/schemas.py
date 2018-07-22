@@ -5,7 +5,7 @@ from marshmallow.fields import Boolean, DateTime, Float, Integer, List, Nested, 
 from marshmallow.validate import Length, Range
 
 from ereuse_devicehub.marshmallow import NestedOn
-from ereuse_devicehub.resources.device.schemas import Component, Device, Computer
+from ereuse_devicehub.resources.device.schemas import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
     PriceSoftware, RATE_POSITIVE, RatingSoftware, SnapshotExpectedEvents, SnapshotSoftware, \
     TestHardDriveLength
@@ -298,4 +298,28 @@ class BenchmarkProcessorSysbench(BenchmarkProcessor):
 
 
 class BenchmarkRamSysbench(BenchmarkWithRate):
+    pass
+
+
+class ToRepair(EventWithMultipleDevices):
+    pass
+
+
+class Repair(EventWithMultipleDevices):
+    pass
+
+
+class ToPrepare(EventWithMultipleDevices):
+    pass
+
+
+class Prepare(EventWithMultipleDevices):
+    pass
+
+
+class ToDispose(EventWithMultipleDevices):
+    pass
+
+
+class Dispose(EventWithMultipleDevices):
     pass

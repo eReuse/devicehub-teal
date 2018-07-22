@@ -4,13 +4,13 @@ import pytest
 from flask import g
 from sqlalchemy.util import OrderedSet
 
+from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
 from ereuse_devicehub.resources.enums import TestHardDriveLength
-from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, EraseBasic, EraseSectors, \
-    EventWithOneDevice, Install, Ready, StepRandom, StepZero, StressTest, TestDataStorage
-from tests.conftest import create_user
+from ereuse_devicehub.resources.event import models
+from tests.conftest import create_user, file
 
 
 @pytest.mark.usefixtures('app_context')
@@ -22,7 +22,7 @@ def test_author():
     """
     user = create_user()
     g.user = user
-    e = EventWithOneDevice(device=Device())
+    e = models.EventWithOneDevice(device=Device())
     db.session.add(e)
     assert e.author is None
     assert e.author_id is None
@@ -32,7 +32,7 @@ def test_author():
 
 @pytest.mark.usefixtures('auth_app_context')
 def test_erase_basic():
-    erasure = EraseBasic(
+    erasure = models.EraseBasic(
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
         zeros=True,
         start_time=datetime.now(),
@@ -41,7 +41,7 @@ def test_erase_basic():
     )
     db.session.add(erasure)
     db.session.commit()
-    db_erasure = EraseBasic.query.one()
+    db_erasure = models.EraseBasic.query.one()
     assert erasure == db_erasure
     assert next(iter(db_erasure.device.events)) == erasure
 
@@ -53,7 +53,7 @@ def test_validate_device_data_storage():
     with pytest.raises(TypeError,
                        message='EraseBasic.device must be a DataStorage '
                                'but you passed <GraphicCard None model=\'foo-bar\' S/N=\'foo\'>'):
-        EraseBasic(
+        models.EraseBasic(
             device=GraphicCard(serial_number='foo', manufacturer='bar', model='foo-bar'),
             clean_with_zeros=True,
             start_time=datetime.now(),
@@ -64,27 +64,27 @@ def test_validate_device_data_storage():
 
 @pytest.mark.usefixtures('auth_app_context')
 def test_erase_sectors_steps():
-    erasure = EraseSectors(
+    erasure = models.EraseSectors(
         device=SolidStateDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
         zeros=True,
         start_time=datetime.now(),
         end_time=datetime.now(),
         error=False,
         steps=[
-            StepZero(error=False,
-                     start_time=datetime.now(),
-                     end_time=datetime.now()),
-            StepRandom(error=False,
-                       start_time=datetime.now(),
-                       end_time=datetime.now()),
-            StepZero(error=False,
-                     start_time=datetime.now(),
-                     end_time=datetime.now())
+            models.StepZero(error=False,
+                            start_time=datetime.now(),
+                            end_time=datetime.now()),
+            models.StepRandom(error=False,
+                              start_time=datetime.now(),
+                              end_time=datetime.now()),
+            models.StepZero(error=False,
+                            start_time=datetime.now(),
+                            end_time=datetime.now())
         ]
     )
     db.session.add(erasure)
     db.session.commit()
-    db_erasure = EraseSectors.query.one()
+    db_erasure = models.EraseSectors.query.one()
     # Steps are in order
     assert db_erasure.steps[0].num == 0
     assert db_erasure.steps[1].num == 1
@@ -93,7 +93,7 @@ def test_erase_sectors_steps():
 
 @pytest.mark.usefixtures('auth_app_context')
 def test_test_data_storage():
-    test = TestDataStorage(
+    test = models.TestDataStorage(
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
         error=False,
         elapsed=timedelta(minutes=25),
@@ -103,15 +103,15 @@ def test_test_data_storage():
     )
     db.session.add(test)
     db.session.commit()
-    assert TestDataStorage.query.one()
+    assert models.TestDataStorage.query.one()
 
 
 @pytest.mark.usefixtures('auth_app_context')
 def test_install():
     hdd = HardDrive(serial_number='sn')
-    install = Install(name='LinuxMint 18.04 es',
-                      elapsed=timedelta(seconds=25),
-                      device=hdd)
+    install = models.Install(name='LinuxMint 18.04 es',
+                             elapsed=timedelta(seconds=25),
+                             device=hdd)
     db.session.add(install)
     db.session.commit()
 
@@ -123,7 +123,7 @@ def test_update_components_event_one():
     computer.components.add(hdd)
 
     # Add event
-    test = StressTest(elapsed=timedelta(seconds=1))
+    test = models.StressTest(elapsed=timedelta(seconds=1))
     computer.events_one.add(test)
     assert test.device == computer
     assert next(iter(test.components)) == hdd, 'Event has to have new components'
@@ -147,7 +147,7 @@ def test_update_components_event_multiple():
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 
-    ready = Ready()
+    ready = models.Ready()
     assert not ready.devices
     assert not ready.components
 
@@ -174,7 +174,7 @@ def test_update_parent():
     computer.components.add(hdd)
 
     # Add
-    benchmark = BenchmarkDataStorage()
+    benchmark = models.BenchmarkDataStorage()
     benchmark.device = hdd
     assert benchmark.parent == computer
     assert not benchmark.components
@@ -182,3 +182,23 @@ def test_update_parent():
     # Remove
     benchmark.device = None
     assert not benchmark.parent
+
+
+@pytest.mark.xfail(reason='No POST view for generic tests')
+@pytest.mark.parametrize('event_model', [
+    models.ToRepair,
+    models.Repair,
+    models.ToPrepare,
+    models.Prepare,
+    models.ToDispose,
+    models.Dispose,
+    models.Ready
+])
+def test_generic_event(event_model: models.Event, user: UserClient):
+    """Tests POSTing all generic events."""
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    event = {'type': event_model.t, 'devices': [snapshot['device']['id']]}
+    event, _ = user.post(event, res=event_model)
+    assert event['device'][0]['id'] == snapshot['device']['id']
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert device['events'][0]['id'] == event['id']

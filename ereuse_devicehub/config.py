@@ -1,41 +1,21 @@
 from distutils.version import StrictVersion
+from itertools import chain
 from typing import Set
 
-from ereuse_devicehub.resources.device import CellphoneDef, ComponentDef, ComputerDef, \
-    ComputerMonitorDef, DataStorageDef, DesktopDef, DeviceDef, DisplayDef, GraphicCardDef, \
-    HardDriveDef, LaptopDef, MobileDef, MonitorDef, MotherboardDef, NetworkAdapterDef, \
-    ProcessorDef, RamModuleDef, ServerDef, SmartphoneDef, SolidStateDriveDef, SoundCardDef, \
-    TabletDef, TelevisionSetDef
+from ereuse_devicehub.resources import device, event, inventory, tag, user
 from ereuse_devicehub.resources.enums import PriceSoftware, RatingSoftware
-from ereuse_devicehub.resources.event import AddDef, AggregateRateDef, AppRateDef, \
-    BenchmarkDataStorageDef, BenchmarkDef, BenchmarkProcessorDef, BenchmarkProcessorSysbenchDef, \
-    BenchmarkRamSysbenchDef, BenchmarkWithRateDef, EraseBasicDef, EraseSectorsDef, EreusePriceDef, \
-    EventDef, InstallDef, PhotoboxSystemRateDef, PhotoboxUserDef, PriceDef, RateDef, RemoveDef, \
-    SnapshotDef, StepDef, StepRandomDef, StepZeroDef, StressTestDef, TestDataStorageDef, TestDef, \
-    WorkbenchRateDef
-from ereuse_devicehub.resources.inventory import InventoryDef
-from ereuse_devicehub.resources.tag import TagDef
-from ereuse_devicehub.resources.user import OrganizationDef, UserDef
 from teal.auth import TokenAuth
 from teal.config import Config
 from teal.currency import Currency
+from teal.utils import import_resource
 
 
 class DevicehubConfig(Config):
-    RESOURCE_DEFINITIONS = {
-        DeviceDef, ComputerDef, DesktopDef, LaptopDef, ServerDef, MonitorDef, TelevisionSetDef,
-        ComputerMonitorDef, ComponentDef, GraphicCardDef, DataStorageDef,
-        SolidStateDriveDef, MobileDef, DisplayDef, SmartphoneDef, TabletDef, CellphoneDef,
-        HardDriveDef, MotherboardDef, NetworkAdapterDef, RamModuleDef, ProcessorDef, SoundCardDef,
-        UserDef,
-        OrganizationDef, TagDef, EventDef, AddDef, RemoveDef, EraseBasicDef, EraseSectorsDef,
-        StepDef, StepZeroDef, StepRandomDef, RateDef, AggregateRateDef, WorkbenchRateDef,
-        PhotoboxUserDef, PhotoboxSystemRateDef, PriceDef, EreusePriceDef,
-        InstallDef, SnapshotDef, TestDef,
-        TestDataStorageDef, StressTestDef, WorkbenchRateDef, InventoryDef, BenchmarkDef,
-        BenchmarkDataStorageDef, BenchmarkWithRateDef, AppRateDef, BenchmarkProcessorDef,
-        BenchmarkProcessorSysbenchDef, BenchmarkRamSysbenchDef
-    }
+    RESOURCE_DEFINITIONS = set(chain(import_resource(device),
+                                     import_resource(event),
+                                     import_resource(user),
+                                     import_resource(tag),
+                                     import_resource(inventory)))
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/devicehub'  # type: str
     SCHEMA = 'dhub'
