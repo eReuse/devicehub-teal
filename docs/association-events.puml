@@ -1,72 +1,25 @@
 @startuml
-ChangeAssociation <|-- Organize
-ChangeAssociation <|-- Transfer
-Organize <|-- Plan
-Organize <|-- Allocate
-Allocate <|-- Accept
-Allocate <|-- Reject
-Allocate <|-- Assign
-Allocate <|-- Authorize
-Plan <|-- Reserve
-Plan <|-- Cancel
+skinparam nodesep 10
+skinparam ranksep 30
+
+abstract class Trade {
+    to: Agent
+}
+abstract class Transfer
+abstract class Organize
+
+
+"Associate" <|-- Organize
+"Associate" <|-- Transfer
+Organize <|-- Reserve
+Organize <|--- "Cancel\nReservation"
 Transfer <|-- Receive
-ChangeAssociation <|-- Trade
+"Associate" <|-- Trade
 Trade <|-- Sell
 Trade <|-- Donate
 Trade <|-- Pay
 Trade <|-- Rent
-Trade <|-- DisposeProduct
-
-class ChangeAssociation {
-    agent: who did it
-}
-
-class Receive {
-    sender
-    recipient
-}
-
-class Reserve {
-    reservee
-}
-
-class Cancel {
-    reservee
-}
-
-class Trade {
-
-}
-
-class Allocate {
-    purpose
-}
-
-class Sell {
-    buyer
-}
-
-class Donate {
-    recipient
-}
-
-class Pay {
-    purpose
-    recipient
-}
-
-class Rent {
-    recipient
-}
+Trade <|-- "Dispose\nProduct"
 
 
-Association <|-- PhysicalPossessor
-Association <|-- TradeAssociation
-TradeAssociation <|-- Usufructuary
-TradeAssociation <|-- Ownership
-
-Sell - TradeAssociation
-Donate - TradeAssociation
-Rent -- Usufructuary : Sure?
-Receive - PhysicalPossessor
 @enduml

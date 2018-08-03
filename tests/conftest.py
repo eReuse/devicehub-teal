@@ -8,6 +8,7 @@ from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 
@@ -66,16 +67,14 @@ def user(app: Devicehub) -> UserClient:
     with app.app_context():
         password = 'foo'
         user = create_user(password=password)
-        client = UserClient(application=app,
-                            response_wrapper=app.response_class,
-                            email=user.email,
-                            password=password)
-        client.user, _ = client.login(client.email, client.password)
+        client = UserClient(app, user.email, password, response_wrapper=app.response_class)
+        client.login()
         return client
 
 
 def create_user(email='foo@foo.com', password='foo') -> User:
     user = User(email=email, password=password)
+    user.individuals.add(Person(name='Timmy'))
     db.session.add(user)
     db.session.commit()
     return user

@@ -3,6 +3,8 @@ from base64 import b64encode
 from marshmallow import post_dump
 from marshmallow.fields import Email, String, UUID
 
+from ereuse_devicehub.marshmallow import NestedOn
+from ereuse_devicehub.resources.agent.schemas import Individual
 from ereuse_devicehub.resources.schemas import Thing
 
 
@@ -10,6 +12,7 @@ class User(Thing):
     id = UUID(dump_only=True)
     email = Email(required=True)
     password = String(load_only=True, required=True)
+    individuals = NestedOn(Individual, many=True, dump_only=True)
     name = String()
     token = String(dump_only=True,
                    description='Use this token in an Authorization header to access the app.'

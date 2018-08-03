@@ -1,11 +1,11 @@
 from collections import Iterable
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Set, Union
 from uuid import uuid4
 
 from flask import current_app as app, g
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
-    Float, ForeignKey, Interval, JSON, SmallInteger, Unicode, event, orm
+    Float, ForeignKey, Interval, JSON, Numeric, SmallInteger, Unicode, event, orm
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -14,17 +14,23 @@ from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Desktop, \
     Device, Laptop, Server
 from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RATE_5, Bios, \
     FunctionalityRange, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
-    SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
+    ReceiverRole, SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
 from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
-from teal.currency import Currency
-from teal.db import ArrayOfEnum, CASCADE, CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, \
-    POLYMORPHIC_ON, StrictVersionType, check_range
+from teal.db import ArrayOfEnum, CASCADE, CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, \
+    POLYMORPHIC_ON, StrictVersionType, URL, check_range
+from teal.enums import Country, Currency, Subdivision
+from teal.marshmallow import ValidationError
+
+"""
+A quantity of money with a currency.
+"""
 
 
 class JoinedTableMixin:
@@ -36,11 +42,11 @@ class JoinedTableMixin:
 
 class Event(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    type = Column(Unicode, nullable=False)
     name = Column(Unicode(STR_BIG_SIZE), default='', nullable=False)
     name.comment = """
         A name or title for the event. Used when searching for events.
     """
-    type = Column(Unicode)
     incidence = Column(Boolean, default=False, nullable=False)
     incidence.comment = """
         Should this event be reviewed due some anomaly?
@@ -61,13 +67,21 @@ class Event(Thing):
     description.comment = """
         A comment about the event.
     """
-    date = Column(DateTime)
-    date.comment = """
-        When this event happened.
-        Leave it blank if it is happening now
-        (the field ``created`` is used instead).
-        This is used for example when creating events retroactively.
+    start_time = Column(DateTime)
+    start_time.comment = """
+       When the action starts. For some actions like reservations 
+       the time when they are available, for others like renting
+       when the renting starts.
     """
+    end_time = Column(DateTime)
+    end_time.comment = """
+        When the action ends. For some actions like reservations
+        the time when they expire, for others like renting
+        the time the end rents. For punctual actions it is the time 
+        they are performed; it differs with ``created`` in which
+        created is the where the system received the action.
+    """
+
     snapshot_id = Column(UUID(as_uuid=True), ForeignKey('snapshot.id',
                                                         use_alter=True,
                                                         name='snapshot_events'))
@@ -82,9 +96,36 @@ class Event(Thing):
                        ForeignKey(User.id),
                        nullable=False,
                        default=lambda: g.user.id)
+    # todo compute the org
     author = relationship(User,
-                          backref=backref('events', lazy=True, collection_class=set),
+                          backref=backref('authored_events', lazy=True, collection_class=set),
                           primaryjoin=author_id == User.id)
+    """
+    The user that recorded this action in the system.
+     
+    This does not necessarily has to be the person that produced
+    the action in the real world. For that purpose see
+    ``agent``.
+    """
+
+    agent_id = Column(UUID(as_uuid=True),
+                      ForeignKey(Agent.id),
+                      nullable=False,
+                      default=lambda: g.user.individual.id)
+    # todo compute the org
+    agent = relationship(Agent,
+                         backref=backref('events_agent',
+                                         lazy=True,
+                                         collection_class=OrderedSet,
+                                         order_by=lambda: Event.created),
+                         primaryjoin=agent_id == Agent.id, )
+    agent_id.comment = """
+    The direct performer or driver of the action. e.g. John wrote a book.
+    
+    It can differ with the user that registered the action in the
+    system, which can be in their behalf.
+    """
+
     components = relationship(Component,
                               backref=backref('events_components',
                                               lazy=True,
@@ -93,7 +134,7 @@ class Event(Thing):
                               secondary=lambda: EventComponent.__table__,
                               order_by=lambda: Component.id,
                               collection_class=OrderedSet)
-    """
+    components.comment = """
     The components that are affected by the event.
     
     When performing events to parent devices their components are
@@ -138,13 +179,32 @@ class Event(Thing):
             args[INHERIT_COND] = cls.id == Event.id
         return args
 
+    @validates('end_time')
+    def validate_end_time(self, _, end_time: datetime):
+        if self.start_time and end_time <= self.start_time:
+            raise ValidationError('The event cannot finish before it starts.')
+        return end_time
+
+    @validates('start_time')
+    def validate_start_time(self, _, start_time: datetime):
+        if self.end_time and start_time >= self.end_time:
+            raise ValidationError('The event cannot start after it finished.')
+        return start_time
+
 
 class EventComponent(db.Model):
     device_id = Column(BigInteger, ForeignKey(Component.id), primary_key=True)
     event_id = Column(UUID(as_uuid=True), ForeignKey(Event.id), primary_key=True)
 
 
-class EventWithOneDevice(Event):
+class JoinedWithOneDeviceMixin:
+    # noinspection PyMethodParameters
+    @declared_attr
+    def id(cls):
+        return Column(UUID(as_uuid=True), ForeignKey(EventWithOneDevice.id), primary_key=True)
+
+
+class EventWithOneDevice(JoinedTableMixin, Event):
     device_id = Column(BigInteger, ForeignKey(Device.id), nullable=False)
     device = relationship(Device,
                           backref=backref('events_one',
@@ -198,18 +258,12 @@ class Deallocate(JoinedTableMixin, EventWithMultipleDevices):
     organization = Column(Unicode(STR_SIZE))
 
 
-class EraseBasic(JoinedTableMixin, EventWithOneDevice):
-    start_time = Column(DateTime, nullable=False)
-    end_time = Column(DateTime, CheckConstraint('end_time > start_time'), nullable=False)
+class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
     zeros = Column(Boolean, nullable=False)
     zeros.comment = """
         Whether this erasure had a first erasure step consisting of
         only writing zeros.
     """
-
-
-class Ready(EventWithMultipleDevices):
-    pass
 
 
 class EraseSectors(EraseBasic):
@@ -222,7 +276,9 @@ class Step(db.Model):
     num = Column(SmallInteger, primary_key=True)
     error = Column(Boolean, default=False, nullable=False)
     start_time = Column(DateTime, nullable=False)
+    start_time.comment = Event.start_time.comment
     end_time = Column(DateTime, CheckConstraint('end_time > start_time'), nullable=False)
+    end_time.comment = Event.end_time.comment
 
     erasure = relationship(EraseBasic,
                            backref=backref('steps',
@@ -254,7 +310,7 @@ class StepRandom(Step):
     pass
 
 
-class Snapshot(JoinedTableMixin, EventWithOneDevice):
+class Snapshot(JoinedWithOneDeviceMixin, EventWithOneDevice):
     uuid = Column(UUID(as_uuid=True), unique=True)
     version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)
     software = Column(DBEnum(SnapshotSoftware), nullable=False)
@@ -266,7 +322,7 @@ class Snapshot(JoinedTableMixin, EventWithOneDevice):
     expected_events = Column(ArrayOfEnum(DBEnum(SnapshotExpectedEvents)))
 
 
-class Install(JoinedTableMixin, EventWithOneDevice):
+class Install(JoinedWithOneDeviceMixin, EventWithOneDevice):
     elapsed = Column(Interval, nullable=False)
 
 
@@ -280,7 +336,7 @@ class SnapshotRequest(db.Model):
                                             cascade=CASCADE_OWN))
 
 
-class Rate(JoinedTableMixin, EventWithOneDevice):
+class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
     rating = Column(Float(decimal_return_scale=2), check_range('rating', *RATE_POSITIVE))
     software = Column(DBEnum(RatingSoftware))
     version = Column(StrictVersionType)
@@ -401,9 +457,9 @@ class PhotoboxSystemRate(PhotoboxRate):
     id = Column(UUID(as_uuid=True), ForeignKey(PhotoboxRate.id), primary_key=True)
 
 
-class Price(JoinedTableMixin, EventWithOneDevice):
+class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
     currency = Column(DBEnum(Currency), nullable=False)
-    price = Column(Float(decimal_return_scale=2), check_range('price', 0), nullable=False)
+    price = Column(Numeric(precision=19, scale=4), check_range('price', 0), nullable=False)
     software = Column(DBEnum(PriceSoftware))
     version = Column(StrictVersionType)
     rating_id = Column(UUID(as_uuid=True), ForeignKey(AggregateRate.id))
@@ -497,7 +553,7 @@ class EreusePrice(Price):
         return self.Service(self.device, self.rating.rating_range, role, self.price)
 
 
-class Test(JoinedTableMixin, EventWithOneDevice):
+class Test(JoinedWithOneDeviceMixin, EventWithOneDevice):
     elapsed = Column(Interval, nullable=False)
 
     @declared_attr
@@ -536,11 +592,14 @@ class StressTest(Test):
     pass
 
     @validates('elapsed')
-    def bigger_than_a_minute(self, _, value: timedelta):
-        assert value.total_seconds() >= 60
+    def is_minute_and_bigger_than_1_minute(self, _, value: timedelta):
+        seconds = value.total_seconds()
+        assert not bool(seconds % 60)
+        assert seconds >= 60
+        return value
 
 
-class Benchmark(JoinedTableMixin, EventWithOneDevice):
+class Benchmark(JoinedWithOneDeviceMixin, EventWithOneDevice):
     elapsed = Column(Interval)
 
     @declared_attr
@@ -589,6 +648,10 @@ class Repair(EventWithMultipleDevices):
     pass
 
 
+class ReadyToUse(EventWithMultipleDevices):
+    pass
+
+
 class ToPrepare(EventWithMultipleDevices):
     pass
 
@@ -597,11 +660,124 @@ class Prepare(EventWithMultipleDevices):
     pass
 
 
-class ToDispose(EventWithMultipleDevices):
+class Live(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    ip = Column(IP, nullable=False,
+                comment='The IP where the live was triggered.')
+    subdivision_confidence = Column(SmallInteger,
+                                    check_range('subdivision_confidence', 0, 100),
+                                    nullable=False)
+    subdivision = Column(DBEnum(Subdivision), nullable=False)
+    city = Column(Unicode(STR_SM_SIZE), nullable=False)
+    city_confidence = Column(SmallInteger,
+                             check_range('city_confidence', 0, 100),
+                             nullable=False)
+    isp = Column(Unicode(length=STR_SM_SIZE), nullable=False)
+    organization = Column(Unicode(length=STR_SIZE))
+    organization_type = Column(Unicode(length=STR_SM_SIZE))
+
+    @property
+    def country(self) -> Country:
+        return self.subdivision.country
+    # todo relate to snapshot
+    # todo testing
+
+
+class Organize(JoinedTableMixin, EventWithMultipleDevices):
     pass
 
 
-class Dispose(EventWithMultipleDevices):
+class Reserve(Organize):
+    pass
+
+
+class CancelReservation(Organize):
+    pass
+
+
+class Trade(JoinedTableMixin, EventWithMultipleDevices):
+    shipping_date = Column(DateTime)
+    shipping_date.comment = """
+            When are the devices going to be ready for shipping?
+        """
+    invoice_number = Column(Unicode(length=STR_SIZE))
+    invoice_number.comment = """
+            The id of the invoice so they can be linked.
+        """
+    price_id = Column(UUID(as_uuid=True), ForeignKey(Price.id))
+    price = relationship(Price,
+                         backref=backref('trade', lazy=True, uselist=False),
+                         primaryjoin=price_id == Price.id)
+    price_id.comment = """
+            The price set for this trade.
+            
+            If no price is set it is supposed that the trade was
+            not payed, usual in donations.
+        """
+    to_id = Column(UUID(as_uuid=True),
+                   ForeignKey(Agent.id),
+                   nullable=False,
+                   default=lambda: g.user.id)
+    # todo compute the org
+    to = relationship(Agent,
+                      backref=backref('events_to',
+                                      lazy=True,
+                                      collection_class=OrderedSet,
+                                      order_by=lambda: Event.created),
+                      primaryjoin=to_id == Agent.id)
+    confirms_id = Column(UUID(as_uuid=True), ForeignKey(Organize.id))
+    confirms = relationship(Organize,
+                            backref=backref('confirmation', lazy=True, uselist=False),
+                            primaryjoin=confirms_id == Organize.id)
+    confirms_id.comment = """
+            An organize action that this association confirms.
+            
+            For example, a ``Sell`` or ``Rent``
+            can confirm a ``Reserve`` action.
+        """
+
+
+class Sell(Trade):
+    pass
+
+
+class Donate(Trade):
+    pass
+
+
+class Rent(Trade):
+    pass
+
+
+class CancelTrade(Trade):
+    pass
+
+
+class ToDisposeProduct(Trade):
+    pass
+
+
+class DisposeProduct(Trade):
+    pass
+
+
+class Receive(JoinedTableMixin, EventWithMultipleDevices):
+    role = Column(DBEnum(ReceiverRole),
+                  nullable=False,
+                  default=ReceiverRole.Intermediary)
+
+
+class Migrate(JoinedTableMixin, EventWithMultipleDevices):
+    other = Column(URL(), nullable=False)
+    other.comment = """
+        The URL of the Migrate in the other end.
+    """
+
+
+class MigrateTo(Migrate):
+    pass
+
+
+class MigrateFrom(Migrate):
     pass
 
 

@@ -1,25 +1,31 @@
+import ipaddress
 from datetime import datetime, timedelta
+from decimal import Decimal
 from distutils.version import StrictVersion
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Union
 from uuid import UUID
 
+from boltons.urlutils import URL
 from sqlalchemy import Column
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import Currency
 
+from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    PriceSoftware, RatingSoftware, SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
+    PriceSoftware, RatingSoftware, ReceiverRole, SnapshotExpectedEvents, SnapshotSoftware, \
+    TestHardDriveLength
 from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import Thing
-from ereuse_devicehub.resources.user import User
+from ereuse_devicehub.resources.user.models import User
+from teal import enums
 from teal.db import Model
+from teal.enums import Country
 
 
 class Event(Thing):
     id = ...  # type: Column
     name = ...  # type: Column
-    date = ...  # type: Column
     type = ...  # type: Column
     error = ...  # type: Column
     incidence = ...  # type: Column
@@ -28,14 +34,19 @@ class Event(Thing):
     snapshot_id = ...  # type: Column
     snapshot = ...  # type: relationship
     author_id = ...  # type: Column
-    author = ...  # type: relationship
+    agent = ...  # type: relationship
     components = ...  # type: relationship
     parent_id = ...  # type: Column
     parent = ...  # type: relationship
     closed = ...  # type: Column
+    start_time = ...  # type: Column
+    end_time = ...  # type: Column
+    agent_id = ...  # type: Column
 
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, id=None, name=None, incidence=None, closed=None, error=None,
+                 description=None, start_time=None, end_time=None, snapshot=None, agent=None,
+                 parent=None, created=None, updated=None, author=None) -> None:
+        super().__init__(created, updated)
         self.id = ...  # type: UUID
         self.name = ...  # type: str
         self.type = ...  # type: str
@@ -43,26 +54,32 @@ class Event(Thing):
         self.closed = ...  # type: bool
         self.error = ...  # type: bool
         self.description = ...  # type: str
-        self.date = ...  # type: datetime
-        self.snapshot_id = ...  # type: UUID
+        self.start_time = ...  # type: datetime
+        self.end_time = ...  # type: datetime
         self.snapshot = ...  # type: Snapshot
-        self.author_id = ...  # type: UUID
-        self.author = ...  # type: User
         self.components = ...  # type: Set[Component]
-        self.parent_id = ...  # type: Computer
         self.parent = ...  # type: Computer
+        self.agent = ...  # type: Agent
+        self.author = ...  # type: User
 
 
 class EventWithOneDevice(Event):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.device_id = ...  # type: int
+
+    def __init__(self, id=None, name=None, incidence=None, closed=None, error=None,
+                 description=None, start_time=None, end_time=None, snapshot=None, agent=None,
+                 parent=None, created=None, updated=None, author=None, device=None) -> None:
+        super().__init__(id, name, incidence, closed, error, description, start_time, end_time,
+                         snapshot, agent, parent, created, updated, author)
         self.device = ...  # type: Device
 
 
 class EventWithMultipleDevices(Event):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+
+    def __init__(self, id=None, name=None, incidence=None, closed=None, error=None,
+                 description=None, start_time=None, end_time=None, snapshot=None, agent=None,
+                 parent=None, created=None, updated=None, author=None, devices=None) -> None:
+        super().__init__(id, name, incidence, closed, error, description, start_time, end_time,
+                         snapshot, agent, parent, created, updated, author)
         self.devices = ...  # type: Set[Device]
 
 
@@ -75,14 +92,15 @@ class Remove(EventWithOneDevice):
 
 
 class Step(Model):
-    def __init__(self, **kwargs) -> None:
-        self.erasure_id = ...  # type: UUID
+    def __init__(self, num=None, success=None, start_time=None, end_time=None,
+                 erasure=None, error=None) -> None:
         self.type = ...  # type: str
         self.num = ...  # type: int
         self.success = ...  # type: bool
         self.start_time = ...  # type: datetime
         self.end_time = ...  # type: datetime
         self.erasure = ...  # type: EraseBasic
+        self.error = ...  # type: bool
 
 
 class StepZero(Step):
@@ -174,7 +192,6 @@ class PhotoboxRate(IndividualRate):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.num = ...  # type: int
-        self.image_id = ...  # type: UUID
         self.image = ...  # type: Image
 
 
@@ -205,11 +222,10 @@ class Price(EventWithOneDevice):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.price = ...  # type: Decimal
         self.currency = ...  # type: Currency
-        self.price = ...  # type: float
         self.software = ...  # type: PriceSoftware
         self.version = ...  # type: StrictVersion
-        self.rating_id = ...  # type: UUID
         self.rating = ...  # type: AggregateRate
 
 
@@ -260,10 +276,6 @@ class EraseBasic(EventWithOneDevice):
         self.success = ...  # type: bool
 
 
-class Ready(EventWithMultipleDevices):
-    pass
-
-
 class EraseSectors(EraseBasic):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -311,6 +323,10 @@ class Repair(EventWithMultipleDevices):
     pass
 
 
+class ReadyToUse(EventWithMultipleDevices):
+    pass
+
+
 class ToPrepare(EventWithMultipleDevices):
     pass
 
@@ -319,9 +335,96 @@ class Prepare(EventWithMultipleDevices):
     pass
 
 
-class ToDispose(EventWithMultipleDevices):
+class Live(EventWithOneDevice):
+    ip = ...  # type: Column
+    subdivision_confidence = ...  # type: Column
+    subdivision = ...  # type: Column
+    city = ...  # type: Column
+    city_confidence = ...  # type: Column
+    isp = ...  # type: Column
+    organization = ...  # type: Column
+    organization_type = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.ip = ...  # type: Union[ipaddress.IPv4Address, ipaddress.IPv6Address]
+        self.subdivision_confidence = ...  # type: int
+        self.subdivision = ...  # type: enums.Subdivision
+        self.city = ...  # type: str
+        self.city_confidence = ...  # type: int
+        self.isp = ...  # type: str
+        self.organization = ...  # type: str
+        self.organization_type = ...  # type: str
+        self.country = ...  # type: Country
+
+
+class Organize(EventWithMultipleDevices):
     pass
 
 
-class Dispose(EventWithMultipleDevices):
+class Reserve(Organize):
+    pass
+
+
+class Trade(EventWithMultipleDevices):
+    shipping_date = ...  # type: Column
+    invoice_number = ...  # type: Column
+    price = ...  # type: relationship
+    to = ...  # type: relationship
+    confirms = ...  # type: relationship
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.shipping_date = ...  # type: datetime
+        self.invoice_number = ...  # type: str
+        self.price = ...  # type: Price
+        self.to = ...  # type: Agent
+        self.confirms = ...  # type: Organize
+
+
+class Sell(Trade):
+    pass
+
+
+class Donate(Trade):
+    pass
+
+
+class Rent(Trade):
+    pass
+
+
+class CancelTrade(Trade):
+    pass
+
+
+class ToDisposeProduct(Trade):
+    pass
+
+
+class DisposeProduct(Trade):
+    pass
+
+
+class Receive(EventWithMultipleDevices):
+    role = ...  # type:Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.role = ...  # type: ReceiverRole
+
+
+class Migrate(EventWithMultipleDevices):
+    other = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.other = ...  # type: URL
+
+
+class MigrateTo(Migrate):
+    pass
+
+
+class MigrateFrom(Migrate):
     pass

@@ -2,11 +2,11 @@ from distutils.version import StrictVersion
 from itertools import chain
 from typing import Set
 
-from ereuse_devicehub.resources import device, event, inventory, tag, user
+from ereuse_devicehub.resources import agent, device, event, inventory, tag, user
 from ereuse_devicehub.resources.enums import PriceSoftware, RatingSoftware
 from teal.auth import TokenAuth
 from teal.config import Config
-from teal.currency import Currency
+from teal.enums import Currency
 from teal.utils import import_resource
 
 
@@ -15,7 +15,8 @@ class DevicehubConfig(Config):
                                      import_resource(event),
                                      import_resource(user),
                                      import_resource(tag),
-                                     import_resource(inventory)))
+                                     import_resource(inventory),
+                                     import_resource(agent)))
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/devicehub'  # type: str
     SCHEMA = 'dhub'

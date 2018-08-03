@@ -4,6 +4,7 @@ from typing import List, Tuple
 from uuid import uuid4
 
 import pytest
+
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
@@ -28,7 +29,7 @@ def test_snapshot_model():
     device = m.Desktop(serial_number='a1', chassis=ComputerChassis.Tower)
     # noinspection PyArgumentList
     snapshot = Snapshot(uuid=uuid4(),
-                        date=datetime.now(),
+                        end_time=datetime.now(),
                         version='1.0',
                         software=SnapshotSoftware.DesktopApp,
                         elapsed=timedelta(seconds=25))

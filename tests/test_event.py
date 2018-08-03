@@ -1,19 +1,22 @@
+import ipaddress
 from datetime import datetime, timedelta
 
 import pytest
-from flask import g
+from flask import current_app as app, g
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
-from ereuse_devicehub.resources.enums import TestHardDriveLength
+from ereuse_devicehub.resources.enums import ComputerChassis, TestHardDriveLength
 from ereuse_devicehub.resources.event import models
+from teal.enums import Currency, Subdivision
+from tests import conftest
 from tests.conftest import create_user, file
 
 
-@pytest.mark.usefixtures('app_context')
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_author():
     """
     Checks the default created author.
@@ -30,7 +33,7 @@ def test_author():
     assert e.author == user
 
 
-@pytest.mark.usefixtures('auth_app_context')
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_erase_basic():
     erasure = models.EraseBasic(
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
@@ -46,7 +49,7 @@ def test_erase_basic():
     assert next(iter(db_erasure.device.events)) == erasure
 
 
-@pytest.mark.usefixtures('auth_app_context')
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_validate_device_data_storage():
     """Checks the validation for data-storage-only events works."""
     # We can't set a GraphicCard
@@ -62,7 +65,7 @@ def test_validate_device_data_storage():
         )
 
 
-@pytest.mark.usefixtures('auth_app_context')
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_erase_sectors_steps():
     erasure = models.EraseSectors(
         device=SolidStateDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
@@ -91,7 +94,7 @@ def test_erase_sectors_steps():
     assert db_erasure.steps[2].num == 2
 
 
-@pytest.mark.usefixtures('auth_app_context')
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_test_data_storage():
     test = models.TestDataStorage(
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
@@ -106,7 +109,7 @@ def test_test_data_storage():
     assert models.TestDataStorage.query.one()
 
 
-@pytest.mark.usefixtures('auth_app_context')
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_install():
     hdd = HardDrive(serial_number='sn')
     install = models.Install(name='LinuxMint 18.04 es',
@@ -116,7 +119,7 @@ def test_install():
     db.session.commit()
 
 
-@pytest.mark.usefixtures('auth_app_context')
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_update_components_event_one():
     computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1')
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
@@ -141,13 +144,13 @@ def test_update_components_event_one():
     assert len(test.components) == 1
 
 
-@pytest.mark.usefixtures('auth_app_context')
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_update_components_event_multiple():
     computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1')
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 
-    ready = models.Ready()
+    ready = models.ReadyToUse()
     assert not ready.devices
     assert not ready.components
 
@@ -167,7 +170,7 @@ def test_update_components_event_multiple():
     assert ready.components
 
 
-@pytest.mark.usefixtures('auth_app_context')
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_update_parent():
     computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1')
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
@@ -184,21 +187,96 @@ def test_update_parent():
     assert not benchmark.parent
 
 
-@pytest.mark.xfail(reason='No POST view for generic tests')
 @pytest.mark.parametrize('event_model', [
     models.ToRepair,
     models.Repair,
     models.ToPrepare,
+    models.ReadyToUse,
+    models.ToPrepare,
     models.Prepare,
-    models.ToDispose,
-    models.Dispose,
-    models.Ready
 ])
 def test_generic_event(event_model: models.Event, user: UserClient):
     """Tests POSTing all generic events."""
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     event = {'type': event_model.t, 'devices': [snapshot['device']['id']]}
-    event, _ = user.post(event, res=event_model)
-    assert event['device'][0]['id'] == snapshot['device']['id']
+    event, _ = user.post(event, res=models.Event)
+    assert event['devices'][0]['id'] == snapshot['device']['id']
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
-    assert device['events'][0]['id'] == event['id']
+    assert device['events'][-1]['id'] == event['id']
+
+
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
+def test_live():
+    """Tests inserting a Live into the database and GETting it."""
+    db_live = models.Live(ip=ipaddress.ip_address('79.147.10.10'),
+                          subdivision_confidence=84,
+                          subdivision=Subdivision['ES-CA'],
+                          city='Barcelona',
+                          city_confidence=20,
+                          isp='ACME',
+                          device=Desktop(serial_number='sn1', model='ml1', manufacturer='mr1',
+                                         chassis=ComputerChassis.Docking),
+                          organization='ACME1',
+                          organization_type='ACME1bis')
+    db.session.add(db_live)
+    db.session.commit()
+    client = UserClient(app, 'foo@foo.com', 'foo', response_wrapper=app.response_class)
+    client.login()
+    live, _ = client.get(res=models.Event, item=str(db_live.id))
+    assert live['ip'] == '79.147.10.10'
+    assert live['subdivision'] == 'ES-CA'
+    assert live['country'] == 'ES'
+
+
+@pytest.mark.xfail(reson='Functionality not developed.')
+def test_live_geoip():
+    """Tests performing a Live action using the GEOIP library."""
+
+
+@pytest.mark.xfail(reson='Develop reserve')
+def test_reserve(user: UserClient):
+    """Performs a reservation and then cancels it."""
+
+
+@pytest.mark.parametrize('event_model', [
+    models.Sell,
+    models.Donate,
+    models.Rent,
+    models.DisposeProduct
+])
+def test_trade(event_model: models.Event, user: UserClient):
+    """Tests POSTing all generic events."""
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    event = {
+        'type': event_model.t,
+        'devices': [snapshot['device']['id']],
+        'to': user.user['individuals'][0]['id'],
+        'shippingDate': '2018-06-29T12:28:54',
+        'invoiceNumber': 'ABC'
+    }
+    event, _ = user.post(event, res=models.Event)
+    assert event['devices'][0]['id'] == snapshot['device']['id']
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert device['events'][-1]['id'] == event['id']
+
+
+@pytest.mark.xfail(reson='Develop migrate')
+def test_migrate():
+    pass
+
+
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
+def test_price_custom():
+    computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1',
+                       chassis=ComputerChassis.Docking)
+    price = models.Price(price=25.25, currency=Currency.EUR)
+    price.device = computer
+    db.session.add(computer)
+    db.session.commit()
+
+    client = UserClient(app, 'foo@foo.com', 'foo', response_wrapper=app.response_class)
+    client.login()
+    p, _ = client.get(res=models.Event, item=str(price.id))
+    assert p['device']['id'] == price.device.id == computer.id
+    assert p['price'] == 25.25
+    assert p['currency'] == Currency.EUR.name == 'EUR'

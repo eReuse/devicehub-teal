@@ -9,6 +9,7 @@ from sqlalchemy.util import OrderedSet
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Component, ComputerMonitor, Desktop, Device, \
     GraphicCard, Laptop, Motherboard, NetworkAdapter
@@ -369,6 +370,7 @@ def test_get_device(app: Devicehub, user: UserClient):
         db.session.add(Test(device=pc,
                             elapsed=timedelta(seconds=4),
                             error=False,
+                            agent=Person(name='Timmy'),
                             author=User(email='bar@bar.com')))
         db.session.commit()
     pc, _ = user.get(res=Device, item=1)

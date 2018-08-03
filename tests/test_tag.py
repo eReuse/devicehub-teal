@@ -5,11 +5,11 @@ from sqlalchemy.exc import IntegrityError
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Desktop
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.tag.view import CannotCreateETag, TagNotLinked
-from ereuse_devicehub.resources.user import Organization
 from teal.db import MultipleResourcesFound, ResourceNotFound
 from teal.marshmallow import ValidationError
 

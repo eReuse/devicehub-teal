@@ -1,4 +1,8 @@
 @startuml
+left to right direction
+skinparam nodesep 20
+skinparam ranksep 1
+
 abstract class Rate
 abstract class Event
 abstract class Test
@@ -38,13 +42,13 @@ EventWithOneDevice <|--- EraseBasic
 EraseBasic <|- EraseSectors
 
 Step <|-- StepZero
-Step <|-- StepRandom
-Snapshot "1" -- "1" SnapshotRequest
+Step <|-- "Step\nRandom"
+Snapshot "1" -- "1" "Snapshot\nRequest"
 Event "*" -> "0..1" Snapshot : InSnapshot >
 Event "*" -> "0..1" Component : affectedComponents >
-Device "1" *-- "*" EventWithOneDevice : EventOn <
-Device "1..*" *-- "1" EventWithMultipleDevices : EventOn <
-EraseBasic "1" *-- "1..*" Step
+Device "1" *- "*" EventWithOneDevice : EventOn <
+Device "1..*" *- "1" EventWithMultipleDevices : EventOn <
+EraseBasic "1" *- "1..*" Step
 PhotoboxRate <|-- PhotoboxSystemRate
 PhotoboxRate <|-- PhotoboxPersonRate
 
@@ -84,18 +88,14 @@ Plan <|-- CancelReservation
 
 
 package Agents {
-    abstract class User
+    abstract class User <<Common schema>>
     abstract class Agent
+
     Event "*" -> "1" User : Author >
     Event "*" - "0..1" Agent : agent >
+    Trade "*" - "0..1" Agent : to >
 
-    Agent <|-- User
-
-    User <|-- Person
-    User <|-- System
-    Agent <|-- Organization
-    User "*" -o "0..1" Organization : WorksIn >
-    User "*" -o "0..1" Organization : activeOrganization >
+    User - Agent
 }
 
 @enduml

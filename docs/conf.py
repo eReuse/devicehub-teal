@@ -167,7 +167,7 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 todo_include_todos = True
 
 # Plantuml
-plantuml_output_format = 'svg'
+plantuml_output_format = 'svg_img'
 
 # favicon
 html_favicon = 'img/favicon.ico'

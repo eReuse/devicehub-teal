@@ -94,9 +94,8 @@ class InstallDef(EventDef):
 
 
 class SnapshotDef(EventDef):
-    VIEW = None
-    SCHEMA = schemas.Snapshot
     VIEW = SnapshotView
+    SCHEMA = schemas.Snapshot
 
     def __init__(self, app, import_name=__package__, static_folder=None, static_url_path=None,
                  template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
@@ -161,6 +160,11 @@ class RepairDef(EventDef):
     SCHEMA = schemas.Repair
 
 
+class ReadyToUse(EventDef):
+    VIEW = None
+    SCHEMA = schemas.ReadyToUse
+
+
 class ToPrepareDef(EventDef):
     VIEW = None
     SCHEMA = schemas.ToPrepare
@@ -171,11 +175,61 @@ class PrepareDef(EventDef):
     SCHEMA = schemas.Prepare
 
 
-class ToDisposeDef(EventDef):
+class LiveDef(EventDef):
     VIEW = None
-    SCHEMA = schemas.ToDispose
+    SCHEMA = schemas.Live
 
 
-class DisposeDef(EventDef):
+class ReserveDef(EventDef):
     VIEW = None
-    SCHEMA = schemas.Dispose
+    SCHEMA = schemas.Reserve
+
+
+class CancelReservationDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.CancelReservation
+
+
+class SellDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.Sell
+
+
+class DonateDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.Donate
+
+
+class RentDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.Rent
+
+
+class CancelTradeDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.CancelTrade
+
+
+class ToDisposeProductDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.ToDisposeProduct
+
+
+class DisposeProductDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.DisposeProduct
+
+
+class ReceiveDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.Receive
+
+
+class MigrateToDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.MigrateTo
+
+
+class MigrateFromDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.MigrateFrom

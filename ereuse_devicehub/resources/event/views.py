@@ -3,7 +3,7 @@ from distutils.version import StrictVersion
 from typing import List
 from uuid import UUID
 
-from flask import request
+from flask import current_app as app, request
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
@@ -14,6 +14,18 @@ from teal.resource import View
 
 
 class EventView(View):
+    def post(self):
+        """Posts an event."""
+        json = request.get_json(validate=False)
+        e = app.resources[json['type']].schema.load(json)
+        Model = db.Model._decl_class_registry.data[json['type']]()
+        event = Model(**e)
+        db.session.add(event)
+        db.session.commit()
+        ret = self.schema.jsonify(event)
+        ret.status_code = 201
+        return ret
+
     def one(self, id: UUID):
         """Gets one event."""
         event = Event.query.filter_by(id=id).one()

@@ -195,3 +195,15 @@ class ComputerChassis(Enum):
     Detachable = 'Detachable'
     Tablet = 'Tablet'
     Virtual = 'Virtual: A device with no chassis, probably non-physical.'
+
+
+class ReceiverRole(Enum):
+    """
+    The role that the receiver takes in the reception;
+    the meaning of the reception.
+    """
+    Intermediary = 'Generic user in the workflow of the device.'
+    FinalUser = 'The user that will use the device.'
+    CollectionPoint = 'A collection point.'
+    RecyclingPoint = 'A recycling point.'
+    Transporter = 'An user that ships the devices to another one.'

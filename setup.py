@@ -35,7 +35,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=[
-        'teal>=0.2.0a9',
+        'teal>=0.2.0a11',
         'marshmallow_enum',
         'ereuse-utils[Naming]>=0.4b1',
         'psycopg2-binary',
@@ -44,7 +44,7 @@ setup(
         'hashids',
         'click',
         'click-spinner',
-        'sqlalchemy-utils[password, color, babel]',
+        'sqlalchemy-utils[password, color, phone]',
         'PyYAML',
         'python-stdnum',
         'ereuse-rate==0.0.2'
@@ -53,7 +53,7 @@ setup(
         'docs': [
             'sphinx',
             'sphinxcontrib-httpdomain >= 1.5.0',
-            'sphinxcontrib-plantuml >= 0.11',
+            'sphinxcontrib-plantuml >= 0.12',
             'sphinxcontrib-websupport >= 1.0.1'
         ],
         'test': test_requires

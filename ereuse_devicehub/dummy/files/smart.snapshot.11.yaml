@@ -7,16 +7,16 @@
   "device": {
     "model": "HP Compaq 8100 Elite SFF",
     "events": [
-      {
-        "type": "BenchmarkRamSysbench",
-        "elapsed": 1,
-        "rate": 0.979
-      },
-      {
-        "type": "StressTest",
-        "elapsed": 300,
-        "error": false
-      }
+    {
+      "type": "BenchmarkRamSysbench",
+      "elapsed": 1,
+      "rate": 0.979
+    },
+    {
+      "type": "StressTest",
+      "elapsed": 300,
+      "error": false
+    }
     ],
     "serialNumber": "CZC0408YJG",
     "type": "Desktop",
@@ -24,141 +24,141 @@
     "chassis": "Tower"
   },
   "components": [
+  {
+    "model": "Intel Core i3 CPU 530 @ 2.93GHz",
+    "address": 64,
+    "events": [
     {
-      "model": "Intel Core i3 CPU 530 @ 2.93GHz",
-      "address": 64,
-      "events": [
-        {
-          "type": "BenchmarkProcessor",
-          "elapsed": 0,
-          "rate": 23408.68
-        },
-        {
-          "type": "BenchmarkProcessorSysbench",
-          "elapsed": 17,
-          "rate": 17.0138
-        }
-      ],
-      "cores": 2,
-      "type": "Processor",
-      "manufacturer": "Intel Corp.",
-      "threads": 4,
-      "serialNumber": null,
-      "speed": 1.199
+      "type": "BenchmarkProcessor",
+      "elapsed": 0,
+      "rate": 23408.68
     },
     {
-      "model": "Core Processor Integrated Graphics Controller",
-      "events": [],
-      "serialNumber": null,
-      "type": "GraphicCard",
-      "manufacturer": "Intel Corporation",
-      "memory": 256.0
-    },
-    {
-      "model": "5 Series/3400 Series Chipset High Definition Audio",
-      "events": [],
-      "serialNumber": null,
-      "type": "SoundCard",
-      "manufacturer": "Intel Corporation"
-    },
-    {
-      "model": "16JTF25664AZ-1G4F",
-      "interface": "DDR3",
-      "events": [],
-      "serialNumber": "B4012F30",
-      "type": "RamModule",
-      "manufacturer": "JEDEC ID:80 2C",
-      "format": "DIMM",
-      "size": 2048,
-      "speed": 1333.0
-    },
-    {
-      "model": "16JTF25664AZ-1G4F",
-      "interface": "DDR3",
-      "events": [],
-      "serialNumber": "8E9F2E29",
-      "type": "RamModule",
-      "manufacturer": "JEDEC ID:80 2C",
-      "format": "DIMM",
-      "size": 2048,
-      "speed": 1333.0
-    },
-    {
-      "model": "16JTF25664AZ-1G4F",
-      "interface": "DDR3",
-      "events": [],
-      "serialNumber": "9A012F30",
-      "type": "RamModule",
-      "manufacturer": "JEDEC ID:80 2C",
-      "format": "DIMM",
-      "size": 2048,
-      "speed": 1333.0
-    },
-    {
-      "model": "16JTF25664AZ-1G4F",
-      "interface": "DDR3",
-      "events": [],
-      "serialNumber": "8F9F2E29",
-      "type": "RamModule",
-      "manufacturer": "JEDEC ID:80 2C",
-      "format": "DIMM",
-      "size": 2048,
-      "speed": 1333.0
-    },
-    {
-      "model": "82578DM Gigabit Network Connection",
-      "events": [],
-      "serialNumber": "6c:62:6d:81:22:9f",
-      "type": "NetworkAdapter",
-      "wireless": false,
-      "manufacturer": "Intel Corporation",
-      "speed": 1000
-    },
-    {
-      "model": "WDC WD3200AAJS-6",
-      "interface": "ATA",
-      "events": [
-        {
-          "currentPendingSectorCount": 0,
-          "commandTimeout": 0,
-          "status": "Completed without error",
-          "offlineUncorrectable": 1,
-          "powerCycleCount": 1838,
-          "assessment": true,
-          "error": false,
-          "type": "TestDataStorage",
-          "lifetime": 10546,
-          "reallocatedSectorCount": 0,
-          "reportedUncorrectableErrors": 0,
-          "elapsed": 115,
-          "length": "Short"
-        },
-        {
-          "type": "BenchmarkDataStorage",
-          "writeSpeed": 24.6,
-          "readSpeed": 112.0,
-          "elapsed": 13
-        }
-      ],
-      "serialNumber": "WD-WCAV2U909540",
-      "type": "HardDrive",
-      "manufacturer": "Western Digital",
-      "size": 305245
-    },
-    {
-      "model": "304Ah",
-      "pcmcia": 0,
-      "events": [],
-      "usb": 2,
-      "firewire": 0,
-      "type": "Motherboard",
-      "slots": 0,
-      "manufacturer": "Hewlett-Packard",
-      "serial": 0,
-      "serialNumber": "CZC0408YJG"
+      "type": "BenchmarkProcessorSysbench",
+      "elapsed": 17,
+      "rate": 17.0138
     }
+    ],
+    "cores": 2,
+    "type": "Processor",
+    "manufacturer": "Intel Corp.",
+    "threads": 4,
+    "serialNumber": null,
+    "speed": 1.199
+  },
+  {
+    "model": "Core Processor Integrated Graphics Controller",
+    "events": [],
+    "serialNumber": null,
+    "type": "GraphicCard",
+    "manufacturer": "Intel Corporation",
+    "memory": 256.0
+  },
+  {
+    "model": "5 Series/3400 Series Chipset High Definition Audio",
+    "events": [],
+    "serialNumber": null,
+    "type": "SoundCard",
+    "manufacturer": "Intel Corporation"
+  },
+  {
+    "model": "16JTF25664AZ-1G4F",
+    "interface": "DDR3",
+    "events": [],
+    "serialNumber": "B4012F30",
+    "type": "RamModule",
+    "manufacturer": "JEDEC ID:80 2C",
+    "format": "DIMM",
+    "size": 2048,
+    "speed": 1333.0
+  },
+  {
+    "model": "16JTF25664AZ-1G4F",
+    "interface": "DDR3",
+    "events": [],
+    "serialNumber": "8E9F2E29",
+    "type": "RamModule",
+    "manufacturer": "JEDEC ID:80 2C",
+    "format": "DIMM",
+    "size": 2048,
+    "speed": 1333.0
+  },
+  {
+    "model": "16JTF25664AZ-1G4F",
+    "interface": "DDR3",
+    "events": [],
+    "serialNumber": "9A012F30",
+    "type": "RamModule",
+    "manufacturer": "JEDEC ID:80 2C",
+    "format": "DIMM",
+    "size": 2048,
+    "speed": 1333.0
+  },
+  {
+    "model": "16JTF25664AZ-1G4F",
+    "interface": "DDR3",
+    "events": [],
+    "serialNumber": "8F9F2E29",
+    "type": "RamModule",
+    "manufacturer": "JEDEC ID:80 2C",
+    "format": "DIMM",
+    "size": 2048,
+    "speed": 1333.0
+  },
+  {
+    "model": "82578DM Gigabit Network Connection",
+    "events": [],
+    "serialNumber": "6c:62:6d:81:22:9f",
+    "type": "NetworkAdapter",
+    "wireless": false,
+    "manufacturer": "Intel Corporation",
+    "speed": 1000
+  },
+  {
+    "model": "WDC WD3200AAJS-6",
+    "interface": "ATA",
+    "events": [
+    {
+      "currentPendingSectorCount": 0,
+      "commandTimeout": 0,
+      "status": "Completed without error",
+      "offlineUncorrectable": 1,
+      "powerCycleCount": 1838,
+      "assessment": true,
+      "error": false,
+      "type": "TestDataStorage",
+      "lifetime": 10546,
+      "reallocatedSectorCount": 0,
+      "reportedUncorrectableErrors": 0,
+      "elapsed": 115,
+      "length": "Short"
+    },
+    {
+      "type": "BenchmarkDataStorage",
+      "writeSpeed": 24.6,
+      "readSpeed": 112.0,
+      "elapsed": 13
+    }
+    ],
+    "serialNumber": "WD-WCAV2U909540",
+    "type": "HardDrive",
+    "manufacturer": "Western Digital",
+    "size": 305245
+  },
+  {
+    "model": "304Ah",
+    "pcmcia": 0,
+    "events": [],
+    "usb": 2,
+    "firewire": 0,
+    "type": "Motherboard",
+    "slots": 0,
+    "manufacturer": "Hewlett-Packard",
+    "serial": 0,
+    "serialNumber": "CZC0408YJG"
+  }
   ],
-  "date": "2018-07-11T16:11:43.467824",
+  "endTime": "2018-07-11T16:11:43.467824",
   "version": "11.0a3",
   "software": "Workbench",
   "type": "Snapshot",

@@ -109,3 +109,8 @@ class UserClient(Client):
              **kw) -> Tuple[Union[Dict[str, object], str], Response]:
         return super().open(uri, res, status, query, accept, content_type, item, headers,
                             self.user['token'] if self.user else token, **kw)
+
+    def login(self):
+        response = super().login(self.email, self.password)
+        self.user = response[0]
+        return response

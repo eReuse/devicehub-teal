@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy import Column
 
 from teal.db import Model
@@ -15,8 +13,3 @@ class Thing(Model):
     type = ...  # type: str
     updated = ...  # type: Column
     created = ...  # type: Column
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.updated = ...  # type: datetime
-        self.created = ...  # type: datetime

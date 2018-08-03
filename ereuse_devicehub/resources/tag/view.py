@@ -5,7 +5,7 @@ from webargs.flaskparser import parser
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag import Tag
 from teal.marshmallow import ValidationError
-from teal.resource import View, Schema
+from teal.resource import Schema, View
 
 
 class TagView(View):

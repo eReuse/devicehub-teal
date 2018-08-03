@@ -1,0 +1,25 @@
+@startuml
+
+abstract class User <<Common schema>>
+abstract class Individual
+abstract class Agent
+
+Event "*" --> "1" User : Author >
+Event "*" -- "0..1" Agent : agent >
+Trade "*" -- "0..1" Agent : to >
+
+User "0..1" - "0..1" Agent : user <
+
+Agent <|-- Individual
+Individual <|-- Person
+Individual <|-- System
+Agent <|-- Organization
+Individual "*" -o "0..1" Organization
+(Individual, Organization) .. Membership
+class Membership {
+    member_id
+}
+
+
+Individual "*" -o "0..1" Organization : activeOrg >
+@enduml

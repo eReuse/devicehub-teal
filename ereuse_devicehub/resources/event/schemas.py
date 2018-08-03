@@ -1,43 +1,49 @@
+import decimal
+
 from flask import current_app as app
 from marshmallow import Schema as MarshmallowSchema, ValidationError, validates_schema
-from marshmallow.fields import Boolean, DateTime, Float, Integer, List, Nested, String, TimeDelta, \
-    UUID
+from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, List, Nested, String, \
+    TimeDelta, URL, UUID
 from marshmallow.validate import Length, Range
+from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.marshmallow import NestedOn
+from ereuse_devicehub.resources.agent.schemas import Agent
 from ereuse_devicehub.resources.device.schemas import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    PriceSoftware, RATE_POSITIVE, RatingSoftware, SnapshotExpectedEvents, SnapshotSoftware, \
-    TestHardDriveLength
+    PriceSoftware, RATE_POSITIVE, RatingSoftware, ReceiverRole, SnapshotExpectedEvents, \
+    SnapshotSoftware, TestHardDriveLength
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user.schemas import User
-from teal.currency import Currency
-from teal.marshmallow import EnumField, Version
+from teal.enums import Country, Currency, Subdivision
+from teal.marshmallow import EnumField, IP, Version
 from teal.resource import Schema
 
 
 class Event(Thing):
     id = UUID(dump_only=True)
     name = String(default='', validate=Length(STR_BIG_SIZE), description=m.Event.name.comment)
-    date = DateTime('iso', description=m.Event.date.comment)
-    error = Boolean(default=False, description=m.Event.error.comment)
     incidence = Boolean(default=False, description=m.Event.incidence.comment)
-    snapshot = NestedOn('Snapshot', dump_only=True)
-    components = NestedOn(Component, dump_only=True, many=True)
-    description = String(default='', description=m.Event.description.comment)
-    author = NestedOn(User, dump_only=True, exclude=('token',))
     closed = Boolean(missing=True, description=m.Event.closed.comment)
+    error = Boolean(default=False, description=m.Event.error.comment)
+    description = String(default='', description=m.Event.description.comment)
+    start_time = DateTime(data_key='startTime', description=m.Event.start_time.comment)
+    end_time = DateTime(data_key='endTime', description=m.Event.end_time.comment)
+    snapshot = NestedOn('Snapshot', dump_only=True)
+    agent = NestedOn(Agent, description=m.Event.agent_id.comment)
+    author = NestedOn(User, dump_only=True, exclude=('token',))
+    components = NestedOn(Component, dump_only=True, many=True)
     parent = NestedOn(Computer, dump_only=True, description=m.Event.parent_id.comment)
 
 
 class EventWithOneDevice(Event):
-    device = NestedOn(Device)
+    device = NestedOn(Device, only_query='id')
 
 
 class EventWithMultipleDevices(Event):
-    devices = NestedOn(Device, many=True)
+    devices = NestedOn(Device, many=True, only_query='id', collection_class=OrderedSet)
 
 
 class Add(EventWithOneDevice):
@@ -51,7 +57,7 @@ class Remove(EventWithOneDevice):
 class Allocate(EventWithMultipleDevices):
     to = NestedOn(User,
                   description='The user the devices are allocated to.')
-    organization = String(validate=Length(STR_SIZE),
+    organization = String(validate=Length(max=STR_SIZE),
                           description='The organization where the user was when this happened.')
 
 
@@ -59,13 +65,11 @@ class Deallocate(EventWithMultipleDevices):
     from_rel = Nested(User,
                       data_key='from',
                       description='The user where the devices are not allocated to anymore.')
-    organization = String(validate=Length(STR_SIZE),
+    organization = String(validate=Length(max=STR_SIZE),
                           description='The organization where the user was when this happened.')
 
 
 class EraseBasic(EventWithOneDevice):
-    start_time = DateTime(required=True, data_key='startTime')
-    end_time = DateTime(required=True, data_key='endTime')
     zeros = Boolean(required=True, description=m.EraseBasic.zeros.comment)
     steps = NestedOn('Step', many=True, required=True)
 
@@ -161,7 +165,7 @@ class WorkbenchRate(ManualRate):
 
 class Price(EventWithOneDevice):
     currency = EnumField(Currency, required=True)
-    price = Float(required=True)
+    price = Decimal(places=4, rounding=decimal.ROUND_HALF_EVEN, required=True)
     software = EnumField(PriceSoftware, dump_only=True)
     version = Version(dump_only=True)
     rating = NestedOn(AggregateRate, dump_only=True)
@@ -208,7 +212,6 @@ class Snapshot(EventWithOneDevice):
                                        'are performed. Setting this value will activate'
                                        'the async Snapshot.')
 
-    device = NestedOn(Device)
     elapsed = TimeDelta(precision=TimeDelta.SECONDS)
     components = NestedOn(Component,
                           many=True,
@@ -309,6 +312,10 @@ class Repair(EventWithMultipleDevices):
     pass
 
 
+class ReadyToUse(EventWithMultipleDevices):
+    pass
+
+
 class ToPrepare(EventWithMultipleDevices):
     pass
 
@@ -317,9 +324,73 @@ class Prepare(EventWithMultipleDevices):
     pass
 
 
-class ToDispose(EventWithMultipleDevices):
+class Live(EventWithOneDevice):
+    ip = IP(dump_only=True)
+    subdivision_confidence = Integer(dump_only=True, data_key='subdivisionConfidence')
+    subdivision = EnumField(Subdivision, dump_only=True)
+    country = EnumField(Country, dump_only=True)
+    city = String(dump_only=True)
+    city_confidence = Integer(dump_only=True, data_key='cityConfidence')
+    isp = String(dump_only=True)
+    organization = String(dump_only=True)
+    organization_type = String(dump_only=True, data_key='organizationType')
+
+
+class Organize(EventWithMultipleDevices):
     pass
 
 
-class Dispose(EventWithMultipleDevices):
+class Reserve(Organize):
+    pass
+
+
+class CancelReservation(Organize):
+    pass
+
+
+class Trade(EventWithMultipleDevices):
+    shipping_date = DateTime(data_key='shippingDate')
+    invoice_number = String(validate=Length(max=STR_SIZE), data_key='invoiceNumber')
+    price = NestedOn(Price)
+    to = NestedOn(Agent, only_query='id')
+    confirms = NestedOn(Organize)
+
+
+class Sell(Trade):
+    pass
+
+
+class Donate(Trade):
+    pass
+
+
+class Rent(Trade):
+    pass
+
+
+class CancelTrade(Trade):
+    pass
+
+
+class ToDisposeProduct(Trade):
+    pass
+
+
+class DisposeProduct(Trade):
+    pass
+
+
+class Receive(EventWithMultipleDevices):
+    role = EnumField(ReceiverRole)
+
+
+class Migrate(EventWithMultipleDevices):
+    other = URL()
+
+
+class MigrateTo(Migrate):
+    pass
+
+
+class MigrateFrom(Migrate):
     pass

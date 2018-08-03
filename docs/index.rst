@@ -10,11 +10,12 @@ This is the documentation and API of the `eReuse.org DeviceHub
 
 
 ..  toctree::
-    :maxdepth: 4
+    :maxdepth: 2
 
-    events
-    tags
+    actions
+    agents
     inventory
+    tags
     etag
 
 * :ref:`genindex`

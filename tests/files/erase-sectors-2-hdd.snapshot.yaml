@@ -18,139 +18,139 @@
     "EraseBasic"
   ],
   "components": [
+  {
+    "serialNumber": null,
+    "threads": 2,
+    "manufacturer": "Intel Corp.",
+    "address": 64,
+    "model": "Intel Core i3-2100 CPU @ 3.10GHz",
+    "type": "Processor",
+    "events": [],
+    "cores": 2,
+    "speed": 1.6071410000000002
+  },
+  {
+    "manufacturer": "Intel Corporation",
+    "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+    "type": "SoundCard",
+    "events": [],
+    "serialNumber": null
+  },
+  {
+    "serialNumber": "8F17943",
+    "size": 4096,
+    "manufacturer": "Kingston",
+    "format": "DIMM",
+    "model": "9905403-038.A00LF",
+    "type": "RamModule",
+    "events": [],
+    "interface": "DDR3",
+    "speed": 1333.0
+  },
+  {
+    "manufacturer": "Realtek Semiconductor Co., Ltd.",
+    "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
+    "type": "NetworkAdapter",
+    "events": [],
+    "serialNumber": "f4:6d:04:12:9b:85",
+    "speed": 1000
+  },
+  {
+    "serialNumber": "WD-WCAV29008961",
+    "size": 305245,
+    "manufacturer": "Western Digital",
+    "model": "WDC WD3200AAJS-2",
+    "type": "HardDrive",
+    "events": [
     {
-      "serialNumber": null,
-      "threads": 2,
-      "manufacturer": "Intel Corp.",
-      "address": 64,
-      "model": "Intel Core i3-2100 CPU @ 3.10GHz",
-      "type": "Processor",
-      "events": [],
-      "cores": 2,
-      "speed": 1.6071410000000002
-    },
-    {
-      "manufacturer": "Intel Corporation",
-      "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
-      "type": "SoundCard",
-      "events": [],
-      "serialNumber": null
-    },
-    {
-      "serialNumber": "8F17943",
-      "size": 4096,
-      "manufacturer": "Kingston",
-      "format": "DIMM",
-      "model": "9905403-038.A00LF",
-      "type": "RamModule",
-      "events": [],
-      "interface": "DDR3",
-      "speed": 1333.0
-    },
-    {
-      "manufacturer": "Realtek Semiconductor Co., Ltd.",
-      "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
-      "type": "NetworkAdapter",
-      "events": [],
-      "serialNumber": "f4:6d:04:12:9b:85",
-      "speed": 1000
-    },
-    {
-      "serialNumber": "WD-WCAV29008961",
-      "size": 305245,
-      "manufacturer": "Western Digital",
-      "model": "WDC WD3200AAJS-2",
-      "type": "HardDrive",
-      "events": [
-        {
-          "endTime": "2018-07-13T11:54:55.100581",
-          "steps": [
-            {
-              "endTime": "2018-07-13T11:54:55.096491",
-              "type": "StepRandom",
-              "error": false,
-              "startTime": "2018-07-13T10:52:45.092981"
-            }
-          ],
-          "type": "EraseBasic",
-          "error": false,
-          "zeros": false,
-          "startTime": "2018-07-13T10:52:45.092612"
-        },
-        {
-          "lifetime": 24658,
-          "assessment": false,
-          "elapsed": 131,
-          "length": "Short",
-          "offlineUncorrectable": 1,
-          "error": true,
-          "currentPendingSectorCount": 1,
-          "powerCycleCount": 1253,
-          "reallocatedSectorCount": 6,
-          "type": "TestDataStorage",
-          "status": "Completed: read failure"
-        }
+      "endTime": "2018-07-13T11:54:55.100581",
+      "steps": [
+      {
+        "endTime": "2018-07-13T11:54:55.096491",
+        "type": "StepRandom",
+        "error": false,
+        "startTime": "2018-07-13T10:52:45.092981"
+      }
       ],
-      "interface": "ATA"
+      "type": "EraseBasic",
+      "error": false,
+      "zeros": false,
+      "startTime": "2018-07-13T10:52:45.092612"
     },
     {
-      "serialNumber": "WD-WCAV27984668",
-      "size": 305245,
-      "manufacturer": "Western Digital",
-      "model": "WDC WD3200AAJS-0",
-      "type": "HardDrive",
-      "events": [
-        {
-          "endTime": "2018-07-13T12:55:47.331586",
-          "steps": [
-            {
-              "endTime": "2018-07-13T12:55:47.326835",
-              "type": "StepRandom",
-              "error": false,
-              "startTime": "2018-07-13T11:54:55.100925"
-            }
-          ],
-          "type": "EraseBasic",
-          "error": false,
-          "zeros": false,
-          "startTime": "2018-07-13T11:54:55.100667"
-        },
-        {
-          "lifetime": 21979,
-          "assessment": true,
-          "elapsed": 115,
-          "length": "Short",
-          "offlineUncorrectable": 0,
-          "error": false,
-          "currentPendingSectorCount": 0,
-          "powerCycleCount": 1956,
-          "reallocatedSectorCount": 0,
-          "type": "TestDataStorage",
-          "status": "Completed without error"
-        }
-      ],
-      "interface": "ATA"
-    },
-    {
-      "serialNumber": null,
-      "manufacturer": "Intel Corporation",
-      "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
-      "type": "GraphicCard",
-      "events": [],
-      "memory": 256.0
-    },
-    {
-      "pcmcia": 0,
-      "serial": 1,
-      "manufacturer": "ASUSTeK Computer INC.",
-      "model": "P8H61-M LE",
-      "type": "Motherboard",
-      "events": [],
-      "slots": 2,
-      "usb": 2,
-      "firewire": 0,
-      "serialNumber": "109192430003459"
+      "lifetime": 24658,
+      "assessment": false,
+      "elapsed": 131,
+      "length": "Short",
+      "offlineUncorrectable": 1,
+      "error": true,
+      "currentPendingSectorCount": 1,
+      "powerCycleCount": 1253,
+      "reallocatedSectorCount": 6,
+      "type": "TestDataStorage",
+      "status": "Completed: read failure"
     }
+    ],
+    "interface": "ATA"
+  },
+  {
+    "serialNumber": "WD-WCAV27984668",
+    "size": 305245,
+    "manufacturer": "Western Digital",
+    "model": "WDC WD3200AAJS-0",
+    "type": "HardDrive",
+    "events": [
+    {
+      "endTime": "2018-07-13T12:55:47.331586",
+      "steps": [
+      {
+        "endTime": "2018-07-13T12:55:47.326835",
+        "type": "StepRandom",
+        "error": false,
+        "startTime": "2018-07-13T11:54:55.100925"
+      }
+      ],
+      "type": "EraseBasic",
+      "error": false,
+      "zeros": false,
+      "startTime": "2018-07-13T11:54:55.100667"
+    },
+    {
+      "lifetime": 21979,
+      "assessment": true,
+      "elapsed": 115,
+      "length": "Short",
+      "offlineUncorrectable": 0,
+      "error": false,
+      "currentPendingSectorCount": 0,
+      "powerCycleCount": 1956,
+      "reallocatedSectorCount": 0,
+      "type": "TestDataStorage",
+      "status": "Completed without error"
+    }
+    ],
+    "interface": "ATA"
+  },
+  {
+    "serialNumber": null,
+    "manufacturer": "Intel Corporation",
+    "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+    "type": "GraphicCard",
+    "events": [],
+    "memory": 256.0
+  },
+  {
+    "pcmcia": 0,
+    "serial": 1,
+    "manufacturer": "ASUSTeK Computer INC.",
+    "model": "P8H61-M LE",
+    "type": "Motherboard",
+    "events": [],
+    "slots": 2,
+    "usb": 2,
+    "firewire": 0,
+    "serialNumber": "109192430003459"
+  }
   ],
-  "date": "2018-07-13T10:48:36.738398"
+  "endTime": "2018-07-13T10:48:36.738398"
 }

@@ -5,16 +5,16 @@ device:
   type: Desktop
   chassis: Microtower
 components:
-  - manufacturer: p1c2m
-    serialNumber: p1c2s
-    model: p1c2
-    type: Processor
-    cores: 2
-    speed: 1.23
-  - manufacturer: p1c3m
-    serialNumber: p1c3s
-    type: GraphicCard
-    memory: 1.5
+- manufacturer: p1c2m
+  serialNumber: p1c2s
+  model: p1c2
+  type: Processor
+  cores: 2
+  speed: 1.23
+- manufacturer: p1c3m
+  serialNumber: p1c3s
+  type: GraphicCard
+  memory: 1.5
 elapsed: 30
 software: Workbench
 uuid: 3be271b6-5ef4-47d8-8237-5e1133eebfc6

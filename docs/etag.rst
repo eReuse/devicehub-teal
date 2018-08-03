@@ -15,7 +15,6 @@ Actors
 - Photochromic tag manufacturer.
 - User: organization that uses the tags.
 
-
 Requirements
 ************
 

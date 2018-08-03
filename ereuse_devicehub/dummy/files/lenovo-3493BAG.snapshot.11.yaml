@@ -2,21 +2,21 @@
   "uuid": "9c3560a9-371c-4392-b586-37090b5f79c6",
   "version": "11.0a3",
   "closed": false,
-  "date": "2018-07-11T13:26:29.365504",
+  "endTime": "2018-07-11T13:26:29.365504",
   "type": "Snapshot",
   "device": {
     "serialNumber": "PB357N0",
     "events": [
-      {
-        "elapsed": 60,
-        "type": "StressTest",
-        "error": false
-      },
-      {
-        "elapsed": 1,
-        "type": "BenchmarkRamSysbench",
-        "rate": 0.8438
-      }
+    {
+      "elapsed": 60,
+      "type": "StressTest",
+      "error": false
+    },
+    {
+      "elapsed": 1,
+      "type": "BenchmarkRamSysbench",
+      "rate": 0.8438
+    }
     ],
     "chassis": "Tower",
     "model": "3493BAG",
@@ -26,112 +26,112 @@
   "elapsed": 2255,
   "software": "Workbench",
   "components": [
+  {
+    "events": [],
+    "speed": 1000,
+    "serialNumber": "d4:3d:7e:41:c4:c4",
+    "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
+    "manufacturer": "Realtek Semiconductor Co., Ltd.",
+    "type": "NetworkAdapter",
+    "wireless": false
+  },
+  {
+    "cores": 2,
+    "events": [
     {
-      "events": [],
-      "speed": 1000,
-      "serialNumber": "d4:3d:7e:41:c4:c4",
-      "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
-      "manufacturer": "Realtek Semiconductor Co., Ltd.",
-      "type": "NetworkAdapter",
-      "wireless": false
+      "elapsed": 0,
+      "type": "BenchmarkProcessor",
+      "rate": 11573.64
     },
     {
-      "cores": 2,
-      "events": [
-        {
-          "elapsed": 0,
-          "type": "BenchmarkProcessor",
-          "rate": 11573.64
-        },
-        {
-          "elapsed": 19,
-          "type": "BenchmarkProcessorSysbench",
-          "rate": 19.1558
-        }
-      ],
-      "speed": 1.665234,
-      "serialNumber": null,
-      "address": 64,
-      "model": "Intel Pentium CPU G645 @ 2.90GHz",
-      "manufacturer": "Intel Corp.",
-      "type": "Processor"
-    },
-    {
-      "events": [],
-      "memory": 256.0,
-      "serialNumber": null,
-      "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
-      "manufacturer": "Intel Corporation",
-      "type": "GraphicCard"
-    },
-    {
-      "events": [],
-      "serialNumber": null,
-      "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
-      "manufacturer": "Intel Corporation",
-      "type": "SoundCard"
-    },
-    {
-      "serialNumber": "292E48DA",
-      "events": [],
-      "speed": 1333.0,
-      "size": 2048,
-      "format": "DIMM",
-      "interface": "DDR3",
-      "model": "16JTF25664AZ-1G4F1",
-      "manufacturer": "Micron",
-      "type": "RamModule"
-    },
-    {
-      "serialNumber": "Z2AYPLNP",
-      "events": [
-        {
-          "writeSpeed": 20.4,
-          "type": "BenchmarkDataStorage",
-          "readSpeed": 139.0,
-          "elapsed": 15
-        },
-        {
-          "error": true,
-          "type": "TestDataStorage",
-          "elapsed": 0,
-          "length": "Short",
-          "status": "Unspecified Error. Self-test not started."
-        },
-        {
-          "startTime": "2018-07-11T13:28:07.319948",
-          "type": "EraseBasic",
-          "endTime": "2018-07-11T14:04:04.864425",
-          "error": false,
-          "steps": [
-            {
-              "startTime": "2018-07-11T13:28:07.320244",
-              "type": "StepRandom",
-              "endTime": "2018-07-11T14:04:04.861590",
-              "error": false
-            }
-          ],
-          "zeros": false
-        }
-      ],
-      "size": 238475,
-      "interface": "ATA",
-      "model": "ST250DM000-1BD14",
-      "manufacturer": "Seagate",
-      "type": "HardDrive"
-    },
-    {
-      "serial": 1,
-      "usb": 2,
-      "pcmcia": 0,
-      "events": [],
-      "slots": 2,
-      "serialNumber": null,
-      "firewire": 0,
-      "model": null,
-      "manufacturer": "LENOVO",
-      "type": "Motherboard"
+      "elapsed": 19,
+      "type": "BenchmarkProcessorSysbench",
+      "rate": 19.1558
     }
+    ],
+    "speed": 1.665234,
+    "serialNumber": null,
+    "address": 64,
+    "model": "Intel Pentium CPU G645 @ 2.90GHz",
+    "manufacturer": "Intel Corp.",
+    "type": "Processor"
+  },
+  {
+    "events": [],
+    "memory": 256.0,
+    "serialNumber": null,
+    "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+    "manufacturer": "Intel Corporation",
+    "type": "GraphicCard"
+  },
+  {
+    "events": [],
+    "serialNumber": null,
+    "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+    "manufacturer": "Intel Corporation",
+    "type": "SoundCard"
+  },
+  {
+    "serialNumber": "292E48DA",
+    "events": [],
+    "speed": 1333.0,
+    "size": 2048,
+    "format": "DIMM",
+    "interface": "DDR3",
+    "model": "16JTF25664AZ-1G4F1",
+    "manufacturer": "Micron",
+    "type": "RamModule"
+  },
+  {
+    "serialNumber": "Z2AYPLNP",
+    "events": [
+    {
+      "writeSpeed": 20.4,
+      "type": "BenchmarkDataStorage",
+      "readSpeed": 139.0,
+      "elapsed": 15
+    },
+    {
+      "error": true,
+      "type": "TestDataStorage",
+      "elapsed": 0,
+      "length": "Short",
+      "status": "Unspecified Error. Self-test not started."
+    },
+    {
+      "startTime": "2018-07-11T13:28:07.319948",
+      "type": "EraseBasic",
+      "endTime": "2018-07-11T14:04:04.864425",
+      "error": false,
+      "steps": [
+      {
+        "startTime": "2018-07-11T13:28:07.320244",
+        "type": "StepRandom",
+        "endTime": "2018-07-11T14:04:04.861590",
+        "error": false
+      }
+      ],
+      "zeros": false
+    }
+    ],
+    "size": 238475,
+    "interface": "ATA",
+    "model": "ST250DM000-1BD14",
+    "manufacturer": "Seagate",
+    "type": "HardDrive"
+  },
+  {
+    "serial": 1,
+    "usb": 2,
+    "pcmcia": 0,
+    "events": [],
+    "slots": 2,
+    "serialNumber": null,
+    "firewire": 0,
+    "model": null,
+    "manufacturer": "LENOVO",
+    "type": "Motherboard"
+  }
   ],
   "expectedEvents": [
     "Benchmark",

@@ -5,15 +5,15 @@ device:
   type: Desktop
   chassis: Tower
 components:
-  - manufacturer: p1c4m
-    serialNumber: p1c4s
-    type: NetworkAdapter
-    speed: 1000
-    wireless: False
-  - manufacturer: p1c3m
-    serialNumber: p1c3s
-    type: GraphicCard
-    memory: 1.5
+- manufacturer: p1c4m
+  serialNumber: p1c4s
+  type: NetworkAdapter
+  speed: 1000
+  wireless: False
+- manufacturer: p1c3m
+  serialNumber: p1c3s
+  type: GraphicCard
+  memory: 1.5
 elapsed: 25
 software: Workbench
 uuid: fd007eb4-48e3-454a-8763-169491904c6e

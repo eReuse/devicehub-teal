@@ -2,9 +2,9 @@ from sqlalchemy import BigInteger, Column, ForeignKey, Unicode, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship, validates
 
+from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
-from ereuse_devicehub.resources.user.models import Organization
 from teal.db import DB_CASCADE_SET_NULL, URL
 from teal.marshmallow import ValidationError
 

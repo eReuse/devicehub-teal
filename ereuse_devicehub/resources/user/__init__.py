@@ -2,9 +2,8 @@ from click import argument, option
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.user import schemas
-from ereuse_devicehub.resources.user.models import Organization, User
+from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.user.views import UserView, login
-from teal.db import SQLAlchemy
 from teal.resource import Converters, Resource
 
 
@@ -34,35 +33,3 @@ class UserDef(Resource):
         db.session.add(user)
         db.session.commit()
         return self.schema.dump(user)
-
-
-class OrganizationDef(Resource):
-    __type__ = 'Organization'
-    ID_CONVERTER = Converters.uuid
-    AUTH = True
-
-    def __init__(self, app, import_name=__package__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None):
-        cli_commands = ((self.create_org, 'create-org'),)
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
-
-    @argument('name')
-    @argument('tax_id')
-    @argument('country')
-    def create_org(self, **kw: dict) -> dict:
-        """
-        Creates an organization.
-        COUNTRY has to be 2 characters as defined by
-        """
-        org = Organization(**self.schema.load(kw))
-        db.session.add(org)
-        db.session.commit()
-        return self.schema.dump(org)
-
-    def init_db(self, db: SQLAlchemy):
-        """Creates the default organization."""
-        from flask import current_app as app
-        org = Organization(**app.config.get_namespace('ORGANIZATION_'))
-        db.session.add(org)

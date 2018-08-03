@@ -9,130 +9,130 @@
   "closed": false,
   "elapsed": -3058,
   "uuid": "106930cd-e948-4cca-a8c8-1e39d6192ad6",
-  "date": "2018-07-11T10:47:50.822380",
+  "endTime": "2018-07-11T10:47:50.822380",
   "components": [
+  {
+    "type": "Processor",
+    "speed": 1.199,
+    "events": [
     {
-      "type": "Processor",
-      "speed": 1.199,
-      "events": [
-        {
-          "type": "BenchmarkProcessor",
-          "rate": 23409.32,
-          "elapsed": 0
-        },
-        {
-          "type": "BenchmarkProcessorSysbench",
-          "rate": 17.0196,
-          "elapsed": 17
-        }
-      ],
-      "serialNumber": null,
-      "address": 64,
-      "cores": 2,
-      "model": "Intel Core i3 CPU 530 @ 2.93GHz",
-      "manufacturer": "Intel Corp."
+      "type": "BenchmarkProcessor",
+      "rate": 23409.32,
+      "elapsed": 0
     },
     {
-      "memory": 256.0,
-      "type": "GraphicCard",
-      "events": [],
-      "serialNumber": null,
-      "model": "Core Processor Integrated Graphics Controller",
-      "manufacturer": "Intel Corporation"
-    },
-    {
-      "type": "NetworkAdapter",
-      "speed": 1000,
-      "events": [],
-      "serialNumber": "6c:62:6d:81:22:65",
-      "model": "82578DM Gigabit Network Connection",
-      "manufacturer": "Intel Corporation",
-      "wireless": false
-    },
-    {
-      "type": "SoundCard",
-      "events": [],
-      "serialNumber": null,
-      "model": "5 Series/3400 Series Chipset High Definition Audio",
-      "manufacturer": "Intel Corporation"
-    },
-    {
-      "speed": 1333.0,
-      "type": "RamModule",
-      "format": "DIMM",
-      "events": [],
-      "size": 2048,
-      "serialNumber": "E6002F30",
-      "interface": "DDR3",
-      "model": "16JTF25664AZ-1G4F",
-      "manufacturer": "JEDEC ID:80 2C"
-    },
-    {
-      "type": "HardDrive",
-      "events": [
-        {
-          "type": "EraseBasic",
-          "zeros": false,
-          "endTime": "2018-07-11T11:56:52.390306",
-          "error": false,
-          "startTime": "2018-07-11T10:49:31.998217",
-          "steps": [
-            {
-              "type": "StepRandom",
-              "endTime": "2018-07-11T11:56:52.386505",
-              "error": false,
-              "startTime": "2018-07-11T10:49:31.998609"
-            }
-          ]
-        },
-        {
-          "length": "Short",
-          "type": "TestDataStorage",
-          "status": "Unspecified Error. Self-test not started.",
-          "error": true,
-          "elapsed": 0
-        },
-        {
-          "type": "BenchmarkDataStorage",
-          "readSpeed": 61.1,
-          "writeSpeed": 17.1,
-          "elapsed": 20
-        }
-      ],
-      "size": 190782,
-      "serialNumber": "5ND202LZ",
-      "interface": "ATA",
-      "model": "ST3200826AS",
-      "manufacturer": "Seagate"
-    },
-    {
-      "pcmcia": 0,
-      "serial": 0,
-      "type": "Motherboard",
-      "slots": 0,
-      "events": [],
-      "serialNumber": "CZC0408YNC",
-      "usb": 2,
-      "firewire": 0,
-      "model": "304Ah",
-      "manufacturer": "Hewlett-Packard"
+      "type": "BenchmarkProcessorSysbench",
+      "rate": 17.0196,
+      "elapsed": 17
     }
+    ],
+    "serialNumber": null,
+    "address": 64,
+    "cores": 2,
+    "model": "Intel Core i3 CPU 530 @ 2.93GHz",
+    "manufacturer": "Intel Corp."
+  },
+  {
+    "memory": 256.0,
+    "type": "GraphicCard",
+    "events": [],
+    "serialNumber": null,
+    "model": "Core Processor Integrated Graphics Controller",
+    "manufacturer": "Intel Corporation"
+  },
+  {
+    "type": "NetworkAdapter",
+    "speed": 1000,
+    "events": [],
+    "serialNumber": "6c:62:6d:81:22:65",
+    "model": "82578DM Gigabit Network Connection",
+    "manufacturer": "Intel Corporation",
+    "wireless": false
+  },
+  {
+    "type": "SoundCard",
+    "events": [],
+    "serialNumber": null,
+    "model": "5 Series/3400 Series Chipset High Definition Audio",
+    "manufacturer": "Intel Corporation"
+  },
+  {
+    "speed": 1333.0,
+    "type": "RamModule",
+    "format": "DIMM",
+    "events": [],
+    "size": 2048,
+    "serialNumber": "E6002F30",
+    "interface": "DDR3",
+    "model": "16JTF25664AZ-1G4F",
+    "manufacturer": "JEDEC ID:80 2C"
+  },
+  {
+    "type": "HardDrive",
+    "events": [
+    {
+      "type": "EraseBasic",
+      "zeros": false,
+      "endTime": "2018-07-11T11:56:52.390306",
+      "error": false,
+      "startTime": "2018-07-11T10:49:31.998217",
+      "steps": [
+      {
+        "type": "StepRandom",
+        "endTime": "2018-07-11T11:56:52.386505",
+        "error": false,
+        "startTime": "2018-07-11T10:49:31.998609"
+      }
+      ]
+    },
+    {
+      "length": "Short",
+      "type": "TestDataStorage",
+      "status": "Unspecified Error. Self-test not started.",
+      "error": true,
+      "elapsed": 0
+    },
+    {
+      "type": "BenchmarkDataStorage",
+      "readSpeed": 61.1,
+      "writeSpeed": 17.1,
+      "elapsed": 20
+    }
+    ],
+    "size": 190782,
+    "serialNumber": "5ND202LZ",
+    "interface": "ATA",
+    "model": "ST3200826AS",
+    "manufacturer": "Seagate"
+  },
+  {
+    "pcmcia": 0,
+    "serial": 0,
+    "type": "Motherboard",
+    "slots": 0,
+    "events": [],
+    "serialNumber": "CZC0408YNC",
+    "usb": 2,
+    "firewire": 0,
+    "model": "304Ah",
+    "manufacturer": "Hewlett-Packard"
+  }
   ],
   "type": "Snapshot",
   "device": {
     "type": "Desktop",
     "chassis": "Tower",
     "events": [
-      {
-        "type": "BenchmarkRamSysbench",
-        "rate": 0.9767,
-        "elapsed": 1
-      },
-      {
-        "type": "StressTest",
-        "error": false,
-        "elapsed": 60
-      }
+    {
+      "type": "BenchmarkRamSysbench",
+      "rate": 0.9767,
+      "elapsed": 1
+    },
+    {
+      "type": "StressTest",
+      "error": false,
+      "elapsed": 60
+    }
     ],
     "serialNumber": "CZC0408YNC",
     "model": "HP Compaq 8100 Elite SFF",

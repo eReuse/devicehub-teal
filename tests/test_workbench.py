@@ -3,12 +3,12 @@ Tests that emulates the behaviour of a WorkbenchServer.
 """
 
 import pytest
+
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.event import models as em
 from ereuse_devicehub.resources.tag.model import Tag
-
 from tests.conftest import file
 
 

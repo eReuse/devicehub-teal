@@ -1,22 +1,22 @@
 from contextlib import suppress
+from itertools import chain
 from operator import attrgetter
 from typing import Dict, Set
 
-from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
-    RamFormat, RamInterface
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
-from itertools import chain
-from sqlalchemy import BigInteger, Column, Enum as DBEnum, Float, ForeignKey, Integer, Sequence, \
-    SmallInteger, Unicode, inspect, Boolean
+from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
+    Sequence, SmallInteger, Unicode, inspect
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
+
+from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
+    RamFormat, RamInterface
+from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
+from ereuse_utils.naming import Naming
 from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, check_range
 from teal.marshmallow import ValidationError
-
-from ereuse_utils.naming import Naming
 
 
 class Device(Thing):

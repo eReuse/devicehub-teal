@@ -3,8 +3,10 @@ from pathlib import Path
 import click
 import click_spinner
 import yaml
+
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.event.models import Snapshot
 from ereuse_devicehub.resources.inventory import Inventory
 from ereuse_devicehub.resources.tag.model import Tag
@@ -49,11 +51,10 @@ class Dummy:
 
     def user_client(self, email: str, password: str):
         user = User(email=email, password=password)
+        user.individuals.add(Person(name='Timmy'))
         db.session.add(user)
         db.session.commit()
-        client = UserClient(application=self.app,
-                            response_wrapper=self.app.response_class,
-                            email=user.email,
-                            password=password)
-        client.user, _ = client.login(client.email, client.password)
+        client = UserClient(self.app, user.email, password,
+                            response_wrapper=self.app.response_class)
+        client.login()
         return client

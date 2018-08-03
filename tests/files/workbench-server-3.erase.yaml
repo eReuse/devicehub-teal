@@ -14,7 +14,7 @@ zeros: False
 startTime: 2018-01-01T10:10:10
 endTime: 2018-01-01T12:10:10
 steps:
-  - type: 'StepRandom'
-    startTime: '2018-01-01T10:10:10'
-    endTime: '2018-01-01T12:10:10'
-    error: False
+- type: 'StepRandom'
+  startTime: '2018-01-01T10:10:10'
+  endTime: '2018-01-01T12:10:10'
+  error: False
