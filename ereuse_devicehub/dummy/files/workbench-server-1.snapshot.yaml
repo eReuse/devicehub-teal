@@ -9,6 +9,7 @@ type: Snapshot
 uuid: cb8ce6b5-6a1b-4084-b5b9-d8fadad2a015
 version: '11.0'
 software: Workbench
+expectedEvents: [TestDataStorage, StressTest, EraseSectors, Install]
 elapsed: 500
 device:
   type: Desktop
@@ -25,9 +26,6 @@ device:
     functionalityRange: B
   - type: BenchmarkRamSysbench
     rate: 2444
-  - type: StressTest
-    elapsed: 300
-    error: False
 components:
 - type: GraphicCard
   serialNumber: gc1-1s
@@ -67,22 +65,11 @@ components:
     assessment: True
     powerCycleCount: 11
     reallocatedSectorCount: 2
-    powerCycleCount: 4
     reportedUncorrectableErrors: 1
     commandTimeout: 11
     currentPendingSectorCount: 1
     offlineUncorrectable: 33
     remainingLifetimePercentage: 1
-  - type: EraseSectors
-    error: False
-    zeros: False
-    startTime: 2018-01-01T10:10:10
-    endTime: 2018-01-01T12:10:10
-    steps:
-    - type: StepRandom
-      startTime: 2018-01-01T10:10:10
-      endTime: 2018-01-01T12:10:10
-      error: False
 - type: HardDrive
   serialNumber: hdd1-1s
   model: hdd1-1ml
@@ -91,20 +78,6 @@ components:
   - type: BenchmarkDataStorage
     readSpeed: 10
     writeSpeed: 5
-  - type: EraseSectors
-    error: False
-    zeros: False
-    startTime: 2018-01-01T10:10:10
-    endTime: 2018-01-01T12:10:10
-    steps:
-    - type: StepRandom
-      startTime: 2018-01-01T10:10:10
-      endTime: 2018-01-01T12:10:10
-      error: False
-  - type: Install
-    elapsed: 420
-    error: False
-    name: LinuxMint 18.01 32b
 - type: Motherboard
   serialNumber: mb1-1s
   model: mb1-1ml

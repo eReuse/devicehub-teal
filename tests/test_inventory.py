@@ -8,10 +8,10 @@ from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.event.models import Snapshot
 from ereuse_devicehub.resources.inventory import Filters, Inventory, Sorting
 from teal.utils import compiled
-from tests.conftest import file
+from tests import conftest
 
 
-@pytest.mark.usefixtures('app_context')
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_inventory_filters():
     schema = Filters()
     q = schema.load({
@@ -43,7 +43,7 @@ def test_inventory_filters():
                                     'Server', 'Dell%', 'Computer', 'bcn-%'}
 
 
-@pytest.mark.usefixtures('app_context')
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_inventory_sort():
     schema = Sorting()
     r = next(schema.load({'created': True}))
@@ -96,7 +96,7 @@ def test_inventory_query_filter_sort(user: UserClient):
 
 def test_inventory_query(user: UserClient):
     """Checks result of inventory."""
-    user.post(file('basic.snapshot'), res=Snapshot)
+    user.post(conftest.file('basic.snapshot'), res=Snapshot)
     i, _ = user.get(res=Inventory)
     pc = next(d for d in i['devices'] if d['type'] == 'Desktop')
     assert len(pc['events']) == 4

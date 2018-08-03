@@ -12,9 +12,10 @@ from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.tag.view import CannotCreateETag, TagNotLinked
 from teal.db import MultipleResourcesFound, ResourceNotFound
 from teal.marshmallow import ValidationError
+from tests import conftest
 
 
-@pytest.mark.usefixtures('app_context')
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_tag():
     """Creates a tag specifying a custom organization."""
     org = Organization(name='Bar', tax_id='BarTax')
@@ -23,7 +24,7 @@ def test_create_tag():
     db.session.commit()
 
 
-@pytest.mark.usefixtures('app_context')
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_tag_default_org():
     """Creates a tag using the default organization."""
     tag = Tag(id='foo-1')
@@ -36,14 +37,14 @@ def test_create_tag_default_org():
     assert tag.org.name == 'FooOrg'  # as defined in the settings
 
 
-@pytest.mark.usefixtures('app_context')
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_tag_no_slash():
     """Checks that no tags can be created that contain a slash."""
     with raises(ValidationError):
         Tag(id='/')
 
 
-@pytest.mark.usefixtures('app_context')
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_two_same_tags():
     """Ensures there cannot be two tags with the same ID and organization."""
     db.session.add(Tag(id='foo-bar'))
