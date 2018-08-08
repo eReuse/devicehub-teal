@@ -51,7 +51,7 @@ class Event(Thing):
     incidence.comment = """
         Should this event be reviewed due some anomaly?
     """
-    closed = Column(Boolean, default=True, nullable=False)
+    closed = Column(Boolean, default=False, nullable=False)
     closed.comment = """
         Whether the author has finished the event.
         After this is set to True, no modifications are allowed.
@@ -100,7 +100,7 @@ class Event(Thing):
     author = relationship(User,
                           backref=backref('authored_events', lazy=True, collection_class=set),
                           primaryjoin=author_id == User.id)
-    """
+    author_id.comment = """
     The user that recorded this action in the system.
      
     This does not necessarily has to be the person that produced
@@ -118,7 +118,7 @@ class Event(Thing):
                                          lazy=True,
                                          collection_class=OrderedSet,
                                          order_by=lambda: Event.created),
-                         primaryjoin=agent_id == Agent.id, )
+                         primaryjoin=agent_id == Agent.id)
     agent_id.comment = """
     The direct performer or driver of the action. e.g. John wrote a book.
     

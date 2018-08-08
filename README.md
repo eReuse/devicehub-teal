@@ -22,7 +22,7 @@ Devicehub is built with [Teal](https://github.com/bustawin/teal) and
 The requirements are:
 
 - Python 3.5.3 or higher. In debian 9 is `# apt install python3-pip`.
-- PostgreSQL 9.6 or higher. In debian 9 is `# apt install postgresql`
+- PostgreSQL 9.6 or higher. In debian 9 is `# apt install postgresql-contrib`
 - passlib. In debian 9 is `# apt install python3-passlib`.
 
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
@@ -39,6 +39,8 @@ postgres $ createdb devicehub  # Create main database
 postgres $ psql devicehub  # Access to the database
 postgres $ CREATE USER dhub WITH PASSWORD 'ereuse';  # Create user devicehub uses to access db
 postgres $ GRANT ALL PRIVILEGES ON DATABASE devicehub TO dhub;  # Give access to the db
+postgres $ CREATE EXTENSION pgcrypto SCHEMA public; # Enable pgcrypto
+postgres $ CREATE EXTENSION ltree SCHEMA public; # Enable ltree
 postgres $ \q
 exit
 ```

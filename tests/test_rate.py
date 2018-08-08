@@ -8,9 +8,10 @@ from ereuse_devicehub.resources.enums import Bios, ComputerChassis, ImageMimeTyp
     RatingSoftware
 from ereuse_devicehub.resources.event.models import PhotoboxRate, WorkbenchRate
 from ereuse_devicehub.resources.image.models import Image, ImageList
+from tests import conftest
 
 
-@pytest.mark.usefixtures('auth_app_context')
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_workbench_rate_db():
     rate = WorkbenchRate(processor=0.1,
                          ram=1.0,
@@ -25,7 +26,7 @@ def test_workbench_rate_db():
     db.session.commit()
 
 
-@pytest.mark.usefixtures('auth_app_context')
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_photobox_rate_db():
     pc = Desktop(serial_number='24', chassis=ComputerChassis.Tower)
     image = Image(name='foo',

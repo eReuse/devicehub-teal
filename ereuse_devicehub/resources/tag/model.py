@@ -38,7 +38,7 @@ class Tag(Thing):
         return value
 
     __table_args__ = (
-        UniqueConstraint(device_id, org_id, name='One tag per organization.'),
+        UniqueConstraint(device_id, org_id, name='one_tag_per_organization'),
     )
 
     def __repr__(self) -> str:
