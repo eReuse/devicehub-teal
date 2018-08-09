@@ -12,12 +12,11 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import STR_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
+from teal.db import UUIDLtree
 
 
 class Lot(Thing):
-    id = db.Column(UUID(as_uuid=True),
-                   primary_key=True,
-                   server_default=db.text('gen_random_uuid()'))
+    id = db.Column(UUID(as_uuid=True), primary_key=True)  # uuid is generated on init by default
     name = db.Column(db.Unicode(STR_SIZE), nullable=False)
     closed = db.Column(db.Boolean, default=False, nullable=False)
     closed.comment = """
@@ -28,8 +27,14 @@ class Lot(Thing):
                               secondary=lambda: LotDevice.__table__,
                               collection_class=set)
 
-    def __repr__(self) -> str:
-        return '<Lot {0.name} devices={0.devices!r}>'.format(self)
+    def __init__(self, name: str, closed: bool = closed.default.arg) -> None:
+        """
+        Initializes a lot
+        :param name:
+        :param closed:
+        """
+        super().__init__(id=uuid.uuid4(), name=name, closed=closed)
+        Edge(self)  # Lots have always one edge per default.
 
     def add_child(self, child: 'Lot'):
         """Adds a child to this lot."""
@@ -42,6 +47,9 @@ class Lot(Thing):
 
     def __contains__(self, child: 'Lot'):
         return Edge.has_lot(self.id, child.id)
+
+    def __repr__(self) -> str:
+        return '<Lot {0.name} devices={0.devices!r}>'.format(self)
 
 
 class LotDevice(db.Model):
@@ -58,7 +66,7 @@ class LotDevice(db.Model):
     """
 
 
-class Edge(Thing):
+class Edge(db.Model):
     id = db.Column(db.UUID(as_uuid=True),
                    primary_key=True,
                    server_default=db.text('gen_random_uuid()'))
@@ -66,7 +74,11 @@ class Edge(Thing):
     lot = db.relationship(Lot,
                           backref=db.backref('edges', lazy=True, collection_class=set),
                           primaryjoin=Lot.id == lot_id)
-    path = db.Column(LtreeType, unique=True, nullable=False)
+    path = db.Column(LtreeType, nullable=False)
+    created = db.Column(db.TIMESTAMP(timezone=True), server_default=db.text('CURRENT_TIMESTAMP'))
+    created.comment = """
+            When Devicehub created this.
+        """
 
     __table_args__ = (
         db.UniqueConstraint(path, name='edge_path_unique', deferrable=True, initially='immediate'),
@@ -74,8 +86,13 @@ class Edge(Thing):
         db.Index('path_btree', path, postgresql_using='btree')
     )
 
+    def __init__(self, lot: Lot) -> None:
+        super().__init__(lot=lot)
+        self.path = UUIDLtree(lot.id)
+
     def children(self) -> Set['Edge']:
         """Get the children edges."""
+        # todo is it useful? test it when first usage
         # From https://stackoverflow.com/a/41158890
         exp = '*.{}.*{{1}}'.format(self.lot_id)
         return set(self.query

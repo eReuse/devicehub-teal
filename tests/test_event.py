@@ -1,5 +1,5 @@
 import ipaddress
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from flask import current_app as app, g
@@ -38,8 +38,8 @@ def test_erase_basic():
     erasure = models.EraseBasic(
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
         zeros=True,
-        start_time=datetime.now(),
-        end_time=datetime.now(),
+        start_time=datetime.now(timezone.utc),
+        end_time=datetime.now(timezone.utc),
         error=False
     )
     db.session.add(erasure)
@@ -59,8 +59,8 @@ def test_validate_device_data_storage():
         models.EraseBasic(
             device=GraphicCard(serial_number='foo', manufacturer='bar', model='foo-bar'),
             clean_with_zeros=True,
-            start_time=datetime.now(),
-            end_time=datetime.now(),
+            start_time=datetime.now(timezone.utc),
+            end_time=datetime.now(timezone.utc),
             error=False
         )
 
@@ -70,19 +70,19 @@ def test_erase_sectors_steps():
     erasure = models.EraseSectors(
         device=SolidStateDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
         zeros=True,
-        start_time=datetime.now(),
-        end_time=datetime.now(),
+        start_time=datetime.now(timezone.utc),
+        end_time=datetime.now(timezone.utc),
         error=False,
         steps=[
             models.StepZero(error=False,
-                            start_time=datetime.now(),
-                            end_time=datetime.now()),
+                            start_time=datetime.now(timezone.utc),
+                            end_time=datetime.now(timezone.utc)),
             models.StepRandom(error=False,
-                              start_time=datetime.now(),
-                              end_time=datetime.now()),
+                              start_time=datetime.now(timezone.utc),
+                              end_time=datetime.now(timezone.utc)),
             models.StepZero(error=False,
-                            start_time=datetime.now(),
-                            end_time=datetime.now())
+                            start_time=datetime.now(timezone.utc),
+                            end_time=datetime.now(timezone.utc))
         ]
     )
     db.session.add(erasure)

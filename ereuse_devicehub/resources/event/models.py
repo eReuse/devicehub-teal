@@ -67,13 +67,13 @@ class Event(Thing):
     description.comment = """
         A comment about the event.
     """
-    start_time = Column(DateTime)
+    start_time = Column(db.TIMESTAMP(timezone=True))
     start_time.comment = """
        When the action starts. For some actions like reservations 
        the time when they are available, for others like renting
        when the renting starts.
     """
-    end_time = Column(DateTime)
+    end_time = Column(db.TIMESTAMP(timezone=True))
     end_time.comment = """
         When the action ends. For some actions like reservations
         the time when they expire, for others like renting

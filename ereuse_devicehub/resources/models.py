@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ereuse_devicehub.db import db
 
@@ -10,11 +10,16 @@ STR_XSM_SIZE = 16
 
 class Thing(db.Model):
     __abstract__ = True
-    updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    # todo make updated to auto-update
+    updated = db.Column(db.TIMESTAMP(timezone=True),
+                        nullable=False,
+                        server_default=db.text('CURRENT_TIMESTAMP'))
     updated.comment = """
         When this was last changed.
     """
-    created = db.Column(db.DateTime, default=datetime.utcnow)
+    created = db.Column(db.TIMESTAMP(timezone=True),
+                        nullable=False,
+                        server_default=db.text('CURRENT_TIMESTAMP'))
     created.comment = """
         When Devicehub created this.
     """
@@ -22,4 +27,4 @@ class Thing(db.Model):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         if not self.created:
-            self.created = datetime.utcnow()
+            self.created = datetime.now(timezone.utc)

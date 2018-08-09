@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from distutils.version import StrictVersion
 from typing import List, Tuple
 from uuid import uuid4
@@ -29,7 +29,7 @@ def test_snapshot_model():
     device = m.Desktop(serial_number='a1', chassis=ComputerChassis.Tower)
     # noinspection PyArgumentList
     snapshot = Snapshot(uuid=uuid4(),
-                        end_time=datetime.now(),
+                        end_time=datetime.now(timezone.utc),
                         version='1.0',
                         software=SnapshotSoftware.DesktopApp,
                         elapsed=timedelta(seconds=25))
