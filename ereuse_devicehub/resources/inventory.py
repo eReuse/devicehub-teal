@@ -7,6 +7,7 @@ from sqlalchemy import Column
 
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.event.models import Rate
+from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.tag import Tag
 from teal.query import Between, FullTextSearch, ILike, Join, Or, Query, Sort, SortField
@@ -97,7 +98,7 @@ class InventoryView(View):
             .paginate(page=args['page'], per_page=30)  # type: Pagination
         inventory = {
             'devices': app.resources[Device.t].schema.dump(devices.items, many=True, nested=1),
-            'groups': [],
+            'lots': Lot.roots(),
             'widgets': {},
             'pagination': {
                 'page': devices.page,

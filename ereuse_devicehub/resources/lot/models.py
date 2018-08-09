@@ -48,6 +48,11 @@ class Lot(Thing):
     def __contains__(self, child: 'Lot'):
         return Edge.has_lot(self.id, child.id)
 
+    @classmethod
+    def roots(cls):
+        """Gets the lots that are not under any other lot."""
+        return set(cls.query.join(cls.edges).filter(db.func.nlevel(Edge.path) == 1).all())
+
     def __repr__(self) -> str:
         return '<Lot {0.name} devices={0.devices!r}>'.format(self)
 

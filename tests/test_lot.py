@@ -168,3 +168,16 @@ def test_lot_unite_graphs():
     l2.remove_child(l4)
     assert l4 not in l2 and l5 not in l2 and l6 not in l2 and l7 not in l2 and l8 not in l2
     assert l4 not in l3 and l5 not in l3 and l6 not in l3 and l7 not in l3 and l8 not in l3
+
+
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
+def test_lot_roots():
+    """Tests getting the method Lot.roots."""
+    lots = Lot('1'), Lot('2'), Lot('3')
+    l1, l2, l3 = lots
+    db.session.add_all(lots)
+    db.session.flush()
+
+    assert Lot.roots() == {l1, l2, l3}
+    l1.add_child(l2)
+    assert Lot.roots() == {l1, l3}
