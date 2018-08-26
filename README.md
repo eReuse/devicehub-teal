@@ -91,6 +91,8 @@ To run the tests you will need to:
 2. Create a database for testing. By default the database used is 
    `dh_test`. Execute to create it:
    1. `postgres $ createdb dh_test`.
-   2. `postgres $ psql devicehub`.
+   2. `postgres $ psql dh_test`.
    3. `postgres $ GRANT ALL PRIVILEGES ON DATABASE dh_test TO dhub;`.
+   4. `CREATE EXTENSION pgcrypto SCHEMA public;`
+   5. `CREATE EXTENSION ltree SCHEMA public;`
 3. Execute at the root folder of the project ``python3 setup.py test``.

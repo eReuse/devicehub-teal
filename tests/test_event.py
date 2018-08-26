@@ -1,9 +1,10 @@
 import ipaddress
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 import pytest
 from flask import current_app as app, g
 from sqlalchemy.util import OrderedSet
+from teal.enums import Currency, Subdivision
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
@@ -11,7 +12,6 @@ from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCar
     RamModule, SolidStateDrive
 from ereuse_devicehub.resources.enums import ComputerChassis, TestHardDriveLength
 from ereuse_devicehub.resources.event import models
-from teal.enums import Currency, Subdivision
 from tests import conftest
 from tests.conftest import create_user, file
 
@@ -38,9 +38,7 @@ def test_erase_basic():
     erasure = models.EraseBasic(
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
         zeros=True,
-        start_time=datetime.now(timezone.utc),
-        end_time=datetime.now(timezone.utc),
-        error=False
+        **conftest.T
     )
     db.session.add(erasure)
     db.session.commit()
@@ -59,9 +57,7 @@ def test_validate_device_data_storage():
         models.EraseBasic(
             device=GraphicCard(serial_number='foo', manufacturer='bar', model='foo-bar'),
             clean_with_zeros=True,
-            start_time=datetime.now(timezone.utc),
-            end_time=datetime.now(timezone.utc),
-            error=False
+            **conftest.T
         )
 
 
@@ -70,20 +66,12 @@ def test_erase_sectors_steps():
     erasure = models.EraseSectors(
         device=SolidStateDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
         zeros=True,
-        start_time=datetime.now(timezone.utc),
-        end_time=datetime.now(timezone.utc),
-        error=False,
         steps=[
-            models.StepZero(error=False,
-                            start_time=datetime.now(timezone.utc),
-                            end_time=datetime.now(timezone.utc)),
-            models.StepRandom(error=False,
-                              start_time=datetime.now(timezone.utc),
-                              end_time=datetime.now(timezone.utc)),
-            models.StepZero(error=False,
-                            start_time=datetime.now(timezone.utc),
-                            end_time=datetime.now(timezone.utc))
-        ]
+            models.StepZero(**conftest.T),
+            models.StepRandom(**conftest.T),
+            models.StepZero(**conftest.T)
+        ],
+        **conftest.T
     )
     db.session.add(erasure)
     db.session.commit()

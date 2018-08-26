@@ -1,3 +1,6 @@
+import io
+from contextlib import redirect_stdout
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -11,6 +14,13 @@ from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
+
+STARTT = datetime(year=2000, month=1, day=1, hour=1)
+"""A dummy starting time to use in tests."""
+ENDT = datetime(year=2000, month=1, day=1, hour=2)
+"""A dummy ending time to use in tests."""
+T = {'start_time': STARTT, 'end_time': ENDT}
+"""A dummy start_time/end_time to use as function keywords."""
 
 
 class TestConfig(DevicehubConfig):
@@ -40,7 +50,8 @@ def app(request, _app: Devicehub) -> Devicehub:
 
     with _app.app_context():
         try:
-            _app.init_db()
+            with redirect_stdout(io.StringIO()):
+                _app.init_db()
         except ProgrammingError:
             print('Database was not correctly emptied. Re-empty and re-installing...')
             _drop()
