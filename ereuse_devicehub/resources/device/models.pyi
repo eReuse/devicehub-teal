@@ -2,12 +2,14 @@ from typing import Dict, List, Set
 
 from colour import Color
 from sqlalchemy import Column, Integer
+from sqlalchemy.orm import relationship
 
 from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
     RamFormat, RamInterface
 from ereuse_devicehub.resources.event.models import Event, EventWithMultipleDevices, \
     EventWithOneDevice
 from ereuse_devicehub.resources.image.models import ImageList
+from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.tag import Tag
 
@@ -24,6 +26,7 @@ class Device(Thing):
     height = ...  # type: Column
     depth = ...  # type: Column
     color = ...  # type: Column
+    parents = ... # type: relationship
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -44,6 +47,7 @@ class Device(Thing):
         self.events_one = ...  # type: Set[EventWithOneDevice]
         self.images = ...  # type: ImageList
         self.tags = ...  # type: Set[Tag]
+        self.parents = ... # type: Set[Lot]
 
 
 class DisplayMixin:

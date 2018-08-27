@@ -52,13 +52,13 @@ def test_add_edge():
     parent.add_child(child)
 
     assert child in parent
-    assert len(child.edges) == 1
-    assert len(parent.edges) == 1
+    assert len(child.paths) == 1
+    assert len(parent.paths) == 1
 
     parent.remove_child(child)
     assert child not in parent
-    assert len(child.edges) == 1
-    assert len(parent.edges) == 1
+    assert len(child.paths) == 1
+    assert len(parent.paths) == 1
 
     grandparent = Lot('grandparent')
     db.session.add(grandparent)
@@ -115,8 +115,8 @@ def test_lot_multiple_parents():
 
     parent.remove_child(child)
     assert child not in parent
-    assert len(child.edges) == 1
-    assert len(parent.edges) == 1
+    assert len(child.paths) == 1
+    assert len(parent.paths) == 1
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)

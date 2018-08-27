@@ -7,12 +7,12 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import expression
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
+from teal.db import UUIDLtree
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import STR_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
-from teal.db import UUIDLtree
 
 
 class Lot(Thing):
@@ -34,24 +34,24 @@ class Lot(Thing):
         :param closed:
         """
         super().__init__(id=uuid.uuid4(), name=name, closed=closed)
-        Edge(self)  # Lots have always one edge per default.
+        Path(self)  # Lots have always one edge per default.
 
     def add_child(self, child: 'Lot'):
         """Adds a child to this lot."""
-        Edge.add(self.id, child.id)
+        Path.add(self.id, child.id)
         db.session.refresh(self)  # todo is this useful?
         db.session.refresh(child)
 
     def remove_child(self, child: 'Lot'):
-        Edge.delete(self.id, child.id)
+        Path.delete(self.id, child.id)
 
     def __contains__(self, child: 'Lot'):
-        return Edge.has_lot(self.id, child.id)
+        return Path.has_lot(self.id, child.id)
 
     @classmethod
     def roots(cls):
         """Gets the lots that are not under any other lot."""
-        return set(cls.query.join(cls.edges).filter(db.func.nlevel(Edge.path) == 1).all())
+        return set(cls.query.join(cls.paths).filter(db.func.nlevel(Path.path) == 1).all())
 
     def __repr__(self) -> str:
         return '<Lot {0.name} devices={0.devices!r}>'.format(self)
@@ -71,13 +71,13 @@ class LotDevice(db.Model):
     """
 
 
-class Edge(db.Model):
+class Path(db.Model):
     id = db.Column(db.UUID(as_uuid=True),
                    primary_key=True,
                    server_default=db.text('gen_random_uuid()'))
     lot_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(Lot.id), nullable=False)
     lot = db.relationship(Lot,
-                          backref=db.backref('edges', lazy=True, collection_class=set),
+                          backref=db.backref('paths', lazy=True, collection_class=set),
                           primaryjoin=Lot.id == lot_id)
     path = db.Column(LtreeType, nullable=False)
     created = db.Column(db.TIMESTAMP(timezone=True), server_default=db.text('CURRENT_TIMESTAMP'))
@@ -86,7 +86,8 @@ class Edge(db.Model):
         """
 
     __table_args__ = (
-        db.UniqueConstraint(path, name='edge_path_unique', deferrable=True, initially='immediate'),
+        # dag.delete_edge needs to disable internally/temporarily the unique constraint
+        db.UniqueConstraint(path, name='path_unique', deferrable=True, initially='immediate'),
         db.Index('path_gist', path, postgresql_using='gist'),
         db.Index('path_btree', path, postgresql_using='btree')
     )
@@ -95,7 +96,7 @@ class Edge(db.Model):
         super().__init__(lot=lot)
         self.path = UUIDLtree(lot.id)
 
-    def children(self) -> Set['Edge']:
+    def children(self) -> Set['Path']:
         """Get the children edges."""
         # todo is it useful? test it when first usage
         # From https://stackoverflow.com/a/41158890
@@ -118,6 +119,6 @@ class Edge(db.Model):
     @classmethod
     def has_lot(cls, parent_id: uuid.UUID, child_id: uuid.UUID) -> bool:
         return bool(db.session.execute(
-            "SELECT 1 from edge where path ~ '*.{}.*.{}.*'".format(
+            "SELECT 1 from path where path ~ '*.{}.*.{}.*'".format(
                 str(parent_id).replace('-', '_'), str(child_id).replace('-', '_'))
         ).first())

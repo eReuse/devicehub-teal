@@ -24,8 +24,8 @@ BEGIN
     raise exception 'Cannot create edge: the parent is the same as the child.';
   end if;
 
-  if exists(
-      select 1 from edge where edge.path ~ CAST('*.' || child || '.*.' || parent || '.*' as lquery)
+  if EXISTS (
+      SELECT 1 FROM path where path.path ~ CAST('*.' || child || '.*.' || parent || '.*' as lquery)
   )
   then
     raise exception 'Cannot create edge: child already contains parent.';
@@ -36,16 +36,14 @@ BEGIN
   -- to all the leafs.
   -- We do the cartesian product from all the paths of the parent subgraph that end in the parent
   -- WITH all the paths that start from the child that end to its leafs.
-  insert into edge (lot_id, path) (select distinct lot_id, fp.path ||
-                                                           subpath(edge.path, index(edge.path, text2ltree(child)))
-                                   from edge,
-                                        (select path
-                                         from edge
-                                         where path ~ CAST('*.' || parent AS lquery)) as fp
-                                   where edge.path ~ CAST('*.' || child || '.*' AS lquery));
+  insert into path (lot_id, path) (
+    select distinct lot_id, fp.path || subpath(path.path, index(path.path, text2ltree(child)))
+    from path, (select path.path from path where path.path ~ CAST('*.' || parent AS lquery)) as fp
+    where path.path ~ CAST('*.' || child || '.*' AS lquery)
+  );
   -- Cleanup: old paths that start with the child (that where used above in the cartesian product)
   -- have became a subset of the result of the cartesian product, thus being redundant.
-  delete from edge where edge.path ~ CAST(child || '.*' AS lquery);
+  delete from path where path.path ~ CAST(child || '.*' AS lquery);
 END
 $$
 LANGUAGE plpgsql;
@@ -70,11 +68,11 @@ BEGIN
   -- this part of the path we will have duplicate paths.
 
   -- don't check uniqueness for path key until we delete duplicates
-  SET CONSTRAINTS edge_path_unique DEFERRED;
+  SET CONSTRAINTS path_unique DEFERRED;
 
   -- remove everything above the child lot_id in the path
   -- this creates duplicates on path and lot_id
-  update edge
+  update path
   set path = subpath(path, index(path, text2ltree(child)))
   where path ~ CAST('*.' || parent || '.' || child || '.*' AS lquery);
 
@@ -82,13 +80,14 @@ BEGIN
   -- we need an id field exclusively for this operation
   -- from https://wiki.postgresql.org/wiki/Deleting_duplicates
   DELETE
-  FROM edge
+  FROM path
   WHERE id IN (SELECT id
-               FROM (SELECT id, ROW_NUMBER() OVER (partition BY lot_id, path) AS rnum FROM edge) t
+               FROM (SELECT id, ROW_NUMBER() OVER (partition BY lot_id, path) AS rnum FROM path) t
                WHERE t.rnum > 1);
 
   -- re-activate uniqueness check and perform check
-  SET CONSTRAINTS edge_path_unique IMMEDIATE;
+  -- todo we should put this in a kind-of finally clause
+  SET CONSTRAINTS path_unique IMMEDIATE;
 
   -- After the update the one of the paths of the child will be
   -- containing only the child.
@@ -96,10 +95,10 @@ BEGIN
   -- In case the child has more than one parent, remove this path
   -- (note that we want it to remove it too from descendants of this
   -- child, ex. 'child_id'.'desc1')
-  select COUNT(1) into number from edge where lot_id = child_id;
+  select COUNT(1) into number from path where lot_id = child_id;
   IF number > 1
   THEN
-    delete from edge where path <@ text2ltree(child);
+    delete from path where path <@ text2ltree(child);
   end if;
 
 END
