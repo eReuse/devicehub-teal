@@ -7,6 +7,7 @@ from sqlalchemy_utils import PhoneNumber
 
 from ereuse_devicehub.resources.event.models import Event, Trade
 from ereuse_devicehub.resources.models import Thing
+from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
 from teal import enums
 
@@ -39,6 +40,7 @@ class Organization(Agent):
     def __init__(self, name: str, **kwargs):
         super().__init__(**kwargs)
         self.members = ...  # type: Set[Membership]
+        self.tags = ... # type: Set[Tag]
 
     @classmethod
     def get_default_org_id(cls) -> uuid.UUID:
