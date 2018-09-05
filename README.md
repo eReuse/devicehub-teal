@@ -22,7 +22,8 @@ Devicehub is built with [Teal](https://github.com/bustawin/teal) and
 The requirements are:
 
 - Python 3.5.3 or higher. In debian 9 is `# apt install python3-pip`.
-- PostgreSQL 9.6 or higher. In debian 9 is `# apt install postgresql-contrib`
+- PostgreSQL 9.6 or higher with pgcrypto and ltree.
+  In debian 9 is `# apt install postgresql-contrib`
 - passlib. In debian 9 is `# apt install python3-passlib`.
 
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
@@ -99,6 +100,7 @@ To run the tests you will need to:
 
 ## Generating the docs
 1. `git clone` this project.
-2. Execute `pip3 install -e .[docs]` in the project root folder.
+2. Install plantuml. In Debian 9 is `# apt install plantuml`.
+3. Execute `pip3 install -e .[docs]` in the project root folder.
 3. Go to `<project root folder>/docs` and execute `make html`. 
    Repeat this step to generate new docs.
