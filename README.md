@@ -95,4 +95,10 @@ To run the tests you will need to:
    3. `postgres $ GRANT ALL PRIVILEGES ON DATABASE dh_test TO dhub;`.
    4. `CREATE EXTENSION pgcrypto SCHEMA public;`
    5. `CREATE EXTENSION ltree SCHEMA public;`
-3. Execute at the root folder of the project ``python3 setup.py test``.
+3. Execute at the root folder of the project `python3 setup.py test`.
+
+## Generating the docs
+1. `git clone` this project.
+2. Execute `pip3 install -e .[docs]` in the project root folder.
+3. Go to `<project root folder>/docs` and execute `make html`. 
+   Repeat this step to generate new docs.
