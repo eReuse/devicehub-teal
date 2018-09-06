@@ -12,6 +12,10 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
+from teal.db import ArrayOfEnum, CASCADE, CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, \
+    POLYMORPHIC_ON, StrictVersionType, URL, check_range
+from teal.enums import Country, Currency, Subdivision
+from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Agent
@@ -23,10 +27,6 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RA
 from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
-from teal.db import ArrayOfEnum, CASCADE, CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, \
-    POLYMORPHIC_ON, StrictVersionType, URL, check_range
-from teal.enums import Country, Currency, Subdivision
-from teal.marshmallow import ValidationError
 
 """
 A quantity of money with a currency.
@@ -216,6 +216,20 @@ class EventWithOneDevice(JoinedTableMixin, Event):
 
     def __repr__(self) -> str:
         return '<{0.t} {0.id!r} device={0.device!r}>'.format(self)
+
+    @declared_attr
+    def __mapper_args__(cls):
+        """
+        Defines inheritance.
+
+        From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
+        extensions/declarative/api.html
+        #sqlalchemy.ext.declarative.declared_attr>`_
+        """
+        args = {POLYMORPHIC_ID: cls.t}
+        if cls.t == 'EventWithOneDevice':
+            args[POLYMORPHIC_ON] = cls.type
+        return args
 
 
 class EventWithMultipleDevices(Event):
