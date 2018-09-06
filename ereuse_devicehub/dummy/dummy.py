@@ -30,7 +30,7 @@ class Dummy:
         self.app.cli.command('dummy',
                              short_help='Creates dummy devices and users.')(self.run)
 
-    @click.confirmation_option(prompt='This command deletes the DB in the process. '
+    @click.confirmation_option(prompt='This command (re)creates the DB from scratch.'
                                       'Do you want to continue?')
     def run(self):
         print('Preparing the database...'.ljust(30), end='')

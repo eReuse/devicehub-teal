@@ -5,8 +5,8 @@
    :alt: DeviceHub logo
 
 
-This is the documentation and API of the `eReuse.org DeviceHub
-<https://github.com/eReuse/DeviceHub>`_.
+This is the documentation and API of the `eReuse.org Devicehub
+<https://github.com/ereuse/devicehub-teal>`_.
 
 
 ..  toctree::
