@@ -1,6 +1,7 @@
 import pytest
 from pytest import raises
-from sqlalchemy.exc import IntegrityError
+from teal.db import MultipleResourcesFound, ResourceNotFound, UniqueViolation
+from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
@@ -10,8 +11,6 @@ from ereuse_devicehub.resources.device.models import Desktop
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.tag.view import CannotCreateETag, TagNotLinked
-from teal.db import MultipleResourcesFound, ResourceNotFound
-from teal.marshmallow import ValidationError
 from tests import conftest
 
 
@@ -49,7 +48,7 @@ def test_create_two_same_tags():
     """Ensures there cannot be two tags with the same ID and organization."""
     db.session.add(Tag(id='foo-bar'))
     db.session.add(Tag(id='foo-bar'))
-    with raises(IntegrityError):
+    with raises(UniqueViolation):
         db.session.commit()
     db.session.rollback()
     # And it works if tags are in different organizations

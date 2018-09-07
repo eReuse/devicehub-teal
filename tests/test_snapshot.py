@@ -4,6 +4,7 @@ from typing import List, Tuple
 from uuid import uuid4
 
 import pytest
+from teal.db import UniqueViolation
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
@@ -274,11 +275,10 @@ def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
     user.post(pc2, res=Snapshot, status=422)
 
 
-@pytest.mark.xfail(reason='duplicate Snapshot is a human error and needs a nice error message.')
 def test_snapshot_upload_twice_uuid_error(user: UserClient):
     pc1 = file('basic.snapshot')
     user.post(pc1, res=Snapshot)
-    user.post(pc1, res=Snapshot, status=422)
+    user.post(pc1, res=Snapshot, status=UniqueViolation)
 
 
 def test_erase(user: UserClient):

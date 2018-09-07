@@ -5,12 +5,12 @@ from uuid import UUID
 
 from flask import current_app as app, request
 from sqlalchemy.util import OrderedSet
+from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import SnapshotSoftware
 from ereuse_devicehub.resources.event.models import Event, Snapshot, WorkbenchRate
-from teal.resource import View
 
 
 class EventView(View):

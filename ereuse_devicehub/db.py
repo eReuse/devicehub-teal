@@ -1,9 +1,8 @@
 from sqlalchemy.dialects import postgresql
+from teal.db import SchemaSQLAlchemy
 
-from teal.db import SQLAlchemy as _SQLAlchemy
 
-
-class SQLAlchemy(_SQLAlchemy):
+class SQLAlchemy(SchemaSQLAlchemy):
     """
     Superuser must create the required extensions in the public
     schema of the database, as it is in the `search_path`

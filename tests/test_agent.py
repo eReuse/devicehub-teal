@@ -1,15 +1,15 @@
 from uuid import UUID
 
 import pytest
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy_utils import PhoneNumber
+from teal.db import UniqueViolation
+from teal.enums import Country
 
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.agent import OrganizationDef, models, schemas
 from ereuse_devicehub.resources.agent.models import Membership, Organization, Person, System
-from teal.enums import Country
 from tests.conftest import app_context, create_user
 
 
@@ -79,7 +79,7 @@ def test_membership_repeated():
     db.session.add(person)
 
     person.member_of.add(Membership(org, person))
-    with pytest.raises(IntegrityError):
+    with pytest.raises(UniqueViolation):
         db.session.flush()
 
 
@@ -94,7 +94,7 @@ def test_membership_repeating_id():
     person2 = Person(name='Tommy')
     person2.member_of.add(Membership(org, person2, id='acme-1'))
     db.session.add(person2)
-    with pytest.raises(IntegrityError) as e:
+    with pytest.raises(UniqueViolation) as e:
         db.session.flush()
     assert 'One member id per organization' in str(e)
 
