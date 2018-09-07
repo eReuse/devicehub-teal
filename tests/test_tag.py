@@ -120,3 +120,13 @@ def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: Us
         db.session.add(Tag(id='foo-bar', org=org2))
         db.session.commit()
     user.get(res=Tag, item='foo-bar/device', status=MultipleResourcesFound)
+
+
+def test_tag_create_tags_cli(app: Devicehub, user: UserClient):
+    """Checks creating tags with the CLI endpoint."""
+    runner = app.test_cli_runner()
+    runner.invoke(args=['create-tags', 'id1'], catch_exceptions=False)
+    with app.app_context():
+        tag = Tag.query.one()  # type: Tag
+        assert tag.id == 'id1'
+        assert tag.org.id == Organization.get_default_org_id()
