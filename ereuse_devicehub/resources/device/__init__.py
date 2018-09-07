@@ -1,6 +1,7 @@
+from teal.resource import Converters, Resource
+
 from ereuse_devicehub.resources.device import schemas
 from ereuse_devicehub.resources.device.views import DeviceView
-from teal.resource import Converters, Resource
 
 
 class DeviceDef(Resource):

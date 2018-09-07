@@ -1,11 +1,11 @@
 from marshmallow import fields as ma_fields, validate as ma_validate
 from marshmallow.fields import Email
+from teal import enums
+from teal.marshmallow import EnumField, Phone
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.models import STR_SIZE, STR_SM_SIZE
 from ereuse_devicehub.resources.schemas import Thing
-from teal import enums
-from teal.marshmallow import EnumField, Phone
 
 
 class Agent(Thing):

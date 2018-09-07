@@ -6,6 +6,9 @@ from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, List,
     TimeDelta, URL, UUID
 from marshmallow.validate import Length, Range
 from sqlalchemy.util import OrderedSet
+from teal.enums import Country, Currency, Subdivision
+from teal.marshmallow import EnumField, IP, Version
+from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.agent.schemas import Agent
@@ -17,9 +20,6 @@ from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user.schemas import User
-from teal.enums import Country, Currency, Subdivision
-from teal.marshmallow import EnumField, IP, Version
-from teal.resource import Schema
 
 
 class Event(Thing):

@@ -2,12 +2,13 @@ from distutils.version import StrictVersion
 from itertools import chain
 from typing import Set
 
-from ereuse_devicehub.resources import agent, device, event, inventory, lot, tag, user
-from ereuse_devicehub.resources.enums import PriceSoftware, RatingSoftware
 from teal.auth import TokenAuth
 from teal.config import Config
 from teal.enums import Currency
 from teal.utils import import_resource
+
+from ereuse_devicehub.resources import agent, device, event, inventory, lot, tag, user
+from ereuse_devicehub.resources.enums import PriceSoftware, RatingSoftware
 
 
 class DevicehubConfig(Config):

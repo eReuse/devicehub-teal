@@ -1,13 +1,13 @@
 from typing import Tuple
 
 from click import argument, option
+from teal.resource import Resource
+from teal.teal import Teal
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.tag import schema
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.tag.view import TagView, get_device_from_tag
-from teal.resource import Resource
-from teal.teal import Teal
 
 
 class TagDef(Resource):

@@ -1,11 +1,11 @@
 from uuid import UUID
 
 from flask import g, request
+from teal.resource import View
 
 from ereuse_devicehub.resources.user.exceptions import WrongCredentials
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.user.schemas import User as UserS
-from teal.resource import View
 
 
 class UserView(View):

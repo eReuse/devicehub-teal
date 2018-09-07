@@ -4,12 +4,12 @@ from sqlalchemy import BigInteger, Column, Enum as DBEnum, ForeignKey, Unicode
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.util import OrderedSet
+from teal.db import CASCADE_OWN
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.enums import ImageMimeTypes, Orientation
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, Thing
-from teal.db import CASCADE_OWN
 
 
 class ImageList(Thing):

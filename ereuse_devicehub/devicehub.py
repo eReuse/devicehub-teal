@@ -1,13 +1,13 @@
 from typing import Type
 
 from flask_sqlalchemy import SQLAlchemy
+from teal.config import Config as ConfigClass
+from teal.teal import Teal
 
 from ereuse_devicehub.auth import Auth
 from ereuse_devicehub.client import Client
 from ereuse_devicehub.db import db
 from ereuse_devicehub.dummy.dummy import Dummy
-from teal.config import Config as ConfigClass
-from teal.teal import Teal
 
 
 class Devicehub(Teal):

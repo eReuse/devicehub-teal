@@ -1,10 +1,10 @@
 from click import argument, option
+from teal.resource import Converters, Resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.user import schemas
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.user.views import UserView, login
-from teal.resource import Converters, Resource
 
 
 class UserDef(Resource):

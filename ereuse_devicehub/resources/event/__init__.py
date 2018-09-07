@@ -1,9 +1,10 @@
 from typing import Callable, Iterable, Tuple
 
+from teal.resource import Converters, Resource
+
 from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.event import schemas
 from ereuse_devicehub.resources.event.views import EventView, SnapshotView
-from teal.resource import Converters, Resource
 
 
 class EventDef(Resource):

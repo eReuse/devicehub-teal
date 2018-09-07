@@ -8,12 +8,12 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy_utils import EmailType, PhoneNumberType
-
-from ereuse_devicehub.resources.models import STR_SIZE, STR_SM_SIZE, Thing
-from ereuse_devicehub.resources.user.models import User
 from teal import enums
 from teal.db import INHERIT_COND, POLYMORPHIC_ID, \
     POLYMORPHIC_ON
+
+from ereuse_devicehub.resources.models import STR_SIZE, STR_SM_SIZE, Thing
+from ereuse_devicehub.resources.user.models import User
 
 
 class JoinedTableMixin:

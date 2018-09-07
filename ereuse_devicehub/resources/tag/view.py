@@ -1,11 +1,11 @@
 from flask import Response, current_app as app, request
 from marshmallow.fields import List, String, URL
+from teal.marshmallow import ValidationError
+from teal.resource import Schema, View
 from webargs.flaskparser import parser
 
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag import Tag
-from teal.marshmallow import ValidationError
-from teal.resource import Schema, View
 
 
 class TagView(View):

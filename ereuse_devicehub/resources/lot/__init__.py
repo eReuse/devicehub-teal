@@ -1,9 +1,10 @@
 import pathlib
 
+from teal.resource import Converters, Resource
+
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.lot import schemas
 from ereuse_devicehub.resources.lot.views import LotView
-from teal.resource import Converters, Resource
 
 
 class LotDef(Resource):

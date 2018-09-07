@@ -1,10 +1,10 @@
 import uuid
 
 from flask import current_app as app, request
+from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.lot.models import Lot
-from teal.resource import View
 
 
 class LotView(View):

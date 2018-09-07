@@ -2,9 +2,9 @@ from enum import Enum
 
 from marshmallow import post_load
 from marshmallow.fields import DateTime, List, String, URL
+from teal.resource import Schema
 
 from ereuse_devicehub.resources import models as m
-from teal.resource import Schema
 
 
 class UnitCodes(Enum):

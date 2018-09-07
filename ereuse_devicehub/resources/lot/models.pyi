@@ -15,7 +15,7 @@ class Lot(Thing):
     name = ...  # type: Column
     closed = ...  # type: Column
     devices = ...  # type: relationship
-    paths = ... # type: relationship
+    paths = ...  # type: relationship
 
     def __init__(self, name: str, closed: bool = closed.default.arg) -> None:
         super().__init__()

@@ -5,14 +5,14 @@ from typing import Iterable, Set
 from sqlalchemy import inspect
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.util import OrderedSet
+from teal.db import ResourceNotFound
+from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.event.models import Remove
 from ereuse_devicehub.resources.tag.model import Tag
-from teal.db import ResourceNotFound
-from teal.marshmallow import ValidationError
 
 
 class Sync:

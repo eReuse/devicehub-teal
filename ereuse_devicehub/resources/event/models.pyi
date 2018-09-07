@@ -9,6 +9,9 @@ from boltons.urlutils import URL
 from sqlalchemy import Column
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import Currency
+from teal import enums
+from teal.db import Model
+from teal.enums import Country
 
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
@@ -18,9 +21,6 @@ from ereuse_devicehub.resources.enums import AppearanceRange, Bios, Functionalit
 from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
-from teal import enums
-from teal.db import Model
-from teal.enums import Country
 
 
 class Event(Thing):

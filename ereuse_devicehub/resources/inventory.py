@@ -4,14 +4,14 @@ from marshmallow import Schema as MarshmallowSchema
 from marshmallow.fields import Float, Integer, Nested, Str
 from marshmallow.validate import Range
 from sqlalchemy import Column
+from teal.query import Between, FullTextSearch, ILike, Join, Or, Query, Sort, SortField
+from teal.resource import Resource, View
 
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.event.models import Rate
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.tag import Tag
-from teal.query import Between, FullTextSearch, ILike, Join, Or, Query, Sort, SortField
-from teal.resource import Resource, View
 
 
 class Inventory(Thing):

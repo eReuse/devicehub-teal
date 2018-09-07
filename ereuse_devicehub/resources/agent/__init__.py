@@ -1,10 +1,10 @@
 import click
 from flask import current_app as app
+from teal.db import SQLAlchemy
+from teal.resource import Converters, Resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent import models, schemas
-from teal.db import SQLAlchemy
-from teal.resource import Converters, Resource
 
 
 class AgentDef(Resource):

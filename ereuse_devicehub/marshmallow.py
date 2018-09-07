@@ -1,8 +1,8 @@
 from marshmallow.fields import missing_
-
-from ereuse_devicehub.db import db
 from teal.db import SQLAlchemy
 from teal.marshmallow import NestedOn as TealNestedOn
+
+from ereuse_devicehub.db import db
 
 
 class NestedOn(TealNestedOn):

@@ -3,6 +3,7 @@ from marshmallow.fields import Boolean, Float, Integer, Str
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
+from teal.marshmallow import EnumField, ValidationError
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device import models as m
@@ -10,7 +11,6 @@ from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterfa
     RamFormat, RamInterface
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing, UnitCodes
-from teal.marshmallow import EnumField, ValidationError
 
 
 class Device(Thing):

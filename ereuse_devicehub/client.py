@@ -1,13 +1,13 @@
 from inspect import isclass
 from typing import Any, Dict, Iterable, Tuple, Type, Union
 
+from ereuse_utils.test import JSON
 from flask import Response
+from teal.client import Client as TealClient
+from teal.marshmallow import ValidationError
 from werkzeug.exceptions import HTTPException
 
 from ereuse_devicehub.resources import models, schemas
-from ereuse_utils.test import JSON
-from teal.client import Client as TealClient
-from teal.marshmallow import ValidationError
 
 
 class Client(TealClient):

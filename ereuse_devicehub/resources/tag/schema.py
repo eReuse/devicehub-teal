@@ -1,9 +1,9 @@
 from marshmallow.fields import String
+from teal.marshmallow import URL
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device.schemas import Device
 from ereuse_devicehub.resources.schemas import Thing
-from teal.marshmallow import URL
 
 
 class Tag(Thing):

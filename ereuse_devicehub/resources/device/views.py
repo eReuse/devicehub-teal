@@ -1,5 +1,6 @@
-from ereuse_devicehub.resources.device.models import Device
 from teal.resource import View
+
+from ereuse_devicehub.resources.device.models import Device
 
 
 class DeviceView(View):
