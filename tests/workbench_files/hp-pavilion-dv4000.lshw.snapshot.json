@@ -1,0 +1,103 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "Hewlett-Packard",
+    "model": "Pavilion dv4000",
+    "serialNumber": "2CE5270ZWC",
+    "events": [],
+    "type": "Laptop",
+    "chassis": "Netbook"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Pentium M processor 1.60GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 1.6,
+      "address": 32,
+      "threads": 8
+    },
+    {
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 512,
+      "interface": "DDR"
+    },
+    {
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 512,
+      "interface": "DDR"
+    },
+    {
+      "manufacturer": "Fujitsu",
+      "model": "MHT2080A",
+      "serialNumber": "NN4FT561BDC2",
+      "events": [],
+      "type": "HardDrive",
+      "size": 76319,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Mobile 915GM/GMS/910GML Express Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "PRO/Wireless 2200BG Calexico2 Network Connection",
+      "serialNumber": "00:12:f0:c7:68:51",
+      "events": [],
+      "type": "NetworkAdapter",
+      "wireless": true
+    },
+    {
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "model": "RTL-8100/8101L/8139 PCI Fast Ethernet Adapter",
+      "serialNumber": "00:0a:e4:d4:71:82",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 100,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82801FB/FBM/FR/FW/FRW AC'97 Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Hewlett-Packard",
+      "model": "09BC",
+      "serialNumber": null,
+      "events": [],
+      "type": "Motherboard",
+      "usb": 5,
+      "firewire": 1,
+      "serial": 1,
+      "pcmcia": 1,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

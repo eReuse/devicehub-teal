@@ -1,0 +1,86 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": null,
+    "model": null,
+    "serialNumber": null,
+    "events": [],
+    "type": "Desktop",
+    "chassis": "Tower"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core2 CPU 6600 @ 2.40GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 2.394,
+      "address": 64,
+      "threads": 8
+    },
+    {
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 1024,
+      "interface": "SDRAM",
+      "speed": 667.0
+    },
+    {
+      "manufacturer": null,
+      "model": "SAMSUNG HD250HJ",
+      "serialNumber": "S0URJDQP811025",
+      "events": [],
+      "type": "HardDrive",
+      "size": 238475,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82G965 Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
+      "serialNumber": "00:1b:fc:30:75:09",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82801H HD Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "ASUSTeK Computer INC.",
+      "model": "P5B-VM",
+      "serialNumber": "MB-1234567890",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 7,
+      "firewire": 1,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

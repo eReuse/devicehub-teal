@@ -1,0 +1,91 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "Acer",
+    "model": "Aspire 5737Z",
+    "serialNumber": "LXAZ70X0669112B8DB1601",
+    "events": [],
+    "type": "Laptop",
+    "chassis": "Netbook"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core2 Duo CPU T6400 @ 2.00GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 2.0,
+      "address": 64,
+      "cores": 2,
+      "threads": 2
+    },
+    {
+      "manufacturer": "Western Digital",
+      "model": "WDC WD5000BEVT-2",
+      "serialNumber": "WD-WXN209S36759",
+      "events": [],
+      "type": "HardDrive",
+      "size": 476940,
+      "interface": null
+    },
+    {
+      "manufacturer": "NVIDIA Corporation",
+      "model": "C79 GeForce 9400M G",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Broadcom Inc. and subsidiaries",
+      "model": "NetXtreme BCM5764M Gigabit Ethernet PCIe",
+      "serialNumber": "00:23:5a:5f:6b:8d",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Qualcomm Atheros",
+      "model": "AR928X Wireless Network Adapter",
+      "serialNumber": "00:24:2b:d3:dd:19",
+      "events": [],
+      "type": "NetworkAdapter",
+      "wireless": true
+    },
+    {
+      "manufacturer": "Chicony Electronics Co., Ltd.",
+      "model": "CNF7017",
+      "serialNumber": "SN0001",
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "NVIDIA Corporation",
+      "model": "MCP79 High Definition Audio",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "events": [],
+      "type": "Motherboard",
+      "usb": 4,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

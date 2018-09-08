@@ -1,6 +1,8 @@
 """
 Tests that emulates the behaviour of a WorkbenchServer.
 """
+import json
+import pathlib
 
 import pytest
 
@@ -232,3 +234,34 @@ def test_real_custom(user: UserClient):
 def test_real_hp_quad_core(user: UserClient):
     s = file('real-hp-quad-core.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
+
+
+def test_real_eee_1000h(user: UserClient):
+    s = file('asus-eee-1000h.snapshot.11')
+    snapshot, _ = user.post(res=em.Snapshot, data=s)
+
+
+SNAPSHOTS_NEED_ID = {
+    'box-xavier.snapshot.json',
+    'custom.lshw.snapshot.json',
+    'nox.lshw.snapshot.json',
+    'core2.lshw.snapshot.json',
+    'all-series.lshw.snapshot.json',
+    'ecs-2.lshw.snapshot.json',
+    'ecs-computers.lshw.snapshot.json',
+    'asus-all-series.lshw.snapshot.json'
+}
+"""Snapshots that do not generate HID requiring a custom ID."""
+
+
+@pytest.mark.parametrize('file',
+                         pathlib.Path(__file__).parent.joinpath('workbench_files').iterdir())
+def test_workbench_fixtures(file: pathlib.Path, user: UserClient):
+    """Uploads the Snapshot files Workbench tests generate.
+
+    Keep this files up to date with the Workbench version.
+    """
+    s = json.load(file.open())
+    user.post(res=em.Snapshot,
+              data=s,
+              status=201 if file.name not in SNAPSHOTS_NEED_ID else NeedsId)

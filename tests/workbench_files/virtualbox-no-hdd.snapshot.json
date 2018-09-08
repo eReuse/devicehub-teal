@@ -1,0 +1,48 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "innotek GmbH",
+    "model": "VirtualBox",
+    "serialNumber": "0",
+    "events": [],
+    "type": "Computer",
+    "chassis": "Virtual"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82540EM Gigabit Ethernet Controller",
+      "serialNumber": "08:00:27:53:cb:af",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82801AA AC'97 Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Oracle Corporation",
+      "model": "VirtualBox",
+      "serialNumber": "0",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 2,
+      "firewire": 0,
+      "serial": 0,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

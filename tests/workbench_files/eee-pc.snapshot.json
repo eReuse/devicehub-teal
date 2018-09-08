@@ -1,0 +1,100 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "ASUSTeK Computer INC.",
+    "model": "1000H",
+    "serialNumber": "8BOAAQ191999",
+    "events": [],
+    "type": "Laptop",
+    "chassis": "Netbook"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Atom CPU N270 @ 1.60GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 1.6,
+      "address": 32,
+      "threads": 8
+    },
+    {
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 2048,
+      "interface": "SDRAM"
+    },
+    {
+      "manufacturer": null,
+      "model": "TS32GSSD370S",
+      "serialNumber": "C304332411",
+      "events": [],
+      "type": "HardDrive",
+      "size": 30533,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Mobile 945GSE Express Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Qualcomm Atheros",
+      "model": "AR8121/AR8113/AR8114 Gigabit or Fast Ethernet",
+      "serialNumber": "00:23:54:8d:be:66",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 100,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Ralink corp.",
+      "model": "RT2790 Wireless 802.11n 1T/2R PCIe",
+      "serialNumber": "00:15:af:dc:44:eb",
+      "events": [],
+      "type": "NetworkAdapter",
+      "wireless": true
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "NM10/ICH7 Family High Definition Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Chicony Electronics Co., Ltd.",
+      "model": "CNF7129",
+      "serialNumber": "SN0001",
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "ASUSTeK Computer INC.",
+      "model": "1000H",
+      "serialNumber": "Eee0123456789",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 5,
+      "firewire": 0,
+      "serial": 0,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

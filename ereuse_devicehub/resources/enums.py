@@ -146,12 +146,25 @@ BOX_RATE_3 = 1, 3
 
 @unique
 class RamInterface(Enum):
-    DDR = 'DDR'
-    DDR2 = 'DDR2'
-    DDR3 = 'DDR3'
-    DDR4 = 'DDR4'
-    DDR5 = 'DDR5'
-    DDR6 = 'DDR6'
+    """
+    The interface or type of RAM.
+
+    The more common type of RAM nowadays for RamModules is SDRAM.
+    Note that we have not added all sub-types (please contact if
+    you want them). See more here
+    https://en.wikipedia.org/wiki/Category:SDRAM.
+
+    Although SDRAM is the generic naming for any DDR we include it
+    here for those cases where there is no more specific information.
+    Please, try to always use DDRø-6 denominations.
+    """
+    SDRAM = 'SDRAM'
+    DDR = 'DDR SDRAM'
+    DDR2 = 'DDR2 SDRAM'
+    DDR3 = 'DDR3 SDRAM'
+    DDR4 = 'DDR4 SDRAM'
+    DDR5 = 'DDR5 SDRAM'
+    DDR6 = 'DDR6 SDRAM'
 
 
 @unique

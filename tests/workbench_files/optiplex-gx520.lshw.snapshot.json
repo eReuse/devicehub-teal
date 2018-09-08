@@ -1,0 +1,97 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "Dell Inc.",
+    "model": "OptiPlex GX520",
+    "serialNumber": "6G0772J",
+    "events": [],
+    "type": "Desktop",
+    "chassis": "Tower"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Pentium 4 CPU 3.00GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 3.0,
+      "address": 64,
+      "threads": 8
+    },
+    {
+      "manufacturer": "Nanya Technology",
+      "model": "NT512T64U88A0BY-37",
+      "serialNumber": "197312A4",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 512,
+      "interface": "DDR",
+      "speed": 533.0
+    },
+    {
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 512,
+      "interface": "DDR",
+      "speed": 533.0
+    },
+    {
+      "manufacturer": "Seagate",
+      "model": "ST3808110AS",
+      "serialNumber": "5LR30DTZ",
+      "events": [],
+      "type": "HardDrive",
+      "size": 76293,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82945G/GZ Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Broadcom Limited",
+      "model": "NetXtreme BCM5751 Gigabit Ethernet PCI Express",
+      "serialNumber": "00:13:72:78:53:12",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82801G AC'97 Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Dell Inc.",
+      "model": "0UG982",
+      "serialNumber": "..CN1374063201S5.",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 5,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

@@ -1,0 +1,95 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": null,
+    "model": null,
+    "serialNumber": null,
+    "events": [],
+    "type": "Desktop",
+    "chassis": "Tower"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Celeron CPU N3050 @ 1.60GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 0.47998,
+      "address": 64,
+      "cores": 2,
+      "threads": 2
+    },
+    {
+      "manufacturer": "Kingston",
+      "model": "99U5469-044.A00LF",
+      "serialNumber": "17220285",
+      "events": [],
+      "type": "RamModule",
+      "format": "SODIMM",
+      "size": 4096,
+      "interface": "DDR3",
+      "speed": 1600.0
+    },
+    {
+      "manufacturer": "Toshiba",
+      "model": "THNSNS12",
+      "serialNumber": "Y2IS101GT4BY",
+      "events": [],
+      "type": "HardDrive",
+      "size": 122104,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Atom/Celeron/Pentium Processor x5-E8000/J3xxx/N3xxx Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Wireless 3165",
+      "serialNumber": "34:02:86:5b:47:b2",
+      "events": [],
+      "type": "NetworkAdapter",
+      "wireless": true
+    },
+    {
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
+      "serialNumber": "b8:ae:ed:76:91:83",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Atom/Celeron/Pentium Processor x5-E8000/J3xxx/N3xxx Series High Definition Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "NUC5CPYB",
+      "serialNumber": "GEPY523011FH",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 1,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

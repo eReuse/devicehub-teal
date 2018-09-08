@@ -1,0 +1,98 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "NEC Computers SAS",
+    "model": "Powermate MLxxx",
+    "serialNumber": "SN 123456789ABC",
+    "events": [],
+    "type": "Desktop",
+    "chassis": "Tower"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core2 Duo CPU E8400 @ 3.00GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 3.0,
+      "address": 64,
+      "cores": 2,
+      "threads": 2
+    },
+    {
+      "manufacturer": "Samsung",
+      "model": "M3 78T2863QZS-CE6",
+      "serialNumber": "253C8F0C",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 1024,
+      "interface": "DDR2",
+      "speed": 667.0
+    },
+    {
+      "manufacturer": "Samsung",
+      "model": "M3 78T2863QZS-CE6",
+      "serialNumber": "253C8DE7",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 1024,
+      "interface": "DDR2",
+      "speed": 667.0
+    },
+    {
+      "manufacturer": "Hitachi",
+      "model": "HDT72103",
+      "serialNumber": "STA2L7MV39LL6D",
+      "events": [],
+      "type": "HardDrive",
+      "size": 305245,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82Q35 Express Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82566DM-2 Gigabit Network Connection",
+      "serialNumber": "00:24:21:7a:90:02",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82801I HD Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Micro-Star International Co Ltd",
+      "model": "MS-7377",
+      "serialNumber": "9516777584",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 8,
+      "firewire": 1,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

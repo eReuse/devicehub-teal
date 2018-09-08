@@ -226,7 +226,7 @@ class Snapshot(EventWithOneDevice):
             if data['version'] < app.config['MIN_WORKBENCH']:
                 raise ValidationError(
                     'Min. supported Workbench version is '
-                    '{}'.format(app.config['MIN_WORKBENCH']),
+                    '{} but yours is {}.'.format(app.config['MIN_WORKBENCH'], data['version']),
                     field_names=['version']
                 )
 
@@ -245,7 +245,7 @@ class Snapshot(EventWithOneDevice):
             if not data.get('uuid', None):
                 raise ValidationError('Snapshots from Workbench must have uuid',
                                       field_names=['uuid'])
-            if not data.get('elapsed', None):
+            if data.get('elapsed', None) is None:
                 raise ValidationError('Snapshots from Workbench must have elapsed',
                                       field_names=['elapsed'])
         else:

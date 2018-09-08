@@ -1,0 +1,91 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "Timi",
+    "model": "TM1613",
+    "serialNumber": "13138/00064437",
+    "events": [],
+    "type": "Laptop",
+    "chassis": "Netbook"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core i5-6200U CPU @ 2.30GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 2.684156,
+      "address": 64,
+      "cores": 2,
+      "threads": 4
+    },
+    {
+      "manufacturer": "Samsung",
+      "model": "M471A1K43BB0-CPB",
+      "serialNumber": null,
+      "events": [],
+      "type": "RamModule",
+      "format": "SODIMM",
+      "size": 8192,
+      "speed": 2133.0
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Sky Lake Integrated Graphics",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "NVIDIA Corporation",
+      "model": "NVIDIA Corporation",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Wireless 8260",
+      "serialNumber": "a0:c5:89:41:a8:a7",
+      "events": [],
+      "type": "NetworkAdapter",
+      "wireless": true
+    },
+    {
+      "manufacturer": "SunplusIT Inc",
+      "model": "XiaoMi USB 2.0 Webcam",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Intel Corporation",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Timi",
+      "model": "TM1613",
+      "serialNumber": "MMG5S000000226B1P02YK",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 1,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

@@ -1,0 +1,98 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "Dell Inc.",
+    "model": "Vostro 260",
+    "serialNumber": "1Q63F5J",
+    "events": [],
+    "type": "Desktop",
+    "chassis": "Tower"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core i3-2120 CPU @ 3.30GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 1.6709470000000002,
+      "address": 64,
+      "cores": 2,
+      "threads": 2
+    },
+    {
+      "manufacturer": "Micron",
+      "model": "8JTF25664AZ-1G4M1",
+      "serialNumber": "E192532D",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 2048,
+      "interface": "DDR3",
+      "speed": 1333.0
+    },
+    {
+      "manufacturer": "Micron",
+      "model": "8JTF25664AZ-1G4M1",
+      "serialNumber": "E192532C",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 2048,
+      "interface": "DDR3",
+      "speed": 1333.0
+    },
+    {
+      "manufacturer": "Seagate",
+      "model": "ST500DM002-1BD14",
+      "serialNumber": "Z2AYS308",
+      "events": [],
+      "type": "HardDrive",
+      "size": 476940,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
+      "serialNumber": "d4:be:d9:ec:2d:ea",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Dell Inc.",
+      "model": "0GDG8Y",
+      "serialNumber": "..CN70163257067Z.",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 2,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

@@ -1,0 +1,98 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "Dell Inc.",
+    "model": "OptiPlex 745",
+    "serialNumber": "HQ5583J",
+    "events": [],
+    "type": "Desktop",
+    "chassis": "Tower"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core2 CPU 6400 @ 2.13GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 2.133,
+      "address": 64,
+      "cores": 2,
+      "threads": 2
+    },
+    {
+      "manufacturer": "Infineon",
+      "model": "64T128020HU3SB",
+      "serialNumber": "07129114",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 1024,
+      "interface": "DDR",
+      "speed": 667.0
+    },
+    {
+      "manufacturer": "Infineon",
+      "model": "64T128020HU3SB",
+      "serialNumber": "07127E11",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 1024,
+      "interface": "DDR",
+      "speed": 667.0
+    },
+    {
+      "manufacturer": "Western Digital",
+      "model": "WDC WD3200AAKS-7",
+      "serialNumber": "WD-WMAV2W580992",
+      "events": [],
+      "type": "HardDrive",
+      "size": 305245,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82Q963/Q965 Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Broadcom Limited",
+      "model": "NetXtreme BCM5754 Gigabit Ethernet PCI Express",
+      "serialNumber": "00:1a:a0:e0:60:62",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82801H HD Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Dell Inc.",
+      "model": "0HP962",
+      "serialNumber": "..CN137407AJ02SW.",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 7,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

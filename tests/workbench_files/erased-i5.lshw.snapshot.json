@@ -1,0 +1,96 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "Hewlett-Packard",
+    "model": "HP Compaq dc7900 Small Form Factor",
+    "serialNumber": "CZC901381R",
+    "events": [],
+    "type": "Desktop",
+    "chassis": "Tower"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core2 Duo CPU E8400 @ 3.00GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 3.0,
+      "address": 64,
+      "cores": 2,
+      "threads": 2
+    },
+    {
+      "manufacturer": "JEDEC ID:AD 00 00 00 00 00 00 00",
+      "model": "HYMP125U64CP8-S6",
+      "serialNumber": "01200000",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 2048,
+      "interface": "DDR2",
+      "speed": 800.0
+    },
+    {
+      "manufacturer": "Seagate",
+      "model": "ST3160815AS",
+      "serialNumber": "6RX7AWEZ",
+      "events": [],
+      "type": "HardDrive",
+      "size": 152627,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "4 Series Chipset Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82567LM-3 Gigabit Network Connection",
+      "serialNumber": "00:23:7d:49:5e:31",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "model": "RTL8169 PCI Gigabit Ethernet Controller",
+      "serialNumber": "00:b0:c2:02:ab:b7",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82801JD/DO HD Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Hewlett-Packard",
+      "model": "3031h",
+      "serialNumber": "CZC901381R",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 8,
+      "firewire": 0,
+      "serial": 0,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

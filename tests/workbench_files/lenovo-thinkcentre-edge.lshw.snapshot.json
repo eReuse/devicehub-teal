@@ -1,0 +1,87 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "LENOVO",
+    "model": "3493BAG",
+    "serialNumber": "PB357N0",
+    "events": [],
+    "type": "Desktop",
+    "chassis": "Tower"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Pentium CPU G645 @ 2.90GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 1.674792,
+      "address": 64,
+      "cores": 2,
+      "threads": 2
+    },
+    {
+      "manufacturer": "Micron",
+      "model": "16JTF25664AZ-1G4F1",
+      "serialNumber": "292E48DA",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 2048,
+      "interface": "DDR3",
+      "speed": 1333.0
+    },
+    {
+      "manufacturer": "Seagate",
+      "model": "ST250DM000-1BD14",
+      "serialNumber": "Z2AYPLNP",
+      "events": [],
+      "type": "HardDrive",
+      "size": 238475,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
+      "serialNumber": "d4:3d:7e:41:c4:c4",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "LENOVO",
+      "model": null,
+      "serialNumber": null,
+      "events": [],
+      "type": "Motherboard",
+      "usb": 2,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

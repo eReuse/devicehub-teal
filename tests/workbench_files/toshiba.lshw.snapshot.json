@@ -1,0 +1,109 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "TOSHIBA",
+    "model": "PORTEGE R700",
+    "serialNumber": "YA059622H",
+    "events": [],
+    "type": "Laptop",
+    "chassis": "Netbook"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core i5 CPU M 560 @ 2.67GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 1.199,
+      "address": 64,
+      "threads": 8
+    },
+    {
+      "manufacturer": "Samsung",
+      "model": "M471B5773CHS-CH9",
+      "serialNumber": "67900CDD",
+      "events": [],
+      "type": "RamModule",
+      "format": "SODIMM",
+      "size": 2048,
+      "interface": "DDR3",
+      "speed": 1067.0
+    },
+    {
+      "manufacturer": "Hitachi",
+      "model": "HTS54505",
+      "serialNumber": "101022PBN40317KS46YE",
+      "events": [],
+      "type": "HardDrive",
+      "size": 476940,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Core Processor Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82577LM Gigabit Network Connection",
+      "serialNumber": "00:23:18:02:0d:94",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Centrino Advanced-N 6200",
+      "serialNumber": "00:27:10:cd:5e:44",
+      "events": [],
+      "type": "NetworkAdapter",
+      "wireless": true
+    },
+    {
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": "02:80:37:ec:02:00",
+      "events": [],
+      "type": "NetworkAdapter",
+      "wireless": false
+    },
+    {
+      "manufacturer": "Realtek",
+      "model": "2SF001",
+      "serialNumber": "0x0001",
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "5 Series/3400 Series Chipset High Definition Audio",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "TOSHIBA",
+      "model": "Portable PC",
+      "serialNumber": null,
+      "events": [],
+      "type": "Motherboard",
+      "usb": 2,
+      "firewire": 0,
+      "serial": 0,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

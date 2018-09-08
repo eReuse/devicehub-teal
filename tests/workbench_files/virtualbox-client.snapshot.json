@@ -1,0 +1,50 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "innotek GmbH",
+    "model": "VirtualBox",
+    "serialNumber": "0",
+    "events": [],
+    "type": "Computer",
+    "chassis": "Virtual"
+  },
+  "components": [
+    {
+      "manufacturer": null,
+      "model": "VBOX HARDDISK",
+      "serialNumber": "VBd9783eb3-8ef7f22a",
+      "events": [],
+      "type": "HardDrive",
+      "size": 76856,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82540EM Gigabit Ethernet Controller",
+      "serialNumber": "08:00:27:43:d0:65",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Oracle Corporation",
+      "model": "VirtualBox",
+      "serialNumber": "0",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 1,
+      "firewire": 0,
+      "serial": 0,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

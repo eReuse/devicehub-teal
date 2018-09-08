@@ -1,0 +1,87 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "ASUS",
+    "model": "All Series",
+    "serialNumber": null,
+    "events": [],
+    "type": "Desktop",
+    "chassis": "Tower"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core i5-4440 CPU @ 3.10GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 2.200311,
+      "address": 64,
+      "cores": 4,
+      "threads": 4
+    },
+    {
+      "manufacturer": "Kingston",
+      "model": "99U5584-003.A00LF",
+      "serialNumber": "8618F309",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 4096,
+      "interface": "DDR3",
+      "speed": 1600.0
+    },
+    {
+      "manufacturer": "Western Digital",
+      "model": "WDC WD5000AAKX-6",
+      "serialNumber": "WD-WCC2ETY84203",
+      "events": [],
+      "type": "HardDrive",
+      "size": 476940,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Xeon E3-1200 v3/4th Gen Core Processor Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
+      "serialNumber": "e0:3f:49:1a:d0:44",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "8 Series/C220 Series Chipset High Definition Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "ASUSTeK COMPUTER INC.",
+      "model": "H81M-K",
+      "serialNumber": "131219772601195",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 3,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

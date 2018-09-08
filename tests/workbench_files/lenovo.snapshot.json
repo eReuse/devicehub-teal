@@ -1,0 +1,98 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "LENOVO",
+    "model": "7220W3T",
+    "serialNumber": "S4WV119",
+    "events": [],
+    "type": "Desktop",
+    "chassis": "Tower"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core2 Duo CPU E8400 @ 3.00GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 3.0,
+      "address": 64,
+      "cores": 2,
+      "threads": 2
+    },
+    {
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 2048,
+      "interface": "DDR2",
+      "speed": 1067.0
+    },
+    {
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 2048,
+      "interface": "DDR2",
+      "speed": 1067.0
+    },
+    {
+      "manufacturer": "Seagate",
+      "model": "ST3250318AS",
+      "serialNumber": "6VY52H7X",
+      "events": [],
+      "type": "HardDrive",
+      "size": 238475,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "4 Series Chipset Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82567LM-3 Gigabit Network Connection",
+      "serialNumber": "1c:6f:65:03:fd:c4",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82801JD/DO HD Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "LENOVO",
+      "model": "LENOVO",
+      "serialNumber": null,
+      "events": [],
+      "type": "Motherboard",
+      "usb": 8,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

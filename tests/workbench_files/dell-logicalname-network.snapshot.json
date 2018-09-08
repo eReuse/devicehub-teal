@@ -1,0 +1,113 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "Dell Inc.",
+    "model": "Latitude E5530 non-vPro",
+    "serialNumber": "D8FTRY1",
+    "events": [],
+    "type": "Laptop",
+    "chassis": "Laptop"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core i5-3340M CPU @ 2.70GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 1.204321,
+      "address": 64,
+      "cores": 2,
+      "threads": 4
+    },
+    {
+      "manufacturer": "Micron",
+      "model": "8KTF51264HZ-1G6E1",
+      "serialNumber": "E88F671D",
+      "events": [],
+      "type": "RamModule",
+      "format": "SODIMM",
+      "size": 4096,
+      "interface": "DDR3",
+      "speed": 1600.0
+    },
+    {
+      "manufacturer": "Micron",
+      "model": "8KTF51264HZ-1G6E1",
+      "serialNumber": "E88F671E",
+      "events": [],
+      "type": "RamModule",
+      "format": "SODIMM",
+      "size": 4096,
+      "interface": "DDR3",
+      "speed": 1600.0
+    },
+    {
+      "manufacturer": null,
+      "model": "HGST HTS725050A7",
+      "serialNumber": "TF755AWHKL0LHM",
+      "events": [],
+      "type": "HardDrive",
+      "size": 476940,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "3rd Gen Core processor Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Broadcom Limited",
+      "model": "BCM43228 802.11a/b/g/n",
+      "serialNumber": null,
+      "events": [],
+      "type": "NetworkAdapter",
+      "wireless": false
+    },
+    {
+      "manufacturer": "Broadcom Limited",
+      "model": "NetXtreme BCM5761 Gigabit Ethernet PCIe",
+      "serialNumber": "f0:1f:af:41:3f:18",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "CN0Y4TWT7248737FA56RA01",
+      "model": "Laptop_Integrated_Webcam_E4HD",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "7 Series/C216 Chipset Family High Definition Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Dell Inc.",
+      "model": "0VP63H",
+      "serialNumber": "/D8FTRY1/CN1296139I001F/",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 3,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}

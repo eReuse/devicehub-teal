@@ -1,0 +1,120 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": false,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "Hewlett-Packard",
+    "model": "HP Compaq 8100 Elite SFF",
+    "serialNumber": "CZC0408YPV",
+    "events": [],
+    "type": "Desktop",
+    "chassis": "Tower"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core i3 CPU 530 @ 2.93GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 2.9330000000000003,
+      "address": 64,
+      "cores": 2,
+      "threads": 4
+    },
+    {
+      "manufacturer": "JEDEC ID:80 2C",
+      "model": "16JTF25664AZ-1G4F",
+      "serialNumber": "92072F30",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 2048,
+      "interface": "DDR3",
+      "speed": 1333.0
+    },
+    {
+      "manufacturer": "JEDEC ID:80 2C",
+      "model": "16JTF25664AZ-1G4F",
+      "serialNumber": "A4482E29",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 2048,
+      "interface": "DDR3",
+      "speed": 1333.0
+    },
+    {
+      "manufacturer": "JEDEC ID:80 2C",
+      "model": "16JTF25664AZ-1G4F",
+      "serialNumber": "939E2E29",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 2048,
+      "interface": "DDR3",
+      "speed": 1333.0
+    },
+    {
+      "manufacturer": "JEDEC ID:80 2C",
+      "model": "16JTF25664AZ-1G4F",
+      "serialNumber": "48FD2E30",
+      "events": [],
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 2048,
+      "interface": "DDR3",
+      "speed": 1333.0
+    },
+    {
+      "manufacturer": "Western Digital",
+      "model": "WDC WD3200AAJS-6",
+      "serialNumber": "WD-WCAV2U856544",
+      "events": [],
+      "type": "HardDrive",
+      "size": 305245,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Core Processor Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "82578DM Gigabit Network Connection",
+      "serialNumber": "6c:62:6d:81:4d:ae",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "5 Series/3400 Series Chipset High Definition Audio",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Hewlett-Packard",
+      "model": "304Ah",
+      "serialNumber": "CZC0408YPV",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 2,
+      "firewire": 0,
+      "serial": 0,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}
