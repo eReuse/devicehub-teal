@@ -28,5 +28,4 @@ class DeviceView(View):
 
     def find(self, args: dict):
         """Gets many devices."""
-        devices = Device.query.all()
-        return self.schema.jsonify(devices, many=True)
+        return self.schema.jsonify(Device.query, many=True)

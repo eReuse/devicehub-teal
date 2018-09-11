@@ -179,9 +179,9 @@ def test_lot_roots():
     db.session.add_all(lots)
     db.session.flush()
 
-    assert Lot.roots() == {l1, l2, l3}
+    assert set(Lot.roots()) == {l1, l2, l3}
     l1.add_child(l2)
-    assert Lot.roots() == {l1, l3}
+    assert set(Lot.roots()) == {l1, l3}
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)

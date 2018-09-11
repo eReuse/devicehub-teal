@@ -1,14 +1,16 @@
 import uuid
 from datetime import datetime
-from typing import Set, Union
+from typing import Iterable, Set, Union
 from uuid import UUID
 
 from sqlalchemy import Column
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Query, relationship
 from sqlalchemy_utils import Ltree
 
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
+
+LotQuery = Union[Query, Iterable['Lot']]
 
 
 class Lot(Thing):
@@ -26,18 +28,18 @@ class Lot(Thing):
         self.devices = ...  # type: Set[Device]
         self.paths = ...  # type: Set[Path]
 
-    def add_child(self, child: Union['Lot', uuid.UUID]):
+    def add_child(self, child: Union[Lot, uuid.UUID]):
         pass
 
-    def remove_child(self, child: 'Lot'):
+    def remove_child(self, child: Lot):
         pass
 
     @classmethod
-    def roots(cls):
+    def roots(cls) -> LotQuery:
         pass
 
     @property
-    def children(self) -> Set['Lot']:
+    def children(self) -> LotQuery:
         pass
 
 

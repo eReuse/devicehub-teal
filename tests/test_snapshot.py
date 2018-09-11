@@ -239,7 +239,7 @@ def test_snapshot_tag_inner_tag(tag_id: str, user: UserClient, app: Devicehub):
     snapshot_and_check(user, b,
                        event_types=(WorkbenchRate.t, AggregateRate.t, BenchmarkProcessor.t))
     with app.app_context():
-        tag, *_ = Tag.query.all()  # type: Tag
+        tag = Tag.query.one()  # type: Tag
         assert tag.device_id == 1, 'Tag should be linked to the first device'
 
 

@@ -44,7 +44,7 @@ setup(
         'psycopg2-binary',
         'python-stdnum',
         'PyYAML',
-        'teal>=0.2.0a13',
+        'teal>=0.2.0a14',
         'requests',
         'requests-toolbelt',
         'sqlalchemy-utils[password, color, phone]',

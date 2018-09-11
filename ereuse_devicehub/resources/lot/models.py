@@ -76,7 +76,7 @@ class Lot(Thing):
     @classmethod
     def roots(cls):
         """Gets the lots that are not under any other lot."""
-        return set(cls.query.join(cls.paths).filter(db.func.nlevel(Path.path) == 1).all())
+        return cls.query.join(cls.paths).filter(db.func.nlevel(Path.path) == 1)
 
     def __repr__(self) -> str:
         return '<Lot {0.name} devices={0.devices!r}>'.format(self)
