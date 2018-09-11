@@ -1,6 +1,7 @@
 import pytest
 from flask import g
 
+from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Desktop
 from ereuse_devicehub.resources.enums import ComputerChassis
@@ -181,3 +182,40 @@ def test_lot_roots():
     assert Lot.roots() == {l1, l2, l3}
     l1.add_child(l2)
     assert Lot.roots() == {l1, l3}
+
+
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
+def test_lot_model_children():
+    """Tests the property Lot.children"""
+    lots = Lot('1'), Lot('2'), Lot('3')
+    l1, l2, l3 = lots
+    db.session.add_all(lots)
+    db.session.flush()
+
+    l1.add_child(l2)
+    db.session.flush()
+
+    children = l1.children
+    assert list(children) == [l2]
+
+
+def test_post_get_lot(user: UserClient):
+    """Tests submitting and retreiving a basic lot."""
+    l, _ = user.post({'name': 'Foo'}, res=Lot)
+    assert l['name'] == 'Foo'
+    l, _ = user.get(res=Lot, item=l['id'])
+    assert l['name'] == 'Foo'
+    assert not l['children']
+
+
+def test_post_add_children_view(user: UserClient):
+    """Tests adding children lots to a lot through the view."""
+    l, _ = user.post(({'name': 'Parent'}), res=Lot)
+    child, _ = user.post(({'name': 'Child'}), res=Lot)
+    l, _ = user.post({}, res=Lot, item='{}/children'.format(l['id']), query=[('id', child['id'])])
+    assert l['children'][0]['id'] == child['id']
+
+
+@pytest.mark.xfail(reason='Just develop the test')
+def test_post_add_device_view(user: UserClient):
+    pass

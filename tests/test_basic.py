@@ -25,7 +25,9 @@ def test_api_docs(client: Client):
         '/snapshots/',
         '/users/login',
         '/events/',
-        '/lots/'
+        '/lots/',
+        '/lots/{id}/children',
+        '/lots/{id}/devices'
     }
     assert docs['info'] == {'title': 'Devicehub', 'version': '0.2'}
     assert docs['components']['securitySchemes']['bearerAuth'] == {

@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime
-from typing import Set
 
 from flask import g
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import aliased
 from sqlalchemy.sql import expression
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
@@ -26,6 +26,12 @@ class Lot(Thing):
                               backref=db.backref('parents', lazy=True, collection_class=set),
                               secondary=lambda: LotDevice.__table__,
                               collection_class=set)
+    """
+    The **children** devices that the lot has.
+    
+    Note that the lot can have more devices, if they are inside 
+    descendant lots.
+    """
 
     def __init__(self, name: str, closed: bool = closed.default.arg) -> None:
         """
@@ -36,14 +42,33 @@ class Lot(Thing):
         super().__init__(id=uuid.uuid4(), name=name, closed=closed)
         Path(self)  # Lots have always one edge per default.
 
-    def add_child(self, child: 'Lot'):
+    def add_child(self, child):
         """Adds a child to this lot."""
-        Path.add(self.id, child.id)
-        db.session.refresh(self)  # todo is this useful?
-        db.session.refresh(child)
+        if isinstance(child, Lot):
+            Path.add(self.id, child.id)
+            db.session.refresh(self)  # todo is this useful?
+            db.session.refresh(child)
+        else:
+            assert isinstance(child, uuid.UUID)
+            Path.add(self.id, child)
+            db.session.refresh(self)  # todo is this useful?
 
     def remove_child(self, child: 'Lot'):
         Path.delete(self.id, child.id)
+
+    @property
+    def children(self):
+        """The children lots."""
+        # From https://stackoverflow.com/a/41158890
+        # todo test
+        cls = self.__class__
+        exp = '*.{}.*{{1}}'.format(UUIDLtree.convert(self.id))
+        child_lots = aliased(Lot)
+
+        return self.query \
+            .join(cls.paths) \
+            .filter(Path.path.lquery(expression.cast(exp, LQUERY))) \
+            .join(child_lots, Path.lot)
 
     def __contains__(self, child: 'Lot'):
         return Path.has_lot(self.id, child.id)
@@ -96,16 +121,6 @@ class Path(db.Model):
         super().__init__(lot=lot)
         self.path = UUIDLtree(lot.id)
 
-    def children(self) -> Set['Path']:
-        """Get the children edges."""
-        # todo is it useful? test it when first usage
-        # From https://stackoverflow.com/a/41158890
-        exp = '*.{}.*{{1}}'.format(self.lot_id)
-        return set(self.query
-                   .filter(self.path.lquery(expression.cast(exp, LQUERY)))
-                   .distinct(self.__class__.lot_id)
-                   .all())
-
     @classmethod
     def add(cls, parent_id: uuid.UUID, child_id: uuid.UUID):
         """Creates an edge between parent and child."""
@@ -118,7 +133,10 @@ class Path(db.Model):
 
     @classmethod
     def has_lot(cls, parent_id: uuid.UUID, child_id: uuid.UUID) -> bool:
-        return bool(db.session.execute(
-            "SELECT 1 from path where path ~ '*.{}.*.{}.*'".format(
-                str(parent_id).replace('-', '_'), str(child_id).replace('-', '_'))
-        ).first())
+        parent_id = UUIDLtree.convert(parent_id)
+        child_id = UUIDLtree.convert(child_id)
+        return bool(
+            db.session.execute(
+                "SELECT 1 from path where path ~ '*.{}.*.{}.*'".format(parent_id, child_id)
+            ).first()
+        )

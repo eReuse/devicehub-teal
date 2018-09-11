@@ -1,10 +1,12 @@
 import pathlib
+from typing import Callable, Iterable, Tuple
 
 from teal.resource import Converters, Resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.lot import schemas
-from ereuse_devicehub.resources.lot.views import LotView
+from ereuse_devicehub.resources.lot.views import LotBaseChildrenView, LotChildrenView, \
+    LotDeviceView, LotView
 
 
 class LotDef(Resource):
@@ -12,6 +14,20 @@ class LotDef(Resource):
     VIEW = LotView
     AUTH = True
     ID_CONVERTER = Converters.uuid
+
+    def __init__(self, app, import_name=__package__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+        children = LotChildrenView.as_view('lot-children', definition=self, auth=app.auth)
+        self.add_url_rule('/<{}:{}>/children'.format(self.ID_CONVERTER.value, self.ID_NAME),
+                          view_func=children,
+                          methods={'POST', 'DELETE'})
+        children = LotDeviceView.as_view('lot-device', definition=self, auth=app.auth)
+        self.add_url_rule('/<{}:{}>/devices'.format(self.ID_CONVERTER.value, self.ID_NAME),
+                          view_func=children,
+                          methods={'POST', 'DELETE'})
 
     def init_db(self, db: 'db.SQLAlchemy'):
         # Create functions

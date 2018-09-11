@@ -1,5 +1,6 @@
+import uuid
 from datetime import datetime
-from typing import Set
+from typing import Set, Union
 from uuid import UUID
 
 from sqlalchemy import Column
@@ -25,7 +26,7 @@ class Lot(Thing):
         self.devices = ...  # type: Set[Device]
         self.paths = ...  # type: Set[Path]
 
-    def add_child(self, child: 'Lot'):
+    def add_child(self, child: Union['Lot', uuid.UUID]):
         pass
 
     def remove_child(self, child: 'Lot'):
@@ -33,6 +34,10 @@ class Lot(Thing):
 
     @classmethod
     def roots(cls):
+        pass
+
+    @property
+    def children(self) -> Set['Lot']:
         pass
 
 
