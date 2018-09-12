@@ -49,6 +49,7 @@ class LotBaseChildrenView(View):
         lot = self.get_lot(id)
         self._post(lot, self.get_ids())
         db.session.commit()
+
         ret = self.schema.jsonify(lot)
         ret.status_code = 201
         return ret

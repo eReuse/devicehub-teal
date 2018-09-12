@@ -12,6 +12,5 @@ class Lot(Thing):
     name = f.String(validate=f.validate.Length(max=STR_SIZE), required=True)
     closed = f.Boolean(missing=False, description=m.Lot.closed.comment)
     devices = NestedOn(Device, many=True, dump_only=True)
-    children = NestedOn('Lot',
-                        many=True,
-                        dump_only=True)
+    children = NestedOn('Lot', many=True, dump_only=True)
+    parents = NestedOn('Lot', many=True, dump_only=True)

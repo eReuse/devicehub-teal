@@ -31,7 +31,7 @@ class Lot(Thing):
     def add_child(self, child: Union[Lot, uuid.UUID]):
         pass
 
-    def remove_child(self, child: Lot):
+    def remove_child(self, child: Union[Lot, uuid.UUID]):
         pass
 
     @classmethod
@@ -40,6 +40,10 @@ class Lot(Thing):
 
     @property
     def children(self) -> LotQuery:
+        pass
+
+    @property
+    def parents(self) -> LotQuery:
         pass
 
 

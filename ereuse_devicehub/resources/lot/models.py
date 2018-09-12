@@ -2,9 +2,9 @@ import uuid
 from datetime import datetime
 
 from flask import g
+from sqlalchemy import TEXT
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import aliased
-from sqlalchemy.sql import expression
+from sqlalchemy.sql import expression as exp
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
 from teal.db import UUIDLtree
@@ -53,22 +53,32 @@ class Lot(Thing):
             Path.add(self.id, child)
             db.session.refresh(self)  # todo is this useful?
 
-    def remove_child(self, child: 'Lot'):
-        Path.delete(self.id, child.id)
+    def remove_child(self, child):
+        if isinstance(child, Lot):
+            Path.delete(self.id, child.id)
+        else:
+            assert isinstance(child, uuid.UUID)
+            Path.delete(self.id, child)
 
     @property
     def children(self):
         """The children lots."""
         # From https://stackoverflow.com/a/41158890
-        # todo test
-        cls = self.__class__
-        exp = '*.{}.*{{1}}'.format(UUIDLtree.convert(self.id))
-        child_lots = aliased(Lot)
-
+        id = UUIDLtree.convert(self.id)
         return self.query \
-            .join(cls.paths) \
-            .filter(Path.path.lquery(expression.cast(exp, LQUERY))) \
-            .join(child_lots, Path.lot)
+            .join(self.__class__.paths) \
+            .filter(Path.path.lquery(exp.cast('*.{}.*{{1}}'.format(id), LQUERY)))
+
+    @property
+    def parents(self):
+        """The parent lots."""
+        id = UUIDLtree.convert(self.id)
+        i = db.func.index(Path.path, id)
+        parent_id = db.func.replace(exp.cast(db.func.subpath(Path.path, i - 1, i), TEXT), '_', '-')
+        join_clause = parent_id == exp.cast(Lot.id, TEXT)
+        return self.query.join(Path, join_clause).filter(
+            Path.path.lquery(exp.cast('*{{1}}.{}.*'.format(id), LQUERY))
+        )
 
     def __contains__(self, child: 'Lot'):
         return Path.has_lot(self.id, child.id)

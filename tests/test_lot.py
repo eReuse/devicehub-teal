@@ -210,10 +210,15 @@ def test_post_get_lot(user: UserClient):
 
 def test_post_add_children_view(user: UserClient):
     """Tests adding children lots to a lot through the view."""
-    l, _ = user.post(({'name': 'Parent'}), res=Lot)
+    parent, _ = user.post(({'name': 'Parent'}), res=Lot)
     child, _ = user.post(({'name': 'Child'}), res=Lot)
-    l, _ = user.post({}, res=Lot, item='{}/children'.format(l['id']), query=[('id', child['id'])])
-    assert l['children'][0]['id'] == child['id']
+    parent, _ = user.post({},
+                          res=Lot,
+                          item='{}/children'.format(parent['id']),
+                          query=[('id', child['id'])])
+    assert parent['children'][0]['id'] == child['id']
+    child, _ = user.get(res=Lot, item=child['id'])
+    assert child['parents'][0]['id'] == parent['id']
 
 
 @pytest.mark.xfail(reason='Just develop the test')
