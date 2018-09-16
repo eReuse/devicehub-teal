@@ -57,7 +57,7 @@ setup(
         ],
         'test': test_requires
     },
-    tests_requires=test_requires,
+    tests_require=test_requires,
     setup_requires=[
         'pytest-runner'
     ],
