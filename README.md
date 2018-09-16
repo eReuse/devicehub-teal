@@ -29,22 +29,14 @@ The requirements are:
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
 
 ## Running
-Download, or copy the contents, of [this file](example/app.py), and
+Download, or copy the contents, of [this file](examples/app.py), and
 call the new file ``app.py``.
 
-Create a PostgreSQL database called *devicehub*:
-
-```bash
-sudo su - postgres  # Change to Postgres main user
-postgres $ createdb devicehub  # Create main database
-postgres $ psql devicehub  # Access to the database
-postgres $ CREATE USER dhub WITH PASSWORD 'ereuse';  # Create user devicehub uses to access db
-postgres $ GRANT ALL PRIVILEGES ON DATABASE devicehub TO dhub;  # Give access to the db
-postgres $ CREATE EXTENSION pgcrypto SCHEMA public; # Enable pgcrypto
-postgres $ CREATE EXTENSION ltree SCHEMA public; # Enable ltree
-postgres $ \q
-exit
-```
+Create a PostgreSQL database called *devicehub* by running 
+[create-db](examples/create-db.sh):
+ 
+- In Debian 9: `sudo su - postgres; examples/create-db.sh devicehub`
+- In MacOS: `examples/create-db.sh devicehub`.
 
 Create the tables in the database by executing in the same directory 
 where `app.py` is:
@@ -89,13 +81,9 @@ Use postman as an example of how to use the API.
 To run the tests you will need to:
 
 1. `git clone` this project.
-2. Create a database for testing. By default the database used is 
-   `dh_test`. Execute to create it:
-   1. `postgres $ createdb dh_test`.
-   2. `postgres $ psql dh_test`.
-   3. `postgres $ GRANT ALL PRIVILEGES ON DATABASE dh_test TO dhub;`.
-   4. `CREATE EXTENSION pgcrypto SCHEMA public;`
-   5. `CREATE EXTENSION ltree SCHEMA public;`
+2. Create a database for testing executing `create-db.sh` like
+   the normal installation but changing the first parameter
+   from `devicehub` to `dh_test`: `create-db.sh dh_test`.
 3. Execute at the root folder of the project `python3 setup.py test`.
 
 ## Generating the docs

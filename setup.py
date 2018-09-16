@@ -11,7 +11,6 @@ with open('ereuse_devicehub/__init__.py', 'rt', encoding='utf8') as f:
 
 test_requires = [
     'pytest',
-    'pytest-datadir',
     'requests_mock'
 ]
 
