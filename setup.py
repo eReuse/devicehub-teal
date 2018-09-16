@@ -34,6 +34,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=[
+        'teal>=0.2.0a15',  # teal always first
         'click',
         'click-spinner',
         'ereuse-rate==0.0.2',
@@ -43,7 +44,6 @@ setup(
         'psycopg2-binary',
         'python-stdnum',
         'PyYAML',
-        'teal>=0.2.0a15',
         'requests',
         'requests-toolbelt',
         'sqlalchemy-utils[password, color, phone]',
