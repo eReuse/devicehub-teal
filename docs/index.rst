@@ -16,7 +16,7 @@ This is the documentation and API of the `eReuse.org Devicehub
     agents
     inventory
     tags
-    etag
+    lots
 
 * :ref:`genindex`
 * :ref:`modindex`
