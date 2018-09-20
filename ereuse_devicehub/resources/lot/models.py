@@ -23,7 +23,7 @@ class Lot(Thing):
             A closed lot cannot be modified anymore.
         """
     devices = db.relationship(Device,
-                              backref=db.backref('parents', lazy=True, collection_class=set),
+                              backref=db.backref('lots', lazy=True, collection_class=set),
                               secondary=lambda: LotDevice.__table__,
                               collection_class=set)
     """

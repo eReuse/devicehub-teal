@@ -26,7 +26,7 @@ class Device(Thing):
     height = ...  # type: Column
     depth = ...  # type: Column
     color = ...  # type: Column
-    parents = ...  # type: relationship
+    lots = ...  # type: relationship
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -47,7 +47,7 @@ class Device(Thing):
         self.events_one = ...  # type: Set[EventWithOneDevice]
         self.images = ...  # type: ImageList
         self.tags = ...  # type: Set[Tag]
-        self.parents = ...  # type: Set[Lot]
+        self.lots = ...  # type: Set[Lot]
 
 
 class DisplayMixin:

@@ -12,6 +12,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.inventory import Inventory
+from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
 
@@ -89,11 +90,14 @@ class Dummy:
             },
             res=m.Event)
 
-        from tests.test_lot import test_post_add_children_view, test_post_add_device_view
-        test_post_add_children_view(user)
+        from tests.test_lot import test_post_add_children_view
+        child_id = test_post_add_children_view(user)
 
-        # todo this does not add devices to lots
-        test_post_add_device_view(user)
+        lot, _ = user.post({},
+                           res=Lot,
+                           item='{}/devices'.format(child_id),
+                           query=[('id', pc) for pc in itertools.islice(pcs, len(pcs) // 3)])
+        assert len(lot['devices'])
 
         print('⭐ Done.')
 

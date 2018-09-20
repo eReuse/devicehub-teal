@@ -6,6 +6,7 @@ from flask import request
 from teal.resource import View
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
 
 
@@ -29,9 +30,6 @@ class LotBaseChildrenView(View):
     """Base class for adding / removing children devices and
      lots from a lot.
      """
-
-    class ListArgs(ma.Schema):
-        id = ma.fields.List(ma.fields.UUID())
 
     def __init__(self, definition: 'Resource', **kw) -> None:
         super().__init__(definition, **kw)
@@ -73,6 +71,9 @@ class LotChildrenView(LotBaseChildrenView):
     Ex. ``lot/<id>/children/id=X&id=Y``.
     """
 
+    class ListArgs(ma.Schema):
+        id = ma.fields.List(ma.fields.UUID())
+
     def _post(self, lot: Lot, ids: Set[uuid.UUID]):
         for id in ids:
             lot.add_child(id)  # todo what to do if child exists already?
@@ -88,9 +89,11 @@ class LotDeviceView(LotBaseChildrenView):
     Ex. ``lot/<id>/devices/id=X&id=Y``.
     """
 
-    def _post(self, lot: Lot, ids: Set[uuid.UUID]):
-        # todo this works?
-        lot.devices |= ids
+    class ListArgs(ma.Schema):
+        id = ma.fields.List(ma.fields.Integer())
 
-    def _delete(self, lot: Lot, ids: Set[uuid.UUID]):
-        lot.devices -= ids
+    def _post(self, lot: Lot, ids: Set[int]):
+        lot.devices.update(Device.query.filter(Device.id.in_(ids)))
+
+    def _delete(self, lot: Lot, ids: Set[int]):
+        lot.devices.difference_update(Device.query.filter(Device.id.in_(ids)))

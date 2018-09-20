@@ -3,6 +3,7 @@ from flask import g
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
+from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device.models import Desktop
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.lot.models import Lot, LotDevice
@@ -38,7 +39,7 @@ def test_lot_device_relationship():
     assert lot_device.lot_id == lot.id
     assert lot_device.created
     assert lot_device.author_id == g.user.id
-    assert device.parents == {lot}
+    assert device.lots == {lot}
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
@@ -219,8 +220,29 @@ def test_post_add_children_view(user: UserClient):
     assert parent['children'][0]['id'] == child['id']
     child, _ = user.get(res=Lot, item=child['id'])
     assert child['parents'][0]['id'] == parent['id']
+    return child['id']
 
 
-@pytest.mark.xfail(reason='Just develop the test')
-def test_post_add_device_view(user: UserClient):
-    pass
+def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
+    """Tests adding a device to a lot using POST and
+    removing it with DELETE."""
+    with app.app_context():
+        device = Desktop(serial_number='foo',
+                         model='bar',
+                         manufacturer='foobar',
+                         chassis=ComputerChassis.Lunchbox)
+        db.session.add(device)
+        db.session.commit()
+        device_id = device.id
+    parent, _ = user.post(({'name': 'lot'}), res=Lot)
+    lot, _ = user.post({},
+                       res=Lot,
+                       item='{}/devices'.format(parent['id']),
+                       query=[('id', device_id)])
+    assert lot['devices'][0]['id'] == device_id
+    # Remove the device
+    lot, _ = user.delete(res=Lot,
+                         item='{}/devices'.format(parent['id']),
+                         query=[('id', device_id)],
+                         status=200)
+    assert not len(lot['devices'])
