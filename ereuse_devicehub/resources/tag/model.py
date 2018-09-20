@@ -26,9 +26,10 @@ class Tag(Thing):
                        primaryjoin=Organization.id == org_id,
                        collection_class=set)
     """The organization that issued the tag."""
-    provider = Column(URL(),
-                      comment='The tag provider URL. If None, the provider is this Devicehub.')
-    provider.comment = """The provider URL."""
+    provider = Column(URL())
+    provider.comment = """
+        The tag provider URL. If None, the provider is this Devicehub.
+    """
     device_id = Column(BigInteger,
                        # We don't want to delete the tag on device deletion, only set to null
                        ForeignKey(Device.id, ondelete=DB_CASCADE_SET_NULL))
@@ -67,6 +68,13 @@ class Tag(Thing):
         if '/' in value:
             raise ValidationError('Tags cannot contain slashes (/).')
         return value
+
+    @validates('provider')
+    def use_only_domain(self, _, url: URL):
+        if url.path:
+            raise ValidationError('Provider can only contain scheme and host',
+                                  field_names=['provider'])
+        return url
 
     __table_args__ = (
         UniqueConstraint(device_id, org_id, name='one_tag_per_org'),

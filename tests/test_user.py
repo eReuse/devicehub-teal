@@ -3,6 +3,8 @@ from uuid import UUID
 
 import pytest
 from sqlalchemy_utils import Password
+from teal.enums import Country
+from teal.marshmallow import ValidationError
 from werkzeug.exceptions import NotFound
 
 from ereuse_devicehub.client import Client
@@ -11,23 +13,33 @@ from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.user import UserDef
 from ereuse_devicehub.resources.user.exceptions import WrongCredentials
 from ereuse_devicehub.resources.user.models import User
-from teal.marshmallow import ValidationError
 from tests.conftest import app_context, create_user
 
 
 @pytest.mark.usefixtures(app_context.__name__)
-def test_create_user_method(app: Devicehub):
+def test_create_user_method_with_agent(app: Devicehub):
     """
     Tests creating an user through the main method.
 
     This method checks that the token is correct, too.
     """
     user_def = app.resources['User']  # type: UserDef
-    u = user_def.create_user(email='foo@foo.com', password='foo')
+    u = user_def.create_user(email='foo@foo.com',
+                             password='foo',
+                             agent='Nice Person',
+                             country=Country.ES.name,
+                             telephone='+34 666 66 66 66',
+                             tax_id='1234')
     user = User.query.filter_by(id=u['id']).one()  # type: User
     assert user.email == 'foo@foo.com'
     assert isinstance(user.token, UUID)
     assert User.query.filter_by(email='foo@foo.com').one() == user
+    individual = next(iter(user.individuals))
+    assert individual.name == 'Nice Person'
+    assert individual.tax_id == '1234'
+    assert individual.telephone.e164 == '+34666666666'
+    assert individual.country == Country.ES
+    assert individual.email == user.email
 
 
 @pytest.mark.usefixtures(app_context.__name__)

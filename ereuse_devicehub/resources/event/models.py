@@ -727,10 +727,7 @@ class Trade(JoinedTableMixin, EventWithMultipleDevices):
             If no price is set it is supposed that the trade was
             not payed, usual in donations.
         """
-    to_id = Column(UUID(as_uuid=True),
-                   ForeignKey(Agent.id),
-                   nullable=False,
-                   default=lambda: g.user.id)
+    to_id = Column(UUID(as_uuid=True), ForeignKey(Agent.id), nullable=False)
     # todo compute the org
     to = relationship(Agent,
                       backref=backref('events_to',
@@ -738,6 +735,9 @@ class Trade(JoinedTableMixin, EventWithMultipleDevices):
                                       collection_class=OrderedSet,
                                       order_by=lambda: Event.created),
                       primaryjoin=to_id == Agent.id)
+    to_comment = """
+        The agent that gets the device due this deal.
+    """
     confirms_id = Column(UUID(as_uuid=True), ForeignKey(Organize.id))
     confirms = relationship(Organize,
                             backref=backref('confirmation', lazy=True, uselist=False),

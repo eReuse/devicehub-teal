@@ -1,3 +1,5 @@
+import json
+
 import click
 from flask import current_app as app
 from teal.db import SQLAlchemy
@@ -39,7 +41,9 @@ class OrganizationDef(AgentDef):
         ))
         db.session.add(org)
         db.session.commit()
-        return self.schema.dump(org)
+        o = self.schema.dump(org)
+        print(json.dumps(o, indent=2))
+        return o
 
     def init_db(self, db: SQLAlchemy):
         """Creates the default organization."""

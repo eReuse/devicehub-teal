@@ -43,11 +43,6 @@ class Agent(Thing):
     telephone = Column(PhoneNumberType())
     email = Column(EmailType, unique=True)
 
-    user_id = Column(UUID(as_uuid=True), ForeignKey(User.id), unique=True)
-    user = relationship(User,
-                        backref=backref('individuals', lazy=True, collection_class=set),
-                        primaryjoin=user_id == User.id)
-
     __table_args__ = (
         UniqueConstraint(tax_id, country, name='Registration Number per country.'),
     )
@@ -99,6 +94,11 @@ class Organization(JoinedTableMixin, Agent):
 class Individual(JoinedTableMixin, Agent):
     active_org_id = Column(UUID(as_uuid=True), ForeignKey(Organization.id))
     active_org = relationship(Organization, primaryjoin=active_org_id == Organization.id)
+
+    user_id = Column(UUID(as_uuid=True), ForeignKey(User.id), unique=True)
+    user = relationship(User,
+                        backref=backref('individuals', lazy=True, collection_class=set),
+                        primaryjoin=user_id == User.id)
 
 
 class Membership(Thing):

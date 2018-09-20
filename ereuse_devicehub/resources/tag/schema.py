@@ -1,7 +1,9 @@
 from marshmallow.fields import String
+from sqlalchemy.util import OrderedSet
 from teal.marshmallow import URL
 
 from ereuse_devicehub.marshmallow import NestedOn
+from ereuse_devicehub.resources.agent.schemas import Organization
 from ereuse_devicehub.resources.device.schemas import Device
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.tag import model as m
@@ -19,5 +21,5 @@ class Tag(Thing):
     provider = URL(description=m.Tag.provider.comment,
                    validator=without_slash)
     device = NestedOn(Device, dump_only=True)
-    org = String()
+    org = NestedOn(Organization, collection_class=OrderedSet, only_query='id')
     secondary = String(description=m.Tag.secondary.comment)
