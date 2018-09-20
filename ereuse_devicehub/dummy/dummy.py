@@ -37,7 +37,8 @@ class Dummy:
         with click_spinner.spinner():
             self.app.init_db(erase=True)
             user = self.user_client('user@dhub.com', '1234')
-            user.post(res=Tag, query=[('ids', i) for i in self.TAGS], data={})
+            for id in self.TAGS:
+                user.post({'id': id}, res=Tag)
         files = tuple(Path(__file__).parent.joinpath('files').iterdir())
         print('done.')
         with click.progressbar(files, label='Creating devices...'.ljust(28)) as bar:

@@ -155,7 +155,7 @@ class Sync:
             with suppress(ResourceNotFound):
                 db_device = Device.query.filter_by(hid=device.hid).one()
         try:
-            tags = {Tag.query.filter_by(id=tag.id).one() for tag in device.tags}  # type: Set[Tag]
+            tags = {Tag.from_an_id(tag.id).one() for tag in device.tags}  # type: Set[Tag]
         except ResourceNotFound:
             raise ResourceNotFound('tag you are linking to device {}'.format(device))
         linked_tags = {tag for tag in tags if tag.device_id}  # type: Set[Tag]

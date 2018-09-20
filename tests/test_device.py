@@ -3,8 +3,10 @@ from uuid import UUID
 
 import pytest
 from colour import Color
+from ereuse_utils.naming import Naming
 from pytest import raises
 from sqlalchemy.util import OrderedSet
+from teal.db import ResourceNotFound
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
@@ -20,8 +22,6 @@ from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech
 from ereuse_devicehub.resources.event.models import Remove, Test
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
-from ereuse_utils.naming import Naming
-from teal.db import ResourceNotFound
 from tests import conftest
 
 
@@ -217,7 +217,8 @@ def test_sync_execute_register_Desktop_existing_no_tag():
     db.session.add(pc)
     db.session.commit()
 
-    pc = Desktop(**conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
+    pc = Desktop(
+        **conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
     # 1: device exists on DB
     db_pc = Sync().execute_register(pc)
     assert pc.physical_properties == db_pc.physical_properties
@@ -287,7 +288,7 @@ def test_sync_execute_register_tag_does_not_exist():
 
     Tags have to be created before trying to link them through a Snapshot.
     """
-    pc = Desktop(**conftest.file('pc-components.db')['device'], tags=OrderedSet([Tag()]))
+    pc = Desktop(**conftest.file('pc-components.db')['device'], tags=OrderedSet([Tag('foo')]))
     with raises(ResourceNotFound):
         Sync().execute_register(pc)
 
@@ -304,7 +305,8 @@ def test_sync_execute_register_tag_linked_same_device():
     db.session.add(Tag(id='foo', device=orig_pc))
     db.session.commit()
 
-    pc = Desktop(**conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
+    pc = Desktop(
+        **conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
     pc.tags.add(Tag(id='foo'))
     db_pc = Sync().execute_register(pc)
     assert db_pc.id == orig_pc.id
@@ -326,7 +328,8 @@ def test_sync_execute_register_tag_linked_other_device_mismatch_between_tags():
     db.session.add(Tag(id='foo-2', device=pc2))
     db.session.commit()
 
-    pc1 = Desktop(**conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
+    pc1 = Desktop(
+        **conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
     pc1.tags.add(Tag(id='foo-1'))
     pc1.tags.add(Tag(id='foo-2'))
     with raises(MismatchBetweenTags):
@@ -349,7 +352,8 @@ def test_sync_execute_register_mismatch_between_tags_and_hid():
     db.session.add(Tag(id='foo-2', device=pc2))
     db.session.commit()
 
-    pc1 = Desktop(**conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
+    pc1 = Desktop(
+        **conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
     pc1.tags.add(Tag(id='foo-2'))
     with raises(MismatchBetweenTagsAndHid):
         Sync().execute_register(pc1)

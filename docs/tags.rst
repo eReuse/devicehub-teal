@@ -19,11 +19,9 @@ A device can have many tags but a tag can only be linked to one device.
 As for the actual implementation, you cannot unlink them.
 
 Devicehub users can design, generate and print tags, manually setting
-an ID and an tag provider. Future Devicehub versions can allow
-parametrizing an ID generator.
-
-Note that these virtual tags don't have to forcefully be printed or
-have a physical representation (this is not imposed at system level).
+an ID and a tag provider. Note though that these virtual tags don't have
+to forcefully be printed or have a physical representation
+(this is not imposed at system level).
 
 eTags
 *****
@@ -33,12 +31,16 @@ by tag providers that comply with the eReuse.org requisites.
 
 The eTags are designed to empower device exchange between
 organizations and identification efficiency. They are built with durable
-plastic and have a QR code, NFC chip and a written ID.
+plastic and have a QR code, a NFC chip and a written ID.
 
 These tags live in separate databases from Devicehubs, empowered by
-the `eReuse.org Tag <https://github.com/ereuse/tag>`_. By using this
-software, eReuse.org certified tag providers can create and manage
-the tags, and send them to Devicehubs of their choice.
+the `eReuse.org Tag <https://github.com/ereuse/tag>`_ software.
+By using this software, eReuse.org certified tag providers
+can create and manage the tags, and send them to Devicehubs of their
+choice.
+
+The section *Use-case with eTags* shows the use-case of these
+eTags.
 
 Tag ID design
 =============
@@ -95,15 +97,12 @@ Getting a device through its tag
 When performing ``GET /tags/<tag-id>/device`` you will get directly the
 device of such tag, as long as there are not two tags with the same
 tag-id. In such case you should use ``GET /tags/<ngo>/<tag-id>/device``
-to inequivocally get the correct device (to develop).
+to unequivocally get the correct device (feature to develop).
 
 Tags and migrations
 *******************
 Tags travel with the devices they are linked when migrating them. Future
 implementations can parameterize this.
-
-http://t.devicetag.io/TG-1234567890
-
 
 Use-case with eTags
 *******************

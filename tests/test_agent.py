@@ -1,6 +1,7 @@
 from uuid import UUID
 
 import pytest
+from marshmallow import ValidationError
 from sqlalchemy_utils import PhoneNumber
 from teal.db import UniqueViolation
 from teal.enums import Country
@@ -127,3 +128,9 @@ def test_create_organization_main_method(app: Devicehub):
     assert org.name == o['name'] == 'ACME'
     assert org.tax_id == o['taxId'] == 'FOO'
     assert org.country.name == o['country'] == 'ES'
+
+
+@pytest.mark.usefixtures(app_context.__name__)
+def test_organization_no_slash_name():
+    with pytest.raises(ValidationError):
+        Organization(name='/')

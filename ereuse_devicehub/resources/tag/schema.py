@@ -4,12 +4,20 @@ from teal.marshmallow import URL
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device.schemas import Device
 from ereuse_devicehub.resources.schemas import Thing
+from ereuse_devicehub.resources.tag import model as m
+
+
+def without_slash(x: str) -> bool:
+    """Returns true if x does not contain a slash."""
+    return '/' not in x
 
 
 class Tag(Thing):
-    id = String(description='The ID of the tag.',
-                validator=lambda x: '/' not in x,
+    id = String(description=m.Tag.id.comment,
+                validator=without_slash,
                 required=True)
-    provider = URL(description='The provider URL.')
-    device = NestedOn(Device, description='The device linked to this tag.')
-    org = String(description='The organization that issued the tag.')
+    provider = URL(description=m.Tag.provider.comment,
+                   validator=without_slash)
+    device = NestedOn(Device, dump_only=True)
+    org = String()
+    secondary = String(description=m.Tag.secondary.comment)

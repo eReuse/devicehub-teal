@@ -1,6 +1,8 @@
-from typing import Tuple
+import csv
+import pathlib
 
 from click import argument, option
+from ereuse_utils import cli
 from teal.resource import Resource
 from teal.teal import Teal
 
@@ -14,12 +16,19 @@ class TagDef(Resource):
     SCHEMA = schema.Tag
     VIEW = TagView
 
+    ORG_H = 'The name of an existing organization in the DB. '
+    'By default the organization operating this Devicehub.'
+    PROV_H = 'The Base URL of the provider. '
+    'By default set to the actual Devicehub.'
+    CLI_SCHEMA = schema.Tag(only=('id', 'provider', 'org', 'secondary'))
+
     def __init__(self, app: Teal, import_name=__package__, static_folder=None,
                  static_url_path=None,
                  template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
                  root_path=None):
         cli_commands = (
-            (self.create_tags, 'create-tags'),
+            (self.create_tag, 'create-tag'),
+            (self.create_tags_csv, 'create-tags-csv')
         )
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
@@ -27,20 +36,37 @@ class TagDef(Resource):
         self.add_url_rule('/<{}:{}>/device'.format(self.ID_CONVERTER.value, self.ID_NAME),
                           view_func=_get_device_from_tag,
                           methods={'GET'})
+        self.tag_schema = schema.Tag
 
-    @option('--org',
-            help='The name of an existing organization in the DB. '
-                 'By default the organization operating this Devicehub.')
-    @option('--provider',
-            help='The Base URL of the provider. '
-                 'By default set to the actual Devicehub.')
-    @argument('ids', nargs=-1, required=True)
-    def create_tags(self, ids: Tuple[str], org: str = None, provider: str = None):
+    @option('-o', '--org', help=ORG_H)
+    @option('-p', '--provider', help=PROV_H)
+    @option('-s', '--sec', help=Tag.secondary.comment)
+    @argument('id')
+    def create_tag(self,
+                   id: str,
+                   org: str = None,
+                   sec: str = None,
+                   provider: str = None):
         """Create TAGS and associates them to a specific PROVIDER."""
-        tag_schema = schema.Tag(only=('id', 'provider', 'org'))
+        db.session.add(Tag(**self.schema.load(
+            dict(id=id, org=org, secondary=sec, provider=provider)
+        )))
+        db.session.commit()
 
-        db.session.add_all(
-            Tag(**tag_schema.load({'id': tag_id, 'provider': provider, 'org': org}))
-            for tag_id in ids
-        )
+    @option('--org', help=ORG_H)
+    @option('--provider', help=PROV_H)
+    @argument('path', type=cli.Path(writable=True))
+    def create_tags_csv(self, path: pathlib.Path, org: str, provider: str):
+        """Creates tags by reading CSV from ereuse-tag.
+
+        CSV must have the following columns:
+
+        1. ID tag
+        2. Secondary id tag (or empty)
+        """
+        with path.open() as f:
+            for id, sec in csv.reader(f):
+                db.session.add(Tag(**self.schema.load(
+                    dict(id=id, org=org, secondary=sec, provider=provider)
+                )))
         db.session.commit()

@@ -1,3 +1,5 @@
+import pathlib
+
 import pytest
 from pytest import raises
 from teal.db import MultipleResourcesFound, ResourceNotFound, UniqueViolation
@@ -40,7 +42,10 @@ def test_create_tag_default_org():
 def test_create_tag_no_slash():
     """Checks that no tags can be created that contain a slash."""
     with raises(ValidationError):
-        Tag(id='/')
+        Tag('/')
+
+    with raises(ValidationError):
+        Tag('bar', secondary='/')
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -60,7 +65,7 @@ def test_create_two_same_tags():
 
 def test_tag_post(app: Devicehub, user: UserClient):
     """Checks the POST method of creating a tag."""
-    user.post(res=Tag, query=[('ids', 'foo')], data={})
+    user.post({'id': 'foo'}, res=Tag)
     with app.app_context():
         assert Tag.query.filter_by(id='foo').one()
 
@@ -70,16 +75,14 @@ def test_tag_post_etag(user: UserClient):
     Ensures users cannot create eReuse.org tags through POST;
     only terminal.
     """
-    user.post(res=Tag, query=[('ids', 'FO-123456')], data={}, status=CannotCreateETag)
+    user.post({'id': 'FO-123456'}, res=Tag, status=CannotCreateETag)
     # Although similar, these are not eTags and should pass
-    user.post(res=Tag, query=[
-        ('ids', 'FO-0123-45'),
-        ('ids', 'FOO012345678910'),
-        ('ids', 'FO'),
-        ('ids', 'FO-'),
-        ('ids', 'FO-123'),
-        ('ids', 'FOO-123456')
-    ], data={})
+    user.post({'id': 'FO-0123-45'}, res=Tag)
+    user.post({'id': 'FOO012345678910'}, res=Tag)
+    user.post({'id': 'FO'}, res=Tag)
+    user.post({'id': 'FO-'}, res=Tag)
+    user.post({'id': 'FO-123'}, res=Tag)
+    user.post({'id': 'FOO-123456'}, res=Tag)
 
 
 def test_tag_get_device_from_tag_endpoint(app: Devicehub, user: UserClient):
@@ -125,8 +128,38 @@ def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: Us
 def test_tag_create_tags_cli(app: Devicehub, user: UserClient):
     """Checks creating tags with the CLI endpoint."""
     runner = app.test_cli_runner()
-    runner.invoke(args=['create-tags', 'id1'], catch_exceptions=False)
+    runner.invoke(args=['create-tag', 'id1'], catch_exceptions=False)
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
         assert tag.id == 'id1'
         assert tag.org.id == Organization.get_default_org_id()
+
+
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_tag_secondary():
+    """Creates and consumes tags with a secondary id."""
+    t = Tag('foo', secondary='bar')
+    db.session.add(t)
+    db.session.flush()
+    assert Tag.from_an_id('bar').one() == t
+    assert Tag.from_an_id('foo').one() == t
+    with pytest.raises(ResourceNotFound):
+        Tag.from_an_id('nope').one()
+
+
+def test_tag_create_tags_cli_csv(app: Devicehub, user: UserClient):
+    """Checks creating tags with the CLI endpoint using a CSV."""
+    csv = pathlib.Path(__file__).parent / 'files' / 'tags-cli.csv'
+    runner = app.test_cli_runner()
+    runner.invoke(args=['create-tags-csv', str(csv)],
+                  catch_exceptions=False)
+    with app.app_context():
+        t1 = Tag.from_an_id('id1').one()
+        t2 = Tag.from_an_id('sec1').one()
+        assert t1 == t2
+
+
+def test_tag_multiple_secondary_org(user: UserClient):
+    """Ensures two secondary ids cannot be part of the same Org."""
+    user.post({'id': 'foo', 'secondary': 'bar'}, res=Tag)
+    user.post({'id': 'foo1', 'secondary': 'bar'}, res=Tag, status=UniqueViolation)

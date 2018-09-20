@@ -89,7 +89,8 @@ class LotDeviceView(LotBaseChildrenView):
     """
 
     def _post(self, lot: Lot, ids: Set[uuid.UUID]):
-        lot.devices |= self.get_ids()
+        # todo this works?
+        lot.devices |= ids
 
     def _delete(self, lot: Lot, ids: Set[uuid.UUID]):
-        lot.devices -= self.get_ids()
+        lot.devices -= ids

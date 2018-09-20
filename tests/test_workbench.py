@@ -29,7 +29,9 @@ def test_workbench_server_condensed(user: UserClient):
     ))
     s['components'][5]['events'] = [file('workbench-server-3.erase')]
     # Create tags
-    user.post(res=Tag, query=[('ids', t['id']) for t in s['device']['tags']], data={})
+    for t in s['device']['tags']:
+        user.post({'id': t['id']}, res=Tag)
+
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     events = snapshot['events']
     assert {(event['type'], event['device']) for event in events} == {

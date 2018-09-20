@@ -1,44 +1,22 @@
 from flask import Response, current_app as app, request
-from marshmallow.fields import List, String, URL
 from teal.marshmallow import ValidationError
-from teal.resource import Schema, View
-from webargs.flaskparser import parser
+from teal.resource import View
 
+from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag import Tag
 
 
 class TagView(View):
-    class PostArgs(Schema):
-        ids = List(String(), required=True, description='A list of tags identifiers.')
-        org = String(description='The name of an existing organization in the DB. '
-                                 'If not set, the default organization is used.')
-        provider = URL(description='The Base URL of the provider. By default is this Devicehub.')
-
-    post_args = PostArgs()
 
     def post(self):
-        """
-        Creates tags.
-
-        ---
-        parameters:
-          - name: tags
-            in: path
-            description: Number of tags to create.
-        """
-        args = parser.parse(self.post_args, request, locations={'querystring'})
-        # Ensure user is not POSTing an eReuse.org tag
-        # For now only allow them to be created through command-line
-        for id in args['ids']:
-            try:
-                provider, _id = id.split('-')
-            except ValueError:
-                pass
-            else:
-                if len(provider) == 2 and 5 <= len(_id) <= 10:
-                    raise CannotCreateETag(id)
-        self.resource_def.create_tags(**args)
+        """Creates a tag."""
+        t = request.get_json()
+        tag = Tag(**t)
+        if tag.like_etag():
+            raise CannotCreateETag(tag.id)
+        db.session.add(tag)
+        db.session.commit()
         return Response(status=201)
 
 
@@ -58,13 +36,13 @@ def get_device_from_tag(id: str):
     return app.resources[Device.t].schema.jsonify(device)
 
 
-class CannotCreateETag(ValidationError):
-    def __init__(self, id: str):
-        message = 'Only sysadmin can create an eReuse.org Tag ({})'.format(id)
-        super().__init__(message)
-
-
 class TagNotLinked(ValidationError):
     def __init__(self, id):
         message = 'The tag {} is not linked to a device.'.format(id)
         super().__init__(message, field_names=['device'])
+
+
+class CannotCreateETag(ValidationError):
+    def __init__(self, id: str):
+        message = 'Only sysadmin can create an eReuse.org Tag ({})'.format(id)
+        super().__init__(message)
