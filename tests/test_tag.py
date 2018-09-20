@@ -9,10 +9,11 @@ from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.agent.models import Organization
-from ereuse_devicehub.resources.device.models import Desktop
+from ereuse_devicehub.resources.device.models import Desktop, Device
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.tag import Tag
-from ereuse_devicehub.resources.tag.view import CannotCreateETag, TagNotLinked
+from ereuse_devicehub.resources.tag.view import CannotCreateETag, LinkedToAnotherDevice, \
+    TagNotLinked
 from tests import conftest
 
 
@@ -133,6 +134,26 @@ def test_tag_create_tags_cli(app: Devicehub, user: UserClient):
         tag = Tag.query.one()  # type: Tag
         assert tag.id == 'id1'
         assert tag.org.id == Organization.get_default_org_id()
+
+
+def test_tag_manual_link(app: Devicehub, user: UserClient):
+    """Tests linking manually a tag through PUT /tags/<id>/device/<id>"""
+    with app.app_context():
+        db.session.add(Tag('foo-bar', secondary='foo-sec'))
+        desktop = Desktop(serial_number='foo', chassis=ComputerChassis.AllInOne)
+        db.session.add(desktop)
+        db.session.commit()
+        desktop_id = desktop.id
+    user.put({}, res=Tag, item='foo-bar/device/{}'.format(desktop_id), status=204)
+    device, _ = user.get(res=Device, item=1)
+    assert device['tags'][0]['id'] == 'foo-bar'
+
+    # Device already linked
+    # Just returns an OK to conform to PUT as anything changes
+    user.put({}, res=Tag, item='foo-sec/device/{}'.format(desktop_id), status=204)
+
+    # cannot link to another device when already linked
+    user.put({}, res=Tag, item='foo-bar/device/99', status=LinkedToAnotherDevice)
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)

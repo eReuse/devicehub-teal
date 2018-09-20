@@ -1,13 +1,13 @@
 from inspect import isclass
-from typing import Any, Dict, Iterable, Tuple, Type, Union
+from typing import Dict, Iterable, Type, Union
 
-from ereuse_utils.test import JSON
-from flask import Response
-from teal.client import Client as TealClient
-from teal.marshmallow import ValidationError
+from ereuse_utils.test import JSON, Res
+from teal.client import Client as TealClient, Query, Status
 from werkzeug.exceptions import HTTPException
 
 from ereuse_devicehub.resources import models, schemas
+
+ResourceLike = Union[Type[Union[models.Thing, schemas.Thing]], str]
 
 
 class Client(TealClient):
@@ -21,15 +21,15 @@ class Client(TealClient):
 
     def open(self,
              uri: str,
-             res: Union[str, Type[Union[models.Thing, schemas.Thing]]] = None,
-             status: Union[int, Type[HTTPException], Type[ValidationError]] = 200,
-             query: Iterable[Tuple[str, Any]] = tuple(),
+             res: ResourceLike = None,
+             status: Status = 200,
+             query: Query = tuple(),
              accept=JSON,
              content_type=JSON,
              item=None,
              headers: dict = None,
              token: str = None,
-             **kw) -> Tuple[Union[Dict[str, object], str], Response]:
+             **kw) -> Res:
         if isclass(res) and issubclass(res, (models.Thing, schemas.Thing)):
             res = res.t
         return super().open(uri, res, status, query, accept, content_type, item, headers, token,
@@ -37,29 +37,71 @@ class Client(TealClient):
 
     def get(self,
             uri: str = '',
-            res: Union[Type[Union[models.Thing, schemas.Thing]], str] = None,
-            query: Iterable[Tuple[str, Any]] = tuple(),
-            status: Union[int, Type[HTTPException], Type[ValidationError]] = 200,
+            res: ResourceLike = None,
+            query: Query = tuple(),
+            status: Status = 200,
             item: Union[int, str] = None,
             accept: str = JSON,
             headers: dict = None,
             token: str = None,
-            **kw) -> Tuple[Union[Dict[str, object], str], Response]:
+            **kw) -> Res:
         return super().get(uri, res, query, status, item, accept, headers, token, **kw)
 
     def post(self,
              data: str or dict,
              uri: str = '',
-             res: Union[Type[Union[models.Thing, schemas.Thing]], str] = None,
-             query: Iterable[Tuple[str, Any]] = tuple(),
-             status: Union[int, Type[HTTPException], Type[ValidationError]] = 201,
+             res: ResourceLike = None,
+             query: Query = tuple(),
+             status: Status = 201,
              content_type: str = JSON,
              accept: str = JSON,
              headers: dict = None,
              token: str = None,
-             **kw) -> Tuple[Union[Dict[str, object], str], Response]:
+             **kw) -> Res:
         return super().post(data, uri, res, query, status, content_type, accept, headers, token,
                             **kw)
+
+    def patch(self,
+              data: str or dict,
+              uri: str = '',
+              res: ResourceLike = None,
+              query: Query = tuple(),
+              item: Union[int, str] = None,
+              status: Status = 200,
+              content_type: str = JSON,
+              accept: str = JSON,
+              headers: dict = None,
+              token: str = None,
+              **kw) -> Res:
+        return super().patch(data, uri, res, query, item, status, content_type, accept, token,
+                             headers, **kw)
+
+    def put(self,
+            data: str or dict,
+            uri: str = '',
+            res: ResourceLike = None,
+            query: Query = tuple(),
+            item: Union[int, str] = None,
+            status: Status = 201,
+            content_type: str = JSON,
+            accept: str = JSON,
+            headers: dict = None,
+            token: str = None,
+            **kw) -> Res:
+        return super().put(data, uri, res, query, item, status, content_type, accept, token,
+                           headers, **kw)
+
+    def delete(self,
+               uri: str = '',
+               res: ResourceLike = None,
+               query: Query = tuple(),
+               status: Status = 204,
+               item: Union[int, str] = None,
+               accept: str = JSON,
+               headers: dict = None,
+               token: str = None,
+               **kw) -> Res:
+        return super().delete(uri, res, query, status, item, accept, headers, token, **kw)
 
     def login(self, email: str, password: str):
         assert isinstance(email, str)
@@ -67,7 +109,7 @@ class Client(TealClient):
         return self.post({'email': email, 'password': password}, '/users/login', status=200)
 
     def get_many(self,
-                 res: Union[Type[Union[models.Thing, schemas.Thing]], str],
+                 res: ResourceLike,
                  resources: Iterable[Union[dict, int]],
                  key: str = None,
                  **kw) -> Iterable[Union[Dict[str, object], str]]:
@@ -98,18 +140,19 @@ class UserClient(Client):
 
     def open(self,
              uri: str,
-             res: Union[str, Type[Union[models.Thing, schemas.Thing]]] = None,
+             res: ResourceLike = None,
              status: int or HTTPException = 200,
-             query: Iterable[Tuple[str, Any]] = tuple(),
+             query: Query = tuple(),
              accept=JSON,
              content_type=JSON,
              item=None,
              headers: dict = None,
              token: str = None,
-             **kw) -> Tuple[Union[Dict[str, object], str], Response]:
+             **kw) -> Res:
         return super().open(uri, res, status, query, accept, content_type, item, headers,
                             self.user['token'] if self.user else token, **kw)
 
+    # noinspection PyMethodOverriding
     def login(self):
         response = super().login(self.email, self.password)
         self.user = response[0]

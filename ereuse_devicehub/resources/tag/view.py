@@ -8,7 +8,6 @@ from ereuse_devicehub.resources.tag import Tag
 
 
 class TagView(View):
-
     def post(self):
         """Creates a tag."""
         t = request.get_json()
@@ -18,6 +17,31 @@ class TagView(View):
         db.session.add(tag)
         db.session.commit()
         return Response(status=201)
+
+
+class TagDeviceView(View):
+    """Endpoints to work with the device of the tag; /tags/23/device"""
+
+    def one(self, id):
+        """Gets the device from the tag."""
+        tag = Tag.from_an_id(id).one()  # type: Tag
+        if not tag.device:
+            raise TagNotLinked(tag.id)
+        return app.resources[Device.t].schema.jsonify(tag.device)
+
+    # noinspection PyMethodOverriding
+    def put(self, tag_id: str, device_id: str):
+        """Links an existing tag with a device."""
+        tag = Tag.from_an_id(tag_id).one()  # type: Tag
+        if tag.device_id:
+            if tag.device_id == device_id:
+                return Response(status=204)
+            else:
+                raise LinkedToAnotherDevice(tag.device_id)
+        else:
+            tag.device_id = device_id
+        db.session.commit()
+        return Response(status=204)
 
 
 def get_device_from_tag(id: str):
@@ -45,4 +69,10 @@ class TagNotLinked(ValidationError):
 class CannotCreateETag(ValidationError):
     def __init__(self, id: str):
         message = 'Only sysadmin can create an eReuse.org Tag ({})'.format(id)
+        super().__init__(message)
+
+
+class LinkedToAnotherDevice(ValidationError):
+    def __init__(self, device_id: int):
+        message = 'The tag is already linked to device {}'.format(device_id)
         super().__init__(message)

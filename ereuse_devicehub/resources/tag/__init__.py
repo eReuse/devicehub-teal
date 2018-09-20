@@ -7,9 +7,10 @@ from teal.resource import Resource
 from teal.teal import Teal
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.device import DeviceDef
 from ereuse_devicehub.resources.tag import schema
 from ereuse_devicehub.resources.tag.model import Tag
-from ereuse_devicehub.resources.tag.view import TagView, get_device_from_tag
+from ereuse_devicehub.resources.tag.view import TagDeviceView, TagView, get_device_from_tag
 
 
 class TagDef(Resource):
@@ -33,10 +34,18 @@ class TagDef(Resource):
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
         _get_device_from_tag = app.auth.requires_auth(get_device_from_tag)
-        self.add_url_rule('/<{}:{}>/device'.format(self.ID_CONVERTER.value, self.ID_NAME),
-                          view_func=_get_device_from_tag,
+
+        # DeviceTagView URLs
+        device_view = TagDeviceView.as_view('tag-device-view', definition=self, auth=app.auth)
+        if self.AUTH:
+            device_view = app.auth.requires_auth(device_view)
+        self.add_url_rule('/<{0.ID_CONVERTER.value}:{0.ID_NAME}>/device'.format(self),
+                          view_func=device_view,
                           methods={'GET'})
-        self.tag_schema = schema.Tag
+        self.add_url_rule('/<{0.ID_CONVERTER.value}:tag_id>/'.format(self) +
+                          'device/<{0.ID_CONVERTER.value}:device_id>'.format(DeviceDef),
+                          view_func=device_view,
+                          methods={'PUT'})
 
     @option('-o', '--org', help=ORG_H)
     @option('-p', '--provider', help=PROV_H)
