@@ -5,6 +5,7 @@ from uuid import uuid4
 
 import pytest
 from teal.db import UniqueViolation
+from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
@@ -279,6 +280,22 @@ def test_snapshot_upload_twice_uuid_error(user: UserClient):
     pc1 = file('basic.snapshot')
     user.post(pc1, res=Snapshot)
     user.post(pc1, res=Snapshot, status=UniqueViolation)
+
+
+def test_snapshot_component_containing_components(user: UserClient):
+    """There is no reason for components to have components and when
+    this happens it is always an error.
+
+    This test avoids this until an appropriate use-case is presented.
+    """
+    s = file('basic.snapshot')
+    s['device'] = {
+        'type': 'Processor',
+        'serialNumber': 'foo',
+        'manufacturer': 'bar',
+        'model': 'baz'
+    }
+    user.post(s, res=Snapshot, status=ValidationError)
 
 
 def test_erase(user: UserClient):

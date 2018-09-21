@@ -55,7 +55,10 @@ class Sync:
         db_device = self.execute_register(device)
         db_components, events = OrderedSet(), OrderedSet()
         if components is not None:  # We have component info (see above)
-            assert isinstance(db_device, Computer)
+            if not isinstance(db_device, Computer):
+                # Until a good reason is given, we synthetically forbid
+                # non-computers with components
+                raise ValidationError('Only computers can have components.')
             blacklist = set()  # type: Set[int]
             not_new_components = set()
             for component in components:
