@@ -6,7 +6,7 @@ click-spinner==0.1.8
 colorama==0.3.9
 colour==0.1.5
 ereuse-rate==0.0.2
-ereuse-utils==0.4.0b4
+ereuse-utils==0.4.0b6
 Flask==1.0.2
 Flask-Cors==3.0.6
 Flask-SQLAlchemy==2.3.2
@@ -26,5 +26,6 @@ requests==2.19.1
 requests-mock==1.5.2
 SQLAlchemy==1.2.11
 SQLAlchemy-Utils==0.33.3
+teal==0.2.0a16
 webargs==4.0.0
 Werkzeug==0.14.1
