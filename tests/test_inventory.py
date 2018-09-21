@@ -1,4 +1,5 @@
 import pytest
+from teal.utils import compiled
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
@@ -7,7 +8,6 @@ from ereuse_devicehub.resources.device.models import Desktop, Device, Laptop, So
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.event.models import Snapshot
 from ereuse_devicehub.resources.inventory import Filters, Inventory, Sorting
-from teal.utils import compiled
 from tests import conftest
 
 
@@ -102,3 +102,8 @@ def test_inventory_query(user: UserClient):
     assert len(pc['events']) == 4
     assert len(pc['components']) == 3
     assert not pc['tags']
+
+
+@pytest.mark.xfail(reason='Functionality not yet developed.')
+def test_inventory_lots_query(user: UserClient):
+    pass

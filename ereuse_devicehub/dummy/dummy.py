@@ -68,8 +68,6 @@ class Dummy:
                     snapshot = yaml.load(f)
                 s, _ = user.post(res=m.Snapshot, data=snapshot)
                 pcs.add(s['device']['id'])
-        inventory, _ = user.get(res=Inventory)
-        assert len(inventory['devices'])
 
         # Link tags and eTags
         for tag, pc in zip((self.TAGS[1], self.TAGS[2], self.ET[0][0], self.ET[1][1]), pcs):
@@ -99,6 +97,10 @@ class Dummy:
                            query=[('id', pc) for pc in itertools.islice(pcs, len(pcs) // 3)])
         assert len(lot['devices'])
 
+        # Keep this at the bottom
+        inventory, _ = user.get(res=Inventory)
+        assert len(inventory['devices'])
+        assert len(inventory['lots'])
         print('⭐ Done.')
 
     def user_client(self, email: str, password: str):
