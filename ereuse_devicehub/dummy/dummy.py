@@ -88,12 +88,16 @@ class Dummy:
             },
             res=m.Event)
 
-        from tests.test_lot import test_post_add_children_view
-        child_id = test_post_add_children_view(user)
+        parent, _ = user.post(({'name': 'Parent'}), res=Lot)
+        child, _ = user.post(({'name': 'Child'}), res=Lot)
+        parent, _ = user.post({},
+                              res=Lot,
+                              item='{}/children'.format(parent['id']),
+                              query=[('id', child['id'])])
 
         lot, _ = user.post({},
                            res=Lot,
-                           item='{}/devices'.format(child_id),
+                           item='{}/devices'.format(child['id']),
                            query=[('id', pc) for pc in itertools.islice(pcs, len(pcs) // 3)])
         assert len(lot['devices'])
 
