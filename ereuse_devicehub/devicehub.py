@@ -19,7 +19,7 @@ class Devicehub(Teal):
     def __init__(self,
                  config: ConfigClass,
                  db: SQLAlchemy = db,
-                 import_name=__package__,
+                 import_name=__name__.split('.')[0],
                  static_url_path=None,
                  static_folder='static',
                  static_host=None,

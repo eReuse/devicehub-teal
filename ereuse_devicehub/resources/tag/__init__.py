@@ -23,7 +23,7 @@ class TagDef(Resource):
     'By default set to the actual Devicehub.'
     CLI_SCHEMA = schema.Tag(only=('id', 'provider', 'org', 'secondary'))
 
-    def __init__(self, app: Teal, import_name=__package__, static_folder=None,
+    def __init__(self, app: Teal, import_name=__name__.split('.')[0], static_folder=None,
                  static_url_path=None,
                  template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
                  root_path=None):
