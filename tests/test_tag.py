@@ -1,6 +1,7 @@
 import pathlib
 
 import pytest
+from boltons.urlutils import URL
 from pytest import raises
 from teal.db import MultipleResourcesFound, ResourceNotFound, UniqueViolation
 from teal.marshmallow import ValidationError
@@ -21,9 +22,12 @@ from tests import conftest
 def test_create_tag():
     """Creates a tag specifying a custom organization."""
     org = Organization(name='Bar', tax_id='BarTax')
-    tag = Tag(id='bar-1', org=org)
+    tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'))
     db.session.add(tag)
     db.session.commit()
+    tag = Tag.query.one()
+    assert tag.id == 'bar-1'
+    assert tag.provider == URL('http://foo.bar')
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -134,6 +138,19 @@ def test_tag_create_tags_cli(app: Devicehub, user: UserClient):
         tag = Tag.query.one()  # type: Tag
         assert tag.id == 'id1'
         assert tag.org.id == Organization.get_default_org_id()
+
+
+def test_tag_create_etags_cli(app: Devicehub, user: UserClient):
+    """Creates an eTag through the CLI."""
+    # todo what happens to organization?
+    runner = app.test_cli_runner()
+    runner.invoke(args=['create-tag', '-p', 'https://t.ereuse.org', '-s', 'foo', 'DT-BARBAR'],
+                  catch_exceptions=False)
+    with app.app_context():
+        tag = Tag.query.one()  # type: Tag
+        assert tag.id == 'DT-BARBAR'
+        assert tag.secondary == 'foo'
+        assert tag.provider == URL('https://t.ereuse.org')
 
 
 def test_tag_manual_link(app: Devicehub, user: UserClient):

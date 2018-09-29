@@ -40,9 +40,7 @@ class Tag(Thing):
     secondary = Column(Unicode())
     secondary.comment = """
         A secondary identifier for this tag. It has the same
-        constraints as the main one.
-        
-        Only needed in special cases.
+        constraints as the main one. Only needed in special cases.
     """
 
     def __init__(self, id: str, **kwargs) -> None:

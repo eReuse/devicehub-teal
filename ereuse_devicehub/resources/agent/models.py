@@ -9,9 +9,9 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy_utils import EmailType, PhoneNumberType
 from teal import enums
-from teal.db import INHERIT_COND, POLYMORPHIC_ID, \
-    POLYMORPHIC_ON
+from teal.db import DBError, INHERIT_COND, POLYMORPHIC_ID, POLYMORPHIC_ON
 from teal.marshmallow import ValidationError
+from werkzeug.exceptions import NotImplemented, UnprocessableEntity
 
 from ereuse_devicehub.resources.models import STR_SIZE, STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
@@ -85,10 +85,15 @@ class Organization(JoinedTableMixin, Agent):
     @classmethod
     def get_default_org_id(cls) -> UUID:
         """Retrieves the default organization."""
-        return g.setdefault('org_id',
-                            Organization.query.filter_by(
-                                **app.config.get_namespace('ORGANIZATION_')
-                            ).one().id)
+        try:
+            return g.setdefault('org_id',
+                                Organization.query.filter_by(
+                                    **app.config.get_namespace('ORGANIZATION_')
+                                ).one().id)
+        except (DBError, UnprocessableEntity):
+            # todo test how well this works
+            raise NotImplemented('Error in getting the default organization. '
+                                 'Is the DB initialized?')
 
 
 class Individual(JoinedTableMixin, Agent):

@@ -19,7 +19,7 @@ class TagDef(Resource):
 
     ORG_H = 'The name of an existing organization in the DB. '
     'By default the organization operating this Devicehub.'
-    PROV_H = 'The Base URL of the provider. '
+    PROV_H = 'The Base URL of the provider; scheme + domain. Ex: "https://foo.com". '
     'By default set to the actual Devicehub.'
     CLI_SCHEMA = schema.Tag(only=('id', 'provider', 'org', 'secondary'))
 
@@ -56,7 +56,7 @@ class TagDef(Resource):
                    org: str = None,
                    sec: str = None,
                    provider: str = None):
-        """Create TAGS and associates them to a specific PROVIDER."""
+        """Create a tag with the given ID."""
         db.session.add(Tag(**self.schema.load(
             dict(id=id, org=org, secondary=sec, provider=provider)
         )))
