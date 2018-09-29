@@ -4,10 +4,12 @@ from marshmallow import Schema as MarshmallowSchema
 from marshmallow.fields import Float, Integer, Nested, Str
 from marshmallow.validate import Range
 from sqlalchemy import Column
-from teal.query import Between, FullTextSearch, ILike, Join, Or, Query, Sort, SortField
+from teal.query import Between, ILike, Join, Or, Query, Sort, SortField
 from teal.resource import Resource, View
 
+from ereuse_devicehub.resources import search
 from ereuse_devicehub.resources.device.models import Device
+from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.event.models import Rate
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.schemas import Thing
@@ -54,7 +56,7 @@ class Sorting(Sort):
 
 class InventoryView(View):
     class FindArgs(MarshmallowSchema):
-        search = FullTextSearch()  # todo Develop this. See more at docs/inventory.
+        search = Str()
         filter = Nested(Filters, missing=[])
         sort = Nested(Sorting, missing=[Device.created.desc()])
         page = Integer(validate=Range(min=1), missing=1)
@@ -92,10 +94,18 @@ class InventoryView(View):
 
     def find(self, args: dict):
         """See :meth:`.get` above."""
-        devices = Device.query \
-            .filter(*args['filter']) \
-            .order_by(*args['sort']) \
-            .paginate(page=args['page'], per_page=30)  # type: Pagination
+        search_p = args.get('search', None)
+        query = Device.query
+        if search_p:
+            properties = DeviceSearch.properties
+            tags = DeviceSearch.tags
+            query = query.join(DeviceSearch).filter(
+                search.Search.match(properties, search_p) | search.Search.match(tags, search_p)
+            ).order_by(
+                search.Search.rank(properties, search_p) + search.Search.rank(tags, search_p)
+            )
+        query = query.filter(*args['filter']).order_by(*args['sort'])
+        devices = query.paginate(page=args['page'], per_page=30)  # type: Pagination
         inventory = {
             'devices': app.resources[Device.t].schema.dump(devices.items, many=True, nested=1),
             'lots': app.resources[Lot.t].schema.dump(Lot.roots(), many=True, nested=1),

@@ -16,13 +16,17 @@ from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Component, ComputerMonitor, Desktop, Device, \
     GraphicCard, Laptop, Motherboard, NetworkAdapter
 from ereuse_devicehub.resources.device.schemas import Device as DeviceS
+from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, MismatchBetweenTagsAndHid, \
     Sync
 from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech
+from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.event.models import Remove, Test
+from ereuse_devicehub.resources.inventory import Inventory
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
 from tests import conftest
+from tests.conftest import file
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -418,8 +422,9 @@ def test_get_devices(app: Devicehub, user: UserClient):
         db.session.commit()
     devices, _ = user.get(res=Device)
     assert tuple(d['id'] for d in devices) == (1, 2, 3, 4, 5)
-    assert tuple(d['type'] for d in devices) == ('Desktop', 'Desktop', 'Laptop',
-                                                 'NetworkAdapter', 'GraphicCard')
+    assert tuple(d['type'] for d in devices) == (
+        'Desktop', 'Desktop', 'Laptop', 'NetworkAdapter', 'GraphicCard'
+    )
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -448,3 +453,17 @@ def test_mobile_imei():
 @pytest.mark.xfail(reason='Make test')
 def test_computer_with_display():
     pass
+
+
+def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClient):
+    """Ensures DeviceSearch can regenerate itself when the table is empty."""
+    user.post(file('basic.snapshot'), res=m.Snapshot)
+    with app.app_context():
+        app.db.session.execute('TRUNCATE TABLE {}'.format(DeviceSearch.__table__.name))
+        app.db.session.commit()
+    i, _ = user.get(res=Inventory, query=[('search', 'Desktop')])
+    assert not len(i['devices'])
+    with app.app_context():
+        DeviceSearch.set_all_devices_tokens_if_empty(app.db.session)
+    i, _ = user.get(res=Inventory, query=[('search', 'Desktop')])
+    assert not len(i['devices'])

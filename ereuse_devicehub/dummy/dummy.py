@@ -101,6 +101,11 @@ class Dummy:
         inventory, _ = user.get(res=Inventory)
         assert len(inventory['devices'])
         assert len(inventory['lots'])
+
+        i, _ = user.get(res=Inventory, query=[('search', 'intel')])
+        assert len(i['devices']) == 10
+        i, _ = user.get(res=Inventory, query=[('search', 'pc')])
+        assert len(i['devices']) == 11
         print('⭐ Done.')
 
     def user_client(self, email: str, password: str):

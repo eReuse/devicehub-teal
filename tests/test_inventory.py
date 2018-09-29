@@ -9,6 +9,7 @@ from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.event.models import Snapshot
 from ereuse_devicehub.resources.inventory import Filters, Inventory, Sorting
 from tests import conftest
+from tests.conftest import file
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -53,7 +54,7 @@ def test_inventory_sort():
 @pytest.fixture()
 def inventory_query_dummy(app: Devicehub):
     with app.app_context():
-        db.session.add_all((  # The order matters ;-)
+        devices = (  # The order matters ;-)
             Desktop(serial_number='s1',
                     model='ml1',
                     manufacturer='mr1',
@@ -67,7 +68,10 @@ def inventory_query_dummy(app: Devicehub):
                     manufacturer='mr2',
                     chassis=ComputerChassis.Microtower),
             SolidStateDrive(serial_number='s4', model='ml4', manufacturer='mr4')
-        ))
+        )
+        devices[-1].parent = devices[0]  # s4 in s1
+        db.session.add_all(devices)
+
         db.session.commit()
 
 
@@ -107,3 +111,36 @@ def test_inventory_query(user: UserClient):
 @pytest.mark.xfail(reason='Functionality not yet developed.')
 def test_inventory_lots_query(user: UserClient):
     pass
+
+
+def test_inventory_query_search(user: UserClient):
+    # todo improve
+    user.post(file('basic.snapshot'), res=Snapshot)
+    user.post(file('computer-monitor.snapshot'), res=Snapshot)
+    user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
+    i, _ = user.get(res=Inventory, query=[('search', 'desktop')])
+    assert i['devices'][0]['id'] == 1
+    i, _ = user.get(res=Inventory, query=[('search', 'intel')])
+    assert len(i['devices']) == 1
+
+
+@pytest.mark.xfail(reason='No dictionary yet that knows asustek = asus')
+def test_inventory_query_search_synonyms_asus(user: UserClient):
+    user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
+    i, _ = user.get(res=Inventory, query=[('search', 'asustek')])
+    assert len(i['devices']) == 1
+    i, _ = user.get(res=Inventory, query=[('search', 'asus')])
+    assert len(i['devices']) == 1
+
+
+@pytest.mark.xfail(reason='No dictionary yet that knows hp = hewlett packard')
+def test_inventory_query_search_synonyms_intel(user: UserClient):
+    s = file('real-hp.snapshot.11')
+    s['device']['model'] = 'foo'  # The model had the word 'HP' in it
+    user.post(s, res=Snapshot)
+    i, _ = user.get(res=Inventory, query=[('search', 'hewlett packard')])
+    assert len(i['devices']) == 1
+    i, _ = user.get(res=Inventory, query=[('search', 'hewlett')])
+    assert len(i['devices']) == 1
+    i, _ = user.get(res=Inventory, query=[('search', 'hp')])
+    assert len(i['devices']) == 1
