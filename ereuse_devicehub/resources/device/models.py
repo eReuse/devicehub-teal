@@ -1,8 +1,12 @@
+import json
+import pathlib
 from contextlib import suppress
 from itertools import chain
 from operator import attrgetter
 from typing import Dict, Set
 
+from boltons import urlutils
+from citext import CIText
 from ereuse_utils.naming import Naming
 from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
     Sequence, SmallInteger, Unicode, inspect
@@ -11,10 +15,11 @@ from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
-from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, check_lower, \
+from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, URL, check_lower, \
     check_range
 from teal.marshmallow import ValidationError
 
+from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
     RamFormat, RamInterface
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
@@ -316,3 +321,25 @@ class Display(JoinedComponentTableMixin, DisplayMixin, Component):
     and Television Set.
     """
     pass
+
+
+class Manufacturer(db.Model):
+    __table_args__ = {'schema': 'common'}
+    CUSTOM_MANUFACTURERS = {'Belinea', 'OKI Data Corporation', 'Vivitek', 'Yuraku'}
+    """A list of manufacturer names that are not from Wikipedia's JSON."""
+
+    name = db.Column(CIText(), primary_key=True)
+    url = db.Column(URL(), unique=True)
+    logo = db.Column(URL())
+
+    @classmethod
+    def add_all_to_session(cls, session):
+        """Adds all manufacturers to session."""
+        with pathlib.Path(__file__).parent.joinpath('manufacturers.json').open() as f:
+            for m in json.load(f):
+                man = cls(name=m['name'],
+                          url=urlutils.URL(m['url']),
+                          logo=urlutils.URL(m['logo']) if m.get('logo', None) else None)
+                session.add(man)
+        for name in cls.CUSTOM_MANUFACTURERS:
+            session.add(cls(name=name))

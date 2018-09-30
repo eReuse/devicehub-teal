@@ -467,3 +467,14 @@ def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClie
         DeviceSearch.set_all_devices_tokens_if_empty(app.db.session)
     i, _ = user.get(res=Inventory, query=[('search', 'Desktop')])
     assert not len(i['devices'])
+
+
+def test_manufacturer(user: UserClient):
+    m, _ = user.get(res='Manufacturer', query=[('name', 'asus')])
+    assert m == {'items': [{'name': 'Asus', 'url': 'https://en.wikipedia.org/wiki/Asus'}]}
+
+
+@pytest.mark.xfail(reason='Develop functionality')
+def test_manufacturer_enforced():
+    """Ensures that non-computer devices can submit only
+     manufacturers from the Manufacturer table."""

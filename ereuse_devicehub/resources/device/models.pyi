@@ -1,8 +1,10 @@
 from typing import Dict, List, Set
 
+from boltons.urlutils import URL
 from colour import Color
 from sqlalchemy import Column, Integer
 from sqlalchemy.orm import relationship
+from teal.db import Model
 
 from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
     RamFormat, RamInterface
@@ -210,3 +212,20 @@ class RamModule(Component):
 
 class Display(DisplayMixin, Component):
     pass
+
+
+class Manufacturer(Model):
+    CUSTOM_MANUFACTURERS = ...  # type: set
+    name = ...  # type: Column
+    url = ...  # type: Column
+    logo = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+        self.name = ...  # type: str
+        self.url = ...  # type: URL
+        self.logo = ...  # type: URL
+
+    @classmethod
+    def add_all_to_session(cls, session):
+        pass

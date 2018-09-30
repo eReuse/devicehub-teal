@@ -1,9 +1,10 @@
 from marshmallow import post_load, pre_load
-from marshmallow.fields import Boolean, Float, Integer, Str
+from marshmallow.fields import Boolean, Float, Integer, Str, String
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
-from teal.marshmallow import EnumField, SanitizedStr, ValidationError
+from teal.marshmallow import EnumField, SanitizedStr, URL, ValidationError
+from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device import models as m
@@ -183,3 +184,9 @@ class SoundCard(Component):
 
 class Display(DisplayMixin, Component):
     pass
+
+
+class Manufacturer(Schema):
+    name = String(dump_only=True)
+    url = URL(dump_only=True)
+    logo = URL(dump_only=True)

@@ -1,7 +1,8 @@
 from teal.resource import Converters, Resource
 
 from ereuse_devicehub.resources.device import schemas
-from ereuse_devicehub.resources.device.views import DeviceView
+from ereuse_devicehub.resources.device.models import Manufacturer
+from ereuse_devicehub.resources.device.views import DeviceView, ManufacturerView
 
 
 class DeviceDef(Resource):
@@ -119,3 +120,13 @@ class SoundCardDef(ComponentDef):
 class DisplayDef(ComponentDef):
     VIEW = None
     SCHEMA = schemas.Display
+
+
+class ManufacturerDef(Resource):
+    VIEW = ManufacturerView
+    SCHEMA = schemas.Manufacturer
+    AUTH = True
+
+    def init_db(self, db: 'db.SQLAlchemy'):
+        """Loads the manufacturers to the database."""
+        Manufacturer.add_all_to_session(db.session)

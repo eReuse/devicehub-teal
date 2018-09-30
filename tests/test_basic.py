@@ -26,6 +26,7 @@ def test_api_docs(client: Client):
         '/users/login',
         '/events/',
         '/lots/',
+        '/manufacturers/',
         '/lots/{id}/children',
         '/lots/{id}/devices',
         '/tags/{tag_id}/device/{device_id}'
@@ -39,4 +40,4 @@ def test_api_docs(client: Client):
         'scheme': 'basic',
         'name': 'Authorization'
     }
-    assert 77 == len(docs['definitions'])
+    assert 78 == len(docs['definitions'])
