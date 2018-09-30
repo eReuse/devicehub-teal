@@ -21,7 +21,7 @@ from tests import conftest
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_tag():
     """Creates a tag specifying a custom organization."""
-    org = Organization(name='Bar', tax_id='BarTax')
+    org = Organization(name='bar', tax_id='bartax')
     tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'))
     db.session.add(tag)
     db.session.commit()
@@ -148,7 +148,7 @@ def test_tag_create_etags_cli(app: Devicehub, user: UserClient):
                   catch_exceptions=False)
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
-        assert tag.id == 'DT-BARBAR'
+        assert tag.id == 'dt-barbar'
         assert tag.secondary == 'foo'
         assert tag.provider == URL('https://t.ereuse.org')
 
@@ -167,7 +167,12 @@ def test_tag_manual_link(app: Devicehub, user: UserClient):
 
     # Device already linked
     # Just returns an OK to conform to PUT as anything changes
+
     user.put({}, res=Tag, item='foo-sec/device/{}'.format(desktop_id), status=204)
+
+    # Secondary IDs are case insensitive
+    user.put({}, res=Tag, item='FOO-BAR/device/{}'.format(desktop_id), status=204)
+    user.put({}, res=Tag, item='FOO-SEC/device/{}'.format(desktop_id), status=204)
 
     # cannot link to another device when already linked
     user.put({}, res=Tag, item='foo-bar/device/99', status=LinkedToAnotherDevice)

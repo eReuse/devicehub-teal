@@ -352,7 +352,7 @@ def assert_similar_device(device1: dict, device2: dict):
     assert isinstance(device1, dict) and device1
     assert isinstance(device2, dict) and device2
     for key in 'serialNumber', 'model', 'manufacturer', 'type':
-        assert device1.get(key, None) == device2.get(key, None)
+        assert device1.get(key, '').lower() == device2.get(key, '').lower()
 
 
 def assert_similar_components(components1: List[dict], components2: List[dict]):

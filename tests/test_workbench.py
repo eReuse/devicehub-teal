@@ -150,9 +150,9 @@ def test_real_eee_1001pxd(user: UserClient):
     pc, _ = user.get(res=Device, item=snapshot['device']['id'])
     assert pc['type'] == 'Laptop'
     assert pc['chassis'] == 'Netbook'
-    assert pc['model'] == '1001PXD'
-    assert pc['serialNumber'] == 'B8OAAS048286'
-    assert pc['manufacturer'] == 'ASUSTeK Computer INC.'
+    assert pc['model'] == '1001pxd'
+    assert pc['serialNumber'] == 'b8oaas048286'
+    assert pc['manufacturer'] == 'asustek computer inc.'
     assert pc['hid'] == 'asustek_computer_inc-b8oaas048286-1001pxd'
     assert pc['tags'] == []
     components = snapshot['components']
@@ -170,7 +170,7 @@ def test_real_eee_1001pxd(user: UserClient):
     assert cpu['threads'] == 1
     assert cpu['speed'] == 1.667
     assert 'hid' not in cpu
-    assert cpu['model'] == 'Intel Atom CPU N455 @ 1.66GHz'
+    assert cpu['model'] == 'intel atom cpu n455 @ 1.66ghz'
     cpu, _ = user.get(res=Device, item=cpu['id'])
     events = cpu['events']
     sysbench = next(e for e in events if e['type'] == em.BenchmarkProcessorSysbench.t)
@@ -188,8 +188,8 @@ def test_real_eee_1001pxd(user: UserClient):
     assert em.Snapshot.t in event_types
     assert len(events) == 5
     gpu = components[3]
-    assert gpu['model'] == 'Atom Processor D4xx/D5xx/N4xx/N5xx Integrated Graphics Controller'
-    assert gpu['manufacturer'] == 'Intel Corporation'
+    assert gpu['model'] == 'atom processor d4xx/d5xx/n4xx/n5xx integrated graphics controller'
+    assert gpu['manufacturer'] == 'intel corporation'
     assert gpu['memory'] == 256
     gpu, _ = user.get(res=Device, item=gpu['id'])
     event_types = tuple(e['type'] for e in gpu['events'])
@@ -198,9 +198,9 @@ def test_real_eee_1001pxd(user: UserClient):
     assert em.Snapshot.t in event_types
     assert len(event_types) == 3
     sound = components[4]
-    assert sound['model'] == 'NM10/ICH7 Family High Definition Audio Controller'
+    assert sound['model'] == 'nm10/ich7 family high definition audio controller'
     sound = components[5]
-    assert sound['model'] == 'USB 2.0 UVC VGA WebCam'
+    assert sound['model'] == 'usb 2.0 uvc vga webcam'
     ram = components[6]
     assert ram['interface'] == 'DDR2'
     assert ram['speed'] == 667

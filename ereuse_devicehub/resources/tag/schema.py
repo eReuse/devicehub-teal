@@ -1,6 +1,5 @@
-from marshmallow.fields import String
 from sqlalchemy.util import OrderedSet
-from teal.marshmallow import URL
+from teal.marshmallow import SanitizedStr, URL
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.agent.schemas import Organization
@@ -15,11 +14,12 @@ def without_slash(x: str) -> bool:
 
 
 class Tag(Thing):
-    id = String(description=m.Tag.id.comment,
-                validator=without_slash,
-                required=True)
+    id = SanitizedStr(lower=True,
+                      description=m.Tag.id.comment,
+                      validator=without_slash,
+                      required=True)
     provider = URL(description=m.Tag.provider.comment,
                    validator=without_slash)
     device = NestedOn(Device, dump_only=True)
     org = NestedOn(Organization, collection_class=OrderedSet, only_query='id')
-    secondary = String(description=m.Tag.secondary.comment)
+    secondary = SanitizedStr(lower=True, description=m.Tag.secondary.comment)

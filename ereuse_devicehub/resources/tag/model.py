@@ -3,7 +3,7 @@ from contextlib import suppress
 from sqlalchemy import BigInteger, Column, ForeignKey, Unicode, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship, validates
-from teal.db import DB_CASCADE_SET_NULL, Query, URL
+from teal.db import DB_CASCADE_SET_NULL, Query, URL, check_lower
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.resources.agent.models import Organization
@@ -12,7 +12,7 @@ from ereuse_devicehub.resources.models import Thing
 
 
 class Tag(Thing):
-    id = Column(Unicode(), primary_key=True)
+    id = Column(Unicode(), check_lower('id'), primary_key=True)
     id.comment = """The ID of the tag."""
     org_id = Column(UUID(as_uuid=True),
                     ForeignKey(Organization.id),
@@ -37,7 +37,7 @@ class Tag(Thing):
                           backref=backref('tags', lazy=True, collection_class=set),
                           primaryjoin=Device.id == device_id)
     """The device linked to this tag."""
-    secondary = Column(Unicode())
+    secondary = Column(Unicode(), check_lower('secondary'))
     secondary.comment = """
         A secondary identifier for this tag. It has the same
         constraints as the main one. Only needed in special cases.

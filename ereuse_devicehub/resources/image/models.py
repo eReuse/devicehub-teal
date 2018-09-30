@@ -1,6 +1,7 @@
 from uuid import uuid4
 
-from sqlalchemy import BigInteger, Column, Enum as DBEnum, ForeignKey, Unicode
+from citext import CIText
+from sqlalchemy import BigInteger, Column, Enum as DBEnum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.util import OrderedSet
@@ -9,7 +10,7 @@ from teal.db import CASCADE_OWN
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.enums import ImageMimeTypes, Orientation
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, Thing
+from ereuse_devicehub.resources.models import Thing
 
 
 class ImageList(Thing):
@@ -26,7 +27,7 @@ class ImageList(Thing):
 
 class Image(Thing):
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    name = Column(Unicode(STR_BIG_SIZE), default='', nullable=False)
+    name = Column(CIText(), default='', nullable=False)
     content = db.Column(db.LargeBinary, nullable=False)
     file_format = db.Column(DBEnum(ImageMimeTypes), nullable=False)
     orientation = db.Column(DBEnum(Orientation), nullable=False)

@@ -6,3 +6,4 @@ psql -d $1 -c "CREATE USER dhub WITH PASSWORD 'ereuse';" # Create user Devicehub
 psql -d $1 -c "GRANT ALL PRIVILEGES ON DATABASE $1 TO dhub;" # Give access to the db
 psql -d $1 -c "CREATE EXTENSION pgcrypto SCHEMA public;" # Enable pgcrypto
 psql -d $1 -c "CREATE EXTENSION ltree SCHEMA public;" # Enable ltree
+psql -d $1 -c "CREATE EXTENSION citext SCHEMA public;" # Enable citext

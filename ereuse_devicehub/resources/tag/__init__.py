@@ -3,7 +3,7 @@ import pathlib
 
 from click import argument, option
 from ereuse_utils import cli
-from teal.resource import Resource
+from teal.resource import Converters, Resource
 from teal.teal import Teal
 
 from ereuse_devicehub.db import db
@@ -16,6 +16,7 @@ from ereuse_devicehub.resources.tag.view import TagDeviceView, TagView, get_devi
 class TagDef(Resource):
     SCHEMA = schema.Tag
     VIEW = TagView
+    ID_CONVERTER = Converters.lower
 
     ORG_H = 'The name of an existing organization in the DB. '
     'By default the organization operating this Devicehub.'

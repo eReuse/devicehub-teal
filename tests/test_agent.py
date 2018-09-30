@@ -18,7 +18,7 @@ from tests.conftest import app_context, create_user
 def test_agent():
     """Tests creating an person."""
     person = Person(name='Timmy',
-                    tax_id='XYZ',
+                    tax_id='xyz',
                     country=Country.ES,
                     telephone=PhoneNumber('+34666666666'),
                     email='foo@bar.com')
@@ -27,7 +27,7 @@ def test_agent():
 
     p = schemas.Person().dump(person)
     assert p['name'] == person.name == 'Timmy'
-    assert p['taxId'] == person.tax_id == 'XYZ'
+    assert p['taxId'] == person.tax_id == 'xyz'
     assert p['country'] == person.country.name == 'ES'
     assert p['telephone'] == person.telephone.international == '+34 666 66 66 66'
     assert p['email'] == person.email == 'foo@bar.com'
@@ -50,7 +50,7 @@ def test_system():
 def test_organization():
     """Tests creating an organization."""
     org = Organization(name='ACME',
-                       tax_id='XYZ',
+                       tax_id='xyz',
                        country=Country.ES,
                        email='contact@acme.com')
     db.session.add(org)
@@ -58,7 +58,7 @@ def test_organization():
 
     o = schemas.Organization().dump(org)
     assert o['name'] == org.name == 'ACME'
-    assert o['taxId'] == org.tax_id == 'XYZ'
+    assert o['taxId'] == org.tax_id == 'xyz'
     assert org.country.name == o['country'] == 'ES'
 
 
@@ -123,10 +123,10 @@ def test_assign_individual_user():
 @pytest.mark.usefixtures(app_context.__name__)
 def test_create_organization_main_method(app: Devicehub):
     org_def = app.resources[models.Organization.t]  # type: OrganizationDef
-    o = org_def.create_org('ACME', tax_id='FOO', country='ES')
+    o = org_def.create_org('ACME', tax_id='foo', country='ES')
     org = models.Agent.query.filter_by(id=o['id']).one()  # type: Organization
     assert org.name == o['name'] == 'ACME'
-    assert org.tax_id == o['taxId'] == 'FOO'
+    assert org.tax_id == o['taxId'] == 'foo', 'FOO must be converted to lowercase'
     assert org.country.name == o['country'] == 'ES'
 
 

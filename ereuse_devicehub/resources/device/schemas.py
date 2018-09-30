@@ -3,7 +3,7 @@ from marshmallow.fields import Boolean, Float, Integer, Str
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
-from teal.marshmallow import EnumField, ValidationError
+from teal.marshmallow import EnumField, SanitizedStr, ValidationError
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device import models as m
@@ -15,14 +15,14 @@ from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 
 class Device(Thing):
     id = Integer(description=m.Device.id.comment, dump_only=True)
-    hid = Str(dump_only=True, description=m.Device.hid.comment)
+    hid = SanitizedStr(lower=True, dump_only=True, description=m.Device.hid.comment)
     tags = NestedOn('Tag',
                     many=True,
                     collection_class=OrderedSet,
                     description='The set of tags that identify the device.')
-    model = Str(validate=Length(max=STR_BIG_SIZE))
-    manufacturer = Str(validate=Length(max=STR_SIZE))
-    serial_number = Str(data_key='serialNumber')
+    model = SanitizedStr(lower=True, validate=Length(max=STR_BIG_SIZE))
+    manufacturer = SanitizedStr(lower=True, validate=Length(max=STR_SIZE))
+    serial_number = SanitizedStr(lower=True, data_key='serialNumber')
     weight = Float(validate=Range(0.1, 3), unit=UnitCodes.kgm, description=m.Device.weight.comment)
     width = Float(validate=Range(0.1, 3), unit=UnitCodes.m, description=m.Device.width.comment)
     height = Float(validate=Range(0.1, 3), unit=UnitCodes.m, description=m.Device.height.comment)

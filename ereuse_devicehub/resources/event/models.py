@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Set, Union
 from uuid import uuid4
 
+from citext import CIText
 from flask import current_app as app, g
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
     Float, ForeignKey, Interval, JSON, Numeric, SmallInteger, Unicode, event, orm
@@ -13,7 +14,7 @@ from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
 from teal.db import ArrayOfEnum, CASCADE, CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, \
-    POLYMORPHIC_ON, StrictVersionType, URL, check_range
+    POLYMORPHIC_ON, StrictVersionType, URL, check_lower, check_range
 from teal.enums import Country, Currency, Subdivision
 from teal.marshmallow import ValidationError
 
@@ -25,7 +26,7 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RA
     FunctionalityRange, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
     ReceiverRole, SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
 from ereuse_devicehub.resources.image.models import Image
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
+from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 
 """
@@ -43,7 +44,7 @@ class JoinedTableMixin:
 class Event(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     type = Column(Unicode, nullable=False)
-    name = Column(Unicode(STR_BIG_SIZE), default='', nullable=False)
+    name = Column(CIText(), default='', nullable=False)
     name.comment = """
         A name or title for the event. Used when searching for events.
     """
@@ -263,13 +264,13 @@ class Remove(EventWithOneDevice):
 class Allocate(JoinedTableMixin, EventWithMultipleDevices):
     to_id = Column(UUID, ForeignKey(User.id))
     to = relationship(User, primaryjoin=User.id == to_id)
-    organization = Column(Unicode(STR_SIZE))
+    organization = Column(CIText())
 
 
 class Deallocate(JoinedTableMixin, EventWithMultipleDevices):
     from_id = Column(UUID, ForeignKey(User.id))
     from_rel = relationship(User, primaryjoin=User.id == from_id)
-    organization = Column(Unicode(STR_SIZE))
+    organization = Column(CIText())
 
 
 class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
@@ -588,7 +589,7 @@ class Test(JoinedWithOneDeviceMixin, EventWithOneDevice):
 class TestDataStorage(Test):
     id = Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
     length = Column(DBEnum(TestHardDriveLength), nullable=False)  # todo from type
-    status = Column(Unicode(STR_SIZE), nullable=False)
+    status = Column(Unicode(), check_lower('status'), nullable=False)
     lifetime = Column(Interval)
     assessment = Column(Boolean)
     reallocated_sector_count = Column(SmallInteger)
@@ -681,13 +682,13 @@ class Live(JoinedWithOneDeviceMixin, EventWithOneDevice):
                                     check_range('subdivision_confidence', 0, 100),
                                     nullable=False)
     subdivision = Column(DBEnum(Subdivision), nullable=False)
-    city = Column(Unicode(STR_SM_SIZE), nullable=False)
+    city = Column(Unicode(STR_SM_SIZE), check_lower('city'), nullable=False)
     city_confidence = Column(SmallInteger,
                              check_range('city_confidence', 0, 100),
                              nullable=False)
-    isp = Column(Unicode(length=STR_SM_SIZE), nullable=False)
-    organization = Column(Unicode(length=STR_SIZE))
-    organization_type = Column(Unicode(length=STR_SM_SIZE))
+    isp = Column(Unicode(STR_SM_SIZE), check_lower('isp'), nullable=False)
+    organization = Column(Unicode(STR_SM_SIZE), check_lower('organization'))
+    organization_type = Column(Unicode(STR_SM_SIZE), check_lower('organization_type'))
 
     @property
     def country(self) -> Country:
@@ -713,7 +714,7 @@ class Trade(JoinedTableMixin, EventWithMultipleDevices):
     shipping_date.comment = """
             When are the devices going to be ready for shipping?
         """
-    invoice_number = Column(Unicode(length=STR_SIZE))
+    invoice_number = Column(CIText())
     invoice_number.comment = """
             The id of the invoice so they can be linked.
         """

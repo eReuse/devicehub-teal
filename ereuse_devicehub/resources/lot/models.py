@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 
+from citext import CIText
 from flask import g
 from sqlalchemy import TEXT
 from sqlalchemy.dialects.postgresql import UUID
@@ -11,13 +12,13 @@ from teal.db import UUIDLtree
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.resources.models import STR_SIZE, Thing
+from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
 
 class Lot(Thing):
     id = db.Column(UUID(as_uuid=True), primary_key=True)  # uuid is generated on init by default
-    name = db.Column(db.Unicode(STR_SIZE), nullable=False)
+    name = db.Column(CIText(), nullable=False)
     closed = db.Column(db.Boolean, default=False, nullable=False)
     closed.comment = """
             A closed lot cannot be modified anymore.

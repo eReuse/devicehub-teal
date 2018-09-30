@@ -7,7 +7,7 @@ from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, List,
 from marshmallow.validate import Length, Range
 from sqlalchemy.util import OrderedSet
 from teal.enums import Country, Currency, Subdivision
-from teal.marshmallow import EnumField, IP, Version
+from teal.marshmallow import EnumField, IP, SanitizedStr, Version
 from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
@@ -24,11 +24,13 @@ from ereuse_devicehub.resources.user.schemas import User
 
 class Event(Thing):
     id = UUID(dump_only=True)
-    name = String(default='', validate=Length(max=STR_BIG_SIZE), description=m.Event.name.comment)
+    name = SanitizedStr(default='',
+                        validate=Length(max=STR_BIG_SIZE),
+                        description=m.Event.name.comment)
     incidence = Boolean(default=False, description=m.Event.incidence.comment)
     closed = Boolean(missing=True, description=m.Event.closed.comment)
     error = Boolean(default=False, description=m.Event.error.comment)
-    description = String(default='', description=m.Event.description.comment)
+    description = SanitizedStr(default='', description=m.Event.description.comment)
     start_time = DateTime(data_key='startTime', description=m.Event.start_time.comment)
     end_time = DateTime(data_key='endTime', description=m.Event.end_time.comment)
     snapshot = NestedOn('Snapshot', dump_only=True)
@@ -57,16 +59,18 @@ class Remove(EventWithOneDevice):
 class Allocate(EventWithMultipleDevices):
     to = NestedOn(User,
                   description='The user the devices are allocated to.')
-    organization = String(validate=Length(max=STR_SIZE),
-                          description='The organization where the user was when this happened.')
+    organization = SanitizedStr(validate=Length(max=STR_SIZE),
+                                description='The organization where the '
+                                            'user was when this happened.')
 
 
 class Deallocate(EventWithMultipleDevices):
     from_rel = Nested(User,
                       data_key='from',
                       description='The user where the devices are not allocated to anymore.')
-    organization = String(validate=Length(max=STR_SIZE),
-                          description='The organization where the user was when this happened.')
+    organization = SanitizedStr(validate=Length(max=STR_SIZE),
+                                description='The organization where the '
+                                            'user was when this happened.')
 
 
 class EraseBasic(EventWithOneDevice):
@@ -187,9 +191,9 @@ class EreusePrice(Price):
 
 
 class Install(EventWithOneDevice):
-    name = String(validate=Length(min=4, max=STR_BIG_SIZE),
-                  required=True,
-                  description='The name of the OS installed.')
+    name = SanitizedStr(validate=Length(min=4, max=STR_BIG_SIZE),
+                        required=True,
+                        description='The name of the OS installed.')
     elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
 
 
@@ -263,7 +267,7 @@ class Test(EventWithOneDevice):
 
 class TestDataStorage(Test):
     length = EnumField(TestHardDriveLength, required=True)
-    status = String(validate=Length(max=STR_SIZE), required=True)
+    status = SanitizedStr(lower=True, validate=Length(max=STR_SIZE), required=True)
     lifetime = TimeDelta(precision=TimeDelta.DAYS)
     assessment = Boolean()
     reallocated_sector_count = Integer(data_key='reallocatedSectorCount')
@@ -329,11 +333,11 @@ class Live(EventWithOneDevice):
     subdivision_confidence = Integer(dump_only=True, data_key='subdivisionConfidence')
     subdivision = EnumField(Subdivision, dump_only=True)
     country = EnumField(Country, dump_only=True)
-    city = String(dump_only=True)
+    city = SanitizedStr(lower=True, dump_only=True)
     city_confidence = Integer(dump_only=True, data_key='cityConfidence')
-    isp = String(dump_only=True)
-    organization = String(dump_only=True)
-    organization_type = String(dump_only=True, data_key='organizationType')
+    isp = SanitizedStr(lower=True, dump_only=True)
+    organization = SanitizedStr(lower=True, dump_only=True)
+    organization_type = SanitizedStr(lower=True, dump_only=True, data_key='organizationType')
 
 
 class Organize(EventWithMultipleDevices):
@@ -350,7 +354,7 @@ class CancelReservation(Organize):
 
 class Trade(EventWithMultipleDevices):
     shipping_date = DateTime(data_key='shippingDate')
-    invoice_number = String(validate=Length(max=STR_SIZE), data_key='invoiceNumber')
+    invoice_number = SanitizedStr(validate=Length(max=STR_SIZE), data_key='invoiceNumber')
     price = NestedOn(Price)
     to = NestedOn(Agent, only_query='id', required=True, comment=m.Trade.to_comment)
     confirms = NestedOn(Organize)

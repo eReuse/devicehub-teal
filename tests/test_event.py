@@ -89,7 +89,7 @@ def test_test_data_storage():
         error=False,
         elapsed=timedelta(minutes=25),
         length=TestHardDriveLength.Short,
-        status='OK!',
+        status='ok!',
         lifetime=timedelta(days=120)
     )
     db.session.add(test)
@@ -199,13 +199,13 @@ def test_live():
     db_live = models.Live(ip=ipaddress.ip_address('79.147.10.10'),
                           subdivision_confidence=84,
                           subdivision=Subdivision['ES-CA'],
-                          city='Barcelona',
+                          city='barcelona',
                           city_confidence=20,
-                          isp='ACME',
+                          isp='acme',
                           device=Desktop(serial_number='sn1', model='ml1', manufacturer='mr1',
                                          chassis=ComputerChassis.Docking),
-                          organization='ACME1',
-                          organization_type='ACME1bis')
+                          organization='acme1',
+                          organization_type='acme1bis')
     db.session.add(db_live)
     db.session.commit()
     client = UserClient(app, 'foo@foo.com', 'foo', response_wrapper=app.response_class)

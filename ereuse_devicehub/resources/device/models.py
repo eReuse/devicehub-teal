@@ -11,12 +11,13 @@ from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
-from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, check_range
+from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, check_lower, \
+    check_range
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
     RamFormat, RamInterface
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE, STR_SM_SIZE, Thing
+from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 
 
 class Device(Thing):
@@ -29,14 +30,14 @@ class Device(Thing):
         The identifier of the device for this database.
     """
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
-    hid = Column(Unicode(STR_BIG_SIZE), unique=True)
+    hid = Column(Unicode(), check_lower('hid'), unique=True)
     hid.comment = """
         The Hardware ID (HID) is the unique ID traceability systems 
         use to ID a device globally.
     """
-    model = Column(Unicode(STR_BIG_SIZE))
-    manufacturer = Column(Unicode(STR_SIZE))
-    serial_number = Column(Unicode(STR_SIZE))
+    model = Column(Unicode(), check_lower('model'))
+    manufacturer = Column(Unicode(), check_lower('manufacturer'))
+    serial_number = Column(Unicode(), check_lower('serial_number'))
     weight = Column(Float(decimal_return_scale=3), check_range('weight', 0.1, 3))
     weight.comment = """
         The weight of the device in Kgm.

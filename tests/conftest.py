@@ -28,7 +28,7 @@ class TestConfig(DevicehubConfig):
     SCHEMA = 'test'
     TESTING = True
     ORGANIZATION_NAME = 'FooOrg'
-    ORGANIZATION_TAX_ID = 'FooOrgId'
+    ORGANIZATION_TAX_ID = 'foo-org-id'
 
 
 @pytest.fixture(scope='module')

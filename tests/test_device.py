@@ -201,7 +201,7 @@ def test_sync_run_components_none():
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_sync_execute_register_Desktop_new_Desktop_no_tag():
+def test_sync_execute_register_desktop_new_Desktop_no_tag():
     """
     Syncs a new Desktop with HID and without a tag, creating it.
     :return:
@@ -213,7 +213,7 @@ def test_sync_execute_register_Desktop_new_Desktop_no_tag():
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_sync_execute_register_Desktop_existing_no_tag():
+def test_sync_execute_register_desktop_existing_no_tag():
     """
     Syncs an existing Desktop with HID and without a tag.
     """
@@ -229,7 +229,7 @@ def test_sync_execute_register_Desktop_existing_no_tag():
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_sync_execute_register_Desktop_no_hid_no_tag():
+def test_sync_execute_register_desktop_no_hid_no_tag():
     """
     Syncs a Desktop without HID and no tag.
 
@@ -243,18 +243,18 @@ def test_sync_execute_register_Desktop_no_hid_no_tag():
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_sync_execute_register_Desktop_tag_not_linked():
+def test_sync_execute_register_desktop_tag_not_linked():
     """
     Syncs a new Desktop with HID and a non-linked tag.
 
     It is OK if the tag was not linked, it will be linked in this process.
     """
-    tag = Tag(id='FOO')
+    tag = Tag(id='foo')
     db.session.add(tag)
     db.session.commit()
 
     # Create a new transient non-db object
-    pc = Desktop(**conftest.file('pc-components.db')['device'], tags=OrderedSet([Tag(id='FOO')]))
+    pc = Desktop(**conftest.file('pc-components.db')['device'], tags=OrderedSet([Tag(id='foo')]))
     returned_pc = Sync().execute_register(pc)
     assert returned_pc == pc
     assert tag.device == pc, 'Tag has to be linked'
