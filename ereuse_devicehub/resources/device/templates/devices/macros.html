@@ -1,0 +1,18 @@
+{% macro component_type(components, type) %}
+    <ul class="list-unstyled">
+        {% for c in components if c.t == type %}
+            <li>
+                <strong>{{ c.__format__('t') }}</strong>
+                <p>
+                    <small>{{ c.__format__('s') }}</small>
+                </p>
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% macro rate(range) %}
+    <span class="label label-primary">
+        {{ range }}
+    </span>
+{% endmacro %}
