@@ -1,20 +1,22 @@
+import datetime
 from datetime import timedelta
 from uuid import UUID
 
 import pytest
 from colour import Color
 from ereuse_utils.naming import Naming
+from ereuse_utils.test import ANY
 from pytest import raises
 from sqlalchemy.util import OrderedSet
 from teal.db import ResourceNotFound
 
-from ereuse_devicehub.client import UserClient
+from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.device.exceptions import NeedsId
-from ereuse_devicehub.resources.device.models import Component, ComputerMonitor, Desktop, Device, \
-    GraphicCard, Laptop, Motherboard, NetworkAdapter
+from ereuse_devicehub.resources.device.models import Component, ComputerMonitor, DataStorage, \
+    Desktop, Device, GraphicCard, Laptop, Motherboard, NetworkAdapter
 from ereuse_devicehub.resources.device.schemas import Device as DeviceS
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, MismatchBetweenTagsAndHid, \
@@ -470,11 +472,42 @@ def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClie
 
 
 def test_manufacturer(user: UserClient):
-    m, _ = user.get(res='Manufacturer', query=[('name', 'asus')])
+    m, r = user.get(res='Manufacturer', query=[('name', 'asus')])
     assert m == {'items': [{'name': 'Asus', 'url': 'https://en.wikipedia.org/wiki/Asus'}]}
+    assert r.cache_control.public
+    assert r.expires > datetime.datetime.now()
 
 
 @pytest.mark.xfail(reason='Develop functionality')
 def test_manufacturer_enforced():
     """Ensures that non-computer devices can submit only
      manufacturers from the Manufacturer table."""
+
+
+def test_device_properties_format(app: Devicehub, user: UserClient):
+    user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
+    with app.app_context():
+        pc = Laptop.query.one()  # type: Laptop
+        assert format(pc) == 'Laptop 1: model 1000h, S/N 94oaaq021116'
+        assert format(pc, 't') == 'netbook 1000h'
+        assert format(pc, 's') == '(asustek computer inc.) S/N 94oaaq021116'
+        assert pc.ram_size == 1024
+        assert pc.data_storage_size == 152627
+        assert pc.graphic_card_model == 'mobile 945gse express integrated graphics controller'
+        assert pc.processor_model == 'intel atom cpu n270 @ 1.60ghz'
+        net = next(c for c in pc.components if isinstance(c, NetworkAdapter))
+        assert format(net) == 'NetworkAdapter 2: model ar8121/ar8113/ar8114 ' \
+                              'gigabit or fast ethernet, S/N 00:24:8c:7f:cf:2d'
+        assert format(net, 't') == 'NetworkAdapter ar8121/ar8113/ar8114 gigabit or fast ethernet'
+        assert format(net, 's') == '(qualcomm atheros) S/N 00:24:8c:7f:cf:2d – 100 Mbps'
+        hdd = next(c for c in pc.components if isinstance(c, DataStorage))
+        assert format(hdd) == 'HardDrive 7: model st9160310as, S/N 5sv4tqa6'
+        assert format(hdd, 't') == 'HardDrive st9160310as'
+        assert format(hdd, 's') == '(seagate) S/N 5sv4tqa6 – 152 GB'
+
+
+def test_device_public(user: UserClient, client: Client):
+    s, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
+    html, _ = client.get(res=Device, item=s['device']['id'], accept=ANY)
+    assert 'intel atom cpu n270 @ 1.60ghz' in html
+    assert 'S/N 00:24:8c:7f:cf:2d – 100 Mbps' in html

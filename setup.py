@@ -34,7 +34,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=[
-        'teal>=0.2.0a20',  # teal always first
+        'teal>=0.2.0a21',  # teal always first
         'click',
         'click-spinner',
         'ereuse-rate==0.0.2',

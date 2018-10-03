@@ -76,6 +76,29 @@ class Computer(DisplayMixin, Device):
         self.events_parent = ...  # type: Set[Event]
         self.chassis = ...  # type: ComputerChassis
 
+    @property
+    def events(self) -> List:
+        pass
+
+    @property
+    def ram_size(self) -> int:
+        pass
+
+    @property
+    def data_storage_size(self) -> int:
+        pass
+
+    @property
+    def processor_model(self) -> str:
+        pass
+
+    @property
+    def graphic_card_model(self) -> str:
+        pass
+
+    @property
+    def network_speeds(self) -> List[int]:
+        pass
 
 class Desktop(Computer):
     pass

@@ -3,7 +3,7 @@ import pathlib
 from contextlib import suppress
 from itertools import chain
 from operator import attrgetter
-from typing import Dict, Set
+from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
@@ -111,8 +111,18 @@ class Device(Thing):
     def __lt__(self, other):
         return self.id < other.id
 
-    def __repr__(self) -> str:
-        return '<{0.t} {0.id!r} model={0.model!r} S/N={0.serial_number!r}>'.format(self)
+    def __str__(self) -> str:
+        return '{0.t} {0.id}: model {0.model}, S/N {0.serial_number}'.format(self)
+
+    def __format__(self, format_spec):
+        if not format_spec:
+            return super().__format__(format_spec)
+        v = ''
+        if 't' in format_spec:
+            v += '{0.t} {0.model}'.format(self)
+        if 's' in format_spec:
+            v += '({0.manufacturer}) S/N {0.serial_number}'.format(self)
+        return v
 
 
 class DisplayMixin:
@@ -135,6 +145,14 @@ class DisplayMixin:
         in pixels.
     """
 
+    def __format__(self, format_spec: str) -> str:
+        v = ''
+        if 't' in format_spec:
+            v += '{0.t} {0.model}'.format(self)
+        if 's' in format_spec:
+            v += '({0.manufacturer}) S/N {0.serial_number} – {0.size}in {0.technology}'
+        return v
+
 
 class Computer(Device):
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
@@ -143,6 +161,46 @@ class Computer(Device):
     @property
     def events(self) -> list:
         return sorted(chain(super().events, self.events_parent), key=attrgetter('created'))
+
+    @property
+    def ram_size(self) -> int:
+        """The total of RAM memory the computer has."""
+        return sum(ram.size for ram in self.components if isinstance(ram, RamModule))
+
+    @property
+    def data_storage_size(self) -> int:
+        """The total of data storage the computer has."""
+        return sum(ds.size for ds in self.components if isinstance(ds, DataStorage))
+
+    @property
+    def processor_model(self) -> str:
+        """The model of one of the processors of the computer."""
+        return next(p.model for p in self.components if isinstance(p, Processor))
+
+    @property
+    def graphic_card_model(self) -> str:
+        """The model of one of the graphic cards of the computer."""
+        return next(p.model for p in self.components if isinstance(p, GraphicCard))
+
+    @property
+    def network_speeds(self) -> List[int]:
+        """Returns two speeds: the first for the eth and the
+        second for the wifi networks, or 0 respectively if not found.
+        """
+        speeds = [0, 0]
+        for net in (c for c in self.components if isinstance(c, NetworkAdapter)):
+            speeds[net.wireless] = max(net.speed or 0, speeds[net.wireless])
+        return speeds
+
+    def __format__(self, format_spec):
+        if not format_spec:
+            return super().__format__(format_spec)
+        v = ''
+        if 't' in format_spec:
+            v += '{0.chassis} {0.model}'.format(self)
+        elif 's' in format_spec:
+            v += '({0.manufacturer}) S/N {0.serial_number}'.format(self)
+        return v
 
 
 class Desktop(Computer):
@@ -260,6 +318,12 @@ class DataStorage(JoinedComponentTableMixin, Component):
     """
     interface = Column(DBEnum(DataStorageInterface))
 
+    def __format__(self, format_spec):
+        v = super().__format__(format_spec)
+        if 's' in format_spec:
+            v += ' – {} GB'.format(self.size // 1000)
+        return v
+
 
 class HardDrive(DataStorage):
     pass
@@ -289,6 +353,12 @@ class NetworkMixin:
     wireless.comment = """
         Whether it is a wireless interface.
     """
+
+    def __format__(self, format_spec):
+        v = super().__format__(format_spec)
+        if 's' in format_spec:
+            v += ' – {} Mbps'.format(self.speed)
+        return v
 
 
 class NetworkAdapter(JoinedComponentTableMixin, NetworkMixin, Component):

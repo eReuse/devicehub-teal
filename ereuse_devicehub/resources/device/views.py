@@ -1,9 +1,13 @@
+import datetime
+
 import marshmallow
-from flask import current_app as app
+from flask import current_app as app, render_template, request
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
+from teal.cache import cache
 from teal.resource import View
 
+from ereuse_devicehub import auth
 from ereuse_devicehub.resources.device.models import Device, Manufacturer
 
 
@@ -27,9 +31,21 @@ class DeviceView(View):
 
     def one(self, id: int):
         """Gets one device."""
+        if not request.authorization:
+            return self.one_public(id)
+        else:
+            return self.one_private(id)
+
+    def one_public(self, id: int):
+        device = Device.query.filter_by(id=id).one()
+        return render_template('devices/layout.html', device=device)
+
+    @auth.Auth.requires_auth
+    def one_private(self, id: int):
         device = Device.query.filter_by(id=id).one()
         return self.schema.jsonify(device)
 
+    @auth.Auth.requires_auth
     def find(self, args: dict):
         """Gets many devices."""
         return self.schema.jsonify(Device.query, many=True)
@@ -41,6 +57,7 @@ class ManufacturerView(View):
                                       # Disallow like operators
                                       validate=lambda x: '%' not in x and '_' not in x)
 
+    @cache(datetime.timedelta(days=1))
     def find(self, args: dict):
         name = args['name']
         manufacturers = Manufacturer.query \

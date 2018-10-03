@@ -1,3 +1,5 @@
+from typing import Callable, Iterable, Tuple
+
 from teal.resource import Converters, Resource
 
 from ereuse_devicehub.resources.device import schemas
@@ -9,7 +11,19 @@ class DeviceDef(Resource):
     SCHEMA = schemas.Device
     VIEW = DeviceView
     ID_CONVERTER = Converters.int
-    AUTH = True
+    AUTH = False  # We manage this at each view
+
+    def __init__(self, app,
+                 import_name=__name__, static_folder=None,
+                 static_url_path=None,
+                 template_folder='templates',
+                 url_prefix=None,
+                 subdomain=None,
+                 url_defaults=None,
+                 root_path=None,
+                 cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
 
 
 class ComputerDef(DeviceDef):

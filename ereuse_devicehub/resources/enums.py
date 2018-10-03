@@ -166,11 +166,17 @@ class RamInterface(Enum):
     DDR5 = 'DDR5 SDRAM'
     DDR6 = 'DDR6 SDRAM'
 
+    def __str__(self):
+        return self.value
+
 
 @unique
 class RamFormat(Enum):
     DIMM = 'DIMM'
     SODIMM = 'SODIMM'
+
+    def __str__(self):
+        return self.value
 
 
 @unique
@@ -178,6 +184,9 @@ class DataStorageInterface(Enum):
     ATA = 'ATA'
     USB = 'USB'
     PCI = 'PCI'
+
+    def __str__(self):
+        return self.value
 
 
 @unique
@@ -190,15 +199,18 @@ class DisplayTech(Enum):
     OLED = 'Organic light-emitting diode (OLED)'
     AMOLED = 'Organic light-emitting diode (AMOLED)'
 
+    def __str__(self):
+        return self.name
+
 
 @unique
 class ComputerChassis(Enum):
     """The chassis of a computer."""
     Tower = 'Tower'
     Docking = 'Docking'
-    AllInOne = 'AllInOne'
+    AllInOne = 'All in one'
     Microtower = 'Microtower'
-    PizzaBox = 'PizzaBox'
+    PizzaBox = 'Pizza box'
     Lunchbox = 'Lunchbox'
     Stick = 'Stick'
     Netbook = 'Netbook'
@@ -207,7 +219,10 @@ class ComputerChassis(Enum):
     Convertible = 'Convertible'
     Detachable = 'Detachable'
     Tablet = 'Tablet'
-    Virtual = 'Virtual: A device with no chassis, probably non-physical.'
+    Virtual = 'Non-physical device'
+
+    def __format__(self, format_spec):
+        return self.value.lower()
 
 
 class ReceiverRole(Enum):
