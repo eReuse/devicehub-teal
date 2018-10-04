@@ -38,7 +38,7 @@ setup(
         'click',
         'click-spinner',
         'ereuse-rate==0.0.2',
-        'ereuse-utils[Naming]>=0.4b1',
+        'ereuse-utils[Naming]>=0.4b8',
         'hashids',
         'marshmallow_enum',
         'psycopg2-binary',
