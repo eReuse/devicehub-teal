@@ -241,7 +241,7 @@ class Mobile(Device):
 
     @validates('imei')
     def validate_imei(self, _, value: int):
-        if not imei.is_valid(value):
+        if not imei.is_valid(str(value)):
             raise ValidationError('{} is not a valid imei.'.format(value))
 
     @validates('meid')

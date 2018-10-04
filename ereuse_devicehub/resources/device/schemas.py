@@ -104,13 +104,18 @@ class TelevisionSet(Monitor):
 
 
 class Mobile(Device):
-    imei = Integer(validate=lambda x: imei.validate(str(x)),
-                   description=m.Mobile.imei.comment)
-    meid = Str(validate=meid.validate, description=m.Mobile.meid.comment)
+    imei = Integer(description=m.Mobile.imei.comment)
+    meid = Str(description=m.Mobile.meid.comment)
 
-    @post_load
-    def convert_meid(self, data: dict):
-        if 'meid' in data:
+    @pre_load
+    def convert_check_imei(self, data):
+        if data.get('imei', None):
+            data['imei'] = int(imei.validate(data['imei']))
+        return data
+
+    @pre_load
+    def convert_check_meid(self, data: dict):
+        if data.get('meid', None):
             data['meid'] = meid.compact(data['meid'])
 
 

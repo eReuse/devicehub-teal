@@ -7,7 +7,7 @@ from teal.resource import Converters, Resource
 from teal.teal import Teal
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device import DeviceDef
+from ereuse_devicehub.resources.device.definitions import DeviceDef
 from ereuse_devicehub.resources.tag import schema
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.tag.view import TagDeviceView, TagView, get_device_from_tag

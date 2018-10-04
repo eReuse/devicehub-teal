@@ -1,0 +1,14 @@
+type: Snapshot
+software: Web
+version: '1.0'
+device:
+  type: Smartphone
+  manufacturer: Apple
+  model: A1586
+  serialNumber: ABCDEF
+  imei: 35686800-004141-20
+  events:
+  - type: AppRate
+    appearanceRange: A
+    functionalityRange: B
+    labelling: False

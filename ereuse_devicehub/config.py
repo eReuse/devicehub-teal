@@ -7,16 +7,16 @@ from teal.config import Config
 from teal.enums import Currency
 from teal.utils import import_resource
 
-from ereuse_devicehub.resources import agent, device, event, inventory, lot, tag, user
+from ereuse_devicehub.resources import agent, event, lot, tag, user
+from ereuse_devicehub.resources.device import definitions
 from ereuse_devicehub.resources.enums import PriceSoftware, RatingSoftware
 
 
 class DevicehubConfig(Config):
-    RESOURCE_DEFINITIONS = set(chain(import_resource(device),
+    RESOURCE_DEFINITIONS = set(chain(import_resource(definitions),
                                      import_resource(event),
                                      import_resource(user),
                                      import_resource(tag),
-                                     import_resource(inventory),
                                      import_resource(agent),
                                      import_resource(lot)))
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]

@@ -17,7 +17,6 @@ def test_api_docs(client: Client):
     docs, _ = client.get('/apidocs')
     assert set(docs['paths'].keys()) == {
         # todo this does not appear: '/tags/{id}/device',
-        '/inventories/',
         '/apidocs',
         '/users/',
         '/devices/',
@@ -40,4 +39,4 @@ def test_api_docs(client: Client):
         'scheme': 'basic',
         'name': 'Authorization'
     }
-    assert 78 == len(docs['definitions'])
+    assert 77 == len(docs['definitions'])

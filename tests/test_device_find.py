@@ -5,15 +5,15 @@ from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device.models import Desktop, Device, Laptop, SolidStateDrive
+from ereuse_devicehub.resources.device.views import Filters, Sorting
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.event.models import Snapshot
-from ereuse_devicehub.resources.inventory import Filters, Inventory, Sorting
 from tests import conftest
 from tests.conftest import file
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_inventory_filters():
+def test_device_filters():
     schema = Filters()
     q = schema.load({
         'type': ['Computer', 'Laptop'],
@@ -45,14 +45,14 @@ def test_inventory_filters():
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_inventory_sort():
+def test_device_sort():
     schema = Sorting()
     r = next(schema.load({'created': True}))
     assert str(r) == 'device.created ASC'
 
 
 @pytest.fixture()
-def inventory_query_dummy(app: Devicehub):
+def device_query_dummy(app: Devicehub):
     with app.app_context():
         devices = (  # The order matters ;-)
             Desktop(serial_number='s1',
@@ -75,72 +75,72 @@ def inventory_query_dummy(app: Devicehub):
         db.session.commit()
 
 
-@pytest.mark.usefixtures(inventory_query_dummy.__name__)
-def test_inventory_query_no_filters(user: UserClient):
-    i, _ = user.get(res=Inventory)
-    assert tuple(d['type'] for d in i['devices']) == (
-        'SolidStateDrive', 'Desktop', 'Laptop', 'Desktop'
+@pytest.mark.usefixtures(device_query_dummy.__name__)
+def test_device_query_no_filters(user: UserClient):
+    i, _ = user.get(res=Device)
+    assert tuple(d['type'] for d in i['items']) == (
+        'Desktop', 'Laptop', 'Desktop', 'SolidStateDrive'
     )
 
 
-@pytest.mark.usefixtures(inventory_query_dummy.__name__)
-def test_inventory_query_filter_type(user: UserClient):
-    i, _ = user.get(res=Inventory, query=[('filter', {'type': ['Desktop', 'Laptop']})])
-    assert tuple(d['type'] for d in i['devices']) == ('Desktop', 'Laptop', 'Desktop')
+@pytest.mark.usefixtures(device_query_dummy.__name__)
+def test_device_query_filter_type(user: UserClient):
+    i, _ = user.get(res=Device, query=[('filter', {'type': ['Desktop', 'Laptop']})])
+    assert tuple(d['type'] for d in i['items']) == ('Desktop', 'Laptop', 'Desktop')
 
 
-@pytest.mark.usefixtures(inventory_query_dummy.__name__)
-def test_inventory_query_filter_sort(user: UserClient):
-    i, _ = user.get(res=Inventory, query=[
+@pytest.mark.usefixtures(device_query_dummy.__name__)
+def test_device_query_filter_sort(user: UserClient):
+    i, _ = user.get(res=Device, query=[
         ('sort', {'created': Sorting.ASCENDING}),
         ('filter', {'type': ['Computer']})
     ])
-    assert tuple(d['type'] for d in i['devices']) == ('Desktop', 'Laptop', 'Desktop')
+    assert tuple(d['type'] for d in i['items']) == ('Desktop', 'Laptop', 'Desktop')
 
 
-def test_inventory_query(user: UserClient):
+def test_device_query(user: UserClient):
     """Checks result of inventory."""
     user.post(conftest.file('basic.snapshot'), res=Snapshot)
-    i, _ = user.get(res=Inventory)
-    pc = next(d for d in i['devices'] if d['type'] == 'Desktop')
+    i, _ = user.get(res=Device)
+    pc = next(d for d in i['items'] if d['type'] == 'Desktop')
     assert len(pc['events']) == 4
     assert len(pc['components']) == 3
     assert not pc['tags']
 
 
 @pytest.mark.xfail(reason='Functionality not yet developed.')
-def test_inventory_lots_query(user: UserClient):
+def test_device_lots_query(user: UserClient):
     pass
 
 
-def test_inventory_query_search(user: UserClient):
+def test_device_query_search(user: UserClient):
     # todo improve
     user.post(file('basic.snapshot'), res=Snapshot)
     user.post(file('computer-monitor.snapshot'), res=Snapshot)
     user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
-    i, _ = user.get(res=Inventory, query=[('search', 'desktop')])
-    assert i['devices'][0]['id'] == 1
-    i, _ = user.get(res=Inventory, query=[('search', 'intel')])
-    assert len(i['devices']) == 1
+    i, _ = user.get(res=Device, query=[('search', 'desktop')])
+    assert i['items'][0]['id'] == 1
+    i, _ = user.get(res=Device, query=[('search', 'intel')])
+    assert len(i['items']) == 1
 
 
 @pytest.mark.xfail(reason='No dictionary yet that knows asustek = asus')
-def test_inventory_query_search_synonyms_asus(user: UserClient):
+def test_device_query_search_synonyms_asus(user: UserClient):
     user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
-    i, _ = user.get(res=Inventory, query=[('search', 'asustek')])
-    assert len(i['devices']) == 1
-    i, _ = user.get(res=Inventory, query=[('search', 'asus')])
-    assert len(i['devices']) == 1
+    i, _ = user.get(res=Device, query=[('search', 'asustek')])
+    assert len(i['items']) == 1
+    i, _ = user.get(res=Device, query=[('search', 'asus')])
+    assert len(i['items']) == 1
 
 
 @pytest.mark.xfail(reason='No dictionary yet that knows hp = hewlett packard')
-def test_inventory_query_search_synonyms_intel(user: UserClient):
+def test_device_query_search_synonyms_intel(user: UserClient):
     s = file('real-hp.snapshot.11')
     s['device']['model'] = 'foo'  # The model had the word 'HP' in it
     user.post(s, res=Snapshot)
-    i, _ = user.get(res=Inventory, query=[('search', 'hewlett packard')])
-    assert len(i['devices']) == 1
-    i, _ = user.get(res=Inventory, query=[('search', 'hewlett')])
-    assert len(i['devices']) == 1
-    i, _ = user.get(res=Inventory, query=[('search', 'hp')])
-    assert len(i['devices']) == 1
+    i, _ = user.get(res=Device, query=[('search', 'hewlett packard')])
+    assert len(i['items']) == 1
+    i, _ = user.get(res=Device, query=[('search', 'hewlett')])
+    assert len(i['items']) == 1
+    i, _ = user.get(res=Device, query=[('search', 'hp')])
+    assert len(i['items']) == 1

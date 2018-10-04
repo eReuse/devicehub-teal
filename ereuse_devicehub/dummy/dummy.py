@@ -10,8 +10,8 @@ import yaml
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Person
+from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.event import models as m
-from ereuse_devicehub.resources.inventory import Inventory
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
@@ -102,14 +102,13 @@ class Dummy:
         assert len(lot['devices'])
 
         # Keep this at the bottom
-        inventory, _ = user.get(res=Inventory)
-        assert len(inventory['devices'])
-        assert len(inventory['lots'])
+        inventory, _ = user.get(res=Device)
+        assert len(inventory['items'])
 
-        i, _ = user.get(res=Inventory, query=[('search', 'intel')])
-        assert len(i['devices']) == 10
-        i, _ = user.get(res=Inventory, query=[('search', 'pc')])
-        assert len(i['devices']) == 11
+        i, _ = user.get(res=Device, query=[('search', 'intel')])
+        assert len(i['items']) == 10
+        i, _ = user.get(res=Device, query=[('search', 'pc')])
+        assert len(i['items']) == 11
         print('⭐ Done.')
 
     def user_client(self, email: str, password: str):

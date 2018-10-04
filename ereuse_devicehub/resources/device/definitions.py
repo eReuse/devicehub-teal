@@ -1,0 +1,146 @@
+from typing import Callable, Iterable, Tuple
+
+from teal.resource import Converters, Resource
+
+from ereuse_devicehub.resources.device import schemas
+from ereuse_devicehub.resources.device.models import Manufacturer
+from ereuse_devicehub.resources.device.views import DeviceView, ManufacturerView
+
+
+class DeviceDef(Resource):
+    SCHEMA = schemas.Device
+    VIEW = DeviceView
+    ID_CONVERTER = Converters.int
+    AUTH = False  # We manage this at each view
+
+    def __init__(self, app,
+                 import_name=__name__, static_folder=None,
+                 static_url_path=None,
+                 template_folder='templates',
+                 url_prefix=None,
+                 subdomain=None,
+                 url_defaults=None,
+                 root_path=None,
+                 cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
+
+class ComputerDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Computer
+
+
+class DesktopDef(ComputerDef):
+    VIEW = None
+    SCHEMA = schemas.Desktop
+
+
+class LaptopDef(ComputerDef):
+    VIEW = None
+    SCHEMA = schemas.Laptop
+
+
+class ServerDef(ComputerDef):
+    VIEW = None
+    SCHEMA = schemas.Server
+
+
+class MonitorDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Monitor
+
+
+class ComputerMonitorDef(MonitorDef):
+    VIEW = None
+    SCHEMA = schemas.ComputerMonitor
+
+
+class TelevisionSetDef(MonitorDef):
+    VIEW = None
+    SCHEMA = schemas.TelevisionSet
+
+
+class MobileDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Mobile
+
+
+class SmartphoneDef(MobileDef):
+    VIEW = None
+    SCHEMA = schemas.Smartphone
+
+
+class TabletDef(MobileDef):
+    VIEW = None
+    SCHEMA = schemas.Tablet
+
+
+class CellphoneDef(MobileDef):
+    VIEW = None
+    SCHEMA = schemas.Cellphone
+
+
+class ComponentDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Component
+
+
+class GraphicCardDef(ComponentDef):
+    VIEW = None
+    SCHEMA = schemas.GraphicCard
+
+
+class DataStorageDef(ComponentDef):
+    VIEW = None
+    SCHEMA = schemas.DataStorage
+
+
+class HardDriveDef(DataStorageDef):
+    VIEW = None
+    SCHEMA = schemas.HardDrive
+
+
+class SolidStateDriveDef(DataStorageDef):
+    VIEW = None
+    SCHEMA = schemas.SolidStateDrive
+
+
+class MotherboardDef(ComponentDef):
+    VIEW = None
+    SCHEMA = schemas.Motherboard
+
+
+class NetworkAdapterDef(ComponentDef):
+    VIEW = None
+    SCHEMA = schemas.NetworkAdapter
+
+
+class RamModuleDef(ComponentDef):
+    VIEW = None
+    SCHEMA = schemas.RamModule
+
+
+class ProcessorDef(ComponentDef):
+    VIEW = None
+    SCHEMA = schemas.Processor
+
+
+class SoundCardDef(ComponentDef):
+    VIEW = None
+    SCHEMA = schemas.SoundCard
+
+
+class DisplayDef(ComponentDef):
+    VIEW = None
+    SCHEMA = schemas.Display
+
+
+class ManufacturerDef(Resource):
+    VIEW = ManufacturerView
+    SCHEMA = schemas.Manufacturer
+    AUTH = True
+
+    def init_db(self, db: 'db.SQLAlchemy'):
+        """Loads the manufacturers to the database."""
+        Manufacturer.add_all_to_session(db.session)

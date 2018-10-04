@@ -24,7 +24,6 @@ from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, Mismatch
 from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.event.models import Remove, Test
-from ereuse_devicehub.resources.inventory import Inventory
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
 from tests import conftest
@@ -423,8 +422,8 @@ def test_get_devices(app: Devicehub, user: UserClient):
         db.session.add_all((pc, pc1, pc2))
         db.session.commit()
     devices, _ = user.get(res=Device)
-    assert tuple(d['id'] for d in devices) == (1, 2, 3, 4, 5)
-    assert tuple(d['type'] for d in devices) == (
+    assert tuple(d['id'] for d in devices['items']) == (1, 2, 3, 4, 5)
+    assert tuple(d['type'] for d in devices['items']) == (
         'Desktop', 'Desktop', 'Laptop', 'NetworkAdapter', 'GraphicCard'
     )
 
@@ -463,12 +462,12 @@ def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClie
     with app.app_context():
         app.db.session.execute('TRUNCATE TABLE {}'.format(DeviceSearch.__table__.name))
         app.db.session.commit()
-    i, _ = user.get(res=Inventory, query=[('search', 'Desktop')])
-    assert not len(i['devices'])
+    i, _ = user.get(res=Device, query=[('search', 'Desktop')])
+    assert not len(i['items'])
     with app.app_context():
         DeviceSearch.set_all_devices_tokens_if_empty(app.db.session)
-    i, _ = user.get(res=Inventory, query=[('search', 'Desktop')])
-    assert not len(i['devices'])
+    i, _ = user.get(res=Device, query=[('search', 'Desktop')])
+    assert not len(i['items'])
 
 
 def test_manufacturer(user: UserClient):

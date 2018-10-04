@@ -328,6 +328,11 @@ def test_snapshot_computer_monitor(user: UserClient):
     snapshot_and_check(user, s, event_types=('AppRate',))
 
 
+def test_snapshot_mobile_smartphone(user: UserClient):
+    s = file('smartphone.snapshot')
+    snapshot_and_check(user, s, event_types=('AppRate',))
+
+
 def test_snapshot_components_none():
     """
     Tests that a snapshot without components does not
