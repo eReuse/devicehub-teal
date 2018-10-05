@@ -113,7 +113,7 @@ class DeviceView(View):
             'pagination': {
                 'page': devices.page,
                 'perPage': devices.per_page,
-                'total': devices.total
+                'total': devices.total,
             }
         }
         return jsonify(ret)

@@ -20,7 +20,8 @@ class OrganizationDef(AgentDef):
     SCHEMA = schemas.Organization
     VIEW = None
 
-    def __init__(self, app, import_name=__name__.split('.')[0], static_folder=None, static_url_path=None,
+    def __init__(self, app, import_name=__name__.split('.')[0], static_folder=None,
+                 static_url_path=None,
                  template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
                  root_path=None):
         cli_commands = ((self.create_org, 'create-org'),)
@@ -28,8 +29,8 @@ class OrganizationDef(AgentDef):
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
 
     @click.argument('name')
-    @click.argument('tax_id')
-    @click.argument('country')
+    @click.option('--tax_id', '-t')
+    @click.option('--country', '-c')
     def create_org(self, name: str, tax_id: str = None, country: str = None) -> dict:
         """Creates an organization."""
         org = models.Organization(**self.schema.load(

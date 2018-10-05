@@ -29,14 +29,13 @@ class Dummy:
         ('A0000000000002', 'DT-BBBBB'),
     )
     """eTags to create."""
-    ORG = 'eReuse.org CAT', 'G-60437761', 'ES'
+    ORG = 'eReuse.org CAT', '-t', 'G-60437761', '-c', 'ES'
     """An organization to create."""
 
     def __init__(self, app) -> None:
         super().__init__()
         self.app = app
-        self.app.cli.command('dummy',
-                             short_help='Creates dummy devices and users.')(self.run)
+        self.app.cli.command('dummy', short_help='Creates dummy devices and users.')(self.run)
 
     @click.confirmation_option(prompt='This command (re)creates the DB from scratch.'
                                       'Do you want to continue?')

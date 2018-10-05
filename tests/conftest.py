@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from psycopg2 import IntegrityError
 from sqlalchemy.exc import ProgrammingError
 
 from ereuse_devicehub.client import Client, UserClient
@@ -31,12 +32,12 @@ class TestConfig(DevicehubConfig):
     ORGANIZATION_TAX_ID = 'foo-org-id'
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def config():
     return TestConfig()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def _app(config: TestConfig) -> Devicehub:
     return Devicehub(config=config, db=db)
 
@@ -52,7 +53,7 @@ def app(request, _app: Devicehub) -> Devicehub:
         try:
             with redirect_stdout(io.StringIO()):
                 _app.init_db()
-        except ProgrammingError:
+        except (ProgrammingError, IntegrityError):
             print('Database was not correctly emptied. Re-empty and re-installing...')
             _drop()
             _app.init_db()
