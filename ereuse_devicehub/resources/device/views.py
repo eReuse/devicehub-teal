@@ -114,7 +114,10 @@ class DeviceView(View):
                 'page': devices.page,
                 'perPage': devices.per_page,
                 'total': devices.total,
-            }
+                'previous': devices.prev_num,
+                'next': devices.next_num
+            },
+            'url': request.path
         }
         return jsonify(ret)
 

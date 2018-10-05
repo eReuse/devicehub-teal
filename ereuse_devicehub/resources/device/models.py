@@ -5,6 +5,7 @@ from itertools import chain
 from operator import attrgetter
 from typing import Dict, List, Set
 
+from boltons import urlutils
 from citext import CIText
 from ereuse_utils.naming import Naming
 from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
@@ -17,6 +18,7 @@ from stdnum import imei, meid
 from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, URL, check_lower, \
     check_range
 from teal.marshmallow import ValidationError
+from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
@@ -56,9 +58,7 @@ class Device(Thing):
     """
     depth = Column(Float(decimal_return_scale=3), check_range('depth', 0.1, 3))
     color = Column(ColorType)
-    color.comment = """
-    
-    """
+    color.comment = """The predominant color of the device."""
 
     @property
     def events(self) -> list:
@@ -92,6 +92,11 @@ class Device(Thing):
                 if isinstance(c, ColumnProperty)
                 and not getattr(c, 'foreign_keys', None)
                 and c.key not in {'id', 'type', 'created', 'updated', 'parent_id', 'hid'}}
+
+    @property
+    def url(self) -> urlutils.URL:
+        """The URL where to GET this device."""
+        return urlutils.URL(url_for_resource(Device, item_id=self.id))
 
     @declared_attr
     def __mapper_args__(cls):

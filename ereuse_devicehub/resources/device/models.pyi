@@ -1,5 +1,6 @@
 from typing import Dict, List, Set
 
+from boltons import urlutils
 from boltons.urlutils import URL
 from colour import Color
 from sqlalchemy import Column, Integer
@@ -51,6 +52,9 @@ class Device(Thing):
         self.tags = ...  # type: Set[Tag]
         self.lots = ...  # type: Set[Lot]
 
+    @property
+    def url(self) -> urlutils.URL:
+        pass
 
 class DisplayMixin:
     technology = ...  # type: Column

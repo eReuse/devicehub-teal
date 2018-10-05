@@ -102,6 +102,8 @@ def test_device_query(user: UserClient):
     """Checks result of inventory."""
     user.post(conftest.file('basic.snapshot'), res=Snapshot)
     i, _ = user.get(res=Device)
+    assert i['url'] == '/devices/'
+    assert i['items'][0]['url'] == '/devices/1'
     pc = next(d for d in i['items'] if d['type'] == 'Desktop')
     assert len(pc['events']) == 4
     assert len(pc['components']) == 3

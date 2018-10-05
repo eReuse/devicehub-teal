@@ -5,6 +5,7 @@ from distutils.version import StrictVersion
 from typing import Dict, List, Set, Union
 from uuid import UUID
 
+from boltons import urlutils
 from boltons.urlutils import URL
 from sqlalchemy import Column
 from sqlalchemy.orm import relationship
@@ -62,6 +63,9 @@ class Event(Thing):
         self.agent = ...  # type: Agent
         self.author = ...  # type: User
 
+    @property
+    def url(self) -> urlutils.URL:
+        pass
 
 class EventWithOneDevice(Event):
 

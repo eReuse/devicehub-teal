@@ -30,6 +30,7 @@ class TestConfig(DevicehubConfig):
     TESTING = True
     ORGANIZATION_NAME = 'FooOrg'
     ORGANIZATION_TAX_ID = 'foo-org-id'
+    SERVER_NAME = 'localhost'
 
 
 @pytest.fixture(scope='session')

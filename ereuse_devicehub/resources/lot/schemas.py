@@ -1,5 +1,5 @@
 from marshmallow import fields as f
-from teal.marshmallow import SanitizedStr
+from teal.marshmallow import SanitizedStr, URL
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device.schemas import Device
@@ -15,3 +15,4 @@ class Lot(Thing):
     devices = NestedOn(Device, many=True, dump_only=True)
     children = NestedOn('Lot', many=True, dump_only=True)
     parents = NestedOn('Lot', many=True, dump_only=True)
+    url = URL(dump_only=True, description=m.Lot.url.__doc__)

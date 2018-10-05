@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 
+from boltons import urlutils
 from citext import CIText
 from flask import g
 from sqlalchemy import TEXT
@@ -9,6 +10,7 @@ from sqlalchemy.sql import expression as exp
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
 from teal.db import UUIDLtree
+from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
@@ -60,6 +62,11 @@ class Lot(Thing):
         else:
             assert isinstance(child, uuid.UUID)
             Path.delete(self.id, child)
+
+    @property
+    def url(self) -> urlutils.URL:
+        """The URL where to GET this event."""
+        return urlutils.URL(url_for_resource(Lot, item_id=self.id))
 
     @property
     def children(self):

@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Iterable, Set, Union
 from uuid import UUID
 
+from boltons import urlutils
 from sqlalchemy import Column
 from sqlalchemy.orm import Query, relationship
 from sqlalchemy_utils import Ltree
@@ -46,6 +47,9 @@ class Lot(Thing):
     def parents(self) -> LotQuery:
         pass
 
+    @property
+    def url(self) -> urlutils.URL:
+        pass
 
 class Path:
     id = ...  # type: Column

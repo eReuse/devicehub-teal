@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Set, Union
 from uuid import uuid4
 
+from boltons import urlutils
 from citext import CIText
 from flask import current_app as app, g
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
@@ -17,6 +18,7 @@ from teal.db import ArrayOfEnum, CASCADE, CASCADE_OWN, INHERIT_COND, IP, POLYMOR
     POLYMORPHIC_ON, StrictVersionType, URL, check_lower, check_range
 from teal.enums import Country, Currency, Subdivision
 from teal.marshmallow import ValidationError
+from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Agent
@@ -162,6 +164,11 @@ class Event(Thing):
     For example: for a ``EraseBasic`` performed on a data storage, this
     would point to the computer that contained this data storage, if any.
     """
+
+    @property
+    def url(self) -> urlutils.URL:
+        """The URL where to GET this event."""
+        return urlutils.URL(url_for_resource(Event, item_id=self.id))
 
     # noinspection PyMethodParameters
     @declared_attr

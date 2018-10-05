@@ -1,7 +1,8 @@
 from enum import Enum
 
 from marshmallow import post_load
-from marshmallow.fields import DateTime, List, String, URL
+from marshmallow.fields import DateTime, List, String
+from teal.marshmallow import URL
 from teal.resource import Schema
 
 from ereuse_devicehub.resources import models as m
@@ -20,7 +21,6 @@ class UnitCodes(Enum):
 
 class Thing(Schema):
     type = String(description='Only required when it is nested.')
-    url = URL(dump_only=True, description='The URL of the resource.')
     same_as = List(URL(dump_only=True), dump_only=True, data_key='sameAs')
     updated = DateTime('iso', dump_only=True, description=m.Thing.updated.comment.strip())
     created = DateTime('iso', dump_only=True, description=m.Thing.created.comment.strip())

@@ -3,11 +3,11 @@ import decimal
 from flask import current_app as app
 from marshmallow import Schema as MarshmallowSchema, ValidationError, validates_schema
 from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, List, Nested, String, \
-    TimeDelta, URL, UUID
+    TimeDelta, UUID
 from marshmallow.validate import Length, Range
 from sqlalchemy.util import OrderedSet
 from teal.enums import Country, Currency, Subdivision
-from teal.marshmallow import EnumField, IP, SanitizedStr, Version
+from teal.marshmallow import EnumField, IP, SanitizedStr, Version, URL
 from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
@@ -38,6 +38,7 @@ class Event(Thing):
     author = NestedOn(User, dump_only=True, exclude=('token',))
     components = NestedOn(Component, dump_only=True, many=True)
     parent = NestedOn(Computer, dump_only=True, description=m.Event.parent_id.comment)
+    url = URL(dump_only=True, description=m.Event.url.__doc__)
 
 
 class EventWithOneDevice(Event):
