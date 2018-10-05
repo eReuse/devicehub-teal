@@ -1,13 +1,14 @@
 import uuid
-from typing import Set
+from collections import deque
+from typing import List, Set
 
 import marshmallow as ma
-from flask import request
+from flask import jsonify, request
 from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.lot.models import Lot, Path
 
 
 class LotView(View):
@@ -24,6 +25,49 @@ class LotView(View):
         """Gets one event."""
         lot = Lot.query.filter_by(id=id).one()  # type: Lot
         return self.schema.jsonify(lot)
+
+    def find(self, args: dict):
+        """Returns all lots as required for DevicehubClient::
+
+            [
+                {title: 'lot1',
+                nodes: [{title: 'child1', nodes:[]}]
+            ]
+        """
+        nodes = []
+        for model in Path.query:  # type: Path
+            path = deque(model.path.path.split('.'))
+            self._p(nodes, path)
+        return jsonify({
+            'items': nodes,
+            'url': request.path
+        })
+
+    def _p(self, nodes: List[dict], path: deque):
+        """Recursively creates the nested lot structure.
+
+        Every recursive step consumes path (a deque of lot_id),
+        trying to find it as the value of id in nodes, otherwise
+        it adds itself. Then moves to the node's children.
+        """
+        lot_id = uuid.UUID(path.popleft().replace('_', '-'))
+        try:
+            # does lot_id exist already in node?
+            node = next(part for part in nodes if lot_id == part['id'])
+        except StopIteration:
+            lot = Lot.query.filter_by(id=lot_id).one()
+            node = {
+                'id': lot_id,
+                'title': lot.name,
+                'url': lot.url.to_text(),
+                'closed': lot.closed,
+                'updated': lot.updated,
+                'created': lot.created,
+                'nodes': []
+            }
+            nodes.append(node)
+        if path:
+            self._p(node['nodes'], path)
 
 
 class LotBaseChildrenView(View):

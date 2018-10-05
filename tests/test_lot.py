@@ -122,7 +122,7 @@ def test_lot_multiple_parents():
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
-def test_lot_unite_graphs():
+def test_lot_unite_graphs_and_find():
     """Adds and removes children uniting already existing graphs.
 
     1  3
@@ -220,7 +220,12 @@ def test_post_add_children_view(user: UserClient):
     assert parent['children'][0]['id'] == child['id']
     child, _ = user.get(res=Lot, item=child['id'])
     assert child['parents'][0]['id'] == parent['id']
-    return child['id']
+
+    lots = user.get(res=Lot)[0]['items']
+    assert len(lots) == 1
+    assert lots[0]['title'] == 'Parent'
+    assert len(lots[0]['nodes']) == 1
+    assert lots[0]['nodes'][0]['title'] == 'Child'
 
 
 def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
