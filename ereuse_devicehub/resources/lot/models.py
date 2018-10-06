@@ -78,13 +78,26 @@ class Lot(Thing):
             .filter(Path.path.lquery(exp.cast('*.{}.*{{1}}'.format(id), LQUERY)))
 
     @property
+    def descendants(self):
+        return self.descendantsq(self.id)
+
+    @classmethod
+    def descendantsq(cls, id):
+        _id = UUIDLtree.convert(id)
+        return (cls.id == Path.lot_id) & Path.path.lquery(exp.cast('*.{}.*'.format(_id), LQUERY))
+
+    @property
     def parents(self):
+        return self.parentsq(self.id)
+
+    @classmethod
+    def parentsq(cls, id: UUID):
         """The parent lots."""
-        id = UUIDLtree.convert(self.id)
+        id = UUIDLtree.convert(id)
         i = db.func.index(Path.path, id)
         parent_id = db.func.replace(exp.cast(db.func.subpath(Path.path, i - 1, i), TEXT), '_', '-')
         join_clause = parent_id == exp.cast(Lot.id, TEXT)
-        return self.query.join(Path, join_clause).filter(
+        return cls.query.join(Path, join_clause).filter(
             Path.path.lquery(exp.cast('*{{1}}.{}.*'.format(id), LQUERY))
         )
 

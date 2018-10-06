@@ -4,7 +4,8 @@ import marshmallow
 from flask import current_app as app, render_template, request
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
-from marshmallow import fields as f, validate as v
+from marshmallow import fields, fields as f, validate as v
+from sqlalchemy.orm import aliased
 from teal import query
 from teal.cache import cache
 from teal.resource import View
@@ -12,9 +13,10 @@ from teal.resource import View
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources import search
-from ereuse_devicehub.resources.device.models import Device, Manufacturer
+from ereuse_devicehub.resources.device.models import Component, Computer, Device, Manufacturer
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.event.models import Rate
+from ereuse_devicehub.resources.lot.models import Lot, LotDevice
 from ereuse_devicehub.resources.tag.model import Tag
 
 
@@ -39,16 +41,28 @@ class TagQ(query.Query):
     org = query.ILike(Tag.org)
 
 
+class LotQ(query.Query):
+    id = query.Or(query.QueryField(Lot.descendantsq, fields.UUID()))
+
+
 class Filters(query.Query):
+    _parent = aliased(Computer)
+    _device_inside_lot = (Device.id == LotDevice.device_id) & (Lot.id == LotDevice.lot_id)
+    _component_inside_lot_through_parent = (Device.id == Component.id) \
+                                           & (Component.parent_id == _parent.id) \
+                                           & (_parent.id == LotDevice.device_id)
+
     type = query.Or(OfType(Device.type))
     model = query.ILike(Device.model)
     manufacturer = query.ILike(Device.manufacturer)
     serialNumber = query.ILike(Device.serial_number)
     rating = query.Join(Device.id == Rate.device_id, RateQ)
-    tag = query.Join(Device.id == Tag.id, TagQ)
+    tag = query.Join(Device.id == Tag.device_id, TagQ)
+    lot = query.Join(_device_inside_lot | _component_inside_lot_through_parent, LotQ)
 
 
 class Sorting(query.Sort):
+    id = query.SortField(Device.id)
     created = query.SortField(Device.created)
 
 

@@ -8,6 +8,7 @@ from ereuse_devicehub.resources.device.models import Desktop, Device, Laptop, So
 from ereuse_devicehub.resources.device.views import Filters, Sorting
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.event.models import Snapshot
+from ereuse_devicehub.resources.lot.models import Lot
 from tests import conftest
 from tests.conftest import file
 
@@ -96,6 +97,50 @@ def test_device_query_filter_sort(user: UserClient):
         ('filter', {'type': ['Computer']})
     ])
     assert tuple(d['type'] for d in i['items']) == ('Desktop', 'Laptop', 'Desktop')
+
+
+@pytest.mark.usefixtures(device_query_dummy.__name__)
+def test_device_query_filter_lots(user: UserClient):
+    parent, _ = user.post({'name': 'Parent'}, res=Lot)
+    child, _ = user.post({'name': 'Child'}, res=Lot)
+    parent, _ = user.post({},
+                          res=Lot,
+                          item='{}/children'.format(parent['id']),
+                          query=[('id', child['id'])])
+    i, _ = user.get(res=Device, query=[
+        ('filter', {'type': ['Computer']})
+    ])
+    lot, _ = user.post({},
+                       res=Lot,
+                       item='{}/devices'.format(parent['id']),
+                       query=[('id', d['id']) for d in i['items'][:-1]])
+    lot, _ = user.post({},
+                       res=Lot,
+                       item='{}/devices'.format(child['id']),
+                       query=[('id', i['items'][-1]['id'])])
+    i, _ = user.get(res=Device, query=[
+        ('filter', {'lot': {'id': [parent['id']]}}),
+        ('sort', {'id': Sorting.ASCENDING})
+    ])
+    assert len(i['items']) == 4
+    assert tuple(x['id'] for x in i['items']) == (1, 2, 3, 4), \
+        'The parent lot contains 2 items plus indirectly the third one, and 1st device the HDD.'
+
+    s, _ = user.get(res=Device, query=[
+        ('filter', {'lot': {'id': [child['id']]}})
+    ])
+    assert s['items'][0]['chassis'] == 'Microtower', 'The child lot only contains the last device.'
+    s, _ = user.get(res=Device, query=[
+        ('filter', {'lot': {'id': [child['id'], parent['id']]}})
+    ])
+    assert all(x['id'] == id for x, id in zip(i['items'], (1, 2, 3, 4))), \
+        'Adding both lots is redundant in this case and we have the 4 elements.'
+    i, _ = user.get(res=Device, query=[
+        ('filter', {'lot': {'id': [parent['id']]}, 'type': ['Computer']}),
+        ('sort', {'id': Sorting.ASCENDING})
+    ])
+    assert len(i['items']) == 3
+    assert tuple(x['id'] for x in i['items']) == (1, 2, 3), 'Only computers now'
 
 
 def test_device_query(user: UserClient):

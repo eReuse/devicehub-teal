@@ -44,12 +44,25 @@ class Lot(Thing):
         pass
 
     @property
+    def descendants(self) -> LotQuery:
+        pass
+
+    @classmethod
+    def descendantsq(cls, id) -> LotQuery:
+        pass
+
+    @property
     def parents(self) -> LotQuery:
+        pass
+
+    @classmethod
+    def parentsq(cls, id) -> LotQuery:
         pass
 
     @property
     def url(self) -> urlutils.URL:
         pass
+
 
 class Path:
     id = ...  # type: Column
