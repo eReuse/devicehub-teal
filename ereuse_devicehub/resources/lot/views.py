@@ -1,9 +1,13 @@
 import uuid
 from collections import deque
+from enum import Enum
 from typing import List, Set
 
 import marshmallow as ma
 from flask import jsonify, request
+from marshmallow import Schema as MarshmallowSchema, fields as f
+from teal import query
+from teal.marshmallow import EnumField
 from teal.resource import View
 
 from ereuse_devicehub.db import db
@@ -11,7 +15,23 @@ from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot, Path
 
 
+class Filters(query.Query):
+    name = query.ILike(Lot.name)
+
+
+class LotFormat(Enum):
+    UiTree = 'UiTree'
+
+
 class LotView(View):
+    class FindArgs(MarshmallowSchema):
+        """
+        Allowed arguments for the ``find``
+        method (GET collection) endpoint
+        """
+        format = EnumField(LotFormat, missing=None)
+        filter = f.Nested(Filters, missing=[])
+
     def post(self):
         l = request.get_json()
         lot = Lot(**l)
@@ -27,21 +47,46 @@ class LotView(View):
         return self.schema.jsonify(lot)
 
     def find(self, args: dict):
-        """Returns all lots as required for DevicehubClient::
+        """
+        Gets lots.
 
-            [
+        By passing the value `UiTree` in the parameter `format`
+        of the query you get a recursive nested suited for ui-tree::
+
+             [
                 {title: 'lot1',
                 nodes: [{title: 'child1', nodes:[]}]
             ]
+
+        Note that in this format filters are ignored.
+
+        Otherwise it just returns the standard flat view of lots that
+        you can filter.
         """
-        nodes = []
-        for model in Path.query:  # type: Path
-            path = deque(model.path.path.split('.'))
-            self._p(nodes, path)
-        return jsonify({
-            'items': nodes,
-            'url': request.path
-        })
+        if args['format'] == LotFormat.UiTree:
+            nodes = []
+            for model in Path.query:  # type: Path
+                path = deque(model.path.path.split('.'))
+                self._p(nodes, path)
+            return jsonify({
+                'items': nodes,
+                'url': request.path
+            })
+        else:
+            query = Lot.query.filter(*args['filter'])
+            lots = query.paginate(per_page=6)
+            ret = {
+                'items': self.schema.dump(lots.items, many=True, nested=0),
+                'pagination': {
+                    'page': lots.page,
+                    'perPage': lots.per_page,
+                    'total': lots.total,
+                    'previous': lots.prev_num,
+                    'next': lots.next_num
+                },
+                'url': request.path
+            }
+            return jsonify(ret)
 
     def _p(self, nodes: List[dict], path: deque):
         """Recursively creates the nested lot structure.

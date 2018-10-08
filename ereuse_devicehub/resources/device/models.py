@@ -9,7 +9,7 @@ from boltons import urlutils
 from citext import CIText
 from ereuse_utils.naming import Naming
 from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
-    Sequence, SmallInteger, Unicode, inspect
+    Sequence, SmallInteger, Unicode, inspect, text
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
@@ -401,7 +401,10 @@ class Manufacturer(db.Model):
     __table_args__ = {'schema': 'common'}
     CSV_DELIMITER = csv.get_dialect('excel').delimiter
 
-    name = db.Column(CIText(), primary_key=True)
+    name = db.Column(CIText(),
+                     primary_key=True,
+                     # from https://niallburkley.com/blog/index-columns-for-like-in-postgres/
+                     index=db.Index('name', text('name gin_trgm_ops'), postgresql_using='gin'))
     url = db.Column(URL(), unique=True)
     logo = db.Column(URL())
 

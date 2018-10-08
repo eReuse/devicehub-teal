@@ -4,7 +4,7 @@ from flask import g
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
-from ereuse_devicehub.resources.device.models import Desktop
+from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.lot.models import Lot, LotDevice
 from tests import conftest
@@ -23,6 +23,7 @@ In case of error, debug with:
 """
 
 
+@pytest.mark.xfail(reason='Components are not added to lots!')
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_device_relationship():
     device = Desktop(serial_number='foo',
@@ -40,6 +41,12 @@ def test_lot_device_relationship():
     assert lot_device.created
     assert lot_device.author_id == g.user.id
     assert device.lots == {lot}
+    assert device in lot
+
+    graphic = GraphicCard(serial_number='foo', model='bar')
+    device.components.add(graphic)
+    db.session.flush()
+    assert graphic in lot
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
@@ -209,8 +216,9 @@ def test_post_get_lot(user: UserClient):
     assert not l['children']
 
 
-def test_post_add_children_view(user: UserClient):
-    """Tests adding children lots to a lot through the view."""
+def test_post_add_children_view_ui_tree_normal(user: UserClient):
+    """Tests adding children lots to a lot through the view and
+    GETting the results."""
     parent, _ = user.post(({'name': 'Parent'}), res=Lot)
     child, _ = user.post(({'name': 'Child'}), res=Lot)
     parent, _ = user.post({},
@@ -221,16 +229,29 @@ def test_post_add_children_view(user: UserClient):
     child, _ = user.get(res=Lot, item=child['id'])
     assert child['parents'][0]['id'] == parent['id']
 
-    lots = user.get(res=Lot)[0]['items']
+    # Format UiTree
+    lots = user.get(res=Lot, query=[('format', 'UiTree')])[0]['items']
     assert len(lots) == 1
     assert lots[0]['name'] == 'Parent'
     assert len(lots[0]['nodes']) == 1
     assert lots[0]['nodes'][0]['name'] == 'Child'
 
+    # Normal list format
+    lots = user.get(res=Lot)[0]['items']
+    assert len(lots) == 2
+    assert lots[0]['name'] == 'Parent'
+    assert lots[1]['name'] == 'Child'
+
+    # List format with a filter
+    lots = user.get(res=Lot, query=[('filter', {'name': 'pa'})])[0]['items']
+    assert len(lots) == 1
+    assert lots[0]['name'] == 'Parent'
+
 
 def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
     """Tests adding a device to a lot using POST and
     removing it with DELETE."""
+    # todo check with components
     with app.app_context():
         device = Desktop(serial_number='foo',
                          model='bar',
@@ -244,7 +265,11 @@ def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
                        res=Lot,
                        item='{}/devices'.format(parent['id']),
                        query=[('id', device_id)])
-    assert lot['devices'][0]['id'] == device_id
+    assert lot['devices'][0]['id'] == device_id, 'Lot contains device'
+    device, _ = user.get(res=Device, item=device_id)
+    assert len(device['lots']) == 1
+    assert device['lots'][0]['id'] == lot['id'], 'Device is inside lot'
+
     # Remove the device
     lot, _ = user.delete(res=Lot,
                          item='{}/devices'.format(parent['id']),

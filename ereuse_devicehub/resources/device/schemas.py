@@ -30,6 +30,7 @@ class Device(Thing):
     events = NestedOn('Event', many=True, dump_only=True, description=m.Device.events.__doc__)
     events_one = NestedOn('Event', many=True, load_only=True, collection_class=OrderedSet)
     url = URL(dump_only=True, description=m.Device.url.__doc__)
+    lots = NestedOn('Lot', many=True, dump_only=True)
 
     @pre_load
     def from_events_to_events_one(self, data: dict):
