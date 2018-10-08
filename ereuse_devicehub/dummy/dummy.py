@@ -40,10 +40,10 @@ class Dummy:
     @click.confirmation_option(prompt='This command (re)creates the DB from scratch.'
                                       'Do you want to continue?')
     def run(self):
-        print('Preparing the database...'.ljust(30), end='')
         runner = self.app.test_cli_runner()
+        self.app.init_db(erase=True)
+        print('Creating stuff...'.ljust(30), end='')
         with click_spinner.spinner():
-            self.app.init_db(erase=True)
             out = runner.invoke(args=['create-org', *self.ORG], catch_exceptions=False).output
             org_id = json.loads(out)['id']
             user = self.user_client('user@dhub.com', '1234')

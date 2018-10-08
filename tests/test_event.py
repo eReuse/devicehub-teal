@@ -10,7 +10,7 @@ from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
-from ereuse_devicehub.resources.enums import ComputerChassis, TestHardDriveLength
+from ereuse_devicehub.resources.enums import ComputerChassis, TestDataStorageLength
 from ereuse_devicehub.resources.event import models
 from tests import conftest
 from tests.conftest import create_user, file
@@ -88,7 +88,7 @@ def test_test_data_storage():
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
         error=False,
         elapsed=timedelta(minutes=25),
-        length=TestHardDriveLength.Short,
+        length=TestDataStorageLength.Short,
         status='ok!',
         lifetime=timedelta(days=120)
     )

@@ -26,7 +26,7 @@ from ereuse_devicehub.resources.device.models import Component, Computer, DataSt
     Device, Laptop, Server
 from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RATE_5, Bios, \
     FunctionalityRange, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
-    ReceiverRole, SnapshotExpectedEvents, SnapshotSoftware, TestHardDriveLength
+    ReceiverRole, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
@@ -595,7 +595,7 @@ class Test(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
 class TestDataStorage(Test):
     id = Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
-    length = Column(DBEnum(TestHardDriveLength), nullable=False)  # todo from type
+    length = Column(DBEnum(TestDataStorageLength), nullable=False)  # todo from type
     status = Column(Unicode(), check_lower('status'), nullable=False)
     lifetime = Column(Interval)
     assessment = Column(Boolean)

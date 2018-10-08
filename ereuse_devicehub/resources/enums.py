@@ -109,7 +109,7 @@ class Orientation(Enum):
 
 
 @unique
-class TestHardDriveLength(Enum):
+class TestDataStorageLength(Enum):
     Short = 'Short'
     Extended = 'Extended'
 

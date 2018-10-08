@@ -7,7 +7,7 @@ from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, List,
 from marshmallow.validate import Length, Range
 from sqlalchemy.util import OrderedSet
 from teal.enums import Country, Currency, Subdivision
-from teal.marshmallow import EnumField, IP, SanitizedStr, Version, URL
+from teal.marshmallow import EnumField, IP, SanitizedStr, URL, Version
 from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
@@ -15,7 +15,7 @@ from ereuse_devicehub.resources.agent.schemas import Agent
 from ereuse_devicehub.resources.device.schemas import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
     PriceSoftware, RATE_POSITIVE, RatingSoftware, ReceiverRole, SnapshotExpectedEvents, \
-    SnapshotSoftware, TestHardDriveLength
+    SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
@@ -267,7 +267,7 @@ class Test(EventWithOneDevice):
 
 
 class TestDataStorage(Test):
-    length = EnumField(TestHardDriveLength, required=True)
+    length = EnumField(TestDataStorageLength, required=True)
     status = SanitizedStr(lower=True, validate=Length(max=STR_SIZE), required=True)
     lifetime = TimeDelta(precision=TimeDelta.DAYS)
     assessment = Boolean()

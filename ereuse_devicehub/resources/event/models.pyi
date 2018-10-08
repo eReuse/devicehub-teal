@@ -18,7 +18,7 @@ from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
     PriceSoftware, RatingSoftware, ReceiverRole, SnapshotExpectedEvents, SnapshotSoftware, \
-    TestHardDriveLength
+    TestDataStorageLength
 from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
@@ -66,6 +66,7 @@ class Event(Thing):
     @property
     def url(self) -> urlutils.URL:
         pass
+
 
 class EventWithOneDevice(Event):
 
@@ -251,7 +252,7 @@ class TestDataStorage(Test):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.id = ...  # type: UUID
-        self.length = ...  # type: TestHardDriveLength
+        self.length = ...  # type: TestDataStorageLength
         self.status = ...  # type: str
         self.lifetime = ...  # type: timedelta
         self.first_error = ...  # type: int
