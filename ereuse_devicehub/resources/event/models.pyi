@@ -31,7 +31,6 @@ class Event(Thing):
     error = ...  # type: Column
     incidence = ...  # type: Column
     description = ...  # type: Column
-    finalized = ...  # type: Column
     snapshot_id = ...  # type: Column
     snapshot = ...  # type: relationship
     author_id = ...  # type: Column
@@ -79,6 +78,7 @@ class EventWithOneDevice(Event):
 
 
 class EventWithMultipleDevices(Event):
+    devices = ... # type: relationship
 
     def __init__(self, id=None, name=None, incidence=None, closed=None, error=None,
                  description=None, start_time=None, end_time=None, snapshot=None, agent=None,

@@ -223,9 +223,9 @@ def test_post_add_children_view(user: UserClient):
 
     lots = user.get(res=Lot)[0]['items']
     assert len(lots) == 1
-    assert lots[0]['title'] == 'Parent'
+    assert lots[0]['name'] == 'Parent'
     assert len(lots[0]['nodes']) == 1
-    assert lots[0]['nodes'][0]['title'] == 'Child'
+    assert lots[0]['nodes'][0]['name'] == 'Child'
 
 
 def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):

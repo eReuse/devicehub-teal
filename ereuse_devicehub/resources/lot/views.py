@@ -58,7 +58,7 @@ class LotView(View):
             lot = Lot.query.filter_by(id=lot_id).one()
             node = {
                 'id': lot_id,
-                'title': lot.name,
+                'name': lot.name,
                 'url': lot.url.to_text(),
                 'closed': lot.closed,
                 'updated': lot.updated,
