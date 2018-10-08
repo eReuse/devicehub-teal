@@ -243,7 +243,7 @@ def test_post_add_children_view_ui_tree_normal(user: UserClient):
     assert lots[1]['name'] == 'Child'
 
     # List format with a filter
-    lots = user.get(res=Lot, query=[('filter', {'name': 'pa'})])[0]['items']
+    lots = user.get(res=Lot, query=[('search', 'pa')])[0]['items']
     assert len(lots) == 1
     assert lots[0]['name'] == 'Parent'
 

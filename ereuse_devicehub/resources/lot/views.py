@@ -6,17 +6,12 @@ from typing import List, Set
 import marshmallow as ma
 from flask import jsonify, request
 from marshmallow import Schema as MarshmallowSchema, fields as f
-from teal import query
 from teal.marshmallow import EnumField
 from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot, Path
-
-
-class Filters(query.Query):
-    name = query.ILike(Lot.name)
 
 
 class LotFormat(Enum):
@@ -30,7 +25,7 @@ class LotView(View):
         method (GET collection) endpoint
         """
         format = EnumField(LotFormat, missing=None)
-        filter = f.Nested(Filters, missing=[])
+        search = f.Str(missing=None)
 
     def post(self):
         l = request.get_json()
@@ -73,8 +68,10 @@ class LotView(View):
                 'url': request.path
             })
         else:
-            query = Lot.query.filter(*args['filter'])
-            lots = query.paginate(per_page=6)
+            query = Lot.query
+            if args['search']:
+                query = query.filter(Lot.name.ilike(args['search'] + '%'))
+            lots = query.paginate(per_page=6 if args['search'] else 30)
             ret = {
                 'items': self.schema.dump(lots.items, many=True, nested=0),
                 'pagination': {
