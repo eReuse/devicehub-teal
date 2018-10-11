@@ -50,7 +50,8 @@ class Filters(query.Query):
     _device_inside_lot = (Device.id == LotDevice.device_id) & (Lot.id == LotDevice.lot_id)
     _component_inside_lot_through_parent = (Device.id == Component.id) \
                                            & (Component.parent_id == _parent.id) \
-                                           & (_parent.id == LotDevice.device_id)
+                                           & (_parent.id == LotDevice.device_id) \
+                                           & (Lot.id == LotDevice.lot_id)
 
     type = query.Or(OfType(Device.type))
     model = query.ILike(Device.model)

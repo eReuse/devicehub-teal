@@ -510,3 +510,10 @@ def test_device_public(user: UserClient, client: Client):
     html, _ = client.get(res=Device, item=s['device']['id'], accept=ANY)
     assert 'intel atom cpu n270 @ 1.60ghz' in html
     assert 'S/N 00:24:8c:7f:cf:2d – 100 Mbps' in html
+
+
+@pytest.mark.xfail(reason='Functionality not yet developed.')
+def test_device_search_multiple_tags(user: UserClient):
+    """Ensures that users can search multiple tags at once
+    and get their multiple devices."""
+    pass
