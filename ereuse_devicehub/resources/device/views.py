@@ -1,4 +1,6 @@
 import datetime
+import itertools
+from collections import OrderedDict
 
 import marshmallow
 from flask import current_app as app, render_template, request
@@ -13,9 +15,11 @@ from teal.resource import View
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources import search
-from ereuse_devicehub.resources.device.models import Component, Computer, Device, Manufacturer
+from ereuse_devicehub.resources.device.definitions import ComponentDef
+from ereuse_devicehub.resources.device.models import Component, Computer, Device, Manufacturer, \
+    RamModule, Processor, DataStorage
 from ereuse_devicehub.resources.device.search import DeviceSearch
-from ereuse_devicehub.resources.event.models import Rate
+from ereuse_devicehub.resources.event.models import Rate, Event
 from ereuse_devicehub.resources.lot.models import Lot, LotDevice
 from ereuse_devicehub.resources.tag.model import Tag
 
@@ -119,21 +123,95 @@ class DeviceView(View):
                 search.Search.rank(properties, search_p) + search.Search.rank(tags, search_p)
             )
         query = query.filter(*args['filter']).order_by(*args['sort'])
-        devices = query.paginate(page=args['page'], per_page=30)  # type: Pagination
-        ret = {
-            'items': self.schema.dump(devices.items, many=True, nested=1),
-            # todo pagination should be in Header like github
-            # https://developer.github.com/v3/guides/traversing-with-pagination/
-            'pagination': {
-                'page': devices.page,
-                'perPage': devices.per_page,
-                'total': devices.total,
-                'previous': devices.prev_num,
-                'next': devices.next_num
-            },
-            'url': request.path
-        }
-        return jsonify(ret)
+        if args['format']:
+            ...
+            return self.spreadsheet(query)
+        else:
+            devices = query.paginate(page=args['page'], per_page=30)  # type: Pagination
+            ret = {
+                'items': self.schema.dump(devices.items, many=True, nested=1),
+                # todo pagination should be in Header like github
+                # https://developer.github.com/v3/guides/traversing-with-pagination/
+                'pagination': {
+                    'page': devices.page,
+                    'perPage': devices.per_page,
+                    'total': devices.total,
+                    'previous': devices.prev_num,
+                    'next': devices.next_num
+                },
+                'url': request.path
+            }
+            return jsonify(ret)
+
+    def spreadsheet(self, query):
+        devices = []
+        for device in query:
+            d = DeviceRow(device)
+            devices.append(d)
+
+        titles = [name for name in devices[0].keys()] +
+        rest = [[value for value in row.values()] for row in devices]
+
+
+class DeviceRow(OrderedDict):
+    NUMS = {
+        Processor.t: 1
+    }
+
+    def __init__(self, device: Device) -> None:
+        super().__init__()
+        self.device = device
+        self['Type'] = device.t
+        if isinstance(device, Computer):
+            self['Chassis'] = device.chassis
+        self['Tag 1'] = self['Tag 2'] = self['Tag 3'] = ''
+        for i, tag in zip(range(1, 3), device.tags):
+            self['Tag {}'.format(i)] = format(tag)
+        self['Serial Number'] = device.serial_number
+        self['Price'] = device.price
+        self['Model'] = device.model
+        self['Manu...'] = device.manufacturer
+        self['Regsitered in '] = device.created
+        if isinstance(device, Computer):
+            self['Processor'] = device.processor_model
+            self['RAM (GB)'] = device.ram_size
+            self['Size (MB)'] = device.data_storage_size
+        rate = device.rate # type: Rate
+        if rate:
+            self['Rate'] = rate.rating
+            self['Range'] = rate.rating_range
+            self['Processor Rate'] = rate.processor_rate
+            self['RAM Rate'] = rate.ram_rate
+            self['Data Storage Rate'] = rate.data_storage_rate
+        # New Update fields (necessaris?)
+        # Origin note = Id-Donació
+        # Target note = Id-Receptor
+        # Partner = cadena de custodia (cadena de noms dels agents(entitas) implicats) [int]
+        # Margin = percentatges de com es repeteix els guanys del preu de venta del dispositiu. [int]
+        # Id invoice = id de la factura
+        if isinstance(device, Computer):
+            self.components()
+
+
+    def components(self):
+        assert isinstance(self.device, Computer)
+        for type in app.resources[Component.t].subresources_types: # type: str
+            max = self.NUMS.get(type, 4)
+            i = 1
+            for component in (r for r in self.device.components if r.type == type):
+                self.fill_component(type, i, component)
+                i += 1
+                if i >= max:
+                    break
+            while i < max:
+                self.fill_component(type, i)
+                i += 1
+
+
+    def fill_component(self, type, i, component = None):
+        self['{} {} Serial Number'.format(type, i)] = component.serial_number if component else ''
+        if isinstance(component, DataStorage):
+            self['{} {} Compliance'.format()] = component.compliance
 
 
 class ManufacturerView(View):
