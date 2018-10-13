@@ -33,3 +33,4 @@ components:
   events:
   - type: BenchmarkProcessor
     rate: 2410
+    elapsed: 11

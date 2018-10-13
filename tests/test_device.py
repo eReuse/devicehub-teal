@@ -91,7 +91,14 @@ def test_physical_properties():
                     manufacturer='mr',
                     width=2.0,
                     color=Color())
-    pc = Desktop(chassis=ComputerChassis.Tower)
+    pc = Desktop(chassis=ComputerChassis.Tower,
+                 model='foo',
+                 manufacturer='bar',
+                 serial_number='foo-bar',
+                 weight=2.8,
+                 width=1.4,
+                 height=2.1,
+                 color=Color('LightSeaGreen'))
     pc.components.add(c)
     db.session.add(pc)
     db.session.commit()
@@ -109,6 +116,17 @@ def test_physical_properties():
         'width': 2.0,
         'color': Color(),
         'depth': None
+    }
+    assert pc.physical_properties == {
+        'model': 'foo',
+        'manufacturer': 'bar',
+        'serial_number': 'foo-bar',
+        'weight': 2.8,
+        'width': 1.4,
+        'height': 2.1,
+        'depth': None,
+        'color': Color('LightSeaGreen'),
+        'chassis': ComputerChassis.Tower
     }
 
 

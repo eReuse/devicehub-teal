@@ -1,4 +1,3 @@
-from contextlib import suppress
 from distutils.version import StrictVersion
 from typing import List
 from uuid import UUID
@@ -77,11 +76,9 @@ class SnapshotView(View):
                 snapshot.events |= events
 
         # Compute ratings
-        with suppress(StopIteration):
-            # todo are we sure we want to have snapshots without rates?
-            snapshot.events |= next(
-                e.ratings() for e in events_device if isinstance(e, WorkbenchRate)
-            )
+        for rate in (e for e in events_device if isinstance(e, WorkbenchRate)):
+            rates = rate.ratings()
+            snapshot.events |= rates
 
         db.session.add(snapshot)
         db.session.commit()

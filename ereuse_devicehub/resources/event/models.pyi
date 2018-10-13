@@ -19,7 +19,6 @@ from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
     PriceSoftware, RatingSoftware, ReceiverRole, SnapshotExpectedEvents, SnapshotSoftware, \
     TestDataStorageLength
-from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -78,7 +77,7 @@ class EventWithOneDevice(Event):
 
 
 class EventWithMultipleDevices(Event):
-    devices = ... # type: relationship
+    devices = ...  # type: relationship
 
     def __init__(self, id=None, name=None, incidence=None, closed=None, error=None,
                  description=None, start_time=None, end_time=None, snapshot=None, agent=None,
@@ -165,10 +164,42 @@ class IndividualRate(Rate):
 
 
 class AggregateRate(Rate):
+    manual_id = ...  # type: Column
+    manual = ...  # type: relationship
+    workbench = ...  # type: relationship
+    workbench_id = ...  # type: Column
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.ratings = ...  # type: Set[IndividualRate]
+        self.manual_id = ...  # type: UUID
+        self.manual = ...  # type: ManualRate
+        self.workbench = ...  # type: WorkbenchRate
+        self.workbench_id = ...  # type: UUID
         self.price = ...  # type: Price
+
+    @property
+    def processor(self):
+        return self.workbench.processor
+
+    @property
+    def ram(self):
+        return self.workbench.ram
+
+    @property
+    def data_storage(self):
+        return self.workbench.data_storage
+
+    @property
+    def graphic_card(self):
+        return self.workbench.graphic_card
+
+    @property
+    def bios(self):
+        return self.workbench.bios
+
+    @classmethod
+    def from_workbench_rate(cls, rate: WorkbenchRate) -> AggregateRate:
+        pass
 
 
 class ManualRate(IndividualRate):
@@ -177,6 +208,7 @@ class ManualRate(IndividualRate):
         self.labelling = ...  # type: bool
         self.appearance_range = ...  # type: AppearanceRange
         self.functionality_range = ...  # type: FunctionalityRange
+        self.aggregate_rate_manual = ...  #type: AggregateRate
 
 
 class WorkbenchRate(ManualRate):
@@ -187,34 +219,10 @@ class WorkbenchRate(ManualRate):
         self.data_storage = ...  # type: float
         self.graphic_card = ...  # type: float
         self.bios = ...  # type: Bios
+        self.aggregate_rate_workbench = ...  #type: AggregateRate
 
-
-class AppRate(ManualRate):
-    pass
-
-
-class PhotoboxRate(IndividualRate):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.num = ...  # type: int
-        self.image = ...  # type: Image
-
-
-class PhotoboxUserRate(PhotoboxRate):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.assembling = ...  # type: int
-        self.parts = ...  # type: int
-        self.buttons = ...  # type: int
-        self.dents = ...  # type: int
-        self.decolorization = ...  # type: int
-        self.scratches = ...  # type: int
-        self.tag_adhesive = ...  # type: int
-        self.dirt = ...  # type: int
-
-
-class PhotoboxSystemRate(PhotoboxRate):
-    pass
+    def ratings(self) -> Set[Rate]:
+        pass
 
 
 class Price(EventWithOneDevice):
@@ -237,8 +245,24 @@ class Price(EventWithOneDevice):
 class EreusePrice(Price):
     MULTIPLIER = ...  # type: Dict
 
+    class Type:
+        def __init__(self) -> None:
+            super().__init__()
+            self.amount = ...  # type: float
+            self.percentage = ...  # type: float
+
+    class Service:
+        def __init__(self) -> None:
+            super().__init__()
+            self.standard = ...  # type: EreusePrice.Type
+            self.warranty2 = ...  # type: EreusePrice.Type
+
     def __init__(self, rating: AggregateRate, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.retailer = ...  # type: EreusePrice.Service
+        self.platform = ...  # type: EreusePrice.Service
+        self.refurbisher = ...  # type: EreusePrice.Service
+        self.warranty2 = ...  # type: float
 
 
 class Test(EventWithOneDevice):

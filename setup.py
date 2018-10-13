@@ -37,7 +37,6 @@ setup(
         'teal>=0.2.0a24',  # teal always first
         'click',
         'click-spinner',
-        'ereuse-rate==0.0.2',
         'ereuse-utils[Naming]>=0.4b9',
         'hashids',
         'marshmallow_enum',

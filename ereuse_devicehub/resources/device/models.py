@@ -21,8 +21,8 @@ from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
-    RamFormat, RamInterface
+from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, \
+    DataStoragePrivacyCompliance, DisplayTech, RamFormat, RamInterface
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 
 
@@ -44,19 +44,22 @@ class Device(Thing):
     model = Column(Unicode(), check_lower('model'))
     manufacturer = Column(Unicode(), check_lower('manufacturer'))
     serial_number = Column(Unicode(), check_lower('serial_number'))
-    weight = Column(Float(decimal_return_scale=3), check_range('weight', 0.1, 3))
+    weight = Column(Float(decimal_return_scale=3), check_range('weight', 0.1, 5))
     weight.comment = """
         The weight of the device in Kgm.
     """
-    width = Column(Float(decimal_return_scale=3), check_range('width', 0.1, 3))
+    width = Column(Float(decimal_return_scale=3), check_range('width', 0.1, 5))
     width.comment = """
         The width of the device in meters.
     """
-    height = Column(Float(decimal_return_scale=3), check_range('height', 0.1, 3))
+    height = Column(Float(decimal_return_scale=3), check_range('height', 0.1, 5))
     height.comment = """
         The height of the device in meters.
     """
-    depth = Column(Float(decimal_return_scale=3), check_range('depth', 0.1, 3))
+    depth = Column(Float(decimal_return_scale=3), check_range('depth', 0.1, 5))
+    depth.comment = """
+        The depth of the device in meters.
+    """
     color = Column(ColorType)
     color.comment = """The predominant color of the device."""
 
@@ -98,6 +101,54 @@ class Device(Thing):
         """The URL where to GET this device."""
         return urlutils.URL(url_for_resource(Device, item_id=self.id))
 
+    @property
+    def rate(self):
+        """Gets the last aggregate rate."""
+        with suppress(LookupError, ValueError):
+            from ereuse_devicehub.resources.event.models import AggregateRate
+            return self.last_event_of(AggregateRate)
+
+    @property
+    def price(self):
+        """Gets the actual Price of the device or None
+        if no price has ever been set."""
+        with suppress(LookupError, ValueError):
+            from ereuse_devicehub.resources.event.models import Price
+            return self.last_event_of(Price)
+
+    @property
+    def trading(self):
+        """The actual trading state or None if there is no trading info."""
+        from ereuse_devicehub.resources.device import states
+        with suppress(LookupError, ValueError):
+            event = self.last_event_of(*states.Trading.events())
+            return states.Trading(event.__class__)
+
+    @property
+    def physical(self):
+        """The actual physical state, None if there is no state."""
+        from ereuse_devicehub.resources.device import states
+        with suppress(LookupError, ValueError):
+            event = self.last_event_of(*states.Physical.events())
+            return states.Physical(event.__class__)
+
+    @property
+    def physical_possessor(self):
+        """The actual physical possessor or None.
+
+        The physical possessor is the Agent that has physically
+        the device. It differs from legal owners, usufructuarees
+        or reserves in that the physical possessor does not have
+        a legal relation per se with the device, but it is the one
+        that has it physically. As an example, a transporter could
+        be a physical possessor of a device although it does not
+        own it legally.
+        """
+        from ereuse_devicehub.resources.event.models import Receive
+        with suppress(LookupError):
+            event = self.last_event_of(Receive)
+            return event.agent
+
     @declared_attr
     def __mapper_args__(cls):
         """
@@ -111,6 +162,16 @@ class Device(Thing):
         if cls.t == 'Device':
             args[POLYMORPHIC_ON] = cls.type
         return args
+
+    def last_event_of(self, *types):
+        """Gets the last event of the given types.
+
+        :raise LookupError: Device has not an event of the given type.
+        """
+        try:
+            return next(e for e in reversed(self.events) if isinstance(e, types))
+        except StopIteration:
+            raise LookupError('{!r} does not contain events of types {}.'.format(self, types))
 
     def __lt__(self, other):
         return self.id < other.id
@@ -169,31 +230,38 @@ class Computer(Device):
     @property
     def ram_size(self) -> int:
         """The total of RAM memory the computer has."""
-        return sum(ram.size for ram in self.components if isinstance(ram, RamModule))
+        return sum(ram.size or 0 for ram in self.components if isinstance(ram, RamModule))
 
     @property
     def data_storage_size(self) -> int:
         """The total of data storage the computer has."""
-        return sum(ds.size for ds in self.components if isinstance(ds, DataStorage))
+        return sum(ds.size or 0 for ds in self.components if isinstance(ds, DataStorage))
 
     @property
     def processor_model(self) -> str:
         """The model of one of the processors of the computer."""
-        return next(p.model for p in self.components if isinstance(p, Processor))
+        return next((p.model for p in self.components if isinstance(p, Processor)), None)
 
     @property
     def graphic_card_model(self) -> str:
         """The model of one of the graphic cards of the computer."""
-        return next(p.model for p in self.components if isinstance(p, GraphicCard))
+        return next((p.model for p in self.components if isinstance(p, GraphicCard)), None)
 
     @property
     def network_speeds(self) -> List[int]:
-        """Returns two speeds: the first for the eth and the
-        second for the wifi networks, or 0 respectively if not found.
+        """Returns two values representing the speeds of the network
+        adapters of the device.
+
+        1. The max Ethernet speed of the computer, 0 if ethernet
+           adaptor exists but its speed is unknown, None if no eth
+           adaptor exists.
+        2. The max WiFi speed of the computer, 0 if computer has
+           WiFi but its speed is unknown, None if no WiFi adaptor
+           exists.
         """
-        speeds = [0, 0]
+        speeds = [None, None]
         for net in (c for c in self.components if isinstance(c, NetworkAdapter)):
-            speeds[net.wireless] = max(net.speed or 0, speeds[net.wireless])
+            speeds[net.wireless] = max(net.speed or 0, speeds[net.wireless] or 0)
         return speeds
 
     def __format__(self, format_spec):
@@ -322,6 +390,15 @@ class DataStorage(JoinedComponentTableMixin, Component):
     """
     interface = Column(DBEnum(DataStorageInterface))
 
+    @property
+    def privacy(self):
+        """Returns the privacy compliance state of the data storage."""
+        # todo add physical destruction event
+        from ereuse_devicehub.resources.event.models import EraseBasic
+        with suppress(LookupError):
+            erase = self.last_event_of(EraseBasic)
+            return DataStoragePrivacyCompliance.from_erase(erase)
+
     def __format__(self, format_spec):
         v = super().__format__(format_spec)
         if 's' in format_spec:
@@ -353,7 +430,7 @@ class NetworkMixin:
     speed.comment = """
         The maximum speed this network adapter can handle, in mbps.
     """
-    wireless = Column(Boolean)
+    wireless = Column(Boolean, nullable=False, default=False)
     wireless.comment = """
         Whether it is a wireless interface.
     """

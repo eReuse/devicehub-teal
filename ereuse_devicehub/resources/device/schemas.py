@@ -1,5 +1,5 @@
 from marshmallow import post_load, pre_load
-from marshmallow.fields import Boolean, Float, Integer, Str, String
+from marshmallow.fields import Boolean, Float, Integer, List, Str, String
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
@@ -7,9 +7,9 @@ from teal.marshmallow import EnumField, SanitizedStr, URL, ValidationError
 from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
-from ereuse_devicehub.resources.device import models as m
-from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
-    RamFormat, RamInterface
+from ereuse_devicehub.resources.device import models as m, states
+from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, \
+    DataStoragePrivacyCompliance, DisplayTech, RamFormat, RamInterface
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 
@@ -24,13 +24,19 @@ class Device(Thing):
     model = SanitizedStr(lower=True, validate=Length(max=STR_BIG_SIZE))
     manufacturer = SanitizedStr(lower=True, validate=Length(max=STR_SIZE))
     serial_number = SanitizedStr(lower=True, data_key='serialNumber')
-    weight = Float(validate=Range(0.1, 3), unit=UnitCodes.kgm, description=m.Device.weight.comment)
-    width = Float(validate=Range(0.1, 3), unit=UnitCodes.m, description=m.Device.width.comment)
-    height = Float(validate=Range(0.1, 3), unit=UnitCodes.m, description=m.Device.height.comment)
+    weight = Float(validate=Range(0.1, 5), unit=UnitCodes.kgm, description=m.Device.weight.comment)
+    width = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.width.comment)
+    height = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.height.comment)
+    depth = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.depth.comment)
     events = NestedOn('Event', many=True, dump_only=True, description=m.Device.events.__doc__)
     events_one = NestedOn('Event', many=True, load_only=True, collection_class=OrderedSet)
     url = URL(dump_only=True, description=m.Device.url.__doc__)
     lots = NestedOn('Lot', many=True, dump_only=True)
+    rate = NestedOn('AggregateRate', dump_only=True)
+    price = NestedOn('Price', dump_only=True)
+    trading = EnumField(states.Trading, dump_only=True)
+    physical = EnumField(states.Physical, dump_only=True)
+    physical_possessor = NestedOn('Agent', dump_only=True, data_key='physicalPossessor')
 
     @pre_load
     def from_events_to_events_one(self, data: dict):
@@ -60,6 +66,11 @@ class Device(Thing):
 class Computer(Device):
     components = NestedOn('Component', many=True, dump_only=True, collection_class=OrderedSet)
     chassis = EnumField(ComputerChassis, required=True)
+    ram_size = Integer(dump_only=True, data_key='ramSize')
+    data_storage_size = Integer(dump_only=True, data_key='dataStorageSize')
+    processor_model = Str(dump_only=True, data_key='processorModel')
+    graphic_card_model = Str(dump_only=True, data_key='graphicCardModel')
+    network_speeds = List(Integer(dump_only=True), dump_only=True, data_key='networkSpeeds')
 
 
 class Desktop(Computer):
@@ -148,6 +159,7 @@ class DataStorage(Component):
                    unit=UnitCodes.mbyte,
                    description=m.DataStorage.size.comment)
     interface = EnumField(DataStorageInterface)
+    privacy = EnumField(DataStoragePrivacyCompliance, dump_only=True)
 
 
 class HardDrive(DataStorage):

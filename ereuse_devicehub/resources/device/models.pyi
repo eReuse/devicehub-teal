@@ -1,4 +1,4 @@
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Type, Union
 
 from boltons import urlutils
 from boltons.urlutils import URL
@@ -7,10 +7,11 @@ from sqlalchemy import Column, Integer
 from sqlalchemy.orm import relationship
 from teal.db import Model
 
-from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
-    RamFormat, RamInterface
-from ereuse_devicehub.resources.event.models import Event, EventWithMultipleDevices, \
-    EventWithOneDevice
+from ereuse_devicehub.resources.agent.models import Agent
+from ereuse_devicehub.resources.device import states
+from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, \
+    DataStoragePrivacyCompliance, DisplayTech, RamFormat, RamInterface
+from ereuse_devicehub.resources.event import models as e
 from ereuse_devicehub.resources.image.models import ImageList
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.models import Thing
@@ -44,10 +45,10 @@ class Device(Thing):
         self.height = ...  # type: float
         self.depth = ...  # type: float
         self.color = ...  # type: Color
-        self.events = ...  # type: List[Event]
+        self.events = ...  # type: List[e.Event]
         self.physical_properties = ...  # type: Dict[str, object or None]
-        self.events_multiple = ...  # type: Set[EventWithMultipleDevices]
-        self.events_one = ...  # type: Set[EventWithOneDevice]
+        self.events_multiple = ...  # type: Set[e.EventWithMultipleDevices]
+        self.events_one = ...  # type: Set[e.EventWithOneDevice]
         self.images = ...  # type: ImageList
         self.tags = ...  # type: Set[Tag]
         self.lots = ...  # type: Set[Lot]
@@ -55,6 +56,30 @@ class Device(Thing):
     @property
     def url(self) -> urlutils.URL:
         pass
+
+    @property
+    def rate(self) -> Union[e.AggregateRate, None]:
+        pass
+
+    @property
+    def price(self) -> Union[e.Price, None]:
+        pass
+
+    @property
+    def trading(self) -> Union[states.Trading, None]:
+        pass
+
+    @property
+    def physical(self) -> Union[states.Physical, None]:
+        pass
+
+    @property
+    def physical_possessor(self) -> Union[Agent, None]:
+        pass
+
+    def last_event_of(self, *types: Type[e.Event]) -> e.Event:
+        pass
+
 
 class DisplayMixin:
     technology = ...  # type: Column
@@ -77,7 +102,7 @@ class Computer(DisplayMixin, Device):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.components = ...  # type: Set[Component]
-        self.events_parent = ...  # type: Set[Event]
+        self.events_parent = ...  # type: Set[e.Event]
         self.chassis = ...  # type: ComputerChassis
 
     @property
@@ -103,6 +128,7 @@ class Computer(DisplayMixin, Device):
     @property
     def network_speeds(self) -> List[int]:
         pass
+
 
 class Desktop(Computer):
     pass
@@ -155,7 +181,7 @@ class Component(Device):
         super().__init__(**kwargs)
         self.parent_id = ...  # type: int
         self.parent = ...  # type: Computer
-        self.events_components = ...  # type: Set[Event]
+        self.events_components = ...  # type: Set[e.Event]
 
     def similar_one(self, parent: Computer, blacklist: Set[int]) -> 'Component':
         pass
@@ -177,6 +203,10 @@ class DataStorage(Component):
         super().__init__(**kwargs)
         self.size = ...  # type: int
         self.interface = ...  # type: DataStorageInterface
+
+    @property
+    def privacy(self) -> DataStoragePrivacyCompliance:
+        pass
 
 
 class HardDrive(DataStorage):

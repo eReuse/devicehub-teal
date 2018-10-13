@@ -101,7 +101,7 @@ class StepRandom(Step):
 class Rate(EventWithOneDevice):
     rating = Integer(validate=Range(*RATE_POSITIVE),
                      dump_only=True,
-                     data_key='ratingValue',
+                     data_key='rating',
                      description='The rating for the content.')
     software = EnumField(RatingSoftware,
                          dump_only=True,
@@ -116,10 +116,6 @@ class Rate(EventWithOneDevice):
 
 class IndividualRate(Rate):
     pass
-
-
-class AggregateRate(Rate):
-    ratings = NestedOn(IndividualRate, many=True)
 
 
 class PhotoboxRate(IndividualRate):
@@ -155,10 +151,6 @@ class ManualRate(IndividualRate):
     labelling = Boolean(description='Sets if there are labels stuck that should be removed.')
 
 
-class AppRate(ManualRate):
-    pass
-
-
 class WorkbenchRate(ManualRate):
     processor = Float()
     ram = Float()
@@ -166,6 +158,16 @@ class WorkbenchRate(ManualRate):
     graphic_card = Float()
     bios = EnumField(Bios, description='How difficult it has been to set the bios to '
                                        'boot from the network.')
+
+
+class AggregateRate(Rate):
+    workbench = NestedOn(WorkbenchRate, dump_only=True)
+    manual = NestedOn(ManualRate, dump_only=True)
+    processor = Float(dump_only=True)
+    ram = Float(dump_only=True)
+    data_storage = Float(dump_only=True)
+    graphic_card = Float(dump_only=True)
+    bios = EnumField(Bios, dump_only=True)
 
 
 class Price(EventWithOneDevice):
@@ -285,7 +287,7 @@ class StressTest(Test):
 
 
 class Benchmark(EventWithOneDevice):
-    elapsed = TimeDelta(precision=TimeDelta.SECONDS)
+    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
 
 
 class BenchmarkDataStorage(Benchmark):

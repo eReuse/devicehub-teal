@@ -26,6 +26,7 @@ device:
     functionalityRange: B
   - type: BenchmarkRamSysbench
     rate: 2444
+    elapsed: 1
 components:
 - type: GraphicCard
   serialNumber: gc1-1s
@@ -35,22 +36,27 @@ components:
   serialNumber: rm1-1s
   model: rm1-1ml
   manufacturer: rm1-1mr
+  size: 1024
 - type: RamModule
   serialNumber: rm2-1s
   model: rm2-1ml
   manufacturer: rm2-1mr
+  size: 1024
 - type: Processor
-  model: p1-1s
+  model: p1-1ml
   manufacturer: p1-1mr
   events:
   - type: BenchmarkProcessor
     rate: 2410
+    elapsed: 44
   - type: BenchmarkProcessorSysbench
     rate: 4400
+    elapsed: 44
 - type: SolidStateDrive
   serialNumber: ssd1-1s
   model: ssd1-1ml
   manufacturer: ssd1-1mr
+  size: 1100
   events:
   - type: BenchmarkDataStorage
     readSpeed: 20
@@ -78,7 +84,24 @@ components:
   - type: BenchmarkDataStorage
     readSpeed: 10
     writeSpeed: 5
+    elapsed: 20
 - type: Motherboard
   serialNumber: mb1-1s
   model: mb1-1ml
   manufacturer: mb1-1mr
+- type: NetworkAdapter
+  serialNumber: na1-s
+  model: na1-1ml
+  manufacturer: na1-1mr
+  speed: 1000
+  wireless: False
+- type: NetworkAdapter
+  serialNumber: na2-s
+  model: na2-1ml
+  manufacturer: na2-1mr
+  wireless: True
+  speed: 58
+- type: RamModule
+  serialNumber: rm3-1s
+  model: rm3-1ml
+  manufacturer: rm3-1mr

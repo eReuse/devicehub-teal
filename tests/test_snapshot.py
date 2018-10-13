@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, timezone
-from distutils.version import StrictVersion
 from typing import List, Tuple
 from uuid import uuid4
 
 import pytest
+from boltons import urlutils
 from teal.db import UniqueViolation
 from teal.marshmallow import ValidationError
 
@@ -13,8 +13,7 @@ from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.sync import MismatchBetweenTagsAndHid
-from ereuse_devicehub.resources.enums import Bios, ComputerChassis, RatingSoftware, \
-    SnapshotSoftware
+from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.event.models import AggregateRate, BenchmarkProcessor, \
     EraseSectors, Event, Snapshot, SnapshotRequest, WorkbenchRate
 from ereuse_devicehub.resources.tag import Tag
@@ -37,21 +36,11 @@ def test_snapshot_model():
                         elapsed=timedelta(seconds=25))
     snapshot.device = device
     snapshot.request = SnapshotRequest(request={'foo': 'bar'})
-    snapshot.events.add(WorkbenchRate(processor=0.1,
-                                      ram=1.0,
-                                      bios=Bios.A,
-                                      labelling=False,
-                                      graphic_card=0.1,
-                                      data_storage=4.1,
-                                      software=RatingSoftware.ECost,
-                                      version=StrictVersion('1.0'),
-                                      device=device))
     db.session.add(snapshot)
     db.session.commit()
     device = m.Desktop.query.one()  # type: m.Desktop
-    e1, e2 = device.events
+    e1 = device.events[0]
     assert isinstance(e1, Snapshot), 'Creation order must be preserved: 1. snapshot, 2. WR'
-    assert isinstance(e2, WorkbenchRate)
     db.session.delete(device)
     db.session.commit()
     assert Snapshot.query.one_or_none() is None
@@ -59,6 +48,8 @@ def test_snapshot_model():
     assert User.query.one() is not None
     assert m.Desktop.query.one_or_none() is None
     assert m.Device.query.one_or_none() is None
+    # Check properties
+    assert device.url == urlutils.URL('http://localhost/devices/1')
 
 
 def test_snapshot_schema(app: Devicehub):
@@ -321,27 +312,37 @@ def test_erase(user: UserClient):
         assert step['type'] == 'StepZero'
         assert step['error'] is False
         assert 'num' not in step
+    assert storage['privacy'] == erasure['device']['privacy'] == 'EraseSectors'
+
+    # Let's try a second erasure with an error
+    s['uuid'] = uuid4()
+    s['components'][0]['events'][0]['error'] = True
+    snapshot, _ = user.post(s, res=Snapshot)
+    assert snapshot['components'][0]['hid'] == 'c1mr-c1s-c1ml'
+    assert snapshot['components'][0]['privacy'] == 'EraseSectorsError'
 
 
 def test_snapshot_computer_monitor(user: UserClient):
     s = file('computer-monitor.snapshot')
-    snapshot_and_check(user, s, event_types=('AppRate',))
+    snapshot_and_check(user, s, event_types=('ManualRate',))
+    # todo check that ManualRate has generated an AggregateRate
 
 
 def test_snapshot_mobile_smartphone(user: UserClient):
     s = file('smartphone.snapshot')
-    snapshot_and_check(user, s, event_types=('AppRate',))
+    snapshot_and_check(user, s, event_types=('ManualRate',))
+    # todo check that ManualRate has generated an AggregateRate
 
 
+@pytest.mark.xfail(reason='Test not developed')
 def test_snapshot_components_none():
     """
     Tests that a snapshot without components does not
     remove them from the computer.
     """
-    # todo test
-    pass
 
 
+@pytest.mark.xfail(reason='Test not developed')
 def test_snapshot_components_empty():
     """
     Tests that a snapshot whose components are an empty list remove

@@ -1,5 +1,6 @@
 from collections import Iterable
 from datetime import datetime, timedelta
+from distutils.version import StrictVersion
 from typing import Set, Union
 from uuid import uuid4
 
@@ -24,16 +25,11 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Desktop, \
     Device, Laptop, Server
-from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RATE_5, Bios, \
+from ereuse_devicehub.resources.enums import AppearanceRange, Bios, \
     FunctionalityRange, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
     ReceiverRole, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
-from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
-
-"""
-A quantity of money with a currency.
-"""
 
 
 class JoinedTableMixin:
@@ -54,7 +50,7 @@ class Event(Thing):
     incidence.comment = """
         Should this event be reviewed due some anomaly?
     """
-    closed = Column(Boolean, default=False, nullable=False)
+    closed = Column(Boolean, default=True, nullable=False)
     closed.comment = """
         Whether the author has finished the event.
         After this is set to True, no modifications are allowed.
@@ -389,30 +385,6 @@ class IndividualRate(Rate):
     pass
 
 
-class AggregateRate(Rate):
-    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    ratings = relationship(IndividualRate,
-                           backref=backref('aggregated_ratings',
-                                           lazy=True,
-                                           order_by=lambda: IndividualRate.created,
-                                           collection_class=OrderedSet),
-                           secondary=lambda: RateAggregateRate.__table__,
-                           order_by=lambda: IndividualRate.created,
-                           collection_class=OrderedSet)
-    """The ratings this aggregateRate aggregates."""
-
-
-class RateAggregateRate(db.Model):
-    """
-    Represents the ``many to many`` relationship between
-    ``Rate`` and ``AggregateRate``.
-    """
-    rate_id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    aggregate_rate_id = Column(UUID(as_uuid=True),
-                               ForeignKey(AggregateRate.id),
-                               primary_key=True)
-
-
 class ManualRate(IndividualRate):
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
     labelling = Column(Boolean)
@@ -432,51 +404,67 @@ class WorkbenchRate(ManualRate):
 
     # todo ensure for WorkbenchRate version and software are not None when inserting them
 
-    def ratings(self) -> Set['WorkbenchRate']:
+    def ratings(self):
         """
         Computes all the possible rates taking this rating as a model.
 
         Returns a set of ratings, including this one, which is mutated.
         """
-        from ereuse_rate.main import main
+        from ereuse_devicehub.resources.event.rate.main import main
         return main(self, **app.config.get_namespace('WORKBENCH_RATE_'))
 
 
-class AppRate(ManualRate):
-    pass
-
-
-class PhotoboxRate(IndividualRate):
+class AggregateRate(Rate):
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    image_id = Column(UUID(as_uuid=True), ForeignKey(Image.id), nullable=False)
-    image = relationship(Image,
-                         uselist=False,
-                         cascade=CASCADE_OWN,
-                         single_parent=True,
-                         primaryjoin=Image.id == image_id)
+    manual_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
+    manual = relationship(ManualRate,
+                          backref=backref('aggregate_rate_manual',
+                                          lazy=True,
+                                          order_by=lambda: AggregateRate.created,
+                                          collection_class=OrderedSet),
+                          primaryjoin=manual_id == ManualRate.id)
+    workbench_id = Column(UUID(as_uuid=True), ForeignKey(WorkbenchRate.id))
+    workbench = relationship(WorkbenchRate,
+                             backref=backref('aggregate_rate_workbench',
+                                             lazy=True,
+                                             order_by=lambda: AggregateRate.created,
+                                             collection_class=OrderedSet),
+                             primaryjoin=workbench_id == WorkbenchRate.id)
 
-    # todo how to ensure phtoboxrate.device == image.image_list.device?
+    def __init__(self, *args, **kwargs) -> None:
+        kwargs.setdefault('version', StrictVersion('1.0'))
+        super().__init__(*args, **kwargs)
 
+    @property
+    def processor(self):
+        return self.workbench.processor
 
-class PhotoboxUserRate(PhotoboxRate):
-    id = Column(UUID(as_uuid=True), ForeignKey(PhotoboxRate.id), primary_key=True)
-    assembling = Column(SmallInteger, check_range('assembling', *BOX_RATE_5), nullable=False)
-    parts = Column(SmallInteger, check_range('parts', *BOX_RATE_5), nullable=False)
-    buttons = Column(SmallInteger, check_range('buttons', *BOX_RATE_5), nullable=False)
-    dents = Column(SmallInteger, check_range('dents', *BOX_RATE_5), nullable=False)
-    decolorization = Column(SmallInteger,
-                            check_range('decolorization', *BOX_RATE_5),
-                            nullable=False)
-    scratches = Column(SmallInteger, check_range('scratches', *BOX_RATE_5), nullable=False)
-    tag_alignment = Column(SmallInteger,
-                           check_range('tag_alignment', *BOX_RATE_3),
-                           nullable=False)
-    tag_adhesive = Column(SmallInteger, check_range('tag_adhesive', *BOX_RATE_3), nullable=False)
-    dirt = Column(SmallInteger, check_range('dirt', *BOX_RATE_3), nullable=False)
+    @property
+    def ram(self):
+        return self.workbench.ram
 
+    @property
+    def data_storage(self):
+        return self.workbench.data_storage
 
-class PhotoboxSystemRate(PhotoboxRate):
-    id = Column(UUID(as_uuid=True), ForeignKey(PhotoboxRate.id), primary_key=True)
+    @property
+    def graphic_card(self):
+        return self.workbench.graphic_card
+
+    @property
+    def bios(self):
+        return self.workbench.bios
+
+    @classmethod
+    def from_workbench_rate(cls, rate: WorkbenchRate):
+        aggregate = cls()
+        aggregate.rating = rate.rating
+        aggregate.software = rate.software
+        aggregate.appearance = rate.appearance
+        aggregate.functionality = rate.functionality
+        aggregate.device = rate.device
+        aggregate.workbench = rate
+        return aggregate
 
 
 class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
