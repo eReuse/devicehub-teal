@@ -146,6 +146,8 @@ class Rate(EventWithOneDevice):
     rating = ...  # type: Column
     appearance = ...  # type: Column
     functionality = ...  # type: Column
+    software = ...  # type: Column
+    version = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)

@@ -64,16 +64,6 @@ class WorkbenchRateDef(RateDef):
     SCHEMA = schemas.WorkbenchRate
 
 
-class PhotoboxUserDef(RateDef):
-    VIEW = None
-    SCHEMA = schemas.PhotoboxUserRate
-
-
-class PhotoboxSystemRateDef(RateDef):
-    VIEW = None
-    SCHEMA = schemas.PhotoboxSystemRate
-
-
 class ManualRateDef(RateDef):
     VIEW = None
     SCHEMA = schemas.ManualRate

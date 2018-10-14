@@ -31,11 +31,14 @@ class Device(Thing):
     events = NestedOn('Event', many=True, dump_only=True, description=m.Device.events.__doc__)
     events_one = NestedOn('Event', many=True, load_only=True, collection_class=OrderedSet)
     url = URL(dump_only=True, description=m.Device.url.__doc__)
-    lots = NestedOn('Lot', many=True, dump_only=True)
-    rate = NestedOn('AggregateRate', dump_only=True)
-    price = NestedOn('Price', dump_only=True)
-    trading = EnumField(states.Trading, dump_only=True)
-    physical = EnumField(states.Physical, dump_only=True)
+    lots = NestedOn('Lot',
+                    many=True,
+                    dump_only=True,
+                    description='The lots where this device is directly under.')
+    rate = NestedOn('AggregateRate', dump_only=True, description=m.Device.rate.__doc__)
+    price = NestedOn('Price', dump_only=True, description=m.Device.price.__doc__)
+    trading = EnumField(states.Trading, dump_only=True, description=m.Device.trading.__doc__)
+    physical = EnumField(states.Physical, dump_only=True, description=m.Device.physical.__doc__)
     physical_possessor = NestedOn('Agent', dump_only=True, data_key='physicalPossessor')
 
     @pre_load

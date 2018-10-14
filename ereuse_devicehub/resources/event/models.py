@@ -356,8 +356,11 @@ class SnapshotRequest(db.Model):
 
 class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
     rating = Column(Float(decimal_return_scale=2), check_range('rating', *RATE_POSITIVE))
+    rating.comment = """The rating for the content."""
     software = Column(DBEnum(RatingSoftware))
+    software.comment = """The algorithm used to produce this rating."""
     version = Column(StrictVersionType)
+    version.comment = """The version of the software."""
     appearance = Column(Float(decimal_return_scale=2), check_range('appearance', *RATE_NEGATIVE))
     functionality = Column(Float(decimal_return_scale=2),
                            check_range('functionality', *RATE_NEGATIVE))
@@ -392,13 +395,9 @@ class ManualRate(IndividualRate):
     be removed.
     """
     appearance_range = Column(DBEnum(AppearanceRange))
-    appearance_range.comment = """Grades the imperfections that 
-    aesthetically affect the device, but not its usage.
-    """
+    appearance_range.comment = AppearanceRange.__doc__
     functionality_range = Column(DBEnum(FunctionalityRange))
-    functionality_range.comment = """Grades the defects of a device 
-    affecting usage.
-    """
+    functionality_range.comment = FunctionalityRange.__doc__
 
 
 class WorkbenchRate(ManualRate):
@@ -412,9 +411,7 @@ class WorkbenchRate(ManualRate):
     bios = Column(Float(decimal_return_scale=2),
                   check_range('bios', *RATE_POSITIVE))
     bios_range = Column(DBEnum(Bios))
-    bios_range.comment = """How difficult it has been to set the bios
-    to boot from the network.
-    """
+    bios_range.comment = Bios.__doc__
 
     # todo ensure for WorkbenchRate version and software are not None when inserting them
 
@@ -431,6 +428,12 @@ class WorkbenchRate(ManualRate):
 class AggregateRate(Rate):
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
     manual_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
+    manual_id.comment = """The ManualEvent used to generate this
+    aggregation, or None if none used.
+
+    An example of ManualEvent is using the web or the Android app
+    to rate a device.
+    """
     manual = relationship(ManualRate,
                           backref=backref('aggregate_rate_manual',
                                           lazy=True,
@@ -438,6 +441,9 @@ class AggregateRate(Rate):
                                           collection_class=OrderedSet),
                           primaryjoin=manual_id == ManualRate.id)
     workbench_id = Column(UUID(as_uuid=True), ForeignKey(WorkbenchRate.id))
+    workbench_id.comment = """The WorkbenchRate used to generate
+    this aggregation, or None if none used.
+    """
     workbench = relationship(WorkbenchRate,
                              backref=backref('aggregate_rate_workbench',
                                              lazy=True,
@@ -483,10 +489,19 @@ class AggregateRate(Rate):
 
 class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
     currency = Column(DBEnum(Currency), nullable=False)
+    currency.comment = """The currency of this price as for ISO 4217."""
     price = Column(Numeric(precision=19, scale=4), check_range('price', 0), nullable=False)
+    price.comment = """The value."""
     software = Column(DBEnum(PriceSoftware))
+    software.comment = """The software used to compute this price,
+    if the price was computed automatically. This field is None
+    if the price has been manually set.
+    """
     version = Column(StrictVersionType)
+    version.comment = """The version of the software, or None."""
     rating_id = Column(UUID(as_uuid=True), ForeignKey(AggregateRate.id))
+    rating_id.comment = """The AggregateRate used to auto-compute
+    this price, if it has not been set manually."""
     rating = relationship(AggregateRate,
                           backref=backref('price',
                                           lazy=True,

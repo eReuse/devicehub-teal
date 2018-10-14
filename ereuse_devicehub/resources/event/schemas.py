@@ -102,12 +102,12 @@ class Rate(EventWithOneDevice):
     rating = Integer(validate=Range(*RATE_POSITIVE),
                      dump_only=True,
                      data_key='rating',
-                     description='The rating for the content.')
+                     description=m.Rate.rating.comment)
     software = EnumField(RatingSoftware,
                          dump_only=True,
-                         description='The algorithm used to produce this rating.')
+                         description=m.Rate.software.comment)
     version = Version(dump_only=True,
-                      description='The version of the software.')
+                      description=m.Rate.version.comment)
     appearance = Integer(validate=Range(-3, 5), dump_only=True)
     functionality = Integer(validate=Range(-3, 5),
                             dump_only=True,
@@ -115,26 +115,6 @@ class Rate(EventWithOneDevice):
 
 
 class IndividualRate(Rate):
-    pass
-
-
-class PhotoboxRate(IndividualRate):
-    num = Integer(dump_only=True)
-    # todo Image
-
-
-class PhotoboxUserRate(IndividualRate):
-    assembling = Integer()
-    parts = Integer()
-    buttons = Integer()
-    dents = Integer()
-    decolorization = Integer()
-    scratches = Integer()
-    tag_adhesive = Integer()
-    dirt = Integer()
-
-
-class PhotoboxSystemRate(IndividualRate):
     pass
 
 
@@ -162,8 +142,11 @@ class WorkbenchRate(ManualRate):
 
 
 class AggregateRate(Rate):
-    workbench = NestedOn(WorkbenchRate, dump_only=True)
-    manual = NestedOn(ManualRate, dump_only=True)
+    workbench = NestedOn(WorkbenchRate, dump_only=True,
+                         description=m.AggregateRate.workbench_id.comment)
+    manual = NestedOn(ManualRate,
+                      dump_only=True,
+                      description=m.AggregateRate.manual_id.comment)
     processor = Float(dump_only=True)
     ram = Float(dump_only=True)
     data_storage = Float(dump_only=True)
@@ -172,11 +155,14 @@ class AggregateRate(Rate):
 
 
 class Price(EventWithOneDevice):
-    currency = EnumField(Currency, required=True)
-    price = Decimal(places=4, rounding=decimal.ROUND_HALF_EVEN, required=True)
-    software = EnumField(PriceSoftware, dump_only=True)
-    version = Version(dump_only=True)
-    rating = NestedOn(AggregateRate, dump_only=True)
+    currency = EnumField(Currency, required=True, description=m.Price.currency.comment)
+    price = Decimal(places=4,
+                    ounding=decimal.ROUND_HALF_EVEN,
+                    required=True,
+                    description=m.Price.price.comment)
+    software = EnumField(PriceSoftware, dump_only=True, description=m.Price.software.comment)
+    version = Version(dump_only=True, description=m.Price.version.comment)
+    rating = NestedOn(AggregateRate, dump_only=True, description=m.Price.rating_id.comment)
 
 
 class EreusePrice(Price):

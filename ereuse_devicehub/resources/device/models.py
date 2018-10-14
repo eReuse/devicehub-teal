@@ -103,22 +103,23 @@ class Device(Thing):
 
     @property
     def rate(self):
-        """Gets the last aggregate rate."""
+        """The last AggregateRate of the device."""
         with suppress(LookupError, ValueError):
             from ereuse_devicehub.resources.event.models import AggregateRate
             return self.last_event_of(AggregateRate)
 
     @property
     def price(self):
-        """Gets the actual Price of the device or None
-        if no price has ever been set."""
+        """The actual Price of the device, or None if no price has
+        ever been set."""
         with suppress(LookupError, ValueError):
             from ereuse_devicehub.resources.event.models import Price
             return self.last_event_of(Price)
 
     @property
     def trading(self):
-        """The actual trading state or None if there is no trading info."""
+        """The actual trading state, or None if no Trade event has
+        ever been performed to this device."""
         from ereuse_devicehub.resources.device import states
         with suppress(LookupError, ValueError):
             event = self.last_event_of(*states.Trading.events())
@@ -126,7 +127,7 @@ class Device(Thing):
 
     @property
     def physical(self):
-        """The actual physical state, None if there is no state."""
+        """The actual physical state, None otherwise."""
         from ereuse_devicehub.resources.device import states
         with suppress(LookupError, ValueError):
             event = self.last_event_of(*states.Physical.events())
