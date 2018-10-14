@@ -563,8 +563,9 @@ class EreusePrice(Price):
         def __init__(self, device, rating_range, role, price) -> None:
             cls = device.__class__ if device.__class__ != Server else Desktop
             rate = self.SCHEMA[cls][rating_range]
-            self.standard = EreusePrice.Type(rate['STD'][role], price)
-            self.warranty2 = EreusePrice.Type(rate['WR2'][role], price)
+            self.standard = EreusePrice.Type(rate[self.STANDARD][role], price)
+            if self.WARRANTY2 in rate:
+                self.warranty2 = EreusePrice.Type(rate[self.WARRANTY2][role], price)
 
     def __init__(self, rating: AggregateRate, **kwargs) -> None:
         if rating.rating_range == RatingRange.VERY_LOW:
@@ -584,9 +585,10 @@ class EreusePrice(Price):
         self.refurbisher = self._service(self.Service.REFURBISHER)
         self.retailer = self._service(self.Service.RETAILER)
         self.platform = self._service(self.Service.PLATFORM)
-        self.warranty2 = round(self.refurbisher.warranty2.amount
-                               + self.retailer.warranty2.amount
-                               + self.platform.warranty2.amount, 2)
+        if hasattr(self.refurbisher, 'warranty2'):
+            self.warranty2 = round(self.refurbisher.warranty2.amount
+                                   + self.retailer.warranty2.amount
+                                   + self.platform.warranty2.amount, 2)
 
     def _service(self, role):
         return self.Service(self.device, self.rating.rating_range, role, self.price)

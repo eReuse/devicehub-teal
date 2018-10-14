@@ -294,3 +294,9 @@ def test_workbench_fixtures(file: pathlib.Path, user: UserClient):
     user.post(res=em.Snapshot,
               data=s,
               status=201 if file.name not in SNAPSHOTS_NEED_ID else NeedsId)
+
+
+def test_workbench_asus_1001pxd_rate_low(user: UserClient):
+    """Tests an Asus 1001pxd with a low rate."""
+    s = file('asus-1001pxd.snapshot')
+    snapshot, _ = user.post(res=em.Snapshot, data=s)

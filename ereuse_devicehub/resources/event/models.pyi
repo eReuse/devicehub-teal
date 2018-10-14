@@ -262,7 +262,7 @@ class EreusePrice(Price):
     MULTIPLIER = ...  # type: Dict
 
     class Type:
-        def __init__(self) -> None:
+        def __init__(self, percentage, price) -> None:
             super().__init__()
             self.amount = ...  # type: float
             self.percentage = ...  # type: float
