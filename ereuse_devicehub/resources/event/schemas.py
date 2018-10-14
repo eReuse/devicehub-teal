@@ -142,13 +142,12 @@ class ManualRate(IndividualRate):
     appearance_range = EnumField(AppearanceRange,
                                  required=True,
                                  data_key='appearanceRange',
-                                 description='Grades the imperfections that aesthetically '
-                                             'affect the device, but not its usage.')
+                                 description=m.ManualRate.appearance_range.comment)
     functionality_range = EnumField(FunctionalityRange,
                                     required=True,
                                     data_key='functionalityRange',
-                                    description='Grades the defects of a device affecting usage.')
-    labelling = Boolean(description='Sets if there are labels stuck that should be removed.')
+                                    description=m.ManualRate.functionality_range.comment)
+    labelling = Boolean(description=m.ManualRate.labelling.comment)
 
 
 class WorkbenchRate(ManualRate):
@@ -156,8 +155,10 @@ class WorkbenchRate(ManualRate):
     ram = Float()
     data_storage = Float()
     graphic_card = Float()
-    bios = EnumField(Bios, description='How difficult it has been to set the bios to '
-                                       'boot from the network.')
+    bios = Float()
+    bios_range = EnumField(Bios,
+                           description=m.WorkbenchRate.bios_range.comment,
+                           data_key='biosRange')
 
 
 class AggregateRate(Rate):

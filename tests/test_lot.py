@@ -254,7 +254,7 @@ def test_post_get_lot(user: UserClient):
     assert not l['children']
 
 
-def test_post_add_children_view_ui_tree_normal(user: UserClient):
+def test_lot_post_add_children_view_ui_tree_normal(user: UserClient):
     """Tests adding children lots to a lot through the view and
     GETting the results."""
     parent, _ = user.post(({'name': 'Parent'}), res=Lot)

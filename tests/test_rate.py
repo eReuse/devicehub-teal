@@ -17,7 +17,7 @@ from tests import conftest
 def test_workbench_rate_db():
     rate = WorkbenchRate(processor=0.1,
                          ram=1.0,
-                         bios=Bios.A,
+                         bios_range=Bios.A,
                          labelling=False,
                          graphic_card=0.1,
                          data_storage=4.1,

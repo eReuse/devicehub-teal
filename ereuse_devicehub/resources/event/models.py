@@ -388,8 +388,17 @@ class IndividualRate(Rate):
 class ManualRate(IndividualRate):
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
     labelling = Column(Boolean)
+    labelling.comment = """Sets if there are labels stuck that should
+    be removed.
+    """
     appearance_range = Column(DBEnum(AppearanceRange))
+    appearance_range.comment = """Grades the imperfections that 
+    aesthetically affect the device, but not its usage.
+    """
     functionality_range = Column(DBEnum(FunctionalityRange))
+    functionality_range.comment = """Grades the defects of a device 
+    affecting usage.
+    """
 
 
 class WorkbenchRate(ManualRate):
@@ -400,7 +409,12 @@ class WorkbenchRate(ManualRate):
                           check_range('data_storage', *RATE_POSITIVE))
     graphic_card = Column(Float(decimal_return_scale=2),
                           check_range('graphic_card', *RATE_POSITIVE))
-    bios = Column(DBEnum(Bios))
+    bios = Column(Float(decimal_return_scale=2),
+                  check_range('bios', *RATE_POSITIVE))
+    bios_range = Column(DBEnum(Bios))
+    bios_range.comment = """How difficult it has been to set the bios
+    to boot from the network.
+    """
 
     # todo ensure for WorkbenchRate version and software are not None when inserting them
 

@@ -203,6 +203,11 @@ class AggregateRate(Rate):
 
 
 class ManualRate(IndividualRate):
+    labelling = ...  # type: Column
+    appearance_range = ...  # type: Column
+    functionality_range = ...  # type: Column
+    aggregate_rate_manual = ...  #type: relationship
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.labelling = ...  # type: bool
@@ -212,13 +217,22 @@ class ManualRate(IndividualRate):
 
 
 class WorkbenchRate(ManualRate):
+    processor = ...  # type: Column
+    ram = ...  # type: Column
+    data_storage = ...  # type: Column
+    graphic_card = ...  # type: Column
+    bios_range = ...  # type: Column
+    bios = ...  # type: Column
+    aggregate_rate_workbench = ...  #type: Column
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.processor = ...  # type: float
         self.ram = ...  # type: float
         self.data_storage = ...  # type: float
         self.graphic_card = ...  # type: float
-        self.bios = ...  # type: Bios
+        self.bios_range = ...  # type: Bios
+        self.bios = ...  # type: float
         self.aggregate_rate_workbench = ...  #type: AggregateRate
 
     def ratings(self) -> Set[Rate]:
