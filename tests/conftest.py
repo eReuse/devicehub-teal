@@ -104,7 +104,7 @@ def auth_app_context(app: Devicehub):
             password = ''
 
         app.auth.perform_auth(Auth())
-        yield
+        yield app
 
 
 def file(name: str) -> dict:

@@ -81,8 +81,7 @@ def test_add_edge():
     assert child in grandparent
 
 
-@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
-def test_lot_multiple_parents():
+def test_lot_multiple_parents(auth_app_context):
     """Tests creating a lot with two parent lots:
 
     grandparent1 grandparent2
@@ -108,12 +107,32 @@ def test_lot_multiple_parents():
     assert child in grandparent1
     assert child in grandparent2
 
+    nodes = auth_app_context.resources[Lot.t].VIEW.ui_tree()
+    assert nodes[0]['name'] == 'grandparent1'
+    assert nodes[0]['nodes'][0]['name'] == 'parent'
+    assert nodes[0]['nodes'][0]['nodes'][0]['name'] == 'child'
+    assert nodes[0]['nodes'][0]['nodes'][0]['nodes'] == []
+    assert nodes[1]['name'] == 'grandparent2'
+    assert nodes[1]['nodes'][0]['name'] == 'parent'
+    assert nodes[1]['nodes'][0]['nodes'][0]['name'] == 'child'
+    assert nodes[1]['nodes'][0]['nodes'][0]['nodes'] == []
+
+    # Now remove all childs
+
     grandparent1.remove_child(parent)
     assert parent not in grandparent1
     assert child in parent
     assert parent in grandparent2
     assert child not in grandparent1
     assert child in grandparent2
+
+    nodes = auth_app_context.resources[Lot.t].VIEW.ui_tree()
+    assert nodes[0]['name'] == 'grandparent1'
+    assert nodes[0]['nodes'] == []
+    assert nodes[1]['name'] == 'grandparent2'
+    assert nodes[1]['nodes'][0]['name'] == 'parent'
+    assert nodes[1]['nodes'][0]['nodes'][0]['name'] == 'child'
+    assert nodes[1]['nodes'][0]['nodes'][0]['nodes'] == []
 
     grandparent2.remove_child(parent)
     assert parent not in grandparent2
@@ -122,10 +141,29 @@ def test_lot_multiple_parents():
     assert child not in grandparent1
     assert child in parent
 
+    nodes = auth_app_context.resources[Lot.t].VIEW.ui_tree()
+    assert nodes[0]['name'] == 'grandparent1'
+    assert nodes[0]['nodes'] == []
+    assert nodes[1]['name'] == 'grandparent2'
+    assert nodes[1]['nodes'] == []
+    assert nodes[2]['name'] == 'parent'
+    assert nodes[2]['nodes'][0]['name'] == 'child'
+    assert nodes[2]['nodes'][0]['nodes'] == []
+
     parent.remove_child(child)
     assert child not in parent
     assert len(child.paths) == 1
     assert len(parent.paths) == 1
+
+    nodes = auth_app_context.resources[Lot.t].VIEW.ui_tree()
+    assert nodes[0]['name'] == 'grandparent1'
+    assert nodes[0]['nodes'] == []
+    assert nodes[1]['name'] == 'grandparent2'
+    assert nodes[1]['nodes'] == []
+    assert nodes[2]['name'] == 'parent'
+    assert nodes[2]['nodes'] == []
+    assert nodes[3]['name'] == 'child'
+    assert nodes[3]['nodes'] == []
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)

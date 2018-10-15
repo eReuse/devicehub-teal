@@ -59,12 +59,8 @@ class LotView(View):
         you can filter.
         """
         if args['format'] == LotFormat.UiTree:
-            nodes = []
-            for model in Path.query:  # type: Path
-                path = deque(model.path.path.split('.'))
-                self._p(nodes, path)
             return jsonify({
-                'items': nodes,
+                'items': self.ui_tree(),
                 'url': request.path
             })
         else:
@@ -85,7 +81,16 @@ class LotView(View):
             }
             return jsonify(ret)
 
-    def _p(self, nodes: List[dict], path: deque):
+    @classmethod
+    def ui_tree(cls) -> List[dict]:
+        nodes = []
+        for model in Path.query:  # type: Path
+            path = deque(model.path.path.split('.'))
+            cls._p(nodes, path)
+        return nodes
+
+    @classmethod
+    def _p(cls, nodes: List[dict], path: deque):
         """Recursively creates the nested lot structure.
 
         Every recursive step consumes path (a deque of lot_id),
@@ -109,7 +114,7 @@ class LotView(View):
             }
             nodes.append(node)
         if path:
-            self._p(node['nodes'], path)
+            cls._p(node['nodes'], path)
 
 
 class LotBaseChildrenView(View):
