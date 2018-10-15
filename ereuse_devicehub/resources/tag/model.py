@@ -75,8 +75,8 @@ class Tag(Thing):
         return url
 
     __table_args__ = (
-        UniqueConstraint(device_id, org_id, name='one_tag_per_org'),
-        UniqueConstraint(secondary, org_id, name='one_secondary_per_org')
+        UniqueConstraint(id, org_id, name='one tag id per organization'),
+        UniqueConstraint(secondary, org_id, name='one secondary tag per organization')
     )
 
     def __repr__(self) -> str:

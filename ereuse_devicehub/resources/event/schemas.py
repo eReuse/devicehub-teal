@@ -1,5 +1,3 @@
-import decimal
-
 from flask import current_app as app
 from marshmallow import Schema as MarshmallowSchema, ValidationError, validates_schema
 from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, List, Nested, String, \
@@ -101,44 +99,17 @@ class StepRandom(Step):
 class Rate(EventWithOneDevice):
     rating = Integer(validate=Range(*RATE_POSITIVE),
                      dump_only=True,
-                     data_key='ratingValue',
-                     description='The rating for the content.')
+                     description=m.Rate.rating.comment)
     software = EnumField(RatingSoftware,
                          dump_only=True,
-                         description='The algorithm used to produce this rating.')
+                         description=m.Rate.software.comment)
     version = Version(dump_only=True,
-                      description='The version of the software.')
+                      description=m.Rate.version.comment)
     appearance = Integer(validate=Range(-3, 5), dump_only=True)
-    functionality = Integer(validate=Range(-3, 5),
-                            dump_only=True,
-                            data_key='functionalityScore')
+    functionality = Integer(validate=Range(-3, 5), dump_only=True)
 
 
 class IndividualRate(Rate):
-    pass
-
-
-class AggregateRate(Rate):
-    ratings = NestedOn(IndividualRate, many=True)
-
-
-class PhotoboxRate(IndividualRate):
-    num = Integer(dump_only=True)
-    # todo Image
-
-
-class PhotoboxUserRate(IndividualRate):
-    assembling = Integer()
-    parts = Integer()
-    buttons = Integer()
-    dents = Integer()
-    decolorization = Integer()
-    scratches = Integer()
-    tag_adhesive = Integer()
-    dirt = Integer()
-
-
-class PhotoboxSystemRate(IndividualRate):
     pass
 
 
@@ -146,17 +117,12 @@ class ManualRate(IndividualRate):
     appearance_range = EnumField(AppearanceRange,
                                  required=True,
                                  data_key='appearanceRange',
-                                 description='Grades the imperfections that aesthetically '
-                                             'affect the device, but not its usage.')
+                                 description=m.ManualRate.appearance_range.comment)
     functionality_range = EnumField(FunctionalityRange,
                                     required=True,
                                     data_key='functionalityRange',
-                                    description='Grades the defects of a device affecting usage.')
-    labelling = Boolean(description='Sets if there are labels stuck that should be removed.')
-
-
-class AppRate(ManualRate):
-    pass
+                                    description=m.ManualRate.functionality_range.comment)
+    labelling = Boolean(description=m.ManualRate.labelling.comment)
 
 
 class WorkbenchRate(ManualRate):
@@ -164,16 +130,46 @@ class WorkbenchRate(ManualRate):
     ram = Float()
     data_storage = Float()
     graphic_card = Float()
-    bios = EnumField(Bios, description='How difficult it has been to set the bios to '
-                                       'boot from the network.')
+    bios = Float()
+    bios_range = EnumField(Bios,
+                           description=m.WorkbenchRate.bios_range.comment,
+                           data_key='biosRange')
+
+
+class AggregateRate(Rate):
+    workbench = NestedOn(WorkbenchRate, dump_only=True,
+                         description=m.AggregateRate.workbench_id.comment)
+    manual = NestedOn(ManualRate,
+                      dump_only=True,
+                      description=m.AggregateRate.manual_id.comment)
+    processor = Float(dump_only=True)
+    ram = Float(dump_only=True)
+    data_storage = Float(dump_only=True)
+    graphic_card = Float(dump_only=True)
+    bios = EnumField(Bios, dump_only=True)
+    bios_range = EnumField(Bios,
+                           description=m.WorkbenchRate.bios_range.comment,
+                           data_key='biosRange')
+    appearance_range = EnumField(AppearanceRange,
+                                 required=True,
+                                 data_key='appearanceRange',
+                                 description=m.ManualRate.appearance_range.comment)
+    functionality_range = EnumField(FunctionalityRange,
+                                    required=True,
+                                    data_key='functionalityRange',
+                                    description=m.ManualRate.functionality_range.comment)
+    labelling = Boolean(description=m.ManualRate.labelling.comment)
 
 
 class Price(EventWithOneDevice):
-    currency = EnumField(Currency, required=True)
-    price = Decimal(places=4, rounding=decimal.ROUND_HALF_EVEN, required=True)
-    software = EnumField(PriceSoftware, dump_only=True)
-    version = Version(dump_only=True)
-    rating = NestedOn(AggregateRate, dump_only=True)
+    currency = EnumField(Currency, required=True, description=m.Price.currency.comment)
+    price = Decimal(places=m.Price.SCALE,
+                    rounding=m.Price.ROUND,
+                    required=True,
+                    description=m.Price.price.comment)
+    software = EnumField(PriceSoftware, dump_only=True, description=m.Price.software.comment)
+    version = Version(dump_only=True, description=m.Price.version.comment)
+    rating = NestedOn(AggregateRate, dump_only=True, description=m.Price.rating_id.comment)
 
 
 class EreusePrice(Price):
@@ -285,7 +281,7 @@ class StressTest(Test):
 
 
 class Benchmark(EventWithOneDevice):
-    elapsed = TimeDelta(precision=TimeDelta.SECONDS)
+    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
 
 
 class BenchmarkDataStorage(Benchmark):

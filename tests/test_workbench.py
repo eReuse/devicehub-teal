@@ -27,7 +27,7 @@ def test_workbench_server_condensed(user: UserClient):
         file('workbench-server-3.erase'),
         file('workbench-server-4.install')
     ))
-    s['components'][5]['events'] = [file('workbench-server-3.erase')]
+    s['components'][5]['events'].append(file('workbench-server-3.erase'))
     # Create tags
     for t in s['device']['tags']:
         user.post({'id': t['id']}, res=Tag)
@@ -35,7 +35,7 @@ def test_workbench_server_condensed(user: UserClient):
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     events = snapshot['events']
     assert {(event['type'], event['device']) for event in events} == {
-        # todo missing Rate event aggregating the rates
+        ('AggregateRate', 1),
         ('WorkbenchRate', 1),
         ('BenchmarkProcessorSysbench', 5),
         ('StressTest', 1),
@@ -45,10 +45,26 @@ def test_workbench_server_condensed(user: UserClient):
         ('Install', 6),
         ('EraseSectors', 7),
         ('BenchmarkDataStorage', 6),
+        ('BenchmarkDataStorage', 7),
         ('TestDataStorage', 6)
     }
     assert snapshot['closed']
     assert not snapshot['error']
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert device['dataStorageSize'] == 1100
+    assert device['chassis'] == 'Tower'
+    assert device['hid'] == 'd1mr-d1s-d1ml'
+    assert device['graphicCardModel'] == device['components'][0]['model'] == 'gc1-1ml'
+    assert device['networkSpeeds'] == [1000, 58]
+    assert device['processorModel'] == device['components'][3]['model'] == 'p1-1ml'
+    assert device['ramSize'] == 2048, 'There are 3 RAM: 2 x 1024 and 1 None sizes'
+    assert device['rate']['closed']
+    assert not device['rate']['error']
+    assert device['rate']['rating'] == 0
+    assert device['rate']['workbench']
+    assert device['rate']['appearanceRange'] == 'A'
+    assert device['rate']['functionalityRange'] == 'B'
+    assert device['tags'][0]['id'] == 'tag1'
 
 
 @pytest.mark.xfail(reason='Functionality not yet developed.')
@@ -122,8 +138,9 @@ def test_workbench_server_phases(user: UserClient):
 def test_real_hp_11(user: UserClient):
     s = file('real-hp.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
-    assert snapshot['device']['hid'] == 'hewlett-packard-czc0408yjg-hp_compaq_8100_elite_sff'
-    assert snapshot['device']['chassis'] == 'Tower'
+    pc = snapshot['device']
+    assert pc['hid'] == 'hewlett-packard-czc0408yjg-hp_compaq_8100_elite_sff'
+    assert pc['chassis'] == 'Tower'
     assert set(e['type'] for e in snapshot['events']) == {
         'BenchmarkDataStorage',
         'BenchmarkProcessor',
@@ -133,6 +150,10 @@ def test_real_hp_11(user: UserClient):
         'StressTest'
     }
     assert len(list(e['type'] for e in snapshot['events'])) == 6
+    assert pc['networkSpeeds'] == [1000, None], 'Device has no WiFi'
+    assert pc['processorModel'] == 'intel core i3 cpu 530 @ 2.93ghz'
+    assert pc['ramSize'] == 8192
+    assert pc['dataStorageSize'] == 305245
 
 
 def test_real_toshiba_11(user: UserClient):
@@ -140,7 +161,7 @@ def test_real_toshiba_11(user: UserClient):
     snapshot, _ = user.post(res=em.Snapshot, data=s)
 
 
-def test_real_eee_1001pxd(user: UserClient):
+def test_snapshot_real_eee_1001pxd(user: UserClient):
     """
     Checks the values of the device, components,
     events and their relationships of a real pc.
@@ -155,6 +176,7 @@ def test_real_eee_1001pxd(user: UserClient):
     assert pc['manufacturer'] == 'asustek computer inc.'
     assert pc['hid'] == 'asustek_computer_inc-b8oaas048286-1001pxd'
     assert pc['tags'] == []
+    assert pc['networkSpeeds'] == [100, 0], 'Although it has WiFi we do not know the speed'
     components = snapshot['components']
     wifi = components[0]
     assert wifi['hid'] == 'qualcomm_atheros-74_2f_68_8b_fd_c8-ar9285_wireless_network_adapter'
@@ -170,7 +192,7 @@ def test_real_eee_1001pxd(user: UserClient):
     assert cpu['threads'] == 1
     assert cpu['speed'] == 1.667
     assert 'hid' not in cpu
-    assert cpu['model'] == 'intel atom cpu n455 @ 1.66ghz'
+    assert pc['processorModel'] == cpu['model'] == 'intel atom cpu n455 @ 1.66ghz'
     cpu, _ = user.get(res=Device, item=cpu['id'])
     events = cpu['events']
     sysbench = next(e for e in events if e['type'] == em.BenchmarkProcessorSysbench.t)
@@ -204,6 +226,7 @@ def test_real_eee_1001pxd(user: UserClient):
     ram = components[6]
     assert ram['interface'] == 'DDR2'
     assert ram['speed'] == 667
+    assert pc['ramSize'] == ram['size'] == 1024
     hdd = components[7]
     assert hdd['type'] == 'HardDrive'
     assert hdd['hid'] == 'hitachi-e2024242cv86hj-hts54322'
@@ -223,6 +246,7 @@ def test_real_eee_1001pxd(user: UserClient):
     assert erase['startTime']
     assert erase['zeros'] is False
     assert erase['error'] is False
+    assert hdd['privacy'] == 'EraseBasic'
     mother = components[8]
     assert mother['hid'] == 'asustek_computer_inc-eee0123456789-1001pxd'
 
@@ -241,6 +265,11 @@ def test_real_hp_quad_core(user: UserClient):
 def test_real_eee_1000h(user: UserClient):
     s = file('asus-eee-1000h.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
+
+
+@pytest.mark.xfail(reason='We do not have a snapshot file to use')
+def test_real_full_with_workbench_rate(user: UserClient):
+    pass
 
 
 SNAPSHOTS_NEED_ID = {
@@ -267,3 +296,9 @@ def test_workbench_fixtures(file: pathlib.Path, user: UserClient):
     user.post(res=em.Snapshot,
               data=s,
               status=201 if file.name not in SNAPSHOTS_NEED_ID else NeedsId)
+
+
+def test_workbench_asus_1001pxd_rate_low(user: UserClient):
+    """Tests an Asus 1001pxd with a low rate."""
+    s = file('asus-1001pxd.snapshot')
+    snapshot, _ = user.post(res=em.Snapshot, data=s)

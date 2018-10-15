@@ -14,7 +14,7 @@ device:
     appearanceRange: A
     functionalityRange: B
     labelling: True
-    bios: B
+    biosRange: B
 components:
 - type: GraphicCard
   serialNumber: gc1s
@@ -33,3 +33,4 @@ components:
   events:
   - type: BenchmarkProcessor
     rate: 2410
+    elapsed: 11

@@ -1,5 +1,7 @@
 from collections import Iterable
 from datetime import datetime, timedelta
+from decimal import Decimal, ROUND_HALF_EVEN, ROUND_UP
+from distutils.version import StrictVersion
 from typing import Set, Union
 from uuid import uuid4
 
@@ -24,16 +26,11 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Desktop, \
     Device, Laptop, Server
-from ereuse_devicehub.resources.enums import AppearanceRange, BOX_RATE_3, BOX_RATE_5, Bios, \
+from ereuse_devicehub.resources.enums import AppearanceRange, Bios, \
     FunctionalityRange, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
     ReceiverRole, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
-from ereuse_devicehub.resources.image.models import Image
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
-
-"""
-A quantity of money with a currency.
-"""
 
 
 class JoinedTableMixin:
@@ -54,7 +51,7 @@ class Event(Thing):
     incidence.comment = """
         Should this event be reviewed due some anomaly?
     """
-    closed = Column(Boolean, default=False, nullable=False)
+    closed = Column(Boolean, default=True, nullable=False)
     closed.comment = """
         Whether the author has finished the event.
         After this is set to True, no modifications are allowed.
@@ -360,8 +357,11 @@ class SnapshotRequest(db.Model):
 
 class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
     rating = Column(Float(decimal_return_scale=2), check_range('rating', *RATE_POSITIVE))
+    rating.comment = """The rating for the content."""
     software = Column(DBEnum(RatingSoftware))
+    software.comment = """The algorithm used to produce this rating."""
     version = Column(StrictVersionType)
+    version.comment = """The version of the software."""
     appearance = Column(Float(decimal_return_scale=2), check_range('appearance', *RATE_NEGATIVE))
     functionality = Column(Float(decimal_return_scale=2),
                            check_range('functionality', *RATE_NEGATIVE))
@@ -389,35 +389,16 @@ class IndividualRate(Rate):
     pass
 
 
-class AggregateRate(Rate):
-    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    ratings = relationship(IndividualRate,
-                           backref=backref('aggregated_ratings',
-                                           lazy=True,
-                                           order_by=lambda: IndividualRate.created,
-                                           collection_class=OrderedSet),
-                           secondary=lambda: RateAggregateRate.__table__,
-                           order_by=lambda: IndividualRate.created,
-                           collection_class=OrderedSet)
-    """The ratings this aggregateRate aggregates."""
-
-
-class RateAggregateRate(db.Model):
-    """
-    Represents the ``many to many`` relationship between
-    ``Rate`` and ``AggregateRate``.
-    """
-    rate_id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    aggregate_rate_id = Column(UUID(as_uuid=True),
-                               ForeignKey(AggregateRate.id),
-                               primary_key=True)
-
-
 class ManualRate(IndividualRate):
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
     labelling = Column(Boolean)
+    labelling.comment = """Sets if there are labels stuck that should
+    be removed.
+    """
     appearance_range = Column(DBEnum(AppearanceRange))
+    appearance_range.comment = AppearanceRange.__doc__
     functionality_range = Column(DBEnum(FunctionalityRange))
+    functionality_range.comment = FunctionalityRange.__doc__
 
 
 class WorkbenchRate(ManualRate):
@@ -428,63 +409,120 @@ class WorkbenchRate(ManualRate):
                           check_range('data_storage', *RATE_POSITIVE))
     graphic_card = Column(Float(decimal_return_scale=2),
                           check_range('graphic_card', *RATE_POSITIVE))
-    bios = Column(DBEnum(Bios))
+    bios = Column(Float(decimal_return_scale=2),
+                  check_range('bios', *RATE_POSITIVE))
+    bios_range = Column(DBEnum(Bios))
+    bios_range.comment = Bios.__doc__
 
     # todo ensure for WorkbenchRate version and software are not None when inserting them
 
-    def ratings(self) -> Set['WorkbenchRate']:
+    def ratings(self):
         """
         Computes all the possible rates taking this rating as a model.
 
         Returns a set of ratings, including this one, which is mutated.
         """
-        from ereuse_rate.main import main
+        from ereuse_devicehub.resources.event.rate.main import main
         return main(self, **app.config.get_namespace('WORKBENCH_RATE_'))
 
 
-class AppRate(ManualRate):
-    pass
-
-
-class PhotoboxRate(IndividualRate):
+class AggregateRate(Rate):
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    image_id = Column(UUID(as_uuid=True), ForeignKey(Image.id), nullable=False)
-    image = relationship(Image,
-                         uselist=False,
-                         cascade=CASCADE_OWN,
-                         single_parent=True,
-                         primaryjoin=Image.id == image_id)
+    manual_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
+    manual_id.comment = """The ManualEvent used to generate this
+    aggregation, or None if none used.
 
-    # todo how to ensure phtoboxrate.device == image.image_list.device?
+    An example of ManualEvent is using the web or the Android app
+    to rate a device.
+    """
+    manual = relationship(ManualRate,
+                          backref=backref('aggregate_rate_manual',
+                                          lazy=True,
+                                          order_by=lambda: AggregateRate.created,
+                                          collection_class=OrderedSet),
+                          primaryjoin=manual_id == ManualRate.id)
+    workbench_id = Column(UUID(as_uuid=True), ForeignKey(WorkbenchRate.id))
+    workbench_id.comment = """The WorkbenchRate used to generate
+    this aggregation, or None if none used.
+    """
+    workbench = relationship(WorkbenchRate,
+                             backref=backref('aggregate_rate_workbench',
+                                             lazy=True,
+                                             order_by=lambda: AggregateRate.created,
+                                             collection_class=OrderedSet),
+                             primaryjoin=workbench_id == WorkbenchRate.id)
 
+    def __init__(self, *args, **kwargs) -> None:
+        kwargs.setdefault('version', StrictVersion('1.0'))
+        super().__init__(*args, **kwargs)
 
-class PhotoboxUserRate(PhotoboxRate):
-    id = Column(UUID(as_uuid=True), ForeignKey(PhotoboxRate.id), primary_key=True)
-    assembling = Column(SmallInteger, check_range('assembling', *BOX_RATE_5), nullable=False)
-    parts = Column(SmallInteger, check_range('parts', *BOX_RATE_5), nullable=False)
-    buttons = Column(SmallInteger, check_range('buttons', *BOX_RATE_5), nullable=False)
-    dents = Column(SmallInteger, check_range('dents', *BOX_RATE_5), nullable=False)
-    decolorization = Column(SmallInteger,
-                            check_range('decolorization', *BOX_RATE_5),
-                            nullable=False)
-    scratches = Column(SmallInteger, check_range('scratches', *BOX_RATE_5), nullable=False)
-    tag_alignment = Column(SmallInteger,
-                           check_range('tag_alignment', *BOX_RATE_3),
-                           nullable=False)
-    tag_adhesive = Column(SmallInteger, check_range('tag_adhesive', *BOX_RATE_3), nullable=False)
-    dirt = Column(SmallInteger, check_range('dirt', *BOX_RATE_3), nullable=False)
+    # todo take value from LAST event (manual or workbench)
 
+    @property
+    def processor(self):
+        return self.workbench.processor
 
-class PhotoboxSystemRate(PhotoboxRate):
-    id = Column(UUID(as_uuid=True), ForeignKey(PhotoboxRate.id), primary_key=True)
+    @property
+    def ram(self):
+        return self.workbench.ram
+
+    @property
+    def data_storage(self):
+        return self.workbench.data_storage
+
+    @property
+    def graphic_card(self):
+        return self.workbench.graphic_card
+
+    @property
+    def bios(self):
+        return self.workbench.bios
+
+    @property
+    def functionality_range(self):
+        return self.workbench.functionality_range
+
+    @property
+    def appearance_range(self):
+        return self.workbench.appearance_range
+
+    @property
+    def bios_range(self):
+        return self.workbench.bios_range
+
+    @property
+    def labelling(self):
+        return self.workbench.labelling
+
+    @classmethod
+    def from_workbench_rate(cls, rate: WorkbenchRate):
+        aggregate = cls()
+        aggregate.rating = rate.rating
+        aggregate.software = rate.software
+        aggregate.appearance = rate.appearance
+        aggregate.functionality = rate.functionality
+        aggregate.device = rate.device
+        aggregate.workbench = rate
+        return aggregate
 
 
 class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    SCALE = 4
+    ROUND = ROUND_HALF_EVEN
     currency = Column(DBEnum(Currency), nullable=False)
-    price = Column(Numeric(precision=19, scale=4), check_range('price', 0), nullable=False)
+    currency.comment = """The currency of this price as for ISO 4217."""
+    price = Column(Numeric(precision=19, scale=SCALE), check_range('price', 0), nullable=False)
+    price.comment = """The value."""
     software = Column(DBEnum(PriceSoftware))
+    software.comment = """The software used to compute this price,
+    if the price was computed automatically. This field is None
+    if the price has been manually set.
+    """
     version = Column(StrictVersionType)
+    version.comment = """The version of the software, or None."""
     rating_id = Column(UUID(as_uuid=True), ForeignKey(AggregateRate.id))
+    rating_id.comment = """The AggregateRate used to auto-compute
+    this price, if it has not been set manually."""
     rating = relationship(AggregateRate,
                           backref=backref('price',
                                           lazy=True,
@@ -493,8 +531,17 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
                           primaryjoin=AggregateRate.id == rating_id)
 
     def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.currency = self.currency or app.config['PRICE_CURRENCY']
+        if 'price' in kwargs:
+            assert isinstance(kwargs['price'], Decimal), 'Price must be a Decimal'
+        super().__init__(currency=kwargs.pop('currency', app.config['PRICE_CURRENCY']), **kwargs)
+
+    @classmethod
+    def to_price(cls, value: Union[Decimal, float], rounding=ROUND) -> Decimal:
+        """Returns a Decimal value with the correct scale for Price.price."""
+        if isinstance(value, float):
+            value = Decimal(value)
+        # equation from marshmallow.fields.Decimal
+        return value.quantize(Decimal((0, (1,), -cls.SCALE)), rounding=rounding)
 
 
 class EreusePrice(Price):
@@ -505,9 +552,10 @@ class EreusePrice(Price):
     }
 
     class Type:
-        def __init__(self, percentage, price) -> None:
+        def __init__(self, percentage: float, price: Decimal) -> None:
             # see https://stackoverflow.com/a/29651462 for the - 0.005
-            self.amount = round(price * percentage - 0.005, 2)
+            self.amount = EreusePrice.to_price(price * Decimal(percentage))
+            self.percentage = EreusePrice.to_price(price * Decimal(percentage))
             self.percentage = round(percentage - 0.005, 2)
 
     class Service:
@@ -543,20 +591,25 @@ class EreusePrice(Price):
         }
         SCHEMA[Server] = SCHEMA[Desktop]
 
-        def __init__(self, device, rating_range, role, price) -> None:
+        def __init__(self, device, rating_range, role, price: Decimal) -> None:
             cls = device.__class__ if device.__class__ != Server else Desktop
             rate = self.SCHEMA[cls][rating_range]
-            self.standard = EreusePrice.Type(rate['STD'][role], price)
-            self.warranty2 = EreusePrice.Type(rate['WR2'][role], price)
+            self.standard = EreusePrice.Type(rate[self.STANDARD][role], price)
+            if self.WARRANTY2 in rate:
+                self.warranty2 = EreusePrice.Type(rate[self.WARRANTY2][role], price)
 
     def __init__(self, rating: AggregateRate, **kwargs) -> None:
         if rating.rating_range == RatingRange.VERY_LOW:
             raise ValueError('Cannot compute price for Range.VERY_LOW')
-        self.price = round(rating.rating * self.MULTIPLIER[rating.device.__class__], 2)
-        super().__init__(rating=rating, device=rating.device, **kwargs)
+        # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
+        price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)
+        super().__init__(rating=rating,
+                         device=rating.device,
+                         price=price,
+                         software=kwargs.pop('software', app.config['PRICE_SOFTWARE']),
+                         version=kwargs.pop('version', app.config['PRICE_VERSION']),
+                         **kwargs)
         self._compute()
-        self.software = self.software or app.config['PRICE_SOFTWARE']
-        self.version = self.version or app.config['PRICE_VERSION']
 
     @orm.reconstructor
     def _compute(self):
@@ -567,9 +620,10 @@ class EreusePrice(Price):
         self.refurbisher = self._service(self.Service.REFURBISHER)
         self.retailer = self._service(self.Service.RETAILER)
         self.platform = self._service(self.Service.PLATFORM)
-        self.warranty2 = round(self.refurbisher.warranty2.amount
-                               + self.retailer.warranty2.amount
-                               + self.platform.warranty2.amount, 2)
+        if hasattr(self.refurbisher, 'warranty2'):
+            self.warranty2 = round(self.refurbisher.warranty2.amount
+                                   + self.retailer.warranty2.amount
+                                   + self.platform.warranty2.amount, 2)
 
     def _service(self, role):
         return self.Service(self.device, self.rating.rating_range, role, self.price)

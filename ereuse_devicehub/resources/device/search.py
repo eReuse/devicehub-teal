@@ -108,6 +108,7 @@ class DeviceSearch(db.Model):
         tags = session.query(
             search.Search.vectorize(
                 (db.func.string_agg(Tag.id, ' '), search.Weight.A),
+                (db.func.string_agg(Tag.secondary, ' '), search.Weight.A),
                 (db.func.string_agg(Organization.name, ' '), search.Weight.B)
             )
         ).filter(Tag.device_id == device.id).join(Tag.org)

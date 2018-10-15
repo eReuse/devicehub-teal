@@ -12,6 +12,7 @@ state Attributes {
 	state Usufructuarees
 	state Reservees
 	state "Physical\nPossessor"
+	state "Waste\n\Product"
 }
 
 state Physical {
@@ -35,8 +36,17 @@ state Trading {
 	Reserved --> Cancelled : Cancel
 	Sold --> Cancelled : Cancel
 	Sold --> Payed : Pay
-	Registered --> ToBeDisposed
-	ToBeDisposed --> Disposed : DisposeProduct
+	Registered --> ToBeDisposed : ToDisposeProduct
+	ToBeDisposed --> ProductDisposed : DisposeProduct
+	Registered --> Donated: Donate
+	Registered --> Renting: Rent
+	Donated --> Cancelled : Cancel
+	Renting --> Cancelled : Cancel
+}
+
+state DataStoragePrivacyCompliance {
+    state Erased
+    state Destroyed
 }
 
 

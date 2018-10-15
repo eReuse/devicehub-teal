@@ -235,3 +235,21 @@ class ReceiverRole(Enum):
     CollectionPoint = 'A collection point.'
     RecyclingPoint = 'A recycling point.'
     Transporter = 'An user that ships the devices to another one.'
+
+
+class DataStoragePrivacyCompliance(Enum):
+    EraseBasic = 'EraseBasic'
+    EraseBasicError = 'EraseBasicError'
+    EraseSectors = 'EraseSectors'
+    EraseSectorsError = 'EraseSectorsError'
+    Destruction = 'Destruction'
+    DestructionError = 'DestructionError'
+
+    @classmethod
+    def from_erase(cls, erasure) -> 'DataStoragePrivacyCompliance':
+        """Returns the correct enum depending of the passed-in erasure."""
+        from ereuse_devicehub.resources.event.models import EraseSectors
+        if isinstance(erasure, EraseSectors):
+            return cls.EraseSectors if not erasure.error else cls.EraseSectorsError
+        else:
+            return cls.EraseBasic if not erasure.error else cls.EraseBasicError

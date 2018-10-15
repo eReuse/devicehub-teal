@@ -1,5 +1,7 @@
 import ipaddress
 from datetime import timedelta
+from decimal import Decimal
+from typing import Tuple
 
 import pytest
 from flask import current_app as app, g
@@ -8,6 +10,7 @@ from teal.enums import Currency, Subdivision
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
 from ereuse_devicehub.resources.enums import ComputerChassis, TestDataStorageLength
@@ -175,22 +178,24 @@ def test_update_parent():
     assert not benchmark.parent
 
 
-@pytest.mark.parametrize('event_model', [
-    models.ToRepair,
-    models.Repair,
-    models.ToPrepare,
-    models.ReadyToUse,
-    models.ToPrepare,
-    models.Prepare,
+@pytest.mark.parametrize('event_model_state', [
+    (models.ToRepair, states.Physical.ToBeRepaired),
+    (models.Repair, states.Physical.Repaired),
+    (models.ToPrepare, states.Physical.Preparing),
+    (models.ReadyToUse, states.Physical.ReadyToBeUsed),
+    (models.ToPrepare, states.Physical.Preparing),
+    (models.Prepare, states.Physical.Prepared)
 ])
-def test_generic_event(event_model: models.Event, user: UserClient):
+def test_generic_event(event_model_state: Tuple[models.Event, states.Trading], user: UserClient):
     """Tests POSTing all generic events."""
+    event_model, state = event_model_state
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     event = {'type': event_model.t, 'devices': [snapshot['device']['id']]}
     event, _ = user.post(event, res=models.Event)
     assert event['devices'][0]['id'] == snapshot['device']['id']
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
     assert device['events'][-1]['id'] == event['id']
+    assert device['physical'] == state.name
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
@@ -214,6 +219,8 @@ def test_live():
     assert live['ip'] == '79.147.10.10'
     assert live['subdivision'] == 'ES-CA'
     assert live['country'] == 'ES'
+    device, _ = client.get(res=Device, item=live['device']['id'])
+    assert device['physical'] == states.Physical.InUse.name
 
 
 @pytest.mark.xfail(reson='Functionality not developed.')
@@ -226,14 +233,15 @@ def test_reserve(user: UserClient):
     """Performs a reservation and then cancels it."""
 
 
-@pytest.mark.parametrize('event_model', [
-    models.Sell,
-    models.Donate,
-    models.Rent,
-    models.DisposeProduct
+@pytest.mark.parametrize('event_model_state', [
+    (models.Sell, states.Trading.Sold),
+    (models.Donate, states.Trading.Donated),
+    (models.Rent, states.Trading.Renting),
+    (models.DisposeProduct, states.Trading.ProductDisposed)
 ])
-def test_trade(event_model: models.Event, user: UserClient):
-    """Tests POSTing all generic events."""
+def test_trade(event_model_state: Tuple[models.Event, states.Trading], user: UserClient):
+    """Tests POSTing all Trade events."""
+    event_model, state = event_model_state
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     event = {
         'type': event_model.t,
@@ -246,6 +254,7 @@ def test_trade(event_model: models.Event, user: UserClient):
     assert event['devices'][0]['id'] == snapshot['device']['id']
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
     assert device['events'][-1]['id'] == event['id']
+    assert device['trading'] == state.name
 
 
 @pytest.mark.xfail(reson='Develop migrate')
@@ -257,8 +266,9 @@ def test_migrate():
 def test_price_custom():
     computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1',
                        chassis=ComputerChassis.Docking)
-    price = models.Price(price=25.25, currency=Currency.EUR)
+    price = models.Price(price=Decimal(25.25), currency=Currency.EUR)
     price.device = computer
+    assert computer.price == price
     db.session.add(computer)
     db.session.commit()
 
@@ -268,3 +278,15 @@ def test_price_custom():
     assert p['device']['id'] == price.device.id == computer.id
     assert p['price'] == 25.25
     assert p['currency'] == Currency.EUR.name == 'EUR'
+
+    c, _ = client.get(res=Device, item=computer.id)
+    assert c['price']['id'] == p['id']
+
+
+@pytest.mark.xfail(reson='Develop test')
+def test_ereuse_price():
+    """Tests the several ways of creating eReuse Price, emulating
+    from an AggregateRate and ensuring that the different Range
+    return correct results."""
+    # important to check Range.low no returning warranty2
+    # Range.verylow not returning nothing
