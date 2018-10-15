@@ -12,10 +12,12 @@ from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Desktop, Device
 from ereuse_devicehub.resources.enums import ComputerChassis
+from ereuse_devicehub.resources.event.models import Snapshot
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.tag.view import CannotCreateETag, LinkedToAnotherDevice, \
     TagNotLinked
 from tests import conftest
+from tests.conftest import file
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -179,8 +181,10 @@ def test_tag_manual_link(app: Devicehub, user: UserClient):
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_tag_secondary():
-    """Creates and consumes tags with a secondary id."""
+def test_tag_secondary_workbench_link_find(user: UserClient):
+    """Creates and consumes tags with a secondary id, linking them
+    through Workbench to a device
+    and getting them through search."""
     t = Tag('foo', secondary='bar')
     db.session.add(t)
     db.session.flush()
@@ -188,6 +192,18 @@ def test_tag_secondary():
     assert Tag.from_an_id('foo').one() == t
     with pytest.raises(ResourceNotFound):
         Tag.from_an_id('nope').one()
+
+    s = file('basic.snapshot')
+    s['device']['tags'] = [{'id': 'foo', 'secondary': 'bar', 'type': 'Tag'}]
+    snapshot, _ = user.post(s, res=Snapshot)
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert device['tags'][0]['id'] == 'foo'
+    assert device['tags'][0]['secondary'] == 'bar'
+
+    r, _ = user.get(res=Device, query=[('search', 'foo'), ('filter', {'type': ['Computer']})])
+    assert len(r['items']) == 1
+    r, _ = user.get(res=Device, query=[('search', 'bar'), ('filter', {'type': ['Computer']})])
+    assert len(r['items']) == 1
 
 
 def test_tag_create_tags_cli_csv(app: Devicehub, user: UserClient):
