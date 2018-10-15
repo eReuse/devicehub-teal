@@ -199,6 +199,22 @@ class AggregateRate(Rate):
     def bios(self):
         return self.workbench.bios
 
+    @property
+    def functionality_range(self):
+        return self.workbench.functionality_range
+
+    @property
+    def appearance_range(self):
+        return self.workbench.appearance_range
+
+    @property
+    def bios_range(self):
+        return self.workbench.bios_range
+
+    @property
+    def labelling(self):
+        return self.workbench.labelling
+
     @classmethod
     def from_workbench_rate(cls, rate: WorkbenchRate) -> AggregateRate:
         pass

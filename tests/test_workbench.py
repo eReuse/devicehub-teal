@@ -62,6 +62,8 @@ def test_workbench_server_condensed(user: UserClient):
     assert not device['rate']['error']
     assert device['rate']['rating'] == 0
     assert device['rate']['workbench']
+    assert device['rate']['appearanceRange'] == 'A'
+    assert device['rate']['functionalityRange'] == 'B'
     assert device['tags'][0]['id'] == 'tag1'
 
 

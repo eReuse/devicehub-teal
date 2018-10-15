@@ -99,7 +99,6 @@ class StepRandom(Step):
 class Rate(EventWithOneDevice):
     rating = Integer(validate=Range(*RATE_POSITIVE),
                      dump_only=True,
-                     data_key='rating',
                      description=m.Rate.rating.comment)
     software = EnumField(RatingSoftware,
                          dump_only=True,
@@ -107,9 +106,7 @@ class Rate(EventWithOneDevice):
     version = Version(dump_only=True,
                       description=m.Rate.version.comment)
     appearance = Integer(validate=Range(-3, 5), dump_only=True)
-    functionality = Integer(validate=Range(-3, 5),
-                            dump_only=True,
-                            data_key='functionalityScore')
+    functionality = Integer(validate=Range(-3, 5), dump_only=True)
 
 
 class IndividualRate(Rate):
@@ -150,6 +147,18 @@ class AggregateRate(Rate):
     data_storage = Float(dump_only=True)
     graphic_card = Float(dump_only=True)
     bios = EnumField(Bios, dump_only=True)
+    bios_range = EnumField(Bios,
+                           description=m.WorkbenchRate.bios_range.comment,
+                           data_key='biosRange')
+    appearance_range = EnumField(AppearanceRange,
+                                 required=True,
+                                 data_key='appearanceRange',
+                                 description=m.ManualRate.appearance_range.comment)
+    functionality_range = EnumField(FunctionalityRange,
+                                    required=True,
+                                    data_key='functionalityRange',
+                                    description=m.ManualRate.functionality_range.comment)
+    labelling = Boolean(description=m.ManualRate.labelling.comment)
 
 
 class Price(EventWithOneDevice):
