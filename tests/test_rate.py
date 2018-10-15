@@ -1,3 +1,4 @@
+from decimal import Decimal
 from distutils.version import StrictVersion
 
 import pytest
@@ -64,17 +65,17 @@ def test_rate():
     rate.device = pc
     events = main.main(rate, RatingSoftware.ECost, StrictVersion('1.0'))
     price = next(e for e in events if isinstance(e, EreusePrice))
-    assert price.price == 92.2
-    assert price.retailer.standard.amount == 40.97
-    assert price.platform.standard.amount == 18.84
-    assert price.refurbisher.standard.amount == 32.38
+    assert price.price == Decimal('92.2001')
+    assert price.retailer.standard.amount == Decimal('40.9714')
+    assert price.platform.standard.amount == Decimal('18.8434')
+    assert price.refurbisher.standard.amount == Decimal('32.3853')
     assert price.price >= price.retailer.standard.amount \
            + price.platform.standard.amount \
            + price.refurbisher.standard.amount
-    assert price.retailer.warranty2.amount == 55.30
-    assert price.platform.warranty2.amount == 25.43
-    assert price.refurbisher.warranty2.amount == 43.72
-    assert price.warranty2 == 124.45
+    assert price.retailer.warranty2.amount == Decimal('55.3085')
+    assert price.platform.warranty2.amount == Decimal('25.4357')
+    assert price.refurbisher.warranty2.amount == Decimal('43.7259')
+    assert price.warranty2 == Decimal('124.47')
     # Checks relationships
     workbench_rate = next(e for e in events if isinstance(e, WorkbenchRate))
     aggregate_rate = next(e for e in events if isinstance(e, AggregateRate))

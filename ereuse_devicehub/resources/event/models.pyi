@@ -242,6 +242,8 @@ class WorkbenchRate(ManualRate):
 
 
 class Price(EventWithOneDevice):
+    SCALE = ...
+    ROUND = ...
     currency = ...  # type: Column
     price = ...  # type: Column
     software = ...  # type: Column
@@ -256,6 +258,10 @@ class Price(EventWithOneDevice):
         self.software = ...  # type: PriceSoftware
         self.version = ...  # type: StrictVersion
         self.rating = ...  # type: AggregateRate
+
+    @classmethod
+    def to_price(cls, value: Union[Decimal, float], rounding=ROUND) -> Decimal:
+        pass
 
 
 class EreusePrice(Price):

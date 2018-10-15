@@ -1,5 +1,6 @@
 import ipaddress
 from datetime import timedelta
+from decimal import Decimal
 from typing import Tuple
 
 import pytest
@@ -265,7 +266,7 @@ def test_migrate():
 def test_price_custom():
     computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1',
                        chassis=ComputerChassis.Docking)
-    price = models.Price(price=25.25, currency=Currency.EUR)
+    price = models.Price(price=Decimal(25.25), currency=Currency.EUR)
     price.device = computer
     assert computer.price == price
     db.session.add(computer)
@@ -280,3 +281,12 @@ def test_price_custom():
 
     c, _ = client.get(res=Device, item=computer.id)
     assert c['price']['id'] == p['id']
+
+
+@pytest.mark.xfail(reson='Develop test')
+def test_ereuse_price():
+    """Tests the several ways of creating eReuse Price, emulating
+    from an AggregateRate and ensuring that the different Range
+    return correct results."""
+    # important to check Range.low no returning warranty2
+    # Range.verylow not returning nothing

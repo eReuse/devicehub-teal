@@ -1,5 +1,6 @@
 from collections import Iterable
 from datetime import datetime, timedelta
+from decimal import Decimal, ROUND_HALF_EVEN, ROUND_UP
 from distutils.version import StrictVersion
 from typing import Set, Union
 from uuid import uuid4
@@ -488,9 +489,11 @@ class AggregateRate(Rate):
 
 
 class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    SCALE = 4
+    ROUND = ROUND_HALF_EVEN
     currency = Column(DBEnum(Currency), nullable=False)
     currency.comment = """The currency of this price as for ISO 4217."""
-    price = Column(Numeric(precision=19, scale=4), check_range('price', 0), nullable=False)
+    price = Column(Numeric(precision=19, scale=SCALE), check_range('price', 0), nullable=False)
     price.comment = """The value."""
     software = Column(DBEnum(PriceSoftware))
     software.comment = """The software used to compute this price,
@@ -510,8 +513,17 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
                           primaryjoin=AggregateRate.id == rating_id)
 
     def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.currency = self.currency or app.config['PRICE_CURRENCY']
+        if 'price' in kwargs:
+            assert isinstance(kwargs['price'], Decimal), 'Price must be a Decimal'
+        super().__init__(currency=kwargs.pop('currency', app.config['PRICE_CURRENCY']), **kwargs)
+
+    @classmethod
+    def to_price(cls, value: Union[Decimal, float], rounding=ROUND) -> Decimal:
+        """Returns a Decimal value with the correct scale for Price.price."""
+        if isinstance(value, float):
+            value = Decimal(value)
+        # equation from marshmallow.fields.Decimal
+        return value.quantize(Decimal((0, (1,), -cls.SCALE)), rounding=rounding)
 
 
 class EreusePrice(Price):
@@ -522,9 +534,10 @@ class EreusePrice(Price):
     }
 
     class Type:
-        def __init__(self, percentage, price) -> None:
+        def __init__(self, percentage: float, price: Decimal) -> None:
             # see https://stackoverflow.com/a/29651462 for the - 0.005
-            self.amount = round(price * percentage - 0.005, 2)
+            self.amount = EreusePrice.to_price(price * Decimal(percentage))
+            self.percentage = EreusePrice.to_price(price * Decimal(percentage))
             self.percentage = round(percentage - 0.005, 2)
 
     class Service:
@@ -560,7 +573,7 @@ class EreusePrice(Price):
         }
         SCHEMA[Server] = SCHEMA[Desktop]
 
-        def __init__(self, device, rating_range, role, price) -> None:
+        def __init__(self, device, rating_range, role, price: Decimal) -> None:
             cls = device.__class__ if device.__class__ != Server else Desktop
             rate = self.SCHEMA[cls][rating_range]
             self.standard = EreusePrice.Type(rate[self.STANDARD][role], price)
@@ -570,11 +583,15 @@ class EreusePrice(Price):
     def __init__(self, rating: AggregateRate, **kwargs) -> None:
         if rating.rating_range == RatingRange.VERY_LOW:
             raise ValueError('Cannot compute price for Range.VERY_LOW')
-        self.price = round(rating.rating * self.MULTIPLIER[rating.device.__class__], 2)
-        super().__init__(rating=rating, device=rating.device, **kwargs)
+        # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
+        price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)
+        super().__init__(rating=rating,
+                         device=rating.device,
+                         price=price,
+                         software=kwargs.pop('software', app.config['PRICE_SOFTWARE']),
+                         version=kwargs.pop('version', app.config['PRICE_VERSION']),
+                         **kwargs)
         self._compute()
-        self.software = self.software or app.config['PRICE_SOFTWARE']
-        self.version = self.version or app.config['PRICE_VERSION']
 
     @orm.reconstructor
     def _compute(self):

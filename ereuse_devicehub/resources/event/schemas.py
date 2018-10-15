@@ -1,5 +1,3 @@
-import decimal
-
 from flask import current_app as app
 from marshmallow import Schema as MarshmallowSchema, ValidationError, validates_schema
 from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, List, Nested, String, \
@@ -156,8 +154,8 @@ class AggregateRate(Rate):
 
 class Price(EventWithOneDevice):
     currency = EnumField(Currency, required=True, description=m.Price.currency.comment)
-    price = Decimal(places=4,
-                    ounding=decimal.ROUND_HALF_EVEN,
+    price = Decimal(places=m.Price.SCALE,
+                    rounding=m.Price.ROUND,
                     required=True,
                     description=m.Price.price.comment)
     software = EnumField(PriceSoftware, dump_only=True, description=m.Price.software.comment)
