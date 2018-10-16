@@ -44,32 +44,17 @@
     </article>
     <article class="col-md-6">
         <h3>These are the specifications</h3>
-        <ul class="list-unstyled">
-            <li>
-                <ul class="list-inline">
-                    {% if device.trading %}
-                        <li>
-                            {{ device.trading.name }}
-                        </li>
-                    {% endif %}
-                    {% if device.physical %}
-                        <li>
-                            {{ device.physical.name }}
-                        </li>
-                    {% endif %}
-                </ul>
-            </li>
-            {% if device.physical_possessor %}
-                <li>
-                    Physical possessor:
-                    {{ device.physical_possessor.name }},
-                    {{ device.physical_possessor.country.value }}
-                </li>
-            {% endif %}
-        </ul>
-
+        {% if device.trading %}
+            {{ device.trading.name }}
+        {% endif %}
+        {% if device.trading and device.physical %}
+            and
+        {% endif %}
+        {% if device.phyisical %}
+            {{ device.physical.name }}
+        {% endif %}
         <div class="table-responsive">
-            <table class="table">
+            <table class="table table-striped">
                 <thead>
                 <tr>
                     <th></th>
@@ -80,10 +65,7 @@
                 {% if device.processor_model %}
                     <tr>
                         <td>
-                            <details>
-                                <summary>CPU – {{ device.processor_model }}</summary>
-                                {{ macros.component_type(device.components, 'Processor') }}
-                            </details>
+                            CPU – {{ device.processor_model }}
                         </td>
                         <td>{{ device.rate.processor_range if device.rate }}</td>
                     </tr>
@@ -91,10 +73,8 @@
                 {% if device.ram_size %}
                     <tr>
                         <td>
-                            <details>
-                                <summary>RAM – {{ device.ram_size // 1000 }} GB</summary>
-                                {{ macros.component_type(device.components, 'RamModule') }}
-                            </details>
+                            RAM – {{ device.ram_size // 1000 }} GB
+                            {{ macros.component_type(device.components, 'RamModule') }}
                         </td>
                         <td>{{ device.rate.ram_range if device.rate }}</td>
                     </tr>
@@ -102,12 +82,9 @@
                 {% if device.data_storage_size %}
                     <tr>
                         <td>
-                            <details>
-                                <summary>Data Storage – {{ device.data_storage_size // 1000 }} GB
-                                </summary>
-                                {{ macros.component_type(device.components, 'SolidStateDrive') }}
-                                {{ macros.component_type(device.components, 'HardDrive') }}
-                            </details>
+                            Data Storage – {{ device.data_storage_size // 1000 }} GB
+                            {{ macros.component_type(device.components, 'SolidStateDrive') }}
+                            {{ macros.component_type(device.components, 'HardDrive') }}
                         </td>
                         <td>{{ device.rate.data_storage_range if device.rate }}</td>
                     </tr>
@@ -115,10 +92,8 @@
                 {% if device.graphic_card_model %}
                     <tr>
                         <td>
-                            <details>
-                                <summary>Graphics – {{ device.graphic_card_model }}</summary>
-                                {{ macros.component_type(device.components, 'GraphicCard') }}
-                            </details>
+                            Graphics – {{ device.graphic_card_model }}
+                            {{ macros.component_type(device.components, 'GraphicCard') }}
                         </td>
                         <td></td>
                     </tr>
@@ -126,26 +101,23 @@
                 {% if device.network_speeds %}
                     <tr>
                         <td>
-                            <details>
-                                <summary>Network –
-                                    {% if device.network_speeds[0] %}
-                                        Ethernet
-                                        {% if device.network_speeds[0] != None %}
-                                            max. {{ device.network_speeds[0] }} Mbps
-                                        {% endif %}
-                                    {% endif %}
-                                    {% if device.network_speeds[0] and device.network_speeds[1] %}
-                                        +
-                                    {% endif %}
-                                    {% if device.network_speeds[1] %}
-                                        WiFi
-                                        {% if device.network_speeds[1] != None %}
-                                            max. {{ device.network_speeds[1] }} Mbps
-                                        {% endif %}
-                                    {% endif %}
-                                </summary>
-                                {{ macros.component_type(device.components, 'NetworkAdapter') }}
-                            </details>
+                            Network –
+                            {% if device.network_speeds[0] %}
+                                Ethernet
+                                {% if device.network_speeds[0] != None %}
+                                    max. {{ device.network_speeds[0] }} Mbps
+                                {% endif %}
+                            {% endif %}
+                            {% if device.network_speeds[0] and device.network_speeds[1] %}
+                                +
+                            {% endif %}
+                            {% if device.network_speeds[1] %}
+                                WiFi
+                                {% if device.network_speeds[1] != None %}
+                                    max. {{ device.network_speeds[1] }} Mbps
+                                {% endif %}
+                            {% endif %}
+                            {{ macros.component_type(device.components, 'NetworkAdapter') }}
                         </td>
                         <td></td>
                     </tr>
@@ -185,11 +157,10 @@
         </div>
         <h3>This is the traceability log of your device</h3>
         <div class="text-right">
-            <small>Oldest one.</small>
-
+            <small>Latest one.</small>
         </div>
         <ol>
-            {% for event in device.events %}
+            {% for event in device.events|reverse %}
                 <li>
                     <strong>
                         {{ event.type }}
@@ -207,11 +178,13 @@
             {% endfor %}
         </ol>
         <div class="text-right">
-            <small>Latest one.</small>
+            <small>Oldest one.</small>
         </div>
     </article>
 </div>
-<img class="img-responsive center-block" style="max-width: 30em;"
-     src="{{ url_for('Device.static', filename='ereuse-logo.svg') }}">
+<a href="https://www.ereuse.org/">
+    <img class="img-responsive center-block" style="max-width: 30em;"
+         src="{{ url_for('Device.static', filename='ereuse-logo.svg') }}">
+</a>
 </body>
 </html>

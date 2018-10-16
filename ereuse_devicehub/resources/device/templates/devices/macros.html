@@ -1,5 +1,5 @@
 {% macro component_type(components, type) %}
-    <ul class="list-unstyled">
+    <ul>
         {% for c in components if c.t == type %}
             <li>
                 {{ c.__format__('t') }}
