@@ -12,8 +12,8 @@ from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.agent.schemas import Agent
 from ereuse_devicehub.resources.device.schemas import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    PriceSoftware, RATE_POSITIVE, RatingSoftware, ReceiverRole, SnapshotExpectedEvents, \
-    SnapshotSoftware, TestDataStorageLength
+    PriceSoftware, RATE_POSITIVE, RatingRange, RatingSoftware, ReceiverRole, \
+    SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
@@ -107,6 +107,7 @@ class Rate(EventWithOneDevice):
                       description=m.Rate.version.comment)
     appearance = Integer(validate=Range(-3, 5), dump_only=True)
     functionality = Integer(validate=Range(-3, 5), dump_only=True)
+    rating_range = EnumField(RatingRange, dump_only=True, data_key='ratingRange')
 
 
 class IndividualRate(Rate):
@@ -134,6 +135,10 @@ class WorkbenchRate(ManualRate):
     bios_range = EnumField(Bios,
                            description=m.WorkbenchRate.bios_range.comment,
                            data_key='biosRange')
+    data_storage_range = EnumField(RatingRange, dump_only=True, data_key='dataStorageRange')
+    ram_range = EnumField(RatingRange, dump_only=True, data_key='ramRange')
+    processor_range = EnumField(RatingRange, dump_only=True, data_key='processorRange')
+    graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
 
 
 class AggregateRate(Rate):
@@ -159,6 +164,10 @@ class AggregateRate(Rate):
                                     data_key='functionalityRange',
                                     description=m.ManualRate.functionality_range.comment)
     labelling = Boolean(description=m.ManualRate.labelling.comment)
+    data_storage_range = EnumField(RatingRange, dump_only=True, data_key='dataStorageRange')
+    ram_range = EnumField(RatingRange, dump_only=True, data_key='ramRange')
+    processor_range = EnumField(RatingRange, dump_only=True, data_key='processorRange')
+    graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
 
 
 class Price(EventWithOneDevice):
@@ -265,7 +274,7 @@ class Test(EventWithOneDevice):
 class TestDataStorage(Test):
     length = EnumField(TestDataStorageLength, required=True)
     status = SanitizedStr(lower=True, validate=Length(max=STR_SIZE), required=True)
-    lifetime = TimeDelta(precision=TimeDelta.DAYS)
+    lifetime = TimeDelta(precision=TimeDelta.HOURS)
     assessment = Boolean()
     reallocated_sector_count = Integer(data_key='reallocatedSectorCount')
     power_cycle_count = Integer(data_key='powerCycleCount')

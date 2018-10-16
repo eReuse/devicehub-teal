@@ -2,9 +2,9 @@
     <ul class="list-unstyled">
         {% for c in components if c.t == type %}
             <li>
-                <strong>{{ c.__format__('t') }}</strong>
+                {{ c.__format__('t') }}
                 <p>
-                    <small>{{ c.__format__('s') }}</small>
+                    <small class="text-muted">{{ c.__format__('s') }}</small>
                 </p>
             </li>
         {% endfor %}

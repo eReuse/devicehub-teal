@@ -13,85 +13,205 @@
 <body class="container">
 
 <div class="page-header">
-    <h1>{{ device.__format__('t') }}
+    <h1>{{ device.__format__('t') }}<br>
         <small>{{ device.__format__('s') }}</small>
     </h1>
 </div>
 
+<h2 class='text-center'>
+    This is your {{ device.t }}.
+</h2>
+
 <div class="row">
     <article class="col-md-6">
-        <table class="table">
-            <thead>
-            <tr>
-                <th></th>
-                <th>Range</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    <details>
-                        <summary>CPU – {{ device.processor_model }}</summary>
-                        {{ macros.component_type(device.components, 'Processor') }}
-                    </details>
-                </td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>
-                    <details>
-                        <summary>RAM – {{ device.ram_size // 1000 }} GB</summary>
-                        {{ macros.component_type(device.components, 'RamModule') }}
-                    </details>
-                </td>
-                <td>//range//</td>
-            </tr>
-            <tr>
-                <td>
-                    <details>
-                        <summary>Data Storage – {{ device.data_storage_size // 1000 }} GB</summary>
-                        {{ macros.component_type(device.components, 'SolidStateDrive') }}
-                        {{ macros.component_type(device.components, 'HardDrive') }}
-                    </details>
-                </td>
-                <td>//range//</td>
-            </tr>
-            <tr>
-                <td>
-                    <details>
-                        <summary>Graphics – {{ device.graphic_card_model }}</summary>
-                        {{ macros.component_type(device.components, 'GraphicCard') }}
-                    </details>
-                </td>
-                <td>//range//</td>
-            </tr>
-            <tr>
-                <td>
-                    <details>
-                        <summary>Network –
-                            {% if device.network_speeds[0] %}
-                                Ethernet of {{ device.network_speeds[0] }} Mbps
-                            {% endif %}
-                            {% if device.network_speeds[0] and device.network_speeds[1] %}
-                                +
-                            {% endif %}
-                            {% if device.network_speeds[1] %}
-                                WiFi of {{ device.network_speeds[1] }} Mbps
-                            {% endif %}
-                        </summary>
-                        {{ macros.component_type(device.components, 'NetworkAdapter') }}
-                    </details>
-                </td>
-                <td></td>
-            </tr>
-            </tbody>
-        </table>
+        <h3>You can verify the originality of your device.</h3>
+        <p>
+            If your device comes with the following tag
+        </p>
+        <img class="img-responsive center-block" style="width: 12em;"
+             src="{{ url_for('Device.static', filename='photochromic-alone.svg') }}">
+        <p>
+            It means it has been refurbished by an eReuse.org
+            certificated organization.
+        </p>
+        <p>
+            The tag is special –illuminate it with the torch of
+            your phone for 6 seconds and it will react like in
+            the following image:
+        </p>
+        <img class="img-responsive center-block" style="width: 30em;"
+             src="{{ url_for('Device.static', filename='photochromic-tag-web.svg') }}">
     </article>
-    <aside class="col-md-6">
-        <h2>Check the validity of the device</h2>
-        <p>Use the flashlight to scan...</p>
-    </aside>
-</div>
+    <article class="col-md-6">
+        <h3>These are the specifications</h3>
+        <ul class="list-unstyled">
+            <li>
+                <ul class="list-inline">
+                    {% if device.trading %}
+                        <li>
+                            {{ device.trading.name }}
+                        </li>
+                    {% endif %}
+                    {% if device.physical %}
+                        <li>
+                            {{ device.physical.name }}
+                        </li>
+                    {% endif %}
+                </ul>
+            </li>
+            {% if device.physical_possessor %}
+                <li>
+                    Physical possessor:
+                    {{ device.physical_possessor.name }},
+                    {{ device.physical_possessor.country.value }}
+                </li>
+            {% endif %}
+        </ul>
 
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Range</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if device.processor_model %}
+                    <tr>
+                        <td>
+                            <details>
+                                <summary>CPU – {{ device.processor_model }}</summary>
+                                {{ macros.component_type(device.components, 'Processor') }}
+                            </details>
+                        </td>
+                        <td>{{ device.rate.processor_range if device.rate }}</td>
+                    </tr>
+                {% endif %}
+                {% if device.ram_size %}
+                    <tr>
+                        <td>
+                            <details>
+                                <summary>RAM – {{ device.ram_size // 1000 }} GB</summary>
+                                {{ macros.component_type(device.components, 'RamModule') }}
+                            </details>
+                        </td>
+                        <td>{{ device.rate.ram_range if device.rate }}</td>
+                    </tr>
+                {% endif %}
+                {% if device.data_storage_size %}
+                    <tr>
+                        <td>
+                            <details>
+                                <summary>Data Storage – {{ device.data_storage_size // 1000 }} GB
+                                </summary>
+                                {{ macros.component_type(device.components, 'SolidStateDrive') }}
+                                {{ macros.component_type(device.components, 'HardDrive') }}
+                            </details>
+                        </td>
+                        <td>{{ device.rate.data_storage_range if device.rate }}</td>
+                    </tr>
+                {% endif %}
+                {% if device.graphic_card_model %}
+                    <tr>
+                        <td>
+                            <details>
+                                <summary>Graphics – {{ device.graphic_card_model }}</summary>
+                                {{ macros.component_type(device.components, 'GraphicCard') }}
+                            </details>
+                        </td>
+                        <td></td>
+                    </tr>
+                {% endif %}
+                {% if device.network_speeds %}
+                    <tr>
+                        <td>
+                            <details>
+                                <summary>Network –
+                                    {% if device.network_speeds[0] %}
+                                        Ethernet
+                                        {% if device.network_speeds[0] != None %}
+                                            max. {{ device.network_speeds[0] }} Mbps
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if device.network_speeds[0] and device.network_speeds[1] %}
+                                        +
+                                    {% endif %}
+                                    {% if device.network_speeds[1] %}
+                                        WiFi
+                                        {% if device.network_speeds[1] != None %}
+                                            max. {{ device.network_speeds[1] }} Mbps
+                                        {% endif %}
+                                    {% endif %}
+                                </summary>
+                                {{ macros.component_type(device.components, 'NetworkAdapter') }}
+                            </details>
+                        </td>
+                        <td></td>
+                    </tr>
+                {% endif %}
+                {% if device.rate %}
+                    <tr class="active">
+                        <td class="text-right">
+                            Total rate
+                        </td>
+                        <td>
+                            {{ device.rate.rating_range }}
+                        </td>
+                    </tr>
+                {% endif %}
+                {% if device.rate and device.rate.price %}
+                    <tr class="active">
+                        <td class="text-right">
+                            Algorithm price
+                        </td>
+                        <td>
+                            {{ device.rate.price }}
+                        </td>
+                    </tr>
+                {% endif %}
+                {% if device.price %}
+                    <tr class="active">
+                        <td class="text-right">
+                            Actual price
+                        </td>
+                        <td>
+                            {{ device.price }}
+                        </td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+        <h3>This is the traceability log of your device</h3>
+        <div class="text-right">
+            <small>Oldest one.</small>
+
+        </div>
+        <ol>
+            {% for event in device.events %}
+                <li>
+                    <strong>
+                        {{ event.type }}
+                    </strong>
+                    —
+                    {{ event }}
+                    <br>
+                    <div class="text-muted">
+                        <small>
+                            {{ event._date_str }}
+                        </small>
+                    </div>
+
+                </li>
+            {% endfor %}
+        </ol>
+        <div class="text-right">
+            <small>Latest one.</small>
+        </div>
+    </article>
+</div>
+<img class="img-responsive center-block" style="max-width: 30em;"
+     src="{{ url_for('Device.static', filename='ereuse-logo.svg') }}">
 </body>
 </html>

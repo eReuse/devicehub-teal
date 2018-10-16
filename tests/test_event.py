@@ -284,6 +284,11 @@ def test_price_custom():
 
 
 @pytest.mark.xfail(reson='Develop test')
+def test_price_custom_client():
+    """As test_price_custom but creating the price through the API."""
+
+
+@pytest.mark.xfail(reson='Develop test')
 def test_ereuse_price():
     """Tests the several ways of creating eReuse Price, emulating
     from an AggregateRate and ensuring that the different Range
