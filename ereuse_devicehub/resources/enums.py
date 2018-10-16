@@ -245,7 +245,7 @@ class ComputerChassis(Enum):
     Virtual = 'Non-physical device'
 
     def __format__(self, format_spec):
-        return self.value.lower()
+        return inflection.humanize(inflection.underscore(self.value))
 
 
 class ReceiverRole(Enum):

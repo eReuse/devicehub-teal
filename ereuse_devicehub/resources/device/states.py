@@ -12,7 +12,7 @@ class State(Enum):
         return (s.value for s in cls)
 
     def __str__(self):
-        return inflection.humanize(self.name)
+        return inflection.humanize(inflection.underscore(self.name))
 
 
 class Trading(State):
