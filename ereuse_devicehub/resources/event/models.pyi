@@ -65,6 +65,10 @@ class Event(Thing):
     def url(self) -> urlutils.URL:
         pass
 
+    @property
+    def _err_str(self):
+        pass
+
 
 class EventWithOneDevice(Event):
 
@@ -254,6 +258,22 @@ class WorkbenchRate(ManualRate):
         self.aggregate_rate_workbench = ...  #type: AggregateRate
 
     def ratings(self) -> Set[Rate]:
+        pass
+
+    @property
+    def data_storage_range(self):
+        pass
+
+    @property
+    def ram_range(self):
+        pass
+
+    @property
+    def processor_range(self):
+        pass
+
+    @property
+    def graphic_card_range(self):
         pass
 
 

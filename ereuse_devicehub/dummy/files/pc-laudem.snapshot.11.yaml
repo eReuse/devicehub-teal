@@ -1,0 +1,146 @@
+{
+  "closed": true,
+  "components": [
+  {
+    "events": [],
+    "manufacturer": "Intel Corporation",
+    "model": "82567LM-3 Gigabit Network Connection",
+    "serialNumber": "00:23:7d:49:5e:31",
+    "speed": 1000,
+    "type": "NetworkAdapter",
+    "wireless": false
+  },
+  {
+    "events": [],
+    "manufacturer": "Intel Corporation",
+    "model": "82801JD/DO HD Audio Controller",
+    "serialNumber": null,
+    "type": "SoundCard"
+  },
+  {
+    "events": [],
+    "format": "DIMM",
+    "interface": "DDR2",
+    "manufacturer": null,
+    "model": "HYMP125U64CP8-S6",
+    "serialNumber": null,
+    "size": 2048,
+    "speed": 800.0,
+    "type": "RamModule"
+  },
+  {
+    "address": 64,
+    "cores": 2,
+    "events": [
+    {
+      "elapsed": 0,
+      "rate": 11970.54,
+      "type": "BenchmarkProcessor"
+    },
+    {
+      "elapsed": 20,
+      "rate": 19.6233,
+      "type": "BenchmarkProcessorSysbench"
+    }
+    ],
+    "manufacturer": "Intel Corp.",
+    "model": "Intel Core2 Duo CPU E8400 @ 3.00GHz",
+    "serialNumber": null,
+    "speed": 3.0,
+    "threads": 2,
+    "type": "Processor"
+  },
+  {
+    "events": [
+    {
+      "elapsed": 16,
+      "readSpeed": 76.8,
+      "type": "BenchmarkDataStorage",
+      "writeSpeed": 21.1
+    },
+    {
+      "assessment": true,
+      "currentPendingSectorCount": 0,
+      "elapsed": 134,
+      "error": false,
+      "length": "Short",
+      "lifetime": 19549,
+      "offlineUncorrectable": 0,
+      "powerCycleCount": 3354,
+      "reallocatedSectorCount": 33,
+      "reportedUncorrectableErrors": 0,
+      "status": "Completed without error",
+      "type": "TestDataStorage"
+    }
+    ],
+    "interface": "ATA",
+    "manufacturer": "Seagate",
+    "model": "ST3160815AS",
+    "serialNumber": "6RX7AWEZ",
+    "size": 152627,
+    "type": "HardDrive"
+  },
+  {
+    "events": [],
+    "manufacturer": "Intel Corporation",
+    "memory": 256.0,
+    "model": "4 Series Chipset Integrated Graphics Controller",
+    "serialNumber": null,
+    "type": "GraphicCard"
+  },
+  {
+    "events": [],
+    "firewire": 0,
+    "manufacturer": "Hewlett-Packard",
+    "model": "3031h",
+    "pcmcia": 0,
+    "serial": 0,
+    "serialNumber": "CZC901381R",
+    "slots": 0,
+    "type": "Motherboard",
+    "usb": 8
+  }
+  ],
+  "device": {
+    "chassis": "Tower",
+    "events": [
+    {
+      "elapsed": 60,
+      "error": false,
+      "type": "StressTest"
+    },
+    {
+      "elapsed": 6,
+      "rate": 5.7674,
+      "type": "BenchmarkRamSysbench"
+    },
+    {
+      "appearanceRange": "A",
+      "biosRange": "A",
+      "functionalityRange": "A",
+      "type": "WorkbenchRate"
+    }
+    ],
+    "manufacturer": "Hewlett-Packard",
+    "model": "HP Compaq dc7900 Small Form Factor",
+    "serialNumber": "CZC901381R",
+    "tags": [
+    {
+      "id": "tagA-secondary",
+      "type": "Tag"
+    }
+    ],
+    "type": "Desktop"
+  },
+  "elapsed": 238,
+  "endTime": "2018-10-15T13:59:37.431309+00:00",
+  "expectedEvents": [
+    "Benchmark",
+    "TestDataStorage",
+    "StressTest"
+  ],
+  "software": "Workbench",
+  "type": "Snapshot",
+  "uuid": "ec23c11b-80b6-42cd-ac5c-73ba7acddbc4",
+  "version": "11.0a6"
+}

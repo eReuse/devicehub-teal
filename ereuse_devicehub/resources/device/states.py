@@ -1,5 +1,7 @@
 from enum import Enum
 
+import inflection
+
 from ereuse_devicehub.resources.event import models as e
 
 
@@ -8,6 +10,9 @@ class State(Enum):
     def events(cls):
         """Events participating in this state."""
         return (s.value for s in cls)
+
+    def __str__(self):
+        return inflection.humanize(inflection.underscore(self.name))
 
 
 class Trading(State):

@@ -14,7 +14,8 @@ class DeviceDef(Resource):
     AUTH = False  # We manage this at each view
 
     def __init__(self, app,
-                 import_name=__name__, static_folder=None,
+                 import_name=__name__,
+                 static_folder='static',
                  static_url_path=None,
                  template_folder='templates',
                  url_prefix=None,
@@ -29,6 +30,12 @@ class DeviceDef(Resource):
 class ComputerDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Computer
+
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
 
 
 class DesktopDef(ComputerDef):
@@ -50,6 +57,12 @@ class MonitorDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Monitor
 
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
 
 class ComputerMonitorDef(MonitorDef):
     VIEW = None
@@ -64,6 +77,12 @@ class TelevisionSetDef(MonitorDef):
 class MobileDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Mobile
+
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
 
 
 class SmartphoneDef(MobileDef):
@@ -84,6 +103,12 @@ class CellphoneDef(MobileDef):
 class ComponentDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Component
+
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
 
 
 class GraphicCardDef(ComponentDef):

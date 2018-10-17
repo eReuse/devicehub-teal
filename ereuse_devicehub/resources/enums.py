@@ -2,6 +2,8 @@ from distutils.version import StrictVersion
 from enum import Enum, IntEnum, unique
 from typing import Union
 
+import inflection
+
 
 @unique
 class SnapshotSoftware(Enum):
@@ -10,6 +12,9 @@ class SnapshotSoftware(Enum):
     AndroidApp = 'AndroidApp'
     Web = 'Web'
     DesktopApp = 'DesktopApp'
+
+    def __str__(self):
+        return self.name
 
 
 @unique
@@ -24,6 +29,9 @@ class RatingSoftware(Enum):
     This model is cost-oriented. 
     """
     EMarket = 'EMarket'
+
+    def __str__(self):
+        return self.name
 
 
 RATE_POSITIVE = 0, 10
@@ -55,6 +63,12 @@ class RatingRange(IntEnum):
         else:
             return cls.HIGH
 
+    def __str__(self):
+        return inflection.humanize(self.name)
+
+    def __format__(self, format_spec):
+        return str(self)
+
 
 @unique
 class PriceSoftware(Enum):
@@ -81,6 +95,9 @@ class AppearanceRange(Enum):
     D = 'D. Is acceptable (visual damage in visible parts, not screens)'
     E = 'E. Is unacceptable (considerable visual damage that can affect usage)'
 
+    def __str__(self):
+        return self.name
+
 
 @unique
 class FunctionalityRange(Enum):
@@ -91,6 +108,9 @@ class FunctionalityRange(Enum):
     C = 'C. A non-important button (or similar) doesn\'t work; screen has multiple scratches in edges'
     D = 'D. Multiple buttons don\'t work; screen has visual damage resulting in uncomfortable usage'
 
+    def __str__(self):
+        return self.name
+
 
 @unique
 class Bios(Enum):
@@ -100,6 +120,9 @@ class Bios(Enum):
     C = 'C. Like B, but with more than 5 steps'
     D = 'D. Like B or C, but you had to unlock the BIOS (i.e. by removing the battery)'
     E = 'E. The device could not be booted through the network.'
+
+    def __str__(self):
+        return self.name
 
 
 @unique
@@ -222,7 +245,7 @@ class ComputerChassis(Enum):
     Virtual = 'Non-physical device'
 
     def __format__(self, format_spec):
-        return self.value.lower()
+        return inflection.humanize(inflection.underscore(self.value))
 
 
 class ReceiverRole(Enum):

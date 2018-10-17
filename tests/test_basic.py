@@ -28,7 +28,8 @@ def test_api_docs(client: Client):
         '/manufacturers/',
         '/lots/{id}/children',
         '/lots/{id}/devices',
-        '/tags/{tag_id}/device/{device_id}'
+        '/tags/{tag_id}/device/{device_id}',
+        '/devices/static/{filename}'
     }
     assert docs['info'] == {'title': 'Devicehub', 'version': '0.2'}
     assert docs['components']['securitySchemes']['bearerAuth'] == {

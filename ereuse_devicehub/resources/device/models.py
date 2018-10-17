@@ -187,7 +187,9 @@ class Device(Thing):
         if 't' in format_spec:
             v += '{0.t} {0.model}'.format(self)
         if 's' in format_spec:
-            v += '({0.manufacturer}) S/N {0.serial_number}'.format(self)
+            v += '({0.manufacturer})'.format(self)
+            if self.serial_number:
+                v += ' S/N ' + self.serial_number.upper()
         return v
 
 
@@ -272,7 +274,9 @@ class Computer(Device):
         if 't' in format_spec:
             v += '{0.chassis} {0.model}'.format(self)
         elif 's' in format_spec:
-            v += '({0.manufacturer}) S/N {0.serial_number}'.format(self)
+            v += '({0.manufacturer})'.format(self)
+            if self.serial_number:
+                v += ' S/N ' + self.serial_number.upper()
         return v
 
 

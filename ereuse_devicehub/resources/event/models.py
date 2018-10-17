@@ -5,6 +5,7 @@ from distutils.version import StrictVersion
 from typing import Set, Union
 from uuid import uuid4
 
+import inflection
 from boltons import urlutils
 from citext import CIText
 from flask import current_app as app, g
@@ -196,6 +197,17 @@ class Event(Thing):
             raise ValidationError('The event cannot start after it finished.')
         return start_time
 
+    @property
+    def _err_str(self):
+        return '❌ Error.' if self.error else '✓'
+
+    @property
+    def _date_str(self):
+        return '{:%c}'.format(self.end_time or self.created)
+
+    def __str__(self) -> str:
+        return '{}'.format(self._err_str)
+
 
 class EventComponent(db.Model):
     device_id = Column(BigInteger, ForeignKey(Component.id), primary_key=True)
@@ -284,6 +296,11 @@ class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
         only writing zeros.
     """
 
+    # todo return erasure properties like num steps, if it is british...
+
+    def __str__(self) -> str:
+        return '{} on {}.'.format(self._err_str, self.end_time)
+
 
 class EraseSectors(EraseBasic):
     pass
@@ -340,6 +357,9 @@ class Snapshot(JoinedWithOneDeviceMixin, EventWithOneDevice):
     """
     expected_events = Column(ArrayOfEnum(DBEnum(SnapshotExpectedEvents)))
 
+    def __str__(self) -> str:
+        return '{}. {} version {}.'.format(self._err_str, self.software, self.version)
+
 
 class Install(JoinedWithOneDeviceMixin, EventWithOneDevice):
     elapsed = Column(Interval, nullable=False)
@@ -368,7 +388,8 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
     @property
     def rating_range(self) -> RatingRange:
-        return RatingRange.from_score(self.rating)
+        if self.rating:
+            return RatingRange.from_score(self.rating)
 
     @declared_attr
     def __mapper_args__(cls):
@@ -383,6 +404,9 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
         if cls.t == 'Rate':
             args[POLYMORPHIC_ON] = cls.type
         return args
+
+    def __str__(self) -> str:
+        return '{} ({} v.{})'.format(self.rating_range, self.software, self.version)
 
 
 class IndividualRate(Rate):
@@ -399,6 +423,12 @@ class ManualRate(IndividualRate):
     appearance_range.comment = AppearanceRange.__doc__
     functionality_range = Column(DBEnum(FunctionalityRange))
     functionality_range.comment = FunctionalityRange.__doc__
+
+    def __str__(self) -> str:
+        return super().__str__() + '. Appearance {} and functionality {}'.format(
+            self.appearance_range,
+            self.functionality_range
+        )
 
 
 class WorkbenchRate(ManualRate):
@@ -424,6 +454,26 @@ class WorkbenchRate(ManualRate):
         """
         from ereuse_devicehub.resources.event.rate.main import main
         return main(self, **app.config.get_namespace('WORKBENCH_RATE_'))
+
+    @property
+    def data_storage_range(self):
+        if self.data_storage:
+            return RatingRange.from_score(self.data_storage)
+
+    @property
+    def ram_range(self):
+        if self.ram:
+            return RatingRange.from_score(self.ram)
+
+    @property
+    def processor_range(self):
+        if self.processor:
+            return RatingRange.from_score(self.processor)
+
+    @property
+    def graphic_card_range(self):
+        if self.graphic_card:
+            return RatingRange.from_score(self.graphic_card)
 
 
 class AggregateRate(Rate):
@@ -473,6 +523,22 @@ class AggregateRate(Rate):
     @property
     def graphic_card(self):
         return self.workbench.graphic_card
+
+    @property
+    def data_storage_range(self):
+        return self.workbench.data_storage_range
+
+    @property
+    def ram_range(self):
+        return self.workbench.ram_range
+
+    @property
+    def processor_range(self):
+        return self.workbench.processor_range
+
+    @property
+    def graphic_card_range(self):
+        return self.workbench.graphic_card_range
 
     @property
     def bios(self):
@@ -530,10 +596,11 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
                                           uselist=False),
                           primaryjoin=AggregateRate.id == rating_id)
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         if 'price' in kwargs:
             assert isinstance(kwargs['price'], Decimal), 'Price must be a Decimal'
-        super().__init__(currency=kwargs.pop('currency', app.config['PRICE_CURRENCY']), **kwargs)
+        super().__init__(currency=kwargs.pop('currency', app.config['PRICE_CURRENCY']), *args,
+                         **kwargs)
 
     @classmethod
     def to_price(cls, value: Union[Decimal, float], rounding=ROUND) -> Decimal:
@@ -542,6 +609,23 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
             value = Decimal(value)
         # equation from marshmallow.fields.Decimal
         return value.quantize(Decimal((0, (1,), -cls.SCALE)), rounding=rounding)
+
+    @declared_attr
+    def __mapper_args__(cls):
+        """
+        Defines inheritance.
+
+        From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
+        extensions/declarative/api.html
+        #sqlalchemy.ext.declarative.declared_attr>`_
+        """
+        args = {POLYMORPHIC_ID: cls.t}
+        if cls.t == 'Price':
+            args[POLYMORPHIC_ON] = cls.type
+        return args
+
+    def __str__(self) -> str:
+        return '{0:0.2f} {1}'.format(self.price, self.currency)
 
 
 class EreusePrice(Price):
@@ -661,11 +745,14 @@ class TestDataStorage(Test):
     offline_uncorrectable = Column(SmallInteger)
     remaining_lifetime_percentage = Column(SmallInteger)
 
+    def __str__(self) -> str:
+        return '{}. Lifetime of {:.1f} years'.format(inflection.humanize(self.status),
+                                                     self.lifetime.days / 365)
+
     # todo remove lifetime / passed_lifetime as I think they are the same
 
 
 class StressTest(Test):
-    pass
 
     @validates('elapsed')
     def is_minute_and_bigger_than_1_minute(self, _, value: timedelta):
@@ -673,6 +760,9 @@ class StressTest(Test):
         assert not bool(seconds % 60)
         assert seconds >= 60
         return value
+
+    def __str__(self) -> str:
+        return '{}. Computing for {}'.format(self._err_str, self.elapsed)
 
 
 class Benchmark(JoinedWithOneDeviceMixin, EventWithOneDevice):
@@ -698,10 +788,16 @@ class BenchmarkDataStorage(Benchmark):
     read_speed = Column(Float(decimal_return_scale=2), nullable=False)
     write_speed = Column(Float(decimal_return_scale=2), nullable=False)
 
+    def __str__(self) -> str:
+        return 'Read: {} MB/s, write: {} MB/s'.format(self.read_speed, self.write_speed)
+
 
 class BenchmarkWithRate(Benchmark):
     id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
     rate = Column(SmallInteger, nullable=False)
+
+    def __str__(self) -> str:
+        return '{} points'.format(self.rate)
 
 
 class BenchmarkProcessor(BenchmarkWithRate):

@@ -58,16 +58,28 @@ class Dummy:
                     '-o', org_id
                 ],
                     catch_exceptions=False)
+            # create tag for pc-laudem
+            runner.invoke(args=[
+                'create-tag', 'tagA',
+                '-p', 'https://t.devicetag.io',
+                '-s', 'tagA-secondary'
+            ],
+                catch_exceptions=False)
         files = tuple(Path(__file__).parent.joinpath('files').iterdir())
         print('done.')
+        sample_pc = None  # We treat this one as a special sample for demonstrations
         pcs = set()  # type: Set[int]
         with click.progressbar(files, label='Creating devices...'.ljust(28)) as bar:
             for path in bar:
                 with path.open() as f:
                     snapshot = yaml.load(f)
                 s, _ = user.post(res=m.Snapshot, data=snapshot)
-                pcs.add(s['device']['id'])
-
+                if s.get('uuid', None) == 'ec23c11b-80b6-42cd-ac5c-73ba7acddbc4':
+                    sample_pc = s['device']['id']
+                else:
+                    pcs.add(s['device']['id'])
+        assert sample_pc
+        print('PC sample is', sample_pc)
         # Link tags and eTags
         for tag, pc in zip((self.TAGS[1], self.TAGS[2], self.ET[0][0], self.ET[1][1]), pcs):
             user.put({}, res=Tag, item='{}/device/{}'.format(tag, pc), status=204)
@@ -105,9 +117,29 @@ class Dummy:
         assert len(inventory['items'])
 
         i, _ = user.get(res=Device, query=[('search', 'intel')])
-        assert len(i['items']) == 10
-        i, _ = user.get(res=Device, query=[('search', 'pc')])
         assert len(i['items']) == 11
+        i, _ = user.get(res=Device, query=[('search', 'pc')])
+        assert len(i['items']) == 12
+
+        # Let's create a set of events for the pc device
+        # Make device Ready
+
+        user.post({'type': m.ToPrepare.t, 'devices': [sample_pc]}, res=m.Event)
+        user.post({'type': m.Prepare.t, 'devices': [sample_pc]}, res=m.Event)
+        user.post({'type': m.ReadyToUse.t, 'devices': [sample_pc]}, res=m.Event)
+        user.post({'type': m.Price.t, 'device': sample_pc, 'currency': 'EUR', 'price': 85},
+                  res=m.Event)
+        # todo test reserve
+        user.post(  # Sell device
+            {
+                'type': m.Sell.t,
+                'to': user.user['individuals'][0]['id'],
+                'devices': [sample_pc]
+            },
+            res=m.Event)
+        # todo Receive
+
+        # For netbook: to preapre -> torepair -> to dispose -> disposed
         print('⭐ Done.')
 
     def user_client(self, email: str, password: str):

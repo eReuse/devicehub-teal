@@ -35,7 +35,9 @@ call the new file ``app.py``.
 Create a PostgreSQL database called *devicehub* by running 
 [create-db](examples/create-db.sh):
  
-- In Debian 9: `sudo su - postgres; examples/create-db.sh devicehub`
+- In a Debian 9 terminal, execute the following two commands:
+  1. `sudo su - postgres`.
+  2. `bash examples/create-db.sh devicehub`.
 - In MacOS: `examples/create-db.sh devicehub`.
 
 Create the tables in the database by executing in the same directory 

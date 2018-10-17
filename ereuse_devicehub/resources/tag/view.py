@@ -1,6 +1,6 @@
-from flask import Response, current_app as app, request
+from flask import Response, current_app as app, redirect, request
 from teal.marshmallow import ValidationError
-from teal.resource import View
+from teal.resource import View, url_for_resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
@@ -27,6 +27,8 @@ class TagDeviceView(View):
         tag = Tag.from_an_id(id).one()  # type: Tag
         if not tag.device:
             raise TagNotLinked(tag.id)
+        if not request.authorization:
+            return redirect(location=url_for_resource(Device, tag.device.id))
         return app.resources[Device.t].schema.jsonify(tag.device)
 
     # noinspection PyMethodOverriding
@@ -55,6 +57,8 @@ def get_device_from_tag(id: str):
     """
     # todo this could be more efficient by Device.query... join with tag
     device = Tag.query.filter_by(id=id).one().device
+    if not request.authorization:
+        return redirect(location=url_for_resource(Device, device.id))
     if device is None:
         raise TagNotLinked(id)
     return app.resources[Device.t].schema.jsonify(device)
