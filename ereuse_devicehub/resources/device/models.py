@@ -226,6 +226,10 @@ class Computer(Device):
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     chassis = Column(DBEnum(ComputerChassis), nullable=False)
 
+    def __init__(self, chassis, **kwargs) -> None:
+        chassis = ComputerChassis(chassis)
+        super().__init__(chassis=chassis, **kwargs)
+
     @property
     def events(self) -> list:
         return sorted(chain(super().events, self.events_parent), key=attrgetter('created'))

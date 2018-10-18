@@ -6,6 +6,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device.models import Desktop, Device, Laptop, Processor, \
     SolidStateDrive
+from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.device.views import Filters, Sorting
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.event.models import Snapshot
@@ -172,6 +173,21 @@ def test_device_query(user: UserClient):
 @pytest.mark.xfail(reason='Functionality not yet developed.')
 def test_device_lots_query(user: UserClient):
     pass
+
+
+def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClient):
+    """Ensures DeviceSearch can regenerate itself when the table is empty."""
+    user.post(file('basic.snapshot'), res=Snapshot)
+    with app.app_context():
+        app.db.session.execute('TRUNCATE TABLE {}'.format(DeviceSearch.__table__.name))
+        app.db.session.commit()
+    i, _ = user.get(res=Device, query=[('search', 'Desktop')])
+    assert not len(i['items'])
+    with app.app_context():
+        DeviceSearch.set_all_devices_tokens_if_empty(app.db.session)
+        app.db.session.commit()
+    i, _ = user.get(res=Device, query=[('search', 'Desktop')])
+    assert i['items']
 
 
 def test_device_query_search(user: UserClient):

@@ -155,8 +155,11 @@ def test_tag_create_etags_cli(app: Devicehub, user: UserClient):
         assert tag.provider == URL('https://t.ereuse.org')
 
 
-def test_tag_manual_link(app: Devicehub, user: UserClient):
-    """Tests linking manually a tag through PUT /tags/<id>/device/<id>"""
+def test_tag_manual_link_search(app: Devicehub, user: UserClient):
+    """Tests linking manually a tag through PUT /tags/<id>/device/<id>
+
+    Checks search has the term.
+    """
     with app.app_context():
         db.session.add(Tag('foo-bar', secondary='foo-sec'))
         desktop = Desktop(serial_number='foo', chassis=ComputerChassis.AllInOne)
@@ -178,6 +181,13 @@ def test_tag_manual_link(app: Devicehub, user: UserClient):
 
     # cannot link to another device when already linked
     user.put({}, res=Tag, item='foo-bar/device/99', status=LinkedToAnotherDevice)
+
+    i, _ = user.get(res=Device, query=[('search', 'foo-bar')])
+    assert i['items']
+    i, _ = user.get(res=Device, query=[('search', 'foo-sec')])
+    assert i['items']
+    i, _ = user.get(res=Device, query=[('search', 'foo')])
+    assert i['items']
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)

@@ -18,7 +18,6 @@ from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Component, ComputerMonitor, DataStorage, \
     Desktop, Device, GraphicCard, Laptop, Motherboard, NetworkAdapter
 from ereuse_devicehub.resources.device.schemas import Device as DeviceS
-from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, MismatchBetweenTagsAndHid, \
     Sync
 from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech
@@ -474,20 +473,6 @@ def test_computer_with_display():
     pass
 
 
-def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClient):
-    """Ensures DeviceSearch can regenerate itself when the table is empty."""
-    user.post(file('basic.snapshot'), res=m.Snapshot)
-    with app.app_context():
-        app.db.session.execute('TRUNCATE TABLE {}'.format(DeviceSearch.__table__.name))
-        app.db.session.commit()
-    i, _ = user.get(res=Device, query=[('search', 'Desktop')])
-    assert not len(i['items'])
-    with app.app_context():
-        DeviceSearch.set_all_devices_tokens_if_empty(app.db.session)
-    i, _ = user.get(res=Device, query=[('search', 'Desktop')])
-    assert not len(i['items'])
-
-
 def test_manufacturer(user: UserClient):
     m, r = user.get(res='Manufacturer', query=[('name', 'asus')])
     assert m == {'items': [{'name': 'Asus', 'url': 'https://en.wikipedia.org/wiki/Asus'}]}
@@ -528,10 +513,3 @@ def test_device_public(user: UserClient, client: Client):
     html, _ = client.get(res=Device, item=s['device']['id'], accept=ANY)
     assert 'intel atom cpu n270 @ 1.60ghz' in html
     assert 'S/N 00:24:8C:7F:CF:2D – 100 Mbps' in html
-
-
-@pytest.mark.xfail(reason='Functionality not yet developed.')
-def test_device_search_multiple_tags(user: UserClient):
-    """Ensures that users can search multiple tags at once
-    and get their multiple devices."""
-    pass
