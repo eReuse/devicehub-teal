@@ -1,9 +1,11 @@
+import csv
 import datetime
-import itertools
+
+from io import StringIO
 from collections import OrderedDict
 
 import marshmallow
-from flask import current_app as app, render_template, request
+from flask import current_app as app, render_template, request, make_response
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
 from marshmallow import fields, fields as f, validate as v
@@ -15,7 +17,7 @@ from teal.resource import View
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources import search
-from ereuse_devicehub.resources.device.definitions import ComponentDef
+# from ereuse_devicehub.resources.device.definitions import ComponentDef
 from ereuse_devicehub.resources.device.models import Component, Computer, Device, Manufacturer, \
     RamModule, Processor, DataStorage
 from ereuse_devicehub.resources.device.search import DeviceSearch
@@ -124,9 +126,8 @@ class DeviceView(View):
                 search.Search.rank(properties, search_p) + search.Search.rank(tags, search_p)
             )
         query = query.filter(*args['filter']).order_by(*args['sort'])
-        if args['format']:
-            ...
-            return self.spreadsheet(query)
+        if 'text/csv' in request.accept_mimetypes:
+            return self.generate_post_csv(query)
         else:
             devices = query.paginate(page=args['page'], per_page=30)  # type: Pagination
             ret = {
@@ -144,14 +145,29 @@ class DeviceView(View):
             }
             return jsonify(ret)
 
-    def spreadsheet(self, query):
+    def generate_post_csv(self, query):
+        """
+        Get device query and put information in csv format
+        :param query:
+        :return:
+        """
         devices = []
         for device in query:
             d = DeviceRow(device)
             devices.append(d)
 
-        titles = [name for name in devices[0].keys()] +
-        rest = [[value for value in row.values()] for row in devices]
+        keys = [name for name in devices[0].keys()]
+        # writer_csv = csv.DictWriter(devices, fieldnames='')
+        values = [[value for value in row.values()] for row in devices]
+        # devices = str(re.sub('\[|\]', '', str(devices)))  # convert to a string; remove brackets
+        data = StringIO()
+        cw = csv.writer(data)
+        cw.writerow(keys)
+        cw.writerows(values)
+        output = make_response(data.getvalue())
+        output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+        output.headers["Content-type"] = "text/csv"
+        return output
 
 
 class DeviceRow(OrderedDict):
@@ -171,20 +187,23 @@ class DeviceRow(OrderedDict):
         self['Serial Number'] = device.serial_number
         self['Price'] = device.price
         self['Model'] = device.model
-        self['Manu...'] = device.manufacturer
-        self['Regsitered in '] = device.created
+        self['Manufacturer'] = device.manufacturer
+        self['Registered in '] = device.created
         if isinstance(device, Computer):
             self['Processor'] = device.processor_model
             self['RAM (GB)'] = device.ram_size
             self['Size (MB)'] = device.data_storage_size
-        rate = device.rate # type: Rate
+        rate = device.rate
         if rate:
             self['Rate'] = rate.rating
             self['Range'] = rate.rating_range
-            self['Processor Rate'] = rate.processor_rate
-            self['RAM Rate'] = rate.ram_rate
-            self['Data Storage Rate'] = rate.data_storage_rate
-        # New Update fields (necessaris?)
+            self['Processor Rate'] = rate.processor
+            self['Processor Range'] = rate.workbench.processor_range
+            self['RAM Rate'] = rate.ram
+            self['RAM Range'] = rate.workbench.ram_range
+            self['Data Storage Rate'] = rate.data_storage
+            self['Data Storage Range'] = rate.workbench.data_storage_range
+        # New Update fields
         # Origin note = Id-Donació
         # Target note = Id-Receptor
         # Partner = cadena de custodia (cadena de noms dels agents(entitas) implicats) [int]
@@ -193,10 +212,9 @@ class DeviceRow(OrderedDict):
         if isinstance(device, Computer):
             self.components()
 
-
     def components(self):
         assert isinstance(self.device, Computer)
-        for type in app.resources[Component.t].subresources_types: # type: str
+        for type in app.resources[Component.t].subresources_types:  # type: str
             max = self.NUMS.get(type, 4)
             i = 1
             for component in (r for r in self.device.components if r.type == type):
@@ -207,7 +225,6 @@ class DeviceRow(OrderedDict):
             while i < max:
                 self.fill_component(type, i)
                 i += 1
-
 
     def fill_component(self, type, i, component = None):
         self['{} {} Serial Number'.format(type, i)] = component.serial_number if component else ''
