@@ -474,7 +474,7 @@ def test_computer_with_display():
 
 
 def test_manufacturer(user: UserClient):
-    m, r = user.get(res='Manufacturer', query=[('name', 'asus')])
+    m, r = user.get(res='Manufacturer', query=[('search', 'asus')])
     assert m == {'items': [{'name': 'Asus', 'url': 'https://en.wikipedia.org/wiki/Asus'}]}
     assert r.cache_control.public
     assert r.expires > datetime.datetime.now()

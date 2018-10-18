@@ -139,15 +139,15 @@ class DeviceView(View):
 
 class ManufacturerView(View):
     class FindArgs(marshmallow.Schema):
-        name = marshmallow.fields.Str(required=True,
-                                      # Disallow like operators
-                                      validate=lambda x: '%' not in x and '_' not in x)
+        search = marshmallow.fields.Str(required=True,
+                                        # Disallow like operators
+                                        validate=lambda x: '%' not in x and '_' not in x)
 
     @cache(datetime.timedelta(days=1))
     def find(self, args: dict):
-        name = args['name']
+        search = args['search']
         manufacturers = Manufacturer.query \
-            .filter(Manufacturer.name.ilike(name + '%')) \
+            .filter(Manufacturer.name.ilike(search + '%')) \
             .paginate(page=1, per_page=6)  # type: Pagination
         return jsonify(
             items=app.resources[Manufacturer.t].schema.dump(
