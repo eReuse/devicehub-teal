@@ -23,6 +23,15 @@ In case of error, debug with:
 """
 
 
+def test_lot_modify_patch_endpoint(user: UserClient):
+    """Creates and modifies lot properties through the endpoint"""
+    l, _ = user.post({'name': 'foo'}, res=Lot)
+    assert l['name'] == 'foo'
+    user.patch({'name': 'bar'}, res=Lot, item=l['id'], status=204)
+    l_after, _ = user.get(res=Lot, item=l['id'])
+    assert l_after['name'] == 'bar'
+
+
 @pytest.mark.xfail(reason='Components are not added to lots!')
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_device_relationship():
