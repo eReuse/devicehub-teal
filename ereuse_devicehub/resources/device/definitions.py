@@ -161,6 +161,121 @@ class DisplayDef(ComponentDef):
     SCHEMA = schemas.Display
 
 
+class ComputerAccessoryDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.ComputerAccessory
+
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
+
+class MouseDef(ComputerAccessoryDef):
+    VIEW = None
+    SCHEMA = schemas.Mouse
+
+
+class KeyboardDef(ComputerAccessoryDef):
+    VIEW = None
+    SCHEMA = schemas.Keyboard
+
+
+class SAIDef(ComputerAccessoryDef):
+    VIEW = None
+    SCHEMA = schemas.SAI
+
+
+class MemoryCardReaderDef(ComputerAccessoryDef):
+    VIEW = None
+    SCHEMA = schemas.MemoryCardReader
+
+
+class NetworkingDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Networking
+
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
+
+class RouterDef(NetworkingDef):
+    VIEW = None
+    SCHEMA = schemas.Router
+
+
+class SwitchDef(NetworkingDef):
+    VIEW = None
+    SCHEMA = schemas.Switch
+
+
+class HubDef(NetworkingDef):
+    VIEW = None
+    SCHEMA = schemas.Hub
+
+
+class WirelessAccessPointDef(NetworkingDef):
+    VIEW = None
+    SCHEMA = schemas.WirelessAccessPoint
+
+
+class PrinterDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Printer
+
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
+
+class LabelPrinterDef(PrinterDef):
+    VIEW = None
+    SCHEMA = schemas.LabelPrinter
+
+
+class SoundDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Sound
+
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
+
+class MicrophoneDef(SoundDef):
+    VIEW = None
+    SCHEMA = schemas.Microphone
+
+
+class VideoDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Video
+
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
+
+class VideoScalerDef(VideoDef):
+    VIEW = None
+    SCHEMA = schemas.VideoScaler
+
+
+class VideoconferenceDef(VideoDef):
+    VIEW = None
+    SCHEMA = schemas.Videoconference
+
+
 class ManufacturerDef(Resource):
     VIEW = ManufacturerView
     SCHEMA = schemas.Manufacturer

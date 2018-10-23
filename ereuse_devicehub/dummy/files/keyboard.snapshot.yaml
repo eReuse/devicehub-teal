@@ -1,0 +1,14 @@
+type: Snapshot
+version: '1.0'
+software: Web
+device:
+  type: Keyboard
+  model: FOO
+  serialNumber: BAR
+  manufacturer: BAZ
+  layout: ES
+  events:
+  - type: ManualRate
+    appearanceRange: A
+    functionalityRange: A
+    labelling: False

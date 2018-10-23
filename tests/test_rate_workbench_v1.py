@@ -15,7 +15,7 @@ Excluded cases in tests
 import pytest
 
 from ereuse_devicehub.resources.device.models import Desktop, HardDrive, Processor, RamModule
-from ereuse_devicehub.resources.enums import AppearanceRange, FunctionalityRange
+from ereuse_devicehub.resources.enums import AppearanceRange, ComputerChassis, FunctionalityRange
 from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, BenchmarkProcessor, \
     WorkbenchRate
 from ereuse_devicehub.resources.event.rate.workbench.v1_0 import DataStorageRate, ProcessorRate, \
@@ -307,7 +307,7 @@ def test_rate_computer_rate():
     """
 
     # Create a new Computer with components characteristics of pc with id = 1193
-    pc_test = Desktop()
+    pc_test = Desktop(chassis=ComputerChassis.Tower)
     data_storage = HardDrive(size=476940)
     data_storage.events_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
     cpu = Processor(cores=2, speed=3.4)
@@ -333,7 +333,7 @@ def test_rate_computer_rate():
     assert round(rate_pc.rating, 2) == 4.61
 
     # Create a new Computer with components characteristics of pc with id = 1201
-    pc_test = Desktop()
+    pc_test = Desktop(chassis=ComputerChassis.Tower)
     data_storage = HardDrive(size=476940)
     data_storage.events_one.add(BenchmarkDataStorage(read_speed=158, write_speed=34.7))
     cpu = Processor(cores=2, speed=3.3)
@@ -358,7 +358,7 @@ def test_rate_computer_rate():
     assert round(rate_pc.rating, 2) == 3.48
 
     # Create a new Computer with components characteristics of pc with id = 79
-    pc_test = Desktop()
+    pc_test = Desktop(chassis=ComputerChassis.Tower)
     data_storage = HardDrive(size=76319)
     data_storage.events_one.add(BenchmarkDataStorage(read_speed=72.2, write_speed=24.3))
     cpu = Processor(cores=1, speed=1.6)
@@ -386,7 +386,7 @@ def test_rate_computer_rate():
     assert round(rate_pc.rating, 2) == 1.58
 
     # Create a new Computer with components characteristics of pc with id = 798
-    pc_test = Desktop()
+    pc_test = Desktop(chassis=ComputerChassis.Tower)
     data_storage = HardDrive(size=152587)
     data_storage.events_one.add(BenchmarkDataStorage(read_speed=78.1, write_speed=24.4))
     cpu = Processor(cores=2, speed=2.5)

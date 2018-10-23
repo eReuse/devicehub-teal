@@ -112,7 +112,10 @@ def test_install():
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_update_components_event_one():
-    computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1')
+    computer = Desktop(serial_number='sn1',
+                       model='ml1',
+                       manufacturer='mr1',
+                       chassis=ComputerChassis.Tower)
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 
@@ -137,7 +140,10 @@ def test_update_components_event_one():
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_update_components_event_multiple():
-    computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1')
+    computer = Desktop(serial_number='sn1',
+                       model='ml1',
+                       manufacturer='mr1',
+                       chassis=ComputerChassis.Tower)
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 
@@ -163,7 +169,10 @@ def test_update_components_event_multiple():
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_update_parent():
-    computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1')
+    computer = Desktop(serial_number='sn1',
+                       model='ml1',
+                       manufacturer='mr1',
+                       chassis=ComputerChassis.Tower)
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 

@@ -17,6 +17,12 @@
       "elapsed": 19,
       "rate": 19.3106,
       "type": "BenchmarkRamSysbench"
+    },
+    {
+      "appearanceRange": "A",
+      "biosRange": "A",
+      "functionalityRange": "A",
+      "type": "WorkbenchRate"
     }
     ],
     "manufacturer": "ASUSTeK Computer INC."

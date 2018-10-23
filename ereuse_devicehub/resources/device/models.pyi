@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict, List, Set, Type, Union
 
 from boltons import urlutils
@@ -6,11 +7,12 @@ from colour import Color
 from sqlalchemy import Column, Integer
 from sqlalchemy.orm import relationship
 from teal.db import Model
+from teal.enums import Layouts
 
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, \
-    DataStoragePrivacyCompliance, DisplayTech, RamFormat, RamInterface
+    DataStoragePrivacyCompliance, DisplayTech, PrinterTechnology, RamFormat, RamInterface
 from ereuse_devicehub.resources.event import models as e
 from ereuse_devicehub.resources.image.models import ImageList
 from ereuse_devicehub.resources.lot.models import Lot
@@ -31,6 +33,7 @@ class Device(Thing):
     depth = ...  # type: Column
     color = ...  # type: Column
     lots = ...  # type: relationship
+    production_date = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -52,6 +55,7 @@ class Device(Thing):
         self.images = ...  # type: ImageList
         self.tags = ...  # type: Set[Tag]
         self.lots = ...  # type: Set[Lot]
+        self.production_date = ...  # type: datetime
 
     @property
     def url(self) -> urlutils.URL:
@@ -86,6 +90,9 @@ class DisplayMixin:
     size = ...  # type: Column
     resolution_width = ...  # type: Column
     resolution_height = ...  # type: Column
+    refresh_rate = ...  # type: Column
+    contrast_ratio = ...  # type: Column
+    touchable = ...  # type: Column
 
     def __init__(self) -> None:
         super().__init__()
@@ -93,6 +100,9 @@ class DisplayMixin:
         self.size = ...  # type: Integer
         self.resolution_width = ...  # type: int
         self.resolution_height = ...  # type: int
+        self.refresh_rate = ...  # type: int
+        self.contrast_ratio = ...  # type: int
+        self.touchable = ...  # type: bool
 
 
 class Computer(DisplayMixin, Device):
@@ -135,7 +145,11 @@ class Desktop(Computer):
 
 
 class Laptop(Computer):
-    pass
+    layout = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.layout = ...  # type: Layouts
 
 
 class Server(Computer):
@@ -233,12 +247,18 @@ class Motherboard(Component):
         self.pcmcia = ...  # type: int
 
 
-class NetworkAdapter(Component):
+class NetworkMixin:
     speed = ...  # type: Column
+    wireless = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.speed = ...  # type: int
+        self.wireless = ...  # type: bool
+
+
+class NetworkAdapter(NetworkMixin, Component):
+    pass
 
 
 class Processor(Component):
@@ -268,6 +288,88 @@ class RamModule(Component):
 
 
 class Display(DisplayMixin, Component):
+    pass
+
+
+class ComputerAccessory(Device):
+    pass
+
+
+class SAI(ComputerAccessory):
+    pass
+
+
+class Keyboard(ComputerAccessory):
+    layout = ...  # type: Column
+
+    def __init__(self, layout: Layouts, **kwargs):
+        super().__init__(**kwargs)
+        self.layout = ...  # type: Layouts
+
+
+class Mouse(ComputerAccessory):
+    pass
+
+
+class MemoryCardReader(ComputerAccessory):
+    pass
+
+
+class Networking(NetworkMixin, Device):
+    pass
+
+
+class Router(Networking):
+    pass
+
+
+class Switch(Networking):
+    pass
+
+
+class Hub(Networking):
+    pass
+
+
+class WirelessAccessPoint(Networking):
+    pass
+
+
+class Printer(Device):
+    wireless = ...  # type: Column
+    scanning = ...  # type: Column
+    technology = ...  # type: Column
+    monochrome = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.wireless = ...  # type: bool
+        self.scanning = ...  # type: bool
+        self.technology = ...  # type: PrinterTechnology
+        self.monochrome = ...  # type: bool
+
+
+class LabelPrinter(Printer):
+    pass
+
+
+class Sound(Device):
+    pass
+
+
+class Microphone(Sound):
+    pass
+
+
+class Video(Device):
+    pass
+
+
+class VideoScaler(Video):
+    pass
+
+
+class Videoconference(Video):
     pass
 
 

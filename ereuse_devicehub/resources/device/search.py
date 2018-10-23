@@ -1,3 +1,5 @@
+from itertools import chain
+
 import inflection
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import TSVECTOR
@@ -37,21 +39,24 @@ class DeviceSearch(db.Model):
 
     @classmethod
     def update_modified_devices(cls, session: db.Session):
-        """Updates the documents of the devices that are part of a modified
-        event in the passed-in session.
+        """Updates the documents of the devices that are part of a
+        modified event, or tag in the passed-in session.
 
-        This method is registered as a SQLAlchemy
-        listener in the Devicehub class.
+        This method is registered as a SQLAlchemy listener in the
+        Devicehub class.
         """
         devices_to_update = set()
-        for event in (e for e in session.new if isinstance(e, Event)):
-            if isinstance(event, EventWithMultipleDevices):
-                devices_to_update |= event.devices
-            elif isinstance(event, EventWithOneDevice):
-                devices_to_update.add(event.device)
-            if event.parent:
-                devices_to_update.add(event.parent)
-            devices_to_update |= event.components
+        for model in chain(session.new, session.dirty):
+            if isinstance(model, Event):
+                if isinstance(model, EventWithMultipleDevices):
+                    devices_to_update |= model.devices
+                elif isinstance(model, EventWithOneDevice):
+                    devices_to_update.add(model.device)
+                if model.parent:
+                    devices_to_update.add(model.parent)
+                devices_to_update |= model.components
+            elif isinstance(model, Tag) and model.device:
+                devices_to_update.add(model.device)
 
         # this flush is controversial:
         # see https://groups.google.com/forum/#!topic/sqlalchemy/hBzfypgPfYo

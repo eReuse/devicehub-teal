@@ -276,3 +276,12 @@ class DataStoragePrivacyCompliance(Enum):
             return cls.EraseSectors if not erasure.error else cls.EraseSectorsError
         else:
             return cls.EraseBasic if not erasure.error else cls.EraseBasicError
+
+
+class PrinterTechnology(Enum):
+    """Technology of the printer."""
+    Toner = 'Toner / Laser'
+    Inkjet = 'Liquid inkjet'
+    SolidInk = 'Solid ink'
+    Dye = 'Dye-sublimation'
+    Thermal = 'Thermal'

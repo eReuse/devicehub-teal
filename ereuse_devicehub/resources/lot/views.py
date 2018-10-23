@@ -4,7 +4,7 @@ from enum import Enum
 from typing import List, Set
 
 import marshmallow as ma
-from flask import jsonify, request
+from flask import Response, jsonify, request
 from marshmallow import Schema as MarshmallowSchema, fields as f
 from teal.marshmallow import EnumField
 from teal.resource import View
@@ -35,6 +35,14 @@ class LotView(View):
         ret = self.schema.jsonify(lot)
         ret.status_code = 201
         return ret
+
+    def patch(self, id):
+        l = request.get_json()
+        lot = Lot.query.filter_by(id=id).one()
+        for key, value in l.items():
+            setattr(lot, key, value)
+        db.session.commit()
+        return Response(status=204)
 
     def one(self, id: uuid.UUID):
         """Gets one event."""

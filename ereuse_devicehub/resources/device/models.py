@@ -17,12 +17,13 @@ from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
 from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, URL, check_lower, \
     check_range
+from teal.enums import Layouts
 from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, \
-    DataStoragePrivacyCompliance, DisplayTech, RamFormat, RamInterface
+    DataStoragePrivacyCompliance, DisplayTech, PrinterTechnology, RamFormat, RamInterface
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 
 
@@ -62,6 +63,19 @@ class Device(Thing):
     """
     color = Column(ColorType)
     color.comment = """The predominant color of the device."""
+    production_date = Column(db.TIMESTAMP(timezone=True))
+    production_date.comment = """The date of production of the item."""
+
+    _NON_PHYSICAL_PROPS = {
+        'id',
+        'type',
+        'created',
+        'updated',
+        'parent_id',
+        'hid',
+        'production_date',
+        'color'
+    }
 
     @property
     def events(self) -> list:
@@ -94,7 +108,7 @@ class Device(Thing):
                 for c in inspect(self.__class__).attrs
                 if isinstance(c, ColumnProperty)
                 and not getattr(c, 'foreign_keys', None)
-                and c.key not in {'id', 'type', 'created', 'updated', 'parent_id', 'hid'}}
+                and c.key not in self._NON_PHYSICAL_PROPS}
 
     @property
     def url(self) -> urlutils.URL:
@@ -194,6 +208,11 @@ class Device(Thing):
 
 
 class DisplayMixin:
+    """
+    Aspect ratio  can be computed as in
+    https://github.com/mirukan/whratio/blob/master/whratio/ratio.py and
+    could be a future property.
+    """
     size = Column(Float(decimal_return_scale=2), check_range('size', 2, 150))
     size.comment = """
         The size of the monitor in inches.
@@ -212,6 +231,10 @@ class DisplayMixin:
         The maximum vertical resolution the monitor can natively support
         in pixels.
     """
+    refresh_rate = Column(SmallInteger, check_range('refresh_rate', 10, 1000))
+    contrast_ratio = Column(SmallInteger, check_range('contrast_ratio', 100, 100000))
+    touchable = Column(Boolean, nullable=False, default=False)
+    touchable.comment = """Whether it is a touchscreen."""
 
     def __format__(self, format_spec: str) -> str:
         v = ''
@@ -225,6 +248,10 @@ class DisplayMixin:
 class Computer(Device):
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     chassis = Column(DBEnum(ComputerChassis), nullable=False)
+
+    def __init__(self, chassis, **kwargs) -> None:
+        chassis = ComputerChassis(chassis)
+        super().__init__(chassis=chassis, **kwargs)
 
     @property
     def events(self) -> list:
@@ -285,7 +312,9 @@ class Desktop(Computer):
 
 
 class Laptop(Computer):
-    pass
+    layout = Column(DBEnum(Layouts))
+    layout.comment = """Layout of a built-in keyboard of the computer,
+     if any."""
 
 
 class Server(Computer):
@@ -301,6 +330,10 @@ class ComputerMonitor(Monitor):
 
 
 class TelevisionSet(Monitor):
+    pass
+
+
+class Projector(Monitor):
     pass
 
 
@@ -476,6 +509,83 @@ class Display(JoinedComponentTableMixin, DisplayMixin, Component):
     mobiles, smart-watches, and so on; excluding then ComputerMonitor
     and Television Set.
     """
+    pass
+
+
+class ComputerAccessory(Device):
+    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
+    pass
+
+
+class SAI(ComputerAccessory):
+    pass
+
+
+class Keyboard(ComputerAccessory):
+    layout = Column(DBEnum(Layouts))  # If we want to do it not null
+
+
+class Mouse(ComputerAccessory):
+    pass
+
+
+class MemoryCardReader(ComputerAccessory):
+    pass
+
+
+class Networking(NetworkMixin, Device):
+    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
+
+
+class Router(Networking):
+    pass
+
+
+class Switch(Networking):
+    pass
+
+
+class Hub(Networking):
+    pass
+
+
+class WirelessAccessPoint(Networking):
+    pass
+
+
+class Printer(Device):
+    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
+    wireless = Column(Boolean, nullable=False, default=False)
+    wireless.comment = """Whether it is a wireless printer."""
+    scanning = Column(Boolean, nullable=False, default=False)
+    scanning.comment = """Whether the printer has scanning capabilities."""
+    technology = Column(DBEnum(PrinterTechnology))
+    technology.comment = """Technology used to print."""
+    monochrome = Column(Boolean, nullable=False, default=True)
+    monochrome.comment = """Whether the printer is only monochrome."""
+
+
+class LabelPrinter(Printer):
+    pass
+
+
+class Sound(Device):
+    pass
+
+
+class Microphone(Sound):
+    pass
+
+
+class Video(Device):
+    pass
+
+
+class VideoScaler(Video):
+    pass
+
+
+class Videoconference(Video):
     pass
 
 

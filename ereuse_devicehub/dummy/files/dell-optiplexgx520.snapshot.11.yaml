@@ -12,6 +12,12 @@
       "error": false,
       "type": "StressTest",
       "elapsed": 60
+    },
+    {
+      "appearanceRange": "A",
+      "biosRange": "A",
+      "functionalityRange": "A",
+      "type": "WorkbenchRate"
     }
     ],
     "type": "Desktop",

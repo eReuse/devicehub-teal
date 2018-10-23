@@ -229,7 +229,7 @@ class Sync:
         if adding:
             # For the components we are adding, let's remove them from their old parents
             def g_parent(component: Component) -> Device:
-                return component.parent or Computer(id=0)  # Computer with id 0 is our Identity
+                return component.parent or Device(id=0)  # Computer with id 0 is our Identity
 
             for parent, _components in groupby(sorted(adding, key=g_parent), key=g_parent):
                 if parent.id != 0:  # Is not Computer Identity

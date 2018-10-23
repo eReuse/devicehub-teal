@@ -51,7 +51,7 @@ def test_rate():
         appearance_range=AppearanceRange.A,
         functionality_range=FunctionalityRange.A
     )
-    pc = Desktop()
+    pc = Desktop(chassis=ComputerChassis.Tower)
     hdd = HardDrive(size=476940)
     hdd.events_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
     cpu = Processor(cores=2, speed=3.4)
