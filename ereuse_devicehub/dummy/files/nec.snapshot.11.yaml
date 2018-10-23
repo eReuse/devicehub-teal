@@ -14,6 +14,12 @@
       "rate": 0.9323,
       "elapsed": 1,
       "type": "BenchmarkRamSysbench"
+    },
+    {
+      "appearanceRange": "B",
+      "biosRange": "A",
+      "functionalityRange": "C",
+      "type": "WorkbenchRate"
     }
     ],
     "type": "Desktop",

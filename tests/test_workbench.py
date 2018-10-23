@@ -142,6 +142,9 @@ def test_real_hp_11(user: UserClient):
     assert pc['hid'] == 'hewlett-packard-czc0408yjg-hp_compaq_8100_elite_sff'
     assert pc['chassis'] == 'Tower'
     assert set(e['type'] for e in snapshot['events']) == {
+        'EreusePrice',
+        'AggregateRate',
+        'WorkbenchRate',
         'BenchmarkDataStorage',
         'BenchmarkProcessor',
         'BenchmarkProcessorSysbench',
@@ -149,11 +152,12 @@ def test_real_hp_11(user: UserClient):
         'BenchmarkRamSysbench',
         'StressTest'
     }
-    assert len(list(e['type'] for e in snapshot['events'])) == 6
+    assert len(list(e['type'] for e in snapshot['events'])) == 9
     assert pc['networkSpeeds'] == [1000, None], 'Device has no WiFi'
     assert pc['processorModel'] == 'intel core i3 cpu 530 @ 2.93ghz'
     assert pc['ramSize'] == 8192
     assert pc['dataStorageSize'] == 305245
+    # todo check rating
 
 
 def test_real_toshiba_11(user: UserClient):
@@ -177,6 +181,20 @@ def test_snapshot_real_eee_1001pxd(user: UserClient):
     assert pc['hid'] == 'asustek_computer_inc-b8oaas048286-1001pxd'
     assert pc['tags'] == []
     assert pc['networkSpeeds'] == [100, 0], 'Although it has WiFi we do not know the speed'
+    assert pc['rate']
+    rate = pc['rate']
+    assert rate['appearanceRange'] == 'B'
+    assert rate['functionalityRange'] == 'A'
+    assert rate['processorRange'] == 'VERY_LOW'
+    assert rate['ramRange'] == 'VERY_LOW'
+    assert rate['ratingRange'] == 'VERY_LOW'
+    assert rate['ram'] == 1.53
+    assert rate['data_storage'] == 3.76
+    assert rate['type'] == 'AggregateRate'
+    assert rate['biosRange'] == 'C'
+    assert rate['appearance'] > 0
+    assert rate['functionality'] > 0
+    assert rate['rating'] > 0 and rate['rating'] != 1
     components = snapshot['components']
     wifi = components[0]
     assert wifi['hid'] == 'qualcomm_atheros-74_2f_68_8b_fd_c8-ar9285_wireless_network_adapter'
@@ -208,7 +226,7 @@ def test_snapshot_real_eee_1001pxd(user: UserClient):
     assert em.BenchmarkRamSysbench.t in event_types
     assert em.StressTest.t in event_types
     assert em.Snapshot.t in event_types
-    assert len(events) == 5
+    assert len(events) == 7
     gpu = components[3]
     assert gpu['model'] == 'atom processor d4xx/d5xx/n4xx/n5xx integrated graphics controller'
     assert gpu['manufacturer'] == 'intel corporation'

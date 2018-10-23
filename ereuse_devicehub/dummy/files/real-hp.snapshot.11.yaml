@@ -148,6 +148,12 @@
       "rate": 0.9759,
       "type": "BenchmarkRamSysbench",
       "elapsed": 1
+    },
+    {
+      "appearanceRange": "B",
+      "biosRange": "A",
+      "functionalityRange": "D",
+      "type": "WorkbenchRate"
     }
     ],
     "serialNumber": "CZC0408YJG",

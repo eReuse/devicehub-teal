@@ -145,6 +145,12 @@
       "type": "StressTest",
       "error": false,
       "elapsed": 60
+    },
+    {
+      "appearanceRange": "B",
+      "biosRange": "C",
+      "functionalityRange": "A",
+      "type": "WorkbenchRate"
     }
     ]
   },
