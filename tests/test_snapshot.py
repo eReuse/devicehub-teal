@@ -411,3 +411,10 @@ def snapshot_and_check(user: UserClient,
         return snapshot_and_check(user, input_snapshot, event_types, perform_second_snapshot=False)
     else:
         return snapshot
+
+
+def test_snapshot_keyboard(user: UserClient):
+    s = file('keyboard.snapshot')
+    snapshot = snapshot_and_check(user, s, event_types=('ManualRate',))
+    keyboard = snapshot['device']
+    assert keyboard['layout'] == 'ES'

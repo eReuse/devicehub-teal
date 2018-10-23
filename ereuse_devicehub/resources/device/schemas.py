@@ -1,15 +1,16 @@
 from marshmallow import post_load, pre_load
-from marshmallow.fields import Boolean, Float, Integer, List, Str, String
+from marshmallow.fields import Boolean, DateTime, Float, Integer, List, Str, String
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
+from teal.enums import Layouts
 from teal.marshmallow import EnumField, SanitizedStr, URL, ValidationError
 from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device import models as m, states
 from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, \
-    DataStoragePrivacyCompliance, DisplayTech, RamFormat, RamInterface
+    DataStoragePrivacyCompliance, DisplayTech, PrinterTechnology, RamFormat, RamInterface
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 
@@ -40,6 +41,9 @@ class Device(Thing):
     trading = EnumField(states.Trading, dump_only=True, description=m.Device.trading.__doc__)
     physical = EnumField(states.Physical, dump_only=True, description=m.Device.physical.__doc__)
     physical_possessor = NestedOn('Agent', dump_only=True, data_key='physicalPossessor')
+    production_date = DateTime('iso',
+                               description=m.Device.updated.comment,
+                               data_key='productionDate')
 
     @pre_load
     def from_events_to_events_one(self, data: dict):
@@ -98,6 +102,9 @@ class DisplayMixin:
     resolution_height = Integer(data_key='resolutionHeight',
                                 validate=Range(10, 20000),
                                 description=m.DisplayMixin.resolution_height.comment)
+    refresh_rate = Integer(data_key='refreshRate', validate=Range(10, 1000))
+    contrast_ratio = Integer(data_key='contrastRatio', validate=Range(100, 100000))
+    touchable = Boolean(missing=False, description=m.DisplayMixin.touchable.comment)
 
 
 class NetworkMixin:
@@ -212,3 +219,74 @@ class Manufacturer(Schema):
     name = String(dump_only=True)
     url = URL(dump_only=True)
     logo = URL(dump_only=True)
+
+
+class ComputerAccessory(Device):
+    pass
+
+
+class Mouse(ComputerAccessory):
+    pass
+
+
+class MemoryCardReader(ComputerAccessory):
+    pass
+
+
+class SAI(ComputerAccessory):
+    pass
+
+
+class Keyboard(ComputerAccessory):
+    layout = EnumField(Layouts)
+
+
+class Networking(NetworkMixin, Device):
+    pass
+
+
+class Router(Networking):
+    pass
+
+
+class Switch(Networking):
+    pass
+
+
+class Hub(Networking):
+    pass
+
+
+class WirelessAccessPoint(Networking):
+    pass
+
+
+class Printer(Device):
+    wireless = Boolean(required=True, missing=False)
+    scanning = Boolean(required=True, missing=False)
+    technology = EnumField(PrinterTechnology, required=True)
+    monochrome = Boolean(required=True, missing=True)
+
+
+class LabelPrinter(Printer):
+    pass
+
+
+class Sound(Device):
+    pass
+
+
+class Microphone(Sound):
+    pass
+
+
+class Video(Device):
+    pass
+
+
+class VideoScaler(Video):
+    pass
+
+
+class Videoconference(Video):
+    pass
