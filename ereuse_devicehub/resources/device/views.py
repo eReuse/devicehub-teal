@@ -151,24 +151,71 @@ class DeviceView(View):
         :param query:
         :return:
         """
-        devices = []
-        for device in query:
-            d = DeviceRow(device)
-            devices.append(d)
-
-        keys = [name for name in devices[0].keys()]
-        # writer_csv = csv.DictWriter(devices, fieldnames='')
-        values = [[value for value in row.values()] for row in devices]
-        # devices = str(re.sub('\[|\]', '', str(devices)))  # convert to a string; remove brackets
         data = StringIO()
         cw = csv.writer(data)
-        cw.writerow(keys)
-        cw.writerows(values)
+        first = True
+        for device in query:
+            d = DeviceRow(device)
+            if first:
+                cw.writerow(name for name in d.keys())
+                first = False
+            cw.writerow(v for v in d.values())
         output = make_response(data.getvalue())
-        output.headers["Content-Disposition"] = "attachment; filename=export.csv"
-        output.headers["Content-type"] = "text/csv"
+        output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+        output.headers['Content-type'] = 'text/csv'
         return output
 
+    def generate_erase_certificate(self, query):
+        data = StringIO()
+        cw = csv.writer(data)
+        first = True
+        for device in query:
+            d = DeviceRow(device)
+            if first:
+                cw.writerow(name for name in d.keys())
+                first = False
+            cw.writerow(v for v in d.values())
+        # cw = csv.DictWriter(d, fieldnames=keys)
+        output = make_response(data.getvalue())
+        output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+        output.headers['Content-type'] = 'text/csv'
+        return output
+
+
+class EraseDataStorage(OrderedDict):
+    def __init__(self, device: Device) -> None:
+        super().__init__()
+        self.device = device
+
+
+        # General Information
+        self['Organization'] = device.org
+        self['Date report'] = datetime.time()
+        self['Erase Information'] = device.org + 'ha borrado los siguientes discos acorde a ..' + eraseType
+        # Devices information for row {TABLE}
+        self['Computer Serial Number'] = device.serial_number
+        self['Computer Tag'] = device.tags
+        self['DataStorage Serial Number'] = device.components.data_storage.serial_number
+        self['Erase Date'] = device.event.erase.event_date
+        self['Erase Status'] = device.event.erase.privacy
+        self['Erase Type'] = device.event.erase.type
+        # For each DataStorage
+        self['DataStorage Serial Number'] = device.components.data_storage.serial_number
+        self['DataStorage Model'] = device.components.data_storage.model
+        self['DataStorage Manufacturer'] = device.components.data_storage.manufacturer
+        self['DataStorage Size (MB)'] = device.data_storage_size
+        self['Erase Date'] = device.event.erase.event_date
+        self['Erase Status'] = device.components.data_storage.privacy
+            # Erase information
+            self['Tool used to erase'] = device.erase_tool
+            self['Steps'] = device.events.erase.steps
+            self['Elapsed time'] = device.events.erase.erase_time
+            self['Final clean with zeros'] = 'Yes|No'
+        # Optional more computer info
+        self['Computer Serial Number'] = device.serial_number
+        self['Computer Model'] = device.model
+        self['Computer Manufacturer'] = device.manufacturer
+        self['Computer Tag'] = device.tags
 
 class DeviceRow(OrderedDict):
     NUMS = {
@@ -180,7 +227,7 @@ class DeviceRow(OrderedDict):
         self.device = device
         self['Type'] = device.t
         if isinstance(device, Computer):
-            self['Chassis'] = device.chassis
+            self['Chassis'] = device.chassis.
         self['Tag 1'] = self['Tag 2'] = self['Tag 3'] = ''
         for i, tag in zip(range(1, 3), device.tags):
             self['Tag {}'.format(i)] = format(tag)
@@ -203,12 +250,6 @@ class DeviceRow(OrderedDict):
             self['RAM Range'] = rate.workbench.ram_range
             self['Data Storage Rate'] = rate.data_storage
             self['Data Storage Range'] = rate.workbench.data_storage_range
-        # New Update fields
-        # Origin note = Id-Donació
-        # Target note = Id-Receptor
-        # Partner = cadena de custodia (cadena de noms dels agents(entitas) implicats) [int]
-        # Margin = percentatges de com es repeteix els guanys del preu de venta del dispositiu. [int]
-        # Id invoice = id de la factura
         if isinstance(device, Computer):
             self.components()
 
