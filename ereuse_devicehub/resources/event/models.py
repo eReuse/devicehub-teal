@@ -745,11 +745,29 @@ class TestDataStorage(Test):
     offline_uncorrectable = Column(SmallInteger)
     remaining_lifetime_percentage = Column(SmallInteger)
 
-    def __str__(self) -> str:
-        return '{}. Lifetime of {:.1f} years'.format(inflection.humanize(self.status),
-                                                     self.lifetime.days / 365)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        # As of https://www.backblaze.com/blog/hard-drive-smart-stats/ and
+        # https://www.backblaze.com/blog-smart-stats-2014-8.html
+        # We can guess some future disk failures by analyzing some
+        # SMART data
+        if (self.reallocated_sector_count or 0) > 10:
+            self.incidence = True
+            self.description = 'Warning: Chance of disk failure within a year.'
+        if (self.current_pending_sector_count or 0) > 40 \
+                and (self.reported_uncorrectable_errors or 0) > 10:
+            self.incidence = True
+            self.description = 'Warning: Chance of disk failure within a year.'
+        if not self.assessment:
+            self.incidence = True
+            self.description = 'Warning: Drive failure expected soon.'
 
-    # todo remove lifetime / passed_lifetime as I think they are the same
+    def __str__(self) -> str:
+        t = inflection.humanize(self.status)
+        if self.lifetime:
+            t += ' with a lifetime of {:.1f} years.'.format(self.lifetime.days / 365)
+        t += self.description
+        return t
 
 
 class StressTest(Test):

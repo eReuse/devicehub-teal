@@ -6,6 +6,7 @@ from typing import Set
 import click
 import click_spinner
 import yaml
+from ereuse_utils.test import ANY
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
@@ -138,6 +139,11 @@ class Dummy:
             },
             res=m.Event)
         # todo Receive
+
+        user.get(res=Device, item=sample_pc)  # Test
+        anonymous = self.app.test_client()
+        html, _ = anonymous.get(res=Device, item=sample_pc, accept=ANY)
+        assert 'intel core2 duo cpu' in html
 
         # For netbook: to preapre -> torepair -> to dispose -> disposed
         print('⭐ Done.')
