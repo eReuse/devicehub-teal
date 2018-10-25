@@ -193,6 +193,7 @@ def test_snapshot_real_eee_1001pxd(user: UserClient):
     assert rate['type'] == 'AggregateRate'
     assert rate['biosRange'] == 'C'
     assert rate['appearance'] > 0
+    # todo check why rate func is not > 0 is 0
     assert rate['functionality'] > 0
     assert rate['rating'] > 0 and rate['rating'] != 1
     components = snapshot['components']

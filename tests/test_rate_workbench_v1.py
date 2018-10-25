@@ -217,6 +217,7 @@ def test_rate_processor_with_null_cores():
 
     processor_rate = ProcessorRate().compute(cpu, WorkbenchRate())
 
+    # todo result is not 1 != 1.376 .. check what's wrong
     assert processor_rate == 1, 'ProcessorRate returns incorrect value(rate)'
 
 
@@ -230,7 +231,7 @@ def test_rate_processor_with_null_speed():
 
     processor_rate = ProcessorRate().compute(cpu, WorkbenchRate())
 
-    assert processor_rate == 1.06, 'ProcessorRate returns incorrect value(rate)'
+    assert round(processor_rate, 2) == 1.06, 'ProcessorRate returns incorrect value(rate)'
 
 
 def test_rate_computer_rate():
