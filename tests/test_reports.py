@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 from io import StringIO
 from pathlib import Path
 
@@ -13,7 +14,9 @@ def test_export_basic_snapshot(user: UserClient):
     Test export device information in a csv file
     """
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
-    csv_str, _ = user.get(res=Device, accept='text/csv')
+    csv_str, _ = user.get(res=Device,
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)
@@ -22,10 +25,12 @@ def test_export_basic_snapshot(user: UserClient):
         obj_csv = csv.reader(csv_file)
         fixture_csv = list(obj_csv)
 
-    # Pop(datetime) field d[1x][9]
+    assert isinstance(datetime.strptime(export_csv[1][9], '%c'), datetime), \
+        'Register in field is not a datetime'
     fixture_csv[1] = fixture_csv[1][:9] + fixture_csv[1][10:]
     export_csv[1] = export_csv[1][:9] + export_csv[1][10:]
 
+    # Pop dates fields from csv lists to compare them
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert fixture_csv[1] == export_csv[1], 'Computer information are not equal'
 
@@ -35,17 +40,22 @@ def test_export_full_snapshot(user: UserClient):
     Test a export device with all information and a lot of components
     """
     snapshot, _ = user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
-    csv_str, _ = user.get(res=Device, accept='text/csv')
+    csv_str, _ = user.get(res=Device,
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)
     # Open fixture csv and transform to list
-    with Path(__file__).parent.joinpath('files').joinpath('full-real-eee.csv').open() as csv_file:
+    with Path(__file__).parent.joinpath('files').joinpath('real-eee-1001pxd.csv').open() \
+            as csv_file:
         obj_csv = csv.reader(csv_file)
         fixture_csv = list(obj_csv)
 
-    # todo one pop for each devices
-    # One pop(datetime) fields d[1x][9]
+    assert isinstance(datetime.strptime(export_csv[1][9], '%c'), datetime), \
+        'Register in field is not a datetime'
+
+    # Pop dates fields from csv lists to compare them
     fixture_csv[1] = fixture_csv[1][:9] + fixture_csv[1][10:]
     export_csv[1] = export_csv[1][:9] + export_csv[1][10:]
 
@@ -70,16 +80,19 @@ def test_export_computer_monitor(user: UserClient):
     Test a export device type computer monitor
     """
     snapshot, _ = user.post(file('computer-monitor.snapshot'), res=Snapshot)
-    csv_str, _ = user.get(res=Device, accept='text/csv')
+    csv_str, _ = user.get(res=Device,
+                          accept='text/csv',
+                          query=[('filter', {'type': ['ComputerMonitor']})])
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)
     # Open fixture csv and transform to list
-    with Path(__file__).parent.joinpath('files').joinpath('computer-monitor.csv').open() as csv_file:
+    with Path(__file__).parent.joinpath('files').joinpath('computer-monitor.csv').open() \
+            as csv_file:
         obj_csv = csv.reader(csv_file)
         fixture_csv = list(obj_csv)
 
-    # One pop(datetime) fields
+    # Pop dates fields from csv lists to compare them
     fixture_csv[1] = fixture_csv[1][:8]
     export_csv[1] = export_csv[1][:8]
 
@@ -92,7 +105,9 @@ def test_export_keyboard(user: UserClient):
     Test a export device type keyboard
     """
     snapshot, _ = user.post(file('keyboard.snapshot'), res=Snapshot)
-    csv_str, _ = user.get(res=Device, accept='text/csv')
+    csv_str, _ = user.get(res=Device,
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Keyboard']})])
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)
@@ -101,7 +116,7 @@ def test_export_keyboard(user: UserClient):
         obj_csv = csv.reader(csv_file)
         fixture_csv = list(obj_csv)
 
-    # One pop(datetime) fields
+    # Pop dates fields from csv lists to compare them
     fixture_csv[1] = fixture_csv[1][:8]
     export_csv[1] = export_csv[1][:8]
 
@@ -113,5 +128,18 @@ def test_export_multiple_devices(user: UserClient):
     """
     Test a export multiple devices with different components and information
     """
-    # todo test multiple devices
+    pass
+
+
+def test_export_only_components(user: UserClient):
+    """
+    Test a export only components
+    """
+    pass
+
+
+def test_export_computers__and_components(user: UserClient):
+    """
+    Test a export multiple devices (computers and independent components)
+    """
     pass
