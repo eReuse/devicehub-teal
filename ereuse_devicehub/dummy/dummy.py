@@ -28,6 +28,7 @@ class Dummy:
     ET = (
         ('A0000000000001', 'DT-AAAAA'),
         ('A0000000000002', 'DT-BBBBB'),
+        ('A0000000000002', 'DT-CCCCC'),
     )
     """eTags to create."""
     ORG = 'eReuse.org CAT', '-t', 'G-60437761', '-c', 'ES'

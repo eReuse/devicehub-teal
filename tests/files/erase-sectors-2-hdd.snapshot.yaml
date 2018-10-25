@@ -1,9 +1,9 @@
 {
   "version": "11.0a3",
   "device": {
-    "serialNumber": null,
-    "manufacturer": null,
-    "model": null,
+    "serialNumber": 'foo',
+    "manufacturer": 'bar',
+    "model": 'baz',
     "type": "Desktop",
     "events": [],
     "chassis": "Tower"
@@ -53,7 +53,8 @@
     "type": "NetworkAdapter",
     "events": [],
     "serialNumber": "f4:6d:04:12:9b:85",
-    "speed": 1000
+    "speed": 1000,
+    "wireless": false
   },
   {
     "serialNumber": "WD-WCAV29008961",
@@ -86,7 +87,7 @@
       "error": true,
       "currentPendingSectorCount": 1,
       "powerCycleCount": 1253,
-      "reallocatedSectorCount": 6,
+      "reallocatedSectorCount": 15,
       "type": "TestDataStorage",
       "status": "Completed: read failure"
     }

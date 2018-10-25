@@ -244,7 +244,7 @@ class ComputerChassis(Enum):
     Tablet = 'Tablet'
     Virtual = 'Non-physical device'
 
-    def __format__(self, format_spec):
+    def __str__(self):
         return inflection.humanize(inflection.underscore(self.value))
 
 

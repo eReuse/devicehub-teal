@@ -322,6 +322,15 @@ def test_erase(user: UserClient):
     assert snapshot['components'][0]['privacy'] == 'EraseSectorsError'
 
 
+def test_test_data_storage(user: UserClient):
+    """Tests a Snapshot with EraseSectors."""
+    s = file('erase-sectors-2-hdd.snapshot')
+    snapshot, _ = user.post(res=Snapshot, data=s)
+    incidence_test = next(ev for ev in snapshot['events'] if ev['reallocatedSectorCount'] == 15)
+    assert incidence_test['incidence']
+    assert incidence_test['description'] == 'Warning: Drive failure expected soon.'
+
+
 def test_snapshot_computer_monitor(user: UserClient):
     s = file('computer-monitor.snapshot')
     snapshot_and_check(user, s, event_types=('ManualRate',))
