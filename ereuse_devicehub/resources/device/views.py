@@ -154,80 +154,21 @@ class DeviceView(View):
         data = StringIO()
         cw = csv.writer(data)
         first = True
-        # todo fix if only export components
-        for device in query:
-            # if not isinstance(device, Component):
-            d = DeviceRow(device)
-            if first:
-                cw.writerow(name for name in d.keys())
-                cw.writerow(v for v in d.values())
-                first = False
-            elif isinstance(device, Computer):
-                cw.writerow(v for v in d.values())
-        output = make_response(data.getvalue())
-        output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
-        output.headers['Content-type'] = 'text/csv'
-        return output
-
-
-""" Export Erased Certificate Code
-
-    def generate_erased_certificate(self, query):
-        data = StringIO()
-        cw = csv.writer(data)
-        first = True
         for device in query:
             d = DeviceRow(device)
             if first:
                 cw.writerow(name for name in d.keys())
                 first = False
             cw.writerow(v for v in d.values())
-        # cw = csv.DictWriter(d, fieldnames=keys)
         output = make_response(data.getvalue())
         output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
 
 
-class EraseDataStorage(OrderedDict):
-    def __init__(self, device: Device) -> None:
-        super().__init__()
-        self.device = device
-
-        # General Information
-        self['Organization'] = device.org
-        self['Date report'] = datetime.time()
-        self['Erase Information'] = device.org + 'ha borrado los siguientes discos acorde a ..' + eraseType
-        # Devices information for row {TABLE}
-        self['Computer Serial Number'] = device.serial_number
-        self['Computer Tag'] = device.tags
-        self['DataStorage Serial Number'] = device.components.data_storage.serial_number
-        self['Erase Date'] = device.event.erase.event_date
-        self['Erase Status'] = device.event.erase.privacy
-        self['Erase Type'] = device.event.erase.type
-        # For each DataStorage
-        self['DataStorage Serial Number'] = device.components.data_storage.serial_number
-        self['DataStorage Model'] = device.components.data_storage.model
-        self['DataStorage Manufacturer'] = device.components.data_storage.manufacturer
-        self['DataStorage Size (MB)'] = device.data_storage_size
-        self['Erase Date'] = device.event.erase.event_date
-        self['Erase Status'] = device.components.data_storage.privacy
-            # Erase information
-            self['Tool used to erase'] = device.erase_tool
-            self['Steps'] = device.events.erase.steps
-            self['Elapsed time'] = device.events.erase.erase_time
-            self['Final clean with zeros'] = 'Yes|No'
-        # Optional more computer info
-        self['Computer Serial Number'] = device.serial_number
-        self['Computer Model'] = device.model
-        self['Computer Manufacturer'] = device.manufacturer
-        self['Computer Tag'] = device.tags
-"""
-
-
 class DeviceRow(OrderedDict):
     NUMS = {
-        Display.t: 2,
+        Display.t: 1,
         Processor.t: 2,
         GraphicCard.t: 2,
         Motherboard.t: 1,
