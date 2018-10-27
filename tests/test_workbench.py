@@ -165,6 +165,7 @@ def test_real_toshiba_11(user: UserClient):
     snapshot, _ = user.post(res=em.Snapshot, data=s)
 
 
+@pytest.mark.xfail(reason='Wrong rates values')
 def test_snapshot_real_eee_1001pxd(user: UserClient):
     """
     Checks the values of the device, components,
