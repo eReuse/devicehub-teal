@@ -28,7 +28,7 @@ class Dummy:
     ET = (
         ('A0000000000001', 'DT-AAAAA'),
         ('A0000000000002', 'DT-BBBBB'),
-        ('A0000000000002', 'DT-CCCCC'),
+        ('A0000000000003', 'DT-CCCCC'),
     )
     """eTags to create."""
     ORG = 'eReuse.org CAT', '-t', 'G-60437761', '-c', 'ES'
@@ -119,9 +119,9 @@ class Dummy:
         assert len(inventory['items'])
 
         i, _ = user.get(res=Device, query=[('search', 'intel')])
-        assert len(i['items']) == 11
-        i, _ = user.get(res=Device, query=[('search', 'pc')])
         assert len(i['items']) == 12
+        i, _ = user.get(res=Device, query=[('search', 'pc')])
+        assert len(i['items']) == 13
 
         # Let's create a set of events for the pc device
         # Make device Ready

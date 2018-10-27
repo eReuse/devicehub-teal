@@ -10,7 +10,7 @@ from boltons import urlutils
 from citext import CIText
 from flask import current_app as app, g
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
-    Float, ForeignKey, Interval, JSON, Numeric, SmallInteger, Unicode, event, orm
+    Float, ForeignKey, Interval, JSON, Numeric, SmallInteger, Unicode, event, orm, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -812,7 +812,7 @@ class BenchmarkDataStorage(Benchmark):
 
 class BenchmarkWithRate(Benchmark):
     id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
-    rate = Column(SmallInteger, nullable=False)
+    rate = Column(Float, nullable=False)
 
     def __str__(self) -> str:
         return '{} points'.format(self.rate)

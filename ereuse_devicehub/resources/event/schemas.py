@@ -299,7 +299,7 @@ class BenchmarkDataStorage(Benchmark):
 
 
 class BenchmarkWithRate(Benchmark):
-    rate = Integer(required=True)
+    rate = Float(required=True)
 
 
 class BenchmarkProcessor(BenchmarkWithRate):

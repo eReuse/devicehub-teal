@@ -1,0 +1,128 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "expectedEvents": [],
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00",
+  "device": {
+    "manufacturer": "Dell Inc.",
+    "model": "Latitude E6440",
+    "serialNumber": "FJBQVZ1",
+    "events": [],
+    "type": "Laptop",
+    "chassis": "Laptop"
+  },
+  "components": [
+    {
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core i7-4600M CPU @ 2.90GHz",
+      "serialNumber": null,
+      "events": [],
+      "type": "Processor",
+      "speed": 1.259899,
+      "address": 64,
+      "cores": 2,
+      "threads": 4
+    },
+    {
+      "manufacturer": "Samsung",
+      "model": "M471B5173DB0-YK0",
+      "serialNumber": "732CD498",
+      "events": [],
+      "type": "RamModule",
+      "format": "SODIMM",
+      "size": 4096,
+      "interface": "DDR3",
+      "speed": 1600.0
+    },
+    {
+      "manufacturer": "Samsung",
+      "model": "M471B5173DB0-YK0",
+      "serialNumber": "152DD498",
+      "events": [],
+      "type": "RamModule",
+      "format": "SODIMM",
+      "size": 4096,
+      "interface": "DDR3",
+      "speed": 1600.0
+    },
+    {
+      "manufacturer": null,
+      "model": "Crucial_CT525MX3",
+      "serialNumber": "164014297BCC",
+      "events": [],
+      "type": "HardDrive",
+      "size": 500786,
+      "interface": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "4th Gen Core Processor Integrated Graphics Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "GraphicCard",
+      "memory": null
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Ethernet Connection I217-LM",
+      "serialNumber": "ec:f4:bb:0b:18:90",
+      "events": [],
+      "type": "NetworkAdapter",
+      "speed": 1000,
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Centrino Advanced-N 6235",
+      "serialNumber": "c4:d9:87:47:90:e1",
+      "events": [],
+      "type": "NetworkAdapter",
+      "wireless": true
+    },
+    {
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": "da:b4:3a:25:88:6c",
+      "events": [],
+      "type": "NetworkAdapter",
+      "wireless": false
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "Xeon E3-1200 v3/4th Gen Core Processor HD Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "CNFCH52J48303+YF2",
+      "model": "Laptop_Integrated_Webcam_HD",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "model": "8 Series/C220 Series Chipset High Definition Audio Controller",
+      "serialNumber": null,
+      "events": [],
+      "type": "SoundCard"
+    },
+    {
+      "manufacturer": "Dell Inc.",
+      "model": "0159N7",
+      "serialNumber": "/FJBQVZ1/CN1296342I009B/",
+      "events": [],
+      "type": "Motherboard",
+      "usb": 3,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 1
+    }
+  ],
+  "elapsed": 0
+}
