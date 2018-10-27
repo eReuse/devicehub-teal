@@ -326,7 +326,10 @@ def test_test_data_storage(user: UserClient):
     """Tests a Snapshot with EraseSectors."""
     s = file('erase-sectors-2-hdd.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=s)
-    incidence_test = next(ev for ev in snapshot['events'] if ev['reallocatedSectorCount'] == 15)
+    incidence_test = next(
+        ev for ev in snapshot['events']
+        if ev.get('reallocatedSectorCount', None) == 15
+    )
     assert incidence_test['incidence']
     assert incidence_test['description'] == 'Warning: Drive failure expected soon.'
 
