@@ -740,7 +740,7 @@ class TestDataStorage(Test):
     reallocated_sector_count = Column(SmallInteger)
     power_cycle_count = Column(SmallInteger)
     reported_uncorrectable_errors = Column(SmallInteger)
-    command_timeout = Column(SmallInteger)
+    command_timeout = Column(Integer)
     current_pending_sector_count = Column(SmallInteger)
     offline_uncorrectable = Column(SmallInteger)
     remaining_lifetime_percentage = Column(SmallInteger)
