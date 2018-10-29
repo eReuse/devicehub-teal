@@ -1,13 +1,9 @@
-import re
 from collections import OrderedDict
 
 from setuptools import find_packages, setup
 
 with open('README.md', encoding='utf8') as f:
     long_description = f.read()
-
-with open('ereuse_devicehub/__init__.py', 'rt', encoding='utf8') as f:
-    version = re.search(r'__version__ = \'(.*?)\'', f.read()).group(1)
 
 test_requires = [
     'pytest',
@@ -16,7 +12,7 @@ test_requires = [
 
 setup(
     name='ereuse-devicehub',
-    version=version,
+    version='0.2.0b1',
     url='https://github.com/ereuse/devicehub-teal',
     project_urls=OrderedDict((
         ('Documentation', 'http://devicheub.ereuse.org'),
@@ -29,7 +25,6 @@ setup(
     description='A system to manage devices focusing reuse.',
     packages=find_packages(),
     include_package_data=True,
-    platforms='any',
     python_requires='>=3.5.3',
     long_description=long_description,
     long_description_content_type='text/markdown',
