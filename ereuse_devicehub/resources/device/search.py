@@ -83,14 +83,29 @@ class DeviceSearch(db.Model):
         assert not isinstance(device, Component)
 
         tokens = [
+            (str(device.id), search.Weight.A),
             (inflection.humanize(device.type), search.Weight.B),
             (Device.model, search.Weight.B),
             (Device.manufacturer, search.Weight.C),
             (Device.serial_number, search.Weight.A)
         ]
+
+        if device.manufacturer:
+            # todo this has to be done using a dictionary
+            manufacturer = device.manufacturer.lower()
+            if 'asus' in manufacturer:
+                tokens.append(('asus', search.Weight.B))
+            if 'hewlett' in manufacturer or 'hp' in manufacturer or 'h.p' in manufacturer:
+                tokens.append(('hp', search.Weight.B))
+                tokens.append(('h.p', search.Weight.C))
+                tokens.append(('hewlett', search.Weight.C))
+                tokens.append(('packard', search.Weight.C))
+
         if isinstance(device, Computer):
+            # Aggregate the values of all the components of pc
             Comp = aliased(Component)
             tokens.extend((
+                (db.func.string_agg(db.cast(Comp.id, db.TEXT), ' '), search.Weight.D),
                 (db.func.string_agg(Comp.model, ' '), search.Weight.C),
                 (db.func.string_agg(Comp.manufacturer, ' '), search.Weight.D),
                 (db.func.string_agg(Comp.serial_number, ' '), search.Weight.B),

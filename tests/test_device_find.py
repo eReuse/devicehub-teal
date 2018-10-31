@@ -199,25 +199,27 @@ def test_device_query_search(user: UserClient):
     assert i['items'][0]['id'] == 1
     i, _ = user.get(res=Device, query=[('search', 'intel')])
     assert len(i['items']) == 1
+    i, _ = user.get(res=Device, query=[('search', '1')])
+    assert len(i['items']) == 1
 
 
-@pytest.mark.xfail(reason='No dictionary yet that knows asustek = asus')
 def test_device_query_search_synonyms_asus(user: UserClient):
     user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
     i, _ = user.get(res=Device, query=[('search', 'asustek')])
-    assert len(i['items']) == 1
+    assert 1 == len(i['items'])
     i, _ = user.get(res=Device, query=[('search', 'asus')])
-    assert len(i['items']) == 1
+    assert 1 == len(i['items'])
 
 
-@pytest.mark.xfail(reason='No dictionary yet that knows hp = hewlett packard')
 def test_device_query_search_synonyms_intel(user: UserClient):
     s = file('real-hp.snapshot.11')
     s['device']['model'] = 'foo'  # The model had the word 'HP' in it
     user.post(s, res=Snapshot)
     i, _ = user.get(res=Device, query=[('search', 'hewlett packard')])
-    assert len(i['items']) == 1
+    assert 1 == len(i['items'])
     i, _ = user.get(res=Device, query=[('search', 'hewlett')])
-    assert len(i['items']) == 1
+    assert 1 == len(i['items'])
     i, _ = user.get(res=Device, query=[('search', 'hp')])
-    assert len(i['items']) == 1
+    assert 1 == len(i['items'])
+    i, _ = user.get(res=Device, query=[('search', 'h.p')])
+    assert 1 == len(i['items'])

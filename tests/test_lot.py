@@ -278,20 +278,20 @@ def test_lot_post_add_children_view_ui_tree_normal(user: UserClient):
 
     # Format UiTree
     lots = user.get(res=Lot, query=[('format', 'UiTree')])[0]['items']
-    assert len(lots) == 1
+    assert 1 == len(lots)
     assert lots[0]['name'] == 'Parent'
     assert len(lots[0]['nodes']) == 1
     assert lots[0]['nodes'][0]['name'] == 'Child'
 
     # Normal list format
     lots = user.get(res=Lot)[0]['items']
-    assert len(lots) == 2
+    assert 2 == len(lots)
     assert lots[0]['name'] == 'Parent'
     assert lots[1]['name'] == 'Child'
 
     # List format with a filter
     lots = user.get(res=Lot, query=[('search', 'pa')])[0]['items']
-    assert len(lots) == 1
+    assert 1 == len(lots)
     assert lots[0]['name'] == 'Parent'
 
 

@@ -69,7 +69,7 @@ class Sorting(query.Sort):
 
 class DeviceView(View):
     class FindArgs(marshmallow.Schema):
-        search = f.Str()
+        search = f.Raw()
         filter = f.Nested(Filters, missing=[])
         sort = f.Nested(Sorting, missing=[])
         page = f.Integer(validate=v.Range(min=1), missing=1)
