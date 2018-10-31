@@ -88,7 +88,20 @@ class DeviceView(View):
           200:
             description: The device or devices.
         """
-        return super().get(id)
+        # Majority of code is from teal
+        if id:
+            response = self.one(id)
+        else:
+            args = self.QUERY_PARSER.parse(self.find_args,
+                                           request,
+                                           locations=('querystring',))
+            # todo not-nice way of de-parsing what webargs parser
+            # does when sees that an argument is like an int, etc
+            # when solving this, change too the Query.search to Str
+            if args.get('search', False):
+                args['search'] = str(args['search'])
+            response = self.find(args)
+        return response
 
     def one(self, id: int):
         """Gets one device."""
