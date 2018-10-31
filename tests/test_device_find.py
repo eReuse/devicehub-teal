@@ -190,6 +190,21 @@ def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClie
     assert i['items']
 
 
+def test_device_search_regenerate_table(app: DeviceSearch, user: UserClient):
+    user.post(file('basic.snapshot'), res=Snapshot)
+    i, _ = user.get(res=Device, query=[('search', 'Desktop')])
+    assert i['items'], 'Normal search works'
+    with app.app_context():
+        app.db.session.execute('TRUNCATE TABLE {}'.format(DeviceSearch.__table__.name))
+        app.db.session.commit()
+    i, _ = user.get(res=Device, query=[('search', 'Desktop')])
+    assert not i['items'], 'Truncate deleted all items'
+    runner = app.test_cli_runner()
+    runner.invoke(args=['regenerate-search'], catch_exceptions=False)
+    i, _ = user.get(res=Device, query=[('search', 'Desktop')])
+    assert i['items'], 'Regenerated re-made the table'
+
+
 def test_device_query_search(user: UserClient):
     # todo improve
     user.post(file('basic.snapshot'), res=Snapshot)

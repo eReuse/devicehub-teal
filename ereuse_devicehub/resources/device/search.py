@@ -73,9 +73,15 @@ class DeviceSearch(db.Model):
         it deletes unlogged tables as ours.
         """
         if not DeviceSearch.query.first():
-            for device in Device.query:
-                if not isinstance(device, Component):
-                    cls.set_device_tokens(session, device)
+            cls.regenerate_search_table(session)
+
+    @classmethod
+    def regenerate_search_table(cls, session: db.Session):
+        """Deletes and re-computes all the search table."""
+        DeviceSearch.query.delete()
+        for device in Device.query:
+            if not isinstance(device, Component):
+                cls.set_device_tokens(session, device)
 
     @classmethod
     def set_device_tokens(cls, session: db.Session, device: Device):
