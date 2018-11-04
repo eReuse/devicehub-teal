@@ -131,7 +131,7 @@ class Path(db.Model):
     id = db.Column(db.UUID(as_uuid=True),
                    primary_key=True,
                    server_default=db.text('gen_random_uuid()'))
-    lot_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(Lot.id), nullable=False)
+    lot_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(Lot.id), nullable=False, index=True)
     lot = db.relationship(Lot,
                           backref=db.backref('paths', lazy=True, collection_class=set),
                           primaryjoin=Lot.id == lot_id)

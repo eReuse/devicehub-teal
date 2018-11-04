@@ -32,12 +32,13 @@ class Tag(Thing):
     """
     device_id = Column(BigInteger,
                        # We don't want to delete the tag on device deletion, only set to null
-                       ForeignKey(Device.id, ondelete=DB_CASCADE_SET_NULL))
+                       ForeignKey(Device.id, ondelete=DB_CASCADE_SET_NULL),
+                       index=True)
     device = relationship(Device,
                           backref=backref('tags', lazy=True, collection_class=set),
                           primaryjoin=Device.id == device_id)
     """The device linked to this tag."""
-    secondary = Column(Unicode(), check_lower('secondary'))
+    secondary = Column(Unicode(), check_lower('secondary'), index=True)
     secondary.comment = """
         A secondary identifier for this tag. It has the same
         constraints as the main one. Only needed in special cases.

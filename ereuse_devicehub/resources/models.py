@@ -13,12 +13,14 @@ class Thing(db.Model):
     # todo make updated to auto-update
     updated = db.Column(db.TIMESTAMP(timezone=True),
                         nullable=False,
+                        index=True,
                         server_default=db.text('CURRENT_TIMESTAMP'))
     updated.comment = """
         When this was last changed.
     """
     created = db.Column(db.TIMESTAMP(timezone=True),
                         nullable=False,
+                        index=True,
                         server_default=db.text('CURRENT_TIMESTAMP'))
     created.comment = """
         When Devicehub created this.

@@ -43,7 +43,7 @@ class JoinedTableMixin:
 
 class Event(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    type = Column(Unicode, nullable=False)
+    type = Column(Unicode, nullable=False, index=True)
     name = Column(CIText(), default='', nullable=False)
     name.comment = """
         A name or title for the event. Used when searching for events.
@@ -148,7 +148,7 @@ class Event(Thing):
     For Add and Remove though, this has another meaning: the components
     that are added or removed.
     """
-    parent_id = Column(BigInteger, ForeignKey(Computer.id))
+    parent_id = Column(BigInteger, ForeignKey(Computer.id), index=True)
     parent = relationship(Computer,
                           backref=backref('events_parent',
                                           lazy=True,
@@ -222,7 +222,7 @@ class JoinedWithOneDeviceMixin:
 
 
 class EventWithOneDevice(JoinedTableMixin, Event):
-    device_id = Column(BigInteger, ForeignKey(Device.id), nullable=False)
+    device_id = Column(BigInteger, ForeignKey(Device.id), nullable=False, index=True)
     device = relationship(Device,
                           backref=backref('events_one',
                                           lazy=True,

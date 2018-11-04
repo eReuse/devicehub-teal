@@ -36,7 +36,7 @@ class Device(Thing):
     id.comment = """
         The identifier of the device for this database.
     """
-    type = Column(Unicode(STR_SM_SIZE), nullable=False)
+    type = Column(Unicode(STR_SM_SIZE), nullable=False, index=True)
     hid = Column(Unicode(), check_lower('hid'), unique=True)
     hid.comment = """
         The Hardware ID (HID) is the unique ID traceability systems 
@@ -375,7 +375,7 @@ class Cellphone(Mobile):
 class Component(Device):
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
 
-    parent_id = Column(BigInteger, ForeignKey(Computer.id))
+    parent_id = Column(BigInteger, ForeignKey(Computer.id), index=True)
     parent = relationship(Computer,
                           backref=backref('components',
                                           lazy=True,
