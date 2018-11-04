@@ -4,7 +4,7 @@ from teal.utils import compiled
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
-from ereuse_devicehub.resources.device.models import Desktop, Device, Laptop, Processor, \
+from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, Laptop, Server, \
     SolidStateDrive
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.device.views import Filters, Sorting
@@ -56,51 +56,70 @@ def test_device_sort():
 
 @pytest.fixture()
 def device_query_dummy(app: Devicehub):
+    """
+    3 computers, where:
+
+    1. s1 Desktop with a Processor
+    2. s2 Desktop with an SSD
+    3. s3 Laptop
+    4. s4 Server with another SSD
+
+    :param app:
+    :return:
+    """
     with app.app_context():
         devices = (  # The order matters ;-)
-            Desktop(serial_number='s1',
+            Desktop(serial_number='1',
                     model='ml1',
                     manufacturer='mr1',
                     chassis=ComputerChassis.Tower),
-            Laptop(serial_number='s3',
-                   model='ml3',
-                   manufacturer='mr3',
-                   chassis=ComputerChassis.Detachable),
-            Desktop(serial_number='s2',
+            Desktop(serial_number='2',
                     model='ml2',
                     manufacturer='mr2',
                     chassis=ComputerChassis.Microtower),
-            SolidStateDrive(serial_number='s4', model='ml4', manufacturer='mr4')
+            Laptop(serial_number='3',
+                   model='ml3',
+                   manufacturer='mr3',
+                   chassis=ComputerChassis.Detachable),
+            Server(serial_number='4',
+                   model='ml4',
+                   manufacturer='mr4',
+                   chassis=ComputerChassis.Tower),
         )
-        devices[-1].parent = devices[0]  # s4 in s1
+        devices[0].components.add(
+            GraphicCard(serial_number='1-gc', model='s1ml', manufacturer='s1mr')
+        )
+        devices[1].components.add(
+            SolidStateDrive(serial_number='2-ssd', model='s2ml', manufacturer='s2mr')
+        )
+        devices[-1].components.add(
+            SolidStateDrive(serial_number='4-ssd', model='s4ml', manufacturer='s4mr')
+        )
         db.session.add_all(devices)
-
-        devices[0].components.add(Processor(model='ml5', manufacturer='mr5'))
-
         db.session.commit()
 
 
 @pytest.mark.usefixtures(device_query_dummy.__name__)
 def test_device_query_no_filters(user: UserClient):
     i, _ = user.get(res=Device)
-    assert tuple(d['type'] for d in i['items']) == (
-        'Desktop', 'Laptop', 'Desktop', 'SolidStateDrive', 'Processor'
+    assert ('1', '2', '3', '4', '1-gc', '2-ssd', '4-ssd') == tuple(
+        d['serialNumber'] for d in i['items']
     )
 
 
 @pytest.mark.usefixtures(device_query_dummy.__name__)
 def test_device_query_filter_type(user: UserClient):
     i, _ = user.get(res=Device, query=[('filter', {'type': ['Desktop', 'Laptop']})])
-    assert tuple(d['type'] for d in i['items']) == ('Desktop', 'Laptop', 'Desktop')
+    assert ('1', '2', '3') == tuple(d['serialNumber'] for d in i['items'])
 
 
 @pytest.mark.usefixtures(device_query_dummy.__name__)
 def test_device_query_filter_sort(user: UserClient):
     i, _ = user.get(res=Device, query=[
-        ('sort', {'created': Sorting.ASCENDING}),
+        ('sort', {'created': Sorting.DESCENDING}),
         ('filter', {'type': ['Computer']})
     ])
-    assert tuple(d['type'] for d in i['items']) == ('Desktop', 'Laptop', 'Desktop')
+    assert ('4', '3', '2', '1') == tuple(d['serialNumber'] for d in i['items'])
 
 
 @pytest.mark.usefixtures(device_query_dummy.__name__)
@@ -111,7 +130,7 @@ def test_device_query_filter_lots(user: UserClient):
     i, _ = user.get(res=Device, query=[
         ('filter', {'lot': {'id': [parent['id']]}})
     ])
-    assert len(i['items']) == 0, 'No devices in lot'
+    assert not i['items'], 'No devices in lot'
 
     parent, _ = user.post({},
                           res=Lot,
@@ -120,42 +139,37 @@ def test_device_query_filter_lots(user: UserClient):
     i, _ = user.get(res=Device, query=[
         ('filter', {'type': ['Computer']})
     ])
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(parent['id']),
-                       query=[('id', d['id']) for d in i['items'][:-1]])
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(child['id']),
-                       query=[('id', i['items'][-1]['id'])])
+    assert ('1', '2', '3', '4') == tuple(d['serialNumber'] for d in i['items'])
+    parent, _ = user.post({},
+                          res=Lot,
+                          item='{}/devices'.format(parent['id']),
+                          query=[('id', d['id']) for d in i['items'][:2]])
+    child, _ = user.post({},
+                         res=Lot,
+                         item='{}/devices'.format(child['id']),
+                         query=[('id', d['id']) for d in i['items'][2:]])
     i, _ = user.get(res=Device, query=[
-        ('filter', {'lot': {'id': [parent['id']]}}),
-        ('sort', {'id': Sorting.ASCENDING})
+        ('filter', {'lot': {'id': [parent['id']]}})
     ])
-    assert tuple(x['id'] for x in i['items']) == (1, 2, 3, 4, 5), \
-        'The parent lot contains 2 items plus indirectly the third one, and 1st device the HDD.'
+    assert ('1', '2', '3', '4', '1-gc', '2-ssd', '4-ssd') == tuple(
+        x['serialNumber'] for x in i['items']
+    ), 'The parent lot contains 2 items plus indirectly the other ' \
+       '2 from the child lot, with all their 2 components'
 
     i, _ = user.get(res=Device, query=[
         ('filter', {'type': ['Computer'], 'lot': {'id': [parent['id']]}}),
-        ('sort', {'id': Sorting.ASCENDING})
     ])
-    assert tuple(x['id'] for x in i['items']) == (1, 2, 3)
-
+    assert ('1', '2', '3', '4') == tuple(x['serialNumber'] for x in i['items'])
     s, _ = user.get(res=Device, query=[
         ('filter', {'lot': {'id': [child['id']]}})
     ])
-    assert len(s['items']) == 1
-    assert s['items'][0]['chassis'] == 'Microtower', 'The child lot only contains the last device.'
+    assert ('3', '4', '4-ssd') == tuple(x['serialNumber'] for x in s['items'])
     s, _ = user.get(res=Device, query=[
         ('filter', {'lot': {'id': [child['id'], parent['id']]}})
     ])
-    assert all(x['id'] == id for x, id in zip(i['items'], (1, 2, 3, 4))), \
-        'Adding both lots is redundant in this case and we have the 4 elements.'
-    i, _ = user.get(res=Device, query=[
-        ('filter', {'lot': {'id': [parent['id']]}, 'type': ['Computer']}),
-        ('sort', {'id': Sorting.ASCENDING})
-    ])
-    assert tuple(x['id'] for x in i['items']) == (1, 2, 3), 'Only computers now'
+    assert ('1', '2', '3', '4', '1-gc', '2-ssd', '4-ssd') == tuple(
+        x['serialNumber'] for x in s['items']
+    ), 'Adding both lots is redundant in this case and we have the 4 elements.'
 
 
 def test_device_query(user: UserClient):

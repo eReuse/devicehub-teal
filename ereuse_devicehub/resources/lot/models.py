@@ -101,13 +101,13 @@ class Lot(Thing):
             Path.path.lquery(exp.cast('*{{1}}.{}.*'.format(id), LQUERY))
         )
 
-    def __contains__(self, child: 'Lot'):
-        return Path.has_lot(self.id, child.id)
-
     @classmethod
     def roots(cls):
         """Gets the lots that are not under any other lot."""
         return cls.query.join(cls.paths).filter(db.func.nlevel(Path.path) == 1)
+
+    def __contains__(self, child: 'Lot'):
+        return Path.has_lot(self.id, child.id)
 
     def __repr__(self) -> str:
         return '<Lot {0.name} devices={0.devices!r}>'.format(self)

@@ -5,7 +5,6 @@ from flask import current_app as app, render_template, request
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
 from marshmallow import fields, fields as f, validate as v
-from sqlalchemy.orm import aliased
 from teal import query
 from teal.cache import cache
 from teal.resource import View
@@ -46,12 +45,10 @@ class LotQ(query.Query):
 
 
 class Filters(query.Query):
-    _parent = aliased(Computer)
+    _parent = Computer.__table__.alias()
     _device_inside_lot = (Device.id == LotDevice.device_id) & (Lot.id == LotDevice.lot_id)
-    _component_inside_lot_through_parent = (Device.id == Component.id) \
-                                           & (Component.parent_id == _parent.id) \
-                                           & (_parent.id == LotDevice.device_id) \
-                                           & (Lot.id == LotDevice.lot_id)
+    _parent_device_in_lot = (Device.id == Component.id) & (Component.parent_id == _parent.c.id) \
+                            & (_parent.c.id == LotDevice.device_id) & (Lot.id == LotDevice.lot_id)
 
     type = query.Or(OfType(Device.type))
     model = query.ILike(Device.model)
@@ -59,7 +56,10 @@ class Filters(query.Query):
     serialNumber = query.ILike(Device.serial_number)
     rating = query.Join(Device.id == Rate.device_id, RateQ)
     tag = query.Join(Device.id == Tag.device_id, TagQ)
-    lot = query.Join(_device_inside_lot | _component_inside_lot_through_parent, LotQ)
+    # todo This part of the query is really slow
+    # And forces usage of distinct, as it returns many rows
+    # due to having multiple paths to the same
+    lot = query.Join(_device_inside_lot | _parent_device_in_lot, LotQ)
 
 
 class Sorting(query.Sort):
@@ -71,7 +71,7 @@ class DeviceView(View):
     class FindArgs(marshmallow.Schema):
         search = f.Raw()
         filter = f.Nested(Filters, missing=[])
-        sort = f.Nested(Sorting, missing=[])
+        sort = f.Nested(Sorting, missing=[Device.id.asc()])
         page = f.Integer(validate=v.Range(min=1), missing=1)
 
     def get(self, id):
@@ -123,7 +123,7 @@ class DeviceView(View):
     def find(self, args: dict):
         """Gets many devices."""
         search_p = args.get('search', None)
-        query = Device.query
+        query = Device.query.distinct()  # todo we should not force to do this if the query is ok
         if search_p:
             properties = DeviceSearch.properties
             tags = DeviceSearch.tags

@@ -32,30 +32,37 @@ def test_lot_modify_patch_endpoint(user: UserClient):
     assert l_after['name'] == 'bar'
 
 
-@pytest.mark.xfail(reason='Components are not added to lots!')
+@pytest.mark.xfail(reason='the IN comparison does not work for device')
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_device_relationship():
     device = Desktop(serial_number='foo',
                      model='bar',
                      manufacturer='foobar',
                      chassis=ComputerChassis.Lunchbox)
-    lot = Lot('lot1')
-    lot.devices.add(device)
-    db.session.add(lot)
+    child = Lot('child')
+    child.devices.add(device)
+    db.session.add(child)
     db.session.flush()
 
     lot_device = LotDevice.query.one()  # type: LotDevice
     assert lot_device.device_id == device.id
-    assert lot_device.lot_id == lot.id
+    assert lot_device.lot_id == child.id
     assert lot_device.created
     assert lot_device.author_id == g.user.id
-    assert device.lots == {lot}
-    assert device in lot
+    assert device.lots == {child}
+    # todo Device IN LOT does not work
+    assert device in child
 
     graphic = GraphicCard(serial_number='foo', model='bar')
     device.components.add(graphic)
     db.session.flush()
-    assert graphic in lot
+    assert graphic in child
+
+    parent = Lot('parent')
+    db.session.add(parent)
+    db.session.flush()
+    parent.add_child(child)
+    assert child in parent
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
