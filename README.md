@@ -98,3 +98,7 @@ To run the tests you will need to:
 3. Execute `pip3 install -e .[docs]` in the project root folder.
 3. Go to `<project root folder>/docs` and execute `make html`. 
    Repeat this step to generate new docs.
+   
+To auto-generate the docs do `pip3 install -e .[docs-auto]`, then
+execute, in the root folder of the project 
+`sphinx-autobuild docs docs/_build/html`.

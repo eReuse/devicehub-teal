@@ -50,6 +50,9 @@ setup(
             'sphinxcontrib-plantuml >= 0.12',
             'sphinxcontrib-websupport >= 1.0.1'
         ],
+        'docs-auto': [
+            'sphinx-autobuild'
+        ],
         'test': test_requires
     },
     tests_require=test_requires,
