@@ -20,6 +20,7 @@ class Lot(Thing):
     closed = ...  # type: Column
     devices = ...  # type: relationship
     paths = ...  # type: relationship
+    description = ...  # type: Column
 
     def __init__(self, name: str, closed: bool = closed.default.arg) -> None:
         super().__init__()
@@ -28,6 +29,7 @@ class Lot(Thing):
         self.closed = ...  # type: bool
         self.devices = ...  # type: Set[Device]
         self.paths = ...  # type: Set[Path]
+        description = ...  # type: str
 
     def add_child(self, child: Union[Lot, uuid.UUID]):
         pass

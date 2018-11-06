@@ -21,6 +21,8 @@ from ereuse_devicehub.resources.user.models import User
 class Lot(Thing):
     id = db.Column(UUID(as_uuid=True), primary_key=True)  # uuid is generated on init by default
     name = db.Column(CIText(), nullable=False)
+    description = db.Column(CIText())
+    description.comment = """A comment about the lot."""
     closed = db.Column(db.Boolean, default=False, nullable=False)
     closed.comment = """
             A closed lot cannot be modified anymore.
@@ -36,13 +38,14 @@ class Lot(Thing):
     descendant lots.
     """
 
-    def __init__(self, name: str, closed: bool = closed.default.arg) -> None:
+    def __init__(self, name: str, closed: bool = closed.default.arg,
+                 description: str = None) -> None:
         """
         Initializes a lot
         :param name:
         :param closed:
         """
-        super().__init__(id=uuid.uuid4(), name=name, closed=closed)
+        super().__init__(id=uuid.uuid4(), name=name, closed=closed, description=description)
         Path(self)  # Lots have always one edge per default.
 
     def add_child(self, child):

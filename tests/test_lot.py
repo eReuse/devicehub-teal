@@ -25,11 +25,18 @@ In case of error, debug with:
 
 def test_lot_modify_patch_endpoint(user: UserClient):
     """Creates and modifies lot properties through the endpoint"""
-    l, _ = user.post({'name': 'foo'}, res=Lot)
+    l, _ = user.post({'name': 'foo', 'description': 'baz'}, res=Lot)
     assert l['name'] == 'foo'
-    user.patch({'name': 'bar'}, res=Lot, item=l['id'], status=204)
+    assert l['description'] == 'baz'
+    user.patch({'name': 'bar', 'description': 'bax'}, res=Lot, item=l['id'], status=204)
     l_after, _ = user.get(res=Lot, item=l['id'])
     assert l_after['name'] == 'bar'
+    assert l_after['description'] == 'bax'
+
+
+@pytest.mark.xfail(reason='No DEL endpoint')
+def test_lot_delete_endpoint(user: UserClient):
+    pass
 
 
 @pytest.mark.xfail(reason='the IN comparison does not work for device')
