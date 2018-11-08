@@ -69,7 +69,7 @@
     {
       "elapsed": 1,
       "type": "TestDataStorage",
-      "error": true,
+      "severity": "Error",
       "status": "Unspecified Error. Self-test not started.",
       "length": "Short"
     },
@@ -83,13 +83,13 @@
       "startTime": "2018-07-11T10:32:14.445306",
       "zeros": false,
       "type": "EraseBasic",
-      "error": false,
+      "severity": "Info",
       "endTime": "2018-07-11T10:53:46.442123",
       "steps": [
       {
         "startTime": "2018-07-11T10:32:14.445496",
         "type": "StepRandom",
-        "error": false,
+        "severity": "Info",
         "endTime": "2018-07-11T10:53:46.438901"
       }
       ]
@@ -107,7 +107,7 @@
     {
       "elapsed": 0,
       "type": "TestDataStorage",
-      "error": true,
+      "severity": "Error",
       "status": "Unspecified Error. Self-test not started.",
       "length": "Short"
     },
@@ -115,13 +115,13 @@
       "startTime": "2018-07-11T10:53:46.442187",
       "zeros": false,
       "type": "EraseBasic",
-      "error": false,
+      "severity": "Info",
       "endTime": "2018-07-11T11:16:28.469899",
       "steps": [
       {
         "startTime": "2018-07-11T10:53:46.442343",
         "type": "StepRandom",
-        "error": false,
+        "severity": "Info",
         "endTime": "2018-07-11T11:16:28.463789"
       }
       ]
@@ -157,7 +157,7 @@
     "chassis": "Tower",
     "events": [
     {
-      "error": false,
+      "severity": "Info",
       "elapsed": 60,
       "type": "StressTest"
     },

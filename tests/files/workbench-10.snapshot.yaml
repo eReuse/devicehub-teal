@@ -28,12 +28,12 @@ components:
   serialNumber: 6VMB1A52
   size: 238475
   test: {'@type': TestHardDrive, CommandTimeout: 1786733725708, CurrentPendingSectorCount: 0,
-         OfflineUncorrectable: 0, assessment: true, error: false, firstError: null, lifetime: 16947,
+         OfflineUncorrectable: 0, assessment: true, severity: Info, firstError: null, lifetime: 16947,
          passedLifetime: 16947, powerCycleCount: 1694, reallocatedSectorCount: 0, reportedUncorrectableErrors: 0,
          status: Completed without error, type: Short offline}
   type: HDD
-- {                                                                                                                       '@type': GraphicCard, manufacturer: Intel Corporation, memory: 256.0, model: 4
-                                                                                                                                                                                                  Series Chipset Integrated Graphics Controller, serialNumber: null}
+- {                                                                                                                                                                                                                                              '@type': GraphicCard, manufacturer: Intel Corporation, memory: 256.0, model: 4
+                                                                                                                                                                                                                                                                                                                         Series Chipset Integrated Graphics Controller, serialNumber: null}
 - '@type': Motherboard
   connectors: {firewire: 0, pcmcia: 0, serial: 1, usb: 8}
   manufacturer: LENOVO
@@ -41,22 +41,22 @@ components:
   serialNumber: null
   totalSlots: 0
   usedSlots: 2
-- {                                                                                '@type': NetworkAdapter, manufacturer: Intel Corporation, model: 82567LM-3 Gigabit
-                                                                                                                                               Network Connection, serialNumber: '00:21:86:2c:5e:d6', speed: 1000}
-- {                                                                   '@type': SoundCard, manufacturer: Intel Corporation, model: 82801JD/DO HD Audio
-                                                                                                                             Controller, serialNumber: null}
+- {                                                                                                                                                                '@type': NetworkAdapter, manufacturer: Intel Corporation, model: 82567LM-3 Gigabit
+                                                                                                                                                                                                                               Network Connection, serialNumber: '00:21:86:2c:5e:d6', speed: 1000}
+- {                                                                                                                                      '@type': SoundCard, manufacturer: Intel Corporation, model: 82801JD/DO HD Audio
+                                                                                                                                                                                                Controller, serialNumber: null}
 condition:
   appearance: {general: B}
   functionality: {general: A}
 date: '2018-05-09T10:32:15'
 debug:
-  capabilities: {                                                                              dmi-2.5: DMI version 2.5, smbios-2.5: SMBIOS version 2.5, smp: Symmetric
-                                                                                                                                                           Multi-Processing, smp-1.4: SMP specification v1.4}
+  capabilities: {                                                                                                                                                            dmi-2.5: DMI version 2.5, smbios-2.5: SMBIOS version 2.5, smp: Symmetric
+                                                                                                                                                                                                                                         Multi-Processing, smp-1.4: SMP specification v1.4}
   children:
   - children:
-    - capabilities: {                                                                               acpi: ACPI, biosbootspecification: BIOS boot specification, cdboot: Booting
-                                                                                                                                                                  from CD-ROM/DVD, edd: Enhanced Disk Drive extensions, escd: ESCD, ls120boot: Booting
-                                                                                                                                                                                                                                      from LS-120, pci: PCI bus, pnp: Plug-and-Play, shadowing: BIOS shadowing,
+    - capabilities: {                                                                                                                                                              acpi: ACPI, biosbootspecification: BIOS boot specification, cdboot: Booting
+                                                                                                                                                                                                                                                 from CD-ROM/DVD, edd: Enhanced Disk Drive extensions, escd: ESCD, ls120boot: Booting
+                                                                                                                                                                                                                                                                                                                     from LS-120, pci: PCI bus, pnp: Plug-and-Play, shadowing: BIOS shadowing,
       smartbattery: Smart battery, upgrade: BIOS EEPROM can be upgraded, usb: USB
                                                                            legacy emulation}
       capacity: 4128768
@@ -71,9 +71,9 @@ debug:
       vendor: LENOVO
       version: 5CKT48AUS
     - businfo: cpu@0
-      capabilities: {                                                                                                     acpi: thermal control (ACPI), aperfmperf: true, apic: on-chip
-                                                                                                                                                                            advanced programmable interrupt controller (APIC), arch_perfmon: true, boot: boot
-                                                                                                                                                                                                                                                     processor, bts: true, clflush: true, cmov: conditional move instruction,
+      capabilities: {                                                                                                                                                                                                          acpi: thermal control (ACPI), aperfmperf: true, apic: on-chip
+                                                                                                                                                                                                                                                                                 advanced programmable interrupt controller (APIC), arch_perfmon: true, boot: boot
+                                                                                                                                                                                                                                                                                                                                                          processor, bts: true, clflush: true, cmov: conditional move instruction,
         constant_tsc: true, cpufreq: CPU Frequency scaling, cx16: true, cx8: compare
                                                                           and exchange 8-byte, de: debugging extensions, ds_cpl: true, dtes64: true,
         dtherm: true, dts: debug trace and EMON store MSRs, eagerfpu: true, est: true,
@@ -149,16 +149,16 @@ debug:
       version: 6.7.10
       width: 64
     - children:
-      - {                                                                      claimed: true, class: memory, clock: 1067000000, description: DIMM DDR2 Synchronous
-                                                                                                                                  1067 MHz (0.9 ns), handle: 'DMI:001F', id: 'bank:0', physid: '0', product: '000000000000000000000000000000000000',
+      - {                                                                                                                                            claimed: true, class: memory, clock: 1067000000, description: DIMM DDR2 Synchronous
+                                                                                                                                                                                                        1067 MHz (0.9 ns), handle: 'DMI:001F', id: 'bank:0', physid: '0', product: '000000000000000000000000000000000000',
         serial: '00000000', size: 2147483648, slot: J6G1, units: bytes, vendor: Unknown,
         width: 40960}
       - {claimed: true, class: memory, clock: 1067000000, description: 'DIMM DDR2
           Synchronous 1067 MHz (0.9 ns) [empty]', handle: 'DMI:0020', id: 'bank:1',
          physid: '1', product: 012345678901234567890123456789012345, serial: '01234567',
          slot: J6G2, vendor: 48spaces}
-      - {                                                                      claimed: true, class: memory, clock: 1067000000, description: DIMM DDR2 Synchronous
-                                                                                                                                  1067 MHz (0.9 ns), handle: 'DMI:0021', id: 'bank:2', physid: '2', product: '000000000000000000000000000000000000',
+      - {                                                                                                                                            claimed: true, class: memory, clock: 1067000000, description: DIMM DDR2 Synchronous
+                                                                                                                                                                                                        1067 MHz (0.9 ns), handle: 'DMI:0021', id: 'bank:2', physid: '2', product: '000000000000000000000000000000000000',
         serial: '00000000', size: 2147483648, slot: J6H1, units: bytes, vendor: Unknown,
         width: 41984}
       - {claimed: true, class: memory, clock: 1067000000, description: 'DIMM DDR2
@@ -205,7 +205,7 @@ debug:
     - businfo: pci@0000:00:00.0
       children:
       - businfo: pci@0000:00:02.0
-        capabilities: {                                                                bus_master: bus mastering, cap_list: PCI capabilities listing,
+        capabilities: {                                                                                                                                bus_master: bus mastering, cap_list: PCI capabilities listing,
           msi: Message Signalled Interrupts, pm: Power Management, rom: extension
                                                                      ROM, vga_controller: true}
         claimed: true
@@ -265,8 +265,8 @@ debug:
         version: '03'
         width: 32
       - businfo: pci@0000:00:03.3
-        capabilities: {                                                     '16550': true, bus_master: bus mastering, cap_list: PCI capabilities
-                                                                                                                        listing, msi: Message Signalled Interrupts, pm: Power Management}
+        capabilities: {                                                                                                          '16550': true, bus_master: bus mastering, cap_list: PCI capabilities
+                                                                                                                                                                             listing, msi: Message Signalled Interrupts, pm: Power Management}
         claimed: true
         class: communication
         clock: 66000000
@@ -280,8 +280,8 @@ debug:
         version: '03'
         width: 32
       - businfo: pci@0000:00:19.0
-        capabilities: {                                                                     1000bt-fd: 1Gbit/s (full duplex), 100bt: 100Mbit/s, 100bt-fd: 100Mbit/s
-                                                                                                                                                  (full duplex), 10bt: 10Mbit/s, 10bt-fd: 10Mbit/s (full duplex), autonegotiation: Auto-negotiation,
+        capabilities: {                                                                                                                                          1000bt-fd: 1Gbit/s (full duplex), 100bt: 100Mbit/s, 100bt-fd: 100Mbit/s
+                                                                                                                                                                                                                       (full duplex), 10bt: 10Mbit/s, 10bt-fd: 10Mbit/s (full duplex), autonegotiation: Auto-negotiation,
           bus_master: bus mastering, cap_list: PCI capabilities listing, ethernet: true,
           msi: Message Signalled Interrupts, physical: Physical interface, pm: Power
                                                                              Management, tp: twisted pair}
@@ -575,8 +575,8 @@ debug:
         version: '02'
         width: 32
       - businfo: pci@0000:00:1f.2
-        capabilities: {                                                      ahci_1.0: true, bus_master: bus mastering, cap_list: PCI capabilities
-                                                                                                                          listing, msi: Message Signalled Interrupts, pm: Power Management, storage: true}
+        capabilities: {                                                                                                            ahci_1.0: true, bus_master: bus mastering, cap_list: PCI capabilities
+                                                                                                                                                                                listing, msi: Message Signalled Interrupts, pm: Power Management, storage: true}
         claimed: true
         class: storage
         clock: 66000000
@@ -620,7 +620,7 @@ debug:
                                                         table}
         children:
         - businfo: scsi@0:0.0.0,1
-          capabilities: {                                                                    dir_nlink: directories with 65000+ subdirs, ext2: EXT2/EXT3,
+          capabilities: {                                                                                                                                        dir_nlink: directories with 65000+ subdirs, ext2: EXT2/EXT3,
             ext4: true, extended_attributes: Extended Attributes, extents: extent-based
                                                                     allocation, huge_files: 16TB+ files, initialized: initialized volume,
             journaled: true, large_files: 4GB+ files, primary: Primary partition}
@@ -672,8 +672,8 @@ debug:
     - capabilities: {emulated: Emulated device}
       children:
       - businfo: scsi@1:0.0.0
-        capabilities: {                                                         audio: Audio CD playback, cd-r: CD-R burning, cd-rw: CD-RW
-                                                                                                                                burning, dvd: DVD playback, dvd-r: DVD-R burning, dvd-ram: DVD-RAM burning,
+        capabilities: {                                                                                                                  audio: Audio CD playback, cd-r: CD-R burning, cd-rw: CD-RW
+                                                                                                                                                                                         burning, dvd: DVD playback, dvd-r: DVD-R burning, dvd-ram: DVD-RAM burning,
           removable: support is removable}
         claimed: true
         class: disk

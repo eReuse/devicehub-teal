@@ -20,7 +20,7 @@ from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.schemas import Device as DeviceS
 from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, MismatchBetweenTagsAndHid, \
     Sync
-from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech
+from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech, Severity
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.event.models import Remove, Test
 from ereuse_devicehub.resources.tag.model import Tag
@@ -393,7 +393,7 @@ def test_get_device(app: Devicehub, user: UserClient):
         db.session.add(pc)
         db.session.add(Test(device=pc,
                             elapsed=timedelta(seconds=4),
-                            error=False,
+                            severity=Severity.Info,
                             agent=Person(name='Timmy'),
                             author=User(email='bar@bar.com')))
         db.session.commit()
@@ -402,7 +402,7 @@ def test_get_device(app: Devicehub, user: UserClient):
     assert pc['events'][0]['type'] == 'Test'
     assert pc['events'][0]['device'] == 1
     assert pc['events'][0]['elapsed'] == 4
-    assert not pc['events'][0]['error']
+    assert pc['events'][0]['severity'] == 'Info'
     assert UUID(pc['events'][0]['author'])
     assert 'events_components' not in pc, 'events_components are internal use only'
     assert 'events_one' not in pc, 'they are internal use only'

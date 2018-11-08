@@ -273,9 +273,10 @@ class DataStoragePrivacyCompliance(Enum):
         """Returns the correct enum depending of the passed-in erasure."""
         from ereuse_devicehub.resources.event.models import EraseSectors
         if isinstance(erasure, EraseSectors):
-            return cls.EraseSectors if not erasure.error else cls.EraseSectorsError
+            c = cls.EraseSectors if erasure.severity != Severity.Error else cls.EraseSectorsError
         else:
-            return cls.EraseBasic if not erasure.error else cls.EraseBasicError
+            c = cls.EraseBasic if erasure.severity == Severity.Error else cls.EraseBasicError
+        return c
 
 
 class PrinterTechnology(Enum):
@@ -285,3 +286,38 @@ class PrinterTechnology(Enum):
     SolidInk = 'Solid ink'
     Dye = 'Dye-sublimation'
     Thermal = 'Thermal'
+
+
+class Severity(IntEnum):
+    """A flag evaluating the event execution. Ex. failed events
+    have the value `Severity.Error`.
+
+    Devicehub uses 4 severity levels:
+
+    - Info: default neutral severity. The event succeeded.
+    - Notice: The event succeeded but it is raising awareness.
+      Notices are not usually that important but something
+      (good or bad) worth checking.
+    - Warning: The event succeeded but there is something important
+      to check negatively affecting the event.
+    - Error: the event failed.
+
+    Devicehub specially raises user awareness when an event
+    has a Severity of ``Warning`` or greater.
+    """
+
+    Info = 0
+    Notice = 1
+    Warning = 2
+    Error = 3
+
+    def __str__(self):
+        if self == self.Info:
+            m = '✓'
+        elif self == self.Notice:
+            m = 'ℹ️'
+        elif self == self.Warning:
+            m = '⚠'
+        else:
+            m = '❌'
+        return m

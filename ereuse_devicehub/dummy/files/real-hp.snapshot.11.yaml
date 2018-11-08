@@ -88,7 +88,7 @@
     },
     {
       "status": "Unspecified Error. Self-test not started.",
-      "error": true,
+      "severity": "Error",
       "type": "TestDataStorage",
       "elapsed": 1,
       "length": Short
@@ -142,7 +142,7 @@
     {
       "type": "StressTest",
       "elapsed": 60,
-      "error": false
+      "severity": "Info"
     },
     {
       "rate": 0.9759,

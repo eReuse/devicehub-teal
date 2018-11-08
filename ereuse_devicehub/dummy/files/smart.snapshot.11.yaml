@@ -15,7 +15,7 @@
     {
       "type": "StressTest",
       "elapsed": 300,
-      "error": false
+      "severity": "Info"
     }
     ],
     "serialNumber": "CZC0408YJG",
@@ -125,7 +125,7 @@
       "offlineUncorrectable": 1,
       "powerCycleCount": 1838,
       "assessment": true,
-      "error": false,
+      "severity": "Info",
       "type": "TestDataStorage",
       "lifetime": 10546,
       "reallocatedSectorCount": 0,

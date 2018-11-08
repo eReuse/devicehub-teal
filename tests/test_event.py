@@ -13,7 +13,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
-from ereuse_devicehub.resources.enums import ComputerChassis, TestDataStorageLength
+from ereuse_devicehub.resources.enums import ComputerChassis, Severity, TestDataStorageLength
 from ereuse_devicehub.resources.event import models
 from tests import conftest
 from tests.conftest import create_user, file
@@ -89,7 +89,7 @@ def test_erase_sectors_steps():
 def test_test_data_storage():
     test = models.TestDataStorage(
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
-        error=False,
+        severity=Severity.Info,
         elapsed=timedelta(minutes=25),
         length=TestDataStorageLength.Short,
         status='ok!',

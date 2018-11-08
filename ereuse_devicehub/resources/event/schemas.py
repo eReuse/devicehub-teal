@@ -12,7 +12,7 @@ from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.agent.schemas import Agent
 from ereuse_devicehub.resources.device.schemas import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    PriceSoftware, RATE_POSITIVE, RatingRange, RatingSoftware, ReceiverRole, \
+    PriceSoftware, RATE_POSITIVE, RatingRange, RatingSoftware, ReceiverRole, Severity, \
     SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
@@ -25,9 +25,8 @@ class Event(Thing):
     name = SanitizedStr(default='',
                         validate=Length(max=STR_BIG_SIZE),
                         description=m.Event.name.comment)
-    incidence = Boolean(default=False, description=m.Event.incidence.comment)
     closed = Boolean(missing=True, description=m.Event.closed.comment)
-    error = Boolean(default=False, description=m.Event.error.comment)
+    severity = EnumField(Severity, description=m.Event.severity.comment)
     description = SanitizedStr(default='', description=m.Event.description.comment)
     start_time = DateTime(data_key='startTime', description=m.Event.start_time.comment)
     end_time = DateTime(data_key='endTime', description=m.Event.end_time.comment)
@@ -85,7 +84,7 @@ class Step(Schema):
     type = String(description='Only required when it is nested.')
     start_time = DateTime(required=True, data_key='startTime')
     end_time = DateTime(required=True, data_key='endTime')
-    error = Boolean(default=False, description='Did the event fail?')
+    severity = EnumField(Severity, description=m.Event.severity.comment)
 
 
 class StepZero(Step):

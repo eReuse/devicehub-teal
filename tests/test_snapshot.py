@@ -310,13 +310,13 @@ def test_erase(user: UserClient):
     assert erasure['device']['id'] == storage['id']
     for step in erasure['steps']:
         assert step['type'] == 'StepZero'
-        assert step['error'] is False
+        assert step['severity'] == 'Info'
         assert 'num' not in step
     assert storage['privacy'] == erasure['device']['privacy'] == 'EraseSectors'
 
     # Let's try a second erasure with an error
     s['uuid'] = uuid4()
-    s['components'][0]['events'][0]['error'] = True
+    s['components'][0]['events'][0]['severity'] = 'Error'
     snapshot, _ = user.post(s, res=Snapshot)
     assert snapshot['components'][0]['hid'] == 'c1mr-c1s-c1ml'
     assert snapshot['components'][0]['privacy'] == 'EraseSectorsError'
@@ -330,8 +330,7 @@ def test_test_data_storage(user: UserClient):
         ev for ev in snapshot['events']
         if ev.get('reallocatedSectorCount', None) == 15
     )
-    assert incidence_test['incidence']
-    assert incidence_test['description'] == 'Warning: Drive failure expected soon.'
+    incidence_test['severity'] == 'Error'
 
 
 def test_snapshot_computer_monitor(user: UserClient):

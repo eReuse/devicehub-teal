@@ -6,7 +6,7 @@
     "manufacturer": "NEC Computers SAS",
     "events": [
     {
-      "error": false,
+      "severity": "Info",
       "elapsed": 60,
       "type": "StressTest"
     },
@@ -101,7 +101,7 @@
     "size": 305245,
     "events": [
     {
-      "error": false,
+      "severity": "Info",
       "endTime": "2018-07-11T11:33:41.531918",
       "startTime": "2018-07-11T10:30:35.643855",
       "zeros": false,
@@ -111,7 +111,7 @@
         "type": "StepRandom",
         "endTime": "2018-07-11T11:33:41.529224",
         "startTime": "2018-07-11T10:30:35.644043",
-        "error": false
+        "severity": "Info"
       }
       ]
     },
@@ -125,7 +125,7 @@
       "type": "TestDataStorage",
       "length": "Short",
       "elapsed": 1,
-      "error": true,
+      "severity": "Error",
       "status": "Unspecified Error. Self-test not started."
     }
     ],

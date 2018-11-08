@@ -6,11 +6,12 @@ from typing import Set, Union
 from uuid import uuid4
 
 import inflection
+import teal.db
 from boltons import urlutils
 from citext import CIText
 from flask import current_app as app, g
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
-    Float, ForeignKey, Interval, JSON, Numeric, SmallInteger, Unicode, event, orm, Integer
+    Float, ForeignKey, Integer, Interval, JSON, Numeric, SmallInteger, Unicode, event, orm
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -27,9 +28,9 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Desktop, \
     Device, Laptop, Server
-from ereuse_devicehub.resources.enums import AppearanceRange, Bios, \
-    FunctionalityRange, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, \
-    ReceiverRole, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
+from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
+    PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, ReceiverRole, \
+    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -48,21 +49,13 @@ class Event(Thing):
     name.comment = """
         A name or title for the event. Used when searching for events.
     """
-    incidence = Column(Boolean, default=False, nullable=False)
-    incidence.comment = """
-        Should this event be reviewed due some anomaly?
-    """
+    severity = Column(teal.db.IntEnum(Severity), default=Severity.Info, nullable=False)
+    severity.comment = Severity.__doc__
     closed = Column(Boolean, default=True, nullable=False)
     closed.comment = """
         Whether the author has finished the event.
         After this is set to True, no modifications are allowed.
         By default events are closed when performed.
-    """
-    error = Column(Boolean, default=False, nullable=False)
-    error.comment = """
-        Did the event fail?
-        For example, a failure in ``Erase`` means that the data storage
-        unit did not erase correctly.
     """
     description = Column(Unicode, default='', nullable=False)
     description.comment = """
@@ -181,6 +174,7 @@ class Event(Thing):
         args = {POLYMORPHIC_ID: cls.t}
         if cls.t == 'Event':
             args[POLYMORPHIC_ON] = cls.type
+        # noinspection PyUnresolvedReferences
         if JoinedTableMixin in cls.mro():
             args[INHERIT_COND] = cls.id == Event.id
         return args
@@ -198,15 +192,14 @@ class Event(Thing):
         return start_time
 
     @property
-    def _err_str(self):
-        return '❌ Error.' if self.error else '✓'
-
-    @property
     def _date_str(self):
         return '{:%c}'.format(self.end_time or self.created)
 
     def __str__(self) -> str:
-        return '{}'.format(self._err_str)
+        return '{}'.format(self.severity)
+
+    def __repr__(self):
+        return '<{0.t} {0.id} {0.severity}>'.format(self)
 
 
 class EventComponent(db.Model):
@@ -232,7 +225,7 @@ class EventWithOneDevice(JoinedTableMixin, Event):
                           primaryjoin=Device.id == device_id)
 
     def __repr__(self) -> str:
-        return '<{0.t} {0.id!r} device={0.device!r}>'.format(self)
+        return '<{0.t} {0.id} {0.severity} device={0.device!r}>'.format(self)
 
     @declared_attr
     def __mapper_args__(cls):
@@ -260,7 +253,7 @@ class EventWithMultipleDevices(Event):
                            collection_class=OrderedSet)
 
     def __repr__(self) -> str:
-        return '<{0.t} {0.id!r} devices={0.devices!r}>'.format(self)
+        return '<{0.t} {0.id} {0.severity} devices={0.devices!r}>'.format(self)
 
 
 class EventDevice(db.Model):
@@ -299,7 +292,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
     # todo return erasure properties like num steps, if it is british...
 
     def __str__(self) -> str:
-        return '{} on {}.'.format(self._err_str, self.end_time)
+        return '{} on {}.'.format(self.severity, self.end_time)
 
 
 class EraseSectors(EraseBasic):
@@ -310,7 +303,7 @@ class Step(db.Model):
     erasure_id = Column(UUID(as_uuid=True), ForeignKey(EraseBasic.id), primary_key=True)
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     num = Column(SmallInteger, primary_key=True)
-    error = Column(Boolean, default=False, nullable=False)
+    severity = Column(teal.db.IntEnum(Severity), default=Severity.Info, nullable=False)
     start_time = Column(DateTime, nullable=False)
     start_time.comment = Event.start_time.comment
     end_time = Column(DateTime, CheckConstraint('end_time > start_time'), nullable=False)
@@ -358,7 +351,7 @@ class Snapshot(JoinedWithOneDeviceMixin, EventWithOneDevice):
     expected_events = Column(ArrayOfEnum(DBEnum(SnapshotExpectedEvents)))
 
     def __str__(self) -> str:
-        return '{}. {} version {}.'.format(self._err_str, self.software, self.version)
+        return '{}. {} version {}.'.format(self.severity, self.software, self.version)
 
 
 class Install(JoinedWithOneDeviceMixin, EventWithOneDevice):
@@ -747,20 +740,18 @@ class TestDataStorage(Test):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+
+        # Define severity
         # As of https://www.backblaze.com/blog/hard-drive-smart-stats/ and
         # https://www.backblaze.com/blog-smart-stats-2014-8.html
-        # We can guess some future disk failures by analyzing some
-        # SMART data
-        if (self.reallocated_sector_count or 0) > 10:
-            self.incidence = True
-            self.description = 'Warning: Chance of disk failure within a year.'
-        if (self.current_pending_sector_count or 0) > 40 \
-                and (self.reported_uncorrectable_errors or 0) > 10:
-            self.incidence = True
-            self.description = 'Warning: Chance of disk failure within a year.'
-        if not self.assessment:
-            self.incidence = True
-            self.description = 'Warning: Drive failure expected soon.'
+        # We can guess some future disk failures by analyzing some SMART data.
+        if self.severity is None:
+            # Test finished successfully
+            if not self.assessment:
+                self.severity = Severity.Error
+            elif self.current_pending_sector_count and self.current_pending_sector_count > 40 \
+                    or self.reallocated_sector_count and self.reallocated_sector_count > 10:
+                self.severity = Severity.Warning
 
     def __str__(self) -> str:
         t = inflection.humanize(self.status)
@@ -780,7 +771,7 @@ class StressTest(Test):
         return value
 
     def __str__(self) -> str:
-        return '{}. Computing for {}'.format(self._err_str, self.elapsed)
+        return '{}. Computing for {}'.format(self.severity, self.elapsed)
 
 
 class Benchmark(JoinedWithOneDeviceMixin, EventWithOneDevice):

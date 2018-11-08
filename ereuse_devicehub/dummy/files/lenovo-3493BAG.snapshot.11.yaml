@@ -10,7 +10,7 @@
     {
       "elapsed": 60,
       "type": "StressTest",
-      "error": false
+      "severity": "Info"
     },
     {
       "elapsed": 1,
@@ -92,7 +92,7 @@
       "elapsed": 15
     },
     {
-      "error": true,
+      "severity": "Error",
       "type": "TestDataStorage",
       "elapsed": 0,
       "length": "Short",
@@ -102,13 +102,13 @@
       "startTime": "2018-07-11T13:28:07.319948",
       "type": "EraseBasic",
       "endTime": "2018-07-11T14:04:04.864425",
-      "error": false,
+      "severity": "Info",
       "steps": [
       {
         "startTime": "2018-07-11T13:28:07.320244",
         "type": "StepRandom",
         "endTime": "2018-07-11T14:04:04.861590",
-        "error": false
+        "severity": "Info"
       }
       ],
       "zeros": false

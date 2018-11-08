@@ -90,7 +90,7 @@
       "type": "TestDataStorage",
       "length": "Short",
       "elapsed": 2,
-      "error": true,
+      "severity": "Error",
       "status": "Unspecified Error. Self-test not started."
     },
     {
@@ -99,12 +99,12 @@
       {
         "type": "StepRandom",
         "startTime": "2018-07-03T09:15:22.257059",
-        "error": false,
+        "severity": "Info",
         "endTime": "2018-07-03T10:32:11.843190"
       }
       ],
       "startTime": "2018-07-03T09:15:22.256074",
-      "error": false,
+      "severity": "Info",
       "zeros": false,
       "endTime": "2018-07-03T10:32:11.848455"
     }
@@ -143,7 +143,7 @@
     },
     {
       "type": "StressTest",
-      "error": false,
+      "severity": "Info",
       "elapsed": 60
     },
     {

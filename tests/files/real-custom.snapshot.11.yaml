@@ -77,7 +77,7 @@
       "status": "Self-test routine in progress",
       "powerCycleCount": 648,
       "length": "Short",
-      "error": false,
+      "severity": "Error",
       "lifetime": 202
     }
     ],
@@ -110,7 +110,7 @@
       "type": "BenchmarkRamSysbench"
     },
     {
-      "error": false,
+      "severity": "Info",
       "elapsed": 60,
       "type": "StressTest"
     }
