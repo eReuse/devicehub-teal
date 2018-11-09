@@ -299,6 +299,12 @@ class EraseSectors(EraseBasic):
     pass
 
 
+class ErasePhysical(EraseBasic):
+    """Physical destruction of a data storage unit."""
+    # todo add attributes
+    pass
+
+
 class Step(db.Model):
     erasure_id = Column(UUID(as_uuid=True), ForeignKey(EraseBasic.id), primary_key=True)
     type = Column(Unicode(STR_SM_SIZE), nullable=False)

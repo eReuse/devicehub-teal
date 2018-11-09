@@ -289,8 +289,10 @@ def test_snapshot_component_containing_components(user: UserClient):
     user.post(s, res=Snapshot, status=ValidationError)
 
 
-def test_erase(user: UserClient):
-    """Tests a Snapshot with EraseSectors."""
+def test_erase_privacy(user: UserClient):
+    """Tests a Snapshot with EraseSectors and the resulting
+    privacy properties.
+    """
     s = file('erase-sectors.snapshot')
     snapshot = snapshot_and_check(user, s, (EraseSectors.t,), perform_second_snapshot=True)
     storage, *_ = snapshot['components']
@@ -312,14 +314,19 @@ def test_erase(user: UserClient):
         assert step['type'] == 'StepZero'
         assert step['severity'] == 'Info'
         assert 'num' not in step
-    assert storage['privacy'] == erasure['device']['privacy'] == 'EraseSectors'
+    assert storage['privacy']['type'] == 'EraseSectors'
+    pc, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    assert pc['privacy'] == [storage['privacy']]
 
     # Let's try a second erasure with an error
     s['uuid'] = uuid4()
     s['components'][0]['events'][0]['severity'] = 'Error'
     snapshot, _ = user.post(s, res=Snapshot)
-    assert snapshot['components'][0]['hid'] == 'c1mr-c1s-c1ml'
-    assert snapshot['components'][0]['privacy'] == 'EraseSectorsError'
+    storage, _ = user.get(res=m.Device, item=storage['id'])
+    assert storage['hid'] == 'c1mr-c1s-c1ml'
+    assert storage['privacy']['type'] == 'EraseSectors'
+    pc, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    assert pc['privacy'] == [storage['privacy']]
 
 
 def test_test_data_storage(user: UserClient):
@@ -330,7 +337,7 @@ def test_test_data_storage(user: UserClient):
         ev for ev in snapshot['events']
         if ev.get('reallocatedSectorCount', None) == 15
     )
-    incidence_test['severity'] == 'Error'
+    assert incidence_test['severity'] == 'Error'
 
 
 def test_snapshot_computer_monitor(user: UserClient):

@@ -8,6 +8,7 @@ from typing import Dict, List, Set
 from boltons import urlutils
 from citext import CIText
 from ereuse_utils.naming import Naming
+from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
     Sequence, SmallInteger, Unicode, inspect, text
 from sqlalchemy.ext.declarative import declared_attr
@@ -22,8 +23,8 @@ from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, \
-    DataStoragePrivacyCompliance, DisplayTech, PrinterTechnology, RamFormat, RamInterface
+from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
+    PrinterTechnology, RamFormat, RamInterface, Severity
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 
 
@@ -31,6 +32,7 @@ class Device(Thing):
     """
     Base class for any type of physical object that can be identified.
     """
+    EVENT_SORT_KEY = attrgetter('created')
 
     id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
     id.comment = """
@@ -77,6 +79,11 @@ class Device(Thing):
         'color'
     }
 
+    def __init__(self, **kw) -> None:
+        super().__init__(**kw)
+        with suppress(TypeError):
+            self.hid = Naming.hid(self.manufacturer, self.serial_number, self.model)
+
     @property
     def events(self) -> list:
         """
@@ -86,12 +93,25 @@ class Device(Thing):
 
         Events are returned by ascending creation time.
         """
-        return sorted(chain(self.events_multiple, self.events_one), key=attrgetter('created'))
+        return sorted(chain(self.events_multiple, self.events_one), key=self.EVENT_SORT_KEY)
 
-    def __init__(self, **kw) -> None:
-        super().__init__(**kw)
-        with suppress(TypeError):
-            self.hid = Naming.hid(self.manufacturer, self.serial_number, self.model)
+    @property
+    def problems(self):
+        """Current events with severity.Warning or higher.
+
+        There can be up to 3 events: current Snapshot,
+        current Physical event, current Trading event.
+        """
+        from ereuse_devicehub.resources.device import states
+        from ereuse_devicehub.resources.event.models import Snapshot
+        events = set()
+        with suppress(LookupError, ValueError):
+            events.add(self.last_event_of(Snapshot))
+        with suppress(LookupError, ValueError):
+            events.add(self.last_event_of(*states.Physical.events()))
+        with suppress(LookupError, ValueError):
+            events.add(self.last_event_of(*states.Trading.events()))
+        return self._warning_events(events)
 
     @property
     def physical_properties(self) -> Dict[str, object or None]:
@@ -164,6 +184,20 @@ class Device(Thing):
             event = self.last_event_of(Receive)
             return event.agent
 
+    @property
+    def working(self):
+        """A list of the current tests with warning or errors. A
+        device is working if the list is empty.
+
+        This property returns, for the last test performed of each type,
+        the one with the worst severity of them, or None if no
+        test has been executed.
+        """
+        from ereuse_devicehub.resources.event.models import Test
+        current_tests = unique_everseen((e for e in reversed(self.events) if isinstance(e, Test)),
+                                        key=attrgetter('type'))  # last test of each type
+        return self._warning_events(current_tests)
+
     @declared_attr
     def __mapper_args__(cls):
         """
@@ -187,6 +221,10 @@ class Device(Thing):
             return next(e for e in reversed(self.events) if isinstance(e, types))
         except StopIteration:
             raise LookupError('{!r} does not contain events of types {}.'.format(self, types))
+
+    def _warning_events(self, events):
+        return sorted((ev for ev in events if ev.severity >= Severity.Warning),
+                      key=self.EVENT_SORT_KEY)
 
     def __lt__(self, other):
         return self.id < other.id
@@ -255,7 +293,7 @@ class Computer(Device):
 
     @property
     def events(self) -> list:
-        return sorted(chain(super().events, self.events_parent), key=attrgetter('created'))
+        return sorted(chain(super().events, self.events_parent), key=self.EVENT_SORT_KEY)
 
     @property
     def ram_size(self) -> int:
@@ -293,6 +331,17 @@ class Computer(Device):
         for net in (c for c in self.components if isinstance(c, NetworkAdapter)):
             speeds[net.wireless] = max(net.speed or 0, speeds[net.wireless] or 0)
         return speeds
+
+    @property
+    def privacy(self):
+        """Returns the privacy of all DataStorage components when
+        it is None.
+        """
+        return set(
+            privacy for privacy in
+            (hdd.privacy for hdd in self.components if isinstance(hdd, DataStorage))
+            if privacy
+        )
 
     def __format__(self, format_spec):
         if not format_spec:
@@ -405,7 +454,7 @@ class Component(Device):
 
     @property
     def events(self) -> list:
-        return sorted(chain(super().events, self.events_components), key=attrgetter('created'))
+        return sorted(chain(super().events, self.events_components), key=self.EVENT_SORT_KEY)
 
 
 class JoinedComponentTableMixin:
@@ -431,11 +480,12 @@ class DataStorage(JoinedComponentTableMixin, Component):
     @property
     def privacy(self):
         """Returns the privacy compliance state of the data storage."""
-        # todo add physical destruction event
         from ereuse_devicehub.resources.event.models import EraseBasic
-        with suppress(LookupError):
-            erase = self.last_event_of(EraseBasic)
-            return DataStoragePrivacyCompliance.from_erase(erase)
+        try:
+            ev = self.last_event_of(EraseBasic)
+        except LookupError:
+            ev = None
+        return ev
 
     def __format__(self, format_spec):
         v = super().__format__(format_spec)

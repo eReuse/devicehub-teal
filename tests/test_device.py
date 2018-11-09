@@ -73,6 +73,11 @@ def test_device_model():
     assert d.GraphicCard.query.first() is None, 'We should have deleted it –it was inside the pc'
 
 
+@pytest.mark.xfail(reason='Test not developed')
+def test_device_problems():
+    pass
+
+
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_device_schema():
     """Ensures the user does not upload non-writable or extra fields."""

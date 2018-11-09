@@ -260,25 +260,6 @@ class ReceiverRole(Enum):
     Transporter = 'An user that ships the devices to another one.'
 
 
-class DataStoragePrivacyCompliance(Enum):
-    EraseBasic = 'EraseBasic'
-    EraseBasicError = 'EraseBasicError'
-    EraseSectors = 'EraseSectors'
-    EraseSectorsError = 'EraseSectorsError'
-    Destruction = 'Destruction'
-    DestructionError = 'DestructionError'
-
-    @classmethod
-    def from_erase(cls, erasure) -> 'DataStoragePrivacyCompliance':
-        """Returns the correct enum depending of the passed-in erasure."""
-        from ereuse_devicehub.resources.event.models import EraseSectors
-        if isinstance(erasure, EraseSectors):
-            c = cls.EraseSectors if erasure.severity != Severity.Error else cls.EraseSectorsError
-        else:
-            c = cls.EraseBasic if erasure.severity == Severity.Error else cls.EraseBasicError
-        return c
-
-
 class PrinterTechnology(Enum):
     """Technology of the printer."""
     Toner = 'Toner / Laser'
