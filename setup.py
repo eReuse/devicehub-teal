@@ -29,7 +29,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=[
-        'teal>=0.2.0a28',  # teal always first
+        'teal>=0.2.0a29',  # teal always first
         'click',
         'click-spinner',
         'ereuse-utils[Naming]>=0.4b10',
