@@ -11,6 +11,7 @@ from teal.resource import View
 
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
+from ereuse_devicehub.query import SearchQueryParser
 from ereuse_devicehub.resources import search
 from ereuse_devicehub.resources.device.models import Device, Manufacturer
 from ereuse_devicehub.resources.device.search import DeviceSearch
@@ -63,8 +64,10 @@ class Sorting(query.Sort):
 
 
 class DeviceView(View):
+    QUERY_PARSER = SearchQueryParser()
+
     class FindArgs(marshmallow.Schema):
-        search = f.Raw()
+        search = f.Str()
         filter = f.Nested(Filters, missing=[])
         sort = f.Nested(Sorting, missing=[Device.id.asc()])
         page = f.Integer(validate=v.Range(min=1), missing=1)
@@ -90,11 +93,6 @@ class DeviceView(View):
             args = self.QUERY_PARSER.parse(self.find_args,
                                            request,
                                            locations=('querystring',))
-            # todo not-nice way of de-parsing what webargs parser
-            # does when sees that an argument is like an int, etc
-            # when solving this, change too the Query.search to Str
-            if args.get('search', False):
-                args['search'] = str(args['search'])
             response = self.find(args)
         return response
 
