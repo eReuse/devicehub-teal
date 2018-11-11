@@ -23,7 +23,40 @@ In case of error, debug with:
 """
 
 
-def test_lot_modify_patch_endpoint(user: UserClient):
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
+def test_lot_model_children():
+    """Tests the property Lot.children
+
+    l1
+    |
+    l2
+    |
+    l3
+    """
+    lots = Lot('1'), Lot('2'), Lot('3')
+    l1, l2, l3 = lots
+    db.session.add_all(lots)
+    db.session.flush()
+
+    l1.add_child(l2)
+    db.session.flush()
+
+    assert list(l1.children) == [l2]
+
+    l2.add_child(l3)
+    assert list(l1.children) == [l2]
+
+    l2.delete()
+    db.session.flush()
+    assert not list(l1.children)
+
+    l1.delete()
+    db.session.flush()
+    l3b = Lot.query.one()
+    assert l3 == l3b
+
+
+def test_lot_modify_patch_endpoint_and_delete(user: UserClient):
     """Creates and modifies lot properties through the endpoint"""
     l, _ = user.post({'name': 'foo', 'description': 'baz'}, res=Lot)
     assert l['name'] == 'foo'
@@ -32,20 +65,17 @@ def test_lot_modify_patch_endpoint(user: UserClient):
     l_after, _ = user.get(res=Lot, item=l['id'])
     assert l_after['name'] == 'bar'
     assert l_after['description'] == 'bax'
+    user.delete(res=Lot, item=l['id'], status=204)
+    user.get(res=Lot, item=l['id'], status=404)
 
 
-@pytest.mark.xfail(reason='No DEL endpoint')
-def test_lot_delete_endpoint(user: UserClient):
-    pass
-
-
-@pytest.mark.xfail(reason='the IN comparison does not work for device')
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_device_relationship():
     device = Desktop(serial_number='foo',
                      model='bar',
                      manufacturer='foobar',
                      chassis=ComputerChassis.Lunchbox)
+    device.components.add(GraphicCard(serial_number='foo', model='bar1', manufacturer='baz'))
     child = Lot('child')
     child.devices.add(device)
     db.session.add(child)
@@ -251,21 +281,6 @@ def test_lot_roots():
     assert set(Lot.roots()) == {l1, l2, l3}
     l1.add_child(l2)
     assert set(Lot.roots()) == {l1, l3}
-
-
-@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
-def test_lot_model_children():
-    """Tests the property Lot.children"""
-    lots = Lot('1'), Lot('2'), Lot('3')
-    l1, l2, l3 = lots
-    db.session.add_all(lots)
-    db.session.flush()
-
-    l1.add_child(l2)
-    db.session.flush()
-
-    children = l1.children
-    assert list(children) == [l2]
 
 
 def test_post_get_lot(user: UserClient):

@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Union
 
 from boltons import urlutils
 from citext import CIText
@@ -9,11 +10,11 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import expression as exp
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
-from teal.db import UUIDLtree
+from teal.db import CASCADE_OWN, UUIDLtree
 from teal.resource import url_for_resource
 
-from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Device
+from ereuse_devicehub.db import create_view, db
+from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -89,6 +90,16 @@ class Lot(Thing):
         _id = UUIDLtree.convert(id)
         return (cls.id == Path.lot_id) & Path.path.lquery(exp.cast('*.{}.*'.format(_id), LQUERY))
 
+    @classmethod
+    def device_in_lotq(cls):
+        parent = Computer.__table__.alias()
+        device_inside_lot = (Device.id == LotDevice.device_id) & (Lot.id == LotDevice.lot_id)
+        parent_device_in_lot = (Device.id == Component.id) \
+                               & (Component.parent_id == parent.c.id) \
+                               & (parent.c.id == LotDevice.device_id) \
+                               & (Lot.id == LotDevice.lot_id)
+        return device_inside_lot | parent_device_in_lot
+
     @property
     def parents(self):
         return self.parentsq(self.id)
@@ -109,8 +120,28 @@ class Lot(Thing):
         """Gets the lots that are not under any other lot."""
         return cls.query.join(cls.paths).filter(db.func.nlevel(Path.path) == 1)
 
-    def __contains__(self, child: 'Lot'):
-        return Path.has_lot(self.id, child.id)
+    def delete(self):
+        """Deletes the lot.
+
+        This method removes the children lots and children
+        devices orphan from this lot and then marks this lot
+        for deletion.
+        """
+        for child in self.children:
+            self.remove_child(child)
+        db.session.delete(self)
+
+    def __contains__(self, child: Union['Lot', Device]):
+        if isinstance(child, Lot):
+            return Path.has_lot(self.id, child.id)
+        elif isinstance(child, Device):
+            device = db.session.query(LotDeviceDescendants) \
+                .filter(LotDeviceDescendants.device_id == child.id) \
+                .filter(LotDeviceDescendants.ancestor_lot_id == self.id) \
+                .one_or_none()
+            return device
+        else:
+            raise TypeError('Lot only contains devices and lots, not {}'.format(child.__class__))
 
     def __repr__(self) -> str:
         return '<Lot {0.name} devices={0.devices!r}>'.format(self)
@@ -136,7 +167,10 @@ class Path(db.Model):
                    server_default=db.text('gen_random_uuid()'))
     lot_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(Lot.id), nullable=False, index=True)
     lot = db.relationship(Lot,
-                          backref=db.backref('paths', lazy=True, collection_class=set),
+                          backref=db.backref('paths',
+                                             lazy=True,
+                                             collection_class=set,
+                                             cascade=CASCADE_OWN),
                           primaryjoin=Lot.id == lot_id)
     path = db.Column(LtreeType, nullable=False)
     created = db.Column(db.TIMESTAMP(timezone=True), server_default=db.text('CURRENT_TIMESTAMP'))
@@ -174,3 +208,54 @@ class Path(db.Model):
                 "SELECT 1 from path where path ~ '*.{}.*.{}.*'".format(parent_id, child_id)
             ).first()
         )
+
+
+class LotDeviceDescendants(db.Model):
+    """A view facilitating querying inclusion between devices and lots,
+    including components.
+
+    The view has 4 columns:
+    1. The ID of the device.
+    2. The ID of a lot containing the device.
+    3. The ID of the lot that directly contains the device.
+    4. If 1. is a component, the ID of the device that is inside the lot.
+    """
+
+    _ancestor = Lot.__table__.alias(name='ancestor')
+    """Ancestor lot table."""
+    _desc = Lot.__table__.alias()
+    """Descendant lot table."""
+    lot_device = _desc \
+        .join(LotDevice, _desc.c.id == LotDevice.lot_id) \
+        .join(Path, _desc.c.id == Path.lot_id)
+    """Join: Path -- Lot -- LotDevice"""
+
+    descendants = "path.path ~ (CAST('*.'|| replace(CAST({}.id as text), '-', '_') " \
+                  "|| '.*' AS LQUERY))".format(_ancestor.name)
+    """Query that gets the descendants of the ancestor lot."""
+    devices = db.select([
+        LotDevice.device_id,
+        _ancestor.c.id.label('ancestor_lot_id'),
+        _desc.c.id.label('parent_lot_id'),
+        None
+    ]).select_from(_ancestor).select_from(lot_device).where(descendants)
+
+    # Components
+    _parent_device = Device.__table__.alias(name='parent_device')
+    """The device that has the access to the lot."""
+    lot_device_component = lot_device \
+        .join(_parent_device, _parent_device.c.id == LotDevice.device_id) \
+        .join(Component, _parent_device.c.id == Component.parent_id)
+    """Join: Path -- Lot -- LotDevice -- ParentDevice (Device) -- Component"""
+
+    components = db.select([
+        Component.id.label('device_id'),
+        _ancestor.c.id.label('ancestor_lot_id'),
+        _desc.c.id.label('parent_lot_id'),
+        LotDevice.device_id.label('device_parent_id'),
+    ]).select_from(_ancestor).select_from(lot_device_component).where(descendants)
+
+    __table__ = create_view(
+        name='lot_device_descendants',
+        selectable=devices.union(components)
+    )

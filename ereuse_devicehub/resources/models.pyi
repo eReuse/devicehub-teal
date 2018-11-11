@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column
+from sqlalchemy import Column, Table
 from teal.db import Model
 
 STR_SIZE = 64
@@ -10,6 +10,7 @@ STR_XSM_SIZE = 16
 
 
 class Thing(Model):
+    __table__ = ...  # type: Table
     t = ...  # type: str
     type = ...  # type: str
     updated = ...  # type: Column

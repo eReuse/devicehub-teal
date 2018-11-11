@@ -16,8 +16,8 @@ from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
-from teal.db import CASCADE, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, URL, check_lower, \
-    check_range
+from teal.db import CASCADE_DEL, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, URL, \
+    check_lower, check_range
 from teal.enums import Layouts
 from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
@@ -428,7 +428,7 @@ class Component(Device):
     parent = relationship(Computer,
                           backref=backref('components',
                                           lazy=True,
-                                          cascade=CASCADE,
+                                          cascade=CASCADE_DEL,
                                           order_by=lambda: Component.id,
                                           collection_class=OrderedSet),
                           primaryjoin=parent_id == Computer.id)

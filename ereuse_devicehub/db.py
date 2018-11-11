@@ -1,4 +1,6 @@
+from sqlalchemy import event
 from sqlalchemy.dialects import postgresql
+from sqlalchemy_utils import view
 from teal.db import SchemaSQLAlchemy
 
 
@@ -17,3 +19,21 @@ class SQLAlchemy(SchemaSQLAlchemy):
 
 
 db = SQLAlchemy(session_options={"autoflush": False})
+
+
+def create_view(name, selectable):
+    """Creates a view.
+
+    This is an adaptation from sqlalchemy_utils.view. See
+     `the test on sqlalchemy-utils <https://github.com/kvesteri/
+    sqlalchemy-utils/blob/master/tests/test_views.py>`_ for an
+    example on how to use.
+    """
+    table = view.create_table_from_selectable(name=name, selectable=selectable, metadata=None)
+
+    # We need to ensure views are created / destroyed before / after
+    # SchemaSQLAlchemy's listeners execute
+    # That is why insert=True in 'after_create'
+    event.listen(db.metadata, 'after_create', view.CreateView(name, selectable), insert=True)
+    event.listen(db.metadata, 'before_drop', view.DropView(name))
+    return table

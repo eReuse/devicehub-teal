@@ -18,7 +18,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
-from teal.db import ArrayOfEnum, CASCADE, CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, \
+from teal.db import ArrayOfEnum, CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, \
     POLYMORPHIC_ON, StrictVersionType, URL, check_lower, check_range
 from teal.enums import Country, Currency, Subdivision
 from teal.marshmallow import ValidationError
@@ -219,7 +219,7 @@ class EventWithOneDevice(JoinedTableMixin, Event):
     device = relationship(Device,
                           backref=backref('events_one',
                                           lazy=True,
-                                          cascade=CASCADE,
+                                          cascade=CASCADE_OWN,
                                           order_by=lambda: EventWithOneDevice.created,
                                           collection_class=OrderedSet),
                           primaryjoin=Device.id == device_id)

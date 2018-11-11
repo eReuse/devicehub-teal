@@ -97,6 +97,12 @@ class LotView(View):
             cls._p(nodes, path)
         return nodes
 
+    def delete(self, id):
+        lot = Lot.query.filter_by(id=id).one()
+        lot.delete()
+        db.session.commit()
+        return Response(status=204)
+
     @classmethod
     def _p(cls, nodes: List[dict], path: deque):
         """Recursively creates the nested lot structure.

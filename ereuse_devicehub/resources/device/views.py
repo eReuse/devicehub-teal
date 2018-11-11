@@ -12,10 +12,10 @@ from teal.resource import View
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources import search
-from ereuse_devicehub.resources.device.models import Component, Computer, Device, Manufacturer
+from ereuse_devicehub.resources.device.models import Device, Manufacturer
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.event.models import Rate
-from ereuse_devicehub.resources.lot.models import Lot, LotDevice
+from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
 from ereuse_devicehub.resources.tag.model import Tag
 
 
@@ -41,15 +41,10 @@ class TagQ(query.Query):
 
 
 class LotQ(query.Query):
-    id = query.Or(query.QueryField(Lot.descendantsq, fields.UUID()))
+    id = query.Or(query.Equal(LotDeviceDescendants.ancestor_lot_id, fields.UUID()))
 
 
 class Filters(query.Query):
-    _parent = Computer.__table__.alias()
-    _device_inside_lot = (Device.id == LotDevice.device_id) & (Lot.id == LotDevice.lot_id)
-    _parent_device_in_lot = (Device.id == Component.id) & (Component.parent_id == _parent.c.id) \
-                            & (_parent.c.id == LotDevice.device_id) & (Lot.id == LotDevice.lot_id)
-
     type = query.Or(OfType(Device.type))
     model = query.ILike(Device.model)
     manufacturer = query.ILike(Device.manufacturer)
@@ -59,7 +54,7 @@ class Filters(query.Query):
     # todo This part of the query is really slow
     # And forces usage of distinct, as it returns many rows
     # due to having multiple paths to the same
-    lot = query.Join(_device_inside_lot | _parent_device_in_lot, LotQ)
+    lot = query.Join(Device.id == LotDeviceDescendants.device_id, LotQ)
 
 
 class Sorting(query.Sort):
