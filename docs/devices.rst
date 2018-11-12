@@ -46,3 +46,10 @@ The result is a JSON object with the following fields:
     or ``1``.
   - **perPage**: How many devices are in every page, fixed to ``30``.
   - **total**: How many total devices passed the filters.
+
+Models
+******
+
+.. automodule:: ereuse_devicehub.resources.device.models
+    :members:
+    :member-order: bysource

@@ -14,7 +14,7 @@
 #
 # import os
 # import sys
-# sys.path.insert(0, os.path.abspath('.'))
+# sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
@@ -42,7 +42,8 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
     'sphinxcontrib.plantuml',
-    'sphinx.ext.autosectionlabel'
+    'sphinx.ext.autosectionlabel',
+    'sphinx.ext.autodoc'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -159,7 +160,7 @@ texinfo_documents = [
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 # -- Options for todo extension ----------------------------------------------
 
@@ -174,3 +175,4 @@ html_favicon = 'img/favicon.ico'
 
 # autosectionlabel
 autosectionlabel_prefix_document = True
+autodoc_member_order = 'bysource'

@@ -209,7 +209,6 @@ def test_update_parent():
     (models.Repair, states.Physical.Repaired),
     (models.ToPrepare, states.Physical.Preparing),
     (models.ReadyToUse, states.Physical.ReadyToBeUsed),
-    (models.ToPrepare, states.Physical.Preparing),
     (models.Prepare, states.Physical.Prepared)
 ])
 def test_generic_event(event_model_state: Tuple[models.Event, states.Trading], user: UserClient):

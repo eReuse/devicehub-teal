@@ -263,11 +263,19 @@ class EventDevice(db.Model):
 
 
 class Add(EventWithOneDevice):
-    pass
+    """The act of adding components to a device.
+
+    It is usually used internally from a :class:`.Snapshot`, for
+    example, when adding a secondary data storage to a computer.
+    """
 
 
 class Remove(EventWithOneDevice):
-    pass
+    """The act of removing components from a device.
+
+    It is usually used internally from a :class:`.Snapshot`, for
+    example, when removing a component from a broken computer.
+    """
 
 
 class Allocate(JoinedTableMixin, EventWithMultipleDevices):
@@ -283,6 +291,30 @@ class Deallocate(JoinedTableMixin, EventWithMultipleDevices):
 
 
 class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    """An erasure attempt to a ``DataStorage``. The event contains
+    information about success and nature of the erasure.
+
+    EraseBasic is a software-based fast non-100%-secured way of
+    erasing data storage, performed
+    by Workbench Computer when executing the open-source
+    `shred <https://en.wikipedia.org/wiki/Shred_(Unix)>`_.
+
+    Users can generate erasure certificates from successful erasures.
+
+    Erasures are an accumulation of **erasure steps**, that are performed
+    as separate actions, called ``StepRandom``, for an erasure step
+    that has overwritten data with random bits, and ``StepZero``,
+    for an erasure step that has overwritten data with zeros.
+
+    For example, if steps are set in the following order and the user
+    used `EraseSectors`, the event represents a
+    `British HMG Infosec Standard 5 (HMG IS5) <https://en.wikipedia.org/
+    wiki/Infosec_Standard_5>`_:
+
+    1. A first step writing zeroes to the hard-drives.
+    2. A second step erasing with random data, verifying the erasure
+       success in each hard-drive sector.
+    """
     zeros = Column(Boolean, nullable=False)
     zeros.comment = """
         Whether this erasure had a first erasure step consisting of
@@ -296,11 +328,14 @@ class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
 
 class EraseSectors(EraseBasic):
-    pass
+    """A secured-way of erasing data storages, checking sector-by-sector
+    the erasure, using `badblocks <https://en.wikipedia.org/wiki/Badblocks>`_.
+    """
+    # todo make a property that says if the data wiping process is british...
 
 
 class ErasePhysical(EraseBasic):
-    """Physical destruction of a data storage unit."""
+    """The act of physically destroying a data storage unit."""
     # todo add attributes
     pass
 
@@ -346,6 +381,92 @@ class StepRandom(Step):
 
 
 class Snapshot(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    """The Snapshot sets the physical information of the device (S/N, model...)
+    and updates it with erasures, benchmarks, ratings, and tests; updates the
+    composition of its components (adding / removing them), and links tags
+    to the device.
+
+    When receiving a Snapshot, the DeviceHub creates, adds and removes
+    components to match the Snapshot. For example, if a Snapshot of a computer
+    contains a new component, the system searches for the component in its
+    database and, if not found, its creates it; finally linking it to the
+    computer.
+
+    A Snapshot is used with Remove to represent changes in components for
+    a device:
+
+    1. ``Snapshot`` creates a device if it does not exist, and the same
+       for its components. This is all done in one ``Snapshot``.
+    2. If the device exists, it updates its component composition by
+       *adding* and *removing* them. If,
+       for example, this new Snasphot doesn't have a component, it means that
+       this component is not present anymore in the device, thus removing it
+       from it. Then we have that:
+
+         - Components that are added to the device: snapshot2.components -
+           snapshot1.components
+         - Components that are removed to the device: snapshot1.components -
+           snapshot2.components
+
+       When adding a component, there may be the case this component existed
+       before and it was inside another device. In such case, DeviceHub will
+       perform ``Remove`` on the old parent.
+
+    **Snapshots from Workbench**
+
+    When processing a device from the Workbench, this one performs a Snapshot
+    and then performs more events (like testings, benchmarking...).
+
+    There are two ways of sending this information. In an async way,
+    this is, submitting events as soon as Workbench performs then, or
+    submitting only one Snapshot event with all the other events embedded.
+
+    **Asynced**
+
+    The use case, which is represented in the ``test_workbench_phases``,
+    is as follows:
+
+    1. In **T1**, WorkbenchServer (as the middleware from Workbench and
+       Devicehub) submits:
+
+       - A ``Snapshot`` event with the required information to **synchronize**
+         and **rate** the device. This is:
+
+           - Identification information about the device and components
+             (S/N, model, physical characteristics...)
+           - ``Tags`` in a ``tags`` property in the ``device``.
+           - ``Rate`` in an ``events`` property in the ``device``.
+           - ``Benchmarks`` in an ``events`` property in each ``component``
+             or ``device``.
+           - ``TestDataStorage`` as in ``Benchmarks``.
+       - An ordered set of **expected events**, defining which are the next
+         events that Workbench will perform to the device in ideal
+         conditions (device doesn't fail, no Internet drop...).
+
+       Devicehub **syncs** the device with the database and perform the
+       ``Benchmark``, the ``TestDataStorage``, and finally the ``Rate``.
+       This leaves the Snapshot **open** to wait for the next events
+       to come.
+    2. Assuming that we expect all events, in **T2**, WorkbenchServer
+       submits a ``StressTest`` with a ``snapshot`` field containing the
+       ID of the Snapshot in 1, and Devicehub links the event with such
+       ``Snapshot``.
+    3. In **T3**, WorkbenchServer submits the ``Erase`` with the ``Snapshot``
+       and ``component`` IDs from 1, linking it to them. It repeats
+       this for all the erased data storage devices; **T3+Tn** being
+       *n* the erased data storage devices.
+    4. WorkbenchServer does like in 3. but for the event ``Install``,
+       finishing in **T3+Tn+Tx**, being *x* the number of data storage
+       devices with an OS installed into.
+    5. In **T3+Tn+Tx**, when all *expected events* have been performed,
+       Devicehub **closes** the ``Snapshot`` from 1.
+
+    **Synced**
+
+    Optionally, Devicehub understands receiving a ``Snapshot`` with all
+    the events in an ``events`` property inside each affected ``component``
+    or ``device``.
+    """
     uuid = Column(UUID(as_uuid=True), unique=True)
     version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)
     software = Column(DBEnum(SnapshotSoftware), nullable=False)
@@ -361,6 +482,9 @@ class Snapshot(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
 
 class Install(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    """The action of installing an Operative System to a data
+    storage unit.
+    """
     elapsed = Column(Interval, nullable=False)
 
 
@@ -375,6 +499,48 @@ class SnapshotRequest(db.Model):
 
 
 class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    """Devicehub generates an rating for a device taking into consideration the
+    visual, functional, and performance.
+
+    A Workflow is as follows:
+
+    1. An agent generates feedback from the device in the form of benchmark,
+       visual, and functional information; which is filled in a ``Rate``
+       event. This is done through a **software**, defining the type
+       of ``Rate`` event. At the moment we have ``WorkbenchRate``.
+    2. Devicehub gathers this information and computes a score that updates
+       the ``Rate`` event.
+    3. Devicehub aggregates different rates and computes a final score for
+       the device by performing a new ``AggregateRating`` event.
+
+    There are two base **types** of ``Rate``: ``WorkbenchRate``,
+    ``ManualRate``. ``WorkbenchRate`` can have different
+    **software** algorithms, and each software algorithm can have several
+    **versions**. So, we have 3 dimensions for ``WorkbenchRate``:
+    type, software, version.
+
+    Devicehub generates a rate event for each software and version. So,
+    if an agent fulfills a ``WorkbenchRate`` and there are 2 software
+    algorithms and each has two versions, Devicehub will generate 4 rates.
+    Devicehub understands that only one software and version are the
+    **oficial** (set in the settings of each inventory),
+    and it will generate an ``AggregateRating`` for only the official
+    versions. At the same time, ``Price`` only computes the price of
+    the **oficial** version.
+
+    The technical Workflow in Devicehub is as follows:
+
+    1. In **T1**, the user performs a ``Snapshot`` by processing the device
+       through the Workbench. From the benchmarks and the visual and
+       functional ratings the user does in the device, the system generates
+       many ``WorkbenchRate`` (as many as software and versions defined).
+       With only this information, the system generates an ``AggregateRating``,
+       which is the event that the user will see in the web.
+    2. In **T2**, the agent can optionally visually re-rate the device
+       using the mobile app, generating an ``AppRate``. This new
+       action generates a new ``AggregateRating`` with the ``AppRate``
+       plus the ``WorkbenchRate`` from 1.
+    """
     rating = Column(Float(decimal_return_scale=2), check_range('rating', *RATE_POSITIVE))
     rating.comment = """The rating for the content."""
     software = Column(DBEnum(RatingSoftware))
@@ -572,6 +738,16 @@ class AggregateRate(Rate):
 
 
 class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    """Price states a selling price for the device, but not
+    necessarily the final price this is sold (which is set in the Sell
+    event).
+
+    Devicehub automatically computes a price from ``AggregateRating``
+    events. As in a **Rate**, price can have **software** and **version**,
+    and there is an **official** price that is used to automatically
+    compute the price from an ``AggregateRating``. Only the official price
+    is computed from an ``AggregateRating``.
+    """
     SCALE = 4
     ROUND = ROUND_HALF_EVEN
     currency = Column(DBEnum(Currency), nullable=False)
@@ -713,6 +889,12 @@ class EreusePrice(Price):
 
 
 class Test(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    """The act of testing the physical condition of a device and its
+    components.
+
+    Testing errors and warnings are easily taken in
+    :attr:`ereuse_devicehub.resources.device.models.Device.working`.
+    """
     elapsed = Column(Interval, nullable=False)
 
     @declared_attr
@@ -731,6 +913,17 @@ class Test(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
 
 class TestDataStorage(Test):
+    """
+    The act of testing the data storage.
+
+    Testing is done using the `S.M.A.R.T self test
+    <https://en.wikipedia.org/wiki/S.M.A.R.T.#Self-tests>`_. Note
+    that not all data storage units, specially some new PCIe ones, do not
+    support SMART testing.
+
+    The test takes to other SMART values indicators of the overall health
+    of the data storage.
+    """
     id = Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
     length = Column(DBEnum(TestDataStorageLength), nullable=False)  # todo from type
     status = Column(Unicode(), check_lower('status'), nullable=False)
@@ -768,6 +961,10 @@ class TestDataStorage(Test):
 
 
 class StressTest(Test):
+    """The act of stressing (putting to the maximum capacity)
+    a device for an amount of minutes. If the device is not in great
+    condition won't probably survive such test.
+    """
 
     @validates('elapsed')
     def is_minute_and_bigger_than_1_minute(self, _, value: timedelta):
@@ -781,6 +978,7 @@ class StressTest(Test):
 
 
 class Benchmark(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    """The act of gauging the performance of a device."""
     elapsed = Column(Interval)
 
     @declared_attr
@@ -799,6 +997,7 @@ class Benchmark(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
 
 class BenchmarkDataStorage(Benchmark):
+    """Benchmarks the data storage unit reading and writing speeds."""
     id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
     read_speed = Column(Float(decimal_return_scale=2), nullable=False)
     write_speed = Column(Float(decimal_return_scale=2), nullable=False)
@@ -808,6 +1007,7 @@ class BenchmarkDataStorage(Benchmark):
 
 
 class BenchmarkWithRate(Benchmark):
+    """The act of benchmarking a device with a single rate."""
     id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
     rate = Column(Float, nullable=False)
 
@@ -816,11 +1016,18 @@ class BenchmarkWithRate(Benchmark):
 
 
 class BenchmarkProcessor(BenchmarkWithRate):
+    """Benchmarks a processor by executing `BogoMips
+    <https://en.wikipedia.org/wiki/BogoMips>`_. Note that this is not
+    a reliable way of rating processors and we keep it for compatibility
+    purposes.
+    """
     pass
 
 
 class BenchmarkProcessorSysbench(BenchmarkProcessor):
-    pass
+    """Benchmarks a processor by using the processor benchmarking
+    utility of `sysbench <https://github.com/akopytov/sysbench>`_.
+    """
 
 
 class BenchmarkRamSysbench(BenchmarkWithRate):
@@ -828,26 +1035,54 @@ class BenchmarkRamSysbench(BenchmarkWithRate):
 
 
 class ToRepair(EventWithMultipleDevices):
-    pass
+    """Select a device to be repaired."""
 
 
 class Repair(EventWithMultipleDevices):
-    pass
+    """Repair is the act of performing reparations.
+
+    If a repair without an error is performed,
+    it represents that the reparation has been successful.
+    """
 
 
 class ReadyToUse(EventWithMultipleDevices):
-    pass
+    """The device is ready to be used.
+
+    This involves greater preparation from the ``Prepare`` event,
+    and users should only use a device after this event is performed.
+
+    Users usually require devices with this event before shipping them
+    to costumers.
+    """
 
 
 class ToPrepare(EventWithMultipleDevices):
+    """The device has been selected for preparation.
+
+    See Prepare for more info.
+
+    Usually **ToPrepare** is the next event done after registering the
+    device.
+    """
     pass
 
 
 class Prepare(EventWithMultipleDevices):
-    pass
+    """Work has been performed to the device to a defined point of
+    acceptance.
+
+    Users using this event have to agree what is this point
+    of acceptance; for some is when the device just works, for others
+    when some testing has been performed.
+    """
 
 
 class Live(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    """A keep-alive from a device connected to the Internet with
+    information about its state (in the form of a ``Snapshot`` event)
+     and usage statistics.
+    """
     ip = Column(IP, nullable=False,
                 comment='The IP where the live was triggered.')
     subdivision_confidence = Column(SmallInteger,
@@ -870,18 +1105,34 @@ class Live(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
 
 class Organize(JoinedTableMixin, EventWithMultipleDevices):
-    pass
+    """The act of manipulating/administering/supervising/controlling
+    one or more devices.
+    """
 
 
 class Reserve(Organize):
-    pass
+    """The act of reserving devices and cancelling them.
+
+    After this event is performed, the user is the **reservee** of the
+    devices. There can only be one non-cancelled reservation for
+    a device, and a reservation can only have one reservee.
+    """
 
 
 class CancelReservation(Organize):
-    pass
+    """The act of cancelling a reservation."""
 
 
 class Trade(JoinedTableMixin, EventWithMultipleDevices):
+    """Trade actions log the political exchange of devices between users.
+    Every time a trade event is performed, the old user looses its
+    political possession, for example ownership, in favor of another
+    user.
+
+
+    Performing trade events changes the *Trading* state of the
+    device —:class:`ereuse_devicehub.resources.device.states.Trading`.
+    """
     shipping_date = Column(DateTime)
     shipping_date.comment = """
             When are the devices going to be ready for shipping?
@@ -924,36 +1175,67 @@ class Trade(JoinedTableMixin, EventWithMultipleDevices):
 
 
 class Sell(Trade):
-    pass
+    """The act of taking money from a buyer in exchange of a device."""
 
 
 class Donate(Trade):
-    pass
+    """The act of giving devices without compensation."""
 
 
 class Rent(Trade):
-    pass
+    """The act of giving money in return for temporary use, but not
+    ownership, of a device.
+    """
 
 
 class CancelTrade(Trade):
-    pass
+    """The act of cancelling a `Sell`_, `Donate`_ or `Rent`_."""
+    # todo cancelTrade does not do anything
 
 
 class ToDisposeProduct(Trade):
-    pass
+    """The act of setting a device for being disposed.
+
+    See :class:`.DisposeProduct`.
+    """
+    # todo test this
 
 
 class DisposeProduct(Trade):
-    pass
+    """The act of getting rid of devices by giving (selling, donating)
+    to another organization, like a waste manager.
+
+
+    See :class:`.ToDispose` and :class:`.DisposeProduct` for
+    disposing without trading the device. See :class:`.DisposeWaste`
+    and :class:`.Recover` for disposing in-house, this is,
+    without trading the device.
+    """
+    # todo For usability purposes, users might not directly perform
+    #     *DisposeProduct*, but this could automatically be done when
+    #     performing :class:`.ToDispose` + :class:`.Receive` to a
+    #     ``RecyclingCenter``.
 
 
 class Receive(JoinedTableMixin, EventWithMultipleDevices):
+    """The act of physically taking delivery of a device.
+
+    The receiver confirms that the devices have arrived, and thus,
+    they are the
+    :attr:`ereuse_devicehub.resources.device.models.Device.physical_possessor`.
+
+    The receiver can optionally take a
+    :class:`ereuse_devicehub.resources.enums.ReceiverRole`.
+    """
     role = Column(DBEnum(ReceiverRole),
                   nullable=False,
                   default=ReceiverRole.Intermediary)
 
 
 class Migrate(JoinedTableMixin, EventWithMultipleDevices):
+    """Moves the devices to a new database/inventory. Devices cannot be
+    modified anymore at the previous database.
+    """
     other = Column(URL(), nullable=False)
     other.comment = """
         The URL of the Migrate in the other end.

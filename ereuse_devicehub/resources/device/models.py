@@ -178,6 +178,10 @@ class Device(Thing):
         that has it physically. As an example, a transporter could
         be a physical possessor of a device although it does not
         own it legally.
+
+        Note that there can only be one physical possessor per device,
+        and :class:`ereuse_devicehub.resources.event.models.Receive`
+        changes it.
         """
         from ereuse_devicehub.resources.event.models import Receive
         with suppress(LookupError):
@@ -190,7 +194,7 @@ class Device(Thing):
         device is working if the list is empty.
 
         This property returns, for the last test performed of each type,
-        the one with the worst severity of them, or None if no
+        the one with the worst severity of them, or `None` if no
         test has been executed.
         """
         from ereuse_devicehub.resources.event.models import Test

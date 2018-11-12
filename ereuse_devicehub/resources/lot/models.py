@@ -14,7 +14,7 @@ from teal.db import CASCADE_OWN, UUIDLtree
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import create_view, db
-from ereuse_devicehub.resources.device.models import Component, Computer, Device
+from ereuse_devicehub.resources.device.models import Component, Device
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -89,16 +89,6 @@ class Lot(Thing):
     def descendantsq(cls, id):
         _id = UUIDLtree.convert(id)
         return (cls.id == Path.lot_id) & Path.path.lquery(exp.cast('*.{}.*'.format(_id), LQUERY))
-
-    @classmethod
-    def device_in_lotq(cls):
-        parent = Computer.__table__.alias()
-        device_inside_lot = (Device.id == LotDevice.device_id) & (Lot.id == LotDevice.lot_id)
-        parent_device_in_lot = (Device.id == Component.id) \
-                               & (Component.parent_id == parent.c.id) \
-                               & (parent.c.id == LotDevice.device_id) \
-                               & (Lot.id == LotDevice.lot_id)
-        return device_inside_lot | parent_device_in_lot
 
     @property
     def parents(self):
