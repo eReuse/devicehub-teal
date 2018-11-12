@@ -394,6 +394,14 @@ class Videoconference(Video):
     pass
 
 
+class Cooking(Device):
+    pass
+
+
+class Mixer(Cooking):
+    pass
+
+
 class Manufacturer(Model):
     CUSTOM_MANUFACTURERS = ...  # type: set
     name = ...  # type: Column

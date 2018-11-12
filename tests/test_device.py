@@ -20,7 +20,8 @@ from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.schemas import Device as DeviceS
 from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, MismatchBetweenTagsAndHid, \
     Sync
-from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech, Severity
+from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech, Severity, \
+    SnapshotSoftware
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.event.models import Remove, Test
 from ereuse_devicehub.resources.tag.model import Tag
@@ -536,3 +537,30 @@ def test_networking_model():
     switch = d.Switch(speed=1000, wireless=False)
     db.session.add(switch)
     db.session.commit()
+
+
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_cooking_mixer():
+    mixer = d.Mixer(serial_number='foo', model='bar', manufacturer='foobar')
+    db.session.add(mixer)
+    db.session.commit()
+
+
+def test_cooking_mixer_api(user: UserClient):
+    snapshot, _ = user.post(
+        {
+            'type': 'Snapshot',
+            'device': {
+                'serialNumber': 'foo',
+                'model': 'bar',
+                'manufacturer': 'foobar',
+                'type': 'Mixer'
+            },
+            'version': '11.0',
+            'software': SnapshotSoftware.Web.name
+        },
+        res=m.Snapshot
+    )
+    mixer, _ = user.get(res=d.Device, item=snapshot['device']['id'])
+    assert mixer['type'] == 'Mixer'
+    assert mixer['serialNumber'] == 'foo'

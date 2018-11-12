@@ -295,3 +295,11 @@ class VideoScaler(Video):
 
 class Videoconference(Video):
     pass
+
+
+class Cooking(Device):
+    pass
+
+
+class Mixer(Cooking):
+    pass

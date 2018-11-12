@@ -639,6 +639,14 @@ class Videoconference(Video):
     pass
 
 
+class Cooking(Device):
+    pass
+
+
+class Mixer(Cooking):
+    pass
+
+
 class Manufacturer(db.Model):
     __table_args__ = {'schema': 'common'}
     CSV_DELIMITER = csv.get_dialect('excel').delimiter
