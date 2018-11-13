@@ -1,11 +1,14 @@
+import csv
 import datetime
+from io import StringIO
 
 import marshmallow
-from flask import current_app as app, render_template, request
+from flask import current_app as app, render_template, request, make_response
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
 from marshmallow import fields, fields as f, validate as v
 from sqlalchemy.orm import aliased
+from sqlalchemy.util import OrderedDict
 from teal import query
 from teal.cache import cache
 from teal.resource import View
@@ -14,7 +17,9 @@ from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import SearchQueryParser
 from ereuse_devicehub.resources import search
-from ereuse_devicehub.resources.device.models import Component, Computer, Device, Manufacturer
+from ereuse_devicehub.resources.device.models import Component, Computer, Device, Manufacturer, \
+    Display, Processor, GraphicCard, Motherboard, NetworkAdapter, DataStorage, RamModule, \
+    SoundCard
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.event.models import Rate
 from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
