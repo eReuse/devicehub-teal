@@ -9,7 +9,7 @@
       "elapsed": 2
     },
     {
-      "error": false,
+      "severity": "Info",
       "type": "StressTest",
       "elapsed": 60
     },
@@ -91,14 +91,14 @@
     {
       "steps": [
       {
-        "error": false,
+        "severity": "Info",
         "type": "StepRandom",
         "startTime": "2018-07-11T11:20:01.005336",
         "endTime": "2018-07-11T11:42:12.971177"
       }
       ],
       "zeros": false,
-      "error": false,
+      "severity": "Info",
       "type": "EraseBasic",
       "endTime": "2018-07-11T11:42:12.975358",
       "startTime": "2018-07-11T11:20:01.004892"
@@ -111,7 +111,7 @@
     },
     {
       "length": "Short",
-      "error": true,
+      "severity": "Error",
       "type": "TestDataStorage",
       "status": "Unspecified Error. Self-test not started.",
       "elapsed": 0

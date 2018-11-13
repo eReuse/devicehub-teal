@@ -64,7 +64,7 @@ components:
     elapsed: 21
   - type: TestDataStorage
     elapsed: 233
-    error: False
+    severity: Info
     status: Completed without error
     length: Short
     lifetime: 99

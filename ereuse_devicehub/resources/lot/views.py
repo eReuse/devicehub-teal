@@ -1,7 +1,7 @@
 import uuid
 from collections import deque
 from enum import Enum
-from typing import List, Set
+from typing import Dict, List, Set, Union
 
 import marshmallow as ma
 from flask import Response, jsonify, request
@@ -67,10 +67,12 @@ class LotView(View):
         you can filter.
         """
         if args['format'] == LotFormat.UiTree:
-            return jsonify({
-                'items': self.ui_tree(),
+            lots = self.schema.dump(Lot.query, many=True, nested=1)
+            ret = {
+                'items': {l['id']: l for l in lots},
+                'tree': self.ui_tree(),
                 'url': request.path
-            })
+            }
         else:
             query = Lot.query
             if args['search']:
@@ -87,18 +89,24 @@ class LotView(View):
                 },
                 'url': request.path
             }
-            return jsonify(ret)
+        return jsonify(ret)
+
+    def delete(self, id):
+        lot = Lot.query.filter_by(id=id).one()
+        lot.delete()
+        db.session.commit()
+        return Response(status=204)
 
     @classmethod
-    def ui_tree(cls) -> List[dict]:
-        nodes = []
+    def ui_tree(cls) -> List[Dict]:
+        tree = []
         for model in Path.query:  # type: Path
             path = deque(model.path.path.split('.'))
-            cls._p(nodes, path)
-        return nodes
+            cls._p(tree, path)
+        return tree
 
     @classmethod
-    def _p(cls, nodes: List[dict], path: deque):
+    def _p(cls, nodes: List[Dict[str, Union[uuid.UUID, List]]], path: deque):
         """Recursively creates the nested lot structure.
 
         Every recursive step consumes path (a deque of lot_id),
@@ -110,14 +118,8 @@ class LotView(View):
             # does lot_id exist already in node?
             node = next(part for part in nodes if lot_id == part['id'])
         except StopIteration:
-            lot = Lot.query.filter_by(id=lot_id).one()
             node = {
                 'id': lot_id,
-                'name': lot.name,
-                'url': lot.url.to_text(),
-                'closed': lot.closed,
-                'updated': lot.updated,
-                'created': lot.created,
                 'nodes': []
             }
             nodes.append(node)
@@ -174,12 +176,10 @@ class LotChildrenView(LotBaseChildrenView):
         id = ma.fields.List(ma.fields.UUID())
 
     def _post(self, lot: Lot, ids: Set[uuid.UUID]):
-        for id in ids:
-            lot.add_child(id)  # todo what to do if child exists already?
+        lot.add_children(*ids)
 
     def _delete(self, lot: Lot, ids: Set[uuid.UUID]):
-        for id in ids:
-            lot.remove_child(id)
+        lot.remove_children(*ids)
 
 
 class LotDeviceView(LotBaseChildrenView):

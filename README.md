@@ -1,7 +1,8 @@
 # Devicehub
 
-Devicehub is an IT Asset Management System focused in reusing devices,
-created under the project [eReuse.org](https://www.ereuse.org).
+Devicehub is a distributed IT Asset Management System focused in 
+reusing devices, created under the project 
+[eReuse.org](https://www.ereuse.org).
 
 Our main objectives are:
 
@@ -35,10 +36,12 @@ call the new file ``app.py``.
 Create a PostgreSQL database called *devicehub* by running 
 [create-db](examples/create-db.sh):
  
-- In a Debian 9 terminal, execute the following two commands:
+- In a Debian 9 bash terminal, execute the following two commands:
   1. `sudo su - postgres`.
-  2. `bash examples/create-db.sh devicehub`.
-- In MacOS: `examples/create-db.sh devicehub`.
+  2. `bash examples/create-db.sh devicehub dhub`, 
+     and password `ereuse`.
+- In MacOS: `bash examples/create-db.sh devicehub dhub`, 
+  and password `ereuse`.
 
 Create the tables in the database by executing in the same directory 
 where `app.py` is:
@@ -85,7 +88,8 @@ To run the tests you will need to:
 1. `git clone` this project.
 2. Create a database for testing executing `create-db.sh` like
    the normal installation but changing the first parameter
-   from `devicehub` to `dh_test`: `create-db.sh dh_test`.
+   from `devicehub` to `dh_test`: `create-db.sh dh_test dhub` and
+   password `ereuse`.
 3. Execute at the root folder of the project `python3 setup.py test`.
 
 ## Generating the docs
@@ -94,3 +98,7 @@ To run the tests you will need to:
 3. Execute `pip3 install -e .[docs]` in the project root folder.
 3. Go to `<project root folder>/docs` and execute `make html`. 
    Repeat this step to generate new docs.
+   
+To auto-generate the docs do `pip3 install -e .[docs-auto]`, then
+execute, in the root folder of the project 
+`sphinx-autobuild docs docs/_build/html`.

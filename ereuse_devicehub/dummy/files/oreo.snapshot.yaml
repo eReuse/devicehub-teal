@@ -1,0 +1,169 @@
+{
+  "uuid": "de4f495e-c58b-40e1-a33e-46ab5e84767e",
+  "endTime": "2018-10-24T11:03:36.113006+00:00",
+  "components": [
+  {
+    "speed": 1000,
+    "manufacturer": "Realtek Semiconductor Co., Ltd.",
+    "wireless": false,
+    "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
+    "serialNumber": "00:26:18:96:dc:af",
+    "type": "NetworkAdapter",
+    "events": []
+  },
+  {
+    "speed": 1333.0,
+    "manufacturer": null,
+    "interface": "DDR",
+    "model": null,
+    "serialNumber": null,
+    "type": "RamModule",
+    "format": "DIMM",
+    "size": 2048,
+    "events": []
+  },
+  {
+    "speed": 1333.0,
+    "manufacturer": null,
+    "interface": "DDR",
+    "model": null,
+    "serialNumber": null,
+    "type": "RamModule",
+    "format": "DIMM",
+    "size": 2048,
+    "events": []
+  },
+  {
+    "speed": 1333.0,
+    "manufacturer": null,
+    "interface": "DDR",
+    "model": null,
+    "serialNumber": null,
+    "type": "RamModule",
+    "format": "DIMM",
+    "size": 2048,
+    "events": []
+  },
+  {
+    "speed": 1333.0,
+    "manufacturer": null,
+    "interface": "DDR",
+    "model": null,
+    "serialNumber": null,
+    "type": "RamModule",
+    "format": "DIMM",
+    "size": 2048,
+    "events": []
+  },
+  {
+    "manufacturer": "Intel Corporation",
+    "model": "5 Series/3400 Series Chipset High Definition Audio",
+    "serialNumber": null,
+    "type": "SoundCard",
+    "events": []
+  },
+  {
+    "speed": 2.5330000000000004,
+    "manufacturer": "Intel Corp.",
+    "cores": 4,
+    "address": 64,
+    "model": "Intel Core i7 CPU 860 @ 2.80GHz",
+    "serialNumber": null,
+    "type": "Processor",
+    "threads": 8,
+    "events": [
+    {
+      "elapsed": 9,
+      "type": "BenchmarkProcessorSysbench",
+      "rate": 8.7418
+    },
+    {
+      "elapsed": 0,
+      "type": "BenchmarkProcessor",
+      "rate": 44937.520000000004
+    }
+    ]
+  },
+  {
+    "manufacturer": null,
+    "interface": "ATA",
+    "model": "SAMSUNG HD103SJ",
+    "serialNumber": "S246J90Z406422",
+    "type": "HardDrive",
+    "size": 953869,
+    "events": [
+    {
+      "elapsed": 120,
+      "lifetime": 14298,
+      "currentPendingSectorCount": 0,
+      "type": "TestDataStorage",
+      "status": "Completed without error",
+      "powerCycleCount": 693,
+      "assessment": true,
+      "offlineUncorrectable": 0,
+      "severity": "Info",
+      "length": "Short",
+      "reallocatedSectorCount": 0
+    },
+    {
+      "readSpeed": 136.0,
+      "elapsed": 9,
+      "type": "BenchmarkDataStorage",
+      "writeSpeed": 35.0
+    }
+    ]
+  },
+  {
+    "manufacturer": "NVIDIA Corporation",
+    "model": "G84 GeForce 8600 GT",
+    "serialNumber": null,
+    "type": "GraphicCard",
+    "memory": 256.0,
+    "events": []
+  },
+  {
+    "firewire": 1,
+    "manufacturer": "ASUSTeK Computer INC.",
+    "usb": 2,
+    "model": "P7P55D",
+    "serialNumber": "101005570001137",
+    "type": "Motherboard",
+    "pcmcia": 0,
+    "slots": 4,
+    "serial": 1,
+    "events": []
+  }
+  ],
+  "elapsed": 203,
+  "device": {
+    "manufacturer": null,
+    "model": null,
+    "chassis": "Tower",
+    "type": "Desktop",
+    "serialNumber": null,
+    "events": [
+    {
+      "elapsed": 60,
+      "type": "StressTest",
+      "severity": "Info"
+    },
+    {
+      "elapsed": 1,
+      "type": "BenchmarkRamSysbench",
+      "rate": 0.8315
+    }
+    ],
+    "tags": [
+    {"id": "A0000000000003", "type": "Tag"}
+    ]
+  },
+  "version": "11.0a6",
+  "expectedEvents": [
+    "Benchmark",
+    "TestDataStorage",
+    "StressTest"
+  ],
+  "type": "Snapshot",
+  "closed": true,
+  "software": "Workbench"
+}

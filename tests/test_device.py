@@ -20,7 +20,8 @@ from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.schemas import Device as DeviceS
 from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, MismatchBetweenTagsAndHid, \
     Sync
-from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech
+from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech, Severity, \
+    SnapshotSoftware
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.event.models import Remove, Test
 from ereuse_devicehub.resources.tag.model import Tag
@@ -71,6 +72,11 @@ def test_device_model():
     assert d.NetworkAdapter.query.first() is not None, 'We removed the network adaptor'
     assert gcard.id == 3, 'We should still hold a reference to a zombie graphic card'
     assert d.GraphicCard.query.first() is None, 'We should have deleted it –it was inside the pc'
+
+
+@pytest.mark.xfail(reason='Test not developed')
+def test_device_problems():
+    pass
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -393,7 +399,7 @@ def test_get_device(app: Devicehub, user: UserClient):
         db.session.add(pc)
         db.session.add(Test(device=pc,
                             elapsed=timedelta(seconds=4),
-                            error=False,
+                            severity=Severity.Info,
                             agent=Person(name='Timmy'),
                             author=User(email='bar@bar.com')))
         db.session.commit()
@@ -402,7 +408,7 @@ def test_get_device(app: Devicehub, user: UserClient):
     assert pc['events'][0]['type'] == 'Test'
     assert pc['events'][0]['device'] == 1
     assert pc['events'][0]['elapsed'] == 4
-    assert not pc['events'][0]['error']
+    assert pc['events'][0]['severity'] == 'Info'
     assert UUID(pc['events'][0]['author'])
     assert 'events_components' not in pc, 'events_components are internal use only'
     assert 'events_one' not in pc, 'they are internal use only'
@@ -531,3 +537,30 @@ def test_networking_model():
     switch = d.Switch(speed=1000, wireless=False)
     db.session.add(switch)
     db.session.commit()
+
+
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_cooking_mixer():
+    mixer = d.Mixer(serial_number='foo', model='bar', manufacturer='foobar')
+    db.session.add(mixer)
+    db.session.commit()
+
+
+def test_cooking_mixer_api(user: UserClient):
+    snapshot, _ = user.post(
+        {
+            'type': 'Snapshot',
+            'device': {
+                'serialNumber': 'foo',
+                'model': 'bar',
+                'manufacturer': 'foobar',
+                'type': 'Mixer'
+            },
+            'version': '11.0',
+            'software': SnapshotSoftware.Web.name
+        },
+        res=m.Snapshot
+    )
+    mixer, _ = user.get(res=d.Device, item=snapshot['device']['id'])
+    assert mixer['type'] == 'Mixer'
+    assert mixer['serialNumber'] == 'foo'

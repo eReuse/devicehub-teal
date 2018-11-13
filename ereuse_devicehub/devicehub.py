@@ -35,6 +35,7 @@ class Devicehub(Teal):
                          instance_relative_config, root_path, Auth)
         self.dummy = Dummy(self)
         self.before_request(self.register_db_events_listeners)
+        self.cli.command('regenerate-search')(self.regenerate_search)
 
     def register_db_events_listeners(self):
         """Registers the SQLAlchemy event listeners."""
@@ -44,3 +45,9 @@ class Devicehub(Teal):
     def _init_db(self):
         super()._init_db()
         DeviceSearch.set_all_devices_tokens_if_empty(self.db.session)
+
+    def regenerate_search(self):
+        """Re-creates from 0 all the search tables."""
+        DeviceSearch.regenerate_search_table(self.db.session)
+        db.session.commit()
+        print('Done.')

@@ -13,7 +13,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
-from ereuse_devicehub.resources.enums import ComputerChassis, TestDataStorageLength
+from ereuse_devicehub.resources.enums import ComputerChassis, Severity, TestDataStorageLength
 from ereuse_devicehub.resources.event import models
 from tests import conftest
 from tests.conftest import create_user, file
@@ -86,18 +86,35 @@ def test_erase_sectors_steps():
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
-def test_test_data_storage():
+def test_test_data_storage_working():
+    """Tests TestDataStorage with the resulting properties in Device."""
+    hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     test = models.TestDataStorage(
-        device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
-        error=False,
+        device=hdd,
+        severity=Severity.Error,
         elapsed=timedelta(minutes=25),
         length=TestDataStorageLength.Short,
-        status='ok!',
+        status=':-(',
         lifetime=timedelta(days=120)
     )
     db.session.add(test)
-    db.session.commit()
-    assert models.TestDataStorage.query.one()
+    db.session.flush()
+    assert hdd.working == [test]
+    assert not hdd.problems
+    # Add new test overriding the first test in the problems
+    # / working condition
+    test2 = models.TestDataStorage(
+        device=hdd,
+        severity=Severity.Warning,
+        elapsed=timedelta(minutes=25),
+        length=TestDataStorageLength.Short,
+        status=':-(',
+        lifetime=timedelta(days=120)
+    )
+    db.session.add(test2)
+    db.session.flush()
+    assert hdd.working == [test2]
+    assert hdd.problems == []
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
@@ -192,7 +209,6 @@ def test_update_parent():
     (models.Repair, states.Physical.Repaired),
     (models.ToPrepare, states.Physical.Preparing),
     (models.ReadyToUse, states.Physical.ReadyToBeUsed),
-    (models.ToPrepare, states.Physical.Preparing),
     (models.Prepare, states.Physical.Prepared)
 ])
 def test_generic_event(event_model_state: Tuple[models.Event, states.Trading], user: UserClient):

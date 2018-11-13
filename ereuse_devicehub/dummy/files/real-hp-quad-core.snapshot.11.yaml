@@ -83,7 +83,7 @@
       "elapsed": 0,
       "type": "TestDataStorage",
       "status": "Unspecified Error. Self-test not started.",
-      "error": true,
+      "severity": "Error",
       "length": "Short"
     }
     ]

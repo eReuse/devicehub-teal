@@ -21,11 +21,11 @@ components:
     endTime: 2018-06-01T09:12:06
     steps:
     - type: StepZero
-      error: False
+      severity: Info
       startTime: 2018-06-01T08:15:00
       endTime: 2018-06-01T09:16:00
     - type: StepZero
-      error: False
+      severity: Info
       startTime: 2018-06-01T08:16:00
       endTime: 2018-06-01T09:17:00
 - type: Processor

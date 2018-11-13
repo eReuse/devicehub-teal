@@ -14,7 +14,7 @@ This is the documentation and API of the `eReuse.org Devicehub
 
     actions
     agents
-    inventory
+    devices
     tags
     lots
 

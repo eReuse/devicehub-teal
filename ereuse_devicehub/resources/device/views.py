@@ -1,11 +1,7 @@
-import csv
 import datetime
 
-from io import StringIO
-from collections import OrderedDict
-
 import marshmallow
-from flask import current_app as app, render_template, request, make_response
+from flask import current_app as app, render_template, request
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
 from marshmallow import fields, fields as f, validate as v
@@ -16,13 +12,12 @@ from teal.resource import View
 
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
+from ereuse_devicehub.query import SearchQueryParser
 from ereuse_devicehub.resources import search
-# from ereuse_devicehub.resources.device.definitions import ComponentDef
-from ereuse_devicehub.resources.device.models import Component, Computer, Device, Manufacturer, \
-    RamModule, Processor, DataStorage, GraphicCard, Motherboard, Display, NetworkAdapter, SoundCard
+from ereuse_devicehub.resources.device.models import Component, Computer, Device, Manufacturer
 from ereuse_devicehub.resources.device.search import DeviceSearch
-from ereuse_devicehub.resources.event.models import Rate, Event
-from ereuse_devicehub.resources.lot.models import Lot, LotDevice
+from ereuse_devicehub.resources.event.models import Rate
+from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
 from ereuse_devicehub.resources.tag.model import Tag
 
 
@@ -48,24 +43,20 @@ class TagQ(query.Query):
 
 
 class LotQ(query.Query):
-    id = query.Or(query.QueryField(Lot.descendantsq, fields.UUID()))
+    id = query.Or(query.Equal(LotDeviceDescendants.ancestor_lot_id, fields.UUID()))
 
 
 class Filters(query.Query):
-    _parent = aliased(Computer)
-    _device_inside_lot = (Device.id == LotDevice.device_id) & (Lot.id == LotDevice.lot_id)
-    _component_inside_lot_through_parent = (Device.id == Component.id) \
-                                           & (Component.parent_id == _parent.id) \
-                                           & (_parent.id == LotDevice.device_id) \
-                                           & (Lot.id == LotDevice.lot_id)
-
     type = query.Or(OfType(Device.type))
     model = query.ILike(Device.model)
     manufacturer = query.ILike(Device.manufacturer)
     serialNumber = query.ILike(Device.serial_number)
     rating = query.Join(Device.id == Rate.device_id, RateQ)
     tag = query.Join(Device.id == Tag.device_id, TagQ)
-    lot = query.Join(_device_inside_lot | _component_inside_lot_through_parent, LotQ)
+    # todo This part of the query is really slow
+    # And forces usage of distinct, as it returns many rows
+    # due to having multiple paths to the same
+    lot = query.Join(Device.id == LotDeviceDescendants.device_id, LotQ)
 
 
 class Sorting(query.Sort):
@@ -74,6 +65,8 @@ class Sorting(query.Sort):
 
 
 class DeviceView(View):
+    QUERY_PARSER = SearchQueryParser()
+
     class FindArgs(marshmallow.Schema):
         search = f.Str()
         filter = f.Nested(Filters, missing=[])
@@ -94,7 +87,15 @@ class DeviceView(View):
           200:
             description: The device or devices.
         """
-        return super().get(id)
+        # Majority of code is from teal
+        if id:
+            response = self.one(id)
+        else:
+            args = self.QUERY_PARSER.parse(self.find_args,
+                                           request,
+                                           locations=('querystring',))
+            response = self.find(args)
+        return response
 
     def one(self, id: int):
         """Gets one device."""
@@ -116,7 +117,7 @@ class DeviceView(View):
     def find(self, args: dict):
         """Gets many devices."""
         search_p = args.get('search', None)
-        query = Device.query
+        query = Device.query.distinct()  # todo we should not force to do this if the query is ok
         if search_p:
             properties = DeviceSearch.properties
             tags = DeviceSearch.tags

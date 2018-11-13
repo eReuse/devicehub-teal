@@ -8,9 +8,8 @@ from teal.marshmallow import EnumField, SanitizedStr, URL, ValidationError
 from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
+from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.device import models as m, states
-from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, \
-    DataStoragePrivacyCompliance, DisplayTech, PrinterTechnology, RamFormat, RamInterface
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 
@@ -31,6 +30,7 @@ class Device(Thing):
     depth = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.depth.comment)
     events = NestedOn('Event', many=True, dump_only=True, description=m.Device.events.__doc__)
     events_one = NestedOn('Event', many=True, load_only=True, collection_class=OrderedSet)
+    problems = NestedOn('Event', many=True, dump_only=True, description=m.Device.problems.__doc__)
     url = URL(dump_only=True, description=m.Device.url.__doc__)
     lots = NestedOn('Lot',
                     many=True,
@@ -44,6 +44,10 @@ class Device(Thing):
     production_date = DateTime('iso',
                                description=m.Device.updated.comment,
                                data_key='productionDate')
+    working = NestedOn('Event',
+                       many=True,
+                       dump_only=True,
+                       description=m.Device.working.__doc__)
 
     @pre_load
     def from_events_to_events_one(self, data: dict):
@@ -72,12 +76,13 @@ class Device(Thing):
 
 class Computer(Device):
     components = NestedOn('Component', many=True, dump_only=True, collection_class=OrderedSet)
-    chassis = EnumField(ComputerChassis, required=True)
+    chassis = EnumField(enums.ComputerChassis, required=True)
     ram_size = Integer(dump_only=True, data_key='ramSize')
     data_storage_size = Integer(dump_only=True, data_key='dataStorageSize')
     processor_model = Str(dump_only=True, data_key='processorModel')
     graphic_card_model = Str(dump_only=True, data_key='graphicCardModel')
     network_speeds = List(Integer(dump_only=True), dump_only=True, data_key='networkSpeeds')
+    privacy = NestedOn('Event', many=True, dump_only=True, collection_class=set)
 
 
 class Desktop(Computer):
@@ -94,7 +99,7 @@ class Server(Computer):
 
 class DisplayMixin:
     size = Float(description=m.DisplayMixin.size.comment, validate=Range(2, 150))
-    technology = EnumField(DisplayTech,
+    technology = EnumField(enums.DisplayTech,
                            description=m.DisplayMixin.technology.comment)
     resolution_width = Integer(data_key='resolutionWidth',
                                validate=Range(10, 20000),
@@ -168,8 +173,8 @@ class DataStorage(Component):
     size = Integer(validate=Range(0, 10 ** 8),
                    unit=UnitCodes.mbyte,
                    description=m.DataStorage.size.comment)
-    interface = EnumField(DataStorageInterface)
-    privacy = EnumField(DataStoragePrivacyCompliance, dump_only=True)
+    interface = EnumField(enums.DataStorageInterface)
+    privacy = NestedOn('Event', dump_only=True)
 
 
 class HardDrive(DataStorage):
@@ -203,8 +208,8 @@ class Processor(Component):
 class RamModule(Component):
     size = Integer(validate=Range(min=128, max=17000), unit=UnitCodes.mbyte)
     speed = Integer(validate=Range(min=100, max=10000), unit=UnitCodes.mhz)
-    interface = EnumField(RamInterface)
-    format = EnumField(RamFormat)
+    interface = EnumField(enums.RamInterface)
+    format = EnumField(enums.RamFormat)
 
 
 class SoundCard(Component):
@@ -264,7 +269,7 @@ class WirelessAccessPoint(Networking):
 class Printer(Device):
     wireless = Boolean(required=True, missing=False)
     scanning = Boolean(required=True, missing=False)
-    technology = EnumField(PrinterTechnology, required=True)
+    technology = EnumField(enums.PrinterTechnology, required=True)
     monochrome = Boolean(required=True, missing=True)
 
 
@@ -289,4 +294,12 @@ class VideoScaler(Video):
 
 
 class Videoconference(Video):
+    pass
+
+
+class Cooking(Device):
+    pass
+
+
+class Mixer(Cooking):
     pass

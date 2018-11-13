@@ -1,19 +1,19 @@
 import uuid
 from datetime import datetime
+from typing import Union
 
 from boltons import urlutils
 from citext import CIText
 from flask import g
 from sqlalchemy import TEXT
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.sql import expression as exp
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
-from teal.db import UUIDLtree
+from teal.db import CASCADE_OWN, UUIDLtree
 from teal.resource import url_for_resource
 
-from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Device
+from ereuse_devicehub.db import create_view, db, exp, f
+from ereuse_devicehub.resources.device.models import Component, Device
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -21,6 +21,8 @@ from ereuse_devicehub.resources.user.models import User
 class Lot(Thing):
     id = db.Column(UUID(as_uuid=True), primary_key=True)  # uuid is generated on init by default
     name = db.Column(CIText(), nullable=False)
+    description = db.Column(CIText())
+    description.comment = """A comment about the lot."""
     closed = db.Column(db.Boolean, default=False, nullable=False)
     closed.comment = """
             A closed lot cannot be modified anymore.
@@ -28,6 +30,7 @@ class Lot(Thing):
     devices = db.relationship(Device,
                               backref=db.backref('lots', lazy=True, collection_class=set),
                               secondary=lambda: LotDevice.__table__,
+                              lazy=True,
                               collection_class=set)
     """
     The **children** devices that the lot has.
@@ -35,47 +38,47 @@ class Lot(Thing):
     Note that the lot can have more devices, if they are inside 
     descendant lots.
     """
+    parents = db.relationship(lambda: Lot,
+                              viewonly=True,
+                              lazy=True,
+                              collection_class=set,
+                              secondary=lambda: LotParent.__table__,
+                              primaryjoin=lambda: Lot.id == LotParent.child_id,
+                              secondaryjoin=lambda: LotParent.parent_id == Lot.id,
+                              cascade='refresh-expire',  # propagate changes outside ORM
+                              backref=db.backref('children',
+                                                 viewonly=True,
+                                                 lazy=True,
+                                                 cascade='refresh-expire',
+                                                 collection_class=set)
+                              )
+    """The parent lots."""
 
-    def __init__(self, name: str, closed: bool = closed.default.arg) -> None:
+    all_devices = db.relationship(Device,
+                                  viewonly=True,
+                                  lazy=True,
+                                  collection_class=set,
+                                  secondary=lambda: LotDeviceDescendants.__table__,
+                                  primaryjoin=lambda: Lot.id == LotDeviceDescendants.ancestor_lot_id,
+                                  secondaryjoin=lambda: LotDeviceDescendants.device_id == Device.id)
+    """All devices, including components, inside this lot and its
+    descendants.
+    """
+
+    def __init__(self, name: str, closed: bool = closed.default.arg,
+                 description: str = None) -> None:
         """
         Initializes a lot
         :param name:
         :param closed:
         """
-        super().__init__(id=uuid.uuid4(), name=name, closed=closed)
+        super().__init__(id=uuid.uuid4(), name=name, closed=closed, description=description)
         Path(self)  # Lots have always one edge per default.
-
-    def add_child(self, child):
-        """Adds a child to this lot."""
-        if isinstance(child, Lot):
-            Path.add(self.id, child.id)
-            db.session.refresh(self)  # todo is this useful?
-            db.session.refresh(child)
-        else:
-            assert isinstance(child, uuid.UUID)
-            Path.add(self.id, child)
-            db.session.refresh(self)  # todo is this useful?
-
-    def remove_child(self, child):
-        if isinstance(child, Lot):
-            Path.delete(self.id, child.id)
-        else:
-            assert isinstance(child, uuid.UUID)
-            Path.delete(self.id, child)
 
     @property
     def url(self) -> urlutils.URL:
         """The URL where to GET this event."""
         return urlutils.URL(url_for_resource(Lot, item_id=self.id))
-
-    @property
-    def children(self):
-        """The children lots."""
-        # From https://stackoverflow.com/a/41158890
-        id = UUIDLtree.convert(self.id)
-        return self.query \
-            .join(self.__class__.paths) \
-            .filter(Path.path.lquery(exp.cast('*.{}.*{{1}}'.format(id), LQUERY)))
 
     @property
     def descendants(self):
@@ -86,28 +89,72 @@ class Lot(Thing):
         _id = UUIDLtree.convert(id)
         return (cls.id == Path.lot_id) & Path.path.lquery(exp.cast('*.{}.*'.format(_id), LQUERY))
 
-    @property
-    def parents(self):
-        return self.parentsq(self.id)
-
-    @classmethod
-    def parentsq(cls, id: UUID):
-        """The parent lots."""
-        id = UUIDLtree.convert(id)
-        i = db.func.index(Path.path, id)
-        parent_id = db.func.replace(exp.cast(db.func.subpath(Path.path, i - 1, i), TEXT), '_', '-')
-        join_clause = parent_id == exp.cast(Lot.id, TEXT)
-        return cls.query.join(Path, join_clause).filter(
-            Path.path.lquery(exp.cast('*{{1}}.{}.*'.format(id), LQUERY))
-        )
-
-    def __contains__(self, child: 'Lot'):
-        return Path.has_lot(self.id, child.id)
-
     @classmethod
     def roots(cls):
         """Gets the lots that are not under any other lot."""
         return cls.query.join(cls.paths).filter(db.func.nlevel(Path.path) == 1)
+
+    def add_children(self, *children):
+        """Add children lots to this lot.
+
+        This operation is highly costly as it forces refreshing
+        many models in session.
+        """
+        for child in children:
+            if isinstance(child, Lot):
+                Path.add(self.id, child.id)
+                db.session.refresh(child)
+            else:
+                assert isinstance(child, uuid.UUID)
+                Path.add(self.id, child)
+        # We need to refresh the models involved in this operation
+        # outside the session / ORM control so the models
+        # that have relationships to this model
+        # with the cascade 'refresh-expire' can welcome the changes
+        db.session.refresh(self)
+
+    def remove_children(self, *children):
+        """Remove children lots from this lot.
+
+        This operation is highly costly as it forces refreshing
+        many models in session.
+        """
+        for child in children:
+            if isinstance(child, Lot):
+                Path.delete(self.id, child.id)
+                db.session.refresh(child)
+            else:
+                assert isinstance(child, uuid.UUID)
+                Path.delete(self.id, child)
+        db.session.refresh(self)
+
+    def delete(self):
+        """Deletes the lot.
+
+        This method removes the children lots and children
+        devices orphan from this lot and then marks this lot
+        for deletion.
+        """
+        self.remove_children(*self.children)
+        db.session.delete(self)
+
+    def _refresh_models_with_relationships_to_lots(self):
+        session = db.Session.object_session(self)
+        for model in session:
+            if isinstance(model, (Device, Lot, Path)):
+                session.expire(model)
+
+    def __contains__(self, child: Union['Lot', Device]):
+        if isinstance(child, Lot):
+            return Path.has_lot(self.id, child.id)
+        elif isinstance(child, Device):
+            device = db.session.query(LotDeviceDescendants) \
+                .filter(LotDeviceDescendants.device_id == child.id) \
+                .filter(LotDeviceDescendants.ancestor_lot_id == self.id) \
+                .one_or_none()
+            return device
+        else:
+            raise TypeError('Lot only contains devices and lots, not {}'.format(child.__class__))
 
     def __repr__(self) -> str:
         return '<Lot {0.name} devices={0.devices!r}>'.format(self)
@@ -131,9 +178,12 @@ class Path(db.Model):
     id = db.Column(db.UUID(as_uuid=True),
                    primary_key=True,
                    server_default=db.text('gen_random_uuid()'))
-    lot_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(Lot.id), nullable=False)
+    lot_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(Lot.id), nullable=False, index=True)
     lot = db.relationship(Lot,
-                          backref=db.backref('paths', lazy=True, collection_class=set),
+                          backref=db.backref('paths',
+                                             lazy=True,
+                                             collection_class=set,
+                                             cascade=CASCADE_OWN),
                           primaryjoin=Lot.id == lot_id)
     path = db.Column(LtreeType, nullable=False)
     created = db.Column(db.TIMESTAMP(timezone=True), server_default=db.text('CURRENT_TIMESTAMP'))
@@ -171,3 +221,64 @@ class Path(db.Model):
                 "SELECT 1 from path where path ~ '*.{}.*.{}.*'".format(parent_id, child_id)
             ).first()
         )
+
+
+class LotDeviceDescendants(db.Model):
+    """A view facilitating querying inclusion between devices and lots,
+    including components.
+
+    The view has 4 columns:
+    1. The ID of the device.
+    2. The ID of a lot containing the device.
+    3. The ID of the lot that directly contains the device.
+    4. If 1. is a component, the ID of the device that is inside the lot.
+    """
+
+    _ancestor = Lot.__table__.alias(name='ancestor')
+    """Ancestor lot table."""
+    _desc = Lot.__table__.alias()
+    """Descendant lot table."""
+    lot_device = _desc \
+        .join(LotDevice, _desc.c.id == LotDevice.lot_id) \
+        .join(Path, _desc.c.id == Path.lot_id)
+    """Join: Path -- Lot -- LotDevice"""
+
+    descendants = "path.path ~ (CAST('*.'|| replace(CAST({}.id as text), '-', '_') " \
+                  "|| '.*' AS LQUERY))".format(_ancestor.name)
+    """Query that gets the descendants of the ancestor lot."""
+    devices = db.select([
+        LotDevice.device_id,
+        _desc.c.id.label('parent_lot_id'),
+        _ancestor.c.id.label('ancestor_lot_id'),
+        None
+    ]).select_from(_ancestor).select_from(lot_device).where(descendants)
+
+    # Components
+    _parent_device = Device.__table__.alias(name='parent_device')
+    """The device that has the access to the lot."""
+    lot_device_component = lot_device \
+        .join(_parent_device, _parent_device.c.id == LotDevice.device_id) \
+        .join(Component, _parent_device.c.id == Component.parent_id)
+    """Join: Path -- Lot -- LotDevice -- ParentDevice (Device) -- Component"""
+
+    components = db.select([
+        Component.id.label('device_id'),
+        _desc.c.id.label('parent_lot_id'),
+        _ancestor.c.id.label('ancestor_lot_id'),
+        LotDevice.device_id.label('device_parent_id'),
+    ]).select_from(_ancestor).select_from(lot_device_component).where(descendants)
+
+    __table__ = create_view('lot_device_descendants', devices.union(components))
+
+
+class LotParent(db.Model):
+    i = f.index(Path.path, db.func.text2ltree(f.replace(exp.cast(Path.lot_id, TEXT), '-', '_')))
+
+    __table__ = create_view(
+        'lot_parent',
+        db.select([
+            Path.lot_id.label('child_id'),
+            exp.cast(f.replace(exp.cast(f.subltree(Path.path, i - 1, i), TEXT), '_', '-'),
+                     UUID).label('parent_id')
+        ]).select_from(Path).where(i > 0),
+    )

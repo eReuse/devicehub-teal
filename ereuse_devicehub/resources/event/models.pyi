@@ -17,8 +17,8 @@ from teal.enums import Country
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    PriceSoftware, RatingSoftware, ReceiverRole, SnapshotExpectedEvents, SnapshotSoftware, \
-    TestDataStorageLength
+    PriceSoftware, RatingSoftware, ReceiverRole, Severity, SnapshotExpectedEvents, \
+    SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -27,8 +27,6 @@ class Event(Thing):
     id = ...  # type: Column
     name = ...  # type: Column
     type = ...  # type: Column
-    error = ...  # type: Column
-    incidence = ...  # type: Column
     description = ...  # type: Column
     snapshot_id = ...  # type: Column
     snapshot = ...  # type: relationship
@@ -41,17 +39,14 @@ class Event(Thing):
     start_time = ...  # type: Column
     end_time = ...  # type: Column
     agent_id = ...  # type: Column
+    severity = ...  # type: Column
 
-    def __init__(self, id=None, name=None, incidence=None, closed=None, error=None,
-                 description=None, start_time=None, end_time=None, snapshot=None, agent=None,
-                 parent=None, created=None, updated=None, author=None) -> None:
+    def __init__(self, **kwargs) -> None:
         super().__init__(created, updated)
         self.id = ...  # type: UUID
         self.name = ...  # type: str
         self.type = ...  # type: str
-        self.incidence = ...  # type: bool
         self.closed = ...  # type: bool
-        self.error = ...  # type: bool
         self.description = ...  # type: str
         self.start_time = ...  # type: datetime
         self.end_time = ...  # type: datetime
@@ -60,34 +55,25 @@ class Event(Thing):
         self.parent = ...  # type: Computer
         self.agent = ...  # type: Agent
         self.author = ...  # type: User
+        self.severity = ...  # type: Severity
 
     @property
     def url(self) -> urlutils.URL:
         pass
 
-    @property
-    def _err_str(self):
-        pass
-
 
 class EventWithOneDevice(Event):
 
-    def __init__(self, id=None, name=None, incidence=None, closed=None, error=None,
-                 description=None, start_time=None, end_time=None, snapshot=None, agent=None,
-                 parent=None, created=None, updated=None, author=None, device=None) -> None:
-        super().__init__(id, name, incidence, closed, error, description, start_time, end_time,
-                         snapshot, agent, parent, created, updated, author)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.device = ...  # type: Device
 
 
 class EventWithMultipleDevices(Event):
     devices = ...  # type: relationship
 
-    def __init__(self, id=None, name=None, incidence=None, closed=None, error=None,
-                 description=None, start_time=None, end_time=None, snapshot=None, agent=None,
-                 parent=None, created=None, updated=None, author=None, devices=None) -> None:
-        super().__init__(id, name, incidence, closed, error, description, start_time, end_time,
-                         snapshot, agent, parent, created, updated, author)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.devices = ...  # type: Set[Device]
 
 
@@ -100,15 +86,21 @@ class Remove(EventWithOneDevice):
 
 
 class Step(Model):
+    type = ...  # type: Column
+    num = ...  # type: Column
+    start_time = ...  # type: Column
+    end_time = ...  # type: Column
+    erasure = ...  # type: relationship
+    severity = ...  # type: Column
+
     def __init__(self, num=None, success=None, start_time=None, end_time=None,
-                 erasure=None, error=None) -> None:
+                 erasure=None, severity=None) -> None:
         self.type = ...  # type: str
         self.num = ...  # type: int
-        self.success = ...  # type: bool
         self.start_time = ...  # type: datetime
         self.end_time = ...  # type: datetime
         self.erasure = ...  # type: EraseBasic
-        self.error = ...  # type: bool
+        self.severity = ...  # type: Severity
 
 
 class StepZero(Step):

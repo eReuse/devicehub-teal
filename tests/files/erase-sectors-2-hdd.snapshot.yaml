@@ -1,9 +1,9 @@
 {
   "version": "11.0a3",
   "device": {
-    "serialNumber": null,
-    "manufacturer": null,
-    "model": null,
+    "serialNumber": 'foo',
+    "manufacturer": 'bar',
+    "model": 'baz',
     "type": "Desktop",
     "events": [],
     "chassis": "Tower"
@@ -53,7 +53,8 @@
     "type": "NetworkAdapter",
     "events": [],
     "serialNumber": "f4:6d:04:12:9b:85",
-    "speed": 1000
+    "speed": 1000,
+    "wireless": false
   },
   {
     "serialNumber": "WD-WCAV29008961",
@@ -68,12 +69,12 @@
       {
         "endTime": "2018-07-13T11:54:55.096491",
         "type": "StepRandom",
-        "error": false,
+        "severity": "Info",
         "startTime": "2018-07-13T10:52:45.092981"
       }
       ],
       "type": "EraseBasic",
-      "error": false,
+      "severity": "Info",
       "zeros": false,
       "startTime": "2018-07-13T10:52:45.092612"
     },
@@ -83,10 +84,10 @@
       "elapsed": 131,
       "length": "Short",
       "offlineUncorrectable": 1,
-      "error": true,
+      "severity": "Error",
       "currentPendingSectorCount": 1,
       "powerCycleCount": 1253,
-      "reallocatedSectorCount": 6,
+      "reallocatedSectorCount": 15,
       "type": "TestDataStorage",
       "status": "Completed: read failure"
     }
@@ -106,12 +107,12 @@
       {
         "endTime": "2018-07-13T12:55:47.326835",
         "type": "StepRandom",
-        "error": false,
+        "severity": "Info",
         "startTime": "2018-07-13T11:54:55.100925"
       }
       ],
       "type": "EraseBasic",
-      "error": false,
+      "severity": "Info",
       "zeros": false,
       "startTime": "2018-07-13T11:54:55.100667"
     },
@@ -121,7 +122,7 @@
       "elapsed": 115,
       "length": "Short",
       "offlineUncorrectable": 0,
-      "error": false,
+      "severity": "Info",
       "currentPendingSectorCount": 0,
       "powerCycleCount": 1956,
       "reallocatedSectorCount": 0,

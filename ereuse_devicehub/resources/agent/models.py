@@ -27,7 +27,7 @@ class JoinedTableMixin:
 
 class Agent(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    type = Column(Unicode, nullable=False)
+    type = Column(Unicode, nullable=False, index=True)
     name = Column(CIText())
     name.comment = """
         The name of the organization or person.

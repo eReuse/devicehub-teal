@@ -62,7 +62,7 @@
       "assessment": true,
       "currentPendingSectorCount": 0,
       "elapsed": 134,
-      "error": false,
+      "severity": "Info",
       "length": "Short",
       "lifetime": 19549,
       "offlineUncorrectable": 0,
@@ -106,7 +106,7 @@
     "events": [
     {
       "elapsed": 60,
-      "error": false,
+      "severity": "Info",
       "type": "StressTest"
     },
     {

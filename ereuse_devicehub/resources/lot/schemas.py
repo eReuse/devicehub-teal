@@ -11,6 +11,7 @@ from ereuse_devicehub.resources.schemas import Thing
 class Lot(Thing):
     id = f.UUID(dump_only=True)
     name = SanitizedStr(validate=f.validate.Length(max=STR_SIZE), required=True)
+    description = SanitizedStr(description=m.Lot.description.comment)
     closed = f.Boolean(missing=False, description=m.Lot.closed.comment)
     devices = NestedOn(Device, many=True, dump_only=True)
     children = NestedOn('Lot', many=True, dump_only=True)

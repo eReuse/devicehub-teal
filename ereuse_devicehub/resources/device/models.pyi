@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Dict, List, Set, Type, Union
+from operator import attrgetter
+from typing import Dict, Generator, Iterable, List, Optional, Set, Type
 
 from boltons import urlutils
 from boltons.urlutils import URL
@@ -11,8 +12,8 @@ from teal.enums import Layouts
 
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device import states
-from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, \
-    DataStoragePrivacyCompliance, DisplayTech, PrinterTechnology, RamFormat, RamInterface
+from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
+    PrinterTechnology, RamFormat, RamInterface
 from ereuse_devicehub.resources.event import models as e
 from ereuse_devicehub.resources.image.models import ImageList
 from ereuse_devicehub.resources.lot.models import Lot
@@ -21,6 +22,8 @@ from ereuse_devicehub.resources.tag import Tag
 
 
 class Device(Thing):
+    EVENT_SORT_KEY = attrgetter('created')
+
     id = ...  # type: Column
     type = ...  # type: Column
     hid = ...  # type: Column
@@ -48,7 +51,6 @@ class Device(Thing):
         self.height = ...  # type: float
         self.depth = ...  # type: float
         self.color = ...  # type: Color
-        self.events = ...  # type: List[e.Event]
         self.physical_properties = ...  # type: Dict[str, object or None]
         self.events_multiple = ...  # type: Set[e.EventWithMultipleDevices]
         self.events_one = ...  # type: Set[e.EventWithOneDevice]
@@ -58,30 +60,45 @@ class Device(Thing):
         self.production_date = ...  # type: datetime
 
     @property
+    def events(self) -> List[e.Event]:
+        pass
+
+    @property
+    def problems(self) -> List[e.Event]:
+        pass
+
+    @property
     def url(self) -> urlutils.URL:
         pass
 
     @property
-    def rate(self) -> Union[e.AggregateRate, None]:
+    def rate(self) -> Optional[e.AggregateRate]:
         pass
 
     @property
-    def price(self) -> Union[e.Price, None]:
+    def price(self) -> Optional[e.Price]:
         pass
 
     @property
-    def trading(self) -> Union[states.Trading, None]:
+    def trading(self) -> Optional[states.Trading]:
         pass
 
     @property
-    def physical(self) -> Union[states.Physical, None]:
+    def physical(self) -> Optional[states.Physical]:
         pass
 
     @property
-    def physical_possessor(self) -> Union[Agent, None]:
+    def physical_possessor(self) -> Optional[Agent]:
+        pass
+
+    @property
+    def working(self) -> List[e.Test]:
         pass
 
     def last_event_of(self, *types: Type[e.Event]) -> e.Event:
+        pass
+
+    def _warning_events(self, events: Iterable[e.Event]) -> Generator[e.Event]:
         pass
 
 
@@ -137,6 +154,10 @@ class Computer(DisplayMixin, Device):
 
     @property
     def network_speeds(self) -> List[int]:
+        pass
+
+    @property
+    def privacy(self) -> Set[e.EraseBasic]:
         pass
 
 
@@ -219,7 +240,7 @@ class DataStorage(Component):
         self.interface = ...  # type: DataStorageInterface
 
     @property
-    def privacy(self) -> DataStoragePrivacyCompliance:
+    def privacy(self) -> Optional[e.EraseBasic]:
         pass
 
 
@@ -370,6 +391,14 @@ class VideoScaler(Video):
 
 
 class Videoconference(Video):
+    pass
+
+
+class Cooking(Device):
+    pass
+
+
+class Mixer(Cooking):
     pass
 
 

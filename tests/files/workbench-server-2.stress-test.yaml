@@ -8,5 +8,5 @@
 
 type: 'StressTest'
 elapsed: 300
-error: False
+severity: Info
 # snapshot: None fulfill!

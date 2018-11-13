@@ -96,7 +96,7 @@
       "status": "Unspecified Error. Self-test not started.",
       "type": "TestDataStorage",
       "length": Short,
-      "error": true
+      "severity": "Error"
     }
     ],
     "type": "HardDrive",
@@ -122,7 +122,7 @@
     "events": [
     {
       "type": "StressTest",
-      "error": false,
+      "severity": "Info",
       "elapsed": 120
     },
     {

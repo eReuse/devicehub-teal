@@ -6,13 +6,15 @@ skinparam ranksep 1
 [*] -> Registered
 
 state Attributes {
-
 	state Broken : cannot turn on
 	state Owners
 	state Usufructuarees
 	state Reservees
 	state "Physical\nPossessor"
 	state "Waste\n\Product"
+	state problems : List of current events \nwith Warn/Error
+	state privacy : Set of\ncurrent erasures
+	state working : List of current events\naffecting working
 }
 
 state Physical {
@@ -43,11 +45,5 @@ state Trading {
 	Donated --> Cancelled : Cancel
 	Renting --> Cancelled : Cancel
 }
-
-state DataStoragePrivacyCompliance {
-    state Erased
-    state Destroyed
-}
-
 
 @enduml
