@@ -22,6 +22,8 @@ class Lot(Thing):
     devices = ...  # type: relationship
     paths = ...  # type: relationship
     description = ...  # type: Column
+    all_devices = ...  # type: relationship
+    parents = ...  # type: relationship
 
     def __init__(self, name: str, closed: bool = closed.default.arg) -> None:
         super().__init__()
@@ -30,20 +32,19 @@ class Lot(Thing):
         self.closed = ...  # type: bool
         self.devices = ...  # type: Set[Device]
         self.paths = ...  # type: Set[Path]
-        description = ...  # type: str
+        self.description = ...  # type: str
+        self.all_devices = ...  # type: Set[Device]
+        self.parents = ...  # type: Set[Lot]
+        self.children = ...  # type: Set[Lot]
 
-    def add_child(self, child: Union[Lot, uuid.UUID]):
+    def add_children(self, *children: Union[Lot, uuid.UUID]):
         pass
 
-    def remove_child(self, child: Union[Lot, uuid.UUID]):
+    def remove_children(self, *children: Union[Lot, uuid.UUID]):
         pass
 
     @classmethod
     def roots(cls) -> LotQuery:
-        pass
-
-    @property
-    def children(self) -> LotQuery:
         pass
 
     @property
@@ -52,14 +53,6 @@ class Lot(Thing):
 
     @classmethod
     def descendantsq(cls, id) -> LotQuery:
-        pass
-
-    @property
-    def parents(self) -> LotQuery:
-        pass
-
-    @classmethod
-    def parentsq(cls, id) -> LotQuery:
         pass
 
     @property

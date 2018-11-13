@@ -7,13 +7,12 @@ from citext import CIText
 from flask import g
 from sqlalchemy import TEXT
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.sql import expression as exp
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
 from teal.db import CASCADE_OWN, UUIDLtree
 from teal.resource import url_for_resource
 
-from ereuse_devicehub.db import create_view, db
+from ereuse_devicehub.db import create_view, db, exp, f
 from ereuse_devicehub.resources.device.models import Component, Device
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
@@ -31,12 +30,39 @@ class Lot(Thing):
     devices = db.relationship(Device,
                               backref=db.backref('lots', lazy=True, collection_class=set),
                               secondary=lambda: LotDevice.__table__,
+                              lazy=True,
                               collection_class=set)
     """
     The **children** devices that the lot has.
     
     Note that the lot can have more devices, if they are inside 
     descendant lots.
+    """
+    parents = db.relationship(lambda: Lot,
+                              viewonly=True,
+                              lazy=True,
+                              collection_class=set,
+                              secondary=lambda: LotParent.__table__,
+                              primaryjoin=lambda: Lot.id == LotParent.child_id,
+                              secondaryjoin=lambda: LotParent.parent_id == Lot.id,
+                              cascade='refresh-expire',  # propagate changes outside ORM
+                              backref=db.backref('children',
+                                                 viewonly=True,
+                                                 lazy=True,
+                                                 cascade='refresh-expire',
+                                                 collection_class=set)
+                              )
+    """The parent lots."""
+
+    all_devices = db.relationship(Device,
+                                  viewonly=True,
+                                  lazy=True,
+                                  collection_class=set,
+                                  secondary=lambda: LotDeviceDescendants.__table__,
+                                  primaryjoin=lambda: Lot.id == LotDeviceDescendants.ancestor_lot_id,
+                                  secondaryjoin=lambda: LotDeviceDescendants.device_id == Device.id)
+    """All devices, including components, inside this lot and its
+    descendants.
     """
 
     def __init__(self, name: str, closed: bool = closed.default.arg,
@@ -49,37 +75,10 @@ class Lot(Thing):
         super().__init__(id=uuid.uuid4(), name=name, closed=closed, description=description)
         Path(self)  # Lots have always one edge per default.
 
-    def add_child(self, child):
-        """Adds a child to this lot."""
-        if isinstance(child, Lot):
-            Path.add(self.id, child.id)
-            db.session.refresh(self)  # todo is this useful?
-            db.session.refresh(child)
-        else:
-            assert isinstance(child, uuid.UUID)
-            Path.add(self.id, child)
-            db.session.refresh(self)  # todo is this useful?
-
-    def remove_child(self, child):
-        if isinstance(child, Lot):
-            Path.delete(self.id, child.id)
-        else:
-            assert isinstance(child, uuid.UUID)
-            Path.delete(self.id, child)
-
     @property
     def url(self) -> urlutils.URL:
         """The URL where to GET this event."""
         return urlutils.URL(url_for_resource(Lot, item_id=self.id))
-
-    @property
-    def children(self):
-        """The children lots."""
-        # From https://stackoverflow.com/a/41158890
-        id = UUIDLtree.convert(self.id)
-        return self.query \
-            .join(self.__class__.paths) \
-            .filter(Path.path.lquery(exp.cast('*.{}.*{{1}}'.format(id), LQUERY)))
 
     @property
     def descendants(self):
@@ -90,25 +89,44 @@ class Lot(Thing):
         _id = UUIDLtree.convert(id)
         return (cls.id == Path.lot_id) & Path.path.lquery(exp.cast('*.{}.*'.format(_id), LQUERY))
 
-    @property
-    def parents(self):
-        return self.parentsq(self.id)
-
-    @classmethod
-    def parentsq(cls, id: UUID):
-        """The parent lots."""
-        id = UUIDLtree.convert(id)
-        i = db.func.index(Path.path, id)
-        parent_id = db.func.replace(exp.cast(db.func.subpath(Path.path, i - 1, i), TEXT), '_', '-')
-        join_clause = parent_id == exp.cast(Lot.id, TEXT)
-        return cls.query.join(Path, join_clause).filter(
-            Path.path.lquery(exp.cast('*{{1}}.{}.*'.format(id), LQUERY))
-        )
-
     @classmethod
     def roots(cls):
         """Gets the lots that are not under any other lot."""
         return cls.query.join(cls.paths).filter(db.func.nlevel(Path.path) == 1)
+
+    def add_children(self, *children):
+        """Add children lots to this lot.
+
+        This operation is highly costly as it forces refreshing
+        many models in session.
+        """
+        for child in children:
+            if isinstance(child, Lot):
+                Path.add(self.id, child.id)
+                db.session.refresh(child)
+            else:
+                assert isinstance(child, uuid.UUID)
+                Path.add(self.id, child)
+        # We need to refresh the models involved in this operation
+        # outside the session / ORM control so the models
+        # that have relationships to this model
+        # with the cascade 'refresh-expire' can welcome the changes
+        db.session.refresh(self)
+
+    def remove_children(self, *children):
+        """Remove children lots from this lot.
+
+        This operation is highly costly as it forces refreshing
+        many models in session.
+        """
+        for child in children:
+            if isinstance(child, Lot):
+                Path.delete(self.id, child.id)
+                db.session.refresh(child)
+            else:
+                assert isinstance(child, uuid.UUID)
+                Path.delete(self.id, child)
+        db.session.refresh(self)
 
     def delete(self):
         """Deletes the lot.
@@ -117,9 +135,14 @@ class Lot(Thing):
         devices orphan from this lot and then marks this lot
         for deletion.
         """
-        for child in self.children:
-            self.remove_child(child)
+        self.remove_children(*self.children)
         db.session.delete(self)
+
+    def _refresh_models_with_relationships_to_lots(self):
+        session = db.Session.object_session(self)
+        for model in session:
+            if isinstance(model, (Device, Lot, Path)):
+                session.expire(model)
 
     def __contains__(self, child: Union['Lot', Device]):
         if isinstance(child, Lot):
@@ -225,8 +248,8 @@ class LotDeviceDescendants(db.Model):
     """Query that gets the descendants of the ancestor lot."""
     devices = db.select([
         LotDevice.device_id,
-        _ancestor.c.id.label('ancestor_lot_id'),
         _desc.c.id.label('parent_lot_id'),
+        _ancestor.c.id.label('ancestor_lot_id'),
         None
     ]).select_from(_ancestor).select_from(lot_device).where(descendants)
 
@@ -240,12 +263,22 @@ class LotDeviceDescendants(db.Model):
 
     components = db.select([
         Component.id.label('device_id'),
-        _ancestor.c.id.label('ancestor_lot_id'),
         _desc.c.id.label('parent_lot_id'),
+        _ancestor.c.id.label('ancestor_lot_id'),
         LotDevice.device_id.label('device_parent_id'),
     ]).select_from(_ancestor).select_from(lot_device_component).where(descendants)
 
+    __table__ = create_view('lot_device_descendants', devices.union(components))
+
+
+class LotParent(db.Model):
+    i = f.index(Path.path, db.func.text2ltree(f.replace(exp.cast(Path.lot_id, TEXT), '-', '_')))
+
     __table__ = create_view(
-        name='lot_device_descendants',
-        selectable=devices.union(components)
+        'lot_parent',
+        db.select([
+            Path.lot_id.label('child_id'),
+            exp.cast(f.replace(exp.cast(f.subltree(Path.path, i - 1, i), TEXT), '_', '-'),
+                     UUID).label('parent_id')
+        ]).select_from(Path).where(i > 0),
     )

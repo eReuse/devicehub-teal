@@ -37,23 +37,33 @@ def test_lot_model_children():
     l1, l2, l3 = lots
     db.session.add_all(lots)
     db.session.flush()
+    assert not l1.children
+    assert not l1.parents
+    assert not l2.children
+    assert not l2.parents
+    assert not l3.parents
+    assert not l3.children
 
-    l1.add_child(l2)
-    db.session.flush()
+    l1.add_children(l2)
+    assert l1.children == {l2}
+    assert l2.parents == {l1}
 
-    assert list(l1.children) == [l2]
-
-    l2.add_child(l3)
-    assert list(l1.children) == [l2]
+    l2.add_children(l3)
+    assert l1.children == {l2}
+    assert l2.parents == {l1}
+    assert l2.children == {l3}
+    assert l3.parents == {l2}
 
     l2.delete()
     db.session.flush()
-    assert not list(l1.children)
+    assert not l1.children
+    assert not l3.parents
 
     l1.delete()
     db.session.flush()
     l3b = Lot.query.one()
     assert l3 == l3b
+    assert not l3.parents
 
 
 def test_lot_modify_patch_endpoint_and_delete(user: UserClient):
@@ -87,8 +97,8 @@ def test_lot_device_relationship():
     assert lot_device.created
     assert lot_device.author_id == g.user.id
     assert device.lots == {child}
-    # todo Device IN LOT does not work
     assert device in child
+    assert device in child.all_devices
 
     graphic = GraphicCard(serial_number='foo', model='bar')
     device.components.add(graphic)
@@ -98,7 +108,7 @@ def test_lot_device_relationship():
     parent = Lot('parent')
     db.session.add(parent)
     db.session.flush()
-    parent.add_child(child)
+    parent.add_children(child)
     assert child in parent
 
 
@@ -111,13 +121,13 @@ def test_add_edge():
     db.session.add(parent)
     db.session.flush()
 
-    parent.add_child(child)
+    parent.add_children(child)
 
     assert child in parent
     assert len(child.paths) == 1
     assert len(parent.paths) == 1
 
-    parent.remove_child(child)
+    parent.remove_children(child)
     assert child not in parent
     assert len(child.paths) == 1
     assert len(parent.paths) == 1
@@ -126,8 +136,8 @@ def test_add_edge():
     db.session.add(grandparent)
     db.session.flush()
 
-    grandparent.add_child(parent)
-    parent.add_child(child)
+    grandparent.add_children(parent)
+    parent.add_children(child)
 
     assert parent in grandparent
     assert child in parent
@@ -148,31 +158,36 @@ def test_lot_multiple_parents(auth_app_context):
     db.session.add_all(lots)
     db.session.flush()
 
-    grandparent1.add_child(parent)
+    grandparent1.add_children(parent)
     assert parent in grandparent1
-    parent.add_child(child)
+    parent.add_children(child)
     assert child in parent
     assert child in grandparent1
-    grandparent2.add_child(parent)
+    grandparent2.add_children(parent)
     assert parent in grandparent1
     assert parent in grandparent2
     assert child in parent
     assert child in grandparent1
     assert child in grandparent2
 
+    p = parent.id
+    c = child.id
+    gp1 = grandparent1.id
+    gp2 = grandparent2.id
+
     nodes = auth_app_context.resources[Lot.t].VIEW.ui_tree()
-    assert nodes[0]['name'] == 'grandparent1'
-    assert nodes[0]['nodes'][0]['name'] == 'parent'
-    assert nodes[0]['nodes'][0]['nodes'][0]['name'] == 'child'
+    assert nodes[0]['id'] == gp1
+    assert nodes[0]['nodes'][0]['id'] == p
+    assert nodes[0]['nodes'][0]['nodes'][0]['id'] == c
     assert nodes[0]['nodes'][0]['nodes'][0]['nodes'] == []
-    assert nodes[1]['name'] == 'grandparent2'
-    assert nodes[1]['nodes'][0]['name'] == 'parent'
-    assert nodes[1]['nodes'][0]['nodes'][0]['name'] == 'child'
+    assert nodes[1]['id'] == gp2
+    assert nodes[1]['nodes'][0]['id'] == p
+    assert nodes[1]['nodes'][0]['nodes'][0]['id'] == c
     assert nodes[1]['nodes'][0]['nodes'][0]['nodes'] == []
 
     # Now remove all childs
 
-    grandparent1.remove_child(parent)
+    grandparent1.remove_children(parent)
     assert parent not in grandparent1
     assert child in parent
     assert parent in grandparent2
@@ -180,14 +195,14 @@ def test_lot_multiple_parents(auth_app_context):
     assert child in grandparent2
 
     nodes = auth_app_context.resources[Lot.t].VIEW.ui_tree()
-    assert nodes[0]['name'] == 'grandparent1'
+    assert nodes[0]['id'] == gp1
     assert nodes[0]['nodes'] == []
-    assert nodes[1]['name'] == 'grandparent2'
-    assert nodes[1]['nodes'][0]['name'] == 'parent'
-    assert nodes[1]['nodes'][0]['nodes'][0]['name'] == 'child'
+    assert nodes[1]['id'] == gp2
+    assert nodes[1]['nodes'][0]['id'] == p
+    assert nodes[1]['nodes'][0]['nodes'][0]['id'] == c
     assert nodes[1]['nodes'][0]['nodes'][0]['nodes'] == []
 
-    grandparent2.remove_child(parent)
+    grandparent2.remove_children(parent)
     assert parent not in grandparent2
     assert parent not in grandparent1
     assert child not in grandparent2
@@ -195,27 +210,27 @@ def test_lot_multiple_parents(auth_app_context):
     assert child in parent
 
     nodes = auth_app_context.resources[Lot.t].VIEW.ui_tree()
-    assert nodes[0]['name'] == 'grandparent1'
+    assert nodes[0]['id'] == gp1
     assert nodes[0]['nodes'] == []
-    assert nodes[1]['name'] == 'grandparent2'
+    assert nodes[1]['id'] == gp2
     assert nodes[1]['nodes'] == []
-    assert nodes[2]['name'] == 'parent'
-    assert nodes[2]['nodes'][0]['name'] == 'child'
+    assert nodes[2]['id'] == p
+    assert nodes[2]['nodes'][0]['id'] == c
     assert nodes[2]['nodes'][0]['nodes'] == []
 
-    parent.remove_child(child)
+    parent.remove_children(child)
     assert child not in parent
     assert len(child.paths) == 1
     assert len(parent.paths) == 1
 
     nodes = auth_app_context.resources[Lot.t].VIEW.ui_tree()
-    assert nodes[0]['name'] == 'grandparent1'
+    assert nodes[0]['id'] == gp1
     assert nodes[0]['nodes'] == []
-    assert nodes[1]['name'] == 'grandparent2'
+    assert nodes[1]['id'] == gp2
     assert nodes[1]['nodes'] == []
-    assert nodes[2]['name'] == 'parent'
+    assert nodes[2]['id'] == p
     assert nodes[2]['nodes'] == []
-    assert nodes[3]['name'] == 'child'
+    assert nodes[3]['id'] == c
     assert nodes[3]['nodes'] == []
 
 
@@ -243,29 +258,29 @@ def test_lot_unite_graphs_and_find():
     db.session.add_all(lots)
     db.session.flush()
 
-    l1.add_child(l2)
+    l1.add_children(l2)
     assert l2 in l1
-    l3.add_child(l2)
+    l3.add_children(l2)
     assert l2 in l3
-    l5.add_child(l7)
+    l5.add_children(l7)
     assert l7 in l5
-    l4.add_child(l5)
+    l4.add_children(l5)
     assert l5 in l4
     assert l7 in l4
-    l5.add_child(l8)
+    l5.add_children(l8)
     assert l8 in l5
-    l4.add_child(l6)
+    l4.add_children(l6)
     assert l6 in l4
-    l6.add_child(l5)
+    l6.add_children(l5)
     assert l5 in l6 and l5 in l4
 
     # We unite the two graphs
-    l2.add_child(l4)
+    l2.add_children(l4)
     assert l4 in l2 and l5 in l2 and l6 in l2 and l7 in l2 and l8 in l2
     assert l4 in l3 and l5 in l3 and l6 in l3 and l7 in l3 and l8 in l3
 
     # We remove the union
-    l2.remove_child(l4)
+    l2.remove_children(l4)
     assert l4 not in l2 and l5 not in l2 and l6 not in l2 and l7 not in l2 and l8 not in l2
     assert l4 not in l3 and l5 not in l3 and l6 not in l3 and l7 not in l3 and l8 not in l3
 
@@ -279,7 +294,7 @@ def test_lot_roots():
     db.session.flush()
 
     assert set(Lot.roots()) == {l1, l2, l3}
-    l1.add_child(l2)
+    l1.add_children(l2)
     assert set(Lot.roots()) == {l1, l3}
 
 
@@ -306,11 +321,16 @@ def test_lot_post_add_children_view_ui_tree_normal(user: UserClient):
     assert child['parents'][0]['id'] == parent['id']
 
     # Format UiTree
-    lots = user.get(res=Lot, query=[('format', 'UiTree')])[0]['items']
-    assert 1 == len(lots)
-    assert lots[0]['name'] == 'Parent'
-    assert len(lots[0]['nodes']) == 1
-    assert lots[0]['nodes'][0]['name'] == 'Child'
+    r = user.get(res=Lot, query=[('format', 'UiTree')])[0]
+    lots, nodes = r['items'], r['tree']
+    assert 1 == len(nodes)
+    assert nodes[0]['id'] == parent['id']
+    assert len(nodes[0]['nodes']) == 1
+    assert nodes[0]['nodes'][0]['id'] == child['id']
+    assert 2 == len(lots)
+    assert 'Parent' == lots[parent['id']]['name']
+    assert 'Child' == lots[child['id']]['name']
+    assert lots[child['id']]['parents'][0]['name'] == 'Parent'
 
     # Normal list format
     lots = user.get(res=Lot)[0]['items']
