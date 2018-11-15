@@ -16,9 +16,9 @@ from teal.enums import Country
 
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
-from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    PriceSoftware, RatingSoftware, ReceiverRole, Severity, SnapshotExpectedEvents, \
-    SnapshotSoftware, TestDataStorageLength
+from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ErasureStandards, \
+    FunctionalityRange, PriceSoftware, RatingSoftware, ReceiverRole, Severity, \
+    SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -353,6 +353,10 @@ class EraseBasic(EventWithOneDevice):
         self.steps = ...  # type: List[Step]
         self.zeros = ...  # type: bool
         self.success = ...  # type: bool
+
+    @property
+    def standards(self) -> Set[ErasureStandards]:
+        pass
 
 
 class EraseSectors(EraseBasic):

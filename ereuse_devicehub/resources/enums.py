@@ -302,3 +302,45 @@ class Severity(IntEnum):
         else:
             m = '❌'
         return m
+
+
+class PhysicalErasureMethod(Enum):
+    """Methods of physically erasing the data-storage, usually
+    destroying the whole component.
+
+    Certified data-storage destruction mean, as of `UNE-EN 15713
+    <https://www.une.org/encuentra-tu-norma/busca-tu-norma/norma?c=N0044792>`_,
+    reducing the material to a size making it undecipherable, illegible,
+    and non able to be re-built.
+    """
+
+    Shred = 'Reduction of the data-storage to the required certified ' \
+            'standard sizes.'
+    Disintegration = 'Reduction of the data-storage to smaller sizes ' \
+                     'than the certified standard ones.'
+
+    def __str__(self):
+        return self.name
+
+
+class ErasureStandards(Enum):
+    HMG_IS5 = 'British HMG Infosec Standard 5 (HMG IS5)'
+    """`British HMG Infosec Standard 5 (HMG IS5) 
+    <https://en.wikipedia.org/wiki/Infosec_Standard_5>`_.
+    
+    In order to follow this standard, an erasure must have the
+    following steps:
+    
+    1. A first step writing zeroes to the data-storage units.
+    2. A second step erasing with random data, verifying the erasure
+       success in each hard-drive sector.
+    
+    And be an :class:`ereuse_devicehub.resources.event.models.EraseSectors`.
+    """
+
+    def __str__(self):
+        return self.value
+
+    @classmethod
+    def from_data_storage(cls, erasure):
+        raise NotImplementedError()

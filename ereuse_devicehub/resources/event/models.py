@@ -28,9 +28,10 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Desktop, \
     Device, Laptop, Server
-from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, ReceiverRole, \
-    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
+from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ErasureStandards, \
+    FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, \
+    RatingRange, RatingSoftware, ReceiverRole, Severity, SnapshotExpectedEvents, SnapshotSoftware, \
+    TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -306,14 +307,9 @@ class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
     that has overwritten data with random bits, and ``StepZero``,
     for an erasure step that has overwritten data with zeros.
 
-    For example, if steps are set in the following order and the user
-    used `EraseSectors`, the event represents a
-    `British HMG Infosec Standard 5 (HMG IS5) <https://en.wikipedia.org/
-    wiki/Infosec_Standard_5>`_:
-
-    1. A first step writing zeroes to the hard-drives.
-    2. A second step erasing with random data, verifying the erasure
-       success in each hard-drive sector.
+    Erasure standards define steps and methodologies to use.
+    Devicehub automatically shows the standards that each erasure
+    follows.
     """
     zeros = Column(Boolean, nullable=False)
     zeros.comment = """
@@ -321,7 +317,10 @@ class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
         only writing zeros.
     """
 
-    # todo return erasure properties like num steps, if it is british...
+    @property
+    def standards(self):
+        """A set of standards that this erasure follows."""
+        return ErasureStandards.from_data_storage(self)
 
     def __str__(self) -> str:
         return '{} on {}.'.format(self.severity, self.end_time)
@@ -336,8 +335,7 @@ class EraseSectors(EraseBasic):
 
 class ErasePhysical(EraseBasic):
     """The act of physically destroying a data storage unit."""
-    # todo add attributes
-    pass
+    method = Column(DBEnum(PhysicalErasureMethod))
 
 
 class Step(db.Model):
@@ -508,10 +506,11 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
        visual, and functional information; which is filled in a ``Rate``
        event. This is done through a **software**, defining the type
        of ``Rate`` event. At the moment we have ``WorkbenchRate``.
-    2. Devicehub gathers this information and computes a score that updates
-       the ``Rate`` event.
-    3. Devicehub aggregates different rates and computes a final score for
-       the device by performing a new ``AggregateRating`` event.
+    2. Devicehub gathers this information and computes a score, which
+       it is embedded into the Rate event.
+    3. Devicehub takes the rate from 2. and embeds it into an
+       `AggregateRate` which is like a total rate. This is the
+       official rate that agents can lookup.
 
     There are two base **types** of ``Rate``: ``WorkbenchRate``,
     ``ManualRate``. ``WorkbenchRate`` can have different
@@ -530,9 +529,9 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
     The technical Workflow in Devicehub is as follows:
 
-    1. In **T1**, the user performs a ``Snapshot`` by processing the device
+    1. In **T1**, the agent performs a ``Snapshot`` by processing the device
        through the Workbench. From the benchmarks and the visual and
-       functional ratings the user does in the device, the system generates
+       functional ratings the agent does in the device, the system generates
        many ``WorkbenchRate`` (as many as software and versions defined).
        With only this information, the system generates an ``AggregateRating``,
        which is the event that the user will see in the web.

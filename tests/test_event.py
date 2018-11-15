@@ -320,3 +320,13 @@ def test_ereuse_price():
     return correct results."""
     # important to check Range.low no returning warranty2
     # Range.verylow not returning nothing
+
+
+@pytest.mark.xfail(reson='Develop functionality')
+def test_erase_standards():
+    pass
+
+
+@pytest.mark.xfail(reson='Develop test')
+def test_erase_physical():
+    pass
