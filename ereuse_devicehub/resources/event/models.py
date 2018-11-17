@@ -497,20 +497,8 @@ class SnapshotRequest(db.Model):
 
 
 class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
-    """Devicehub generates an rating for a device taking into consideration the
-    visual, functional, and performance.
-
-    A Workflow is as follows:
-
-    1. An agent generates feedback from the device in the form of benchmark,
-       visual, and functional information; which is filled in a ``Rate``
-       event. This is done through a **software**, defining the type
-       of ``Rate`` event. At the moment we have ``WorkbenchRate``.
-    2. Devicehub gathers this information and computes a score, which
-       it is embedded into the Rate event.
-    3. Devicehub takes the rate from 2. and embeds it into an
-       `AggregateRate` which is like a total rate. This is the
-       official rate that agents can lookup.
+    """The act of grading the appearance, performance, and functionality
+    of a device.
 
     There are two base **types** of ``Rate``: ``WorkbenchRate``,
     ``ManualRate``. ``WorkbenchRate`` can have different
@@ -522,10 +510,18 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
     if an agent fulfills a ``WorkbenchRate`` and there are 2 software
     algorithms and each has two versions, Devicehub will generate 4 rates.
     Devicehub understands that only one software and version are the
-    **oficial** (set in the settings of each inventory),
+    **official** (set in the settings of each inventory),
     and it will generate an ``AggregateRating`` for only the official
     versions. At the same time, ``Price`` only computes the price of
-    the **oficial** version.
+    the **official** version.
+
+    There are two ways of rating a device:
+
+    1. When processing the device with Workbench and the Android App.
+    2. Anytime after with the Android App or website.
+
+    Refer to *processes* in the documentation to get more info with
+    the process.
 
     The technical Workflow in Devicehub is as follows:
 
@@ -737,9 +733,10 @@ class AggregateRate(Rate):
 
 
 class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
-    """Price states a selling price for the device, but not
-    necessarily the final price this is sold (which is set in the Sell
-    event).
+    """The act of setting a trading price for the device.
+
+    This does not imply that the device is ultimately traded for that
+    price. Use the :class:`.Sell` for that.
 
     Devicehub automatically computes a price from ``AggregateRating``
     events. As in a **Rate**, price can have **software** and **version**,
@@ -803,7 +800,13 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
 
 class EreusePrice(Price):
-    """A Price class that auto-computes its amount by"""
+    """The act of setting a price by guessing it using the eReuse.org
+    algorithm.
+
+    This algorithm states that the price is the use value of the device
+    (represented by its last :class:`.Rate`) multiplied by a constants
+    value agreed by a circuit or platform.
+    """
     MULTIPLIER = {
         Desktop: 20,
         Laptop: 30
@@ -1110,7 +1113,7 @@ class Organize(JoinedTableMixin, EventWithMultipleDevices):
 
 
 class Reserve(Organize):
-    """The act of reserving devices and cancelling them.
+    """The act of reserving devices.
 
     After this event is performed, the user is the **reservee** of the
     devices. There can only be one non-cancelled reservation for
@@ -1222,6 +1225,11 @@ class Receive(JoinedTableMixin, EventWithMultipleDevices):
     The receiver confirms that the devices have arrived, and thus,
     they are the
     :attr:`ereuse_devicehub.resources.device.models.Device.physical_possessor`.
+
+    This differs from :class:`.Trade` in that trading changes the
+    political possession. As an example, a transporter can *receive*
+    a device but it is not it's owner. After the delivery, the
+    transporter performs another *receive* to the final owner.
 
     The receiver can optionally take a
     :class:`ereuse_devicehub.resources.enums.ReceiverRole`.

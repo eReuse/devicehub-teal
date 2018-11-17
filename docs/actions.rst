@@ -161,11 +161,17 @@ Add, Remove
 .. autoclass:: ereuse_devicehub.resources.event.models.Add
 .. autoclass:: ereuse_devicehub.resources.event.models.Remove
 
-EraseBasic, EraseSectors
-========================
+Erase
+=====
 .. autoclass:: ereuse_devicehub.resources.event.models.EraseBasic
 .. autoclass:: ereuse_devicehub.resources.event.models.EraseSectors
+.. autoclass:: ereuse_devicehub.resources.enums.ErasureStandards
+    :members:
 .. autoclass:: ereuse_devicehub.resources.event.models.ErasePhysical
+.. autoclass:: ereuse_devicehub.resources.enums.PhysicalErasureMethod
+    :members:
+    :undoc-members:
+
 
 Install
 =======
@@ -216,6 +222,17 @@ Rate
 ====
 .. autoclass:: ereuse_devicehub.resources.event.models.Rate
 
+The following are the values the appearance, performance, and
+functionality grade can have:
+
+.. autoclass:: ereuse_devicehub.resources.enums.AppearanceRange
+    :members:
+    :undoc-members:
+.. autoclass:: ereuse_devicehub.resources.enums.FunctionalityRange
+    :members:
+    :undoc-members:
+.. autoclass:: ereuse_devicehub.resources.enums.RatingRange
+
 Price
 =====
 .. autoclass:: ereuse_devicehub.resources.event.models.Price
@@ -225,6 +242,12 @@ Migrate
 Not done.
 
 .. autoclass:: ereuse_devicehub.resources.event.models.Migrate
+
+Locate
+======
+todo
+.. todo !!
+
 
 States
 ******

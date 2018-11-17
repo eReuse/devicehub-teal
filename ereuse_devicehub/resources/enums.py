@@ -43,7 +43,13 @@ class RatingRange(IntEnum):
     """
     The human translation to score range.
 
-    You can compare them: ScoreRange.VERY_LOW < ScoreRange.LOW
+    You can compare them: ScoreRange.VERY_LOW < ScoreRange.LOW.
+    There are four levels:
+
+    1. Very low.
+    2. Low.
+    3. Medium.
+    4. High.
     """
     VERY_LOW = 2
     LOW = 3
@@ -324,6 +330,8 @@ class PhysicalErasureMethod(Enum):
 
 
 class ErasureStandards(Enum):
+    """Software erasure standards."""
+
     HMG_IS5 = 'British HMG Infosec Standard 5 (HMG IS5)'
     """`British HMG Infosec Standard 5 (HMG IS5) 
     <https://en.wikipedia.org/wiki/Infosec_Standard_5>`_.

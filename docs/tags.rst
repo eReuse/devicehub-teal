@@ -107,6 +107,14 @@ Tags and migrations
 Tags travel with the devices they are linked when migrating them. Future
 implementations can parameterize this.
 
+Photochromic tags
+*****************
+The photochromic Reversible Tag helps the end-user to identify a
+legitimate device that has correctly refurbished by an eReuse.org
+authorized refurbisher, without the hassle to read the QR code.
+
+Only eReuse.org authorized organizations can use the Photochromic tags.
+
 Use-case with eTags
 *******************
 We explain the use-case of tagging a device with an :ref:`tags:eTags`,

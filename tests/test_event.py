@@ -254,8 +254,10 @@ def test_live_geoip():
 
 
 @pytest.mark.xfail(reson='Develop reserve')
-def test_reserve(user: UserClient):
-    """Performs a reservation and then cancels it."""
+def test_reserve_and_cancel(user: UserClient):
+    """Performs a reservation and then cancels it,
+    checking the attribute `reservees`.
+    """
 
 
 @pytest.mark.parametrize('event_model_state', [
@@ -330,3 +332,24 @@ def test_erase_standards():
 @pytest.mark.xfail(reson='Develop test')
 def test_erase_physical():
     pass
+
+
+@pytest.mark.xfail(reson='validate use-case')
+def test_view_public_erasure_certificate():
+    """User can see html erasure certificate even if not logged-in,
+    from the public link.
+    """
+
+
+@pytest.mark.xfail(reson='Validate use-case')
+def test_not_download_erasure_certificate_if_public():
+    """User cannot download an erasure certificate as PDF if
+    not logged-in.
+    """
+
+
+@pytest.mark.xfail(reson='talk to Jordi about variables in certificate erasure.')
+def test_download_erasure_certificate():
+    """User can download erasure certificates. We test erasure
+    certificates with: ... todo
+    """
