@@ -406,11 +406,13 @@ class Mobile(Device):
     def validate_imei(self, _, value: int):
         if not imei.is_valid(str(value)):
             raise ValidationError('{} is not a valid imei.'.format(value))
+        return value
 
     @validates('meid')
     def validate_meid(self, _, value: str):
         if not meid.is_valid(value):
             raise ValidationError('{} is not a valid meid.'.format(value))
+        return value
 
 
 class Smartphone(Mobile):

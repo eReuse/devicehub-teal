@@ -463,16 +463,6 @@ def test_computer_monitor():
 
 
 @pytest.mark.xfail(reason='Make test')
-def test_mobile_meid():
-    pass
-
-
-@pytest.mark.xfail(reason='Make test')
-def test_mobile_imei():
-    pass
-
-
-@pytest.mark.xfail(reason='Make test')
 def test_computer_with_display():
     pass
 

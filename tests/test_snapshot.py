@@ -350,10 +350,12 @@ def test_snapshot_computer_monitor(user: UserClient):
     # todo check that ManualRate has generated an AggregateRate
 
 
-def test_snapshot_mobile_smartphone(user: UserClient):
+def test_snapshot_mobile_smartphone_imei_manual_rate(user: UserClient):
     s = file('smartphone.snapshot')
-    snapshot_and_check(user, s, event_types=('ManualRate',))
-    # todo check that ManualRate has generated an AggregateRate
+    snapshot = snapshot_and_check(user, s, event_types=('ManualRate',))
+    mobile, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    assert mobile['imei'] == 3568680000414120
+    # todo check that manual rate has been created
 
 
 @pytest.mark.xfail(reason='Test not developed')

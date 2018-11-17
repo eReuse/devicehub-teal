@@ -584,6 +584,9 @@ class ManualRate(IndividualRate):
             self.functionality_range
         )
 
+    def ratings(self):
+        raise NotImplementedError()
+
 
 class WorkbenchRate(ManualRate):
     id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id), primary_key=True)
@@ -604,7 +607,8 @@ class WorkbenchRate(ManualRate):
         """
         Computes all the possible rates taking this rating as a model.
 
-        Returns a set of ratings, including this one, which is mutated.
+        Returns a set of ratings, including this one, which is mutated,
+        and the final :class:`.AggregateRate`.
         """
         from ereuse_devicehub.resources.event.rate.main import main
         return main(self, **app.config.get_namespace('WORKBENCH_RATE_'))

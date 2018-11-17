@@ -145,6 +145,7 @@ class Mobile(Device):
     def convert_check_meid(self, data: dict):
         if data.get('meid', None):
             data['meid'] = meid.compact(data['meid'])
+        return data
 
 
 class Smartphone(Mobile):

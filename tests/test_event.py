@@ -315,9 +315,21 @@ def test_price_custom():
     assert c['price']['id'] == p['id']
 
 
-@pytest.mark.xfail(reson='Develop test')
-def test_price_custom_client():
+def test_price_custom_client(user: UserClient):
     """As test_price_custom but creating the price through the API."""
+    s = file('basic.snapshot')
+    snapshot, _ = user.post(s, res=models.Snapshot)
+    price, _ = user.post({
+        'type': 'Price',
+        'price': 25,
+        'currency': Currency.EUR.name,
+        'device': snapshot['device']['id']
+    }, res=models.Event)
+    assert 25 == price['price']
+    assert Currency.EUR.name == price['currency']
+
+    device, _ = user.get(res=Device, item=price['device']['id'])
+    assert 25 == device['price']['price']
 
 
 @pytest.mark.xfail(reson='Develop test')
@@ -358,3 +370,31 @@ def test_download_erasure_certificate():
     """User can download erasure certificates. We test erasure
     certificates with: ... todo
     """
+
+
+@pytest.mark.xfail(reson='Adapt rate algorithm to re-compute by passing a manual rate.')
+def test_manual_rate_after_workbench_rate(user: UserClient):
+    """Perform a WorkbenchRate and then update the device with a ManualRate.
+
+    Devicehub must make the final rate with the first workbench rate
+    plus the new manual rate, without considering the appearance /
+    functionality values of the workbench rate.
+    """
+    s = file('real-hp.snapshot.11')
+    snapshot, _ = user.post(s, res=models.Snapshot)
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert 'B' == device['rate']['appearanceRange']
+    assert device['rate'] == 1
+    user.post({
+        'type': 'ManualRate',
+        'device': device['id'],
+        'appearanceRange': 'A',
+        'functionalityRange': 'A'
+    }, res=models.Event)
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert 'A' == device['rate']['appearanceRange']
+
+
+@pytest.mark.xfail(reson='Develop an algorithm that can make rates only from manual rates')
+def test_manual_rate_without_workbench_rate(user: UserClient):
+    pass
