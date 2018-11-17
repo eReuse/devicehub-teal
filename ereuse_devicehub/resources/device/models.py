@@ -76,7 +76,11 @@ class Device(Thing):
         'parent_id',
         'hid',
         'production_date',
-        'color'
+        'color',  # these are only user-input thus volatile
+        'width',
+        'height',
+        'depth',
+        'weight'
     }
 
     def __init__(self, **kw) -> None:

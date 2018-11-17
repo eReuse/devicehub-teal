@@ -12,7 +12,8 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device.exceptions import NeedsId
-from ereuse_devicehub.resources.device.sync import MismatchBetweenTagsAndHid
+from ereuse_devicehub.resources.device.sync import MismatchBetweenProperties, \
+    MismatchBetweenTagsAndHid
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.event.models import AggregateRate, BenchmarkProcessor, \
     EraseSectors, Event, Snapshot, SnapshotRequest, WorkbenchRate
@@ -246,10 +247,8 @@ def test_snapshot_tag_inner_tag_mismatch_between_tags_and_hid(user: UserClient, 
     user.post(pc2, res=Snapshot, status=MismatchBetweenTagsAndHid)
 
 
-@pytest.mark.xfail(reason='There is no attribute checking for tag-matching devices')
 def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
-    """
-    Tests a snapshot performed to device 1 with tag A and then to
+    """Tests a snapshot performed to device 1 with tag A and then to
     device 2 with tag B. Both don't have HID but are different type.
     Devicehub must fail the Snapshot.
     """
@@ -262,9 +261,9 @@ def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
     pc2 = file('basic.snapshot')
     pc2['uuid'] = uuid4()
     pc2['device']['tags'] = pc1['device']['tags']
-    del pc2['device'][
-        'model']  # pc2 model is unknown but pc1 model is set = different characteristic
-    user.post(pc2, res=Snapshot, status=422)
+    # pc2 model is unknown but pc1 model is set = different property
+    del pc2['device']['model']
+    user.post(pc2, res=Snapshot, status=MismatchBetweenProperties)
 
 
 def test_snapshot_upload_twice_uuid_error(user: UserClient):

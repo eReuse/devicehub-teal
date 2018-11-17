@@ -116,19 +116,11 @@ def test_physical_properties():
         'serial': None,
         'firewire': None,
         'manufacturer': 'mr',
-        'weight': None,
-        'height': None,
-        'width': 2.0,
-        'depth': None
     }
     assert pc.physical_properties == {
         'model': 'foo',
         'manufacturer': 'bar',
         'serial_number': 'foo-bar',
-        'weight': 2.8,
-        'width': 1.4,
-        'height': 2.1,
-        'depth': None,
         'chassis': ComputerChassis.Tower
     }
 
