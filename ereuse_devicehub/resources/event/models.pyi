@@ -17,8 +17,8 @@ from teal.enums import Country
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ErasureStandards, \
-    FunctionalityRange, PriceSoftware, RatingSoftware, ReceiverRole, Severity, \
-    SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
+    FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RatingSoftware, ReceiverRole, \
+    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -362,6 +362,14 @@ class EraseBasic(EventWithOneDevice):
 class EraseSectors(EraseBasic):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+
+
+class ErasePhysical(EraseBasic):
+    method = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.method = ...  # type: PhysicalErasureMethod
 
 
 class Benchmark(EventWithOneDevice):

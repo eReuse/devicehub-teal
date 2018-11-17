@@ -263,7 +263,6 @@ def test_snapshot_real_eee_1001pxd(user: UserClient):
     erase = next(e for e in hdd['events'] if e['type'] == em.EraseBasic.t)
     assert erase['endTime']
     assert erase['startTime']
-    assert erase['zeros'] is False
     assert erase['severity'] == 'Info'
     assert hdd['privacy'] == 'EraseBasic'
     mother = components[8]

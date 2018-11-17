@@ -80,6 +80,10 @@ class Dummy:
                     sample_pc = s['device']['id']
                 else:
                     pcs.add(s['device']['id'])
+                if s.get('uuid', None) == 'de4f495e-c58b-40e1-a33e-46ab5e84767e': # oreo
+                    # Make one hdd ErasePhysical
+                    hdd = next(hdd for hdd in s['components'] if hdd['type'] == 'HardDrive')
+                    user.post({'type': 'ErasePhysical', 'method': 'Shred', 'device': hdd['id']}, res=m.Event)
         assert sample_pc
         print('PC sample is', sample_pc)
         # Link tags and eTags

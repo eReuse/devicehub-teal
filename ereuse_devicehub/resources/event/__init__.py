@@ -34,6 +34,11 @@ class EraseSectorsDef(EraseBasicDef):
     SCHEMA = schemas.EraseSectors
 
 
+class ErasePhysicalDef(EraseBasicDef):
+    VIEW = None
+    SCHEMA = schemas.ErasePhysical
+
+
 class StepDef(Resource):
     VIEW = None
     SCHEMA = schemas.Step

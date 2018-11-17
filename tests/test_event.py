@@ -10,6 +10,7 @@ from teal.enums import Currency, Subdivision
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
@@ -40,7 +41,10 @@ def test_author():
 def test_erase_basic():
     erasure = models.EraseBasic(
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
-        zeros=True,
+        steps=[
+            models.StepZero(**conftest.T),
+            models.StepRandom(**conftest.T)
+        ],
         **conftest.T
     )
     db.session.add(erasure)
@@ -48,6 +52,7 @@ def test_erase_basic():
     db_erasure = models.EraseBasic.query.one()
     assert erasure == db_erasure
     assert next(iter(db_erasure.device.events)) == erasure
+    assert not erasure.standards, 'EraseBasic themselves do not have standards'
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
@@ -65,14 +70,13 @@ def test_validate_device_data_storage():
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
-def test_erase_sectors_steps():
+def test_erase_sectors_steps_erasure_standards_hmg_is5():
     erasure = models.EraseSectors(
         device=SolidStateDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
-        zeros=True,
         steps=[
             models.StepZero(**conftest.T),
             models.StepRandom(**conftest.T),
-            models.StepZero(**conftest.T)
+            models.StepRandom(**conftest.T)
         ],
         **conftest.T
     )
@@ -83,6 +87,7 @@ def test_erase_sectors_steps():
     assert db_erasure.steps[0].num == 0
     assert db_erasure.steps[1].num == 1
     assert db_erasure.steps[2].num == 2
+    assert {enums.ErasureStandards.HMG_IS5} == erasure.standards
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
@@ -324,14 +329,14 @@ def test_ereuse_price():
     # Range.verylow not returning nothing
 
 
-@pytest.mark.xfail(reson='Develop functionality')
-def test_erase_standards():
-    pass
-
-
-@pytest.mark.xfail(reson='Develop test')
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_erase_physical():
-    pass
+    erasure = models.ErasePhysical(
+        device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
+        method=enums.PhysicalErasureMethod.Disintegration
+    )
+    db.session.add(erasure)
+    db.session.commit()
 
 
 @pytest.mark.xfail(reson='validate use-case')

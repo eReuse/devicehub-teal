@@ -1,5 +1,5 @@
 from flask import current_app as app
-from marshmallow import Schema as MarshmallowSchema, ValidationError, validates_schema
+from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema
 from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, List, Nested, String, \
     TimeDelta, UUID
 from marshmallow.validate import Length, Range
@@ -9,11 +9,12 @@ from teal.marshmallow import EnumField, IP, SanitizedStr, URL, Version
 from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
+from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.agent.schemas import Agent
 from ereuse_devicehub.resources.device.schemas import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    PriceSoftware, RATE_POSITIVE, RatingRange, RatingSoftware, ReceiverRole, Severity, \
-    SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
+    PhysicalErasureMethod, PriceSoftware, RATE_POSITIVE, RatingRange, RatingSoftware, ReceiverRole, \
+    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
@@ -72,12 +73,16 @@ class Deallocate(EventWithMultipleDevices):
 
 
 class EraseBasic(EventWithOneDevice):
-    zeros = Boolean(required=True, description=m.EraseBasic.zeros.comment)
-    steps = NestedOn('Step', many=True, required=True)
+    steps = NestedOn('Step', many=True)
+    standards = f.List(EnumField(enums.ErasureStandards), dump_only=True)
 
 
 class EraseSectors(EraseBasic):
     pass
+
+
+class ErasePhysical(EraseBasic):
+    method = EnumField(PhysicalErasureMethod, description=PhysicalErasureMethod.__doc__)
 
 
 class Step(Schema):

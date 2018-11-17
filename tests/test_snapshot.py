@@ -289,7 +289,7 @@ def test_snapshot_component_containing_components(user: UserClient):
     user.post(s, res=Snapshot, status=ValidationError)
 
 
-def test_erase_privacy(user: UserClient):
+def test_erase_privacy_standards(user: UserClient):
     """Tests a Snapshot with EraseSectors and the resulting
     privacy properties.
     """
@@ -310,10 +310,14 @@ def test_erase_privacy(user: UserClient):
     assert erasure['steps'][1]['startTime'] == '2018-06-01T08:16:00+00:00'
     assert erasure['steps'][1]['endTime'] == '2018-06-01T09:17:00+00:00'
     assert erasure['device']['id'] == storage['id']
-    for step in erasure['steps']:
-        assert step['type'] == 'StepZero'
-        assert step['severity'] == 'Info'
-        assert 'num' not in step
+    step1, step2 = erasure['steps']
+    assert step1['type'] == 'StepZero'
+    assert step1['severity'] == 'Info'
+    assert 'num' not in step1
+    assert step2['type'] == 'StepRandom'
+    assert step2['severity'] == 'Info'
+    assert 'num' not in step2
+    assert ['HMG_IS5'] == erasure['standards']
     assert storage['privacy']['type'] == 'EraseSectors'
     pc, _ = user.get(res=m.Device, item=snapshot['device']['id'])
     assert pc['privacy'] == [storage['privacy']]

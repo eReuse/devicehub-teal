@@ -16,7 +16,6 @@ components:
   manufacturer: c1mr
   events:
   - type: EraseSectors
-    zeros: True
     startTime: 2018-06-01T08:12:06
     endTime: 2018-06-01T09:12:06
     steps:
@@ -24,7 +23,7 @@ components:
       severity: Info
       startTime: 2018-06-01T08:15:00
       endTime: 2018-06-01T09:16:00
-    - type: StepZero
+    - type: StepRandom
       severity: Info
       startTime: 2018-06-01T08:16:00
       endTime: 2018-06-01T09:17:00

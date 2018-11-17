@@ -1,6 +1,7 @@
+from contextlib import suppress
 from distutils.version import StrictVersion
 from enum import Enum, IntEnum, unique
-from typing import Union
+from typing import Set, Union
 
 import inflection
 
@@ -350,5 +351,14 @@ class ErasureStandards(Enum):
         return self.value
 
     @classmethod
-    def from_data_storage(cls, erasure):
-        raise NotImplementedError()
+    def from_data_storage(cls, erasure) -> Set['ErasureStandards']:
+        """Returns a set of erasure standards."""
+        from ereuse_devicehub.resources.event import models as events
+        standards = set()
+        if isinstance(erasure, events.EraseSectors):
+            with suppress(ValueError):
+                first_step, *other_steps = erasure.steps
+                if isinstance(first_step, events.StepZero) \
+                        and all(isinstance(step, events.StepRandom) for step in other_steps):
+                    standards.add(cls.HMG_IS5)
+        return standards

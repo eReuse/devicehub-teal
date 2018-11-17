@@ -311,11 +311,6 @@ class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
     Devicehub automatically shows the standards that each erasure
     follows.
     """
-    zeros = Column(Boolean, nullable=False)
-    zeros.comment = """
-        Whether this erasure had a first erasure step consisting of
-        only writing zeros.
-    """
 
     @property
     def standards(self):
@@ -330,7 +325,6 @@ class EraseSectors(EraseBasic):
     """A secured-way of erasing data storages, checking sector-by-sector
     the erasure, using `badblocks <https://en.wikipedia.org/wiki/Badblocks>`_.
     """
-    # todo make a property that says if the data wiping process is british...
 
 
 class ErasePhysical(EraseBasic):
