@@ -2,7 +2,7 @@ import ipaddress
 from datetime import datetime, timedelta
 from decimal import Decimal
 from distutils.version import StrictVersion
-from typing import Dict, List, Set, Union
+from typing import Dict, List, Optional, Set, Union
 from uuid import UUID
 
 from boltons import urlutils
@@ -356,6 +356,10 @@ class EraseBasic(EventWithOneDevice):
 
     @property
     def standards(self) -> Set[ErasureStandards]:
+        pass
+
+    @property
+    def certificate(self) -> urlutils.URL:
         pass
 
 

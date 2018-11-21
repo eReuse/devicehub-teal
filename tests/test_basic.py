@@ -28,6 +28,8 @@ def test_api_docs(client: Client):
         '/manufacturers/',
         '/lots/{id}/children',
         '/lots/{id}/devices',
+        '/documents/erasures/',
+        '/documents/static/{filename}',
         '/tags/{tag_id}/device/{device_id}',
         '/devices/static/{filename}'
     }

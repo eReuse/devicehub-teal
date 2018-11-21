@@ -184,11 +184,6 @@ def test_device_query(user: UserClient):
     assert not pc['tags']
 
 
-@pytest.mark.xfail(reason='Functionality not yet developed.')
-def test_device_lots_query(user: UserClient):
-    pass
-
-
 def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClient):
     """Ensures DeviceSearch can regenerate itself when the table is empty."""
     user.post(file('basic.snapshot'), res=Snapshot)

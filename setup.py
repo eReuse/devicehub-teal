@@ -42,6 +42,7 @@ setup(
         'requests-toolbelt',
         'sqlalchemy-citext',
         'sqlalchemy-utils[password, color, phone]',
+        'Flask-WeasyPrint'
     ],
     extras_require={
         'docs': [

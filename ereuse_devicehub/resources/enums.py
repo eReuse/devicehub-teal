@@ -310,6 +310,9 @@ class Severity(IntEnum):
             m = '❌'
         return m
 
+    def __format__(self, format_spec):
+        return str(self)
+
 
 class PhysicalErasureMethod(Enum):
     """Methods of physically erasing the data-storage, usually

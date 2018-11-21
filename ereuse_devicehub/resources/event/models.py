@@ -2,7 +2,7 @@ from collections import Iterable
 from datetime import datetime, timedelta
 from decimal import Decimal, ROUND_HALF_EVEN, ROUND_UP
 from distutils.version import StrictVersion
-from typing import Set, Union
+from typing import Optional, Set, Union
 from uuid import uuid4
 
 import inflection
@@ -158,9 +158,19 @@ class Event(Thing):
     """
 
     @property
+    def elapsed(self):
+        """Returns the elapsed time with seconds precision."""
+        t = self.end_time - self.start_time
+        return timedelta(seconds=t.seconds)
+
+    @property
     def url(self) -> urlutils.URL:
         """The URL where to GET this event."""
         return urlutils.URL(url_for_resource(Event, item_id=self.id))
+
+    @property
+    def certificate(self) -> Optional[urlutils.URL]:
+        return None
 
     # noinspection PyMethodParameters
     @declared_attr
@@ -193,7 +203,7 @@ class Event(Thing):
         return start_time
 
     @property
-    def _date_str(self):
+    def date_str(self):
         return '{:%c}'.format(self.end_time or self.created)
 
     def __str__(self) -> str:
@@ -311,20 +321,44 @@ class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
     Devicehub automatically shows the standards that each erasure
     follows.
     """
+    method = 'Shred'
+    """The method or software used to destroy the data."""
 
     @property
     def standards(self):
         """A set of standards that this erasure follows."""
         return ErasureStandards.from_data_storage(self)
 
+    @property
+    def certificate(self):
+        """The URL of this erasure certificate."""
+        # todo will this url_for_resoure work for other resources?
+        return urlutils.URL(url_for_resource('Document', item_id=self.id))
+
     def __str__(self) -> str:
-        return '{} on {}.'.format(self.severity, self.end_time)
+        return '{} on {}.'.format(self.severity, self.date_str)
+
+    def __format__(self, format_spec: str) -> str:
+        v = ''
+        if 't' in format_spec:
+            v += '{} {}'.format(self.type, self.severity)
+        if 't' in format_spec and 's' in format_spec:
+            v += '. '
+        if 's' in format_spec:
+            if self.standards:
+                std = 'with standards {}'.format(self.standards)
+            else:
+                std = 'no standard'
+            v += 'Method used: {}, {}. '.format(self.method, std)
+            v += '{} elapsed, on {}'.format(self.elapsed, self.date_str)
+        return v
 
 
 class EraseSectors(EraseBasic):
     """A secured-way of erasing data storages, checking sector-by-sector
     the erasure, using `badblocks <https://en.wikipedia.org/wiki/Badblocks>`_.
     """
+    method = 'Badblocks'
 
 
 class ErasePhysical(EraseBasic):
@@ -348,6 +382,12 @@ class Step(db.Model):
                                            order_by=num,
                                            collection_class=ordering_list('num')))
 
+    @property
+    def elapsed(self):
+        """Returns the elapsed time with seconds precision."""
+        t = self.end_time - self.start_time
+        return timedelta(seconds=t.seconds)
+
     # noinspection PyMethodParameters
     @declared_attr
     def __mapper_args__(cls):
@@ -362,6 +402,9 @@ class Step(db.Model):
         if cls.t == 'Step':
             args[POLYMORPHIC_ON] = cls.type
         return args
+
+    def __format__(self, format_spec: str) -> str:
+        return '{} – {} {}'.format(self.severity, self.type, self.elapsed)
 
 
 class StepZero(Step):

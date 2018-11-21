@@ -1,4 +1,5 @@
 from contextlib import suppress
+from typing import Set
 
 from sqlalchemy import BigInteger, Column, ForeignKey, Unicode, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
@@ -9,6 +10,14 @@ from teal.marshmallow import ValidationError
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
+
+
+class Tags(Set['Tag']):
+    def __str__(self) -> str:
+        return ', '.join(str(tag) for tag in self).strip()
+
+    def __format__(self, format_spec):
+        return ', '.join(format(tag, format_spec) for tag in self).strip()
 
 
 class Tag(Thing):
@@ -35,7 +44,7 @@ class Tag(Thing):
                        ForeignKey(Device.id, ondelete=DB_CASCADE_SET_NULL),
                        index=True)
     device = relationship(Device,
-                          backref=backref('tags', lazy=True, collection_class=set),
+                          backref=backref('tags', lazy=True, collection_class=Tags),
                           primaryjoin=Device.id == device_id)
     """The device linked to this tag."""
     secondary = Column(Unicode(), check_lower('secondary'), index=True)
@@ -82,3 +91,9 @@ class Tag(Thing):
 
     def __repr__(self) -> str:
         return '<Tag {0.id} org:{0.org_id} device:{0.device_id}>'.format(self)
+
+    def __str__(self) -> str:
+        return '{0.id} org: {0.org.name} device: {0.device}'.format(self)
+
+    def __format__(self, format_spec: str) -> str:
+        return '{0.org.name} {0.id}'

@@ -19,6 +19,7 @@ from ereuse_devicehub.resources.image.models import ImageList
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.tag import Tag
+from ereuse_devicehub.resources.tag.model import Tags
 
 
 class Device(Thing):
@@ -55,7 +56,7 @@ class Device(Thing):
         self.events_multiple = ...  # type: Set[e.EventWithMultipleDevices]
         self.events_one = ...  # type: Set[e.EventWithOneDevice]
         self.images = ...  # type: ImageList
-        self.tags = ...  # type: Set[Tag]
+        self.tags = ...  # type: Tags[Tag]
         self.lots = ...  # type: Set[Lot]
         self.production_date = ...  # type: datetime
 

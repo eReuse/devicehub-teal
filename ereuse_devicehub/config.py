@@ -9,6 +9,7 @@ from teal.utils import import_resource
 
 from ereuse_devicehub.resources import agent, event, lot, tag, user
 from ereuse_devicehub.resources.device import definitions
+from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import PriceSoftware, RatingSoftware
 
 
@@ -18,7 +19,9 @@ class DevicehubConfig(Config):
                                      import_resource(user),
                                      import_resource(tag),
                                      import_resource(agent),
-                                     import_resource(lot)))
+                                     import_resource(lot),
+                                     import_resource(documents))
+                               )
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/devicehub'  # type: str
     SCHEMA = 'dhub'

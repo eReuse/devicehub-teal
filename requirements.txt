@@ -29,3 +29,5 @@ teal==0.2.0a30
 webargs==4.0.0
 Werkzeug==0.14.1
 sqlalchemy-citext==1.3.post0
+flask-weasyprint==0.5
+weasyprint==43

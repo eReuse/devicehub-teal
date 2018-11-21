@@ -343,7 +343,7 @@ class Computer(Device):
     @property
     def privacy(self):
         """Returns the privacy of all DataStorage components when
-        it is None.
+        it is not None.
         """
         return set(
             privacy for privacy in
@@ -500,7 +500,7 @@ class DataStorage(JoinedComponentTableMixin, Component):
     def __format__(self, format_spec):
         v = super().__format__(format_spec)
         if 's' in format_spec:
-            v += ' – {} GB'.format(self.size // 1000)
+            v += ' – {} GB'.format(self.size // 1000 if self.size else '?')
         return v
 
 

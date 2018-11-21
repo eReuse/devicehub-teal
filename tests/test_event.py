@@ -351,27 +351,6 @@ def test_erase_physical():
     db.session.commit()
 
 
-@pytest.mark.xfail(reson='validate use-case')
-def test_view_public_erasure_certificate():
-    """User can see html erasure certificate even if not logged-in,
-    from the public link.
-    """
-
-
-@pytest.mark.xfail(reson='Validate use-case')
-def test_not_download_erasure_certificate_if_public():
-    """User cannot download an erasure certificate as PDF if
-    not logged-in.
-    """
-
-
-@pytest.mark.xfail(reson='talk to Jordi about variables in certificate erasure.')
-def test_download_erasure_certificate():
-    """User can download erasure certificates. We test erasure
-    certificates with: ... todo
-    """
-
-
 @pytest.mark.xfail(reson='Adapt rate algorithm to re-compute by passing a manual rate.')
 def test_manual_rate_after_workbench_rate(user: UserClient):
     """Perform a WorkbenchRate and then update the device with a ManualRate.
