@@ -309,6 +309,10 @@ class RamModule(Component):
         self.format = ...  # type: RamFormat
 
 
+class SoundCard(Component):
+    pass
+
+
 class Display(DisplayMixin, Component):
     pass
 
