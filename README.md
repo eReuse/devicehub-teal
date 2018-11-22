@@ -59,10 +59,13 @@ $ flask run
 ```
 
 The error `flask: command not found` can happen when you are not in a 
-*virtual environment*. Try executing then `python3 -m flask`. 
+*virtual environment*. Try executing then `python3 -m flask`.
 
 See the [Flask quickstart](http://flask.pocoo.org/docs/1.0/quickstart/)
 for more info.
+
+The error 'bdist_wheel' can happen when you works with *virtual environment*.
+To fix it, install in the *virtual environment* wheel package.  `pip3 install wheel`
 
 ## Administrating
 Devicehub has many commands that allows you to administrate it. You
