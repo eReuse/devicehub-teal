@@ -1,0 +1,190 @@
+# This is a complete Snapshot with benchmarks, tests, erasure
+# installation, and an eTag (TIS) linked
+{
+  "closed": true,
+  "components": [
+  {
+    "address": 64,
+    "cores": 1,
+    "events": [
+    {
+      "elapsed": 0,
+      "rate": 6666.22,
+      "type": "BenchmarkProcessor"
+    },
+    {
+      "elapsed": 165,
+      "rate": 165.365,
+      "type": "BenchmarkProcessorSysbench"
+    }
+    ],
+    "manufacturer": "Intel Corp.",
+    "model": "Intel Atom CPU N455 @ 1.66GHz",
+    "serialNumber": null,
+    "speed": 1.667,
+    "threads": 2,
+    "type": "Processor"
+  },
+  {
+    "events": [],
+    "manufacturer": "Qualcomm Atheros",
+    "model": "AR9285 Wireless Network Adapter",
+    "serialNumber": "74:2f:68:8b:fd:c8",
+    "type": "NetworkAdapter",
+    "wireless": true
+  },
+  {
+    "events": [],
+    "manufacturer": "Qualcomm Atheros",
+    "model": "AR8152 v2.0 Fast Ethernet",
+    "serialNumber": "14:da:e9:42:f6:7c",
+    "speed": 100,
+    "type": "NetworkAdapter",
+    "wireless": false
+  },
+  {
+    "events": [],
+    "format": "DIMM",
+    "interface": "DDR2",
+    "manufacturer": null,
+    "model": null,
+    "serialNumber": null,
+    "size": 1024,
+    "speed": 667.0,
+    "type": "RamModule"
+  },
+  {
+    "events": [],
+    "manufacturer": "Intel Corporation",
+    "model": "NM10/ICH7 Family High Definition Audio Controller",
+    "serialNumber": null,
+    "type": "SoundCard"
+  },
+  {
+    "events": [],
+    "manufacturer": "Azurewave",
+    "model": "USB 2.0 UVC VGA WebCam",
+    "serialNumber": "0x0001",
+    "type": "SoundCard"
+  },
+  {
+    "events": [
+    {
+      "endTime": "2018-11-24T22:00:39.643726+00:00",
+      "severity": "Info",
+      "startTime": "2018-11-24T18:12:42.641985+00:00",
+      "steps": [
+      {
+        "endTime": "2018-11-24T19:28:51.215882+00:00",
+        "severity": "Info",
+        "startTime": "2018-11-24T18:12:42.643104+00:00",
+        "type": "StepZero"
+      },
+      {
+        "endTime": "2018-11-24T22:00:39.642482+00:00",
+        "severity": "Info",
+        "startTime": "2018-11-24T19:28:51.216747+00:00",
+        "type": "StepRandom"
+      }
+      ],
+      "type": "EraseSectors"
+    },
+    {
+      "assessment": true,
+      "currentPendingSectorCount": 0,
+      "elapsed": 99,
+      "length": "Short",
+      "lifetime": 1199,
+      "offlineUncorrectable": 0,
+      "powerCycleCount": 2128,
+      "reallocatedSectorCount": 0,
+      "severity": "Info",
+      "status": "Completed without error",
+      "type": "TestDataStorage"
+    },
+    {
+      "type": "Install",
+      "elapsed": 1000,
+      "name": "LinuxMintFSAx32-Eng.fsa",
+      "address": 32
+    },
+    {
+      "elapsed": 16,
+      "readSpeed": 66.1,
+      "type": "BenchmarkDataStorage",
+      "writeSpeed": 21.8
+    }
+    ],
+    "interface": "ATA",
+    "manufacturer": "Hitachi",
+    "model": "HTS54322",
+    "serialNumber": "E2024242CV86HJ",
+    "size": 238475,
+    "type": "HardDrive"
+  },
+  {
+    "events": [],
+    "manufacturer": "Intel Corporation",
+    "memory": 256.0,
+    "model": "Atom Processor D4xx/D5xx/N4xx/N5xx Integrated Graphics Controller",
+    "serialNumber": null,
+    "type": "GraphicCard"
+  },
+  {
+    "events": [],
+    "firewire": 0,
+    "manufacturer": "ASUSTeK Computer INC.",
+    "model": "1001PXD",
+    "pcmcia": 0,
+    "serial": 1,
+    "serialNumber": "Eee0123456789",
+    "slots": 2,
+    "type": "Motherboard",
+    "usb": 5
+  }
+  ],
+  "device": {
+    "chassis": "Netbook",
+    "events": [
+    {
+      "elapsed": 16,
+      "rate": 15.9165,
+      "type": "BenchmarkRamSysbench"
+    },
+    {
+      "elapsed": 60,
+      "severity": "Info",
+      "type": "StressTest"
+    },
+    {
+      "appearanceRange": "A",
+      "biosRange": "A",
+      "functionalityRange": "A",
+      "type": "WorkbenchRate"
+    }
+    ],
+    "manufacturer": "ASUSTeK Computer INC.",
+    "model": "1001PXD",
+    "serialNumber": "B8OAAS048286",
+    "tags": [
+    {
+      "id": "04e4bc5af95980",
+      "type": "Tag"
+    }
+    ],
+    "type": "Laptop"
+  },
+  "elapsed": 14725,
+  "endTime": "2018-11-24T18:06:37.611704+00:00",
+  "expectedEvents": [
+    "Benchmark",
+    "TestDataStorage",
+    "StressTest",
+    "EraseBasic",
+    "Install"
+  ],
+  "software": "Workbench",
+  "type": "Snapshot",
+  "uuid": "f6cba71f-0ac1-4aba-8b6a-c1fd56ab483d",
+  "version": "11.0b2"
+}

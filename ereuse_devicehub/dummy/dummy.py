@@ -29,7 +29,8 @@ class Dummy:
         ('A0000000000001', 'DT-AAAAA'),
         ('A0000000000002', 'DT-BBBBB'),
         ('A0000000000003', 'DT-CCCCC'),
-        ('04970DA2A15984', 'DT-BRRAB')
+        ('04970DA2A15984', 'DT-BRRAB'),
+        ('04e4bc5af95980', 'DT-XXXXX')
     )
     """eTags to create."""
     ORG = 'eReuse.org CAT', '-t', 'G-60437761', '-c', 'ES'
@@ -81,10 +82,11 @@ class Dummy:
                     sample_pc = s['device']['id']
                 else:
                     pcs.add(s['device']['id'])
-                if s.get('uuid', None) == 'de4f495e-c58b-40e1-a33e-46ab5e84767e': # oreo
+                if s.get('uuid', None) == 'de4f495e-c58b-40e1-a33e-46ab5e84767e':  # oreo
                     # Make one hdd ErasePhysical
                     hdd = next(hdd for hdd in s['components'] if hdd['type'] == 'HardDrive')
-                    user.post({'type': 'ErasePhysical', 'method': 'Shred', 'device': hdd['id']}, res=m.Event)
+                    user.post({'type': 'ErasePhysical', 'method': 'Shred', 'device': hdd['id']},
+                              res=m.Event)
         assert sample_pc
         print('PC sample is', sample_pc)
         # Link tags and eTags

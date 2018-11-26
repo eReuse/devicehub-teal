@@ -2,7 +2,7 @@ from flask import current_app as app
 from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema
 from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, List, Nested, String, \
     TimeDelta, UUID
-from marshmallow.validate import Length, Range
+from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from teal.enums import Country, Currency, Subdivision
 from teal.marshmallow import EnumField, IP, SanitizedStr, URL, Version
@@ -205,6 +205,7 @@ class Install(EventWithOneDevice):
                         required=True,
                         description='The name of the OS installed.')
     elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
+    address = Integer(validate=OneOf({8, 16, 32, 64, 128, 256}))
 
 
 class Snapshot(EventWithOneDevice):

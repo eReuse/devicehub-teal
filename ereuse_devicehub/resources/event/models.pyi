@@ -124,11 +124,15 @@ class Snapshot(EventWithOneDevice):
 
 
 class Install(EventWithOneDevice):
+    name = ...  # type: Column
+    elapsed = ...  # type: Column
+    address = ...  # type: Column
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.name = ...  # type: str
         self.elapsed = ...  # type: timedelta
-        self.success = ...  # type: bool
+        self.address = ...  # type: Optional[int]
 
 
 class SnapshotRequest(Model):

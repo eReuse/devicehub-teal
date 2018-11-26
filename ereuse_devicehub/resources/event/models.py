@@ -521,6 +521,7 @@ class Install(JoinedWithOneDeviceMixin, EventWithOneDevice):
     storage unit.
     """
     elapsed = Column(Interval, nullable=False)
+    address = Column(SmallInteger, check_range('address', 8, 256))
 
 
 class SnapshotRequest(db.Model):
