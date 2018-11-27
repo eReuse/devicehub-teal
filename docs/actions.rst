@@ -42,14 +42,22 @@ The following actions describe and react on the
 :class:`ereuse_devicehub.resources.device.states.Physical` condition
 of the devices.
 
-ToPrepare, Prepare
+ToPrepare and Prepare
 ==================
+Prepare
+-------
 .. autoclass:: ereuse_devicehub.resources.event.models.Prepare
+ToPrepare
+---------
 .. autoclass:: ereuse_devicehub.resources.event.models.ToPrepare
 
 ToRepair, Repair
 ================
+Repair
+------
 .. autoclass:: ereuse_devicehub.resources.event.models.Repair
+ToRepair
+--------
 .. autoclass:: ereuse_devicehub.resources.event.models.ToRepair
 
 ReadyToUse
@@ -83,9 +91,11 @@ and **organize** actions.
 
 .. uml:: association-events.puml
 
-Trade actions
-=============
-Not fully developed.
+Trade
+=====
+
+.. todo Not fully developed.
+
 .. autoclass:: ereuse_devicehub.resources.event.models.Trade
 
 Sell
