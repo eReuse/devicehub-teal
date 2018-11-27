@@ -105,6 +105,7 @@ class ProcessorRate(BaseRate):
         speed = processor.speed or self.DEFAULT_SPEED
         # todo fix StopIteration if don't exists BenchmarkProcessor
         benchmark_cpu = next(e for e in processor.events if isinstance(e, BenchmarkProcessor))
+        # todo fix if benchmark_cpu.rate == 0
         benchmark_cpu = benchmark_cpu.rate or self.DEFAULT_SCORE
 
         # STEP: Fusion components
