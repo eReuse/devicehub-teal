@@ -12,7 +12,7 @@ test_requires = [
 
 setup(
     name='ereuse-devicehub',
-    version='0.2.0b1',
+    version='0.2.0b2',
     url='https://github.com/ereuse/devicehub-teal',
     project_urls=OrderedDict((
         ('Documentation', 'http://devicheub.ereuse.org'),
