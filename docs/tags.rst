@@ -173,8 +173,8 @@ Use case
 
    1. By using the `eReuse.org Android App <https://github.com/eReuse/eReuseAndroidApp>`_
       the user can scan the QR code or the NFC of the eTag.
-   2. If the *user* is processing devices with the `eReuse.org
-      Workbench <https://github.com/ereuse/workbench>`_, Workbench
+   2. If the *user* is processing devices with the
+      `eReuse.org Workbench <https://github.com/ereuse/workbench>`_, Workbench
       automatically attaches hardware information like serial numbers,
       otherwise the *user* can add that information through the app.
    3. These softwares communicate with the Devicehub of the user and
