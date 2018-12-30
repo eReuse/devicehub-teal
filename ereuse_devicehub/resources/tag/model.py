@@ -89,6 +89,10 @@ class Tag(Thing):
         UniqueConstraint(secondary, org_id, name='one secondary tag per organization')
     )
 
+    @property
+    def type(self) -> str:
+        return self.__class__.__name__
+
     def __repr__(self) -> str:
         return '<Tag {0.id} org:{0.org_id} device:{0.device_id}>'.format(self)
 

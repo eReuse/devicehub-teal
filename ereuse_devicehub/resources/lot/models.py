@@ -76,6 +76,10 @@ class Lot(Thing):
         Path(self)  # Lots have always one edge per default.
 
     @property
+    def type(self) -> str:
+        return self.__class__.__name__
+
+    @property
     def url(self) -> urlutils.URL:
         """The URL where to GET this event."""
         return urlutils.URL(url_for_resource(Lot, item_id=self.id))

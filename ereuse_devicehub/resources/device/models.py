@@ -489,7 +489,10 @@ class DataStorage(JoinedComponentTableMixin, Component):
 
     @property
     def privacy(self):
-        """Returns the privacy compliance state of the data storage."""
+        """Returns the privacy compliance state of the data storage.
+
+        This is, the last erasure performed to the data storage.
+        """
         from ereuse_devicehub.resources.event.models import EraseBasic
         try:
             ev = self.last_event_of(EraseBasic)

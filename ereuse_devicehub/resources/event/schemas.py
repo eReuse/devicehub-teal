@@ -75,6 +75,7 @@ class Deallocate(EventWithMultipleDevices):
 class EraseBasic(EventWithOneDevice):
     steps = NestedOn('Step', many=True)
     standards = f.List(EnumField(enums.ErasureStandards), dump_only=True)
+    certificate = URL(dump_only=True)
 
 
 class EraseSectors(EraseBasic):

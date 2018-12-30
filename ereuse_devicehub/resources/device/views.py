@@ -62,6 +62,7 @@ class Filters(query.Query):
 class Sorting(query.Sort):
     id = query.SortField(Device.id)
     created = query.SortField(Device.created)
+    updated = query.SortField(Device.updated)
 
 
 class DeviceView(View):
