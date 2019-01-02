@@ -54,7 +54,7 @@ def test_workbench_server_condensed(user: UserClient):
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
     assert device['dataStorageSize'] == 1100
     assert device['chassis'] == 'Tower'
-    assert device['hid'] == 'd1mr-d1s-d1ml'
+    assert device['hid'] == 'desktop-d1mr-d1ml-d1s'
     assert device['graphicCardModel'] == device['components'][0]['model'] == 'gc1-1ml'
     assert device['networkSpeeds'] == [1000, 58]
     assert device['processorModel'] == device['components'][3]['model'] == 'p1-1ml'
@@ -140,7 +140,7 @@ def test_real_hp_11(user: UserClient):
     s = file('real-hp.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     pc = snapshot['device']
-    assert pc['hid'] == 'hewlett-packard-czc0408yjg-hp_compaq_8100_elite_sff'
+    assert pc['hid'] == 'desktop-hewlett-packard-hp_compaq_8100_elite_sff-czc0408yjg'
     assert pc['chassis'] == 'Tower'
     assert set(e['type'] for e in snapshot['events']) == {
         'EreusePrice',
@@ -179,7 +179,7 @@ def test_snapshot_real_eee_1001pxd(user: UserClient):
     assert pc['model'] == '1001pxd'
     assert pc['serialNumber'] == 'b8oaas048286'
     assert pc['manufacturer'] == 'asustek computer inc.'
-    assert pc['hid'] == 'asustek_computer_inc-b8oaas048286-1001pxd'
+    assert pc['hid'] == 'laptop-asustek_computer_inc-1001pxd-b8oaas048286'
     assert pc['tags'] == []
     assert pc['networkSpeeds'] == [100, 0], 'Although it has WiFi we do not know the speed'
     assert pc['rate']
@@ -200,11 +200,13 @@ def test_snapshot_real_eee_1001pxd(user: UserClient):
     # assert rate['rating'] > 0 and rate['rating'] != 1
     components = snapshot['components']
     wifi = components[0]
-    assert wifi['hid'] == 'qualcomm_atheros-74_2f_68_8b_fd_c8-ar9285_wireless_network_adapter'
+    assert wifi['hid'] == 'networkadapter-qualcomm_atheros-' \
+                          'ar9285_wireless_network_adapter-74_2f_68_8b_fd_c8'
     assert wifi['serialNumber'] == '74:2f:68:8b:fd:c8'
     assert wifi['wireless']
     eth = components[1]
-    assert eth['hid'] == 'qualcomm_atheros-14_da_e9_42_f6_7c-ar8152_v2_0_fast_ethernet'
+    assert eth['hid'] == 'networkadapter-qualcomm_atheros-' \
+                         'ar8152_v2_0_fast_ethernet-14_da_e9_42_f6_7c'
     assert eth['speed'] == 100
     assert not eth['wireless']
     cpu = components[2]
@@ -251,7 +253,7 @@ def test_snapshot_real_eee_1001pxd(user: UserClient):
     assert pc['ramSize'] == ram['size'] == 1024
     hdd = components[7]
     assert hdd['type'] == 'HardDrive'
-    assert hdd['hid'] == 'hitachi-e2024242cv86hj-hts54322'
+    assert hdd['hid'] == 'harddrive-hitachi-hts54322-e2024242cv86hj'
     assert hdd['interface'] == 'ATA'
     assert hdd['size'] == 238475
     hdd, _ = user.get(res=Device, item=hdd['id'])
@@ -270,7 +272,7 @@ def test_snapshot_real_eee_1001pxd(user: UserClient):
     assert erase['severity'] == 'Info'
     assert hdd['privacy']['type'] == 'EraseBasic'
     mother = components[8]
-    assert mother['hid'] == 'asustek_computer_inc-eee0123456789-1001pxd'
+    assert mother['hid'] == 'motherboard-asustek_computer_inc-1001pxd-eee0123456789'
 
 
 def test_real_custom(user: UserClient):

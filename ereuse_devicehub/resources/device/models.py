@@ -86,7 +86,7 @@ class Device(Thing):
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
         with suppress(TypeError):
-            self.hid = Naming.hid(self.manufacturer, self.serial_number, self.model)
+            self.hid = Naming.hid(self.type, self.manufacturer, self.model, self.serial_number)
 
     @property
     def events(self) -> list:

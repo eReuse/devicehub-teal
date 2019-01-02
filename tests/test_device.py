@@ -342,7 +342,7 @@ def test_sync_execute_register_tag_linked_other_device_mismatch_between_tags():
     db.session.add(Tag(id='foo-1', device=pc1))
     pc2 = d.Desktop(**conftest.file('pc-components.db')['device'])
     pc2.serial_number = 'pc2-serial'
-    pc2.hid = Naming.hid(pc2.manufacturer, pc2.serial_number, pc2.model)
+    pc2.hid = Naming.hid(pc2.type, pc2.manufacturer, pc2.model, pc2.serial_number)
     db.session.add(Tag(id='foo-2', device=pc2))
     db.session.commit()
 
@@ -366,7 +366,7 @@ def test_sync_execute_register_mismatch_between_tags_and_hid():
     db.session.add(Tag(id='foo-1', device=pc1))
     pc2 = d.Desktop(**conftest.file('pc-components.db')['device'])
     pc2.serial_number = 'pc2-serial'
-    pc2.hid = Naming.hid(pc2.manufacturer, pc2.serial_number, pc2.model)
+    pc2.hid = Naming.hid(pc2.type, pc2.manufacturer, pc2.model, pc2.serial_number)
     db.session.add(Tag(id='foo-2', device=pc2))
     db.session.commit()
 
@@ -406,7 +406,7 @@ def test_get_device(app: Devicehub, user: UserClient):
     assert 'events_one' not in pc, 'they are internal use only'
     assert 'author' not in pc
     assert tuple(c['id'] for c in pc['components']) == (2, 3)
-    assert pc['hid'] == 'p1ma-p1s-p1mo'
+    assert pc['hid'] == 'desktop-p1ma-p1mo-p1s'
     assert pc['model'] == 'p1mo'
     assert pc['manufacturer'] == 'p1ma'
     assert pc['serialNumber'] == 'p1s'

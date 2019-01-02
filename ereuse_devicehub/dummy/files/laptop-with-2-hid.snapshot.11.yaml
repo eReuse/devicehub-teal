@@ -1,0 +1,158 @@
+{
+  "software": "Workbench",
+  "endTime": "2018-09-22T19:05:47.005552+00:00",
+  "device": {
+    "events": [
+    {
+      "rate": 15.9663,
+      "type": "BenchmarkRamSysbench",
+      "elapsed": 16
+    },
+    {
+
+      "type": "StressTest",
+      "elapsed": 120
+    }
+    ],
+    "model": "E627",
+    "chassis": "Netbook",
+    "serialNumber": "LXN650207893942DE21601",
+    "type": "Laptop",
+    "manufacturer": "eMachines"
+  },
+  "elapsed": 451,
+  "expectedEvents": [
+    "Benchmark",
+    "TestDataStorage",
+    "StressTest"
+  ],
+  "components": [
+  {
+    "events": [],
+    "model": "Video WebCam",
+    "serialNumber": "CN0314-SN30-OV035-VA-R05.00.00",
+    "type": "SoundCard",
+    "manufacturer": "SuYin"
+  },
+  {
+    "events": [],
+    "model": "SBx00 Azalia",
+    "serialNumber": null,
+    "type": "SoundCard",
+    "manufacturer": "Advanced Micro Devices, Inc. AMD/ATI"
+  },
+  {
+    "speed": 400.0,
+    "size": 2048,
+    "format": "DIMM",
+    "events": [],
+    "model": "HYMP125S64CP8-S6",
+    "interface": "DDR2",
+    "type": "RamModule",
+    "manufacturer": null,
+    "serialNumber": null
+  },
+  {
+    "speed": 400.0,
+    "size": 2048,
+    "format": "DIMM",
+    "events": [],
+    "model": "HYMP125S64CP8-S6",
+    "interface": "DDR2",
+    "type": "RamModule",
+    "manufacturer": null,
+    "serialNumber": null
+  },
+  {
+    "speed": 0.8,
+    "address": 64,
+    "serialNumber": null,
+    "events": [
+    {
+      "rate": 173.6996,
+      "type": "BenchmarkProcessorSysbench",
+      "elapsed": 174
+    },
+    {
+      "rate": 3191.96,
+      "type": "BenchmarkProcessor",
+      "elapsed": 0
+    }
+    ],
+    "model": "AMD Athlon Processor TF-20",
+    "threads": 1,
+    "cores": 1,
+    "type": "Processor",
+    "manufacturer": "Advanced Micro Devices AMD"
+  },
+  {
+    "events": [],
+    "model": "AR9285 Wireless Network Adapter",
+    "serialNumber": "0c:60:76:5f:49:91",
+    "type": "NetworkAdapter",
+    "manufacturer": "Qualcomm Atheros",
+    "wireless": true
+  },
+  {
+    "speed": 100,
+    "events": [],
+    "model": "AR8132 Fast Ethernet",
+    "serialNumber": "00:26:22:59:a1:56",
+    "type": "NetworkAdapter",
+    "manufacturer": "Qualcomm Atheros",
+    "wireless": false
+  },
+  {
+    "size": 152627,
+    "serialNumber": "WD-WX80A8996018",
+    "events": [
+    {
+      "writeSpeed": 17.8,
+      "type": "BenchmarkDataStorage",
+      "elapsed": 20,
+      "readSpeed": 59.8
+    },
+    {
+      "currentPendingSectorCount": 0,
+      "length": "Short",
+      "elapsed": 117,
+      "reallocatedSectorCount": 0,
+      "powerCycleCount": 2872,
+      "offlineUncorrectable": 0,
+      "type": "TestDataStorage",
+      "lifetime": 2775,
+      "assessment": true,
+      "status": "Completed without error"
+    }
+    ],
+    "model": "WDC WD1600BEVT-2",
+    "interface": "ATA",
+    "type": "HardDrive",
+    "manufacturer": "Western Digital"
+  },
+  {
+    "events": [],
+    "model": "RS780M Mobility Radeon HD 3200",
+    "serialNumber": null,
+    "type": "GraphicCard",
+    "manufacturer": "Advanced Micro Devices, Inc. AMD/ATI",
+    "memory": 256.0
+  },
+  {
+    "slots": 4,
+    "firewire": 0,
+    "events": [],
+    "model": "E627",
+    "usb": 3,
+    "serialNumber": "LXN650207893942DE21601",
+    "type": "Motherboard",
+    "manufacturer": "eMachines",
+    "serial": 1,
+    "pcmcia": 0
+  }
+  ],
+  "uuid": "a01eacdb-db01-43ec-b6fb-a9b8cd21492d",
+  "type": "Snapshot",
+  "version": "11.0a4",
+  "closed": false
+}

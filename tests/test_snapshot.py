@@ -326,7 +326,7 @@ def test_erase_privacy_standards(user: UserClient):
     s['components'][0]['events'][0]['severity'] = 'Error'
     snapshot, _ = user.post(s, res=Snapshot)
     storage, _ = user.get(res=m.Device, item=storage['id'])
-    assert storage['hid'] == 'c1mr-c1s-c1ml'
+    assert storage['hid'] == 'solidstatedrive-c1mr-c1ml-c1s'
     assert storage['privacy']['type'] == 'EraseSectors'
     pc, _ = user.get(res=m.Device, item=snapshot['device']['id'])
     assert pc['privacy'] == [storage['privacy']]

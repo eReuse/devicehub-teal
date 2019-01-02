@@ -105,6 +105,8 @@ class Sync:
         try:
             if component.hid:
                 db_component = Device.query.filter_by(hid=component.hid).one()
+                assert isinstance(db_component, Device), \
+                    '{} must be a component'.format(db_component)
             else:
                 # Is there a component similar to ours?
                 db_component = component.similar_one(parent, blacklist)
