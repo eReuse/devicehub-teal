@@ -1,11 +1,13 @@
 from contextlib import suppress
 from typing import Set
 
+from boltons import urlutils
 from sqlalchemy import BigInteger, Column, ForeignKey, Unicode, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship, validates
 from teal.db import DB_CASCADE_SET_NULL, Query, URL, check_lower
 from teal.marshmallow import ValidationError
+from teal.resource import url_for_resource
 
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Device
@@ -92,6 +94,21 @@ class Tag(Thing):
     @property
     def type(self) -> str:
         return self.__class__.__name__
+
+    @property
+    def url(self) -> urlutils.URL:
+        """The URL where to GET this device."""
+        # todo this url only works for printable internal tags
+        return urlutils.URL(url_for_resource(Tag, item_id=self.id))
+
+    @property
+    def printable(self) -> bool:
+        """Can the tag be printed by the user?
+
+        Only tags that are from the default organization can be
+        printed by the user.
+        """
+        return Organization.get_default_org_id == self.org_id
 
     def __repr__(self) -> str:
         return '<Tag {0.id} org:{0.org_id} device:{0.device_id}>'.format(self)

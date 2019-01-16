@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from boltons import urlutils
 from boltons.urlutils import URL
 from sqlalchemy import Column
 from sqlalchemy.orm import relationship
@@ -38,4 +39,12 @@ class Tag(Thing):
         pass
 
     def like_etag(self) -> bool:
+        pass
+
+    @property
+    def printable(self) -> bool:
+        pass
+
+    @property
+    def url(self) -> urlutils.URL:
         pass

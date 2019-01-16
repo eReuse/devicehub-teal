@@ -22,7 +22,7 @@ def test_api_docs(client: Client):
         '/devices/',
         '/tags/',
         '/snapshots/',
-        '/users/login',
+        '/users/login/',
         '/events/',
         '/lots/',
         '/manufacturers/',

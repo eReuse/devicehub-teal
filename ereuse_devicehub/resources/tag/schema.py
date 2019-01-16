@@ -1,4 +1,5 @@
 from sqlalchemy.util import OrderedSet
+from marshmallow.fields import Boolean
 from teal.marshmallow import SanitizedStr, URL
 
 from ereuse_devicehub.marshmallow import NestedOn
@@ -23,3 +24,5 @@ class Tag(Thing):
     device = NestedOn(Device, dump_only=True)
     org = NestedOn(Organization, collection_class=OrderedSet, only_query='id')
     secondary = SanitizedStr(lower=True, description=m.Tag.secondary.comment)
+    printable = Boolean(dump_only=True, decsription=m.Tag.printable.__doc__)
+    url = URL(dump_only=True, description=m.Tag.url.__doc__)

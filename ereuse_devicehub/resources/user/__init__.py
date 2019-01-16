@@ -20,7 +20,7 @@ class UserDef(Resource):
         cli_commands = ((self.create_user, 'create-user'),)
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
-        self.add_url_rule('/login', view_func=login, methods={'POST'})
+        self.add_url_rule('/login/', view_func=login, methods={'POST'})
 
     @argument('email')
     @option('-a', '--agent', help='The name of an agent to create with the user.')

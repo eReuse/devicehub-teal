@@ -16,9 +16,11 @@
       <tbody>
       {% for erasure in erasures %}
         <tr>
-          <td>
-            {{ erasure.parent.serial_number.upper() }}
-          </td>
+          {% if erasure.parent.serial_number %}
+            <td>
+              {{ erasure.parent.serial_number.upper() }}
+            </td>
+          {% endif %}
           <td>
             {{ erasure.parent.tags }}
           </td>

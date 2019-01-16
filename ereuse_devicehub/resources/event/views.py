@@ -4,6 +4,7 @@ from uuid import UUID
 
 from flask import current_app as app, request
 from sqlalchemy.util import OrderedSet
+from teal.marshmallow import ValidationError
 from teal.resource import View
 
 from ereuse_devicehub.db import db
@@ -16,6 +17,8 @@ class EventView(View):
     def post(self):
         """Posts an event."""
         json = request.get_json(validate=False)
+        if 'type' not in json:
+            raise ValidationError('Resource needs a type.')
         e = app.resources[json['type']].schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()
         event = Model(**e)

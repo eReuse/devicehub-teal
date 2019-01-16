@@ -74,7 +74,7 @@ def test_login_success(client: Client, app: Devicehub):
     with app.app_context():
         create_user()
     user, _ = client.post({'email': 'foo@foo.com', 'password': 'foo'},
-                          uri='/users/login',
+                          uri='/users/login/',
                           status=200)
     assert user['email'] == 'foo@foo.com'
     assert UUID(b64decode(user['token'].encode()).decode()[:-1])
@@ -90,12 +90,12 @@ def test_login_failure(client: Client, app: Devicehub):
     with app.app_context():
         create_user()
     client.post({'email': 'foo@foo.com', 'password': 'wrong pass'},
-                uri='/users/login',
+                uri='/users/login/',
                 status=WrongCredentials)
     # Wrong URI
     client.post({}, uri='/wrong-uri', status=NotFound)
     # Malformed data
-    client.post({}, uri='/users/login', status=ValidationError)
+    client.post({}, uri='/users/login/', status=ValidationError)
     client.post({'email': 'this is not an email', 'password': 'nope'},
-                uri='/users/login',
+                uri='/users/login/',
                 status=ValidationError)
