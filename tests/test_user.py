@@ -1,4 +1,3 @@
-from base64 import b64decode
 from uuid import UUID
 
 import pytest
@@ -7,6 +6,7 @@ from teal.enums import Country
 from teal.marshmallow import ValidationError
 from werkzeug.exceptions import NotFound
 
+from ereuse_devicehub import auth
 from ereuse_devicehub.client import Client
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
@@ -77,7 +77,7 @@ def test_login_success(client: Client, app: Devicehub):
                           uri='/users/login/',
                           status=200)
     assert user['email'] == 'foo@foo.com'
-    assert UUID(b64decode(user['token'].encode()).decode()[:-1])
+    assert UUID(auth.Auth.decode(user['token']))
     assert 'password' not in user
     assert user['individuals'][0]['name'] == 'Timmy'
     assert user['individuals'][0]['type'] == 'Person'

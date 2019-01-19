@@ -1,5 +1,6 @@
 from typing import Type
 
+from ereuse_utils.session import DevicehubClient
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event
 from teal.config import Config as ConfigClass
@@ -33,6 +34,7 @@ class Devicehub(Teal):
         super().__init__(config, db, import_name, static_url_path, static_folder, static_host,
                          host_matching, subdomain_matching, template_folder, instance_path,
                          instance_relative_config, root_path, Auth)
+        self.tag_provider = DevicehubClient(**self.config.get_namespace('TAG_'))
         self.dummy = Dummy(self)
         self.before_request(self.register_db_events_listeners)
         self.cli.command('regenerate-search')(self.regenerate_search)

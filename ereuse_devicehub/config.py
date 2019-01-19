@@ -2,6 +2,7 @@ from distutils.version import StrictVersion
 from itertools import chain
 from typing import Set
 
+import boltons.urlutils
 from teal.auth import TokenAuth
 from teal.config import Config
 from teal.enums import Currency
@@ -59,8 +60,14 @@ class DevicehubConfig(Config):
     """
     Official versions
     """
+    TAG_BASE_URL = None
+    TAG_TOKEN = None
+    """Access to the tag provider."""
 
     def __init__(self, db: str = None) -> None:
         if not self.ORGANIZATION_NAME or not self.ORGANIZATION_TAX_ID:
             raise ValueError('You need to set the main organization parameters.')
+        if not self.TAG_BASE_URL or not self.TAG_TOKEN:
+            raise ValueError('You need a tag service.')
+        self.TAG_BASE_URL = boltons.urlutils.URL(self.TAG_BASE_URL)
         super().__init__(db)

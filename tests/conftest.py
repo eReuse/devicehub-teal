@@ -31,6 +31,8 @@ class TestConfig(DevicehubConfig):
     ORGANIZATION_NAME = 'FooOrg'
     ORGANIZATION_TAX_ID = 'foo-org-id'
     SERVER_NAME = 'localhost'
+    TAG_BASE_URL = 'https://example.com'
+    TAG_TOKEN = 'tagToken'
 
 
 @pytest.fixture(scope='session')

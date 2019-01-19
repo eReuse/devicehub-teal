@@ -108,7 +108,7 @@ class Tag(Thing):
         Only tags that are from the default organization can be
         printed by the user.
         """
-        return Organization.get_default_org_id == self.org_id
+        return Organization.get_default_org_id() == self.org_id
 
     def __repr__(self) -> str:
         return '<Tag {0.id} org:{0.org_id} device:{0.device_id}>'.format(self)

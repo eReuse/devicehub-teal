@@ -1,6 +1,7 @@
 import pathlib
 
 import pytest
+import requests_mock
 from boltons.urlutils import URL
 from pytest import raises
 from teal.db import MultipleResourcesFound, ResourceNotFound, UniqueViolation
@@ -232,3 +233,20 @@ def test_tag_multiple_secondary_org(user: UserClient):
     """Ensures two secondary ids cannot be part of the same Org."""
     user.post({'id': 'foo', 'secondary': 'bar'}, res=Tag)
     user.post({'id': 'foo1', 'secondary': 'bar'}, res=Tag, status=UniqueViolation)
+
+
+def test_crate_num_regular_tags(user: UserClient, requests_mock: requests_mock.mocker.Mocker):
+    """Create regular tags. This is done using a tag provider that
+    returns IDs. These tags are printable.
+    """
+    requests_mock.post('https://example.com/',
+                       # request
+                       request_headers={'Authorization': 'Basic tagToken'},
+                       # response
+                       json=['tag1id', 'tag2id'],
+                       status_code=201)
+    data, _ = user.post({}, res=Tag, query=[('num', 2)])
+    assert data['items'][0]['id'] == 'tag1id'
+    assert data['items'][0]['printable'], 'Tags made this way are printable'
+    assert data['items'][1]['id'] == 'tag2id'
+    assert data['items'][1]['printable']

@@ -1,4 +1,5 @@
-from flask import Response, current_app as app, redirect, request
+from ereuse_utils.session import DevicehubClient
+from flask import Response, current_app, current_app as app, jsonify, redirect, request
 from teal.marshmallow import ValidationError
 from teal.resource import View, url_for_resource
 
@@ -10,6 +11,25 @@ from ereuse_devicehub.resources.tag import Tag
 class TagView(View):
     def post(self):
         """Creates a tag."""
+        num = request.args.get('num', type=int)
+        if num:
+            res = self._create_many_regular_tags(num)
+        else:
+            res = self._post_one()
+        return res
+
+    def _create_many_regular_tags(self, num: int):
+        tag_provider = current_app.tag_provider  # type: DevicehubClient
+        tags_id, _ = tag_provider.post('/', {}, query=[('num', num)])
+        tags = [Tag(id=tag_id, provider=current_app.config['TAG_BASE_URL']) for tag_id in tags_id]
+        db.session.add_all(tags)
+        db.session.commit()
+        response = jsonify(items=self.schema.dump(tags, many=True, nested=1))  # type: Response
+        response.status_code = 201
+        return response
+
+    def _post_one(self):
+        # todo do we use this?
         t = request.get_json()
         tag = Tag(**t)
         if tag.like_etag():
