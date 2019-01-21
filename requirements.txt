@@ -25,7 +25,7 @@ requests==2.19.1
 requests-mock==1.5.2
 SQLAlchemy==1.2.14
 SQLAlchemy-Utils==0.33.6
-teal==0.2.0a33
+teal==0.2.0a34
 webargs==4.0.0
 Werkzeug==0.14.1
 sqlalchemy-citext==1.3.post0
