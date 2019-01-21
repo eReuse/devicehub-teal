@@ -46,7 +46,7 @@ class OrganizationDef(AgentDef):
         print(json.dumps(o, indent=2))
         return o
 
-    def init_db(self, db: SQLAlchemy):
+    def init_db(self, db: SQLAlchemy, exclude_schema=None):
         """Creates the default organization."""
         org = models.Organization(**app.config.get_namespace('ORGANIZATION_'))
         db.session.add(org)

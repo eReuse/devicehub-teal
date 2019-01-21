@@ -297,6 +297,7 @@ class ManufacturerDef(Resource):
     SCHEMA = schemas.Manufacturer
     AUTH = True
 
-    def init_db(self, db: 'db.SQLAlchemy'):
+    def init_db(self, db: 'db.SQLAlchemy', exclude_schema=None):
         """Loads the manufacturers to the database."""
-        Manufacturer.add_all_to_session(db.session)
+        if exclude_schema != 'common':
+            Manufacturer.add_all_to_session(db.session)

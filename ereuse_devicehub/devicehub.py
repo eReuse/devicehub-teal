@@ -44,9 +44,11 @@ class Devicehub(Teal):
         # todo can I make it with a global Session only?
         event.listen(db.session, 'before_commit', DeviceSearch.update_modified_devices)
 
-    def _init_db(self):
-        super()._init_db()
-        DeviceSearch.set_all_devices_tokens_if_empty(self.db.session)
+    def _init_db(self, exclude_schema=None, check=False):
+        created = super()._init_db(exclude_schema, check)
+        if created:
+            DeviceSearch.set_all_devices_tokens_if_empty(self.db.session)
+        return created
 
     def regenerate_search(self):
         """Re-creates from 0 all the search tables."""

@@ -1,3 +1,4 @@
+import citext
 from sqlalchemy import event
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import expression
@@ -11,7 +12,10 @@ class SQLAlchemy(SchemaSQLAlchemy):
     schema of the database, as it is in the `search_path`
     defined in teal.
     """
+    # todo add here all types of columns used so we don't have to
+    #   manually import them all the time
     UUID = postgresql.UUID
+    CIText = citext.CIText
 
     def drop_all(self, bind='__all__', app=None):
         """A faster nuke-like option to drop everything."""
@@ -37,6 +41,6 @@ def create_view(name, selectable):
     return table
 
 
-db = SQLAlchemy(session_options={"autoflush": False})
+db = SQLAlchemy(session_options={'autoflush': False})
 f = db.func
 exp = expression

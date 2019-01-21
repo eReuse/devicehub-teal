@@ -5,6 +5,8 @@ from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import EmailType, PasswordType
 
+from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.inventory.model import Inventory
 from ereuse_devicehub.resources.models import STR_SIZE, Thing
 
 
@@ -23,6 +25,10 @@ class User(Thing):
     data_types.html#module-sqlalchemy_utils.types.password>`_
     """
     token = Column(UUID(as_uuid=True), default=uuid4, unique=True)
+    inventories = db.relationship(Inventory,
+                                  backref=db.backref('users', lazy=True, collection_class=set),
+                                  secondary=lambda: UserInventory.__table__,
+                                  collection_class=set)
 
     def __repr__(self) -> str:
         return '<User {0.email}>'.format(self)
@@ -31,3 +37,10 @@ class User(Thing):
     def individual(self):
         """The individual associated for this database, or None."""
         return next(iter(self.individuals), None)
+
+
+class UserInventory(db.Model):
+    """Relationship between users and their inventories."""
+    __table_args__ = {'schema': 'common'}
+    user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(User.id), primary_key=True)
+    inventory_id = db.Column(db.Unicode(), db.ForeignKey(Inventory.id), primary_key=True)

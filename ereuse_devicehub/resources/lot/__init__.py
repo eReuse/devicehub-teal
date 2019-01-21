@@ -34,7 +34,7 @@ class LotDef(Resource):
                           view_func=lot_device,
                           methods={'POST', 'DELETE'})
 
-    def init_db(self, db: 'db.SQLAlchemy'):
+    def init_db(self, db: 'db.SQLAlchemy', exclude_schema=None):
         # Create functions
         with pathlib.Path(__file__).parent.joinpath('dag.sql').open() as f:
             sql = f.read()

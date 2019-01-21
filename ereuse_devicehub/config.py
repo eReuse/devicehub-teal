@@ -64,10 +64,15 @@ class DevicehubConfig(Config):
     TAG_TOKEN = None
     """Access to the tag provider."""
 
-    def __init__(self, db: str = None) -> None:
+    def __init__(self, schema: str = None, token=None) -> None:
         if not self.ORGANIZATION_NAME or not self.ORGANIZATION_TAX_ID:
             raise ValueError('You need to set the main organization parameters.')
-        if not self.TAG_BASE_URL or not self.TAG_TOKEN:
+        if not self.TAG_BASE_URL:
             raise ValueError('You need a tag service.')
+        self.TAG_TOKEN = token or self.TAG_TOKEN
+        if not self.TAG_TOKEN:
+            raise ValueError('You need a tag token')
         self.TAG_BASE_URL = boltons.urlutils.URL(self.TAG_BASE_URL)
-        super().__init__(db)
+        if schema:
+            self.SCHEMA = schema
+        super().__init__()
