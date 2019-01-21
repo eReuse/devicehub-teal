@@ -5,7 +5,7 @@ click==6.7
 click-spinner==0.1.8
 colorama==0.3.9
 colour==0.1.5
-ereuse-utils==0.4.0b13
+ereuse-utils==0.4.0b14
 Flask==1.0.2
 Flask-Cors==3.0.6
 Flask-SQLAlchemy==2.3.2
@@ -30,4 +30,4 @@ webargs==4.0.0
 Werkzeug==0.14.1
 sqlalchemy-citext==1.3.post0
 flask-weasyprint==0.5
-weasyprint==43
+weasyprint==44
