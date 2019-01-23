@@ -78,7 +78,7 @@ class Devicehub(Teal):
     @click.option('--erase/--no-erase',
                   default=False,
                   help='Delete the full database before? Including all schemas and users.')
-    @click.option('--common',
+    @click.option('--common/--no-common',
                   default=False,
                   help='Creates common databases. Only execute if the database is empty.')
     def init_db(self, name: str,

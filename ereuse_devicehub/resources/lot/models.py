@@ -255,7 +255,7 @@ class LotDeviceDescendants(db.Model):
         _desc.c.id.label('parent_lot_id'),
         _ancestor.c.id.label('ancestor_lot_id'),
         None
-    ]).select_from(_ancestor).select_from(lot_device).where(descendants)
+    ]).select_from(_ancestor).select_from(lot_device).where(db.text(descendants))
 
     # Components
     _parent_device = Device.__table__.alias(name='parent_device')
@@ -270,7 +270,7 @@ class LotDeviceDescendants(db.Model):
         _desc.c.id.label('parent_lot_id'),
         _ancestor.c.id.label('ancestor_lot_id'),
         LotDevice.device_id.label('device_parent_id'),
-    ]).select_from(_ancestor).select_from(lot_device_component).where(descendants)
+    ]).select_from(_ancestor).select_from(lot_device_component).where(db.text(descendants))
 
     __table__ = create_view('lot_device_descendants', devices.union(components))
 
