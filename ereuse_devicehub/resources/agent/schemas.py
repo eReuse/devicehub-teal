@@ -21,6 +21,7 @@ class Agent(Thing):
 
 class Organization(Agent):
     members = NestedOn('Membership')
+    default_of = NestedOn('Inventory')
 
 
 class Membership(Thing):

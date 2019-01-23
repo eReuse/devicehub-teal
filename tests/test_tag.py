@@ -241,7 +241,9 @@ def test_crate_num_regular_tags(user: UserClient, requests_mock: requests_mock.m
     """
     requests_mock.post('https://example.com/',
                        # request
-                       request_headers={'Authorization': 'Basic tagToken'},
+                       request_headers={
+                           'Authorization': 'Basic 52dacef0-6bcb-4919-bfed-f10d2c96ecee'
+                       },
                        # response
                        json=['tag1id', 'tag2id'],
                        status_code=201)

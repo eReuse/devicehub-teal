@@ -3,17 +3,17 @@ from operator import attrgetter
 from uuid import uuid4
 
 from citext import CIText
-from flask import current_app as app, g
 from sqlalchemy import Column, Enum as DBEnum, ForeignKey, Unicode, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy_utils import EmailType, PhoneNumberType
 from teal import enums
-from teal.db import DBError, INHERIT_COND, POLYMORPHIC_ID, POLYMORPHIC_ON, check_lower
+from teal.db import INHERIT_COND, POLYMORPHIC_ID, POLYMORPHIC_ON, check_lower
 from teal.marshmallow import ValidationError
-from werkzeug.exceptions import NotImplemented, UnprocessableEntity
 
+from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.inventory import Inventory
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -46,6 +46,7 @@ class Agent(Thing):
 
     __table_args__ = (
         UniqueConstraint(tax_id, country, name='Registration Number per country.'),
+        UniqueConstraint(tax_id, name, name='One tax ID with one name.')
     )
 
     @declared_attr
@@ -80,21 +81,18 @@ class Agent(Thing):
 
 
 class Organization(JoinedTableMixin, Agent):
+    default_of = db.relationship(Inventory,
+                                 single_parent=True,
+                                 uselist=False,
+                                 primaryjoin=lambda: Organization.id == Inventory.org_id)
+
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(**kwargs, name=name)
 
     @classmethod
     def get_default_org_id(cls) -> UUID:
         """Retrieves the default organization."""
-        try:
-            return g.setdefault('org_id',
-                                Organization.query.filter_by(
-                                    **app.config.get_namespace('ORGANIZATION_')
-                                ).one().id)
-        except (DBError, UnprocessableEntity):
-            # todo test how well this works
-            raise NotImplemented('Error in getting the default organization. '
-                                 'Is the DB initialized?')
+        return cls.query.filter_by(default_of=Inventory.current).one().id
 
 
 class Individual(JoinedTableMixin, Agent):

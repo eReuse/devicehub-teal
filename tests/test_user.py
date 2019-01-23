@@ -82,6 +82,7 @@ def test_login_success(client: Client, app: Devicehub):
     assert user['individuals'][0]['name'] == 'Timmy'
     assert user['individuals'][0]['type'] == 'Person'
     assert len(user['individuals']) == 1
+    assert user['inventories'][0]['id'] == 'test'
 
 
 def test_login_failure(client: Client, app: Devicehub):
@@ -99,3 +100,8 @@ def test_login_failure(client: Client, app: Devicehub):
     client.post({'email': 'this is not an email', 'password': 'nope'},
                 uri='/users/login/',
                 status=ValidationError)
+
+
+@pytest.mark.xfail(reason='Test not developed')
+def test_user_at_least_one_inventory():
+    pass

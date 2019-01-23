@@ -29,10 +29,10 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=[
-        'teal>=0.2.0a34',  # teal always first
+        'teal>=0.2.0a35',  # teal always first
         'click',
         'click-spinner',
-        'ereuse-utils[Naming]>=0.4b14',
+        'ereuse-utils[naming, test, session, cli]>=0.4b14',
         'hashids',
         'marshmallow_enum',
         'psycopg2-binary',
@@ -57,6 +57,11 @@ setup(
         'test': test_requires
     },
     tests_require=test_requires,
+    entry_points={
+        'console_scripts': [
+            'dh = ereuse_devicehub.cli:cli'
+        ]
+    },
     setup_requires=[
         'pytest-runner'
     ],

@@ -5,6 +5,7 @@ from typing import Set
 
 import click
 import click_spinner
+import ereuse_utils.cli
 import yaml
 from ereuse_utils.test import ANY
 
@@ -41,11 +42,25 @@ class Dummy:
         self.app = app
         self.app.cli.command('dummy', short_help='Creates dummy devices and users.')(self.run)
 
+    @click.option('--tag-url', '-tu',
+                  type=ereuse_utils.cli.URL(scheme=True, host=True, path=False),
+                  default='http://localhost:8081',
+                  help='The base url (scheme and host) of the tag provider.')
+    @click.option('--tag-token', '-tt',
+                  type=click.UUID,
+                  default='899c794e-1737-4cea-9232-fdc507ab7106',
+                  help='The token provided by the tag provider. It is an UUID.')
     @click.confirmation_option(prompt='This command (re)creates the DB from scratch.'
                                       'Do you want to continue?')
-    def run(self):
+    def run(self, tag_url, tag_token):
         runner = self.app.test_cli_runner()
-        self.app.init_db(erase=True)
+        self.app.init_db('Dummy',
+                         'ACME',
+                         'acme-id',
+                         tag_url,
+                         tag_token,
+                         erase=True,
+                         common=True)
         print('Creating stuff...'.ljust(30), end='')
         with click_spinner.spinner():
             out = runner.invoke(args=['create-org', *self.ORG], catch_exceptions=False).output

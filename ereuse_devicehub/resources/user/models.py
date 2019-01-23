@@ -19,16 +19,24 @@ class User(Thing):
                                        schemes=app.config['PASSWORD_SCHEMES'],
                                        **kwargs
                                    )))
-    """
-    Password field.
-    From `here <https://sqlalchemy-utils.readthedocs.io/en/latest/
-    data_types.html#module-sqlalchemy_utils.types.password>`_
-    """
-    token = Column(UUID(as_uuid=True), default=uuid4, unique=True)
+    token = Column(UUID(as_uuid=True), default=uuid4, unique=True, nullable=False)
     inventories = db.relationship(Inventory,
                                   backref=db.backref('users', lazy=True, collection_class=set),
                                   secondary=lambda: UserInventory.__table__,
                                   collection_class=set)
+    # todo set restriction that user has, at least, one active db
+
+    def __init__(self, email, password=None, inventories=None) -> None:
+        """
+        Creates an user.
+        :param email:
+        :param password:
+        :param inventories: A set of Inventory where the user has
+        access to. If none, the user is granted access to the current
+        inventory.
+        """
+        inventories = inventories or {Inventory.current}
+        super().__init__(email=email, password=password, inventories=inventories)
 
     def __repr__(self) -> str:
         return '<User {0.email}>'.format(self)

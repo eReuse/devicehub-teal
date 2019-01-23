@@ -5,6 +5,7 @@ from teal.marshmallow import SanitizedStr
 from ereuse_devicehub import auth
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.agent.schemas import Individual
+from ereuse_devicehub.resources.inventory.schema import Inventory
 from ereuse_devicehub.resources.schemas import Thing
 
 
@@ -17,6 +18,7 @@ class User(Thing):
     token = String(dump_only=True,
                    description='Use this token in an Authorization header to access the app.'
                                'The token can change overtime.')
+    inventories = NestedOn(Inventory, many=True, dump_only=True)
 
     def __init__(self,
                  only=None,

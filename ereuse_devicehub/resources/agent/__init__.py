@@ -1,8 +1,6 @@
 import json
 
 import click
-from flask import current_app as app
-from teal.db import SQLAlchemy
 from teal.resource import Converters, Resource
 
 from ereuse_devicehub.db import db
@@ -45,11 +43,6 @@ class OrganizationDef(AgentDef):
         o = self.schema.dump(org)
         print(json.dumps(o, indent=2))
         return o
-
-    def init_db(self, db: SQLAlchemy, exclude_schema=None):
-        """Creates the default organization."""
-        org = models.Organization(**app.config.get_namespace('ORGANIZATION_'))
-        db.session.add(org)
 
 
 class Membership(Resource):
