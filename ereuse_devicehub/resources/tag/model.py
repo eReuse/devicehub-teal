@@ -9,6 +9,7 @@ from teal.db import DB_CASCADE_SET_NULL, Query, URL, check_lower
 from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
+from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
@@ -23,7 +24,7 @@ class Tags(Set['Tag']):
 
 
 class Tag(Thing):
-    id = Column(Unicode(), check_lower('id'), primary_key=True)
+    id = Column(db.CIText(), primary_key=True)
     id.comment = """The ID of the tag."""
     org_id = Column(UUID(as_uuid=True),
                     ForeignKey(Organization.id),
@@ -49,7 +50,7 @@ class Tag(Thing):
                           backref=backref('tags', lazy=True, collection_class=Tags),
                           primaryjoin=Device.id == device_id)
     """The device linked to this tag."""
-    secondary = Column(Unicode(), check_lower('secondary'), index=True)
+    secondary = Column(db.CIText(), index=True)
     secondary.comment = """
         A secondary identifier for this tag. It has the same
         constraints as the main one. Only needed in special cases.
@@ -108,7 +109,12 @@ class Tag(Thing):
         Only tags that are from the default organization can be
         printed by the user.
         """
-        return Organization.get_default_org_id() == self.org_id
+        return self.org_id == Organization.get_default_org_id()
+
+    @classmethod
+    def is_printable_q(cls):
+        """Return a SQLAlchemy filter expression for printable queries"""
+        return cls.org_id == Organization.get_default_org_id()
 
     def __repr__(self) -> str:
         return '<Tag {0.id} org:{0.org_id} device:{0.device_id}>'.format(self)

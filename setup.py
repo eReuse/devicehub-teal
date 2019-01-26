@@ -32,7 +32,7 @@ setup(
         'teal>=0.2.0a35',  # teal always first
         'click',
         'click-spinner',
-        'ereuse-utils[naming, test, session, cli]>=0.4b14',
+        'ereuse-utils[naming, test, session, cli]>=0.4b15',
         'hashids',
         'marshmallow_enum',
         'psycopg2-binary',

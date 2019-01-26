@@ -10,6 +10,7 @@ from teal.marshmallow import EnumField
 from teal.resource import View
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot, Path
 
@@ -78,17 +79,10 @@ class LotView(View):
             if args['search']:
                 query = query.filter(Lot.name.ilike(args['search'] + '%'))
             lots = query.paginate(per_page=6 if args['search'] else 30)
-            ret = {
-                'items': self.schema.dump(lots.items, many=True, nested=0),
-                'pagination': {
-                    'page': lots.page,
-                    'perPage': lots.per_page,
-                    'total': lots.total,
-                    'previous': lots.prev_num,
-                    'next': lots.next_num
-                },
-                'url': request.path
-            }
+            return things_response(
+                self.schema.dump(lots.items, many=True, nested=0),
+                lots.page, lots.per_page, lots.total, lots.prev_num, lots.next_num
+            )
         return jsonify(ret)
 
     def delete(self, id):

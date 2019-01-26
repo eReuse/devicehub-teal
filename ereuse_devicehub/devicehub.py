@@ -111,4 +111,5 @@ class Devicehub(Teal):
     def _prepare_request(self):
         """Prepares request stuff."""
         inv = g.inventory = Inventory.current  # type: Inventory
-        g.tag_provider = DevicehubClient(base_url=inv.tag_provider, token=inv.tag_token)
+        g.tag_provider = DevicehubClient(base_url=inv.tag_provider,
+                                         token=DevicehubClient.encode_token(inv.tag_token))

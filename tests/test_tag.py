@@ -3,6 +3,7 @@ import pathlib
 import pytest
 import requests_mock
 from boltons.urlutils import URL
+from ereuse_utils.session import DevicehubClient
 from pytest import raises
 from teal.db import MultipleResourcesFound, ResourceNotFound, UniqueViolation
 from teal.marshmallow import ValidationError
@@ -242,7 +243,8 @@ def test_crate_num_regular_tags(user: UserClient, requests_mock: requests_mock.m
     requests_mock.post('https://example.com/',
                        # request
                        request_headers={
-                           'Authorization': 'Basic 52dacef0-6bcb-4919-bfed-f10d2c96ecee'
+                           'Authorization': 'Basic {}'.format(DevicehubClient.encode_token(
+                               '52dacef0-6bcb-4919-bfed-f10d2c96ecee'))
                        },
                        # response
                        json=['tag1id', 'tag2id'],
@@ -252,3 +254,37 @@ def test_crate_num_regular_tags(user: UserClient, requests_mock: requests_mock.m
     assert data['items'][0]['printable'], 'Tags made this way are printable'
     assert data['items'][1]['id'] == 'tag2id'
     assert data['items'][1]['printable']
+
+
+def test_get_tags_endpoint(user: UserClient, app: Devicehub,
+                           requests_mock: requests_mock.mocker.Mocker):
+    """Performs GET /tags after creating 3 tags, 2 printable and one
+    not. Only the printable ones are returned.
+    """
+    # Prepare test
+    with app.app_context():
+        org = Organization(name='bar', tax_id='bartax')
+        tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'))
+        db.session.add(tag)
+        db.session.commit()
+        assert not tag.printable
+
+    requests_mock.post('https://example.com/',
+                       # request
+                       request_headers={
+                           'Authorization': 'Basic {}'.format(DevicehubClient.encode_token(
+                               '52dacef0-6bcb-4919-bfed-f10d2c96ecee'))
+                       },
+                       # response
+                       json=['tag1id', 'tag2id'],
+                       status_code=201)
+    user.post({}, res=Tag, query=[('num', 2)])
+
+    # Test itself
+    data, _ = user.get(res=Tag)
+    assert len(data['items']) == 2, 'Only 2 tags are printable, thus retreived'
+    # Order is created descending
+    assert data['items'][0]['id'] == 'tag2id'
+    assert data['items'][0]['printable']
+    assert data['items'][1]['id'] == 'tag1id'
+    assert data['items'][1]['printable'], 'Tags made this way are printable'

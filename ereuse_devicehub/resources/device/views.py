@@ -11,7 +11,7 @@ from teal.resource import View
 
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
-from ereuse_devicehub.query import SearchQueryParser
+from ereuse_devicehub.query import SearchQueryParser, things_response
 from ereuse_devicehub.resources import search
 from ereuse_devicehub.resources.device.models import Device, Manufacturer
 from ereuse_devicehub.resources.device.search import DeviceSearch
@@ -112,20 +112,10 @@ class DeviceView(View):
         # Compute query
         query = self.query(args)
         devices = query.paginate(page=args['page'], per_page=30)  # type: Pagination
-        ret = {
-            'items': self.schema.dump(devices.items, many=True, nested=1),
-            # todo pagination should be in Header like github
-            # https://developer.github.com/v3/guides/traversing-with-pagination/
-            'pagination': {
-                'page': devices.page,
-                'perPage': devices.per_page,
-                'total': devices.total,
-                'previous': devices.prev_num,
-                'next': devices.next_num
-            },
-            'url': request.path
-        }
-        return jsonify(ret)
+        return things_response(
+            self.schema.dump(devices.items, many=True, nested=1),
+            devices.page, devices.per_page, devices.total, devices.prev_num, devices.next_num
+        )
 
     def query(self, args):
         query = Device.query.distinct()  # todo we should not force to do this if the query is ok

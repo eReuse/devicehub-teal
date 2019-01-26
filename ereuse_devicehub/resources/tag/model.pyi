@@ -45,6 +45,10 @@ class Tag(Thing):
     def printable(self) -> bool:
         pass
 
+    @classmethod
+    def is_printable_q(cls):
+        pass
+
     @property
     def url(self) -> urlutils.URL:
         pass

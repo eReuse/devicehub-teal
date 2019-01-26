@@ -5,7 +5,7 @@ click==6.7
 click-spinner==0.1.8
 colorama==0.3.9
 colour==0.1.5
-ereuse-utils[naming, test, session, cli]==0.4.0b14
+ereuse-utils[naming, test, session, cli]==0.4.0b15
 Flask==1.0.2
 Flask-Cors==3.0.6
 Flask-SQLAlchemy==2.3.2
