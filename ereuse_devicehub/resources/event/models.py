@@ -350,7 +350,10 @@ class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
             else:
                 std = 'no standard'
             v += 'Method used: {}, {}. '.format(self.method, std)
-            v += '{} elapsed, on {}'.format(self.elapsed, self.date_str)
+            if self.end_time and self.start_time:
+                v += '{} elapsed. '.format(self.elapsed)
+
+            v += 'On {}'.format(self.date_str)
         return v
 
 

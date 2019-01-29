@@ -1,3 +1,6 @@
+import datetime
+
+import teal.cache
 from flask import Response, current_app as app, g, redirect, request
 from flask_sqlalchemy import Pagination
 from teal.marshmallow import ValidationError
@@ -19,6 +22,7 @@ class TagView(View):
             res = self._post_one()
         return res
 
+    @teal.cache.cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
         tags = Tag.query.filter(Tag.is_printable_q()) \
             .order_by(Tag.created.desc()) \

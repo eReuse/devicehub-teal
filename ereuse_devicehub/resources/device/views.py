@@ -107,6 +107,7 @@ class DeviceView(View):
         return self.schema.jsonify(device)
 
     @auth.Auth.requires_auth
+    @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
         """Gets many devices."""
         # Compute query

@@ -61,6 +61,18 @@ class Event(Thing):
     def url(self) -> urlutils.URL:
         pass
 
+    @property
+    def elapsed(self) -> timedelta:
+        pass
+
+    @property
+    def certificate(self) -> Optional[urlutils.URL]:
+        return None
+
+    @property
+    def date_str(self):
+        return '{:%c}'.format(self.end_time or self.created)
+
 
 class EventWithOneDevice(Event):
 

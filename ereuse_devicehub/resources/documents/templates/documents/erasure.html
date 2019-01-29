@@ -20,9 +20,11 @@
             <td>
               {{ erasure.parent.serial_number.upper() }}
             </td>
+          {% else %}
+            <td></td>
           {% endif %}
           <td>
-            {{ erasure.parent.tags }}
+            {{ erasure.parent.tags.__format__('') }}
           </td>
           <td>
             {{ erasure.device.serial_number.upper() }}
@@ -55,14 +57,16 @@
           <dd>{{ erasure.parent.tags }}</dd>
           <dt>Erasure:</dt>
           <dd>{{ erasure.__format__('ts') }}</dd>
-          <dt>Erasure steps:</dt>
-          <dd>
-            <ol>
-              {% for step in erasure.steps %}
-                <li>{{ step.__format__('') }}</li>
-              {% endfor %}
-            </ol>
-          </dd>
+          {% if erasure.steps %}
+            <dt>Erasure steps:</dt>
+            <dd>
+              <ol>
+                {% for step in erasure.steps %}
+                  <li>{{ step.__format__('') }}</li>
+                {% endfor %}
+              </ol>
+            </dd>
+          {% endif %}
         </dl>
       </div>
     {% endfor %}

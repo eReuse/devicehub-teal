@@ -2,10 +2,10 @@ from contextlib import suppress
 from typing import Set
 
 from boltons import urlutils
-from sqlalchemy import BigInteger, Column, ForeignKey, Unicode, UniqueConstraint
+from sqlalchemy import BigInteger, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship, validates
-from teal.db import DB_CASCADE_SET_NULL, Query, URL, check_lower
+from teal.db import DB_CASCADE_SET_NULL, Query, URL
 from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
@@ -123,4 +123,4 @@ class Tag(Thing):
         return '{0.id} org: {0.org.name} device: {0.device}'.format(self)
 
     def __format__(self, format_spec: str) -> str:
-        return '{0.org.name} {0.id}'
+        return '{0.org.name} {0.id}'.format(self)

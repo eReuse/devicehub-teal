@@ -1,9 +1,11 @@
+import datetime
 import uuid
 from collections import deque
 from enum import Enum
 from typing import Dict, List, Set, Union
 
 import marshmallow as ma
+import teal.cache
 from flask import Response, jsonify, request
 from marshmallow import Schema as MarshmallowSchema, fields as f
 from teal.marshmallow import EnumField
@@ -50,6 +52,7 @@ class LotView(View):
         lot = Lot.query.filter_by(id=id).one()  # type: Lot
         return self.schema.jsonify(lot)
 
+    @teal.cache.cache(datetime.timedelta(minutes=5))
     def find(self, args: dict):
         """
         Gets lots.
