@@ -38,7 +38,7 @@ setup(
         'psycopg2-binary',
         'python-stdnum',
         'PyYAML',
-        'requests',
+        'requests[security]',
         'requests-toolbelt',
         'sqlalchemy-citext',
         'sqlalchemy-utils[password, color, phone]',
