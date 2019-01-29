@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from operator import itemgetter
 from typing import List, Tuple
 from uuid import uuid4
 
@@ -79,13 +80,17 @@ def test_snapshot_post(user: UserClient):
     assert 'events' not in snapshot['device']
     assert 'author' not in snapshot['device']
     device, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    key = itemgetter('serialNumber')
+    snapshot['components'].sort(key=key)
+    device['components'].sort(key=key)
     assert snapshot['components'] == device['components']
 
-    assert tuple(c['type'] for c in snapshot['components']) == (m.GraphicCard.t, m.RamModule.t,
-                                                                m.Processor.t)
+    assert {c['type'] for c in snapshot['components']} == {m.GraphicCard.t, m.RamModule.t,
+                                                                m.Processor.t}
     rate = next(e for e in snapshot['events'] if e['type'] == WorkbenchRate.t)
     rate, _ = user.get(res=Event, item=rate['id'])
     assert rate['device']['id'] == snapshot['device']['id']
+    rate['components'].sort(key=key)
     assert rate['components'] == snapshot['components']
     assert rate['snapshot']['id'] == snapshot['id']
 
@@ -390,6 +395,9 @@ def assert_similar_components(components1: List[dict], components2: List[dict]):
     similar than the components in components2.
     """
     assert len(components1) == len(components2)
+    key = itemgetter('serialNumber')
+    components1.sort(key=key)
+    components2.sort(key=key)
     for c1, c2 in zip(components1, components2):
         assert_similar_device(c1, c2)
 

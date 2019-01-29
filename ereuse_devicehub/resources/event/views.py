@@ -85,12 +85,6 @@ class SnapshotView(View):
 
         db.session.add(snapshot)
         db.session.commit()
-        # todo we are setting snapshot dirty again with this components but
-        # we do not want to update it.
-        # The real solution is https://stackoverflow.com/questions/
-        # 24480581/set-the-insert-order-of-a-many-to-many-sqlalchemy-
-        # flask-app-sqlite-db?noredirect=1&lq=1
-        snapshot.components = ordered_components
         ret = self.schema.jsonify(snapshot)  # transform it back
         ret.status_code = 201
         return ret
