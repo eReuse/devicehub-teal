@@ -31,10 +31,9 @@ Devicehub is built with `Teal <https://github.com/bustawin/teal>`_ and
 ..  toctree::
     :maxdepth: 2
 
-    processes
-    actions
-    agents
+    api
     devices
+    actions
     tags
     lots
 

@@ -287,11 +287,13 @@ class Processor(Component):
     speed = ...  # type: Column
     cores = ...  # type: Column
     address = ...  # type: Column
+    threads = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.speed = ...  # type: float
         self.cores = ...  # type: int
+        self.threads = ...  # type: int
         self.address = ...  # type: int
 
 

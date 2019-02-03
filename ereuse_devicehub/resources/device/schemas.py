@@ -15,12 +15,13 @@ from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 
 
 class Device(Thing):
+    __doc__ = m.Device.__doc__
     id = Integer(description=m.Device.id.comment, dump_only=True)
     hid = SanitizedStr(lower=True, dump_only=True, description=m.Device.hid.comment)
     tags = NestedOn('Tag',
                     many=True,
                     collection_class=OrderedSet,
-                    description='The set of tags that identify the device.')
+                    description='A set of tags that identify the device.')
     model = SanitizedStr(lower=True, validate=Length(max=STR_BIG_SIZE))
     manufacturer = SanitizedStr(lower=True, validate=Length(max=STR_SIZE))
     serial_number = SanitizedStr(lower=True, data_key='serialNumber')
@@ -75,29 +76,54 @@ class Device(Thing):
 
 
 class Computer(Device):
-    components = NestedOn('Component', many=True, dump_only=True, collection_class=OrderedSet)
-    chassis = EnumField(enums.ComputerChassis, required=True)
-    ram_size = Integer(dump_only=True, data_key='ramSize')
-    data_storage_size = Integer(dump_only=True, data_key='dataStorageSize')
-    processor_model = Str(dump_only=True, data_key='processorModel')
-    graphic_card_model = Str(dump_only=True, data_key='graphicCardModel')
-    network_speeds = List(Integer(dump_only=True), dump_only=True, data_key='networkSpeeds')
-    privacy = NestedOn('Event', many=True, dump_only=True, collection_class=set)
+    __doc__ = m.Computer.__doc__
+    components = NestedOn('Component',
+                          many=True,
+                          dump_only=True,
+                          collection_class=OrderedSet,
+                          description='The components that are inside this computer.')
+    chassis = EnumField(enums.ComputerChassis,
+                        required=True,
+                        description=m.Computer.chassis.comment)
+    ram_size = Integer(dump_only=True,
+                       data_key='ramSize',
+                       description=m.Computer.ram_size.__doc__)
+    data_storage_size = Integer(dump_only=True,
+                                data_key='dataStorageSize',
+                                description=m.Computer.data_storage_size.__doc__)
+    processor_model = Str(dump_only=True,
+                          data_key='processorModel',
+                          description=m.Computer.processor_model.__doc__)
+    graphic_card_model = Str(dump_only=True,
+                             data_key='graphicCardModel',
+                             description=m.Computer.graphic_card_model.__doc__)
+    network_speeds = List(Integer(dump_only=True),
+                          dump_only=True,
+                          data_key='networkSpeeds',
+                          description=m.Computer.network_speeds.__doc__)
+    privacy = NestedOn('Event',
+                       many=True,
+                       dump_only=True,
+                       collection_class=set,
+                       description=m.Computer.privacy.__doc__)
 
 
 class Desktop(Computer):
-    pass
+    __doc__ = m.Desktop.__doc__
 
 
 class Laptop(Computer):
-    pass
+    layout = EnumField(Layouts, description=m.Laptop.layout.comment)
+    __doc__ = m.Laptop.__doc__
 
 
 class Server(Computer):
-    pass
+    __doc__ = m.Server.__doc__
 
 
 class DisplayMixin:
+    __doc__ = m.DisplayMixin.__doc__
+
     size = Float(description=m.DisplayMixin.size.comment, validate=Range(2, 150))
     technology = EnumField(enums.DisplayTech,
                            description=m.DisplayMixin.technology.comment)
@@ -113,6 +139,8 @@ class DisplayMixin:
 
 
 class NetworkMixin:
+    __doc__ = m.NetworkMixin.__doc__
+
     speed = Integer(validate=Range(min=10, max=10000),
                     unit=UnitCodes.mbps,
                     description=m.NetworkAdapter.speed.comment)
@@ -120,18 +148,20 @@ class NetworkMixin:
 
 
 class Monitor(DisplayMixin, Device):
-    pass
+    __doc__ = m.Monitor.__doc__
 
 
 class ComputerMonitor(Monitor):
-    pass
+    __doc__ = m.ComputerMonitor.__doc__
 
 
 class TelevisionSet(Monitor):
-    pass
+    __doc__ = m.TelevisionSet.__doc__
 
 
 class Mobile(Device):
+    __doc__ = m.Mobile.__doc__
+
     imei = Integer(description=m.Mobile.imei.comment)
     meid = Str(description=m.Mobile.meid.comment)
 
@@ -149,28 +179,34 @@ class Mobile(Device):
 
 
 class Smartphone(Mobile):
-    pass
+    __doc__ = m.Smartphone.__doc__
 
 
 class Tablet(Mobile):
-    pass
+    __doc__ = m.Tablet.__doc__
 
 
 class Cellphone(Mobile):
-    pass
+    __doc__ = m.Cellphone.__doc__
 
 
 class Component(Device):
+    __doc__ = m.Component.__doc__
+
     parent = NestedOn(Device, dump_only=True)
 
 
 class GraphicCard(Component):
+    __doc__ = m.GraphicCard.__doc__
+
     memory = Integer(validate=Range(0, 10000),
                      unit=UnitCodes.mbyte,
                      description=m.GraphicCard.memory.comment)
 
 
 class DataStorage(Component):
+    __doc__ = m.DataStorage.__doc__
+
     size = Integer(validate=Range(0, 10 ** 8),
                    unit=UnitCodes.mbyte,
                    description=m.DataStorage.size.comment)
@@ -179,128 +215,147 @@ class DataStorage(Component):
 
 
 class HardDrive(DataStorage):
-    pass
+    __doc__ = m.HardDrive.__doc__
 
 
 class SolidStateDrive(DataStorage):
-    pass
+    __doc__ = m.SolidStateDrive.__doc__
 
 
 class Motherboard(Component):
+    __doc__ = m.Motherboard.__doc__
+
     slots = Integer(validate=Range(0, 20),
                     description=m.Motherboard.slots.comment)
-    usb = Integer(validate=Range(0, 20))
-    firewire = Integer(validate=Range(0, 20))
-    serial = Integer(validate=Range(0, 20))
-    pcmcia = Integer(validate=Range(0, 20))
+    usb = Integer(validate=Range(0, 20), description=m.Motherboard.usb.comment)
+    firewire = Integer(validate=Range(0, 20), description=m.Motherboard.firewire.comment)
+    serial = Integer(validate=Range(0, 20), description=m.Motherboard.serial.comment)
+    pcmcia = Integer(validate=Range(0, 20), description=m.Motherboard.pcmcia.comment)
 
 
 class NetworkAdapter(NetworkMixin, Component):
-    pass
+    __doc__ = m.NetworkAdapter.__doc__
 
 
 class Processor(Component):
-    speed = Float(validate=Range(min=0.1, max=15), unit=UnitCodes.ghz)
-    cores = Integer(validate=Range(min=1, max=10))
-    threads = Integer(validate=Range(min=1, max=20))
-    address = Integer(validate=OneOf({8, 16, 32, 64, 128, 256}))
+    __doc__ = m.Processor.__doc__
+
+    speed = Float(validate=Range(min=0.1, max=15),
+                  unit=UnitCodes.ghz,
+                  description=m.Processor.speed.comment)
+    cores = Integer(validate=Range(min=1, max=10), description=m.Processor.cores.comment)
+    threads = Integer(validate=Range(min=1, max=20), description=m.Processor.threads.comment)
+    address = Integer(validate=OneOf({8, 16, 32, 64, 128, 256}),
+                      description=m.Processor.address.comment)
 
 
 class RamModule(Component):
-    size = Integer(validate=Range(min=128, max=17000), unit=UnitCodes.mbyte)
+    __doc__ = m.RamModule.__doc__
+
+    size = Integer(validate=Range(min=128, max=17000),
+                   unit=UnitCodes.mbyte,
+                   description=m.RamModule.size.comment)
     speed = Integer(validate=Range(min=100, max=10000), unit=UnitCodes.mhz)
     interface = EnumField(enums.RamInterface)
     format = EnumField(enums.RamFormat)
 
 
 class SoundCard(Component):
-    pass
+    __doc__ = m.SoundCard.__doc__
 
 
 class Display(DisplayMixin, Component):
-    pass
+    __doc__ = m.Display.__doc__
 
 
 class Manufacturer(Schema):
+    __doc__ = m.Manufacturer.__doc__
+
     name = String(dump_only=True)
     url = URL(dump_only=True)
     logo = URL(dump_only=True)
 
 
 class ComputerAccessory(Device):
-    pass
+    __doc__ = m.ComputerAccessory.__doc__
 
 
 class Mouse(ComputerAccessory):
-    pass
+    __doc__ = m.Mouse.__doc__
 
 
 class MemoryCardReader(ComputerAccessory):
-    pass
+    __doc__ = m.MemoryCardReader.__doc__
 
 
 class SAI(ComputerAccessory):
-    pass
+    __doc__ = m.SAI.__doc__
 
 
 class Keyboard(ComputerAccessory):
+    __doc__ = m.Keyboard.__doc__
+
     layout = EnumField(Layouts)
 
 
 class Networking(NetworkMixin, Device):
-    pass
+    __doc__ = m.Networking.__doc__
 
 
 class Router(Networking):
-    pass
+    __doc__ = m.Router.__doc__
 
 
 class Switch(Networking):
-    pass
+    __doc__ = m.Switch.__doc__
 
 
 class Hub(Networking):
-    pass
+    __doc__ = m.Hub.__doc__
 
 
 class WirelessAccessPoint(Networking):
-    pass
+    __doc__ = m.WirelessAccessPoint.__doc__
 
 
 class Printer(Device):
-    wireless = Boolean(required=True, missing=False)
-    scanning = Boolean(required=True, missing=False)
-    technology = EnumField(enums.PrinterTechnology, required=True)
-    monochrome = Boolean(required=True, missing=True)
+    __doc__ = m.Printer.__doc__
+
+    wireless = Boolean(required=True, missing=False, description=m.Printer.wireless.comment)
+    scanning = Boolean(required=True, missing=False, description=m.Printer.scanning.comment)
+    technology = EnumField(enums.PrinterTechnology,
+                           required=True,
+                           description=m.Printer.technology.comment)
+    monochrome = Boolean(required=True, missing=True, description=m.Printer.monochrome.comment)
 
 
 class LabelPrinter(Printer):
-    pass
+    __doc__ = m.LabelPrinter.__doc__
 
 
 class Sound(Device):
-    pass
+    __doc__ = m.Sound.__doc__
 
 
 class Microphone(Sound):
-    pass
+    __doc__ = m.Microphone.__doc__
 
 
 class Video(Device):
-    pass
+    __doc__ = m.Video.__doc__
 
 
 class VideoScaler(Video):
-    pass
+    __doc__ = m.VideoScaler.__doc__
 
 
 class Videoconference(Video):
-    pass
+    __doc__ = m.Videoconference.__doc__
 
 
 class Cooking(Device):
-    pass
+    __doc__ = m.Cooking.__doc__
 
 
 class Mixer(Cooking):
-    pass
+    __doc__ = m.Mixer.__doc__

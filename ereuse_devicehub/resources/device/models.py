@@ -29,44 +29,75 @@ from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 
 
 class Device(Thing):
-    """
-    Base class for any type of physical object that can be identified.
+    """Base class for any type of physical object that can be identified.
+
+    Device partly extends `Schema's IndividualProduct <https
+    ://schema.org/IndividualProduct>`_, adapting it to our
+    use case.
+
+    A device requires an identification method, ideally a serial number,
+    although it can be identified only with tags too. More ideally
+    both methods are used.
+
+    Devices can contain ``Components``, which are just a type of device
+    (it is a recursive relationship).
     """
     EVENT_SORT_KEY = attrgetter('created')
 
     id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
     id.comment = """
-        The identifier of the device for this database.
+        The identifier of the device for this database. Used only
+        internally for software; users should not use this.
     """
     type = Column(Unicode(STR_SM_SIZE), nullable=False, index=True)
     hid = Column(Unicode(), check_lower('hid'), unique=True)
     hid.comment = """
         The Hardware ID (HID) is the unique ID traceability systems 
-        use to ID a device globally.
+        use to ID a device globally. This field is auto-generated
+        from Devicehub using literal identifiers from the device,
+        so it can re-generated *offline*.
+        
+        The HID is the result of joining the type of device, S/N,
+        manufacturer name, and model. Devices that do not have one
+        of these fields cannot generate HID, thus not guaranteeing
+        global uniqueness.
     """
     model = Column(Unicode(), check_lower('model'))
+    model.comment = """The model or brand of the device in lower case.
+    
+    Devices usually report one of both (model or brand). This value
+    must be consistent through time. 
+    """
     manufacturer = Column(Unicode(), check_lower('manufacturer'))
+    manufacturer.comment = """The normalized name of the manufacturer
+    in lower case.
+    
+    Although as of now Devicehub does not enforce normalization,
+    users can choose a list of normalized manufacturer names
+    from the own ``/manufacturers`` REST endpoint.
+    """
     serial_number = Column(Unicode(), check_lower('serial_number'))
+    serial_number.comment = """The serial number of the device in lower case."""
     weight = Column(Float(decimal_return_scale=3), check_range('weight', 0.1, 5))
     weight.comment = """
-        The weight of the device in Kgm.
+        The weight of the device.
     """
     width = Column(Float(decimal_return_scale=3), check_range('width', 0.1, 5))
     width.comment = """
-        The width of the device in meters.
+        The width of the device.
     """
     height = Column(Float(decimal_return_scale=3), check_range('height', 0.1, 5))
     height.comment = """
-        The height of the device in meters.
+        The height of the device.
     """
     depth = Column(Float(decimal_return_scale=3), check_range('depth', 0.1, 5))
     depth.comment = """
-        The depth of the device in meters.
+        The depth of the device.
     """
     color = Column(ColorType)
     color.comment = """The predominant color of the device."""
     production_date = Column(db.TIMESTAMP(timezone=True))
-    production_date.comment = """The date of production of the item."""
+    production_date.comment = """The date of production of the device."""
 
     _NON_PHYSICAL_PROPS = {
         'id',
@@ -91,11 +122,13 @@ class Device(Thing):
     @property
     def events(self) -> list:
         """
-        All the events where the device participated, including
-        1) events performed directly to the device, 2) events performed
-        to a component, and 3) events performed to a parent device.
+        All the events where the device participated, including:
 
-        Events are returned by ascending creation time.
+        1. Events performed directly to the device.
+        2. Events performed to a component.
+        3. Events performed to a parent device.
+
+        Events are returned by ascending ``created`` time.
         """
         return sorted(chain(self.events_multiple, self.events_one), key=self.EVENT_SORT_KEY)
 
@@ -198,7 +231,7 @@ class Device(Thing):
         device is working if the list is empty.
 
         This property returns, for the last test performed of each type,
-        the one with the worst severity of them, or `None` if no
+        the one with the worst ``severity`` of them, or ``None`` if no
         test has been executed.
         """
         from ereuse_devicehub.resources.event.models import Test
@@ -292,8 +325,18 @@ class DisplayMixin:
 
 
 class Computer(Device):
+    """A chassis with components inside that can be processed
+    automatically with Workbench Computer.
+
+    Computer is broadly extended by ``Desktop``, ``Laptop``, and
+    ``Server``. The property ``chassis`` defines it more granularly.
+    """
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     chassis = Column(DBEnum(ComputerChassis), nullable=False)
+    chassis.comment = """The physical form of the computer.
+    
+    It is a subset of the Linux definition of DMI / DMI decode.
+    """
 
     def __init__(self, chassis, **kwargs) -> None:
         chassis = ComputerChassis(chassis)
@@ -342,7 +385,7 @@ class Computer(Device):
 
     @property
     def privacy(self):
-        """Returns the privacy of all DataStorage components when
+        """Returns the privacy of all ``DataStorage`` components when
         it is not None.
         """
         return set(
@@ -395,6 +438,8 @@ class Projector(Monitor):
 
 
 class Mobile(Device):
+    """A mobile device consisting of smartphones, tablets, and cellphones."""
+
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     imei = Column(BigInteger)
     imei.comment = """
@@ -432,6 +477,7 @@ class Cellphone(Mobile):
 
 
 class Component(Device):
+    """A device that can be inside another device."""
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
 
     parent_id = Column(BigInteger, ForeignKey(Computer.id), index=True)
@@ -481,6 +527,7 @@ class GraphicCard(JoinedComponentTableMixin, Component):
 
 
 class DataStorage(JoinedComponentTableMixin, Component):
+    """A device that stores information."""
     size = Column(Integer, check_range('size', min=1, max=10 ** 8))
     size.comment = """
         The size of the data-storage in MB.
@@ -548,14 +595,21 @@ class NetworkAdapter(JoinedComponentTableMixin, NetworkMixin, Component):
 
 
 class Processor(JoinedComponentTableMixin, Component):
+    """The CPU."""
     speed = Column(Float, check_range('speed', 0.1, 15))
+    speed.comment = """The regular CPU speed."""
     cores = Column(SmallInteger, check_range('cores', 1, 10))
+    cores.comment = """The number of regular cores."""
     threads = Column(SmallInteger, check_range('threads', 1, 20))
+    threads.comment = """The number of threads per core."""
     address = Column(SmallInteger, check_range('address', 8, 256))
+    address.comment = """The address of the CPU: 8, 16, 32, 64, 128 or 256 bits."""
 
 
 class RamModule(JoinedComponentTableMixin, Component):
+    """A stick of RAM."""
     size = Column(SmallInteger, check_range('size', min=128, max=17000))
+    size.comment = """The capacity of the RAM stick."""
     speed = Column(SmallInteger, check_range('speed', min=100, max=10000))
     interface = Column(DBEnum(RamInterface))
     format = Column(DBEnum(RamFormat))
@@ -568,14 +622,15 @@ class SoundCard(JoinedComponentTableMixin, Component):
 class Display(JoinedComponentTableMixin, DisplayMixin, Component):
     """
     The display of a device. This is used in all devices that have
-    displays but that it is not their main treat, like laptops,
-    mobiles, smart-watches, and so on; excluding then ComputerMonitor
-    and Television Set.
+    displays but that it is not their main part, like laptops,
+    mobiles, smart-watches, and so on; excluding ``ComputerMonitor``
+    and ``TelevisionSet``.
     """
     pass
 
 
 class ComputerAccessory(Device):
+    """Computer peripherals and similar accessories."""
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     pass
 
@@ -597,6 +652,7 @@ class MemoryCardReader(ComputerAccessory):
 
 
 class Networking(NetworkMixin, Device):
+    """Routers, switches, hubs..."""
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
 
 
@@ -641,6 +697,7 @@ class Microphone(Sound):
 
 
 class Video(Device):
+    """Devices related to video treatment."""
     pass
 
 
@@ -653,6 +710,7 @@ class Videoconference(Video):
 
 
 class Cooking(Device):
+    """Cooking devices."""
     pass
 
 
@@ -661,6 +719,11 @@ class Mixer(Cooking):
 
 
 class Manufacturer(db.Model):
+    """The normalized information about a manufacturer.
+
+    Ideally users should use the names from this list when submitting
+    devices.
+    """
     __table_args__ = {'schema': 'common'}
     CSV_DELIMITER = csv.get_dialect('excel').delimiter
 
@@ -668,8 +731,11 @@ class Manufacturer(db.Model):
                      primary_key=True,
                      # from https://niallburkley.com/blog/index-columns-for-like-in-postgres/
                      index=db.Index('name', text('name gin_trgm_ops'), postgresql_using='gin'))
+    name.comment = """The normalized name of the manufacturer."""
     url = db.Column(URL(), unique=True)
+    url.comment = """An URL to a page describing the manufacturer."""
     logo = db.Column(URL())
+    logo.comment = """An URL pointing to the logo of the manufacturer."""
 
     @classmethod
     def add_all_to_session(cls, session: db.Session):

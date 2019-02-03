@@ -37,19 +37,14 @@ Result
 ******
 The result is a JSON object with the following fields:
 
-- **devices**: A list of devices.
-- **groups**: A list of groups.
-- **widgets**: A dictionary of widgets.
-- **pagination**: Pagination information:
-
+- **items**: A list of devices.
+- **pagination**:
   - **page**: The page you requested in the ``page`` param of the query,
     or ``1``.
   - **perPage**: How many devices are in every page, fixed to ``30``.
   - **total**: How many total devices passed the filters.
+  - **next**: The number of the next page, if any.
+  - **last**: The number of the last page, if any.
 
-Models
-******
-
-.. automodule:: ereuse_devicehub.resources.device.models
-    :members:
-    :member-order: bysource
+.. dhlist::
+    :module: ereuse_devicehub.resources.device.schemas

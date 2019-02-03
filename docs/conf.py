@@ -18,6 +18,19 @@
 
 
 # -- Project information -----------------------------------------------------
+import importlib
+import inspect
+from typing import Union
+
+from docutils.parsers.rst import Directive, directives
+from docutils.statemachine import StringList, string2lines
+from marshmallow.fields import DateTime, Field
+from marshmallow.schema import SchemaMeta
+from teal.enums import Country, Currency, Layouts, Subdivision
+from teal.marshmallow import EnumField
+
+from ereuse_devicehub.marshmallow import NestedOn
+from ereuse_devicehub.resources.schemas import Thing
 
 project = 'Devicehub'
 copyright = '2018, eReuse.org team'
@@ -176,3 +189,123 @@ html_favicon = 'img/favicon.ico'
 # autosectionlabel
 autosectionlabel_prefix_document = True
 autodoc_member_order = 'bysource'
+
+import docutils.nodes as n
+
+
+class DhlistDirective(Directive):
+    """Generates documentation from Devicehub Schema.
+
+    This requires :py:class:`ereuse_devicehub.resources.schemas.SchemaMeta`.
+    You will find in that module more information.
+    """
+    has_content = False
+
+    # Definition of passed-in options
+    option_spec = {'module': directives.unchanged}
+
+    def _import(self, module):
+        for obj in vars(module).values():
+            if inspect.isclass(obj):
+                if isinstance(obj, SchemaMeta) and hasattr(obj, '_base_class'):
+                    yield obj
+
+    def run(self):
+        env = self.state.document.settings.env
+        module = importlib.import_module(self.options['module'])
+        things = tuple(self._import(module))
+
+        sections = []
+        sections.append(self.links(things))  # Make index
+        for thng in things:  # type: Thing
+            # Generate a section for each class, with a title,
+            # fields description and a paragraph
+            section = n.section(ids=[self._id(thng)])
+            section += n.title(thng.__name__, thng.__name__)
+            section += self.parse('*Extends {}*'.format(thng._base_class))
+            if thng.__doc__:
+                section += self.parse(thng.__doc__)
+            fields = n.field_list()
+            for key, f in thng._own:
+                name = n.field_name(text=f.data_key or key)
+                body = [
+                    self.parse('{} {}'.format(self.type(f), f.metadata.get('description', '')))
+                ]
+                if isinstance(f, EnumField):
+                    body.append(self._parse_enum_field(f))
+                attrs = n.field_list()
+                if f.dump_only:
+                    attrs += self.field('Submit', 'No.')
+                if f.required:
+                    attrs += self.field('Required', f.required)
+                fields += n.field('', name, n.field_body('', *body, attrs))
+            section += fields
+            sections.append(section)
+        return sections
+
+    def _parse_enum_field(self, f):
+        from ereuse_devicehub.resources.device import states
+        if issubclass(f.enum, (Subdivision, Currency, Country, Layouts, states.State)):
+            return self.parse(f.enum.__doc__)
+        else:
+            enum_fields = n.field_list()
+            for el in f.enum:
+                enum_fields += self.field(el.name, el.value)
+            return enum_fields
+
+    def field(self, name: str, body: Union[str, bool]):
+        """Generates a field node with a name and a paragraph body."""
+        if isinstance(body, bool):
+            body = 'Yes.' if body else 'No.'
+        body = str(body) if body else ''
+        return n.field('', n.field_name(text=name), n.field_body('', self.parse(body)))
+
+    def type(self, field: Field):
+        """Parses the type field."""
+        if isinstance(field, NestedOn):
+            t = ''
+            if field.many:
+                t = 'List of '
+            t = t + str(field.schema.t)
+        elif isinstance(field, EnumField):
+            t = field.enum.__name__
+        elif isinstance(field, DateTime):
+            t = 'Date time (ISO 8601 with timezone)'
+        else:
+            t = field.__class__.__name__
+            if 'str' in t.lower():
+                t = 'Text'
+        if 'unit' in field.metadata:
+            t = t + ' ({})'.format(field.metadata['unit'])
+        return t + '.'
+
+    def links(self, things, parent='Schema'):
+        """Generates an index of things with inheritance awareness."""
+        l = n.bullet_list('')
+        for child in (c for c in things if c._base_class == parent):
+            ref = n.reference(text=child.__name__)
+            ref['refuri'] = '#{}'.format(self._id(child))
+            p = n.paragraph()
+            p += ref
+            l += n.list_item('', p)
+            sub_list = self.links(things, parent=child.__name__)
+            if sub_list:
+                l += sub_list
+        return l
+
+    def _id(self, thing):
+        """Generate an id to use as html anchors."""
+        return n.make_id('dh-{}'.format(thing.__name__))
+
+    def parse(self, text) -> n.container:
+        """Parses text possibly containing ReST stuff and adds it in
+         a node."""
+        p = n.container('')
+        self.state.nested_parse(StringList(string2lines(inspect.cleandoc(text))), 0, p)
+        return p
+        # return publish_doctree(text).children
+
+
+def setup(app):
+    app.add_directive('dhlist', DhlistDirective)
+    return {'version': '0.1'}

@@ -2,7 +2,7 @@ from marshmallow import fields as f
 from teal.marshmallow import SanitizedStr, URL
 
 from ereuse_devicehub.marshmallow import NestedOn
-from ereuse_devicehub.resources.device.schemas import Device
+from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.lot import models as m
 from ereuse_devicehub.resources.models import STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
@@ -13,7 +13,7 @@ class Lot(Thing):
     name = SanitizedStr(validate=f.validate.Length(max=STR_SIZE), required=True)
     description = SanitizedStr(description=m.Lot.description.comment)
     closed = f.Boolean(missing=False, description=m.Lot.closed.comment)
-    devices = NestedOn(Device, many=True, dump_only=True)
+    devices = NestedOn(s_device.Device, many=True, dump_only=True)
     children = NestedOn('Lot', many=True, dump_only=True)
     parents = NestedOn('Lot', many=True, dump_only=True)
     url = URL(dump_only=True, description=m.Lot.url.__doc__)

@@ -278,17 +278,15 @@ class PrinterTechnology(Enum):
 
 class Severity(IntEnum):
     """A flag evaluating the event execution. Ex. failed events
-    have the value `Severity.Error`.
+    have the value `Severity.Error`. Devicehub uses 4 severity levels:
 
-    Devicehub uses 4 severity levels:
-
-    - Info: default neutral severity. The event succeeded.
-    - Notice: The event succeeded but it is raising awareness.
+    * Info: default neutral severity. The event succeeded.
+    * Notice: The event succeeded but it is raising awareness.
       Notices are not usually that important but something
       (good or bad) worth checking.
-    - Warning: The event succeeded but there is something important
+    * Warning: The event succeeded but there is something important
       to check negatively affecting the event.
-    - Error: the event failed.
+    * Error: the event failed.
 
     Devicehub specially raises user awareness when an event
     has a Severity of ``Warning`` or greater.

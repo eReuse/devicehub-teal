@@ -44,6 +44,10 @@ class JoinedTableMixin:
 
 
 class Event(Thing):
+    """Event performed on a device.
+
+    This class extends `Schema's Action <https://schema.org/Action>`_.
+    """
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     type = Column(Unicode, nullable=False, index=True)
     name = Column(CIText(), default='', nullable=False)
@@ -1179,6 +1183,9 @@ class Trade(JoinedTableMixin, EventWithMultipleDevices):
 
     Performing trade events changes the *Trading* state of the
     device —:class:`ereuse_devicehub.resources.device.states.Trading`.
+
+    This class and its inheritors
+    extend `Schema's Trade <http://schema.org/TradeAction>`_.
     """
     shipping_date = Column(DateTime)
     shipping_date.comment = """

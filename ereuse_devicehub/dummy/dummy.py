@@ -27,11 +27,11 @@ class Dummy:
     )
     """Tags to create."""
     ET = (
-        ('A0000000000001', 'DT-AAAAA'),
-        ('A0000000000002', 'DT-BBBBB'),
-        ('A0000000000003', 'DT-CCCCC'),
-        ('04970DA2A15984', 'DT-BRRAB'),
-        ('04e4bc5af95980', 'DT-XXXXX')
+        ('DT-AAAAA', 'A0000000000001'),
+        ('DT-BBBBB', 'A0000000000002'),
+        ('DT-CCCCC', 'A0000000000003'),
+        ('DT-BRRAB', '04970DA2A15984'),
+        ('DT-XXXXX', '04e4bc5af95980')
     )
     """eTags to create."""
     ORG = 'eReuse.org CAT', '-t', 'G-60437761', '-c', 'ES'
