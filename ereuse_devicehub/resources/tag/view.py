@@ -32,8 +32,10 @@ class TagView(View):
         tags_id, _ = g.tag_provider.post('/', {}, query=[('num', num)])
         tags = [Tag(id=tag_id, provider=g.inventory.tag_provider) for tag_id in tags_id]
         db.session.add_all(tags)
+        db.session().final_flush()
+        response = things_response(self.schema.dump(tags, many=True, nested=1), code=201)
         db.session.commit()
-        return things_response(self.schema.dump(tags, many=True, nested=1), code=201)
+        return response
 
     def _post_one(self):
         # todo do we use this?
@@ -42,6 +44,7 @@ class TagView(View):
         if tag.like_etag():
             raise CannotCreateETag(tag.id)
         db.session.add(tag)
+        db.session().final_flush()
         db.session.commit()
         return Response(status=201)
 
@@ -69,6 +72,7 @@ class TagDeviceView(View):
                 raise LinkedToAnotherDevice(tag.device_id)
         else:
             tag.device_id = device_id
+        db.session().final_flush()
         db.session.commit()
         return Response(status=204)
 

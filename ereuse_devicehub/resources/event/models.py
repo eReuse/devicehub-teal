@@ -10,7 +10,7 @@ import teal.db
 from boltons import urlutils
 from citext import CIText
 from flask import current_app as app, g
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Enum as DBEnum, \
     Float, ForeignKey, Integer, Interval, JSON, Numeric, SmallInteger, Unicode, event, orm
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
@@ -378,9 +378,10 @@ class Step(db.Model):
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     num = Column(SmallInteger, primary_key=True)
     severity = Column(teal.db.IntEnum(Severity), default=Severity.Info, nullable=False)
-    start_time = Column(DateTime, nullable=False)
+    start_time = Column(db.TIMESTAMP(timezone=True), nullable=False)
     start_time.comment = Event.start_time.comment
-    end_time = Column(DateTime, CheckConstraint('end_time > start_time'), nullable=False)
+    end_time = Column(db.TIMESTAMP(timezone=True), CheckConstraint('end_time > start_time'),
+                      nullable=False)
     end_time.comment = Event.end_time.comment
 
     erasure = relationship(EraseBasic,
@@ -1187,7 +1188,7 @@ class Trade(JoinedTableMixin, EventWithMultipleDevices):
     This class and its inheritors
     extend `Schema's Trade <http://schema.org/TradeAction>`_.
     """
-    shipping_date = Column(DateTime)
+    shipping_date = Column(db.TIMESTAMP(timezone=True))
     shipping_date.comment = """
             When are the devices going to be ready for shipping?
         """

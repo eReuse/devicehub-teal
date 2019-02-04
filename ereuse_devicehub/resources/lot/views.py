@@ -34,9 +34,10 @@ class LotView(View):
         l = request.get_json()
         lot = Lot(**l)
         db.session.add(lot)
-        db.session.commit()
+        db.session().final_flush()
         ret = self.schema.jsonify(lot)
         ret.status_code = 201
+        db.session.commit()
         return ret
 
     def patch(self, id):
@@ -144,17 +145,21 @@ class LotBaseChildrenView(View):
     def post(self, id: uuid.UUID):
         lot = self.get_lot(id)
         self._post(lot, self.get_ids())
-        db.session.commit()
 
+        db.session().final_flush()
         ret = self.schema.jsonify(lot)
         ret.status_code = 201
+
+        db.session.commit()
         return ret
 
     def delete(self, id: uuid.UUID):
         lot = self.get_lot(id)
         self._delete(lot, self.get_ids())
+        db.session().final_flush()
+        response = self.schema.jsonify(lot)
         db.session.commit()
-        return self.schema.jsonify(lot)
+        return response
 
     def _post(self, lot: Lot, ids: Set[uuid.UUID]):
         raise NotImplementedError

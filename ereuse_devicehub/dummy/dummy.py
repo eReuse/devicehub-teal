@@ -141,9 +141,9 @@ class Dummy:
         assert len(inventory['items'])
 
         i, _ = user.get(res=Device, query=[('search', 'intel')])
-        assert len(i['items']) == 12
+        assert 12 == len(i['items'])
         i, _ = user.get(res=Device, query=[('search', 'pc')])
-        assert len(i['items']) == 14
+        assert 14 == len(i['items'])
 
         # Let's create a set of events for the pc device
         # Make device Ready

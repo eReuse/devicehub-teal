@@ -86,7 +86,7 @@ def test_snapshot_post(user: UserClient):
     assert snapshot['components'] == device['components']
 
     assert {c['type'] for c in snapshot['components']} == {m.GraphicCard.t, m.RamModule.t,
-                                                                m.Processor.t}
+                                                           m.Processor.t}
     rate = next(e for e in snapshot['events'] if e['type'] == WorkbenchRate.t)
     rate, _ = user.get(res=Event, item=rate['id'])
     assert rate['device']['id'] == snapshot['device']['id']
@@ -298,7 +298,9 @@ def test_erase_privacy_standards(user: UserClient):
     privacy properties.
     """
     s = file('erase-sectors.snapshot')
+    assert '2018-06-01T09:12:06+02:00' == s['components'][0]['events'][0]['endTime']
     snapshot = snapshot_and_check(user, s, (EraseSectors.t,), perform_second_snapshot=True)
+    assert '2018-06-01T07:12:06+00:00' == snapshot['events'][0]['endTime']
     storage, *_ = snapshot['components']
     assert storage['type'] == 'SolidStateDrive', 'Components must be ordered by input order'
     storage, _ = user.get(res=m.Device, item=storage['id'])  # Let's get storage events too
@@ -306,13 +308,15 @@ def test_erase_privacy_standards(user: UserClient):
     erasure1, _snapshot1, erasure2, _snapshot2 = storage['events']
     assert erasure1['type'] == erasure2['type'] == 'EraseSectors'
     assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
-    assert snapshot == user.get(res=Event, item=_snapshot2['id'])[0]
+    get_snapshot, _ = user.get(res=Event, item=_snapshot2['id'])
+    assert get_snapshot['events'][0]['endTime'] == '2018-06-01T07:12:06+00:00'
+    assert snapshot == get_snapshot
     erasure, _ = user.get(res=Event, item=erasure1['id'])
     assert len(erasure['steps']) == 2
-    assert erasure['steps'][0]['startTime'] == '2018-06-01T08:15:00+00:00'
-    assert erasure['steps'][0]['endTime'] == '2018-06-01T09:16:00+00:00'
-    assert erasure['steps'][1]['startTime'] == '2018-06-01T08:16:00+00:00'
-    assert erasure['steps'][1]['endTime'] == '2018-06-01T09:17:00+00:00'
+    assert erasure['steps'][0]['startTime'] == '2018-06-01T06:15:00+00:00'
+    assert erasure['steps'][0]['endTime'] == '2018-06-01T07:16:00+00:00'
+    assert erasure['steps'][1]['startTime'] == '2018-06-01T06:16:00+00:00'
+    assert erasure['steps'][1]['endTime'] == '2018-06-01T07:17:00+00:00'
     assert erasure['device']['id'] == storage['id']
     step1, step2 = erasure['steps']
     assert step1['type'] == 'StepZero'

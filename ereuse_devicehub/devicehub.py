@@ -8,7 +8,6 @@ import ereuse_utils.cli
 from ereuse_utils.session import DevicehubClient
 from flask.globals import _app_ctx_stack, g
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import event
 from teal.teal import Teal
 
 from ereuse_devicehub.auth import Auth
@@ -47,15 +46,9 @@ class Devicehub(Teal):
         self.id = inventory
         """The Inventory ID of this instance. In Teal is the app.schema."""
         self.dummy = Dummy(self)
-        self.before_request(self.register_db_events_listeners)
         self.cli.command('regenerate-search')(self.regenerate_search)
         self.cli.command('init-db')(self.init_db)
         self.before_request(self._prepare_request)
-
-    def register_db_events_listeners(self):
-        """Registers the SQLAlchemy event listeners."""
-        # todo can I make it with a global Session only?
-        event.listen(db.session, 'before_commit', DeviceSearch.update_modified_devices)
 
     # noinspection PyMethodOverriding
     @click.option('--name', '-n',

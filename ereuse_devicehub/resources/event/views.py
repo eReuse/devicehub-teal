@@ -23,9 +23,10 @@ class EventView(View):
         Model = db.Model._decl_class_registry.data[json['type']]()
         event = Model(**e)
         db.session.add(event)
-        db.session.commit()
+        db.session().final_flush()
         ret = self.schema.jsonify(event)
         ret.status_code = 201
+        db.session.commit()
         return ret
 
     def one(self, id: UUID):
@@ -84,7 +85,8 @@ class SnapshotView(View):
             snapshot.events |= rates
 
         db.session.add(snapshot)
-        db.session.commit()
+        db.session().final_flush()
         ret = self.schema.jsonify(snapshot)  # transform it back
         ret.status_code = 201
+        db.session.commit()
         return ret
