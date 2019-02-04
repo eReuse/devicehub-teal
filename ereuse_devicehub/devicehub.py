@@ -77,7 +77,8 @@ class Devicehub(Teal):
                   help='The token provided by the tag provider. It is an UUID.')
     @click.option('--erase/--no-erase',
                   default=False,
-                  help='Delete the full database before? Including all schemas and users.')
+                  help='Delete the schema before? '
+                       'If --common is set this includes the common database.')
     @click.option('--common/--no-common',
                   default=False,
                   help='Creates common databases. Only execute if the database is empty.')
@@ -93,7 +94,7 @@ class Devicehub(Teal):
         print('Initializing database...'.ljust(30), end='')
         with click_spinner.spinner():
             if erase:
-                self.db.drop_all()
+                self.db.drop_all(common_schema=common)
             exclude_schema = 'common' if not common else None
             self._init_db(exclude_schema=exclude_schema)
             InventoryDef.set_inventory_config(name, org_name, org_id, tag_url, tag_token)

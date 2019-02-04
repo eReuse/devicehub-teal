@@ -17,10 +17,11 @@ class SQLAlchemy(SchemaSQLAlchemy):
     UUID = postgresql.UUID
     CIText = citext.CIText
 
-    def drop_all(self, bind='__all__', app=None):
+    def drop_all(self, bind='__all__', app=None, common_schema=True):
         """A faster nuke-like option to drop everything."""
         self.drop_schema()
-        self.drop_schema(schema='common')
+        if common_schema:
+            self.drop_schema(schema='common')
 
 
 def create_view(name, selectable):

@@ -13,4 +13,7 @@ def test_create_existing_inventory():
 
 @pytest.mark.xfail(reason='Test not developed')
 def test_delete_inventory():
-    pass
+    """Tests deleting an inventory without
+    disturbing other inventories (ex. keeping commmon db), and
+    removing its traces in common (no inventory row in inventory table).
+    """
