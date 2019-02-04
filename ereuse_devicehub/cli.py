@@ -8,6 +8,7 @@ from ereuse_devicehub.devicehub import Devicehub
 
 
 class DevicehubGroup(flask.cli.FlaskGroup):
+    # todo users cannot make cli to use a custom db this way!
     CONFIG = DevicehubConfig
 
     def main(self, *args, **kwargs):
