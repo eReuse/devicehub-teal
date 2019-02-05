@@ -7,7 +7,7 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
-from ereuse_utils.naming import Naming
+from ereuse_utils.naming import Naming, HID_CONVERSION_DOC
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
     Sequence, SmallInteger, Unicode, inspect, text
@@ -57,11 +57,7 @@ class Device(Thing):
         from Devicehub using literal identifiers from the device,
         so it can re-generated *offline*.
         
-        The HID is the result of joining the type of device, S/N,
-        manufacturer name, and model. Devices that do not have one
-        of these fields cannot generate HID, thus not guaranteeing
-        global uniqueness.
-    """
+    """ + HID_CONVERSION_DOC
     model = Column(Unicode(), check_lower('model'))
     model.comment = """The model or brand of the device in lower case.
     

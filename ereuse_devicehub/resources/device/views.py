@@ -51,7 +51,10 @@ class Filters(query.Query):
     model = query.ILike(Device.model)
     manufacturer = query.ILike(Device.manufacturer)
     serialNumber = query.ILike(Device.serial_number)
-    rating = query.Join(Device.id == events.Rate.device_id, RateQ)
+    # todo test query for rating (and possibly other filters)
+    rating = query.Join((Device.id == events.EventWithOneDevice.device_id)
+                        & (events.EventWithOneDevice.id == events.Rate.id),
+                        RateQ)
     tag = query.Join(Device.id == Tag.device_id, TagQ)
     # todo This part of the query is really slow
     # And forces usage of distinct, as it returns many rows
