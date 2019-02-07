@@ -49,7 +49,7 @@ class Event(Thing):
     This class extends `Schema's Action <https://schema.org/Action>`_.
     """
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    type = Column(Unicode, nullable=False, index=True)
+    type = Column(Unicode, nullable=False)
     name = Column(CIText(), default='', nullable=False)
     name.comment = """
         A name or title for the event. Used when searching for events.
@@ -146,7 +146,7 @@ class Event(Thing):
     For Add and Remove though, this has another meaning: the components
     that are added or removed.
     """
-    parent_id = Column(BigInteger, ForeignKey(Computer.id), index=True)
+    parent_id = Column(BigInteger, ForeignKey(Computer.id))
     parent = relationship(Computer,
                           backref=backref('events_parent',
                                           lazy=True,
@@ -160,6 +160,12 @@ class Event(Thing):
     For example: for a ``EraseBasic`` performed on a data storage, this
     would point to the computer that contained this data storage, if any.
     """
+
+    __table_args__ = (
+        db.Index('ix_id', id, postgresql_using='hash'),
+        db.Index('ix_type', type, postgresql_using='hash'),
+        db.Index('ix_parent_id', parent_id, postgresql_using='hash')
+    )
 
     @property
     def elapsed(self):
@@ -230,7 +236,7 @@ class JoinedWithOneDeviceMixin:
 
 
 class EventWithOneDevice(JoinedTableMixin, Event):
-    device_id = Column(BigInteger, ForeignKey(Device.id), nullable=False, index=True)
+    device_id = Column(BigInteger, ForeignKey(Device.id), nullable=False)
     device = relationship(Device,
                           backref=backref('events_one',
                                           lazy=True,
@@ -238,6 +244,10 @@ class EventWithOneDevice(JoinedTableMixin, Event):
                                           order_by=lambda: EventWithOneDevice.created,
                                           collection_class=OrderedSet),
                           primaryjoin=Device.id == device_id)
+
+    __table_args__ = (
+        db.Index('event_one_device_id_index', device_id, postgresql_using='hash'),
+    )
 
     def __repr__(self) -> str:
         return '<{0.t} {0.id} {0.severity} device={0.device!r}>'.format(self)

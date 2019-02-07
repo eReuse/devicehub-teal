@@ -6,7 +6,6 @@ from ereuse_devicehub.resources.models import Thing
 
 
 class Inventory(Thing):
-    __table_args__ = {'schema': 'common'}
     id = db.Column(db.Unicode(), primary_key=True)
     id.comment = """The name of the inventory as in the URL and schema."""
     name = db.Column(db.CIText(), nullable=False, unique=True)
@@ -15,6 +14,11 @@ class Inventory(Thing):
     tag_token = db.Column(db.UUID(as_uuid=True), unique=True, nullable=False)
     tag_token.comment = """The token to access a Tag service."""
     org_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey('organization.id'), nullable=False)
+
+    __table_args__ = (
+        db.Index('id_hash', id, postgresql_using='hash'),
+        {'schema': 'common'}
+    )
 
     @classproperty
     def current(cls) -> 'Inventory':

@@ -44,8 +44,7 @@ class Tag(Thing):
     """
     device_id = Column(BigInteger,
                        # We don't want to delete the tag on device deletion, only set to null
-                       ForeignKey(Device.id, ondelete=DB_CASCADE_SET_NULL),
-                       index=True)
+                       ForeignKey(Device.id, ondelete=DB_CASCADE_SET_NULL))
     device = relationship(Device,
                           backref=backref('tags', lazy=True, collection_class=Tags),
                           primaryjoin=Device.id == device_id)
@@ -55,6 +54,10 @@ class Tag(Thing):
         A secondary identifier for this tag. It has the same
         constraints as the main one. Only needed in special cases.
     """
+
+    __table_args__ = (
+        db.Index('device_id_index', device_id, postgresql_using='hash'),
+    )
 
     def __init__(self, id: str, **kwargs) -> None:
         super().__init__(id=id, **kwargs)

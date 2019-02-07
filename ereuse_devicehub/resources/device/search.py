@@ -24,18 +24,20 @@ class DeviceSearch(db.Model):
                           primary_key=True)
     device = db.relationship(Device, primaryjoin=Device.id == device_id)
 
-    properties = db.Column(TSVECTOR,
-                           nullable=False,
-                           index=db.Index('properties gist',
-                                          postgresql_using='gist',
-                                          postgresql_concurrently=True))
-    tags = db.Column(TSVECTOR, index=db.Index('tags gist',
-                                              postgresql_using='gist',
-                                              postgresql_concurrently=True))
+    properties = db.Column(TSVECTOR, nullable=False)
+    tags = db.Column(TSVECTOR)
 
-    __table_args__ = {
-        'prefixes': ['UNLOGGED']  # Only for temporal tables, can cause table to empty on turn on
-    }
+    __table_args__ = (
+        # todo to add concurrency this should be commited separately
+        #   see https://docs.sqlalchemy.org/en/latest/dialects/postgresql.html#indexes-with-concurrently
+        db.Index('properties gist', properties, postgresql_using='gist'),
+        db.Index('tags gist', tags, postgresql_using='gist'),
+        {
+            'prefixes': ['UNLOGGED']
+            # Only for temporal tables, can cause table to empty on turn on
+        }
+
+    )
 
     @classmethod
     def update_modified_devices(cls, session: db.Session):

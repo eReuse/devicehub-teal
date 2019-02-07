@@ -27,7 +27,7 @@ class JoinedTableMixin:
 
 class Agent(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    type = Column(Unicode, nullable=False, index=True)
+    type = Column(Unicode, nullable=False)
     name = Column(CIText())
     name.comment = """
         The name of the organization or person.
@@ -46,7 +46,8 @@ class Agent(Thing):
 
     __table_args__ = (
         UniqueConstraint(tax_id, country, name='Registration Number per country.'),
-        UniqueConstraint(tax_id, name, name='One tax ID with one name.')
+        UniqueConstraint(tax_id, name, name='One tax ID with one name.'),
+        db.Index('agent_type', type, postgresql_using='hash')
     )
 
     @declared_attr

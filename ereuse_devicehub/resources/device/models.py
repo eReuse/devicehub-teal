@@ -7,7 +7,7 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
-from ereuse_utils.naming import Naming, HID_CONVERSION_DOC
+from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
     Sequence, SmallInteger, Unicode, inspect, text
@@ -49,7 +49,7 @@ class Device(Thing):
         The identifier of the device for this database. Used only
         internally for software; users should not use this.
     """
-    type = Column(Unicode(STR_SM_SIZE), nullable=False, index=True)
+    type = Column(Unicode(STR_SM_SIZE), nullable=False)
     hid = Column(Unicode(), check_lower('hid'), unique=True)
     hid.comment = """
         The Hardware ID (HID) is the unique ID traceability systems 
@@ -109,6 +109,11 @@ class Device(Thing):
         'depth',
         'weight'
     }
+
+    __table_args__ = (
+        db.Index('device_id', id, postgresql_using='hash'),
+        db.Index('type_index', type, postgresql_using='hash')
+    )
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
@@ -476,7 +481,7 @@ class Component(Device):
     """A device that can be inside another device."""
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
 
-    parent_id = Column(BigInteger, ForeignKey(Computer.id), index=True)
+    parent_id = Column(BigInteger, ForeignKey(Computer.id))
     parent = relationship(Computer,
                           backref=backref('components',
                                           lazy=True,
@@ -484,6 +489,10 @@ class Component(Device):
                                           order_by=lambda: Component.id,
                                           collection_class=OrderedSet),
                           primaryjoin=parent_id == Computer.id)
+
+    __table_args__ = (
+        db.Index('parent_index', parent_id, postgresql_using='hash'),
+    )
 
     def similar_one(self, parent: Computer, blacklist: Set[int]) -> 'Component':
         """
@@ -720,18 +729,20 @@ class Manufacturer(db.Model):
     Ideally users should use the names from this list when submitting
     devices.
     """
-    __table_args__ = {'schema': 'common'}
     CSV_DELIMITER = csv.get_dialect('excel').delimiter
 
-    name = db.Column(CIText(),
-                     primary_key=True,
-                     # from https://niallburkley.com/blog/index-columns-for-like-in-postgres/
-                     index=db.Index('name', text('name gin_trgm_ops'), postgresql_using='gin'))
+    name = db.Column(CIText(), primary_key=True)
     name.comment = """The normalized name of the manufacturer."""
     url = db.Column(URL(), unique=True)
     url.comment = """An URL to a page describing the manufacturer."""
     logo = db.Column(URL())
     logo.comment = """An URL pointing to the logo of the manufacturer."""
+
+    __table_args__ = (
+        # from https://niallburkley.com/blog/index-columns-for-like-in-postgres/
+        db.Index('name_index', text('name gin_trgm_ops'), postgresql_using='gin'),
+        {'schema': 'common'}
+    )
 
     @classmethod
     def add_all_to_session(cls, session: db.Session):

@@ -23,11 +23,8 @@ Devicehub is built with [Teal](https://github.com/bustawin/teal) and
 The requirements are:
 
 - Python 3.5.3 or higher. In debian 9 is `# apt install python3-pip`.
-- PostgreSQL 9.6 or higher with pgcrypto and ltree.
-  In debian 9 is `# apt install postgresql-contrib`
-- passlib. In debian 9 is `# apt install python3-passlib`.
-- Weasyprint requires some system packages. 
-  [Their docs explain which ones and how to install them](http://weasyprint.readthedocs.io/en/stable/install.html).
+- [PostgreSQL 11 or higher](https://www.postgresql.org/download/).
+- Weasyprint [dependencies](http://weasyprint.readthedocs.io/en/stable/install.html). 
 
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
 

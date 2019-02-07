@@ -182,7 +182,7 @@ class Path(db.Model):
     id = db.Column(db.UUID(as_uuid=True),
                    primary_key=True,
                    server_default=db.text('gen_random_uuid()'))
-    lot_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(Lot.id), nullable=False, index=True)
+    lot_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(Lot.id), nullable=False)
     lot = db.relationship(Lot,
                           backref=db.backref('paths',
                                              lazy=True,
@@ -199,7 +199,8 @@ class Path(db.Model):
         # dag.delete_edge needs to disable internally/temporarily the unique constraint
         db.UniqueConstraint(path, name='path_unique', deferrable=True, initially='immediate'),
         db.Index('path_gist', path, postgresql_using='gist'),
-        db.Index('path_btree', path, postgresql_using='btree')
+        db.Index('path_btree', path, postgresql_using='btree'),
+        db.Index('lot_id_index', lot_id, postgresql_using='hash')
     )
 
     def __init__(self, lot: Lot) -> None:

@@ -75,6 +75,7 @@ def test_lot_modify_patch_endpoint_and_delete(user: UserClient):
     l_after, _ = user.get(res=Lot, item=l['id'])
     assert l_after['name'] == 'bar'
     assert l_after['description'] == 'bax'
+    user.patch({'description': 'bax'}, res=Lot, item=l['id'], status=204)
     user.delete(res=Lot, item=l['id'], status=204)
     user.get(res=Lot, item=l['id'], status=404)
 
