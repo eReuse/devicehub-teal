@@ -5,6 +5,7 @@ from sqlalchemy import Column
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import Password
 
+from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Individual
 from ereuse_devicehub.resources.inventory import Inventory
 from ereuse_devicehub.resources.models import Thing
@@ -30,3 +31,7 @@ class User(Thing):
     @property
     def individual(self) -> Union[Individual, None]:
         pass
+
+
+class UserInventory(db.Model):
+    pass

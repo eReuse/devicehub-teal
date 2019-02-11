@@ -63,27 +63,21 @@ class Dummy:
                          common=True)
         print('Creating stuff...'.ljust(30), end='')
         with click_spinner.spinner():
-            out = runner.invoke(args=['create-org', *self.ORG], catch_exceptions=False).output
+            out = runner.invoke('org', 'add', *self.ORG).output
             org_id = json.loads(out)['id']
             user = self.user_client('user@dhub.com', '1234')
             # todo put user's agent into Org
             for id in self.TAGS:
                 user.post({'id': id}, res=Tag)
             for id, sec in self.ET:
-                runner.invoke(args=[
-                    'create-tag', id,
-                    '-p', 'https://t.devicetag.io',
-                    '-s', sec,
-                    '-o', org_id
-                ],
-                    catch_exceptions=False)
+                runner.invoke('tag', 'add', id,
+                              '-p', 'https://t.devicetag.io',
+                              '-s', sec,
+                              '-o', org_id)
             # create tag for pc-laudem
-            runner.invoke(args=[
-                'create-tag', 'tagA',
-                '-p', 'https://t.devicetag.io',
-                '-s', 'tagA-secondary'
-            ],
-                catch_exceptions=False)
+            runner.invoke('tag', 'add', 'tagA',
+                          '-p', 'https://t.devicetag.io',
+                          '-s', 'tagA-secondary')
         files = tuple(Path(__file__).parent.joinpath('files').iterdir())
         print('done.')
         sample_pc = None  # We treat this one as a special sample for demonstrations

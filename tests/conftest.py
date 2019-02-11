@@ -62,7 +62,7 @@ def app(request, _app: Devicehub) -> Devicehub:
         try:
             with redirect_stdout(io.StringIO()):
                 _init()
-        except (ProgrammingError, IntegrityError):
+        except (ProgrammingError, IntegrityError, AssertionError):
             print('Database was not correctly emptied. Re-empty and re-installing...')
             _drop()
             _init()

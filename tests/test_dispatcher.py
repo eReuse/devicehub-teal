@@ -13,7 +13,6 @@ def noop():
 
 @pytest.fixture()
 def dispatcher(app: Devicehub, config: TestConfig) -> PathDispatcher:
-    print('whoho')
     PathDispatcher.call = Mock(side_effect=lambda *args: args[0])
     return PathDispatcher(config_cls=config)
 

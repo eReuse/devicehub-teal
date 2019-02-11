@@ -1,8 +1,6 @@
 import uuid
 
 import boltons.urlutils
-import click
-import ereuse_utils.cli
 from flask import current_app
 from teal.db import ResourceNotFound
 from teal.resource import Resource
@@ -20,35 +18,8 @@ class InventoryDef(Resource):
                  static_url_path=None,
                  template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
                  root_path=None):
-        cli_commands = (
-            (self.set_inventory_config_cli, 'set-inventory-config'),
-        )
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
-
-    @click.option('--name', '-n',
-                  default='Test 1',
-                  help='The human name of the inventory.')
-    @click.option('--org-name', '-on',
-                  default=None,
-                  help='The name of the default organization that owns this inventory.')
-    @click.option('--org-id', '-oi',
-                  default=None,
-                  help='The Tax ID of the organization.')
-    @click.option('--tag-url', '-tu',
-                  type=ereuse_utils.cli.URL(scheme=True, host=True, path=False),
-                  default=None,
-                  help='The base url (scheme and host) of the tag provider.')
-    @click.option('--tag-token', '-tt',
-                  type=click.UUID,
-                  default=None,
-                  help='The token provided by the tag provider. It is an UUID.')
-    def set_inventory_config_cli(self, **kwargs):
-        """Sets the inventory configuration. Only updates passed-in
-        values.
-        """
-        self.set_inventory_config(**kwargs)
-        db.session.commit()
+                         url_prefix, subdomain, url_defaults, root_path)
 
     @classmethod
     def set_inventory_config(cls,
@@ -72,8 +43,23 @@ class InventoryDef(Resource):
             except ResourceNotFound:
                 org = Organization(tax_id=org_id, name=org_name)
             org.default_of = inventory
-            db.session.add(org)
         if tag_url:
             inventory.tag_provider = tag_url
         if tag_token:
             inventory.tag_token = tag_token
+
+    @classmethod
+    def delete_inventory(cls):
+        """Removes an inventory alongside with the users that have
+        only access to this inventory.
+        """
+        from ereuse_devicehub.resources.user.models import User, UserInventory
+        inv = Inventory.query.filter_by(id=current_app.id).one()
+        db.session.delete(inv)
+        db.session.flush()
+        # Remove users that end-up without any inventory
+        # todo this should be done in a trigger / event
+        users = User.query \
+            .filter(User.id.notin_(db.session.query(UserInventory.user_id).distinct()))
+        for user in users:
+            db.session.delete(user)

@@ -209,7 +209,7 @@ def test_device_search_regenerate_table(app: DeviceSearch, user: UserClient):
     i, _ = user.get(res=Device, query=[('search', 'Desktop')])
     assert not i['items'], 'Truncate deleted all items'
     runner = app.test_cli_runner()
-    runner.invoke(args=['regenerate-search'], catch_exceptions=False)
+    runner.invoke('inv', 'search')
     i, _ = user.get(res=Device, query=[('search', 'Desktop')])
     assert i['items'], 'Regenerated re-made the table'
 

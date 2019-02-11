@@ -83,8 +83,13 @@ class Agent(Thing):
 
 class Organization(JoinedTableMixin, Agent):
     default_of = db.relationship(Inventory,
-                                 single_parent=True,
                                  uselist=False,
+                                 lazy=True,
+                                 backref=backref('org', lazy=True),
+                                 # We need to use this as we cannot do Inventory.foreign -> Org
+                                 # as foreign keys can only reference to one table
+                                 # and we have multiple organization table (one per schema)
+                                 foreign_keys=[Inventory.org_id],
                                  primaryjoin=lambda: Organization.id == Inventory.org_id)
 
     def __init__(self, name: str, **kwargs) -> None:

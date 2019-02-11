@@ -29,10 +29,10 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=[
-        'teal>=0.2.0a35',  # teal always first
+        'teal>=0.2.0a36',  # teal always first
         'click',
         'click-spinner',
-        'ereuse-utils[naming, test, session, cli]>=0.4b20',
+        'ereuse-utils[naming, test, session, cli]>=0.4b21',
         'hashids',
         'marshmallow_enum',
         'psycopg2-binary',

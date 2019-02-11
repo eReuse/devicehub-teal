@@ -137,7 +137,7 @@ def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: Us
 def test_tag_create_tags_cli(app: Devicehub, user: UserClient):
     """Checks creating tags with the CLI endpoint."""
     runner = app.test_cli_runner()
-    runner.invoke(args=['create-tag', 'id1'], catch_exceptions=False)
+    runner.invoke('tag', 'add', 'id1')
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
         assert tag.id == 'id1'
@@ -148,8 +148,7 @@ def test_tag_create_etags_cli(app: Devicehub, user: UserClient):
     """Creates an eTag through the CLI."""
     # todo what happens to organization?
     runner = app.test_cli_runner()
-    runner.invoke(args=['create-tag', '-p', 'https://t.ereuse.org', '-s', 'foo', 'DT-BARBAR'],
-                  catch_exceptions=False)
+    runner.invoke('tag', 'add', '-p', 'https://t.ereuse.org', '-s', 'foo', 'DT-BARBAR')
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
         assert tag.id == 'dt-barbar'
@@ -222,8 +221,7 @@ def test_tag_create_tags_cli_csv(app: Devicehub, user: UserClient):
     """Checks creating tags with the CLI endpoint using a CSV."""
     csv = pathlib.Path(__file__).parent / 'files' / 'tags-cli.csv'
     runner = app.test_cli_runner()
-    runner.invoke(args=['create-tags-csv', str(csv)],
-                  catch_exceptions=False)
+    runner.invoke('tag', 'add-csv', str(csv))
     with app.app_context():
         t1 = Tag.from_an_id('id1').one()
         t2 = Tag.from_an_id('sec1').one()

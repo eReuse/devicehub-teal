@@ -13,7 +13,8 @@ class Inventory(Thing):
     tag_provider = db.Column(db.URL(), nullable=False)
     tag_token = db.Column(db.UUID(as_uuid=True), unique=True, nullable=False)
     tag_token.comment = """The token to access a Tag service."""
-    org_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey('organization.id'), nullable=False)
+    # todo no validation that UUID is from an existing organization
+    org_id = db.Column(db.UUID(as_uuid=True), nullable=False)
 
     __table_args__ = (
         db.Index('id_hash', id, postgresql_using='hash'),
