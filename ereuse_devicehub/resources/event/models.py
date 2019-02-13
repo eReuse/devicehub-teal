@@ -593,7 +593,12 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
        plus the ``WorkbenchRate`` from 1.
     """
     rating = Column(Float(decimal_return_scale=2), check_range('rating', *RATE_POSITIVE))
-    rating.comment = """The rating for the content."""
+    rating.comment = """The rating for the content.
+    
+    This value is automatically set by rating algorithms. In case that
+    no algorithm is defined per the device and type of rate, this
+    value is None.
+    """
     software = Column(DBEnum(RatingSoftware))
     software.comment = """The algorithm used to produce this rating."""
     version = Column(StrictVersionType)
@@ -604,8 +609,7 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
     @property
     def rating_range(self) -> RatingRange:
-        if self.rating:
-            return RatingRange.from_score(self.rating)
+        return RatingRange.from_score(self.rating) if self.rating else None
 
     @declared_attr
     def __mapper_args__(cls):
@@ -782,13 +786,12 @@ class AggregateRate(Rate):
 
     @classmethod
     def from_workbench_rate(cls, rate: WorkbenchRate):
-        aggregate = cls()
-        aggregate.rating = rate.rating
-        aggregate.software = rate.software
-        aggregate.appearance = rate.appearance
-        aggregate.functionality = rate.functionality
-        aggregate.device = rate.device
-        aggregate.workbench = rate
+        aggregate = cls(rating=rate.rating,
+                        software=rate.software,
+                        appearance=rate.appearance,
+                        functionality=rate.functionality,
+                        device=rate.device,
+                        workbench=rate)
         return aggregate
 
 
@@ -836,7 +839,7 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
     @classmethod
     def to_price(cls, value: Union[Decimal, float], rounding=ROUND) -> Decimal:
         """Returns a Decimal value with the correct scale for Price.price."""
-        if isinstance(value, float):
+        if isinstance(value, (float, int)):
             value = Decimal(value)
         # equation from marshmallow.fields.Decimal
         return value.quantize(Decimal((0, (1,), -cls.SCALE)), rounding=rounding)
@@ -920,8 +923,8 @@ class EreusePrice(Price):
                 self.warranty2 = EreusePrice.Type(rate[self.WARRANTY2][role], price)
 
     def __init__(self, rating: AggregateRate, **kwargs) -> None:
-        if rating.rating_range == RatingRange.VERY_LOW:
-            raise ValueError('Cannot compute price for Range.VERY_LOW')
+        if not rating.rating_range or rating.rating_range == RatingRange.VERY_LOW:
+            raise InvalidRangeForPrice()
         # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
         price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)
         super().__init__(rating=rating,
@@ -993,7 +996,7 @@ class TestDataStorage(Test):
     assessment = Column(Boolean)
     reallocated_sector_count = Column(SmallInteger)
     power_cycle_count = Column(SmallInteger)
-    reported_uncorrectable_errors = Column(SmallInteger)
+    _reported_uncorrectable_errors = Column('reported_uncorrectable_errors', Integer)
     command_timeout = Column(Integer)
     current_pending_sector_count = Column(SmallInteger)
     offline_uncorrectable = Column(SmallInteger)
@@ -1020,6 +1023,16 @@ class TestDataStorage(Test):
             t += ' with a lifetime of {:.1f} years.'.format(self.lifetime.days / 365)
         t += self.description
         return t
+
+    @property
+    def reported_uncorrectable_errors(self):
+        return self._reported_uncorrectable_errors
+
+    @reported_uncorrectable_errors.setter
+    def reported_uncorrectable_errors(self, value):
+        # There is no value for a stratospherically big number
+        self._reported_uncorrectable_errors = min(value, db.PSQL_INT_MAX)
+
 
 
 class StressTest(Test):
@@ -1401,3 +1414,7 @@ def update_parent(target: Union[EraseBasic, Test, Install], device: Device, _, _
     target.parent = None
     if isinstance(device, Component):
         target.parent = device.parent
+
+
+class InvalidRangeForPrice(ValueError):
+    pass

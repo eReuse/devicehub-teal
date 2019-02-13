@@ -36,6 +36,7 @@ class SQLAlchemy(SchemaSQLAlchemy):
     #   manually import them all the time
     UUID = postgresql.UUID
     CIText = citext.CIText
+    PSQL_INT_MAX = 2147483648
 
     def drop_all(self, bind='__all__', app=None, common_schema=True):
         """A faster nuke-like option to drop everything."""
