@@ -1,0 +1,2546 @@
+{
+  "attempts": 0,
+  "ip": "192.168.2.143",
+  "names": [],
+  "snapshots": [
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "f4585175-fce5-4347-b65b-154ec41c2e64",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7574
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24743.88
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.6765
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.6319270000000001
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "237810AC",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "2378107D",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 135.0,
+            "writingSpeed": 21.1
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:14:28",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:46:39",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:00:34",
+                "startingTime": "2019-02-15T10:00:34",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:14:28",
+                "startingTime": "2019-02-15T11:14:28",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "Z2APCX0R",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 21357,
+            "passedLifetime": 21357,
+            "powerCycleCount": 1397,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:c4:b8",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:19:47",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTXF17",
+        "type": "Desktop"
+      },
+      "elapsed": "2:31:23",
+      "inventory": {
+        "elapsed": "0:00:26"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "5883bda1-87c5-42b2-909b-2df42f304dc2",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.757
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24743.84
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.6805
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.5999510000000001
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9 1",
+          "serialNumber": "23789D4E",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "23789D6B",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 136.0,
+            "writingSpeed": 22.0
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T10:24:23",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:51:29",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:07:09",
+                "startingTime": "2019-02-15T10:07:09",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T10:24:23",
+                "startingTime": "2019-02-15T10:24:23",
+                "success": false
+              }
+            ],
+            "success": false
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "Z2APDN6M",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 42137,
+            "passedLifetime": 42137,
+            "powerCycleCount": 1949,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:97:be",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T09:24:49",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTWK56",
+        "type": "Desktop"
+      },
+      "elapsed": "1:36:25",
+      "inventory": {
+        "elapsed": "0:00:26"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "0ff1b0f5-2386-44bc-9d80-761c17271bd4",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7567
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24743.8
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.6986
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.599761
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Undefined",
+          "model": "CT51264BA160B.C16F",
+          "serialNumber": "A31DB3D2",
+          "size": 4096,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Undefined",
+          "model": "CT51264BA160B.C16F",
+          "serialNumber": "A4168D04",
+          "size": 4096,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 136.0,
+            "writingSpeed": 20.7
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:21:10",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:51:39",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:06:26",
+                "startingTime": "2019-02-15T10:06:26",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:21:10",
+                "startingTime": "2019-02-15T11:21:10",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "Z2APB9Q2",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 46742,
+            "passedLifetime": 46742,
+            "powerCycleCount": 1263,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 1,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:99:e9",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:21:32",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTWZ24",
+        "type": "Desktop"
+      },
+      "elapsed": "2:33:03",
+      "inventory": {
+        "elapsed": "0:00:26"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "9a70d5cc-ea7c-4197-a087-4ac17c2c5f2b",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7573
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24740.4
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.6766
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.5999510000000001
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "072BD846",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "072BD7B6",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 126.0,
+            "writingSpeed": 19.7
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:31:12",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:51:20",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:11:21",
+                "startingTime": "2019-02-15T10:11:21",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:31:12",
+                "startingTime": "2019-02-15T11:31:12",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "W2AA624X",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 1,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 37924,
+            "passedLifetime": 37924,
+            "powerCycleCount": 1760,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 1,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:c8:38",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:31:23",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTXT20",
+        "type": "Desktop"
+      },
+      "elapsed": "2:43:24",
+      "inventory": {
+        "elapsed": "0:00:27"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "cc1d3699-29ee-4863-8dc0-89973d7a8d45",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7625
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24738.96
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.6795
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.624926
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "23780FF4",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "23780FE5",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 132.0,
+            "writingSpeed": 20.7
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:18:30",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:44:08",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:01:22",
+                "startingTime": "2019-02-15T10:01:22",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:18:30",
+                "startingTime": "2019-02-15T11:18:30",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "W2AAC2K5",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 22514,
+            "passedLifetime": 22514,
+            "powerCycleCount": 769,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:cb:4b",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:25:57",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTXF58",
+        "type": "Desktop"
+      },
+      "elapsed": "2:37:54",
+      "inventory": {
+        "elapsed": "0:00:27"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "4485fa87-bd30-46ce-ab92-b5e913bec675",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7268
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24738.24
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.6768
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.5999510000000001
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "237814B7",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "237816BB",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 136.0,
+            "writingSpeed": 20.5
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:18:43",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:50:36",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:04:42",
+                "startingTime": "2019-02-15T10:04:42",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:18:43",
+                "startingTime": "2019-02-15T11:18:43",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "Z2APGZS7",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 31232,
+            "passedLifetime": 31232,
+            "powerCycleCount": 1013,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:9d:cb",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:20:07",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTVY71",
+        "type": "Desktop"
+      },
+      "elapsed": "2:31:39",
+      "inventory": {
+        "elapsed": "0:00:26"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "deac0a5f-11d4-4699-b998-93ed458eb7ac",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7552
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24738.24
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.6785
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.599761
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "2377FA0D",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "2377FED7",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 132.0,
+            "writingSpeed": 21.4
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T12:23:58",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T09:50:47",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T11:07:25",
+                "startingTime": "2019-02-15T11:07:25",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T12:23:58",
+                "startingTime": "2019-02-15T12:23:58",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "Z2ANQ1Y5",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 40927,
+            "passedLifetime": 40927,
+            "powerCycleCount": 1099,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:b8:9c",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:25:09",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTWA58",
+        "type": "Desktop"
+      },
+      "elapsed": "2:36:42",
+      "inventory": {
+        "elapsed": "0:00:26"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "53465692-c696-4287-80c4-6ff16fda9974",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7122
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24738.12
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.701
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.599761
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "23789432",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "2378940D",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 142.0,
+            "writingSpeed": 22.2
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:13:59",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:50:05",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:02:56",
+                "startingTime": "2019-02-15T10:02:56",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:13:59",
+                "startingTime": "2019-02-15T11:13:59",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "Z2APBGND",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 34082,
+            "passedLifetime": 34082,
+            "powerCycleCount": 448,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:98:8d",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:15:52",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTWY73",
+        "type": "Desktop"
+      },
+      "elapsed": "2:27:27",
+      "inventory": {
+        "elapsed": "0:00:26"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "3d184ebb-e74f-4432-9709-169c2b082d29",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7566
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24741.12
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.6868
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.5999510000000001
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Undefined",
+          "model": "RMR1810EC58E8F1333",
+          "serialNumber": "09E3CE28",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Undefined",
+          "model": "RMR1810EC58E8F1333",
+          "serialNumber": "41B61358",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 137.0,
+            "writingSpeed": 20.1
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:23:14",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:54:06",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:08:41",
+                "startingTime": "2019-02-15T10:08:41",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:23:14",
+                "startingTime": "2019-02-15T11:23:14",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "W2AA652D",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 15924,
+            "passedLifetime": 15924,
+            "powerCycleCount": 537,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:c9:3d",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:20:44",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTWV65",
+        "type": "Desktop"
+      },
+      "elapsed": "2:32:40",
+      "inventory": {
+        "elapsed": "0:00:27"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "50d26e0a-037a-4f30-8960-9278cbbf53c6",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7044
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24743.64
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.6799
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.624926
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "2377EDC3",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "2377EDAC",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 130.0,
+            "writingSpeed": 21.1
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:17:04",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:45:34",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:01:20",
+                "startingTime": "2019-02-15T10:01:20",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:17:04",
+                "startingTime": "2019-02-15T11:17:04",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "W2A7LN8P",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 39961,
+            "passedLifetime": 39961,
+            "powerCycleCount": 774,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:c7:32",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:22:54",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTXF36",
+        "type": "Desktop"
+      },
+      "elapsed": "2:35:03",
+      "inventory": {
+        "elapsed": "0:00:26"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "8caee209-77f6-4fa8-b5c0-31a456fc51c2",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7585
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24738.92
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.6772
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.628521
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Undefined",
+          "model": "RMR1810EC58E8F1333",
+          "serialNumber": "41135B58",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Undefined",
+          "model": "RMR1810EC58E8F1333",
+          "serialNumber": "41015B58",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 135.0,
+            "writingSpeed": 20.7
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:15:56",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:49:26",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:02:44",
+                "startingTime": "2019-02-15T10:02:44",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:15:56",
+                "startingTime": "2019-02-15T11:15:56",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "W2AAC5F9",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 46073,
+            "passedLifetime": 46073,
+            "powerCycleCount": 789,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:a6:04",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:18:04",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTXP55",
+        "type": "Desktop"
+      },
+      "elapsed": "2:30:02",
+      "inventory": {
+        "elapsed": "0:00:26"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "e5ba685b-d96a-4f20-b6de-cdaff62b0ea9",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7441
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24744.32
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.6824
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.604681
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "237803F7",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "237809F2",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 129.0,
+            "writingSpeed": 20.6
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:27:13",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:45:54",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:06:38",
+                "startingTime": "2019-02-15T10:06:38",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:27:13",
+                "startingTime": "2019-02-15T11:27:13",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "Z2APCY9M",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 20662,
+            "passedLifetime": 20662,
+            "powerCycleCount": 1688,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:a1:0c",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:32:50",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTWY30",
+        "type": "Desktop"
+      },
+      "elapsed": "2:44:51",
+      "inventory": {
+        "elapsed": "0:00:26"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "e075afda-11bb-4927-a10c-f216b4d411cb",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7624
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24738.16
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.7953
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.5999510000000001
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Micron",
+          "model": "8KTF25664AZ-1G4M1",
+          "serialNumber": "E688B4A9",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Micron",
+          "model": "8KTF25664AZ-1G4M1",
+          "serialNumber": "E688B4B5",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 138.0,
+            "writingSpeed": 21.8
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:19:39",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:52:33",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:06:21",
+                "startingTime": "2019-02-15T10:06:21",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:19:39",
+                "startingTime": "2019-02-15T11:19:39",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "Z2APS51G",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 1,
+            "CurrentPendingSectorCount": 1720,
+            "OfflineUncorrectable": 1720,
+            "assessment": true,
+            "error": true,
+            "firstError": 976773072,
+            "lifetime": 53765,
+            "passedLifetime": 53765,
+            "powerCycleCount": 1041,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 201,
+            "status": "Completed: read failure",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "44:37:e6:90:af:e7",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:20:10",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "S4FVYG2",
+        "type": "Desktop"
+      },
+      "elapsed": "2:30:54",
+      "inventory": {
+        "elapsed": "0:00:28"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 3,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "19c1e1d8-c135-4dbb-bfd5-b9453b8cc6e9",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7615
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24743.84
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.7073
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.6001400000000001
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9 1",
+          "serialNumber": "23789D4E",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "23789D6B",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 136.0,
+            "writingSpeed": 22.0
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "Z2APDN6M",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 42139,
+            "passedLifetime": 42139,
+            "powerCycleCount": 1949,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:97:be",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T09:29:22",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTWK56",
+        "type": "Desktop"
+      },
+      "elapsed": "0:03:30",
+      "inventory": {
+        "elapsed": "0:00:25"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "8e0882c2-dbae-499c-abe9-426e8ec788c8",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.7507
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24746.64
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.7038
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.601086
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Undefined",
+          "model": "RMR1810EC58E8F1333",
+          "serialNumber": "09E7CE28",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Undefined",
+          "model": "RMR1810EC58E8F1333",
+          "serialNumber": "0902CF28",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 133.0,
+            "writingSpeed": 20.5
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:20:32",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:50:54",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:05:49",
+                "startingTime": "2019-02-15T10:05:49",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:20:32",
+                "startingTime": "2019-02-15T11:20:32",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "W2AAC2QB",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 38491,
+            "passedLifetime": 38491,
+            "powerCycleCount": 802,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:ca:b6",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:21:13",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTWV63",
+        "type": "Desktop"
+      },
+      "elapsed": "2:33:10",
+      "inventory": {
+        "elapsed": "0:00:26"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    },
+    {
+      "@type": "devices:Snapshot",
+      "_error": null,
+      "_phases": 4,
+      "_saved": null,
+      "_totalPhases": 4,
+      "_uploaded": null,
+      "_uuid": "e2341753-6484-4a95-9e30-dd61e13f60ef",
+      "automatic": true,
+      "benchmarks": [
+        {
+          "@type": "BenchmarkRamSysbench",
+          "score": 0.704
+        }
+      ],
+      "components": [
+        {
+          "@type": "Processor",
+          "address": 64,
+          "benchmarks": [
+            {
+              "@type": "BenchmarkProcessor",
+              "score": 24738.16
+            },
+            {
+              "@type": "BenchmarkProcessorSysbench",
+              "score": 8.6803
+            }
+          ],
+          "manufacturer": "Intel Corp.",
+          "model": "Intel Core i5-2400 CPU @ 3.10GHz",
+          "numberOfCores": 4,
+          "serialNumber": null,
+          "speed": 1.599572
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "23788693",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "RamModule",
+          "manufacturer": "Samsung",
+          "model": "M378B5773DH0-CH9",
+          "serialNumber": "2378867E",
+          "size": 2048,
+          "speed": 1333.0
+        },
+        {
+          "@type": "HardDrive",
+          "benchmark": {
+            "@type": "BenchmarkHardDrive",
+            "readingSpeed": 96.8,
+            "writingSpeed": 18.2
+          },
+          "erasure": {
+            "@type": "EraseBasic",
+            "cleanWithZeros": true,
+            "endingTime": "2019-02-15T11:24:37",
+            "secureRandomSteps": 1,
+            "startingTime": "2019-02-15T08:51:22",
+            "steps": [
+              {
+                "@type": "Zeros",
+                "endingTime": "2019-02-15T10:08:10",
+                "startingTime": "2019-02-15T10:08:10",
+                "success": true
+              },
+              {
+                "@type": "Random",
+                "endingTime": "2019-02-15T11:24:37",
+                "startingTime": "2019-02-15T11:24:37",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "interface": "ata\n",
+          "manufacturer": "Seagate",
+          "model": "ST500DM002-1BD14",
+          "serialNumber": "Z2ANQ0F2",
+          "size": 476940,
+          "test": {
+            "@type": "TestHardDrive",
+            "CommandTimeout": 0,
+            "CurrentPendingSectorCount": 0,
+            "OfflineUncorrectable": 0,
+            "assessment": true,
+            "error": false,
+            "firstError": null,
+            "lifetime": 29050,
+            "passedLifetime": 29050,
+            "powerCycleCount": 738,
+            "reallocatedSectorCount": 0,
+            "reportedUncorrectableErrors": 0,
+            "status": "Completed without error",
+            "type": "Short offline"
+          },
+          "type": "HDD"
+        },
+        {
+          "@type": "GraphicCard",
+          "manufacturer": "Intel Corporation",
+          "memory": 256.0,
+          "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+          "serialNumber": null
+        },
+        {
+          "@type": "Motherboard",
+          "connectors": {
+            "firewire": 0,
+            "pcmcia": 0,
+            "serial": 1,
+            "usb": 2
+          },
+          "manufacturer": "LENOVO",
+          "model": null,
+          "serialNumber": "INVALID",
+          "totalSlots": 4,
+          "usedSlots": 2
+        },
+        {
+          "@type": "NetworkAdapter",
+          "manufacturer": "Intel Corporation",
+          "model": "82579LM Gigabit Network Connection",
+          "serialNumber": "cc:52:af:45:98:41",
+          "speed": 1000
+        },
+        {
+          "@type": "SoundCard",
+          "manufacturer": "Intel Corporation",
+          "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+          "serialNumber": null
+        }
+      ],
+      "date": "2019-02-15T10:24:53",
+      "device": {
+        "@type": "Computer",
+        "manufacturer": "LENOVO",
+        "model": "7072A37",
+        "serialNumber": "PBTWK83",
+        "type": "Desktop"
+      },
+      "elapsed": "2:36:50",
+      "inventory": {
+        "elapsed": "0:00:29"
+      },
+      "snapshotSoftware": "Workbench",
+      "tests": [
+        {
+          "@type": "StressTest",
+          "elapsed": "0:02:00",
+          "success": true
+        }
+      ],
+      "version": "10.0b8"
+    }
+  ],
+  "usbs": []
+}

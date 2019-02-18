@@ -21,7 +21,6 @@ def test_api_docs(client: Client):
         '/users/',
         '/devices/',
         '/tags/',
-        '/snapshots/',
         '/users/login/',
         '/events/',
         '/lots/',
