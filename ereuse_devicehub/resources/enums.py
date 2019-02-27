@@ -119,6 +119,21 @@ class FunctionalityRange(Enum):
         return self.name
 
 
+FUNCTIONALITY_RANGE = -0.25, 0.5
+
+
+@unique
+class FunctionalityRangev2(Enum):
+    """Grade the buttons and chassis that affect its usage, like screen defect or camera defects"""
+    A = 'A. All the buttons works perfectly, no screen/camera defects and chassis without issues'
+    B = 'B. There is a button difficult to press or unstable it, a screen/camera defect or chassis problem'
+    C = 'C.	Multiple buttons don\'t work; broken or unusable it, some screen/camera defects and chassis problems'
+    D = 'D.	All buttons. screen or chassis don\'t work; broken or unusable it, difficult to usage.'
+    NONE = 'NA. Grade doesn’t exists'
+
+    def __str__(self):
+        return self.name
+
 @unique
 class Bios(Enum):
     """How difficult it has been to set the bios to boot from the network."""
@@ -131,6 +146,8 @@ class Bios(Enum):
     def __str__(self):
         return self.name
 
+
+# TODO add all grade tables (chassis defects, camera defects, buttons test, connectivity, ..)
 
 @unique
 class Orientation(Enum):

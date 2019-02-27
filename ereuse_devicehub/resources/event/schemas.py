@@ -14,7 +14,7 @@ from ereuse_devicehub.resources.agent import schemas as s_agent
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
     PhysicalErasureMethod, PriceSoftware, RATE_POSITIVE, RatingRange, RatingSoftware, ReceiverRole, \
-    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
+    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength, FunctionalityRangev2
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
@@ -109,6 +109,7 @@ class StepRandom(Step):
     __doc__ = m.StepRandom.__doc__
 
 
+
 class Rate(EventWithOneDevice):
     __doc__ = m.Rate.__doc__
     rating = Integer(validate=Range(*RATE_POSITIVE),
@@ -157,6 +158,28 @@ class WorkbenchRate(ManualRate):
     graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
 
 
+"""
+    WORKBENCH RATE COMPUTER
+    Adaptation of old class WorkbenchRate
+"""
+
+
+class WorkbenchRateComputer(ManualRate):
+    __doc__ = m.WorkbenchRate.__doc__
+    processor = Float()
+    ram = Float()
+    data_storage = Float()
+    graphic_card = Float()
+    bios = Float()
+    bios_range = EnumField(Bios,
+                           description=m.WorkbenchComputerRate.bios_range.comment,
+                           data_key='biosRange')
+    data_storage_range = EnumField(RatingRange, dump_only=True, data_key='dataStorageRange')
+    ram_range = EnumField(RatingRange, dump_only=True, data_key='ramRange')
+    processor_range = EnumField(RatingRange, dump_only=True, data_key='processorRange')
+    graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
+
+
 class AggregateRate(Rate):
     __doc__ = m.AggregateRate.__doc__
     workbench = NestedOn(WorkbenchRate, dump_only=True,
@@ -185,6 +208,106 @@ class AggregateRate(Rate):
     ram_range = EnumField(RatingRange, dump_only=True, data_key='ramRange')
     processor_range = EnumField(RatingRange, dump_only=True, data_key='processorRange')
     graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
+
+
+class QualityRate(Rate):
+    __doc__ = m.QualityRate.__doc__
+
+    ram = Float(dump_only=True, description=m.QualityRate.ram.comment)
+    processor = Float(dump_only=True, description=m.QualityRate.processor.comment)
+    data_storage = Float(dump_only=True, description=m.QualityRate.data_storage.comment)
+
+
+""" New class for WorkbenchRate in Rate v2"""
+
+
+class QualityRateComputer(Rate):
+    __doc__ = m.QualityRateComputer.__doc__
+
+    """ List of components appears in general quality rate a device
+    
+    ram = Float(dump_only=True, description=m.QualityRateComputer.ram.comment)
+    processor = Float(dump_only=True, description=m.QualityRateComputer.processor.comment)
+    data_storage = Float(dump_only=True, description=m.QualityRateComputer.data_storage.comment)
+    """
+
+    graphic_card = Float(dump_only=True, description=m.QualityRateComputer.processor.comment)
+    network_adapter = Float(dump_only=True, description=m.QualityRateComputer.network_adapter.comment)
+
+
+class QualityRateMobile(Rate):
+    __doc__ = m.QualityRateMobile.__doc__
+
+    """ List of components appears in general quality rate a device
+    
+    ram = Float(dump_only=True, description=m.QualityRateMobile.ram.comment)
+    processor = Float(dump_only=True, description=m.QualityRateMobile.processor.comment)
+    data_storage = Float(dump_only=True, description=m.QualityRateMobile.data_storage.comment)
+    """
+
+    display = Float(dump_only=True, description=m.QualityRateMobile.display.comment)
+    battery = Float(dump_only=True, description=m.QualityRateMobile.batter.comment)
+    camera = Float(dump_only=True, description=m.QualityRateMobile.camera.comment)
+
+
+class FunctionalityRate(Rate):
+    __doc__ = m.FunctionalityRate.__doc__
+
+    functionality = EnumField(dump_only=True, description=m.FunctionalityRate.functionality.comment)
+    functionality_range = EnumField(dump_only=True, description=m.FunctionalityRate.functionality_range.comment)
+    connectivity_rate = EnumField(dump_only=True, description=m.FunctionalityRate.connectivity_rate.comment)
+    audio_rate = EnumField(dump_only=True, description=m.FunctionalityRate.audio_rate.comment)
+
+
+class FinalRate(Rate):
+    __doc__ = m.FinalRate.__doc__
+    workbench_computer = NestedOn(WorkbenchComputer, dump_only=True,
+                                  description=m.ResultRate.workbench_computer_id.comment)
+    workbench_mobile = NestedOn(WorkbenchMobile, dump_only=True,
+                                description=m.ResultRate.workbench_mobile_id.comment)
+    bios = EnumField(Bios, dump_only=True)
+    bios_range = EnumField(Bios,
+                           description=m.WorkbenchRate.bios_range.comment,
+                           data_key='biosRange')
+
+
+# TODO Finish input rates (internal and external sources) - Whats really interesting to save in BD?? Whichs aspects?
+class ResultRate(Rate):
+    __doc__ = m.ResultRate.__doc__
+    # TODO ask for what to do NestedOn??
+    workbench_computer = NestedOn(WorkbenchRateComputer, dump_only=True,
+                                  description=m.ResultRate.workbench_computer_id.comment)
+    workbench_mobile = NestedOn(WorkbenchRateMobile, dump_only=True,
+                                description=m.ResultRate.workbench_mobile_id.comment)
+    manual_computer = NestedOn(ManualRateComputer,
+                               dump_only=True,
+                               description=m.ResultRate.manual_computer_id.comment)
+
+    processor = Float(dump_only=True)
+    ram = Float(dump_only=True)
+    data_storage = Float(dump_only=True)
+    graphic_card = Float(dump_only=True)
+    bios = EnumField(Bios, dump_only=True)
+    bios_range = EnumField(Bios,
+                           description=m.WorkbenchRate.bios_range.comment,
+                           data_key='biosRange')
+    appearance_range = EnumField(AppearanceRange,
+                                 required=True,
+                                 data_key='appearanceRange',
+                                 description=m.ManualRate.appearance_range.comment)
+    functionality_range = EnumField(FunctionalityRange,
+                                    required=True,
+                                    data_key='functionalityRange',
+                                    description=m.ManualRate.functionality_range.comment)
+    labelling = Boolean(description=m.ManualRate.labelling.comment)
+    data_storage_range = EnumField(RatingRange, dump_only=True, data_key='dataStorageRange')
+    ram_range = EnumField(RatingRange, dump_only=True, data_key='ramRange')
+    processor_range = EnumField(RatingRange, dump_only=True, data_key='processorRange')
+    graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
+
+
+
+
 
 
 class Price(EventWithOneDevice):

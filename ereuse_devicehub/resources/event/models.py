@@ -31,7 +31,8 @@ from ereuse_devicehub.resources.device.models import Component, Computer, DataSt
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ErasureStandards, \
     FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, \
     RatingRange, RatingSoftware, ReceiverRole, Severity, SnapshotExpectedEvents, SnapshotSoftware, \
-    TestDataStorageLength
+    TestDataStorageLength, FUNCTIONALITY_RANGE, FunctionalityRangev2
+from ereuse_devicehub.resources.event.rate.workbench.v2_0 import QualityRate, FunctionalityRate
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -650,7 +651,7 @@ class ManualRate(IndividualRate):
         raise NotImplementedError()
 
 
-class WorkbenchRate(ManualRate):
+class WorkbenchComputerRate(ManualRate):
     id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id), primary_key=True)
     processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE))
     ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE))
@@ -696,6 +697,172 @@ class WorkbenchRate(ManualRate):
             return RatingRange.from_score(self.graphic_card)
 
 
+"""     QUALITY RATE CODE START HERE     """
+
+
+class QualityRate(Rate):
+    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+    processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE),
+                       comment='Is a test explain cpu component.')
+    ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE),
+                 comment='RAM memory rate.')
+    data_storage = Column(Float(decimal_return_scale=2), check_range('data_storage', *RATE_POSITIVE),
+                          comment='Data storage rate, like HHD, SSD.')
+
+    @property
+    def ram_range(self):
+        return self.workbench.ram_range
+
+    @property
+    def processor_range(self):
+        return self.workbench.processor_range
+
+    @property
+    def display_range(self):
+        return self.workbench.data_storage_range
+
+    @property
+    def data_storage_range(self):
+        return self.workbench.data_storage_range
+
+    @property
+    def battery_range(self):
+        return self.workbench.ram_range
+
+    @property
+    def camera_range(self):
+        return self.workbench_mobile.camera_range
+
+    @property
+    def graphic_card_range(self):
+        return self.workbench_mobil.graphic_card_range
+
+
+class QualityRateComputer(QualityRate):
+    id = Column(UUID(as_uuid=True), ForeignKey(QualityRate.id), primary_key=True)
+    processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE),
+                       comment='Is a test explain cpu component.')
+    ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE),
+                 comment='RAM memory rate.')
+    data_storage = Column(Float(decimal_return_scale=2), check_range('data_storage', *RATE_POSITIVE),
+                          comment='Data storage rate, like HHD, SSD.')
+
+    graphic_card = Column(Float(decimal_return_scale=2), check_range('graphic_card', *RATE_POSITIVE),
+                          comment='Graphic card score in performance, amount of memory and benchmark result')
+    network_adapter = Column(Float(decimal_return_scale=2), check_range('network_adapter', *RATE_POSITIVE),
+                             comment='Network adapter rate, take it speed limit')
+
+    bios = Column(Float(decimal_return_scale=2), check_range('bios', *RATE_POSITIVE))
+    bios_range = Column(DBEnum(Bios))
+    bios_range.comment = Bios.__doc__
+
+    # todo ensure for WorkbenchRate version and software are not None when inserting them
+
+    def ratings(self):
+        """
+        #Computes all the possible rates taking this rating as a model.
+
+        #Returns a set of ratings, including this one, which is mutated,
+        #and the final :class:`.AggregateRate`.
+        """
+        from ereuse_devicehub.resources.event.rate.main import main
+        return main(self, **app.config.get_namespace('WORKBENCH_RATE_'))
+
+    @property
+    def graphic_card_range(self):
+        if self.graphic_card:
+            return RatingRange.from_score(self.graphic_card)
+
+    @property
+    def network_adapter_range(self):
+        return self.workbench_mobil.network_adapter_range
+
+    @property
+    def bios_range(self):
+        return self.workbench_mobil.bios_range
+
+
+class QualityRateMobile(QualityRate):
+    id = Column(UUID(as_uuid=True), ForeignKey(QualityRate.id), primary_key=True)
+    display = Column(Float(decimal_return_scale=2), check_range('display', *RATE_POSITIVE))
+    display.comment = 'Display rate, screen resolution and size to calculate PPI and convert in score'
+    battery = Column(Float(decimal_return_scale=2), check_range('battery', *RATE_POSITIVE),
+                     comment='Battery rate is related with capacity and its health')
+    camera = Column(Float(decimal_return_scale=2), check_range('camera', *RATE_POSITIVE),
+                    comment='Camera rate take into account resolution')
+
+    graphic_card = Column(Float(decimal_return_scale=2), check_range('graphic_card', *RATE_POSITIVE),
+                          comment='Graphic card score in performance, amount of memory and benchmark result')
+    network_adapter = Column(Float(decimal_return_scale=2), check_range('network_adapter', *RATE_POSITIVE),
+                             comment='Network adapter rate, take it speed limit')
+
+    bios = Column(Float(decimal_return_scale=2), check_range('bios', *RATE_POSITIVE))
+    bios_range = Column(DBEnum(Bios))
+    bios_range.comment = Bios.__doc__
+
+    # todo ensure for WorkbenchRate version and software are not None when inserting them
+
+    def ratings(self):
+        """
+        #Computes all the possible rates taking this rating as a model.
+        """
+        from ereuse_devicehub.resources.event.rate.main import main
+        return main(self, **app.config.get_namespace('WORKBENCH_RATE_'))
+
+    @property
+    def display_range(self):
+        if self.data_storage:
+            return RatingRange.from_score(self.data_storage)
+
+    @property
+    def battery_range(self):
+        if self.ram:
+            return RatingRange.from_score(self.ram)
+
+    @property
+    def camera_range(self):
+        if self.processor:
+            return RatingRange.from_score(self.processor)
+
+    @property
+    def graphic_card_range(self):
+        if self.graphic_card:
+            return RatingRange.from_score(self.graphic_card)
+
+
+class FunctionalityRate(Rate):
+    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+    functionality = Column(Float(decimal_return_scale=2), check_range('functionality', *FUNCTIONALITY_RANGE))
+    functionality.comment = 'Functionality rate of a device'
+
+    functionality_range = Column(DBEnum(FunctionalityRangev2))
+    functionality_range.comment = FunctionalityRangev2.__doc__
+
+    connectivity = Column(Float(decimal_return_scale=2),
+                          comment='This punctuation covers a series of aspects related to connectivity.')
+    audio = Column(Float(decimal_return_scale=2), comment='Take into account loudspeaker and microphone')
+
+    @property
+    def connectivity_rate(self):
+        yield
+
+    @property
+    def audio_rate(self):
+        yield
+
+    @property
+    def test_buttonse(self):
+        yield
+
+    @classmethod
+    def test_camera_defects(self):
+        yield
+
+
+class FinalRate(Rate):
+    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+
+
 class AggregateRate(Rate):
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
     manual_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
@@ -711,16 +878,16 @@ class AggregateRate(Rate):
                                           order_by=lambda: AggregateRate.created,
                                           collection_class=OrderedSet),
                           primaryjoin=manual_id == ManualRate.id)
-    workbench_id = Column(UUID(as_uuid=True), ForeignKey(WorkbenchRate.id))
+    workbench_id = Column(UUID(as_uuid=True), ForeignKey(QualityRateComputer.id))
     workbench_id.comment = """The WorkbenchRate used to generate
     this aggregation, or None if none used.
     """
-    workbench = relationship(WorkbenchRate,
+    workbench = relationship(QualityRateComputer,
                              backref=backref('aggregate_rate_workbench',
                                              lazy=True,
                                              order_by=lambda: AggregateRate.created,
                                              collection_class=OrderedSet),
-                             primaryjoin=workbench_id == WorkbenchRate.id)
+                             primaryjoin=workbench_id == QualityRateComputer.id)
 
     def __init__(self, *args, **kwargs) -> None:
         kwargs.setdefault('version', StrictVersion('1.0'))
@@ -781,7 +948,198 @@ class AggregateRate(Rate):
         return self.workbench.labelling
 
     @classmethod
-    def from_workbench_rate(cls, rate: WorkbenchRate):
+    def from_workbench_rate(cls, rate: QualityRateComputer):
+        aggregate = cls()
+        aggregate.rating = rate.rating
+        aggregate.software = rate.software
+        aggregate.appearance = rate.appearance
+        aggregate.functionality = rate.functionality
+        aggregate.device = rate.device
+        aggregate.workbench = rate
+        return aggregate
+
+
+####################################################################################
+
+
+class ResultRate(Rate):
+    """The act of grading the appearance, quality (performance), and functionality
+        of a device.
+
+        There are five categories of ``Rate``:
+        1. ``Quality``. How good is the machine, in terms of performance.
+        2. ``Functionality``.
+        3. ``Appearance``.
+        4. ``Market value``.
+        5. ``Cost of repair``.
+
+
+        There are types of rating a device:
+
+        1. Rate Quality
+        2. Rate Functionality
+        3. Rate Final
+
+
+        List of source where can input information of rating a device:
+
+        1. When processing the device with Workbench Computer/Mobile.
+        2. Using the Android App (through Scan).
+        3.
+        4. Anytime after manually written in a form in the website.
+        """
+
+    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+    quality_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
+    quality_id.comment = """The Quality Rate used to generate this
+    aggregation, or None if none used.
+    """
+
+    func_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
+    func_id.comment = """The Functionality Rate used to generate this
+      aggregation, or None if none used.
+      """
+
+    final_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
+    final_id.comment = """The Final Rate used to generate this
+      aggregation, or None if none used.
+      """
+
+    """     MANUAL INPUT      """
+    manual_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
+    manual_id.comment = """The ManualEvent used to generate this
+      aggregation, or None if none used.
+
+      An example of ManualEvent is using the web or the Android app
+      to rate a device.
+      """
+    manual = relationship(ManualRate,
+                          backref=backref('aggregate_rate_manual',
+                                          lazy=True,
+                                          order_by=lambda: ResultRate.created,
+                                          collection_class=OrderedSet),
+                          primaryjoin=manual_id == ManualRate.id)
+
+    """     WORKBENCH COMPUTER       """
+    workbench_computer_id = Column(UUID(as_uuid=True), ForeignKey(QualityRateComputer.id))
+    workbench_computer_id.comment = """The WorkbenchRate used to generate
+    this aggregation, or None if none used.
+    """
+    workbench_computer = relationship(QualityRateComputer,
+                                      backref=backref('aggregate_rate_workbench',
+                                                      lazy=True,
+                                                      order_by=lambda: ResultRate.created,
+                                                      collection_class=OrderedSet),
+                                      primaryjoin=workbench_computer_id == QualityRateComputer.id)
+
+    """     WORKBENCH MOBILE       """
+
+    workbench_mobile_id = Column(UUID(as_uuid=True), ForeignKey(QualityRateMobile.id))
+    workbench_mobile_id.comment = """The WorkbenchRate used to generate
+    this aggregation, or None if none used.
+    """
+    workbench_mobile = relationship(QualityRateMobile,
+                                    backref=backref('aggregate_rate_workbench',
+                                                    lazy=True,
+                                                    order_by=lambda: ResultRate.created,
+                                                    collection_class=OrderedSet),
+                                    primaryjoin=workbench_mobile_id == QualityRateMobile.id)
+
+    def __init__(self, *args, **kwargs) -> None:
+        kwargs.setdefault('version', StrictVersion('1.0'))
+        super().__init__(*args, **kwargs)
+
+    @classmethod
+    def quality_rate(cls, quality: QualityRate):
+        pass
+
+    @classmethod
+    def functionality_rate(cls, func: FunctionalityRate):
+        pass
+
+    @classmethod
+    def final_rate(cls, rate: Rate):
+        pass
+
+    # Categories
+
+    @classmethod
+    def quality_category(cls, quality: QualityRate):
+        pass
+
+    @classmethod
+    def functionality_category(cls, quality: QualityRate):
+        pass
+
+    @classmethod
+    def appearance_category(cls, quality: QualityRate):
+        pass
+
+    @classmethod
+    def maket_value_category(cls, quality: QualityRate):
+        pass
+
+    @classmethod
+    def cost_of_repair_category(cls, quality: QualityRate):
+        pass
+
+
+    # todo take value from LAST event (manual or workbench)
+
+    @property
+    def processor(self):
+        return self.workbench.processor
+
+    @property
+    def ram(self):
+        return self.workbench.ram
+
+    @property
+    def data_storage(self):
+        return self.workbench.data_storage
+
+    @property
+    def graphic_card(self):
+        return self.workbench.graphic_card
+
+    @property
+    def data_storage_range(self):
+        return self.workbench.data_storage_range
+
+    @property
+    def ram_range(self):
+        return self.workbench.ram_range
+
+    @property
+    def processor_range(self):
+        return self.workbench.processor_range
+
+    @property
+    def graphic_card_range(self):
+        return self.workbench.graphic_card_range
+
+    @property
+    def bios(self):
+        return self.workbench.bios
+
+    @property
+    def functionality_range(self):
+        return self.workbench.functionality_range
+
+    @property
+    def appearance_range(self):
+        return self.workbench.appearance_range
+
+    @property
+    def bios_range(self):
+        return self.workbench.bios_range
+
+    @property
+    def labelling(self):
+        return self.workbench.labelling
+
+    @classmethod
+    def from_workbench_rate(cls, rate: QualityRateComputer):
         aggregate = cls()
         aggregate.rating = rate.rating
         aggregate.software = rate.software
