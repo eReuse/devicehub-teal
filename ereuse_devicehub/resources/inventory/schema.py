@@ -8,4 +8,3 @@ class Inventory(Thing):
     id = mf.String(dump_only=True)
     name = mf.String(dump_only=True)
     tag_provider = teal.marshmallow.URL(dump_only=True, data_key='tagProvider')
-    tag_token = mf.UUID(dump_only=True, data_key='tagToken')
