@@ -4,8 +4,8 @@ from typing import Set, Union
 
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.enums import RatingSoftware
-from ereuse_devicehub.resources.event.models import AggregateRate, EreusePrice, Rate, \
-    WorkbenchRate
+from ereuse_devicehub.resources.event.models import AggregateRate, EreusePrice, \
+    InvalidRangeForPrice, Rate, WorkbenchRate
 from ereuse_devicehub.resources.event.rate.workbench import v1_0
 
 RATE_TYPES = {
@@ -72,7 +72,6 @@ def main(rating_model: WorkbenchRate,
             if soft == software and vers == version:
                 aggregation = AggregateRate.from_workbench_rate(rating)
                 events.add(aggregation)
-                with suppress(ValueError):
-                    # We will have exception if range == VERY_LOW
+                with suppress(InvalidRangeForPrice):  # We will have exception if range == VERY_LOW
                     events.add(EreusePrice(aggregation))
     return events

@@ -10,29 +10,28 @@ device:
   model: pc1ml
   manufacturer: pc1mr
 components:
-- type: SolidStateDrive
-  serialNumber: c1s
-  model: c1ml
-  manufacturer: c1mr
-  events:
-  - type: EraseSectors
-    zeros: True
-    startTime: 2018-06-01T08:12:06
-    endTime: 2018-06-01T09:12:06
-    steps:
-    - type: StepZero
-      severity: Info
-      startTime: 2018-06-01T08:15:00
-      endTime: 2018-06-01T09:16:00
-    - type: StepZero
-      severity: Info
-      startTime: 2018-06-01T08:16:00
-      endTime: 2018-06-01T09:17:00
-- type: Processor
-  serialNumber: p1s
-  model: p1ml
-  manufacturer: p1mr
-- type: RamModule
-  serialNumber: rm1s
-  model: rm1ml
-  manufacturer: rm1mr
+  - type: SolidStateDrive
+    serialNumber: c1s
+    model: c1ml
+    manufacturer: c1mr
+    events:
+      - type: EraseSectors
+        startTime: '2018-06-01T08:12:06+02:00'
+        endTime: '2018-06-01T09:12:06+02:00'
+        steps:
+          - type: StepZero
+            severity: Info
+            startTime: '2018-06-01T08:15:00+02:00'
+            endTime: '2018-06-01T09:16:00+02:00'
+          - type: StepRandom
+            severity: Info
+            startTime: '2018-06-01T08:16:00+02:00'
+            endTime: '2018-06-01T09:17:00+02:00'
+  - type: Processor
+    serialNumber: p1s
+    model: p1ml
+    manufacturer: p1mr
+  - type: RamModule
+    serialNumber: rm1s
+    model: rm1ml
+    manufacturer: rm1mr

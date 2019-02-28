@@ -23,9 +23,8 @@ Devicehub is built with [Teal](https://github.com/bustawin/teal) and
 The requirements are:
 
 - Python 3.5.3 or higher. In debian 9 is `# apt install python3-pip`.
-- PostgreSQL 9.6 or higher with pgcrypto and ltree.
-  In debian 9 is `# apt install postgresql-contrib`
-- passlib. In debian 9 is `# apt install python3-passlib`.
+- [PostgreSQL 11 or higher](https://www.postgresql.org/download/).
+- Weasyprint [dependencies](http://weasyprint.readthedocs.io/en/stable/install.html). 
 
 Install Devicehub with *pip*: `pip3 install ereuse-devicehub -U --pre`.
 
@@ -57,10 +56,13 @@ $ flask run
 ```
 
 The error `flask: command not found` can happen when you are not in a 
-*virtual environment*. Try executing then `python3 -m flask`. 
+*virtual environment*. Try executing then `python3 -m flask`.
 
 See the [Flask quickstart](http://flask.pocoo.org/docs/1.0/quickstart/)
 for more info.
+
+The error 'bdist_wheel' can happen when you works with *virtual environment*.
+To fix it, install in the *virtual environment* wheel package.  `pip3 install wheel`
 
 ## Administrating
 Devicehub has many commands that allows you to administrate it. You

@@ -1,8 +1,29 @@
+import citext
 from sqlalchemy import event
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import expression
 from sqlalchemy_utils import view
-from teal.db import SchemaSQLAlchemy
+from teal.db import SchemaSQLAlchemy, SchemaSession
+
+
+class DhSession(SchemaSession):
+    def final_flush(self):
+        """A regular flush that performs expensive final operations
+        through Devicehub (like saving searches), so it is thought
+        to be used once in each request, at the very end before
+        a commit.
+        """
+        # This was done before with an ``before_commit`` sqlalchemy event
+        # however it is too fragile –it does not detect previously-flushed
+        # things
+        # This solution makes this more aware to the user, although
+        # has the same problem. This is not final solution.
+        # todo a solution would be for this session to save, on every
+        #   flush, all the new / dirty interesting things in a variable
+        #   until DeviceSearch is executed
+        from ereuse_devicehub.resources.device.search import DeviceSearch
+        DeviceSearch.update_modified_devices(session=self)
 
 
 class SQLAlchemy(SchemaSQLAlchemy):
@@ -11,12 +32,20 @@ class SQLAlchemy(SchemaSQLAlchemy):
     schema of the database, as it is in the `search_path`
     defined in teal.
     """
+    # todo add here all types of columns used so we don't have to
+    #   manually import them all the time
     UUID = postgresql.UUID
+    CIText = citext.CIText
+    PSQL_INT_MAX = 2147483648
 
-    def drop_all(self, bind='__all__', app=None):
+    def drop_all(self, bind='__all__', app=None, common_schema=True):
         """A faster nuke-like option to drop everything."""
         self.drop_schema()
-        self.drop_schema(schema='common')
+        if common_schema:
+            self.drop_schema(schema='common')
+
+    def create_session(self, options):
+        return sessionmaker(class_=DhSession, db=self, **options)
 
 
 def create_view(name, selectable):
@@ -37,6 +66,6 @@ def create_view(name, selectable):
     return table
 
 
-db = SQLAlchemy(session_options={"autoflush": False})
+db = SQLAlchemy(session_options={'autoflush': False})
 f = db.func
 exp = expression

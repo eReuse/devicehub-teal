@@ -3,17 +3,17 @@ from operator import attrgetter
 from uuid import uuid4
 
 from citext import CIText
-from flask import current_app as app, g
 from sqlalchemy import Column, Enum as DBEnum, ForeignKey, Unicode, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy_utils import EmailType, PhoneNumberType
 from teal import enums
-from teal.db import DBError, INHERIT_COND, POLYMORPHIC_ID, POLYMORPHIC_ON, check_lower
+from teal.db import INHERIT_COND, POLYMORPHIC_ID, POLYMORPHIC_ON, check_lower
 from teal.marshmallow import ValidationError
-from werkzeug.exceptions import NotImplemented, UnprocessableEntity
 
+from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.inventory import Inventory
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -27,7 +27,7 @@ class JoinedTableMixin:
 
 class Agent(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    type = Column(Unicode, nullable=False, index=True)
+    type = Column(Unicode, nullable=False)
     name = Column(CIText())
     name.comment = """
         The name of the organization or person.
@@ -46,6 +46,8 @@ class Agent(Thing):
 
     __table_args__ = (
         UniqueConstraint(tax_id, country, name='Registration Number per country.'),
+        UniqueConstraint(tax_id, name, name='One tax ID with one name.'),
+        db.Index('agent_type', type, postgresql_using='hash')
     )
 
     @declared_attr
@@ -80,21 +82,23 @@ class Agent(Thing):
 
 
 class Organization(JoinedTableMixin, Agent):
+    default_of = db.relationship(Inventory,
+                                 uselist=False,
+                                 lazy=True,
+                                 backref=backref('org', lazy=True),
+                                 # We need to use this as we cannot do Inventory.foreign -> Org
+                                 # as foreign keys can only reference to one table
+                                 # and we have multiple organization table (one per schema)
+                                 foreign_keys=[Inventory.org_id],
+                                 primaryjoin=lambda: Organization.id == Inventory.org_id)
+
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(**kwargs, name=name)
 
     @classmethod
     def get_default_org_id(cls) -> UUID:
         """Retrieves the default organization."""
-        try:
-            return g.setdefault('org_id',
-                                Organization.query.filter_by(
-                                    **app.config.get_namespace('ORGANIZATION_')
-                                ).one().id)
-        except (DBError, UnprocessableEntity):
-            # todo test how well this works
-            raise NotImplemented('Error in getting the default organization. '
-                                 'Is the DB initialized?')
+        return cls.query.filter_by(default_of=Inventory.current).one().id
 
 
 class Individual(JoinedTableMixin, Agent):

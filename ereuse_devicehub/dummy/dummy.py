@@ -5,6 +5,7 @@ from typing import Set
 
 import click
 import click_spinner
+import ereuse_utils.cli
 import yaml
 from ereuse_utils.test import ANY
 
@@ -26,9 +27,11 @@ class Dummy:
     )
     """Tags to create."""
     ET = (
-        ('A0000000000001', 'DT-AAAAA'),
-        ('A0000000000002', 'DT-BBBBB'),
-        ('A0000000000003', 'DT-CCCCC'),
+        ('DT-AAAAA', 'A0000000000001'),
+        ('DT-BBBBB', 'A0000000000002'),
+        ('DT-CCCCC', 'A0000000000003'),
+        ('DT-BRRAB', '04970DA2A15984'),
+        ('DT-XXXXX', '04e4bc5af95980')
     )
     """eTags to create."""
     ORG = 'eReuse.org CAT', '-t', 'G-60437761', '-c', 'ES'
@@ -39,34 +42,42 @@ class Dummy:
         self.app = app
         self.app.cli.command('dummy', short_help='Creates dummy devices and users.')(self.run)
 
+    @click.option('--tag-url', '-tu',
+                  type=ereuse_utils.cli.URL(scheme=True, host=True, path=False),
+                  default='http://localhost:8081',
+                  help='The base url (scheme and host) of the tag provider.')
+    @click.option('--tag-token', '-tt',
+                  type=click.UUID,
+                  default='899c794e-1737-4cea-9232-fdc507ab7106',
+                  help='The token provided by the tag provider. It is an UUID.')
     @click.confirmation_option(prompt='This command (re)creates the DB from scratch.'
                                       'Do you want to continue?')
-    def run(self):
+    def run(self, tag_url, tag_token):
         runner = self.app.test_cli_runner()
-        self.app.init_db(erase=True)
+        self.app.init_db('Dummy',
+                         'ACME',
+                         'acme-id',
+                         tag_url,
+                         tag_token,
+                         erase=True,
+                         common=True)
         print('Creating stuff...'.ljust(30), end='')
         with click_spinner.spinner():
-            out = runner.invoke(args=['create-org', *self.ORG], catch_exceptions=False).output
+            out = runner.invoke('org', 'add', *self.ORG).output
             org_id = json.loads(out)['id']
             user = self.user_client('user@dhub.com', '1234')
             # todo put user's agent into Org
             for id in self.TAGS:
                 user.post({'id': id}, res=Tag)
             for id, sec in self.ET:
-                runner.invoke(args=[
-                    'create-tag', id,
-                    '-p', 'https://t.devicetag.io',
-                    '-s', sec,
-                    '-o', org_id
-                ],
-                    catch_exceptions=False)
+                runner.invoke('tag', 'add', id,
+                              '-p', 'https://t.devicetag.io',
+                              '-s', sec,
+                              '-o', org_id)
             # create tag for pc-laudem
-            runner.invoke(args=[
-                'create-tag', 'tagA',
-                '-p', 'https://t.devicetag.io',
-                '-s', 'tagA-secondary'
-            ],
-                catch_exceptions=False)
+            runner.invoke('tag', 'add', 'tagA',
+                          '-p', 'https://t.devicetag.io',
+                          '-s', 'tagA-secondary')
         files = tuple(Path(__file__).parent.joinpath('files').iterdir())
         print('done.')
         sample_pc = None  # We treat this one as a special sample for demonstrations
@@ -80,6 +91,11 @@ class Dummy:
                     sample_pc = s['device']['id']
                 else:
                     pcs.add(s['device']['id'])
+                if s.get('uuid', None) == 'de4f495e-c58b-40e1-a33e-46ab5e84767e':  # oreo
+                    # Make one hdd ErasePhysical
+                    hdd = next(hdd for hdd in s['components'] if hdd['type'] == 'HardDrive')
+                    user.post({'type': 'ErasePhysical', 'method': 'Shred', 'device': hdd['id']},
+                              res=m.Event)
         assert sample_pc
         print('PC sample is', sample_pc)
         # Link tags and eTags
@@ -119,9 +135,9 @@ class Dummy:
         assert len(inventory['items'])
 
         i, _ = user.get(res=Device, query=[('search', 'intel')])
-        assert len(i['items']) == 12
+        assert 12 == len(i['items'])
         i, _ = user.get(res=Device, query=[('search', 'pc')])
-        assert len(i['items']) == 13
+        assert 14 == len(i['items'])
 
         # Let's create a set of events for the pc device
         # Make device Ready

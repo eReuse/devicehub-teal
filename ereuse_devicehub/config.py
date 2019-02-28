@@ -7,8 +7,9 @@ from teal.config import Config
 from teal.enums import Currency
 from teal.utils import import_resource
 
-from ereuse_devicehub.resources import agent, event, lot, tag, user
+from ereuse_devicehub.resources import agent, event, inventory, lot, tag, user
 from ereuse_devicehub.resources.device import definitions
+from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import PriceSoftware, RatingSoftware
 
 
@@ -18,21 +19,16 @@ class DevicehubConfig(Config):
                                      import_resource(user),
                                      import_resource(tag),
                                      import_resource(agent),
-                                     import_resource(lot)))
+                                     import_resource(lot),
+                                     import_resource(documents),
+                                     import_resource(inventory)),
+                               )
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/devicehub'  # type: str
-    SCHEMA = 'dhub'
     MIN_WORKBENCH = StrictVersion('11.0a1')  # type: StrictVersion
     """
     the minimum version of ereuse.org workbench that this devicehub
     accepts. we recommend not changing this value.
-    """
-    ORGANIZATION_NAME = None  # type: str
-    ORGANIZATION_TAX_ID = None  # type: str
-    """
-    The organization using this Devicehub.
-    
-    It is used by default, for example, when creating tags.
     """
     API_DOC_CONFIG_TITLE = 'Devicehub'
     API_DOC_CONFIG_VERSION = '0.2'
@@ -56,8 +52,3 @@ class DevicehubConfig(Config):
     """
     Official versions
     """
-
-    def __init__(self, db: str = None) -> None:
-        if not self.ORGANIZATION_NAME or not self.ORGANIZATION_TAX_ID:
-            raise ValueError('You need to set the main organization parameters.')
-        super().__init__(db)

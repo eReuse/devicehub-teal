@@ -81,7 +81,7 @@
     },
     {
       "startTime": "2018-07-11T10:32:14.445306",
-      "zeros": false,
+
       "type": "EraseBasic",
       "severity": "Info",
       "endTime": "2018-07-11T10:53:46.442123",
@@ -113,7 +113,7 @@
     },
     {
       "startTime": "2018-07-11T10:53:46.442187",
-      "zeros": false,
+
       "type": "EraseBasic",
       "severity": "Info",
       "endTime": "2018-07-11T11:16:28.469899",

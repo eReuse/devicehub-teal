@@ -1,4 +1,3 @@
-from base64 import b64decode
 from uuid import UUID
 
 import pytest
@@ -7,6 +6,7 @@ from teal.enums import Country
 from teal.marshmallow import ValidationError
 from werkzeug.exceptions import NotFound
 
+from ereuse_devicehub import auth
 from ereuse_devicehub.client import Client
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
@@ -74,14 +74,15 @@ def test_login_success(client: Client, app: Devicehub):
     with app.app_context():
         create_user()
     user, _ = client.post({'email': 'foo@foo.com', 'password': 'foo'},
-                          uri='/users/login',
+                          uri='/users/login/',
                           status=200)
     assert user['email'] == 'foo@foo.com'
-    assert UUID(b64decode(user['token'].encode()).decode()[:-1])
+    assert UUID(auth.Auth.decode(user['token']))
     assert 'password' not in user
     assert user['individuals'][0]['name'] == 'Timmy'
     assert user['individuals'][0]['type'] == 'Person'
     assert len(user['individuals']) == 1
+    assert user['inventories'][0]['id'] == 'test'
 
 
 def test_login_failure(client: Client, app: Devicehub):
@@ -90,12 +91,17 @@ def test_login_failure(client: Client, app: Devicehub):
     with app.app_context():
         create_user()
     client.post({'email': 'foo@foo.com', 'password': 'wrong pass'},
-                uri='/users/login',
+                uri='/users/login/',
                 status=WrongCredentials)
     # Wrong URI
     client.post({}, uri='/wrong-uri', status=NotFound)
     # Malformed data
-    client.post({}, uri='/users/login', status=ValidationError)
+    client.post({}, uri='/users/login/', status=ValidationError)
     client.post({'email': 'this is not an email', 'password': 'nope'},
-                uri='/users/login',
+                uri='/users/login/',
                 status=ValidationError)
+
+
+@pytest.mark.xfail(reason='Test not developed')
+def test_user_at_least_one_inventory():
+    pass

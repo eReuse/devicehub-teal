@@ -1,7 +1,9 @@
+import difflib
 from contextlib import suppress
 from itertools import groupby
 from typing import Iterable, Set
 
+import yaml
 from sqlalchemy import inspect
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.util import OrderedSet
@@ -103,6 +105,8 @@ class Sync:
         try:
             if component.hid:
                 db_component = Device.query.filter_by(hid=component.hid).one()
+                assert isinstance(db_component, Device), \
+                    '{} must be a component'.format(db_component)
             else:
                 # Is there a component similar to ours?
                 db_component = component.similar_one(parent, blacklist)
@@ -166,11 +170,16 @@ class Sync:
             sample_tag = next(iter(linked_tags))
             for tag in linked_tags:
                 if tag.device_id != sample_tag.device_id:
-                    raise MismatchBetweenTags(tag, sample_tag)  # Linked to different devices
+                    raise MismatchBetweenTags(tag, sample_tag)  # Tags linked to different devices
             if db_device:  # Device from hid
                 if sample_tag.device_id != db_device.id:  # Device from hid != device from tags
                     raise MismatchBetweenTagsAndHid(db_device.id, db_device.hid)
             else:  # There was no device from hid
+                if sample_tag.device.physical_properties != device.physical_properties:
+                    # Incoming physical props of device != props from tag's device
+                    # which means that the devices are not the same
+                    raise MismatchBetweenProperties(sample_tag.device.physical_properties,
+                                                    device.physical_properties)
                 db_device = sample_tag.device
         if db_device:  # Device from hid or tags
             self.merge(device, db_device)
@@ -253,4 +262,13 @@ class MismatchBetweenTagsAndHid(ValidationError):
                  field_names={'device.hid'}):
         message = 'Tags are linked to device {} but hid refers to device {}.'.format(device_id,
                                                                                      hid)
+        super().__init__(message, field_names)
+
+
+class MismatchBetweenProperties(ValidationError):
+    def __init__(self, props1, props2, field_names={'device'}):
+        message = 'The device from the tag and the passed-in differ the following way:'
+        message += '\n'.join(
+            difflib.ndiff(yaml.dump(props1).splitlines(), yaml.dump(props2).splitlines())
+        )
         super().__init__(message, field_names)

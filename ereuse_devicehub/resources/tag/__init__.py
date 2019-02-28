@@ -29,8 +29,8 @@ class TagDef(Resource):
                  template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
                  root_path=None):
         cli_commands = (
-            (self.create_tag, 'create-tag'),
-            (self.create_tags_csv, 'create-tags-csv')
+            (self.create_tag, 'add'),
+            (self.create_tags_csv, 'add-csv')
         )
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)

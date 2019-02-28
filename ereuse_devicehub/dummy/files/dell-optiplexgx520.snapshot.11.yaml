@@ -97,7 +97,7 @@
         "endTime": "2018-07-11T11:42:12.971177"
       }
       ],
-      "zeros": false,
+
       "severity": "Info",
       "type": "EraseBasic",
       "endTime": "2018-07-11T11:42:12.975358",

@@ -1,7 +1,9 @@
 import pathlib
 
 import pytest
+import requests_mock
 from boltons.urlutils import URL
+from ereuse_utils.session import DevicehubClient
 from pytest import raises
 from teal.db import MultipleResourcesFound, ResourceNotFound, UniqueViolation
 from teal.marshmallow import ValidationError
@@ -135,7 +137,7 @@ def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: Us
 def test_tag_create_tags_cli(app: Devicehub, user: UserClient):
     """Checks creating tags with the CLI endpoint."""
     runner = app.test_cli_runner()
-    runner.invoke(args=['create-tag', 'id1'], catch_exceptions=False)
+    runner.invoke('tag', 'add', 'id1')
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
         assert tag.id == 'id1'
@@ -146,8 +148,7 @@ def test_tag_create_etags_cli(app: Devicehub, user: UserClient):
     """Creates an eTag through the CLI."""
     # todo what happens to organization?
     runner = app.test_cli_runner()
-    runner.invoke(args=['create-tag', '-p', 'https://t.ereuse.org', '-s', 'foo', 'DT-BARBAR'],
-                  catch_exceptions=False)
+    runner.invoke('tag', 'add', '-p', 'https://t.ereuse.org', '-s', 'foo', 'DT-BARBAR')
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
         assert tag.id == 'dt-barbar'
@@ -220,8 +221,7 @@ def test_tag_create_tags_cli_csv(app: Devicehub, user: UserClient):
     """Checks creating tags with the CLI endpoint using a CSV."""
     csv = pathlib.Path(__file__).parent / 'files' / 'tags-cli.csv'
     runner = app.test_cli_runner()
-    runner.invoke(args=['create-tags-csv', str(csv)],
-                  catch_exceptions=False)
+    runner.invoke('tag', 'add-csv', str(csv))
     with app.app_context():
         t1 = Tag.from_an_id('id1').one()
         t2 = Tag.from_an_id('sec1').one()
@@ -232,3 +232,57 @@ def test_tag_multiple_secondary_org(user: UserClient):
     """Ensures two secondary ids cannot be part of the same Org."""
     user.post({'id': 'foo', 'secondary': 'bar'}, res=Tag)
     user.post({'id': 'foo1', 'secondary': 'bar'}, res=Tag, status=UniqueViolation)
+
+
+def test_crate_num_regular_tags(user: UserClient, requests_mock: requests_mock.mocker.Mocker):
+    """Create regular tags. This is done using a tag provider that
+    returns IDs. These tags are printable.
+    """
+    requests_mock.post('https://example.com/',
+                       # request
+                       request_headers={
+                           'Authorization': 'Basic {}'.format(DevicehubClient.encode_token(
+                               '52dacef0-6bcb-4919-bfed-f10d2c96ecee'))
+                       },
+                       # response
+                       json=['tag1id', 'tag2id'],
+                       status_code=201)
+    data, _ = user.post({}, res=Tag, query=[('num', 2)])
+    assert data['items'][0]['id'] == 'tag1id'
+    assert data['items'][0]['printable'], 'Tags made this way are printable'
+    assert data['items'][1]['id'] == 'tag2id'
+    assert data['items'][1]['printable']
+
+
+def test_get_tags_endpoint(user: UserClient, app: Devicehub,
+                           requests_mock: requests_mock.mocker.Mocker):
+    """Performs GET /tags after creating 3 tags, 2 printable and one
+    not. Only the printable ones are returned.
+    """
+    # Prepare test
+    with app.app_context():
+        org = Organization(name='bar', tax_id='bartax')
+        tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'))
+        db.session.add(tag)
+        db.session.commit()
+        assert not tag.printable
+
+    requests_mock.post('https://example.com/',
+                       # request
+                       request_headers={
+                           'Authorization': 'Basic {}'.format(DevicehubClient.encode_token(
+                               '52dacef0-6bcb-4919-bfed-f10d2c96ecee'))
+                       },
+                       # response
+                       json=['tag1id', 'tag2id'],
+                       status_code=201)
+    user.post({}, res=Tag, query=[('num', 2)])
+
+    # Test itself
+    data, _ = user.get(res=Tag)
+    assert len(data['items']) == 2, 'Only 2 tags are printable, thus retreived'
+    # Order is created descending
+    assert data['items'][0]['id'] == 'tag2id'
+    assert data['items'][0]['printable']
+    assert data['items'][1]['id'] == 'tag1id'
+    assert data['items'][1]['printable'], 'Tags made this way are printable'

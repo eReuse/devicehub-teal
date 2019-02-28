@@ -1,8 +1,7 @@
 import json
 
 import click
-from flask import current_app as app
-from teal.db import SQLAlchemy
+from boltons.typeutils import classproperty
 from teal.resource import Converters, Resource
 
 from ereuse_devicehub.db import db
@@ -24,7 +23,7 @@ class OrganizationDef(AgentDef):
                  static_url_path=None,
                  template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
                  root_path=None):
-        cli_commands = ((self.create_org, 'create-org'),)
+        cli_commands = ((self.create_org, 'add'),)
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
 
@@ -46,10 +45,9 @@ class OrganizationDef(AgentDef):
         print(json.dumps(o, indent=2))
         return o
 
-    def init_db(self, db: SQLAlchemy):
-        """Creates the default organization."""
-        org = models.Organization(**app.config.get_namespace('ORGANIZATION_'))
-        db.session.add(org)
+    @classproperty
+    def cli_name(cls):
+        return 'org'
 
 
 class Membership(Resource):

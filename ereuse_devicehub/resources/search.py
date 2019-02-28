@@ -30,12 +30,12 @@ class Search:
     @staticmethod
     def match(column: db.Column, search: str, lang=LANG):
         """Query that matches a TSVECTOR column with search words."""
-        return column.op('@@')(db.func.plainto_tsquery(lang, search))
+        return column.op('@@')(db.func.websearch_to_tsquery(lang, search))
 
     @staticmethod
     def rank(column: db.Column, search: str, lang=LANG):
         """Query that ranks a TSVECTOR column with search words."""
-        return db.func.ts_rank(column, db.func.plainto_tsquery(lang, search))
+        return db.func.ts_rank(column, db.func.websearch_to_tsquery(lang, search))
 
     @staticmethod
     def _vectorize(col: db.Column, weight: Weight = Weight.D, lang=LANG):

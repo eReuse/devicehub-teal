@@ -10,6 +10,7 @@ from teal.enums import Currency, Subdivision
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
@@ -40,7 +41,10 @@ def test_author():
 def test_erase_basic():
     erasure = models.EraseBasic(
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
-        zeros=True,
+        steps=[
+            models.StepZero(**conftest.T),
+            models.StepRandom(**conftest.T)
+        ],
         **conftest.T
     )
     db.session.add(erasure)
@@ -48,6 +52,7 @@ def test_erase_basic():
     db_erasure = models.EraseBasic.query.one()
     assert erasure == db_erasure
     assert next(iter(db_erasure.device.events)) == erasure
+    assert not erasure.standards, 'EraseBasic themselves do not have standards'
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
@@ -65,14 +70,13 @@ def test_validate_device_data_storage():
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
-def test_erase_sectors_steps():
+def test_erase_sectors_steps_erasure_standards_hmg_is5():
     erasure = models.EraseSectors(
         device=SolidStateDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
-        zeros=True,
         steps=[
             models.StepZero(**conftest.T),
             models.StepRandom(**conftest.T),
-            models.StepZero(**conftest.T)
+            models.StepRandom(**conftest.T)
         ],
         **conftest.T
     )
@@ -83,6 +87,7 @@ def test_erase_sectors_steps():
     assert db_erasure.steps[0].num == 0
     assert db_erasure.steps[1].num == 1
     assert db_erasure.steps[2].num == 2
+    assert {enums.ErasureStandards.HMG_IS5} == erasure.standards
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
@@ -254,8 +259,10 @@ def test_live_geoip():
 
 
 @pytest.mark.xfail(reson='Develop reserve')
-def test_reserve(user: UserClient):
-    """Performs a reservation and then cancels it."""
+def test_reserve_and_cancel(user: UserClient):
+    """Performs a reservation and then cancels it,
+    checking the attribute `reservees`.
+    """
 
 
 @pytest.mark.parametrize('event_model_state', [
@@ -308,9 +315,21 @@ def test_price_custom():
     assert c['price']['id'] == p['id']
 
 
-@pytest.mark.xfail(reson='Develop test')
-def test_price_custom_client():
+def test_price_custom_client(user: UserClient):
     """As test_price_custom but creating the price through the API."""
+    s = file('basic.snapshot')
+    snapshot, _ = user.post(s, res=models.Snapshot)
+    price, _ = user.post({
+        'type': 'Price',
+        'price': 25,
+        'currency': Currency.EUR.name,
+        'device': snapshot['device']['id']
+    }, res=models.Event)
+    assert 25 == price['price']
+    assert Currency.EUR.name == price['currency']
+
+    device, _ = user.get(res=Device, item=price['device']['id'])
+    assert 25 == device['price']['price']
 
 
 @pytest.mark.xfail(reson='Develop test')
@@ -320,3 +339,41 @@ def test_ereuse_price():
     return correct results."""
     # important to check Range.low no returning warranty2
     # Range.verylow not returning nothing
+
+
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
+def test_erase_physical():
+    erasure = models.ErasePhysical(
+        device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
+        method=enums.PhysicalErasureMethod.Disintegration
+    )
+    db.session.add(erasure)
+    db.session.commit()
+
+
+@pytest.mark.xfail(reson='Adapt rate algorithm to re-compute by passing a manual rate.')
+def test_manual_rate_after_workbench_rate(user: UserClient):
+    """Perform a WorkbenchRate and then update the device with a ManualRate.
+
+    Devicehub must make the final rate with the first workbench rate
+    plus the new manual rate, without considering the appearance /
+    functionality values of the workbench rate.
+    """
+    s = file('real-hp.snapshot.11')
+    snapshot, _ = user.post(s, res=models.Snapshot)
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert 'B' == device['rate']['appearanceRange']
+    assert device['rate'] == 1
+    user.post({
+        'type': 'ManualRate',
+        'device': device['id'],
+        'appearanceRange': 'A',
+        'functionalityRange': 'A'
+    }, res=models.Event)
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert 'A' == device['rate']['appearanceRange']
+
+
+@pytest.mark.xfail(reson='Develop an algorithm that can make rates only from manual rates')
+def test_manual_rate_without_workbench_rate(user: UserClient):
+    pass

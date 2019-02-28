@@ -2,7 +2,7 @@ import ipaddress
 from datetime import datetime, timedelta
 from decimal import Decimal
 from distutils.version import StrictVersion
-from typing import Dict, List, Set, Union
+from typing import Dict, List, Optional, Set, Union
 from uuid import UUID
 
 from boltons import urlutils
@@ -16,9 +16,9 @@ from teal.enums import Country
 
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
-from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    PriceSoftware, RatingSoftware, ReceiverRole, Severity, SnapshotExpectedEvents, \
-    SnapshotSoftware, TestDataStorageLength
+from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ErasureStandards, \
+    FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RatingSoftware, ReceiverRole, \
+    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -60,6 +60,18 @@ class Event(Thing):
     @property
     def url(self) -> urlutils.URL:
         pass
+
+    @property
+    def elapsed(self) -> timedelta:
+        pass
+
+    @property
+    def certificate(self) -> Optional[urlutils.URL]:
+        return None
+
+    @property
+    def date_str(self):
+        return '{:%c}'.format(self.end_time or self.created)
 
 
 class EventWithOneDevice(Event):
@@ -124,11 +136,15 @@ class Snapshot(EventWithOneDevice):
 
 
 class Install(EventWithOneDevice):
+    name = ...  # type: Column
+    elapsed = ...  # type: Column
+    address = ...  # type: Column
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.name = ...  # type: str
         self.elapsed = ...  # type: timedelta
-        self.success = ...  # type: bool
+        self.address = ...  # type: Optional[int]
 
 
 class SnapshotRequest(Model):
@@ -229,6 +245,9 @@ class ManualRate(IndividualRate):
         self.functionality_range = ...  # type: FunctionalityRange
         self.aggregate_rate_manual = ...  #type: AggregateRate
 
+    def ratings(self) -> Set[Rate]:
+        pass
+
 
 class WorkbenchRate(ManualRate):
     processor = ...  # type: Column
@@ -248,9 +267,6 @@ class WorkbenchRate(ManualRate):
         self.bios_range = ...  # type: Bios
         self.bios = ...  # type: float
         self.aggregate_rate_workbench = ...  #type: AggregateRate
-
-    def ratings(self) -> Set[Rate]:
-        pass
 
     @property
     def data_storage_range(self):
@@ -354,10 +370,26 @@ class EraseBasic(EventWithOneDevice):
         self.zeros = ...  # type: bool
         self.success = ...  # type: bool
 
+    @property
+    def standards(self) -> Set[ErasureStandards]:
+        pass
+
+    @property
+    def certificate(self) -> urlutils.URL:
+        pass
+
 
 class EraseSectors(EraseBasic):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+
+
+class ErasePhysical(EraseBasic):
+    method = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.method = ...  # type: PhysicalErasureMethod
 
 
 class Benchmark(EventWithOneDevice):

@@ -16,6 +16,19 @@ class State(Enum):
 
 
 class Trading(State):
+    """
+    Trading states.
+
+    :cvar Reserved: The device has been reserved.
+    :cvar Cancelled: The device has been cancelled.
+    :cvar Sold: The device has been sold.
+    :cvar Donated: The device is donated.
+    :cvar Renting: The device is in renting
+    :cvar ToBeDisposed: The device is disposed.
+          This is the end of life of a device.
+    :cvar ProductDisposed: The device has been removed
+          from the facility. It does not mean end-of-life.
+    """
     Reserved = e.Reserve
     Cancelled = e.CancelTrade
     Sold = e.Sell
@@ -27,6 +40,16 @@ class Trading(State):
 
 
 class Physical(State):
+    """
+    Physical states.
+
+    :cvar ToBeRepaired: The device has been selected for reparation.
+    :cvar Repaired: The device has been repaired.
+    :cvar Preparing: The device is going to be or being prepared.
+    :cvar Prepared: The device has been prepared.
+    :cvar ReadyToBeUsed: The device is in working conditions.
+    :cvar InUse: The device is being reported to be in active use.
+    """
     ToBeRepaired = e.ToRepair
     Repaired = e.Repair
     Preparing = e.ToPrepare

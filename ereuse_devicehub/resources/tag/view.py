@@ -1,8 +1,10 @@
-from flask import Response, current_app as app, redirect, request
+from flask import Response, current_app as app, g, redirect, request
+from flask_sqlalchemy import Pagination
 from teal.marshmallow import ValidationError
 from teal.resource import View, url_for_resource
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag import Tag
 
@@ -10,11 +12,39 @@ from ereuse_devicehub.resources.tag import Tag
 class TagView(View):
     def post(self):
         """Creates a tag."""
+        num = request.args.get('num', type=int)
+        if num:
+            res = self._create_many_regular_tags(num)
+        else:
+            res = self._post_one()
+        return res
+
+    def find(self, args: dict):
+        tags = Tag.query.filter(Tag.is_printable_q()) \
+            .order_by(Tag.created.desc()) \
+            .paginate(per_page=200)  # type: Pagination
+        return things_response(
+            self.schema.dump(tags.items, many=True, nested=0),
+            tags.page, tags.per_page, tags.total, tags.prev_num, tags.next_num
+        )
+
+    def _create_many_regular_tags(self, num: int):
+        tags_id, _ = g.tag_provider.post('/', {}, query=[('num', num)])
+        tags = [Tag(id=tag_id, provider=g.inventory.tag_provider) for tag_id in tags_id]
+        db.session.add_all(tags)
+        db.session().final_flush()
+        response = things_response(self.schema.dump(tags, many=True, nested=1), code=201)
+        db.session.commit()
+        return response
+
+    def _post_one(self):
+        # todo do we use this?
         t = request.get_json()
         tag = Tag(**t)
         if tag.like_etag():
             raise CannotCreateETag(tag.id)
         db.session.add(tag)
+        db.session().final_flush()
         db.session.commit()
         return Response(status=201)
 
@@ -42,6 +72,7 @@ class TagDeviceView(View):
                 raise LinkedToAnotherDevice(tag.device_id)
         else:
             tag.device_id = device_id
+        db.session().final_flush()
         db.session.commit()
         return Response(status=204)
 

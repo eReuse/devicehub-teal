@@ -2,7 +2,7 @@ from collections import Iterable
 from datetime import datetime, timedelta
 from decimal import Decimal, ROUND_HALF_EVEN, ROUND_UP
 from distutils.version import StrictVersion
-from typing import Set, Union
+from typing import Optional, Set, Union
 from uuid import uuid4
 
 import inflection
@@ -10,7 +10,7 @@ import teal.db
 from boltons import urlutils
 from citext import CIText
 from flask import current_app as app, g
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Enum as DBEnum, \
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Enum as DBEnum, \
     Float, ForeignKey, Integer, Interval, JSON, Numeric, SmallInteger, Unicode, event, orm
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
@@ -28,9 +28,10 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Desktop, \
     Device, Laptop, Server
-from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, RatingRange, RatingSoftware, ReceiverRole, \
-    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
+from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ErasureStandards, \
+    FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, \
+    RatingRange, RatingSoftware, ReceiverRole, Severity, SnapshotExpectedEvents, SnapshotSoftware, \
+    TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -43,8 +44,12 @@ class JoinedTableMixin:
 
 
 class Event(Thing):
+    """Event performed on a device.
+
+    This class extends `Schema's Action <https://schema.org/Action>`_.
+    """
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    type = Column(Unicode, nullable=False, index=True)
+    type = Column(Unicode, nullable=False)
     name = Column(CIText(), default='', nullable=False)
     name.comment = """
         A name or title for the event. Used when searching for events.
@@ -141,7 +146,7 @@ class Event(Thing):
     For Add and Remove though, this has another meaning: the components
     that are added or removed.
     """
-    parent_id = Column(BigInteger, ForeignKey(Computer.id), index=True)
+    parent_id = Column(BigInteger, ForeignKey(Computer.id))
     parent = relationship(Computer,
                           backref=backref('events_parent',
                                           lazy=True,
@@ -156,10 +161,26 @@ class Event(Thing):
     would point to the computer that contained this data storage, if any.
     """
 
+    __table_args__ = (
+        db.Index('ix_id', id, postgresql_using='hash'),
+        db.Index('ix_type', type, postgresql_using='hash'),
+        db.Index('ix_parent_id', parent_id, postgresql_using='hash')
+    )
+
+    @property
+    def elapsed(self):
+        """Returns the elapsed time with seconds precision."""
+        t = self.end_time - self.start_time
+        return timedelta(seconds=t.seconds)
+
     @property
     def url(self) -> urlutils.URL:
         """The URL where to GET this event."""
         return urlutils.URL(url_for_resource(Event, item_id=self.id))
+
+    @property
+    def certificate(self) -> Optional[urlutils.URL]:
+        return None
 
     # noinspection PyMethodParameters
     @declared_attr
@@ -192,7 +213,7 @@ class Event(Thing):
         return start_time
 
     @property
-    def _date_str(self):
+    def date_str(self):
         return '{:%c}'.format(self.end_time or self.created)
 
     def __str__(self) -> str:
@@ -215,7 +236,7 @@ class JoinedWithOneDeviceMixin:
 
 
 class EventWithOneDevice(JoinedTableMixin, Event):
-    device_id = Column(BigInteger, ForeignKey(Device.id), nullable=False, index=True)
+    device_id = Column(BigInteger, ForeignKey(Device.id), nullable=False)
     device = relationship(Device,
                           backref=backref('events_one',
                                           lazy=True,
@@ -223,6 +244,10 @@ class EventWithOneDevice(JoinedTableMixin, Event):
                                           order_by=lambda: EventWithOneDevice.created,
                                           collection_class=OrderedSet),
                           primaryjoin=Device.id == device_id)
+
+    __table_args__ = (
+        db.Index('event_one_device_id_index', device_id, postgresql_using='hash'),
+    )
 
     def __repr__(self) -> str:
         return '<{0.t} {0.id} {0.severity} device={0.device!r}>'.format(self)
@@ -306,38 +331,56 @@ class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
     that has overwritten data with random bits, and ``StepZero``,
     for an erasure step that has overwritten data with zeros.
 
-    For example, if steps are set in the following order and the user
-    used `EraseSectors`, the event represents a
-    `British HMG Infosec Standard 5 (HMG IS5) <https://en.wikipedia.org/
-    wiki/Infosec_Standard_5>`_:
-
-    1. A first step writing zeroes to the hard-drives.
-    2. A second step erasing with random data, verifying the erasure
-       success in each hard-drive sector.
+    Erasure standards define steps and methodologies to use.
+    Devicehub automatically shows the standards that each erasure
+    follows.
     """
-    zeros = Column(Boolean, nullable=False)
-    zeros.comment = """
-        Whether this erasure had a first erasure step consisting of
-        only writing zeros.
-    """
+    method = 'Shred'
+    """The method or software used to destroy the data."""
 
-    # todo return erasure properties like num steps, if it is british...
+    @property
+    def standards(self):
+        """A set of standards that this erasure follows."""
+        return ErasureStandards.from_data_storage(self)
+
+    @property
+    def certificate(self):
+        """The URL of this erasure certificate."""
+        # todo will this url_for_resoure work for other resources?
+        return urlutils.URL(url_for_resource('Document', item_id=self.id))
 
     def __str__(self) -> str:
-        return '{} on {}.'.format(self.severity, self.end_time)
+        return '{} on {}.'.format(self.severity, self.date_str)
+
+    def __format__(self, format_spec: str) -> str:
+        v = ''
+        if 't' in format_spec:
+            v += '{} {}'.format(self.type, self.severity)
+        if 't' in format_spec and 's' in format_spec:
+            v += '. '
+        if 's' in format_spec:
+            if self.standards:
+                std = 'with standards {}'.format(self.standards)
+            else:
+                std = 'no standard'
+            v += 'Method used: {}, {}. '.format(self.method, std)
+            if self.end_time and self.start_time:
+                v += '{} elapsed. '.format(self.elapsed)
+
+            v += 'On {}'.format(self.date_str)
+        return v
 
 
 class EraseSectors(EraseBasic):
     """A secured-way of erasing data storages, checking sector-by-sector
     the erasure, using `badblocks <https://en.wikipedia.org/wiki/Badblocks>`_.
     """
-    # todo make a property that says if the data wiping process is british...
+    method = 'Badblocks'
 
 
 class ErasePhysical(EraseBasic):
     """The act of physically destroying a data storage unit."""
-    # todo add attributes
-    pass
+    method = Column(DBEnum(PhysicalErasureMethod))
 
 
 class Step(db.Model):
@@ -345,9 +388,10 @@ class Step(db.Model):
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     num = Column(SmallInteger, primary_key=True)
     severity = Column(teal.db.IntEnum(Severity), default=Severity.Info, nullable=False)
-    start_time = Column(DateTime, nullable=False)
+    start_time = Column(db.TIMESTAMP(timezone=True), nullable=False)
     start_time.comment = Event.start_time.comment
-    end_time = Column(DateTime, CheckConstraint('end_time > start_time'), nullable=False)
+    end_time = Column(db.TIMESTAMP(timezone=True), CheckConstraint('end_time > start_time'),
+                      nullable=False)
     end_time.comment = Event.end_time.comment
 
     erasure = relationship(EraseBasic,
@@ -355,6 +399,12 @@ class Step(db.Model):
                                            cascade=CASCADE_OWN,
                                            order_by=num,
                                            collection_class=ordering_list('num')))
+
+    @property
+    def elapsed(self):
+        """Returns the elapsed time with seconds precision."""
+        t = self.end_time - self.start_time
+        return timedelta(seconds=t.seconds)
 
     # noinspection PyMethodParameters
     @declared_attr
@@ -370,6 +420,9 @@ class Step(db.Model):
         if cls.t == 'Step':
             args[POLYMORPHIC_ON] = cls.type
         return args
+
+    def __format__(self, format_spec: str) -> str:
+        return '{} – {} {}'.format(self.severity, self.type, self.elapsed)
 
 
 class StepZero(Step):
@@ -486,6 +539,7 @@ class Install(JoinedWithOneDeviceMixin, EventWithOneDevice):
     storage unit.
     """
     elapsed = Column(Interval, nullable=False)
+    address = Column(SmallInteger, check_range('address', 8, 256))
 
 
 class SnapshotRequest(db.Model):
@@ -499,19 +553,8 @@ class SnapshotRequest(db.Model):
 
 
 class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
-    """Devicehub generates an rating for a device taking into consideration the
-    visual, functional, and performance.
-
-    A Workflow is as follows:
-
-    1. An agent generates feedback from the device in the form of benchmark,
-       visual, and functional information; which is filled in a ``Rate``
-       event. This is done through a **software**, defining the type
-       of ``Rate`` event. At the moment we have ``WorkbenchRate``.
-    2. Devicehub gathers this information and computes a score that updates
-       the ``Rate`` event.
-    3. Devicehub aggregates different rates and computes a final score for
-       the device by performing a new ``AggregateRating`` event.
+    """The act of grading the appearance, performance, and functionality
+    of a device.
 
     There are two base **types** of ``Rate``: ``WorkbenchRate``,
     ``ManualRate``. ``WorkbenchRate`` can have different
@@ -523,16 +566,24 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
     if an agent fulfills a ``WorkbenchRate`` and there are 2 software
     algorithms and each has two versions, Devicehub will generate 4 rates.
     Devicehub understands that only one software and version are the
-    **oficial** (set in the settings of each inventory),
+    **official** (set in the settings of each inventory),
     and it will generate an ``AggregateRating`` for only the official
     versions. At the same time, ``Price`` only computes the price of
-    the **oficial** version.
+    the **official** version.
+
+    There are two ways of rating a device:
+
+    1. When processing the device with Workbench and the Android App.
+    2. Anytime after with the Android App or website.
+
+    Refer to *processes* in the documentation to get more info with
+    the process.
 
     The technical Workflow in Devicehub is as follows:
 
-    1. In **T1**, the user performs a ``Snapshot`` by processing the device
+    1. In **T1**, the agent performs a ``Snapshot`` by processing the device
        through the Workbench. From the benchmarks and the visual and
-       functional ratings the user does in the device, the system generates
+       functional ratings the agent does in the device, the system generates
        many ``WorkbenchRate`` (as many as software and versions defined).
        With only this information, the system generates an ``AggregateRating``,
        which is the event that the user will see in the web.
@@ -542,7 +593,12 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
        plus the ``WorkbenchRate`` from 1.
     """
     rating = Column(Float(decimal_return_scale=2), check_range('rating', *RATE_POSITIVE))
-    rating.comment = """The rating for the content."""
+    rating.comment = """The rating for the content.
+    
+    This value is automatically set by rating algorithms. In case that
+    no algorithm is defined per the device and type of rate, this
+    value is None.
+    """
     software = Column(DBEnum(RatingSoftware))
     software.comment = """The algorithm used to produce this rating."""
     version = Column(StrictVersionType)
@@ -553,8 +609,7 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
     @property
     def rating_range(self) -> RatingRange:
-        if self.rating:
-            return RatingRange.from_score(self.rating)
+        return RatingRange.from_score(self.rating) if self.rating else None
 
     @declared_attr
     def __mapper_args__(cls):
@@ -595,6 +650,9 @@ class ManualRate(IndividualRate):
             self.functionality_range
         )
 
+    def ratings(self):
+        raise NotImplementedError()
+
 
 class WorkbenchRate(ManualRate):
     id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id), primary_key=True)
@@ -615,7 +673,8 @@ class WorkbenchRate(ManualRate):
         """
         Computes all the possible rates taking this rating as a model.
 
-        Returns a set of ratings, including this one, which is mutated.
+        Returns a set of ratings, including this one, which is mutated,
+        and the final :class:`.AggregateRate`.
         """
         from ereuse_devicehub.resources.event.rate.main import main
         return main(self, **app.config.get_namespace('WORKBENCH_RATE_'))
@@ -727,20 +786,20 @@ class AggregateRate(Rate):
 
     @classmethod
     def from_workbench_rate(cls, rate: WorkbenchRate):
-        aggregate = cls()
-        aggregate.rating = rate.rating
-        aggregate.software = rate.software
-        aggregate.appearance = rate.appearance
-        aggregate.functionality = rate.functionality
-        aggregate.device = rate.device
-        aggregate.workbench = rate
+        aggregate = cls(rating=rate.rating,
+                        software=rate.software,
+                        appearance=rate.appearance,
+                        functionality=rate.functionality,
+                        device=rate.device,
+                        workbench=rate)
         return aggregate
 
 
 class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
-    """Price states a selling price for the device, but not
-    necessarily the final price this is sold (which is set in the Sell
-    event).
+    """The act of setting a trading price for the device.
+
+    This does not imply that the device is ultimately traded for that
+    price. Use the :class:`.Sell` for that.
 
     Devicehub automatically computes a price from ``AggregateRating``
     events. As in a **Rate**, price can have **software** and **version**,
@@ -780,7 +839,7 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
     @classmethod
     def to_price(cls, value: Union[Decimal, float], rounding=ROUND) -> Decimal:
         """Returns a Decimal value with the correct scale for Price.price."""
-        if isinstance(value, float):
+        if isinstance(value, (float, int)):
             value = Decimal(value)
         # equation from marshmallow.fields.Decimal
         return value.quantize(Decimal((0, (1,), -cls.SCALE)), rounding=rounding)
@@ -804,7 +863,13 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
 
 class EreusePrice(Price):
-    """A Price class that auto-computes its amount by"""
+    """The act of setting a price by guessing it using the eReuse.org
+    algorithm.
+
+    This algorithm states that the price is the use value of the device
+    (represented by its last :class:`.Rate`) multiplied by a constants
+    value agreed by a circuit or platform.
+    """
     MULTIPLIER = {
         Desktop: 20,
         Laptop: 30
@@ -858,8 +923,8 @@ class EreusePrice(Price):
                 self.warranty2 = EreusePrice.Type(rate[self.WARRANTY2][role], price)
 
     def __init__(self, rating: AggregateRate, **kwargs) -> None:
-        if rating.rating_range == RatingRange.VERY_LOW:
-            raise ValueError('Cannot compute price for Range.VERY_LOW')
+        if not rating.rating_range or rating.rating_range == RatingRange.VERY_LOW:
+            raise InvalidRangeForPrice()
         # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
         price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)
         super().__init__(rating=rating,
@@ -931,7 +996,7 @@ class TestDataStorage(Test):
     assessment = Column(Boolean)
     reallocated_sector_count = Column(SmallInteger)
     power_cycle_count = Column(SmallInteger)
-    reported_uncorrectable_errors = Column(SmallInteger)
+    _reported_uncorrectable_errors = Column('reported_uncorrectable_errors', Integer)
     command_timeout = Column(Integer)
     current_pending_sector_count = Column(SmallInteger)
     offline_uncorrectable = Column(SmallInteger)
@@ -958,6 +1023,16 @@ class TestDataStorage(Test):
             t += ' with a lifetime of {:.1f} years.'.format(self.lifetime.days / 365)
         t += self.description
         return t
+
+    @property
+    def reported_uncorrectable_errors(self):
+        return self._reported_uncorrectable_errors
+
+    @reported_uncorrectable_errors.setter
+    def reported_uncorrectable_errors(self, value):
+        # There is no value for a stratospherically big number
+        self._reported_uncorrectable_errors = min(value, db.PSQL_INT_MAX)
+
 
 
 class StressTest(Test):
@@ -1111,7 +1186,7 @@ class Organize(JoinedTableMixin, EventWithMultipleDevices):
 
 
 class Reserve(Organize):
-    """The act of reserving devices and cancelling them.
+    """The act of reserving devices.
 
     After this event is performed, the user is the **reservee** of the
     devices. There can only be one non-cancelled reservation for
@@ -1132,8 +1207,11 @@ class Trade(JoinedTableMixin, EventWithMultipleDevices):
 
     Performing trade events changes the *Trading* state of the
     device —:class:`ereuse_devicehub.resources.device.states.Trading`.
+
+    This class and its inheritors
+    extend `Schema's Trade <http://schema.org/TradeAction>`_.
     """
-    shipping_date = Column(DateTime)
+    shipping_date = Column(db.TIMESTAMP(timezone=True))
     shipping_date.comment = """
             When are the devices going to be ready for shipping?
         """
@@ -1223,6 +1301,11 @@ class Receive(JoinedTableMixin, EventWithMultipleDevices):
     The receiver confirms that the devices have arrived, and thus,
     they are the
     :attr:`ereuse_devicehub.resources.device.models.Device.physical_possessor`.
+
+    This differs from :class:`.Trade` in that trading changes the
+    political possession. As an example, a transporter can *receive*
+    a device but it is not it's owner. After the delivery, the
+    transporter performs another *receive* to the final owner.
 
     The receiver can optionally take a
     :class:`ereuse_devicehub.resources.enums.ReceiverRole`.
@@ -1331,3 +1414,7 @@ def update_parent(target: Union[EraseBasic, Test, Install], device: Device, _, _
     target.parent = None
     if isinstance(device, Component):
         target.parent = device.parent
+
+
+class InvalidRangeForPrice(ValueError):
+    pass

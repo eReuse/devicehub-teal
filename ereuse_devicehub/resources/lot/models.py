@@ -76,6 +76,10 @@ class Lot(Thing):
         Path(self)  # Lots have always one edge per default.
 
     @property
+    def type(self) -> str:
+        return self.__class__.__name__
+
+    @property
     def url(self) -> urlutils.URL:
         """The URL where to GET this event."""
         return urlutils.URL(url_for_resource(Lot, item_id=self.id))
@@ -178,7 +182,7 @@ class Path(db.Model):
     id = db.Column(db.UUID(as_uuid=True),
                    primary_key=True,
                    server_default=db.text('gen_random_uuid()'))
-    lot_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(Lot.id), nullable=False, index=True)
+    lot_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(Lot.id), nullable=False)
     lot = db.relationship(Lot,
                           backref=db.backref('paths',
                                              lazy=True,
@@ -195,7 +199,8 @@ class Path(db.Model):
         # dag.delete_edge needs to disable internally/temporarily the unique constraint
         db.UniqueConstraint(path, name='path_unique', deferrable=True, initially='immediate'),
         db.Index('path_gist', path, postgresql_using='gist'),
-        db.Index('path_btree', path, postgresql_using='btree')
+        db.Index('path_btree', path, postgresql_using='btree'),
+        db.Index('lot_id_index', lot_id, postgresql_using='hash')
     )
 
     def __init__(self, lot: Lot) -> None:
@@ -251,7 +256,7 @@ class LotDeviceDescendants(db.Model):
         _desc.c.id.label('parent_lot_id'),
         _ancestor.c.id.label('ancestor_lot_id'),
         None
-    ]).select_from(_ancestor).select_from(lot_device).where(descendants)
+    ]).select_from(_ancestor).select_from(lot_device).where(db.text(descendants))
 
     # Components
     _parent_device = Device.__table__.alias(name='parent_device')
@@ -266,7 +271,7 @@ class LotDeviceDescendants(db.Model):
         _desc.c.id.label('parent_lot_id'),
         _ancestor.c.id.label('ancestor_lot_id'),
         LotDevice.device_id.label('device_parent_id'),
-    ]).select_from(_ancestor).select_from(lot_device_component).where(descendants)
+    ]).select_from(_ancestor).select_from(lot_device_component).where(db.text(descendants))
 
     __table__ = create_view('lot_device_descendants', devices.union(components))
 

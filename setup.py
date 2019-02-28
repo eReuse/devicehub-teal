@@ -12,7 +12,7 @@ test_requires = [
 
 setup(
     name='ereuse-devicehub',
-    version='0.2.0b1',
+    version='0.2.0b3',
     url='https://github.com/ereuse/devicehub-teal',
     project_urls=OrderedDict((
         ('Documentation', 'http://devicheub.ereuse.org'),
@@ -29,19 +29,20 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=[
-        'teal>=0.2.0a30',  # teal always first
+        'teal>=0.2.0a38',  # teal always first
         'click',
         'click-spinner',
-        'ereuse-utils[Naming]>=0.4b10',
+        'ereuse-utils[naming, test, session, cli]>=0.4b21',
         'hashids',
         'marshmallow_enum',
         'psycopg2-binary',
         'python-stdnum',
         'PyYAML',
-        'requests',
+        'requests[security]',
         'requests-toolbelt',
         'sqlalchemy-citext',
         'sqlalchemy-utils[password, color, phone]',
+        'Flask-WeasyPrint'
     ],
     extras_require={
         'docs': [
@@ -56,6 +57,11 @@ setup(
         'test': test_requires
     },
     tests_require=test_requires,
+    entry_points={
+        'console_scripts': [
+            'dh = ereuse_devicehub.cli:cli'
+        ]
+    },
     setup_requires=[
         'pytest-runner'
     ],

@@ -1,18 +1,30 @@
 from contextlib import suppress
+from typing import Set
 
-from sqlalchemy import BigInteger, Column, ForeignKey, Unicode, UniqueConstraint
+from boltons import urlutils
+from sqlalchemy import BigInteger, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship, validates
-from teal.db import DB_CASCADE_SET_NULL, Query, URL, check_lower
+from teal.db import DB_CASCADE_SET_NULL, Query, URL
 from teal.marshmallow import ValidationError
+from teal.resource import url_for_resource
 
+from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
 
 
+class Tags(Set['Tag']):
+    def __str__(self) -> str:
+        return ', '.join(str(tag) for tag in self).strip()
+
+    def __format__(self, format_spec):
+        return ', '.join(format(tag, format_spec) for tag in self).strip()
+
+
 class Tag(Thing):
-    id = Column(Unicode(), check_lower('id'), primary_key=True)
+    id = Column(db.CIText(), primary_key=True)
     id.comment = """The ID of the tag."""
     org_id = Column(UUID(as_uuid=True),
                     ForeignKey(Organization.id),
@@ -32,17 +44,20 @@ class Tag(Thing):
     """
     device_id = Column(BigInteger,
                        # We don't want to delete the tag on device deletion, only set to null
-                       ForeignKey(Device.id, ondelete=DB_CASCADE_SET_NULL),
-                       index=True)
+                       ForeignKey(Device.id, ondelete=DB_CASCADE_SET_NULL))
     device = relationship(Device,
-                          backref=backref('tags', lazy=True, collection_class=set),
+                          backref=backref('tags', lazy=True, collection_class=Tags),
                           primaryjoin=Device.id == device_id)
     """The device linked to this tag."""
-    secondary = Column(Unicode(), check_lower('secondary'), index=True)
+    secondary = Column(db.CIText(), index=True)
     secondary.comment = """
         A secondary identifier for this tag. It has the same
         constraints as the main one. Only needed in special cases.
     """
+
+    __table_args__ = (
+        db.Index('device_id_index', device_id, postgresql_using='hash'),
+    )
 
     def __init__(self, id: str, **kwargs) -> None:
         super().__init__(id=id, **kwargs)
@@ -80,5 +95,35 @@ class Tag(Thing):
         UniqueConstraint(secondary, org_id, name='one secondary tag per organization')
     )
 
+    @property
+    def type(self) -> str:
+        return self.__class__.__name__
+
+    @property
+    def url(self) -> urlutils.URL:
+        """The URL where to GET this device."""
+        # todo this url only works for printable internal tags
+        return urlutils.URL(url_for_resource(Tag, item_id=self.id))
+
+    @property
+    def printable(self) -> bool:
+        """Can the tag be printed by the user?
+
+        Only tags that are from the default organization can be
+        printed by the user.
+        """
+        return self.org_id == Organization.get_default_org_id()
+
+    @classmethod
+    def is_printable_q(cls):
+        """Return a SQLAlchemy filter expression for printable queries"""
+        return cls.org_id == Organization.get_default_org_id()
+
     def __repr__(self) -> str:
         return '<Tag {0.id} org:{0.org_id} device:{0.device_id}>'.format(self)
+
+    def __str__(self) -> str:
+        return '{0.id} org: {0.org.name} device: {0.device}'.format(self)
+
+    def __format__(self, format_spec: str) -> str:
+        return '{0.org.name} {0.id}'.format(self)

@@ -75,7 +75,7 @@
       ],
       "type": "EraseBasic",
       "severity": "Info",
-      "zeros": false,
+
       "startTime": "2018-07-13T10:52:45.092612"
     },
     {
@@ -113,7 +113,6 @@
       ],
       "type": "EraseBasic",
       "severity": "Info",
-      "zeros": false,
       "startTime": "2018-07-13T11:54:55.100667"
     },
     {

@@ -1,6 +1,7 @@
+from contextlib import suppress
 from distutils.version import StrictVersion
 from enum import Enum, IntEnum, unique
-from typing import Union
+from typing import Set, Union
 
 import inflection
 
@@ -43,7 +44,13 @@ class RatingRange(IntEnum):
     """
     The human translation to score range.
 
-    You can compare them: ScoreRange.VERY_LOW < ScoreRange.LOW
+    You can compare them: ScoreRange.VERY_LOW < ScoreRange.LOW.
+    There are four levels:
+
+    1. Very low.
+    2. Low.
+    3. Medium.
+    4. High.
     """
     VERY_LOW = 2
     LOW = 3
@@ -271,17 +278,15 @@ class PrinterTechnology(Enum):
 
 class Severity(IntEnum):
     """A flag evaluating the event execution. Ex. failed events
-    have the value `Severity.Error`.
+    have the value `Severity.Error`. Devicehub uses 4 severity levels:
 
-    Devicehub uses 4 severity levels:
-
-    - Info: default neutral severity. The event succeeded.
-    - Notice: The event succeeded but it is raising awareness.
+    * Info: default neutral severity. The event succeeded.
+    * Notice: The event succeeded but it is raising awareness.
       Notices are not usually that important but something
       (good or bad) worth checking.
-    - Warning: The event succeeded but there is something important
+    * Warning: The event succeeded but there is something important
       to check negatively affecting the event.
-    - Error: the event failed.
+    * Error: the event failed.
 
     Devicehub specially raises user awareness when an event
     has a Severity of ``Warning`` or greater.
@@ -302,3 +307,59 @@ class Severity(IntEnum):
         else:
             m = '❌'
         return m
+
+    def __format__(self, format_spec):
+        return str(self)
+
+
+class PhysicalErasureMethod(Enum):
+    """Methods of physically erasing the data-storage, usually
+    destroying the whole component.
+
+    Certified data-storage destruction mean, as of `UNE-EN 15713
+    <https://www.une.org/encuentra-tu-norma/busca-tu-norma/norma?c=N0044792>`_,
+    reducing the material to a size making it undecipherable, illegible,
+    and non able to be re-built.
+    """
+
+    Shred = 'Reduction of the data-storage to the required certified ' \
+            'standard sizes.'
+    Disintegration = 'Reduction of the data-storage to smaller sizes ' \
+                     'than the certified standard ones.'
+
+    def __str__(self):
+        return self.name
+
+
+class ErasureStandards(Enum):
+    """Software erasure standards."""
+
+    HMG_IS5 = 'British HMG Infosec Standard 5 (HMG IS5)'
+    """`British HMG Infosec Standard 5 (HMG IS5) 
+    <https://en.wikipedia.org/wiki/Infosec_Standard_5>`_.
+    
+    In order to follow this standard, an erasure must have the
+    following steps:
+    
+    1. A first step writing zeroes to the data-storage units.
+    2. A second step erasing with random data, verifying the erasure
+       success in each hard-drive sector.
+    
+    And be an :class:`ereuse_devicehub.resources.event.models.EraseSectors`.
+    """
+
+    def __str__(self):
+        return self.value
+
+    @classmethod
+    def from_data_storage(cls, erasure) -> Set['ErasureStandards']:
+        """Returns a set of erasure standards."""
+        from ereuse_devicehub.resources.event import models as events
+        standards = set()
+        if isinstance(erasure, events.EraseSectors):
+            with suppress(ValueError):
+                first_step, *other_steps = erasure.steps
+                if isinstance(first_step, events.StepZero) \
+                        and all(isinstance(step, events.StepRandom) for step in other_steps):
+                    standards.add(cls.HMG_IS5)
+        return standards

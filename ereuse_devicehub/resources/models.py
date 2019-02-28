@@ -9,21 +9,26 @@ STR_XSM_SIZE = 16
 
 
 class Thing(db.Model):
+    """The base class of all Devicehub resources.
+
+    This is a loose copy of
+    `schema.org's Thing class <https://schema.org/Thing>`_
+    using only needed fields.
+    """
     __abstract__ = True
-    # todo make updated to auto-update
     updated = db.Column(db.TIMESTAMP(timezone=True),
                         nullable=False,
                         index=True,
                         server_default=db.text('CURRENT_TIMESTAMP'))
     updated.comment = """
-        When this was last changed.
+        The last time Devicehub recorded a change for this thing.
     """
     created = db.Column(db.TIMESTAMP(timezone=True),
                         nullable=False,
                         index=True,
                         server_default=db.text('CURRENT_TIMESTAMP'))
     created.comment = """
-        When Devicehub created this.
+        When Devicehub created this. 
     """
 
     def __init__(self, **kwargs) -> None:

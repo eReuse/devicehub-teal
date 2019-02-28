@@ -15,13 +15,13 @@ from teal.resource import View
 
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
-from ereuse_devicehub.query import SearchQueryParser
+from ereuse_devicehub.query import SearchQueryParser, things_response
 from ereuse_devicehub.resources import search
 from ereuse_devicehub.resources.device.models import Component, Computer, Device, Manufacturer, \
     Display, Processor, GraphicCard, Motherboard, NetworkAdapter, DataStorage, RamModule, \
     SoundCard
 from ereuse_devicehub.resources.device.search import DeviceSearch
-from ereuse_devicehub.resources.event.models import Rate
+from ereuse_devicehub.resources.event import models as events
 from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
 from ereuse_devicehub.resources.tag.model import Tag
 
@@ -37,9 +37,9 @@ class OfType(f.Str):
 
 
 class RateQ(query.Query):
-    rating = query.Between(Rate.rating, f.Float())
-    appearance = query.Between(Rate.appearance, f.Float())
-    functionality = query.Between(Rate.functionality, f.Float())
+    rating = query.Between(events.Rate.rating, f.Float())
+    appearance = query.Between(events.Rate.appearance, f.Float())
+    functionality = query.Between(events.Rate.functionality, f.Float())
 
 
 class TagQ(query.Query):
@@ -52,11 +52,15 @@ class LotQ(query.Query):
 
 
 class Filters(query.Query):
+    id = query.Or(query.Equal(Device.id, fields.Integer()))
     type = query.Or(OfType(Device.type))
     model = query.ILike(Device.model)
     manufacturer = query.ILike(Device.manufacturer)
     serialNumber = query.ILike(Device.serial_number)
-    rating = query.Join(Device.id == Rate.device_id, RateQ)
+    # todo test query for rating (and possibly other filters)
+    rating = query.Join((Device.id == events.EventWithOneDevice.device_id)
+                        & (events.EventWithOneDevice.id == events.Rate.id),
+                        RateQ)
     tag = query.Join(Device.id == Tag.device_id, TagQ)
     # todo This part of the query is really slow
     # And forces usage of distinct, as it returns many rows
@@ -67,6 +71,7 @@ class Filters(query.Query):
 class Sorting(query.Sort):
     id = query.SortField(Device.id)
     created = query.SortField(Device.created)
+    updated = query.SortField(Device.updated)
 
 
 class DeviceView(View):
@@ -75,7 +80,7 @@ class DeviceView(View):
     class FindArgs(marshmallow.Schema):
         search = f.Str()
         filter = f.Nested(Filters, missing=[])
-        sort = f.Nested(Sorting, missing=[])
+        sort = f.Nested(Sorting, missing=[Device.id.asc()])
         page = f.Integer(validate=v.Range(min=1), missing=1)
 
     def get(self, id):
@@ -86,21 +91,13 @@ class DeviceView(View):
         parameters:
           - name: id
             type: integer
-            in: path
+            in: path}
             description: The identifier of the device.
         responses:
           200:
             description: The device or devices.
         """
-        # Majority of code is from teal
-        if id:
-            response = self.one(id)
-        else:
-            args = self.QUERY_PARSER.parse(self.find_args,
-                                           request,
-                                           locations=('querystring',))
-            response = self.find(args)
-        return response
+        return super().get(id)
 
     def one(self, id: int):
         """Gets one device."""
@@ -119,10 +116,20 @@ class DeviceView(View):
         return self.schema.jsonify(device)
 
     @auth.Auth.requires_auth
+    @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
         """Gets many devices."""
-        search_p = args.get('search', None)
+        # Compute query
+        query = self.query(args)
+        devices = query.paginate(page=args['page'], per_page=30)  # type: Pagination
+        return things_response(
+            self.schema.dump(devices.items, many=True, nested=1),
+            devices.page, devices.per_page, devices.total, devices.prev_num, devices.next_num
+        )
+
+    def query(self, args):
         query = Device.query.distinct()  # todo we should not force to do this if the query is ok
+        search_p = args.get('search', None)
         if search_p:
             properties = DeviceSearch.properties
             tags = DeviceSearch.tags

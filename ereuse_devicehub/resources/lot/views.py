@@ -1,15 +1,18 @@
+import datetime
 import uuid
 from collections import deque
 from enum import Enum
 from typing import Dict, List, Set, Union
 
 import marshmallow as ma
+import teal.cache
 from flask import Response, jsonify, request
 from marshmallow import Schema as MarshmallowSchema, fields as f
 from teal.marshmallow import EnumField
 from teal.resource import View
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot, Path
 
@@ -31,13 +34,15 @@ class LotView(View):
         l = request.get_json()
         lot = Lot(**l)
         db.session.add(lot)
-        db.session.commit()
+        db.session().final_flush()
         ret = self.schema.jsonify(lot)
         ret.status_code = 201
+        db.session.commit()
         return ret
 
     def patch(self, id):
-        l = request.get_json()
+        patch_schema = self.resource_def.SCHEMA(only=('name', 'description'), partial=True)
+        l = request.get_json(schema=patch_schema)
         lot = Lot.query.filter_by(id=id).one()
         for key, value in l.items():
             setattr(lot, key, value)
@@ -49,6 +54,7 @@ class LotView(View):
         lot = Lot.query.filter_by(id=id).one()  # type: Lot
         return self.schema.jsonify(lot)
 
+    @teal.cache.cache(datetime.timedelta(minutes=5))
     def find(self, args: dict):
         """
         Gets lots.
@@ -78,17 +84,10 @@ class LotView(View):
             if args['search']:
                 query = query.filter(Lot.name.ilike(args['search'] + '%'))
             lots = query.paginate(per_page=6 if args['search'] else 30)
-            ret = {
-                'items': self.schema.dump(lots.items, many=True, nested=0),
-                'pagination': {
-                    'page': lots.page,
-                    'perPage': lots.per_page,
-                    'total': lots.total,
-                    'previous': lots.prev_num,
-                    'next': lots.next_num
-                },
-                'url': request.path
-            }
+            return things_response(
+                self.schema.dump(lots.items, many=True, nested=0),
+                lots.page, lots.per_page, lots.total, lots.prev_num, lots.next_num
+            )
         return jsonify(ret)
 
     def delete(self, id):
@@ -147,17 +146,21 @@ class LotBaseChildrenView(View):
     def post(self, id: uuid.UUID):
         lot = self.get_lot(id)
         self._post(lot, self.get_ids())
-        db.session.commit()
 
+        db.session().final_flush()
         ret = self.schema.jsonify(lot)
         ret.status_code = 201
+
+        db.session.commit()
         return ret
 
     def delete(self, id: uuid.UUID):
         lot = self.get_lot(id)
         self._delete(lot, self.get_ids())
+        db.session().final_flush()
+        response = self.schema.jsonify(lot)
         db.session.commit()
-        return self.schema.jsonify(lot)
+        return response
 
     def _post(self, lot: Lot, ids: Set[uuid.UUID]):
         raise NotImplementedError

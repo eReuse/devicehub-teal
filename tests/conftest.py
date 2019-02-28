@@ -1,8 +1,10 @@
 import io
+import uuid
 from contextlib import redirect_stdout
 from datetime import datetime
 from pathlib import Path
 
+import boltons.urlutils
 import pytest
 import yaml
 from psycopg2 import IntegrityError
@@ -26,10 +28,7 @@ T = {'start_time': STARTT, 'end_time': ENDT}
 
 class TestConfig(DevicehubConfig):
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/dh_test'
-    SCHEMA = 'test'
     TESTING = True
-    ORGANIZATION_NAME = 'FooOrg'
-    ORGANIZATION_TAX_ID = 'foo-org-id'
     SERVER_NAME = 'localhost'
 
 
@@ -40,7 +39,7 @@ def config():
 
 @pytest.fixture(scope='session')
 def _app(config: TestConfig) -> Devicehub:
-    return Devicehub(config=config, db=db)
+    return Devicehub(inventory='test', config=config, db=db)
 
 
 @pytest.fixture()
@@ -50,14 +49,23 @@ def app(request, _app: Devicehub) -> Devicehub:
         with _app.app_context():
             db.drop_all()
 
+    def _init():
+        _app.init_db(name='Test Inventory',
+                     org_name='FooOrg',
+                     org_id='foo-org-id',
+                     tag_url=boltons.urlutils.URL('https://example.com'),
+                     tag_token=uuid.UUID('52dacef0-6bcb-4919-bfed-f10d2c96ecee'),
+                     erase=False,
+                     common=True)
+
     with _app.app_context():
         try:
             with redirect_stdout(io.StringIO()):
-                _app.init_db()
-        except (ProgrammingError, IntegrityError):
+                _init()
+        except (ProgrammingError, IntegrityError, AssertionError):
             print('Database was not correctly emptied. Re-empty and re-installing...')
             _drop()
-            _app.init_db()
+            _init()
 
     request.addfinalizer(_drop)
     return _app

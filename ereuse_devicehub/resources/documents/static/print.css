@@ -1,0 +1,48 @@
+/**
+Devicehub uses Weasyprint to generate the PDF.
+
+This print.css provides helpful markup to generate the PDF (pages, margins, etc).
+
+The most important things to remember are:
+- DOM elements with a class `page-break` create a new page.
+- DOM elements with a class `no-page-break` do not break between pages.
+- Pages are in A4 by default an 12px.
+ */
+body {
+    background-color: transparent !important;
+    font-size: 12px !important
+}
+
+@page {
+    size: A4;
+    @bottom-right {
+        font-family: "Source Sans Pro", Calibri, Candra, Sans serif;
+        margin-right: 3em;
+        content: counter(page) " / " counter(pages) !important
+    }
+}
+
+/* Sections produce a new page*/
+.page-break:not(section:first-of-type) {
+    page-break-before: always
+}
+
+/* Do not break divs with not-break between pages*/
+.no-page-break {
+    page-break-inside: avoid
+}
+
+.print-only, .print-only * {
+    display: none
+}
+
+/* Do not print divs with no-print in them */
+@media print {
+    .no-print, .no-print * {
+        display: none !important;
+    }
+
+    .print-only, .print-only * {
+        display: initial;
+    }
+}

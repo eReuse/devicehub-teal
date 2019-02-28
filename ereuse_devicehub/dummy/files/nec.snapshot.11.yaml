@@ -104,7 +104,6 @@
       "severity": "Info",
       "endTime": "2018-07-11T11:33:41.531918",
       "startTime": "2018-07-11T10:30:35.643855",
-      "zeros": false,
       "type": "EraseBasic",
       "steps": [
       {

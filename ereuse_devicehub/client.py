@@ -106,7 +106,7 @@ class Client(TealClient):
     def login(self, email: str, password: str):
         assert isinstance(email, str)
         assert isinstance(password, str)
-        return self.post({'email': email, 'password': password}, '/users/login', status=200)
+        return self.post({'email': email, 'password': password}, '/users/login/', status=200)
 
     def get_many(self,
                  res: ResourceLike,

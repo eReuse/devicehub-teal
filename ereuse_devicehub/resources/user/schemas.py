@@ -1,11 +1,11 @@
-from base64 import b64encode
-
 from marshmallow import post_dump
 from marshmallow.fields import Email, String, UUID
 from teal.marshmallow import SanitizedStr
 
+from ereuse_devicehub import auth
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.agent.schemas import Individual
+from ereuse_devicehub.resources.inventory.schema import Inventory
 from ereuse_devicehub.resources.schemas import Thing
 
 
@@ -18,6 +18,7 @@ class User(Thing):
     token = String(dump_only=True,
                    description='Use this token in an Authorization header to access the app.'
                                'The token can change overtime.')
+    inventories = NestedOn(Inventory, many=True, dump_only=True)
 
     def __init__(self,
                  only=None,
@@ -42,5 +43,5 @@ class User(Thing):
         if 'token' in data:
             # In many cases we don't dump the token (ex. relationships)
             # Framework needs ':' at the end
-            data['token'] = b64encode(str.encode(str(data['token']) + ':')).decode()
+            data['token'] = auth.Auth.encode(data['token'])
         return data

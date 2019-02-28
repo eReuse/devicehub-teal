@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from operator import itemgetter
 from typing import List, Tuple
 from uuid import uuid4
 
@@ -12,7 +13,8 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device.exceptions import NeedsId
-from ereuse_devicehub.resources.device.sync import MismatchBetweenTagsAndHid
+from ereuse_devicehub.resources.device.sync import MismatchBetweenProperties, \
+    MismatchBetweenTagsAndHid
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.event.models import AggregateRate, BenchmarkProcessor, \
     EraseSectors, Event, Snapshot, SnapshotRequest, WorkbenchRate
@@ -78,13 +80,17 @@ def test_snapshot_post(user: UserClient):
     assert 'events' not in snapshot['device']
     assert 'author' not in snapshot['device']
     device, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    key = itemgetter('serialNumber')
+    snapshot['components'].sort(key=key)
+    device['components'].sort(key=key)
     assert snapshot['components'] == device['components']
 
-    assert tuple(c['type'] for c in snapshot['components']) == (m.GraphicCard.t, m.RamModule.t,
-                                                                m.Processor.t)
+    assert {c['type'] for c in snapshot['components']} == {m.GraphicCard.t, m.RamModule.t,
+                                                           m.Processor.t}
     rate = next(e for e in snapshot['events'] if e['type'] == WorkbenchRate.t)
     rate, _ = user.get(res=Event, item=rate['id'])
     assert rate['device']['id'] == snapshot['device']['id']
+    rate['components'].sort(key=key)
     assert rate['components'] == snapshot['components']
     assert rate['snapshot']['id'] == snapshot['id']
 
@@ -246,10 +252,8 @@ def test_snapshot_tag_inner_tag_mismatch_between_tags_and_hid(user: UserClient, 
     user.post(pc2, res=Snapshot, status=MismatchBetweenTagsAndHid)
 
 
-@pytest.mark.xfail(reason='There is no attribute checking for tag-matching devices')
 def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
-    """
-    Tests a snapshot performed to device 1 with tag A and then to
+    """Tests a snapshot performed to device 1 with tag A and then to
     device 2 with tag B. Both don't have HID but are different type.
     Devicehub must fail the Snapshot.
     """
@@ -262,9 +266,9 @@ def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
     pc2 = file('basic.snapshot')
     pc2['uuid'] = uuid4()
     pc2['device']['tags'] = pc1['device']['tags']
-    del pc2['device'][
-        'model']  # pc2 model is unknown but pc1 model is set = different characteristic
-    user.post(pc2, res=Snapshot, status=422)
+    # pc2 model is unknown but pc1 model is set = different property
+    del pc2['device']['model']
+    user.post(pc2, res=Snapshot, status=MismatchBetweenProperties)
 
 
 def test_snapshot_upload_twice_uuid_error(user: UserClient):
@@ -289,12 +293,14 @@ def test_snapshot_component_containing_components(user: UserClient):
     user.post(s, res=Snapshot, status=ValidationError)
 
 
-def test_erase_privacy(user: UserClient):
+def test_erase_privacy_standards(user: UserClient):
     """Tests a Snapshot with EraseSectors and the resulting
     privacy properties.
     """
     s = file('erase-sectors.snapshot')
+    assert '2018-06-01T09:12:06+02:00' == s['components'][0]['events'][0]['endTime']
     snapshot = snapshot_and_check(user, s, (EraseSectors.t,), perform_second_snapshot=True)
+    assert '2018-06-01T07:12:06+00:00' == snapshot['events'][0]['endTime']
     storage, *_ = snapshot['components']
     assert storage['type'] == 'SolidStateDrive', 'Components must be ordered by input order'
     storage, _ = user.get(res=m.Device, item=storage['id'])  # Let's get storage events too
@@ -302,18 +308,24 @@ def test_erase_privacy(user: UserClient):
     erasure1, _snapshot1, erasure2, _snapshot2 = storage['events']
     assert erasure1['type'] == erasure2['type'] == 'EraseSectors'
     assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
-    assert snapshot == user.get(res=Event, item=_snapshot2['id'])[0]
+    get_snapshot, _ = user.get(res=Event, item=_snapshot2['id'])
+    assert get_snapshot['events'][0]['endTime'] == '2018-06-01T07:12:06+00:00'
+    assert snapshot == get_snapshot
     erasure, _ = user.get(res=Event, item=erasure1['id'])
     assert len(erasure['steps']) == 2
-    assert erasure['steps'][0]['startTime'] == '2018-06-01T08:15:00+00:00'
-    assert erasure['steps'][0]['endTime'] == '2018-06-01T09:16:00+00:00'
-    assert erasure['steps'][1]['startTime'] == '2018-06-01T08:16:00+00:00'
-    assert erasure['steps'][1]['endTime'] == '2018-06-01T09:17:00+00:00'
+    assert erasure['steps'][0]['startTime'] == '2018-06-01T06:15:00+00:00'
+    assert erasure['steps'][0]['endTime'] == '2018-06-01T07:16:00+00:00'
+    assert erasure['steps'][1]['startTime'] == '2018-06-01T06:16:00+00:00'
+    assert erasure['steps'][1]['endTime'] == '2018-06-01T07:17:00+00:00'
     assert erasure['device']['id'] == storage['id']
-    for step in erasure['steps']:
-        assert step['type'] == 'StepZero'
-        assert step['severity'] == 'Info'
-        assert 'num' not in step
+    step1, step2 = erasure['steps']
+    assert step1['type'] == 'StepZero'
+    assert step1['severity'] == 'Info'
+    assert 'num' not in step1
+    assert step2['type'] == 'StepRandom'
+    assert step2['severity'] == 'Info'
+    assert 'num' not in step2
+    assert ['HMG_IS5'] == erasure['standards']
     assert storage['privacy']['type'] == 'EraseSectors'
     pc, _ = user.get(res=m.Device, item=snapshot['device']['id'])
     assert pc['privacy'] == [storage['privacy']]
@@ -323,7 +335,7 @@ def test_erase_privacy(user: UserClient):
     s['components'][0]['events'][0]['severity'] = 'Error'
     snapshot, _ = user.post(s, res=Snapshot)
     storage, _ = user.get(res=m.Device, item=storage['id'])
-    assert storage['hid'] == 'c1mr-c1s-c1ml'
+    assert storage['hid'] == 'solidstatedrive-c1mr-c1ml-c1s'
     assert storage['privacy']['type'] == 'EraseSectors'
     pc, _ = user.get(res=m.Device, item=snapshot['device']['id'])
     assert pc['privacy'] == [storage['privacy']]
@@ -346,10 +358,12 @@ def test_snapshot_computer_monitor(user: UserClient):
     # todo check that ManualRate has generated an AggregateRate
 
 
-def test_snapshot_mobile_smartphone(user: UserClient):
+def test_snapshot_mobile_smartphone_imei_manual_rate(user: UserClient):
     s = file('smartphone.snapshot')
-    snapshot_and_check(user, s, event_types=('ManualRate',))
-    # todo check that ManualRate has generated an AggregateRate
+    snapshot = snapshot_and_check(user, s, event_types=('ManualRate',))
+    mobile, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    assert mobile['imei'] == 3568680000414120
+    # todo check that manual rate has been created
 
 
 @pytest.mark.xfail(reason='Test not developed')
@@ -385,6 +399,9 @@ def assert_similar_components(components1: List[dict], components2: List[dict]):
     similar than the components in components2.
     """
     assert len(components1) == len(components2)
+    key = itemgetter('serialNumber')
+    components1.sort(key=key)
+    components2.sort(key=key)
     for c1, c2 in zip(components1, components2):
         assert_similar_device(c1, c2)
 
@@ -436,3 +453,14 @@ def test_snapshot_keyboard(user: UserClient):
     snapshot = snapshot_and_check(user, s, event_types=('ManualRate',))
     keyboard = snapshot['device']
     assert keyboard['layout'] == 'ES'
+
+
+def test_pc_rating_rate_none(user: UserClient):
+    """Tests a Snapshot with EraseSectors."""
+    s = file('desktop-9644w8n-lenovo-0169622.snapshot')
+    snapshot, _ = user.post(res=Snapshot, data=s)
+
+
+def test_pc_2(user: UserClient):
+    s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
+    snapshot, _ = user.post(res=Snapshot, data=s)

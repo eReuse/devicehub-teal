@@ -11,3 +11,4 @@ psql -d $1 -c "GRANT ALL PRIVILEGES ON DATABASE $1 TO $2;" # Give access to the 
 psql -d $1 -c "CREATE EXTENSION pgcrypto SCHEMA public;" # Enable pgcrypto
 psql -d $1 -c "CREATE EXTENSION ltree SCHEMA public;" # Enable ltree
 psql -d $1 -c "CREATE EXTENSION citext SCHEMA public;" # Enable citext
+psql -d $1 -c "CREATE EXTENSION pg_trgm SCHEMA public;" # Enable pg_trgm
