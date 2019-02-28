@@ -3,8 +3,10 @@ from datetime import datetime
 from io import StringIO
 from pathlib import Path
 
+import pytest
+
 from ereuse_devicehub.client import UserClient
-from ereuse_devicehub.resources.device.models import Device
+from ereuse_devicehub.resources.documents import documents as docs
 from ereuse_devicehub.resources.event.models import Snapshot
 from tests.conftest import file
 
@@ -14,7 +16,8 @@ def test_export_basic_snapshot(user: UserClient):
     Test export device information in a csv file
     """
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
-    csv_str, _ = user.get(res=Device,
+    csv_str, _ = user.get(res=docs.DocumentDef.t,
+                          item='devices/',
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
     f = StringIO(csv_str)
@@ -40,7 +43,8 @@ def test_export_full_snapshot(user: UserClient):
     Test a export device with all information and a lot of components
     """
     snapshot, _ = user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
-    csv_str, _ = user.get(res=Device,
+    csv_str, _ = user.get(res=docs.DocumentDef.t,
+                          item='devices/',
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
     f = StringIO(csv_str)
@@ -67,7 +71,9 @@ def test_export_empty(user: UserClient):
     """
     Test to check works correctly exporting csv without any information (no snapshot)
     """
-    csv_str, _ = user.get(res=Device, accept='text/csv')
+    csv_str, _ = user.get(res=docs.DocumentDef.t,
+                          accept='text/csv',
+                          item='devices/')
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)
@@ -80,7 +86,8 @@ def test_export_computer_monitor(user: UserClient):
     Test a export device type computer monitor
     """
     snapshot, _ = user.post(file('computer-monitor.snapshot'), res=Snapshot)
-    csv_str, _ = user.get(res=Device,
+    csv_str, _ = user.get(res=docs.DocumentDef.t,
+                          item='devices/',
                           accept='text/csv',
                           query=[('filter', {'type': ['ComputerMonitor']})])
     f = StringIO(csv_str)
@@ -105,7 +112,8 @@ def test_export_keyboard(user: UserClient):
     Test a export device type keyboard
     """
     snapshot, _ = user.post(file('keyboard.snapshot'), res=Snapshot)
-    csv_str, _ = user.get(res=Device,
+    csv_str, _ = user.get(res=docs.DocumentDef.t,
+                          item='devices/',
                           accept='text/csv',
                           query=[('filter', {'type': ['Keyboard']})])
     f = StringIO(csv_str)
@@ -124,6 +132,7 @@ def test_export_keyboard(user: UserClient):
     assert fixture_csv[1] == export_csv[1], 'Component information are not equal'
 
 
+@pytest.mark.xfail(reason='Develop test')
 def test_export_multiple_devices(user: UserClient):
     """
     Test a export multiple devices with different components and information
@@ -131,6 +140,7 @@ def test_export_multiple_devices(user: UserClient):
     pass
 
 
+@pytest.mark.xfail(reason='Develop test')
 def test_export_only_components(user: UserClient):
     """
     Test a export only components
@@ -138,7 +148,8 @@ def test_export_only_components(user: UserClient):
     pass
 
 
-def test_export_computers__and_components(user: UserClient):
+@pytest.mark.xfail(reason='Develop test')
+def test_export_computers_and_components(user: UserClient):
     """
     Test a export multiple devices (computers and independent components)
     """
