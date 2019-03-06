@@ -3,6 +3,7 @@ from collections import OrderedDict
 from flask import current_app
 
 from ereuse_devicehub.resources.device import models as d
+from ereuse_devicehub.resources.event.models import TestDataStorage, BenchmarkDataStorage
 
 
 class DeviceRow(OrderedDict):
@@ -15,6 +16,7 @@ class DeviceRow(OrderedDict):
         d.SoundCard.t: 2
     }
 
+    # TODO Add more fields information
     def __init__(self, device: d.Device) -> None:
         super().__init__()
         self.device = device
@@ -22,6 +24,8 @@ class DeviceRow(OrderedDict):
         self['Type'] = device.t
         if isinstance(device, d.Computer):
             self['Chassis'] = device.chassis
+        else:
+            self['Chassis'] = ''
         self['Tag 1'] = self['Tag 2'] = self['Tag 3'] = ''
         for i, tag in zip(range(1, 3), device.tags):
             self['Tag {}'.format(i)] = format(tag)
@@ -29,12 +33,12 @@ class DeviceRow(OrderedDict):
         self['Model'] = device.model
         self['Manufacturer'] = device.manufacturer
         # self['State'] = device.last_event_of()
-        self['Price'] = device.price
         self['Registered in'] = format(device.created, '%c')
+        self['Price'] = device.price
         if isinstance(device, d.Computer):
             self['Processor'] = device.processor_model
             self['RAM (GB)'] = device.ram_size
-            self['Storage Size (MB)'] = device.data_storage_size
+            self['Data Storage Size (MB)'] = device.data_storage_size
         rate = device.rate
         if rate:
             self['Rate'] = rate.rating
@@ -54,7 +58,7 @@ class DeviceRow(OrderedDict):
         Function to get all components information of a device
         """
         assert isinstance(self.device, d.Computer)
-        # todo put an input specific order (non alphabetic)
+        # todo put an input specific order (non alphabetic) & where are a list of types components
         for type in sorted(current_app.resources[d.Component.t].subresources_types):  # type: str
             max = self.NUMS.get(type, 4)
             if type not in ['Component', 'HardDrive', 'SolidStateDrive']:
@@ -87,11 +91,18 @@ class DeviceRow(OrderedDict):
         if isinstance(component, d.DataStorage):
             self['{} {} Size (MB)'.format(type, i)] = component.size
             self['{} {} Privacy'.format(type, i)] = component.privacy
-
-        # todo decide if is relevant more info about Motherboard
-        """ Particular fields for component Motherboard """
-        if isinstance(component, d.Motherboard):
-            self['{} {} Slots'.format(type, i)] = component.slots
+            try:
+                self['{} {} Lifetime'.format(type, i)] = component.last_event_of(TestDataStorage).lifetime
+            except:
+                self['{} {} Lifetime'.format(type, i)] = ''
+            try:
+                self['{} {} Reading speed'.format(type, i)] = component.last_event_of(BenchmarkDataStorage).read_speed
+            except:
+                self['{} {} Reading speed'.format(type, i)] = ''
+            try:
+                self['{} {} Writing speed'.format(type, i)] = component.last_event_of(BenchmarkDataStorage).write_speed
+            except:
+                self['{} {} Writing speed'.format(type, i)] = ''
 
         """ Particular fields for component Processor """
         if isinstance(component, d.Processor):
@@ -102,7 +113,6 @@ class DeviceRow(OrderedDict):
         if isinstance(component, d.RamModule):
             self['{} {} Size (MB)'.format(type, i)] = component.size
             self['{} {} Speed (MHz)'.format(type, i)] = component.speed
-            self['{} {} Size'.format(type, i)] = component.size
 
         # todo add Display size, ...
         # todo add NetworkAdapter speedLink?
