@@ -651,7 +651,7 @@ class ManualRate(IndividualRate):
         raise NotImplementedError()
 
 
-class WorkbenchComputerRate(ManualRate):
+class ComputerRate(ManualRate):
     id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id), primary_key=True)
     processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE))
     ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE))
@@ -695,172 +695,6 @@ class WorkbenchComputerRate(ManualRate):
     def graphic_card_range(self):
         if self.graphic_card:
             return RatingRange.from_score(self.graphic_card)
-
-
-"""     QUALITY RATE CODE START HERE     """
-
-
-class QualityRate(Rate):
-    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE),
-                       comment='Is a test explain cpu component.')
-    ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE),
-                 comment='RAM memory rate.')
-    data_storage = Column(Float(decimal_return_scale=2), check_range('data_storage', *RATE_POSITIVE),
-                          comment='Data storage rate, like HHD, SSD.')
-
-    @property
-    def ram_range(self):
-        return self.workbench.ram_range
-
-    @property
-    def processor_range(self):
-        return self.workbench.processor_range
-
-    @property
-    def display_range(self):
-        return self.workbench.data_storage_range
-
-    @property
-    def data_storage_range(self):
-        return self.workbench.data_storage_range
-
-    @property
-    def battery_range(self):
-        return self.workbench.ram_range
-
-    @property
-    def camera_range(self):
-        return self.workbench_mobile.camera_range
-
-    @property
-    def graphic_card_range(self):
-        return self.workbench_mobil.graphic_card_range
-
-
-class QualityRateComputer(QualityRate):
-    id = Column(UUID(as_uuid=True), ForeignKey(QualityRate.id), primary_key=True)
-    processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE),
-                       comment='Is a test explain cpu component.')
-    ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE),
-                 comment='RAM memory rate.')
-    data_storage = Column(Float(decimal_return_scale=2), check_range('data_storage', *RATE_POSITIVE),
-                          comment='Data storage rate, like HHD, SSD.')
-
-    graphic_card = Column(Float(decimal_return_scale=2), check_range('graphic_card', *RATE_POSITIVE),
-                          comment='Graphic card score in performance, amount of memory and benchmark result')
-    network_adapter = Column(Float(decimal_return_scale=2), check_range('network_adapter', *RATE_POSITIVE),
-                             comment='Network adapter rate, take it speed limit')
-
-    bios = Column(Float(decimal_return_scale=2), check_range('bios', *RATE_POSITIVE))
-    bios_range = Column(DBEnum(Bios))
-    bios_range.comment = Bios.__doc__
-
-    # todo ensure for WorkbenchRate version and software are not None when inserting them
-
-    def ratings(self):
-        """
-        #Computes all the possible rates taking this rating as a model.
-
-        #Returns a set of ratings, including this one, which is mutated,
-        #and the final :class:`.AggregateRate`.
-        """
-        from ereuse_devicehub.resources.event.rate.main import main
-        return main(self, **app.config.get_namespace('WORKBENCH_RATE_'))
-
-    @property
-    def graphic_card_range(self):
-        if self.graphic_card:
-            return RatingRange.from_score(self.graphic_card)
-
-    @property
-    def network_adapter_range(self):
-        return self.workbench_mobil.network_adapter_range
-
-    @property
-    def bios_range(self):
-        return self.workbench_mobil.bios_range
-
-
-class QualityRateMobile(QualityRate):
-    id = Column(UUID(as_uuid=True), ForeignKey(QualityRate.id), primary_key=True)
-    display = Column(Float(decimal_return_scale=2), check_range('display', *RATE_POSITIVE))
-    display.comment = 'Display rate, screen resolution and size to calculate PPI and convert in score'
-    battery = Column(Float(decimal_return_scale=2), check_range('battery', *RATE_POSITIVE),
-                     comment='Battery rate is related with capacity and its health')
-    camera = Column(Float(decimal_return_scale=2), check_range('camera', *RATE_POSITIVE),
-                    comment='Camera rate take into account resolution')
-
-    graphic_card = Column(Float(decimal_return_scale=2), check_range('graphic_card', *RATE_POSITIVE),
-                          comment='Graphic card score in performance, amount of memory and benchmark result')
-    network_adapter = Column(Float(decimal_return_scale=2), check_range('network_adapter', *RATE_POSITIVE),
-                             comment='Network adapter rate, take it speed limit')
-
-    bios = Column(Float(decimal_return_scale=2), check_range('bios', *RATE_POSITIVE))
-    bios_range = Column(DBEnum(Bios))
-    bios_range.comment = Bios.__doc__
-
-    # todo ensure for WorkbenchRate version and software are not None when inserting them
-
-    def ratings(self):
-        """
-        #Computes all the possible rates taking this rating as a model.
-        """
-        from ereuse_devicehub.resources.event.rate.main import main
-        return main(self, **app.config.get_namespace('WORKBENCH_RATE_'))
-
-    @property
-    def display_range(self):
-        if self.data_storage:
-            return RatingRange.from_score(self.data_storage)
-
-    @property
-    def battery_range(self):
-        if self.ram:
-            return RatingRange.from_score(self.ram)
-
-    @property
-    def camera_range(self):
-        if self.processor:
-            return RatingRange.from_score(self.processor)
-
-    @property
-    def graphic_card_range(self):
-        if self.graphic_card:
-            return RatingRange.from_score(self.graphic_card)
-
-
-class FunctionalityRate(Rate):
-    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    functionality = Column(Float(decimal_return_scale=2), check_range('functionality', *FUNCTIONALITY_RANGE))
-    functionality.comment = 'Functionality rate of a device'
-
-    functionality_range = Column(DBEnum(FunctionalityRangev2))
-    functionality_range.comment = FunctionalityRangev2.__doc__
-
-    connectivity = Column(Float(decimal_return_scale=2),
-                          comment='This punctuation covers a series of aspects related to connectivity.')
-    audio = Column(Float(decimal_return_scale=2), comment='Take into account loudspeaker and microphone')
-
-    @property
-    def connectivity_rate(self):
-        yield
-
-    @property
-    def audio_rate(self):
-        yield
-
-    @property
-    def test_buttonse(self):
-        yield
-
-    @classmethod
-    def test_camera_defects(self):
-        yield
-
-
-class FinalRate(Rate):
-    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
 
 
 class AggregateRate(Rate):
@@ -959,7 +793,186 @@ class AggregateRate(Rate):
         return aggregate
 
 
-####################################################################################
+class EreusePrice(Price):
+    """The act of setting a price by guessing it using the eReuse.org
+    algorithm.
+
+    This algorithm states that the price is the use value of the device
+    (represented by its last :class:`.Rate`) multiplied by a constants
+    value agreed by a circuit or platform.
+    """
+    MULTIPLIER = {
+        Desktop: 20,
+        Laptop: 30
+    }
+
+    class Type:
+        def __init__(self, percentage: float, price: Decimal) -> None:
+            # see https://stackoverflow.com/a/29651462 for the - 0.005
+            self.amount = EreusePrice.to_price(price * Decimal(percentage))
+            self.percentage = EreusePrice.to_price(price * Decimal(percentage))
+            self.percentage = round(percentage - 0.005, 2)
+
+    class Service:
+        REFURBISHER, PLATFORM, RETAILER = 0, 1, 2
+        STANDARD, WARRANTY2 = 'STD', 'WR2'
+        SCHEMA = {
+            Desktop: {
+                RatingRange.HIGH: {
+                    STANDARD: (0.35125, 0.204375, 0.444375),
+                    WARRANTY2: (0.47425, 0.275875, 0.599875)
+                },
+                RatingRange.MEDIUM: {
+                    STANDARD: (0.385, 0.2558333333, 0.3591666667),
+                    WARRANTY2: (0.539, 0.3581666667, 0.5028333333)
+                },
+                RatingRange.LOW: {
+                    STANDARD: (0.5025, 0.30875, 0.18875),
+                },
+            },
+            Laptop: {
+                RatingRange.HIGH: {
+                    STANDARD: (0.3469230769, 0.195, 0.4580769231),
+                    WARRANTY2: (0.4522307692, 0.2632307692, 0.6345384615)
+                },
+                RatingRange.MEDIUM: {
+                    STANDARD: (0.382, 0.1735, 0.4445),
+                    WARRANTY2: (0.5108, 0.2429, 0.6463)
+                },
+                RatingRange.LOW: {
+                    STANDARD: (0.4528571429, 0.2264285714, 0.3207142857),
+                }
+            }
+        }
+        SCHEMA[Server] = SCHEMA[Desktop]
+
+        def __init__(self, device, rating_range, role, price: Decimal) -> None:
+            cls = device.__class__ if device.__class__ != Server else Desktop
+            rate = self.SCHEMA[cls][rating_range]
+            self.standard = EreusePrice.Type(rate[self.STANDARD][role], price)
+            if self.WARRANTY2 in rate:
+                self.warranty2 = EreusePrice.Type(rate[self.WARRANTY2][role], price)
+
+    def __init__(self, rating: AggregateRate, **kwargs) -> None:
+        if rating.rating_range == RatingRange.VERY_LOW:
+            raise ValueError('Cannot compute price for Range.VERY_LOW')
+        # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
+        price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)
+        super().__init__(rating=rating,
+                         device=rating.device,
+                         price=price,
+                         software=kwargs.pop('software', app.config['PRICE_SOFTWARE']),
+                         version=kwargs.pop('version', app.config['PRICE_VERSION']),
+                         **kwargs)
+        self._compute()
+
+    @orm.reconstructor
+    def _compute(self):
+        """
+        Calculates eReuse.org prices when initializing the
+        instance from the price and other properties.
+        """
+        self.refurbisher = self._service(self.Service.REFURBISHER)
+        self.retailer = self._service(self.Service.RETAILER)
+        self.platform = self._service(self.Service.PLATFORM)
+        if hasattr(self.refurbisher, 'warranty2'):
+            self.warranty2 = round(self.refurbisher.warranty2.amount
+                                   + self.retailer.warranty2.amount
+                                   + self.platform.warranty2.amount, 2)
+
+    def _service(self, role):
+        return self.Service(self.device, self.rating.rating_range, role, self.price)
+
+
+class EreusePrice(Price):
+    """The act of setting a price by guessing it using the eReuse.org
+    algorithm.
+
+    This algorithm states that the price is the use value of the device
+    (represented by its last :class:`.Rate`) multiplied by a constants
+    value agreed by a circuit or platform.
+    """
+    MULTIPLIER = {
+        Desktop: 20,
+        Laptop: 30
+    }
+
+    class Type:
+        def __init__(self, percentage: float, price: Decimal) -> None:
+            # see https://stackoverflow.com/a/29651462 for the - 0.005
+            self.amount = EreusePrice.to_price(price * Decimal(percentage))
+            self.percentage = EreusePrice.to_price(price * Decimal(percentage))
+            self.percentage = round(percentage - 0.005, 2)
+
+    class Service:
+        REFURBISHER, PLATFORM, RETAILER = 0, 1, 2
+        STANDARD, WARRANTY2 = 'STD', 'WR2'
+        SCHEMA = {
+            Desktop: {
+                RatingRange.HIGH: {
+                    STANDARD: (0.35125, 0.204375, 0.444375),
+                    WARRANTY2: (0.47425, 0.275875, 0.599875)
+                },
+                RatingRange.MEDIUM: {
+                    STANDARD: (0.385, 0.2558333333, 0.3591666667),
+                    WARRANTY2: (0.539, 0.3581666667, 0.5028333333)
+                },
+                RatingRange.LOW: {
+                    STANDARD: (0.5025, 0.30875, 0.18875),
+                },
+            },
+            Laptop: {
+                RatingRange.HIGH: {
+                    STANDARD: (0.3469230769, 0.195, 0.4580769231),
+                    WARRANTY2: (0.4522307692, 0.2632307692, 0.6345384615)
+                },
+                RatingRange.MEDIUM: {
+                    STANDARD: (0.382, 0.1735, 0.4445),
+                    WARRANTY2: (0.5108, 0.2429, 0.6463)
+                },
+                RatingRange.LOW: {
+                    STANDARD: (0.4528571429, 0.2264285714, 0.3207142857),
+                }
+            }
+        }
+        SCHEMA[Server] = SCHEMA[Desktop]
+
+        def __init__(self, device, rating_range, role, price: Decimal) -> None:
+            cls = device.__class__ if device.__class__ != Server else Desktop
+            rate = self.SCHEMA[cls][rating_range]
+            self.standard = EreusePrice.Type(rate[self.STANDARD][role], price)
+            if self.WARRANTY2 in rate:
+                self.warranty2 = EreusePrice.Type(rate[self.WARRANTY2][role], price)
+
+    def __init__(self, rating: AggregateRate, **kwargs) -> None:
+        if rating.rating_range == RatingRange.VERY_LOW:
+            raise ValueError('Cannot compute price for Range.VERY_LOW')
+        # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
+        price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)
+        super().__init__(rating=rating,
+                         device=rating.device,
+                         price=price,
+                         software=kwargs.pop('software', app.config['PRICE_SOFTWARE']),
+                         version=kwargs.pop('version', app.config['PRICE_VERSION']),
+                         **kwargs)
+        self._compute()
+
+    @orm.reconstructor
+    def _compute(self):
+        """
+        Calculates eReuse.org prices when initializing the
+        instance from the price and other properties.
+        """
+        self.refurbisher = self._service(self.Service.REFURBISHER)
+        self.retailer = self._service(self.Service.RETAILER)
+        self.platform = self._service(self.Service.PLATFORM)
+        if hasattr(self.refurbisher, 'warranty2'):
+            self.warranty2 = round(self.refurbisher.warranty2.amount
+                                   + self.retailer.warranty2.amount
+                                   + self.platform.warranty2.amount, 2)
+
+    def _service(self, role):
+        return self.Service(self.device, self.rating.rating_range, role, self.price)
 
 
 class ResultRate(Rate):
@@ -1150,6 +1163,92 @@ class ResultRate(Rate):
         return aggregate
 
 
+class BenchmarkRate:
+    """
+    Common class to group by benchmark rate classes
+    """
+
+
+class BenchmarkQuality(BenchmarkRate):
+    """
+    Computes quality benchmarks results to aggregate in result rate
+    """
+    cpu_sysbench = Column(Float(decimal_return_scale=2))
+    cpu_sysbench.comment = 'Benchmark processor component with sysbench tool'
+    ram_sysbench = Column(Float(decimal_return_scale=2))
+    ram_sysbench.comment = 'Benchmark RAM component'
+    # gpu_sysbench = Column(Float(decimal_return_scale=2)) todo how to do?
+    data_storage_sysbench = Column(Float(decimal_return_scale=2))
+    data_storage_sysbench.comment = 'Benchmark data storage component with sysbench tool'
+    data_storage_smart = Column(Float(decimal_return_scale=2))
+    data_storage_smart.comment = 'Benchmark data storage component with SMART tool'
+
+
+class FunctionalityTest(Test):
+    """
+    Class where are generic devices functionality aspects
+    """
+
+
+class TestAudio(FunctionalityTest):
+    """
+    Test to check all this aspects related with audio fucntions
+    """
+    loudspeaker = Column(BDEnum(LoudspeakerRange))
+    loudspeaker.comment = 'Range to determine if the speaker is working properly and what sound quality it has.'
+    microphone = Column(Boolean)
+    microphone.comment = 'This evaluate if microphone works correctly'
+
+
+class TestConnectivity(FunctionalityTest):
+    """
+    Test to check all this aspects related with functionality connections in devices
+    """
+
+    SIM = Column(Boolean)
+    SIM.comment = 'Evaluate if SIM works'
+    wifi = Column(Boolean)
+    wifi.comment = 'Evaluate if wifi connection works correctly'
+    bluetooth = Column(Boolean)
+    bluetooth.comment = 'Evaluate if bluetooth works'
+    usb = Column(DBEnum())
+    usb.comment = 'Evaluate if usb port was detected and charger plug works'
+
+
+class TestBattery(FunctionalityTest):
+    """
+    Test of length of charge. Source R2: Minimum X minutes discharging the device
+    """
+    battery_duration = Column(Boolean())
+    battery_duration.comment = ''
+
+
+class TestBios(FunctionalityTest):
+    """
+    Test that determinate if is difficult to access BIOS, like need password, are protected..
+    """
+    bios_range = Column(DBEnum())
+    bios_range.comment = 'Range of difficult to acces BIOS'
+
+
+class TestApperance():
+    """
+    Class with appearance characteristics
+    """
+    chassis_defects_range = Column(BDEnum(ChassisRange))
+    chassis_defects_range.comment = 'Range to determinate cosmetic defects on chassis like scratches'
+
+
+class TestVisual(TestAppearance):
+    """
+    Check aesthetics or cosmetic aspects. Like defects on chassis, display, ..
+    """
+    camera_defects_range = Column(BDEnum(CameraRange))
+    camera_defects_range = 'Range to determinate cosmetic defects on camera'
+    display_defects_range = Column(BDEnum(DisplayRange))
+    display_defects_range = 'Range to determinate cosmetic defects on display'
+
+
 class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
     """The act of setting a trading price for the device.
 
@@ -1215,97 +1314,6 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
     def __str__(self) -> str:
         return '{0:0.2f} {1}'.format(self.price, self.currency)
-
-
-class EreusePrice(Price):
-    """The act of setting a price by guessing it using the eReuse.org
-    algorithm.
-
-    This algorithm states that the price is the use value of the device
-    (represented by its last :class:`.Rate`) multiplied by a constants
-    value agreed by a circuit or platform.
-    """
-    MULTIPLIER = {
-        Desktop: 20,
-        Laptop: 30
-    }
-
-    class Type:
-        def __init__(self, percentage: float, price: Decimal) -> None:
-            # see https://stackoverflow.com/a/29651462 for the - 0.005
-            self.amount = EreusePrice.to_price(price * Decimal(percentage))
-            self.percentage = EreusePrice.to_price(price * Decimal(percentage))
-            self.percentage = round(percentage - 0.005, 2)
-
-    class Service:
-        REFURBISHER, PLATFORM, RETAILER = 0, 1, 2
-        STANDARD, WARRANTY2 = 'STD', 'WR2'
-        SCHEMA = {
-            Desktop: {
-                RatingRange.HIGH: {
-                    STANDARD: (0.35125, 0.204375, 0.444375),
-                    WARRANTY2: (0.47425, 0.275875, 0.599875)
-                },
-                RatingRange.MEDIUM: {
-                    STANDARD: (0.385, 0.2558333333, 0.3591666667),
-                    WARRANTY2: (0.539, 0.3581666667, 0.5028333333)
-                },
-                RatingRange.LOW: {
-                    STANDARD: (0.5025, 0.30875, 0.18875),
-                },
-            },
-            Laptop: {
-                RatingRange.HIGH: {
-                    STANDARD: (0.3469230769, 0.195, 0.4580769231),
-                    WARRANTY2: (0.4522307692, 0.2632307692, 0.6345384615)
-                },
-                RatingRange.MEDIUM: {
-                    STANDARD: (0.382, 0.1735, 0.4445),
-                    WARRANTY2: (0.5108, 0.2429, 0.6463)
-                },
-                RatingRange.LOW: {
-                    STANDARD: (0.4528571429, 0.2264285714, 0.3207142857),
-                }
-            }
-        }
-        SCHEMA[Server] = SCHEMA[Desktop]
-
-        def __init__(self, device, rating_range, role, price: Decimal) -> None:
-            cls = device.__class__ if device.__class__ != Server else Desktop
-            rate = self.SCHEMA[cls][rating_range]
-            self.standard = EreusePrice.Type(rate[self.STANDARD][role], price)
-            if self.WARRANTY2 in rate:
-                self.warranty2 = EreusePrice.Type(rate[self.WARRANTY2][role], price)
-
-    def __init__(self, rating: AggregateRate, **kwargs) -> None:
-        if rating.rating_range == RatingRange.VERY_LOW:
-            raise ValueError('Cannot compute price for Range.VERY_LOW')
-        # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
-        price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)
-        super().__init__(rating=rating,
-                         device=rating.device,
-                         price=price,
-                         software=kwargs.pop('software', app.config['PRICE_SOFTWARE']),
-                         version=kwargs.pop('version', app.config['PRICE_VERSION']),
-                         **kwargs)
-        self._compute()
-
-    @orm.reconstructor
-    def _compute(self):
-        """
-        Calculates eReuse.org prices when initializing the
-        instance from the price and other properties.
-        """
-        self.refurbisher = self._service(self.Service.REFURBISHER)
-        self.retailer = self._service(self.Service.RETAILER)
-        self.platform = self._service(self.Service.PLATFORM)
-        if hasattr(self.refurbisher, 'warranty2'):
-            self.warranty2 = round(self.refurbisher.warranty2.amount
-                                   + self.retailer.warranty2.amount
-                                   + self.platform.warranty2.amount, 2)
-
-    def _service(self, role):
-        return self.Service(self.device, self.rating.rating_range, role, self.price)
 
 
 class Test(JoinedWithOneDeviceMixin, EventWithOneDevice):
