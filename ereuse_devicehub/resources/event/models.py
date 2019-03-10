@@ -31,7 +31,7 @@ from ereuse_devicehub.resources.device.models import Component, Computer, DataSt
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ErasureStandards, \
     FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, \
     RatingRange, RatingSoftware, ReceiverRole, Severity, SnapshotExpectedEvents, SnapshotSoftware, \
-    TestDataStorageLength, FUNCTIONALITY_RANGE, FunctionalityRangev2
+    TestDataStorageLength, FUNCTIONALITY_RANGE, FunctionalityRangev2, AppearanceRangev2, BatteryHealthRange
 from ereuse_devicehub.resources.event.rate.workbench.v2_0 import QualityRate, FunctionalityRate
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
@@ -553,6 +553,220 @@ class SnapshotRequest(db.Model):
                                             cascade=CASCADE_OWN))
 
 
+class Benchmark(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    """The act of gauging the performance of a device."""
+    elapsed = Column(Interval)
+
+    @declared_attr
+    def __mapper_args__(cls):
+        """
+        Defines inheritance.
+
+        From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
+        extensions/declarative/api.html
+        #sqlalchemy.ext.declarative.declared_attr>`_
+        """
+        args = {POLYMORPHIC_ID: cls.t}
+        if cls.t == 'Benchmark':
+            args[POLYMORPHIC_ON] = cls.type
+        return args
+
+
+class BenchmarkDataStorage(Benchmark):
+    """Benchmarks the data storage unit reading and writing speeds."""
+    id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
+    read_speed = Column(Float(decimal_return_scale=2), nullable=False)
+    write_speed = Column(Float(decimal_return_scale=2), nullable=False)
+
+    def __str__(self) -> str:
+        return 'Read: {} MB/s, write: {} MB/s'.format(self.read_speed, self.write_speed)
+
+
+class BenchmarkWithRate(Benchmark):
+    """The act of benchmarking a device with a single rate."""
+    id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
+    rate = Column(Float, nullable=False)
+
+    def __str__(self) -> str:
+        return '{} points'.format(self.rate)
+
+
+class BenchmarkProcessor(BenchmarkWithRate):
+    """Benchmarks a processor by executing `BogoMips
+    <https://en.wikipedia.org/wiki/BogoMips>`_. Note that this is not
+    a reliable way of rating processors and we keep it for compatibility
+    purposes.
+    """
+    pass
+
+
+class BenchmarkProcessorSysbench(BenchmarkProcessor):
+    """Benchmarks a processor by using the processor benchmarking
+    utility of `sysbench <https://github.com/akopytov/sysbench>`_.
+    """
+    pass
+
+
+class BenchmarkRamSysbench(BenchmarkWithRate):
+    pass
+
+
+class BenchmarkGraphicCard(BenchmarkWithRate):
+    pass
+
+
+class Test(JoinedWithOneDeviceMixin, EventWithOneDevice):
+    """The act of testing the physical condition of a device and its
+    components.
+
+    Testing errors and warnings are easily taken in
+    :attr:`ereuse_devicehub.resources.device.models.Device.working`.
+    """
+    elapsed = Column(Interval, nullable=False)
+
+    @declared_attr
+    def __mapper_args__(cls):
+        """
+        Defines inheritance.
+
+        From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
+        extensions/declarative/api.html
+        #sqlalchemy.ext.declarative.declared_attr>`_
+        """
+        args = {POLYMORPHIC_ID: cls.t}
+        if cls.t == 'Test':
+            args[POLYMORPHIC_ON] = cls.type
+        return args
+
+
+class TestDataStorage(Test):
+    """
+    The act of testing the data storage.
+
+    Testing is done using the `S.M.A.R.T self test
+    <https://en.wikipedia.org/wiki/S.M.A.R.T.#Self-tests>`_. Note
+    that not all data storage units, specially some new PCIe ones, do not
+    support SMART testing.
+
+    The test takes to other SMART values indicators of the overall health
+    of the data storage.
+    """
+    id = Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
+    length = Column(DBEnum(TestDataStorageLength), nullable=False)  # todo from type
+    status = Column(Unicode(), check_lower('status'), nullable=False)
+    lifetime = Column(Interval)
+    assessment = Column(Boolean)
+    reallocated_sector_count = Column(SmallInteger)
+    power_cycle_count = Column(SmallInteger)
+    reported_uncorrectable_errors = Column(SmallInteger)
+    command_timeout = Column(Integer)
+    current_pending_sector_count = Column(SmallInteger)
+    offline_uncorrectable = Column(SmallInteger)
+    remaining_lifetime_percentage = Column(SmallInteger)
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+        # Define severity
+        # As of https://www.backblaze.com/blog/hard-drive-smart-stats/ and
+        # https://www.backblaze.com/blog-smart-stats-2014-8.html
+        # We can guess some future disk failures by analyzing some SMART data.
+        if self.severity is None:
+            # Test finished successfully
+            if not self.assessment:
+                self.severity = Severity.Error
+            elif self.current_pending_sector_count and self.current_pending_sector_count > 40 \
+                    or self.reallocated_sector_count and self.reallocated_sector_count > 10:
+                self.severity = Severity.Warning
+
+    def __str__(self) -> str:
+        t = inflection.humanize(self.status)
+        if self.lifetime:
+            t += ' with a lifetime of {:.1f} years.'.format(self.lifetime.days / 365)
+        t += self.description
+        return t
+
+
+class StressTest(Test):
+    """The act of stressing (putting to the maximum capacity)
+    a device for an amount of minutes. If the device is not in great
+    condition won't probably survive such test.
+    """
+
+    @validates('elapsed')
+    def is_minute_and_bigger_than_1_minute(self, _, value: timedelta):
+        seconds = value.total_seconds()
+        assert not bool(seconds % 60)
+        assert seconds >= 60
+        return value
+
+    def __str__(self) -> str:
+        return '{}. Computing for {}'.format(self.severity, self.elapsed)
+
+
+class TestAudio(Test):
+    """
+    Test to check all this aspects related with audio functions, Manual Tests??
+    """
+    loudspeaker = Column(BDEnum(LoudspeakerRange))
+    loudspeaker.comment = 'Range to determine if the speaker is working properly and what sound quality it has.'
+    microphone = Column(Boolean)
+    microphone.comment = 'This evaluate if microphone works correctly'
+
+
+class TestConnectivity(Test):
+    """
+    Test to check all this aspects related with functionality connections in devices
+    """
+
+    SIM = Column(Boolean)
+    SIM.comment = 'Evaluate if SIM works'
+    wifi = Column(Boolean)
+    wifi.comment = 'Evaluate if wifi connection works correctly'
+    bluetooth = Column(Boolean)
+    bluetooth.comment = 'Evaluate if bluetooth works'
+    usb = Column(DBEnum(USBPortRange))
+    usb.comment = 'Evaluate if usb port was detected and charger plug works'
+
+
+class TestBattery(Test):
+    """
+    Test battery health, status and length of charge. Minimum X minutes discharging the device
+    """
+    # TODO how to determinate if test PASS depend on battery stat and/or health
+    battery_stat = Column(Boolean())
+    battery_stat.comment = """
+        Some batteries can report a self-check life status.
+    """
+    battery_health = Column(DBEnum(BatteryHealthRange))
+    battery_health.comment = BatteryHealthRange.__doc__
+
+
+class TestBios(Test):
+    """
+    Test that determinate motherboard no beeps, codes or errors when power on,
+    and a grade to reflect some possibles difficult to access or modify setting in the BIOS, like password protection..
+    """
+    bios_power_on = Column(Boolean())
+    bios_power_on.comment = """
+        Motherboards do a self check when powering up (R2 p.23), test PASS if no beeps, codes, or errors appears.
+    """
+    # TODO Eum(BiosAccesRange)
+    bios_access_range = Column(BDEnum(BiosAccessRange))
+    bios_access_range.comment = 'Range of difficult to acces BIOS'
+
+
+class TestVisual(ManualRate):
+    """
+    Special test that its aspects are represented with grade and focuses mainly on
+    the aesthetic or cosmetic defects of important parts of a device.
+    Like defects on chassis, display, ..
+    """
+    # TODO Consider if add some new var in appearance aspect??
+    appearance_range = Column(DBEnum(AppearanceRangev2))
+    appearance_range.comment = AppearanceRangev2.__doc__
+
+
 class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
     """The act of grading the appearance, performance, and functionality
     of a device.
@@ -651,50 +865,13 @@ class ManualRate(IndividualRate):
         raise NotImplementedError()
 
 
-class ComputerRate(ManualRate):
-    id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id), primary_key=True)
-    processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE))
-    ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE))
-    data_storage = Column(Float(decimal_return_scale=2),
-                          check_range('data_storage', *RATE_POSITIVE))
-    graphic_card = Column(Float(decimal_return_scale=2),
-                          check_range('graphic_card', *RATE_POSITIVE))
-    bios = Column(Float(decimal_return_scale=2),
-                  check_range('bios', *RATE_POSITIVE))
-    bios_range = Column(DBEnum(Bios))
-    bios_range.comment = Bios.__doc__
+# TODO is necessary?
+class WorkbenchComputer(ManualRate):
+    pass
 
-    # todo ensure for WorkbenchRate version and software are not None when inserting them
 
-    def ratings(self):
-        """
-        Computes all the possible rates taking this rating as a model.
-
-        Returns a set of ratings, including this one, which is mutated,
-        and the final :class:`.AggregateRate`.
-        """
-        from ereuse_devicehub.resources.event.rate.main import main
-        return main(self, **app.config.get_namespace('WORKBENCH_RATE_'))
-
-    @property
-    def data_storage_range(self):
-        if self.data_storage:
-            return RatingRange.from_score(self.data_storage)
-
-    @property
-    def ram_range(self):
-        if self.ram:
-            return RatingRange.from_score(self.ram)
-
-    @property
-    def processor_range(self):
-        if self.processor:
-            return RatingRange.from_score(self.processor)
-
-    @property
-    def graphic_card_range(self):
-        if self.graphic_card:
-            return RatingRange.from_score(self.graphic_card)
+class WorkbenchMobile(ManualRate):
+    pass
 
 
 class AggregateRate(Rate):
@@ -782,7 +959,7 @@ class AggregateRate(Rate):
         return self.workbench.labelling
 
     @classmethod
-    def from_workbench_rate(cls, rate: QualityRateComputer):
+    def from_workbench_rate(cls, rate: QualityRate):
         aggregate = cls()
         aggregate.rating = rate.rating
         aggregate.software = rate.software
@@ -793,189 +970,88 @@ class AggregateRate(Rate):
         return aggregate
 
 
-class EreusePrice(Price):
-    """The act of setting a price by guessing it using the eReuse.org
-    algorithm.
-
-    This algorithm states that the price is the use value of the device
-    (represented by its last :class:`.Rate`) multiplied by a constants
-    value agreed by a circuit or platform.
+class QualityRate(Rate):
     """
-    MULTIPLIER = {
-        Desktop: 20,
-        Laptop: 30
-    }
-
-    class Type:
-        def __init__(self, percentage: float, price: Decimal) -> None:
-            # see https://stackoverflow.com/a/29651462 for the - 0.005
-            self.amount = EreusePrice.to_price(price * Decimal(percentage))
-            self.percentage = EreusePrice.to_price(price * Decimal(percentage))
-            self.percentage = round(percentage - 0.005, 2)
-
-    class Service:
-        REFURBISHER, PLATFORM, RETAILER = 0, 1, 2
-        STANDARD, WARRANTY2 = 'STD', 'WR2'
-        SCHEMA = {
-            Desktop: {
-                RatingRange.HIGH: {
-                    STANDARD: (0.35125, 0.204375, 0.444375),
-                    WARRANTY2: (0.47425, 0.275875, 0.599875)
-                },
-                RatingRange.MEDIUM: {
-                    STANDARD: (0.385, 0.2558333333, 0.3591666667),
-                    WARRANTY2: (0.539, 0.3581666667, 0.5028333333)
-                },
-                RatingRange.LOW: {
-                    STANDARD: (0.5025, 0.30875, 0.18875),
-                },
-            },
-            Laptop: {
-                RatingRange.HIGH: {
-                    STANDARD: (0.3469230769, 0.195, 0.4580769231),
-                    WARRANTY2: (0.4522307692, 0.2632307692, 0.6345384615)
-                },
-                RatingRange.MEDIUM: {
-                    STANDARD: (0.382, 0.1735, 0.4445),
-                    WARRANTY2: (0.5108, 0.2429, 0.6463)
-                },
-                RatingRange.LOW: {
-                    STANDARD: (0.4528571429, 0.2264285714, 0.3207142857),
-                }
-            }
-        }
-        SCHEMA[Server] = SCHEMA[Desktop]
-
-        def __init__(self, device, rating_range, role, price: Decimal) -> None:
-            cls = device.__class__ if device.__class__ != Server else Desktop
-            rate = self.SCHEMA[cls][rating_range]
-            self.standard = EreusePrice.Type(rate[self.STANDARD][role], price)
-            if self.WARRANTY2 in rate:
-                self.warranty2 = EreusePrice.Type(rate[self.WARRANTY2][role], price)
-
-    def __init__(self, rating: AggregateRate, **kwargs) -> None:
-        if rating.rating_range == RatingRange.VERY_LOW:
-            raise ValueError('Cannot compute price for Range.VERY_LOW')
-        # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
-        price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)
-        super().__init__(rating=rating,
-                         device=rating.device,
-                         price=price,
-                         software=kwargs.pop('software', app.config['PRICE_SOFTWARE']),
-                         version=kwargs.pop('version', app.config['PRICE_VERSION']),
-                         **kwargs)
-        self._compute()
-
-    @orm.reconstructor
-    def _compute(self):
-        """
-        Calculates eReuse.org prices when initializing the
-        instance from the price and other properties.
-        """
-        self.refurbisher = self._service(self.Service.REFURBISHER)
-        self.retailer = self._service(self.Service.RETAILER)
-        self.platform = self._service(self.Service.PLATFORM)
-        if hasattr(self.refurbisher, 'warranty2'):
-            self.warranty2 = round(self.refurbisher.warranty2.amount
-                                   + self.retailer.warranty2.amount
-                                   + self.platform.warranty2.amount, 2)
-
-    def _service(self, role):
-        return self.Service(self.device, self.rating.rating_range, role, self.price)
-
-
-class EreusePrice(Price):
-    """The act of setting a price by guessing it using the eReuse.org
-    algorithm.
-
-    This algorithm states that the price is the use value of the device
-    (represented by its last :class:`.Rate`) multiplied by a constants
-    value agreed by a circuit or platform.
+    The act of compute performance (quality) a device
     """
-    MULTIPLIER = {
-        Desktop: 20,
-        Laptop: 30
-    }
+    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+    processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE),
+                       comment='Is a test explain cpu component.')
+    ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE),
+                 comment='RAM memory rate.')
+    data_storage = Column(Float(decimal_return_scale=2), check_range('data_storage', *RATE_POSITIVE),
+                          comment='Data storage rate, like HHD, SSD.')
 
-    class Type:
-        def __init__(self, percentage: float, price: Decimal) -> None:
-            # see https://stackoverflow.com/a/29651462 for the - 0.005
-            self.amount = EreusePrice.to_price(price * Decimal(percentage))
-            self.percentage = EreusePrice.to_price(price * Decimal(percentage))
-            self.percentage = round(percentage - 0.005, 2)
+    """     MOBILE QUALITY RATE     """
+    display = Column(Float(decimal_return_scale=2), check_range('display', *RATE_POSITIVE))
+    display.comment = 'Display rate, screen resolution and size to calculate PPI and convert in score'
+    battery = Column(Float(decimal_return_scale=2), check_range('battery', *RATE_POSITIVE),
+                     comment='Battery rate is related with capacity and its health')
+    camera = Column(Float(decimal_return_scale=2), check_range('camera', *RATE_POSITIVE),
+                    comment='Camera rate take into account resolution')
 
-    class Service:
-        REFURBISHER, PLATFORM, RETAILER = 0, 1, 2
-        STANDARD, WARRANTY2 = 'STD', 'WR2'
-        SCHEMA = {
-            Desktop: {
-                RatingRange.HIGH: {
-                    STANDARD: (0.35125, 0.204375, 0.444375),
-                    WARRANTY2: (0.47425, 0.275875, 0.599875)
-                },
-                RatingRange.MEDIUM: {
-                    STANDARD: (0.385, 0.2558333333, 0.3591666667),
-                    WARRANTY2: (0.539, 0.3581666667, 0.5028333333)
-                },
-                RatingRange.LOW: {
-                    STANDARD: (0.5025, 0.30875, 0.18875),
-                },
-            },
-            Laptop: {
-                RatingRange.HIGH: {
-                    STANDARD: (0.3469230769, 0.195, 0.4580769231),
-                    WARRANTY2: (0.4522307692, 0.2632307692, 0.6345384615)
-                },
-                RatingRange.MEDIUM: {
-                    STANDARD: (0.382, 0.1735, 0.4445),
-                    WARRANTY2: (0.5108, 0.2429, 0.6463)
-                },
-                RatingRange.LOW: {
-                    STANDARD: (0.4528571429, 0.2264285714, 0.3207142857),
-                }
-            }
-        }
-        SCHEMA[Server] = SCHEMA[Desktop]
+    """     COMPUTER QUALITY RATE     """
+    graphic_card = Column(Float(decimal_return_scale=2), check_range('graphic_card', *RATE_POSITIVE),
+                          comment='Graphic card score in performance, amount of memory and benchmark result')
+    network_adapter = Column(Float(decimal_return_scale=2), check_range('network_adapter', *RATE_POSITIVE),
+                             comment='Network adapter rate, take it speed limit')
 
-        def __init__(self, device, rating_range, role, price: Decimal) -> None:
-            cls = device.__class__ if device.__class__ != Server else Desktop
-            rate = self.SCHEMA[cls][rating_range]
-            self.standard = EreusePrice.Type(rate[self.STANDARD][role], price)
-            if self.WARRANTY2 in rate:
-                self.warranty2 = EreusePrice.Type(rate[self.WARRANTY2][role], price)
+    bios = Column(Float(decimal_return_scale=2), check_range('bios', *RATE_POSITIVE))
+    bios_range = Column(DBEnum(Bios))
+    bios_range.comment = Bios.__doc__
 
-    def __init__(self, rating: AggregateRate, **kwargs) -> None:
-        if rating.rating_range == RatingRange.VERY_LOW:
-            raise ValueError('Cannot compute price for Range.VERY_LOW')
-        # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
-        price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)
-        super().__init__(rating=rating,
-                         device=rating.device,
-                         price=price,
-                         software=kwargs.pop('software', app.config['PRICE_SOFTWARE']),
-                         version=kwargs.pop('version', app.config['PRICE_VERSION']),
-                         **kwargs)
-        self._compute()
+    @property
+    def ram_range(self):
+        return self.workbench.ram_range
 
-    @orm.reconstructor
-    def _compute(self):
-        """
-        Calculates eReuse.org prices when initializing the
-        instance from the price and other properties.
-        """
-        self.refurbisher = self._service(self.Service.REFURBISHER)
-        self.retailer = self._service(self.Service.RETAILER)
-        self.platform = self._service(self.Service.PLATFORM)
-        if hasattr(self.refurbisher, 'warranty2'):
-            self.warranty2 = round(self.refurbisher.warranty2.amount
-                                   + self.retailer.warranty2.amount
-                                   + self.platform.warranty2.amount, 2)
+    @property
+    def processor_range(self):
+        return self.workbench.processor_range
 
-    def _service(self, role):
-        return self.Service(self.device, self.rating.rating_range, role, self.price)
+    @property
+    def display_range(self):
+        return self.workbench.data_storage_range
+
+    @property
+    def data_storage_range(self):
+        return self.workbench.data_storage_range
+
+    @property
+    def battery_range(self):
+        return self.workbench.ram_range
+
+    @property
+    def camera_range(self):
+        return self.workbench_mobile.camera_range
+
+    @property
+    def graphic_card_range(self):
+        return self.workbench_mobil.graphic_card_range
+
+    @property
+    def network_adapter_range(self):
+        return self.workbench_mobil.network_adapter_range
+
+    @property
+    def bios_range(self):
+        return self.workbench_mobil.bios_range
 
 
-class ResultRate(Rate):
+class FunctionalityRate(Rate):
+    """
+    The act of compute functionality characteristics of a device.
+    Two functionality variables, functionality rate (float) and functionality range (Enum)
+
+    """
+    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+    functionality = Column(Float(decimal_return_scale=2), check_range('functionality', *FUNCTIONALITY_RANGE))
+    functionality.comment = 'Functionality rate of a device'
+
+    functionality_range = Column(DBEnum(FunctionalityRangev2))
+    functionality_range.comment = FunctionalityRangev2.__doc__
+
+
+class FinalRate(Rate):
     """The act of grading the appearance, quality (performance), and functionality
         of a device.
 
@@ -987,7 +1063,7 @@ class ResultRate(Rate):
         5. ``Cost of repair``.
 
 
-        There are types of rating a device:
+        There are different types of rating a device:
 
         1. Rate Quality
         2. Rate Functionality
@@ -1003,17 +1079,22 @@ class ResultRate(Rate):
         """
 
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    quality_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
+    quality_id = Column(UUID(as_uuid=True), ForeignKey(QualityRate.id))
     quality_id.comment = """The Quality Rate used to generate this
     aggregation, or None if none used.
     """
+    quality = relationship(QualityRate, )
 
-    func_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
-    func_id.comment = """The Functionality Rate used to generate this
+    functionality_id = Column(UUID(as_uuid=True), ForeignKey(FunctionalityRate.id))
+    functionality_id.comment = """The Functionality Rate used to generate this
       aggregation, or None if none used.
       """
+    functionality = relationship(FunctionalityRate, )
 
-    final_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
+    # TODO is necessary?? create a AppearanceRate..
+    appearance = relationship(TestVisual, )
+
+    final_id = Column(UUID(as_uuid=True), ForeignKey(FinalRate.id))
     final_id.comment = """The Final Rate used to generate this
       aggregation, or None if none used.
       """
@@ -1058,6 +1139,8 @@ class ResultRate(Rate):
                                                     collection_class=OrderedSet),
                                     primaryjoin=workbench_mobile_id == QualityRateMobile.id)
 
+    # TODO Add more source that global rate can use it
+
     def __init__(self, *args, **kwargs) -> None:
         kwargs.setdefault('version', StrictVersion('1.0'))
         super().__init__(*args, **kwargs)
@@ -1081,11 +1164,11 @@ class ResultRate(Rate):
         pass
 
     @classmethod
-    def functionality_category(cls, quality: QualityRate):
+    def functionality_category(cls, functionality: FunctionalityRate):
         pass
 
     @classmethod
-    def appearance_category(cls, quality: QualityRate):
+    def appearance_category(cls, appearance: ManualRate):
         pass
 
     @classmethod
@@ -1150,103 +1233,6 @@ class ResultRate(Rate):
     @property
     def labelling(self):
         return self.workbench.labelling
-
-    @classmethod
-    def from_workbench_rate(cls, rate: QualityRateComputer):
-        aggregate = cls()
-        aggregate.rating = rate.rating
-        aggregate.software = rate.software
-        aggregate.appearance = rate.appearance
-        aggregate.functionality = rate.functionality
-        aggregate.device = rate.device
-        aggregate.workbench = rate
-        return aggregate
-
-
-class BenchmarkRate:
-    """
-    Common class to group by benchmark rate classes
-    """
-
-
-class BenchmarkQuality(BenchmarkRate):
-    """
-    Computes quality benchmarks results to aggregate in result rate
-    """
-    cpu_sysbench = Column(Float(decimal_return_scale=2))
-    cpu_sysbench.comment = 'Benchmark processor component with sysbench tool'
-    ram_sysbench = Column(Float(decimal_return_scale=2))
-    ram_sysbench.comment = 'Benchmark RAM component'
-    # gpu_sysbench = Column(Float(decimal_return_scale=2)) todo how to do?
-    data_storage_sysbench = Column(Float(decimal_return_scale=2))
-    data_storage_sysbench.comment = 'Benchmark data storage component with sysbench tool'
-    data_storage_smart = Column(Float(decimal_return_scale=2))
-    data_storage_smart.comment = 'Benchmark data storage component with SMART tool'
-
-
-class FunctionalityTest(Test):
-    """
-    Class where are generic devices functionality aspects
-    """
-
-
-class TestAudio(FunctionalityTest):
-    """
-    Test to check all this aspects related with audio fucntions
-    """
-    loudspeaker = Column(BDEnum(LoudspeakerRange))
-    loudspeaker.comment = 'Range to determine if the speaker is working properly and what sound quality it has.'
-    microphone = Column(Boolean)
-    microphone.comment = 'This evaluate if microphone works correctly'
-
-
-class TestConnectivity(FunctionalityTest):
-    """
-    Test to check all this aspects related with functionality connections in devices
-    """
-
-    SIM = Column(Boolean)
-    SIM.comment = 'Evaluate if SIM works'
-    wifi = Column(Boolean)
-    wifi.comment = 'Evaluate if wifi connection works correctly'
-    bluetooth = Column(Boolean)
-    bluetooth.comment = 'Evaluate if bluetooth works'
-    usb = Column(DBEnum())
-    usb.comment = 'Evaluate if usb port was detected and charger plug works'
-
-
-class TestBattery(FunctionalityTest):
-    """
-    Test of length of charge. Source R2: Minimum X minutes discharging the device
-    """
-    battery_duration = Column(Boolean())
-    battery_duration.comment = ''
-
-
-class TestBios(FunctionalityTest):
-    """
-    Test that determinate if is difficult to access BIOS, like need password, are protected..
-    """
-    bios_range = Column(DBEnum())
-    bios_range.comment = 'Range of difficult to acces BIOS'
-
-
-class TestApperance():
-    """
-    Class with appearance characteristics
-    """
-    chassis_defects_range = Column(BDEnum(ChassisRange))
-    chassis_defects_range.comment = 'Range to determinate cosmetic defects on chassis like scratches'
-
-
-class TestVisual(TestAppearance):
-    """
-    Check aesthetics or cosmetic aspects. Like defects on chassis, display, ..
-    """
-    camera_defects_range = Column(BDEnum(CameraRange))
-    camera_defects_range = 'Range to determinate cosmetic defects on camera'
-    display_defects_range = Column(BDEnum(DisplayRange))
-    display_defects_range = 'Range to determinate cosmetic defects on display'
 
 
 class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
@@ -1316,150 +1302,95 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
         return '{0:0.2f} {1}'.format(self.price, self.currency)
 
 
-class Test(JoinedWithOneDeviceMixin, EventWithOneDevice):
-    """The act of testing the physical condition of a device and its
-    components.
+class EreusePrice(Price):
+    """The act of setting a price by guessing it using the eReuse.org
+    algorithm.
 
-    Testing errors and warnings are easily taken in
-    :attr:`ereuse_devicehub.resources.device.models.Device.working`.
+    This algorithm states that the price is the use value of the device
+    (represented by its last :class:`.Rate`) multiplied by a constants
+    value agreed by a circuit or platform.
     """
-    elapsed = Column(Interval, nullable=False)
+    MULTIPLIER = {
+        Desktop: 20,
+        Laptop: 30
+    }
 
-    @declared_attr
-    def __mapper_args__(cls):
+    class Type:
+        def __init__(self, percentage: float, price: Decimal) -> None:
+            # see https://stackoverflow.com/a/29651462 for the - 0.005
+            self.amount = EreusePrice.to_price(price * Decimal(percentage))
+            self.percentage = EreusePrice.to_price(price * Decimal(percentage))
+            self.percentage = round(percentage - 0.005, 2)
+
+    class Service:
+        REFURBISHER, PLATFORM, RETAILER = 0, 1, 2
+        STANDARD, WARRANTY2 = 'STD', 'WR2'
+        SCHEMA = {
+            Desktop: {
+                RatingRange.HIGH: {
+                    STANDARD: (0.35125, 0.204375, 0.444375),
+                    WARRANTY2: (0.47425, 0.275875, 0.599875)
+                },
+                RatingRange.MEDIUM: {
+                    STANDARD: (0.385, 0.2558333333, 0.3591666667),
+                    WARRANTY2: (0.539, 0.3581666667, 0.5028333333)
+                },
+                RatingRange.LOW: {
+                    STANDARD: (0.5025, 0.30875, 0.18875),
+                },
+            },
+            Laptop: {
+                RatingRange.HIGH: {
+                    STANDARD: (0.3469230769, 0.195, 0.4580769231),
+                    WARRANTY2: (0.4522307692, 0.2632307692, 0.6345384615)
+                },
+                RatingRange.MEDIUM: {
+                    STANDARD: (0.382, 0.1735, 0.4445),
+                    WARRANTY2: (0.5108, 0.2429, 0.6463)
+                },
+                RatingRange.LOW: {
+                    STANDARD: (0.4528571429, 0.2264285714, 0.3207142857),
+                }
+            }
+        }
+        SCHEMA[Server] = SCHEMA[Desktop]
+
+        def __init__(self, device, rating_range, role, price: Decimal) -> None:
+            cls = device.__class__ if device.__class__ != Server else Desktop
+            rate = self.SCHEMA[cls][rating_range]
+            self.standard = EreusePrice.Type(rate[self.STANDARD][role], price)
+            if self.WARRANTY2 in rate:
+                self.warranty2 = EreusePrice.Type(rate[self.WARRANTY2][role], price)
+
+    def __init__(self, rating: AggregateRate, **kwargs) -> None:
+        if rating.rating_range == RatingRange.VERY_LOW:
+            raise ValueError('Cannot compute price for Range.VERY_LOW')
+        # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
+        price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)
+        super().__init__(rating=rating,
+                         device=rating.device,
+                         price=price,
+                         software=kwargs.pop('software', app.config['PRICE_SOFTWARE']),
+                         version=kwargs.pop('version', app.config['PRICE_VERSION']),
+                         **kwargs)
+        self._compute()
+
+    @orm.reconstructor
+    def _compute(self):
         """
-        Defines inheritance.
-
-        From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
-        extensions/declarative/api.html
-        #sqlalchemy.ext.declarative.declared_attr>`_
+        Calculates eReuse.org prices when initializing the
+        instance from the price and other properties.
         """
-        args = {POLYMORPHIC_ID: cls.t}
-        if cls.t == 'Test':
-            args[POLYMORPHIC_ON] = cls.type
-        return args
+        self.refurbisher = self._service(self.Service.REFURBISHER)
+        self.retailer = self._service(self.Service.RETAILER)
+        self.platform = self._service(self.Service.PLATFORM)
+        if hasattr(self.refurbisher, 'warranty2'):
+            self.warranty2 = round(self.refurbisher.warranty2.amount
+                                   + self.retailer.warranty2.amount
+                                   + self.platform.warranty2.amount, 2)
 
-
-class TestDataStorage(Test):
-    """
-    The act of testing the data storage.
-
-    Testing is done using the `S.M.A.R.T self test
-    <https://en.wikipedia.org/wiki/S.M.A.R.T.#Self-tests>`_. Note
-    that not all data storage units, specially some new PCIe ones, do not
-    support SMART testing.
-
-    The test takes to other SMART values indicators of the overall health
-    of the data storage.
-    """
-    id = Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
-    length = Column(DBEnum(TestDataStorageLength), nullable=False)  # todo from type
-    status = Column(Unicode(), check_lower('status'), nullable=False)
-    lifetime = Column(Interval)
-    assessment = Column(Boolean)
-    reallocated_sector_count = Column(SmallInteger)
-    power_cycle_count = Column(SmallInteger)
-    reported_uncorrectable_errors = Column(SmallInteger)
-    command_timeout = Column(Integer)
-    current_pending_sector_count = Column(SmallInteger)
-    offline_uncorrectable = Column(SmallInteger)
-    remaining_lifetime_percentage = Column(SmallInteger)
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-
-        # Define severity
-        # As of https://www.backblaze.com/blog/hard-drive-smart-stats/ and
-        # https://www.backblaze.com/blog-smart-stats-2014-8.html
-        # We can guess some future disk failures by analyzing some SMART data.
-        if self.severity is None:
-            # Test finished successfully
-            if not self.assessment:
-                self.severity = Severity.Error
-            elif self.current_pending_sector_count and self.current_pending_sector_count > 40 \
-                    or self.reallocated_sector_count and self.reallocated_sector_count > 10:
-                self.severity = Severity.Warning
-
-    def __str__(self) -> str:
-        t = inflection.humanize(self.status)
-        if self.lifetime:
-            t += ' with a lifetime of {:.1f} years.'.format(self.lifetime.days / 365)
-        t += self.description
-        return t
-
-
-class StressTest(Test):
-    """The act of stressing (putting to the maximum capacity)
-    a device for an amount of minutes. If the device is not in great
-    condition won't probably survive such test.
-    """
-
-    @validates('elapsed')
-    def is_minute_and_bigger_than_1_minute(self, _, value: timedelta):
-        seconds = value.total_seconds()
-        assert not bool(seconds % 60)
-        assert seconds >= 60
-        return value
-
-    def __str__(self) -> str:
-        return '{}. Computing for {}'.format(self.severity, self.elapsed)
-
-
-class Benchmark(JoinedWithOneDeviceMixin, EventWithOneDevice):
-    """The act of gauging the performance of a device."""
-    elapsed = Column(Interval)
-
-    @declared_attr
-    def __mapper_args__(cls):
-        """
-        Defines inheritance.
-
-        From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
-        extensions/declarative/api.html
-        #sqlalchemy.ext.declarative.declared_attr>`_
-        """
-        args = {POLYMORPHIC_ID: cls.t}
-        if cls.t == 'Benchmark':
-            args[POLYMORPHIC_ON] = cls.type
-        return args
-
-
-class BenchmarkDataStorage(Benchmark):
-    """Benchmarks the data storage unit reading and writing speeds."""
-    id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
-    read_speed = Column(Float(decimal_return_scale=2), nullable=False)
-    write_speed = Column(Float(decimal_return_scale=2), nullable=False)
-
-    def __str__(self) -> str:
-        return 'Read: {} MB/s, write: {} MB/s'.format(self.read_speed, self.write_speed)
-
-
-class BenchmarkWithRate(Benchmark):
-    """The act of benchmarking a device with a single rate."""
-    id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
-    rate = Column(Float, nullable=False)
-
-    def __str__(self) -> str:
-        return '{} points'.format(self.rate)
-
-
-class BenchmarkProcessor(BenchmarkWithRate):
-    """Benchmarks a processor by executing `BogoMips
-    <https://en.wikipedia.org/wiki/BogoMips>`_. Note that this is not
-    a reliable way of rating processors and we keep it for compatibility
-    purposes.
-    """
-    pass
-
-
-class BenchmarkProcessorSysbench(BenchmarkProcessor):
-    """Benchmarks a processor by using the processor benchmarking
-    utility of `sysbench <https://github.com/akopytov/sysbench>`_.
-    """
-
-
-class BenchmarkRamSysbench(BenchmarkWithRate):
-    pass
+    def _service(self, role):
+        return self.Service(self.device, self.rating.rating_range, role, self.price)
 
 
 class ToRepair(EventWithMultipleDevices):

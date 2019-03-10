@@ -107,6 +107,24 @@ class AppearanceRange(Enum):
 
 
 @unique
+class AppearanceRangev2(Enum):
+    """Based on usage condition of a device and its functionality aspects/characteristics."""
+    Z = 'Z. The device is new'
+    A = 'A. Is like new; without visual damage'
+    B = 'B. Is in really good condition; small visual damage in difficult places to spot'
+    C = 'C. Is in good condition; small visual damage in parts that are easy to spot, minor cosmetic blemishes on cabinet)'
+    D = 'D. Is acceptable; visual damage in visible parts, major cosmetic blemishes on cabinet, missing cosmetic parts..'
+    E = 'E. Is unacceptable; considerable visual damage, missing essential parts,.'
+    NONE = 'NA. Grade doesn’t exists'
+
+    def __str__(self):
+        return self.name
+
+
+APPEARANCE_RANGE = 0.5, -0.3
+
+
+@unique
 class FunctionalityRange(Enum):
     """Grades the defects of a device that affect its usage."""
     # todo sync with https://github.com/ereuse/rdevicescore#input
@@ -129,6 +147,20 @@ class FunctionalityRangev2(Enum):
     B = 'B. There is a button difficult to press or unstable it, a screen/camera defect or chassis problem'
     C = 'C.	Multiple buttons don\'t work; broken or unusable it, some screen/camera defects and chassis problems'
     D = 'D.	All buttons. screen or chassis don\'t work; broken or unusable it, difficult to usage.'
+    NONE = 'NA. Grade doesn’t exists'
+
+    def __str__(self):
+        return self.name
+
+
+@unique
+class BatteryHealthRange(Enum):
+    """Grade the battery health status, depending on self report Android system"""
+    A = 'A. The battery health is very good'
+    B = 'B. Battery health is good'
+    C = 'C.	Battery health is overheat / over voltage status but can stand the minimum duration'
+    D = 'D.	Battery health is bad; can’t stand the minimum duration time'
+    E = 'E. Battery health is very bad; and status is dead; unusable or miss it '
     NONE = 'NA. Grade doesn’t exists'
 
     def __str__(self):

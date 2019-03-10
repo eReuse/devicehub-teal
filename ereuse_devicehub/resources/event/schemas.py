@@ -109,6 +109,77 @@ class StepRandom(Step):
     __doc__ = m.StepRandom.__doc__
 
 
+class Benchmark(EventWithOneDevice):
+    __doc__ = m.Benchmark.__doc__
+    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
+
+
+class BenchmarkDataStorage(Benchmark):
+    __doc__ = m.BenchmarkDataStorage.__doc__
+    read_speed = Float(required=True, data_key='readSpeed')
+    write_speed = Float(required=True, data_key='writeSpeed')
+
+
+class BenchmarkWithRate(Benchmark):
+    __doc__ = m.BenchmarkWithRate.__doc__
+    rate = Float(required=True)
+
+
+class BenchmarkProcessor(BenchmarkWithRate):
+    __doc__ = m.BenchmarkProcessor.__doc__
+
+
+class BenchmarkProcessorSysbench(BenchmarkProcessor):
+    __doc__ = m.BenchmarkProcessorSysbench.__doc__
+
+
+class BenchmarkRamSysbench(BenchmarkWithRate):
+    __doc__ = m.BenchmarkRamSysbench.__doc__
+
+
+class BenchmarkGraphicCard(BenchmarkWithRate):
+    __doc__ = m.BenchmarkGraphicCard.__doc__
+
+
+class Test(EventWithOneDevice):
+    __doc__ = m.Test.__doc__
+    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
+
+
+class TestDataStorage(Test):
+    __doc__ = m.TestDataStorage.__doc__
+    length = EnumField(TestDataStorageLength, required=True)
+    status = SanitizedStr(lower=True, validate=Length(max=STR_SIZE), required=True)
+    lifetime = TimeDelta(precision=TimeDelta.HOURS)
+    assessment = Boolean()
+    reallocated_sector_count = Integer(data_key='reallocatedSectorCount')
+    power_cycle_count = Integer(data_key='powerCycleCount')
+    reported_uncorrectable_errors = Integer(data_key='reportedUncorrectableErrors')
+    command_timeout = Integer(data_key='commandTimeout')
+    current_pending_sector_count = Integer(data_key='currentPendingSectorCount')
+    offline_uncorrectable = Integer(data_key='offlineUncorrectable')
+    remaining_lifetime_percentage = Integer(data_key='remainingLifetimePercentage')
+
+
+class StressTest(Test):
+    __doc__ = m.StressTest.__doc__
+
+
+class TestAudio(Test):
+    __doc__ = m.TestAudio.__doc__
+
+
+class TestConnectivity(Test):
+    __doc__ = m.TestConnectivity.__doc__
+
+
+class TestBattery(Test):
+    __doc__ = m.TestBattery.__doc__
+
+
+class TestVisual(ManualRate):
+    __doc__ = m.TestVisual.__doc__
+
 
 class Rate(EventWithOneDevice):
     __doc__ = m.Rate.__doc__
@@ -142,7 +213,7 @@ class ManualRate(IndividualRate):
     labelling = Boolean(description=m.ManualRate.labelling.comment)
 
 
-class WorkbenchRate(ManualRate):
+class WorkbencComputer(ManualRate):
     __doc__ = m.WorkbenchRate.__doc__
     processor = Float()
     ram = Float()
@@ -158,26 +229,8 @@ class WorkbenchRate(ManualRate):
     graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
 
 
-"""
-    WORKBENCH RATE COMPUTER
-    Adaptation of old class WorkbenchRate
-"""
-
-
-class WorkbenchRateComputer(ManualRate):
-    __doc__ = m.WorkbenchRate.__doc__
-    processor = Float()
-    ram = Float()
-    data_storage = Float()
-    graphic_card = Float()
-    bios = Float()
-    bios_range = EnumField(Bios,
-                           description=m.WorkbenchComputerRate.bios_range.comment,
-                           data_key='biosRange')
-    data_storage_range = EnumField(RatingRange, dump_only=True, data_key='dataStorageRange')
-    ram_range = EnumField(RatingRange, dump_only=True, data_key='ramRange')
-    processor_range = EnumField(RatingRange, dump_only=True, data_key='processorRange')
-    graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
+class WorkbenchMobile(ManualRate):
+    pass
 
 
 class AggregateRate(Rate):
@@ -210,6 +263,9 @@ class AggregateRate(Rate):
     graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
 
 
+""" RATE v2 CODE"""
+
+
 class QualityRate(Rate):
     __doc__ = m.QualityRate.__doc__
 
@@ -217,37 +273,17 @@ class QualityRate(Rate):
     processor = Float(dump_only=True, description=m.QualityRate.processor.comment)
     data_storage = Float(dump_only=True, description=m.QualityRate.data_storage.comment)
 
+    graphic_card = Float(dump_only=True, description=m.QualityRate.processor.comment)
+    network_adapter = Float(dump_only=True, description=m.QualityRate.network_adapter.comment)
 
-""" New class for WorkbenchRate in Rate v2"""
+    display = Float(dump_only=True, description=m.QualityRate.display.comment)
+    battery = Float(dump_only=True, description=m.QualityRate.batter.comment)
+    camera = Float(dump_only=True, description=m.QualityRate.camera.comment)
 
-
-class QualityRateComputer(Rate):
-    __doc__ = m.QualityRateComputer.__doc__
-
-    """ List of components appears in general quality rate a device
-    
-    ram = Float(dump_only=True, description=m.QualityRateComputer.ram.comment)
-    processor = Float(dump_only=True, description=m.QualityRateComputer.processor.comment)
-    data_storage = Float(dump_only=True, description=m.QualityRateComputer.data_storage.comment)
-    """
-
-    graphic_card = Float(dump_only=True, description=m.QualityRateComputer.processor.comment)
-    network_adapter = Float(dump_only=True, description=m.QualityRateComputer.network_adapter.comment)
-
-
-class QualityRateMobile(Rate):
-    __doc__ = m.QualityRateMobile.__doc__
-
-    """ List of components appears in general quality rate a device
-    
-    ram = Float(dump_only=True, description=m.QualityRateMobile.ram.comment)
-    processor = Float(dump_only=True, description=m.QualityRateMobile.processor.comment)
-    data_storage = Float(dump_only=True, description=m.QualityRateMobile.data_storage.comment)
-    """
-
-    display = Float(dump_only=True, description=m.QualityRateMobile.display.comment)
-    battery = Float(dump_only=True, description=m.QualityRateMobile.batter.comment)
-    camera = Float(dump_only=True, description=m.QualityRateMobile.camera.comment)
+    bios = EnumField(Bios, dump_only=True)
+    bios_range = EnumField(Bios,
+                           description=m.WorkbenchRate.bios_range.comment,
+                           data_key='biosRange')
 
 
 class FunctionalityRate(Rate):
@@ -255,59 +291,34 @@ class FunctionalityRate(Rate):
 
     functionality = EnumField(dump_only=True, description=m.FunctionalityRate.functionality.comment)
     functionality_range = EnumField(dump_only=True, description=m.FunctionalityRate.functionality_range.comment)
-    connectivity_rate = EnumField(dump_only=True, description=m.FunctionalityRate.connectivity_rate.comment)
-    audio_rate = EnumField(dump_only=True, description=m.FunctionalityRate.audio_rate.comment)
 
 
+# TODO Finish input rates (internal and external sources) - Whats really interesting to save in BD?? Whichs aspects?
 class FinalRate(Rate):
     __doc__ = m.FinalRate.__doc__
+    quality = NestedOn(QualityRate, dump_only=True,
+                       description=m.QualityRate.quality_id.comment)
+    functionality = NestedOn(FunctionalityRate, dump_only=True,
+                             description=m.FunctionalityRange.functionality_id.comment)
+    appearance = NestedOn(TestVisual, dump_only=True)
     workbench_computer = NestedOn(WorkbenchComputer, dump_only=True,
                                   description=m.ResultRate.workbench_computer_id.comment)
     workbench_mobile = NestedOn(WorkbenchMobile, dump_only=True,
                                 description=m.ResultRate.workbench_mobile_id.comment)
-    bios = EnumField(Bios, dump_only=True)
-    bios_range = EnumField(Bios,
-                           description=m.WorkbenchRate.bios_range.comment,
-                           data_key='biosRange')
 
-
-# TODO Finish input rates (internal and external sources) - Whats really interesting to save in BD?? Whichs aspects?
-class ResultRate(Rate):
-    __doc__ = m.ResultRate.__doc__
-    # TODO ask for what to do NestedOn??
-    workbench_computer = NestedOn(WorkbenchRateComputer, dump_only=True,
-                                  description=m.ResultRate.workbench_computer_id.comment)
-    workbench_mobile = NestedOn(WorkbenchRateMobile, dump_only=True,
-                                description=m.ResultRate.workbench_mobile_id.comment)
-    manual_computer = NestedOn(ManualRateComputer,
-                               dump_only=True,
-                               description=m.ResultRate.manual_computer_id.comment)
-
-    processor = Float(dump_only=True)
-    ram = Float(dump_only=True)
-    data_storage = Float(dump_only=True)
-    graphic_card = Float(dump_only=True)
-    bios = EnumField(Bios, dump_only=True)
-    bios_range = EnumField(Bios,
-                           description=m.WorkbenchRate.bios_range.comment,
-                           data_key='biosRange')
-    appearance_range = EnumField(AppearanceRange,
+    appearance_range = EnumField(AppearanceRangev2,
                                  required=True,
-                                 data_key='appearanceRange',
+                                 data_key='appearanceRangev2',
                                  description=m.ManualRate.appearance_range.comment)
-    functionality_range = EnumField(FunctionalityRange,
+    functionality_range = EnumField(FunctionalityRangev2,
                                     required=True,
-                                    data_key='functionalityRange',
+                                    data_key='functionalityRangev2',
                                     description=m.ManualRate.functionality_range.comment)
     labelling = Boolean(description=m.ManualRate.labelling.comment)
     data_storage_range = EnumField(RatingRange, dump_only=True, data_key='dataStorageRange')
     ram_range = EnumField(RatingRange, dump_only=True, data_key='ramRange')
     processor_range = EnumField(RatingRange, dump_only=True, data_key='processorRange')
     graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
-
-
-
-
 
 
 class Price(EventWithOneDevice):
@@ -411,58 +422,6 @@ class Snapshot(EventWithOneDevice):
             if data.get('elapsed', None):
                 raise ValidationError('Only Snapshots from Workbench can have elapsed',
                                       field_names=['elapsed'])
-
-
-class Test(EventWithOneDevice):
-    __doc__ = m.Test.__doc__
-    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
-
-
-class TestDataStorage(Test):
-    __doc__ = m.TestDataStorage.__doc__
-    length = EnumField(TestDataStorageLength, required=True)
-    status = SanitizedStr(lower=True, validate=Length(max=STR_SIZE), required=True)
-    lifetime = TimeDelta(precision=TimeDelta.HOURS)
-    assessment = Boolean()
-    reallocated_sector_count = Integer(data_key='reallocatedSectorCount')
-    power_cycle_count = Integer(data_key='powerCycleCount')
-    reported_uncorrectable_errors = Integer(data_key='reportedUncorrectableErrors')
-    command_timeout = Integer(data_key='commandTimeout')
-    current_pending_sector_count = Integer(data_key='currentPendingSectorCount')
-    offline_uncorrectable = Integer(data_key='offlineUncorrectable')
-    remaining_lifetime_percentage = Integer(data_key='remainingLifetimePercentage')
-
-
-class StressTest(Test):
-    __doc__ = m.StressTest.__doc__
-
-
-class Benchmark(EventWithOneDevice):
-    __doc__ = m.Benchmark.__doc__
-    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
-
-
-class BenchmarkDataStorage(Benchmark):
-    __doc__ = m.BenchmarkDataStorage.__doc__
-    read_speed = Float(required=True, data_key='readSpeed')
-    write_speed = Float(required=True, data_key='writeSpeed')
-
-
-class BenchmarkWithRate(Benchmark):
-    __doc__ = m.BenchmarkWithRate.__doc__
-    rate = Float(required=True)
-
-
-class BenchmarkProcessor(BenchmarkWithRate):
-    __doc__ = m.BenchmarkProcessor.__doc__
-
-
-class BenchmarkProcessorSysbench(BenchmarkProcessor):
-    __doc__ = m.BenchmarkProcessorSysbench.__doc__
-
-
-class BenchmarkRamSysbench(BenchmarkWithRate):
-    __doc__ = m.BenchmarkRamSysbench.__doc__
 
 
 class ToRepair(EventWithMultipleDevices):
