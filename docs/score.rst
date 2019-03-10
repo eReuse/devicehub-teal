@@ -34,8 +34,6 @@ List of source where can input information of rating a device:
     3. ...
     4. Anytime after manually written in a form in the website.
 
-** Natural: a positive number that does not have decimals.
-
 There are three types of rating a device, depend on the aspect you are focusing on:
 
     1. `Quality Rate`
@@ -78,8 +76,6 @@ Device components immutable characteristics list:
     * Camera:
         - Resolution (MP)
 
-    SUM(Weights[Components]) = 1
-
     * Benchmark:
         The act of gauging the performance of a device.
         This subclasses define which functionality aspects take into account in score.
@@ -89,6 +85,8 @@ Device components immutable characteristics list:
         - Benchmark Processor
         - Benchmark Graphic Card (TODO)
         -
+
+** Natural: a positive number that does not have decimals.
 
 **2. Functionality Rate**
 
