@@ -452,6 +452,14 @@ class Mobile(Device):
         The Mobile Equipment Identifier as a hexadecimal string.
     """
 
+    # TODO Add more characteristics, like display resolution, battery health, graphic card, ...
+    display_size = Column(Float(decimal_return_scale=2))
+    display_size.comment = 'Display size; Units: inches;'
+    battery_size = Column(Float(decimal_return_scale=2))
+    battery_size.comment = 'Battery size; Units: mAh'
+    camera_resolution = Column(Float(decimal_return_scale=2))
+    camera_resolution.comment = 'Camera resolution; Units: Megapixels'
+
     @validates('imei')
     def validate_imei(self, _, value: int):
         if not imei.is_valid(str(value)):
