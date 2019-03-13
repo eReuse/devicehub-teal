@@ -40,7 +40,9 @@ There are three types of rating a device, depend on the aspect you are focusing 
     2. `Functionality Rate`
     3. `Appearance Rate`
     4. `Final Rate`
-
+        1. ComputerRate
+        2. MobileRate
+        3. ManualRate
 To structure device events information, create two different main class Benchmark and Test.
 Benchmark class is part of the **quality rate** and Test class is part of the **functionality rate**.
 
@@ -51,63 +53,17 @@ The following will explain in more detail the three types of rate. Rate class is
 
 **1. Quality Rate**
 
-Device components immutable characteristics list:
-
-    * Display (screen):
-        - Size (inch)
-        - Resolution (pixels)
-        - Density (ppi)
-
-    * Processor:
-        - Number of cores (Natural)
-        - Speed (GHz)
-
-    * RAM:
-        - Size (GB)
-        - Speed (MHz)
-
-    * Data Storage:
-        - Size (GB)
-
-    * Battery:
-        - Size (mAh)
-        - Voltage (V)
-
-    * Camera:
-        - Resolution (MP)
-
-    * Benchmark:
-        The act of gauging the performance of a device.
-        This subclasses define which functionality aspects take into account in score.
-
-        - Benchmark DataStorage
-        - Benchmark RamSysbench
-        - Benchmark Processor
-        - Benchmark Graphic Card (TODO)
-        -
-
-** Natural: a positive number that does not have decimals.
+    Device components immutable characteristics and Benchmark, the act of gauging the performance of a device.
 
 **2. Functionality Rate**
 
-    * Test:
-        The act of testing usage condition of a device and its functionality aspects/characteristics.
-        Following standard R2 specification*:
-
-        - Test DataStorage (SMART Test) //TODO which SMART test vars important for func aspect??
-        - Test Processor (Stress Test) //TODO which SMART test vars important for func aspect??
-        - Test Bios (Manual Test)
-        - Test Audio (Manual Test)
-        - Test Battery
-        - Test Connectivity
-        -
+    Test, the act of testing usage condition of a device and its functionality aspects/characteristics. Following standard R2 specification*.
 
 **3. Appearance Rate**
 
-    * Visual Test:
-        It is a test of appearance that its aspects are represented with grade.
-        It focuses mainly on the aesthetic or cosmetic defects of important parts of the device,
-        such as the chassis, display (screen) and cameras.
+    Mainly is compute using the results of a visual Test, it is a test of appearance that its aspects are represented with grade.
+    It focuses mainly on the aesthetic or cosmetic defects of important parts of the device, such as the chassis, display (screen) and cameras.
+
 
 Below is explained in more detail how the calculations and formulas that are used to compute the score of a device.
 
@@ -121,7 +77,7 @@ Explication of how to compute score of a device, step by step:
     Normalized the characteristics of the components between 0 and 1 using the theoretical norms table**
     with xMin and xMax and standardize the values applying the following formula:
 
-   **Normalization characteristic value = (x −xMin)/(xMax −xMin)**
+    **Normalization characteristic value = (x −xMin)/(xMax −xMin)**
 
     2. Merge the characteristics of every component in one score.
     Carry out the harmonic mean weighted by the weight of each characteristic.

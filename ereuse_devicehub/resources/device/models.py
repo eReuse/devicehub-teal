@@ -374,7 +374,8 @@ class Computer(Device):
 
         1. The max Ethernet speed of the computer, 0 if ethernet
            adaptor exists but its speed is unknown, None if no eth
-           adaptor exists.
+           adaptor exists.# TODO add all grade tables (chassis defects, camera defects, buttons test, connectivity, ..)
+
         2. The max WiFi speed of the computer, 0 if computer has
            WiFi but its speed is unknown, None if no WiFi adaptor
            exists.
@@ -451,14 +452,6 @@ class Mobile(Device):
     meid.comment = """
         The Mobile Equipment Identifier as a hexadecimal string.
     """
-
-    # TODO Add more characteristics, like display resolution, battery health, graphic card, ...
-    display_size = Column(Float(decimal_return_scale=2))
-    display_size.comment = 'Display size; Units: inches;'
-    battery_size = Column(Float(decimal_return_scale=2))
-    battery_size.comment = 'Battery size; Units: mAh'
-    camera_resolution = Column(Float(decimal_return_scale=2))
-    camera_resolution.comment = 'Camera resolution; Units: Megapixels'
 
     @validates('imei')
     def validate_imei(self, _, value: int):
@@ -763,3 +756,32 @@ class Manufacturer(db.Model):
                 'COPY common.manufacturer FROM STDIN (FORMAT csv)',
                 f
             )
+
+
+class Battery(Component):
+    """
+    Battery component, mobile device
+    """
+    size = Column(Float(decimal_return_scale=2))
+    size.comment = 'Battery size; Units: 2000 mAh'
+    voltage = Column()
+    voltage.comment = 'Battery voltage; Units: 3,5 V'
+    technology = Column()
+    technology.comment = 'Battery technology used; Ex: Li-Ti'
+    charge_counter = Column()
+    charge_counter.comment = 'Number of time that battery has been charged'
+    wireless = Column(Boolean, nullable=False, default=False)
+    wireless.comment = 'If battery can charging wireless'
+    health = Column(DBEnum)
+    health.comment = 'Battery health indicator'
+    status = Column(DBEnum)
+    status.comment = 'Battery status indicator'
+
+
+class Camera(Component):
+    """
+    Component camera in mobile devices
+    """
+
+    resolution = Column(Float(decimal_return_scale=2))
+    resolution.comment = 'Camera resolution; Units: Megapixels'

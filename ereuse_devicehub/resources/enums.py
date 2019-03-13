@@ -94,20 +94,6 @@ class AggregateRatingVersions(Enum):
 
 @unique
 class AppearanceRange(Enum):
-    """Grades the imperfections that aesthetically affect the device, but not its usage."""
-    Z = '0. The device is new.'
-    A = 'A. Is like new (without visual damage)'
-    B = 'B. Is in really good condition (small visual damage in difficult places to spot)'
-    C = 'C. Is in good condition (small visual damage in parts that are easy to spot, not screens)'
-    D = 'D. Is acceptable (visual damage in visible parts, not screens)'
-    E = 'E. Is unacceptable (considerable visual damage that can affect usage)'
-
-    def __str__(self):
-        return self.name
-
-
-@unique
-class AppearanceRangev2(Enum):
     """Based on usage condition of a device and its functionality aspects/characteristics."""
     Z = 'Z. The device is new'
     A = 'A. Is like new; without visual damage'
@@ -126,22 +112,6 @@ APPEARANCE_RANGE = 0.5, -0.3
 
 @unique
 class FunctionalityRange(Enum):
-    """Grades the defects of a device that affect its usage."""
-    # todo sync with https://github.com/ereuse/rdevicescore#input
-    A = 'A. Everything works perfectly (buttons, and in case of screens there are no scratches)'
-    B = 'B. There is a button difficult to press or a small scratch in an edge of a screen'
-    C = 'C. A non-important button (or similar) doesn\'t work; screen has multiple scratches in edges'
-    D = 'D. Multiple buttons don\'t work; screen has visual damage resulting in uncomfortable usage'
-
-    def __str__(self):
-        return self.name
-
-
-FUNCTIONALITY_RANGE = -0.25, 0.5
-
-
-@unique
-class FunctionalityRangev2(Enum):
     """Grade the buttons and chassis that affect its usage, like screen defect or camera defects"""
     A = 'A. All the buttons works perfectly, no screen/camera defects and chassis without issues'
     B = 'B. There is a button difficult to press or unstable it, a screen/camera defect or chassis problem'
@@ -151,6 +121,9 @@ class FunctionalityRangev2(Enum):
 
     def __str__(self):
         return self.name
+
+
+FUNCTIONALITY_RANGE = -0.25, 0.5
 
 
 @unique

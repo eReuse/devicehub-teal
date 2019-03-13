@@ -14,7 +14,7 @@ from ereuse_devicehub.resources.agent import schemas as s_agent
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
     PhysicalErasureMethod, PriceSoftware, RATE_POSITIVE, RatingRange, RatingSoftware, ReceiverRole, \
-    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength, FunctionalityRangev2
+    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength, FunctionalityRange
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
@@ -213,7 +213,7 @@ class ManualRate(IndividualRate):
     labelling = Boolean(description=m.ManualRate.labelling.comment)
 
 
-class WorkbencComputer(ManualRate):
+class RateComputer(ManualRate):
     __doc__ = m.WorkbenchRate.__doc__
     processor = Float()
     ram = Float()
@@ -229,41 +229,8 @@ class WorkbencComputer(ManualRate):
     graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
 
 
-class WorkbenchMobile(ManualRate):
+class RateMobile(ManualRate):
     pass
-
-
-class AggregateRate(Rate):
-    __doc__ = m.AggregateRate.__doc__
-    workbench = NestedOn(WorkbenchRate, dump_only=True,
-                         description=m.AggregateRate.workbench_id.comment)
-    manual = NestedOn(ManualRate,
-                      dump_only=True,
-                      description=m.AggregateRate.manual_id.comment)
-    processor = Float(dump_only=True)
-    ram = Float(dump_only=True)
-    data_storage = Float(dump_only=True)
-    graphic_card = Float(dump_only=True)
-    bios = EnumField(Bios, dump_only=True)
-    bios_range = EnumField(Bios,
-                           description=m.WorkbenchRate.bios_range.comment,
-                           data_key='biosRange')
-    appearance_range = EnumField(AppearanceRange,
-                                 required=True,
-                                 data_key='appearanceRange',
-                                 description=m.ManualRate.appearance_range.comment)
-    functionality_range = EnumField(FunctionalityRange,
-                                    required=True,
-                                    data_key='functionalityRange',
-                                    description=m.ManualRate.functionality_range.comment)
-    labelling = Boolean(description=m.ManualRate.labelling.comment)
-    data_storage_range = EnumField(RatingRange, dump_only=True, data_key='dataStorageRange')
-    ram_range = EnumField(RatingRange, dump_only=True, data_key='ramRange')
-    processor_range = EnumField(RatingRange, dump_only=True, data_key='processorRange')
-    graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
-
-
-""" RATE v2 CODE"""
 
 
 class QualityRate(Rate):
@@ -310,7 +277,7 @@ class FinalRate(Rate):
                                  required=True,
                                  data_key='appearanceRangev2',
                                  description=m.ManualRate.appearance_range.comment)
-    functionality_range = EnumField(FunctionalityRangev2,
+    functionality_range = EnumField(FunctionalityRange,
                                     required=True,
                                     data_key='functionalityRangev2',
                                     description=m.ManualRate.functionality_range.comment)

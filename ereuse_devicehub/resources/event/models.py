@@ -31,8 +31,7 @@ from ereuse_devicehub.resources.device.models import Component, Computer, DataSt
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ErasureStandards, \
     FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, \
     RatingRange, RatingSoftware, ReceiverRole, Severity, SnapshotExpectedEvents, SnapshotSoftware, \
-    TestDataStorageLength, FUNCTIONALITY_RANGE, FunctionalityRangev2, AppearanceRangev2, BatteryHealthRange
-from ereuse_devicehub.resources.event.rate.workbench.v2_0 import QualityRate, FunctionalityRate
+    TestDataStorageLength, FUNCTIONALITY_RANGE, FunctionalityRange, AppearanceRange, BatteryHealthRange
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -718,15 +717,15 @@ class TestConnectivity(Test):
     """
     Test to check all this aspects related with functionality connections in devices
     """
-
-    SIM = Column(Boolean)
+    # TODO name for SIM (3G)
+    celular_network = Column(Boolean)
     SIM.comment = 'Evaluate if SIM works'
     wifi = Column(Boolean)
     wifi.comment = 'Evaluate if wifi connection works correctly'
     bluetooth = Column(Boolean)
     bluetooth.comment = 'Evaluate if bluetooth works'
-    usb = Column(DBEnum(USBPortRange))
-    usb.comment = 'Evaluate if usb port was detected and charger plug works'
+    usb_port = Column(DBEnum(USBPortRange))
+    usb_port.comment = 'Evaluate if usb port was detected and charger plug works'
 
 
 class TestBattery(Test):
@@ -744,12 +743,17 @@ class TestBattery(Test):
 
 class TestBios(Test):
     """
-    Test that determinate motherboard no beeps, codes or errors when power on,
-    and a grade to reflect some possibles difficult to access or modify setting in the BIOS, like password protection..
+    Test that determinate motherboard no beeps, codes or errors when power on
     """
     bios_power_on = Column(Boolean())
     bios_power_on.comment = """
         Motherboards do a self check when powering up (R2 p.23), test PASS if no beeps, codes, or errors appears.
+    """
+
+
+class TestBiosDifficulty:
+    """
+    Test to determinate a grade to reflect some possibles difficult to access or modify setting in the BIOS, like password protection..
     """
     # TODO Eum(BiosAccesRange)
     bios_access_range = Column(BDEnum(BiosAccessRange))
@@ -763,8 +767,8 @@ class TestVisual(ManualRate):
     Like defects on chassis, display, ..
     """
     # TODO Consider if add some new var in appearance aspect??
-    appearance_range = Column(DBEnum(AppearanceRangev2))
-    appearance_range.comment = AppearanceRangev2.__doc__
+    appearance_range = Column(DBEnum(AppearanceRange))
+    appearance_range.comment = AppearanceRange.__doc__
 
 
 class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
@@ -844,7 +848,7 @@ class IndividualRate(Rate):
     pass
 
 
-class ManualRate(IndividualRate):
+class RateManual(IndividualRate):
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
     labelling = Column(Boolean)
     labelling.comment = """Sets if there are labels stuck that should
@@ -865,109 +869,16 @@ class ManualRate(IndividualRate):
         raise NotImplementedError()
 
 
-# TODO is necessary?
-class WorkbenchComputer(ManualRate):
+class RateComputer(IndividualRate):
+    """
+    """
     pass
 
 
-class WorkbenchMobile(ManualRate):
+class RateMobile(IndividualRate):
+    """
+    """
     pass
-
-
-class AggregateRate(Rate):
-    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    manual_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
-    manual_id.comment = """The ManualEvent used to generate this
-    aggregation, or None if none used.
-
-    An example of ManualEvent is using the web or the Android app
-    to rate a device.
-    """
-    manual = relationship(ManualRate,
-                          backref=backref('aggregate_rate_manual',
-                                          lazy=True,
-                                          order_by=lambda: AggregateRate.created,
-                                          collection_class=OrderedSet),
-                          primaryjoin=manual_id == ManualRate.id)
-    workbench_id = Column(UUID(as_uuid=True), ForeignKey(QualityRateComputer.id))
-    workbench_id.comment = """The WorkbenchRate used to generate
-    this aggregation, or None if none used.
-    """
-    workbench = relationship(QualityRateComputer,
-                             backref=backref('aggregate_rate_workbench',
-                                             lazy=True,
-                                             order_by=lambda: AggregateRate.created,
-                                             collection_class=OrderedSet),
-                             primaryjoin=workbench_id == QualityRateComputer.id)
-
-    def __init__(self, *args, **kwargs) -> None:
-        kwargs.setdefault('version', StrictVersion('1.0'))
-        super().__init__(*args, **kwargs)
-
-    # todo take value from LAST event (manual or workbench)
-
-    @property
-    def processor(self):
-        return self.workbench.processor
-
-    @property
-    def ram(self):
-        return self.workbench.ram
-
-    @property
-    def data_storage(self):
-        return self.workbench.data_storage
-
-    @property
-    def graphic_card(self):
-        return self.workbench.graphic_card
-
-    @property
-    def data_storage_range(self):
-        return self.workbench.data_storage_range
-
-    @property
-    def ram_range(self):
-        return self.workbench.ram_range
-
-    @property
-    def processor_range(self):
-        return self.workbench.processor_range
-
-    @property
-    def graphic_card_range(self):
-        return self.workbench.graphic_card_range
-
-    @property
-    def bios(self):
-        return self.workbench.bios
-
-    @property
-    def functionality_range(self):
-        return self.workbench.functionality_range
-
-    @property
-    def appearance_range(self):
-        return self.workbench.appearance_range
-
-    @property
-    def bios_range(self):
-        return self.workbench.bios_range
-
-    @property
-    def labelling(self):
-        return self.workbench.labelling
-
-    @classmethod
-    def from_workbench_rate(cls, rate: QualityRate):
-        aggregate = cls()
-        aggregate.rating = rate.rating
-        aggregate.software = rate.software
-        aggregate.appearance = rate.appearance
-        aggregate.functionality = rate.functionality
-        aggregate.device = rate.device
-        aggregate.workbench = rate
-        return aggregate
 
 
 class QualityRate(Rate):
@@ -982,7 +893,6 @@ class QualityRate(Rate):
     data_storage = Column(Float(decimal_return_scale=2), check_range('data_storage', *RATE_POSITIVE),
                           comment='Data storage rate, like HHD, SSD.')
 
-    """     MOBILE QUALITY RATE     """
     display = Column(Float(decimal_return_scale=2), check_range('display', *RATE_POSITIVE))
     display.comment = 'Display rate, screen resolution and size to calculate PPI and convert in score'
     battery = Column(Float(decimal_return_scale=2), check_range('battery', *RATE_POSITIVE),
@@ -990,7 +900,6 @@ class QualityRate(Rate):
     camera = Column(Float(decimal_return_scale=2), check_range('camera', *RATE_POSITIVE),
                     comment='Camera rate take into account resolution')
 
-    """     COMPUTER QUALITY RATE     """
     graphic_card = Column(Float(decimal_return_scale=2), check_range('graphic_card', *RATE_POSITIVE),
                           comment='Graphic card score in performance, amount of memory and benchmark result')
     network_adapter = Column(Float(decimal_return_scale=2), check_range('network_adapter', *RATE_POSITIVE),
@@ -1047,8 +956,8 @@ class FunctionalityRate(Rate):
     functionality = Column(Float(decimal_return_scale=2), check_range('functionality', *FUNCTIONALITY_RANGE))
     functionality.comment = 'Functionality rate of a device'
 
-    functionality_range = Column(DBEnum(FunctionalityRangev2))
-    functionality_range.comment = FunctionalityRangev2.__doc__
+    functionality_range = Column(DBEnum(FunctionalityRange))
+    functionality_range.comment = FunctionalityRange.__doc__
 
 
 class FinalRate(Rate):
@@ -1062,21 +971,28 @@ class FinalRate(Rate):
         4. ``Market value``.
         5. ``Cost of repair``.
 
+    We define 5 categories to measure:
 
-        There are different types of rating a device:
+        • Functionality (F). Answers to “does the machine work well?” Condition tests fall in here.
+        • Appearance (A). Aesthetic evaluation, surface deterioration.
+        • Quality (Q). How good is the machine, in terms of performance. Benchmarks, power, and characteristics fall here. The quality score, that represents the performance of the device, the functionality score, that based on the correct working of the buttons, audio and connectivity aspects, and the appaerance score, that focused  on the aesthetics and cosmetics aspects like visual damage on screen, buttons or cabinet.
+        • Market value (MV). Perceived value, brand recognition, selling value.
+        • Cost of repair, refurbish and manufacture. ( C )
 
-        1. Rate Quality
-        2. Rate Functionality
-        3. Rate Final
+    List of source where can input information of rating a device:
 
-
-        List of source where can input information of rating a device:
-
-        1. When processing the device with Workbench Computer/Mobile.
+        1. When processing the device with Workbench Computer or WB Mobile.
         2. Using the Android App (through Scan).
-        3.
+        3. ...
         4. Anytime after manually written in a form in the website.
-        """
+
+    There are three types of rating a device, depend on the aspect you are focusing on:
+
+        1. `Quality Rate`
+        2. `Functionality Rate`
+        3. `Appearance Rate`
+        4. `Final Rate`
+    """
 
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
     quality_id = Column(UUID(as_uuid=True), ForeignKey(QualityRate.id))
@@ -1178,7 +1094,6 @@ class FinalRate(Rate):
     @classmethod
     def cost_of_repair_category(cls, quality: QualityRate):
         pass
-
 
     # todo take value from LAST event (manual or workbench)
 
