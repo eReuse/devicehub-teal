@@ -717,9 +717,8 @@ class TestConnectivity(Test):
     """
     Test to check all this aspects related with functionality connections in devices
     """
-    # TODO name for SIM (3G)
-    celular_network = Column(Boolean)
-    SIM.comment = 'Evaluate if SIM works'
+    cellular_network = Column(Boolean)
+    cellular_network.comment = 'Evaluate if cellular network works properly'
     wifi = Column(Boolean)
     wifi.comment = 'Evaluate if wifi connection works correctly'
     bluetooth = Column(Boolean)
@@ -1007,7 +1006,6 @@ class FinalRate(Rate):
       """
     functionality = relationship(FunctionalityRate, )
 
-    # TODO is necessary?? create a AppearanceRate..
     appearance = relationship(TestVisual, )
 
     final_id = Column(UUID(as_uuid=True), ForeignKey(FinalRate.id))

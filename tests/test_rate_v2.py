@@ -1,9 +1,12 @@
 import math
 
+import pytest
+
 from ereuse_devicehub.resources.device.models import HardDrive, Processor, RamModule, Device
 from ereuse_devicehub.resources.event.rate.workbench.v2_0 import Rate
 
 
+@pytest.mark.xfail(reason='Evaluate')
 def test_ratev2_general():
     """
     Test to check if compute all aspects (quality, functionality and appearance) correctly
@@ -43,31 +46,86 @@ def test_ratev2_general():
     assert math.isclose(rate_device, 2.2, rel_tol=0.001)
 
 
+@pytest.mark.xfail(reason='Develop')
+def test_general_rate_without_quality():
+    """
+    Test to check if compute correctly general rate if quality rate are missing..
+    Final Rate = Func Rate + App Rate
+    """
+    pass
+
+
+@pytest.mark.xfail(reason='Develop')
+def test_general_rate_without_functionality():
+    """
+    Test to check if compute correctly general rate if functionality rate are missing..
+    Final Rate = Quality Rate + App Rate
+    """
+    pass
+
+
+@pytest.mark.xfail(reason='Develop')
+def test_general_rate_without_appearance():
+    """
+    Test to check if compute correctly general rate if appearance rate are missing..
+    Final Rate = Quality Rate + Functionality Rate
+    """
+    pass
+
+
+@pytest.mark.xfail(reason='Develop')
+def test_general_rate_without_quality():
+    """
+    Test to check if compute correctly general rate if quality rate are missing..
+    Final Rate = Func Rate + App Rate
+    """
+    pass
+
+
+# QUALITY RATE TEST CODE
+
+
+@pytest.mark.xfail(reason='Develop')
 def test_quality_rate():
-    """ Test to check all quality aspects
+    """
+    Quality Rate Test
+    Test to check all quality aspects, we suppose that we have full snapshot with all information and benchmarks
     """
     pass
 
 
-def test_functionality_rate():
-    """
-    Test to check all functionality aspects
-    :return:
-    """
-    pass
-
-
+@pytest.mark.xfail(reason='Develop')
 def test_component_rate_equal_to_zero():
     """
-    Test to check all functionality aspects
-    :return:
+    Quality Rate Test
+    Test to check quality aspects with some fields equal to 0 or null
     """
     pass
 
 
-def tes_component_rate_is_null():
+# FUNCTIONALITY RATE TEST DONE
+
+
+@pytest.mark.xfail(reason='Develop')
+def test_functionality_rate():
     """
-    Test to check all functionality aspects
-    :return:
+    Functionality Rate Test
+    Tests to check all aspects of functionality, we assume we have a complete snapshot with all the information and tests performed.a
     """
     pass
+
+
+@pytest.mark.xfail(reason='Develop')
+def test_functionality_rate_miss_tests():
+    """
+    Functionality Rate Test
+    Test to check if functionality rate compute correctly without complete information of test.
+    """
+
+
+@pytest.mark.xfail(reason='Develop')
+def test_update_rate_with_manual_rate():
+    """
+    Test to check if compute correctly a new rate of a device, if this device input after a manual rate (like visual test)
+    Computing a new rate with old snapshot information score and aggregate a new test information score.
+    """

@@ -167,6 +167,8 @@ class StressTest(Test):
 
 class TestAudio(Test):
     __doc__ = m.TestAudio.__doc__
+    loudspeaker = BDEnum(LoudspeakerRange)
+    microphone = Boolean()
 
 
 class TestConnectivity(Test):
@@ -177,8 +179,18 @@ class TestBattery(Test):
     __doc__ = m.TestBattery.__doc__
 
 
+class TestBios:
+    __doc__ = m.TestBios.__doc__
+
+
+class TestBiosDifficulty:
+    __doc__ = m.TestBiosDifficulty.__doc__
+
+
+
 class TestVisual(ManualRate):
     __doc__ = m.TestVisual.__doc__
+    appearance_range = DBEnum(AppearanceRange)
 
 
 class Rate(EventWithOneDevice):
