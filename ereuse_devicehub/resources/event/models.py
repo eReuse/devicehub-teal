@@ -717,13 +717,14 @@ class TestConnectivity(Test):
     """
     Test to check all this aspects related with functionality connections in devices
     """
+    # TODO Add Severity and return unique score
     cellular_network = Column(Boolean)
     cellular_network.comment = 'Evaluate if cellular network works properly'
     wifi = Column(Boolean)
     wifi.comment = 'Evaluate if wifi connection works correctly'
     bluetooth = Column(Boolean)
     bluetooth.comment = 'Evaluate if bluetooth works'
-    usb_port = Column(DBEnum(USBPortRange))
+    usb_port = Column(Boolean())
     usb_port.comment = 'Evaluate if usb port was detected and charger plug works'
 
 
@@ -740,6 +741,14 @@ class TestBattery(Test):
     battery_health.comment = BatteryHealthRange.__doc__
 
 
+class TestCamera(Test):
+    """
+    Test to determinate functionality and defects on camera when take pictures or record video
+    # TODO define when test FAIL
+    """
+    camera = Column(Boolean)
+
+
 class TestBios(Test):
     """
     Test that determinate motherboard no beeps, codes or errors when power on
@@ -754,71 +763,40 @@ class TestBiosDifficulty:
     """
     Test to determinate a grade to reflect some possibles difficult to access or modify setting in the BIOS, like password protection..
     """
-    # TODO Eum(BiosAccesRange)
     bios_access_range = Column(BDEnum(BiosAccessRange))
     bios_access_range.comment = 'Range of difficult to acces BIOS'
 
 
 class TestVisual(ManualRate):
     """
-    Special test that its aspects are represented with grade and focuses mainly on
+    Manual rate test its are represented with grade and focuses mainly on
     the aesthetic or cosmetic defects of important parts of a device.
     Like defects on chassis, display, ..
     """
-    # TODO Consider if add some new var in appearance aspect??
     appearance_range = Column(DBEnum(AppearanceRange))
     appearance_range.comment = AppearanceRange.__doc__
+    functionality_range = Column(DBEnum(FunctionalityRange))
+    functionality_range.comment = FunctionalityRange.__doc__
 
 
 class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
-    """The act of grading the appearance, performance, and functionality
+    """The act of computing a rate based on different categories:
+    1. Quality: the appearance, performance, and functionality
     of a device.
 
-    There are two base **types** of ``Rate``: ``WorkbenchRate``,
-    ``ManualRate``. ``WorkbenchRate`` can have different
-    **software** algorithms, and each software algorithm can have several
-    **versions**. So, we have 3 dimensions for ``WorkbenchRate``:
-    type, software, version.
-
-    Devicehub generates a rate event for each software and version. So,
-    if an agent fulfills a ``WorkbenchRate`` and there are 2 software
-    algorithms and each has two versions, Devicehub will generate 4 rates.
-    Devicehub understands that only one software and version are the
-    **official** (set in the settings of each inventory),
-    and it will generate an ``AggregateRating`` for only the official
-    versions. At the same time, ``Price`` only computes the price of
-    the **official** version.
 
     There are two ways of rating a device:
 
     1. When processing the device with Workbench and the Android App.
-    2. Anytime after with the Android App or website.
-
-    Refer to *processes* in the documentation to get more info with
-    the process.
-
-    The technical Workflow in Devicehub is as follows:
-
-    1. In **T1**, the agent performs a ``Snapshot`` by processing the device
-       through the Workbench. From the benchmarks and the visual and
-       functional ratings the agent does in the device, the system generates
-       many ``WorkbenchRate`` (as many as software and versions defined).
-       With only this information, the system generates an ``AggregateRating``,
-       which is the event that the user will see in the web.
-    2. In **T2**, the agent can optionally visually re-rate the device
-       using the mobile app, generating an ``AppRate``. This new
-       action generates a new ``AggregateRating`` with the ``AppRate``
-       plus the ``WorkbenchRate`` from 1.
+    2. Anytime after with the Android App or website.X
     """
+
     rating = Column(Float(decimal_return_scale=2), check_range('rating', *RATE_POSITIVE))
     rating.comment = """The rating for the content."""
     software = Column(DBEnum(RatingSoftware))
     software.comment = """The algorithm used to produce this rating."""
     version = Column(StrictVersionType)
     version.comment = """The version of the software."""
-    appearance = Column(Float(decimal_return_scale=2), check_range('appearance', *RATE_NEGATIVE))
-    functionality = Column(Float(decimal_return_scale=2),
-                           check_range('functionality', *RATE_NEGATIVE))
 
     @property
     def rating_range(self) -> RatingRange:
@@ -843,62 +821,20 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
         return '{} ({} v.{})'.format(self.rating_range, self.software, self.version)
 
 
-class IndividualRate(Rate):
-    pass
-
-
-class RateManual(IndividualRate):
-    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    labelling = Column(Boolean)
-    labelling.comment = """Sets if there are labels stuck that should
-    be removed.
+class RateComputer(Rate):
     """
-    appearance_range = Column(DBEnum(AppearanceRange))
-    appearance_range.comment = AppearanceRange.__doc__
-    functionality_range = Column(DBEnum(FunctionalityRange))
-    functionality_range.comment = FunctionalityRange.__doc__
-
-    def __str__(self) -> str:
-        return super().__str__() + '. Appearance {} and functionality {}'.format(
-            self.appearance_range,
-            self.functionality_range
-        )
-
-    def ratings(self):
-        raise NotImplementedError()
-
-
-class RateComputer(IndividualRate):
-    """
-    """
-    pass
-
-
-class RateMobile(IndividualRate):
-    """
-    """
-    pass
-
-
-class QualityRate(Rate):
-    """
-    The act of compute performance (quality) a device
+    Main class to group by device type: Computer
+    Computer is broadly extended by ``Desktop``, ``Laptop``, and
+    ``Server``.
     """
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+
     processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE),
                        comment='Is a test explain cpu component.')
     ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE),
                  comment='RAM memory rate.')
     data_storage = Column(Float(decimal_return_scale=2), check_range('data_storage', *RATE_POSITIVE),
                           comment='Data storage rate, like HHD, SSD.')
-
-    display = Column(Float(decimal_return_scale=2), check_range('display', *RATE_POSITIVE))
-    display.comment = 'Display rate, screen resolution and size to calculate PPI and convert in score'
-    battery = Column(Float(decimal_return_scale=2), check_range('battery', *RATE_POSITIVE),
-                     comment='Battery rate is related with capacity and its health')
-    camera = Column(Float(decimal_return_scale=2), check_range('camera', *RATE_POSITIVE),
-                    comment='Camera rate take into account resolution')
-
     graphic_card = Column(Float(decimal_return_scale=2), check_range('graphic_card', *RATE_POSITIVE),
                           comment='Graphic card score in performance, amount of memory and benchmark result')
     network_adapter = Column(Float(decimal_return_scale=2), check_range('network_adapter', *RATE_POSITIVE),
@@ -908,244 +844,328 @@ class QualityRate(Rate):
     bios_range = Column(DBEnum(Bios))
     bios_range.comment = Bios.__doc__
 
-    @property
-    def ram_range(self):
-        return self.workbench.ram_range
+    appearance = Column(Float(decimal_return_scale=2), check_range('appearance', *RATE_NEGATIVE))
+    functionality = Column(Float(decimal_return_scale=2),
+                           check_range('functionality', *RATE_NEGATIVE))
 
-    @property
-    def processor_range(self):
-        return self.workbench.processor_range
+    def compute_rate(self):
+        """
+        The act of compute general computer rate
+        """
+        pass
 
-    @property
-    def display_range(self):
-        return self.workbench.data_storage_range
+    def compute_features(self, device):
+        """
+        The act of compute rate about features (quality) aspects of a device
+        """
+        # norm = (x - xMin) / (xMax – xMin)
+        # harmonic_mean = sum(x.weights)/sum(x.char_weight/x.char_norm)
 
-    @property
-    def data_storage_range(self):
-        return self.workbench.data_storage_range
+        CHARACTERISTIC_WEIGHTS = [
+            CPU_CHAR_WEIGHTS = 0.2, 0.4, 0.4  # cores, speed, benchmark
+        RAM_CHAR_WEIGHT = 0.3, 0.3, 0.4  # size, benchmark
+        DATA_STORAGE_CHAR_WEIGHT = 0.2, 0.4, 0.4  # size, speed, benchmark
+        GRAPHIC_CARD_CHAR_WEIGHT = 0.5, 0.5  # size, benchmark
+            ...
+        ]
 
-    @property
-    def battery_range(self):
-        return self.workbench.ram_range
+        self.processor = harmonic_mean(device.cpu.cores, device.cpu.speed, device.cpu.benchmarkCPUSysbench.rate,
+                                       PROCESSOR_CHAR_WEIGHTS)
+        self.ram = harmonic_mean(device.ram.size, device.ram.speed, device.ram.benchmarkRAMSysbench.rate,
+                                 RAM_CHAR_WEIGHT)
+        self.data_storage = harmonic_mean(device.data_storage.size, device.data_storage.speed,
+                                          device.data_storage.benchmarkDataStorage.rate, DATA_STORAGE_CHAR_WEIGHT)
+        self.graphic_card = harmonic_mean(device.graphic_card.size, device.graphic_card.benchmarkGraphicCard.rate,
+                                          GRAPHIC_CARD_CHAR_WEIGHT)
+        # self.network_adapter = device.network_adapter.rate
+        ...
 
-    @property
-    def camera_range(self):
-        return self.workbench_mobile.camera_range
+        COMPONENTS_WEIGHTS = [
+            PROCESSOR_WEIGHT = 0.1,
+                               RAM_WEIGHT = 0.25,
+                                            DATA_STORAGE_WEIGHT = 0.05,
+                                                                  GRAPHIC_CARD_WEIGHT = 0.1,
+                                                                                        ...
+        ]
 
-    @property
-    def graphic_card_range(self):
-        return self.workbench_mobil.graphic_card_range
+        return harmonic_mean(self.processor, self.ram, self.data_storage, self.graphic_card, ..., COMPONENTS_WEIGHTS)
 
-    @property
-    def network_adapter_range(self):
-        return self.workbench_mobil.network_adapter_range
+    def compute_functionality(self, device):
+        """
+        The act of compute functionality characteristics of a device.
+        Two functionality variables, functionality rate (float) and functionality range (Enum)
+        """
+        DATA_STORAGE_WEIGHT = 0.1
+        STRESS_WEIGHT = 0.2
+        BIOS_WEIGHT = 0.2
+        ...
 
-    @property
-    def bios_range(self):
-        return self.workbench_mobil.bios_range
+        test_data_storage = device.last_event_of(TestDataStorage)
+        test_data_storage = int(test_data_storage) * DATA_STORAGE_WEIGHT
+
+        test_stress = device.last_event_of(StressTest)
+        test_stress = int(test_stress) * STRESS_WEIGHT
+
+        test_bios_power_on = device.last_event_of(TestBios).bios_power_on  # type: bool
+        test_bios_power_on = int(test_bios_power_on) * BIOS_WEIGHT
+
+        ...
+
+        functionality_tests = harmonic_mean(test_data_storage, test_stress, test_bios_power_on, ...)
+
+        functionality_range = device.last_event_of(TestVisual).functionality_range
+
+        self.functionality = functionality_range + functionality_tests
+
+    def compute_appearance(self, device):
+        """
+        The act of compute appearance of a device.
+        """
+        test_visual_appearance = device.last_event_of(TestVisual).appearance_range
+        self.appearance = test_visual_appearance
 
 
-class FunctionalityRate(Rate):
+class RateDesktop(RateComputer):
     """
-    The act of compute functionality characteristics of a device.
-    Two functionality variables, functionality rate (float) and functionality range (Enum)
+    Rate class for device type: Desktop
+    """
+    pass
 
+
+class RateLaptop(RateComputer):
+    """
+    Rate class for device type: Laptop
+    """
+
+    display = Column(Float(decimal_return_scale=2), check_range('display', *RATE_POSITIVE))
+    display.comment = 'Display rate, screen resolution and size to calculate PPI and convert in score'
+    battery = Column(Float(decimal_return_scale=2), check_range('battery', *RATE_POSITIVE),
+                     comment='Battery rate is related with capacity and its health')
+    camera = Column(Float(decimal_return_scale=2), check_range('camera', *RATE_POSITIVE),
+                    comment='Camera rate take into account resolution')
+
+    def compute_features(self, device):
+        """
+        The act of compute rate about features (quality) aspects of a device
+        """
+        # norm = (x - xMin) / (xMax – xMin)
+        # harmonic_mean = sum(x.weights)/sum(x.char_weight/x.char_norm)
+
+        CHARACTERISTIC_WEIGHTS = [
+            PROCESSOR_CHAR_WEIGHTS = 0.2, 0.4, 0.4  # cores, speed, benchmark
+        RAM_CHAR_WEIGHT = 0.3, 0.3, 0.4  # size, benchmark
+        DATA_STORAGE_CHAR_WEIGHT = 0.2, 0.4, 0.4  # size, speed, benchmark
+        GRAPHIC_CARD_CHAR_WEIGHT = 0.5, 0.5  # size, benchmark
+        DISPLAY_CHAR_WEIGHT = 0.4, 0.6  # size, resolution
+            ...
+        ]
+
+        self.processor = harmonic_mean(device.cpu.cores, device.cpu.speed, device.cpu.benchmarkCPUSysbench.rate,
+                                       PROCESSOR_CHAR_WEIGHTS)
+        self.ram = harmonic_mean(device.ram.size, device.ram.speed, device.ram.benchmarkRAMSysbench.rate,
+                                 RAM_CHAR_WEIGHT)
+        self.data_storage = harmonic_mean(device.data_storage.size, device.data_storage.speed,
+                                          device.data_storage.benchmarkDataStorage.rate, DATA_STORAGE_CHAR_WEIGHT)
+        self.graphic_card = harmonic_mean(device.graphic_card.size, device.graphic_card.benchmarkGraphicCard.rate,
+                                          GRAPHIC_CARD_CHAR_WEIGHT)
+        self.display = harmonic_mean(device.display.size, device.display.resolution, DISPLAY_CHAR_WEIGHT)
+        ...
+
+        COMPONENTS_WEIGHTS = [
+            PROCESSOR_WEIGHT = 0.1,
+                               RAM_WEIGHT = 0.25,
+                                            DATA_STORAGE_WEIGHT = 0.05,
+                                                                  GRAPHIC_CARD_WEIGHT = 0.1,
+                                                                                        DISPLAY_WEIGHT = 0.3,
+                                                                                                         BATTERY_WEIGHT = 0.25,
+                                                                                                                          CAMERA_WEIGHT = 0.1,
+                                                                                                                                          ...
+        ]
+
+        return harmonic_mean(self.processor, self.ram, self.data_storage, self.graphic_card, self.display,
+                             self.battery, self.camera, ..., COMPONENTS_WEIGHTS)
+
+    def compute_functionality(self, device):
+        """
+        The act of compute functionality characteristics of a device.
+        Two functionality variables, functionality rate (float) and functionality range (Enum)
+        """
+        DATA_STORAGE_WEIGHT = 0.1
+        STRESS_WEIGHT = 0.2
+        CONNECTIVITY_WEIGHT = 0.2
+        BIOS_WEIGHT = 0.25
+        BATTERY_WEIGHT = 0.05
+        AUDIO_WEIGHT = 0.05
+        CAMERA_WEIGHT = 0.05
+        ...
+
+        test_data_storage = device.last_event_of(TestDataStorage)
+        test_data_storage = int(test_data_storage) * DATA_STORAGE_WEIGHT
+
+        test_stress = device.last_event_of(StressTest)
+        test_stress = int(test_stress) * STRESS_WEIGHT
+
+        test_connectivity = device.last_event_of(TestConnectivity)
+        test_connectivity = int(test_connectivity) * CONNECTIVITY_WEIGHT
+
+        test_bios_power_on = device.last_event_of(TestBios).bios_power_on  # type: bool
+        test_bios_power_on = int(test_bios_power_on) * BIOS_WEIGHT
+
+        test_battery = device.last_event_of(TestBattery)
+        test_battery = int(test_battery) * BATTERY_WEIGHT
+
+        test_audio = int(device.last_event_of(TestAudio)) * AUDIO_WEIGHT
+
+        test_camera = device.last_event_of(TestCamera)
+        test_camera = int(test_camera) * CAMERA_WEIGHT
+
+        ...
+
+        functionality_tests = harmonic_mean(test_data_storage, test_stress, test_connectivity, test_bios_power_on,
+                                            test_battery, test_audio, test_camera, ...)
+
+        functionality_range = device.last_event_of(TestVisual).functionality_range
+
+        self.functionality = functionality_range + functionality_tests
+
+
+class RateServer(RateComputer):
+    """
+    Rate class for device type: Desktop
+    """
+    pass
+
+
+class RateMobile(Rate):
+    """
+    Main class to group by device type: Mobile
+    Computer is broadly extended by ``Smartphone``, ``Tablet``, and
+    ``Cellphone``.
     """
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    functionality = Column(Float(decimal_return_scale=2), check_range('functionality', *FUNCTIONALITY_RANGE))
-    functionality.comment = 'Functionality rate of a device'
 
-    functionality_range = Column(DBEnum(FunctionalityRange))
-    functionality_range.comment = FunctionalityRange.__doc__
+    processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE),
+                       comment='Is a test explain cpu component.')
+    ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE),
+                 comment='RAM memory rate.')
+    data_storage = Column(Float(decimal_return_scale=2), check_range('data_storage', *RATE_POSITIVE),
+                          comment='Data storage rate, like HHD, SSD.')
+    graphic_card = Column(Float(decimal_return_scale=2), check_range('graphic_card', *RATE_POSITIVE),
+                          comment='Graphic card score in performance, amount of memory and benchmark result')
+    display = Column(Float(decimal_return_scale=2), check_range('display', *RATE_POSITIVE))
+    display.comment = 'Display rate, screen resolution and size to calculate PPI and convert in score'
+    battery = Column(Float(decimal_return_scale=2), check_range('battery', *RATE_POSITIVE),
+                     comment='Battery rate is related with capacity and its health')
+    camera = Column(Float(decimal_return_scale=2), check_range('camera', *RATE_POSITIVE),
+                    comment='Camera rate take into account resolution')
+
+    def compute_rate(self):
+        """
+        The act of compute general computer rate
+        """
+        pass
+
+    def compute_features(self, device):
+        """
+        The act of compute rate about features (quality) aspects of a device
+        """
+        # norm = (x - xMin) / (xMax – xMin)
+        # harmonic_mean = sum(x.weights)/sum(x.char_weight/x.char_norm)
+
+        CHARACTERISTIC_WEIGHTS = [
+            PROCESSOR_CHAR_WEIGHTS = 0.2, 0.4, 0.4  # cores, speed, benchmark
+        RAM_CHAR_WEIGHT = 0.3, 0.3, 0.4  # size, benchmark
+        DATA_STORAGE_CHAR_WEIGHT = 0.2, 0.4, 0.4  # size, speed, benchmark
+        GRAPHIC_CARD_CHAR_WEIGHT = 0.5, 0.5  # size, benchmark
+        DISPLAY_CHAR_WEIGHT = 0.4, 0.6  # size, resolution
+            ...
+        ]
+
+        self.processor = harmonic_mean(device.cpu.cores, device.cpu.speed, device.cpu.benchmarkCPUSysbench.rate,
+                                       PROCESSOR_CHAR_WEIGHTS)
+        self.ram = harmonic_mean(device.ram.size, device.ram.speed, device.ram.benchmarkRAMSysbench.rate,
+                                 RAM_CHAR_WEIGHT)
+        self.data_storage = harmonic_mean(device.data_storage.size, device.data_storage.speed,
+                                          device.data_storage.benchmarkDataStorage.rate, DATA_STORAGE_CHAR_WEIGHT)
+        self.graphic_card = harmonic_mean(device.graphic_card.size, device.graphic_card.benchmarkGraphicCard.rate,
+                                          GRAPHIC_CARD_CHAR_WEIGHT)
+        self.display = harmonic_mean(device.display.size, device.display.resolution, DISPLAY_CHAR_WEIGHT)
+        ...
+
+        COMPONENTS_WEIGHTS = [
+            PROCESSOR_WEIGHT = 0.1,
+                               RAM_WEIGHT = 0.25,
+                                            DATA_STORAGE_WEIGHT = 0.05,
+                                                                  GRAPHIC_CARD_WEIGHT = 0.1,
+                                                                                        DISPLAY_WEIGHT = 0.3,
+                                                                                                         BATTERY_WEIGHT = 0.25,
+                                                                                                                          CAMERA_WEIGHT = 0.1,
+                                                                                                                                          ...
+        ]
+
+        return harmonic_mean(self.processor, self.ram, self.data_storage, self.graphic_card, self.display,
+                             self.battery, self.camera, ..., COMPONENTS_WEIGHTS)
+
+    def compute_functionality(self, device):
+        """
+        The act of compute functionality characteristics of a device.
+        Two functionality variables, functionality rate (float) and functionality range (Enum)
+        """
+        DATA_STORAGE_WEIGHT = 0.1
+        STRESS_WEIGHT = 0.2
+        CONNECTIVITY_WEIGHT = 0.2
+        BIOS_WEIGHT = 0.25
+        BATTERY_WEIGHT = 0.05
+        AUDIO_WEIGHT = 0.05
+        CAMERA_WEIGHT = 0.05
+        ...
+
+        test_data_storage = device.last_event_of(TestDataStorage)
+        test_data_storage = int(test_data_storage) * DATA_STORAGE_WEIGHT
+
+        test_stress = device.last_event_of(StressTest)
+        test_stress = int(test_stress) * STRESS_WEIGHT
+
+        test_connectivity = device.last_event_of(TestConnectivity)
+        test_connectivity = int(test_connectivity) * CONNECTIVITY_WEIGHT
+
+        test_bios_power_on = device.last_event_of(TestBios).bios_power_on  # type: bool
+        test_bios_power_on = int(test_bios_power_on) * BIOS_WEIGHT
+
+        test_battery = device.last_event_of(TestBattery)
+        test_battery = int(test_battery) * BATTERY_WEIGHT
+
+        test_audio = int(device.last_event_of(TestAudio)) * AUDIO_WEIGHT
+
+        test_camera = device.last_event_of(TestCamera)
+        test_camera = int(test_camera) * CAMERA_WEIGHT
+
+        ...
+
+        functionality_tests = harmonic_mean(test_data_storage, test_stress, test_connectivity, test_bios_power_on,
+                                            test_battery, test_audio, test_camera, ...)
+
+        functionality_range = device.last_event_of(TestVisual).functionality_range
+
+        self.functionality = functionality_range + functionality_tests
+
+    def compute_appearance(self, device):
+        """
+        The act of compute appearance of a device.
+        """
+        test_visual_appearance = device.last_event_of(TestVisual).appearance_range
+        self.appearance = test_visual_appearance
 
 
-class FinalRate(Rate):
-    """The act of grading the appearance, quality (performance), and functionality
-        of a device.
-
-        There are five categories of ``Rate``:
-        1. ``Quality``. How good is the machine, in terms of performance.
-        2. ``Functionality``.
-        3. ``Appearance``.
-        4. ``Market value``.
-        5. ``Cost of repair``.
-
-    We define 5 categories to measure:
-
-        • Functionality (F). Answers to “does the machine work well?” Condition tests fall in here.
-        • Appearance (A). Aesthetic evaluation, surface deterioration.
-        • Quality (Q). How good is the machine, in terms of performance. Benchmarks, power, and characteristics fall here. The quality score, that represents the performance of the device, the functionality score, that based on the correct working of the buttons, audio and connectivity aspects, and the appaerance score, that focused  on the aesthetics and cosmetics aspects like visual damage on screen, buttons or cabinet.
-        • Market value (MV). Perceived value, brand recognition, selling value.
-        • Cost of repair, refurbish and manufacture. ( C )
-
-    List of source where can input information of rating a device:
-
-        1. When processing the device with Workbench Computer or WB Mobile.
-        2. Using the Android App (through Scan).
-        3. ...
-        4. Anytime after manually written in a form in the website.
-
-    There are three types of rating a device, depend on the aspect you are focusing on:
-
-        1. `Quality Rate`
-        2. `Functionality Rate`
-        3. `Appearance Rate`
-        4. `Final Rate`
+class RateMonitor(Rate):
     """
-
+    Main class to group by device type: Monitor
+    Computer is broadly extended by ``ComputerMonitor``, ``TelevisionSet``, and
+    `` Projector``.
+    """
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
-    quality_id = Column(UUID(as_uuid=True), ForeignKey(QualityRate.id))
-    quality_id.comment = """The Quality Rate used to generate this
-    aggregation, or None if none used.
-    """
-    quality = relationship(QualityRate, )
 
-    functionality_id = Column(UUID(as_uuid=True), ForeignKey(FunctionalityRate.id))
-    functionality_id.comment = """The Functionality Rate used to generate this
-      aggregation, or None if none used.
-      """
-    functionality = relationship(FunctionalityRate, )
-
-    appearance = relationship(TestVisual, )
-
-    final_id = Column(UUID(as_uuid=True), ForeignKey(FinalRate.id))
-    final_id.comment = """The Final Rate used to generate this
-      aggregation, or None if none used.
-      """
-
-    """     MANUAL INPUT      """
-    manual_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
-    manual_id.comment = """The ManualEvent used to generate this
-      aggregation, or None if none used.
-
-      An example of ManualEvent is using the web or the Android app
-      to rate a device.
-      """
-    manual = relationship(ManualRate,
-                          backref=backref('aggregate_rate_manual',
-                                          lazy=True,
-                                          order_by=lambda: ResultRate.created,
-                                          collection_class=OrderedSet),
-                          primaryjoin=manual_id == ManualRate.id)
-
-    """     WORKBENCH COMPUTER       """
-    workbench_computer_id = Column(UUID(as_uuid=True), ForeignKey(QualityRateComputer.id))
-    workbench_computer_id.comment = """The WorkbenchRate used to generate
-    this aggregation, or None if none used.
-    """
-    workbench_computer = relationship(QualityRateComputer,
-                                      backref=backref('aggregate_rate_workbench',
-                                                      lazy=True,
-                                                      order_by=lambda: ResultRate.created,
-                                                      collection_class=OrderedSet),
-                                      primaryjoin=workbench_computer_id == QualityRateComputer.id)
-
-    """     WORKBENCH MOBILE       """
-
-    workbench_mobile_id = Column(UUID(as_uuid=True), ForeignKey(QualityRateMobile.id))
-    workbench_mobile_id.comment = """The WorkbenchRate used to generate
-    this aggregation, or None if none used.
-    """
-    workbench_mobile = relationship(QualityRateMobile,
-                                    backref=backref('aggregate_rate_workbench',
-                                                    lazy=True,
-                                                    order_by=lambda: ResultRate.created,
-                                                    collection_class=OrderedSet),
-                                    primaryjoin=workbench_mobile_id == QualityRateMobile.id)
-
-    # TODO Add more source that global rate can use it
-
-    def __init__(self, *args, **kwargs) -> None:
-        kwargs.setdefault('version', StrictVersion('1.0'))
-        super().__init__(*args, **kwargs)
-
-    @classmethod
-    def quality_rate(cls, quality: QualityRate):
-        pass
-
-    @classmethod
-    def functionality_rate(cls, func: FunctionalityRate):
-        pass
-
-    @classmethod
-    def final_rate(cls, rate: Rate):
-        pass
-
-    # Categories
-
-    @classmethod
-    def quality_category(cls, quality: QualityRate):
-        pass
-
-    @classmethod
-    def functionality_category(cls, functionality: FunctionalityRate):
-        pass
-
-    @classmethod
-    def appearance_category(cls, appearance: ManualRate):
-        pass
-
-    @classmethod
-    def maket_value_category(cls, quality: QualityRate):
-        pass
-
-    @classmethod
-    def cost_of_repair_category(cls, quality: QualityRate):
-        pass
-
-    # todo take value from LAST event (manual or workbench)
-
-    @property
-    def processor(self):
-        return self.workbench.processor
-
-    @property
-    def ram(self):
-        return self.workbench.ram
-
-    @property
-    def data_storage(self):
-        return self.workbench.data_storage
-
-    @property
-    def graphic_card(self):
-        return self.workbench.graphic_card
-
-    @property
-    def data_storage_range(self):
-        return self.workbench.data_storage_range
-
-    @property
-    def ram_range(self):
-        return self.workbench.ram_range
-
-    @property
-    def processor_range(self):
-        return self.workbench.processor_range
-
-    @property
-    def graphic_card_range(self):
-        return self.workbench.graphic_card_range
-
-    @property
-    def bios(self):
-        return self.workbench.bios
-
-    @property
-    def functionality_range(self):
-        return self.workbench.functionality_range
-
-    @property
-    def appearance_range(self):
-        return self.workbench.appearance_range
-
-    @property
-    def bios_range(self):
-        return self.workbench.bios_range
-
-    @property
-    def labelling(self):
-        return self.workbench.labelling
+    # TODO determinate which variables must take into account to compute monitor score
 
 
 class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
@@ -1176,7 +1196,7 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
     rating_id = Column(UUID(as_uuid=True), ForeignKey(AggregateRate.id))
     rating_id.comment = """The AggregateRate used to auto-compute
     this price, if it has not been set manually."""
-    rating = relationship(AggregateRate,
+    rating = relationship(FinalRate,
                           backref=backref('price',
                                           lazy=True,
                                           cascade=CASCADE_OWN,

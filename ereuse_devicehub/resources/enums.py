@@ -94,13 +94,16 @@ class AggregateRatingVersions(Enum):
 
 @unique
 class AppearanceRange(Enum):
-    """Based on usage condition of a device and its functionality aspects/characteristics."""
+    """
+    This grade will be defined based on the aesthetics/cosmetic aspects, like visual damage or blemishes principally
+    focused on chassis, physical buttons and screens.
+    """
     Z = 'Z. The device is new'
     A = 'A. Is like new; without visual damage'
     B = 'B. Is in really good condition; small visual damage in difficult places to spot'
-    C = 'C. Is in good condition; small visual damage in parts that are easy to spot, minor cosmetic blemishes on cabinet)'
-    D = 'D. Is acceptable; visual damage in visible parts, major cosmetic blemishes on cabinet, missing cosmetic parts..'
-    E = 'E. Is unacceptable; considerable visual damage, missing essential parts,.'
+    C = 'C. Is in good condition; small visual damage in parts that are easy to spot, minor cosmetic blemishes on chassis)'
+    D = 'D. Is acceptable; visual damage in visible parts, major cosmetic blemishes on chassis, missing cosmetic parts'
+    E = 'E. Is unacceptable; severity visual damage, missing essential parts'
     NONE = 'NA. Grade doesn’t exists'
 
     def __str__(self):
@@ -112,11 +115,11 @@ APPEARANCE_RANGE = 0.5, -0.3
 
 @unique
 class FunctionalityRange(Enum):
-    """Grade the buttons and chassis that affect its usage, like screen defect or camera defects"""
-    A = 'A. All the buttons works perfectly, no screen/camera defects and chassis without issues'
+    """Based on usage condition of a device and its functionality aspects, like screen defect or camera defects"""
+    A = 'A. All the buttons works perfectly, no screen/camera defects and chassis without usage issues'
     B = 'B. There is a button difficult to press or unstable it, a screen/camera defect or chassis problem'
-    C = 'C.	Multiple buttons don\'t work; broken or unusable it, some screen/camera defects and chassis problems'
-    D = 'D.	All buttons. screen or chassis don\'t work; broken or unusable it, difficult to usage.'
+    C = 'C.	Chassis defects or multiple buttons don\'t work; broken or unusable it, some screen/camera defect'
+    D = 'D.	Chassis severity usage problems. All buttons, screen or camera don\'t work; broken or unusable it'
     NONE = 'NA. Grade doesn’t exists'
 
     def __str__(self):
