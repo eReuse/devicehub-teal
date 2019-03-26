@@ -6,6 +6,10 @@ from ereuse_devicehub.resources.event import models as e
 
 
 class State(Enum):
+    """A mutable property of a device result of applying an
+    :ref:`actions:Action` to it.
+    """
+
     @classmethod
     def events(cls):
         """Events participating in this state."""
