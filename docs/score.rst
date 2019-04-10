@@ -23,7 +23,7 @@ We define 5 categories to measure:
 
     • Functionality (F). Answers to “does the machine work well?” Condition tests fall in here.
     • Appearance (A). Aesthetic evaluation, surface deterioration.
-    • Quality (Q). How good is the machine, in terms of performance. Benchmarks, power, and characteristics fall here. The quality score, that represents the performance of the device, the functionality score, that based on the correct working of the buttons, audio and connectivity aspects, and the appaerance score, that focused  on the aesthetics and cosmetics aspects like visual damage on screen, buttons or cabinet.
+    • Performance (Q). How good is the machine, in terms of performance. Benchmarks, power, and characteristics fall here. The quality score, that represents the performance of the device, the functionality score, that based on the correct working of the buttons, audio and connectivity aspects, and the appaerance score, that focused  on the aesthetics and cosmetics aspects like visual damage on screen, buttons or cabinet.
     • Market value (MV). Perceived value, brand recognition, selling value.
     • Cost of repair, refurbish and manufacture. ( C )
 
@@ -111,6 +111,8 @@ Elements of effective testing include the following:
 
     • Test results must be retained after unit shipment or sale.
 
+
+
 **Example of Theorical Normals**
 
 Characteristics xMin	xMax	xMax-xMin
@@ -135,4 +137,3 @@ Characteristics xMin	xMax	xMax-xMin
 
 - Camera Resolution	8	64	56
 
-// end

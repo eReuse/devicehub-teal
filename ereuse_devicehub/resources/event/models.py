@@ -546,6 +546,7 @@ class SnapshotRequest(db.Model):
     id = Column(UUID(as_uuid=True), ForeignKey(Snapshot.id), primary_key=True)
     request = Column(JSON, nullable=False)
     snapshot = relationship(Snapshot,
+
                             backref=backref('request',
                                             lazy=True,
                                             uselist=False,
@@ -708,7 +709,7 @@ class TestAudio(Test):
     Test to check all this aspects related with audio functions, Manual Tests??
     """
     loudspeaker = Column(BDEnum(LoudspeakerRange))
-    loudspeaker.comment = 'Range to determine if the speaker is working properly and what sound quality it has.'
+    loudspeaker.comment = 'Test to determine if the speaker is working properly and what sound quality it has.'
     microphone = Column(Boolean)
     microphone.comment = 'This evaluate if microphone works correctly'
 
@@ -726,7 +727,8 @@ class TestConnectivity(Test):
     bluetooth.comment = 'Evaluate if bluetooth works'
     usb_port = Column(Boolean())
     usb_port.comment = 'Evaluate if usb port was detected and charger plug works'
-
+    locked = Column(Boolean)
+    locked.comment = 'Test to check if devices is locked'
 
 class TestBattery(Test):
     """
@@ -747,6 +749,21 @@ class TestCamera(Test):
     # TODO define when test FAIL
     """
     camera = Column(Boolean)
+    camera.comment = ""
+
+
+class TestKeyboard(Test):
+    """
+    Test to determinate if keyboard layout are and works correctly
+    """
+    keyboard = Column(Boolean)
+    keyboard.comment = ""
+
+
+class TestTrackpad(Test):
+    """Test trackpad works correctly"""
+    trackpad = Column(Boolean)
+    trackpad.comment = ""
 
 
 class TestBios(Test):
@@ -880,13 +897,7 @@ class RateComputer(Rate):
         # self.network_adapter = device.network_adapter.rate
         ...
 
-        COMPONENTS_WEIGHTS = [
-            PROCESSOR_WEIGHT = 0.1,
-                               RAM_WEIGHT = 0.25,
-                                            DATA_STORAGE_WEIGHT = 0.05,
-                                                                  GRAPHIC_CARD_WEIGHT = 0.1,
-                                                                                        ...
-        ]
+        COMPONENTS_WEIGHTS..
 
         return harmonic_mean(self.processor, self.ram, self.data_storage, self.graphic_card, ..., COMPONENTS_WEIGHTS)
 
@@ -972,14 +983,14 @@ class RateLaptop(RateComputer):
         ...
 
         COMPONENTS_WEIGHTS = [
-            PROCESSOR_WEIGHT = 0.1,
-                               RAM_WEIGHT = 0.25,
-                                            DATA_STORAGE_WEIGHT = 0.05,
-                                                                  GRAPHIC_CARD_WEIGHT = 0.1,
-                                                                                        DISPLAY_WEIGHT = 0.3,
-                                                                                                         BATTERY_WEIGHT = 0.25,
-                                                                                                                          CAMERA_WEIGHT = 0.1,
-                                                                                                                                          ...
+            PROCESSOR_WEIGHT: 0.1,
+            RAM_WEIGHT: 0.25,
+            DATA_STORAGE_WEIGHT: 0.05,
+            GRAPHIC_CARD_WEIGHT: 0.1,
+            DISPLAY_WEIGHT: 0.3,
+            BATTERY_WEIGHT: 0.25,
+            CAMERA_WEIGHT: 0.1,
+            ...                                                                                                               ...
         ]
 
         return harmonic_mean(self.processor, self.ram, self.data_storage, self.graphic_card, self.display,
@@ -1074,10 +1085,10 @@ class RateMobile(Rate):
 
         CHARACTERISTIC_WEIGHTS = [
             PROCESSOR_CHAR_WEIGHTS = 0.2, 0.4, 0.4  # cores, speed, benchmark
-        RAM_CHAR_WEIGHT = 0.3, 0.3, 0.4  # size, benchmark
-        DATA_STORAGE_CHAR_WEIGHT = 0.2, 0.4, 0.4  # size, speed, benchmark
-        GRAPHIC_CARD_CHAR_WEIGHT = 0.5, 0.5  # size, benchmark
-        DISPLAY_CHAR_WEIGHT = 0.4, 0.6  # size, resolution
+            RAM_CHAR_WEIGHT = 0.3, 0.3, 0.4  # size, benchmark
+            DATA_STORAGE_CHAR_WEIGHT = 0.2, 0.4, 0.4  # size, speed, benchmark
+            GRAPHIC_CARD_CHAR_WEIGHT = 0.5, 0.5  # size, benchmark
+            DISPLAY_CHAR_WEIGHT = 0.4, 0.6  # size, resolution
             ...
         ]
 
@@ -1093,14 +1104,14 @@ class RateMobile(Rate):
         ...
 
         COMPONENTS_WEIGHTS = [
-            PROCESSOR_WEIGHT = 0.1,
-                               RAM_WEIGHT = 0.25,
-                                            DATA_STORAGE_WEIGHT = 0.05,
-                                                                  GRAPHIC_CARD_WEIGHT = 0.1,
-                                                                                        DISPLAY_WEIGHT = 0.3,
-                                                                                                         BATTERY_WEIGHT = 0.25,
-                                                                                                                          CAMERA_WEIGHT = 0.1,
-                                                                                                                                          ...
+            PROCESSOR_WEIGHT: 0.1,
+            RAM_WEIGHT: 0.25,
+            DATA_STORAGE_WEIGHT: 0.05,
+            GRAPHIC_CARD_WEIGHT: 0.1,
+            DISPLAY_WEIGHT: 0.3,
+            BATTERY_WEIGHT: 0.25,
+            CAMERA_WEIGHT: 0.1,
+            ...
         ]
 
         return harmonic_mean(self.processor, self.ram, self.data_storage, self.graphic_card, self.display,
@@ -1162,6 +1173,7 @@ class RateMonitor(Rate):
     Main class to group by device type: Monitor
     Computer is broadly extended by ``ComputerMonitor``, ``TelevisionSet``, and
     `` Projector``.
+    Important: Aspect ratio is an important variable in screen features
     """
     id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
 

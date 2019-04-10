@@ -119,13 +119,24 @@ def test_functionality_rate():
 def test_functionality_rate_miss_tests():
     """
     Functionality Rate Test
-    Test to check if functionality rate compute correctly without complete information of test.
+    Test to check if functionality rate compute correctly with some test without any information.
     """
+    pass
 
 
-@pytest.mark.xfail(reason='Develop')
+@pytest.mark.xfail(reason='Discuss')
+def test_appearance_rate():
+    """
+    Test to check if compute correctly a new rate of a device, only with visual test
+    """
+    pass
+
+
+@pytest.mark.xfail(reason='Discuss')
 def test_update_rate_with_manual_rate():
     """
     Test to check if compute correctly a new rate of a device, if this device input after a manual rate (like visual test)
     Computing a new rate with old snapshot information score and aggregate a new test information score.
     """
+    pass
+

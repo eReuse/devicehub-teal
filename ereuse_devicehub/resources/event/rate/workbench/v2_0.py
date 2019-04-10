@@ -92,12 +92,26 @@ class FunctionalityRate(BaseRate):
     LOUDSPEAKER_WEIGHT = 0.15
     MICROPHONE_WEIGHT = 0.15
 
-    def compute(self, FunctionalityRate: FunctionalityRate):
+    @classmethod
+    def compute(cls, device: Device):
         """
 
         :param FunctionalityDevice: List[Boolean]
         :return:
         """
+        test_bios_power_on = device.last_event_of(TestBios).bios_power_on # type: bool
+        test_bios_power_on = int(test_bios_power_on)
+
+
+        test_battery = device.last_event_of(TestBattery)
+        test_audio
+        test_data_storage
+
+        functionality = test_bios.bios_power_on * self.BIOS_WEIGHT + ...
+        return cls(funcionality=functionality)
+
+
+
         # TODO Check if funcionality aspect is != NULL
         sim = FunctionalityDevice.sim * self.SIM_WEIGHT
         usb = FunctionalityDevice.usb * self.USB_WEIGHT
@@ -125,110 +139,6 @@ class Appearance(Range):
     D = -0.25
     E = -0.5
     NONE = -0.3
-
-
-class FinalRate(Rate):
-    """The act of grading the appearance, quality (performance), and functionality
-        of a device.
-
-        There are five categories of ``Rate``:
-        1. ``Quality``. How good is the machine, in terms of performance.
-        2. ``Functionality``.
-        3. ``Appearance``.
-        4. ``Market value``.
-        5. ``Cost of repair``.
-
-        There are types of rating a device:
-
-        1. Rate Quality
-        2. Rate Functionality
-        3. Rate Final
-        """
-    quality_rate = QualityRate()
-    functionality_rate = FunctionalityRate()
-    appearance_rate = Appearance()
-
-    final_rate = None
-
-    # TODO Develop merge rate aspects (categories)
-
-    """     MANUAL INPUT      """
-    manual_id = Column(UUID(as_uuid=True), ForeignKey(ManualRate.id))
-    manual_id.comment = """The ManualEvent used to generate this
-      aggregation, or None if none used.
-
-      An example of ManualEvent is using the web or the Android app
-      to rate a device.
-      """
-    manual = relationship(ManualRate,
-                          backref=backref('aggregate_rate_manual',
-                                          lazy=True,
-                                          order_by=lambda: ResultRate.created,
-                                          collection_class=OrderedSet),
-                          primaryjoin=manual_id == ManualRate.id)
-
-    """     WORKBENCH COMPUTER       """
-    workbench_computer_id = Column(UUID(as_uuid=True), ForeignKey(QualityRateComputer.id))
-    workbench_computer_id.comment = """The WorkbenchRate used to generate
-    this aggregation, or None if none used.
-    """
-    workbench_computer = relationship(QualityRateComputer,
-                                      backref=backref('aggregate_rate_workbench',
-                                                      lazy=True,
-                                                      order_by=lambda: ResultRate.created,
-                                                      collection_class=OrderedSet),
-                                      primaryjoin=workbench_computer_id == QualityRateComputer.id)
-
-    """     WORKBENCH MOBILE       """
-
-    workbench_mobile_id = Column(UUID(as_uuid=True), ForeignKey(QualityRateMobile.id))
-    workbench_mobile_id.comment = """The WorkbenchRate used to generate
-    this aggregation, or None if none used.
-    """
-    workbench_mobile = relationship(QualityRateMobile,
-                                    backref=backref('aggregate_rate_workbench',
-                                                    lazy=True,
-                                                    order_by=lambda: ResultRate.created,
-                                                    collection_class=OrderedSet),
-                                    primaryjoin=workbench_mobile_id == QualityRateMobile.id)
-
-    def __init__(self, *args, **kwargs) -> None:
-        kwargs.setdefault('version', StrictVersion('1.0'))
-        super().__init__(*args, **kwargs)
-
-    @classmethod
-    def quality_rate(cls, quality: QualityRate):
-        pass
-
-    @classmethod
-    def functionality_rate(cls, func: FunctionalityRate):
-        pass
-
-    @classmethod
-    def final_rate(cls, rate: Rate):
-        pass
-
-    # Categories
-
-    @classmethod
-    def quality_category(cls, quality: QualityRate):
-        pass
-
-    @classmethod
-    def functionality_category(cls, quality: QualityRate):
-        pass
-
-    @classmethod
-    def appearance_category(cls, quality: QualityRate):
-        pass
-
-    @classmethod
-    def maket_value_category(cls, quality: QualityRate):
-        pass
-
-    @classmethod
-    def cost_of_repair_category(cls, quality: QualityRate):
-        pass
 
 
 class DisplayRate(QualityRate):
