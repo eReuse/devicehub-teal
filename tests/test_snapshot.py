@@ -453,3 +453,14 @@ def test_snapshot_keyboard(user: UserClient):
     snapshot = snapshot_and_check(user, s, event_types=('ManualRate',))
     keyboard = snapshot['device']
     assert keyboard['layout'] == 'ES'
+
+
+def test_pc_rating_rate_none(user: UserClient):
+    """Tests a Snapshot with EraseSectors."""
+    s = file('desktop-9644w8n-lenovo-0169622.snapshot')
+    snapshot, _ = user.post(res=Snapshot, data=s)
+
+
+def test_pc_2(user: UserClient):
+    s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
+    snapshot, _ = user.post(res=Snapshot, data=s)

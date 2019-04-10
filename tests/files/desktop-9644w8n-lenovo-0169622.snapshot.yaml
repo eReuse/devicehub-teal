@@ -1,0 +1,121 @@
+{
+  "closed": true,
+  "components": [
+  {
+    "events": [],
+    "manufacturer": "Intel Corporation",
+    "model": "NM10/ICH7 Family High Definition Audio Controller",
+    "serialNumber": null,
+    "type": "SoundCard"
+  },
+  {
+    "events": [],
+    "manufacturer": "Broadcom Inc. and subsidiaries",
+    "model": "NetLink BCM5786 Gigabit Ethernet PCI Express",
+    "serialNumber": "00:1a:6b:5e:7f:10",
+    "speed": 1000,
+    "type": "NetworkAdapter",
+    "wireless": false
+  },
+  {
+    "events": [],
+    "format": "DIMM",
+    "interface": "DDR",
+    "manufacturer": null,
+    "model": null,
+    "serialNumber": null,
+    "size": 1024,
+    "speed": 133.0,
+    "type": "RamModule"
+  },
+  {
+    "events": [],
+    "format": "DIMM",
+    "interface": "DDR",
+    "manufacturer": null,
+    "model": null,
+    "serialNumber": null,
+    "size": 1024,
+    "speed": 133.0,
+    "type": "RamModule"
+  },
+  {
+    "address": 64,
+    "events": [
+    {
+      "elapsed": 33,
+      "rate": 32.9274,
+      "type": "BenchmarkProcessorSysbench"
+    },
+    {
+      "elapsed": 0,
+      "rate": 8771.5,
+      "type": "BenchmarkProcessor"
+    }
+    ],
+    "manufacturer": "Intel Corp.",
+    "model": "Intel Core2 Duo CPU E4500 @ 2.20GHz",
+    "serialNumber": null,
+    "speed": 1.1,
+    "threads": 2,
+    "type": "Processor"
+  },
+  {
+    "events": [],
+    "manufacturer": "Intel Corporation",
+    "memory": 256.0,
+    "model": "82946GZ/GL Integrated Graphics Controller",
+    "serialNumber": null,
+    "type": "GraphicCard"
+  },
+  {
+    "events": [],
+    "firewire": 0,
+    "manufacturer": "LENOVO",
+    "model": "LENOVO",
+    "pcmcia": 0,
+    "serial": 1,
+    "serialNumber": null,
+    "slots": 0,
+    "type": "Motherboard",
+    "usb": 5
+  }
+  ],
+  "device": {
+    "chassis": "Microtower",
+    "events": [
+    {
+      "appearanceRange": "D",
+      "biosRange": "E",
+      "functionalityRange": "D",
+      "type": "WorkbenchRate"
+    },
+    {
+      "elapsed": 300,
+      "severity": "Info",
+      "type": "StressTest"
+    },
+    {
+      "elapsed": 2,
+      "rate": 1.4968,
+      "type": "BenchmarkRamSysbench"
+    }
+    ],
+    "manufacturer": "LENOVO",
+    "model": "9644W8N",
+    "serialNumber": "0169622",
+    "type": "Desktop"
+  },
+  "elapsed": 338,
+  "endTime": "2019-02-13T11:57:31.378330+00:00",
+  "expectedEvents": [
+    "Benchmark",
+    "TestDataStorage",
+    "StressTest",
+    "Install"
+  ],
+  "software": "Workbench",
+  "type": "Snapshot",
+  "uuid": "d7904bd3-7d0f-4918-86b1-e21bfab738f9",
+  "version": "11.0b5"
+}

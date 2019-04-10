@@ -21,7 +21,6 @@ def test_api_docs(client: Client):
         '/users/',
         '/devices/',
         '/tags/',
-        '/snapshots/',
         '/users/login/',
         '/events/',
         '/lots/',
@@ -29,6 +28,7 @@ def test_api_docs(client: Client):
         '/lots/{id}/children',
         '/lots/{id}/devices',
         '/documents/erasures/',
+        '/documents/devices/',
         '/documents/static/{filename}',
         '/tags/{tag_id}/device/{device_id}',
         '/devices/static/{filename}'

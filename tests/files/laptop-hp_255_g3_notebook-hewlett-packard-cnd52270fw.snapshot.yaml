@@ -1,0 +1,170 @@
+{
+  "closed": true,
+  "components": [
+    {
+      "events": [],
+      "manufacturer": "Qualcomm Atheros",
+      "model": "QCA9565 / AR9565 Wireless Network Adapter",
+      "serialNumber": "ac:e0:10:c2:e3:ac",
+      "type": "NetworkAdapter",
+      "wireless": true
+    },
+    {
+      "events": [],
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "model": "RTL810xE PCI Express Fast Ethernet controller",
+      "serialNumber": "30:8d:99:25:6c:d9",
+      "speed": 100,
+      "type": "NetworkAdapter",
+      "wireless": false
+    },
+    {
+      "events": [],
+      "manufacturer": "Advanced Micro Devices, Inc. AMD/ATI",
+      "model": "Kabini HDMI/DP Audio",
+      "serialNumber": null,
+      "type": "SoundCard"
+    },
+    {
+      "events": [],
+      "manufacturer": "Chicony Electronics Co.,Ltd.",
+      "model": "HP Webcam",
+      "serialNumber": "0x0001",
+      "type": "SoundCard"
+    },
+    {
+      "events": [],
+      "manufacturer": "Advanced Micro Devices, Inc. AMD",
+      "model": "FCH Azalia Controller",
+      "serialNumber": null,
+      "type": "SoundCard"
+    },
+    {
+      "events": [],
+      "format": "SODIMM",
+      "interface": "DDR3",
+      "manufacturer": "Hynix",
+      "model": "HMT451S6AFR8A-PB",
+      "serialNumber": "11743764",
+      "size": 4096,
+      "speed": 667.0,
+      "type": "RamModule"
+    },
+    {
+      "address": 64,
+      "cores": 2,
+      "events": [
+        {
+          "elapsed": 0,
+          "rate": 3992.32,
+          "type": "BenchmarkProcessor"
+        },
+        {
+          "elapsed": 65,
+          "rate": 65.3007,
+          "type": "BenchmarkProcessorSysbench"
+        }
+      ],
+      "manufacturer": "Advanced Micro Devices AMD",
+      "model": "AMD E1-2100 APU with Radeon HD Graphics",
+      "serialNumber": null,
+      "speed": 0.9,
+      "threads": 2,
+      "type": "Processor"
+    },
+    {
+      "events": [
+        {
+          "elapsed": 12,
+          "readSpeed": 90.0,
+          "type": "BenchmarkDataStorage",
+          "writeSpeed": 30.7
+        },
+        {
+          "assessment": true,
+          "commandTimeout": 1341,
+          "currentPendingSectorCount": 0,
+          "elapsed": 113,
+          "length": "Short",
+          "lifetime": 1782,
+          "offlineUncorrectable": 0,
+          "powerCycleCount": 806,
+          "reallocatedSectorCount": 224,
+          "reportedUncorrectableErrors": 9961472,
+          "severity": "Info",
+          "status": "Completed without error",
+          "type": "TestDataStorage"
+        },
+        {
+          "address": 32,
+          "elapsed": 690,
+          "name": "LinuxMint-19-x86-es-2018-12.fsa",
+          "severity": "Info",
+          "type": "Install"
+        }
+      ],
+      "interface": "ATA",
+      "manufacturer": null,
+      "model": "HGST HTS545050A7",
+      "serialNumber": "TE85134N34LNSN",
+      "size": 476940,
+      "type": "HardDrive"
+    },
+    {
+      "events": [],
+      "manufacturer": "Advanced Micro Devices, Inc. AMD/ATI",
+      "memory": 256.0,
+      "model": "Kabini Radeon HD 8210",
+      "serialNumber": null,
+      "type": "GraphicCard"
+    },
+    {
+      "events": [],
+      "firewire": 0,
+      "manufacturer": "Hewlett-Packard",
+      "model": "21F7",
+      "pcmcia": 0,
+      "serial": 1,
+      "serialNumber": "PEHERF41U8P9TV",
+      "slots": 0,
+      "type": "Motherboard",
+      "usb": 5
+    }
+  ],
+  "device": {
+    "chassis": "Netbook",
+    "events": [
+      {
+        "appearanceRange": "A",
+        "functionalityRange": "A",
+        "type": "WorkbenchRate"
+      },
+      {
+        "elapsed": 300,
+        "severity": "Info",
+        "type": "StressTest"
+      },
+      {
+        "elapsed": 6,
+        "rate": 5.8783,
+        "type": "BenchmarkRamSysbench"
+      }
+    ],
+    "manufacturer": "Hewlett-Packard",
+    "model": "HP 255 G3 Notebook",
+    "serialNumber": "CND52270FW",
+    "type": "Laptop"
+  },
+  "elapsed": 1194,
+  "endTime": "2019-02-13T10:13:50.535387+00:00",
+  "expectedEvents": [
+    "Benchmark",
+    "TestDataStorage",
+    "StressTest",
+    "Install"
+  ],
+  "software": "Workbench",
+  "type": "Snapshot",
+  "uuid": "ca564895-567e-4ac2-9a0d-2d1402528687",
+  "version": "11.0b5"
+}

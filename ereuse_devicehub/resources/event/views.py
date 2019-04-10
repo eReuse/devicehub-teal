@@ -12,14 +12,21 @@ from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import SnapshotSoftware
 from ereuse_devicehub.resources.event.models import Event, Snapshot, WorkbenchRate
 
+SUPPORTED_WORKBENCH = StrictVersion('11.0')
+
 
 class EventView(View):
     def post(self):
         """Posts an event."""
         json = request.get_json(validate=False)
-        if 'type' not in json:
+        if not json or 'type' not in json:
             raise ValidationError('Resource needs a type.')
-        e = app.resources[json['type']].schema.load(json)
+        # todo there should be a way to better get subclassess resource
+        #   defs
+        resource_def = app.resources[json['type']]
+        e = resource_def.schema.load(json)
+        if json['type'] == Snapshot.t:
+            return self.snapshot(e, resource_def)
         Model = db.Model._decl_class_registry.data[json['type']]()
         event = Model(**e)
         db.session.add(event)
@@ -34,25 +41,20 @@ class EventView(View):
         event = Event.query.filter_by(id=id).one()
         return self.schema.jsonify(event)
 
-
-SUPPORTED_WORKBENCH = StrictVersion('11.0')
-
-
-class SnapshotView(View):
-    def post(self):
+    def snapshot(self, snapshot_json: dict, resource_def):
         """
         Performs a Snapshot.
 
         See `Snapshot` section in docs for more info.
         """
-        s = request.get_json()
         # Note that if we set the device / components into the snapshot
         # model object, when we flush them to the db we will flush
         # snapshot, and we want to wait to flush snapshot at the end
-        device = s.pop('device')  # type: Computer
-        components = s.pop('components') \
-            if s['software'] == SnapshotSoftware.Workbench else None  # type: List[Component]
-        snapshot = Snapshot(**s)
+        device = snapshot_json.pop('device')  # type: Computer
+        components = None
+        if snapshot_json['software'] == SnapshotSoftware.Workbench:
+            components = snapshot_json.pop('components')  # type: List[Component]
+        snapshot = Snapshot(**snapshot_json)
 
         # Remove new events from devices so they don't interfere with sync
         events_device = set(e for e in device.events_one)
@@ -62,10 +64,9 @@ class SnapshotView(View):
             for component in components:
                 component.events_one.clear()
 
-        # noinspection PyArgumentList
         assert not device.events_one
         assert all(not c.events_one for c in components) if components else True
-        db_device, remove_events = self.resource_def.sync.run(device, components)
+        db_device, remove_events = resource_def.sync.run(device, components)
         snapshot.device = db_device
         snapshot.events |= remove_events | events_device  # Set events to snapshot
         # commit will change the order of the components by what
