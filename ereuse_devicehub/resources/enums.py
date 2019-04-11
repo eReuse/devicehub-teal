@@ -18,23 +18,6 @@ class SnapshotSoftware(Enum):
         return self.name
 
 
-@unique
-class RatingSoftware(Enum):
-    """The software used to compute the Score."""
-    ECost = 'ECost'
-    """
-    The eReuse.org rate algorithm that focuses maximizing refurbishment
-    of devices in general, specially penalizing very low and very high
-    devices in order to stimulate medium-range devices.
-    
-    This model is cost-oriented. 
-    """
-    EMarket = 'EMarket'
-
-    def __str__(self):
-        return self.name
-
-
 RATE_POSITIVE = 0, 10
 RATE_NEGATIVE = -3, 5
 
@@ -126,7 +109,7 @@ class FunctionalityRange(Enum):
         return self.name
 
 
-FUNCTIONALITY_RANGE = -0.25, 0.5
+FUNCTIONALITY_RANGE = -0.3, 0.4
 
 
 @unique
@@ -142,8 +125,9 @@ class BatteryHealthRange(Enum):
     def __str__(self):
         return self.name
 
+
 @unique
-class Bios(Enum):
+class BiosAccessRange(Enum):
     """How difficult it has been to set the bios to boot from the network."""
     A = 'A. If by pressing a key you could access a boot menu with the network boot'
     B = 'B. You had to get into the BIOS, and in less than 5 steps you could set the network boot'
@@ -154,8 +138,6 @@ class Bios(Enum):
     def __str__(self):
         return self.name
 
-
-# TODO add all grade tables (chassis defects, camera defects, buttons test, connectivity, ..)
 
 @unique
 class Orientation(Enum):

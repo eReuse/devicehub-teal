@@ -5,13 +5,13 @@ from typing import Iterable
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Desktop, Laptop, \
     Processor, RamModule, Server
 from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, BenchmarkProcessor, \
-    WorkbenchRate
+    RateComputer, TestVisual
 # todo if no return assign then rate_c = 1 is assigned
 # todo fix corner cases, like components characteristics == None
 from ereuse_devicehub.resources.event.rate.rate import BaseRate
 
 
-class Rate(BaseRate):
+class RateAlgorithm(BaseRate):
     """
     Rate all components in Computer
     """
@@ -46,15 +46,16 @@ class Rate(BaseRate):
             DataStorage.t: ('data_storage', DataStorageRate())
         }
 
-    def compute(self, device: Computer, rate: WorkbenchRate):
+    def compute(self, device: Computer):
         """
-        Compute 'Workbench'Rate computer is a rate (score) ranging from 0 to 4.7
+        Compute RateComputer is a rate (score) ranging from 0 to 4.7
         that represents estimating value of use of desktop and laptop computer components.
 
         This mutates "rate".
         """
         assert isinstance(device, (Desktop, Laptop, Server))
-        assert isinstance(rate, WorkbenchRate)
+
+        rate = RateComputer()
 
         rate.processor = rate.data_storage = rate.ram = 1  # Init
 
@@ -71,8 +72,8 @@ class Rate(BaseRate):
                 setattr(rate, field, result)
 
         rate_components = self.harmonic_mean_rates(rate.processor, rate.data_storage, rate.ram)
-        rate.appearance = self.Appearance.from_devicehub(rate.appearance_range).value
-        rate.functionality = self.Functionality.from_devicehub(rate.functionality_range).value
+        rate.appearance = self.Appearance.from_devicehub(TestVisual.appearance_range).value
+        rate.functionality = self.Functionality.from_devicehub(TestVisual.functionality_range).value
 
         rate.rating = round(max(rate_components + rate.functionality + rate.appearance, 0), 2)
         rate.appearance = round(rate.appearance, 2)
@@ -80,6 +81,8 @@ class Rate(BaseRate):
         rate.processor = round(rate.processor, 2)
         rate.ram = round(rate.ram, 2)
         rate.data_storage = round(rate.data_storage, 2)
+        device.events_one.add(rate)
+        return rate
 
 
 class ProcessorRate(BaseRate):
@@ -95,7 +98,7 @@ class ProcessorRate(BaseRate):
     # Intel(R) Core(TM) i3 CPU 530 @ 2.93GHz, score = 23406.92 but results inan score of 17503.
     DEFAULT_SCORE = 4000
 
-    def compute(self, processor: Processor, rate: WorkbenchRate):
+    def compute(self, processor: Processor, rate: RateComputer):
         """ Compute processor rate
             Obs: cores and speed are possible NULL value
             :return: result is a rate (score) of Processor characteristics
@@ -139,7 +142,7 @@ class RamRate(BaseRate):
     # ram.size.weight; ram.speed.weight;
     RAM_WEIGHTS = 0.7, 0.3
 
-    def compute(self, ram_devices: Iterable[RamModule], rate: WorkbenchRate):
+    def compute(self, ram_devices: Iterable[RamModule], rate: RateComputer):
         """
         Obs: RamModule.speed is possible NULL value & size != NULL or NOT??
         :return: result is a rate (score) of all RamModule components
@@ -196,7 +199,7 @@ class DataStorageRate(BaseRate):
     # drive.size.weight; drive.readingSpeed.weight; drive.writingSpeed.weight;
     DATA_STORAGE_WEIGHTS = 0.5, 0.25, 0.25
 
-    def compute(self, data_storage_devices: Iterable[DataStorage], rate: WorkbenchRate):
+    def compute(self, data_storage_devices: Iterable[DataStorage], rate: RateComputer):
         """
         Obs: size != NULL and 0 value & read_speed and write_speed != NULL
         :return: result is a rate (score) of all DataStorage devices
@@ -252,3 +255,6 @@ class DataStorageRate(BaseRate):
             # STEP: Fusion Characteristics
             return self.harmonic_mean(self.DATA_STORAGE_WEIGHTS,
                                       rates=(size_rate, read_speed_rate, write_speed_rate))
+
+
+rate_algorithm = RateAlgorithm()

@@ -123,6 +123,37 @@ class StepRandom(Step):
     pass
 
 
+class EraseBasic(EventWithOneDevice):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.start_time = ...  # type: datetime
+        self.end_time = ...  # type: datetime
+        self.steps = ...  # type: List[Step]
+        self.zeros = ...  # type: bool
+        self.success = ...  # type: bool
+
+    @property
+    def standards(self) -> Set[ErasureStandards]:
+        pass
+
+    @property
+    def certificate(self) -> urlutils.URL:
+        pass
+
+
+class EraseSectors(EraseBasic):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+
+class ErasePhysical(EraseBasic):
+    method = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.method = ...  # type: PhysicalErasureMethod
+
+
 class Snapshot(EventWithOneDevice):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -154,11 +185,124 @@ class SnapshotRequest(Model):
         self.snapshot = ...  # type: Snapshot
 
 
+class Benchmark(EventWithOneDevice):
+    pass
+
+
+class BenchmarkDataStorage(Benchmark):
+    read_speed = ...  # type: Column
+    write_speed = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.read_speed = ...  # type: float
+        self.write_speed = ...  # type: float
+
+
+class BenchmarkWithRate(Benchmark):
+    rate = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.rate = ...  # type: int
+
+
+class BenchmarkProcessor(BenchmarkWithRate):
+    pass
+
+
+class BenchmarkProcessorSysbench(BenchmarkProcessor):
+    pass
+
+
+class BenchmarkRamSysbench(BenchmarkWithRate):
+    pass
+
+
+class BenchmarkGraphicCard(BenchmarkWithRate):
+    pass
+
+
+class Test(EventWithOneDevice):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.elapsed = ...  # type: timedelta
+        self.success = ...  # type: bool
+
+
+class TestDataStorage(Test):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.id = ...  # type: UUID
+        self.length = ...  # type: TestDataStorageLength
+        self.status = ...  # type: str
+        self.lifetime = ...  # type: timedelta
+        self.first_error = ...  # type: int
+        self.passed_lifetime = ...  # type: timedelta
+        self.assessment = ...  # type: int
+        self.reallocated_sector_count = ...  # type: int
+        self.power_cycle_count = ...  # type: int
+        self.reported_uncorrectable_errors = ...  # type: int
+        self.command_timeout = ...  # type: int
+        self.current_pending_sector_count = ...  # type: int
+        self.offline_uncorrectable = ...  # type: int
+        self.remaining_lifetime_percentage = ...  # type: int
+
+
+class StressTest(Test):
+    pass
+
+
+class TestAudio(Test):
+    """
+    Test to check all this aspects related with audio functions, Manual Tests??
+    """
+    loudspeaker = ...  # type: Column
+    microphone = ...  # type: Column
+
+
+class TestConnectivity(Test):
+    cellular_network = ...  # type: Column
+    wifi = ...  # type: Column
+    bluetooth = ...  # type: Column
+    usb_port = ...  # type: Column
+    locked = ...  # type: Column
+
+
+class TestBattery(Test):
+    battery_stat = ...  # type: Column
+    battery_health = ...  # type: Column
+
+
+class TestCamera(Test):
+    camera = ...  # type: Column
+
+
+class TestKeyboard(Test):
+    keyboard = ...  # type: Column
+
+
+class TestTrackpad(Test):
+    trackpad = ...  # type: Column
+
+
+class TestBios(Test):
+    bios_power_on = ...  # type: Column
+
+
+class TestBiosDifficulty:
+    bios_access_range = ...  # type: BiosAccessRange
+
+
+class TestVisual(ManualRate):
+    appearance_range = ...  # type: AppearanceRange
+    functionality_range = ...  # type: FunctionalityRange
+
+
 class Rate(EventWithOneDevice):
     rating = ...  # type: Column
     appearance = ...  # type: Column
     functionality = ...  # type: Column
-    software = ...  # type: Column
     version = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
@@ -171,118 +315,11 @@ class Rate(EventWithOneDevice):
         self.rating_range = ...  # type: str
 
 
-class IndividualRate(Rate):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.aggregated_ratings = ...  # type: Set[AggregateRate]
-
-
-class AggregateRate(Rate):
-    manual_id = ...  # type: Column
-    manual = ...  # type: relationship
-    workbench = ...  # type: relationship
-    workbench_id = ...  # type: Column
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.manual_id = ...  # type: UUID
-        self.manual = ...  # type: ManualRate
-        self.workbench = ...  # type: WorkbenchRate
-        self.workbench_id = ...  # type: UUID
-        self.price = ...  # type: Price
-
-    @property
-    def processor(self):
-        return self.workbench.processor
-
-    @property
-    def ram(self):
-        return self.workbench.ram
-
-    @property
-    def data_storage(self):
-        return self.workbench.data_storage
-
-    @property
-    def graphic_card(self):
-        return self.workbench.graphic_card
-
-    @property
-    def bios(self):
-        return self.workbench.bios
-
-    @property
-    def functionality_range(self):
-        return self.workbench.functionality_range
-
-    @property
-    def appearance_range(self):
-        return self.workbench.appearance_range
-
-    @property
-    def bios_range(self):
-        return self.workbench.bios_range
-
-    @property
-    def labelling(self):
-        return self.workbench.labelling
-
-    @classmethod
-    def from_workbench_rate(cls, rate: WorkbenchRate) -> AggregateRate:
-        pass
-
-
-class ManualRate(IndividualRate):
-    labelling = ...  # type: Column
-    appearance_range = ...  # type: Column
-    functionality_range = ...  # type: Column
-    aggregate_rate_manual = ...  #type: relationship
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.labelling = ...  # type: bool
-        self.appearance_range = ...  # type: AppearanceRange
-        self.functionality_range = ...  # type: FunctionalityRange
-        self.aggregate_rate_manual = ...  #type: AggregateRate
-
-    def ratings(self) -> Set[Rate]:
-        pass
-
-
-class WorkbenchRate(ManualRate):
-    processor = ...  # type: Column
-    ram = ...  # type: Column
-    data_storage = ...  # type: Column
-    graphic_card = ...  # type: Column
-    bios_range = ...  # type: Column
-    bios = ...  # type: Column
-    aggregate_rate_workbench = ...  #type: Column
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.processor = ...  # type: float
-        self.ram = ...  # type: float
-        self.data_storage = ...  # type: float
-        self.graphic_card = ...  # type: float
-        self.bios_range = ...  # type: Bios
-        self.bios = ...  # type: float
-        self.aggregate_rate_workbench = ...  #type: AggregateRate
-
-    @property
-    def data_storage_range(self):
-        pass
-
-    @property
-    def ram_range(self):
-        pass
-
-    @property
-    def processor_range(self):
-        pass
-
-    @property
-    def graphic_card_range(self):
-        pass
+class RateComputer(Rate):
+    id = ...
+    processor = ...
+    ram = ...
+    data_storage = ...
 
 
 class Price(EventWithOneDevice):
@@ -329,101 +366,6 @@ class EreusePrice(Price):
         self.platform = ...  # type: EreusePrice.Service
         self.refurbisher = ...  # type: EreusePrice.Service
         self.warranty2 = ...  # type: float
-
-
-class Test(EventWithOneDevice):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.elapsed = ...  # type: timedelta
-        self.success = ...  # type: bool
-
-
-class TestDataStorage(Test):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.id = ...  # type: UUID
-        self.length = ...  # type: TestDataStorageLength
-        self.status = ...  # type: str
-        self.lifetime = ...  # type: timedelta
-        self.first_error = ...  # type: int
-        self.passed_lifetime = ...  # type: timedelta
-        self.assessment = ...  # type: int
-        self.reallocated_sector_count = ...  # type: int
-        self.power_cycle_count = ...  # type: int
-        self.reported_uncorrectable_errors = ...  # type: int
-        self.command_timeout = ...  # type: int
-        self.current_pending_sector_count = ...  # type: int
-        self.offline_uncorrectable = ...  # type: int
-        self.remaining_lifetime_percentage = ...  # type: int
-
-
-class StressTest(Test):
-    pass
-
-
-class EraseBasic(EventWithOneDevice):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.start_time = ...  # type: datetime
-        self.end_time = ...  # type: datetime
-        self.steps = ...  # type: List[Step]
-        self.zeros = ...  # type: bool
-        self.success = ...  # type: bool
-
-    @property
-    def standards(self) -> Set[ErasureStandards]:
-        pass
-
-    @property
-    def certificate(self) -> urlutils.URL:
-        pass
-
-
-class EraseSectors(EraseBasic):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-
-
-class ErasePhysical(EraseBasic):
-    method = ...  # type: Column
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.method = ...  # type: PhysicalErasureMethod
-
-
-class Benchmark(EventWithOneDevice):
-    pass
-
-
-class BenchmarkDataStorage(Benchmark):
-    read_speed = ...  # type: Column
-    write_speed = ...  # type: Column
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.read_speed = ...  # type: float
-        self.write_speed = ...  # type: float
-
-
-class BenchmarkWithRate(Benchmark):
-    rate = ...  # type: Column
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.rate = ...  # type: int
-
-
-class BenchmarkProcessor(BenchmarkWithRate):
-    pass
-
-
-class BenchmarkProcessorSysbench(BenchmarkProcessor):
-    pass
-
-
-class BenchmarkRamSysbench(BenchmarkWithRate):
-    pass
 
 
 class ToRepair(EventWithMultipleDevices):

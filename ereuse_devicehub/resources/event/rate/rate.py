@@ -1,8 +1,8 @@
-import math
 from typing import Iterable
 
+import math
+
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.resources.event.models import WorkbenchRate
 
 
 class BaseRate:
@@ -20,7 +20,7 @@ class BaseRate:
     """Ram has 30% of weight over total score, used in harmonic mean"""
     RAM_WEIGHT = 0.3
 
-    def compute(self, device: Device, rate: WorkbenchRate):
+    def compute(self, device: Device):
         raise NotImplementedError()
 
     @staticmethod
