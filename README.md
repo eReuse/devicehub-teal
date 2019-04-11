@@ -16,7 +16,7 @@ Our main objectives are:
 - To highly integrate with existing IT Asset Management Systems.
 - To be decentralized.
 
-Devicehub is built with [Teal](https://github.com/bustawin/teal) and
+Devicehub is built with [Teal](https://github.com/ereuse/teal) and
 [Flask](http://flask.pocoo.org).
 
 ## Installing

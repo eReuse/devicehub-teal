@@ -24,6 +24,7 @@ class User(Thing):
                                   backref=db.backref('users', lazy=True, collection_class=set),
                                   secondary=lambda: UserInventory.__table__,
                                   collection_class=set)
+
     # todo set restriction that user has, at least, one active db
 
     def __init__(self, email, password=None, inventories=None) -> None:
@@ -40,6 +41,10 @@ class User(Thing):
 
     def __repr__(self) -> str:
         return '<User {0.email}>'.format(self)
+
+    @property
+    def type(self) -> str:
+        return self.__class__.__name__
 
     @property
     def individual(self):

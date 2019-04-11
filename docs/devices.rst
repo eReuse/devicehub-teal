@@ -1,6 +1,19 @@
 Devices
-#########
+#######
+Devices are objects that can be identified, and they are the
+main entity in a Devicehub. Refer to :ref:`devices:Device` for more
+info.
 
+Schema
+******
+The following schema represents all the device types and their
+properties.
+
+.. dhlist::
+    :module: ereuse_devicehub.resources.device.schemas
+
+API
+***
 You can retrieve devices using ``GET /devices/``, or a specific
 device by ``GET /devices/24``.
 
@@ -46,5 +59,4 @@ The result is a JSON object with the following fields:
   - **next**: The number of the next page, if any.
   - **last**: The number of the last page, if any.
 
-.. dhlist::
-    :module: ereuse_devicehub.resources.device.schemas
+
