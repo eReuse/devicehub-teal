@@ -780,11 +780,11 @@ class TestBiosDifficulty:
     """
     Test to determinate a grade to reflect some possibles difficult to access or modify setting in the BIOS, like password protection..
     """
-    bios_access_range = Column(BDEnum(BiosAccessRange))
+    bios_access_range = Column(DBEnum(BiosAccessRange))
     bios_access_range.comment = 'Range of difficult to access BIOS'
 
 
-class TestVisual(ManualRate):
+class TestVisual(Test):
     """
     Manual rate test its are represented with grade and focuses mainly on
     the aesthetic or cosmetic defects of important parts of a device.
@@ -912,7 +912,7 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
     """
     version = Column(StrictVersionType)
     version.comment = """The version of the software, or None."""
-    rating_id = Column(UUID(as_uuid=True), ForeignKey(RateComputer.id))
+    rating_id = Column(UUID(as_uuid=True), ForeignKey(Rate.id))
     rating_id.comment = """The AggregateRate used to auto-compute
     this price, if it has not been set manually."""
     rating = relationship(Rate,
@@ -920,7 +920,7 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
                                           lazy=True,
                                           cascade=CASCADE_OWN,
                                           uselist=False),
-                          primaryjoin=RateComputer.id == rating_id)
+                          primaryjoin=Rate.id == rating_id)
 
     def __init__(self, *args, **kwargs) -> None:
         if 'price' in kwargs:

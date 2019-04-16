@@ -71,9 +71,11 @@ class RateAlgorithm(BaseRate):
             if result:
                 setattr(rate, field, result)
 
+        test_visual = next(e for e in device.events if isinstance(e, TestVisual))
+
         rate_components = self.harmonic_mean_rates(rate.processor, rate.data_storage, rate.ram)
-        rate.appearance = self.Appearance.from_devicehub(TestVisual.appearance_range).value
-        rate.functionality = self.Functionality.from_devicehub(TestVisual.functionality_range).value
+        rate.appearance = self.Appearance.from_devicehub(test_visual.appearance_range).value
+        rate.functionality = self.Functionality.from_devicehub(test_visual.functionality_range).value
 
         rate.rating = round(max(rate_components + rate.functionality + rate.appearance, 0), 2)
         rate.appearance = round(rate.appearance, 2)

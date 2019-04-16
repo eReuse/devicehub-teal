@@ -10,7 +10,7 @@ from teal.utils import import_resource
 from ereuse_devicehub.resources import agent, event, inventory, lot, tag, user
 from ereuse_devicehub.resources.device import definitions
 from ereuse_devicehub.resources.documents import documents
-from ereuse_devicehub.resources.enums import PriceSoftware, RatingSoftware
+from ereuse_devicehub.resources.enums import PriceSoftware
 
 
 class DevicehubConfig(Config):
@@ -39,9 +39,7 @@ class DevicehubConfig(Config):
     }
     API_DOC_CLASS_DISCRIMINATOR = 'type'
 
-    WORKBENCH_RATE_SOFTWARE = RatingSoftware.ECost
     WORKBENCH_RATE_VERSION = StrictVersion('1.0')
-    PHOTOBOX_RATE_SOFTWARE = RatingSoftware.ECost
     PHOTOBOX_RATE_VERSION = StrictVersion('1.0')
     """
     Official versions for WorkbenchRate and PhotoboxRate

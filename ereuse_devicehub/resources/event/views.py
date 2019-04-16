@@ -10,7 +10,7 @@ from teal.resource import View
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import SnapshotSoftware
-from ereuse_devicehub.resources.event.models import Event, Snapshot, WorkbenchRate
+from ereuse_devicehub.resources.event.models import Event, Snapshot, Rate
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
@@ -81,7 +81,7 @@ class EventView(View):
                 snapshot.events |= events
 
         # Compute ratings
-        for rate in (e for e in events_device if isinstance(e, WorkbenchRate)):
+        for rate in (e for e in events_device if isinstance(e, Rate)):
             rates = rate.ratings()
             snapshot.events |= rates
 

@@ -18,9 +18,9 @@ import pytest
 from ereuse_devicehub.resources.device.models import Desktop, HardDrive, Processor, RamModule
 from ereuse_devicehub.resources.enums import AppearanceRange, ComputerChassis, FunctionalityRange
 from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, BenchmarkProcessor, \
-    WorkbenchRate
+    RateComputer, TestVisual
 from ereuse_devicehub.resources.event.rate.workbench.v1_0 import DataStorageRate, ProcessorRate, \
-    RamRate, Rate
+    RamRate, RateAlgorithm
 
 
 def test_rate_data_storage_rate():
@@ -32,7 +32,7 @@ def test_rate_data_storage_rate():
     hdd_1969 = HardDrive(size=476940)
     hdd_1969.events_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
 
-    data_storage_rate = DataStorageRate().compute([hdd_1969], WorkbenchRate())
+    data_storage_rate = DataStorageRate().compute([hdd_1969], RateComputer())
 
     assert math.isclose(data_storage_rate, 4.02, rel_tol=0.001), 'DataStorageRate returns incorrect value(rate)'
 
@@ -40,21 +40,21 @@ def test_rate_data_storage_rate():
     hdd_3054.events_one.add(BenchmarkDataStorage(read_speed=158, write_speed=34.7))
 
     # calculate DataStorage Rate
-    data_storage_rate = DataStorageRate().compute([hdd_3054], WorkbenchRate())
+    data_storage_rate = DataStorageRate().compute([hdd_3054], RateComputer())
 
     assert math.isclose(data_storage_rate, 4.07, rel_tol=0.001), 'DataStorageRate returns incorrect value(rate)'
 
     hdd_81 = HardDrive(size=76319)
     hdd_81.events_one.add(BenchmarkDataStorage(read_speed=72.2, write_speed=24.3))
 
-    data_storage_rate = DataStorageRate().compute([hdd_81], WorkbenchRate())
+    data_storage_rate = DataStorageRate().compute([hdd_81], RateComputer())
 
     assert math.isclose(data_storage_rate, 2.61, rel_tol=0.001), 'DataStorageRate returns incorrect value(rate)'
 
     hdd_1556 = HardDrive(size=152587)
     hdd_1556.events_one.add(BenchmarkDataStorage(read_speed=78.1, write_speed=24.4))
 
-    data_storage_rate = DataStorageRate().compute([hdd_1556], WorkbenchRate())
+    data_storage_rate = DataStorageRate().compute([hdd_1556], RateComputer())
 
     assert math.isclose(data_storage_rate, 3.70, rel_tol=0.001), 'DataStorageRate returns incorrect value(rate)'
 
@@ -69,7 +69,7 @@ def test_rate_data_storage_size_is_null():
     hdd_null = HardDrive(size=None)
     hdd_null.events_one.add(BenchmarkDataStorage(read_speed=0, write_speed=0))
 
-    data_storage_rate = DataStorageRate().compute([hdd_null], WorkbenchRate())
+    data_storage_rate = DataStorageRate().compute([hdd_null], RateComputer())
     assert data_storage_rate is None
 
 
@@ -79,7 +79,7 @@ def test_rate_no_data_storage():
     """
     hdd_null = HardDrive()
     hdd_null.events_one.add(BenchmarkDataStorage(read_speed=0, write_speed=0))
-    data_storage_rate = DataStorageRate().compute([hdd_null], WorkbenchRate())
+    data_storage_rate = DataStorageRate().compute([hdd_null], RateComputer())
     assert data_storage_rate is None
 
 
@@ -94,7 +94,7 @@ def test_rate_ram_rate():
 
     ram1 = RamModule(size=2048, speed=1333)
 
-    ram_rate = RamRate().compute([ram1], WorkbenchRate())
+    ram_rate = RamRate().compute([ram1], RateComputer())
 
     # todo rel_tol >= 0.002
     assert math.isclose(ram_rate, 2.02, rel_tol=0.002), 'RamRate returns incorrect value(rate)'
@@ -109,7 +109,7 @@ def test_rate_ram_rate_2modules():
     ram1 = RamModule(size=4096, speed=1600)
     ram2 = RamModule(size=2048, speed=1067)
 
-    ram_rate = RamRate().compute([ram1, ram2], WorkbenchRate())
+    ram_rate = RamRate().compute([ram1, ram2], RateComputer())
 
     assert math.isclose(ram_rate, 3.79, rel_tol=0.001), 'RamRate returns incorrect value(rate)'
 
@@ -125,7 +125,7 @@ def test_rate_ram_rate_4modules():
     ram3 = RamModule(size=512, speed=667)
     ram4 = RamModule(size=512, speed=533)
 
-    ram_rate = RamRate().compute([ram1, ram2, ram3, ram4], WorkbenchRate())
+    ram_rate = RamRate().compute([ram1, ram2, ram3, ram4], RateComputer())
 
     # todo rel_tol >= 0.002
     assert math.isclose(ram_rate, 1.993, rel_tol=0.001), 'RamRate returns incorrect value(rate)'
@@ -138,7 +138,7 @@ def test_rate_ram_module_size_is_0():
 
     ram0 = RamModule(size=0, speed=888)
 
-    ram_rate = RamRate().compute([ram0], WorkbenchRate())
+    ram_rate = RamRate().compute([ram0], RateComputer())
     assert ram_rate is None
 
 
@@ -150,13 +150,13 @@ def test_rate_ram_speed_is_null():
 
     ram0 = RamModule(size=2048, speed=None)
 
-    ram_rate = RamRate().compute([ram0], WorkbenchRate())
+    ram_rate = RamRate().compute([ram0], RateComputer())
 
     assert math.isclose(ram_rate, 1.85, rel_tol=0.002), 'RamRate returns incorrect value(rate)'
 
     ram0 = RamModule(size=1024, speed=None)
 
-    ram_rate = RamRate().compute([ram0], WorkbenchRate())
+    ram_rate = RamRate().compute([ram0], RateComputer())
 
     # todo rel_tol >= 0.004
     assert math.isclose(ram_rate, 1.25, rel_tol=0.004), 'RamRate returns incorrect value(rate)'
@@ -168,7 +168,7 @@ def test_rate_no_ram_module():
     """
     ram0 = RamModule()
 
-    ram_rate = RamRate().compute([ram0], WorkbenchRate())
+    ram_rate = RamRate().compute([ram0], RateComputer())
     assert ram_rate is None
 
 
@@ -184,7 +184,7 @@ def test_rate_processor_rate():
     # add score processor benchmark
     cpu.events_one.add(BenchmarkProcessor(rate=3192.34))
 
-    processor_rate = ProcessorRate().compute(cpu, WorkbenchRate())
+    processor_rate = ProcessorRate().compute(cpu, RateComputer())
 
     assert math.isclose(processor_rate, 1, rel_tol=0.001), 'ProcessorRate returns incorrect value(rate)'
 
@@ -199,14 +199,14 @@ def test_rate_processor_rate_2cores():
     # add score processor benchmark
     cpu.events_one.add(BenchmarkProcessor(rate=27136.44))
 
-    processor_rate = ProcessorRate().compute(cpu, WorkbenchRate())
+    processor_rate = ProcessorRate().compute(cpu, RateComputer())
 
     assert math.isclose(processor_rate, 3.95, rel_tol=0.001), 'ProcessorRate returns incorrect value(rate)'
 
     cpu = Processor(cores=2, speed=3.3)
     cpu.events_one.add(BenchmarkProcessor(rate=26339.48))
 
-    processor_rate = ProcessorRate().compute(cpu, WorkbenchRate())
+    processor_rate = ProcessorRate().compute(cpu, RateComputer())
 
     # todo rel_tol >= 0.002
     assert math.isclose(processor_rate, 3.93, rel_tol=0.002), 'ProcessorRate returns incorrect value(rate)'
@@ -220,7 +220,7 @@ def test_rate_processor_with_null_cores():
     # todo try without BenchmarkProcessor, StopIteration problem
     cpu.events_one.add(BenchmarkProcessor())
 
-    processor_rate = ProcessorRate().compute(cpu, WorkbenchRate())
+    processor_rate = ProcessorRate().compute(cpu, RateComputer())
 
     # todo rel_tol >= 0.003
     assert math.isclose(processor_rate, 1.38, rel_tol=0.003), 'ProcessorRate returns incorrect value(rate)'
@@ -233,7 +233,7 @@ def test_rate_processor_with_null_speed():
     cpu = Processor(cores=1, speed=None)
     cpu.events_one.add(BenchmarkProcessor(rate=0))
 
-    processor_rate = ProcessorRate().compute(cpu, WorkbenchRate())
+    processor_rate = ProcessorRate().compute(cpu, RateComputer())
 
     assert math.isclose(processor_rate, 1.06, rel_tol=0.001), 'ProcessorRate returns incorrect value(rate)'
 
@@ -323,11 +323,15 @@ def test_rate_computer_rate():
         RamModule(size=2048, speed=1067),
         cpu
     }
-    # add functionality and appearance range
-    rate_pc = WorkbenchRate(appearance_range=AppearanceRange.A,
-                            functionality_range=FunctionalityRange.A)
+    # Add test visual with functionality and appearance range
+    visual_test = TestVisual()
+    visual_test.appearance_range = AppearanceRange.A
+    visual_test.functionality_range = FunctionalityRange.A
+
+    pc_test.events_one.add(visual_test)
+
     # Compute all components rates and general rating
-    Rate().compute(pc_test, rate_pc)
+    rate_pc = RateAlgorithm().compute(pc_test)
 
     assert math.isclose(rate_pc.ram, 3.79, rel_tol=0.001)
 
@@ -348,11 +352,14 @@ def test_rate_computer_rate():
         RamModule(size=2048, speed=1333),
         cpu
     }
-    # add functionality and appearance range
-    rate_pc = WorkbenchRate(appearance_range=AppearanceRange.B,
-                            functionality_range=FunctionalityRange.A)
+    # Add test visual with functionality and appearance range
+    visual_test = TestVisual()
+    visual_test.appearance_range = AppearanceRange.B
+    visual_test.functionality_range = FunctionalityRange.A
+    pc_test.events_one.add(visual_test)
+
     # Compute all components rates and general rating
-    Rate().compute(pc_test, rate_pc)
+    rate_pc = RateAlgorithm().compute(pc_test)
 
     assert math.isclose(rate_pc.ram, 2.02, rel_tol=0.001)
 
@@ -376,11 +383,15 @@ def test_rate_computer_rate():
         RamModule(size=512, speed=533),
         cpu
     }
-    # add functionality and appearance range
-    rate_pc = WorkbenchRate(appearance_range=AppearanceRange.C,
-                            functionality_range=FunctionalityRange.A)
+    # Add test visual with functionality and appearance range
+    visual_test = TestVisual()
+    visual_test.appearance_range = AppearanceRange.C
+    visual_test.functionality_range = FunctionalityRange.A
+
+    pc_test.events_one.add(visual_test)
+
     # Compute all components rates and general rating
-    Rate().compute(pc_test, rate_pc)
+    rate_pc = RateAlgorithm().compute(pc_test)
 
     assert math.isclose(rate_pc.ram, 1.99, rel_tol=0.001)
 
@@ -401,11 +412,15 @@ def test_rate_computer_rate():
         RamModule(size=0, speed=None),
         cpu
     }
-    # add functionality and appearance range
-    rate_pc = WorkbenchRate(appearance_range=AppearanceRange.B,
-                            functionality_range=FunctionalityRange.A)
+    # Add test visual with functionality and appearance range
+    visual_test = TestVisual()
+    visual_test.appearance_range = AppearanceRange.B
+    visual_test.functionality_range = FunctionalityRange.A
+
+    pc_test.events_one.add(visual_test)
+
     # Compute all components rates and general rating
-    Rate().compute(pc_test, rate_pc)
+    rate_pc = RateAlgorithm().compute(pc_test)
 
     assert math.isclose(rate_pc.ram, 1, rel_tol=0.001)
 

@@ -54,24 +54,47 @@ class StepRandomDef(StepDef):
     SCHEMA = schemas.StepRandom
 
 
+class BenchmarkDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.Benchmark
+
+
+class BenchmarkDataStorageDef(BenchmarkDef):
+    VIEW = None
+    SCHEMA = schemas.BenchmarkDataStorage
+
+
+class BenchmarkWithRateDef(BenchmarkDef):
+    VIEW = None
+    SCHEMA = schemas.BenchmarkWithRate
+
+
+class BenchmarkProcessorDef(BenchmarkWithRateDef):
+    VIEW = None
+    SCHEMA = schemas.BenchmarkProcessor
+
+
+class BenchmarkProcessorSysbenchDef(BenchmarkProcessorDef):
+    VIEW = None
+    SCHEMA = schemas.BenchmarkProcessorSysbench
+
+
+class BenchmarkRamSysbenchDef(BenchmarkWithRateDef):
+    VIEW = None
+    SCHEMA = schemas.BenchmarkRamSysbench
+
+
+# TODO add test defs
+
+
 class RateDef(EventDef):
     VIEW = None
     SCHEMA = schemas.Rate
 
 
-class AggregateRateDef(RateDef):
+class RateComputerDef(RateDef):
     VIEW = None
-    SCHEMA = schemas.AggregateRate
-
-
-class WorkbenchRateDef(RateDef):
-    VIEW = None
-    SCHEMA = schemas.WorkbenchRate
-
-
-class ManualRateDef(RateDef):
-    VIEW = None
-    SCHEMA = schemas.ManualRate
+    SCHEMA = schemas.RateComputer
 
 
 class PriceDef(EventDef):
@@ -116,36 +139,6 @@ class TestDataStorageDef(TestDef):
 class StressTestDef(TestDef):
     VIEW = None
     SCHEMA = schemas.StressTest
-
-
-class BenchmarkDef(EventDef):
-    VIEW = None
-    SCHEMA = schemas.Benchmark
-
-
-class BenchmarkDataStorageDef(BenchmarkDef):
-    VIEW = None
-    SCHEMA = schemas.BenchmarkDataStorage
-
-
-class BenchmarkWithRateDef(BenchmarkDef):
-    VIEW = None
-    SCHEMA = schemas.BenchmarkWithRate
-
-
-class BenchmarkProcessorDef(BenchmarkWithRateDef):
-    VIEW = None
-    SCHEMA = schemas.BenchmarkProcessor
-
-
-class BenchmarkProcessorSysbenchDef(BenchmarkProcessorDef):
-    VIEW = None
-    SCHEMA = schemas.BenchmarkProcessorSysbench
-
-
-class BenchmarkRamSysbenchDef(BenchmarkWithRateDef):
-    VIEW = None
-    SCHEMA = schemas.BenchmarkRamSysbench
 
 
 class ToRepairDef(EventDef):

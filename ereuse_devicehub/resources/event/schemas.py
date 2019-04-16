@@ -12,9 +12,9 @@ from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.agent import schemas as s_agent
 from ereuse_devicehub.resources.device import schemas as s_device
-from ereuse_devicehub.resources.enums import AppearanceRange, Bios, FunctionalityRange, \
-    PhysicalErasureMethod, PriceSoftware, RATE_POSITIVE, RatingRange, RatingSoftware, ReceiverRole, \
-    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength, FunctionalityRange
+from ereuse_devicehub.resources.enums import AppearanceRange, BiosAccessRange, FunctionalityRange, \
+    PhysicalErasureMethod, PriceSoftware, RATE_POSITIVE, RatingRange, ReceiverRole, \
+    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
@@ -167,7 +167,7 @@ class StressTest(Test):
 
 class TestAudio(Test):
     __doc__ = m.TestAudio.__doc__
-    loudspeaker = BDEnum(LoudspeakerRange)
+    loudspeaker = Boolean()
     microphone = Boolean()
 
 
@@ -185,12 +185,13 @@ class TestBios:
 
 class TestBiosDifficulty:
     __doc__ = m.TestBiosDifficulty.__doc__
+    bios_access_range = EnumField(BiosAccessRange, dump_only=True, data_key='biosAccessRange')
 
 
-
-class TestVisual(ManualRate):
+class TestVisual():
     __doc__ = m.TestVisual.__doc__
-    appearance_range = DBEnum(AppearanceRange)
+    appearance_range = EnumField(AppearanceRange, dump_only=True, data_key='appearanceRange')
+    functionality_range = EnumField(FunctionalityRange, dump_only=True, data_key='functionalityRange')
 
 
 class Rate(EventWithOneDevice):
@@ -198,9 +199,6 @@ class Rate(EventWithOneDevice):
     rating = Integer(validate=Range(*RATE_POSITIVE),
                      dump_only=True,
                      description=m.Rate.rating.comment)
-    software = EnumField(RatingSoftware,
-                         dump_only=True,
-                         description=m.Rate.software.comment)
     version = Version(dump_only=True,
                       description=m.Rate.version.comment)
     appearance = Integer(validate=Range(-3, 5), dump_only=True)
@@ -208,92 +206,13 @@ class Rate(EventWithOneDevice):
     rating_range = EnumField(RatingRange, dump_only=True, data_key='ratingRange')
 
 
-class IndividualRate(Rate):
-    __doc__ = m.IndividualRate.__doc__
-
-
-class ManualRate(IndividualRate):
-    __doc__ = m.ManualRate.__doc__
-    appearance_range = EnumField(AppearanceRange,
-                                 required=True,
-                                 data_key='appearanceRange',
-                                 description=m.ManualRate.appearance_range.comment)
-    functionality_range = EnumField(FunctionalityRange,
-                                    required=True,
-                                    data_key='functionalityRange',
-                                    description=m.ManualRate.functionality_range.comment)
-    labelling = Boolean(description=m.ManualRate.labelling.comment)
-
-
-class RateComputer(ManualRate):
-    __doc__ = m.WorkbenchRate.__doc__
+class RateComputer(Rate):
+    __doc__ = m.RateComputer.__doc__
     processor = Float()
     ram = Float()
     data_storage = Float()
     graphic_card = Float()
-    bios = Float()
-    bios_range = EnumField(Bios,
-                           description=m.WorkbenchRate.bios_range.comment,
-                           data_key='biosRange')
-    data_storage_range = EnumField(RatingRange, dump_only=True, data_key='dataStorageRange')
-    ram_range = EnumField(RatingRange, dump_only=True, data_key='ramRange')
-    processor_range = EnumField(RatingRange, dump_only=True, data_key='processorRange')
-    graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
 
-
-class RateMobile(ManualRate):
-    pass
-
-
-class QualityRate(Rate):
-    __doc__ = m.QualityRate.__doc__
-
-    ram = Float(dump_only=True, description=m.QualityRate.ram.comment)
-    processor = Float(dump_only=True, description=m.QualityRate.processor.comment)
-    data_storage = Float(dump_only=True, description=m.QualityRate.data_storage.comment)
-
-    graphic_card = Float(dump_only=True, description=m.QualityRate.processor.comment)
-    network_adapter = Float(dump_only=True, description=m.QualityRate.network_adapter.comment)
-
-    display = Float(dump_only=True, description=m.QualityRate.display.comment)
-    battery = Float(dump_only=True, description=m.QualityRate.batter.comment)
-    camera = Float(dump_only=True, description=m.QualityRate.camera.comment)
-
-    bios = EnumField(Bios, dump_only=True)
-    bios_range = EnumField(Bios,
-                           description=m.WorkbenchRate.bios_range.comment,
-                           data_key='biosRange')
-
-
-class FunctionalityRate(Rate):
-    __doc__ = m.FunctionalityRate.__doc__
-
-    functionality = EnumField(dump_only=True, description=m.FunctionalityRate.functionality.comment)
-    functionality_range = EnumField(dump_only=True, description=m.FunctionalityRate.functionality_range.comment)
-
-
-# TODO Finish input rates (internal and external sources) - Whats really interesting to save in BD?? Whichs aspects?
-class FinalRate(Rate):
-    __doc__ = m.FinalRate.__doc__
-    quality = NestedOn(QualityRate, dump_only=True,
-                       description=m.QualityRate.quality_id.comment)
-    functionality = NestedOn(FunctionalityRate, dump_only=True,
-                             description=m.FunctionalityRange.functionality_id.comment)
-    appearance = NestedOn(TestVisual, dump_only=True)
-    workbench_computer = NestedOn(WorkbenchComputer, dump_only=True,
-                                  description=m.ResultRate.workbench_computer_id.comment)
-    workbench_mobile = NestedOn(WorkbenchMobile, dump_only=True,
-                                description=m.ResultRate.workbench_mobile_id.comment)
-
-    appearance_range = EnumField(AppearanceRangev2,
-                                 required=True,
-                                 data_key='appearanceRangev2',
-                                 description=m.ManualRate.appearance_range.comment)
-    functionality_range = EnumField(FunctionalityRange,
-                                    required=True,
-                                    data_key='functionalityRangev2',
-                                    description=m.ManualRate.functionality_range.comment)
-    labelling = Boolean(description=m.ManualRate.labelling.comment)
     data_storage_range = EnumField(RatingRange, dump_only=True, data_key='dataStorageRange')
     ram_range = EnumField(RatingRange, dump_only=True, data_key='ramRange')
     processor_range = EnumField(RatingRange, dump_only=True, data_key='processorRange')
@@ -307,9 +226,8 @@ class Price(EventWithOneDevice):
                     rounding=m.Price.ROUND,
                     required=True,
                     description=m.Price.price.comment)
-    software = EnumField(PriceSoftware, dump_only=True, description=m.Price.software.comment)
     version = Version(dump_only=True, description=m.Price.version.comment)
-    rating = NestedOn(AggregateRate, dump_only=True, description=m.Price.rating_id.comment)
+    rating = NestedOn(Rate, dump_only=True, description=m.Price.rating_id.comment)
 
 
 class EreusePrice(Price):
