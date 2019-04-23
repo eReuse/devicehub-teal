@@ -39,6 +39,7 @@ class DevicehubConfig(Config):
     }
     API_DOC_CLASS_DISCRIMINATOR = 'type'
 
+    # TODO is necessary??
     WORKBENCH_RATE_VERSION = StrictVersion('1.0')
     PHOTOBOX_RATE_VERSION = StrictVersion('1.0')
     """

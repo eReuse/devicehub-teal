@@ -37,7 +37,7 @@ class Device(Thing):
                     many=True,
                     dump_only=True,
                     description='The lots where this device is directly under.')
-    rate = NestedOn('AggregateRate', dump_only=True, description=m.Device.rate.__doc__)
+    rate = NestedOn('Rate', dump_only=True, description=m.Device.rate.__doc__)
     price = NestedOn('Price', dump_only=True, description=m.Device.price.__doc__)
     trading = EnumField(states.Trading, dump_only=True, description=m.Device.trading.__doc__)
     physical = EnumField(states.Physical, dump_only=True, description=m.Device.physical.__doc__)

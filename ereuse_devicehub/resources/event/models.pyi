@@ -224,9 +224,10 @@ class BenchmarkGraphicCard(BenchmarkWithRate):
 
 
 class Test(EventWithOneDevice):
+    elapsed = ...  # type: Column
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.elapsed = ...  # type: timedelta
+        self.elapsed = ...  # type: Optional[timedelta]
         self.success = ...  # type: bool
 
 
@@ -288,9 +289,6 @@ class TestTrackpad(Test):
 
 class TestBios(Test):
     bios_power_on = ...  # type: Column
-
-
-class TestBiosDifficulty:
     bios_access_range = ...  # type: BiosAccessRange
 
 
@@ -321,6 +319,10 @@ class RateComputer(Rate):
     ram = ...
     data_storage = ...
 
+    @classmethod
+    def compute(cls, device) -> 'RateComputer':
+        pass
+
 
 class Price(EventWithOneDevice):
     SCALE = ...
@@ -338,7 +340,7 @@ class Price(EventWithOneDevice):
         self.currency = ...  # type: Currency
         self.software = ...  # type: PriceSoftware
         self.version = ...  # type: StrictVersion
-        self.rating = ...  # type: AggregateRate
+        self.rating = ...  # type: Rate
 
     @classmethod
     def to_price(cls, value: Union[Decimal, float], rounding=ROUND) -> Decimal:
@@ -360,7 +362,7 @@ class EreusePrice(Price):
             self.standard = ...  # type: EreusePrice.Type
             self.warranty2 = ...  # type: EreusePrice.Type
 
-    def __init__(self, rating: AggregateRate, **kwargs) -> None:
+    def __init__(self, rating: Rate, **kwargs) -> None:
         super().__init__(**kwargs)
         self.retailer = ...  # type: EreusePrice.Service
         self.platform = ...  # type: EreusePrice.Service

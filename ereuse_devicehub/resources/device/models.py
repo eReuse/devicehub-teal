@@ -175,10 +175,10 @@ class Device(Thing):
 
     @property
     def rate(self):
-        """The last AggregateRate of the device."""
+        """The last Rate of the device."""
         with suppress(LookupError, ValueError):
-            from ereuse_devicehub.resources.event.models import AggregateRate
-            return self.last_event_of(AggregateRate)
+            from ereuse_devicehub.resources.event.models import Rate
+            return self.last_event_of(Rate)
 
     @property
     def price(self):
@@ -756,32 +756,3 @@ class Manufacturer(db.Model):
                 'COPY common.manufacturer FROM STDIN (FORMAT csv)',
                 f
             )
-
-
-class Battery(Component):
-    """
-    Battery component, mobile device
-    """
-    size = Column(Float(decimal_return_scale=2))
-    size.comment = 'Battery size; Units: 2000 mAh'
-    voltage = Column()
-    voltage.comment = 'Battery voltage; Units: 3,5 V'
-    technology = Column()
-    technology.comment = 'Battery technology used; Ex: Li-Ti'
-    charge_counter = Column()
-    charge_counter.comment = 'Number of time that battery has been charged'
-    wireless = Column(Boolean, nullable=False, default=False)
-    wireless.comment = 'If battery can charging wireless'
-    health = Column(DBEnum)
-    health.comment = 'Battery health indicator'
-    status = Column(DBEnum)
-    status.comment = 'Battery status indicator'
-
-
-class Camera(Component):
-    """
-    Component camera in mobile devices
-    """
-
-    resolution = Column(Float(decimal_return_scale=2))
-    resolution.comment = 'Camera resolution; Units: Megapixels'

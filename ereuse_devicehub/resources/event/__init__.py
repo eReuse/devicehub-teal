@@ -84,7 +84,59 @@ class BenchmarkRamSysbenchDef(BenchmarkWithRateDef):
     SCHEMA = schemas.BenchmarkRamSysbench
 
 
-# TODO add test defs
+class TestDef(EventDef):
+    VIEW = None
+    SCHEMA = schemas.Test
+
+
+class TestDataStorageDef(TestDef):
+    VIEW = None
+    SCHEMA = schemas.TestDataStorage
+
+
+class StressTestDef(TestDef):
+    VIEW = None
+    SCHEMA = schemas.StressTest
+
+
+class TestAudioDef(TestDef):
+    VIEW = None
+    SCHEMA = schemas.TestAudio
+
+
+class TestConnectivityDef(TestDef):
+    VIEW = None
+    SCHEMA = schemas.TestConnectivity
+
+
+class TestBatteryDef(TestDef):
+    VIEW = None
+    SCHEMA = schemas.TestBattery
+
+
+class TestCameraDef(TestDef):
+    VIEW = None
+    SCHEMA = schemas.TestCamera
+
+
+class TestKeyboardDef(TestDef):
+    VIEW = None
+    SCHEMA = schemas.TestKeyboard
+
+
+class TestTrackpadDef(TestDef):
+    VIEW = None
+    SCHEMA = schemas.TestTrackpad
+
+
+class TestBiosDef(TestDef):
+    VIEW = None
+    SCHEMA = schemas.TestBios
+
+
+class TestVisualDef(TestDef):
+    VIEW = None
+    SCHEMA = schemas.TestVisual
 
 
 class RateDef(EventDef):
@@ -124,21 +176,6 @@ class SnapshotDef(EventDef):
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
         self.sync = Sync()
-
-
-class TestDef(EventDef):
-    VIEW = None
-    SCHEMA = schemas.Test
-
-
-class TestDataStorageDef(TestDef):
-    VIEW = None
-    SCHEMA = schemas.TestDataStorage
-
-
-class StressTestDef(TestDef):
-    VIEW = None
-    SCHEMA = schemas.StressTest
 
 
 class ToRepairDef(EventDef):

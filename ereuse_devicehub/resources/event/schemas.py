@@ -14,7 +14,7 @@ from ereuse_devicehub.resources.agent import schemas as s_agent
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.enums import AppearanceRange, BiosAccessRange, FunctionalityRange, \
     PhysicalErasureMethod, PriceSoftware, RATE_POSITIVE, RatingRange, ReceiverRole, \
-    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
+    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength, BatteryHealthRange
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
@@ -143,11 +143,11 @@ class BenchmarkGraphicCard(BenchmarkWithRate):
 
 class Test(EventWithOneDevice):
     __doc__ = m.Test.__doc__
-    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
 
 
 class TestDataStorage(Test):
     __doc__ = m.TestDataStorage.__doc__
+    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
     length = EnumField(TestDataStorageLength, required=True)
     status = SanitizedStr(lower=True, validate=Length(max=STR_SIZE), required=True)
     lifetime = TimeDelta(precision=TimeDelta.HOURS)
@@ -163,6 +163,7 @@ class TestDataStorage(Test):
 
 class StressTest(Test):
     __doc__ = m.StressTest.__doc__
+    elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
 
 
 class TestAudio(Test):
@@ -173,22 +174,41 @@ class TestAudio(Test):
 
 class TestConnectivity(Test):
     __doc__ = m.TestConnectivity.__doc__
+    cellular_network = Boolean()
+    wifi = Boolean()
+    bluetooth = Boolean()
+    usb_port = Boolean()
+    locked = Boolean()
 
 
 class TestBattery(Test):
     __doc__ = m.TestBattery.__doc__
+    battery_stat = Boolean()
+    battery_health = EnumField(BatteryHealthRange, data_key='batteryHealthRange')
 
 
-class TestBios:
+class TestCamera(Test):
+    __doc__ = m.TestCamera.__doc__
+    camera = Boolean()
+
+
+class TestKeyboard(Test):
+    __doc__ = m.TestKeyboard.__doc__
+    keyboard = Boolean()
+
+
+class TestTrackpad(Test):
+    __doc__ = m.TestTrackpad.__doc__
+    trackpad = Boolean()
+
+
+class TestBios(Test):
     __doc__ = m.TestBios.__doc__
+    bios_power_on = Boolean()
+    bios_access_range = EnumField(BiosAccessRange, data_key='accessRange')
 
 
-class TestBiosDifficulty:
-    __doc__ = m.TestBiosDifficulty.__doc__
-    bios_access_range = EnumField(BiosAccessRange, dump_only=True, data_key='biosAccessRange')
-
-
-class TestVisual():
+class TestVisual(Test):
     __doc__ = m.TestVisual.__doc__
     appearance_range = EnumField(AppearanceRange, dump_only=True, data_key='appearanceRange')
     functionality_range = EnumField(FunctionalityRange, dump_only=True, data_key='functionalityRange')

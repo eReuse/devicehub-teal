@@ -73,7 +73,7 @@ class Device(Thing):
         pass
 
     @property
-    def rate(self) -> Optional[e.AggregateRate]:
+    def rate(self) -> Optional[e.Rate]:
         pass
 
     @property

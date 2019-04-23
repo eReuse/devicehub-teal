@@ -70,7 +70,7 @@ class AggregateRatingVersions(Enum):
     v1 = StrictVersion('1.0')
     """
     This version is set to aggregate :class:`ereuse_devicehub.resources.
-    event.models.WorkbenchRate` version X and :class:`ereuse_devicehub.
+    event.models.RateComputer` version X and :class:`ereuse_devicehub.
     resources.event.models.PhotoboxRate` version Y.
     """
 
@@ -89,9 +89,6 @@ class AppearanceRange(Enum):
     E = 'E. Is unacceptable; severity visual damage, missing essential parts'
     NONE = 'NA. Grade doesn’t exists'
 
-    def __str__(self):
-        return self.name
-
 
 APPEARANCE_RANGE = 0.5, -0.3
 
@@ -105,8 +102,6 @@ class FunctionalityRange(Enum):
     D = 'D.	Chassis severity usage problems. All buttons, screen or camera don\'t work; broken or unusable it'
     NONE = 'NA. Grade doesn’t exists'
 
-    def __str__(self):
-        return self.name
 
 
 FUNCTIONALITY_RANGE = -0.3, 0.4
@@ -122,8 +117,6 @@ class BatteryHealthRange(Enum):
     E = 'E. Battery health is very bad; and status is dead; unusable or miss it '
     NONE = 'NA. Grade doesn’t exists'
 
-    def __str__(self):
-        return self.name
 
 
 @unique
@@ -134,9 +127,6 @@ class BiosAccessRange(Enum):
     C = 'C. Like B, but with more than 5 steps'
     D = 'D. Like B or C, but you had to unlock the BIOS (i.e. by removing the battery)'
     E = 'E. The device could not be booted through the network.'
-
-    def __str__(self):
-        return self.name
 
 
 @unique

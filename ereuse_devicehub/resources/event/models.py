@@ -1,3 +1,15 @@
+"""
+This file contains all events can apply to a device and is sorted according to a structure based on:
+
+* Generic Events
+* Benchmarks
+* Tests
+* Rates
+* Prices
+
+Within the above general classes are subclasses in A order.
+"""
+
 from collections import Iterable
 from datetime import datetime, timedelta
 from decimal import Decimal, ROUND_HALF_EVEN, ROUND_UP
@@ -571,6 +583,13 @@ class Benchmark(JoinedWithOneDeviceMixin, EventWithOneDevice):
         return args
 
 
+class BenchmarkMixin:
+    # noinspection PyMethodParameters
+    @declared_attr
+    def id(cls):
+        return Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
+
+
 class BenchmarkDataStorage(Benchmark):
     """Benchmarks the data storage unit reading and writing speeds."""
     id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
@@ -607,6 +626,9 @@ class BenchmarkProcessorSysbench(BenchmarkProcessor):
 
 
 class BenchmarkRamSysbench(BenchmarkWithRate):
+    """Benchmarks a RAM by using the ram benchmarking
+    utility of `sysbench <https://github.com/akopytov/sysbench>`_.
+    """
     pass
 
 
@@ -621,7 +643,6 @@ class Test(JoinedWithOneDeviceMixin, EventWithOneDevice):
     Testing errors and warnings are easily taken in
     :attr:`ereuse_devicehub.resources.device.models.Device.working`.
     """
-    elapsed = Column(Interval, nullable=False)
 
     @declared_attr
     def __mapper_args__(cls):
@@ -638,7 +659,14 @@ class Test(JoinedWithOneDeviceMixin, EventWithOneDevice):
         return args
 
 
-class TestDataStorage(Test):
+class TestMixin:
+    # noinspection PyMethodParameters
+    @declared_attr
+    def id(cls):
+        return Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
+
+
+class TestDataStorage(TestMixin, Test):
     """
     The act of testing the data storage.
 
@@ -650,7 +678,6 @@ class TestDataStorage(Test):
     The test takes to other SMART values indicators of the overall health
     of the data storage.
     """
-    id = Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
     length = Column(DBEnum(TestDataStorageLength), nullable=False)  # todo from type
     status = Column(Unicode(), check_lower('status'), nullable=False)
     lifetime = Column(Interval)
@@ -662,6 +689,7 @@ class TestDataStorage(Test):
     current_pending_sector_count = Column(SmallInteger)
     offline_uncorrectable = Column(SmallInteger)
     remaining_lifetime_percentage = Column(SmallInteger)
+    elapsed = Column(Interval, nullable=False)
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -686,11 +714,12 @@ class TestDataStorage(Test):
         return t
 
 
-class StressTest(Test):
+class StressTest(TestMixin, Test):
     """The act of stressing (putting to the maximum capacity)
     a device for an amount of minutes. If the device is not in great
     condition won't probably survive such test.
     """
+    elapsed = Column(Interval, nullable=False)
 
     @validates('elapsed')
     def is_minute_and_bigger_than_1_minute(self, _, value: timedelta):
@@ -703,7 +732,7 @@ class StressTest(Test):
         return '{}. Computing for {}'.format(self.severity, self.elapsed)
 
 
-class TestAudio(Test):
+class TestAudio(TestMixin, Test):
     """
     Test to check all this aspects related with audio functions, Manual Tests??
     """
@@ -713,7 +742,7 @@ class TestAudio(Test):
     microphone.comment = 'This evaluate if microphone works correctly'
 
 
-class TestConnectivity(Test):
+class TestConnectivity(TestMixin, Test):
     """
     Test to check all this aspects related with functionality connections in devices
     """
@@ -724,18 +753,18 @@ class TestConnectivity(Test):
     wifi.comment = 'Evaluate if wifi connection works correctly'
     bluetooth = Column(Boolean)
     bluetooth.comment = 'Evaluate if bluetooth works'
-    usb_port = Column(Boolean())
+    usb_port = Column(Boolean)
     usb_port.comment = 'Evaluate if usb port was detected and charger plug works'
     locked = Column(Boolean)
     locked.comment = 'Test to check if devices is locked'
 
 
-class TestBattery(Test):
+class TestBattery(TestMixin, Test):
     """
     Test battery health, status and length of charge. Minimum X minutes discharging the device
     """
     # TODO how to determinate if test PASS depend on battery stat and/or health
-    battery_stat = Column(Boolean())
+    battery_stat = Column(Boolean)
     battery_stat.comment = """
         Some batteries can report a self-check life status.
     """
@@ -743,7 +772,7 @@ class TestBattery(Test):
     battery_health.comment = BatteryHealthRange.__doc__
 
 
-class TestCamera(Test):
+class TestCamera(TestMixin, Test):
     """
     Test to determinate functionality and defects on camera when take pictures or record video
     # TODO define when test FAIL
@@ -752,39 +781,38 @@ class TestCamera(Test):
     camera.comment = ""
 
 
-class TestKeyboard(Test):
+class TestKeyboard(TestMixin, Test):
     """
     Test to determinate if keyboard layout are and works correctly
+    # TODO define when test FAIL
     """
     keyboard = Column(Boolean)
     keyboard.comment = ""
 
 
-class TestTrackpad(Test):
-    """Test trackpad works correctly"""
+class TestTrackpad(TestMixin, Test):
+    """
+    Test trackpad works correctly
+    # TODO define when test FAIL
+    """
     trackpad = Column(Boolean)
     trackpad.comment = ""
 
 
-class TestBios(Test):
+class TestBios(TestMixin, Test):
     """
-    Test that determinate motherboard no beeps, codes or errors when power on
+    Test that determinate motherboard no beeps, codes or errors when power on.
+    And a grade to reflect some possibles difficult to access or modify setting in the BIOS, like password protection..
     """
-    bios_power_on = Column(Boolean())
+    bios_power_on = Column(Boolean)
     bios_power_on.comment = """
         Motherboards do a self check when powering up (R2 p.23), test PASS if no beeps, codes, or errors appears.
-    """
-
-
-class TestBiosDifficulty:
-    """
-    Test to determinate a grade to reflect some possibles difficult to access or modify setting in the BIOS, like password protection..
     """
     bios_access_range = Column(DBEnum(BiosAccessRange))
     bios_access_range.comment = 'Range of difficult to access BIOS'
 
 
-class TestVisual(Test):
+class TestVisual(TestMixin, Test):
     """
     Manual rate test its are represented with grade and focuses mainly on
     the aesthetic or cosmetic defects of important parts of a device.
@@ -849,8 +877,7 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
         """
         The act of compute general computer rate
         """
-        from ereuse_devicehub.resources.event.rate.workbench.v1_0 import rate_algorithm
-        return rate_algorithm.compute(device)
+        raise NotImplementedError()
 
 
 class RateComputer(Rate):
@@ -886,6 +913,14 @@ class RateComputer(Rate):
         if self.processor:
             return RatingRange.from_score(self.processor)
 
+    @classmethod
+    def compute(cls, device) -> 'RateComputer':
+        """
+        The act of compute general computer rate
+        """
+        from ereuse_devicehub.resources.event.rate.workbench.v1_0 import rate_algorithm
+        return rate_algorithm.compute(device)
+
 
 class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
     """The act of setting a trading price for the device.
@@ -913,7 +948,7 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
     version = Column(StrictVersionType)
     version.comment = """The version of the software, or None."""
     rating_id = Column(UUID(as_uuid=True), ForeignKey(Rate.id))
-    rating_id.comment = """The AggregateRate used to auto-compute
+    rating_id.comment = """The Rate used to auto-compute
     this price, if it has not been set manually."""
     rating = relationship(Rate,
                           backref=backref('price',

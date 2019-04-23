@@ -53,7 +53,7 @@ class RateAlgorithm(BaseRate):
 
         This mutates "rate".
         """
-        assert isinstance(device, (Desktop, Laptop, Server))
+        assert isinstance(device, Computer)
 
         rate = RateComputer()
 
@@ -70,7 +70,7 @@ class RateAlgorithm(BaseRate):
             result = rate_cls.compute(components, rate)
             if result:
                 setattr(rate, field, result)
-
+        # TODO is necessary check if TestVisual exists?? cause StopIteration Error
         test_visual = next(e for e in device.events if isinstance(e, TestVisual))
 
         rate_components = self.harmonic_mean_rates(rate.processor, rate.data_storage, rate.ram)
@@ -212,7 +212,7 @@ class DataStorageRate(BaseRate):
 
         # STEP: Filtering, data cleaning and merging of component parts
         for storage in data_storage_devices:
-            # todo fix StopIteration if don't exists BenchmarkDataStorage
+            # We assume all hdd snapshots have BenchmarkDataStorage
             benchmark = next(e for e in storage.events if isinstance(e, BenchmarkDataStorage))
             # prevent NULL values
             _size = storage.size or 0
