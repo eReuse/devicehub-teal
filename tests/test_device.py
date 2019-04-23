@@ -389,8 +389,8 @@ def test_get_device(app: Devicehub, user: UserClient):
             d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
         ])
         db.session.add(pc)
+        # todo test is an abstract class. replace with another one
         db.session.add(Test(device=pc,
-                            elapsed=timedelta(seconds=4),
                             severity=Severity.Info,
                             agent=Person(name='Timmy'),
                             author=User(email='bar@bar.com')))
@@ -399,7 +399,6 @@ def test_get_device(app: Devicehub, user: UserClient):
     assert len(pc['events']) == 1
     assert pc['events'][0]['type'] == 'Test'
     assert pc['events'][0]['device'] == 1
-    assert pc['events'][0]['elapsed'] == 4
     assert pc['events'][0]['severity'] == 'Info'
     assert UUID(pc['events'][0]['author'])
     assert 'events_components' not in pc, 'events_components are internal use only'

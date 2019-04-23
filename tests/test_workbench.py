@@ -36,8 +36,8 @@ def test_workbench_server_condensed(user: UserClient):
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     events = snapshot['events']
     assert {(event['type'], event['device']) for event in events} == {
-        ('AggregateRate', 1),
-        ('WorkbenchRate', 1),
+        ('Rate', 1),
+        ('RateComputer', 1),
         ('BenchmarkProcessorSysbench', 5),
         ('StressTest', 1),
         ('EraseSectors', 6),
@@ -109,7 +109,7 @@ def test_workbench_server_phases(user: UserClient):
     assert events[0]['type'] == 'Rate'
     assert events[0]['device'] == 1
     assert events[0]['closed']
-    assert events[0]['type'] == 'WorkbenchRate'
+    assert events[0]['type'] == 'RateComputer'
     assert events[0]['device'] == 1
     assert events[1]['type'] == 'BenchmarkProcessor'
     assert events[1]['device'] == 5
@@ -144,8 +144,8 @@ def test_real_hp_11(user: UserClient):
     assert pc['chassis'] == 'Tower'
     assert set(e['type'] for e in snapshot['events']) == {
         'EreusePrice',
-        'AggregateRate',
-        'WorkbenchRate',
+        'Rate',
+        'RateComputer',
         'BenchmarkDataStorage',
         'BenchmarkProcessor',
         'BenchmarkProcessorSysbench',
@@ -191,7 +191,7 @@ def test_snapshot_real_eee_1001pxd(user: UserClient):
     assert rate['ratingRange'] == 'VERY_LOW'
     assert rate['ram'] == 1.53
     assert rate['data_storage'] == 3.76
-    assert rate['type'] == 'AggregateRate'
+    assert rate['type'] == 'Rate'
     assert rate['biosRange'] == 'C'
     assert rate['appearance'] == 0, 'appearance B equals 0 points'
     # todo fix gets correctly functionality rates values not equals to 0.

@@ -6,51 +6,45 @@ import pytest
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Computer, Desktop, HardDrive, Processor, \
     RamModule
-from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ComputerChassis, \
-    FunctionalityRange, RatingSoftware
-from ereuse_devicehub.resources.event.models import AggregateRate, BenchmarkDataStorage, \
-    BenchmarkProcessor, EreusePrice, WorkbenchRate
-from ereuse_devicehub.resources.event.rate import main
+from ereuse_devicehub.resources.enums import AppearanceRange, ComputerChassis, \
+    FunctionalityRange
+from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, \
+    BenchmarkProcessor, EreusePrice, RateComputer, TestVisual
 from tests import conftest
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_workbench_rate_db():
-    rate = WorkbenchRate(processor=0.1,
-                         ram=1.0,
-                         bios_range=Bios.A,
-                         labelling=False,
-                         graphic_card=0.1,
-                         data_storage=4.1,
-                         software=RatingSoftware.ECost,
-                         version=StrictVersion('1.0'),
-                         device=Computer(serial_number='24', chassis=ComputerChassis.Tower))
+    rate = RateComputer(processor=0.1,
+                        ram=1.0,
+                        labelling=False,
+                        graphic_card=0.1,
+                        data_storage=4.1,
+                        version=StrictVersion('1.0'),
+                        device=Computer(serial_number='24', chassis=ComputerChassis.Tower))
     db.session.add(rate)
     db.session.commit()
 
 
 @pytest.mark.xfail(reason='AggreagteRate only takes data from WorkbenchRate as for now')
 def test_rate_workbench_then_manual():
-    """Checks that a new AggregateRate is generated with a new rate
-    value when a ManualRate is performed after performing a
-    WorkbenchRate.
+    """Checks that a new Rate is generated with a new rate
+    value when a TestVisual is performed after performing a
+    RateComputer.
 
-    The new AggregateRate needs to be computed by the values of
-    the WorkbenchRate + new values from ManualRate.
+    The new Rate needs to be computed by the values of
+    the appearance and funcitonality grade of TestVisual.
     """
     pass
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate():
-    """Test generating an AggregateRate for a given PC / components /
-    WorkbenchRate ensuring results and relationships between
-    pc - rate - workbenchRate - price.
+    """Test generating an Rate for a given PC / components /
+    RateComputer ensuring results and relationships between
+    pc - rate - RateComputer - price.
     """
-    rate = WorkbenchRate(
-        appearance_range=AppearanceRange.A,
-        functionality_range=FunctionalityRange.A
-    )
+    rate = RateComputer()
     pc = Desktop(chassis=ComputerChassis.Tower)
     hdd = HardDrive(size=476940)
     hdd.events_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
@@ -62,8 +56,15 @@ def test_rate():
         RamModule(size=2048, speed=1067),
         cpu
     }
-    rate.device = pc
-    events = main.main(rate, RatingSoftware.ECost, StrictVersion('1.0'))
+
+    # Add test visual with functionality and appearance range
+    visual_test = TestVisual()
+    visual_test.appearance_range = AppearanceRange.A
+    visual_test.functionality_range = FunctionalityRange.A
+
+    pc.events_one.add(visual_test)
+    # TODO why events_one?? how to rewrite correctly this tests??
+    events = rate.compute(pc)
     price = next(e for e in events if isinstance(e, EreusePrice))
     assert price.price == Decimal('92.2001')
     assert price.retailer.standard.amount == Decimal('40.9714')
@@ -76,16 +77,7 @@ def test_rate():
     assert price.platform.warranty2.amount == Decimal('25.4357')
     assert price.refurbisher.warranty2.amount == Decimal('43.7259')
     assert price.warranty2 == Decimal('124.47')
+    # TODO How to check new relationships??
     # Checks relationships
-    workbench_rate = next(e for e in events if isinstance(e, WorkbenchRate))
-    aggregate_rate = next(e for e in events if isinstance(e, AggregateRate))
-    assert price.rating == aggregate_rate
-    assert aggregate_rate.workbench == workbench_rate
-    assert aggregate_rate.rating == workbench_rate.rating == 4.61
-    assert aggregate_rate.software == workbench_rate.software == RatingSoftware.ECost
-    assert aggregate_rate.version == StrictVersion('1.0')
-    assert aggregate_rate.appearance == workbench_rate.appearance
-    assert aggregate_rate.functionality == workbench_rate.functionality
-    assert aggregate_rate.rating_range == workbench_rate.rating_range
-    assert cpu.rate == pc.rate == hdd.rate == aggregate_rate
-    assert cpu.price == pc.price == aggregate_rate.price == hdd.price == price
+    rate_computer = next(e for e in events if isinstance(e, RateComputer))
+    assert rate_computer.rating == 4.61
