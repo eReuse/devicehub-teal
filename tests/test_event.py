@@ -362,6 +362,7 @@ def test_manual_rate_after_workbench_rate(user: UserClient):
     s = file('real-hp.snapshot.11')
     snapshot, _ = user.post(s, res=models.Snapshot)
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    # TODO
     assert 'B' == device['rate']['appearanceRange']
     assert device['rate'] == 1
     user.post({

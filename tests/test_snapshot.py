@@ -379,6 +379,7 @@ def test_snapshot_computer_monitor(user: UserClient):
     # todo check that ManualRate has generated an AggregateRate
 
 
+@pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
 def test_snapshot_mobile_smartphone_imei_manual_rate(user: UserClient):
     s = file('smartphone.snapshot')
     snapshot = snapshot_and_check(user, s, event_types=('TestVisual',))

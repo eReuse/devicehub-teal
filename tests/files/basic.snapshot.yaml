@@ -11,8 +11,8 @@ device:
   manufacturer: d1mr
   events:
     - type: TestVisual
-    appearanceRange: A
-    functionalityRange: B
+      appearanceRange: A
+      functionalityRange: B
 components:
 - type: GraphicCard
   serialNumber: gc1s

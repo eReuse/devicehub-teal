@@ -12,6 +12,6 @@ device:
   size: 21.5
   events:
     - type: TestVisual
-    appearanceRange: A
-    functionalityRange: C
-    labelling: False
+      appearanceRange: A
+      functionalityRange: C
+      labelling: False

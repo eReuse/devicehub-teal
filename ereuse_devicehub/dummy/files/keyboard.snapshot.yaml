@@ -9,6 +9,6 @@ device:
   layout: ES
   events:
     - type: TestVisual
-    appearanceRange: A
-    functionalityRange: A
-    labelling: False
+      appearanceRange: A
+      functionalityRange: A
+      labelling: False

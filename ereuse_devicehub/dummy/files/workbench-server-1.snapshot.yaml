@@ -22,11 +22,11 @@ device:
     id: tag1
   events:
     - type: TestVisual
-    appearanceRange: A
-    functionalityRange: B
-  - type: BenchmarkRamSysbench
-    rate: 2444
-    elapsed: 1
+      appearanceRange: A
+      functionalityRange: B
+    - type: BenchmarkRamSysbench
+      rate: 2444
+      elapsed: 1
 components:
 - type: GraphicCard
   serialNumber: gc1-1s
