@@ -10,11 +10,9 @@ device:
   model: d1ml
   manufacturer: d1mr
   events:
-  - type: WorkbenchRate
+    - type: TestVisual
     appearanceRange: A
     functionalityRange: B
-    labelling: True
-    biosRange: B
 components:
 - type: GraphicCard
   serialNumber: gc1s

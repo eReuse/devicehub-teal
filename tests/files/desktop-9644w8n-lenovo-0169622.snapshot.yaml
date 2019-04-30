@@ -69,7 +69,12 @@
     "type": "GraphicCard"
   },
   {
-    "events": [],
+    "events": [
+    {
+      "type": "TestBios",
+      "accessRange": "E"
+    }
+    ],
     "firewire": 0,
     "manufacturer": "LENOVO",
     "model": "LENOVO",
@@ -86,9 +91,8 @@
     "events": [
     {
       "appearanceRange": "D",
-      "biosRange": "E",
       "functionalityRange": "D",
-      "type": "WorkbenchRate"
+      "type": "TestVisual"
     },
     {
       "elapsed": 300,

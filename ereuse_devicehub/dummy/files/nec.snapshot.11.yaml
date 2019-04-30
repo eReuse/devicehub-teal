@@ -17,9 +17,8 @@
     },
     {
       "appearanceRange": "B",
-      "biosRange": "A",
       "functionalityRange": "C",
-      "type": "WorkbenchRate"
+      "type": "TestVisual"
     }
     ],
     "type": "Desktop",
@@ -137,7 +136,12 @@
     "serial": 1,
     "pcmcia": 0,
     "usb": 8,
-    "events": [],
+    "events": [
+    {
+      "type": "TestBios",
+      "accessRange": "A"
+    }
+    ],
     "type": "Motherboard",
     "model": "MS-7377",
     "firewire": 1,

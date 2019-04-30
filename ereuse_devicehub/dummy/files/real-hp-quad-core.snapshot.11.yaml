@@ -31,7 +31,13 @@
     "speed": 1.9980000000000002,
     "serialNumber": null,
     "manufacturer": "Intel Corp.",
-    "events": [],
+    "events": [
+    {
+      "elapsed": 0,
+      "rate": 6665.7,
+      "type": "BenchmarkProcessor"
+    }
+    ],
     "address": 64
   },
   {
@@ -85,6 +91,12 @@
       "status": "Unspecified Error. Self-test not started.",
       "severity": "Error",
       "length": "Short"
+    },
+    {
+      "type": "BenchmarkDataStorage",
+      "elapsed": 16,
+      "readSpeed": 66.2,
+      "writeSpeed": 21.8
     }
     ]
   },

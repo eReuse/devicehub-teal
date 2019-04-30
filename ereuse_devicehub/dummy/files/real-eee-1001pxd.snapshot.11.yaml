@@ -120,7 +120,12 @@
     "serialNumber": "Eee0123456789",
     "usb": 5,
     "manufacturer": "ASUSTeK Computer INC.",
-    "events": []
+    "events": [
+    {
+      "type": "TestBios",
+      "accessRange": "C"
+    }
+    ]
   }
   ],
   "elapsed": 4875,
@@ -148,9 +153,8 @@
     },
     {
       "appearanceRange": "B",
-      "biosRange": "C",
       "functionalityRange": "A",
-      "type": "WorkbenchRate"
+      "type": "TestVisual"
     }
     ]
   },

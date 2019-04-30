@@ -19,7 +19,18 @@
       "manufacturer": "Intel Corp.",
       "model": "Intel Core i7-4600M CPU @ 2.90GHz",
       "serialNumber": null,
-      "events": [],
+      "events": [
+      {
+          "elapsed": 165,
+          "rate": 164.8342,
+          "type": "BenchmarkProcessorSysbench"
+      },
+      {
+          "elapsed": 0,
+          "rate": 6665.7,
+          "type": "BenchmarkProcessor"
+      }
+      ],
       "type": "Processor",
       "speed": 1.259899,
       "address": 64,
@@ -52,7 +63,14 @@
       "manufacturer": null,
       "model": "Crucial_CT525MX3",
       "serialNumber": "164014297BCC",
-      "events": [],
+      "events": [
+      {
+          "readSpeed": 63.3,
+          "type": "BenchmarkDataStorage",
+          "elapsed": 18,
+          "writeSpeed": 20.1
+      }
+      ],
       "type": "HardDrive",
       "size": 500786,
       "interface": null

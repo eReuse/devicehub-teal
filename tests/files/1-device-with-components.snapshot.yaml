@@ -14,6 +14,10 @@ components:
     speed: 1.23
     cores: 2
     type: Processor
+    events:
+      - type: BenchmarkProcessor
+        rate: 1
+        elapsed: 166
   - manufacturer: p1c3m
     serialNumber: p1c3s
     type: GraphicCard

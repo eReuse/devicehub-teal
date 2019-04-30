@@ -25,7 +25,13 @@
     "address": 64,
     "model": "Intel Core i3-2100 CPU @ 3.10GHz",
     "type": "Processor",
-    "events": [],
+    "events": [
+    {
+      "elapsed": 0,
+      "rate": 6665.7,
+      "type": "BenchmarkProcessor"
+    }
+    ],
     "cores": 2,
     "speed": 1.6071410000000002
   },
@@ -90,6 +96,12 @@
       "reallocatedSectorCount": 15,
       "type": "TestDataStorage",
       "status": "Completed: read failure"
+    },
+    {
+      "readSpeed": 63.3,
+      "type": "BenchmarkDataStorage",
+      "elapsed": 18,
+      "writeSpeed": 20.1
     }
     ],
     "interface": "ATA"
@@ -127,6 +139,12 @@
       "reallocatedSectorCount": 0,
       "type": "TestDataStorage",
       "status": "Completed without error"
+    },
+    {
+      "readSpeed": 63.3,
+      "type": "BenchmarkDataStorage",
+      "elapsed": 18,
+      "writeSpeed": 20.1
     }
     ],
     "interface": "ATA"

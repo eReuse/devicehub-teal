@@ -8,7 +8,7 @@ device:
   manufacturer: BAZ
   layout: ES
   events:
-  - type: ManualRate
+    - type: TestVisual
     appearanceRange: A
     functionalityRange: A
     labelling: False

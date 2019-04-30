@@ -89,7 +89,12 @@
     "type": "GraphicCard"
   },
   {
-    "events": [],
+    "events": [
+    {
+      "type": "TestBios",
+      "accessRange": "A"
+    }
+    ],
     "firewire": 0,
     "manufacturer": "Hewlett-Packard",
     "model": "3031h",
@@ -116,9 +121,8 @@
     },
     {
       "appearanceRange": "A",
-      "biosRange": "A",
       "functionalityRange": "A",
-      "type": "WorkbenchRate"
+      "type": "TestVisual"
     }
     ],
     "manufacturer": "Hewlett-Packard",

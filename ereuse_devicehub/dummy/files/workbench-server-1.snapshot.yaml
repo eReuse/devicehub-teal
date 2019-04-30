@@ -21,7 +21,7 @@ device:
   - type: Tag
     id: tag1
   events:
-  - type: WorkbenchRate
+    - type: TestVisual
     appearanceRange: A
     functionalityRange: B
   - type: BenchmarkRamSysbench

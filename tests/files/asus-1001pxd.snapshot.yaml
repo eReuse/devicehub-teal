@@ -90,7 +90,12 @@
     "type": "GraphicCard"
   },
   {
-    "events": [],
+    "events": [
+    {
+      "type": "TestBios",
+      "accessRange": "A",
+    }
+    ],
     "firewire": 0,
     "manufacturer": "ASUSTeK Computer INC.",
     "model": "1001PXD",
@@ -112,9 +117,8 @@
     },
     {
       "appearanceRange": "A",
-      "biosRange": "A",
       "functionalityRange": "A",
-      "type": "WorkbenchRate"
+      "type": "TestVisual"
     }
     ],
     "manufacturer": "ASUSTeK Computer INC.",

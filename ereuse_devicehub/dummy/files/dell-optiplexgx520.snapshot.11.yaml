@@ -15,9 +15,8 @@
     },
     {
       "appearanceRange": "A",
-      "biosRange": "A",
       "functionalityRange": "A",
-      "type": "WorkbenchRate"
+      "type": "TestVisual"
     }
     ],
     "type": "Desktop",
@@ -135,7 +134,12 @@
     "slots": 0,
     "usb": 5,
     "serial": 1,
-    "events": [],
+    "events": [
+    {
+      "type": "TestBios",
+      "accessRange": "A"
+    }
+    ],
     "serialNumber": "..CN1374063201S5.",
     "pcmcia": 0,
     "type": "Motherboard",

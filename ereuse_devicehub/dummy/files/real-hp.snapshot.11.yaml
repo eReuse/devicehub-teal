@@ -117,7 +117,12 @@
     "model": "Core Processor Integrated Graphics Controller"
   },
   {
-    "events": [],
+    "events": [
+    {
+      "type": "TestBios",
+      "accessRange": "A"
+    }
+    ],
     "firewire": 0,
     "pcmcia": 0,
     "serialNumber": "CZC0408YJG",
@@ -151,9 +156,8 @@
     },
     {
       "appearanceRange": "B",
-      "biosRange": "A",
       "functionalityRange": "D",
-      "type": "WorkbenchRate"
+      "type": "TestVisual"
     }
     ],
     "serialNumber": "CZC0408YJG",

@@ -1,10 +1,5 @@
 {
   "type": "Snapshot",
-  "expectedEvents": [
-    "Benchmark",
-    "TestDataStorage",
-    "StressTest"
-  ],
   "software": "Workbench",
   "closed": false,
   "device": {
@@ -20,9 +15,8 @@
     },
     {
       "appearanceRange": "A",
-      "biosRange": "A",
       "functionalityRange": "A",
-      "type": "WorkbenchRate"
+      "type": "TestVisual"
     }
     ],
     "manufacturer": "ASUSTeK Computer INC."
@@ -116,7 +110,12 @@
     "serial": 0,
     "slots": 1,
     "model": "1000H",
-    "events": [],
+    "events": [
+    {
+      "accessRange": "A",
+      "type": "TestBios"
+    }
+    ],
     "manufacturer": "ASUSTeK Computer INC."
   }
   ],

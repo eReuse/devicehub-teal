@@ -27,10 +27,18 @@ components:
             severity: Info
             startTime: '2018-06-01T08:16:00+02:00'
             endTime: '2018-06-01T09:17:00+02:00'
+      - type: BenchmarkDataStorage
+        elapsed: 16
+        readSpeed: 66.2
+        writeSpeed: 21.8
   - type: Processor
     serialNumber: p1s
     model: p1ml
     manufacturer: p1mr
+    events:
+      - type: BenchmarkProcessor
+        elapsed: 0
+        rate: 6665.7
   - type: RamModule
     serialNumber: rm1s
     model: rm1ml

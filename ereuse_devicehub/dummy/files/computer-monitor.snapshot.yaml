@@ -11,7 +11,7 @@ device:
   resolutionHeight: 1080
   size: 21.5
   events:
-  - type: ManualRate
+    - type: TestVisual
     appearanceRange: A
     functionalityRange: C
     labelling: False
