@@ -103,8 +103,7 @@ class FunctionalityRange(Enum):
     NONE = 'NA. Grade doesn’t exists'
 
 
-
-FUNCTIONALITY_RANGE = -0.3, 0.4
+FUNCTIONALITY_RANGE = 0.4, -0.3
 
 
 @unique

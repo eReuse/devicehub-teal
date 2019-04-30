@@ -11,9 +11,10 @@ Within the above general classes are subclasses in A order.
 """
 
 from collections import Iterable
+from contextlib import suppress
 from datetime import datetime, timedelta
 from decimal import Decimal, ROUND_HALF_EVEN, ROUND_UP
-from typing import Optional, Set, Union
+from typing import Optional, Set, Union, Tuple
 from uuid import uuid4
 
 import inflection
@@ -808,8 +809,8 @@ class TestBios(TestMixin, Test):
     bios_power_on.comment = """
         Motherboards do a self check when powering up (R2 p.23), test PASS if no beeps, codes, or errors appears.
     """
-    bios_access_range = Column(DBEnum(BiosAccessRange))
-    bios_access_range.comment = 'Range of difficult to access BIOS'
+    access_range = Column(DBEnum(BiosAccessRange))
+    access_range.comment = 'Range of difficult to access BIOS'
 
 
 class TestVisual(TestMixin, Test):
@@ -822,6 +823,9 @@ class TestVisual(TestMixin, Test):
     appearance_range.comment = AppearanceRange.__doc__
     functionality_range = Column(DBEnum(FunctionalityRange))
     functionality_range.comment = FunctionalityRange.__doc__
+    labelling = Column(Boolean)
+    labelling.comment = """Whether there are tags to be removed.
+    """
 
     def __str__(self) -> str:
         return super().__str__() + '. Appearance {} and functionality {}'.format(
@@ -894,6 +898,8 @@ class RateComputer(Rate):
                  comment='RAM memory rate.')
     data_storage = Column(Float(decimal_return_scale=2), check_range('data_storage', *RATE_POSITIVE),
                           comment='Data storage rate, like HHD, SSD.')
+    graphic_card = Column(Float(decimal_return_scale=2), check_range('graphic_card', *RATE_POSITIVE),
+                          comment='Graphic card rate.')
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -913,13 +919,22 @@ class RateComputer(Rate):
         if self.processor:
             return RatingRange.from_score(self.processor)
 
+    @property
+    def graphic_card_range(self):
+        if self.graphic_card:
+            return RatingRange.from_score(self.graphic_card)
+
     @classmethod
-    def compute(cls, device) -> 'RateComputer':
+    def compute(cls, device) -> Tuple['RateComputer', 'Price']:
         """
         The act of compute general computer rate
         """
         from ereuse_devicehub.resources.event.rate.workbench.v1_0 import rate_algorithm
-        return rate_algorithm.compute(device)
+        rate = rate_algorithm.compute(device)
+        price = None
+        with suppress(InvalidRangeForPrice):  # We will have exception if range == VERY_LOW
+            price = EreusePrice(rate)
+        return rate, price
 
 
 class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
@@ -1051,7 +1066,7 @@ class EreusePrice(Price):
 
     def __init__(self, rating: RateComputer, **kwargs) -> None:
         if rating.rating_range == RatingRange.VERY_LOW:
-            raise ValueError('Cannot compute price for Range.VERY_LOW')
+            raise InvalidRangeForPrice()
         # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
         price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)
         super().__init__(rating=rating,
@@ -1385,3 +1400,7 @@ def update_parent(target: Union[EraseBasic, Test, Install], device: Device, _, _
     target.parent = None
     if isinstance(device, Component):
         target.parent = device.parent
+
+
+class InvalidRangeForPrice(ValueError):
+    pass

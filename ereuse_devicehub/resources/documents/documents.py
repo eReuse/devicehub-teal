@@ -109,6 +109,7 @@ class DevicesDocumentView(DeviceView):
         query = self.query(args)
         return self.generate_post_csv(query)
 
+    # TODO fix only put one row for device.t == computer (rewrite multiples_devices.csv)
     def generate_post_csv(self, query):
         """
         Get device query and put information in csv format

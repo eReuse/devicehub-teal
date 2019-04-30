@@ -44,11 +44,11 @@ class DeviceRow(OrderedDict):
             self['Rate'] = rate.rating
             self['Range'] = rate.rating_range
             self['Processor Rate'] = rate.processor
-            self['Processor Range'] = rate.workbench.processor_range
+            self['Processor Range'] = rate.processor_range
             self['RAM Rate'] = rate.ram
-            self['RAM Range'] = rate.workbench.ram_range
+            self['RAM Range'] = rate.ram_range
             self['Data Storage Rate'] = rate.data_storage
-            self['Data Storage Range'] = rate.workbench.data_storage_range
+            self['Data Storage Range'] = rate.data_storage_range
         # More specific information about components
         if isinstance(device, d.Computer):
             self.components()

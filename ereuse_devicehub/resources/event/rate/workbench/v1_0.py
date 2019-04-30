@@ -2,10 +2,9 @@ from enum import Enum
 from itertools import groupby
 from typing import Iterable
 
-from ereuse_devicehub.resources.device.models import Computer, DataStorage, Desktop, Laptop, \
-    Processor, RamModule, Server
+from ereuse_devicehub.resources.device.models import Computer, DataStorage, Processor, RamModule
 from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, BenchmarkProcessor, \
-    RateComputer, TestVisual
+    RateComputer, TestVisual, BenchmarkProcessorSysbench
 # todo if no return assign then rate_c = 1 is assigned
 # todo fix corner cases, like components characteristics == None
 from ereuse_devicehub.resources.event.rate.rate import BaseRate
@@ -50,10 +49,9 @@ class RateAlgorithm(BaseRate):
         """
         Compute RateComputer is a rate (score) ranging from 0 to 4.7
         that represents estimating value of use of desktop and laptop computer components.
-
-        This mutates "rate".
         """
-        assert isinstance(device, Computer)
+        if not isinstance(device, Computer):  # todo can be an assert?
+            raise CannotRate('Can only rate computers.')
 
         rate = RateComputer()
 
@@ -71,7 +69,10 @@ class RateAlgorithm(BaseRate):
             if result:
                 setattr(rate, field, result)
         # TODO is necessary check if TestVisual exists?? cause StopIteration Error
-        test_visual = next(e for e in device.events if isinstance(e, TestVisual))
+        try:
+            test_visual = next(e for e in device.events if isinstance(e, TestVisual))
+        except StopIteration:
+            raise CannotRate('You need a visual test.')
 
         rate_components = self.harmonic_mean_rates(rate.processor, rate.data_storage, rate.ram)
         rate.appearance = self.Appearance.from_devicehub(test_visual.appearance_range).value
@@ -109,7 +110,8 @@ class ProcessorRate(BaseRate):
         cores = processor.cores or self.DEFAULT_CORES
         speed = processor.speed or self.DEFAULT_SPEED
         # todo fix StopIteration if don't exists BenchmarkProcessor
-        benchmark_cpu = next(e for e in processor.events if isinstance(e, BenchmarkProcessor))
+        benchmark_cpu = next(e for e in processor.events if
+                             isinstance(e, BenchmarkProcessor) and not isinstance(e, BenchmarkProcessorSysbench))
         # todo fix if benchmark_cpu.rate == 0
         benchmark_cpu = benchmark_cpu.rate or self.DEFAULT_SCORE
 
@@ -260,3 +262,7 @@ class DataStorageRate(BaseRate):
 
 
 rate_algorithm = RateAlgorithm()
+
+
+class CannotRate(Exception):
+    pass

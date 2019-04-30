@@ -205,13 +205,14 @@ class TestTrackpad(Test):
 class TestBios(Test):
     __doc__ = m.TestBios.__doc__
     bios_power_on = Boolean()
-    bios_access_range = EnumField(BiosAccessRange, data_key='accessRange')
+    access_range = EnumField(BiosAccessRange, data_key='accessRange')
 
 
 class TestVisual(Test):
     __doc__ = m.TestVisual.__doc__
-    appearance_range = EnumField(AppearanceRange, dump_only=True, data_key='appearanceRange')
-    functionality_range = EnumField(FunctionalityRange, dump_only=True, data_key='functionalityRange')
+    appearance_range = EnumField(AppearanceRange, data_key='appearanceRange')
+    functionality_range = EnumField(FunctionalityRange, data_key='functionalityRange')
+    labelling = Boolean()
 
 
 class Rate(EventWithOneDevice):
@@ -228,10 +229,10 @@ class Rate(EventWithOneDevice):
 
 class RateComputer(Rate):
     __doc__ = m.RateComputer.__doc__
-    processor = Float()
-    ram = Float()
-    data_storage = Float()
-    graphic_card = Float()
+    processor = Float(dump_only=True)
+    ram = Float(dump_only=True)
+    data_storage = Float(dump_only=True, data_key='dataStorage')
+    graphic_card = Float(dump_only=True, data_key='graphicCard')
 
     data_storage_range = EnumField(RatingRange, dump_only=True, data_key='dataStorageRange')
     ram_range = EnumField(RatingRange, dump_only=True, data_key='ramRange')

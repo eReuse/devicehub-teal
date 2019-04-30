@@ -17,7 +17,6 @@ from tests import conftest
 def test_workbench_rate_db():
     rate = RateComputer(processor=0.1,
                         ram=1.0,
-                        labelling=False,
                         graphic_card=0.1,
                         data_storage=4.1,
                         version=StrictVersion('1.0'),
@@ -44,7 +43,7 @@ def test_rate():
     RateComputer ensuring results and relationships between
     pc - rate - RateComputer - price.
     """
-    rate = RateComputer()
+
     pc = Desktop(chassis=ComputerChassis.Tower)
     hdd = HardDrive(size=476940)
     hdd.events_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
@@ -63,8 +62,10 @@ def test_rate():
     visual_test.functionality_range = FunctionalityRange.A
 
     pc.events_one.add(visual_test)
+    rate, price = RateComputer.compute(pc)
+
     # TODO why events_one?? how to rewrite correctly this tests??
-    events = rate.compute(pc)
+    events = pc.events
     price = next(e for e in events if isinstance(e, EreusePrice))
     assert price.price == Decimal('92.2001')
     assert price.retailer.standard.amount == Decimal('40.9714')
@@ -77,7 +78,3 @@ def test_rate():
     assert price.platform.warranty2.amount == Decimal('25.4357')
     assert price.refurbisher.warranty2.amount == Decimal('43.7259')
     assert price.warranty2 == Decimal('124.47')
-    # TODO How to check new relationships??
-    # Checks relationships
-    rate_computer = next(e for e in events if isinstance(e, RateComputer))
-    assert rate_computer.rating == 4.61

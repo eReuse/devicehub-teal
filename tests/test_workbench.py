@@ -36,8 +36,7 @@ def test_workbench_server_condensed(user: UserClient):
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     events = snapshot['events']
     assert {(event['type'], event['device']) for event in events} == {
-        ('Rate', 1),
-        ('RateComputer', 1),
+        ('RateComputer', 1),  # Only (RateComputer, 1), delete (Rate, 1)
         ('BenchmarkProcessorSysbench', 5),
         ('StressTest', 1),
         ('EraseSectors', 6),
@@ -47,7 +46,8 @@ def test_workbench_server_condensed(user: UserClient):
         ('EraseSectors', 7),
         ('BenchmarkDataStorage', 6),
         ('BenchmarkDataStorage', 7),
-        ('TestDataStorage', 6)
+        ('TestDataStorage', 6),
+        ('TestVisual', 1)
     }
     assert snapshot['closed']
     assert snapshot['severity'] == 'Info'
@@ -62,9 +62,12 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['rate']['closed']
     assert device['rate']['severity'] == 'Info'
     assert device['rate']['rating'] == 0
-    assert device['rate']['workbench']
-    assert device['rate']['appearanceRange'] == 'A'
-    assert device['rate']['functionalityRange'] == 'B'
+    assert device['rate']['type'] == 'RateComputer'  # New in rate v2
+    # new asserts get in TestVisual event info; why change in every execution device['events'][X]
+    # assert device['events'][0]['appearanceRange'] == 'A'
+    # assert device['events'][0]['functionalityRange'] == 'B'
+    # TODO add appearance and functionality Range in device[rate]
+
     assert device['tags'][0]['id'] == 'tag1'
 
 
@@ -144,16 +147,17 @@ def test_real_hp_11(user: UserClient):
     assert pc['chassis'] == 'Tower'
     assert set(e['type'] for e in snapshot['events']) == {
         'EreusePrice',
-        'Rate',
         'RateComputer',
         'BenchmarkDataStorage',
         'BenchmarkProcessor',
         'BenchmarkProcessorSysbench',
         'TestDataStorage',
         'BenchmarkRamSysbench',
-        'StressTest'
+        'StressTest',
+        'TestBios',  # New in rate v2
+        'TestVisual'  # New in rate v2
     }
-    assert len(list(e['type'] for e in snapshot['events'])) == 9
+    assert len(list(e['type'] for e in snapshot['events'])) == 10
     assert pc['networkSpeeds'] == [1000, None], 'Device has no WiFi'
     assert pc['processorModel'] == 'intel core i3 cpu 530 @ 2.93ghz'
     assert pc['ramSize'] == 8192
@@ -184,15 +188,20 @@ def test_snapshot_real_eee_1001pxd(user: UserClient):
     assert pc['networkSpeeds'] == [100, 0], 'Although it has WiFi we do not know the speed'
     assert pc['rate']
     rate = pc['rate']
-    assert rate['appearanceRange'] == 'B'
-    assert rate['functionalityRange'] == 'A'
+    # new asserts get in TestVisual event info; why change pc['events'][X]
+    # assert pc['events'][0]['appearanceRange'] == 'A'
+    # assert pc['events'][0]['functionalityRange'] == 'B'
+    # TODO add appearance and functionality Range in device[rate]
+
     assert rate['processorRange'] == 'VERY_LOW'
     assert rate['ramRange'] == 'VERY_LOW'
     assert rate['ratingRange'] == 'VERY_LOW'
     assert rate['ram'] == 1.53
-    assert rate['data_storage'] == 3.76
-    assert rate['type'] == 'Rate'
-    assert rate['biosRange'] == 'C'
+    # TODO add camelCase instead of snake_case
+    assert rate['dataStorage'] == 3.76
+    assert rate['type'] == 'RateComputer'
+    # TODO change pc[events] TestBios instead of rate[biosRange]
+    # assert rate['biosRange'] == 'C'
     assert rate['appearance'] == 0, 'appearance B equals 0 points'
     # todo fix gets correctly functionality rates values not equals to 0.
     assert rate['functionality'] == 0, 'functionality A equals 0.4 points'

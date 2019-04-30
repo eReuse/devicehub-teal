@@ -1,3 +1,4 @@
+from contextlib import suppress
 from distutils.version import StrictVersion
 from typing import List
 from uuid import UUID
@@ -10,7 +11,9 @@ from teal.resource import View
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import SnapshotSoftware
-from ereuse_devicehub.resources.event.models import Event, Snapshot, Rate, RateComputer
+from ereuse_devicehub.resources.event.models import Event, Snapshot, Rate, RateComputer, InvalidRangeForPrice, \
+    EreusePrice
+from ereuse_devicehub.resources.event.rate.workbench.v1_0 import CannotRate
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
@@ -81,9 +84,16 @@ class EventView(View):
                 snapshot.events |= events
 
         # Compute ratings
-        if isinstance(device, Computer):
-            rate_computer = RateComputer.compute(device)
-            snapshot.events.add(rate_computer)
+        if snapshot.software == SnapshotSoftware.Workbench:
+            try:
+                rate_computer, price = RateComputer.compute(device)
+            except CannotRate:
+                pass
+            else:
+                snapshot.events.add(rate_computer)
+                if price:
+                    snapshot.events.add(price)
+
 
         db.session.add(snapshot)
         db.session().final_flush()

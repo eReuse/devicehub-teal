@@ -18,7 +18,7 @@ from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ErasureStandards, \
     FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RatingSoftware, ReceiverRole, \
-    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
+    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength, BiosAccessRange
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -178,7 +178,8 @@ class Install(EventWithOneDevice):
         self.address = ...  # type: Optional[int]
 
 
-class SnapshotRequest(Model):
+class SnapshotRequest(Mod    assert rate_computer.rating == 4.61
+el):
     def __init__(self, **kwargs) -> None:
         self.id = ...  # type: UUID
         self.request = ...  # type: dict
@@ -289,12 +290,13 @@ class TestTrackpad(Test):
 
 class TestBios(Test):
     bios_power_on = ...  # type: Column
-    bios_access_range = ...  # type: BiosAccessRange
+    access_range = ...  # type: BiosAccessRange
 
 
 class TestVisual(ManualRate):
     appearance_range = ...  # type: AppearanceRange
     functionality_range = ...  # type: FunctionalityRange
+    labelling = ...  # type: Column
 
 
 class Rate(EventWithOneDevice):
@@ -320,7 +322,7 @@ class RateComputer(Rate):
     data_storage = ...
 
     @classmethod
-    def compute(cls, device) -> 'RateComputer':
+    def compute(cls, device):
         pass
 
 

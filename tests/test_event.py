@@ -142,7 +142,7 @@ def test_update_components_event_one():
     computer.components.add(hdd)
 
     # Add event
-    test = models.StressTest(elapsed=timedelta(seconds=1))
+    test = models.StressTest(elapsed=timedelta(minutes=1))
     computer.events_one.add(test)
     assert test.device == computer
     assert next(iter(test.components)) == hdd, 'Event has to have new components'
