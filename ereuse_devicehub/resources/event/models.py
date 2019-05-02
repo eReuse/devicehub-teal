@@ -100,7 +100,8 @@ class Event(Thing):
                             backref=backref('events',
                                             lazy=True,
                                             cascade=CASCADE_OWN,
-                                            collection_class=set),
+                                            order_by=lambda: Event.created,
+                                            collection_class=OrderedSet),
                             primaryjoin='Event.snapshot_id == Snapshot.id')
 
     author_id = Column(UUID(as_uuid=True),
