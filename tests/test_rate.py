@@ -3,22 +3,25 @@ from distutils.version import StrictVersion
 
 import pytest
 
+from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Computer, Desktop, HardDrive, Processor, \
     RamModule
 from ereuse_devicehub.resources.enums import AppearanceRange, ComputerChassis, \
     FunctionalityRange
 from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, \
-    BenchmarkProcessor, EreusePrice, RateComputer, TestVisual
+    BenchmarkProcessor, RateComputer, TestVisual, Snapshot
+from ereuse_devicehub.resources.event.rate.workbench.v1_0 import CannotRate
 from tests import conftest
+from tests.conftest import file
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_workbench_rate_db():
     rate = RateComputer(processor=0.1,
                         ram=1.0,
-                        graphic_card=0.1,
                         data_storage=4.1,
+                        graphic_card=0.1,
                         version=StrictVersion('1.0'),
                         device=Computer(serial_number='24', chassis=ComputerChassis.Tower))
     db.session.add(rate)
@@ -64,9 +67,8 @@ def test_rate():
     pc.events_one.add(visual_test)
     rate, price = RateComputer.compute(pc)
 
-    # TODO why events_one?? how to rewrite correctly this tests??
-    events = pc.events
-    price = next(e for e in events if isinstance(e, EreusePrice))
+    # events = pc.events
+    # price = next(e for e in events if isinstance(e, EreusePrice))
     assert price.price == Decimal('92.2001')
     assert price.retailer.standard.amount == Decimal('40.9714')
     assert price.platform.standard.amount == Decimal('18.8434')
@@ -78,3 +80,43 @@ def test_rate():
     assert price.platform.warranty2.amount == Decimal('25.4357')
     assert price.refurbisher.warranty2.amount == Decimal('43.7259')
     assert price.warranty2 == Decimal('124.47')
+
+
+def test_no_rate_if_no_workbench(user: UserClient):
+    """
+    Checks if compute a rate from snapshot software is not from Workbench
+    """
+    # Upload a basic snapshot
+    device_no_wb = file('basic.snapshot')
+    # Change snapshot software source
+    device_no_wb['software'] = 'Web'
+    del device_no_wb['uuid']
+    del device_no_wb['elapsed']
+    del device_no_wb['components']
+    # Try to compute rate
+    user.post(device_no_wb, res=Snapshot)
+    # How to assert CannotRate Exception
+    assert CannotRate
+
+
+def test_no_rate_if_no_visual_test(user: UserClient):
+    """
+    Checks if a rate is calculated from a snapshot without visual test
+    """
+    # Upload a basic snapshot
+    device = file('basic.snapshot')
+    # Delete snapshot device events
+    del device['device']['events']
+    user.post(device, res=Snapshot)
+    # How to assert CannotRate Exception
+    assert CannotRate
+
+
+def test_no_rate_if_device_is_not_computer(user: UserClient):
+    """
+    Checks if a rate is calculated from a device that is not a computer.
+    """
+    # Upload a basic snapshot of a device type
+    device = file('keyboard.snapshot')
+    user.post(device, res=Snapshot)
+    assert CannotRate

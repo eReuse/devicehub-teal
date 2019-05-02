@@ -9,6 +9,6 @@ device:
   imei: 35686800-004141-20
   events:
     - type: TestVisual
-    appearanceRange: A
-    functionalityRange: B
-    labelling: False
+      appearanceRange: A
+      functionalityRange: B
+      labelling: False

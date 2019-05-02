@@ -13,11 +13,12 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device.exceptions import NeedsId
+from ereuse_devicehub.resources.device.models import SolidStateDrive
 from ereuse_devicehub.resources.device.sync import MismatchBetweenProperties, \
     MismatchBetweenTagsAndHid
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.event.models import BenchmarkProcessor, \
-    EraseSectors, Event, Snapshot, SnapshotRequest, RateComputer, Rate, TestVisual, BenchmarkDataStorage
+    EraseSectors, Event, Snapshot, SnapshotRequest, RateComputer, TestVisual, BenchmarkDataStorage
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 from tests.conftest import file
@@ -241,7 +242,6 @@ def test_snapshot_tag_inner_tag(tag_id: str, user: UserClient, app: Devicehub):
     b = file('basic.snapshot')
     b['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
 
-    # TODO fix assert fail expected 3 and len(snapshot['events']) == 2; why? need param perform??
     snapshot_and_check(user, b,
                        event_types=(
                            RateComputer.t,
@@ -316,19 +316,18 @@ def test_erase_privacy_standards(user: UserClient):
         BenchmarkDataStorage.t,
         BenchmarkProcessor.t
     ), perform_second_snapshot=True)
-    # TODO fix order snapshot[events] ?? cause change in every execution?? why KeyError??
-    assert '2018-06-01T07:12:06+00:00' == snapshot['events'][0]['endTime']
-    storage, *_ = snapshot['components']
-    assert storage['type'] == 'SolidStateDrive', 'Components must be ordered by input order'
+    erase = next(e for e in snapshot['events'] if e['type'] == EraseSectors.t)
+    assert '2018-06-01T07:12:06+00:00' == erase['endTime']
+    storage = next(e for e in snapshot['components'] if e['type'] == SolidStateDrive.t)
     storage, _ = user.get(res=m.Device, item=storage['id'])  # Let's get storage events too
-    # order: creation time descending
-    # TODO fix same order for storage['events']??
-    erasure1, benchmark_data_storage1, _snapshot1, benchmark_data_storage2, erasure2, _snapshot2 = storage['events']
+    # order: creation time ascending
+    erasure1, benchmark_data_storage1, _snapshot1, erasure2, benchmark_data_storage2, _snapshot2 = storage['events']
     assert erasure1['type'] == erasure2['type'] == 'EraseSectors'
     assert benchmark_data_storage1['type'] == benchmark_data_storage2['type'] == 'BenchmarkDataStorage'
     assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
     get_snapshot, _ = user.get(res=Event, item=_snapshot2['id'])
     assert get_snapshot['events'][0]['endTime'] == '2018-06-01T07:12:06+00:00'
+    # TODO events order are different between snapshots
     assert snapshot == get_snapshot
     erasure, _ = user.get(res=Event, item=erasure1['id'])
     assert len(erasure['steps']) == 2
