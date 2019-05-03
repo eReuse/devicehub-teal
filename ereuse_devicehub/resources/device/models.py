@@ -1,6 +1,7 @@
 import csv
 import pathlib
 from contextlib import suppress
+from fractions import Fraction
 from itertools import chain
 from operator import attrgetter
 from typing import Dict, List, Set
@@ -12,6 +13,7 @@ from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
     Sequence, SmallInteger, Unicode, inspect, text
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
@@ -23,8 +25,8 @@ from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
-    PrinterTechnology, RamFormat, RamInterface, Severity
+from ereuse_devicehub.resources.enums import BatteryTechnology, ComputerChassis, \
+    DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 
 
@@ -58,14 +60,15 @@ class Device(Thing):
         so it can re-generated *offline*.
         
     """ + HID_CONVERSION_DOC
-    model = Column(Unicode(), check_lower('model'))
-    model.comment = """The model or brand of the device in lower case.
+    model = Column(Unicode, check_lower('model'))
+    model.comment = """The model of the device in lower case.
     
-    Devices usually report one of both (model or brand). This value
-    must be consistent through time. 
+    The model is the unambiguous, as technical as possible, denomination
+    for the product. This field, among others, is used to identify 
+    the product.
     """
     manufacturer = Column(Unicode(), check_lower('manufacturer'))
-    manufacturer.comment = """The normalized name of the manufacturer
+    manufacturer.comment = """The normalized name of the manufacturer,
     in lower case.
     
     Although as of now Devicehub does not enforce normalization,
@@ -74,26 +77,38 @@ class Device(Thing):
     """
     serial_number = Column(Unicode(), check_lower('serial_number'))
     serial_number.comment = """The serial number of the device in lower case."""
+    brand = db.Column(CIText())
+    brand.comment = """A naming for consumers. This field can represent
+    several models, so it can be ambiguous, and it is not used to 
+    identify the product.
+    """
+    generation = db.Column(db.SmallInteger, check_range('generation', 0))
+    generation.comment = """The generation of the device."""
     weight = Column(Float(decimal_return_scale=3), check_range('weight', 0.1, 5))
     weight.comment = """
         The weight of the device.
     """
     width = Column(Float(decimal_return_scale=3), check_range('width', 0.1, 5))
     width.comment = """
-        The width of the device.
+        The width of the device in meters.
     """
     height = Column(Float(decimal_return_scale=3), check_range('height', 0.1, 5))
     height.comment = """
-        The height of the device.
+        The height of the device in meters.
     """
     depth = Column(Float(decimal_return_scale=3), check_range('depth', 0.1, 5))
     depth.comment = """
-        The depth of the device.
+        The depth of the device in meters.
     """
     color = Column(ColorType)
     color.comment = """The predominant color of the device."""
-    production_date = Column(db.TIMESTAMP(timezone=True))
-    production_date.comment = """The date of production of the device."""
+    production_date = Column(db.DateTime)
+    production_date.comment = """The date of production of the device. 
+    This is timezone naive, as Workbench cannot report this data
+    with timezone information.
+    """
+    variant = Column(Unicode)
+    variant.comment = """A variant or sub-model of the device."""
 
     _NON_PHYSICAL_PROPS = {
         'id',
@@ -107,7 +122,11 @@ class Device(Thing):
         'width',
         'height',
         'depth',
-        'weight'
+        'weight',
+        'brand',
+        'generation',
+        'production_date',
+        'variant'
     }
 
     __table_args__ = (
@@ -129,7 +148,7 @@ class Device(Thing):
         2. Events performed to a component.
         3. Events performed to a parent device.
 
-        Events are returned by ascending ``created`` time.
+        Events are returned by descending ``created`` time.
         """
         return sorted(chain(self.events_multiple, self.events_one), key=self.EVENT_SORT_KEY)
 
@@ -260,6 +279,7 @@ class Device(Thing):
         :raise LookupError: Device has not an event of the given type.
         """
         try:
+            # noinspection PyTypeHints
             return next(e for e in reversed(self.events) if isinstance(e, types))
         except StopIteration:
             raise LookupError('{!r} does not contain events of types {}.'.format(self, types))
@@ -288,12 +308,8 @@ class Device(Thing):
 
 
 class DisplayMixin:
-    """
-    Aspect ratio  can be computed as in
-    https://github.com/mirukan/whratio/blob/master/whratio/ratio.py and
-    could be a future property.
-    """
-    size = Column(Float(decimal_return_scale=2), check_range('size', 2, 150))
+    """Base class for the Display Component and the Monitor Device."""
+    size = Column(Float(decimal_return_scale=1), check_range('size', 2, 150), nullable=False)
     size.comment = """
         The size of the monitor in inches.
     """
@@ -301,27 +317,59 @@ class DisplayMixin:
     technology.comment = """
         The technology the monitor uses to display the image.
     """
-    resolution_width = Column(SmallInteger, check_range('resolution_width', 10, 20000))
+    resolution_width = Column(SmallInteger, check_range('resolution_width', 10, 20000),
+                              nullable=False)
     resolution_width.comment = """
         The maximum horizontal resolution the monitor can natively support
         in pixels.
     """
-    resolution_height = Column(SmallInteger, check_range('resolution_height', 10, 20000))
+    resolution_height = Column(SmallInteger, check_range('resolution_height', 10, 20000),
+                               nullable=False)
     resolution_height.comment = """
         The maximum vertical resolution the monitor can natively support
         in pixels.
     """
     refresh_rate = Column(SmallInteger, check_range('refresh_rate', 10, 1000))
     contrast_ratio = Column(SmallInteger, check_range('contrast_ratio', 100, 100000))
-    touchable = Column(Boolean, nullable=False, default=False)
+    touchable = Column(Boolean)
     touchable.comment = """Whether it is a touchscreen."""
+
+    @hybrid_property
+    def aspect_ratio(self):
+        """The aspect ratio of the display, as a fraction: ``X/Y``.
+
+        Regular values are ``4/3``, ``5/4``, ``16/9``, ``21/9``,
+        ``14/10``, ``19/10``, ``16/10``.
+        """
+        return Fraction(self.resolution_width, self.resolution_height)
+
+    # noinspection PyUnresolvedReferences
+    @aspect_ratio.expression
+    def aspect_ratio(cls):
+        # The aspect ratio to use as SQL in the DB
+        # This allows comparing resolutions
+        return db.func.round(cls.resolution_width / cls.resolution_height, 2)
+
+    @hybrid_property
+    def widescreen(self):
+        """Whether the monitor is considered to be widescreen.
+
+        Widescreen monitors are those having a higher aspect ratio
+        greater than 4/3.
+        """
+        # We add a tiny extra to 4/3 to avoid precision errors
+        return self.aspect_ratio > 4.001 / 3
+
+    def __str__(self) -> str:
+        return '{0.t} {0.serial_number} {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
 
     def __format__(self, format_spec: str) -> str:
         v = ''
         if 't' in format_spec:
             v += '{0.t} {0.model}'.format(self)
         if 's' in format_spec:
-            v += '({0.manufacturer}) S/N {0.serial_number} – {0.size}in {0.technology}'
+            v += '({0.manufacturer}) S/N {0.serial_number}'.format(self)
+            v += '– {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
         return v
 
 
@@ -444,14 +492,16 @@ class Mobile(Device):
 
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     imei = Column(BigInteger)
-    imei.comment = """
-        The International Mobile Equipment Identity of the smartphone
-        as an integer.
+    imei.comment = """The International Mobile Equipment Identity of 
+    the smartphone as an integer.
     """
     meid = Column(Unicode)
-    meid.comment = """
-        The Mobile Equipment Identifier as a hexadecimal string.
+    meid.comment = """The Mobile Equipment Identifier as a hexadecimal 
+    string.
     """
+    ram_size = db.Column(db.Integer, check_range(1, ))
+    ram_size.comment = """The total of RAM of the device in MB."""
+    data_storage_size = db.Column(db.Integer)
 
     @validates('imei')
     def validate_imei(self, _, value: int):
@@ -577,6 +627,8 @@ class Motherboard(JoinedComponentTableMixin, Component):
     firewire = Column(SmallInteger, check_range('firewire', min=0))
     serial = Column(SmallInteger, check_range('serial', min=0))
     pcmcia = Column(SmallInteger, check_range('pcmcia', min=0))
+    bios_date = Column(db.Date)
+    bios_date.comment = """The date of the BIOS version."""
 
 
 class NetworkMixin:
@@ -610,6 +662,8 @@ class Processor(JoinedComponentTableMixin, Component):
     threads.comment = """The number of threads per core."""
     address = Column(SmallInteger, check_range('address', 8, 256))
     address.comment = """The address of the CPU: 8, 16, 32, 64, 128 or 256 bits."""
+    abi = Column(Unicode, check_lower('abi'))
+    abi.comment = """The Application Binary Interface of the processor."""
 
 
 class RamModule(JoinedComponentTableMixin, Component):
@@ -633,6 +687,24 @@ class Display(JoinedComponentTableMixin, DisplayMixin, Component):
     and ``TelevisionSet``.
     """
     pass
+
+
+class Battery(JoinedComponentTableMixin, Component):
+    wireless = db.Column(db.Boolean)
+    wireless.comment = """If the battery can be charged wirelessly."""
+    technology = db.Column(db.Enum(BatteryTechnology))
+    size = db.Column(db.Integer, nullable=False)
+    size.comment = """Maximum battery capacity by design, in mAh.
+    
+    Use BatteryTest's "size" to get the actual size of the battery.
+    """
+
+    @property
+    def capacity(self) -> float:
+        """The quantity of """
+        from ereuse_devicehub.resources.event.models import MeasureBattery
+        real_size = self.last_event_of(MeasureBattery).size
+        return real_size / self.size if real_size and self.size else None
 
 
 class ComputerAccessory(Device):

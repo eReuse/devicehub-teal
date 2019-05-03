@@ -1,9 +1,7 @@
 from collections import OrderedDict
+from pathlib import Path
 
 from setuptools import find_packages, setup
-
-with open('README.md', encoding='utf8') as f:
-    long_description = f.read()
 
 test_requires = [
     'pytest',
@@ -26,13 +24,13 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     python_requires='>=3.5.3',
-    long_description=long_description,
+    long_description=Path('README.md').read_text('utf8'),
     long_description_content_type='text/markdown',
     install_requires=[
         'teal>=0.2.0a38',  # teal always first
         'click',
         'click-spinner',
-        'ereuse-utils[naming, test, session, cli]>=0.4b21',
+        'ereuse-utils[naming,test,session,cli]>=0.4b49',
         'hashids',
         'marshmallow_enum',
         'psycopg2-binary',

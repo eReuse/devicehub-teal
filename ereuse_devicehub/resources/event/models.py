@@ -397,7 +397,9 @@ class ErasePhysical(EraseBasic):
 
 
 class Step(db.Model):
-    erasure_id = Column(UUID(as_uuid=True), ForeignKey(EraseBasic.id), primary_key=True)
+    erasure_id = Column(UUID(as_uuid=True),
+                        ForeignKey(EraseBasic.id, ondelete='CASCADE'),
+                        primary_key=True)
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     num = Column(SmallInteger, primary_key=True)
     severity = Column(teal.db.IntEnum(Severity), default=Severity.Info, nullable=False)
@@ -559,7 +561,6 @@ class SnapshotRequest(db.Model):
     id = Column(UUID(as_uuid=True), ForeignKey(Snapshot.id), primary_key=True)
     request = Column(JSON, nullable=False)
     snapshot = relationship(Snapshot,
-
                             backref=backref('request',
                                             lazy=True,
                                             uselist=False,
@@ -666,6 +667,27 @@ class TestMixin:
     @declared_attr
     def id(cls):
         return Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
+
+
+
+class MeasureBattery(TestMixin, Test):
+    """A sample of the status of the battery.
+
+    Operative Systems keep a record of several aspects of a battery.
+    This is a sample of those.
+    """
+    size = db.Column(db.Integer, nullable=False)
+    size.comment = """Maximum battery capacity, in mAh."""
+    voltage = db.Column(db.Integer, nullable=False)
+    voltage.comment = """The actual voltage of the battery, in mV."""
+    cycle_count = db.Column(db.Integer)
+    cycle_count.comment = """The number of full charges – discharges 
+    cycles.
+    """
+    health = db.Column(db.Enum(BatteryHealth))
+    health.comment = """The health of the Battery. 
+    Only reported in Android.
+    """
 
 
 class TestDataStorage(TestMixin, Test):

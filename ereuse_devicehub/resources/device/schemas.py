@@ -22,9 +22,17 @@ class Device(Thing):
                     many=True,
                     collection_class=OrderedSet,
                     description='A set of tags that identify the device.')
-    model = SanitizedStr(lower=True, validate=Length(max=STR_BIG_SIZE))
-    manufacturer = SanitizedStr(lower=True, validate=Length(max=STR_SIZE))
-    serial_number = SanitizedStr(lower=True, data_key='serialNumber')
+    model = SanitizedStr(lower=True,
+                         validate=Length(max=STR_BIG_SIZE),
+                         description=m.Device.model.comment)
+    manufacturer = SanitizedStr(lower=True,
+                                validate=Length(max=STR_SIZE),
+                                description=m.Device.manufacturer.comment)
+    serial_number = SanitizedStr(lower=True,
+                                 validate=Length(max=STR_BIG_SIZE),
+                                 data_key='serialNumber')
+    brand = SanitizedStr(validate=Length(max=STR_BIG_SIZE), description=m.Device.brand.comment)
+    generation = Integer(validate=Range(1, 100), description=m.Device.generation.comment)
     weight = Float(validate=Range(0.1, 5), unit=UnitCodes.kgm, description=m.Device.weight.comment)
     width = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.width.comment)
     height = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.height.comment)
@@ -113,8 +121,8 @@ class Desktop(Computer):
 
 
 class Laptop(Computer):
-    layout = EnumField(Layouts, description=m.Laptop.layout.comment)
     __doc__ = m.Laptop.__doc__
+    layout = EnumField(Layouts, description=m.Laptop.layout.comment)
 
 
 class Server(Computer):
@@ -123,19 +131,22 @@ class Server(Computer):
 
 class DisplayMixin:
     __doc__ = m.DisplayMixin.__doc__
-
-    size = Float(description=m.DisplayMixin.size.comment, validate=Range(2, 150))
+    size = Float(description=m.DisplayMixin.size.comment, validate=Range(2, 150), required=True)
     technology = EnumField(enums.DisplayTech,
                            description=m.DisplayMixin.technology.comment)
     resolution_width = Integer(data_key='resolutionWidth',
                                validate=Range(10, 20000),
-                               description=m.DisplayMixin.resolution_width.comment)
+                               description=m.DisplayMixin.resolution_width.comment,
+                               required=True)
     resolution_height = Integer(data_key='resolutionHeight',
                                 validate=Range(10, 20000),
-                                description=m.DisplayMixin.resolution_height.comment)
+                                description=m.DisplayMixin.resolution_height.comment,
+                                required=True)
     refresh_rate = Integer(data_key='refreshRate', validate=Range(10, 1000))
     contrast_ratio = Integer(data_key='contrastRatio', validate=Range(100, 100000))
-    touchable = Boolean(missing=False, description=m.DisplayMixin.touchable.comment)
+    touchable = Boolean(description=m.DisplayMixin.touchable.comment)
+    aspect_ratio = String(dump_only=True, description=m.DisplayMixin.aspect_ratio.__doc__)
+    widescreen = Boolean(dump_only=True, description=m.DisplayMixin.widescreen.__doc__)
 
 
 class NetworkMixin:
@@ -164,6 +175,14 @@ class Mobile(Device):
 
     imei = Integer(description=m.Mobile.imei.comment)
     meid = Str(description=m.Mobile.meid.comment)
+    ram_size = Integer(validate=Range(min=128, max=36000),
+                       data_key='ramSize',
+                       unit=UnitCodes.mbyte,
+                       description=m.Mobile.ram_size.comment)
+    data_storage_size = Integer(validate=Range(0, 10 ** 8),
+                                data_key='dataStorageSize',
+                                description=m.Mobile.data_storage_size)
+
 
     @pre_load
     def convert_check_imei(self, data):
@@ -247,6 +266,7 @@ class Processor(Component):
     threads = Integer(validate=Range(min=1, max=20), description=m.Processor.threads.comment)
     address = Integer(validate=OneOf({8, 16, 32, 64, 128, 256}),
                       description=m.Processor.address.comment)
+    abi = SanitizedStr(lower=True, description=m.Processor.abi.comment)
 
 
 class RamModule(Component):
@@ -266,6 +286,14 @@ class SoundCard(Component):
 
 class Display(DisplayMixin, Component):
     __doc__ = m.Display.__doc__
+
+
+class Battery(Component):
+    __doc__ = m.Battery
+
+    wireless = Boolean(description=m.Battery.wireless.comment)
+    technology = EnumField(enums.BatteryTechnology, description=m.Battery.technology.comment)
+    size = Integer(required=True, description=m.Battery.size.comment)
 
 
 class Manufacturer(Schema):
