@@ -1,6 +1,7 @@
 from datetime import datetime
+from fractions import Fraction
 from operator import attrgetter
-from typing import Dict, Generator, Iterable, List, Optional, Set, Type
+from typing import Dict, Generator, Iterable, List, Optional, Set, Type, TypeVar
 
 from boltons import urlutils
 from boltons.urlutils import URL
@@ -12,14 +13,15 @@ from teal.enums import Layouts
 
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device import states
-from ereuse_devicehub.resources.enums import ComputerChassis, DataStorageInterface, DisplayTech, \
-    PrinterTechnology, RamFormat, RamInterface
+from ereuse_devicehub.resources.enums import BatteryTechnology, ComputerChassis, \
+    DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface
 from ereuse_devicehub.resources.event import models as e
-from ereuse_devicehub.resources.image.models import ImageList
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.tag.model import Tags
+
+E = TypeVar('E', bound=e.Event)
 
 
 class Device(Thing):
@@ -38,27 +40,32 @@ class Device(Thing):
     color = ...  # type: Column
     lots = ...  # type: relationship
     production_date = ...  # type: Column
+    brand = ...  # type: Column
+    generation = ...  # type: Column
+    variant = ... # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.id = ...  # type: int
         self.type = ...  # type: str
-        self.hid = ...  # type: str
-        self.model = ...  # type: str
-        self.manufacturer = ...  # type: str
-        self.serial_number = ...  # type: str
-        self.weight = ...  # type: float
-        self.width = ...  # type:float
-        self.height = ...  # type: float
-        self.depth = ...  # type: float
-        self.color = ...  # type: Color
+        self.hid = ...  # type: Optional[str]
+        self.model = ...  # type: Optional[str]
+        self.manufacturer = ...  # type: Optional[str]
+        self.serial_number = ...  # type: Optional[str]
+        self.weight = ...  # type: Optional[float]
+        self.width = ...  # type:Optional[float]
+        self.height = ...  # type: Optional[float]
+        self.depth = ...  # type: Optional[float]
+        self.color = ...  # type: Optional[Color]
         self.physical_properties = ...  # type: Dict[str, object or None]
         self.events_multiple = ...  # type: Set[e.EventWithMultipleDevices]
         self.events_one = ...  # type: Set[e.EventWithOneDevice]
-        self.images = ...  # type: ImageList
         self.tags = ...  # type: Tags[Tag]
         self.lots = ...  # type: Set[Lot]
-        self.production_date = ...  # type: datetime
+        self.production_date = ...  # type: Optional[datetime]
+        self.brand = ...  # type: Optional[str]
+        self.generation = ...  # type: Optional[int]
+        self.variant = ... # type: Optional[str]
 
     @property
     def events(self) -> List[e.Event]:
@@ -96,7 +103,7 @@ class Device(Thing):
     def working(self) -> List[e.Test]:
         pass
 
-    def last_event_of(self, *types: Type[e.Event]) -> e.Event:
+    def last_event_of(self, *types: Type[E]) -> E:
         pass
 
     def _warning_events(self, events: Iterable[e.Event]) -> Generator[e.Event]:
@@ -118,9 +125,11 @@ class DisplayMixin:
         self.size = ...  # type: Integer
         self.resolution_width = ...  # type: int
         self.resolution_height = ...  # type: int
-        self.refresh_rate = ...  # type: int
-        self.contrast_ratio = ...  # type: int
-        self.touchable = ...  # type: bool
+        self.refresh_rate = ...  # type: Optional[int]
+        self.contrast_ratio = ...  # type: Optional[int]
+        self.touchable = ...  # type: Optional[bool]
+        self.aspect_ratio = ...  #type: Fraction
+        self.widescreen = ...  # type: bool
 
 
 class Computer(DisplayMixin, Device):
@@ -193,11 +202,15 @@ class TelevisionSet(Monitor):
 class Mobile(Device):
     imei = ...  # type: Column
     meid = ...  # type: Column
+    ram_size = ... # type: Column
+    data_storage_size = ... # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.imei = ...  # type: int
-        self.meid = ...  # type: str
+        self.imei = ...  # type: Optional[int]
+        self.meid = ...  # type: Optional[str]
+        self.ram_size = ... # type: Optional[int]
+        self.data_storage_size = ... # type: Optional[int]
 
 
 class Smartphone(Mobile):
@@ -288,13 +301,15 @@ class Processor(Component):
     cores = ...  # type: Column
     address = ...  # type: Column
     threads = ...  # type: Column
+    abi = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.speed = ...  # type: float
-        self.cores = ...  # type: int
-        self.threads = ...  # type: int
-        self.address = ...  # type: int
+        self.speed = ...  # type: Optional[float]
+        self.cores = ...  # type: Optional[int]
+        self.threads = ...  # type: Optional[int]
+        self.address = ...  # type: Optional[int]
+        self.abi = ...  # type: Optional[str]
 
 
 class RamModule(Component):
@@ -317,6 +332,18 @@ class SoundCard(Component):
 
 class Display(DisplayMixin, Component):
     pass
+
+
+class Battery(Component):
+    wireless = ...  # type: Column
+    technology = ...  # type: Column
+    size = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.wireless = ...  # type: Optional[bool]
+        self.technology = ...  # type: Optional[BatteryTechnology]
+        self.size = ...  # type: bool
 
 
 class ComputerAccessory(Device):

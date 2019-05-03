@@ -276,6 +276,26 @@ class PrinterTechnology(Enum):
     Thermal = 'Thermal'
 
 
+@unique
+class BatteryHealth(Enum):
+    """The battery health status as in Android."""
+    Cold = 'Cold'
+    Dead = 'Dead'
+    Good = 'Good'
+    Overheat = 'Overheat'
+    OverVoltage = 'OverVoltage'
+    UnspecifiedValue = 'UnspecifiedValue'
+
+
+@unique
+class BatteryTechnology(Enum):
+    """The technology of the Battery."""
+    LiIon = 'Lithium-ion'
+    NiCad = 'Nickel-Cadmium'
+    NiMH = 'Nickel-metal hydride'
+    Al = 'Alkaline'
+
+
 class Severity(IntEnum):
     """A flag evaluating the event execution. Ex. failed events
     have the value `Severity.Error`. Devicehub uses 4 severity levels:

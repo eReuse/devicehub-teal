@@ -116,6 +116,7 @@ def test_physical_properties():
         'serial': None,
         'firewire': None,
         'manufacturer': 'mr',
+        'bios_date': None
     }
     assert pc.physical_properties == {
         'model': 'foo',
@@ -452,11 +453,6 @@ def test_computer_monitor():
                           size=14.5)
     db.session.add(m)
     db.session.commit()
-
-
-@pytest.mark.xfail(reason='Make test')
-def test_computer_with_display():
-    pass
 
 
 def test_manufacturer(user: UserClient):

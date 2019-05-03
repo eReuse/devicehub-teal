@@ -16,9 +16,9 @@ from teal.enums import Country
 
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
-from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ErasureStandards, \
-    FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RatingSoftware, ReceiverRole, \
-    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
+from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, Bios, \
+    ErasureStandards, FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RatingSoftware, \
+    ReceiverRole, Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -355,6 +355,20 @@ class TestDataStorage(Test):
         self.current_pending_sector_count = ...  # type: int
         self.offline_uncorrectable = ...  # type: int
         self.remaining_lifetime_percentage = ...  # type: int
+
+
+class MeasureBattery(Test):
+    size = ...  # type: Column
+    voltage = ...  # type: Column
+    cycle_count = ...  # type: Column
+    health = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.size = ...  # type: int
+        self.voltage = ...  # type: int
+        self.cycle_count = ...  # type: Optional[int]
+        self.health = ...  # type: Optional[BatteryHealth]
 
 
 class StressTest(Test):

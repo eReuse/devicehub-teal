@@ -28,10 +28,10 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Desktop, \
     Device, Laptop, Server
-from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ErasureStandards, \
-    FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, \
-    RatingRange, RatingSoftware, ReceiverRole, Severity, SnapshotExpectedEvents, SnapshotSoftware, \
-    TestDataStorageLength
+from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, Bios, \
+    ErasureStandards, FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RATE_NEGATIVE, \
+    RATE_POSITIVE, RatingRange, RatingSoftware, ReceiverRole, Severity, SnapshotExpectedEvents, \
+    SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -384,7 +384,9 @@ class ErasePhysical(EraseBasic):
 
 
 class Step(db.Model):
-    erasure_id = Column(UUID(as_uuid=True), ForeignKey(EraseBasic.id), primary_key=True)
+    erasure_id = Column(UUID(as_uuid=True),
+                        ForeignKey(EraseBasic.id, ondelete='CASCADE'),
+                        primary_key=True)
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     num = Column(SmallInteger, primary_key=True)
     severity = Column(teal.db.IntEnum(Severity), default=Severity.Info, nullable=False)
@@ -977,7 +979,13 @@ class Test(JoinedWithOneDeviceMixin, EventWithOneDevice):
         return args
 
 
-class TestDataStorage(Test):
+class TestMixin:
+    @declared_attr
+    def id(cls):
+        return Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
+
+
+class TestDataStorage(TestMixin, Test):
     """
     The act of testing the data storage.
 
@@ -989,7 +997,6 @@ class TestDataStorage(Test):
     The test takes to other SMART values indicators of the overall health
     of the data storage.
     """
-    id = Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
     length = Column(DBEnum(TestDataStorageLength), nullable=False)  # todo from type
     status = Column(Unicode(), check_lower('status'), nullable=False)
     lifetime = Column(Interval)
@@ -1034,6 +1041,25 @@ class TestDataStorage(Test):
         self._reported_uncorrectable_errors = min(value, db.PSQL_INT_MAX)
 
 
+class MeasureBattery(TestMixin, Test):
+    """A sample of the status of the battery.
+
+    Operative Systems keep a record of several aspects of a battery.
+    This is a sample of those.
+    """
+    size = db.Column(db.Integer, nullable=False)
+    size.comment = """Maximum battery capacity, in mAh."""
+    voltage = db.Column(db.Integer, nullable=False)
+    voltage.comment = """The actual voltage of the battery, in mV."""
+    cycle_count = db.Column(db.Integer)
+    cycle_count.comment = """The number of full charges – discharges 
+    cycles.
+    """
+    health = db.Column(db.Enum(BatteryHealth))
+    health.comment = """The health of the Battery. 
+    Only reported in Android.
+    """
+
 
 class StressTest(Test):
     """The act of stressing (putting to the maximum capacity)
@@ -1071,9 +1097,14 @@ class Benchmark(JoinedWithOneDeviceMixin, EventWithOneDevice):
         return args
 
 
-class BenchmarkDataStorage(Benchmark):
+class BenchmarkMixin:
+    @declared_attr
+    def id(cls):
+        return Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
+
+
+class BenchmarkDataStorage(BenchmarkMixin, Benchmark):
     """Benchmarks the data storage unit reading and writing speeds."""
-    id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
     read_speed = Column(Float(decimal_return_scale=2), nullable=False)
     write_speed = Column(Float(decimal_return_scale=2), nullable=False)
 
@@ -1081,9 +1112,8 @@ class BenchmarkDataStorage(Benchmark):
         return 'Read: {} MB/s, write: {} MB/s'.format(self.read_speed, self.write_speed)
 
 
-class BenchmarkWithRate(Benchmark):
+class BenchmarkWithRate(BenchmarkMixin, Benchmark):
     """The act of benchmarking a device with a single rate."""
-    id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
     rate = Column(Float, nullable=False)
 
     def __str__(self) -> str:
