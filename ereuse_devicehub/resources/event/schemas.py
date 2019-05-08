@@ -13,8 +13,8 @@ from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.agent import schemas as s_agent
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.enums import AppearanceRange, BiosAccessRange, FunctionalityRange, \
-    PhysicalErasureMethod, PriceSoftware, RATE_POSITIVE, RatingRange, ReceiverRole, \
-    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength, BatteryHealthRange
+    PhysicalErasureMethod, R_POSITIVE, RatingRange, ReceiverRole, \
+    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
@@ -176,38 +176,24 @@ class StressTest(Test):
 
 class TestAudio(Test):
     __doc__ = m.TestAudio.__doc__
-    loudspeaker = Boolean()
-    microphone = Boolean()
+    speaker = Boolean(description=m.TestAudio._speaker.comment)
+    microphone = Boolean(description=m.TestAudio._microphone.comment)
 
 
 class TestConnectivity(Test):
     __doc__ = m.TestConnectivity.__doc__
-    cellular_network = Boolean()
-    wifi = Boolean()
-    bluetooth = Boolean()
-    usb_port = Boolean()
-    locked = Boolean()
-
-
-class TestBattery(Test):
-    __doc__ = m.TestBattery.__doc__
-    battery_stat = Boolean()
-    battery_health = EnumField(BatteryHealthRange, data_key='batteryHealthRange')
 
 
 class TestCamera(Test):
     __doc__ = m.TestCamera.__doc__
-    camera = Boolean()
 
 
 class TestKeyboard(Test):
     __doc__ = m.TestKeyboard.__doc__
-    keyboard = Boolean()
 
 
 class TestTrackpad(Test):
     __doc__ = m.TestTrackpad.__doc__
-    trackpad = Boolean()
 
 
 class TestBios(Test):
@@ -216,8 +202,8 @@ class TestBios(Test):
     access_range = EnumField(BiosAccessRange, data_key='accessRange')
 
 
-class TestVisual(Test):
-    __doc__ = m.TestVisual.__doc__
+class VisualTest(Test):
+    __doc__ = m.VisualTest.__doc__
     appearance_range = EnumField(AppearanceRange, data_key='appearanceRange')
     functionality_range = EnumField(FunctionalityRange, data_key='functionalityRange')
     labelling = Boolean()
@@ -225,14 +211,21 @@ class TestVisual(Test):
 
 class Rate(EventWithOneDevice):
     __doc__ = m.Rate.__doc__
-    rating = Integer(validate=Range(*RATE_POSITIVE),
+    rating = Integer(validate=Range(*R_POSITIVE),
                      dump_only=True,
-                     description=m.Rate.rating.comment)
+                     description=m.Rate._rating.comment)
     version = Version(dump_only=True,
                       description=m.Rate.version.comment)
-    appearance = Integer(validate=Range(-3, 5), dump_only=True)
-    functionality = Integer(validate=Range(-3, 5), dump_only=True)
-    rating_range = EnumField(RatingRange, dump_only=True, data_key='ratingRange')
+    appearance = Integer(validate=Range(enums.R_NEGATIVE),
+                         dump_only=True,
+                         description=m.Rate._appearance.comment)
+    functionality = Integer(validate=Range(enums.R_NEGATIVE),
+                            dump_only=True,
+                            description=m.Rate._functionality.comment)
+    rating_range = EnumField(RatingRange,
+                             dump_only=True,
+                             data_key='ratingRange',
+                             description=m.Rate.rating_range.__doc__)
 
 
 class RateComputer(Rate):

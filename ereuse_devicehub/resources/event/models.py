@@ -14,7 +14,7 @@ from collections import Iterable
 from contextlib import suppress
 from datetime import datetime, timedelta
 from decimal import Decimal, ROUND_HALF_EVEN, ROUND_UP
-from typing import Optional, Set, Union, Tuple
+from typing import Optional, Set, Union
 from uuid import uuid4
 
 import inflection
@@ -40,10 +40,10 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Desktop, \
     Device, Laptop, Server
-from ereuse_devicehub.resources.enums import BiosAccessRange, ErasureStandards, \
-    PhysicalErasureMethod, PriceSoftware, RATE_NEGATIVE, RATE_POSITIVE, \
-    RatingRange, ReceiverRole, Severity, SnapshotExpectedEvents, SnapshotSoftware, \
-    TestDataStorageLength, FunctionalityRange, AppearanceRange, BatteryHealthRange
+from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, BiosAccessRange, \
+    ErasureStandards, FunctionalityRange, PhysicalErasureMethod, PriceSoftware, \
+    R_NEGATIVE, R_POSITIVE, RatingRange, ReceiverRole, Severity, SnapshotExpectedEvents, \
+    SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -669,7 +669,6 @@ class TestMixin:
         return Column(UUID(as_uuid=True), ForeignKey(Test.id), primary_key=True)
 
 
-
 class MeasureBattery(TestMixin, Test):
     """A sample of the status of the battery.
 
@@ -708,7 +707,7 @@ class TestDataStorage(TestMixin, Test):
     assessment = Column(Boolean)
     reallocated_sector_count = Column(SmallInteger)
     power_cycle_count = Column(SmallInteger)
-    reported_uncorrectable_errors = Column(SmallInteger)
+    _reported_uncorrectable_errors = Column('reported_uncorrectable_errors', Integer)
     command_timeout = Column(Integer)
     current_pending_sector_count = Column(SmallInteger)
     offline_uncorrectable = Column(SmallInteger)
@@ -737,6 +736,16 @@ class TestDataStorage(TestMixin, Test):
         t += self.description
         return t
 
+    @property
+    def reported_uncorrectable_errors(self):
+        return self._reported_uncorrectable_errors
+
+    @reported_uncorrectable_errors.setter
+    def reported_uncorrectable_errors(self, value):
+        # We assume that a huge number is not meaningful
+        # So we keep it like this
+        self._reported_uncorrectable_errors = min(value, db.PSQL_INT_MAX)
+
 
 class StressTest(TestMixin, Test):
     """The act of stressing (putting to the maximum capacity)
@@ -760,95 +769,84 @@ class TestAudio(TestMixin, Test):
     """
     Test to check all this aspects related with audio functions, Manual Tests??
     """
-    loudspeaker = Column(Boolean)
-    loudspeaker.comment = 'Test to determine if the speaker is working properly and what sound quality it has.'
-    microphone = Column(Boolean)
-    microphone.comment = 'This evaluate if microphone works correctly'
+    _speaker = Column('speaker', Boolean)
+    _speaker.comment = """Whether the speaker works as expected."""
+    _microphone = Column('microphone', Boolean)
+    _microphone.comment = """Whether the microphone works as expected."""
+
+    @property
+    def speaker(self):
+        return self._speaker
+
+    @speaker.setter
+    def speaker(self, x):
+        self._speaker = x
+        self._check()
+
+    @property
+    def microphone(self):
+        return self._microphone
+
+    @microphone.setter
+    def microphone(self, x):
+        self._microphone = x
+        self._check()
+
+    def _check(self):
+        """Sets ``severity`` to ``error`` if any of the variables fail."""
+        if not self._speaker or not self._microphone:
+            self.severity = Severity.Error
 
 
 class TestConnectivity(TestMixin, Test):
-    """
-    Test to check all this aspects related with functionality connections in devices
-    """
-    # TODO Add Severity and return unique score
-    cellular_network = Column(Boolean)
-    cellular_network.comment = 'Evaluate if cellular network works properly'
-    wifi = Column(Boolean)
-    wifi.comment = 'Evaluate if wifi connection works correctly'
-    bluetooth = Column(Boolean)
-    bluetooth.comment = 'Evaluate if bluetooth works'
-    usb_port = Column(Boolean)
-    usb_port.comment = 'Evaluate if usb port was detected and charger plug works'
-    locked = Column(Boolean)
-    locked.comment = 'Test to check if devices is locked'
+    """Tests that the device can connect both physically and
+    wirelessly.
 
-
-class TestBattery(TestMixin, Test):
+    A failing test means that at least one connection of the device
+    is not working well. A comment should get into more detail.
     """
-    Test battery health, status and length of charge. Minimum X minutes discharging the device
-    """
-    # TODO how to determinate if test PASS depend on battery stat and/or health
-    battery_stat = Column(Boolean)
-    battery_stat.comment = """
-        Some batteries can report a self-check life status.
-    """
-    battery_health = Column(DBEnum(BatteryHealthRange))
-    battery_health.comment = BatteryHealthRange.__doc__
 
 
 class TestCamera(TestMixin, Test):
+    """Tests the working conditions of the camera of the device,
+    specially when taking pictures or recording video.
     """
-    Test to determinate functionality and defects on camera when take pictures or record video
-    # TODO define when test FAIL
-    """
-    camera = Column(Boolean)
-    camera.comment = ""
 
 
 class TestKeyboard(TestMixin, Test):
-    """
-    Test to determinate if keyboard layout are and works correctly
-    # TODO define when test FAIL
-    """
-    keyboard = Column(Boolean)
-    keyboard.comment = ""
+    """Whether the keyboard works correctly."""
 
 
 class TestTrackpad(TestMixin, Test):
-    """
-    Test trackpad works correctly
-    # TODO define when test FAIL
-    """
-    trackpad = Column(Boolean)
-    trackpad.comment = ""
+    """Whether the trackpad works correctly."""
 
 
 class TestBios(TestMixin, Test):
-    """
-    Test that determinate motherboard no beeps, codes or errors when power on.
-    And a grade to reflect some possibles difficult to access or modify setting in the BIOS, like password protection..
-    """
+    """Tests the working condition and grades the usability of the BIOS."""
     bios_power_on = Column(Boolean)
-    bios_power_on.comment = """
-        Motherboards do a self check when powering up (R2 p.23), test PASS if no beeps, codes, or errors appears.
+    bios_power_on.comment = """Whether there are no beeps or error
+    codes when booting up.
+    
+    Reference: R2 standard page 23.
     """
     access_range = Column(DBEnum(BiosAccessRange))
-    access_range.comment = 'Range of difficult to access BIOS'
+    access_range.comment = """Difficulty to modify the boot menu.
+     
+    This is used as an usability measure for accessing and modifying
+    a bios, specially as something as important as modifying the boot
+    menu."""
 
 
-class TestVisual(TestMixin, Test):
-    """
-    Manual rate test its are represented with grade and focuses mainly on
-    the aesthetic or cosmetic defects of important parts of a device.
-    Like defects on chassis, display, ..
+class VisualTest(TestMixin, Test):
+    """The act of visually inspecting the appearance and functionality
+    of the device.
     """
     appearance_range = Column(DBEnum(AppearanceRange))
     appearance_range.comment = AppearanceRange.__doc__
     functionality_range = Column(DBEnum(FunctionalityRange))
     functionality_range.comment = FunctionalityRange.__doc__
     labelling = Column(Boolean)
-    labelling.comment = """Whether there are tags to be removed.
-    """
+    labelling.comment = """Whether there are tags to be removed."""
 
     def __str__(self) -> str:
         return super().__str__() + '. Appearance {} and functionality {}'.format(
@@ -858,29 +856,54 @@ class TestVisual(TestMixin, Test):
 
 
 class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
-    """The act of computing a rate based on different categories:
-    1. Quality: the appearance, performance, and functionality
-    of a device.
-
-
-    There are two ways of rating a device:
-
-    1. When processing the device with Workbench and the Android App.
-    2. Anytime after with the Android App or website.X
+    """The act of computing a rate based on different categories"""
+    # todo jn: explain in each comment what the rate considers.
+    N = 2
+    """The number of significant digits for rates.
+    Values are rounded and stored to it.
     """
 
-    rating = Column(Float(decimal_return_scale=2), check_range('rating', *RATE_POSITIVE))
-    rating.comment = """The rating for the content."""
+    _rating = Column('rating', Float(decimal_return_scale=N), check_range('rating', *R_POSITIVE))
+    _rating.comment = """The rating for the content."""
     version = Column(StrictVersionType)
     version.comment = """The version of the software."""
-    appearance = Column(Float(decimal_return_scale=2), check_range('appearance', *RATE_NEGATIVE))
-    functionality = Column(Float(decimal_return_scale=2),
-                           check_range('functionality', *RATE_NEGATIVE))
+    _appearance = Column('appearance',
+                         Float(decimal_return_scale=N),
+                         check_range('appearance', *R_NEGATIVE))
+    _appearance.comment = """"""
+    _functionality = Column('functionality',
+                            Float(decimal_return_scale=N),
+                            check_range('functionality', *R_NEGATIVE))
+    _functionality.comment = """"""
+
+    @property
+    def rating(self):
+        return self._rating
+
+    @rating.setter
+    def rating(self, x):
+        self._rating = round(max(x, 0), self.N)
+
+    @property
+    def appearance(self):
+        return self._appearance
+
+    @appearance.setter
+    def appearance(self, x):
+        self._appearance = round(x, self.N)
+
+    @property
+    def functionality(self):
+        return self._functionality
+
+    @functionality.setter
+    def functionality(self, x):
+        self._functionality = round(x, self.N)
 
     @property
     def rating_range(self) -> RatingRange:
-        if self.rating:
-            return RatingRange.from_score(self.rating)
+        """"""
+        return RatingRange.from_score(self.rating) if self.rating else None
 
     @declared_attr
     def __mapper_args__(cls):
@@ -901,54 +924,82 @@ class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
 
     @classmethod
     def compute(cls, device) -> 'RateComputer':
-        """
-        The act of compute general computer rate
-        """
         raise NotImplementedError()
 
 
-class RateComputer(Rate):
-    """
-    Main class to group by device type: Computer
-    Computer is broadly extended by ``Desktop``, ``Laptop``, and
-    ``Server``.
-    """
-    id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
+class RateMixin:
+    @declared_attr
+    def id(cls):
+        return Column(UUID(as_uuid=True), ForeignKey(Rate.id), primary_key=True)
 
-    processor = Column(Float(decimal_return_scale=2), check_range('processor', *RATE_POSITIVE),
-                       comment='Is a test explain cpu component.')
-    ram = Column(Float(decimal_return_scale=2), check_range('ram', *RATE_POSITIVE),
-                 comment='RAM memory rate.')
-    data_storage = Column(Float(decimal_return_scale=2), check_range('data_storage', *RATE_POSITIVE),
-                          comment='Data storage rate, like HHD, SSD.')
-    graphic_card = Column(Float(decimal_return_scale=2), check_range('graphic_card', *RATE_POSITIVE),
-                          comment='Graphic card rate.')
 
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+class RateComputer(RateMixin, Rate):
+    """The act of rating a computer."""
+    _processor = Column('processor',
+                        Float(decimal_return_scale=Rate.N),
+                        check_range('processor', *R_POSITIVE))
+    _processor.comment = """The rate of the Processor."""
+    _ram = Column('ram', Float(decimal_return_scale=Rate.N), check_range('ram', *R_POSITIVE))
+    _ram.comment = """The rate of the RAM."""
+    _data_storage = Column('data_storage',
+                           Float(decimal_return_scale=Rate.N),
+                           check_range('data_storage', *R_POSITIVE))
+    _data_storage.comment = """'Data storage rate, like HHD, SSD.'"""
+    _graphic_card = Column('graphic_card',
+                           Float(decimal_return_scale=Rate.N),
+                           check_range('graphic_card', *R_POSITIVE))
+    _graphic_card.comment = 'Graphic card rate.'
+
+    @property
+    def processor(self):
+        return self._processor
+
+    @processor.setter
+    def processor(self, x):
+        self._processor = round(x, self.N)
+
+    @property
+    def ram(self):
+        return self._ram
+
+    @ram.setter
+    def ram(self, x):
+        self._ram = round(x, self.N)
+
+    @property
+    def data_storage(self):
+        return self._data_storage
+
+    @data_storage.setter
+    def data_storage(self, x):
+        self._data_storage = round(x, self.N)
+
+    @property
+    def graphic_card(self):
+        return self._graphic_card
+
+    @graphic_card.setter
+    def graphic_card(self, x):
+        self._graphic_card = round(x, self.N)
 
     @property
     def data_storage_range(self):
-        if self.data_storage:
-            return RatingRange.from_score(self.data_storage)
+        return RatingRange.from_score(self.data_storage) if self.data_storage else None
 
     @property
     def ram_range(self):
-        if self.ram:
-            return RatingRange.from_score(self.ram)
+        return RatingRange.from_score(self.ram) if self.ram else None
 
     @property
     def processor_range(self):
-        if self.processor:
-            return RatingRange.from_score(self.processor)
+        return RatingRange.from_score(self.processor) if self.processor else None
 
     @property
     def graphic_card_range(self):
-        if self.graphic_card:
-            return RatingRange.from_score(self.graphic_card)
+        return RatingRange.from_score(self.graphic_card) if self.graphic_card else None
 
     @classmethod
-    def compute(cls, device) -> Tuple['RateComputer', 'Price']:
+    def compute(cls, device):
         """
         The act of compute general computer rate
         """
@@ -1004,7 +1055,7 @@ class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
     @classmethod
     def to_price(cls, value: Union[Decimal, float], rounding=ROUND) -> Decimal:
         """Returns a Decimal value with the correct scale for Price.price."""
-        if isinstance(value, float):
+        if isinstance(value, (float, int)):
             value = Decimal(value)
         # equation from marshmallow.fields.Decimal
         return value.quantize(Decimal((0, (1,), -cls.SCALE)), rounding=rounding)
@@ -1088,7 +1139,7 @@ class EreusePrice(Price):
                 self.warranty2 = EreusePrice.Type(rate[self.WARRANTY2][role], price)
 
     def __init__(self, rating: RateComputer, **kwargs) -> None:
-        if rating.rating_range == RatingRange.VERY_LOW:
+        if not rating.rating_range or rating.rating_range == RatingRange.VERY_LOW:
             raise InvalidRangeForPrice()
         # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
         price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)

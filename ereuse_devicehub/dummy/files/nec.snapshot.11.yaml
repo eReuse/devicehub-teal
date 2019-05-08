@@ -18,7 +18,7 @@
     {
       "appearanceRange": "B",
       "functionalityRange": "C",
-      "type": "TestVisual"
+      "type": "VisualTest"
     }
     ],
     "type": "Desktop",

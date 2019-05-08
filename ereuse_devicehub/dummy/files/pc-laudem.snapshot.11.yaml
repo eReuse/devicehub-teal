@@ -122,7 +122,7 @@
     {
       "appearanceRange": "A",
       "functionalityRange": "A",
-      "type": "TestVisual"
+      "type": "VisualTest"
     }
     ],
     "manufacturer": "Hewlett-Packard",

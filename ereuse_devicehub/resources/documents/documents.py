@@ -109,7 +109,6 @@ class DevicesDocumentView(DeviceView):
         query = self.query(args)
         return self.generate_post_csv(query)
 
-    # TODO fix only put one row for device.t == computer (rewrite multiples_devices.csv)
     def generate_post_csv(self, query):
         """
         Get device query and put information in csv format
@@ -122,9 +121,9 @@ class DevicesDocumentView(DeviceView):
         for device in query:
             d = DeviceRow(device)
             if first:
-                cw.writerow(name for name in d.keys())
+                cw.writerow(d.keys())
                 first = False
-            cw.writerow(v for v in d.values())
+            cw.writerow(d.values())
         output = make_response(data.getvalue())
         output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
         output.headers['Content-type'] = 'text/csv'

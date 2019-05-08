@@ -92,7 +92,7 @@
     {
       "appearanceRange": "D",
       "functionalityRange": "D",
-      "type": "TestVisual"
+      "type": "VisualTest"
     },
     {
       "elapsed": 300,

@@ -8,7 +8,7 @@ device:
   manufacturer: BAZ
   layout: ES
   events:
-    - type: TestVisual
+    - type: VisualTest
       appearanceRange: A
       functionalityRange: A
       labelling: False

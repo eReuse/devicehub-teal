@@ -31,9 +31,9 @@ class OfType(f.Str):
 
 
 class RateQ(query.Query):
-    rating = query.Between(events.Rate.rating, f.Float())
-    appearance = query.Between(events.Rate.appearance, f.Float())
-    functionality = query.Between(events.Rate.functionality, f.Float())
+    rating = query.Between(events.Rate._rating, f.Float())
+    appearance = query.Between(events.Rate._appearance, f.Float())
+    functionality = query.Between(events.Rate._functionality, f.Float())
 
 
 class TagQ(query.Query):

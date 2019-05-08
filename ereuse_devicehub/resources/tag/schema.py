@@ -1,5 +1,5 @@
-from sqlalchemy.util import OrderedSet
 from marshmallow.fields import Boolean
+from sqlalchemy.util import OrderedSet
 from teal.marshmallow import SanitizedStr, URL
 
 from ereuse_devicehub.marshmallow import NestedOn

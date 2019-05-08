@@ -2,7 +2,7 @@ import ipaddress
 from datetime import datetime, timedelta
 from decimal import Decimal
 from distutils.version import StrictVersion
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 from uuid import UUID
 
 from boltons import urlutils
@@ -16,9 +16,9 @@ from teal.enums import Country
 
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
-from ereuse_devicehub.resources.enums import AppearanceRange, Bios, ErasureStandards, \
-    FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RatingSoftware, ReceiverRole, \
-    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength, BiosAccessRange
+from ereuse_devicehub.resources.enums import AppearanceRange, ErasureStandards, \
+    FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RatingRange, \
+    ReceiverRole, Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -42,7 +42,7 @@ class Event(Thing):
     severity = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
-        super().__init__(created, updated)
+        super().__init__(**kwargs)
         self.id = ...  # type: UUID
         self.name = ...  # type: str
         self.type = ...  # type: str
@@ -75,7 +75,6 @@ class Event(Thing):
 
 
 class EventWithOneDevice(Event):
-
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.device = ...  # type: Device
@@ -178,8 +177,7 @@ class Install(EventWithOneDevice):
         self.address = ...  # type: Optional[int]
 
 
-class SnapshotRequest(Mod    assert rate_computer.rating == 4.61
-el):
+class SnapshotRequest(Model):
     def __init__(self, **kwargs) -> None:
         self.id = ...  # type: UUID
         self.request = ...  # type: dict
@@ -226,6 +224,7 @@ class BenchmarkGraphicCard(BenchmarkWithRate):
 
 class Test(EventWithOneDevice):
     elapsed = ...  # type: Column
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.elapsed = ...  # type: Optional[timedelta]
@@ -233,6 +232,20 @@ class Test(EventWithOneDevice):
 
 
 class TestDataStorage(Test):
+    length = ...  # type: Column
+    status = ...  # type: Column
+    lifetime = ...  # type: Column
+    first_error = ...  # type: Column
+    passed_lifetime = ...  # type: Column
+    assessment = ...  # type: Column
+    reallocated_sector_count = ...  # type: Column
+    power_cycle_count = ...  # type: Column
+    reported_uncorrectable_errors = ...  # type: Column
+    command_timeout = ...  # type: Column
+    current_pending_sector_count = ...  # type: Column
+    offline_uncorrectable = ...  # type: Column
+    remaining_lifetime_percentage = ...  # type: Column
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.id = ...  # type: UUID
@@ -259,70 +272,92 @@ class TestAudio(Test):
     """
     Test to check all this aspects related with audio functions, Manual Tests??
     """
-    loudspeaker = ...  # type: Column
-    microphone = ...  # type: Column
+    _speaker = ...  # type: Column
+    _microphone = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.speaker = ...  # type: bool
+        self.microphone = ...  # type: bool
 
 
 class TestConnectivity(Test):
-    cellular_network = ...  # type: Column
-    wifi = ...  # type: Column
-    bluetooth = ...  # type: Column
-    usb_port = ...  # type: Column
-    locked = ...  # type: Column
-
-
-class TestBattery(Test):
-    battery_stat = ...  # type: Column
-    battery_health = ...  # type: Column
+    pass
 
 
 class TestCamera(Test):
-    camera = ...  # type: Column
+    pass
 
 
 class TestKeyboard(Test):
-    keyboard = ...  # type: Column
+    pass
 
 
 class TestTrackpad(Test):
-    trackpad = ...  # type: Column
+    pass
 
 
 class TestBios(Test):
     bios_power_on = ...  # type: Column
-    access_range = ...  # type: BiosAccessRange
+    access_range = ...  # type: Column
 
 
-class TestVisual(ManualRate):
+class VisualTest(Test):
     appearance_range = ...  # type: AppearanceRange
     functionality_range = ...  # type: FunctionalityRange
     labelling = ...  # type: Column
 
 
 class Rate(EventWithOneDevice):
-    rating = ...  # type: Column
-    appearance = ...  # type: Column
-    functionality = ...  # type: Column
+    N = 2
+    _rating = ...  # type: Column
+    _appearance = ...  # type: Column
+    _functionality = ...  # type: Column
     version = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.rating = ...  # type: float
-        self.software = ...  # type: RatingSoftware
         self.version = ...  # type: StrictVersion
         self.appearance = ...  # type: float
         self.functionality = ...  # type: float
-        self.rating_range = ...  # type: str
+
+    @property
+    def rating_range(self) -> RatingRange:
+        pass
 
 
 class RateComputer(Rate):
-    id = ...
-    processor = ...
-    ram = ...
-    data_storage = ...
+    _processor = ...  # type: Column
+    _ram = ...  # type: Column
+    _data_storage = ...  # type: Column
+    _graphic_card = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.processor = ...  # type: float
+        self.ram = ...  # type: float
+        self.data_storage = ...  # type: float
+        self.graphic_card = ...  # type: float
 
     @classmethod
-    def compute(cls, device):
+    def compute(cls, device: Device) -> Tuple[RateComputer, EreusePrice]:
+        pass
+
+    @property
+    def data_storage_range(self) -> Optional[RatingRange]:
+        pass
+
+    @property
+    def ram_range(self) -> Optional[RatingRange]:
+        pass
+
+    @property
+    def processor_range(self) -> Optional[RatingRange]:
+        pass
+
+    @property
+    def graphic_card_range(self) -> Optional[RatingRange]:
         pass
 
 

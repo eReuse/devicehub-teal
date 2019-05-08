@@ -17,8 +17,8 @@ from ereuse_devicehub.resources.device.models import SolidStateDrive
 from ereuse_devicehub.resources.device.sync import MismatchBetweenProperties, \
     MismatchBetweenTagsAndHid
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
-from ereuse_devicehub.resources.event.models import BenchmarkProcessor, \
-    EraseSectors, Event, Snapshot, SnapshotRequest, RateComputer, TestVisual, BenchmarkDataStorage
+from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, BenchmarkProcessor, \
+    EraseSectors, Event, RateComputer, Snapshot, SnapshotRequest, VisualTest
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 from tests.conftest import file
@@ -70,7 +70,7 @@ def test_snapshot_post(user: UserClient):
     snapshot = snapshot_and_check(user, file('basic.snapshot'),
                                   event_types=(
                                       BenchmarkProcessor.t,
-                                      TestVisual.t,
+                                      VisualTest.t,
                                       RateComputer.t
                                   ),
                                   perform_second_snapshot=False)
@@ -116,15 +116,17 @@ def test_snapshot_component_add_remove(user: UserClient):
     # (represented with their S/N) should be:
     # PC 1: p1c1s, p1c2s, p1c3s. PC 2: ø
     s1 = file('1-device-with-components.snapshot')
-    # TODO if dont put len([event_types]) = 1 != len(event_types) = 18 is BenchmarkProcessor (str 18 chars); why??
-    snapshot1 = snapshot_and_check(user, s1, event_types=('BenchmarkProcessor',), perform_second_snapshot=False)
+    snapshot1 = snapshot_and_check(user,
+                                   s1,
+                                   event_types=(BenchmarkProcessor.t,),
+                                   perform_second_snapshot=False)
     pc1_id = snapshot1['device']['id']
     pc1, _ = user.get(res=m.Device, item=pc1_id)
     # Parent contains components
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c2s', 'p1c3s')
     # Components contain parent
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    # pc has Snapshot as event
+    # pc has two events: Snapshot and the BenchmarkProcessor
     # TODO change assert to len(pc1['events']) == 2 cause we add BenchmarkProcessor event
     assert len(pc1['events']) == 2
     # TODO pc1['events'][0]['type'] == BenchmarkProcessor.t
@@ -154,7 +156,8 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert tuple(e['type'] for e in pc2['events']) == ('Snapshot',)
     # p1c2s has two Snapshots, a Remove and an Add
     p1c2s, _ = user.get(res=m.Device, item=pc2['components'][0]['id'])
-    assert tuple(e['type'] for e in p1c2s['events']) == ('BenchmarkProcessor', 'Snapshot', 'Snapshot', 'Remove')
+    assert tuple(e['type'] for e in p1c2s['events']) == (
+    'BenchmarkProcessor', 'Snapshot', 'Snapshot', 'Remove')
 
     # We register the first device again, but removing motherboard
     # and moving processor from the second device to the first.
@@ -243,11 +246,7 @@ def test_snapshot_tag_inner_tag(tag_id: str, user: UserClient, app: Devicehub):
     b['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
 
     snapshot_and_check(user, b,
-                       event_types=(
-                           RateComputer.t,
-                           BenchmarkProcessor.t,
-                           TestVisual.t
-                       ), perform_second_snapshot=False)
+                       event_types=(RateComputer.t, BenchmarkProcessor.t, VisualTest.t))
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
         assert tag.device_id == 1, 'Tag should be linked to the first device'
@@ -315,15 +314,17 @@ def test_erase_privacy_standards(user: UserClient):
         EraseSectors.t,
         BenchmarkDataStorage.t,
         BenchmarkProcessor.t
-    ), perform_second_snapshot=True)
+    ))
     erase = next(e for e in snapshot['events'] if e['type'] == EraseSectors.t)
     assert '2018-06-01T07:12:06+00:00' == erase['endTime']
     storage = next(e for e in snapshot['components'] if e['type'] == SolidStateDrive.t)
     storage, _ = user.get(res=m.Device, item=storage['id'])  # Let's get storage events too
     # order: creation time ascending
-    erasure1, benchmark_data_storage1, _snapshot1, erasure2, benchmark_data_storage2, _snapshot2 = storage['events']
+    erasure1, benchmark_data_storage1, _snapshot1, erasure2, benchmark_data_storage2, _snapshot2 = \
+    storage['events']
     assert erasure1['type'] == erasure2['type'] == 'EraseSectors'
-    assert benchmark_data_storage1['type'] == benchmark_data_storage2['type'] == 'BenchmarkDataStorage'
+    assert benchmark_data_storage1['type'] == benchmark_data_storage2[
+        'type'] == 'BenchmarkDataStorage'
     assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
     get_snapshot, _ = user.get(res=Event, item=_snapshot2['id'])
     assert get_snapshot['events'][0]['endTime'] == '2018-06-01T07:12:06+00:00'
@@ -381,7 +382,7 @@ def test_snapshot_computer_monitor(user: UserClient):
 @pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
 def test_snapshot_mobile_smartphone_imei_manual_rate(user: UserClient):
     s = file('smartphone.snapshot')
-    snapshot = snapshot_and_check(user, s, event_types=('TestVisual',))
+    snapshot = snapshot_and_check(user, s, event_types=('VisualTest',))
     mobile, _ = user.get(res=m.Device, item=snapshot['device']['id'])
     assert mobile['imei'] == 3568680000414120
     # todo check that manual rate has been created
@@ -429,7 +430,7 @@ def assert_similar_components(components1: List[dict], components2: List[dict]):
 
 def snapshot_and_check(user: UserClient,
                        input_snapshot: dict,
-                       event_types: Tuple[str] = tuple(),
+                       event_types: Tuple[str, ...] = tuple(),
                        perform_second_snapshot=True) -> dict:
     """
         Performs a Snapshot and then checks if the result is ok:

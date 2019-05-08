@@ -1,18 +1,20 @@
 from enum import Enum
 from itertools import groupby
-from typing import Iterable
+from typing import Dict, Iterable, Tuple
 
-from ereuse_devicehub.resources.device.models import Computer, DataStorage, Processor, RamModule
+from ereuse_devicehub.resources.device.models import Computer, DataStorage, Processor, \
+    RamModule
 from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, BenchmarkProcessor, \
-    RateComputer, TestVisual, BenchmarkProcessorSysbench
-# todo if no return assign then rate_c = 1 is assigned
-# todo fix corner cases, like components characteristics == None
+    BenchmarkProcessorSysbench, RateComputer, VisualTest
 from ereuse_devicehub.resources.event.rate.rate import BaseRate
 
 
 class RateAlgorithm(BaseRate):
-    """
-    Rate all components in Computer
+    """The algorithm that generates the Rate v1.0.
+
+    Do not call directly this class, but use
+    :meth:`ereuse_devicehub.resources.event.models.RateComputer.compute`,
+    which then calls this.
     """
 
     class Range(Enum):
@@ -43,48 +45,43 @@ class RateAlgorithm(BaseRate):
             Processor.t: ('processor', ProcessorRate()),
             RamModule.t: ('ram', RamRate()),
             DataStorage.t: ('data_storage', DataStorageRate())
-        }
+        }  # type: Dict[str, Tuple[str, BaseRate]]
 
-    def compute(self, device: Computer):
+    def compute(self, device: Computer) -> RateComputer:
+        """Generates a new
+        :class:`ereuse_devicehub.resources.event.models.RateComputer`
+        for the passed-in device.
         """
-        Compute RateComputer is a rate (score) ranging from 0 to 4.7
-        that represents estimating value of use of desktop and laptop computer components.
-        """
-        if not isinstance(device, Computer):  # todo can be an assert?
-            raise CannotRate('Can only rate computers.')
+        assert isinstance(device, Computer), 'Can only rate computers'
+
+        try:
+            test_visual = device.last_event_of(VisualTest)
+        except LookupError:
+            raise CannotRate('You need a visual test.')
 
         rate = RateComputer()
-
         rate.processor = rate.data_storage = rate.ram = 1  # Init
 
-        # Group cpus, rams, storages and compute their rate
+        # Group cpus, rams, storage and compute their rate
         # Treat the same way with HardDrive and SolidStateDrive like (DataStorage)
         clause = lambda x: DataStorage.t if isinstance(x, DataStorage) else x.t
         c = (c for c in device.components if clause(c) in set(self.RATES.keys()))
         for type, components in groupby(sorted(c, key=clause), key=clause):
             if type == Processor.t:  # ProcessorRate.compute expects only 1 processor
                 components = next(components)
-            field, rate_cls = self.RATES[type]  # type: str, BaseRate
-            result = rate_cls.compute(components, rate)
+            field, rate_cls = self.RATES[type]
+            result = rate_cls.compute(components)
             if result:
                 setattr(rate, field, result)
-        # TODO is necessary check if TestVisual exists?? cause StopIteration Error
-        try:
-            test_visual = next(e for e in device.events if isinstance(e, TestVisual))
-        except StopIteration:
-            raise CannotRate('You need a visual test.')
 
         rate_components = self.harmonic_mean_rates(rate.processor, rate.data_storage, rate.ram)
         rate.appearance = self.Appearance.from_devicehub(test_visual.appearance_range).value
-        rate.functionality = self.Functionality.from_devicehub(test_visual.functionality_range).value
+        rate.functionality = self.Functionality.from_devicehub(
+            test_visual.functionality_range).value
 
-        rate.rating = round(max(rate_components + rate.functionality + rate.appearance, 0), 2)
-        rate.appearance = round(rate.appearance, 2)
-        rate.functionality = round(rate.functionality, 2)
-        rate.processor = round(rate.processor, 2)
-        rate.ram = round(rate.ram, 2)
-        rate.data_storage = round(rate.data_storage, 2)
+        rate.rating = rate_components + rate.functionality + rate.appearance
         device.events_one.add(rate)
+        assert 0 <= rate.rating <= 4.7, 'Rate ranges from 0 to 4.7'
         return rate
 
 
@@ -101,18 +98,20 @@ class ProcessorRate(BaseRate):
     # Intel(R) Core(TM) i3 CPU 530 @ 2.93GHz, score = 23406.92 but results inan score of 17503.
     DEFAULT_SCORE = 4000
 
-    def compute(self, processor: Processor, rate: RateComputer):
+    def compute(self, processor: Processor):
         """ Compute processor rate
             Obs: cores and speed are possible NULL value
             :return: result is a rate (score) of Processor characteristics
         """
-        # todo for processor_device in processors; more than one processor
+        # todo jn? for processor_device in processors; more than one processor
         cores = processor.cores or self.DEFAULT_CORES
         speed = processor.speed or self.DEFAULT_SPEED
-        # todo fix StopIteration if don't exists BenchmarkProcessor
-        benchmark_cpu = next(e for e in processor.events if
-                             isinstance(e, BenchmarkProcessor) and not isinstance(e, BenchmarkProcessorSysbench))
-        # todo fix if benchmark_cpu.rate == 0
+        # todo jn? fix StopIteration if don't exists BenchmarkProcessor
+        benchmark_cpu = next(
+            e for e in reversed(processor.events)
+            if isinstance(e, BenchmarkProcessor) and not isinstance(e, BenchmarkProcessorSysbench)
+        )
+        # todo jn? fix if benchmark_cpu.rate == 0
         benchmark_cpu = benchmark_cpu.rate or self.DEFAULT_SCORE
 
         # STEP: Fusion components
@@ -129,8 +128,6 @@ class ProcessorRate(BaseRate):
             processor_rate = self.rate_lin(processor_norm)
         if processor_norm >= self.CLOG:
             processor_rate = self.rate_log(processor_norm)
-
-        assert processor_rate, 'Could not rate processor.'
         return processor_rate
 
 
@@ -146,7 +143,7 @@ class RamRate(BaseRate):
     # ram.size.weight; ram.speed.weight;
     RAM_WEIGHTS = 0.7, 0.3
 
-    def compute(self, ram_devices: Iterable[RamModule], rate: RateComputer):
+    def compute(self, ram_devices: Iterable[RamModule]):
         """
         Obs: RamModule.speed is possible NULL value & size != NULL or NOT??
         :return: result is a rate (score) of all RamModule components
@@ -203,7 +200,7 @@ class DataStorageRate(BaseRate):
     # drive.size.weight; drive.readingSpeed.weight; drive.writingSpeed.weight;
     DATA_STORAGE_WEIGHTS = 0.5, 0.25, 0.25
 
-    def compute(self, data_storage_devices: Iterable[DataStorage], rate: RateComputer):
+    def compute(self, data_storage_devices: Iterable[DataStorage]):
         """
         Obs: size != NULL and 0 value & read_speed and write_speed != NULL
         :return: result is a rate (score) of all DataStorage devices
@@ -215,7 +212,7 @@ class DataStorageRate(BaseRate):
         # STEP: Filtering, data cleaning and merging of component parts
         for storage in data_storage_devices:
             # We assume all hdd snapshots have BenchmarkDataStorage
-            benchmark = next(e for e in storage.events if isinstance(e, BenchmarkDataStorage))
+            benchmark = storage.last_event_of(BenchmarkDataStorage)
             # prevent NULL values
             _size = storage.size or 0
             size += _size

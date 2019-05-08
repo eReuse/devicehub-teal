@@ -8,7 +8,7 @@ device:
   serialNumber: ABCDEF
   imei: 35686800-004141-20
   events:
-    - type: TestVisual
+    - type: VisualTest
       appearanceRange: A
       functionalityRange: B
       labelling: False

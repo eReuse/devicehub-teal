@@ -183,7 +183,6 @@ class Mobile(Device):
                                 data_key='dataStorageSize',
                                 description=m.Mobile.data_storage_size)
 
-
     @pre_load
     def convert_check_imei(self, data):
         if data.get('imei', None):

@@ -154,7 +154,7 @@
     {
       "appearanceRange": "B",
       "functionalityRange": "A",
-      "type": "TestVisual"
+      "type": "VisualTest"
     }
     ]
   },

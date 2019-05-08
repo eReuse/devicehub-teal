@@ -422,8 +422,7 @@ class Computer(Device):
 
         1. The max Ethernet speed of the computer, 0 if ethernet
            adaptor exists but its speed is unknown, None if no eth
-           adaptor exists.# TODO add all grade tables (chassis defects, camera defects, buttons test, connectivity, ..)
-
+           adaptor exists.
         2. The max WiFi speed of the computer, 0 if computer has
            WiFi but its speed is unknown, None if no WiFi adaptor
            exists.

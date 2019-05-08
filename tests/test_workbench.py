@@ -36,7 +36,7 @@ def test_workbench_server_condensed(user: UserClient):
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     events = snapshot['events']
     assert {(event['type'], event['device']) for event in events} == {
-        ('RateComputer', 1),  # Only (RateComputer, 1), delete (Rate, 1)
+        ('RateComputer', 1),
         ('BenchmarkProcessorSysbench', 5),
         ('StressTest', 1),
         ('EraseSectors', 6),
@@ -47,7 +47,7 @@ def test_workbench_server_condensed(user: UserClient):
         ('BenchmarkDataStorage', 6),
         ('BenchmarkDataStorage', 7),
         ('TestDataStorage', 6),
-        ('TestVisual', 1)
+        ('VisualTest', 1)
     }
     assert snapshot['closed']
     assert snapshot['severity'] == 'Info'
@@ -62,11 +62,9 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['rate']['closed']
     assert device['rate']['severity'] == 'Info'
     assert device['rate']['rating'] == 0
-    assert device['rate']['type'] == 'RateComputer'  # New in rate v2
-    # new asserts get in TestVisual event info; why change in every execution device['events'][X]
-    # assert device['events'][0]['appearanceRange'] == 'A'
-    # assert device['events'][0]['functionalityRange'] == 'B'
-    # TODO add appearance and functionality Range in device[rate]
+    assert device['rate']['type'] == 'RateComputer'
+    assert device['events'][0]['appearanceRange'] == 'A'
+    assert device['events'][0]['functionalityRange'] == 'B'
 
     assert device['tags'][0]['id'] == 'tag1'
 
@@ -154,8 +152,8 @@ def test_real_hp_11(user: UserClient):
         'TestDataStorage',
         'BenchmarkRamSysbench',
         'StressTest',
-        'TestBios',  # New in rate v2
-        'TestVisual'  # New in rate v2
+        'TestBios',
+        'VisualTest'
     }
     assert len(list(e['type'] for e in snapshot['events'])) == 10
     assert pc['networkSpeeds'] == [1000, None], 'Device has no WiFi'
@@ -188,7 +186,6 @@ def test_snapshot_real_eee_1001pxd(user: UserClient):
     assert pc['networkSpeeds'] == [100, 0], 'Although it has WiFi we do not know the speed'
     assert pc['rate']
     rate = pc['rate']
-    # new asserts get in TestVisual event info; why change pc['events'][X]
     # assert pc['events'][0]['appearanceRange'] == 'A'
     # assert pc['events'][0]['functionalityRange'] == 'B'
     # TODO add appearance and functionality Range in device[rate]

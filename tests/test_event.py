@@ -362,7 +362,6 @@ def test_manual_rate_after_workbench_rate(user: UserClient):
     s = file('real-hp.snapshot.11')
     snapshot, _ = user.post(s, res=models.Snapshot)
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
-    # TODO
     assert 'B' == device['rate']['appearanceRange']
     assert device['rate'] == 1
     user.post({
@@ -378,3 +377,27 @@ def test_manual_rate_after_workbench_rate(user: UserClient):
 @pytest.mark.xfail(reson='Develop an algorithm that can make rates only from manual rates')
 def test_manual_rate_without_workbench_rate(user: UserClient):
     pass
+
+
+@pytest.mark.xfail(reson='develop')
+def test_measure_battery():
+    """Tests the MeasureBattery."""
+    # todo jn
+
+
+@pytest.mark.xfail(reson='develop')
+def test_test_camera():
+    """Tests the TestCamera."""
+    # todo jn
+
+
+@pytest.mark.xfail(reson='develop')
+def test_test_keyboard():
+    """Tests the TestKeyboard."""
+    # todo jn
+
+
+@pytest.mark.xfail(reson='develop')
+def test_test_trackpad():
+    """Tests the TestTrackpad."""
+    # todo jn

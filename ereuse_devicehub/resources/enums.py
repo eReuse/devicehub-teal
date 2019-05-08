@@ -1,5 +1,4 @@
 from contextlib import suppress
-from distutils.version import StrictVersion
 from enum import Enum, IntEnum, unique
 from typing import Set, Union
 
@@ -18,8 +17,8 @@ class SnapshotSoftware(Enum):
         return self.name
 
 
-RATE_POSITIVE = 0, 10
-RATE_NEGATIVE = -3, 5
+R_POSITIVE = 0, 10
+R_NEGATIVE = -3, 5
 
 
 @unique
@@ -66,44 +65,29 @@ class PriceSoftware(Enum):
 
 
 @unique
-class AggregateRatingVersions(Enum):
-    v1 = StrictVersion('1.0')
-    """
-    This version is set to aggregate :class:`ereuse_devicehub.resources.
-    event.models.RateComputer` version X and :class:`ereuse_devicehub.
-    resources.event.models.PhotoboxRate` version Y.
-    """
-
-
-@unique
 class AppearanceRange(Enum):
-    """
-    This grade will be defined based on the aesthetics/cosmetic aspects, like visual damage or blemishes principally
-    focused on chassis, physical buttons and screens.
-    """
+    """Grades the imperfections that aesthetically affect the device, but not its usage."""
     Z = 'Z. The device is new'
     A = 'A. Is like new; without visual damage'
     B = 'B. Is in really good condition; small visual damage in difficult places to spot'
-    C = 'C. Is in good condition; small visual damage in parts that are easy to spot, minor cosmetic blemishes on chassis)'
+    C = 'C. Is in good condition; small visual damage in parts that are easy to spot, minor cosmetic blemishes on chassis'
     D = 'D. Is acceptable; visual damage in visible parts, major cosmetic blemishes on chassis, missing cosmetic parts'
-    E = 'E. Is unacceptable; severity visual damage, missing essential parts'
-    NONE = 'NA. Grade doesn’t exists'
+    E = 'E. Is unacceptable; considerable visual damage, missing essential parts'
 
-
-APPEARANCE_RANGE = 0.5, -0.3
+    def __str__(self):
+        return self.name
 
 
 @unique
 class FunctionalityRange(Enum):
-    """Based on usage condition of a device and its functionality aspects, like screen defect or camera defects"""
+    """Grades the defects of a device that affect its usage."""
     A = 'A. All the buttons works perfectly, no screen/camera defects and chassis without usage issues'
     B = 'B. There is a button difficult to press or unstable it, a screen/camera defect or chassis problem'
     C = 'C.	Chassis defects or multiple buttons don\'t work; broken or unusable it, some screen/camera defect'
     D = 'D.	Chassis severity usage problems. All buttons, screen or camera don\'t work; broken or unusable it'
-    NONE = 'NA. Grade doesn’t exists'
 
-
-FUNCTIONALITY_RANGE = 0.4, -0.3
+    def __str__(self):
+        return self.name
 
 
 @unique
@@ -113,9 +97,11 @@ class BatteryHealthRange(Enum):
     B = 'B. Battery health is good'
     C = 'C.	Battery health is overheat / over voltage status but can stand the minimum duration'
     D = 'D.	Battery health is bad; can’t stand the minimum duration time'
-    E = 'E. Battery health is very bad; and status is dead; unusable or miss it '
+    E = 'E. Battery health is very bad; and status is dead; unusable or miss it'
     NONE = 'NA. Grade doesn’t exists'
 
+    def __str__(self):
+        return self.name
 
 
 @unique
@@ -126,6 +112,9 @@ class BiosAccessRange(Enum):
     C = 'C. Like B, but with more than 5 steps'
     D = 'D. Like B or C, but you had to unlock the BIOS (i.e. by removing the battery)'
     E = 'E. The device could not be booted through the network.'
+
+    def __str__(self):
+        return self.name
 
 
 @unique

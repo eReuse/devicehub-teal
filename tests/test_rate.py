@@ -9,8 +9,8 @@ from ereuse_devicehub.resources.device.models import Computer, Desktop, HardDriv
     RamModule
 from ereuse_devicehub.resources.enums import AppearanceRange, ComputerChassis, \
     FunctionalityRange
-from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, \
-    BenchmarkProcessor, RateComputer, TestVisual, Snapshot
+from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, BenchmarkProcessor, \
+    RateComputer, Snapshot, VisualTest
 from ereuse_devicehub.resources.event.rate.workbench.v1_0 import CannotRate
 from tests import conftest
 from tests.conftest import file
@@ -28,16 +28,11 @@ def test_workbench_rate_db():
     db.session.commit()
 
 
-@pytest.mark.xfail(reason='AggreagteRate only takes data from WorkbenchRate as for now')
+@pytest.mark.xfail(reason='ComputerRate V1 can only be triggered from Workbench snapshot software')
 def test_rate_workbench_then_manual():
-    """Checks that a new Rate is generated with a new rate
-    value when a TestVisual is performed after performing a
-    RateComputer.
-
-    The new Rate needs to be computed by the values of
-    the appearance and funcitonality grade of TestVisual.
+    """Checks that a new Rate is generated for a snapshot
+    that is not from Workbench.
     """
-    pass
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -60,11 +55,9 @@ def test_rate():
     }
 
     # Add test visual with functionality and appearance range
-    visual_test = TestVisual()
-    visual_test.appearance_range = AppearanceRange.A
-    visual_test.functionality_range = FunctionalityRange.A
-
-    pc.events_one.add(visual_test)
+    VisualTest(appearance_range=AppearanceRange.A,
+               functionality_range=FunctionalityRange.A,
+               device=pc)
     rate, price = RateComputer.compute(pc)
 
     # events = pc.events
@@ -120,3 +113,14 @@ def test_no_rate_if_device_is_not_computer(user: UserClient):
     device = file('keyboard.snapshot')
     user.post(device, res=Snapshot)
     assert CannotRate
+
+
+@pytest.mark.xfail(reason='Test not developed')
+def test_multiple_rates(user: UserClient):
+    """Tests submitting two rates from Workbench,
+    ensuring that the tests / benchmarks...
+    from the first rate do not contaminate the second rate.
+
+    This ensures that rates only takes the last version  of events
+    and components (in case device has new components, for example).
+    """

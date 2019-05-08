@@ -42,7 +42,7 @@ class Device(Thing):
     production_date = ...  # type: Column
     brand = ...  # type: Column
     generation = ...  # type: Column
-    variant = ... # type: Column
+    variant = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -65,7 +65,7 @@ class Device(Thing):
         self.production_date = ...  # type: Optional[datetime]
         self.brand = ...  # type: Optional[str]
         self.generation = ...  # type: Optional[int]
-        self.variant = ... # type: Optional[str]
+        self.variant = ...  # type: Optional[str]
 
     @property
     def events(self) -> List[e.Event]:
@@ -202,15 +202,15 @@ class TelevisionSet(Monitor):
 class Mobile(Device):
     imei = ...  # type: Column
     meid = ...  # type: Column
-    ram_size = ... # type: Column
-    data_storage_size = ... # type: Column
+    ram_size = ...  # type: Column
+    data_storage_size = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.imei = ...  # type: Optional[int]
         self.meid = ...  # type: Optional[str]
-        self.ram_size = ... # type: Optional[int]
-        self.data_storage_size = ... # type: Optional[int]
+        self.ram_size = ...  # type: Optional[int]
+        self.data_storage_size = ...  # type: Optional[int]
 
 
 class Smartphone(Mobile):

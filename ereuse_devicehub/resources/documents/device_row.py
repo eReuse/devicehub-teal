@@ -3,7 +3,8 @@ from collections import OrderedDict
 from flask import current_app
 
 from ereuse_devicehub.resources.device import models as d
-from ereuse_devicehub.resources.event.models import TestDataStorage, BenchmarkDataStorage
+from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, RateComputer, \
+    TestDataStorage
 
 
 class DeviceRow(OrderedDict):
@@ -43,6 +44,7 @@ class DeviceRow(OrderedDict):
         if rate:
             self['Rate'] = rate.rating
             self['Range'] = rate.rating_range
+            assert isinstance(rate, RateComputer)
             self['Processor Rate'] = rate.processor
             self['Processor Range'] = rate.processor_range
             self['RAM Rate'] = rate.ram
@@ -92,15 +94,18 @@ class DeviceRow(OrderedDict):
             self['{} {} Size (MB)'.format(type, i)] = component.size
             self['{} {} Privacy'.format(type, i)] = component.privacy
             try:
-                self['{} {} Lifetime'.format(type, i)] = component.last_event_of(TestDataStorage).lifetime
+                self['{} {} Lifetime'.format(type, i)] = component.last_event_of(
+                    TestDataStorage).lifetime
             except:
                 self['{} {} Lifetime'.format(type, i)] = ''
             try:
-                self['{} {} Reading speed'.format(type, i)] = component.last_event_of(BenchmarkDataStorage).read_speed
+                self['{} {} Reading speed'.format(type, i)] = component.last_event_of(
+                    BenchmarkDataStorage).read_speed
             except:
                 self['{} {} Reading speed'.format(type, i)] = ''
             try:
-                self['{} {} Writing speed'.format(type, i)] = component.last_event_of(BenchmarkDataStorage).write_speed
+                self['{} {} Writing speed'.format(type, i)] = component.last_event_of(
+                    BenchmarkDataStorage).write_speed
             except:
                 self['{} {} Writing speed'.format(type, i)] = ''
 

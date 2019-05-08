@@ -109,11 +109,6 @@ class TestConnectivityDef(TestDef):
     SCHEMA = schemas.TestConnectivity
 
 
-class TestBatteryDef(TestDef):
-    VIEW = None
-    SCHEMA = schemas.TestBattery
-
-
 class TestCameraDef(TestDef):
     VIEW = None
     SCHEMA = schemas.TestCamera
@@ -134,9 +129,9 @@ class TestBiosDef(TestDef):
     SCHEMA = schemas.TestBios
 
 
-class TestVisualDef(TestDef):
+class VisualTestDef(TestDef):
     VIEW = None
-    SCHEMA = schemas.TestVisual
+    SCHEMA = schemas.VisualTest
 
 
 class RateDef(EventDef):
