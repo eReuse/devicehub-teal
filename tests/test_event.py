@@ -351,34 +351,6 @@ def test_erase_physical():
     db.session.commit()
 
 
-@pytest.mark.xfail(reson='Adapt rate algorithm to re-compute by passing a manual rate.')
-def test_manual_rate_after_workbench_rate(user: UserClient):
-    """Perform a WorkbenchRate and then update the device with a ManualRate.
-
-    Devicehub must make the final rate with the first workbench rate
-    plus the new manual rate, without considering the appearance /
-    functionality values of the workbench rate.
-    """
-    s = file('real-hp.snapshot.11')
-    snapshot, _ = user.post(s, res=models.Snapshot)
-    device, _ = user.get(res=Device, item=snapshot['device']['id'])
-    assert 'B' == device['rate']['appearanceRange']
-    assert device['rate'] == 1
-    user.post({
-        'type': 'ManualRate',
-        'device': device['id'],
-        'appearanceRange': 'A',
-        'functionalityRange': 'A'
-    }, res=models.Event)
-    device, _ = user.get(res=Device, item=snapshot['device']['id'])
-    assert 'A' == device['rate']['appearanceRange']
-
-
-@pytest.mark.xfail(reson='Develop an algorithm that can make rates only from manual rates')
-def test_manual_rate_without_workbench_rate(user: UserClient):
-    pass
-
-
 @pytest.mark.xfail(reson='develop')
 def test_measure_battery():
     """Tests the MeasureBattery."""

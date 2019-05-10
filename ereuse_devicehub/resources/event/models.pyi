@@ -303,9 +303,15 @@ class TestBios(Test):
 
 
 class VisualTest(Test):
-    appearance_range = ...  # type: AppearanceRange
-    functionality_range = ...  # type: FunctionalityRange
+    appearance_range = ...  # type: Column
+    functionality_range = ...  # type: Column
     labelling = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.appearance_range = ... # type: AppearanceRange
+        self.functionality_range = ... # type: FunctionalityRange
+        self.labelling = ... # type: Optional[bool]
 
 
 class Rate(EventWithOneDevice):
@@ -335,10 +341,10 @@ class RateComputer(Rate):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.processor = ...  # type: float
-        self.ram = ...  # type: float
-        self.data_storage = ...  # type: float
-        self.graphic_card = ...  # type: float
+        self.processor = ...  # type: Optional[float]
+        self.ram = ...  # type: Optional[float]
+        self.data_storage = ...  # type: Optional[float]
+        self.graphic_card = ...  # type: Optional[float]
 
     @classmethod
     def compute(cls, device: Device) -> Tuple[RateComputer, EreusePrice]:

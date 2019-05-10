@@ -5,12 +5,12 @@ import pytest
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Computer, Desktop, HardDrive, Processor, \
-    RamModule
+from ereuse_devicehub.resources.device.models import Computer, Desktop, Device, HardDrive, \
+    Processor, RamModule
 from ereuse_devicehub.resources.enums import AppearanceRange, ComputerChassis, \
     FunctionalityRange
 from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, BenchmarkProcessor, \
-    RateComputer, Snapshot, VisualTest
+    Event, RateComputer, Snapshot, VisualTest
 from ereuse_devicehub.resources.event.rate.workbench.v1_0 import CannotRate
 from tests import conftest
 from tests.conftest import file
@@ -28,19 +28,32 @@ def test_workbench_rate_db():
     db.session.commit()
 
 
-@pytest.mark.xfail(reason='ComputerRate V1 can only be triggered from Workbench snapshot software')
-def test_rate_workbench_then_manual():
-    """Checks that a new Rate is generated for a snapshot
-    that is not from Workbench.
+@pytest.mark.xfail(reson='Adapt rate algorithm to re-compute by passing a manual rate.')
+def test_manual_rate_after_workbench_rate(user: UserClient):
+    """Perform a WorkbenchRate and then update the device with a ManualRate.
+
+    Devicehub must make the final rate with the first workbench rate
+    plus the new manual rate, without considering the appearance /
+    functionality values of the workbench rate.
     """
+    s = file('real-hp.snapshot.11')
+    snapshot, _ = user.post(s, res=Snapshot)
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert 'B' == device['rate']['appearanceRange']
+    assert device['rate'] == 1
+    user.post({
+        'type': 'ManualRate',
+        'device': device['id'],
+        'appearanceRange': 'A',
+        'functionalityRange': 'A'
+    }, res=Event)
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert 'A' == device['rate']['appearanceRange']
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_rate():
-    """Test generating an Rate for a given PC / components /
-    RateComputer ensuring results and relationships between
-    pc - rate - RateComputer - price.
-    """
+def test_price_from_rate():
+    """Tests the price generated from the rate."""
 
     pc = Desktop(chassis=ComputerChassis.Tower)
     hdd = HardDrive(size=476940)
@@ -97,12 +110,13 @@ def test_no_rate_if_no_visual_test(user: UserClient):
     Checks if a rate is calculated from a snapshot without visual test
     """
     # Upload a basic snapshot
-    device = file('basic.snapshot')
+    s = file('basic.snapshot')
     # Delete snapshot device events
-    del device['device']['events']
-    user.post(device, res=Snapshot)
+    del s['device']['events']
+    snapshot, _ = user.post(s, res=Snapshot)
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
     # How to assert CannotRate Exception
-    assert CannotRate
+    assert 'rate' not in snapshot['device']
 
 
 def test_no_rate_if_device_is_not_computer(user: UserClient):

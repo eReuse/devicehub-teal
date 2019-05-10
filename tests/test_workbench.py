@@ -168,7 +168,7 @@ def test_real_toshiba_11(user: UserClient):
     snapshot, _ = user.post(res=em.Snapshot, data=s)
 
 
-def test_snapshot_real_eee_1001pxd(user: UserClient):
+def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     """
     Checks the values of the device, components,
     events and their relationships of a real pc.
@@ -295,11 +295,6 @@ def test_real_hp_quad_core(user: UserClient):
 def test_real_eee_1000h(user: UserClient):
     s = file('asus-eee-1000h.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
-
-
-@pytest.mark.xfail(reason='We do not have a snapshot file to use')
-def test_real_full_with_workbench_rate(user: UserClient):
-    pass
 
 
 SNAPSHOTS_NEED_ID = {

@@ -841,9 +841,9 @@ class VisualTest(TestMixin, Test):
     """The act of visually inspecting the appearance and functionality
     of the device.
     """
-    appearance_range = Column(DBEnum(AppearanceRange))
+    appearance_range = Column(DBEnum(AppearanceRange), nullable=False)
     appearance_range.comment = AppearanceRange.__doc__
-    functionality_range = Column(DBEnum(FunctionalityRange))
+    functionality_range = Column(DBEnum(FunctionalityRange), nullable=False)
     functionality_range.comment = FunctionalityRange.__doc__
     labelling = Column(Boolean)
     labelling.comment = """Whether there are tags to be removed."""

@@ -96,7 +96,6 @@ def test_rate_ram_rate():
 
     ram_rate = RamRate().compute([ram1])
 
-    # todo rel_tol >= 0.002
     assert math.isclose(ram_rate, 2.02, rel_tol=0.002), 'RamRate returns incorrect value(rate)'
 
 
@@ -127,7 +126,6 @@ def test_rate_ram_rate_4modules():
 
     ram_rate = RamRate().compute([ram1, ram2, ram3, ram4])
 
-    # todo rel_tol >= 0.002
     assert math.isclose(ram_rate, 1.993, rel_tol=0.001), 'RamRate returns incorrect value(rate)'
 
 
@@ -158,7 +156,6 @@ def test_rate_ram_speed_is_null():
 
     ram_rate = RamRate().compute([ram0])
 
-    # todo rel_tol >= 0.004
     assert math.isclose(ram_rate, 1.25, rel_tol=0.004), 'RamRate returns incorrect value(rate)'
 
 
@@ -208,7 +205,6 @@ def test_rate_processor_rate_2cores():
 
     processor_rate = ProcessorRate().compute(cpu)
 
-    # todo rel_tol >= 0.002
     assert math.isclose(processor_rate, 3.93, rel_tol=0.002)
 
 
@@ -217,12 +213,10 @@ def test_rate_processor_with_null_cores():
     Test with processor device have null number of cores
     """
     cpu = Processor(cores=None, speed=3.3)
-    # todo try without BenchmarkProcessor, StopIteration problem
     cpu.events_one.add(BenchmarkProcessor())
 
     processor_rate = ProcessorRate().compute(cpu)
 
-    # todo rel_tol >= 0.003
     assert math.isclose(processor_rate, 1.38, rel_tol=0.003)
 
 

@@ -68,6 +68,7 @@ class EventView(View):
         assert not device.events_one
         assert all(not c.events_one for c in components) if components else True
         db_device, remove_events = resource_def.sync.run(device, components)
+        del device  # Do not use device anymore
         snapshot.device = db_device
         snapshot.events |= remove_events | events_device  # Set events to snapshot
         # commit will change the order of the components by what
@@ -84,7 +85,7 @@ class EventView(View):
         # Compute ratings
         if snapshot.software == SnapshotSoftware.Workbench:
             try:
-                rate_computer, price = RateComputer.compute(device)
+                rate_computer, price = RateComputer.compute(db_device)
             except CannotRate:
                 pass
             else:

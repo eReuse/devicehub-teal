@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, unique
 from itertools import groupby
 from typing import Dict, Iterable, Tuple
 
@@ -17,26 +17,21 @@ class RateAlgorithm(BaseRate):
     which then calls this.
     """
 
-    class Range(Enum):
-        @classmethod
-        def from_devicehub(cls, r: Enum):
-            return getattr(cls, r.name) if r else cls.NONE
-
-    class Appearance(Range):
+    @unique
+    class Appearance(Enum):
         Z = 0.5
         A = 0.3
         B = 0
         C = -0.2
         D = -0.5
         E = -1.0
-        NONE = -0.3
 
-    class Functionality(Range):
+    @unique
+    class Functionality(Enum):
         A = 0.4
         B = -0.5
         C = -0.75
         D = -1
-        NONE = -0.3
 
     def __init__(self) -> None:
         super().__init__()
@@ -55,7 +50,7 @@ class RateAlgorithm(BaseRate):
         assert isinstance(device, Computer), 'Can only rate computers'
 
         try:
-            test_visual = device.last_event_of(VisualTest)
+            visual_test = device.last_event_of(VisualTest)
         except LookupError:
             raise CannotRate('You need a visual test.')
 
@@ -75,10 +70,8 @@ class RateAlgorithm(BaseRate):
                 setattr(rate, field, result)
 
         rate_components = self.harmonic_mean_rates(rate.processor, rate.data_storage, rate.ram)
-        rate.appearance = self.Appearance.from_devicehub(test_visual.appearance_range).value
-        rate.functionality = self.Functionality.from_devicehub(
-            test_visual.functionality_range).value
-
+        rate.appearance = self.Appearance[visual_test.appearance_range.name].value
+        rate.functionality = self.Functionality[visual_test.functionality_range.name].value
         rate.rating = rate_components + rate.functionality + rate.appearance
         device.events_one.add(rate)
         assert 0 <= rate.rating <= 4.7, 'Rate ranges from 0 to 4.7'
@@ -94,6 +87,7 @@ class ProcessorRate(BaseRate):
 
     DEFAULT_CORES = 1
     DEFAULT_SPEED = 1.6
+
     # In case of i2, i3,.. result penalized.
     # Intel(R) Core(TM) i3 CPU 530 @ 2.93GHz, score = 23406.92 but results inan score of 17503.
     DEFAULT_SCORE = 4000
@@ -103,15 +97,12 @@ class ProcessorRate(BaseRate):
             Obs: cores and speed are possible NULL value
             :return: result is a rate (score) of Processor characteristics
         """
-        # todo jn? for processor_device in processors; more than one processor
         cores = processor.cores or self.DEFAULT_CORES
         speed = processor.speed or self.DEFAULT_SPEED
-        # todo jn? fix StopIteration if don't exists BenchmarkProcessor
         benchmark_cpu = next(
             e for e in reversed(processor.events)
             if isinstance(e, BenchmarkProcessor) and not isinstance(e, BenchmarkProcessorSysbench)
         )
-        # todo jn? fix if benchmark_cpu.rate == 0
         benchmark_cpu = benchmark_cpu.rate or self.DEFAULT_SCORE
 
         # STEP: Fusion components
