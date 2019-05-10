@@ -2,7 +2,7 @@
   "uuid": "9c3560a9-371c-4392-b586-37090b5f79c6",
   "version": "11.0a3",
   "closed": false,
-  "endTime": "2018-07-11T13:26:29.365504",
+  "endTime": "2018-07-11T13:26:29.365504+00:00",
   "type": "Snapshot",
   "device": {
     "serialNumber": "PB357N0",
@@ -99,15 +99,15 @@
       "status": "Unspecified Error. Self-test not started."
     },
     {
-      "startTime": "2018-07-11T13:28:07.319948",
+      "startTime": "2018-07-11T13:28:07.319948+00:00",
       "type": "EraseBasic",
-      "endTime": "2018-07-11T14:04:04.864425",
+      "endTime": "2018-07-11T14:04:04.864425+00:00",
       "severity": "Info",
       "steps": [
       {
-        "startTime": "2018-07-11T13:28:07.320244",
+        "startTime": "2018-07-11T13:28:07.320244+00:00",
         "type": "StepRandom",
-        "endTime": "2018-07-11T14:04:04.861590",
+        "endTime": "2018-07-11T14:04:04.861590+00:00",
         "severity": "Info"
       }
       ]

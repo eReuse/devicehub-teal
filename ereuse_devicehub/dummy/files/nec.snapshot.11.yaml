@@ -101,14 +101,14 @@
     "events": [
     {
       "severity": "Info",
-      "endTime": "2018-07-11T11:33:41.531918",
-      "startTime": "2018-07-11T10:30:35.643855",
+      "endTime": "2018-07-11T11:33:41.531918+00:00",
+      "startTime": "2018-07-11T10:30:35.643855+00:00",
       "type": "EraseBasic",
       "steps": [
       {
         "type": "StepRandom",
-        "endTime": "2018-07-11T11:33:41.529224",
-        "startTime": "2018-07-11T10:30:35.644043",
+        "endTime": "2018-07-11T11:33:41.529224+00:00",
+        "startTime": "2018-07-11T10:30:35.644043+00:00",
         "severity": "Info"
       }
       ]
@@ -155,7 +155,7 @@
     "StressTest",
     "EraseBasic"
   ],
-  "endTime": "2018-07-11T10:28:55.879745",
+  "endTime": "2018-07-11T10:28:55.879745+00:00",
   "type": "Snapshot",
   "elapsed": 3886,
   "closed": false

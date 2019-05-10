@@ -10,10 +10,10 @@ type: 'EraseSectors'
 severity: Info
 # snapshot: None fulfill!
 # device: None fulfill!
-startTime: 2018-01-01T10:10:10
-endTime: 2018-01-01T12:10:10
+startTime: '2018-01-01T10:10:10+00:00'
+endTime: '2018-01-01T12:10:10+00:00'
 steps:
-- type: 'StepRandom'
-  startTime: '2018-01-01T10:10:10'
-  endTime: '2018-01-01T12:10:10'
-  severity: Info
+  - type: 'StepRandom'
+    startTime: '2018-01-01T10:10:10+00:00'
+    endTime: '2018-01-01T12:10:10+00:00'
+    severity: Info

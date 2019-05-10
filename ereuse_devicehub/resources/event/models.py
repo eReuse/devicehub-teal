@@ -12,7 +12,7 @@ Within the above general classes are subclasses in A order.
 
 from collections import Iterable
 from contextlib import suppress
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_EVEN, ROUND_UP
 from typing import Optional, Set, Union
 from uuid import uuid4
@@ -22,6 +22,7 @@ import teal.db
 from boltons import urlutils
 from citext import CIText
 from flask import current_app as app, g
+from sortedcontainers import SortedSet
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Enum as DBEnum, \
     Float, ForeignKey, Integer, Interval, JSON, Numeric, SmallInteger, Unicode, event, orm
 from sqlalchemy.dialects.postgresql import UUID
@@ -53,6 +54,13 @@ class JoinedTableMixin:
     @declared_attr
     def id(cls):
         return Column(UUID(as_uuid=True), ForeignKey(Event.id), primary_key=True)
+
+
+_sorted_events = {
+    'order_by': lambda: Event.end_time,
+    'collection_class': SortedSet
+}
+"""For db.backref, return the events sorted by end_time."""
 
 
 class Event(Thing):
@@ -100,8 +108,7 @@ class Event(Thing):
                             backref=backref('events',
                                             lazy=True,
                                             cascade=CASCADE_OWN,
-                                            order_by=lambda: Event.created,
-                                            collection_class=OrderedSet),
+                                            **_sorted_events),
                             primaryjoin='Event.snapshot_id == Snapshot.id')
 
     author_id = Column(UUID(as_uuid=True),
@@ -126,10 +133,7 @@ class Event(Thing):
                       default=lambda: g.user.individual.id)
     # todo compute the org
     agent = relationship(Agent,
-                         backref=backref('events_agent',
-                                         lazy=True,
-                                         collection_class=OrderedSet,
-                                         order_by=lambda: Event.created),
+                         backref=backref('events_agent', lazy=True, **_sorted_events),
                          primaryjoin=agent_id == Agent.id)
     agent_id.comment = """
     The direct performer or driver of the action. e.g. John wrote a book.
@@ -139,10 +143,7 @@ class Event(Thing):
     """
 
     components = relationship(Component,
-                              backref=backref('events_components',
-                                              lazy=True,
-                                              order_by=lambda: Event.created,
-                                              collection_class=OrderedSet),
+                              backref=backref('events_components', lazy=True, **_sorted_events),
                               secondary=lambda: EventComponent.__table__,
                               order_by=lambda: Component.id,
                               collection_class=OrderedSet)
@@ -161,10 +162,7 @@ class Event(Thing):
     """
     parent_id = Column(BigInteger, ForeignKey(Computer.id))
     parent = relationship(Computer,
-                          backref=backref('events_parent',
-                                          lazy=True,
-                                          order_by=lambda: Event.created,
-                                          collection_class=OrderedSet),
+                          backref=backref('events_parent', lazy=True, **_sorted_events),
                           primaryjoin=parent_id == Computer.id)
     parent_id.comment = """
     For events that are performed to components, the device parent
@@ -227,7 +225,18 @@ class Event(Thing):
 
     @property
     def date_str(self):
-        return '{:%c}'.format(self.end_time or self.created)
+        return '{:%c}'.format(self.end_time)
+
+    def __init__(self, **kwargs) -> None:
+        # sortedset forces us to do this before calling our parent init
+        self.end_time = kwargs.get('end_time', None)
+        if not self.end_time:
+            # Set default for end_time, make it the same of created
+            kwargs['created'] = self.end_time = datetime.now(timezone.utc)
+        super().__init__(**kwargs)
+
+    def __lt__(self, other):
+        return self.end_time < other.end_time
 
     def __str__(self) -> str:
         return '{}'.format(self.severity)
@@ -254,8 +263,7 @@ class EventWithOneDevice(JoinedTableMixin, Event):
                           backref=backref('events_one',
                                           lazy=True,
                                           cascade=CASCADE_OWN,
-                                          order_by=lambda: EventWithOneDevice.created,
-                                          collection_class=OrderedSet),
+                                          **_sorted_events),
                           primaryjoin=Device.id == device_id)
 
     __table_args__ = (
@@ -282,10 +290,7 @@ class EventWithOneDevice(JoinedTableMixin, Event):
 
 class EventWithMultipleDevices(Event):
     devices = relationship(Device,
-                           backref=backref('events_multiple',
-                                           lazy=True,
-                                           order_by=lambda: EventWithMultipleDevices.created,
-                                           collection_class=OrderedSet),
+                           backref=backref('events_multiple', lazy=True, **_sorted_events),
                            secondary=lambda: EventDevice.__table__,
                            order_by=lambda: Device.id,
                            collection_class=OrderedSet)
@@ -1292,10 +1297,7 @@ class Trade(JoinedTableMixin, EventWithMultipleDevices):
     to_id = Column(UUID(as_uuid=True), ForeignKey(Agent.id), nullable=False)
     # todo compute the org
     to = relationship(Agent,
-                      backref=backref('events_to',
-                                      lazy=True,
-                                      collection_class=OrderedSet,
-                                      order_by=lambda: Event.created),
+                      backref=backref('events_to', lazy=True, **_sorted_events),
                       primaryjoin=to_id == Agent.id)
     to_comment = """
         The agent that gets the device due this deal.

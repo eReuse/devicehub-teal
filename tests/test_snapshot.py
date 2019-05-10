@@ -157,7 +157,8 @@ def test_snapshot_component_add_remove(user: UserClient):
     # p1c2s has two Snapshots, a Remove and an Add
     p1c2s, _ = user.get(res=m.Device, item=pc2['components'][0]['id'])
     assert tuple(e['type'] for e in p1c2s['events']) == (
-    'BenchmarkProcessor', 'Snapshot', 'Snapshot', 'Remove')
+        'BenchmarkProcessor', 'Snapshot', 'Snapshot', 'Remove'
+    )
 
     # We register the first device again, but removing motherboard
     # and moving processor from the second device to the first.
@@ -304,31 +305,43 @@ def test_snapshot_component_containing_components(user: UserClient):
     user.post(s, res=Snapshot, status=ValidationError)
 
 
-def test_erase_privacy_standards(user: UserClient):
-    """Tests a Snapshot with EraseSectors and the resulting
-    privacy properties.
+def test_erase_privacy_standards_endtime_sort(user: UserClient):
+    """Tests a Snapshot with EraseSectors and the resulting privacy
+    properties.
+
+    This tests ensures that only the last erasure is picked up, as
+    erasures have always custom endTime value set.
     """
     s = file('erase-sectors.snapshot')
-    assert '2018-06-01T09:12:06+02:00' == s['components'][0]['events'][0]['endTime']
+    assert s['components'][0]['events'][0]['endTime'] == '2018-06-01T09:12:06+02:00'
     snapshot = snapshot_and_check(user, s, event_types=(
         EraseSectors.t,
         BenchmarkDataStorage.t,
         BenchmarkProcessor.t
-    ))
+    ), perform_second_snapshot=False)
+    # Perform a new snapshot changing the erasure time, as if
+    # it is a new erasure performed after.
     erase = next(e for e in snapshot['events'] if e['type'] == EraseSectors.t)
-    assert '2018-06-01T07:12:06+00:00' == erase['endTime']
+    assert erase['endTime'] == '2018-06-01T07:12:06+00:00'
+    s['uuid'] = uuid4()
+    s['components'][0]['events'][0]['endTime'] = '2018-06-01T07:14:00+00:00'
+    snapshot = snapshot_and_check(user, s, event_types=(
+        EraseSectors.t,
+        BenchmarkDataStorage.t,
+        BenchmarkProcessor.t
+    ), perform_second_snapshot=False)
+
+    # The actual test
     storage = next(e for e in snapshot['components'] if e['type'] == SolidStateDrive.t)
     storage, _ = user.get(res=m.Device, item=storage['id'])  # Let's get storage events too
-    # order: creation time ascending
-    erasure1, benchmark_data_storage1, _snapshot1, erasure2, benchmark_data_storage2, _snapshot2 = \
-    storage['events']
+    # order: endTime ascending
+    #        erasure1/2 have an user defined time and others events endTime = created
+    erasure1, erasure2, benchmark_hdd1, _snapshot1, benchmark_hdd2, _snapshot2 = storage['events']
     assert erasure1['type'] == erasure2['type'] == 'EraseSectors'
-    assert benchmark_data_storage1['type'] == benchmark_data_storage2[
-        'type'] == 'BenchmarkDataStorage'
+    assert benchmark_hdd1['type'] == benchmark_hdd2['type'] == 'BenchmarkDataStorage'
     assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
     get_snapshot, _ = user.get(res=Event, item=_snapshot2['id'])
-    assert get_snapshot['events'][0]['endTime'] == '2018-06-01T07:12:06+00:00'
-    # TODO events order are different between snapshots
+    assert get_snapshot['events'][0]['endTime'] == '2018-06-01T07:14:00+00:00'
     assert snapshot == get_snapshot
     erasure, _ = user.get(res=Event, item=erasure1['id'])
     assert len(erasure['steps']) == 2

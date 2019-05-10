@@ -40,7 +40,8 @@ setup(
         'requests-toolbelt',
         'sqlalchemy-citext',
         'sqlalchemy-utils[password, color, phone]',
-        'Flask-WeasyPrint'
+        'Flask-WeasyPrint',
+        'sortedcontainers'
     ],
     extras_require={
         'docs': [

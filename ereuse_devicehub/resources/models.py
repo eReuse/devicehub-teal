@@ -32,6 +32,7 @@ class Thing(db.Model):
     """
 
     def __init__(self, **kwargs) -> None:
+        # We need to set 'created' before sqlalchemy inits the class
+        # to be able to use sorted containers
+        self.created = kwargs.get('created', datetime.now(timezone.utc))
         super().__init__(**kwargs)
-        if not self.created:
-            self.created = datetime.now(timezone.utc)

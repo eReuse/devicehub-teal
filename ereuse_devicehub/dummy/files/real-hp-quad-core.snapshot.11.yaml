@@ -4,7 +4,7 @@
   "uuid": "0c822fb7-6e51-4781-86cf-994bd306212e",
   "software": "Workbench",
   "closed": false,
-  "endTime": "2018-07-05T11:57:17.284891",
+  "endTime": "2018-07-05T11:57:17.284891+00:00",
   "components": [
   {
     "type": "NetworkAdapter",

@@ -36,7 +36,6 @@ def test_workbench_server_condensed(user: UserClient):
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     events = snapshot['events']
     assert {(event['type'], event['device']) for event in events} == {
-        ('RateComputer', 1),
         ('BenchmarkProcessorSysbench', 5),
         ('StressTest', 1),
         ('EraseSectors', 6),
@@ -47,7 +46,8 @@ def test_workbench_server_condensed(user: UserClient):
         ('BenchmarkDataStorage', 6),
         ('BenchmarkDataStorage', 7),
         ('TestDataStorage', 6),
-        ('VisualTest', 1)
+        ('VisualTest', 1),
+        ('RateComputer', 1)
     }
     assert snapshot['closed']
     assert snapshot['severity'] == 'Info'
@@ -63,9 +63,9 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['rate']['severity'] == 'Info'
     assert device['rate']['rating'] == 0
     assert device['rate']['type'] == 'RateComputer'
-    assert device['events'][0]['appearanceRange'] == 'A'
-    assert device['events'][0]['functionalityRange'] == 'B'
-
+    assert device['events'][2]['type'] == 'VisualTest'
+    assert device['events'][2]['appearanceRange'] == 'A'
+    assert device['events'][2]['functionalityRange'] == 'B'
     assert device['tags'][0]['id'] == 'tag1'
 
 

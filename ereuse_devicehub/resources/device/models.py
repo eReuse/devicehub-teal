@@ -44,8 +44,6 @@ class Device(Thing):
     Devices can contain ``Components``, which are just a type of device
     (it is a recursive relationship).
     """
-    EVENT_SORT_KEY = attrgetter('created')
-
     id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
     id.comment = """
         The identifier of the device for this database. Used only
@@ -150,7 +148,7 @@ class Device(Thing):
 
         Events are returned by descending ``created`` time.
         """
-        return sorted(chain(self.events_multiple, self.events_one), key=self.EVENT_SORT_KEY)
+        return sorted(chain(self.events_multiple, self.events_one))
 
     @property
     def problems(self):
@@ -285,8 +283,7 @@ class Device(Thing):
             raise LookupError('{!r} does not contain events of types {}.'.format(self, types))
 
     def _warning_events(self, events):
-        return sorted((ev for ev in events if ev.severity >= Severity.Warning),
-                      key=self.EVENT_SORT_KEY)
+        return sorted(ev for ev in events if ev.severity >= Severity.Warning)
 
     def __lt__(self, other):
         return self.id < other.id
@@ -393,7 +390,7 @@ class Computer(Device):
 
     @property
     def events(self) -> list:
-        return sorted(chain(super().events, self.events_parent), key=self.EVENT_SORT_KEY)
+        return sorted(chain(super().events, self.events_parent))
 
     @property
     def ram_size(self) -> int:
@@ -565,7 +562,7 @@ class Component(Device):
 
     @property
     def events(self) -> list:
-        return sorted(chain(super().events, self.events_components), key=self.EVENT_SORT_KEY)
+        return sorted(chain(super().events, self.events_components))
 
 
 class JoinedComponentTableMixin:
