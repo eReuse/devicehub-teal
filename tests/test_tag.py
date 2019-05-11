@@ -11,10 +11,10 @@ from teal.marshmallow import ValidationError
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Desktop, Device
 from ereuse_devicehub.resources.enums import ComputerChassis
-from ereuse_devicehub.resources.event.models import Snapshot
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.tag.view import CannotCreateETag, LinkedToAnotherDevice, \
     TagNotLinked

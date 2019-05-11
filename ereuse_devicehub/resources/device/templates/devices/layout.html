@@ -194,21 +194,21 @@
         <small>Latest one.</small>
       </div>
       <ol>
-        {% for event in device.events|reverse %}
+        {% for action in device.actions|reverse %}
           <li>
             <strong>
-              {{ event.type }}
+              {{ action.type }}
             </strong>
             —
-            {{ event }}
+            {{ action }}
             <br>
             <div class="text-muted">
               <small>
-                {{ event._date_str }}
+                {{ action._date_str }}
               </small>
             </div>
-            {% if event.certificate %}
-              <a href="{{ event.certificate.to_text() }}">See the certificate</a>
+            {% if action.certificate %}
+              <a href="{{ action.certificate.to_text() }}">See the certificate</a>
             {% endif %}
           </li>
         {% endfor %}

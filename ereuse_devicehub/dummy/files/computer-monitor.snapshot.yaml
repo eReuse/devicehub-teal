@@ -10,7 +10,7 @@ device:
   resolutionWidth: 1920
   resolutionHeight: 1080
   size: 21.5
-  events:
+  actions:
     - type: VisualTest
       appearanceRange: A
       functionalityRange: C

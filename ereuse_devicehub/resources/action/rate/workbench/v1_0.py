@@ -2,18 +2,18 @@ from enum import Enum, unique
 from itertools import groupby
 from typing import Dict, Iterable, Tuple
 
+from ereuse_devicehub.resources.action.models import BenchmarkDataStorage, BenchmarkProcessor, \
+    BenchmarkProcessorSysbench, RateComputer, VisualTest
+from ereuse_devicehub.resources.action.rate.rate import BaseRate
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Processor, \
     RamModule
-from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, BenchmarkProcessor, \
-    BenchmarkProcessorSysbench, RateComputer, VisualTest
-from ereuse_devicehub.resources.event.rate.rate import BaseRate
 
 
 class RateAlgorithm(BaseRate):
     """The algorithm that generates the Rate v1.0.
 
     Do not call directly this class, but use
-    :meth:`ereuse_devicehub.resources.event.models.RateComputer.compute`,
+    :meth:`ereuse_devicehub.resources.action.models.RateComputer.compute`,
     which then calls this.
     """
 
@@ -44,13 +44,13 @@ class RateAlgorithm(BaseRate):
 
     def compute(self, device: Computer) -> RateComputer:
         """Generates a new
-        :class:`ereuse_devicehub.resources.event.models.RateComputer`
+        :class:`ereuse_devicehub.resources.action.models.RateComputer`
         for the passed-in device.
         """
         assert isinstance(device, Computer), 'Can only rate computers'
 
         try:
-            visual_test = device.last_event_of(VisualTest)
+            visual_test = device.last_action_of(VisualTest)
         except LookupError:
             raise CannotRate('You need a visual test.')
 
@@ -73,7 +73,7 @@ class RateAlgorithm(BaseRate):
         rate.appearance = self.Appearance[visual_test.appearance_range.name].value
         rate.functionality = self.Functionality[visual_test.functionality_range.name].value
         rate.rating = rate_components + rate.functionality + rate.appearance
-        device.events_one.add(rate)
+        device.actions_one.add(rate)
         assert 0 <= rate.rating <= 4.7, 'Rate ranges from 0 to 4.7'
         return rate
 
@@ -100,7 +100,7 @@ class ProcessorRate(BaseRate):
         cores = processor.cores or self.DEFAULT_CORES
         speed = processor.speed or self.DEFAULT_SPEED
         benchmark_cpu = next(
-            e for e in reversed(processor.events)
+            e for e in reversed(processor.actions)
             if isinstance(e, BenchmarkProcessor) and not isinstance(e, BenchmarkProcessorSysbench)
         )
         benchmark_cpu = benchmark_cpu.rate or self.DEFAULT_SCORE
@@ -203,7 +203,7 @@ class DataStorageRate(BaseRate):
         # STEP: Filtering, data cleaning and merging of component parts
         for storage in data_storage_devices:
             # We assume all hdd snapshots have BenchmarkDataStorage
-            benchmark = storage.last_event_of(BenchmarkDataStorage)
+            benchmark = storage.last_action_of(BenchmarkDataStorage)
             # prevent NULL values
             _size = storage.size or 0
             size += _size

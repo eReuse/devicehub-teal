@@ -9,7 +9,6 @@ type: Snapshot
 uuid: cb8ce6b5-6a1b-4084-b5b9-d8fadad2a015
 version: '11.0'
 software: Workbench
-expectedEvents: [TestDataStorage, StressTest, EraseSectors, Install]
 elapsed: 500
 device:
   type: Desktop
@@ -20,7 +19,7 @@ device:
   tags:
     - type: Tag
       id: tag1
-  events:
+  actions:
     - type: VisualTest
       appearanceRange: A
       functionalityRange: B
@@ -45,7 +44,7 @@ components:
   - type: Processor
     model: p1-1ml
     manufacturer: p1-1mr
-    events:
+    actions:
       - type: BenchmarkProcessor
         rate: 2410
         elapsed: 44
@@ -57,7 +56,7 @@ components:
     model: ssd1-1ml
     manufacturer: ssd1-1mr
     size: 1100
-    events:
+    actions:
       - type: BenchmarkDataStorage
         readSpeed: 20
         writeSpeed: 15
@@ -80,7 +79,7 @@ components:
     serialNumber: hdd1-1s
     model: hdd1-1ml
     manufacturer: hdd1-1mr
-    events:
+    actions:
       - type: BenchmarkDataStorage
         readSpeed: 10
         writeSpeed: 5

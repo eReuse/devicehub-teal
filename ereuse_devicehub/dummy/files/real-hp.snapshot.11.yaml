@@ -3,7 +3,7 @@
   "uuid": "f9e5e587-baee-44e1-9a94-255d216bbda9",
   "components": [
   {
-    "events": [],
+    "actions": [],
     "serialNumber": "6c:62:6d:81:22:9f",
     "type": "NetworkAdapter",
     "manufacturer": "Intel Corporation",
@@ -13,7 +13,7 @@
   },
   {
     "format": "DIMM",
-    "events": [
+    "actions": [
     ],
     "interface": "DDR3",
     "serialNumber": "B4012F30",
@@ -25,7 +25,7 @@
   },
   {
     "format": "DIMM",
-    "events": [],
+    "actions": [],
     "interface": "DDR3",
     "serialNumber": "8E9F2E29",
     "size": 2048,
@@ -36,7 +36,7 @@
   },
   {
     "format": "DIMM",
-    "events": [],
+    "actions": [],
     "interface": "DDR3",
     "serialNumber": "9A012F30",
     "size": 2048,
@@ -47,7 +47,7 @@
   },
   {
     "format": "DIMM",
-    "events": [
+    "actions": [
     ],
     "interface": "DDR3",
     "serialNumber": "8F9F2E29",
@@ -59,7 +59,7 @@
   },
   {
     "cores": 2,
-    "events": [
+    "actions": [
     {
       "rate": 23410.76,
       "type": "BenchmarkProcessor",
@@ -79,7 +79,7 @@
     "model": "Intel Core i3 CPU 530 @ 2.93GHz"
   },
   {
-    "events": [
+    "actions": [
     {
       "writeSpeed": 24.5,
       "readSpeed": 111.0,
@@ -102,7 +102,7 @@
     "model": "WDC WD3200AAJS-6"
   },
   {
-    "events": [],
+    "actions": [],
     "serialNumber": null,
     "type": "SoundCard",
     "manufacturer": "Intel Corporation",
@@ -110,14 +110,14 @@
   },
   {
     "memory": 256.0,
-    "events": [],
+    "actions": [],
     "serialNumber": null,
     "type": "GraphicCard",
     "manufacturer": "Intel Corporation",
     "model": "Core Processor Integrated Graphics Controller"
   },
   {
-    "events": [
+    "actions": [
     {
       "type": "TestBios",
       "accessRange": "A"
@@ -137,13 +137,8 @@
   "software": "Workbench",
   "elapsed": 96,
   "version": "11.0a1",
-  "expectedEvents": [
-    "StressTest",
-    "Benchmark",
-    "SmartTest"
-  ],
   "device": {
-    "events": [
+    "actions": [
     {
       "type": "StressTest",
       "elapsed": 60,

@@ -11,14 +11,14 @@ from teal.marshmallow import ValidationError
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.action.models import Action, BenchmarkDataStorage, \
+    BenchmarkProcessor, EraseSectors, RateComputer, Snapshot, SnapshotRequest, VisualTest
 from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import SolidStateDrive
 from ereuse_devicehub.resources.device.sync import MismatchBetweenProperties, \
     MismatchBetweenTagsAndHid
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
-from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, BenchmarkProcessor, \
-    EraseSectors, Event, RateComputer, Snapshot, SnapshotRequest, VisualTest
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 from tests.conftest import file
@@ -42,7 +42,7 @@ def test_snapshot_model():
     db.session.add(snapshot)
     db.session.commit()
     device = m.Desktop.query.one()  # type: m.Desktop
-    e1 = device.events[0]
+    e1 = device.actions[0]
     assert isinstance(e1, Snapshot), 'Creation order must be preserved: 1. snapshot, 2. WR'
     db.session.delete(device)
     db.session.commit()
@@ -66,9 +66,9 @@ def test_snapshot_post(user: UserClient):
     Tests the post snapshot endpoint (validation, etc), data correctness,
     and relationship correctness.
     """
-    # TODO add all event_types to check, how to add correctly??
+    # TODO add all action_types to check, how to add correctly??
     snapshot = snapshot_and_check(user, file('basic.snapshot'),
-                                  event_types=(
+                                  action_types=(
                                       BenchmarkProcessor.t,
                                       VisualTest.t,
                                       RateComputer.t
@@ -79,7 +79,7 @@ def test_snapshot_post(user: UserClient):
     assert snapshot['uuid'] == 'f5efd26e-8754-46bc-87bf-fbccc39d60d9'
     assert snapshot['elapsed'] == 4
     assert snapshot['author']['id'] == user.user['id']
-    assert 'events' not in snapshot['device']
+    assert 'actions' not in snapshot['device']
     assert 'author' not in snapshot['device']
     device, _ = user.get(res=m.Device, item=snapshot['device']['id'])
     key = itemgetter('serialNumber')
@@ -89,8 +89,8 @@ def test_snapshot_post(user: UserClient):
 
     assert {c['type'] for c in snapshot['components']} == {m.GraphicCard.t, m.RamModule.t,
                                                            m.Processor.t}
-    rate = next(e for e in snapshot['events'] if e['type'] == RateComputer.t)
-    rate, _ = user.get(res=Event, item=rate['id'])
+    rate = next(e for e in snapshot['actions'] if e['type'] == RateComputer.t)
+    rate, _ = user.get(res=Action, item=rate['id'])
     assert rate['device']['id'] == snapshot['device']['id']
     rate['components'].sort(key=key)
     assert rate['components'] == snapshot['components']
@@ -103,13 +103,13 @@ def test_snapshot_component_add_remove(user: UserClient):
     All computers generate HID.
     """
 
-    def get_events_info(events: List[dict]) -> tuple:
+    def get_actions_info(actions: List[dict]) -> tuple:
         return tuple(
             (
                 e['type'],
                 [c['serialNumber'] for c in e['components']]
             )
-            for e in user.get_many(res=Event, resources=events, key='id')
+            for e in user.get_many(res=Action, resources=actions, key='id')
         )
 
     # We add the first device (2 times). The distribution of components
@@ -118,7 +118,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     s1 = file('1-device-with-components.snapshot')
     snapshot1 = snapshot_and_check(user,
                                    s1,
-                                   event_types=(BenchmarkProcessor.t,),
+                                   action_types=(BenchmarkProcessor.t,),
                                    perform_second_snapshot=False)
     pc1_id = snapshot1['device']['id']
     pc1, _ = user.get(res=m.Device, item=pc1_id)
@@ -126,22 +126,22 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c2s', 'p1c3s')
     # Components contain parent
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    # pc has two events: Snapshot and the BenchmarkProcessor
-    # TODO change assert to len(pc1['events']) == 2 cause we add BenchmarkProcessor event
-    assert len(pc1['events']) == 2
-    # TODO pc1['events'][0]['type'] == BenchmarkProcessor.t
-    assert pc1['events'][1]['type'] == Snapshot.t
+    # pc has two actions: Snapshot and the BenchmarkProcessor
+    # TODO change assert to len(pc1['actions']) == 2 cause we add BenchmarkProcessor action
+    assert len(pc1['actions']) == 2
+    # TODO pc1['actions'][0]['type'] == BenchmarkProcessor.t
+    assert pc1['actions'][1]['type'] == Snapshot.t
     # p1c1s has Snapshot
     p1c1s, _ = user.get(res=m.Device, item=pc1['components'][0]['id'])
-    assert tuple(e['type'] for e in p1c1s['events']) == ('Snapshot',)
+    assert tuple(e['type'] for e in p1c1s['actions']) == ('Snapshot',)
 
     # We register a new device
     # It has the processor of the first one (p1c2s)
     # PC 1: p1c1s, p1c3s. PC 2: p2c1s, p1c2s
-    # Events PC1: Snapshot, Remove. PC2: Snapshot
+    # Actions PC1: Snapshot, Remove. PC2: Snapshot
     s2 = file('2-second-device-with-components-of-first.snapshot')
-    # num_events = 2 = Remove, Add
-    snapshot2 = snapshot_and_check(user, s2, event_types=('Remove',),
+    # num_actions = 2 = Remove, Add
+    snapshot2 = snapshot_and_check(user, s2, action_types=('Remove',),
                                    perform_second_snapshot=False)
     pc2_id = snapshot2['device']['id']
     pc1, _ = user.get(res=m.Device, item=pc1_id)
@@ -149,14 +149,14 @@ def test_snapshot_component_add_remove(user: UserClient):
     # PC1
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c3s')
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    assert tuple(e['type'] for e in pc1['events']) == ('BenchmarkProcessor', 'Snapshot', 'Remove')
+    assert tuple(e['type'] for e in pc1['actions']) == ('BenchmarkProcessor', 'Snapshot', 'Remove')
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p1c2s', 'p2c1s')
     assert all(c['parent'] == pc2_id for c in pc2['components'])
-    assert tuple(e['type'] for e in pc2['events']) == ('Snapshot',)
+    assert tuple(e['type'] for e in pc2['actions']) == ('Snapshot',)
     # p1c2s has two Snapshots, a Remove and an Add
     p1c2s, _ = user.get(res=m.Device, item=pc2['components'][0]['id'])
-    assert tuple(e['type'] for e in p1c2s['events']) == (
+    assert tuple(e['type'] for e in p1c2s['actions']) == (
         'BenchmarkProcessor', 'Snapshot', 'Snapshot', 'Remove'
     )
 
@@ -171,7 +171,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     # PC1
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c2s', 'p1c3s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    assert tuple(get_events_info(pc1['events'])) == (
+    assert tuple(get_actions_info(pc1['actions'])) == (
         # id, type, components, snapshot
         ('BenchmarkProcessor', []),  # first BenchmarkProcessor
         ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # first Snapshot1
@@ -181,13 +181,13 @@ def test_snapshot_component_add_remove(user: UserClient):
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
     assert all(c['parent'] == pc2_id for c in pc2['components'])
-    assert tuple(e['type'] for e in pc2['events']) == (
+    assert tuple(e['type'] for e in pc2['actions']) == (
         'Snapshot',  # Second Snapshot
         'Remove'  # the processor we added in 2.
     )
     # p1c2s has Snapshot, Remove and Add
     p1c2s, _ = user.get(res=m.Device, item=pc1['components'][0]['id'])
-    assert tuple(get_events_info(p1c2s['events'])) == (
+    assert tuple(get_actions_info(p1c2s['actions'])) == (
         ('BenchmarkProcessor', []),  # first BenchmarkProcessor
         ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # First Snapshot to PC1
         ('Snapshot', ['p1c2s', 'p2c1s']),  # Second Snapshot to PC2
@@ -206,7 +206,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c3s', 'p1c4s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
     # This last Snapshot only
-    assert get_events_info(pc1['events'])[-1] == ('Snapshot', ['p1c3s', 'p1c4s'])
+    assert get_actions_info(pc1['actions'])[-1] == ('Snapshot', ['p1c3s', 'p1c4s'])
     # PC2
     # We haven't changed PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
@@ -247,7 +247,7 @@ def test_snapshot_tag_inner_tag(tag_id: str, user: UserClient, app: Devicehub):
     b['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
 
     snapshot_and_check(user, b,
-                       event_types=(RateComputer.t, BenchmarkProcessor.t, VisualTest.t))
+                       action_types=(RateComputer.t, BenchmarkProcessor.t, VisualTest.t))
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
         assert tag.device_id == 1, 'Tag should be linked to the first device'
@@ -313,19 +313,19 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     erasures have always custom endTime value set.
     """
     s = file('erase-sectors.snapshot')
-    assert s['components'][0]['events'][0]['endTime'] == '2018-06-01T09:12:06+02:00'
-    snapshot = snapshot_and_check(user, s, event_types=(
+    assert s['components'][0]['actions'][0]['endTime'] == '2018-06-01T09:12:06+02:00'
+    snapshot = snapshot_and_check(user, s, action_types=(
         EraseSectors.t,
         BenchmarkDataStorage.t,
         BenchmarkProcessor.t
     ), perform_second_snapshot=False)
     # Perform a new snapshot changing the erasure time, as if
     # it is a new erasure performed after.
-    erase = next(e for e in snapshot['events'] if e['type'] == EraseSectors.t)
+    erase = next(e for e in snapshot['actions'] if e['type'] == EraseSectors.t)
     assert erase['endTime'] == '2018-06-01T07:12:06+00:00'
     s['uuid'] = uuid4()
-    s['components'][0]['events'][0]['endTime'] = '2018-06-01T07:14:00+00:00'
-    snapshot = snapshot_and_check(user, s, event_types=(
+    s['components'][0]['actions'][0]['endTime'] = '2018-06-01T07:14:00+00:00'
+    snapshot = snapshot_and_check(user, s, action_types=(
         EraseSectors.t,
         BenchmarkDataStorage.t,
         BenchmarkProcessor.t
@@ -333,17 +333,17 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
 
     # The actual test
     storage = next(e for e in snapshot['components'] if e['type'] == SolidStateDrive.t)
-    storage, _ = user.get(res=m.Device, item=storage['id'])  # Let's get storage events too
+    storage, _ = user.get(res=m.Device, item=storage['id'])  # Let's get storage actions too
     # order: endTime ascending
-    #        erasure1/2 have an user defined time and others events endTime = created
-    erasure1, erasure2, benchmark_hdd1, _snapshot1, benchmark_hdd2, _snapshot2 = storage['events']
+    #        erasure1/2 have an user defined time and others actions endTime = created
+    erasure1, erasure2, benchmark_hdd1, _snapshot1, benchmark_hdd2, _snapshot2 = storage['actions']
     assert erasure1['type'] == erasure2['type'] == 'EraseSectors'
     assert benchmark_hdd1['type'] == benchmark_hdd2['type'] == 'BenchmarkDataStorage'
     assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
-    get_snapshot, _ = user.get(res=Event, item=_snapshot2['id'])
-    assert get_snapshot['events'][0]['endTime'] == '2018-06-01T07:14:00+00:00'
+    get_snapshot, _ = user.get(res=Action, item=_snapshot2['id'])
+    assert get_snapshot['actions'][0]['endTime'] == '2018-06-01T07:14:00+00:00'
     assert snapshot == get_snapshot
-    erasure, _ = user.get(res=Event, item=erasure1['id'])
+    erasure, _ = user.get(res=Action, item=erasure1['id'])
     assert len(erasure['steps']) == 2
     assert erasure['steps'][0]['startTime'] == '2018-06-01T06:15:00+00:00'
     assert erasure['steps'][0]['endTime'] == '2018-06-01T07:16:00+00:00'
@@ -364,7 +364,7 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
 
     # Let's try a second erasure with an error
     s['uuid'] = uuid4()
-    s['components'][0]['events'][0]['severity'] = 'Error'
+    s['components'][0]['actions'][0]['severity'] = 'Error'
     snapshot, _ = user.post(s, res=Snapshot)
     storage, _ = user.get(res=m.Device, item=storage['id'])
     assert storage['hid'] == 'solidstatedrive-c1mr-c1ml-c1s'
@@ -378,7 +378,7 @@ def test_test_data_storage(user: UserClient):
     s = file('erase-sectors-2-hdd.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=s)
     incidence_test = next(
-        ev for ev in snapshot['events']
+        ev for ev in snapshot['actions']
         if ev.get('reallocatedSectorCount', None) == 15
     )
     assert incidence_test['severity'] == 'Error'
@@ -388,14 +388,14 @@ def test_test_data_storage(user: UserClient):
 @pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
 def test_snapshot_computer_monitor(user: UserClient):
     s = file('computer-monitor.snapshot')
-    snapshot_and_check(user, s, event_types=('ManualRate',))
+    snapshot_and_check(user, s, action_types=('ManualRate',))
     # todo check that ManualRate has generated an AggregateRate
 
 
 @pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
 def test_snapshot_mobile_smartphone_imei_manual_rate(user: UserClient):
     s = file('smartphone.snapshot')
-    snapshot = snapshot_and_check(user, s, event_types=('VisualTest',))
+    snapshot = snapshot_and_check(user, s, action_types=('VisualTest',))
     mobile, _ = user.get(res=m.Device, item=snapshot['device']['id'])
     assert mobile['imei'] == 3568680000414120
     # todo check that manual rate has been created
@@ -443,32 +443,32 @@ def assert_similar_components(components1: List[dict], components2: List[dict]):
 
 def snapshot_and_check(user: UserClient,
                        input_snapshot: dict,
-                       event_types: Tuple[str, ...] = tuple(),
+                       action_types: Tuple[str, ...] = tuple(),
                        perform_second_snapshot=True) -> dict:
     """
         Performs a Snapshot and then checks if the result is ok:
 
-        - There have been performed the types of events and in the same
-          order as described in the passed-in ``event_types``.
+        - There have been performed the types of actions and in the same
+          order as described in the passed-in ``action_types``.
         - The inputted devices are similar to the resulted ones.
-        - There is no Remove event after the first Add.
+        - There is no Remove action after the first Add.
         - All input components are now inside the parent device.
 
         Optionally, it can perform a second Snapshot which should
-        perform an exact result, except for the events.
+        perform an exact result, except for the actions.
 
         :return: The last resulting snapshot.
     """
     snapshot, _ = user.post(res=Snapshot, data=input_snapshot)
-    assert all(e['type'] in event_types for e in snapshot['events'])
-    assert len(snapshot['events']) == len(event_types)
-    # Ensure there is no Remove event after the first Add
+    assert all(e['type'] in action_types for e in snapshot['actions'])
+    assert len(snapshot['actions']) == len(action_types)
+    # Ensure there is no Remove action after the first Add
     found_add = False
-    for event in snapshot['events']:
-        if event['type'] == 'Add':
+    for action in snapshot['actions']:
+        if action['type'] == 'Add':
             found_add = True
         if found_add:
-            assert event['type'] != 'Receive', 'All Remove events must be before the Add ones'
+            assert action['type'] != 'Receive', 'All Remove actions must be before the Add ones'
     assert input_snapshot['device']
     assert_similar_device(input_snapshot['device'], snapshot['device'])
     if input_snapshot.get('components', None):
@@ -478,7 +478,8 @@ def snapshot_and_check(user: UserClient,
     if perform_second_snapshot:
         if 'uuid' in input_snapshot:
             input_snapshot['uuid'] = uuid4()
-        return snapshot_and_check(user, input_snapshot, event_types, perform_second_snapshot=False)
+        return snapshot_and_check(user, input_snapshot, action_types,
+                                  perform_second_snapshot=False)
     else:
         return snapshot
 
@@ -487,7 +488,7 @@ def snapshot_and_check(user: UserClient,
 @pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
 def test_snapshot_keyboard(user: UserClient):
     s = file('keyboard.snapshot')
-    snapshot = snapshot_and_check(user, s, event_types=('ManualRate',))
+    snapshot = snapshot_and_check(user, s, action_types=('ManualRate',))
     keyboard = snapshot['device']
     assert keyboard['layout'] == 'ES'
 

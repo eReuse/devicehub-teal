@@ -7,7 +7,7 @@ device:
   model: A1586
   serialNumber: ABCDEF
   imei: 35686800-004141-20
-  events:
+  actions:
     - type: VisualTest
       appearanceRange: A
       functionalityRange: B

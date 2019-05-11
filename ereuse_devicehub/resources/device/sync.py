@@ -11,9 +11,9 @@ from teal.db import ResourceNotFound
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.action.models import Remove
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
-from ereuse_devicehub.resources.event.models import Remove
 from ereuse_devicehub.resources.tag.model import Tag
 
 
@@ -39,7 +39,7 @@ class Sync:
 
         :param device: The device to add / update to the database.
         :param components: Components that are inside of the device.
-                           This method performs Add and Remove events
+                           This method performs Add and Remove actions
                            so the device ends up with these components.
                            Components are added / updated accordingly.
                            If this is empty, all components are removed.
@@ -55,7 +55,7 @@ class Sync:
                  2. A list of Add / Remove (not yet added to session).
         """
         db_device = self.execute_register(device)
-        db_components, events = OrderedSet(), OrderedSet()
+        db_components, actions = OrderedSet(), OrderedSet()
         if components is not None:  # We have component info (see above)
             if not isinstance(db_device, Computer):
                 # Until a good reason is given, we synthetically forbid
@@ -71,9 +71,9 @@ class Sync:
                 if not is_new:
                     not_new_components.add(db_component)
             # We only want to perform Add/Remove to not new components
-            events = self.add_remove(db_device, not_new_components)
+            actions = self.add_remove(db_device, not_new_components)
             db_device.components = db_components
-        return db_device, events
+        return db_device, actions
 
     def execute_register_component(self,
                                    component: Component,
@@ -218,7 +218,7 @@ class Sync:
     def add_remove(device: Computer,
                    components: Set[Component]) -> OrderedSet:
         """
-        Generates the Add and Remove events (but doesn't add them to
+        Generates the Add and Remove actions (but doesn't add them to
         session).
 
         :param device: A device which ``components`` attribute contains
@@ -228,10 +228,10 @@ class Sync:
                            be Added. Some of them can already exist
                            on the device, in which case they won't
                            be re-added.
-        :return: A list of Add / Remove events.
+        :return: A list of Add / Remove actions.
         """
-        # Note that we create the Remove events before the Add ones
-        events = OrderedSet()
+        # Note that we create the Remove actions before the Add ones
+        actions = OrderedSet()
         old_components = set(device.components)
 
         adding = components - old_components
@@ -242,8 +242,8 @@ class Sync:
 
             for parent, _components in groupby(sorted(adding, key=g_parent), key=g_parent):
                 if parent.id != 0:  # Is not Computer Identity
-                    events.add(Remove(device=parent, components=OrderedSet(_components)))
-        return events
+                    actions.add(Remove(device=parent, components=OrderedSet(_components)))
+        return actions
 
 
 class MismatchBetweenTags(ValidationError):

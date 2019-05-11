@@ -14,7 +14,7 @@ components:
     serialNumber: c1s
     model: c1ml
     manufacturer: c1mr
-    events:
+    actions:
       - type: EraseSectors
         startTime: '2018-06-01T08:12:06+02:00'
         endTime: '2018-06-01T09:12:06+02:00'
@@ -35,7 +35,7 @@ components:
     serialNumber: p1s
     model: p1ml
     manufacturer: p1mr
-    events:
+    actions:
       - type: BenchmarkProcessor
         elapsed: 0
         rate: 6665.7

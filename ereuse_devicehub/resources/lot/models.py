@@ -81,7 +81,7 @@ class Lot(Thing):
 
     @property
     def url(self) -> urlutils.URL:
-        """The URL where to GET this event."""
+        """The URL where to GET this action."""
         return urlutils.URL(url_for_resource(Lot, item_id=self.id))
 
     @property

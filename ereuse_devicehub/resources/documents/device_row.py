@@ -2,9 +2,9 @@ from collections import OrderedDict
 
 from flask import current_app
 
-from ereuse_devicehub.resources.device import models as d
-from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, RateComputer, \
+from ereuse_devicehub.resources.action.models import BenchmarkDataStorage, RateComputer, \
     TestDataStorage
+from ereuse_devicehub.resources.device import models as d
 
 
 class DeviceRow(OrderedDict):
@@ -33,7 +33,7 @@ class DeviceRow(OrderedDict):
         self['Serial Number'] = device.serial_number
         self['Model'] = device.model
         self['Manufacturer'] = device.manufacturer
-        # self['State'] = device.last_event_of()
+        # self['State'] = device.last_action_of()
         self['Registered in'] = format(device.created, '%c')
         self['Price'] = device.price
         if isinstance(device, d.Computer):
@@ -94,17 +94,17 @@ class DeviceRow(OrderedDict):
             self['{} {} Size (MB)'.format(type, i)] = component.size
             self['{} {} Privacy'.format(type, i)] = component.privacy
             try:
-                self['{} {} Lifetime'.format(type, i)] = component.last_event_of(
+                self['{} {} Lifetime'.format(type, i)] = component.last_action_of(
                     TestDataStorage).lifetime
             except:
                 self['{} {} Lifetime'.format(type, i)] = ''
             try:
-                self['{} {} Reading speed'.format(type, i)] = component.last_event_of(
+                self['{} {} Reading speed'.format(type, i)] = component.last_action_of(
                     BenchmarkDataStorage).read_speed
             except:
                 self['{} {} Reading speed'.format(type, i)] = ''
             try:
-                self['{} {} Writing speed'.format(type, i)] = component.last_event_of(
+                self['{} {} Writing speed'.format(type, i)] = component.last_action_of(
                     BenchmarkDataStorage).write_speed
             except:
                 self['{} {} Writing speed'.format(type, i)] = ''

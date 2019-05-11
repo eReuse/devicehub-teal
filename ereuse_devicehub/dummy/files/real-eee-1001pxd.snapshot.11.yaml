@@ -6,7 +6,7 @@
     "serialNumber": "74:2f:68:8b:fd:c8",
     "manufacturer": "Qualcomm Atheros",
     "wireless": true,
-    "events": []
+    "actions": []
   },
   {
     "type": "NetworkAdapter",
@@ -15,7 +15,7 @@
     "manufacturer": "Qualcomm Atheros",
     "speed": 100,
     "wireless": false,
-    "events": []
+    "actions": []
   },
   {
     "type": "Processor",
@@ -26,7 +26,7 @@
     "serialNumber": null,
     "manufacturer": "Intel Corp.",
     "speed": 1.667,
-    "events": [
+    "actions": [
     {
       "type": "BenchmarkProcessorSysbench",
       "rate": 164.0803,
@@ -45,21 +45,21 @@
     "serialNumber": null,
     "memory": 256.0,
     "manufacturer": "Intel Corporation",
-    "events": []
+    "actions": []
   },
   {
     "type": "SoundCard",
     "model": "NM10/ICH7 Family High Definition Audio Controller",
     "serialNumber": null,
     "manufacturer": "Intel Corporation",
-    "events": []
+    "actions": []
   },
   {
     "type": "SoundCard",
     "model": "USB 2.0 UVC VGA WebCam",
     "serialNumber": "0x0001",
     "manufacturer": "Azurewave",
-    "events": []
+    "actions": []
   },
   {
     "type": "RamModule",
@@ -70,7 +70,7 @@
     "serialNumber": null,
     "manufacturer": null,
     "speed": 667.0,
-    "events": []
+    "actions": []
   },
   {
     "type": "HardDrive",
@@ -79,7 +79,7 @@
     "interface": "ATA",
     "serialNumber": "E2024242CV86HJ",
     "manufacturer": "Hitachi",
-    "events": [
+    "actions": [
     {
       "type": "BenchmarkDataStorage",
       "elapsed": 16,
@@ -120,7 +120,7 @@
     "serialNumber": "Eee0123456789",
     "usb": 5,
     "manufacturer": "ASUSTeK Computer INC.",
-    "events": [
+    "actions": [
     {
       "type": "TestBios",
       "accessRange": "C"
@@ -140,7 +140,7 @@
     "serialNumber": "B8OAAS048286",
     "manufacturer": "ASUSTeK Computer INC.",
     "chassis": "Netbook",
-    "events": [
+    "actions": [
     {
       "type": "BenchmarkRamSysbench",
       "rate": 15.7188,
@@ -158,11 +158,5 @@
     }
     ]
   },
-  "expectedEvents": [
-    "Benchmark",
-    "SmartTest",
-    "StressTest",
-    "EraseBasic"
-  ],
   "closed": false
 }

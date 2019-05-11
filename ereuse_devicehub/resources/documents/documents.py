@@ -15,10 +15,10 @@ from teal.cache import cache
 from teal.resource import Resource
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.device.views import DeviceView
 from ereuse_devicehub.resources.documents.device_row import DeviceRow
-from ereuse_devicehub.resources.event import models as evs
 
 
 class Format(enum.Enum):
@@ -47,7 +47,7 @@ class DocumentView(DeviceView):
                                        flask.request,
                                        locations=('querystring',))
         if id:
-            # todo we assume we can pass both device id and event id
+            # todo we assume we can pass both device id and action id
             # for certificates... how is it going to end up being?
             try:
                 id = uuid.UUID(id)
@@ -59,7 +59,7 @@ class DocumentView(DeviceView):
                 else:
                     query = devs.Device.query.filter_by(id=id)
             else:
-                query = evs.Event.query.filter_by(id=id)
+                query = evs.Action.query.filter_by(id=id)
         else:
             flask.current_app.auth.requires_auth(lambda: None)()  # todo not nice
             query = self.query(args)

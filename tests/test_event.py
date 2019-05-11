@@ -11,11 +11,11 @@ from teal.enums import Currency, Subdivision
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources import enums
+from ereuse_devicehub.resources.action import models
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
 from ereuse_devicehub.resources.enums import ComputerChassis, Severity, TestDataStorageLength
-from ereuse_devicehub.resources.event import models
 from tests import conftest
 from tests.conftest import create_user, file
 
@@ -29,7 +29,7 @@ def test_author():
     """
     user = create_user()
     g.user = user
-    e = models.EventWithOneDevice(device=Device())
+    e = models.ActionWithOneDevice(device=Device())
     db.session.add(e)
     assert e.author is None
     assert e.author_id is None
@@ -51,13 +51,13 @@ def test_erase_basic():
     db.session.commit()
     db_erasure = models.EraseBasic.query.one()
     assert erasure == db_erasure
-    assert next(iter(db_erasure.device.events)) == erasure
+    assert next(iter(db_erasure.device.actions)) == erasure
     assert not erasure.standards, 'EraseBasic themselves do not have standards'
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_validate_device_data_storage():
-    """Checks the validation for data-storage-only events works."""
+    """Checks the validation for data-storage-only actions works."""
     # We can't set a GraphicCard
     with pytest.raises(TypeError,
                        message='EraseBasic.device must be a DataStorage '
@@ -133,7 +133,7 @@ def test_install():
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
-def test_update_components_event_one():
+def test_update_components_action_one():
     computer = Desktop(serial_number='sn1',
                        model='ml1',
                        manufacturer='mr1',
@@ -141,27 +141,27 @@ def test_update_components_event_one():
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 
-    # Add event
+    # Add action
     test = models.StressTest(elapsed=timedelta(minutes=1))
-    computer.events_one.add(test)
+    computer.actions_one.add(test)
     assert test.device == computer
-    assert next(iter(test.components)) == hdd, 'Event has to have new components'
+    assert next(iter(test.components)) == hdd, 'Action has to have new components'
 
-    # Remove event
-    computer.events_one.clear()
+    # Remove action
+    computer.actions_one.clear()
     assert not test.device
-    assert not test.components, 'Event has to loose the components'
+    assert not test.components, 'Action has to loose the components'
 
-    # If we add a component to a device AFTER assigning the event
-    # to the device, the event doesn't get the new component
-    computer.events_one.add(test)
+    # If we add a component to a device AFTER assigning the action
+    # to the device, the action doesn't get the new component
+    computer.actions_one.add(test)
     ram = RamModule()
     computer.components.add(ram)
     assert len(test.components) == 1
 
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
-def test_update_components_event_multiple():
+def test_update_components_action_multiple():
     computer = Desktop(serial_number='sn1',
                        model='ml1',
                        manufacturer='mr1',
@@ -174,12 +174,12 @@ def test_update_components_event_multiple():
     assert not ready.components
 
     # Add
-    computer.events_multiple.add(ready)
+    computer.actions_multiple.add(ready)
     assert ready.devices == OrderedSet([computer])
     assert next(iter(ready.components)) == hdd
 
     # Remove
-    computer.events_multiple.remove(ready)
+    computer.actions_multiple.remove(ready)
     assert not ready.devices
     assert not ready.components
 
@@ -209,22 +209,23 @@ def test_update_parent():
     assert not benchmark.parent
 
 
-@pytest.mark.parametrize('event_model_state', [
+@pytest.mark.parametrize('action_model_state', [
     (models.ToRepair, states.Physical.ToBeRepaired),
     (models.Repair, states.Physical.Repaired),
     (models.ToPrepare, states.Physical.Preparing),
     (models.ReadyToUse, states.Physical.ReadyToBeUsed),
     (models.Prepare, states.Physical.Prepared)
 ])
-def test_generic_event(event_model_state: Tuple[models.Event, states.Trading], user: UserClient):
-    """Tests POSTing all generic events."""
-    event_model, state = event_model_state
+def test_generic_action(action_model_state: Tuple[models.Action, states.Trading],
+                        user: UserClient):
+    """Tests POSTing all generic actions."""
+    action_model, state = action_model_state
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    event = {'type': event_model.t, 'devices': [snapshot['device']['id']]}
-    event, _ = user.post(event, res=models.Event)
-    assert event['devices'][0]['id'] == snapshot['device']['id']
+    action = {'type': action_model.t, 'devices': [snapshot['device']['id']]}
+    action, _ = user.post(action, res=models.Action)
+    assert action['devices'][0]['id'] == snapshot['device']['id']
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
-    assert device['events'][-1]['id'] == event['id']
+    assert device['actions'][-1]['id'] == action['id']
     assert device['physical'] == state.name
 
 
@@ -245,7 +246,7 @@ def test_live():
     db.session.commit()
     client = UserClient(app, 'foo@foo.com', 'foo', response_wrapper=app.response_class)
     client.login()
-    live, _ = client.get(res=models.Event, item=str(db_live.id))
+    live, _ = client.get(res=models.Action, item=str(db_live.id))
     assert live['ip'] == '79.147.10.10'
     assert live['subdivision'] == 'ES-CA'
     assert live['country'] == 'ES'
@@ -265,27 +266,27 @@ def test_reserve_and_cancel(user: UserClient):
     """
 
 
-@pytest.mark.parametrize('event_model_state', [
+@pytest.mark.parametrize('action_model_state', [
     (models.Sell, states.Trading.Sold),
     (models.Donate, states.Trading.Donated),
     (models.Rent, states.Trading.Renting),
     (models.DisposeProduct, states.Trading.ProductDisposed)
 ])
-def test_trade(event_model_state: Tuple[models.Event, states.Trading], user: UserClient):
-    """Tests POSTing all Trade events."""
-    event_model, state = event_model_state
+def test_trade(action_model_state: Tuple[models.Action, states.Trading], user: UserClient):
+    """Tests POSTing all Trade actions."""
+    action_model, state = action_model_state
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    event = {
-        'type': event_model.t,
+    action = {
+        'type': action_model.t,
         'devices': [snapshot['device']['id']],
         'to': user.user['individuals'][0]['id'],
         'shippingDate': '2018-06-29T12:28:54',
         'invoiceNumber': 'ABC'
     }
-    event, _ = user.post(event, res=models.Event)
-    assert event['devices'][0]['id'] == snapshot['device']['id']
+    action, _ = user.post(action, res=models.Action)
+    assert action['devices'][0]['id'] == snapshot['device']['id']
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
-    assert device['events'][-1]['id'] == event['id']
+    assert device['actions'][-1]['id'] == action['id']
     assert device['trading'] == state.name
 
 
@@ -306,7 +307,7 @@ def test_price_custom():
 
     client = UserClient(app, 'foo@foo.com', 'foo', response_wrapper=app.response_class)
     client.login()
-    p, _ = client.get(res=models.Event, item=str(price.id))
+    p, _ = client.get(res=models.Action, item=str(price.id))
     assert p['device']['id'] == price.device.id == computer.id
     assert p['price'] == 25.25
     assert p['currency'] == Currency.EUR.name == 'EUR'
@@ -324,7 +325,7 @@ def test_price_custom_client(user: UserClient):
         'price': 25,
         'currency': Currency.EUR.name,
         'device': snapshot['device']['id']
-    }, res=models.Event)
+    }, res=models.Action)
     assert 25 == price['price']
     assert Currency.EUR.name == price['currency']
 

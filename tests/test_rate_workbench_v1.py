@@ -15,12 +15,12 @@ import math
 
 import pytest
 
+from ereuse_devicehub.resources.action.models import BenchmarkDataStorage, BenchmarkProcessor, \
+    VisualTest
+from ereuse_devicehub.resources.action.rate.workbench.v1_0 import DataStorageRate, ProcessorRate, \
+    RamRate, RateAlgorithm
 from ereuse_devicehub.resources.device.models import Desktop, HardDrive, Processor, RamModule
 from ereuse_devicehub.resources.enums import AppearanceRange, ComputerChassis, FunctionalityRange
-from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, BenchmarkProcessor, \
-    VisualTest
-from ereuse_devicehub.resources.event.rate.workbench.v1_0 import DataStorageRate, ProcessorRate, \
-    RamRate, RateAlgorithm
 
 
 def test_rate_data_storage_rate():
@@ -30,14 +30,14 @@ def test_rate_data_storage_rate():
     """
 
     hdd_1969 = HardDrive(size=476940)
-    hdd_1969.events_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
+    hdd_1969.actions_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
 
     data_storage_rate = DataStorageRate().compute([hdd_1969])
 
     assert math.isclose(data_storage_rate, 4.02, rel_tol=0.001)
 
     hdd_3054 = HardDrive(size=476940)
-    hdd_3054.events_one.add(BenchmarkDataStorage(read_speed=158, write_speed=34.7))
+    hdd_3054.actions_one.add(BenchmarkDataStorage(read_speed=158, write_speed=34.7))
 
     # calculate DataStorage Rate
     data_storage_rate = DataStorageRate().compute([hdd_3054])
@@ -45,14 +45,14 @@ def test_rate_data_storage_rate():
     assert math.isclose(data_storage_rate, 4.07, rel_tol=0.001)
 
     hdd_81 = HardDrive(size=76319)
-    hdd_81.events_one.add(BenchmarkDataStorage(read_speed=72.2, write_speed=24.3))
+    hdd_81.actions_one.add(BenchmarkDataStorage(read_speed=72.2, write_speed=24.3))
 
     data_storage_rate = DataStorageRate().compute([hdd_81])
 
     assert math.isclose(data_storage_rate, 2.61, rel_tol=0.001)
 
     hdd_1556 = HardDrive(size=152587)
-    hdd_1556.events_one.add(BenchmarkDataStorage(read_speed=78.1, write_speed=24.4))
+    hdd_1556.actions_one.add(BenchmarkDataStorage(read_speed=78.1, write_speed=24.4))
 
     data_storage_rate = DataStorageRate().compute([hdd_1556])
 
@@ -67,7 +67,7 @@ def test_rate_data_storage_size_is_null():
     """
 
     hdd_null = HardDrive(size=None)
-    hdd_null.events_one.add(BenchmarkDataStorage(read_speed=0, write_speed=0))
+    hdd_null.actions_one.add(BenchmarkDataStorage(read_speed=0, write_speed=0))
 
     data_storage_rate = DataStorageRate().compute([hdd_null])
     assert data_storage_rate is None
@@ -78,7 +78,7 @@ def test_rate_no_data_storage():
     Test without data storage devices
     """
     hdd_null = HardDrive()
-    hdd_null.events_one.add(BenchmarkDataStorage(read_speed=0, write_speed=0))
+    hdd_null.actions_one.add(BenchmarkDataStorage(read_speed=0, write_speed=0))
     data_storage_rate = DataStorageRate().compute([hdd_null])
     assert data_storage_rate is None
 
@@ -179,7 +179,7 @@ def test_rate_processor_rate():
 
     cpu = Processor(cores=1, speed=1.6)
     # add score processor benchmark
-    cpu.events_one.add(BenchmarkProcessor(rate=3192.34))
+    cpu.actions_one.add(BenchmarkProcessor(rate=3192.34))
 
     processor_rate = ProcessorRate().compute(cpu)
 
@@ -194,14 +194,14 @@ def test_rate_processor_rate_2cores():
 
     cpu = Processor(cores=2, speed=3.4)
     # add score processor benchmark
-    cpu.events_one.add(BenchmarkProcessor(rate=27136.44))
+    cpu.actions_one.add(BenchmarkProcessor(rate=27136.44))
 
     processor_rate = ProcessorRate().compute(cpu)
 
     assert math.isclose(processor_rate, 3.95, rel_tol=0.001)
 
     cpu = Processor(cores=2, speed=3.3)
-    cpu.events_one.add(BenchmarkProcessor(rate=26339.48))
+    cpu.actions_one.add(BenchmarkProcessor(rate=26339.48))
 
     processor_rate = ProcessorRate().compute(cpu)
 
@@ -213,7 +213,7 @@ def test_rate_processor_with_null_cores():
     Test with processor device have null number of cores
     """
     cpu = Processor(cores=None, speed=3.3)
-    cpu.events_one.add(BenchmarkProcessor())
+    cpu.actions_one.add(BenchmarkProcessor())
 
     processor_rate = ProcessorRate().compute(cpu)
 
@@ -225,7 +225,7 @@ def test_rate_processor_with_null_speed():
     Test with processor device have null speed value
     """
     cpu = Processor(cores=1, speed=None)
-    cpu.events_one.add(BenchmarkProcessor(rate=0))
+    cpu.actions_one.add(BenchmarkProcessor(rate=0))
 
     processor_rate = ProcessorRate().compute(cpu)
 
@@ -239,11 +239,11 @@ def test_rate_computer_rate():
         price = 92.2
         # add components characteristics of pc with id = 1193
         hdd_1969 = HardDrive(size=476940)
-        hdd_1969.events_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
+        hdd_1969.actions_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
         ram1 = RamModule(size=4096, speed=1600)
         ram2 = RamModule(size=2048, speed=1067)
         cpu = Processor(cores=2, speed=3.4)
-        cpu.events_one.add(BenchmarkProcessor(rate=27136.44))
+        cpu.actions_one.add(BenchmarkProcessor(rate=27136.44))
         pc_1193.components.add(hdd_1969, ram1, ram2, cpu)
         # add functionality and appearance range
         rate_pc_1193 = WorkbenchRate(appearance_range=AppearanceRange.A, functionality_range=FunctionalityRange.A)
@@ -256,10 +256,10 @@ def test_rate_computer_rate():
         pc_1201 = Computer()
         price = 69.6
         hdd_3054 = HardDrive(size=476940)
-        hdd_3054.events_one.add(BenchmarkDataStorage(read_speed=158, write_speed=34.7))
+        hdd_3054.actions_one.add(BenchmarkDataStorage(read_speed=158, write_speed=34.7))
         ram1 = RamModule(size=2048, speed=1333)
         cpu = Processor(cores=2, speed=3.3)
-        cpu.events_one.add(BenchmarkProcessor(rate=26339.48))
+        cpu.actions_one.add(BenchmarkProcessor(rate=26339.48))
         pc_1201.components.add(hdd_3054, ram1, cpu)
         # add functionality and appearance range
         rate_pc_1201 = WorkbenchRate(appearance_range=AppearanceRange.B, functionality_range=FunctionalityRange.A)
@@ -272,13 +272,13 @@ def test_rate_computer_rate():
         pc_79 = Computer()
         price = VeryLow
         hdd_81 = HardDrive(size=76319)
-        hdd_81.events_one.add(BenchmarkDataStorage(read_speed=72.2, write_speed=24.3))
+        hdd_81.actions_one.add(BenchmarkDataStorage(read_speed=72.2, write_speed=24.3))
         ram1 = RamModule(size=512, speed=667)
         ram2 = RamModule(size=512, speed=800)
         ram3 = RamModule(size=512, speed=667)
         ram4 = RamModule(size=512, speed=533)
         cpu = Processor(cores=1, speed=1.6)
-        cpu.events_one.add(BenchmarkProcessor(rate=3192.34))
+        cpu.actions_one.add(BenchmarkProcessor(rate=3192.34))
         pc_79.components.add(hdd_81, ram1, ram2, ram3, ram4, cpu)
         # add functionality and appearance range
         rate_pc_79 = WorkbenchRate(appearance_range=AppearanceRange.C, functionality_range=FunctionalityRange.A)
@@ -291,10 +291,10 @@ def test_rate_computer_rate():
         pc_798 = Computer()
         price = 50
         hdd_1556 = HardDrive(size=152587)
-        hdd_1556.events_one.add(BenchmarkDataStorage(read_speed=78.1, write_speed=24.4))
+        hdd_1556.actions_one.add(BenchmarkDataStorage(read_speed=78.1, write_speed=24.4))
         ram0 = RamModule(size=0, speed=None)
         cpu = Processor(cores=2, speed=2.5)
-        cpu.events_one.add(BenchmarkProcessor(rate=9974.3))
+        cpu.actions_one.add(BenchmarkProcessor(rate=9974.3))
         pc_798.components.add(hdd_1556, ram0, cpu)
         # add functionality and appearance range
         rate_pc_798 = WorkbenchRate(appearance_range=AppearanceRange.B, functionality_range=FunctionalityRange.A)
@@ -308,9 +308,9 @@ def test_rate_computer_rate():
     # Create a new Computer with components characteristics of pc with id = 1193
     pc_test = Desktop(chassis=ComputerChassis.Tower)
     data_storage = HardDrive(size=476940)
-    data_storage.events_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
+    data_storage.actions_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
     cpu = Processor(cores=2, speed=3.4)
-    cpu.events_one.add(BenchmarkProcessor(rate=27136.44))
+    cpu.actions_one.add(BenchmarkProcessor(rate=27136.44))
     pc_test.components |= {
         data_storage,
         RamModule(size=4096, speed=1600),
@@ -336,9 +336,9 @@ def test_rate_computer_rate():
     # Create a new Computer with components characteristics of pc with id = 1201
     pc_test = Desktop(chassis=ComputerChassis.Tower)
     data_storage = HardDrive(size=476940)
-    data_storage.events_one.add(BenchmarkDataStorage(read_speed=158, write_speed=34.7))
+    data_storage.actions_one.add(BenchmarkDataStorage(read_speed=158, write_speed=34.7))
     cpu = Processor(cores=2, speed=3.3)
-    cpu.events_one.add(BenchmarkProcessor(rate=26339.48))
+    cpu.actions_one.add(BenchmarkProcessor(rate=26339.48))
     pc_test.components |= {
         data_storage,
         RamModule(size=2048, speed=1333),
@@ -363,9 +363,9 @@ def test_rate_computer_rate():
     # Create a new Computer with components characteristics of pc with id = 79
     pc_test = Desktop(chassis=ComputerChassis.Tower)
     data_storage = HardDrive(size=76319)
-    data_storage.events_one.add(BenchmarkDataStorage(read_speed=72.2, write_speed=24.3))
+    data_storage.actions_one.add(BenchmarkDataStorage(read_speed=72.2, write_speed=24.3))
     cpu = Processor(cores=1, speed=1.6)
-    cpu.events_one.add(BenchmarkProcessor(rate=3192.34))
+    cpu.actions_one.add(BenchmarkProcessor(rate=3192.34))
     pc_test.components |= {
         data_storage,
         RamModule(size=512, speed=667),
@@ -392,9 +392,9 @@ def test_rate_computer_rate():
     # Create a new Computer with components characteristics of pc with id = 798
     pc_test = Desktop(chassis=ComputerChassis.Tower)
     data_storage = HardDrive(size=152587)
-    data_storage.events_one.add(BenchmarkDataStorage(read_speed=78.1, write_speed=24.4))
+    data_storage.actions_one.add(BenchmarkDataStorage(read_speed=78.1, write_speed=24.4))
     cpu = Processor(cores=2, speed=2.5)
-    cpu.events_one.add(BenchmarkProcessor(rate=9974.3))
+    cpu.actions_one.add(BenchmarkProcessor(rate=9974.3))
     pc_test.components |= {
         data_storage,
         RamModule(size=0, speed=None),

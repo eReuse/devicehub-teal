@@ -13,7 +13,7 @@
     "serialNumber": "00:23:24:0d:86:28",
     "manufacturer": "Intel Corporation",
     "wireless": false,
-    "events": []
+    "actions": []
   },
   {
     "type": "NetworkAdapter",
@@ -22,7 +22,7 @@
     "serialNumber": "00:0e:0c:b6:f2:91",
     "manufacturer": "Intel Corporation",
     "wireless": false,
-    "events": []
+    "actions": []
   },
   {
     "cores": 4,
@@ -31,7 +31,7 @@
     "speed": 1.9980000000000002,
     "serialNumber": null,
     "manufacturer": "Intel Corp.",
-    "events": [
+    "actions": [
     {
       "elapsed": 0,
       "rate": 6665.7,
@@ -45,7 +45,7 @@
     "model": "4 Series Chipset Integrated Graphics Controller",
     "serialNumber": null,
     "manufacturer": "Intel Corporation",
-    "events": [],
+    "actions": [],
     "memory": 256.0
   },
   {
@@ -53,7 +53,7 @@
     "model": "82801JD/DO HD Audio Controller",
     "serialNumber": null,
     "manufacturer": "Intel Corporation",
-    "events": []
+    "actions": []
   },
   {
     "size": 2048,
@@ -64,7 +64,7 @@
     "serialNumber": "F8482E29",
     "format": "DIMM",
     "manufacturer": "JEDEC ID:80 2C",
-    "events": []
+    "actions": []
   },
   {
     "size": 2048,
@@ -75,7 +75,7 @@
     "serialNumber": "62072F30",
     "format": "DIMM",
     "manufacturer": "JEDEC ID:80 2C",
-    "events": []
+    "actions": []
   },
   {
     "size": 238475,
@@ -84,7 +84,7 @@
     "model": "ST3250318AS",
     "serialNumber": "9VY6HBKE",
     "manufacturer": "Seagate",
-    "events": [
+    "actions": [
     {
       "elapsed": 0,
       "type": "TestDataStorage",
@@ -108,7 +108,7 @@
     "serialNumber": "CZC03217S7",
     "firewire": 0,
     "manufacturer": "Hewlett-Packard",
-    "events": [],
+    "actions": [],
     "serial": 0,
     "usb": 8
   }
@@ -120,9 +120,6 @@
     "chassis": "Tower",
     "serialNumber": "CZC03217S7",
     "manufacturer": "Hewlett-Packard",
-    "events": []
-  },
-  "expectedEvents": [
-    "SmartTest"
-  ]
+    "actions": []
+  }
 }

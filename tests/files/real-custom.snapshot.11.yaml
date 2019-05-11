@@ -1,14 +1,10 @@
 {
   "version": "11.0a3",
-  "expectedEvents": [
-    "Benchmark",
-    "TestDataStorage",
-    "StressTest"
-  ],
+
   "uuid": "16467238-64bb-48e0-9058-0cba687d7db0",
   "components": [
   {
-    "events": [],
+    "actions": [],
     "type": "NetworkAdapter",
     "speed": 1000,
     "wireless": false,
@@ -17,7 +13,7 @@
     "model": "88E8056 PCI-E Gigabit Ethernet Controller"
   },
   {
-    "events": [
+    "actions": [
     {
       "rate": 4.8652,
       "elapsed": 5,
@@ -39,21 +35,21 @@
     "address": 64
   },
   {
-    "events": [],
+    "actions": [],
     "type": "SoundCard",
     "manufacturer": "Advanced Micro Devices, Inc. AMD/ATI",
     "serialNumber": null,
     "model": "Barts HDMI Audio Radeon HD 6790/6850/6870 / 7720"
   },
   {
-    "events": [],
+    "actions": [],
     "type": "SoundCard",
     "manufacturer": "Intel Corporation",
     "serialNumber": null,
     "model": "82801JI HD Audio Controller"
   },
   {
-    "events": [],
+    "actions": [],
     "type": "GraphicCard",
     "memory": 256.0,
     "manufacturer": "Advanced Micro Devices, Inc. AMD/ATI",
@@ -61,7 +57,7 @@
     "model": "Barts XT Radeon HD 6870"
   },
   {
-    "events": [
+    "actions": [
     {
       "elapsed": 2,
       "type": "BenchmarkDataStorage",
@@ -89,7 +85,7 @@
     "size": 228936
   },
   {
-    "events": [],
+    "actions": [],
     "type": "Motherboard",
     "slots": 6,
     "pcmcia": 0,
@@ -103,7 +99,7 @@
   ],
   "elapsed": 7339,
   "device": {
-    "events": [
+    "actions": [
     {
       "rate": 16.5946,
       "elapsed": 17,

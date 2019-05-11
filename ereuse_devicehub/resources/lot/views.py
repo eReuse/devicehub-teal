@@ -50,7 +50,7 @@ class LotView(View):
         return Response(status=204)
 
     def one(self, id: uuid.UUID):
-        """Gets one event."""
+        """Gets one action."""
         lot = Lot.query.filter_by(id=id).one()  # type: Lot
         return self.schema.jsonify(lot)
 

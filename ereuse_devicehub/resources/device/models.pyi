@@ -11,21 +11,21 @@ from sqlalchemy.orm import relationship
 from teal.db import Model
 from teal.enums import Layouts
 
+from ereuse_devicehub.resources.action import models as e
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.enums import BatteryTechnology, ComputerChassis, \
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface
-from ereuse_devicehub.resources.event import models as e
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.tag.model import Tags
 
-E = TypeVar('E', bound=e.Event)
+E = TypeVar('E', bound=e.Action)
 
 
 class Device(Thing):
-    EVENT_SORT_KEY = attrgetter('created')
+    ACTION_SORT_KEY = attrgetter('created')
 
     id = ...  # type: Column
     type = ...  # type: Column
@@ -58,8 +58,8 @@ class Device(Thing):
         self.depth = ...  # type: Optional[float]
         self.color = ...  # type: Optional[Color]
         self.physical_properties = ...  # type: Dict[str, object or None]
-        self.events_multiple = ...  # type: Set[e.EventWithMultipleDevices]
-        self.events_one = ...  # type: Set[e.EventWithOneDevice]
+        self.actions_multiple = ...  # type: Set[e.ActionWithMultipleDevices]
+        self.actions_one = ...  # type: Set[e.ActionWithOneDevice]
         self.tags = ...  # type: Tags[Tag]
         self.lots = ...  # type: Set[Lot]
         self.production_date = ...  # type: Optional[datetime]
@@ -68,11 +68,11 @@ class Device(Thing):
         self.variant = ...  # type: Optional[str]
 
     @property
-    def events(self) -> List[e.Event]:
+    def actions(self) -> List[e.Action]:
         pass
 
     @property
-    def problems(self) -> List[e.Event]:
+    def problems(self) -> List[e.Action]:
         pass
 
     @property
@@ -103,10 +103,10 @@ class Device(Thing):
     def working(self) -> List[e.Test]:
         pass
 
-    def last_event_of(self, *types: Type[E]) -> E:
+    def last_action_of(self, *types: Type[E]) -> E:
         pass
 
-    def _warning_events(self, events: Iterable[e.Event]) -> Generator[e.Event]:
+    def _warning_actions(self, actions: Iterable[e.Action]) -> Generator[e.Action]:
         pass
 
 
@@ -139,11 +139,11 @@ class Computer(DisplayMixin, Device):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.components = ...  # type: Set[Component]
-        self.events_parent = ...  # type: Set[e.Event]
+        self.actions_parent = ...  # type: Set[e.Action]
         self.chassis = ...  # type: ComputerChassis
 
     @property
-    def events(self) -> List:
+    def actions(self) -> List:
         pass
 
     @property
@@ -230,7 +230,7 @@ class Component(Device):
         super().__init__(**kwargs)
         self.parent_id = ...  # type: int
         self.parent = ...  # type: Computer
-        self.events_components = ...  # type: Set[e.Event]
+        self.actions_components = ...  # type: Set[e.Action]
 
     def similar_one(self, parent: Computer, blacklist: Set[int]) -> 'Component':
         pass

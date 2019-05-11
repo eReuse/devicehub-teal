@@ -58,7 +58,7 @@ class InventoryDef(Resource):
         db.session.delete(inv)
         db.session.flush()
         # Remove users that end-up without any inventory
-        # todo this should be done in a trigger / event
+        # todo this should be done in a trigger / action
         users = User.query \
             .filter(User.id.notin_(db.session.query(UserInventory.user_id).distinct()))
         for user in users:

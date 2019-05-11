@@ -141,18 +141,6 @@ class ImageMimeTypes(Enum):
     png = 'image/png'
 
 
-@unique
-class SnapshotExpectedEvents(Enum):
-    """Events that Workbench can perform when processing a device."""
-    Benchmark = 'Benchmark'
-    TestDataStorage = 'TestDataStorage'
-    StressTest = 'StressTest'
-    EraseBasic = 'EraseBasic'
-    EraseSectors = 'EraseSectors'
-    SmartTest = 'SmartTest'
-    Install = 'Install'
-
-
 BOX_RATE_5 = 1, 5
 BOX_RATE_3 = 1, 3
 
@@ -282,18 +270,18 @@ class BatteryTechnology(Enum):
 
 
 class Severity(IntEnum):
-    """A flag evaluating the event execution. Ex. failed events
+    """A flag evaluating the action execution. Ex. failed actions
     have the value `Severity.Error`. Devicehub uses 4 severity levels:
 
-    * Info: default neutral severity. The event succeeded.
-    * Notice: The event succeeded but it is raising awareness.
+    * Info: default neutral severity. The action succeeded.
+    * Notice: The action succeeded but it is raising awareness.
       Notices are not usually that important but something
       (good or bad) worth checking.
-    * Warning: The event succeeded but there is something important
-      to check negatively affecting the event.
-    * Error: the event failed.
+    * Warning: The action succeeded but there is something important
+      to check negatively affecting the action.
+    * Error: the action failed.
 
-    Devicehub specially raises user awareness when an event
+    Devicehub specially raises user awareness when an action
     has a Severity of ``Warning`` or greater.
     """
 
@@ -350,7 +338,7 @@ class ErasureStandards(Enum):
     2. A second step erasing with random data, verifying the erasure
        success in each hard-drive sector.
     
-    And be an :class:`ereuse_devicehub.resources.event.models.EraseSectors`.
+    And be an :class:`ereuse_devicehub.resources.action.models.EraseSectors`.
     """
 
     def __str__(self):
@@ -359,12 +347,12 @@ class ErasureStandards(Enum):
     @classmethod
     def from_data_storage(cls, erasure) -> Set['ErasureStandards']:
         """Returns a set of erasure standards."""
-        from ereuse_devicehub.resources.event import models as events
+        from ereuse_devicehub.resources.action import models as actions
         standards = set()
-        if isinstance(erasure, events.EraseSectors):
+        if isinstance(erasure, actions.EraseSectors):
             with suppress(ValueError):
                 first_step, *other_steps = erasure.steps
-                if isinstance(first_step, events.StepZero) \
-                        and all(isinstance(step, events.StepRandom) for step in other_steps):
+                if isinstance(first_step, actions.StepZero) \
+                        and all(isinstance(step, actions.StepRandom) for step in other_steps):
                     standards.add(cls.HMG_IS5)
         return standards

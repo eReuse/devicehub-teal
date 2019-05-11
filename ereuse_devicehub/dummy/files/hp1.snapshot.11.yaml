@@ -1,11 +1,5 @@
 {
   "software": "Workbench",
-  "expectedEvents": [
-    "Benchmark",
-    "SmartTest",
-    "StressTest",
-    "EraseBasic"
-  ],
   "closed": false,
   "elapsed": -3058,
   "uuid": "106930cd-e948-4cca-a8c8-1e39d6192ad6",
@@ -14,7 +8,7 @@
   {
     "type": "Processor",
     "speed": 1.199,
-    "events": [
+    "actions": [
     {
       "type": "BenchmarkProcessor",
       "rate": 23409.32,
@@ -35,7 +29,7 @@
   {
     "memory": 256.0,
     "type": "GraphicCard",
-    "events": [],
+    "actions": [],
     "serialNumber": null,
     "model": "Core Processor Integrated Graphics Controller",
     "manufacturer": "Intel Corporation"
@@ -43,7 +37,7 @@
   {
     "type": "NetworkAdapter",
     "speed": 1000,
-    "events": [],
+    "actions": [],
     "serialNumber": "6c:62:6d:81:22:65",
     "model": "82578DM Gigabit Network Connection",
     "manufacturer": "Intel Corporation",
@@ -51,7 +45,7 @@
   },
   {
     "type": "SoundCard",
-    "events": [],
+    "actions": [],
     "serialNumber": null,
     "model": "5 Series/3400 Series Chipset High Definition Audio",
     "manufacturer": "Intel Corporation"
@@ -60,7 +54,7 @@
     "speed": 1333.0,
     "type": "RamModule",
     "format": "DIMM",
-    "events": [],
+    "actions": [],
     "size": 2048,
     "serialNumber": "E6002F30",
     "interface": "DDR3",
@@ -69,7 +63,7 @@
   },
   {
     "type": "HardDrive",
-    "events": [
+    "actions": [
     {
       "type": "EraseBasic",
 
@@ -110,7 +104,7 @@
     "serial": 0,
     "type": "Motherboard",
     "slots": 0,
-    "events": [],
+    "actions": [],
     "serialNumber": "CZC0408YNC",
     "usb": 2,
     "firewire": 0,
@@ -122,7 +116,7 @@
   "device": {
     "type": "Desktop",
     "chassis": "Tower",
-    "events": [
+    "actions": [
     {
       "type": "BenchmarkRamSysbench",
       "rate": 0.9767,

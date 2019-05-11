@@ -16,14 +16,14 @@ from teal.enums import Country
 
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
-from ereuse_devicehub.resources.enums import AppearanceRange, ErasureStandards, \
-    FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RatingRange, \
-    ReceiverRole, Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
+from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, ErasureStandards, \
+    FunctionalityRange, PhysicalErasureMethod, PriceSoftware, RatingRange, ReceiverRole, Severity, \
+    SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
 
-class Event(Thing):
+class Action(Thing):
     id = ...  # type: Column
     name = ...  # type: Column
     type = ...  # type: Column
@@ -74,13 +74,13 @@ class Event(Thing):
         return '{:%c}'.format(self.end_time or self.created)
 
 
-class EventWithOneDevice(Event):
+class ActionWithOneDevice(Action):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.device = ...  # type: Device
 
 
-class EventWithMultipleDevices(Event):
+class ActionWithMultipleDevices(Action):
     devices = ...  # type: relationship
 
     def __init__(self, **kwargs) -> None:
@@ -88,11 +88,11 @@ class EventWithMultipleDevices(Event):
         self.devices = ...  # type: Set[Device]
 
 
-class Add(EventWithOneDevice):
+class Add(ActionWithOneDevice):
     pass
 
 
-class Remove(EventWithOneDevice):
+class Remove(ActionWithOneDevice):
     pass
 
 
@@ -122,7 +122,7 @@ class StepRandom(Step):
     pass
 
 
-class EraseBasic(EventWithOneDevice):
+class EraseBasic(ActionWithOneDevice):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_time = ...  # type: datetime
@@ -153,7 +153,7 @@ class ErasePhysical(EraseBasic):
         self.method = ...  # type: PhysicalErasureMethod
 
 
-class Snapshot(EventWithOneDevice):
+class Snapshot(ActionWithOneDevice):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.uuid = ...  # type: UUID
@@ -161,11 +161,10 @@ class Snapshot(EventWithOneDevice):
         self.software = ...  # type: SnapshotSoftware
         self.elapsed = ...  # type: timedelta
         self.device = ...  # type: Computer
-        self.events = ...  # type: Set[Event]
-        self.expected_events = ...  # type: List[SnapshotExpectedEvents]
+        self.actions = ...  # type: Set[Action]
 
 
-class Install(EventWithOneDevice):
+class Install(ActionWithOneDevice):
     name = ...  # type: Column
     elapsed = ...  # type: Column
     address = ...  # type: Column
@@ -184,7 +183,7 @@ class SnapshotRequest(Model):
         self.snapshot = ...  # type: Snapshot
 
 
-class Benchmark(EventWithOneDevice):
+class Benchmark(ActionWithOneDevice):
     pass
 
 
@@ -222,13 +221,27 @@ class BenchmarkGraphicCard(BenchmarkWithRate):
     pass
 
 
-class Test(EventWithOneDevice):
+class Test(ActionWithOneDevice):
     elapsed = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.elapsed = ...  # type: Optional[timedelta]
         self.success = ...  # type: bool
+
+
+class MeasureBattery(Test):
+    size = ...  # type: Column
+    voltage = ...  # type: Column
+    cycle_count = ...  # type: Column
+    health = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.size = ...  # type: int
+        self.voltage = ...  # type: int
+        self.cycle_count = ...  # type: Optional[int]
+        self.health = ...  # type: Optional[BatteryHealth]
 
 
 class TestDataStorage(Test):
@@ -309,12 +322,12 @@ class VisualTest(Test):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.appearance_range = ... # type: AppearanceRange
-        self.functionality_range = ... # type: FunctionalityRange
-        self.labelling = ... # type: Optional[bool]
+        self.appearance_range = ...  # type: AppearanceRange
+        self.functionality_range = ...  # type: FunctionalityRange
+        self.labelling = ...  # type: Optional[bool]
 
 
-class Rate(EventWithOneDevice):
+class Rate(ActionWithOneDevice):
     N = 2
     _rating = ...  # type: Column
     _appearance = ...  # type: Column
@@ -367,7 +380,7 @@ class RateComputer(Rate):
         pass
 
 
-class Price(EventWithOneDevice):
+class Price(ActionWithOneDevice):
     SCALE = ...
     ROUND = ...
     currency = ...  # type: Column
@@ -413,27 +426,27 @@ class EreusePrice(Price):
         self.warranty2 = ...  # type: float
 
 
-class ToRepair(EventWithMultipleDevices):
+class ToRepair(ActionWithMultipleDevices):
     pass
 
 
-class Repair(EventWithMultipleDevices):
+class Repair(ActionWithMultipleDevices):
     pass
 
 
-class ReadyToUse(EventWithMultipleDevices):
+class ReadyToUse(ActionWithMultipleDevices):
     pass
 
 
-class ToPrepare(EventWithMultipleDevices):
+class ToPrepare(ActionWithMultipleDevices):
     pass
 
 
-class Prepare(EventWithMultipleDevices):
+class Prepare(ActionWithMultipleDevices):
     pass
 
 
-class Live(EventWithOneDevice):
+class Live(ActionWithOneDevice):
     ip = ...  # type: Column
     subdivision_confidence = ...  # type: Column
     subdivision = ...  # type: Column
@@ -456,7 +469,7 @@ class Live(EventWithOneDevice):
         self.country = ...  # type: Country
 
 
-class Organize(EventWithMultipleDevices):
+class Organize(ActionWithMultipleDevices):
     pass
 
 
@@ -464,7 +477,7 @@ class Reserve(Organize):
     pass
 
 
-class Trade(EventWithMultipleDevices):
+class Trade(ActionWithMultipleDevices):
     shipping_date = ...  # type: Column
     invoice_number = ...  # type: Column
     price = ...  # type: relationship
@@ -504,7 +517,7 @@ class DisposeProduct(Trade):
     pass
 
 
-class Receive(EventWithMultipleDevices):
+class Receive(ActionWithMultipleDevices):
     role = ...  # type:Column
 
     def __init__(self, **kwargs) -> None:
@@ -512,7 +525,7 @@ class Receive(EventWithMultipleDevices):
         self.role = ...  # type: ReceiverRole
 
 
-class Migrate(EventWithMultipleDevices):
+class Migrate(ActionWithMultipleDevices):
     other = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:

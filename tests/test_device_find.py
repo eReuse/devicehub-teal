@@ -4,12 +4,12 @@ from teal.utils import compiled
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, Laptop, Server, \
     SolidStateDrive
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.device.views import Filters, Sorting
 from ereuse_devicehub.resources.enums import ComputerChassis
-from ereuse_devicehub.resources.event.models import Snapshot
 from ereuse_devicehub.resources.lot.models import Lot
 from tests import conftest
 from tests.conftest import file
@@ -179,7 +179,7 @@ def test_device_query(user: UserClient):
     assert i['url'] == '/devices/'
     assert i['items'][0]['url'] == '/devices/1'
     pc = next(d for d in i['items'] if d['type'] == 'Desktop')
-    assert len(pc['events']) == 4
+    assert len(pc['actions']) == 4
     assert len(pc['components']) == 3
     assert not pc['tags']
 

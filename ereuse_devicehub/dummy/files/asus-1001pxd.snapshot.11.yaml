@@ -6,7 +6,7 @@
   {
     "address": 64,
     "cores": 1,
-    "events": [
+    "actions": [
     {
       "elapsed": 0,
       "rate": 6666.22,
@@ -26,7 +26,7 @@
     "type": "Processor"
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Qualcomm Atheros",
     "model": "AR9285 Wireless Network Adapter",
     "serialNumber": "74:2f:68:8b:fd:c8",
@@ -34,7 +34,7 @@
     "wireless": true
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Qualcomm Atheros",
     "model": "AR8152 v2.0 Fast Ethernet",
     "serialNumber": "14:da:e9:42:f6:7c",
@@ -43,7 +43,7 @@
     "wireless": false
   },
   {
-    "events": [],
+    "actions": [],
     "format": "DIMM",
     "interface": "DDR2",
     "manufacturer": null,
@@ -54,21 +54,21 @@
     "type": "RamModule"
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Intel Corporation",
     "model": "NM10/ICH7 Family High Definition Audio Controller",
     "serialNumber": null,
     "type": "SoundCard"
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Azurewave",
     "model": "USB 2.0 UVC VGA WebCam",
     "serialNumber": "0x0001",
     "type": "SoundCard"
   },
   {
-    "events": [
+    "actions": [
     {
       "endTime": "2018-11-24T22:00:39.643726+00:00",
       "severity": "Info",
@@ -123,7 +123,7 @@
     "type": "HardDrive"
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Intel Corporation",
     "memory": 256.0,
     "model": "Atom Processor D4xx/D5xx/N4xx/N5xx Integrated Graphics Controller",
@@ -131,7 +131,7 @@
     "type": "GraphicCard"
   },
   {
-    "events": [
+    "actions": [
     {
       "type": "TestBios",
       "accessRange": "A"
@@ -150,7 +150,7 @@
   ],
   "device": {
     "chassis": "Netbook",
-    "events": [
+    "actions": [
     {
       "elapsed": 16,
       "rate": 15.9165,
@@ -180,13 +180,6 @@
   },
   "elapsed": 14725,
   "endTime": "2018-11-24T18:06:37.611704+00:00",
-  "expectedEvents": [
-    "Benchmark",
-    "TestDataStorage",
-    "StressTest",
-    "EraseBasic",
-    "Install"
-  ],
   "software": "Workbench",
   "type": "Snapshot",
   "uuid": "f6cba71f-0ac1-4aba-8b6a-c1fd56ab483d",

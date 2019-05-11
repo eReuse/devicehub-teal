@@ -2,7 +2,7 @@
   "software": "Workbench",
   "endTime": "2018-09-22T19:05:47.005552+00:00",
   "device": {
-    "events": [
+    "actions": [
     {
       "rate": 15.9663,
       "type": "BenchmarkRamSysbench",
@@ -20,21 +20,17 @@
     "manufacturer": "eMachines"
   },
   "elapsed": 451,
-  "expectedEvents": [
-    "Benchmark",
-    "TestDataStorage",
-    "StressTest"
-  ],
+
   "components": [
   {
-    "events": [],
+    "actions": [],
     "model": "Video WebCam",
     "serialNumber": "CN0314-SN30-OV035-VA-R05.00.00",
     "type": "SoundCard",
     "manufacturer": "SuYin"
   },
   {
-    "events": [],
+    "actions": [],
     "model": "SBx00 Azalia",
     "serialNumber": null,
     "type": "SoundCard",
@@ -44,7 +40,7 @@
     "speed": 400.0,
     "size": 2048,
     "format": "DIMM",
-    "events": [],
+    "actions": [],
     "model": "HYMP125S64CP8-S6",
     "interface": "DDR2",
     "type": "RamModule",
@@ -55,7 +51,7 @@
     "speed": 400.0,
     "size": 2048,
     "format": "DIMM",
-    "events": [],
+    "actions": [],
     "model": "HYMP125S64CP8-S6",
     "interface": "DDR2",
     "type": "RamModule",
@@ -66,7 +62,7 @@
     "speed": 0.8,
     "address": 64,
     "serialNumber": null,
-    "events": [
+    "actions": [
     {
       "rate": 173.6996,
       "type": "BenchmarkProcessorSysbench",
@@ -85,7 +81,7 @@
     "manufacturer": "Advanced Micro Devices AMD"
   },
   {
-    "events": [],
+    "actions": [],
     "model": "AR9285 Wireless Network Adapter",
     "serialNumber": "0c:60:76:5f:49:91",
     "type": "NetworkAdapter",
@@ -94,7 +90,7 @@
   },
   {
     "speed": 100,
-    "events": [],
+    "actions": [],
     "model": "AR8132 Fast Ethernet",
     "serialNumber": "00:26:22:59:a1:56",
     "type": "NetworkAdapter",
@@ -104,7 +100,7 @@
   {
     "size": 152627,
     "serialNumber": "WD-WX80A8996018",
-    "events": [
+    "actions": [
     {
       "writeSpeed": 17.8,
       "type": "BenchmarkDataStorage",
@@ -130,7 +126,7 @@
     "manufacturer": "Western Digital"
   },
   {
-    "events": [],
+    "actions": [],
     "model": "RS780M Mobility Radeon HD 3200",
     "serialNumber": null,
     "type": "GraphicCard",
@@ -140,7 +136,7 @@
   {
     "slots": 4,
     "firewire": 0,
-    "events": [],
+    "actions": [],
     "model": "E627",
     "usb": 3,
     "serialNumber": "LXN650207893942DE21601",

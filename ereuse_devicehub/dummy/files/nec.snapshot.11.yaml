@@ -4,7 +4,7 @@
   "device": {
     "serialNumber": "SN 123456789ABC",
     "manufacturer": "NEC Computers SAS",
-    "events": [
+    "actions": [
     {
       "severity": "Info",
       "elapsed": 60,
@@ -30,7 +30,7 @@
     "serialNumber": "00:24:21:7a:90:02",
     "manufacturer": "Intel Corporation",
     "speed": 1000,
-    "events": [],
+    "actions": [],
     "type": "NetworkAdapter",
     "wireless": false,
     "model": "82566DM-2 Gigabit Network Connection"
@@ -40,7 +40,7 @@
     "manufacturer": "Intel Corp.",
     "speed": 3.0,
     "cores": 2,
-    "events": [
+    "actions": [
     {
       "rate": 20.1309,
       "elapsed": 20,
@@ -60,14 +60,14 @@
     "serialNumber": null,
     "manufacturer": "Intel Corporation",
     "memory": 256.0,
-    "events": [],
+    "actions": [],
     "type": "GraphicCard",
     "model": "82Q35 Express Integrated Graphics Controller"
   },
   {
     "serialNumber": null,
     "manufacturer": "Intel Corporation",
-    "events": [],
+    "actions": [],
     "type": "SoundCard",
     "model": "82801I HD Audio Controller"
   },
@@ -78,7 +78,7 @@
     "interface": "DDR2",
     "format": "DIMM",
     "size": 1024,
-    "events": [],
+    "actions": [],
     "type": "RamModule",
     "model": "M3 78T2863QZS-CE6"
   },
@@ -89,7 +89,7 @@
     "interface": "DDR2",
     "format": "DIMM",
     "size": 1024,
-    "events": [],
+    "actions": [],
     "type": "RamModule",
     "model": "M3 78T2863QZS-CE6"
   },
@@ -98,7 +98,7 @@
     "manufacturer": "Hitachi",
     "interface": "ATA",
     "size": 305245,
-    "events": [
+    "actions": [
     {
       "severity": "Info",
       "endTime": "2018-07-11T11:33:41.531918+00:00",
@@ -136,7 +136,7 @@
     "serial": 1,
     "pcmcia": 0,
     "usb": 8,
-    "events": [
+    "actions": [
     {
       "type": "TestBios",
       "accessRange": "A"
@@ -149,12 +149,6 @@
   }
   ],
   "version": "11.0a3",
-  "expectedEvents": [
-    "Benchmark",
-    "SmartTest",
-    "StressTest",
-    "EraseBasic"
-  ],
   "endTime": "2018-07-11T10:28:55.879745+00:00",
   "type": "Snapshot",
   "elapsed": 3886,

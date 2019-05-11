@@ -1,6 +1,6 @@
 from flask import current_app as app
 from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema
-from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, List, Nested, String, \
+from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, Nested, String, \
     TimeDelta, UUID
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
@@ -10,55 +10,55 @@ from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources import enums
+from ereuse_devicehub.resources.action import models as m
 from ereuse_devicehub.resources.agent import schemas as s_agent
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.enums import AppearanceRange, BiosAccessRange, FunctionalityRange, \
     PhysicalErasureMethod, R_POSITIVE, RatingRange, ReceiverRole, \
-    Severity, SnapshotExpectedEvents, SnapshotSoftware, TestDataStorageLength
-from ereuse_devicehub.resources.event import models as m
+    Severity, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user import schemas as s_user
 
 
-class Event(Thing):
-    __doc__ = m.Event.__doc__
+class Action(Thing):
+    __doc__ = m.Action.__doc__
     id = UUID(dump_only=True)
     name = SanitizedStr(default='',
                         validate=Length(max=STR_BIG_SIZE),
-                        description=m.Event.name.comment)
-    closed = Boolean(missing=True, description=m.Event.closed.comment)
-    severity = EnumField(Severity, description=m.Event.severity.comment)
-    description = SanitizedStr(default='', description=m.Event.description.comment)
-    start_time = DateTime(data_key='startTime', description=m.Event.start_time.comment)
-    end_time = DateTime(data_key='endTime', description=m.Event.end_time.comment)
+                        description=m.Action.name.comment)
+    closed = Boolean(missing=True, description=m.Action.closed.comment)
+    severity = EnumField(Severity, description=m.Action.severity.comment)
+    description = SanitizedStr(default='', description=m.Action.description.comment)
+    start_time = DateTime(data_key='startTime', description=m.Action.start_time.comment)
+    end_time = DateTime(data_key='endTime', description=m.Action.end_time.comment)
     snapshot = NestedOn('Snapshot', dump_only=True)
-    agent = NestedOn(s_agent.Agent, description=m.Event.agent_id.comment)
+    agent = NestedOn(s_agent.Agent, description=m.Action.agent_id.comment)
     author = NestedOn(s_user.User, dump_only=True, exclude=('token',))
     components = NestedOn(s_device.Component, dump_only=True, many=True)
-    parent = NestedOn(s_device.Computer, dump_only=True, description=m.Event.parent_id.comment)
-    url = URL(dump_only=True, description=m.Event.url.__doc__)
+    parent = NestedOn(s_device.Computer, dump_only=True, description=m.Action.parent_id.comment)
+    url = URL(dump_only=True, description=m.Action.url.__doc__)
 
 
-class EventWithOneDevice(Event):
-    __doc__ = m.EventWithOneDevice.__doc__
+class ActionWithOneDevice(Action):
+    __doc__ = m.ActionWithOneDevice.__doc__
     device = NestedOn(s_device.Device, only_query='id')
 
 
-class EventWithMultipleDevices(Event):
-    __doc__ = m.EventWithMultipleDevices.__doc__
+class ActionWithMultipleDevices(Action):
+    __doc__ = m.ActionWithMultipleDevices.__doc__
     devices = NestedOn(s_device.Device, many=True, only_query='id', collection_class=OrderedSet)
 
 
-class Add(EventWithOneDevice):
+class Add(ActionWithOneDevice):
     __doc__ = m.Add.__doc__
 
 
-class Remove(EventWithOneDevice):
+class Remove(ActionWithOneDevice):
     __doc__ = m.Remove.__doc__
 
 
-class Allocate(EventWithMultipleDevices):
+class Allocate(ActionWithMultipleDevices):
     __doc__ = m.Allocate.__doc__
     to = NestedOn(s_user.User,
                   description='The user the devices are allocated to.')
@@ -67,7 +67,7 @@ class Allocate(EventWithMultipleDevices):
                                             'user was when this happened.')
 
 
-class Deallocate(EventWithMultipleDevices):
+class Deallocate(ActionWithMultipleDevices):
     __doc__ = m.Deallocate.__doc__
     from_rel = Nested(s_user.User,
                       data_key='from',
@@ -77,7 +77,7 @@ class Deallocate(EventWithMultipleDevices):
                                             'user was when this happened.')
 
 
-class EraseBasic(EventWithOneDevice):
+class EraseBasic(ActionWithOneDevice):
     __doc__ = m.EraseBasic.__doc__
     steps = NestedOn('Step', many=True)
     standards = f.List(EnumField(enums.ErasureStandards), dump_only=True)
@@ -98,7 +98,7 @@ class Step(Schema):
     type = String(description='Only required when it is nested.')
     start_time = DateTime(required=True, data_key='startTime')
     end_time = DateTime(required=True, data_key='endTime')
-    severity = EnumField(Severity, description=m.Event.severity.comment)
+    severity = EnumField(Severity, description=m.Action.severity.comment)
 
 
 class StepZero(Step):
@@ -109,7 +109,7 @@ class StepRandom(Step):
     __doc__ = m.StepRandom.__doc__
 
 
-class Benchmark(EventWithOneDevice):
+class Benchmark(ActionWithOneDevice):
     __doc__ = m.Benchmark.__doc__
     elapsed = TimeDelta(precision=TimeDelta.SECONDS, required=True)
 
@@ -141,7 +141,7 @@ class BenchmarkGraphicCard(BenchmarkWithRate):
     __doc__ = m.BenchmarkGraphicCard.__doc__
 
 
-class Test(EventWithOneDevice):
+class Test(ActionWithOneDevice):
     __doc__ = m.Test.__doc__
 
 
@@ -211,7 +211,7 @@ class VisualTest(Test):
     labelling = Boolean()
 
 
-class Rate(EventWithOneDevice):
+class Rate(ActionWithOneDevice):
     __doc__ = m.Rate.__doc__
     rating = Integer(validate=Range(*R_POSITIVE),
                      dump_only=True,
@@ -243,7 +243,7 @@ class RateComputer(Rate):
     graphic_card_range = EnumField(RatingRange, dump_only=True, data_key='graphicCardRange')
 
 
-class Price(EventWithOneDevice):
+class Price(ActionWithOneDevice):
     __doc__ = m.Price.__doc__
     currency = EnumField(Currency, required=True, description=m.Price.currency.comment)
     price = Decimal(places=m.Price.SCALE,
@@ -271,7 +271,7 @@ class EreusePrice(Price):
     platform = Nested(Service)
 
 
-class Install(EventWithOneDevice):
+class Install(ActionWithOneDevice):
     __doc__ = m.Install.__doc__
     name = SanitizedStr(validate=Length(min=4, max=STR_BIG_SIZE),
                         required=True,
@@ -280,11 +280,11 @@ class Install(EventWithOneDevice):
     address = Integer(validate=OneOf({8, 16, 32, 64, 128, 256}))
 
 
-class Snapshot(EventWithOneDevice):
+class Snapshot(ActionWithOneDevice):
     __doc__ = m.Snapshot.__doc__
     """
     The Snapshot updates the state of the device with information about
-    its components and events performed at them.
+    its components and actions performed at them.
 
     See docs for more info.
     """
@@ -293,13 +293,7 @@ class Snapshot(EventWithOneDevice):
                          required=True,
                          description='The software that generated this Snapshot.')
     version = Version(required=True, description='The version of the software.')
-    events = NestedOn(Event, many=True, dump_only=True)
-    expected_events = List(EnumField(SnapshotExpectedEvents),
-                           data_key='expectedEvents',
-                           description='Keep open this Snapshot until the following events'
-                                       'are performed. Setting this value will activate'
-                                       'the async Snapshot.')
-
+    actions = NestedOn(Action, many=True, dump_only=True)
     elapsed = TimeDelta(precision=TimeDelta.SECONDS)
     components = NestedOn(s_device.Component,
                           many=True,
@@ -345,27 +339,27 @@ class Snapshot(EventWithOneDevice):
                                       field_names=['elapsed'])
 
 
-class ToRepair(EventWithMultipleDevices):
+class ToRepair(ActionWithMultipleDevices):
     __doc__ = m.ToRepair.__doc__
 
 
-class Repair(EventWithMultipleDevices):
+class Repair(ActionWithMultipleDevices):
     __doc__ = m.Repair.__doc__
 
 
-class ReadyToUse(EventWithMultipleDevices):
+class ReadyToUse(ActionWithMultipleDevices):
     __doc__ = m.ReadyToUse.__doc__
 
 
-class ToPrepare(EventWithMultipleDevices):
+class ToPrepare(ActionWithMultipleDevices):
     __doc__ = m.ToPrepare.__doc__
 
 
-class Prepare(EventWithMultipleDevices):
+class Prepare(ActionWithMultipleDevices):
     __doc__ = m.Prepare.__doc__
 
 
-class Live(EventWithOneDevice):
+class Live(ActionWithOneDevice):
     __doc__ = m.Live.__doc__
     ip = IP(dump_only=True)
     subdivision_confidence = Integer(dump_only=True, data_key='subdivisionConfidence')
@@ -378,7 +372,7 @@ class Live(EventWithOneDevice):
     organization_type = SanitizedStr(lower=True, dump_only=True, data_key='organizationType')
 
 
-class Organize(EventWithMultipleDevices):
+class Organize(ActionWithMultipleDevices):
     __doc__ = m.Organize.__doc__
 
 
@@ -390,7 +384,7 @@ class CancelReservation(Organize):
     __doc__ = m.CancelReservation.__doc__
 
 
-class Trade(EventWithMultipleDevices):
+class Trade(ActionWithMultipleDevices):
     __doc__ = m.Trade.__doc__
     shipping_date = DateTime(data_key='shippingDate')
     invoice_number = SanitizedStr(validate=Length(max=STR_SIZE), data_key='invoiceNumber')
@@ -423,12 +417,12 @@ class DisposeProduct(Trade):
     __doc__ = m.DisposeProduct.__doc__
 
 
-class Receive(EventWithMultipleDevices):
+class Receive(ActionWithMultipleDevices):
     __doc__ = m.Receive.__doc__
     role = EnumField(ReceiverRole)
 
 
-class Migrate(EventWithMultipleDevices):
+class Migrate(ActionWithMultipleDevices):
     __doc__ = m.Migrate.__doc__
     other = URL()
 

@@ -2,8 +2,8 @@ import teal.marshmallow
 from ereuse_utils.test import ANY
 
 from ereuse_devicehub.client import Client, UserClient
+from ereuse_devicehub.resources.action import models as e
 from ereuse_devicehub.resources.documents import documents as docs
-from ereuse_devicehub.resources.event import models as e
 from tests.conftest import file
 
 
@@ -25,7 +25,7 @@ def test_erasure_certificate_public_one(user: UserClient, client: Client):
                                accept='application/pdf')
     assert 'application/pdf' == response.content_type
 
-    erasure = next(e for e in snapshot['events'] if e['type'] == 'EraseSectors')
+    erasure = next(e for e in snapshot['actions'] if e['type'] == 'EraseSectors')
 
     doc, response = client.get(res=docs.DocumentDef.t,
                                item='erasures/{}'.format(erasure['id']),

@@ -1,7 +1,7 @@
 """
-This file contains all events can apply to a device and is sorted according to a structure based on:
+This file contains all actions can apply to a device and is sorted according to a structure based on:
 
-* Generic Events
+* Generic Actions
 * Benchmarks
 * Tests
 * Rates
@@ -31,7 +31,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
-from teal.db import ArrayOfEnum, CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, \
+from teal.db import CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, \
     POLYMORPHIC_ON, StrictVersionType, URL, check_lower, check_range
 from teal.enums import Country, Currency, Subdivision
 from teal.marshmallow import ValidationError
@@ -43,8 +43,8 @@ from ereuse_devicehub.resources.device.models import Component, Computer, DataSt
     Device, Laptop, Server
 from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, BiosAccessRange, \
     ErasureStandards, FunctionalityRange, PhysicalErasureMethod, PriceSoftware, \
-    R_NEGATIVE, R_POSITIVE, RatingRange, ReceiverRole, Severity, SnapshotExpectedEvents, \
-    SnapshotSoftware, TestDataStorageLength
+    R_NEGATIVE, R_POSITIVE, RatingRange, ReceiverRole, Severity, SnapshotSoftware, \
+    TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -53,18 +53,18 @@ class JoinedTableMixin:
     # noinspection PyMethodParameters
     @declared_attr
     def id(cls):
-        return Column(UUID(as_uuid=True), ForeignKey(Event.id), primary_key=True)
+        return Column(UUID(as_uuid=True), ForeignKey(Action.id), primary_key=True)
 
 
-_sorted_events = {
-    'order_by': lambda: Event.end_time,
+_sorted_actions = {
+    'order_by': lambda: Action.end_time,
     'collection_class': SortedSet
 }
-"""For db.backref, return the events sorted by end_time."""
+"""For db.backref, return the actions sorted by end_time."""
 
 
-class Event(Thing):
-    """Event performed on a device.
+class Action(Thing):
+    """Action performed on a device.
 
     This class extends `Schema's Action <https://schema.org/Action>`_.
     """
@@ -72,19 +72,19 @@ class Event(Thing):
     type = Column(Unicode, nullable=False)
     name = Column(CIText(), default='', nullable=False)
     name.comment = """
-        A name or title for the event. Used when searching for events.
+        A name or title for the action. Used when searching for actions.
     """
     severity = Column(teal.db.IntEnum(Severity), default=Severity.Info, nullable=False)
     severity.comment = Severity.__doc__
     closed = Column(Boolean, default=True, nullable=False)
     closed.comment = """
-        Whether the author has finished the event.
+        Whether the author has finished the action.
         After this is set to True, no modifications are allowed.
-        By default events are closed when performed.
+        By default actions are closed when performed.
     """
     description = Column(Unicode, default='', nullable=False)
     description.comment = """
-        A comment about the event.
+        A comment about the action.
     """
     start_time = Column(db.TIMESTAMP(timezone=True))
     start_time.comment = """
@@ -103,13 +103,13 @@ class Event(Thing):
 
     snapshot_id = Column(UUID(as_uuid=True), ForeignKey('snapshot.id',
                                                         use_alter=True,
-                                                        name='snapshot_events'))
+                                                        name='snapshot_actions'))
     snapshot = relationship('Snapshot',
-                            backref=backref('events',
+                            backref=backref('actions',
                                             lazy=True,
                                             cascade=CASCADE_OWN,
-                                            **_sorted_events),
-                            primaryjoin='Event.snapshot_id == Snapshot.id')
+                                            **_sorted_actions),
+                            primaryjoin='Action.snapshot_id == Snapshot.id')
 
     author_id = Column(UUID(as_uuid=True),
                        ForeignKey(User.id),
@@ -117,7 +117,7 @@ class Event(Thing):
                        default=lambda: g.user.id)
     # todo compute the org
     author = relationship(User,
-                          backref=backref('authored_events', lazy=True, collection_class=set),
+                          backref=backref('authored_actions', lazy=True, collection_class=set),
                           primaryjoin=author_id == User.id)
     author_id.comment = """
     The user that recorded this action in the system.
@@ -133,7 +133,7 @@ class Event(Thing):
                       default=lambda: g.user.individual.id)
     # todo compute the org
     agent = relationship(Agent,
-                         backref=backref('events_agent', lazy=True, **_sorted_events),
+                         backref=backref('actions_agent', lazy=True, **_sorted_actions),
                          primaryjoin=agent_id == Agent.id)
     agent_id.comment = """
     The direct performer or driver of the action. e.g. John wrote a book.
@@ -143,29 +143,29 @@ class Event(Thing):
     """
 
     components = relationship(Component,
-                              backref=backref('events_components', lazy=True, **_sorted_events),
-                              secondary=lambda: EventComponent.__table__,
+                              backref=backref('actions_components', lazy=True, **_sorted_actions),
+                              secondary=lambda: ActionComponent.__table__,
                               order_by=lambda: Component.id,
                               collection_class=OrderedSet)
     components.comment = """
-    The components that are affected by the event.
+    The components that are affected by the action.
     
-    When performing events to parent devices their components are
+    When performing actions to parent devices their components are
     affected too.
     
     For example: an ``Allocate`` is performed to a Computer and this
     relationship is filled with the components the computer had
-    at the time of the event.
+    at the time of the action.
     
     For Add and Remove though, this has another meaning: the components
     that are added or removed.
     """
     parent_id = Column(BigInteger, ForeignKey(Computer.id))
     parent = relationship(Computer,
-                          backref=backref('events_parent', lazy=True, **_sorted_events),
+                          backref=backref('actions_parent', lazy=True, **_sorted_actions),
                           primaryjoin=parent_id == Computer.id)
     parent_id.comment = """
-    For events that are performed to components, the device parent
+    For actions that are performed to components, the device parent
     at that time.
     
     For example: for a ``EraseBasic`` performed on a data storage, this
@@ -186,8 +186,8 @@ class Event(Thing):
 
     @property
     def url(self) -> urlutils.URL:
-        """The URL where to GET this event."""
-        return urlutils.URL(url_for_resource(Event, item_id=self.id))
+        """The URL where to GET this action."""
+        return urlutils.URL(url_for_resource(Action, item_id=self.id))
 
     @property
     def certificate(self) -> Optional[urlutils.URL]:
@@ -204,23 +204,23 @@ class Event(Thing):
         #sqlalchemy.ext.declarative.declared_attr>`_
         """
         args = {POLYMORPHIC_ID: cls.t}
-        if cls.t == 'Event':
+        if cls.t == 'Action':
             args[POLYMORPHIC_ON] = cls.type
         # noinspection PyUnresolvedReferences
         if JoinedTableMixin in cls.mro():
-            args[INHERIT_COND] = cls.id == Event.id
+            args[INHERIT_COND] = cls.id == Action.id
         return args
 
     @validates('end_time')
     def validate_end_time(self, _, end_time: datetime):
         if self.start_time and end_time <= self.start_time:
-            raise ValidationError('The event cannot finish before it starts.')
+            raise ValidationError('The action cannot finish before it starts.')
         return end_time
 
     @validates('start_time')
     def validate_start_time(self, _, start_time: datetime):
         if self.end_time and start_time >= self.end_time:
-            raise ValidationError('The event cannot start after it finished.')
+            raise ValidationError('The action cannot start after it finished.')
         return start_time
 
     @property
@@ -245,29 +245,29 @@ class Event(Thing):
         return '<{0.t} {0.id} {0.severity}>'.format(self)
 
 
-class EventComponent(db.Model):
+class ActionComponent(db.Model):
     device_id = Column(BigInteger, ForeignKey(Component.id), primary_key=True)
-    event_id = Column(UUID(as_uuid=True), ForeignKey(Event.id), primary_key=True)
+    action_id = Column(UUID(as_uuid=True), ForeignKey(Action.id), primary_key=True)
 
 
 class JoinedWithOneDeviceMixin:
     # noinspection PyMethodParameters
     @declared_attr
     def id(cls):
-        return Column(UUID(as_uuid=True), ForeignKey(EventWithOneDevice.id), primary_key=True)
+        return Column(UUID(as_uuid=True), ForeignKey(ActionWithOneDevice.id), primary_key=True)
 
 
-class EventWithOneDevice(JoinedTableMixin, Event):
+class ActionWithOneDevice(JoinedTableMixin, Action):
     device_id = Column(BigInteger, ForeignKey(Device.id), nullable=False)
     device = relationship(Device,
-                          backref=backref('events_one',
+                          backref=backref('actions_one',
                                           lazy=True,
                                           cascade=CASCADE_OWN,
-                                          **_sorted_events),
+                                          **_sorted_actions),
                           primaryjoin=Device.id == device_id)
 
     __table_args__ = (
-        db.Index('event_one_device_id_index', device_id, postgresql_using='hash'),
+        db.Index('action_one_device_id_index', device_id, postgresql_using='hash'),
     )
 
     def __repr__(self) -> str:
@@ -283,15 +283,15 @@ class EventWithOneDevice(JoinedTableMixin, Event):
         #sqlalchemy.ext.declarative.declared_attr>`_
         """
         args = {POLYMORPHIC_ID: cls.t}
-        if cls.t == 'EventWithOneDevice':
+        if cls.t == 'ActionWithOneDevice':
             args[POLYMORPHIC_ON] = cls.type
         return args
 
 
-class EventWithMultipleDevices(Event):
+class ActionWithMultipleDevices(Action):
     devices = relationship(Device,
-                           backref=backref('events_multiple', lazy=True, **_sorted_events),
-                           secondary=lambda: EventDevice.__table__,
+                           backref=backref('actions_multiple', lazy=True, **_sorted_actions),
+                           secondary=lambda: ActionDevice.__table__,
                            order_by=lambda: Device.id,
                            collection_class=OrderedSet)
 
@@ -299,13 +299,13 @@ class EventWithMultipleDevices(Event):
         return '<{0.t} {0.id} {0.severity} devices={0.devices!r}>'.format(self)
 
 
-class EventDevice(db.Model):
+class ActionDevice(db.Model):
     device_id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
-    event_id = Column(UUID(as_uuid=True), ForeignKey(EventWithMultipleDevices.id),
-                      primary_key=True)
+    action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleDevices.id),
+                       primary_key=True)
 
 
-class Add(EventWithOneDevice):
+class Add(ActionWithOneDevice):
     """The act of adding components to a device.
 
     It is usually used internally from a :class:`.Snapshot`, for
@@ -313,7 +313,7 @@ class Add(EventWithOneDevice):
     """
 
 
-class Remove(EventWithOneDevice):
+class Remove(ActionWithOneDevice):
     """The act of removing components from a device.
 
     It is usually used internally from a :class:`.Snapshot`, for
@@ -321,20 +321,20 @@ class Remove(EventWithOneDevice):
     """
 
 
-class Allocate(JoinedTableMixin, EventWithMultipleDevices):
+class Allocate(JoinedTableMixin, ActionWithMultipleDevices):
     to_id = Column(UUID, ForeignKey(User.id))
     to = relationship(User, primaryjoin=User.id == to_id)
     organization = Column(CIText())
 
 
-class Deallocate(JoinedTableMixin, EventWithMultipleDevices):
+class Deallocate(JoinedTableMixin, ActionWithMultipleDevices):
     from_id = Column(UUID, ForeignKey(User.id))
     from_rel = relationship(User, primaryjoin=User.id == from_id)
     organization = Column(CIText())
 
 
-class EraseBasic(JoinedWithOneDeviceMixin, EventWithOneDevice):
-    """An erasure attempt to a ``DataStorage``. The event contains
+class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
+    """An erasure attempt to a ``DataStorage``. The action contains
     information about success and nature of the erasure.
 
     EraseBasic is a software-based fast non-100%-secured way of
@@ -409,10 +409,10 @@ class Step(db.Model):
     num = Column(SmallInteger, primary_key=True)
     severity = Column(teal.db.IntEnum(Severity), default=Severity.Info, nullable=False)
     start_time = Column(db.TIMESTAMP(timezone=True), nullable=False)
-    start_time.comment = Event.start_time.comment
+    start_time.comment = Action.start_time.comment
     end_time = Column(db.TIMESTAMP(timezone=True), CheckConstraint('end_time > start_time'),
                       nullable=False)
-    end_time.comment = Event.end_time.comment
+    end_time.comment = Action.end_time.comment
 
     erasure = relationship(EraseBasic,
                            backref=backref('steps',
@@ -453,7 +453,7 @@ class StepRandom(Step):
     pass
 
 
-class Snapshot(JoinedWithOneDeviceMixin, EventWithOneDevice):
+class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """The Snapshot sets the physical information of the device (S/N, model...)
     and updates it with erasures, benchmarks, ratings, and tests; updates the
     composition of its components (adding / removing them), and links tags
@@ -488,11 +488,11 @@ class Snapshot(JoinedWithOneDeviceMixin, EventWithOneDevice):
     **Snapshots from Workbench**
 
     When processing a device from the Workbench, this one performs a Snapshot
-    and then performs more events (like testings, benchmarking...).
+    and then performs more actions (like testings, benchmarking...).
 
     There are two ways of sending this information. In an async way,
-    this is, submitting events as soon as Workbench performs then, or
-    submitting only one Snapshot event with all the other events embedded.
+    this is, submitting actions as soon as Workbench performs then, or
+    submitting only one Snapshot action with all the other actions embedded.
 
     **Asynced**
 
@@ -502,42 +502,42 @@ class Snapshot(JoinedWithOneDeviceMixin, EventWithOneDevice):
     1. In **T1**, WorkbenchServer (as the middleware from Workbench and
        Devicehub) submits:
 
-       - A ``Snapshot`` event with the required information to **synchronize**
+       - A ``Snapshot`` action with the required information to **synchronize**
          and **rate** the device. This is:
 
            - Identification information about the device and components
              (S/N, model, physical characteristics...)
            - ``Tags`` in a ``tags`` property in the ``device``.
-           - ``Rate`` in an ``events`` property in the ``device``.
-           - ``Benchmarks`` in an ``events`` property in each ``component``
+           - ``Rate`` in an ``actions`` property in the ``device``.
+           - ``Benchmarks`` in an ``actions`` property in each ``component``
              or ``device``.
            - ``TestDataStorage`` as in ``Benchmarks``.
-       - An ordered set of **expected events**, defining which are the next
-         events that Workbench will perform to the device in ideal
+       - An ordered set of **expected actions**, defining which are the next
+         actions that Workbench will perform to the device in ideal
          conditions (device doesn't fail, no Internet drop...).
 
        Devicehub **syncs** the device with the database and perform the
        ``Benchmark``, the ``TestDataStorage``, and finally the ``Rate``.
-       This leaves the Snapshot **open** to wait for the next events
+       This leaves the Snapshot **open** to wait for the next actions
        to come.
-    2. Assuming that we expect all events, in **T2**, WorkbenchServer
+    2. Assuming that we expect all actions, in **T2**, WorkbenchServer
        submits a ``StressTest`` with a ``snapshot`` field containing the
-       ID of the Snapshot in 1, and Devicehub links the event with such
+       ID of the Snapshot in 1, and Devicehub links the action with such
        ``Snapshot``.
     3. In **T3**, WorkbenchServer submits the ``Erase`` with the ``Snapshot``
        and ``component`` IDs from 1, linking it to them. It repeats
        this for all the erased data storage devices; **T3+Tn** being
        *n* the erased data storage devices.
-    4. WorkbenchServer does like in 3. but for the event ``Install``,
+    4. WorkbenchServer does like in 3. but for the action ``Install``,
        finishing in **T3+Tn+Tx**, being *x* the number of data storage
        devices with an OS installed into.
-    5. In **T3+Tn+Tx**, when all *expected events* have been performed,
+    5. In **T3+Tn+Tx**, when all *expected actions* have been performed,
        Devicehub **closes** the ``Snapshot`` from 1.
 
     **Synced**
 
     Optionally, Devicehub understands receiving a ``Snapshot`` with all
-    the events in an ``events`` property inside each affected ``component``
+    the actions in an ``actions`` property inside each affected ``component``
     or ``device``.
     """
     uuid = Column(UUID(as_uuid=True), unique=True)
@@ -548,13 +548,12 @@ class Snapshot(JoinedWithOneDeviceMixin, EventWithOneDevice):
         For Snapshots made with Workbench, the total amount of time
         it took to complete.
     """
-    expected_events = Column(ArrayOfEnum(DBEnum(SnapshotExpectedEvents)))
 
     def __str__(self) -> str:
         return '{}. {} version {}.'.format(self.severity, self.software, self.version)
 
 
-class Install(JoinedWithOneDeviceMixin, EventWithOneDevice):
+class Install(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """The action of installing an Operative System to a data
     storage unit.
     """
@@ -572,7 +571,7 @@ class SnapshotRequest(db.Model):
                                             cascade=CASCADE_OWN))
 
 
-class Benchmark(JoinedWithOneDeviceMixin, EventWithOneDevice):
+class Benchmark(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """The act of gauging the performance of a device."""
     elapsed = Column(Interval)
 
@@ -644,7 +643,7 @@ class BenchmarkGraphicCard(BenchmarkWithRate):
     pass
 
 
-class Test(JoinedWithOneDeviceMixin, EventWithOneDevice):
+class Test(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """The act of testing the physical condition of a device and its
     components.
 
@@ -860,7 +859,7 @@ class VisualTest(TestMixin, Test):
         )
 
 
-class Rate(JoinedWithOneDeviceMixin, EventWithOneDevice):
+class Rate(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """The act of computing a rate based on different categories"""
     # todo jn: explain in each comment what the rate considers.
     N = 2
@@ -1008,7 +1007,7 @@ class RateComputer(RateMixin, Rate):
         """
         The act of compute general computer rate
         """
-        from ereuse_devicehub.resources.event.rate.workbench.v1_0 import rate_algorithm
+        from ereuse_devicehub.resources.action.rate.workbench.v1_0 import rate_algorithm
         rate = rate_algorithm.compute(device)
         price = None
         with suppress(InvalidRangeForPrice):  # We will have exception if range == VERY_LOW
@@ -1016,14 +1015,14 @@ class RateComputer(RateMixin, Rate):
         return rate, price
 
 
-class Price(JoinedWithOneDeviceMixin, EventWithOneDevice):
+class Price(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """The act of setting a trading price for the device.
 
     This does not imply that the device is ultimately traded for that
     price. Use the :class:`.Sell` for that.
 
     Devicehub automatically computes a price from ``AggregateRating``
-    events. As in a **Rate**, price can have **software** and **version**,
+    actions. As in a **Rate**, price can have **software** and **version**,
     and there is an **official** price that is used to automatically
     compute the price from an ``AggregateRating``. Only the official price
     is computed from an ``AggregateRating``.
@@ -1174,11 +1173,11 @@ class EreusePrice(Price):
         return self.Service(self.device, self.rating.rating_range, role, self.price)
 
 
-class ToRepair(EventWithMultipleDevices):
+class ToRepair(ActionWithMultipleDevices):
     """Select a device to be repaired."""
 
 
-class Repair(EventWithMultipleDevices):
+class Repair(ActionWithMultipleDevices):
     """Repair is the act of performing reparations.
 
     If a repair without an error is performed,
@@ -1186,41 +1185,41 @@ class Repair(EventWithMultipleDevices):
     """
 
 
-class ReadyToUse(EventWithMultipleDevices):
+class ReadyToUse(ActionWithMultipleDevices):
     """The device is ready to be used.
 
-    This involves greater preparation from the ``Prepare`` event,
-    and users should only use a device after this event is performed.
+    This involves greater preparation from the ``Prepare`` action,
+    and users should only use a device after this action is performed.
 
-    Users usually require devices with this event before shipping them
+    Users usually require devices with this action before shipping them
     to costumers.
     """
 
 
-class ToPrepare(EventWithMultipleDevices):
+class ToPrepare(ActionWithMultipleDevices):
     """The device has been selected for preparation.
 
     See Prepare for more info.
 
-    Usually **ToPrepare** is the next event done after registering the
+    Usually **ToPrepare** is the next action done after registering the
     device.
     """
     pass
 
 
-class Prepare(EventWithMultipleDevices):
+class Prepare(ActionWithMultipleDevices):
     """Work has been performed to the device to a defined point of
     acceptance.
 
-    Users using this event have to agree what is this point
+    Users using this action have to agree what is this point
     of acceptance; for some is when the device just works, for others
     when some testing has been performed.
     """
 
 
-class Live(JoinedWithOneDeviceMixin, EventWithOneDevice):
+class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """A keep-alive from a device connected to the Internet with
-    information about its state (in the form of a ``Snapshot`` event)
+    information about its state (in the form of a ``Snapshot`` action)
      and usage statistics.
     """
     ip = Column(IP, nullable=False,
@@ -1244,7 +1243,7 @@ class Live(JoinedWithOneDeviceMixin, EventWithOneDevice):
     # todo testing
 
 
-class Organize(JoinedTableMixin, EventWithMultipleDevices):
+class Organize(JoinedTableMixin, ActionWithMultipleDevices):
     """The act of manipulating/administering/supervising/controlling
     one or more devices.
     """
@@ -1253,7 +1252,7 @@ class Organize(JoinedTableMixin, EventWithMultipleDevices):
 class Reserve(Organize):
     """The act of reserving devices.
 
-    After this event is performed, the user is the **reservee** of the
+    After this action is performed, the user is the **reservee** of the
     devices. There can only be one non-cancelled reservation for
     a device, and a reservation can only have one reservee.
     """
@@ -1263,14 +1262,14 @@ class CancelReservation(Organize):
     """The act of cancelling a reservation."""
 
 
-class Trade(JoinedTableMixin, EventWithMultipleDevices):
+class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     """Trade actions log the political exchange of devices between users.
-    Every time a trade event is performed, the old user looses its
+    Every time a trade action is performed, the old user looses its
     political possession, for example ownership, in favor of another
     user.
 
 
-    Performing trade events changes the *Trading* state of the
+    Performing trade actions changes the *Trading* state of the
     device —:class:`ereuse_devicehub.resources.device.states.Trading`.
 
     This class and its inheritors
@@ -1297,7 +1296,7 @@ class Trade(JoinedTableMixin, EventWithMultipleDevices):
     to_id = Column(UUID(as_uuid=True), ForeignKey(Agent.id), nullable=False)
     # todo compute the org
     to = relationship(Agent,
-                      backref=backref('events_to', lazy=True, **_sorted_events),
+                      backref=backref('actions_to', lazy=True, **_sorted_actions),
                       primaryjoin=to_id == Agent.id)
     to_comment = """
         The agent that gets the device due this deal.
@@ -1357,7 +1356,7 @@ class DisposeProduct(Trade):
     #     ``RecyclingCenter``.
 
 
-class Receive(JoinedTableMixin, EventWithMultipleDevices):
+class Receive(JoinedTableMixin, ActionWithMultipleDevices):
     """The act of physically taking delivery of a device.
 
     The receiver confirms that the devices have arrived, and thus,
@@ -1377,7 +1376,7 @@ class Receive(JoinedTableMixin, EventWithMultipleDevices):
                   default=ReceiverRole.Intermediary)
 
 
-class Migrate(JoinedTableMixin, EventWithMultipleDevices):
+class Migrate(JoinedTableMixin, ActionWithMultipleDevices):
     """Moves the devices to a new database/inventory. Devices cannot be
     modified anymore at the previous database.
     """
@@ -1398,52 +1397,52 @@ class MigrateFrom(Migrate):
 # Listeners
 # Listeners validate values and keep relationships synced
 
-# The following listeners avoids setting values to events that
+# The following listeners avoids setting values to actions that
 # do not make sense. For example, EraseBasic to a graphic card.
 
 @event.listens_for(TestDataStorage.device, Events.set.__name__, propagate=True)
 @event.listens_for(Install.device, Events.set.__name__, propagate=True)
 @event.listens_for(EraseBasic.device, Events.set.__name__, propagate=True)
-def validate_device_is_data_storage(target: Event, value: DataStorage, old_value, initiator):
-    """Validates that the device for data-storage events is effectively a data storage."""
+def validate_device_is_data_storage(target: Action, value: DataStorage, old_value, initiator):
+    """Validates that the device for data-storage actions is effectively a data storage."""
     if value and not isinstance(value, DataStorage):
         raise TypeError('{} must be a DataStorage but you passed {}'.format(initiator.impl, value))
 
 
 @event.listens_for(BenchmarkRamSysbench.device, Events.set.__name__, propagate=True)
-def events_not_for_components(target: Event, value: Device, old_value, initiator):
-    """Validates events that cannot be performed to components."""
+def actions_not_for_components(target: Action, value: Device, old_value, initiator):
+    """Validates actions that cannot be performed to components."""
     if isinstance(value, Component):
         raise TypeError('{!r} cannot be performed to a component ({!r}).'.format(target, value))
 
 
-# The following listeners keep relationships with device <-> components synced with the event
-# So, if you add or remove devices from events these listeners will
-# automatically add/remove the ``components`` and ``parent`` of such events
+# The following listeners keep relationships with device <-> components synced with the action
+# So, if you add or remove devices from actions these listeners will
+# automatically add/remove the ``components`` and ``parent`` of such actions
 # See the tests for examples
 
-@event.listens_for(EventWithOneDevice.device, Events.set.__name__, propagate=True)
-def update_components_event_one(target: EventWithOneDevice, device: Device, __, ___):
+@event.listens_for(ActionWithOneDevice.device, Events.set.__name__, propagate=True)
+def update_components_action_one(target: ActionWithOneDevice, device: Device, __, ___):
     """
-    Syncs the :attr:`.Event.components` with the components in
+    Syncs the :attr:`.Action.components` with the components in
     :attr:`ereuse_devicehub.resources.device.models.Computer.components`.
     """
     # For Add and Remove, ``components`` have different meanings
-    # see Event.components for more info
+    # see Action.components for more info
     if not isinstance(target, (Add, Remove)):
         target.components.clear()
         if isinstance(device, Computer):
             target.components |= device.components
 
 
-@event.listens_for(EventWithMultipleDevices.devices, Events.init_collection.__name__,
+@event.listens_for(ActionWithMultipleDevices.devices, Events.init_collection.__name__,
                    propagate=True)
-@event.listens_for(EventWithMultipleDevices.devices, Events.bulk_replace.__name__, propagate=True)
-@event.listens_for(EventWithMultipleDevices.devices, Events.append.__name__, propagate=True)
-def update_components_event_multiple(target: EventWithMultipleDevices,
-                                     value: Union[Set[Device], Device], _):
+@event.listens_for(ActionWithMultipleDevices.devices, Events.bulk_replace.__name__, propagate=True)
+@event.listens_for(ActionWithMultipleDevices.devices, Events.append.__name__, propagate=True)
+def update_components_action_multiple(target: ActionWithMultipleDevices,
+                                      value: Union[Set[Device], Device], _):
     """
-    Syncs the :attr:`.Event.components` with the components in
+    Syncs the :attr:`.Action.components` with the components in
     :attr:`ereuse_devicehub.resources.device.models.Computer.components`.
     """
     target.components.clear()
@@ -1453,10 +1452,10 @@ def update_components_event_multiple(target: EventWithMultipleDevices,
             target.components |= device.components
 
 
-@event.listens_for(EventWithMultipleDevices.devices, Events.remove.__name__, propagate=True)
-def remove_components_event_multiple(target: EventWithMultipleDevices, device: Device, __):
+@event.listens_for(ActionWithMultipleDevices.devices, Events.remove.__name__, propagate=True)
+def remove_components_action_multiple(target: ActionWithMultipleDevices, device: Device, __):
     """
-    Syncs the :attr:`.Event.components` with the components in
+    Syncs the :attr:`.Action.components` with the components in
     :attr:`ereuse_devicehub.resources.device.models.Computer.components`.
     """
     target.components.clear()
@@ -1471,7 +1470,7 @@ def remove_components_event_multiple(target: EventWithMultipleDevices, device: D
 @event.listens_for(Benchmark.device, Events.set.__name__, propagate=True)
 def update_parent(target: Union[EraseBasic, Test, Install], device: Device, _, __):
     """
-    Syncs the :attr:`Event.parent` with the parent of the device.
+    Syncs the :attr:`Action.parent` with the parent of the device.
     """
     target.parent = None
     if isinstance(device, Component):

@@ -2,7 +2,7 @@
   "closed": true,
   "components": [
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Intel Corporation",
     "model": "82567LM-3 Gigabit Network Connection",
     "serialNumber": "00:23:7d:49:5e:31",
@@ -11,14 +11,14 @@
     "wireless": false
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Intel Corporation",
     "model": "82801JD/DO HD Audio Controller",
     "serialNumber": null,
     "type": "SoundCard"
   },
   {
-    "events": [],
+    "actions": [],
     "format": "DIMM",
     "interface": "DDR2",
     "manufacturer": null,
@@ -31,7 +31,7 @@
   {
     "address": 64,
     "cores": 2,
-    "events": [
+    "actions": [
     {
       "elapsed": 0,
       "rate": 11970.54,
@@ -51,7 +51,7 @@
     "type": "Processor"
   },
   {
-    "events": [
+    "actions": [
     {
       "elapsed": 16,
       "readSpeed": 76.8,
@@ -81,7 +81,7 @@
     "type": "HardDrive"
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Intel Corporation",
     "memory": 256.0,
     "model": "4 Series Chipset Integrated Graphics Controller",
@@ -89,7 +89,7 @@
     "type": "GraphicCard"
   },
   {
-    "events": [
+    "actions": [
     {
       "type": "TestBios",
       "accessRange": "A"
@@ -108,7 +108,7 @@
   ],
   "device": {
     "chassis": "Tower",
-    "events": [
+    "actions": [
     {
       "elapsed": 60,
       "severity": "Info",
@@ -142,11 +142,7 @@
   },
   "elapsed": 238,
   "endTime": "2018-10-15T13:59:37.431309+00:00",
-  "expectedEvents": [
-    "Benchmark",
-    "TestDataStorage",
-    "StressTest"
-  ],
+
   "software": "Workbench",
   "type": "Snapshot",
   "uuid": "ec23c11b-80b6-42cd-ac5c-73ba7acddbc4",

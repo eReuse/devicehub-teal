@@ -5,13 +5,13 @@ import pytest
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.action.models import Action, BenchmarkDataStorage, \
+    BenchmarkProcessor, RateComputer, Snapshot, VisualTest
+from ereuse_devicehub.resources.action.rate.workbench.v1_0 import CannotRate
 from ereuse_devicehub.resources.device.models import Computer, Desktop, Device, HardDrive, \
     Processor, RamModule
 from ereuse_devicehub.resources.enums import AppearanceRange, ComputerChassis, \
     FunctionalityRange
-from ereuse_devicehub.resources.event.models import BenchmarkDataStorage, BenchmarkProcessor, \
-    Event, RateComputer, Snapshot, VisualTest
-from ereuse_devicehub.resources.event.rate.workbench.v1_0 import CannotRate
 from tests import conftest
 from tests.conftest import file
 
@@ -46,7 +46,7 @@ def test_manual_rate_after_workbench_rate(user: UserClient):
         'device': device['id'],
         'appearanceRange': 'A',
         'functionalityRange': 'A'
-    }, res=Event)
+    }, res=Action)
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
     assert 'A' == device['rate']['appearanceRange']
 
@@ -57,9 +57,9 @@ def test_price_from_rate():
 
     pc = Desktop(chassis=ComputerChassis.Tower)
     hdd = HardDrive(size=476940)
-    hdd.events_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
+    hdd.actions_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
     cpu = Processor(cores=2, speed=3.4)
-    cpu.events_one.add(BenchmarkProcessor(rate=27136.44))
+    cpu.actions_one.add(BenchmarkProcessor(rate=27136.44))
     pc.components |= {
         hdd,
         RamModule(size=4096, speed=1600),
@@ -73,8 +73,8 @@ def test_price_from_rate():
                device=pc)
     rate, price = RateComputer.compute(pc)
 
-    # events = pc.events
-    # price = next(e for e in events if isinstance(e, EreusePrice))
+    # actions = pc.actions
+    # price = next(e for e in actions if isinstance(e, EreusePrice))
     assert price.price == Decimal('92.2001')
     assert price.retailer.standard.amount == Decimal('40.9714')
     assert price.platform.standard.amount == Decimal('18.8434')
@@ -111,8 +111,8 @@ def test_no_rate_if_no_visual_test(user: UserClient):
     """
     # Upload a basic snapshot
     s = file('basic.snapshot')
-    # Delete snapshot device events
-    del s['device']['events']
+    # Delete snapshot device actions
+    del s['device']['actions']
     snapshot, _ = user.post(s, res=Snapshot)
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
     # How to assert CannotRate Exception
@@ -135,6 +135,6 @@ def test_multiple_rates(user: UserClient):
     ensuring that the tests / benchmarks...
     from the first rate do not contaminate the second rate.
 
-    This ensures that rates only takes the last version  of events
+    This ensures that rates only takes the last version  of actions
     and components (in case device has new components, for example).
     """

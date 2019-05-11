@@ -138,35 +138,35 @@ class Device(Thing):
             self.hid = Naming.hid(self.type, self.manufacturer, self.model, self.serial_number)
 
     @property
-    def events(self) -> list:
+    def actions(self) -> list:
         """
-        All the events where the device participated, including:
+        All the actions where the device participated, including:
 
-        1. Events performed directly to the device.
-        2. Events performed to a component.
-        3. Events performed to a parent device.
+        1. Actions performed directly to the device.
+        2. Actions performed to a component.
+        3. Actions performed to a parent device.
 
-        Events are returned by descending ``created`` time.
+        Actions are returned by descending ``created`` time.
         """
-        return sorted(chain(self.events_multiple, self.events_one))
+        return sorted(chain(self.actions_multiple, self.actions_one))
 
     @property
     def problems(self):
-        """Current events with severity.Warning or higher.
+        """Current actions with severity.Warning or higher.
 
-        There can be up to 3 events: current Snapshot,
-        current Physical event, current Trading event.
+        There can be up to 3 actions: current Snapshot,
+        current Physical action, current Trading action.
         """
         from ereuse_devicehub.resources.device import states
-        from ereuse_devicehub.resources.event.models import Snapshot
-        events = set()
+        from ereuse_devicehub.resources.action.models import Snapshot
+        actions = set()
         with suppress(LookupError, ValueError):
-            events.add(self.last_event_of(Snapshot))
+            actions.add(self.last_action_of(Snapshot))
         with suppress(LookupError, ValueError):
-            events.add(self.last_event_of(*states.Physical.events()))
+            actions.add(self.last_action_of(*states.Physical.actions()))
         with suppress(LookupError, ValueError):
-            events.add(self.last_event_of(*states.Trading.events()))
-        return self._warning_events(events)
+            actions.add(self.last_action_of(*states.Trading.actions()))
+        return self._warning_actions(actions)
 
     @property
     def physical_properties(self) -> Dict[str, object or None]:
@@ -194,33 +194,33 @@ class Device(Thing):
     def rate(self):
         """The last Rate of the device."""
         with suppress(LookupError, ValueError):
-            from ereuse_devicehub.resources.event.models import Rate
-            return self.last_event_of(Rate)
+            from ereuse_devicehub.resources.action.models import Rate
+            return self.last_action_of(Rate)
 
     @property
     def price(self):
         """The actual Price of the device, or None if no price has
         ever been set."""
         with suppress(LookupError, ValueError):
-            from ereuse_devicehub.resources.event.models import Price
-            return self.last_event_of(Price)
+            from ereuse_devicehub.resources.action.models import Price
+            return self.last_action_of(Price)
 
     @property
     def trading(self):
-        """The actual trading state, or None if no Trade event has
+        """The actual trading state, or None if no Trade action has
         ever been performed to this device."""
         from ereuse_devicehub.resources.device import states
         with suppress(LookupError, ValueError):
-            event = self.last_event_of(*states.Trading.events())
-            return states.Trading(event.__class__)
+            action = self.last_action_of(*states.Trading.actions())
+            return states.Trading(action.__class__)
 
     @property
     def physical(self):
         """The actual physical state, None otherwise."""
         from ereuse_devicehub.resources.device import states
         with suppress(LookupError, ValueError):
-            event = self.last_event_of(*states.Physical.events())
-            return states.Physical(event.__class__)
+            action = self.last_action_of(*states.Physical.actions())
+            return states.Physical(action.__class__)
 
     @property
     def physical_possessor(self):
@@ -235,13 +235,13 @@ class Device(Thing):
         own it legally.
 
         Note that there can only be one physical possessor per device,
-        and :class:`ereuse_devicehub.resources.event.models.Receive`
+        and :class:`ereuse_devicehub.resources.action.models.Receive`
         changes it.
         """
-        from ereuse_devicehub.resources.event.models import Receive
+        from ereuse_devicehub.resources.action.models import Receive
         with suppress(LookupError):
-            event = self.last_event_of(Receive)
-            return event.agent
+            action = self.last_action_of(Receive)
+            return action.agent
 
     @property
     def working(self):
@@ -252,10 +252,10 @@ class Device(Thing):
         the one with the worst ``severity`` of them, or ``None`` if no
         test has been executed.
         """
-        from ereuse_devicehub.resources.event.models import Test
-        current_tests = unique_everseen((e for e in reversed(self.events) if isinstance(e, Test)),
+        from ereuse_devicehub.resources.action.models import Test
+        current_tests = unique_everseen((e for e in reversed(self.actions) if isinstance(e, Test)),
                                         key=attrgetter('type'))  # last test of each type
-        return self._warning_events(current_tests)
+        return self._warning_actions(current_tests)
 
     @declared_attr
     def __mapper_args__(cls):
@@ -271,19 +271,19 @@ class Device(Thing):
             args[POLYMORPHIC_ON] = cls.type
         return args
 
-    def last_event_of(self, *types):
-        """Gets the last event of the given types.
+    def last_action_of(self, *types):
+        """Gets the last action of the given types.
 
-        :raise LookupError: Device has not an event of the given type.
+        :raise LookupError: Device has not an action of the given type.
         """
         try:
             # noinspection PyTypeHints
-            return next(e for e in reversed(self.events) if isinstance(e, types))
+            return next(e for e in reversed(self.actions) if isinstance(e, types))
         except StopIteration:
-            raise LookupError('{!r} does not contain events of types {}.'.format(self, types))
+            raise LookupError('{!r} does not contain actions of types {}.'.format(self, types))
 
-    def _warning_events(self, events):
-        return sorted(ev for ev in events if ev.severity >= Severity.Warning)
+    def _warning_actions(self, actions):
+        return sorted(ev for ev in actions if ev.severity >= Severity.Warning)
 
     def __lt__(self, other):
         return self.id < other.id
@@ -389,8 +389,8 @@ class Computer(Device):
         super().__init__(chassis=chassis, **kwargs)
 
     @property
-    def events(self) -> list:
-        return sorted(chain(super().events, self.events_parent))
+    def actions(self) -> list:
+        return sorted(chain(super().actions, self.actions_parent))
 
     @property
     def ram_size(self) -> int:
@@ -561,8 +561,8 @@ class Component(Device):
         return component
 
     @property
-    def events(self) -> list:
-        return sorted(chain(super().events, self.events_components))
+    def actions(self) -> list:
+        return sorted(chain(super().actions, self.actions_components))
 
 
 class JoinedComponentTableMixin:
@@ -592,9 +592,9 @@ class DataStorage(JoinedComponentTableMixin, Component):
 
         This is, the last erasure performed to the data storage.
         """
-        from ereuse_devicehub.resources.event.models import EraseBasic
+        from ereuse_devicehub.resources.action.models import EraseBasic
         try:
-            ev = self.last_event_of(EraseBasic)
+            ev = self.last_action_of(EraseBasic)
         except LookupError:
             ev = None
         return ev
@@ -698,8 +698,8 @@ class Battery(JoinedComponentTableMixin, Component):
     @property
     def capacity(self) -> float:
         """The quantity of """
-        from ereuse_devicehub.resources.event.models import MeasureBattery
-        real_size = self.last_event_of(MeasureBattery).size
+        from ereuse_devicehub.resources.action.models import MeasureBattery
+        real_size = self.last_action_of(MeasureBattery).size
         return real_size / self.size if real_size and self.size else None
 
 

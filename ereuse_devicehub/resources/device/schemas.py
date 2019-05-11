@@ -37,9 +37,9 @@ class Device(Thing):
     width = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.width.comment)
     height = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.height.comment)
     depth = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.depth.comment)
-    events = NestedOn('Event', many=True, dump_only=True, description=m.Device.events.__doc__)
-    events_one = NestedOn('Event', many=True, load_only=True, collection_class=OrderedSet)
-    problems = NestedOn('Event', many=True, dump_only=True, description=m.Device.problems.__doc__)
+    actions = NestedOn('Action', many=True, dump_only=True, description=m.Device.actions.__doc__)
+    actions_one = NestedOn('Action', many=True, load_only=True, collection_class=OrderedSet)
+    problems = NestedOn('Action', many=True, dump_only=True, description=m.Device.problems.__doc__)
     url = URL(dump_only=True, description=m.Device.url.__doc__)
     lots = NestedOn('Lot',
                     many=True,
@@ -53,34 +53,35 @@ class Device(Thing):
     production_date = DateTime('iso',
                                description=m.Device.updated.comment,
                                data_key='productionDate')
-    working = NestedOn('Event',
+    working = NestedOn('Action',
                        many=True,
                        dump_only=True,
                        description=m.Device.working.__doc__)
 
     @pre_load
-    def from_events_to_events_one(self, data: dict):
+    def from_actions_to_actions_one(self, data: dict):
         """
-        Not an elegant way of allowing submitting events to a device
-        (in the context of Snapshots) without creating an ``events``
+        Not an elegant way of allowing submitting actions to a device
+        (in the context of Snapshots) without creating an ``actions``
         field at the model (which is not possible).
         :param data:
         :return:
         """
-        # Note that it is secure to allow uploading events_one
+        # Note that it is secure to allow uploading actions_one
         # as the only time an user can send a device object is
         # in snapshots.
-        data['events_one'] = data.pop('events', [])
+        data['actions_one'] = data.pop('actions', [])
         return data
 
     @post_load
-    def validate_snapshot_events(self, data):
-        """Validates that only snapshot-related events can be uploaded."""
-        from ereuse_devicehub.resources.event.models import EraseBasic, Test, Rate, Install, \
+    def validate_snapshot_actions(self, data):
+        """Validates that only snapshot-related actions can be uploaded."""
+        from ereuse_devicehub.resources.action.models import EraseBasic, Test, Rate, Install, \
             Benchmark
-        for event in data['events_one']:
-            if not isinstance(event, (Install, EraseBasic, Rate, Test, Benchmark)):
-                raise ValidationError('You cannot upload {}'.format(event), field_names=['events'])
+        for action in data['actions_one']:
+            if not isinstance(action, (Install, EraseBasic, Rate, Test, Benchmark)):
+                raise ValidationError('You cannot upload {}'.format(action),
+                                      field_names=['actions'])
 
 
 class Computer(Device):
@@ -109,7 +110,7 @@ class Computer(Device):
                           dump_only=True,
                           data_key='networkSpeeds',
                           description=m.Computer.network_speeds.__doc__)
-    privacy = NestedOn('Event',
+    privacy = NestedOn('Action',
                        many=True,
                        dump_only=True,
                        collection_class=set,
@@ -229,7 +230,7 @@ class DataStorage(Component):
                    unit=UnitCodes.mbyte,
                    description=m.DataStorage.size.comment)
     interface = EnumField(enums.DataStorageInterface)
-    privacy = NestedOn('Event', dump_only=True)
+    privacy = NestedOn('Action', dump_only=True)
 
 
 class HardDrive(DataStorage):

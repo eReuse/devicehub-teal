@@ -13,6 +13,8 @@ from teal.enums import Layouts
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.action import models as m
+from ereuse_devicehub.resources.action.models import Remove, TestConnectivity
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.device import models as d
 from ereuse_devicehub.resources.device.exceptions import NeedsId
@@ -21,8 +23,6 @@ from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, Mismatch
     Sync
 from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech, Severity, \
     SnapshotSoftware
-from ereuse_devicehub.resources.event import models as m
-from ereuse_devicehub.resources.event.models import Remove, TestConnectivity
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
 from tests import conftest
@@ -169,13 +169,13 @@ def test_add_remove():
 
     # Test:
     # pc has only c3
-    events = Sync.add_remove(device=pc, components={c3, c4})
-    db.session.add_all(events)
+    actions = Sync.add_remove(device=pc, components={c3, c4})
+    db.session.add_all(actions)
     db.session.commit()  # We enforce the appliance of order_by
-    assert len(events) == 1
-    assert isinstance(events[0], Remove)
-    assert events[0].device == pc2
-    assert events[0].components == OrderedSet([c3])
+    assert len(actions) == 1
+    assert isinstance(actions[0], Remove)
+    assert actions[0].device == pc2
+    assert actions[0].components == OrderedSet([c3])
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -396,13 +396,13 @@ def test_get_device(app: Devicehub, user: UserClient):
                                         author=User(email='bar@bar.com')))
         db.session.commit()
     pc, _ = user.get(res=d.Device, item=1)
-    assert len(pc['events']) == 1
-    assert pc['events'][0]['type'] == 'TestConnectivity'
-    assert pc['events'][0]['device'] == 1
-    assert pc['events'][0]['severity'] == 'Info'
-    assert UUID(pc['events'][0]['author'])
-    assert 'events_components' not in pc, 'events_components are internal use only'
-    assert 'events_one' not in pc, 'they are internal use only'
+    assert len(pc['actions']) == 1
+    assert pc['actions'][0]['type'] == 'TestConnectivity'
+    assert pc['actions'][0]['device'] == 1
+    assert pc['actions'][0]['severity'] == 'Info'
+    assert UUID(pc['actions'][0]['author'])
+    assert 'actions_components' not in pc, 'actions_components are internal use only'
+    assert 'actions_one' not in pc, 'they are internal use only'
     assert 'author' not in pc
     assert tuple(c['id'] for c in pc['components']) == (2, 3)
     assert pc['hid'] == 'desktop-p1ma-p1mo-p1s'

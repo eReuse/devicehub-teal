@@ -2,7 +2,7 @@
   "device": {
     "chassis": "Tower",
     "serialNumber": "6G0772J",
-    "events": [
+    "actions": [
     {
       "rate": 2.1341,
       "type": "BenchmarkRamSysbench",
@@ -29,7 +29,7 @@
   {
     "serialNumber": null,
     "address": 64,
-    "events": [
+    "actions": [
     {
       "rate": 11970.92,
       "type": "BenchmarkProcessor",
@@ -48,7 +48,7 @@
   },
   {
     "serialNumber": null,
-    "events": [],
+    "actions": [],
     "type": "SoundCard",
     "manufacturer": "Intel Corporation",
     "model": "82801G AC'97 Audio Controller"
@@ -56,7 +56,7 @@
   {
     "size": 512,
     "serialNumber": "4A7012A1",
-    "events": [],
+    "actions": [],
     "speed": 533.0,
     "type": "RamModule",
     "format": "DIMM",
@@ -67,7 +67,7 @@
   {
     "size": 512,
     "serialNumber": null,
-    "events": [],
+    "actions": [],
     "speed": 533.0,
     "type": "RamModule",
     "format": "DIMM",
@@ -77,7 +77,7 @@
   },
   {
     "serialNumber": "00:13:72:78:53:12",
-    "events": [],
+    "actions": [],
     "type": "NetworkAdapter",
     "manufacturer": "Broadcom Limited",
     "speed": 1000,
@@ -86,7 +86,7 @@
   },
   {
     "serialNumber": "5LR30DTZ",
-    "events": [
+    "actions": [
     {
       "steps": [
       {
@@ -124,7 +124,7 @@
   },
   {
     "serialNumber": null,
-    "events": [],
+    "actions": [],
     "type": "GraphicCard",
     "manufacturer": "Intel Corporation",
     "memory": 256.0,
@@ -134,7 +134,7 @@
     "slots": 0,
     "usb": 5,
     "serial": 1,
-    "events": [
+    "actions": [
     {
       "type": "TestBios",
       "accessRange": "A"
@@ -153,10 +153,5 @@
   "elapsed": 1512,
   "endTime": "2018-07-11T11:17:00.888231+00:00",
   "type": "Snapshot",
-  "expectedEvents": [
-    "Benchmark",
-    "SmartTest",
-    "StressTest",
-    "EraseBasic"
-  ]
+
 }

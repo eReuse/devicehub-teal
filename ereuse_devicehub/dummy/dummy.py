@@ -11,9 +11,9 @@ from ereuse_utils.test import ANY
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.action import models as m
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
@@ -95,18 +95,18 @@ class Dummy:
                     # Make one hdd ErasePhysical
                     hdd = next(hdd for hdd in s['components'] if hdd['type'] == 'HardDrive')
                     user.post({'type': 'ErasePhysical', 'method': 'Shred', 'device': hdd['id']},
-                              res=m.Event)
+                              res=m.Action)
         assert sample_pc
         print('PC sample is', sample_pc)
         # Link tags and eTags
         for tag, pc in zip((self.TAGS[1], self.TAGS[2], self.ET[0][0], self.ET[1][1]), pcs):
             user.put({}, res=Tag, item='{}/device/{}'.format(tag, pc), status=204)
 
-        # Perform generic events
+        # Perform generic actions
         for pc, model in zip(pcs,
                              {m.ToRepair, m.Repair, m.ToPrepare, m.ReadyToUse, m.ToPrepare,
                               m.Prepare}):
-            user.post({'type': model.t, 'devices': [pc]}, res=m.Event)
+            user.post({'type': model.t, 'devices': [pc]}, res=m.Action)
 
         # Perform a Sell to several devices
         user.post(
@@ -115,7 +115,7 @@ class Dummy:
                 'to': user.user['individuals'][0]['id'],
                 'devices': list(itertools.islice(pcs, len(pcs) // 2))
             },
-            res=m.Event)
+            res=m.Action)
 
         parent, _ = user.post(({'name': 'Parent'}), res=Lot)
         child, _ = user.post(({'name': 'Child'}), res=Lot)
@@ -139,14 +139,14 @@ class Dummy:
         i, _ = user.get(res=Device, query=[('search', 'pc')])
         assert 14 == len(i['items'])
 
-        # Let's create a set of events for the pc device
+        # Let's create a set of actions for the pc device
         # Make device Ready
 
-        user.post({'type': m.ToPrepare.t, 'devices': [sample_pc]}, res=m.Event)
-        user.post({'type': m.Prepare.t, 'devices': [sample_pc]}, res=m.Event)
-        user.post({'type': m.ReadyToUse.t, 'devices': [sample_pc]}, res=m.Event)
+        user.post({'type': m.ToPrepare.t, 'devices': [sample_pc]}, res=m.Action)
+        user.post({'type': m.Prepare.t, 'devices': [sample_pc]}, res=m.Action)
+        user.post({'type': m.ReadyToUse.t, 'devices': [sample_pc]}, res=m.Action)
         user.post({'type': m.Price.t, 'device': sample_pc, 'currency': 'EUR', 'price': 85},
-                  res=m.Event)
+                  res=m.Action)
         # todo test reserve
         user.post(  # Sell device
             {
@@ -154,7 +154,7 @@ class Dummy:
                 'to': user.user['individuals'][0]['id'],
                 'devices': [sample_pc]
             },
-            res=m.Event)
+            res=m.Action)
         # todo Receive
 
         user.get(res=Device, item=sample_pc)  # Test

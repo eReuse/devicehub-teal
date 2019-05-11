@@ -67,9 +67,9 @@ class Agent(Thing):
         return args
 
     @property
-    def events(self) -> list:
+    def actions(self) -> list:
         # todo test
-        return sorted(chain(self.events_agent, self.events_to), key=attrgetter('created'))
+        return sorted(chain(self.actions_agent, self.actions_to), key=attrgetter('created'))
 
     @validates('name')
     def does_not_contain_slash(self, _, value: str):

@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 
 from ereuse_devicehub.client import UserClient
+from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.documents import documents
-from ereuse_devicehub.resources.event.models import Snapshot
 from tests.conftest import file
 
 

@@ -2,7 +2,7 @@ from enum import Enum
 
 import inflection
 
-from ereuse_devicehub.resources.event import models as e
+from ereuse_devicehub.resources.action import models as e
 
 
 class State(Enum):
@@ -11,8 +11,8 @@ class State(Enum):
     """
 
     @classmethod
-    def events(cls):
-        """Events participating in this state."""
+    def actions(cls):
+        """Actions participating in this state."""
         return (s.value for s in cls)
 
     def __str__(self):

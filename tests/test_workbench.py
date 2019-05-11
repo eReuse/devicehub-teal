@@ -8,34 +8,33 @@ import pathlib
 import pytest
 
 from ereuse_devicehub.client import UserClient
+from ereuse_devicehub.resources.action import models as em
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.resources.event import models as em
 from ereuse_devicehub.resources.tag.model import Tag
 from tests.conftest import file
 
 
 def test_workbench_server_condensed(user: UserClient):
     """
-    As :def:`.test_workbench_server_phases` but all the events
+    As :def:`.test_workbench_server_phases` but all the actions
     condensed in only one big ``Snapshot`` file, as described
     in the docs.
     """
     s = file('workbench-server-1.snapshot')
-    del s['expectedEvents']
-    s['device']['events'].append(file('workbench-server-2.stress-test'))
-    s['components'][4]['events'].extend((
+    s['device']['actions'].append(file('workbench-server-2.stress-test'))
+    s['components'][4]['actions'].extend((
         file('workbench-server-3.erase'),
         file('workbench-server-4.install')
     ))
-    s['components'][5]['events'].append(file('workbench-server-3.erase'))
+    s['components'][5]['actions'].append(file('workbench-server-3.erase'))
     # Create tags
     for t in s['device']['tags']:
         user.post({'id': t['id']}, res=Tag)
 
     snapshot, _ = user.post(res=em.Snapshot, data=s)
-    events = snapshot['events']
-    assert {(event['type'], event['device']) for event in events} == {
+    actions = snapshot['actions']
+    assert {(action['type'], action['device']) for action in actions} == {
         ('BenchmarkProcessorSysbench', 5),
         ('StressTest', 1),
         ('EraseSectors', 6),
@@ -63,9 +62,9 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['rate']['severity'] == 'Info'
     assert device['rate']['rating'] == 0
     assert device['rate']['type'] == 'RateComputer'
-    assert device['events'][2]['type'] == 'VisualTest'
-    assert device['events'][2]['appearanceRange'] == 'A'
-    assert device['events'][2]['functionalityRange'] == 'B'
+    assert device['actions'][2]['type'] == 'VisualTest'
+    assert device['actions'][2]['appearanceRange'] == 'A'
+    assert device['actions'][2]['functionalityRange'] == 'B'
     assert device['tags'][0]['id'] == 'tag1'
 
 
@@ -74,12 +73,12 @@ def test_workbench_server_phases(user: UserClient):
     """
     Tests the phases described in the docs section `Snapshots from
     Workbench <http://devicehub.ereuse.org/
-    events.html#snapshots-from-workbench>`_.
+    actions.html#snapshots-from-workbench>`_.
     """
     # 1. Snapshot with sync / rate / benchmarks / test data storage
     s = file('workbench-server-1.snapshot')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
-    assert not snapshot['closed'], 'Snapshot must be waiting for the new events'
+    assert not snapshot['closed'], 'Snapshot must be waiting for the new actions'
 
     # 2. stress test
     st = file('workbench-server-2.stress-test')
@@ -102,39 +101,39 @@ def test_workbench_server_phases(user: UserClient):
     i['snapshot'], i['device'] = snapshot['id'], ssd_id
     install, _ = user.post(res=em.Install, data=i)
 
-    # Check events have been appended in Snapshot and devices
+    # Check actions have been appended in Snapshot and devices
     # and that Snapshot is closed
     snapshot, _ = user.get(res=em.Snapshot, item=snapshot['id'])
-    events = snapshot['events']
-    assert len(events) == 9
-    assert events[0]['type'] == 'Rate'
-    assert events[0]['device'] == 1
-    assert events[0]['closed']
-    assert events[0]['type'] == 'RateComputer'
-    assert events[0]['device'] == 1
-    assert events[1]['type'] == 'BenchmarkProcessor'
-    assert events[1]['device'] == 5
-    assert events[2]['type'] == 'BenchmarkProcessorSysbench'
-    assert events[2]['device'] == 5
-    assert events[3]['type'] == 'BenchmarkDataStorage'
-    assert events[3]['device'] == 6
-    assert events[4]['type'] == 'TestDataStorage'
-    assert events[4]['device'] == 6
-    assert events[4]['type'] == 'BenchmarkDataStorage'
-    assert events[4]['device'] == 7
-    assert events[5]['type'] == 'StressTest'
-    assert events[5]['device'] == 1
-    assert events[6]['type'] == 'EraseSectors'
-    assert events[6]['device'] == 6
-    assert events[7]['type'] == 'EraseSectors'
-    assert events[7]['device'] == 7
-    assert events[8]['type'] == 'Install'
-    assert events[8]['device'] == 6
+    actions = snapshot['actions']
+    assert len(actions) == 9
+    assert actions[0]['type'] == 'Rate'
+    assert actions[0]['device'] == 1
+    assert actions[0]['closed']
+    assert actions[0]['type'] == 'RateComputer'
+    assert actions[0]['device'] == 1
+    assert actions[1]['type'] == 'BenchmarkProcessor'
+    assert actions[1]['device'] == 5
+    assert actions[2]['type'] == 'BenchmarkProcessorSysbench'
+    assert actions[2]['device'] == 5
+    assert actions[3]['type'] == 'BenchmarkDataStorage'
+    assert actions[3]['device'] == 6
+    assert actions[4]['type'] == 'TestDataStorage'
+    assert actions[4]['device'] == 6
+    assert actions[4]['type'] == 'BenchmarkDataStorage'
+    assert actions[4]['device'] == 7
+    assert actions[5]['type'] == 'StressTest'
+    assert actions[5]['device'] == 1
+    assert actions[6]['type'] == 'EraseSectors'
+    assert actions[6]['device'] == 6
+    assert actions[7]['type'] == 'EraseSectors'
+    assert actions[7]['device'] == 7
+    assert actions[8]['type'] == 'Install'
+    assert actions[8]['device'] == 6
     assert snapshot['closed']
     assert snapshot['severity'] == 'Info'
 
     pc, _ = user.get(res=Device, item=snapshot['id'])
-    assert len(pc['events']) == 10  # todo shall I add child events?
+    assert len(pc['actions']) == 10  # todo shall I add child actions?
 
 
 def test_real_hp_11(user: UserClient):
@@ -143,7 +142,7 @@ def test_real_hp_11(user: UserClient):
     pc = snapshot['device']
     assert pc['hid'] == 'desktop-hewlett-packard-hp_compaq_8100_elite_sff-czc0408yjg'
     assert pc['chassis'] == 'Tower'
-    assert set(e['type'] for e in snapshot['events']) == {
+    assert set(e['type'] for e in snapshot['actions']) == {
         'EreusePrice',
         'RateComputer',
         'BenchmarkDataStorage',
@@ -155,7 +154,7 @@ def test_real_hp_11(user: UserClient):
         'TestBios',
         'VisualTest'
     }
-    assert len(list(e['type'] for e in snapshot['events'])) == 10
+    assert len(list(e['type'] for e in snapshot['actions'])) == 10
     assert pc['networkSpeeds'] == [1000, None], 'Device has no WiFi'
     assert pc['processorModel'] == 'intel core i3 cpu 530 @ 2.93ghz'
     assert pc['ramSize'] == 8192
@@ -171,7 +170,7 @@ def test_real_toshiba_11(user: UserClient):
 def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     """
     Checks the values of the device, components,
-    events and their relationships of a real pc.
+    actions and their relationships of a real pc.
     """
     s = file('real-eee-1001pxd.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
@@ -186,8 +185,8 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert pc['networkSpeeds'] == [100, 0], 'Although it has WiFi we do not know the speed'
     assert pc['rate']
     rate = pc['rate']
-    # assert pc['events'][0]['appearanceRange'] == 'A'
-    # assert pc['events'][0]['functionalityRange'] == 'B'
+    # assert pc['actions'][0]['appearanceRange'] == 'A'
+    # assert pc['actions'][0]['functionalityRange'] == 'B'
     # TODO add appearance and functionality Range in device[rate]
 
     assert rate['processorRange'] == 'VERY_LOW'
@@ -197,7 +196,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     # TODO add camelCase instead of snake_case
     assert rate['dataStorage'] == 3.76
     assert rate['type'] == 'RateComputer'
-    # TODO change pc[events] TestBios instead of rate[biosRange]
+    # TODO change pc[actions] TestBios instead of rate[biosRange]
     # assert rate['biosRange'] == 'C'
     assert rate['appearance'] == 0, 'appearance B equals 0 points'
     # todo fix gets correctly functionality rates values not equals to 0.
@@ -223,32 +222,32 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert 'hid' not in cpu
     assert pc['processorModel'] == cpu['model'] == 'intel atom cpu n455 @ 1.66ghz'
     cpu, _ = user.get(res=Device, item=cpu['id'])
-    events = cpu['events']
-    sysbench = next(e for e in events if e['type'] == em.BenchmarkProcessorSysbench.t)
+    actions = cpu['actions']
+    sysbench = next(e for e in actions if e['type'] == em.BenchmarkProcessorSysbench.t)
     assert sysbench['elapsed'] == 164
     assert math.isclose(sysbench['rate'], 164, rel_tol=0.001)
     assert sysbench['snapshot'] == snapshot['id']
     assert sysbench['device'] == cpu['id']
     assert sysbench['parent'] == pc['id']
-    benchmark_cpu = next(e for e in events if e['type'] == em.BenchmarkProcessor.t)
+    benchmark_cpu = next(e for e in actions if e['type'] == em.BenchmarkProcessor.t)
     assert math.isclose(benchmark_cpu['rate'], 6666, rel_tol=0.001)
     assert benchmark_cpu['elapsed'] == 0
-    event_types = tuple(e['type'] for e in events)
-    assert em.BenchmarkRamSysbench.t in event_types
-    assert em.StressTest.t in event_types
-    assert em.Snapshot.t in event_types
-    assert len(events) == 7
+    action_types = tuple(e['type'] for e in actions)
+    assert em.BenchmarkRamSysbench.t in action_types
+    assert em.StressTest.t in action_types
+    assert em.Snapshot.t in action_types
+    assert len(actions) == 7
     gpu = components[3]
     assert gpu['model'] == 'atom processor d4xx/d5xx/n4xx/n5xx integrated graphics controller'
     assert gpu['manufacturer'] == 'intel corporation'
     assert gpu['memory'] == 256
     gpu, _ = user.get(res=Device, item=gpu['id'])
-    event_types = tuple(e['type'] for e in gpu['events'])
-    assert em.BenchmarkRamSysbench.t in event_types
-    assert em.StressTest.t in event_types
-    assert em.Snapshot.t in event_types
-    # todo why?? change event types 3 to 5
-    assert len(event_types) == 5
+    action_types = tuple(e['type'] for e in gpu['actions'])
+    assert em.BenchmarkRamSysbench.t in action_types
+    assert em.StressTest.t in action_types
+    assert em.Snapshot.t in action_types
+    # todo why?? change action types 3 to 5
+    assert len(action_types) == 5
     sound = components[4]
     assert sound['model'] == 'nm10/ich7 family high definition audio controller'
     sound = components[5]
@@ -263,16 +262,16 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert hdd['interface'] == 'ATA'
     assert hdd['size'] == 238475
     hdd, _ = user.get(res=Device, item=hdd['id'])
-    event_types = tuple(e['type'] for e in hdd['events'])
-    assert em.BenchmarkRamSysbench.t in event_types
-    assert em.StressTest.t in event_types
-    assert em.BenchmarkDataStorage.t in event_types
-    assert em.TestDataStorage.t in event_types
-    assert em.EraseBasic.t in event_types
-    assert em.Snapshot.t in event_types
-    # todo why?? change event types 6 to 8
-    assert len(event_types) == 8
-    erase = next(e for e in hdd['events'] if e['type'] == em.EraseBasic.t)
+    action_types = tuple(e['type'] for e in hdd['actions'])
+    assert em.BenchmarkRamSysbench.t in action_types
+    assert em.StressTest.t in action_types
+    assert em.BenchmarkDataStorage.t in action_types
+    assert em.TestDataStorage.t in action_types
+    assert em.EraseBasic.t in action_types
+    assert em.Snapshot.t in action_types
+    # todo why?? change action types 6 to 8
+    assert len(action_types) == 8
+    erase = next(e for e in hdd['actions'] if e['type'] == em.EraseBasic.t)
     assert erase['endTime']
     assert erase['startTime']
     assert erase['severity'] == 'Info'

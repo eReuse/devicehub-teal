@@ -13,9 +13,9 @@ from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import SearchQueryParser, things_response
 from ereuse_devicehub.resources import search
+from ereuse_devicehub.resources.action import models as actions
 from ereuse_devicehub.resources.device.models import Device, Manufacturer
 from ereuse_devicehub.resources.device.search import DeviceSearch
-from ereuse_devicehub.resources.event import models as events
 from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
 from ereuse_devicehub.resources.tag.model import Tag
 
@@ -31,9 +31,9 @@ class OfType(f.Str):
 
 
 class RateQ(query.Query):
-    rating = query.Between(events.Rate._rating, f.Float())
-    appearance = query.Between(events.Rate._appearance, f.Float())
-    functionality = query.Between(events.Rate._functionality, f.Float())
+    rating = query.Between(actions.Rate._rating, f.Float())
+    appearance = query.Between(actions.Rate._appearance, f.Float())
+    functionality = query.Between(actions.Rate._functionality, f.Float())
 
 
 class TagQ(query.Query):
@@ -52,8 +52,8 @@ class Filters(query.Query):
     manufacturer = query.ILike(Device.manufacturer)
     serialNumber = query.ILike(Device.serial_number)
     # todo test query for rating (and possibly other filters)
-    rating = query.Join((Device.id == events.EventWithOneDevice.device_id)
-                        & (events.EventWithOneDevice.id == events.Rate.id),
+    rating = query.Join((Device.id == actions.ActionWithOneDevice.device_id)
+                        & (actions.ActionWithOneDevice.id == actions.Rate.id),
                         RateQ)
     tag = query.Join(Device.id == Tag.device_id, TagQ)
     # todo This part of the query is really slow

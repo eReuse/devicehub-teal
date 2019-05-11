@@ -7,10 +7,10 @@ from sqlalchemy.orm import aliased
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources import search
+from ereuse_devicehub.resources.action.models import Action, ActionWithMultipleDevices, \
+    ActionWithOneDevice
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
-from ereuse_devicehub.resources.event.models import Event, EventWithMultipleDevices, \
-    EventWithOneDevice
 from ereuse_devicehub.resources.tag.model import Tag
 
 
@@ -42,17 +42,17 @@ class DeviceSearch(db.Model):
     @classmethod
     def update_modified_devices(cls, session: db.Session):
         """Updates the documents of the devices that are part of a
-        modified event, or tag in the passed-in session.
+        modified action, or tag in the passed-in session.
 
         This method is registered as a SQLAlchemy listener in the
         Devicehub class.
         """
         devices_to_update = set()
         for model in chain(session.new, session.dirty):
-            if isinstance(model, Event):
-                if isinstance(model, EventWithMultipleDevices):
+            if isinstance(model, Action):
+                if isinstance(model, ActionWithMultipleDevices):
                     devices_to_update |= model.devices
-                elif isinstance(model, EventWithOneDevice):
+                elif isinstance(model, ActionWithOneDevice):
                     devices_to_update.add(model.device)
                 if model.parent:
                     devices_to_update.add(model.parent)

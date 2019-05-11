@@ -14,7 +14,7 @@ class DhSession(SchemaSession):
         to be used once in each request, at the very end before
         a commit.
         """
-        # This was done before with an ``before_commit`` sqlalchemy event
+        # This was done before with an ``before_commit`` sqlalchemy action
         # however it is too fragile –it does not detect previously-flushed
         # things
         # This solution makes this more aware to the user, although

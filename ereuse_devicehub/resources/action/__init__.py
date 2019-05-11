@@ -2,29 +2,29 @@ from typing import Callable, Iterable, Tuple
 
 from teal.resource import Converters, Resource
 
+from ereuse_devicehub.resources.action import schemas
+from ereuse_devicehub.resources.action.views import ActionView
 from ereuse_devicehub.resources.device.sync import Sync
-from ereuse_devicehub.resources.event import schemas
-from ereuse_devicehub.resources.event.views import EventView
 
 
-class EventDef(Resource):
-    SCHEMA = schemas.Event
-    VIEW = EventView
+class ActionDef(Resource):
+    SCHEMA = schemas.Action
+    VIEW = ActionView
     AUTH = True
     ID_CONVERTER = Converters.uuid
 
 
-class AddDef(EventDef):
+class AddDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Add
 
 
-class RemoveDef(EventDef):
+class RemoveDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Remove
 
 
-class EraseBasicDef(EventDef):
+class EraseBasicDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.EraseBasic
 
@@ -54,7 +54,7 @@ class StepRandomDef(StepDef):
     SCHEMA = schemas.StepRandom
 
 
-class BenchmarkDef(EventDef):
+class BenchmarkDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Benchmark
 
@@ -84,7 +84,7 @@ class BenchmarkRamSysbenchDef(BenchmarkWithRateDef):
     SCHEMA = schemas.BenchmarkRamSysbench
 
 
-class TestDef(EventDef):
+class TestDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Test
 
@@ -134,7 +134,7 @@ class VisualTestDef(TestDef):
     SCHEMA = schemas.VisualTest
 
 
-class RateDef(EventDef):
+class RateDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Rate
 
@@ -144,22 +144,22 @@ class RateComputerDef(RateDef):
     SCHEMA = schemas.RateComputer
 
 
-class PriceDef(EventDef):
+class PriceDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Price
 
 
-class EreusePriceDef(EventDef):
+class EreusePriceDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.EreusePrice
 
 
-class InstallDef(EventDef):
+class InstallDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Install
 
 
-class SnapshotDef(EventDef):
+class SnapshotDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Snapshot
 
@@ -167,92 +167,92 @@ class SnapshotDef(EventDef):
                  static_url_path=None,
                  template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
                  root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        url_prefix = '/{}'.format(EventDef.resource)
+        url_prefix = '/{}'.format(ActionDef.resource)
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
         self.sync = Sync()
 
 
-class ToRepairDef(EventDef):
+class ToRepairDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.ToRepair
 
 
-class RepairDef(EventDef):
+class RepairDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Repair
 
 
-class ReadyToUse(EventDef):
+class ReadyToUse(ActionDef):
     VIEW = None
     SCHEMA = schemas.ReadyToUse
 
 
-class ToPrepareDef(EventDef):
+class ToPrepareDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.ToPrepare
 
 
-class PrepareDef(EventDef):
+class PrepareDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Prepare
 
 
-class LiveDef(EventDef):
+class LiveDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Live
 
 
-class ReserveDef(EventDef):
+class ReserveDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Reserve
 
 
-class CancelReservationDef(EventDef):
+class CancelReservationDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.CancelReservation
 
 
-class SellDef(EventDef):
+class SellDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Sell
 
 
-class DonateDef(EventDef):
+class DonateDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Donate
 
 
-class RentDef(EventDef):
+class RentDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Rent
 
 
-class CancelTradeDef(EventDef):
+class CancelTradeDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.CancelTrade
 
 
-class ToDisposeProductDef(EventDef):
+class ToDisposeProductDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.ToDisposeProduct
 
 
-class DisposeProductDef(EventDef):
+class DisposeProductDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.DisposeProduct
 
 
-class ReceiveDef(EventDef):
+class ReceiveDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Receive
 
 
-class MigrateToDef(EventDef):
+class MigrateToDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.MigrateTo
 
 
-class MigrateFromDef(EventDef):
+class MigrateFromDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.MigrateFrom
