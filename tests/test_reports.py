@@ -135,15 +135,7 @@ def test_export_keyboard(user: UserClient):
     assert fixture_csv[1] == export_csv[1], 'Component information are not equal'
 
 
-@pytest.mark.xfail(reson='Need to develop.')
-def test_export_multiple_computers(user: UserClient):
-    """
-    Test to export multiples computers devices
-    """
-    pass
-
-
-@pytest.mark.xfail(reson='Need to debug and rewrite it.')
+# TODO JN fix why components also have all rate fields
 def test_export_multiple_different_devices(user: UserClient):
     """
     Test a export multiple different device types (like computers, keyboards, monitors, ...)
@@ -154,7 +146,6 @@ def test_export_multiple_different_devices(user: UserClient):
     snapshot_keyboard, _ = user.post(file('keyboard.snapshot'), res=Snapshot)
     snapshot_monitor, _ = user.post(file('computer-monitor.snapshot'), res=Snapshot)
 
-    # need query param??
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='devices/',
                           accept='text/csv')
@@ -178,3 +169,11 @@ def test_export_multiple_different_devices(user: UserClient):
             fixture_csv[i] = fixture_csv[i][:8] + fixture_csv[i][9:]
 
         assert fixture_csv[i] == export_csv[i], 'Some fields are not equal'
+
+
+@pytest.mark.xfail(reason='Debug why rate computed correctly but when get info change value')
+def test_temp_rate_rating(user: UserClient):
+    snapshot, _ = user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
+    from ereuse_devicehub.resources.device.models import Device
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert device['rate']['rating'] == 1.98

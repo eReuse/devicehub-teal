@@ -127,9 +127,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     # Components contain parent
     assert all(c['parent'] == pc1_id for c in pc1['components'])
     # pc has two actions: Snapshot and the BenchmarkProcessor
-    # TODO change assert to len(pc1['actions']) == 2 cause we add BenchmarkProcessor action
     assert len(pc1['actions']) == 2
-    # TODO pc1['actions'][0]['type'] == BenchmarkProcessor.t
     assert pc1['actions'][1]['type'] == Snapshot.t
     # p1c1s has Snapshot
     p1c1s, _ = user.get(res=m.Device, item=pc1['components'][0]['id'])
@@ -384,11 +382,10 @@ def test_test_data_storage(user: UserClient):
     assert incidence_test['severity'] == 'Error'
 
 
-# TODO change to RateMonitor
 @pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
 def test_snapshot_computer_monitor(user: UserClient):
     s = file('computer-monitor.snapshot')
-    snapshot_and_check(user, s, action_types=('ManualRate',))
+    snapshot_and_check(user, s, action_types=('RateMonitor',))
     # todo check that ManualRate has generated an AggregateRate
 
 
@@ -398,7 +395,6 @@ def test_snapshot_mobile_smartphone_imei_manual_rate(user: UserClient):
     snapshot = snapshot_and_check(user, s, action_types=('VisualTest',))
     mobile, _ = user.get(res=m.Device, item=snapshot['device']['id'])
     assert mobile['imei'] == 3568680000414120
-    # todo check that manual rate has been created
 
 
 @pytest.mark.xfail(reason='Test not developed')
@@ -484,11 +480,10 @@ def snapshot_and_check(user: UserClient,
         return snapshot
 
 
-# TODO change to which Rate??
 @pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
 def test_snapshot_keyboard(user: UserClient):
     s = file('keyboard.snapshot')
-    snapshot = snapshot_and_check(user, s, action_types=('ManualRate',))
+    snapshot = snapshot_and_check(user, s, action_types=('VisualTest',))
     keyboard = snapshot['device']
     assert keyboard['layout'] == 'ES'
 
