@@ -12,6 +12,51 @@ from ereuse_devicehub.resources.device.models import Computer, DataStorage, Proc
 class RateAlgorithm(BaseRate):
     """The algorithm that generates the Rate v1.0.
 
+    Rate v1.0 is mainly based on 3 components (Processor, RAM and Data Storage)
+    and 2 visual grades (one for appearance aspects and other for functionality aspects).
+
+    From components we take into account their main characteristics and
+    also some tests and benchmarks. In particular:
+
+    * Processor:
+        - Cores
+        - Speed
+        - Benchmark processor
+
+    * RAM:
+        - Size
+        - Speed
+
+    * Data Storage:
+        - Size
+        - Benchmark data storage (Read and write speed)
+
+    Step by step to compute Rate v1.0:
+
+    1. Normalization the components characteristics.
+        Normalized the characteristics of the components between 0 and 1.
+        with xMin and xMax and standardize the values applying
+        the following formula:
+
+        **Normalization characteristic value = (x −xMin)/(xMax −xMin)**
+
+    2. Merge the characteristics of every component in one score for component.
+
+
+    3. Merge the components individual rates into a single components rate.
+        We calculate this rate using the weighted harmonic mean.
+        We establish all the components weights, 50% for processor,
+        20% for data storage, 30% for RAM.
+        The result is a unique performance score (components rate).
+
+    4. Grouping all categories aspects sum all in unique final rate.
+        To get Functionality and Appearance Rates values, only directly
+        related a value for each grade.
+
+    **Final Rate = Components Rate + Functionality Rate + Appearance Rate**
+
+    Final Rate are ranged from 0 to 4.7.
+
     Do not call directly this class, but use
     :meth:`ereuse_devicehub.resources.action.models.RateComputer.compute`,
     which then calls this.
@@ -74,7 +119,7 @@ class RateAlgorithm(BaseRate):
         rate.functionality = self.Functionality[visual_test.functionality_range.name].value
         rate.rating = rate_components + rate.functionality + rate.appearance
         device.actions_one.add(rate)
-        assert 0 <= rate.rating <= 4.7, 'Rate ranges from 0 to 4.7'
+        assert 0 <= rate.rating <= 4.7
         return rate
 
 
@@ -88,12 +133,11 @@ class ProcessorRate(BaseRate):
     DEFAULT_CORES = 1
     DEFAULT_SPEED = 1.6
 
-    # In case of i2, i3,.. result penalized.
-    # Intel(R) Core(TM) i3 CPU 530 @ 2.93GHz, score = 23406.92 but results inan score of 17503.
     DEFAULT_SCORE = 4000
 
     def compute(self, processor: Processor):
         """ Compute processor rate
+            We assume always exists a Benchmark Processor
             Obs: cores and speed are possible NULL value
             :return: result is a rate (score) of Processor characteristics
         """
@@ -106,7 +150,7 @@ class ProcessorRate(BaseRate):
         benchmark_cpu = benchmark_cpu.rate or self.DEFAULT_SCORE
 
         # STEP: Fusion components
-        processor_rate = (benchmark_cpu + speed * 2000 * cores) / 2  # todo magic number!
+        processor_rate = (benchmark_cpu + speed * 2000 * cores) / 2
 
         # STEP: Normalize values
         processor_norm = max(self.norm(processor_rate, *self.PROCESSOR_NORM), 0)
@@ -136,7 +180,7 @@ class RamRate(BaseRate):
 
     def compute(self, ram_devices: Iterable[RamModule]):
         """
-        Obs: RamModule.speed is possible NULL value & size != NULL or NOT??
+        If ram speed or ram size, we assume default values before declared
         :return: result is a rate (score) of all RamModule components
         """
         size = 0.0

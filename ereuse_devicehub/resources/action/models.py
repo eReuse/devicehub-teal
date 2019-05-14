@@ -1,5 +1,6 @@
 """
-This file contains all actions can apply to a device and is sorted according to a structure based on:
+This file contains all actions can apply to a device and is sorted according
+to a structure based on:
 
 * Generic Actions
 * Benchmarks
@@ -647,6 +648,12 @@ class Test(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """The act of testing the physical condition of a device and its
     components.
 
+    Ref in R2 Provision 6 pag.19:
+    Records of test results are imperative to documenting
+    the functionality of each device.
+    Pass or fail results for each test in the process must be recorded
+    either manually or through software automation.
+
     Testing errors and warnings are easily taken in
     :attr:`ereuse_devicehub.resources.device.models.Device.working`.
     """
@@ -674,10 +681,23 @@ class TestMixin:
 
 
 class MeasureBattery(TestMixin, Test):
-    """A sample of the status of the battery.
+    """
+    A sample of the status of the battery.
+    Ref in R2 Provision 6 pag.22 Example:
+    Length of charge; Expected results: Minimum 40 minutes.
 
     Operative Systems keep a record of several aspects of a battery.
     This is a sample of those.
+
+    :class: 'Severtity'
+        Info/Pass(0):
+
+        Notice(1):
+
+        Warning(2):
+
+        Error/Fail(3):
+
     """
     size = db.Column(db.Integer, nullable=False)
     size.comment = """Maximum battery capacity, in mAh."""
@@ -704,6 +724,16 @@ class TestDataStorage(TestMixin, Test):
 
     The test takes to other SMART values indicators of the overall health
     of the data storage.
+
+    :class: 'Severtity'
+        Info/Pass(0):
+
+        Notice(1):
+
+        Warning(2):
+
+        Error/Fail(3):
+
     """
     length = Column(DBEnum(TestDataStorageLength), nullable=False)  # todo from type
     status = Column(Unicode(), check_lower('status'), nullable=False)
@@ -771,7 +801,18 @@ class StressTest(TestMixin, Test):
 
 class TestAudio(TestMixin, Test):
     """
-    Test to check all this aspects related with audio functions, Manual Tests??
+    Test to check audio device aspects, focus on speaker sounds correctly
+    and microphone record sounds good
+
+    :class: 'Severtity'
+        Info/Pass(0):
+
+        Notice(1):
+
+        Warning(2):
+
+        Error/Fail(3):
+
     """
     _speaker = Column('speaker', Boolean)
     _speaker.comment = """Whether the speaker works as expected."""
@@ -803,35 +844,87 @@ class TestAudio(TestMixin, Test):
 
 
 class TestConnectivity(TestMixin, Test):
-    """Tests that the device can connect both physically and
-    wirelessly.
+    """
+    Tests that the device can connect both physically and wirelessly.
 
     A failing test means that at least one connection of the device
     is not working well. A comment should get into more detail.
+
+    :class: 'Severtity'
+        Info/Pass(0):
+
+        Notice(1):
+
+        Warning(2):
+
+        Error/Fail(3):
+
     """
 
 
 class TestCamera(TestMixin, Test):
-    """Tests the working conditions of the camera of the device,
+    """
+    Tests the working conditions of the camera of the device,
     specially when taking pictures or recording video.
+    Fail when camera can't take pictures.
     """
 
 
 class TestKeyboard(TestMixin, Test):
-    """Whether the keyboard works correctly."""
+    """
+    Whether the keyboard works correctly.
+
+    Ref in R2 Provision 6 pag.22 example:
+    PASS when each key produces character on the screen
+    """
 
 
 class TestTrackpad(TestMixin, Test):
-    """Whether the trackpad works correctly."""
+    """
+    Whether the trackpad works correctly.
+
+    Ref in R2 Provision 6 pag.22 example:
+    PASS when cursor moves on screen
+    """
+
+
+class TestScreenHinge(TestMixin, Test):
+    """
+    Whether screen hinge works correctly.
+
+    Laptop Test Ref in R2 Provision 6 pag.22 example:
+    PASS when laptop screen stays open/closed at desired angles
+    """
+
+
+class TestPowerAdapter(TestMixin, Test):
+    """
+    Whether power adapter charge battery device without problems.
+
+    Laptop Test Ref in R2 Provision 6 pag.22 example:
+    PASS when plug power adapter into laptop and charges the battery.
+    """
 
 
 class TestBios(TestMixin, Test):
-    """Tests the working condition and grades the usability of the BIOS."""
-    bios_power_on = Column(Boolean)
-    bios_power_on.comment = """Whether there are no beeps or error
+    """
+    Tests the working condition and grades the usability of the BIOS.
+
+    :class: 'Severtity'
+        Info/Pass(0):
+
+        Notice(1):
+
+        Warning(2):
+
+        Error/Fail(3):
+
+    """
+    beeps_power_on = Column(Boolean)
+    beeps_power_on.comment = """Whether there are no beeps or error
     codes when booting up.
     
-    Reference: R2 standard page 23.
+    Reference: R2 provision 6 page 23.
     """
     access_range = Column(DBEnum(BiosAccessRange))
     access_range.comment = """Difficulty to modify the boot menu.
@@ -842,8 +935,25 @@ class TestBios(TestMixin, Test):
 
 
 class VisualTest(TestMixin, Test):
-    """The act of visually inspecting the appearance and functionality
+    """
+    The act of visually inspecting the appearance and functionality
     of the device.
+
+    Reference R2 provision 6 Templates Ready for Resale Checklist (Desktop)
+    https://sustainableelectronics.org/sites/default/files/6.c.2%20Desktop%20R2-Ready%20for%20Resale%20Checklist.docx
+    Physical condition grade
+
+
+    :class: 'Severtity'
+        Info/Pass(0):
+
+        Notice(1):
+
+        Warning(2):
+
+        Error/Fail(3):
+
+
     """
     appearance_range = Column(DBEnum(AppearanceRange), nullable=False)
     appearance_range.comment = AppearanceRange.__doc__
@@ -860,7 +970,14 @@ class VisualTest(TestMixin, Test):
 
 
 class Rate(JoinedWithOneDeviceMixin, ActionWithOneDevice):
-    """The act of computing a rate based on different categories"""
+    """
+    The act of computing a rate based on different categories:
+
+    • Functionality (F). Tests, the act of testing usage condition of a device
+    • Appearance (A). Visual evaluation, surface deterioration.
+    • Performance (Q). Components characteristics and components benchmarks.
+
+    """
     # todo jn: explain in each comment what the rate considers.
     N = 2
     """The number of significant digits for rates.
@@ -938,7 +1055,11 @@ class RateMixin:
 
 
 class RateComputer(RateMixin, Rate):
-    """The act of rating a computer."""
+    """
+    The act of rating a computer type devices.
+    It's the starting point for calculating the rate.
+    Algorithm explained in v1.0 file
+    """
     _processor = Column('processor',
                         Float(decimal_return_scale=Rate.N),
                         check_range('processor', *R_POSITIVE))

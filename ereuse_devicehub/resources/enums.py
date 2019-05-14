@@ -273,13 +273,13 @@ class Severity(IntEnum):
     """A flag evaluating the action execution. Ex. failed actions
     have the value `Severity.Error`. Devicehub uses 4 severity levels:
 
-    * Info: default neutral severity. The action succeeded.
+    * Info (Pass): default neutral severity. The action succeeded.
     * Notice: The action succeeded but it is raising awareness.
       Notices are not usually that important but something
       (good or bad) worth checking.
     * Warning: The action succeeded but there is something important
       to check negatively affecting the action.
-    * Error: the action failed.
+    * Error (Fail): the action failed.
 
     Devicehub specially raises user awareness when an action
     has a Severity of ``Warning`` or greater.

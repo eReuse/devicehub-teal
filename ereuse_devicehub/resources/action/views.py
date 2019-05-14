@@ -8,7 +8,7 @@ from teal.marshmallow import ValidationError
 from teal.resource import View
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot
+from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest
 from ereuse_devicehub.resources.action.rate.workbench.v1_0 import CannotRate
 from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import SnapshotSoftware
@@ -28,6 +28,9 @@ class ActionView(View):
         a = resource_def.schema.load(json)
         if json['type'] == Snapshot.t:
             return self.snapshot(a, resource_def)
+        if json['type'] == VisualTest.t:
+            pass
+            # TODO JN add compute rate with new visual test and old components device
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
         db.session.add(action)
