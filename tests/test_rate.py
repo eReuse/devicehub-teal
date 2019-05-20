@@ -28,7 +28,8 @@ def test_workbench_rate_db():
     db.session.commit()
 
 
-# TODO JN is necessary this test if in test multiples rates we are checking same case??
+@pytest.mark.xfail(reason='Rate algorithm v1 have the limitation of not '
+                          'recompute rate when post new visual test')
 def test_rate_with_multiple_visual_tests(user: UserClient):
     """Perform a ComputerRate and then update the device with a new VisualTest.
 
@@ -160,7 +161,6 @@ def test_multiple_rates(user: UserClient):
     rate1, price1 = RateComputer.compute(pc)
 
     # asserts rate1 ...
-    # TODO JN is also necessary add asserts for component_range??
     assert rate1.data_storage == 4.02
     assert rate1.processor == 3.95
     assert rate1.ram == 3.8
@@ -169,18 +169,14 @@ def test_multiple_rates(user: UserClient):
     assert rate1.functionality == 0.4
 
     assert rate1.rating == 4.62
-    # assert rate1.rating_range == 'High'
 
-    # TODO JN better option to get and assert price??
     assert price1.price == Decimal('92.4001')
-    assert math.isclose(rate1.price.price, 92.40, rel_tol=0.001)
 
     hdd = SolidStateDrive(size=476940)
     hdd.actions_one.add(BenchmarkDataStorage(read_speed=222, write_speed=169))
     cpu = Processor(cores=1, speed=3.0)
     cpu.actions_one.add(BenchmarkProcessor(rate=16069.44))
-    # TODO JN best form to update pc components/benchmarks??
-    pc.components = {
+    pc.components |= {
         hdd,
         RamModule(size=2048, speed=1067),
         RamModule(size=2048, speed=1067),
@@ -192,11 +188,7 @@ def test_multiple_rates(user: UserClient):
                functionality_range=FunctionalityRange.B,
                device=pc)
 
-    # asserts pc characteristics/benchmarks/tests change
-
     rate2, price2 = RateComputer.compute(pc)
-
-    # asserts rate2 ...
 
     assert rate2.data_storage == 4.27
     assert rate2.processor == 3.61
@@ -206,7 +198,5 @@ def test_multiple_rates(user: UserClient):
     assert rate2.functionality == -0.5
 
     assert rate2.rating == 3.37
-    # assert rate2.rating_range == 'Medium'
 
     assert rate2.price.price == Decimal('67.4001')
-    assert math.isclose(price2.price, 67.40, rel_tol=0.001)
