@@ -645,17 +645,13 @@ class BenchmarkGraphicCard(BenchmarkWithRate):
 
 
 class Test(JoinedWithOneDeviceMixin, ActionWithOneDevice):
-    """The act of testing the physical condition of a device and its
-    components.
+    """The act of documenting the functionality of a device, as
+    for the R2 Standard (R2 Provision 6 pag.19).
 
-    Ref in R2 Provision 6 pag.19:
-    Records of test results are imperative to documenting
-    the functionality of each device.
-    Pass or fail results for each test in the process must be recorded
-    either manually or through software automation.
-
-    Testing errors and warnings are easily taken in
-    :attr:`ereuse_devicehub.resources.device.models.Device.working`.
+    :attr:`.severity` in :class:`Action` defines a passing or failing
+    test, and
+    :attr:`ereuse_devicehub.resources.device.models.Device.working`
+    in Device gets all tests with warnings or errors for a device.
     """
 
     @declared_attr
@@ -681,23 +677,13 @@ class TestMixin:
 
 
 class MeasureBattery(TestMixin, Test):
-    """
-    A sample of the status of the battery.
+    """A sample of the status of the battery.
+
     Ref in R2 Provision 6 pag.22 Example:
     Length of charge; Expected results: Minimum 40 minutes.
 
     Operative Systems keep a record of several aspects of a battery.
     This is a sample of those.
-
-    :class: 'Severtity'
-        Info/Pass(0):
-
-        Notice(1):
-
-        Warning(2):
-
-        Error/Fail(3):
-
     """
     size = db.Column(db.Integer, nullable=False)
     size.comment = """Maximum battery capacity, in mAh."""
@@ -714,8 +700,7 @@ class MeasureBattery(TestMixin, Test):
 
 
 class TestDataStorage(TestMixin, Test):
-    """
-    The act of testing the data storage.
+    """The act of testing the data storage.
 
     Testing is done using the `S.M.A.R.T self test
     <https://en.wikipedia.org/wiki/S.M.A.R.T.#Self-tests>`_. Note
@@ -725,15 +710,11 @@ class TestDataStorage(TestMixin, Test):
     The test takes to other SMART values indicators of the overall health
     of the data storage.
 
-    :class: 'Severtity'
-        Info/Pass(0):
+    Failing and warning conditions are as follows:
 
-        Notice(1):
-
-        Warning(2):
-
-        Error/Fail(3):
-
+    * :attr:`Severity.Error`: if the SMART test failed.
+    * :attr:`Severity.Warning`: if there is a significant chance for
+      the data storage to fail in the following year.
     """
     length = Column(DBEnum(TestDataStorageLength), nullable=False)  # todo from type
     status = Column(Unicode(), check_lower('status'), nullable=False)
@@ -783,8 +764,7 @@ class TestDataStorage(TestMixin, Test):
 
 class StressTest(TestMixin, Test):
     """The act of stressing (putting to the maximum capacity)
-    a device for an amount of minutes. If the device is not in great
-    condition won't probably survive such test.
+    a device for an amount of minutes.
     """
     elapsed = Column(Interval, nullable=False)
 
@@ -800,20 +780,7 @@ class StressTest(TestMixin, Test):
 
 
 class TestAudio(TestMixin, Test):
-    """
-    Test to check audio device aspects, focus on speaker sounds correctly
-    and microphone record sounds good
-
-    :class: 'Severtity'
-        Info/Pass(0):
-
-        Notice(1):
-
-        Warning(2):
-
-        Error/Fail(3):
-
-    """
+    """The act of checking the audio aspects of the device."""
     _speaker = Column('speaker', Boolean)
     _speaker.comment = """Whether the speaker works as expected."""
     _microphone = Column('microphone', Boolean)
@@ -844,82 +811,68 @@ class TestAudio(TestMixin, Test):
 
 
 class TestConnectivity(TestMixin, Test):
-    """
-    Tests that the device can connect both physically and wirelessly.
+    """The act of testing the connectivity of the device.
 
     A failing test means that at least one connection of the device
     is not working well. A comment should get into more detail.
-
-    :class: 'Severtity'
-        Info/Pass(0):
-
-        Notice(1):
-
-        Warning(2):
-
-        Error/Fail(3):
-
     """
 
 
 class TestCamera(TestMixin, Test):
-    """
-    Tests the working conditions of the camera of the device,
+    """Tests the working conditions of the camera of the device,
     specially when taking pictures or recording video.
-    Fail when camera can't take pictures.
+
+    Failing and warning conditions are as follows:
+
+    * :attr:`Severity.Error`: if the camera cannot turn on or
+      has significant visual problems.
+    * :attr:`Severity.Warning`: if there are small visual problems
+      with the camera (like dust) that it still allows it to be used.
     """
 
 
 class TestKeyboard(TestMixin, Test):
-    """
-    Whether the keyboard works correctly.
+    """Whether the keyboard works correctly.
 
-    Ref in R2 Provision 6 pag.22 example:
-    PASS when each key produces character on the screen
+    Failing and warning conditions are as follows:
+
+    * :attr:`Severity.Error`: if at least one key does not produce
+      a character on screen. This follows R2 Provision 6 pag.22.
     """
 
 
 class TestTrackpad(TestMixin, Test):
+    """Whether the trackpad works correctly.
+
+     Failing and warning conditions are as follows:
+
+    * :attr:`Severity.Error`: if the cursor does not move on screen.
+      This follows R2 Provision 6 pag.22.
     """
-    Whether the trackpad works correctly.
-
-    Ref in R2 Provision 6 pag.22 example:
-    PASS when cursor moves on screen
-    """
 
 
-class TestScreenHinge(TestMixin, Test):
-    """
-    Whether screen hinge works correctly.
+class TestDisplayHinge(TestMixin, Test):
+    """Whether display hinge works correctly.
 
-    Laptop Test Ref in R2 Provision 6 pag.22 example:
-    PASS when laptop screen stays open/closed at desired angles
+    Failing and warning conditions are as follows:
+
+    * :attr:`Severity.Error`: if the laptop does not stay open
+      or closed at desired angles. From R2 Provision 6 pag.22.
     """
 
 
 class TestPowerAdapter(TestMixin, Test):
-    """
-    Whether power adapter charge battery device without problems.
+    """Whether power adapter charge battery device without problems.
 
-    Laptop Test Ref in R2 Provision 6 pag.22 example:
-    PASS when plug power adapter into laptop and charges the battery.
+    Failing and warning conditions are as follows:
+
+    * :attr:`Severity.Error`: if the laptop does not charge battery.
+      This follows R2 Provision 6 pag.22.
     """
 
 
 class TestBios(TestMixin, Test):
-    """
-    Tests the working condition and grades the usability of the BIOS.
-
-    :class: 'Severtity'
-        Info/Pass(0):
-
-        Notice(1):
-
-        Warning(2):
-
-        Error/Fail(3):
-
-    """
+    """Tests the working condition and grades the usability of the BIOS."""
     beeps_power_on = Column(Boolean)
     beeps_power_on.comment = """Whether there are no beeps or error
     codes when booting up.
@@ -935,25 +888,12 @@ class TestBios(TestMixin, Test):
 
 
 class VisualTest(TestMixin, Test):
-    """
-    The act of visually inspecting the appearance and functionality
+    """The act of visually inspecting the appearance and functionality
     of the device.
 
     Reference R2 provision 6 Templates Ready for Resale Checklist (Desktop)
     https://sustainableelectronics.org/sites/default/files/6.c.2%20Desktop%20R2-Ready%20for%20Resale%20Checklist.docx
     Physical condition grade
-
-
-    :class: 'Severtity'
-        Info/Pass(0):
-
-        Notice(1):
-
-        Warning(2):
-
-        Error/Fail(3):
-
-
     """
     appearance_range = Column(DBEnum(AppearanceRange), nullable=False)
     appearance_range.comment = AppearanceRange.__doc__
@@ -970,13 +910,11 @@ class VisualTest(TestMixin, Test):
 
 
 class Rate(JoinedWithOneDeviceMixin, ActionWithOneDevice):
-    """
-    The act of computing a rate based on different categories:
+    """The act of computing a rate based on different categories:
 
-    • Functionality (F). Tests, the act of testing usage condition of a device
-    • Appearance (A). Visual evaluation, surface deterioration.
-    • Performance (Q). Components characteristics and components benchmarks.
-
+    * Functionality (F). Tests, the act of testing usage condition of a device
+    * Appearance (A). Visual evaluation, surface deterioration.
+    * Performance (Q). Components characteristics and components benchmarks.
     """
     # todo jn: explain in each comment what the rate considers.
     N = 2
@@ -1128,7 +1066,7 @@ class RateComputer(RateMixin, Rate):
         """
         The act of compute general computer rate
         """
-        from ereuse_devicehub.resources.action.rate.workbench.v1_0 import rate_algorithm
+        from ereuse_devicehub.resources.action.rate.v1_0 import rate_algorithm
         rate = rate_algorithm.compute(device)
         price = None
         with suppress(InvalidRangeForPrice):  # We will have exception if range == VERY_LOW

@@ -12,54 +12,29 @@ from ereuse_devicehub.resources.device.models import Computer, DataStorage, Proc
 class RateAlgorithm(BaseRate):
     """The algorithm that generates the Rate v1.0.
 
-    Rate v1.0 is mainly based on 3 components (Processor, RAM and Data Storage)
-    and 2 visual grades (one for appearance aspects and other for functionality aspects).
+    Rate v1.0 rates only computers, counting their processor, ram,
+    data storage, appearance, and functionality. This rate is only
+    triggered by a Snapshot from Workbench that has a VisualTest.
+    The algorithm is as follows:
 
-    From components we take into account their main characteristics and
-    also some tests and benchmarks. In particular:
+    1. Specialized subclasses of :class:`BaseRate` compute a rating
+       for each component. To perform this, each class normalizes first
+       the characteristics and benchmarks of the components between
+       0 and 1, and then they merge the values to a resulting score.
+       The classes are:
 
-    * Processor:
-        - Cores
-        - Speed
-        - Benchmark processor
-
-    * RAM:
-        - Size
-        - Speed
-
-    * Data Storage:
-        - Size
-        - Benchmark data storage (Read and write speed)
-
-    Step by step to compute Rate v1.0:
-
-    1. Normalization the components characteristics.
-        Normalized the characteristics of the components between 0 and 1.
-        with xMin and xMax and standardize the values applying
-        the following formula:
-
-        **Normalization characteristic value = (x −xMin)/(xMax −xMin)**
-
-    2. Merge the characteristics of every component in one score for component.
-
-
-    3. Merge the components individual rates into a single components rate.
-        We calculate this rate using the weighted harmonic mean.
-        We establish all the components weights, 50% for processor,
-        20% for data storage, 30% for RAM.
-        The result is a unique performance score (components rate).
-
-    4. Grouping all categories aspects sum all in unique final rate.
-        To get Functionality and Appearance Rates values, only directly
-        related a value for each grade.
-
-    **Final Rate = Components Rate + Functionality Rate + Appearance Rate**
-
-    Final Rate are ranged from 0 to 4.7.
-
-    Do not call directly this class, but use
-    :meth:`ereuse_devicehub.resources.action.models.RateComputer.compute`,
-    which then calls this.
+       * :class:`ProcessorRate`, using cores, speed, and ``BenchmarkProcessor``.
+       * :class:`RamRate`, using the total of RAM size and speed.
+       * :class:`DataStorageRate`, using the total of disk capacity,
+         and ``BenchmarkDataStorage``.
+    2. Merge the components individual rates into a single rate for
+       all components, using a weighted harmonic mean of
+       50% for the processor rating, 20% for the data storage rating,
+       and 30% for the RAM rating.
+    3. Merge the rate for the components with the appearance and
+       functionality from :class:`VisualTest`. ``Final Rate =
+       Components Rate + Functionality Rate + Appearance Rate``. The
+       value is between 0 and 4.7, included.
     """
 
     @unique
@@ -91,6 +66,10 @@ class RateAlgorithm(BaseRate):
         """Generates a new
         :class:`ereuse_devicehub.resources.action.models.RateComputer`
         for the passed-in device.
+
+        Do not call directly this class, but use
+        :meth:`ereuse_devicehub.resources.action.models.RateComputer.compute`,
+        which then calls this.
         """
         assert isinstance(device, Computer), 'Can only rate computers'
 

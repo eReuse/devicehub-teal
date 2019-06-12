@@ -211,7 +211,6 @@ class DhlistDirective(Directive):
                     yield obj
 
     def run(self):
-        env = self.state.document.settings.env
         module = importlib.import_module(self.options['module'])
         things = tuple(self._import(module))
 

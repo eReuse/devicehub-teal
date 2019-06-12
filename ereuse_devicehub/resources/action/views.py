@@ -9,7 +9,7 @@ from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest
-from ereuse_devicehub.resources.action.rate.workbench.v1_0 import CannotRate
+from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import SnapshotSoftware
 

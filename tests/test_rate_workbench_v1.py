@@ -23,7 +23,7 @@ import pytest
 
 from ereuse_devicehub.resources.action.models import BenchmarkDataStorage, BenchmarkProcessor, \
     VisualTest
-from ereuse_devicehub.resources.action.rate.workbench.v1_0 import DataStorageRate, ProcessorRate, \
+from ereuse_devicehub.resources.action.rate.v1_0 import DataStorageRate, ProcessorRate, \
     RamRate, RateAlgorithm
 from ereuse_devicehub.resources.device.models import Desktop, HardDrive, Processor, RamModule
 from ereuse_devicehub.resources.enums import AppearanceRange, ComputerChassis, FunctionalityRange
