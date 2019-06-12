@@ -384,13 +384,18 @@ def test_test_data_storage(user: UserClient):
 
 @pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
 def test_snapshot_computer_monitor(user: UserClient):
+    """
+    Tests that a snapshot of computer monitor device create correctly.
+    """
     s = file('computer-monitor.snapshot')
     snapshot_and_check(user, s, action_types=('RateMonitor',))
-    # todo check that ManualRate has generated an AggregateRate
 
 
 @pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
 def test_snapshot_mobile_smartphone_imei_manual_rate(user: UserClient):
+    """
+    Tests that a snapshot of smartphone device is creat correctly.
+    """
     s = file('smartphone.snapshot')
     snapshot = snapshot_and_check(user, s, action_types=('VisualTest',))
     mobile, _ = user.get(res=m.Device, item=snapshot['device']['id'])
@@ -405,6 +410,7 @@ def test_snapshot_components_none():
     """
 
 
+# TODO JN is really necessary in which cases??
 @pytest.mark.xfail(reason='Test not developed')
 def test_snapshot_components_empty():
     """

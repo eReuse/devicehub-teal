@@ -135,11 +135,18 @@ def test_export_keyboard(user: UserClient):
     assert fixture_csv[1] == export_csv[1], 'Component information are not equal'
 
 
-# TODO JN fix why components also have all rate fields
 def test_export_multiple_different_devices(user: UserClient):
     """
-    Test a export multiple different device types (like computers, keyboards, monitors, ...)
+    Test function 'Export' of multiple different device types (like
+    computers, keyboards, monitors, etc..)
     """
+    # Open fixture csv and transform to list
+    with Path(__file__).parent.joinpath('files').joinpath('multiples_devices.csv').open() \
+            as csv_file:
+        fixture_csv = list(csv.reader(csv_file))
+    for row in fixture_csv:
+        del row[8]  # We remove the 'Registered in' column
+
     # Post all devices snapshots
     snapshot_pc, _ = user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
     snapshot_empty, _ = user.post(file('basic.snapshot'), res=Snapshot)
@@ -148,32 +155,13 @@ def test_export_multiple_different_devices(user: UserClient):
 
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='devices/',
+                          query=[('filter', {'type': ['Computer', 'Keyboard', 'Monitor']})],
                           accept='text/csv')
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)
 
-    # Open fixture csv and transform to list
-    with Path(__file__).parent.joinpath('files').joinpath('multiples_devices.csv').open() \
-            as csv_file:
-        obj_csv = csv.reader(csv_file)
-        fixture_csv = list(obj_csv)
+    for row in export_csv:
+        del row[8]
 
-    assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
-
-    max_range = max(len(export_csv), len(fixture_csv)) - 1
-    # check if all devices information is correct
-    for i in range(1, max_range):
-        if isinstance(datetime.strptime(export_csv[i][8], '%c'), datetime):
-            export_csv[i] = export_csv[i][:8] + export_csv[i][9:]
-            fixture_csv[i] = fixture_csv[i][:8] + fixture_csv[i][9:]
-
-        assert fixture_csv[i] == export_csv[i], 'Some fields are not equal'
-
-
-@pytest.mark.xfail(reason='Debug why rate computed correctly but when get info change value')
-def test_temp_rate_rating(user: UserClient):
-    snapshot, _ = user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
-    from ereuse_devicehub.resources.device.models import Device
-    device, _ = user.get(res=Device, item=snapshot['device']['id'])
-    assert device['rate']['rating'] == 1.98
+    assert fixture_csv == export_csv
