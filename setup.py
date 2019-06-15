@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from pathlib import Path
 
 from setuptools import find_packages, setup
@@ -10,22 +9,21 @@ test_requires = [
 
 setup(
     name='ereuse-devicehub',
-    version='0.2.0b3',
+    version='1.0a1',
     url='https://github.com/ereuse/devicehub-teal',
-    project_urls=OrderedDict((
-        ('Documentation', 'http://devicheub.ereuse.org'),
-        ('Code', 'http://github.com/ereuse/devicehub-teal'),
-        ('Issue tracker', 'https://tree.taiga.io/project/ereuseorg-devicehub/issues?q=rules')
-    )),
+    project_urls={
+        'Documentation': 'http://devicheub.ereuse.org',
+        'Code': 'http://github.com/ereuse/devicehub-teal',
+        'Issue tracker': 'https://tree.taiga.io/project/ereuseorg-devicehub/issues?q=rules'
+    },
     license='Affero',
     author='eReuse.org team',
     author_email='x.bustamante@ereuse.org',
     description='A system to manage devices focusing reuse.',
     packages=find_packages(),
     include_package_data=True,
-    python_requires='>=3.5.3',
+    python_requires='>=3.7.3',
     long_description=Path('README.md').read_text('utf8'),
-    long_description_content_type='text/markdown',
     install_requires=[
         'teal>=0.2.0a38',  # teal always first
         'click',
