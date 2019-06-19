@@ -110,11 +110,7 @@ class DevicesDocumentView(DeviceView):
         return self.generate_post_csv(query)
 
     def generate_post_csv(self, query):
-        """
-        Get device query and put information in csv format
-        :param query:
-        :return:
-        """
+        """Get device query and put information in csv format."""
         data = StringIO()
         cw = csv.writer(data)
         first = True

@@ -28,7 +28,7 @@ def test_dispatcher_default(dispatcher: PathDispatcher):
 
 
 def test_dispatcher_return_app(dispatcher: PathDispatcher):
-    """The dispatcher returns the correct app for the URL"""
+    """The dispatcher returns the correct app for the URL."""
     # Note that the dispatcher does not check if the URL points
     # to a well-known endpoint for the app.
     # Only if can route it to an app. And then the app checks
@@ -39,7 +39,7 @@ def test_dispatcher_return_app(dispatcher: PathDispatcher):
 
 
 def test_dispatcher_users(dispatcher: PathDispatcher):
-    """Users special endpoint returns an app"""
+    """Users special endpoint returns an app."""
     # For now returns the first app, as all apps
     # can answer {}/users/login
     app = dispatcher({'SCRIPT_NAME:': '/', 'PATH_INFO': '/users/'}, noop)

@@ -31,9 +31,7 @@ from tests.conftest import file
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_device_model():
-    """
-    Tests that the correctness of the device model and its relationships.
-    """
+    """Tests that the correctness of the device model and its relationships."""
     pc = d.Desktop(model='p1mo',
                    manufacturer='p1ma',
                    serial_number='p1s',
@@ -180,8 +178,7 @@ def test_add_remove():
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_sync_run_components_empty():
-    """
-    Syncs a device that has an empty components list. The system should
+    """Syncs a device that has an empty components list. The system should
     remove all the components from the device.
     """
     s = conftest.file('pc-components.db')
@@ -198,8 +195,7 @@ def test_sync_run_components_empty():
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_sync_run_components_none():
-    """
-    Syncs a device that has a None components. The system should
+    """Syncs a device that has a None components. The system should
     keep all the components from the device.
     """
     s = conftest.file('pc-components.db')
@@ -216,10 +212,7 @@ def test_sync_run_components_none():
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_sync_execute_register_desktop_new_desktop_no_tag():
-    """
-    Syncs a new d.Desktop with HID and without a tag, creating it.
-    :return:
-    """
+    """Syncs a new d.Desktop with HID and without a tag, creating it."""
     # Case 1: device does not exist on DB
     pc = d.Desktop(**conftest.file('pc-components.db')['device'])
     db_pc = Sync().execute_register(pc)
@@ -228,9 +221,7 @@ def test_sync_execute_register_desktop_new_desktop_no_tag():
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_sync_execute_register_desktop_existing_no_tag():
-    """
-    Syncs an existing d.Desktop with HID and without a tag.
-    """
+    """Syncs an existing d.Desktop with HID and without a tag."""
     pc = d.Desktop(**conftest.file('pc-components.db')['device'])
     db.session.add(pc)
     db.session.commit()
@@ -244,8 +235,7 @@ def test_sync_execute_register_desktop_existing_no_tag():
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_sync_execute_register_desktop_no_hid_no_tag():
-    """
-    Syncs a d.Desktop without HID and no tag.
+    """Syncs a d.Desktop without HID and no tag.
 
     This should fail as we don't have a way to identify it.
     """
@@ -258,8 +248,7 @@ def test_sync_execute_register_desktop_no_hid_no_tag():
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_sync_execute_register_desktop_tag_not_linked():
-    """
-    Syncs a new d.Desktop with HID and a non-linked tag.
+    """Syncs a new d.Desktop with HID and a non-linked tag.
 
     It is OK if the tag was not linked, it will be linked in this process.
     """
@@ -277,8 +266,7 @@ def test_sync_execute_register_desktop_tag_not_linked():
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_sync_execute_register_no_hid_tag_not_linked(tag_id: str):
-    """
-    Validates registering a d.Desktop without HID and a non-linked tag.
+    """Validates registering a d.Desktop without HID and a non-linked tag.
 
     In this case it is ok still, as the non-linked tag proves that
     the d.Desktop was not existing before (otherwise the tag would
@@ -300,8 +288,7 @@ def test_sync_execute_register_no_hid_tag_not_linked(tag_id: str):
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_sync_execute_register_tag_does_not_exist():
-    """
-    Ensures not being able to register if the tag does not exist,
+    """Ensures not being able to register if the tag does not exist,
     even if the device has HID or it existed before.
 
     Tags have to be created before trying to link them through a Snapshot.
@@ -313,8 +300,7 @@ def test_sync_execute_register_tag_does_not_exist():
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_sync_execute_register_tag_linked_same_device():
-    """
-    If the tag is linked to the device, regardless if it has HID,
+    """If the tag is linked to the device, regardless if it has HID,
     the system should match the device through the tag.
     (If it has HID it validates both HID and tag point at the same
     device, this his checked in ).
@@ -334,8 +320,7 @@ def test_sync_execute_register_tag_linked_same_device():
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_sync_execute_register_tag_linked_other_device_mismatch_between_tags():
-    """
-    Checks that sync raises an error if finds that at least two passed-in
+    """Checks that sync raises an error if finds that at least two passed-in
     tags are not linked to the same device.
     """
     pc1 = d.Desktop(**conftest.file('pc-components.db')['device'])
@@ -356,8 +341,7 @@ def test_sync_execute_register_tag_linked_other_device_mismatch_between_tags():
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_sync_execute_register_mismatch_between_tags_and_hid():
-    """
-    Checks that sync raises an error if it finds that the HID does
+    """Checks that sync raises an error if it finds that the HID does
     not point at the same device as the tag does.
 
     In this case we set HID -> pc1 but tag -> pc2
@@ -463,7 +447,8 @@ def test_manufacturer(user: UserClient):
 @pytest.mark.xfail(reason='Develop functionality')
 def test_manufacturer_enforced():
     """Ensures that non-computer devices can submit only
-     manufacturers from the Manufacturer table."""
+    manufacturers from the Manufacturer table.
+    """
 
 
 def test_device_properties_format(app: Devicehub, user: UserClient):

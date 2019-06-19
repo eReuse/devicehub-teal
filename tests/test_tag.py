@@ -80,8 +80,7 @@ def test_tag_post(app: Devicehub, user: UserClient):
 
 
 def test_tag_post_etag(user: UserClient):
-    """
-    Ensures users cannot create eReuse.org tags through POST;
+    """Ensures users cannot create eReuse.org tags through POST;
     only terminal.
     """
     user.post({'id': 'FO-123456'}, res=Tag, status=CannotCreateETag)
@@ -121,8 +120,7 @@ def test_tag_get_device_from_tag_endpoint_no_tag(user: UserClient):
 
 
 def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: UserClient):
-    """
-    As above, but when there are two tags with the same ID, the
+    """As above, but when there are two tags with the same ID, the
     system should not return any of both (to be deterministic) so
     it should raise an exception.
     """

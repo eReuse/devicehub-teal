@@ -9,8 +9,7 @@ from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.lot.models import Lot, LotDevice
 from tests import conftest
 
-"""
-In case of error, debug with:
+"""In case of error, debug with:
 
     try:
         with db.session.begin_nested():
@@ -67,7 +66,7 @@ def test_lot_model_children():
 
 
 def test_lot_modify_patch_endpoint_and_delete(user: UserClient):
-    """Creates and modifies lot properties through the endpoint"""
+    """Creates and modifies lot properties through the endpoint."""
     l, _ = user.post({'name': 'foo', 'description': 'baz'}, res=Lot)
     assert l['name'] == 'foo'
     assert l['description'] == 'baz'
@@ -310,7 +309,8 @@ def test_post_get_lot(user: UserClient):
 
 def test_lot_post_add_children_view_ui_tree_normal(user: UserClient):
     """Tests adding children lots to a lot through the view and
-    GETting the results."""
+    GETting the results.
+    """
     parent, _ = user.post(({'name': 'Parent'}), res=Lot)
     child, _ = user.post(({'name': 'Child'}), res=Lot)
     parent, _ = user.post({},
@@ -347,7 +347,8 @@ def test_lot_post_add_children_view_ui_tree_normal(user: UserClient):
 
 def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
     """Tests adding a device to a lot using POST and
-    removing it with DELETE."""
+    removing it with DELETE.
+    """
     # todo check with components
     with app.app_context():
         device = Desktop(serial_number='foo',

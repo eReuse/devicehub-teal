@@ -1,95 +1,95 @@
 {% extends "documents/layout.html" %}
 {% block body %}
-  <div>
-    <h2>Resumé</h2>
-    <table class="table table-bordered">
-      <thead>
-      <tr>
-        <th>S/N</th>
-        <th>Tags</th>
-        <th>S/N Data Storage</th>
-        <th>Type of erasure</th>
-        <th>Result</th>
-        <th>Date</th>
-      </tr>
-      </thead>
-      <tbody>
-      {% for erasure in erasures %}
-        <tr>
-          {% if erasure.parent.serial_number %}
-            <td>
-              {{ erasure.parent.serial_number.upper() }}
-            </td>
-          {% else %}
-            <td></td>
-          {% endif %}
-          <td>
-            {{ erasure.parent.tags.__format__('') }}
-          </td>
-          <td>
-            {{ erasure.device.serial_number.upper() }}
-          </td>
-          <td>
-            {{ erasure.type }}
-          </td>
-          <td>
-            {{ erasure.severity }}
-          </td>
-          <td>
-            {{ erasure.date_str }}
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  <div class="page-break row">
-    <h2>Details</h2>
-    {% for erasure in erasures %}
-      <div class="col-md-6 no-page-break">
-        <h4>{{ erasure.device.__format__('t') }}</h4>
+    <div>
+        <h2>Resumé</h2>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>S/N</th>
+                <th>Tags</th>
+                <th>S/N Data Storage</th>
+                <th>Type of erasure</th>
+                <th>Result</th>
+                <th>Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for erasure in erasures %}
+                <tr>
+                    {% if erasure.parent.serial_number %}
+                        <td>
+                            {{ erasure.parent.serial_number.upper() }}
+                        </td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                    <td>
+                        {{ erasure.parent.tags.__format__('') }}
+                    </td>
+                    <td>
+                        {{ erasure.device.serial_number.upper() }}
+                    </td>
+                    <td>
+                        {{ erasure.type }}
+                    </td>
+                    <td>
+                        {{ erasure.severity }}
+                    </td>
+                    <td>
+                        {{ erasure.date_str }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="page-break row">
+        <h2>Details</h2>
+        {% for erasure in erasures %}
+            <div class="col-md-6 no-page-break">
+                <h4>{{ erasure.device.__format__('t') }}</h4>
+                <dl>
+                    <dt>Data storage:</dt>
+                    <dd>{{ erasure.device.__format__('ts') }}</dd>
+                    <dt>Computer:</dt>
+                    <dd>{{ erasure.parent.__format__('ts') }}</dd>
+                    <dt>Tags:</dt>
+                    <dd>{{ erasure.parent.tags }}</dd>
+                    <dt>Erasure:</dt>
+                    <dd>{{ erasure.__format__('ts') }}</dd>
+                    {% if erasure.steps %}
+                        <dt>Erasure steps:</dt>
+                        <dd>
+                            <ol>
+                                {% for step in erasure.steps %}
+                                    <li>{{ step.__format__('') }}</li>
+                                {% endfor %}
+                            </ol>
+                        </dd>
+                    {% endif %}
+                </dl>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="no-page-break">
+        <h2>Glossary</h2>
         <dl>
-          <dt>Data storage:</dt>
-          <dd>{{ erasure.device.__format__('ts') }}</dd>
-          <dt>Computer:</dt>
-          <dd>{{ erasure.parent.__format__('ts') }}</dd>
-          <dt>Tags:</dt>
-          <dd>{{ erasure.parent.tags }}</dd>
-          <dt>Erasure:</dt>
-          <dd>{{ erasure.__format__('ts') }}</dd>
-          {% if erasure.steps %}
-            <dt>Erasure steps:</dt>
+            <dt>Erase Basic</dt>
             <dd>
-              <ol>
-                {% for step in erasure.steps %}
-                  <li>{{ step.__format__('') }}</li>
-                {% endfor %}
-              </ol>
+                A software-based fast non-100%-secured way of erasing data storage,
+                using <a href="https://en.wikipedia.org/wiki/Shred_(Unix)">shred</a>.
             </dd>
-          {% endif %}
+            <dt>Erase Sectors</dt>
+            <dd>
+                A secured-way of erasing data storages, checking sector-by-sector
+                the erasure, using <a href="https://en.wikipedia.org/wiki/Badblocks">badblocks</a>.
+            </dd>
         </dl>
-      </div>
-    {% endfor %}
-  </div>
-  <div class="no-page-break">
-    <h2>Glossary</h2>
-    <dl>
-      <dt>Erase Basic</dt>
-      <dd>
-        A software-based fast non-100%-secured way of erasing data storage,
-        using <a href="https://en.wikipedia.org/wiki/Shred_(Unix)">shred</a>.
-      </dd>
-      <dt>Erase Sectors</dt>
-      <dd>
-        A secured-way of erasing data storages, checking sector-by-sector
-        the erasure, using <a href="https://en.wikipedia.org/wiki/Badblocks">badblocks</a>.
-      </dd>
-    </dl>
-  </div>
-  <div class="no-print">
-    <a href="{{ url_pdf }}">Click here to download the PDF.</a>
-  </div>
-  <div class="print-only">
-    <a href="{{ url_web }}">Verify on-line the integrity of this document</a>
-  </div>
+    </div>
+    <div class="no-print">
+        <a href="{{ url_pdf }}">Click here to download the PDF.</a>
+    </div>
+    <div class="print-only">
+        <a href="{{ url_web }}">Verify on-line the integrity of this document</a>
+    </div>
 {% endblock %}

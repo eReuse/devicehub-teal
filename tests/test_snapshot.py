@@ -26,8 +26,7 @@ from tests.conftest import file
 
 @pytest.mark.usefixtures('auth_app_context')
 def test_snapshot_model():
-    """
-    Tests creating a Snapshot with its relationships ensuring correct
+    """Tests creating a Snapshot with its relationships ensuring correct
     DB mapping.
     """
     device = m.Desktop(serial_number='a1', chassis=ComputerChassis.Tower)
@@ -62,8 +61,7 @@ def test_snapshot_schema(app: Devicehub):
 
 
 def test_snapshot_post(user: UserClient):
-    """
-    Tests the post snapshot endpoint (validation, etc), data correctness,
+    """Tests the post snapshot endpoint (validation, etc), data correctness,
     and relationship correctness.
     """
     # TODO add all action_types to check, how to add correctly??
@@ -98,8 +96,7 @@ def test_snapshot_post(user: UserClient):
 
 
 def test_snapshot_component_add_remove(user: UserClient):
-    """
-    Tests adding and removing components and some don't generate HID.
+    """Tests adding and removing components and some don't generate HID.
     All computers generate HID.
     """
 
@@ -212,8 +209,7 @@ def test_snapshot_component_add_remove(user: UserClient):
 
 
 def _test_snapshot_computer_no_hid(user: UserClient):
-    """
-    Tests inserting a computer that doesn't generate a HID, neither
+    """Tests inserting a computer that doesn't generate a HID, neither
     some of its components.
     """
     # PC with 2 components. PC doesn't have HID and neither 1st component
@@ -384,18 +380,14 @@ def test_test_data_storage(user: UserClient):
 
 @pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
 def test_snapshot_computer_monitor(user: UserClient):
-    """
-    Tests that a snapshot of computer monitor device create correctly.
-    """
+    """Tests that a snapshot of computer monitor device create correctly."""
     s = file('computer-monitor.snapshot')
     snapshot_and_check(user, s, action_types=('RateMonitor',))
 
 
 @pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
 def test_snapshot_mobile_smartphone_imei_manual_rate(user: UserClient):
-    """
-    Tests that a snapshot of smartphone device is creat correctly.
-    """
+    """Tests that a snapshot of smartphone device is creat correctly."""
     s = file('smartphone.snapshot')
     snapshot = snapshot_and_check(user, s, action_types=('VisualTest',))
     mobile, _ = user.get(res=m.Device, item=snapshot['device']['id'])
@@ -404,24 +396,21 @@ def test_snapshot_mobile_smartphone_imei_manual_rate(user: UserClient):
 
 @pytest.mark.xfail(reason='Test not developed')
 def test_snapshot_components_none():
-    """
-    Tests that a snapshot without components does not
-    remove them from the computer.
+    """Tests that a snapshot without components does not remove them
+    from the computer.
     """
 
 
 # TODO JN is really necessary in which cases??
 @pytest.mark.xfail(reason='Test not developed')
 def test_snapshot_components_empty():
-    """
-    Tests that a snapshot whose components are an empty list remove
+    """Tests that a snapshot whose components are an empty list remove
     all its components.
     """
 
 
 def assert_similar_device(device1: dict, device2: dict):
-    """
-    Like :class:`ereuse_devicehub.resources.device.models.Device.
+    """Like :class:`ereuse_devicehub.resources.device.models.Device.
     is_similar()` but adapted for testing.
     """
     assert isinstance(device1, dict) and device1
@@ -431,9 +420,8 @@ def assert_similar_device(device1: dict, device2: dict):
 
 
 def assert_similar_components(components1: List[dict], components2: List[dict]):
-    """
-    Asserts that the components in components1 are
-    similar than the components in components2.
+    """Asserts that the components in components1 are similar than
+    the components in components2.
     """
     assert len(components1) == len(components2)
     key = itemgetter('serialNumber')
@@ -447,8 +435,7 @@ def snapshot_and_check(user: UserClient,
                        input_snapshot: dict,
                        action_types: Tuple[str, ...] = tuple(),
                        perform_second_snapshot=True) -> dict:
-    """
-        Performs a Snapshot and then checks if the result is ok:
+    """Performs a Snapshot and then checks if the result is ok:
 
         - There have been performed the types of actions and in the same
           order as described in the passed-in ``action_types``.

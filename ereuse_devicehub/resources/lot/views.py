@@ -23,8 +23,7 @@ class LotFormat(Enum):
 
 class LotView(View):
     class FindArgs(MarshmallowSchema):
-        """
-        Allowed arguments for the ``find``
+        """Allowed arguments for the ``find``
         method (GET collection) endpoint
         """
         format = EnumField(LotFormat, missing=None)
@@ -56,8 +55,7 @@ class LotView(View):
 
     @teal.cache.cache(datetime.timedelta(minutes=5))
     def find(self, args: dict):
-        """
-        Gets lots.
+        """Gets lots.
 
         By passing the value `UiTree` in the parameter `format`
         of the query you get a recursive nested suited for ui-tree::

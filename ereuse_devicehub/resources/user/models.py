@@ -28,8 +28,7 @@ class User(Thing):
     # todo set restriction that user has, at least, one active db
 
     def __init__(self, email, password=None, inventories=None) -> None:
-        """
-        Creates an user.
+        """Creates an user.
         :param email:
         :param password:
         :param inventories: A set of Inventory where the user has

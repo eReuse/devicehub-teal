@@ -13,8 +13,7 @@ from ereuse_devicehub.resources.inventory import Inventory
 from ereuse_devicehub.resources.user import User
 from tests.conftest import TestConfig
 
-"""
-Tests the management of inventories in a multi-inventory environment
+"""Tests the management of inventories in a multi-inventory environment
 (several Devicehub instances that point at different schemas).
 """
 

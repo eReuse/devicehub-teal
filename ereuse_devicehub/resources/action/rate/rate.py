@@ -1,22 +1,23 @@
-import math
 from typing import Iterable
+
+import math
 
 from ereuse_devicehub.resources.device.models import Device
 
 
 class BaseRate:
-    """growing exponential from this value"""
+    """Growing exponential from this value."""
     CEXP = 0
-    """growing lineal starting on this value"""
+    """Growing lineal starting on this value."""
     CLIN = 242
-    """growing logarithmic starting on this value"""
+    """Growing logarithmic starting on this value."""
     CLOG = 0.5
 
-    """Processor has 50% of weight over total score, used in harmonic mean"""
+    """Processor has 50% of weight over total score, used in harmonic mean."""
     PROCESSOR_WEIGHT = 0.5
-    """Storage has 20% of weight over total score, used in harmonic mean"""
+    """Storage has 20% of weight over total score, used in harmonic mean."""
     DATA_STORAGE_WEIGHT = 0.2
-    """Ram has 30% of weight over total score, used in harmonic mean"""
+    """Ram has 30% of weight over total score, used in harmonic mean."""
     RAM_WEIGHT = 0.3
 
     def compute(self, device: Device):
@@ -43,9 +44,7 @@ class BaseRate:
         return sum(weights) / sum(char / rate for char, rate in zip(weights, rates))
 
     def harmonic_mean_rates(self, rate_processor, rate_storage, rate_ram):
-        """
-        Merging components
-        """
+        """Merging components using harmonic formula."""
         total_weights = self.PROCESSOR_WEIGHT + self.DATA_STORAGE_WEIGHT + self.RAM_WEIGHT
         total_rate = self.PROCESSOR_WEIGHT / rate_processor \
                      + self.DATA_STORAGE_WEIGHT / rate_storage \

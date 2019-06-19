@@ -23,8 +23,7 @@ class Sync:
     def run(self,
             device: Device,
             components: Iterable[Component] or None) -> (Device, OrderedSet):
-        """
-        Synchronizes the device and components with the database.
+        """Synchronizes the device and components with the database.
 
         Identifies if the device and components exist in the database
         and updates / inserts them as necessary.
@@ -79,8 +78,7 @@ class Sync:
                                    component: Component,
                                    blacklist: Set[int],
                                    parent: Computer):
-        """
-        Synchronizes one component to the DB.
+        """Synchronizes one component to the DB.
 
         This method is a specialization of :meth:`.execute_register`
         but for components that are inside parents.
@@ -125,8 +123,7 @@ class Sync:
         return db_component, is_new
 
     def execute_register(self, device: Device) -> Device:
-        """
-        Synchronizes one device to the DB.
+        """Synchronizes one device to the DB.
 
         This method tries to get an existing device using the HID
         or one of the tags, and...
@@ -205,8 +202,7 @@ class Sync:
 
     @staticmethod
     def merge(device: Device, db_device: Device):
-        """
-        Copies the physical properties of the device to the db_device.
+        """Copies the physical properties of the device to the db_device.
 
         This method mutates db_device.
         """
@@ -217,8 +213,7 @@ class Sync:
     @staticmethod
     def add_remove(device: Computer,
                    components: Set[Component]) -> OrderedSet:
-        """
-        Generates the Add and Remove actions (but doesn't add them to
+        """Generates the Add and Remove actions (but doesn't add them to
         session).
 
         :param device: A device which ``components`` attribute contains

@@ -41,8 +41,7 @@ def get_version(ctx, param, value):
 @click.group(cls=DevicehubGroup,
              context_settings=Devicehub.cli_context_settings,
              add_version_option=False,
-             help="""
-            Manages the Devicehub of the inventory {}.
+             help="""Manages the Devicehub of the inventory {}.
 
             Use 'export dhi=xx' to set the inventory that this CLI
             manages. For example 'export dhi=db1' and then executing

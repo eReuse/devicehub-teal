@@ -39,8 +39,8 @@ class Tag(Thing):
                        collection_class=set)
     """The organization that issued the tag."""
     provider = Column(URL())
-    provider.comment = """
-        The tag provider URL. If None, the provider is this Devicehub.
+    provider.comment = """The tag provider URL. If None, the provider is
+    this Devicehub.
     """
     device_id = Column(BigInteger,
                        # We don't want to delete the tag on device deletion, only set to null
@@ -50,9 +50,8 @@ class Tag(Thing):
                           primaryjoin=Device.id == device_id)
     """The device linked to this tag."""
     secondary = Column(db.CIText(), index=True)
-    secondary.comment = """
-        A secondary identifier for this tag. It has the same
-        constraints as the main one. Only needed in special cases.
+    secondary.comment = """A secondary identifier for this tag. 
+    It has the same constraints as the main one. Only needed in special cases.
     """
 
     __table_args__ = (
@@ -116,7 +115,7 @@ class Tag(Thing):
 
     @classmethod
     def is_printable_q(cls):
-        """Return a SQLAlchemy filter expression for printable queries"""
+        """Return a SQLAlchemy filter expression for printable queries."""
         return cls.org_id == Organization.get_default_org_id()
 
     def __repr__(self) -> str:

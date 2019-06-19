@@ -45,18 +45,15 @@ class Device(Thing):
     (it is a recursive relationship).
     """
     id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
-    id.comment = """
-        The identifier of the device for this database. Used only
-        internally for software; users should not use this.
+    id.comment = """The identifier of the device for this database. Used only
+    internally for software; users should not use this.
     """
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     hid = Column(Unicode(), check_lower('hid'), unique=True)
-    hid.comment = """
-        The Hardware ID (HID) is the unique ID traceability systems 
-        use to ID a device globally. This field is auto-generated
-        from Devicehub using literal identifiers from the device,
-        so it can re-generated *offline*.
-        
+    hid.comment = """The Hardware ID (HID) is the unique ID traceability 
+    systems use to ID a device globally. This field is auto-generated
+    from Devicehub using literal identifiers from the device,
+    so it can re-generated *offline*.    
     """ + HID_CONVERSION_DOC
     model = Column(Unicode, check_lower('model'))
     model.comment = """The model of the device in lower case.
@@ -83,21 +80,13 @@ class Device(Thing):
     generation = db.Column(db.SmallInteger, check_range('generation', 0))
     generation.comment = """The generation of the device."""
     weight = Column(Float(decimal_return_scale=3), check_range('weight', 0.1, 5))
-    weight.comment = """
-        The weight of the device.
-    """
+    weight.comment = """The weight of the device."""
     width = Column(Float(decimal_return_scale=3), check_range('width', 0.1, 5))
-    width.comment = """
-        The width of the device in meters.
-    """
+    width.comment = """The width of the device in meters."""
     height = Column(Float(decimal_return_scale=3), check_range('height', 0.1, 5))
-    height.comment = """
-        The height of the device in meters.
-    """
+    height.comment = """The height of the device in meters."""
     depth = Column(Float(decimal_return_scale=3), check_range('depth', 0.1, 5))
-    depth.comment = """
-        The depth of the device in meters.
-    """
+    depth.comment = """The depth of the device in meters."""
     color = Column(ColorType)
     color.comment = """The predominant color of the device."""
     production_date = Column(db.DateTime)
@@ -139,8 +128,7 @@ class Device(Thing):
 
     @property
     def actions(self) -> list:
-        """
-        All the actions where the device participated, including:
+        """All the actions where the device participated, including:
 
         1. Actions performed directly to the device.
         2. Actions performed to a component.
@@ -170,8 +158,7 @@ class Device(Thing):
 
     @property
     def physical_properties(self) -> Dict[str, object or None]:
-        """
-        Fields that describe the physical properties of a device.
+        """Fields that describe the physical properties of a device.
 
         :return A generator where each value is a tuple with tho fields:
                 - Column.
@@ -259,8 +246,7 @@ class Device(Thing):
 
     @declared_attr
     def __mapper_args__(cls):
-        """
-        Defines inheritance.
+        """Defines inheritance.
 
         From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
         extensions/declarative/api.html
@@ -307,24 +293,20 @@ class Device(Thing):
 class DisplayMixin:
     """Base class for the Display Component and the Monitor Device."""
     size = Column(Float(decimal_return_scale=1), check_range('size', 2, 150), nullable=False)
-    size.comment = """
-        The size of the monitor in inches.
-    """
+    size.comment = """The size of the monitor in inches."""
     technology = Column(DBEnum(DisplayTech))
-    technology.comment = """
-        The technology the monitor uses to display the image.
+    technology.comment = """The technology the monitor uses to display 
+    the image.
     """
     resolution_width = Column(SmallInteger, check_range('resolution_width', 10, 20000),
                               nullable=False)
-    resolution_width.comment = """
-        The maximum horizontal resolution the monitor can natively support
-        in pixels.
+    resolution_width.comment = """The maximum horizontal resolution the 
+    monitor can natively support in pixels.
     """
     resolution_height = Column(SmallInteger, check_range('resolution_height', 10, 20000),
                                nullable=False)
-    resolution_height.comment = """
-        The maximum vertical resolution the monitor can natively support
-        in pixels.
+    resolution_height.comment = """The maximum vertical resolution the 
+    monitor can natively support in pixels.
     """
     refresh_rate = Column(SmallInteger, check_range('refresh_rate', 10, 1000))
     contrast_ratio = Column(SmallInteger, check_range('contrast_ratio', 100, 100000))
@@ -460,7 +442,8 @@ class Desktop(Computer):
 class Laptop(Computer):
     layout = Column(DBEnum(Layouts))
     layout.comment = """Layout of a built-in keyboard of the computer,
-     if any."""
+     if any.
+     """
 
 
 class Server(Computer):
@@ -542,11 +525,11 @@ class Component(Device):
     )
 
     def similar_one(self, parent: Computer, blacklist: Set[int]) -> 'Component':
-        """
-        Gets a component that:
-        - has the same parent.
-        - Doesn't generate HID.
-        - Has same physical properties.
+        """Gets a component that:
+
+        * has the same parent.
+        * Doesn't generate HID.
+        * Has same physical properties.
         :param parent:
         :param blacklist: A set of components to not to consider
                           when looking for similar ones.
@@ -573,17 +556,13 @@ class JoinedComponentTableMixin:
 
 class GraphicCard(JoinedComponentTableMixin, Component):
     memory = Column(SmallInteger, check_range('memory', min=1, max=10000))
-    memory.comment = """
-        The amount of memory of the Graphic Card in MB.
-    """
+    memory.comment = """The amount of memory of the Graphic Card in MB."""
 
 
 class DataStorage(JoinedComponentTableMixin, Component):
     """A device that stores information."""
     size = Column(Integer, check_range('size', min=1, max=10 ** 8))
-    size.comment = """
-        The size of the data-storage in MB.
-    """
+    size.comment = """The size of the data-storage in MB."""
     interface = Column(DBEnum(DataStorageInterface))
 
     @property
@@ -616,9 +595,7 @@ class SolidStateDrive(DataStorage):
 
 class Motherboard(JoinedComponentTableMixin, Component):
     slots = Column(SmallInteger, check_range('slots', min=0))
-    slots.comment = """
-        PCI slots the motherboard has.
-    """
+    slots.comment = """PCI slots the motherboard has."""
     usb = Column(SmallInteger, check_range('usb', min=0))
     firewire = Column(SmallInteger, check_range('firewire', min=0))
     serial = Column(SmallInteger, check_range('serial', min=0))
@@ -629,13 +606,11 @@ class Motherboard(JoinedComponentTableMixin, Component):
 
 class NetworkMixin:
     speed = Column(SmallInteger, check_range('speed', min=10, max=10000))
-    speed.comment = """
-        The maximum speed this network adapter can handle, in mbps.
+    speed.comment = """The maximum speed this network adapter can handle, 
+    in mbps.
     """
     wireless = Column(Boolean, nullable=False, default=False)
-    wireless.comment = """
-        Whether it is a wireless interface.
-    """
+    wireless.comment = """Whether it is a wireless interface."""
 
     def __format__(self, format_spec):
         v = super().__format__(format_spec)
@@ -676,8 +651,7 @@ class SoundCard(JoinedComponentTableMixin, Component):
 
 
 class Display(JoinedComponentTableMixin, DisplayMixin, Component):
-    """
-    The display of a device. This is used in all devices that have
+    """The display of a device. This is used in all devices that have
     displays but that it is not their main part, like laptops,
     mobiles, smart-watches, and so on; excluding ``ComputerMonitor``
     and ``TelevisionSet``.

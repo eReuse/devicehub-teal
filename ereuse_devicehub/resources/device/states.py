@@ -20,8 +20,7 @@ class State(Enum):
 
 
 class Trading(State):
-    """
-    Trading states.
+    """Trading states.
 
     :cvar Reserved: The device has been reserved.
     :cvar Cancelled: The device has been cancelled.
@@ -44,8 +43,7 @@ class Trading(State):
 
 
 class Physical(State):
-    """
-    Physical states.
+    """Physical states.
 
     :cvar ToBeRepaired: The device has been selected for reparation.
     :cvar Repaired: The device has been repaired.

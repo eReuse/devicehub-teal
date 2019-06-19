@@ -20,16 +20,14 @@ class Thing(db.Model):
                         nullable=False,
                         index=True,
                         server_default=db.text('CURRENT_TIMESTAMP'))
-    updated.comment = """
-        The last time Devicehub recorded a change for this thing.
+    updated.comment = """The last time Devicehub recorded a change for 
+    this thing.
     """
     created = db.Column(db.TIMESTAMP(timezone=True),
                         nullable=False,
                         index=True,
                         server_default=db.text('CURRENT_TIMESTAMP'))
-    created.comment = """
-        When Devicehub created this. 
-    """
+    created.comment = """When Devicehub created this."""
 
     def __init__(self, **kwargs) -> None:
         # We need to set 'created' before sqlalchemy inits the class

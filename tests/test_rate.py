@@ -1,7 +1,6 @@
 from decimal import Decimal
 from distutils.version import StrictVersion
 
-import math
 import pytest
 
 from ereuse_devicehub.client import UserClient
@@ -96,8 +95,7 @@ def test_price_from_rate():
 
 
 def test_when_rate_must_not_compute(user: UserClient):
-    """
-    Test to check if rate is computed in case of should not be calculated:
+    """Test to check if rate is computed in case of should not be calculated:
         1. Snapshot haven't visual test
         2. Snapshot software aren't Workbench
         3. Device type are not Computer

@@ -56,9 +56,7 @@ class DeviceRow(OrderedDict):
             self.components()
 
     def components(self):
-        """
-        Function to get all components information of a device
-        """
+        """Function to get all components information of a device."""
         assert isinstance(self.device, d.Computer)
         # todo put an input specific order (non alphabetic) & where are a list of types components
         for type in sorted(current_app.resources[d.Component.t].subresources_types):  # type: str
@@ -75,8 +73,8 @@ class DeviceRow(OrderedDict):
                     i += 1
 
     def fill_component(self, type, i, component=None):
-        """
-        Function to put specific information of components in OrderedDict (csv)
+        """Function to put specific information of components
+        in OrderedDict (csv)
         :param type: type of component
         :param component: device.components
         """
@@ -85,11 +83,13 @@ class DeviceRow(OrderedDict):
         self['{} {} Model'.format(type, i)] = component.serial_number if component else ''
         self['{} {} Serial Number'.format(type, i)] = component.serial_number if component else ''
 
-        """ Particular fields for component GraphicCard """
+        """Particular fields for component GraphicCard."""
         if isinstance(component, d.GraphicCard):
             self['{} {} Memory (MB)'.format(type, i)] = component.memory
 
-        """ Particular fields for component DataStorage.t -> (HardDrive, SolidStateDrive) """
+        """Particular fields for component DataStorage.t -> 
+        (HardDrive, SolidStateDrive)
+        """
         if isinstance(component, d.DataStorage):
             self['{} {} Size (MB)'.format(type, i)] = component.size
             self['{} {} Privacy'.format(type, i)] = component.privacy
@@ -109,16 +109,14 @@ class DeviceRow(OrderedDict):
             except:
                 self['{} {} Writing speed'.format(type, i)] = ''
 
-        """ Particular fields for component Processor """
+        """Particular fields for component Processor."""
         if isinstance(component, d.Processor):
             self['{} {} Number of cores'.format(type, i)] = component.cores
             self['{} {} Speed (GHz)'.format(type, i)] = component.speed
 
-        """ Particular fields for component RamModule """
+        """Particular fields for component RamModule."""
         if isinstance(component, d.RamModule):
             self['{} {} Size (MB)'.format(type, i)] = component.size
             self['{} {} Speed (MHz)'.format(type, i)] = component.speed
 
-        # todo add Display size, ...
-        # todo add NetworkAdapter speedLink?
-        # todo add some ComputerAccessories
+        # todo add Display, NetworkAdapter, etc...

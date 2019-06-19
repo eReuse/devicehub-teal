@@ -26,8 +26,7 @@ class DevicehubConfig(Config):
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/devicehub'  # type: str
     MIN_WORKBENCH = StrictVersion('11.0a1')  # type: StrictVersion
-    """
-    the minimum version of ereuse.org workbench that this devicehub
+    """The minimum version of ereuse.org workbench that this devicehub
     accepts. we recommend not changing this value.
     """
     API_DOC_CONFIG_TITLE = 'Devicehub'
@@ -42,6 +41,4 @@ class DevicehubConfig(Config):
     PRICE_SOFTWARE = PriceSoftware.Ereuse
     PRICE_VERSION = StrictVersion('1.0')
     PRICE_CURRENCY = Currency.EUR
-    """
-    Official versions
-    """
+    """Official versions."""

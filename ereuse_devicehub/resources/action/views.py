@@ -46,8 +46,7 @@ class ActionView(View):
         return self.schema.jsonify(action)
 
     def snapshot(self, snapshot_json: dict, resource_def):
-        """
-        Performs a Snapshot.
+        """Performs a Snapshot.
 
         See `Snapshot` section in docs for more info.
         """

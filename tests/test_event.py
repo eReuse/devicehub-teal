@@ -22,8 +22,7 @@ from tests.conftest import create_user, file
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_author():
-    """
-    Checks the default created author.
+    """Checks the default created author.
 
     Note that the author can be accessed after inserting the row.
     """
@@ -337,7 +336,8 @@ def test_price_custom_client(user: UserClient):
 def test_ereuse_price():
     """Tests the several ways of creating eReuse Price, emulating
     from an AggregateRate and ensuring that the different Range
-    return correct results."""
+    return correct results.
+    """
     # important to check Range.low no returning warranty2
     # Range.verylow not returning nothing
 
