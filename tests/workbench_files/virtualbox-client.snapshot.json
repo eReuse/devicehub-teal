@@ -3,47 +3,55 @@
   "uuid": "00000000-0000-0000-0000-000000000000",
   "software": "Workbench",
   "version": "11.0a1",
-  "closed": false,
-  "endTime": "2000-01-01 00:00:00+00:00",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
   "device": {
+    "actions": [],
+    "type": "Computer",
     "manufacturer": "innotek GmbH",
     "model": "VirtualBox",
     "serialNumber": "0",
-    "actions": [],
-    "type": "Computer",
-    "chassis": "Virtual"
+    "chassis": "Virtual",
+    "sku": null,
+    "version": "1.2"
   },
   "components": [
     {
+      "actions": [],
+      "type": "HardDrive",
       "manufacturer": null,
       "model": "VBOX HARDDISK",
       "serialNumber": "VBd9783eb3-8ef7f22a",
-      "actions": [],
-      "type": "HardDrive",
-      "size": 76856,
-      "interface": null
+      "size": 80590.0,
+      "interface": null,
+      "variant": "1.0"
     },
     {
+      "actions": [],
+      "type": "NetworkAdapter",
       "manufacturer": "Intel Corporation",
       "model": "82540EM Gigabit Ethernet Controller",
       "serialNumber": "08:00:27:43:d0:65",
-      "actions": [],
-      "type": "NetworkAdapter",
-      "speed": 1000,
+      "speed": 1000.0,
+      "variant": "02",
       "wireless": false
     },
     {
+      "actions": [],
+      "type": "Motherboard",
       "manufacturer": "Oracle Corporation",
       "model": "VirtualBox",
       "serialNumber": "0",
-      "actions": [],
-      "type": "Motherboard",
       "usb": 1,
       "firewire": 0,
       "serial": 0,
       "pcmcia": 0,
-      "slots": 1
+      "slots": 0,
+      "biosDate": "2006-12-01T00:00:00",
+      "version": "VirtualBox",
+      "ramSlots": null,
+      "ramMaxSize": null
     }
-  ],
-  "elapsed": 0
+  ]
 }

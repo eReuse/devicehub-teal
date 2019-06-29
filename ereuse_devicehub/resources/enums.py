@@ -262,10 +262,16 @@ class BatteryHealth(Enum):
 
 @unique
 class BatteryTechnology(Enum):
-    """The technology of the Battery."""
+    """The technology of the Battery. Adapted from
+    https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-power
+    adding ``Alkaline``.
+    """
     LiIon = 'Lithium-ion'
-    NiCad = 'Nickel-Cadmium'
+    NiCd = 'Nickel-Cadmium'
     NiMH = 'Nickel-metal hydride'
+    LiPoly = 'Lithium-ion Polymer'
+    LiFe = 'LiFe'
+    LiMn = 'Lithium Manganese'
     Al = 'Alkaline'
 
 

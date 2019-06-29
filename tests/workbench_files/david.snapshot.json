@@ -1,0 +1,154 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
+  "device": {
+    "actions": [],
+    "type": "Laptop",
+    "manufacturer": "Dell Inc.",
+    "model": "Latitude E6440",
+    "serialNumber": "FJBQVZ1",
+    "chassis": "Laptop",
+    "sku": "Latitude E6440",
+    "version": "01"
+  },
+  "components": [
+    {
+      "actions": [],
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core i7-4600M CPU @ 2.90GHz",
+      "serialNumber": null,
+      "speed": 1.259899,
+      "address": 64,
+      "cores": 2,
+      "threads": 4,
+      "brand": "Core i7",
+      "generation": 4
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": "Samsung",
+      "model": "M471B5173DB0-YK0",
+      "serialNumber": "732CD498",
+      "format": "SODIMM",
+      "size": 4096.0,
+      "interface": "DDR3",
+      "speed": 1600.0
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": "Samsung",
+      "model": "M471B5173DB0-YK0",
+      "serialNumber": "152DD498",
+      "format": "SODIMM",
+      "size": 4096.0,
+      "interface": "DDR3",
+      "speed": 1600.0
+    },
+    {
+      "actions": [],
+      "type": "HardDrive",
+      "manufacturer": null,
+      "model": "Crucial_CT525MX3",
+      "serialNumber": "164014297BCC",
+      "size": 525113.0,
+      "interface": null,
+      "variant": "R031"
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "model": "4th Gen Core Processor Integrated Graphics Controller",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Intel Corporation",
+      "model": "Ethernet Connection I217-LM",
+      "serialNumber": "ec:f4:bb:0b:18:90",
+      "speed": 1000.0,
+      "variant": "04",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Intel Corporation",
+      "model": "Centrino Advanced-N 6235",
+      "serialNumber": "c4:d9:87:47:90:e1",
+      "speed": null,
+      "variant": "24",
+      "wireless": true
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": "da:b4:3a:25:88:6c",
+      "speed": null,
+      "variant": null,
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "Xeon E3-1200 v3/4th Gen Core Processor HD Audio Controller",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "CNFCH52J48303+YF2",
+      "model": "Laptop_Integrated_Webcam_HD",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "8 Series/C220 Series Chipset High Definition Audio Controller",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "Display",
+      "model": "SAMSUNG SyncMaster",
+      "manufacturer": "SAM SAMSUNG",
+      "serialNumber": "H1CRA03915",
+      "resolutionWidth": 1024,
+      "resolutionHeight": 768,
+      "refreshRate": 70,
+      "size": 15.0,
+      "technology": null,
+      "productionDate": "2001-10-28T00:00:00"
+    },
+    {
+      "actions": [],
+      "type": "Motherboard",
+      "manufacturer": "Dell Inc.",
+      "model": "0159N7",
+      "serialNumber": "/FJBQVZ1/CN1296342I009B/",
+      "usb": 3,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 0,
+      "biosDate": "2013-09-03T00:00:00",
+      "version": "A02",
+      "ramSlots": null,
+      "ramMaxSize": null
+    }
+  ]
+}

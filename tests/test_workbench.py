@@ -9,7 +9,7 @@ import pytest
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.resources.action import models as em
-from ereuse_devicehub.resources.action.models import VisualTest, RateComputer
+from ereuse_devicehub.resources.action.models import RateComputer, VisualTest
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag.model import Tag
@@ -299,20 +299,21 @@ def test_real_eee_1000h(user: UserClient):
 
 
 SNAPSHOTS_NEED_ID = {
-    'box-xavier.snapshot.json',
-    'custom.lshw.snapshot.json',
-    'nox.lshw.snapshot.json',
-    'core2.lshw.snapshot.json',
-    'all-series.lshw.snapshot.json',
-    'ecs-2.lshw.snapshot.json',
-    'ecs-computers.lshw.snapshot.json',
-    'asus-all-series.lshw.snapshot.json'
+    'core2.snapshot.json',
+    'asus-all-series.snapshot.json',
+    'all-series.snapshot.json',
+    'nox.snapshot.json',
+    'ecs-computers.snapshot.json',
+    'custom.snapshot.json',
+    'ecs-2.snapshot.json'
 }
 """Snapshots that do not generate HID requiring a custom ID."""
 
 
 @pytest.mark.parametrize('file',
-                         pathlib.Path(__file__).parent.joinpath('workbench_files').iterdir())
+                         (pytest.param(f, id=f.name)
+                          for f in pathlib.Path().parent.joinpath('workbench_files').iterdir())
+                         )
 def test_workbench_fixtures(file: pathlib.Path, user: UserClient):
     """Uploads the Snapshot files Workbench tests generate.
 

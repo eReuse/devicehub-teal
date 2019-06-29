@@ -115,7 +115,9 @@ def test_physical_properties():
         'serial': None,
         'firewire': None,
         'manufacturer': 'mr',
-        'bios_date': None
+        'bios_date': None,
+        'ram_max_size': None,
+        'ram_slots': None
     }
     assert pc.physical_properties == {
         'model': 'foo',

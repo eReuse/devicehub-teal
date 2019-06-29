@@ -3,95 +3,105 @@
   "uuid": "00000000-0000-0000-0000-000000000000",
   "software": "Workbench",
   "version": "11.0a1",
-  "closed": false,
-  "endTime": "2000-01-01 00:00:00+00:00",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
   "device": {
+    "actions": [],
+    "type": "Desktop",
     "manufacturer": "NEC Computers SAS",
     "model": "Powermate MLxxx",
     "serialNumber": "SN 123456789ABC",
-    "actions": [],
-    "type": "Desktop",
-    "chassis": "Tower"
+    "chassis": "Tower",
+    "sku": null,
+    "version": null
   },
   "components": [
     {
+      "actions": [],
+      "type": "Processor",
       "manufacturer": "Intel Corp.",
       "model": "Intel Core2 Duo CPU E8400 @ 3.00GHz",
       "serialNumber": null,
-      "actions": [],
-      "type": "Processor",
       "speed": 3.0,
       "address": 64,
       "cores": 2,
-      "threads": 2
+      "threads": 2,
+      "brand": "Core2 Duo",
+      "generation": null
     },
     {
+      "actions": [],
+      "type": "RamModule",
       "manufacturer": "Samsung",
       "model": "M3 78T2863QZS-CE6",
       "serialNumber": "253C8F0C",
-      "actions": [],
-      "type": "RamModule",
       "format": "DIMM",
-      "size": 1024,
+      "size": 1024.0,
       "interface": "DDR2",
       "speed": 667.0
     },
     {
+      "actions": [],
+      "type": "RamModule",
       "manufacturer": "Samsung",
       "model": "M3 78T2863QZS-CE6",
       "serialNumber": "253C8DE7",
-      "actions": [],
-      "type": "RamModule",
       "format": "DIMM",
-      "size": 1024,
+      "size": 1024.0,
       "interface": "DDR2",
       "speed": 667.0
     },
     {
+      "actions": [],
+      "type": "HardDrive",
       "manufacturer": "Hitachi",
       "model": "HDT72103",
       "serialNumber": "STA2L7MV39LL6D",
-      "actions": [],
-      "type": "HardDrive",
-      "size": 305245,
-      "interface": null
+      "size": 320073.0,
+      "interface": null,
+      "variant": "A3CC"
     },
     {
+      "actions": [],
+      "type": "GraphicCard",
       "manufacturer": "Intel Corporation",
       "model": "82Q35 Express Integrated Graphics Controller",
       "serialNumber": null,
-      "actions": [],
-      "type": "GraphicCard",
       "memory": null
     },
     {
+      "actions": [],
+      "type": "NetworkAdapter",
       "manufacturer": "Intel Corporation",
       "model": "82566DM-2 Gigabit Network Connection",
       "serialNumber": "00:24:21:7a:90:02",
-      "actions": [],
-      "type": "NetworkAdapter",
-      "speed": 1000,
+      "speed": 1000.0,
+      "variant": "02",
       "wireless": false
     },
     {
+      "actions": [],
+      "type": "SoundCard",
       "manufacturer": "Intel Corporation",
       "model": "82801I HD Audio Controller",
-      "serialNumber": null,
-      "actions": [],
-      "type": "SoundCard"
+      "serialNumber": null
     },
     {
+      "actions": [],
+      "type": "Motherboard",
       "manufacturer": "Micro-Star International Co Ltd",
       "model": "MS-7377",
       "serialNumber": "9516777584",
-      "actions": [],
-      "type": "Motherboard",
       "usb": 8,
       "firewire": 1,
       "serial": 1,
       "pcmcia": 0,
-      "slots": 1
+      "slots": 0,
+      "biosDate": "2008-07-02T00:00:00",
+      "version": "V00L",
+      "ramSlots": null,
+      "ramMaxSize": null
     }
-  ],
-  "elapsed": 0
+  ]
 }

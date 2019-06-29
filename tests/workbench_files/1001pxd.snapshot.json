@@ -1,0 +1,143 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
+  "device": {
+    "actions": [],
+    "type": "Laptop",
+    "manufacturer": "ASUSTeK Computer INC.",
+    "model": "1001PXD",
+    "serialNumber": "B8OAAS048286",
+    "chassis": "Netbook",
+    "sku": "1001PXD",
+    "version": null
+  },
+  "components": [
+    {
+      "actions": [],
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Atom CPU N455 @ 1.66GHz",
+      "serialNumber": null,
+      "speed": 1.667,
+      "address": 64,
+      "cores": 1,
+      "threads": 2,
+      "brand": "Atom",
+      "generation": null
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 1024.0,
+      "interface": "DDR2",
+      "speed": 667.0
+    },
+    {
+      "actions": [],
+      "type": "HardDrive",
+      "manufacturer": "Hitachi",
+      "model": "HTS54322",
+      "serialNumber": "E2024242CV86HJ",
+      "size": 250059.0,
+      "interface": null,
+      "variant": "A60W"
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "model": "Atom Processor D4xx/D5xx/N4xx/N5xx Integrated Graphics Controller",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Qualcomm Atheros",
+      "model": "AR9285 Wireless Network Adapter",
+      "serialNumber": "74:2f:68:8b:fd:c8",
+      "speed": null,
+      "variant": "01",
+      "wireless": true
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Qualcomm Atheros",
+      "model": "AR8152 v2.0 Fast Ethernet",
+      "serialNumber": "14:da:e9:42:f6:7c",
+      "speed": 100.0,
+      "variant": "c1",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "NM10/ICH7 Family High Definition Audio Controller",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Azurewave",
+      "model": "USB 2.0 UVC VGA WebCam",
+      "serialNumber": "0x0001"
+    },
+    {
+      "actions": [],
+      "type": "Display",
+      "model": "InfoVision LCD Monitor",
+      "manufacturer": "IVO InfoVision",
+      "serialNumber": null,
+      "resolutionWidth": 1024,
+      "resolutionHeight": 600,
+      "refreshRate": 60,
+      "size": 10.0,
+      "technology": "LCD",
+      "productionDate": "2010-03-14T00:00:00"
+    },
+    {
+      "actions": [
+        {
+          "type": "MeasureBattery",
+          "severity": "Info",
+          "size": 3801.0,
+          "voltage": 12248.0,
+          "cycleCount": null
+        }
+      ],
+      "type": "Battery",
+      "serialNumber": null,
+      "manufacturer": "ASUS",
+      "model": "1001PXD",
+      "size": 4400,
+      "technology": "LiIon"
+    },
+    {
+      "actions": [],
+      "type": "Motherboard",
+      "manufacturer": "ASUSTeK Computer INC.",
+      "model": "1001PXD",
+      "serialNumber": "Eee0123456789",
+      "usb": 5,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 0,
+      "biosDate": "2011-04-12T00:00:00",
+      "version": "0703",
+      "ramSlots": 2,
+      "ramMaxSize": 4
+    }
+  ]
+}

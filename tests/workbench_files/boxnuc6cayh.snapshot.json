@@ -1,0 +1,106 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
+  "device": {
+    "actions": [],
+    "type": "Desktop",
+    "manufacturer": "Intel Corporation",
+    "model": "NUC6CAYH",
+    "serialNumber": "G6AY80800F4D",
+    "chassis": "Tower",
+    "sku": null,
+    "version": "J26843-405"
+  },
+  "components": [
+    {
+      "actions": [],
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Celeron CPU J3455 @ 1.50GHz",
+      "serialNumber": null,
+      "speed": 2.191406,
+      "address": 64,
+      "cores": 4,
+      "threads": 4,
+      "brand": "Celeron",
+      "generation": null
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": "Kingston",
+      "model": "99U5469-070.A00LF",
+      "serialNumber": "181AFB16",
+      "format": "SODIMM",
+      "size": 4096.0,
+      "interface": "DDR3",
+      "speed": 1600.0
+    },
+    {
+      "actions": [],
+      "type": "HardDrive",
+      "manufacturer": null,
+      "model": "KINGSTON SA400S3",
+      "serialNumber": "50026B77821CF9DE",
+      "size": 120034.0,
+      "interface": null,
+      "variant": "71E0"
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "model": "Intel Corporation",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Intel Corporation",
+      "model": "Dual Band Wireless-AC 3168NGW Stone Peak",
+      "serialNumber": "b8:08:cf:aa:11:f3",
+      "speed": null,
+      "variant": "10",
+      "wireless": true
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
+      "serialNumber": "94:c6:91:1b:7e:93",
+      "speed": 1000.0,
+      "variant": "15",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "Celeron N3350/Pentium N4200/Atom E3900 Series Audio Cluster",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "Motherboard",
+      "manufacturer": "Intel Corporation",
+      "model": "NUC6CAYB",
+      "serialNumber": "GEAY80600ECM",
+      "usb": 1,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 0,
+      "biosDate": "2017-11-23T00:00:00",
+      "version": "AYAPLCEL.86A.0043.2017.1123.1559",
+      "ramSlots": null,
+      "ramMaxSize": null
+    }
+  ]
+}

@@ -1,5 +1,7 @@
+import datetime
+
 from marshmallow import post_load, pre_load
-from marshmallow.fields import Boolean, DateTime, Float, Integer, List, Str, String
+from marshmallow.fields import Boolean, Date, DateTime, Float, Integer, List, Str, String
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
@@ -33,6 +35,7 @@ class Device(Thing):
                                  data_key='serialNumber')
     brand = SanitizedStr(validate=Length(max=STR_BIG_SIZE), description=m.Device.brand.comment)
     generation = Integer(validate=Range(1, 100), description=m.Device.generation.comment)
+    version = SanitizedStr(description=m.Device.version)
     weight = Float(validate=Range(0.1, 5), unit=UnitCodes.kgm, description=m.Device.weight.comment)
     width = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.width.comment)
     height = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.height.comment)
@@ -57,6 +60,8 @@ class Device(Thing):
                        many=True,
                        dump_only=True,
                        description=m.Device.working.__doc__)
+    variant = SanitizedStr(description=m.Device.variant)
+    sku = SanitizedStr(description=m.Device.sku)
 
     @pre_load
     def from_actions_to_actions_one(self, data: dict):
@@ -250,6 +255,12 @@ class Motherboard(Component):
     firewire = Integer(validate=Range(0, 20), description=m.Motherboard.firewire.comment)
     serial = Integer(validate=Range(0, 20), description=m.Motherboard.serial.comment)
     pcmcia = Integer(validate=Range(0, 20), description=m.Motherboard.pcmcia.comment)
+    bios_date = Date(validate=Range(datetime.date(year=1980, month=1, day=1),
+                                    datetime.date(year=2030, month=1, day=1)),
+                     data_key='biosDate',
+                     description=m.Motherboard.bios_date)
+    ram_slots = Integer(validate=Range(1), data_key='ramSlots')
+    ram_max_size = Integer(validate=Range(1), data_key='ramMaxSize')
 
 
 class NetworkAdapter(NetworkMixin, Component):

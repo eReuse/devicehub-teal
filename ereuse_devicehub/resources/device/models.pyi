@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from fractions import Fraction
 from operator import attrgetter
 from typing import Dict, Generator, Iterable, List, Optional, Set, Type, TypeVar
@@ -42,7 +42,9 @@ class Device(Thing):
     production_date = ...  # type: Column
     brand = ...  # type: Column
     generation = ...  # type: Column
+    version = ...  # type: Column
     variant = ...  # type: Column
+    sku = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -65,7 +67,9 @@ class Device(Thing):
         self.production_date = ...  # type: Optional[datetime]
         self.brand = ...  # type: Optional[str]
         self.generation = ...  # type: Optional[int]
+        self.version = ...  # type: Optional[str]
         self.variant = ...  # type: Optional[str]
+        self.sku = ...  # type: Optional[str]
 
     @property
     def actions(self) -> List[e.Action]:
@@ -272,6 +276,9 @@ class Motherboard(Component):
     firewire = ...  # type: Column
     serial = ...  # type: Column
     pcmcia = ...  # type: Column
+    bios_date = ...  # type: Column
+    ram_slots = ...  # type: Column
+    ram_max_size = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -280,6 +287,9 @@ class Motherboard(Component):
         self.firewire = ...  # type: int
         self.serial = ...  # type: int
         self.pcmcia = ...  # type: int
+        self.bios_date = ...  # type: Optional[date]
+        self.ram_slots = ...  # type: Optional[int]
+        self.ram_max_size = ...  # type: Optional[int]
 
 
 class NetworkMixin:

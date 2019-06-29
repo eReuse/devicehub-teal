@@ -161,6 +161,11 @@ class DisplayDef(ComponentDef):
     SCHEMA = schemas.Display
 
 
+class BatteryDef(ComponentDef):
+    VIEW = None
+    SCHEMA = schemas.Battery
+
+
 class ComputerAccessoryDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.ComputerAccessory

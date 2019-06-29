@@ -1,0 +1,171 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
+  "device": {
+    "actions": [],
+    "type": "Desktop",
+    "manufacturer": "LENOVO",
+    "model": "415522G",
+    "serialNumber": "S4T6208",
+    "chassis": "Tower",
+    "sku": null,
+    "version": "ThinkStation D20"
+  },
+  "components": [
+    {
+      "actions": [],
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Xeon CPU E5520 @ 2.27GHz",
+      "serialNumber": null,
+      "speed": 1.596,
+      "address": 64,
+      "cores": 4,
+      "threads": 8,
+      "brand": "Xeon",
+      "generation": 1
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 4096.0,
+      "interface": "DDR3",
+      "speed": 1066.0
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 4096.0,
+      "interface": "DDR3",
+      "speed": 1066.0
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 4096.0,
+      "interface": "DDR3",
+      "speed": 1066.0
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 4096.0,
+      "interface": "DDR3",
+      "speed": 1066.0
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 4096.0,
+      "interface": "DDR3",
+      "speed": 1066.0
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 4096.0,
+      "interface": "DDR3",
+      "speed": 1066.0
+    },
+    {
+      "actions": [],
+      "type": "HardDrive",
+      "manufacturer": "Western Digital",
+      "model": "WDC WDS120G1G0A-",
+      "serialNumber": "173586804248",
+      "size": 120034.0,
+      "interface": null,
+      "variant": "1000"
+    },
+    {
+      "actions": [],
+      "type": "HardDrive",
+      "manufacturer": "Seagate",
+      "model": "ST160LM000 HM161",
+      "serialNumber": "S24NJ9CBC00089",
+      "size": 160042.0,
+      "interface": null,
+      "variant": "0001"
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "NVIDIA Corporation",
+      "model": "GT200GL Quadro FX 3800",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Broadcom Limited",
+      "model": "NetXtreme BCM5755 Gigabit Ethernet PCI Express",
+      "serialNumber": "00:27:13:53:ec:62",
+      "speed": 1000.0,
+      "variant": "02",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Broadcom Limited",
+      "model": "NetXtreme BCM5754 Gigabit Ethernet PCI Express",
+      "serialNumber": "00:27:13:53:ec:63",
+      "speed": 1000.0,
+      "variant": "02",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "82801JI HD Audio Controller",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "Motherboard",
+      "manufacturer": "LENOVO",
+      "model": "LENOVO",
+      "serialNumber": null,
+      "usb": 8,
+      "firewire": 1,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 0,
+      "biosDate": "2010-02-22T00:00:00",
+      "version": "61KT34AUS",
+      "ramSlots": 12,
+      "ramMaxSize": 384
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
+  "device": {
+    "actions": [],
+    "type": "Desktop",
+    "manufacturer": "Hewlett-Packard",
+    "model": "HP Compaq dc7900 Small Form Factor",
+    "serialNumber": "CZC901381R",
+    "chassis": "Tower",
+    "sku": "KP721AV",
+    "version": null
+  },
+  "components": [
+    {
+      "actions": [],
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core2 Duo CPU E8400 @ 3.00GHz",
+      "serialNumber": null,
+      "speed": 1.9980000000000002,
+      "address": 64,
+      "cores": 2,
+      "threads": 2,
+      "brand": "Core2 Duo",
+      "generation": null
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": "HYMP125U64CP8-S6",
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 2048.0,
+      "interface": "DDR2",
+      "speed": 800.0
+    },
+    {
+      "actions": [],
+      "type": "HardDrive",
+      "manufacturer": "Seagate",
+      "model": "ST3160815AS",
+      "serialNumber": "6RX7AWEZ",
+      "size": 160042.0,
+      "interface": null,
+      "variant": "H"
+    },
+    {
+      "actions": [],
+      "type": "HardDrive",
+      "manufacturer": "Western Digital",
+      "model": "WDC WD3200AAJS-0",
+      "serialNumber": "WD-WCARW0244414",
+      "size": 320073.0,
+      "interface": null,
+      "variant": "1B02"
+    },
+    {
+      "actions": [],
+      "type": "HardDrive",
+      "manufacturer": "Western Digital",
+      "model": "WDC WD5000AAKX-6",
+      "serialNumber": "WD-WCC2ETY84203",
+      "size": 500108.0,
+      "interface": null,
+      "variant": "1H18"
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "model": "4 Series Chipset Integrated Graphics Controller",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Intel Corporation",
+      "model": "82567LM-3 Gigabit Network Connection",
+      "serialNumber": "00:23:7d:49:5e:31",
+      "speed": 1000.0,
+      "variant": "02",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "82801JD/DO HD Audio Controller",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "Motherboard",
+      "manufacturer": "Hewlett-Packard",
+      "model": "3031h",
+      "serialNumber": "CZC901381R",
+      "usb": 8,
+      "firewire": 0,
+      "serial": 0,
+      "pcmcia": 0,
+      "slots": 0,
+      "biosDate": "2008-08-25T00:00:00",
+      "version": "786G1 v01.08",
+      "ramSlots": 1,
+      "ramMaxSize": 4
+    }
+  ]
+}

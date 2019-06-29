@@ -149,7 +149,7 @@ class MeasureBattery(Test):
     __doc__ = m.MeasureBattery.__doc__
     size = Integer(required=True, description=m.MeasureBattery.size.comment)
     voltage = Integer(required=True, description=m.MeasureBattery.voltage.comment)
-    cycle_count = Integer(required=True, description=m.MeasureBattery.cycle_count.comment)
+    cycle_count = Integer(data_key='cycleCount', description=m.MeasureBattery.cycle_count.comment)
     health = EnumField(enums.BatteryHealth, description=m.MeasureBattery.health.comment)
 
 

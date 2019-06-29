@@ -3,84 +3,94 @@
   "uuid": "00000000-0000-0000-0000-000000000000",
   "software": "Workbench",
   "version": "11.0a1",
-  "closed": false,
-  "endTime": "2000-01-01 00:00:00+00:00",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
   "device": {
+    "actions": [],
+    "type": "Desktop",
     "manufacturer": null,
     "model": null,
     "serialNumber": null,
-    "actions": [],
-    "type": "Desktop",
-    "chassis": "Tower"
+    "chassis": "Tower",
+    "sku": null,
+    "version": "System Version"
   },
   "components": [
     {
+      "actions": [],
+      "type": "Processor",
       "manufacturer": "Intel Corp.",
       "model": "Intel Core i3-2100 CPU @ 3.10GHz",
       "serialNumber": null,
-      "actions": [],
-      "type": "Processor",
       "speed": 1.6862300000000001,
       "address": 64,
       "cores": 2,
-      "threads": 2
+      "threads": 2,
+      "brand": "Core i3",
+      "generation": 2
     },
     {
+      "actions": [],
+      "type": "RamModule",
       "manufacturer": "Kingston",
       "model": "9905403-038.A00LF",
       "serialNumber": "8F17943",
-      "actions": [],
-      "type": "RamModule",
       "format": "DIMM",
-      "size": 4096,
+      "size": 4096.0,
       "interface": "DDR3",
       "speed": 1333.0
     },
     {
+      "actions": [],
+      "type": "HardDrive",
       "manufacturer": "Seagate",
       "model": "ST3500413AS",
       "serialNumber": "Z2A3HR7N",
-      "actions": [],
-      "type": "HardDrive",
-      "size": 476940,
-      "interface": null
+      "size": 500108.0,
+      "interface": null,
+      "variant": "JC45"
     },
     {
+      "actions": [],
+      "type": "GraphicCard",
       "manufacturer": "Intel Corporation",
       "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
       "serialNumber": null,
-      "actions": [],
-      "type": "GraphicCard",
       "memory": null
     },
     {
+      "actions": [],
+      "type": "NetworkAdapter",
       "manufacturer": "Realtek Semiconductor Co., Ltd.",
       "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
       "serialNumber": "f4:6d:04:12:9b:85",
-      "actions": [],
-      "type": "NetworkAdapter",
-      "speed": 1000,
+      "speed": 1000.0,
+      "variant": "06",
       "wireless": false
     },
     {
+      "actions": [],
+      "type": "SoundCard",
       "manufacturer": "Intel Corporation",
       "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
-      "serialNumber": null,
-      "actions": [],
-      "type": "SoundCard"
+      "serialNumber": null
     },
     {
+      "actions": [],
+      "type": "Motherboard",
       "manufacturer": "ASUSTeK Computer INC.",
       "model": "P8H61-M LE",
       "serialNumber": "109192430003459",
-      "actions": [],
-      "type": "Motherboard",
       "usb": 2,
       "firewire": 0,
       "serial": 1,
       "pcmcia": 0,
-      "slots": 1
+      "slots": 0,
+      "biosDate": "2011-02-11T00:00:00",
+      "version": "0401",
+      "ramSlots": null,
+      "ramMaxSize": null
     }
-  ],
-  "elapsed": 0
+  ]
 }

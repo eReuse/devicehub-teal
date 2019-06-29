@@ -1,0 +1,126 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
+  "device": {
+    "actions": [],
+    "type": "Laptop",
+    "manufacturer": "HP",
+    "model": "ProBook 430 G4",
+    "serialNumber": "5CD7314HDY",
+    "chassis": "Netbook",
+    "sku": "W6P93AV",
+    "version": null
+  },
+  "components": [
+    {
+      "actions": [],
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core i5-7200U CPU @ 2.50GHz",
+      "serialNumber": null,
+      "speed": 3.1001220000000003,
+      "address": 64,
+      "cores": 2,
+      "threads": 4,
+      "brand": "Core i5",
+      "generation": 7
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": "Samsung",
+      "model": "M471A1K43CB1-CRC",
+      "serialNumber": "362E4E84",
+      "format": "SODIMM",
+      "size": 8192.0,
+      "interface": "DDR4",
+      "speed": 2133.0
+    },
+    {
+      "actions": [],
+      "type": "HardDrive",
+      "manufacturer": null,
+      "model": "SAMSUNG MZNTY256",
+      "serialNumber": "S2ZPNB0J121952",
+      "size": 256061.0,
+      "interface": null,
+      "variant": "1H3Q"
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "model": "Intel Corporation",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
+      "serialNumber": "f4:30:b9:a8:6d:15",
+      "speed": 1000.0,
+      "variant": "15",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Intel Corporation",
+      "model": "Wireless 7265",
+      "serialNumber": "16:7b:5f:33:d2:3d",
+      "speed": null,
+      "variant": "59",
+      "wireless": true
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "SunplusIT Inc",
+      "model": "HP HD Camera",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "Intel Corporation",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "Display",
+      "model": "SAMSUNG SyncMaster",
+      "manufacturer": "SAM SAMSUNG",
+      "serialNumber": "H1CRA03915",
+      "resolutionWidth": 1024,
+      "resolutionHeight": 768,
+      "refreshRate": 70,
+      "size": 15.0,
+      "technology": null,
+      "productionDate": "2001-10-28T00:00:00"
+    },
+    {
+      "actions": [],
+      "type": "Motherboard",
+      "manufacturer": "HP",
+      "model": "822C",
+      "serialNumber": "PGDZN018J887YS",
+      "usb": 1,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 0,
+      "biosDate": "2017-06-18T00:00:00",
+      "version": "P85 Ver. 01.06",
+      "ramSlots": null,
+      "ramMaxSize": null
+    }
+  ]
+}

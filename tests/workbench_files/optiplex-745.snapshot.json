@@ -3,95 +3,105 @@
   "uuid": "00000000-0000-0000-0000-000000000000",
   "software": "Workbench",
   "version": "11.0a1",
-  "closed": false,
-  "endTime": "2000-01-01 00:00:00+00:00",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
   "device": {
+    "actions": [],
+    "type": "Desktop",
     "manufacturer": "Dell Inc.",
     "model": "OptiPlex 745",
     "serialNumber": "HQ5583J",
-    "actions": [],
-    "type": "Desktop",
-    "chassis": "Tower"
+    "chassis": "Tower",
+    "sku": null,
+    "version": null
   },
   "components": [
     {
+      "actions": [],
+      "type": "Processor",
       "manufacturer": "Intel Corp.",
       "model": "Intel Core2 CPU 6400 @ 2.13GHz",
       "serialNumber": null,
-      "actions": [],
-      "type": "Processor",
       "speed": 2.133,
       "address": 64,
       "cores": 2,
-      "threads": 2
+      "threads": 2,
+      "brand": null,
+      "generation": null
     },
     {
+      "actions": [],
+      "type": "RamModule",
       "manufacturer": "Infineon",
       "model": "64T128020HU3SB",
       "serialNumber": "07129114",
-      "actions": [],
-      "type": "RamModule",
       "format": "DIMM",
-      "size": 1024,
+      "size": 1024.0,
       "interface": "DDR",
       "speed": 667.0
     },
     {
+      "actions": [],
+      "type": "RamModule",
       "manufacturer": "Infineon",
       "model": "64T128020HU3SB",
       "serialNumber": "07127E11",
-      "actions": [],
-      "type": "RamModule",
       "format": "DIMM",
-      "size": 1024,
+      "size": 1024.0,
       "interface": "DDR",
       "speed": 667.0
     },
     {
+      "actions": [],
+      "type": "HardDrive",
       "manufacturer": "Western Digital",
       "model": "WDC WD3200AAKS-7",
       "serialNumber": "WD-WMAV2W580992",
-      "actions": [],
-      "type": "HardDrive",
-      "size": 305245,
-      "interface": null
+      "size": 320073.0,
+      "interface": null,
+      "variant": "3E02"
     },
     {
+      "actions": [],
+      "type": "GraphicCard",
       "manufacturer": "Intel Corporation",
       "model": "82Q963/Q965 Integrated Graphics Controller",
       "serialNumber": null,
-      "actions": [],
-      "type": "GraphicCard",
       "memory": null
     },
     {
+      "actions": [],
+      "type": "NetworkAdapter",
       "manufacturer": "Broadcom Limited",
       "model": "NetXtreme BCM5754 Gigabit Ethernet PCI Express",
       "serialNumber": "00:1a:a0:e0:60:62",
-      "actions": [],
-      "type": "NetworkAdapter",
-      "speed": 1000,
+      "speed": 1000.0,
+      "variant": "02",
       "wireless": false
     },
     {
+      "actions": [],
+      "type": "SoundCard",
       "manufacturer": "Intel Corporation",
       "model": "82801H HD Audio Controller",
-      "serialNumber": null,
-      "actions": [],
-      "type": "SoundCard"
+      "serialNumber": null
     },
     {
+      "actions": [],
+      "type": "Motherboard",
       "manufacturer": "Dell Inc.",
       "model": "0HP962",
       "serialNumber": "..CN137407AJ02SW.",
-      "actions": [],
-      "type": "Motherboard",
       "usb": 7,
       "firewire": 0,
       "serial": 1,
       "pcmcia": 0,
-      "slots": 1
+      "slots": 0,
+      "biosDate": "2007-08-21T00:00:00",
+      "version": "2.4.1",
+      "ramSlots": null,
+      "ramMaxSize": null
     }
-  ],
-  "elapsed": 0
+  ]
 }

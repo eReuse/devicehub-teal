@@ -209,13 +209,15 @@ def test_update_parent():
     assert not benchmark.parent
 
 
-@pytest.mark.parametrize('action_model_state', [
-    (models.ToRepair, states.Physical.ToBeRepaired),
-    (models.Repair, states.Physical.Repaired),
-    (models.ToPrepare, states.Physical.Preparing),
-    (models.ReadyToUse, states.Physical.ReadyToBeUsed),
-    (models.Prepare, states.Physical.Prepared)
-])
+@pytest.mark.parametrize('action_model_state',
+                         (pytest.param(ams, id=ams[0].__class__.__name__)
+                          for ams in [
+                              (models.ToRepair, states.Physical.ToBeRepaired),
+                              (models.Repair, states.Physical.Repaired),
+                              (models.ToPrepare, states.Physical.Preparing),
+                              (models.ReadyToUse, states.Physical.ReadyToBeUsed),
+                              (models.Prepare, states.Physical.Prepared)
+                          ]))
 def test_generic_action(action_model_state: Tuple[models.Action, states.Trading],
                         user: UserClient):
     """Tests POSTing all generic actions."""
@@ -266,12 +268,14 @@ def test_reserve_and_cancel(user: UserClient):
     """
 
 
-@pytest.mark.parametrize('action_model_state', [
-    (models.Sell, states.Trading.Sold),
-    (models.Donate, states.Trading.Donated),
-    (models.Rent, states.Trading.Renting),
-    (models.DisposeProduct, states.Trading.ProductDisposed)
-])
+@pytest.mark.parametrize('action_model_state',
+                         (pytest.param(ams, id=ams[0].__class__.__name__)
+                          for ams in [
+                              (models.Sell, states.Trading.Sold),
+                              (models.Donate, states.Trading.Donated),
+                              (models.Rent, states.Trading.Renting),
+                              (models.DisposeProduct, states.Trading.ProductDisposed)
+                          ]))
 def test_trade(action_model_state: Tuple[models.Action, states.Trading], user: UserClient):
     """Tests POSTing all Trade actions."""
     action_model, state = action_model_state

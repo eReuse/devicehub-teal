@@ -1,4 +1,3 @@
-import csv
 import pathlib
 from contextlib import suppress
 from fractions import Fraction
@@ -82,6 +81,8 @@ class Device(Thing):
     """
     generation = db.Column(db.SmallInteger, check_range('generation', 0))
     generation.comment = """The generation of the device."""
+    version = db.Column(db.Unicode)
+    version.comment = """The version code this device, like v1 or A001."""
     weight = Column(Float(decimal_return_scale=3), check_range('weight', 0.1, 5))
     weight.comment = """
         The weight of the device.
@@ -107,6 +108,10 @@ class Device(Thing):
     """
     variant = Column(Unicode)
     variant.comment = """A variant or sub-model of the device."""
+    sku = db.Column(db.Unicode)
+    sku.comment = """The Stock Keeping Unit (SKU), i.e. a 
+    merchant-specific identifier for a product or service.
+    """
 
     _NON_PHYSICAL_PROPS = {
         'id',
@@ -124,7 +129,9 @@ class Device(Thing):
         'brand',
         'generation',
         'production_date',
-        'variant'
+        'variant',
+        'version',
+        'sku'
     }
 
     __table_args__ = (
@@ -625,6 +632,8 @@ class Motherboard(JoinedComponentTableMixin, Component):
     pcmcia = Column(SmallInteger, check_range('pcmcia', min=0))
     bios_date = Column(db.Date)
     bios_date.comment = """The date of the BIOS version."""
+    ram_slots = Column(db.SmallInteger, check_range('ram_slots'))
+    ram_max_size = Column(db.Integer, check_range('ram_max_size'))
 
 
 class NetworkMixin:
@@ -798,8 +807,6 @@ class Manufacturer(db.Model):
     Ideally users should use the names from this list when submitting
     devices.
     """
-    CSV_DELIMITER = csv.get_dialect('excel').delimiter
-
     name = db.Column(CIText(), primary_key=True)
     name.comment = """The normalized name of the manufacturer."""
     url = db.Column(URL(), unique=True)

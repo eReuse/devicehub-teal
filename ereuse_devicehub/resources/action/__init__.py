@@ -89,6 +89,11 @@ class TestDef(ActionDef):
     SCHEMA = schemas.Test
 
 
+class MeasureBattery(TestDef):
+    VIEW = None
+    SCHEMA = schemas.MeasureBattery
+
+
 class TestDataStorageDef(TestDef):
     VIEW = None
     SCHEMA = schemas.TestDataStorage
