@@ -14,7 +14,7 @@ from teal.enums import Layouts
 from ereuse_devicehub.resources.action import models as e
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device import states
-from ereuse_devicehub.resources.enums import BatteryTechnology, ComputerChassis, \
+from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.models import Thing
@@ -354,6 +354,28 @@ class Battery(Component):
         self.wireless = ...  # type: Optional[bool]
         self.technology = ...  # type: Optional[BatteryTechnology]
         self.size = ...  # type: bool
+
+
+class Camera(Component):
+    focal_length = ...  # type: Column
+    video_height = ...  # type: Column
+    video_width = ...  # type: Column
+    horizontal_view_angle = ...  # type: Column
+    facing = ...  # type: Column
+    vertical_view_angle = ...  # type: Column
+    video_stabilization = ...  # type: Column
+    flash = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        focal_length = ...  # type: Optional[int]
+        video_height = ...  # type: Optional[int]
+        video_width = ...  # type: Optional[int]
+        horizontal_view_angle = ...  # type: Optional[int]
+        facing = ...  # type: Optional[CameraFacing]
+        vertical_view_angle = ...  # type: Optional[int]
+        video_stabilization = ...  # type: Optional[bool]
+        flash = ...  # type: Optional[bool]
 
 
 class ComputerAccessory(Device):

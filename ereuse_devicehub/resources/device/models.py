@@ -24,7 +24,7 @@ from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.enums import BatteryTechnology, ComputerChassis, \
+from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 
@@ -686,6 +686,18 @@ class Battery(JoinedComponentTableMixin, Component):
         return real_size / self.size if real_size and self.size else None
 
 
+class Camera(Component):
+    """The camera of a device."""
+    focal_length = db.Column(db.SmallInteger)
+    video_height = db.Column(db.SmallInteger)
+    video_width = db.Column(db.Integer)
+    horizontal_view_angle = db.Column(db.Integer)
+    facing = db.Column(db.Enum(CameraFacing))
+    vertical_view_angle = db.Column(db.SmallInteger)
+    video_stabilization = db.Column(db.Boolean)
+    flash = db.Column(db.Boolean)
+
+
 class ComputerAccessory(Device):
     """Computer peripherals and similar accessories."""
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
@@ -772,6 +784,32 @@ class Cooking(Device):
 
 
 class Mixer(Cooking):
+    pass
+
+
+class Drill(Device):
+    max_drill_bit_size = db.Column(db.SmallInteger)
+
+
+class PackOfScrewdrivers(Device):
+    pass
+
+
+class Dehumidifier(Device):
+    size = db.Column(db.SmallInteger)
+    size.comment = """The capacity in Liters."""
+
+
+class Stairs(Device):
+    max_allowed_weight = db.Column(db.Integer)
+
+
+class Bike(Device):
+    wheel_size = db.Column(db.SmallInteger)
+    gears = db.Column(db.SmallInteger)
+
+
+class Racket(Device):
     pass
 
 

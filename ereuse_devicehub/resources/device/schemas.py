@@ -307,6 +307,19 @@ class Battery(Component):
     size = Integer(required=True, description=m.Battery.size.comment)
 
 
+class Camera(Component):
+    __doc__ = m.Camera
+
+    focal_length = Integer(data_key='focalLength')
+    video_height = Integer(data_key='videoHeight')
+    video_width = Integer(data_key='videoWidth')
+    horizontal_view_angle = Integer(data_key='horizontalViewAngle')
+    facing = Integer()
+    vertical_view_angle = Integer(data_key='verticalViewAngle')
+    video_stabilization = Integer(data_key='videoStabilization')
+    flash = Integer()
+
+
 class Manufacturer(Schema):
     __doc__ = m.Manufacturer.__doc__
 
@@ -398,3 +411,28 @@ class Cooking(Device):
 
 class Mixer(Cooking):
     __doc__ = m.Mixer.__doc__
+
+
+class Drill(Device):
+    max_drill_bit_size = Integer(data_key='maxDrillBitSize')
+
+
+class PackOfScrewdrivers(Device):
+    size = Integer()
+
+
+class Dehumidifier(Device):
+    size = Integer()
+
+
+class Stairs(Device):
+    max_allowed_weight = Integer(data_key='maxAllowedWeight')
+
+
+class Bike(Device):
+    wheel_size = Integer(data_key='wheelSize')
+    gears = Integer()
+
+
+class Racket(Device):
+    pass

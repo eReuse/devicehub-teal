@@ -250,6 +250,12 @@ class PrinterTechnology(Enum):
 
 
 @unique
+class CameraFacing(Enum):
+    Front = 'Front'
+    Back = 'Back'
+
+
+@unique
 class BatteryHealth(Enum):
     """The battery health status as in Android."""
     Cold = 'Cold'

@@ -166,6 +166,11 @@ class BatteryDef(ComponentDef):
     SCHEMA = schemas.Battery
 
 
+class CameraDef(ComponentDef):
+    VIEW = None
+    SCHEMA = schemas.Camera
+
+
 class ComputerAccessoryDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.ComputerAccessory
@@ -295,6 +300,36 @@ class CookingDef(DeviceDef):
 class Mixer(CookingDef):
     VIEW = None
     SCHEMA = schemas.Mixer
+
+
+class DrillDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Drill
+
+
+class PackOfScrewdriversDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.PackOfScrewdrivers
+
+
+class DehumidifierDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Dehumidifier
+
+
+class StairsDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Stairs
+
+
+class BikeDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Bike
+
+
+class RacketDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Racket
 
 
 class ManufacturerDef(Resource):
