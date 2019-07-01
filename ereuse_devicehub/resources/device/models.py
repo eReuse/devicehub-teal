@@ -81,7 +81,7 @@ class Device(Thing):
     """
     generation = db.Column(db.SmallInteger, check_range('generation', 0))
     generation.comment = """The generation of the device."""
-    version = db.Column(db.Unicode)
+    version = db.Column(db.CIText())
     version.comment = """The version code this device, like v1 or A001."""
     weight = Column(Float(decimal_return_scale=3), check_range('weight', 0.1, 5))
     weight.comment = """
@@ -106,9 +106,9 @@ class Device(Thing):
     This is timezone naive, as Workbench cannot report this data
     with timezone information.
     """
-    variant = Column(Unicode)
+    variant = Column(db.CIText())
     variant.comment = """A variant or sub-model of the device."""
-    sku = db.Column(db.Unicode)
+    sku = db.Column(db.CIText())
     sku.comment = """The Stock Keeping Unit (SKU), i.e. a 
     merchant-specific identifier for a product or service.
     """
