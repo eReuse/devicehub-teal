@@ -13,14 +13,15 @@ class RateAlgorithm(BaseRate):
     """The algorithm that generates the Rate v1.0.
 
     Rate v1.0 rates only computers, counting their processor, ram,
-    data storage, appearance, and functionality. This rate is only
+    data storage, appearance and functionality. This rate is only
     triggered by a Snapshot from Workbench that has a VisualTest.
     The algorithm is as follows:
 
     1. Specialized subclasses of :class:`BaseRate` compute a rating
        for each component. To perform this, each class normalizes first
        the characteristics and benchmarks of the components between
-       0 and 1, and then they merge the values to a resulting score.
+       0 and 1, and then they merge the values with specific formulas for
+       each components to get a resulting score.
        The classes are:
 
        * :class:`ProcessorRate`, using cores, speed, and ``BenchmarkProcessor``.
@@ -103,9 +104,7 @@ class RateAlgorithm(BaseRate):
 
 
 class ProcessorRate(BaseRate):
-    """
-    Calculate a ProcessorRate of all Processor devices
-    """
+    """Calculate a ProcessorRate of all Processor devices."""
     # processor.xMin, processor.xMax
     PROCESSOR_NORM = 3196.17, 17503.81
 
@@ -115,10 +114,10 @@ class ProcessorRate(BaseRate):
     DEFAULT_SCORE = 4000
 
     def compute(self, processor: Processor):
-        """ Compute processor rate
-            We assume always exists a Benchmark Processor
-            Obs: cores and speed are possible NULL value
-            :return: result is a rate (score) of Processor characteristics
+        """Compute processor rate
+        We assume always exists a Benchmark Processor.
+        Obs: cores and speed are possible NULL value
+        :return: result is a rate (score) of Processor characteristics
         """
         cores = processor.cores or self.DEFAULT_CORES
         speed = processor.speed or self.DEFAULT_SPEED
@@ -146,9 +145,7 @@ class ProcessorRate(BaseRate):
 
 
 class RamRate(BaseRate):
-    """
-    Calculate a RamRate of all RamModule devices
-    """
+    """Calculate a RamRate of all RamModule devices."""
     # ram.size.xMin; ram.size.xMax
     SIZE_NORM = 256, 8192
     RAM_SPEED_NORM = 133, 1333
@@ -158,8 +155,7 @@ class RamRate(BaseRate):
     RAM_WEIGHTS = 0.7, 0.3
 
     def compute(self, ram_devices: Iterable[RamModule]):
-        """
-        If ram speed or ram size, we assume default values before declared
+        """If ram speed or ram size, we assume default values before declared.
         :return: result is a rate (score) of all RamModule components
         """
         size = 0.0
@@ -204,9 +200,7 @@ class RamRate(BaseRate):
 
 
 class DataStorageRate(BaseRate):
-    """
-    Calculate the rate of all DataStorage devices
-    """
+    """Calculate the rate of all DataStorage devices."""
     # drive.size.xMin; drive.size.xMax
     SIZE_NORM = 4, 265000
     READ_SPEED_NORM = 2.7, 109.5
@@ -215,8 +209,7 @@ class DataStorageRate(BaseRate):
     DATA_STORAGE_WEIGHTS = 0.5, 0.25, 0.25
 
     def compute(self, data_storage_devices: Iterable[DataStorage]):
-        """
-        Obs: size != NULL and 0 value & read_speed and write_speed != NULL
+        """Obs: size != NULL and 0 value & read_speed and write_speed != NULL
         :return: result is a rate (score) of all DataStorage devices
         """
         size = 0

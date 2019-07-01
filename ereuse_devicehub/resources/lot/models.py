@@ -24,16 +24,13 @@ class Lot(Thing):
     description = db.Column(CIText())
     description.comment = """A comment about the lot."""
     closed = db.Column(db.Boolean, default=False, nullable=False)
-    closed.comment = """
-            A closed lot cannot be modified anymore.
-        """
+    closed.comment = """A closed lot cannot be modified anymore."""
     devices = db.relationship(Device,
                               backref=db.backref('lots', lazy=True, collection_class=set),
                               secondary=lambda: LotDevice.__table__,
                               lazy=True,
                               collection_class=set)
-    """
-    The **children** devices that the lot has.
+    """The **children** devices that the lot has.
     
     Note that the lot can have more devices, if they are inside 
     descendant lots.
@@ -67,8 +64,7 @@ class Lot(Thing):
 
     def __init__(self, name: str, closed: bool = closed.default.arg,
                  description: str = None) -> None:
-        """
-        Initializes a lot
+        """Initializes a lot
         :param name:
         :param closed:
         """
@@ -173,9 +169,7 @@ class LotDevice(db.Model):
                           nullable=False,
                           default=lambda: g.user.id)
     author = db.relationship(User, primaryjoin=author_id == User.id)
-    author_id.comment = """
-        The user that put the device in the lot.
-    """
+    author_id.comment = """The user that put the device in the lot."""
 
 
 class Path(db.Model):
@@ -191,9 +185,7 @@ class Path(db.Model):
                           primaryjoin=Lot.id == lot_id)
     path = db.Column(LtreeType, nullable=False)
     created = db.Column(db.TIMESTAMP(timezone=True), server_default=db.text('CURRENT_TIMESTAMP'))
-    created.comment = """
-            When Devicehub created this.
-        """
+    created.comment = """When Devicehub created this."""
 
     __table_args__ = (
         # dag.delete_edge needs to disable internally/temporarily the unique constraint

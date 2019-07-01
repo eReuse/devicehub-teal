@@ -27,8 +27,7 @@ class DhSession(SchemaSession):
 
 
 class SQLAlchemy(SchemaSQLAlchemy):
-    """
-    Superuser must create the required extensions in the public
+    """Superuser must create the required extensions in the public
     schema of the database, as it is in the `search_path`
     defined in teal.
     """

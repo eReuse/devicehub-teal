@@ -78,8 +78,7 @@ class DeviceView(View):
         page = f.Integer(validate=v.Range(min=1), missing=1)
 
     def get(self, id):
-        """
-        Devices view
+        """Devices view
         ---
         description: Gets a device or multiple devices.
         parameters:

@@ -1,15 +1,13 @@
-"""
-This file test all corner cases when compute score v1.0.
+"""This file test all corner cases when compute score v1.0.
 
-First test to compute rate for every component in isolation
-todo rewrite some corner cases using range(min,max) characteristics
-    in devices/schemas
+First test to compute rate for every component in isolation.
+
 Components in Score v1:
         -DataStorage
         -RamModule
         -Processor
 
-Then some test compute rate with all components that use the a1lgorithm
+Then some test compute rate with all components that use the algorithm
 
 Excluded cases in tests
 
@@ -31,9 +29,8 @@ from tests import conftest
 
 
 def test_rate_data_storage_rate():
-    """
-    Test to check if compute data storage rate have same value than previous score version;
-    id = pc_1193, pc_1201, pc_79, pc_798
+    """Test to check if compute data storage rate have same value than
+    previous score version.
     """
 
     hdd_1969 = HardDrive(size=476940)
@@ -67,10 +64,8 @@ def test_rate_data_storage_rate():
 
 
 def test_rate_data_storage_size_is_null():
-    """
-    Test where input DataStorage.size = NULL, BenchmarkDataStorage.read_speed = 0,
+    """Test where input DataStorage.size = NULL, BenchmarkDataStorage.read_speed = 0,
     BenchmarkDataStorage.write_speed = 0 is like no DataStorage has been detected;
-    id = pc_2992
     """
 
     hdd_null = HardDrive(size=None)
@@ -81,9 +76,7 @@ def test_rate_data_storage_size_is_null():
 
 
 def test_rate_no_data_storage():
-    """
-    Test without data storage devices
-    """
+    """Test without data storage devices."""
 
     hdd_null = HardDrive()
     hdd_null.actions_one.add(BenchmarkDataStorage(read_speed=0, write_speed=0))
@@ -92,9 +85,8 @@ def test_rate_no_data_storage():
 
 
 def test_rate_ram_rate():
-    """
-    Test to check if compute ram rate have same value than previous score version
-    only with 1 RamModule; id = pc_1201
+    """Test to check if compute ram rate have same value than previous
+    score version only with 1 RamModule.
     """
 
     ram1 = RamModule(size=2048, speed=1333)
@@ -105,9 +97,8 @@ def test_rate_ram_rate():
 
 
 def test_rate_ram_rate_2modules():
-    """
-    Test to check if compute ram rate have same value than previous score version
-    with 2 RamModule; id = pc_1193
+    """Test to check if compute ram rate have same value than previous
+    score version with 2 RamModule.
     """
 
     ram1 = RamModule(size=4096, speed=1600)
@@ -119,9 +110,8 @@ def test_rate_ram_rate_2modules():
 
 
 def test_rate_ram_rate_4modules():
-    """
-    Test to check if compute ram rate have same value than previous score version
-    with 2 RamModule; id = pc_79
+    """Test to check if compute ram rate have same value than previous
+    score version with 2 RamModule.
     """
 
     ram1 = RamModule(size=512, speed=667)
@@ -135,8 +125,8 @@ def test_rate_ram_rate_4modules():
 
 
 def test_rate_ram_module_size_is_0():
-    """
-    Test where input data RamModule.size = 0; is like no RamModule has been detected; id =  pc_798
+    """Test where input data RamModule.size = 0; is like no RamModule
+    has been detected.
     """
 
     ram0 = RamModule(size=0, speed=888)
@@ -146,10 +136,7 @@ def test_rate_ram_module_size_is_0():
 
 
 def test_rate_ram_speed_is_null():
-    """
-    Test where RamModule.speed is NULL (not detected) but has size.
-    Pc ID = 795(1542), 745(1535), 804(1549)
-    """
+    """Test where RamModule.speed is NULL (not detected) but has size."""
 
     ram0 = RamModule(size=2048, speed=None)
 
@@ -165,9 +152,7 @@ def test_rate_ram_speed_is_null():
 
 
 def test_rate_no_ram_module():
-    """
-    Test without RamModule
-    """
+    """Test without RamModule."""
     ram0 = RamModule()
 
     ram_rate = RamRate().compute([ram0])
@@ -175,9 +160,8 @@ def test_rate_no_ram_module():
 
 
 def test_rate_processor_rate():
-    """
-    Test to check if compute processor rate have same value than previous score version
-    only with 1 core; id = 79
+    """Test to check if compute processor rate have same value than previous
+    score version only with 1 core.
     """
 
     cpu = Processor(cores=1, speed=1.6)
@@ -190,9 +174,8 @@ def test_rate_processor_rate():
 
 
 def test_rate_processor_rate_2cores():
-    """
-    Test to check if compute processor rate have same value than previous score version
-    with 2 cores; id = pc_1193, pc_1201
+    """Test to check if compute processor rate have same value than previous
+    score version with 2 cores.
     """
 
     cpu = Processor(cores=2, speed=3.4)
@@ -211,13 +194,8 @@ def test_rate_processor_rate_2cores():
     assert math.isclose(processor_rate, 3.93, rel_tol=0.002)
 
 
-# TODO JN if delete processor default score for benchmark_cpu
-
-
 def test_rate_processor_with_null_cores():
-    """
-    Test with processor device have null number of cores
-    """
+    """Test with processor device have null number of cores."""
     cpu = Processor(cores=None, speed=3.3)
     cpu.actions_one.add(BenchmarkProcessor(rate=0))
 
@@ -227,9 +205,7 @@ def test_rate_processor_with_null_cores():
 
 
 def test_rate_processor_with_null_speed():
-    """
-    Test with processor device have null speed value
-    """
+    """Test with processor device have null speed value."""
     cpu = Processor(cores=1, speed=None)
     cpu.actions_one.add(BenchmarkProcessor(rate=0))
 
@@ -238,13 +214,9 @@ def test_rate_processor_with_null_speed():
     assert math.isclose(processor_rate, 1.06, rel_tol=0.001)
 
 
-# TODO JN add price asserts in rate computers??
-
-
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_rate_computer_1193():
-    """
-    Test rate computer characteristics:
+    """Test rate computer characteristics:
         - 2 module ram
         - processor with 2 cores
 
@@ -297,8 +269,7 @@ def test_rate_computer_1193():
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_rate_computer_1201():
-    """
-    Test rate computer characteristics:
+    """Test rate computer characteristics:
         - only 1 module ram
         - processor 2 cores
 
@@ -349,8 +320,7 @@ def test_rate_computer_1201():
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_rate_computer_multiple_ram_module():
-    """
-    Test rate computer characteristics:
+    """Test rate computer characteristics:
         - only 1 module ram
         - processor 2 cores
 
@@ -408,8 +378,7 @@ def test_rate_computer_multiple_ram_module():
 
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_rate_computer_one_ram_module():
-    """
-    Test rate computer characteristics:
+    """Test rate computer characteristics:
         - only 1 module ram
         - processor 2 cores
 
@@ -463,4 +432,5 @@ def test_rate_computer_one_ram_module():
 @pytest.mark.xfail(reason='Data Storage rate actually requires a DSSBenchmark')
 def test_rate_computer_with_data_storage_without_benchmark():
     """For example if the data storage was introduced manually
-    or comes from an old version without benchmark."""
+    or comes from an old version without benchmark.
+    """

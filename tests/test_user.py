@@ -18,8 +18,7 @@ from tests.conftest import app_context, create_user
 
 @pytest.mark.usefixtures(app_context.__name__)
 def test_create_user_method_with_agent(app: Devicehub):
-    """
-    Tests creating an user through the main method.
+    """Tests creating an user through the main method.
 
     This method checks that the token is correct, too.
     """
@@ -63,8 +62,7 @@ def test_hash_password():
 
 
 def test_login_success(client: Client, app: Devicehub):
-    """
-    Tests successfully performing login.
+    """Tests successfully performing login.
     This checks that:
 
     - User is returned.

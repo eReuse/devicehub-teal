@@ -50,7 +50,7 @@ class TagView(View):
 
 
 class TagDeviceView(View):
-    """Endpoints to work with the device of the tag; /tags/23/device"""
+    """Endpoints to work with the device of the tag; /tags/23/device."""
 
     def one(self, id):
         """Gets the device from the tag."""
@@ -78,8 +78,7 @@ class TagDeviceView(View):
 
 
 def get_device_from_tag(id: str):
-    """
-    Gets the device by passing a tag id.
+    """Gets the device by passing a tag id.
 
     Example: /tags/23/device.
 

@@ -102,8 +102,7 @@ def test_membership_repeating_id():
 
 @pytest.mark.usefixtures(app_context.__name__)
 def test_default_org_exists(config: DevicehubConfig):
-    """
-    Ensures that the default organization is created on app
+    """Ensures that the default organization is created on app
     initialization and that is accessible for the method
     :meth:`ereuse_devicehub.resources.user.Organization.get_default_org`.
     """

@@ -3,8 +3,6 @@ from datetime import datetime
 from io import StringIO
 from pathlib import Path
 
-import pytest
-
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.documents import documents
@@ -12,9 +10,7 @@ from tests.conftest import file
 
 
 def test_export_basic_snapshot(user: UserClient):
-    """
-    Test export device information in a csv file
-    """
+    """Test export device information in a csv file."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='devices/',
@@ -41,9 +37,7 @@ def test_export_basic_snapshot(user: UserClient):
 
 
 def test_export_full_snapshot(user: UserClient):
-    """
-    Test a export device with all information and a lot of components
-    """
+    """Test a export device with all information and a lot of components."""
     snapshot, _ = user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='devices/',
@@ -71,8 +65,8 @@ def test_export_full_snapshot(user: UserClient):
 
 
 def test_export_empty(user: UserClient):
-    """
-    Test to check works correctly exporting csv without any information (no snapshot)
+    """Test to check works correctly exporting csv without any information,
+    export a placeholder device.
     """
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           accept='text/csv',
@@ -85,9 +79,7 @@ def test_export_empty(user: UserClient):
 
 
 def test_export_computer_monitor(user: UserClient):
-    """
-    Test a export device type computer monitor
-    """
+    """Test a export device type computer monitor."""
     snapshot, _ = user.post(file('computer-monitor.snapshot'), res=Snapshot)
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='devices/',
@@ -111,9 +103,7 @@ def test_export_computer_monitor(user: UserClient):
 
 
 def test_export_keyboard(user: UserClient):
-    """
-    Test a export device type keyboard
-    """
+    """Test a export device type keyboard."""
     snapshot, _ = user.post(file('keyboard.snapshot'), res=Snapshot)
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='devices/',
@@ -136,8 +126,7 @@ def test_export_keyboard(user: UserClient):
 
 
 def test_export_multiple_different_devices(user: UserClient):
-    """
-    Test function 'Export' of multiple different device types (like
+    """Test function 'Export' of multiple different device types (like
     computers, keyboards, monitors, etc..)
     """
     # Open fixture csv and transform to list

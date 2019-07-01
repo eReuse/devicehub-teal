@@ -1,7 +1,6 @@
 from decimal import Decimal
 from distutils.version import StrictVersion
 
-import math
 import pytest
 
 from ereuse_devicehub.client import UserClient
@@ -96,8 +95,7 @@ def test_price_from_rate():
 
 
 def test_when_rate_must_not_compute(user: UserClient):
-    """
-    Test to check if rate is computed in case of should not be calculated:
+    """Test to check if rate is computed in case of should not be calculated:
         1. Snapshot haven't visual test
         2. Snapshot software aren't Workbench
         3. Device type are not Computer
@@ -138,8 +136,8 @@ def test_multiple_rates(user: UserClient):
     ensuring that the tests / benchmarks...
     from the first rate do not contaminate the second rate.
 
-    This ensures that rates only takes the last version  of actions
-    and components (in case device has new components, for example).
+    This ensures that rates only takes all the correct actions
+    and components rates in case device have new tests/benchmarks.
     """
     pc = Desktop(chassis=ComputerChassis.Tower)
     hdd = HardDrive(size=476940)
@@ -172,15 +170,13 @@ def test_multiple_rates(user: UserClient):
 
     assert price1.price == Decimal('92.4001')
 
-    hdd = SolidStateDrive(size=476940)
-    hdd.actions_one.add(BenchmarkDataStorage(read_speed=222, write_speed=169))
-    cpu = Processor(cores=1, speed=3.0)
     cpu.actions_one.add(BenchmarkProcessor(rate=16069.44))
+    ssd = SolidStateDrive(size=476940)
+    ssd.actions_one.add(BenchmarkDataStorage(read_speed=222, write_speed=111))
     pc.components |= {
-        hdd,
+        ssd,
         RamModule(size=2048, speed=1067),
         RamModule(size=2048, speed=1067),
-        cpu
     }
 
     # Add test visual with functionality and appearance range
@@ -190,13 +186,13 @@ def test_multiple_rates(user: UserClient):
 
     rate2, price2 = RateComputer.compute(pc)
 
-    assert rate2.data_storage == 4.27
-    assert rate2.processor == 3.61
-    assert rate2.ram == 4.12
+    assert rate2.data_storage == 4.3
+    assert rate2.processor == 3.78
+    assert rate2.ram == 3.95
 
     assert rate2.appearance == 0
     assert rate2.functionality == -0.5
 
-    assert rate2.rating == 3.37
+    assert rate2.rating == 3.43
 
-    assert rate2.price.price == Decimal('67.4001')
+    assert price2.price == Decimal('68.6001')

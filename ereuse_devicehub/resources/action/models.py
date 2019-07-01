@@ -1,5 +1,4 @@
-"""
-This file contains all actions can apply to a device and is sorted according
+"""This file contains all actions can apply to a device and is sorted according
 to a structure based on:
 
 * Generic Actions
@@ -72,34 +71,29 @@ class Action(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     type = Column(Unicode, nullable=False)
     name = Column(CIText(), default='', nullable=False)
-    name.comment = """
-        A name or title for the action. Used when searching for actions.
+    name.comment = """A name or title for the action. Used when searching
+    for actions.
     """
     severity = Column(teal.db.IntEnum(Severity), default=Severity.Info, nullable=False)
     severity.comment = Severity.__doc__
     closed = Column(Boolean, default=True, nullable=False)
-    closed.comment = """
-        Whether the author has finished the action.
-        After this is set to True, no modifications are allowed.
-        By default actions are closed when performed.
+    closed.comment = """Whether the author has finished the action.
+    After this is set to True, no modifications are allowed.
+    By default actions are closed when performed.
     """
     description = Column(Unicode, default='', nullable=False)
-    description.comment = """
-        A comment about the action.
-    """
+    description.comment = """A comment about the action."""
     start_time = Column(db.TIMESTAMP(timezone=True))
-    start_time.comment = """
-       When the action starts. For some actions like reservations 
-       the time when they are available, for others like renting
-       when the renting starts.
+    start_time.comment = """When the action starts. For some actions like
+    reservations the time when they are available, for others like renting
+    when the renting starts.
     """
     end_time = Column(db.TIMESTAMP(timezone=True))
-    end_time.comment = """
-        When the action ends. For some actions like reservations
-        the time when they expire, for others like renting
-        the time the end rents. For punctual actions it is the time 
-        they are performed; it differs with ``created`` in which
-        created is the where the system received the action.
+    end_time.comment = """When the action ends. For some actions like reservations
+    the time when they expire, for others like renting
+    the time the end rents. For punctual actions it is the time 
+    they are performed; it differs with ``created`` in which
+    created is the where the system received the action.
     """
 
     snapshot_id = Column(UUID(as_uuid=True), ForeignKey('snapshot.id',
@@ -120,8 +114,7 @@ class Action(Thing):
     author = relationship(User,
                           backref=backref('authored_actions', lazy=True, collection_class=set),
                           primaryjoin=author_id == User.id)
-    author_id.comment = """
-    The user that recorded this action in the system.
+    author_id.comment = """The user that recorded this action in the system.
      
     This does not necessarily has to be the person that produced
     the action in the real world. For that purpose see
@@ -136,8 +129,8 @@ class Action(Thing):
     agent = relationship(Agent,
                          backref=backref('actions_agent', lazy=True, **_sorted_actions),
                          primaryjoin=agent_id == Agent.id)
-    agent_id.comment = """
-    The direct performer or driver of the action. e.g. John wrote a book.
+    agent_id.comment = """The direct performer or driver of the action. 
+    e.g. John wrote a book.
     
     It can differ with the user that registered the action in the
     system, which can be in their behalf.
@@ -148,8 +141,7 @@ class Action(Thing):
                               secondary=lambda: ActionComponent.__table__,
                               order_by=lambda: Component.id,
                               collection_class=OrderedSet)
-    components.comment = """
-    The components that are affected by the action.
+    components.comment = """The components that are affected by the action.
     
     When performing actions to parent devices their components are
     affected too.
@@ -165,9 +157,8 @@ class Action(Thing):
     parent = relationship(Computer,
                           backref=backref('actions_parent', lazy=True, **_sorted_actions),
                           primaryjoin=parent_id == Computer.id)
-    parent_id.comment = """
-    For actions that are performed to components, the device parent
-    at that time.
+    parent_id.comment = """For actions that are performed to components, 
+    the device parent at that time.
     
     For example: for a ``EraseBasic`` performed on a data storage, this
     would point to the computer that contained this data storage, if any.
@@ -197,8 +188,7 @@ class Action(Thing):
     # noinspection PyMethodParameters
     @declared_attr
     def __mapper_args__(cls):
-        """
-        Defines inheritance.
+        """Defines inheritance.
 
         From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
         extensions/declarative/api.html
@@ -276,8 +266,7 @@ class ActionWithOneDevice(JoinedTableMixin, Action):
 
     @declared_attr
     def __mapper_args__(cls):
-        """
-        Defines inheritance.
+        """Defines inheritance.
 
         From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
         extensions/declarative/api.html
@@ -365,7 +354,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     @property
     def certificate(self):
         """The URL of this erasure certificate."""
-        # todo will this url_for_resoure work for other resources?
+        # todo will this url_for_resource work for other resources?
         return urlutils.URL(url_for_resource('Document', item_id=self.id))
 
     def __str__(self) -> str:
@@ -430,8 +419,7 @@ class Step(db.Model):
     # noinspection PyMethodParameters
     @declared_attr
     def __mapper_args__(cls):
-        """
-        Defines inheritance.
+        """Defines inheritance.
 
         From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
         extensions/declarative/api.html
@@ -545,9 +533,8 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)
     software = Column(DBEnum(SnapshotSoftware), nullable=False)
     elapsed = Column(Interval)
-    elapsed.comment = """
-        For Snapshots made with Workbench, the total amount of time
-        it took to complete.
+    elapsed.comment = """For Snapshots made with Workbench, the total amount 
+    of time it took to complete.
     """
 
     def __str__(self) -> str:
@@ -578,8 +565,7 @@ class Benchmark(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
     @declared_attr
     def __mapper_args__(cls):
-        """
-        Defines inheritance.
+        """Defines inheritance.
 
         From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
         extensions/declarative/api.html
@@ -656,8 +642,7 @@ class Test(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
     @declared_attr
     def __mapper_args__(cls):
-        """
-        Defines inheritance.
+        """Defines inheritance.
 
         From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
         extensions/declarative/api.html
@@ -684,6 +669,11 @@ class MeasureBattery(TestMixin, Test):
 
     Operative Systems keep a record of several aspects of a battery.
     This is a sample of those.
+
+    Failing and warning conditions are as follows:
+
+    * :attr:`Severity.Error`: whether the health are Dead, Overheat or OverVoltage.
+    * :attr:`Severity.Warning`: whether the health are UnspecifiedValue or Cold.
     """
     size = db.Column(db.Integer, nullable=False)
     size.comment = """Maximum battery capacity, in mAh."""
@@ -712,7 +702,7 @@ class TestDataStorage(TestMixin, Test):
 
     Failing and warning conditions are as follows:
 
-    * :attr:`Severity.Error`: if the SMART test failed.
+    * :attr:`Severity.Error`: whether the SMART test failed.
     * :attr:`Severity.Warning`: if there is a significant chance for
       the data storage to fail in the following year.
     """
@@ -765,6 +755,11 @@ class TestDataStorage(TestMixin, Test):
 class StressTest(TestMixin, Test):
     """The act of stressing (putting to the maximum capacity)
     a device for an amount of minutes.
+
+    Failing and warning conditions are as follows:
+
+    * :attr:`Severity.Error`: whether failed StressTest.
+    * :attr:`Severity.Warning`: if stress test are less than 5 minutes.
     """
     elapsed = Column(Interval, nullable=False)
 
@@ -780,7 +775,13 @@ class StressTest(TestMixin, Test):
 
 
 class TestAudio(TestMixin, Test):
-    """The act of checking the audio aspects of the device."""
+    """The act of checking the audio aspects of the device.
+
+    Failing and warning conditions are as follows:
+
+    * :attr:`Severity.Error`: whether speaker or microphone variables fail.
+    * :attr:`Severity.Warning`: .
+    """
     _speaker = Column('speaker', Boolean)
     _speaker.comment = """Whether the speaker works as expected."""
     _microphone = Column('microphone', Boolean)
@@ -824,9 +825,9 @@ class TestCamera(TestMixin, Test):
 
     Failing and warning conditions are as follows:
 
-    * :attr:`Severity.Error`: if the camera cannot turn on or
+    * :attr:`Severity.Error`: whether the camera cannot turn on or
       has significant visual problems.
-    * :attr:`Severity.Warning`: if there are small visual problems
+    * :attr:`Severity.Warning`: whether there are small visual problems
       with the camera (like dust) that it still allows it to be used.
     """
 
@@ -856,7 +857,7 @@ class TestDisplayHinge(TestMixin, Test):
 
     Failing and warning conditions are as follows:
 
-    * :attr:`Severity.Error`: if the laptop does not stay open
+    * :attr:`Severity.Error`: whether the laptop does not stay open
       or closed at desired angles. From R2 Provision 6 pag.22.
     """
 
@@ -872,7 +873,13 @@ class TestPowerAdapter(TestMixin, Test):
 
 
 class TestBios(TestMixin, Test):
-    """Tests the working condition and grades the usability of the BIOS."""
+    """Tests the working condition and grades the usability of the BIOS.
+
+    Failing and warning conditions are as follows:
+
+    * :attr:`Severity.Error`: whether Bios beeps or access range is D or E.
+    * :attr:`Severity.Warning`: whether access range is B or C.
+    """
     beeps_power_on = Column(Boolean)
     beeps_power_on.comment = """Whether there are no beeps or error
     codes when booting up.
@@ -884,7 +891,8 @@ class TestBios(TestMixin, Test):
      
     This is used as an usability measure for accessing and modifying
     a bios, specially as something as important as modifying the boot
-    menu."""
+    menu.
+    """
 
 
 class VisualTest(TestMixin, Test):
@@ -893,7 +901,16 @@ class VisualTest(TestMixin, Test):
 
     Reference R2 provision 6 Templates Ready for Resale Checklist (Desktop)
     https://sustainableelectronics.org/sites/default/files/6.c.2%20Desktop%20R2-Ready%20for%20Resale%20Checklist.docx
-    Physical condition grade
+    Physical condition grade.
+
+    Failing and warning conditions are as follows:
+
+    * :attr:`Severity.Error`: whether appearance range is less than B or
+                                functionality range is less than B.
+    * :attr:`Severity.Warning`: whether appearance range is B or A and
+                                functionality range is B.
+    * :attr:`Severity.Info`: whether appearance range is B or A and
+                                functionality range is A.
     """
     appearance_range = Column(DBEnum(AppearanceRange), nullable=False)
     appearance_range.comment = AppearanceRange.__doc__
@@ -916,7 +933,6 @@ class Rate(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     * Appearance (A). Visual evaluation, surface deterioration.
     * Performance (Q). Components characteristics and components benchmarks.
     """
-    # todo jn: explain in each comment what the rate considers.
     N = 2
     """The number of significant digits for rates.
     Values are rounded and stored to it.
@@ -929,11 +945,11 @@ class Rate(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     _appearance = Column('appearance',
                          Float(decimal_return_scale=N),
                          check_range('appearance', *R_NEGATIVE))
-    _appearance.comment = """"""
+    _appearance.comment = """Subjective value representing aesthetic aspects."""
     _functionality = Column('functionality',
                             Float(decimal_return_scale=N),
                             check_range('functionality', *R_NEGATIVE))
-    _functionality.comment = """"""
+    _functionality.comment = """Subjective value representing usage aspects."""
 
     @property
     def rating(self):
@@ -966,8 +982,7 @@ class Rate(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
     @declared_attr
     def __mapper_args__(cls):
-        """
-        Defines inheritance.
+        """Defines inheritance.
 
         From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
         extensions/declarative/api.html
@@ -993,10 +1008,9 @@ class RateMixin:
 
 
 class RateComputer(RateMixin, Rate):
-    """
-    The act of rating a computer type devices.
+    """The act of rating a computer type devices.
     It's the starting point for calculating the rate.
-    Algorithm explained in v1.0 file
+    Algorithm explained in v1.0 file.
     """
     _processor = Column('processor',
                         Float(decimal_return_scale=Rate.N),
@@ -1063,9 +1077,7 @@ class RateComputer(RateMixin, Rate):
 
     @classmethod
     def compute(cls, device):
-        """
-        The act of compute general computer rate
-        """
+        """The act of compute general computer rate."""
         from ereuse_devicehub.resources.action.rate.v1_0 import rate_algorithm
         rate = rate_algorithm.compute(device)
         price = None
@@ -1075,6 +1087,7 @@ class RateComputer(RateMixin, Rate):
 
 
 class Price(JoinedWithOneDeviceMixin, ActionWithOneDevice):
+    # TODO rewrite  Class comment change AggregateRate..
     """The act of setting a trading price for the device.
 
     This does not imply that the device is ultimately traded for that
@@ -1101,7 +1114,8 @@ class Price(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     version.comment = """The version of the software, or None."""
     rating_id = Column(UUID(as_uuid=True), ForeignKey(Rate.id))
     rating_id.comment = """The Rate used to auto-compute
-    this price, if it has not been set manually."""
+    this price, if it has not been set manually.
+    """
     rating = relationship(Rate,
                           backref=backref('price',
                                           lazy=True,
@@ -1125,8 +1139,7 @@ class Price(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
     @declared_attr
     def __mapper_args__(cls):
-        """
-        Defines inheritance.
+        """Defines inheritance.
 
         From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
         extensions/declarative/api.html
@@ -1216,9 +1229,8 @@ class EreusePrice(Price):
 
     @orm.reconstructor
     def _compute(self):
-        """
-        Calculates eReuse.org prices when initializing the
-        instance from the price and other properties.
+        """Calculates eReuse.org prices when initializing the instance
+        from the price and other properties.
         """
         self.refurbisher = self._service(self.Service.REFURBISHER)
         self.retailer = self._service(self.Service.RETAILER)
@@ -1279,7 +1291,7 @@ class Prepare(ActionWithMultipleDevices):
 class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """A keep-alive from a device connected to the Internet with
     information about its state (in the form of a ``Snapshot`` action)
-     and usage statistics.
+    and usage statistics.
     """
     ip = Column(IP, nullable=False,
                 comment='The IP where the live was triggered.')
@@ -1335,41 +1347,34 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     extend `Schema's Trade <http://schema.org/TradeAction>`_.
     """
     shipping_date = Column(db.TIMESTAMP(timezone=True))
-    shipping_date.comment = """
-            When are the devices going to be ready for shipping?
-        """
+    shipping_date.comment = """When are the devices going to be ready 
+    for shipping?
+    """
     invoice_number = Column(CIText())
-    invoice_number.comment = """
-            The id of the invoice so they can be linked.
-        """
+    invoice_number.comment = """The id of the invoice so they can be linked."""
     price_id = Column(UUID(as_uuid=True), ForeignKey(Price.id))
     price = relationship(Price,
                          backref=backref('trade', lazy=True, uselist=False),
                          primaryjoin=price_id == Price.id)
-    price_id.comment = """
-            The price set for this trade.
-            
-            If no price is set it is supposed that the trade was
-            not payed, usual in donations.
+    price_id.comment = """The price set for this trade.            
+    If no price is set it is supposed that the trade was
+    not payed, usual in donations.
         """
     to_id = Column(UUID(as_uuid=True), ForeignKey(Agent.id), nullable=False)
     # todo compute the org
     to = relationship(Agent,
                       backref=backref('actions_to', lazy=True, **_sorted_actions),
                       primaryjoin=to_id == Agent.id)
-    to_comment = """
-        The agent that gets the device due this deal.
-    """
+    to_comment = """The agent that gets the device due this deal."""
     confirms_id = Column(UUID(as_uuid=True), ForeignKey(Organize.id))
     confirms = relationship(Organize,
                             backref=backref('confirmation', lazy=True, uselist=False),
                             primaryjoin=confirms_id == Organize.id)
-    confirms_id.comment = """
-            An organize action that this association confirms.
-            
-            For example, a ``Sell`` or ``Rent``
-            can confirm a ``Reserve`` action.
-        """
+    confirms_id.comment = """An organize action that this association confirms.                
+    
+    For example, a ``Sell`` or ``Rent``
+    can confirm a ``Reserve`` action.
+    """
 
 
 class Sell(Trade):
@@ -1482,8 +1487,7 @@ def actions_not_for_components(target: Action, value: Device, old_value, initiat
 
 @event.listens_for(ActionWithOneDevice.device, Events.set.__name__, propagate=True)
 def update_components_action_one(target: ActionWithOneDevice, device: Device, __, ___):
-    """
-    Syncs the :attr:`.Action.components` with the components in
+    """Syncs the :attr:`.Action.components` with the components in
     :attr:`ereuse_devicehub.resources.device.models.Computer.components`.
     """
     # For Add and Remove, ``components`` have different meanings
@@ -1500,8 +1504,7 @@ def update_components_action_one(target: ActionWithOneDevice, device: Device, __
 @event.listens_for(ActionWithMultipleDevices.devices, Events.append.__name__, propagate=True)
 def update_components_action_multiple(target: ActionWithMultipleDevices,
                                       value: Union[Set[Device], Device], _):
-    """
-    Syncs the :attr:`.Action.components` with the components in
+    """Syncs the :attr:`.Action.components` with the components in
     :attr:`ereuse_devicehub.resources.device.models.Computer.components`.
     """
     target.components.clear()
@@ -1513,8 +1516,7 @@ def update_components_action_multiple(target: ActionWithMultipleDevices,
 
 @event.listens_for(ActionWithMultipleDevices.devices, Events.remove.__name__, propagate=True)
 def remove_components_action_multiple(target: ActionWithMultipleDevices, device: Device, __):
-    """
-    Syncs the :attr:`.Action.components` with the components in
+    """Syncs the :attr:`.Action.components` with the components in
     :attr:`ereuse_devicehub.resources.device.models.Computer.components`.
     """
     target.components.clear()
@@ -1528,9 +1530,7 @@ def remove_components_action_multiple(target: ActionWithMultipleDevices, device:
 @event.listens_for(Install.device, Events.set.__name__, propagate=True)
 @event.listens_for(Benchmark.device, Events.set.__name__, propagate=True)
 def update_parent(target: Union[EraseBasic, Test, Install], device: Device, _, __):
-    """
-    Syncs the :attr:`Action.parent` with the parent of the device.
-    """
+    """Syncs the :attr:`Action.parent` with the parent of the device."""
     target.parent = None
     if isinstance(device, Component):
         target.parent = device.parent

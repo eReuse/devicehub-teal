@@ -121,8 +121,7 @@ class Client(TealClient):
 
 
 class UserClient(Client):
-    """
-    A client that identifies all of its requests with a specific user.
+    """A client that identifies all of its requests with a specific user.
 
     It will automatically perform login on the first request.
     """

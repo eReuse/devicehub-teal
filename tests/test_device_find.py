@@ -56,8 +56,7 @@ def test_device_sort():
 
 @pytest.fixture()
 def device_query_dummy(app: Devicehub):
-    """
-    3 computers, where:
+    """3 computers, where:
 
     1. s1 Desktop with a Processor
     2. s2 Desktop with an SSD

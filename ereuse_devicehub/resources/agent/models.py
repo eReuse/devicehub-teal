@@ -29,18 +29,13 @@ class Agent(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     type = Column(Unicode, nullable=False)
     name = Column(CIText())
-    name.comment = """
-        The name of the organization or person.
-    """
+    name.comment = """The name of the organization or person."""
     tax_id = Column(Unicode(length=STR_SM_SIZE), check_lower('tax_id'))
-    tax_id.comment = """
-        The Tax / Fiscal ID of the organization, 
-        e.g. the TIN in the US or the CIF/NIF in Spain.
+    tax_id.comment = """The Tax / Fiscal ID of the organization, 
+    e.g. the TIN in the US or the CIF/NIF in Spain.
     """
     country = Column(DBEnum(enums.Country))
-    country.comment = """
-        Country issuing the tax_id number.
-    """
+    country.comment = """Country issuing the tax_id number."""
     telephone = Column(PhoneNumberType())
     email = Column(EmailType, unique=True)
 
@@ -52,8 +47,7 @@ class Agent(Thing):
 
     @declared_attr
     def __mapper_args__(cls):
-        """
-        Defines inheritance.
+        """Defines inheritance.
 
         From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
         extensions/declarative/api.html
@@ -137,8 +131,7 @@ class Membership(Thing):
 
 
 class Person(Individual):
-    """
-    A person in the system. There can be several persons pointing to
+    """A person in the system. There can be several persons pointing to
     a real.
     """
     pass

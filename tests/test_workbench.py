@@ -1,10 +1,8 @@
-"""
-Tests that emulates the behaviour of a WorkbenchServer.
-"""
+"""Tests that emulates the behaviour of a WorkbenchServer."""
 import json
-import math
 import pathlib
 
+import math
 import pytest
 
 from ereuse_devicehub.client import UserClient
@@ -17,8 +15,7 @@ from tests.conftest import file
 
 
 def test_workbench_server_condensed(user: UserClient):
-    """
-    As :def:`.test_workbench_server_phases` but all the actions
+    """As :def:`.test_workbench_server_phases` but all the actions
     condensed in only one big ``Snapshot`` file, as described
     in the docs.
     """
@@ -72,8 +69,7 @@ def test_workbench_server_condensed(user: UserClient):
 
 @pytest.mark.xfail(reason='Functionality not yet developed.')
 def test_workbench_server_phases(user: UserClient):
-    """
-    Tests the phases described in the docs section `Snapshots from
+    """Tests the phases described in the docs section `Snapshots from
     Workbench <http://devicehub.ereuse.org/
     actions.html#snapshots-from-workbench>`_.
     """
@@ -170,8 +166,7 @@ def test_real_toshiba_11(user: UserClient):
 
 
 def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
-    """
-    Checks the values of the device, components,
+    """Checks the values of the device, components,
     actions and their relationships of a real pc.
     """
     s = file('real-eee-1001pxd.snapshot.11')

@@ -29,8 +29,7 @@ class User(Thing):
                  load_only=(),
                  dump_only=(),
                  partial=False):
-        """
-        Instantiates the User.
+        """Instantiates the User.
 
         By default we exclude token from both load/dump
         so they are not taken / set in normal usage by mistake.
