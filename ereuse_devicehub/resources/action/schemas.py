@@ -347,8 +347,8 @@ class Repair(ActionWithMultipleDevices):
     __doc__ = m.Repair.__doc__
 
 
-class ReadyToUse(ActionWithMultipleDevices):
-    __doc__ = m.ReadyToUse.__doc__
+class Available(ActionWithMultipleDevices):
+    __doc__ = m.Available.__doc__
 
 
 class ToPrepare(ActionWithMultipleDevices):

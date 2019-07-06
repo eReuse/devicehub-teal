@@ -56,5 +56,5 @@ class Physical(State):
     Repaired = e.Repair
     Preparing = e.ToPrepare
     Prepared = e.Prepare
-    ReadyToBeUsed = e.ReadyToUse
+    ReadyToBeUsed = e.Available
     InUse = e.Live

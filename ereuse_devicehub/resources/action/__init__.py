@@ -188,9 +188,9 @@ class RepairDef(ActionDef):
     SCHEMA = schemas.Repair
 
 
-class ReadyToUse(ActionDef):
+class Available(ActionDef):
     VIEW = None
-    SCHEMA = schemas.ReadyToUse
+    SCHEMA = schemas.Available
 
 
 class ToPrepareDef(ActionDef):

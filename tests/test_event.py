@@ -168,7 +168,7 @@ def test_update_components_action_multiple():
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 
-    ready = models.ReadyToUse()
+    ready = models.Available()
     assert not ready.devices
     assert not ready.components
 
@@ -214,7 +214,7 @@ def test_update_parent():
                               (models.ToRepair, states.Physical.ToBeRepaired),
                               (models.Repair, states.Physical.Repaired),
                               (models.ToPrepare, states.Physical.Preparing),
-                              (models.ReadyToUse, states.Physical.ReadyToBeUsed),
+                              (models.Available, states.Physical.ReadyToBeUsed),
                               (models.Prepare, states.Physical.Prepared)
                           ]))
 def test_generic_action(action_model_state: Tuple[models.Action, states.Trading],

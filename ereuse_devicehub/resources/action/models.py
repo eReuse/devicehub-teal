@@ -1256,7 +1256,7 @@ class Repair(ActionWithMultipleDevices):
     """
 
 
-class ReadyToUse(ActionWithMultipleDevices):
+class Available(ActionWithMultipleDevices):
     """The device is ready to be used.
 
     This involves greater preparation from the ``Prepare`` action,
