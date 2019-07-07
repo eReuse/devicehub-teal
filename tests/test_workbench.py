@@ -307,7 +307,7 @@ SNAPSHOTS_NEED_ID = {
 
 @pytest.mark.parametrize('file',
                          (pytest.param(f, id=f.name)
-                          for f in pathlib.Path().parent.joinpath('workbench_files').iterdir())
+                          for f in pathlib.Path(__file__).parent.joinpath('workbench_files').iterdir())
                          )
 def test_workbench_fixtures(file: pathlib.Path, user: UserClient):
     """Uploads the Snapshot files Workbench tests generate.
