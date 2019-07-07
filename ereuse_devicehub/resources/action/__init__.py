@@ -188,9 +188,9 @@ class RepairDef(ActionDef):
     SCHEMA = schemas.Repair
 
 
-class Available(ActionDef):
+class ReadyDef(ActionDef):
     VIEW = None
-    SCHEMA = schemas.Available
+    SCHEMA = schemas.Ready
 
 
 class ToPrepareDef(ActionDef):
@@ -231,6 +231,11 @@ class DonateDef(ActionDef):
 class RentDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Rent
+
+
+class MakeAvailable(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.MakeAvailable
 
 
 class CancelTradeDef(ActionDef):

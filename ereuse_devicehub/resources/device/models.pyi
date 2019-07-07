@@ -45,6 +45,7 @@ class Device(Thing):
     version = ...  # type: Column
     variant = ...  # type: Column
     sku = ...  # type: Column
+    image = ...  #type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -70,6 +71,7 @@ class Device(Thing):
         self.version = ...  # type: Optional[str]
         self.variant = ...  # type: Optional[str]
         self.sku = ...  # type: Optional[str]
+        self.image = ...  # type: Optional[urlutils.URL]
 
     @property
     def actions(self) -> List[e.Action]:

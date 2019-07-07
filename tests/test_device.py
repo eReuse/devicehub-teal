@@ -468,18 +468,18 @@ def test_device_properties_format(app: Devicehub, user: UserClient):
         assert format(net) == 'NetworkAdapter 2: model ar8121/ar8113/ar8114 ' \
                               'gigabit or fast ethernet, S/N 00:24:8c:7f:cf:2d'
         assert format(net, 't') == 'NetworkAdapter ar8121/ar8113/ar8114 gigabit or fast ethernet'
-        assert format(net, 's') == '(qualcomm atheros) S/N 00:24:8C:7F:CF:2D – 100 Mbps'
+        assert format(net, 's') == 'qualcomm atheros 00:24:8C:7F:CF:2D – 100 Mbps'
         hdd = next(c for c in pc.components if isinstance(c, d.DataStorage))
         assert format(hdd) == 'HardDrive 7: model st9160310as, S/N 5sv4tqa6'
         assert format(hdd, 't') == 'HardDrive st9160310as'
-        assert format(hdd, 's') == '(seagate) S/N 5SV4TQA6 – 152 GB'
+        assert format(hdd, 's') == 'seagate 5SV4TQA6 – 152 GB'
 
 
 def test_device_public(user: UserClient, client: Client):
     s, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
     html, _ = client.get(res=d.Device, item=s['device']['id'], accept=ANY)
     assert 'intel atom cpu n270 @ 1.60ghz' in html
-    assert 'S/N 00:24:8C:7F:CF:2D – 100 Mbps' in html
+    assert '00:24:8C:7F:CF:2D – 100 Mbps' in html
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)

@@ -44,5 +44,5 @@ Physical
 :cvar Repaired: The device has been repaired.
 :cvar Preparing: The device is going to be or being prepared.
 :cvar Prepared: The device has been prepared.
-:cvar ReadyToBeUsed: The device is in working conditions.
+:cvar Ready: The device is in working conditions.
 :cvar InUse: The device is being reported to be in active use.

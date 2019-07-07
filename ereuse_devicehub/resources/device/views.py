@@ -14,6 +14,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.query import SearchQueryParser, things_response
 from ereuse_devicehub.resources import search
 from ereuse_devicehub.resources.action import models as actions
+from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Device, Manufacturer
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
@@ -101,7 +102,7 @@ class DeviceView(View):
 
     def one_public(self, id: int):
         device = Device.query.filter_by(id=id).one()
-        return render_template('devices/layout.html', device=device)
+        return render_template('devices/layout.html', device=device, states=states)
 
     @auth.Auth.requires_auth
     def one_private(self, id: int):

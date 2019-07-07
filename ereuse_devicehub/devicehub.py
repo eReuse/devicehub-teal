@@ -18,11 +18,13 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.dummy.dummy import Dummy
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.inventory import Inventory, InventoryDef
+from ereuse_devicehub.templating import Environment
 
 
 class Devicehub(Teal):
     test_client_class = Client
     Dummy = Dummy
+    jinja_environment = Environment
 
     def __init__(self,
                  inventory: str,

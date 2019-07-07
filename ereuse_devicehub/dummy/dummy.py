@@ -104,7 +104,7 @@ class Dummy:
 
         # Perform generic actions
         for pc, model in zip(pcs,
-                             {m.ToRepair, m.Repair, m.ToPrepare, m.Available, m.ToPrepare,
+                             {m.ToRepair, m.Repair, m.ToPrepare, m.Ready, m.ToPrepare,
                               m.Prepare}):
             user.post({'type': model.t, 'devices': [pc]}, res=m.Action)
 
@@ -144,7 +144,7 @@ class Dummy:
 
         user.post({'type': m.ToPrepare.t, 'devices': [sample_pc]}, res=m.Action)
         user.post({'type': m.Prepare.t, 'devices': [sample_pc]}, res=m.Action)
-        user.post({'type': m.Available.t, 'devices': [sample_pc]}, res=m.Action)
+        user.post({'type': m.Ready.t, 'devices': [sample_pc]}, res=m.Action)
         user.post({'type': m.Price.t, 'device': sample_pc, 'currency': 'EUR', 'price': 85},
                   res=m.Action)
         # todo test reserve

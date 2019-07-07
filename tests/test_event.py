@@ -1,7 +1,7 @@
 import ipaddress
 from datetime import timedelta
 from decimal import Decimal
-from typing import Tuple
+from typing import Tuple, Type
 
 import pytest
 from flask import current_app as app, g
@@ -168,7 +168,7 @@ def test_update_components_action_multiple():
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 
-    ready = models.Available()
+    ready = models.Ready()
     assert not ready.devices
     assert not ready.components
 
@@ -214,7 +214,7 @@ def test_update_parent():
                               (models.ToRepair, states.Physical.ToBeRepaired),
                               (models.Repair, states.Physical.Repaired),
                               (models.ToPrepare, states.Physical.Preparing),
-                              (models.Available, states.Physical.ReadyToBeUsed),
+                              (models.Ready, states.Physical.Ready),
                               (models.Prepare, states.Physical.Prepared)
                           ]))
 def test_generic_action(action_model_state: Tuple[models.Action, states.Trading],
@@ -268,24 +268,27 @@ def test_reserve_and_cancel(user: UserClient):
 
 
 @pytest.mark.parametrize('action_model_state',
-                         (pytest.param(ams, id=ams[0].__class__.__name__)
+                         (pytest.param(ams, id=ams[0].__name__)
                           for ams in [
+                              (models.MakeAvailable, states.Trading.Available),
                               (models.Sell, states.Trading.Sold),
                               (models.Donate, states.Trading.Donated),
                               (models.Rent, states.Trading.Renting),
                               (models.DisposeProduct, states.Trading.ProductDisposed)
                           ]))
-def test_trade(action_model_state: Tuple[models.Action, states.Trading], user: UserClient):
+def test_trade(action_model_state: Tuple[Type[models.Action], states.Trading], user: UserClient):
     """Tests POSTing all Trade actions."""
+    # todo missing None states.Trading for after cancelling renting, for example
     action_model, state = action_model_state
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     action = {
         'type': action_model.t,
-        'devices': [snapshot['device']['id']],
-        'to': user.user['individuals'][0]['id'],
-        'shippingDate': '2018-06-29T12:28:54',
-        'invoiceNumber': 'ABC'
+        'devices': [snapshot['device']['id']]
     }
+    if issubclass(action_model, models.Trade):
+        action['to'] = user.user['individuals'][0]['id']
+        action['shippingDate'] = '2018-06-29T12:28:54'
+        action['invoiceNumber'] = 'ABC'
     action, _ = user.post(action, res=models.Action)
     assert action['devices'][0]['id'] == snapshot['device']['id']
     device, _ = user.get(res=Device, item=snapshot['device']['id'])

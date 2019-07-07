@@ -1256,7 +1256,7 @@ class Repair(ActionWithMultipleDevices):
     """
 
 
-class Available(ActionWithMultipleDevices):
+class Ready(ActionWithMultipleDevices):
     """The device is ready to be used.
 
     This involves greater preparation from the ``Prepare`` action,
@@ -1418,6 +1418,11 @@ class DisposeProduct(Trade):
     #     *DisposeProduct*, but this could automatically be done when
     #     performing :class:`.ToDispose` + :class:`.Receive` to a
     #     ``RecyclingCenter``.
+
+
+class MakeAvailable(ActionWithMultipleDevices):
+    """The act of setting willingness for trading."""
+    pass
 
 
 class Receive(JoinedTableMixin, ActionWithMultipleDevices):

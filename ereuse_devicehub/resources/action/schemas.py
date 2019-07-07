@@ -47,7 +47,11 @@ class ActionWithOneDevice(Action):
 
 class ActionWithMultipleDevices(Action):
     __doc__ = m.ActionWithMultipleDevices.__doc__
-    devices = NestedOn(s_device.Device, many=True, only_query='id', collection_class=OrderedSet)
+    devices = NestedOn(s_device.Device,
+                       many=True,
+                       required=True,  # todo test ensuring len(devices) >= 1
+                       only_query='id',
+                       collection_class=OrderedSet)
 
 
 class Add(ActionWithOneDevice):
@@ -347,8 +351,8 @@ class Repair(ActionWithMultipleDevices):
     __doc__ = m.Repair.__doc__
 
 
-class Available(ActionWithMultipleDevices):
-    __doc__ = m.Available.__doc__
+class Ready(ActionWithMultipleDevices):
+    __doc__ = m.Ready.__doc__
 
 
 class ToPrepare(ActionWithMultipleDevices):
@@ -403,6 +407,10 @@ class Donate(Trade):
 
 class Rent(Trade):
     __doc__ = m.Rent.__doc__
+
+
+class MakeAvailable(ActionWithMultipleDevices):
+    __doc__ = m.MakeAvailable.__doc__
 
 
 class CancelTrade(Trade):

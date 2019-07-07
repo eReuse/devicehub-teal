@@ -434,7 +434,7 @@ class Repair(ActionWithMultipleDevices):
     pass
 
 
-class ReadyToUse(ActionWithMultipleDevices):
+class Ready(ActionWithMultipleDevices):
     pass
 
 
@@ -502,6 +502,10 @@ class Donate(Trade):
 
 
 class Rent(Trade):
+    pass
+
+
+class MakeAvailable(ActionWithMultipleDevices):
     pass
 
 

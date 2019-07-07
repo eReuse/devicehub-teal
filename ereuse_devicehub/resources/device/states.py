@@ -40,6 +40,7 @@ class Trading(State):
     # todo add Pay = e.Pay
     ToBeDisposed = e.ToDisposeProduct
     ProductDisposed = e.DisposeProduct
+    Available = e.MakeAvailable
 
 
 class Physical(State):
@@ -49,12 +50,12 @@ class Physical(State):
     :cvar Repaired: The device has been repaired.
     :cvar Preparing: The device is going to be or being prepared.
     :cvar Prepared: The device has been prepared.
-    :cvar ReadyToBeUsed: The device is in working conditions.
+    :cvar Ready: The device is in working conditions.
     :cvar InUse: The device is being reported to be in active use.
     """
     ToBeRepaired = e.ToRepair
     Repaired = e.Repair
     Preparing = e.ToPrepare
     Prepared = e.Prepare
-    ReadyToBeUsed = e.Available
+    Ready = e.Ready
     InUse = e.Live

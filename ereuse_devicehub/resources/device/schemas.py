@@ -60,8 +60,9 @@ class Device(Thing):
                        many=True,
                        dump_only=True,
                        description=m.Device.working.__doc__)
-    variant = SanitizedStr(description=m.Device.variant)
-    sku = SanitizedStr(description=m.Device.sku)
+    variant = SanitizedStr(description=m.Device.variant.comment)
+    sku = SanitizedStr(description=m.Device.sku.comment)
+    image = URL(description=m.Device.image.comment)
 
     @pre_load
     def from_actions_to_actions_one(self, data: dict):
@@ -413,26 +414,38 @@ class Mixer(Cooking):
     __doc__ = m.Mixer.__doc__
 
 
-class Drill(Device):
+class DIYAndGardening(Device):
+    pass
+
+
+class Drill(DIYAndGardening):
     max_drill_bit_size = Integer(data_key='maxDrillBitSize')
 
 
-class PackOfScrewdrivers(Device):
+class PackOfScrewdrivers(DIYAndGardening):
     size = Integer()
 
 
-class Dehumidifier(Device):
+class Home(Device):
+    pass
+
+
+class Dehumidifier(Home):
     size = Integer()
 
 
-class Stairs(Device):
+class Stairs(Home):
     max_allowed_weight = Integer(data_key='maxAllowedWeight')
 
 
-class Bike(Device):
+class Recreation(Device):
+    pass
+
+
+class Bike(Recreation):
     wheel_size = Integer(data_key='wheelSize')
     gears = Integer()
 
 
-class Racket(Device):
+class Racket(Recreation):
     pass

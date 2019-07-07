@@ -79,14 +79,14 @@ class Device(Thing):
     generation = db.Column(db.SmallInteger, check_range('generation', 0))
     generation.comment = """The generation of the device."""
     version = db.Column(db.CIText())
-    version.comment = """The version code this device, like v1 or A001."""
-    weight = Column(Float(decimal_return_scale=3), check_range('weight', 0.1, 5))
-    weight.comment = """The weight of the device."""
-    width = Column(Float(decimal_return_scale=3), check_range('width', 0.1, 5))
+    version.comment = """The version code of this device, like v1 or A001."""
+    weight = Column(Float(decimal_return_scale=4), check_range('weight', 0.1, 5))
+    weight.comment = """The weight of the device in Kg."""
+    width = Column(Float(decimal_return_scale=4), check_range('width', 0.1, 5))
     width.comment = """The width of the device in meters."""
-    height = Column(Float(decimal_return_scale=3), check_range('height', 0.1, 5))
+    height = Column(Float(decimal_return_scale=4), check_range('height', 0.1, 5))
     height.comment = """The height of the device in meters."""
-    depth = Column(Float(decimal_return_scale=3), check_range('depth', 0.1, 5))
+    depth = Column(Float(decimal_return_scale=4), check_range('depth', 0.1, 5))
     depth.comment = """The depth of the device in meters."""
     color = Column(ColorType)
     color.comment = """The predominant color of the device."""
@@ -101,6 +101,8 @@ class Device(Thing):
     sku.comment = """The Stock Keeping Unit (SKU), i.e. a 
     merchant-specific identifier for a product or service.
     """
+    image = db.Column(db.URL)
+    image.comment = "An image of the device."
 
     _NON_PHYSICAL_PROPS = {
         'id',
@@ -120,7 +122,8 @@ class Device(Thing):
         'production_date',
         'variant',
         'version',
-        'sku'
+        'sku',
+        'image'
     }
 
     __table_args__ = (
@@ -167,7 +170,7 @@ class Device(Thing):
     def physical_properties(self) -> Dict[str, object or None]:
         """Fields that describe the physical properties of a device.
 
-        :return A generator where each value is a tuple with tho fields:
+        :return A dictionary:
                 - Column.
                 - Actual value of the column or None.
         """
@@ -291,9 +294,13 @@ class Device(Thing):
         if 't' in format_spec:
             v += '{0.t} {0.model}'.format(self)
         if 's' in format_spec:
-            v += '({0.manufacturer})'.format(self)
+            superclass = self.__class__.mro()[1]
+            if not isinstance(self, Device) and superclass != Device:
+                assert issubclass(superclass, Thing)
+                v += superclass.__name__ + ' '
+            v += '{0.manufacturer}'.format(self)
             if self.serial_number:
-                v += ' S/N ' + self.serial_number.upper()
+                v += ' ' + self.serial_number.upper()
         return v
 
 
@@ -787,7 +794,11 @@ class Mixer(Cooking):
     pass
 
 
-class Drill(Device):
+class DIYAndGardening(Device):
+    pass
+
+
+class Drill(DIYAndGardening):
     max_drill_bit_size = db.Column(db.SmallInteger)
 
 
@@ -795,21 +806,29 @@ class PackOfScrewdrivers(Device):
     pass
 
 
-class Dehumidifier(Device):
+class Home(Device):
+    pass
+
+
+class Dehumidifier(Home):
     size = db.Column(db.SmallInteger)
     size.comment = """The capacity in Liters."""
 
 
-class Stairs(Device):
+class Stairs(Home):
     max_allowed_weight = db.Column(db.Integer)
 
 
-class Bike(Device):
+class Recreation(Device):
+    pass
+
+
+class Bike(Recreation):
     wheel_size = db.Column(db.SmallInteger)
     gears = db.Column(db.SmallInteger)
 
 
-class Racket(Device):
+class Racket(Recreation):
     pass
 
 
