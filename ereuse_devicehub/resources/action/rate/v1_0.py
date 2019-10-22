@@ -74,11 +74,6 @@ class RateAlgorithm(BaseRate):
         """
         assert isinstance(device, Computer), 'Can only rate computers'
 
-        try:
-            visual_test = device.last_action_of(VisualTest)
-        except LookupError:
-            raise CannotRate('You need a visual test.')
-
         rate = RateComputer()
         rate.processor = rate.data_storage = rate.ram = 1  # Init
 
@@ -95,11 +90,9 @@ class RateAlgorithm(BaseRate):
                 setattr(rate, field, result)
 
         rate_components = self.harmonic_mean_rates(rate.processor, rate.data_storage, rate.ram)
-        rate.appearance = self.Appearance[visual_test.appearance_range.name].value
-        rate.functionality = self.Functionality[visual_test.functionality_range.name].value
-        rate.rating = rate_components + rate.functionality + rate.appearance
+        rate.rating = rate_components
         device.actions_one.add(rate)
-        assert 0 <= rate.rating <= 4.7
+        assert 0 <= rate.rating
         return rate
 
 

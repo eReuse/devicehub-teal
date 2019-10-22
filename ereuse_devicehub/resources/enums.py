@@ -34,10 +34,10 @@ class RatingRange(IntEnum):
     3. Medium.
     4. High.
     """
-    VERY_LOW = 2
-    LOW = 3
-    MEDIUM = 4
-    HIGH = 5
+    VERY_LOW = 1
+    LOW = 2
+    MEDIUM = 3
+    HIGH = 4
 
     @classmethod
     def from_score(cls, val: Union[int, float]) -> 'RatingRange':

@@ -912,9 +912,9 @@ class VisualTest(TestMixin, Test):
     * :attr:`Severity.Info`: whether appearance range is B or A and
                                 functionality range is A.
     """
-    appearance_range = Column(DBEnum(AppearanceRange), nullable=False)
+    appearance_range = Column(DBEnum(AppearanceRange), nullable=True)
     appearance_range.comment = AppearanceRange.__doc__
-    functionality_range = Column(DBEnum(FunctionalityRange), nullable=False)
+    functionality_range = Column(DBEnum(FunctionalityRange), nullable=True)
     functionality_range.comment = FunctionalityRange.__doc__
     labelling = Column(Boolean)
     labelling.comment = """Whether there are tags to be removed."""
