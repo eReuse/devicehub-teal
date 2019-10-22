@@ -10,30 +10,17 @@
         crossorigin="anonymous">
   <script src="https://use.fontawesome.com/7553aecc27.js"></script>
   <title>Devicehub | {{ device.__format__('t') }}</title>
-  <style>
-    /*Sticky footer*/
-    html {
-      position: relative;
-      min-height: 100%;
-    }
-
-    body {
-      margin-bottom: 60px; /* Margin bottom by footer height */
-    }
-
-    .footer {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      height: 6em;
-    }
-  </style>
 </head>
 <body>
 
 <nav class="navbar navbar-default" style="background-color: gainsboro; margin: 0 !important">
-  <div class="container-fluid text-center">
-    <h1><em>LoT Bcn</em> — Library of Things Barcelona</h1>
+    <div class="container-fluid">
+        <a href="https://www.usody.com/" target="_blank">
+            <img alt="Brand"
+                 class="center-block"
+                 style="height: 4em; padding-bottom: 0.1em"
+                 src="{{ url_for('Device.static', filename='usody-logo-v4.svg') }}">
+        </a>
   </div>
 </nav>
 <div class="container-fluid">
@@ -46,23 +33,8 @@
   </div>
   <div class="row">
     <div class="col-md-3">
-      {% if device.image %}
-        <a href="{{ device.image.to_text() }}" class="thumbnail" target="_blank">
-          <img src="{{ device.image.to_text() }}"
-               alt="Cykel.JPG">
-        </a>
-      {% endif %}
     </div>
     <div class="col-md-6">
-      {% if device.trading == states.Trading.Available %}
-        <div class="alert alert-success">
-          <i class="fa fa-check-circle"></i> {{ device.trading }}
-        </div>
-      {% else %}
-        <div class="alert alert-warning">
-          <i class="fa fa-exclamation-circle"></i> Not available.
-        </div>
-      {% endif %}
       <ul>
         {% for key, value in device.physical_properties.items() %}
           <li>{{ key }}: {{ value }}
@@ -218,22 +190,5 @@
     </div>
   </div>
 </div>
-<footer class="container-fluid footer">
-  <div class="row">
-    <div class="col-md-4">
-      Un projecte de:<br>
-      <img style="height: 4em" src="{{ url_for('Device.static', filename='rezero.logo.png') }}">
-      <img style="height: 3em" src="{{ url_for('Device.static', filename='nusos.logo.png') }}">
-    </div>
-    <div class="col-md-4">
-      Amb la col.laboració de:<br>
-      <img style="height: 4em" src="{{ url_for('Device.static', filename='ereuse-logo.svg') }}">
-    </div>
-    <div class="col-md-4">
-      Activitat subvencionada per:<br>
-      <img style="height: 4em" src="{{ url_for('Device.static', filename='amb.logo.jpg') }}">
-    </div>
-  </div>
-</footer>
 </body>
 </html>
