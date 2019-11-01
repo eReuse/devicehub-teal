@@ -26,7 +26,7 @@ SQLAlchemy==1.2.17
 SQLAlchemy-Utils==0.33.11
 teal==0.2.0a38
 webargs==4.0.0
-Werkzeug==0.14.1
+Werkzeug==0.15.3
 sqlalchemy-citext==1.3.post0
 flask-weasyprint==0.5
 weasyprint==44
