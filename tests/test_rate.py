@@ -139,6 +139,7 @@ def test_multiple_rates(user: UserClient):
     This ensures that rates only takes all the correct actions
     and components rates in case device have new tests/benchmarks.
     """
+
     pc = Desktop(chassis=ComputerChassis.Tower)
     hdd = HardDrive(size=476940)
     hdd.actions_one.add(BenchmarkDataStorage(read_speed=126, write_speed=29.8))
