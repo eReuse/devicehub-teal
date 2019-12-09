@@ -20,7 +20,7 @@ pytest-runner==4.2
 python-dateutil==2.7.3
 python-stdnum==1.9
 PyYAML==3.13
-requests[security]==2.19.1
+requests[security]==2.20.0
 requests-mock==1.5.2
 SQLAlchemy==1.2.17
 SQLAlchemy-Utils==0.33.11
