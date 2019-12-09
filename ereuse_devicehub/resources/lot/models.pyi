@@ -77,6 +77,18 @@ class Path:
         self.path = ...  # type: Ltree
         self.created = ...  # type: datetime
 
+    @classmethod
+    def has_lot(cls, id, id1):
+        pass
+
+    @classmethod
+    def delete(cls, id, id1):
+        pass
+
+    @classmethod
+    def add(cls, id, id1):
+        pass
+
 
 class LotDeviceDescendants(db.Model):
     device_id = ...  # type: Column

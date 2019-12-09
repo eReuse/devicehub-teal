@@ -92,8 +92,7 @@ class Device(Thing):
     color.comment = """The predominant color of the device."""
     production_date = Column(db.DateTime)
     production_date.comment = """The date of production of the device. 
-    This is timezone naive, as Workbench cannot report this data
-    with timezone information.
+    This is timezone naive, as Workbench cannot report this data with timezone information.
     """
     variant = Column(db.CIText())
     variant.comment = """A variant or sub-model of the device."""

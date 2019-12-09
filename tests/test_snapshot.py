@@ -12,7 +12,8 @@ from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.action.models import Action, BenchmarkDataStorage, \
-    BenchmarkProcessor, EraseSectors, RateComputer, Snapshot, SnapshotRequest, VisualTest
+    BenchmarkProcessor, EraseSectors, RateComputer, Snapshot, SnapshotRequest, VisualTest, \
+    MeasureBattery, BenchmarkRamSysbench, StressTest
 from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import SolidStateDrive
@@ -492,3 +493,11 @@ def test_pc_rating_rate_none(user: UserClient):
 def test_pc_2(user: UserClient):
     s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=s)
+
+
+@pytest.mark.xfail(reason='Add battery component assets')
+def test_snapshot_pc_with_battery_component(user: UserClient):
+    pc1 = file('acer.happy.battery.snapshot')
+    snapshot = snapshot_and_check(user, pc1,
+                                  action_types=(StressTest.t, BenchmarkRamSysbench.t),
+                                  perform_second_snapshot=False)
