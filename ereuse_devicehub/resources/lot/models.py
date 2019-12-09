@@ -26,6 +26,18 @@ class Lot(Thing):
     description.comment = """A comment about the lot."""
     closed = db.Column(db.Boolean, default=False, nullable=False)
     closed.comment = """A closed lot cannot be modified anymore."""
+
+    # New variables for DeliveryNote
+    supplier = db.Column()  # String, nullable, ...
+    supplier.comment = """Name of the organization/agent that create DeliveryNote."""
+    date_delivery_note = db.Column()
+    date_delivery_note.comment = """Date of note creation."""
+    # Is the same of lot id??
+    id_delivery_note = db.Column(UUID(as_uuid=True))
+    id_delivery_note.comment = """Unique id of lot and delivery note"""
+    # deposit = db.Column()
+    # deposit.comment = """Total amount of deposit devices in Lot."""
+
     devices = db.relationship(Device,
                               backref=db.backref('lots', lazy=True, collection_class=set),
                               secondary=lambda: LotDevice.__table__,

@@ -533,6 +533,10 @@ class Receive(ActionWithMultipleDevices):
         self.role = ...  # type: ReceiverRole
 
 
+class ShareDeliveryNote(ActionWithMultipleDevices):
+    pass
+
+
 class Migrate(ActionWithMultipleDevices):
     other = ...  # type: Column
 

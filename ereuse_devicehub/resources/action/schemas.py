@@ -438,6 +438,15 @@ class Receive(ActionWithMultipleDevices):
     role = EnumField(ReceiverRole)
 
 
+class ShareDeliveryNote(ActionWithMultipleDevices):
+    __doc__ = m.ShareDeliveryNote.__doc__
+    supplier = SanitizedStr(validate=Length(max=STR_SIZE), data_key='supplierName')
+    date_delivery_note = DateTime(data_key='dateDeliveryNote')
+    deposit = Integer(data_key='depositValue')
+    address_note = UUID(dump_only=True)
+    id_delivery_note = UUID(dump_only=True)
+
+
 class Migrate(ActionWithMultipleDevices):
     __doc__ = m.Migrate.__doc__
     other = URL()
