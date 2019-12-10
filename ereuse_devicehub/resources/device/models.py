@@ -376,9 +376,10 @@ class Computer(Device):
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     chassis = Column(DBEnum(ComputerChassis), nullable=False)
     chassis.comment = """The physical form of the computer.
-    
+
     It is a subset of the Linux definition of DMI / DMI decode.
     """
+    deposit = Column(Integer, check_range('deposit',min=0,max=100), default=0)
 
     def __init__(self, chassis, **kwargs) -> None:
         chassis = ComputerChassis(chassis)
