@@ -141,6 +141,7 @@ class DisplayMixin:
 class Computer(DisplayMixin, Device):
     components = ...  # type: Column
     chassis = ...  # type: Column
+    deposit = ... # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)

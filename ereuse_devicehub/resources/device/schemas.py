@@ -121,7 +121,9 @@ class Computer(Device):
                        dump_only=True,
                        collection_class=set,
                        description=m.Computer.privacy.__doc__)
-
+    deposit = Integer(dump_only=True,
+                       data_key='deposit',
+                       description=m.Computer.deposit.__doc__)
 
 class Desktop(Computer):
     __doc__ = m.Desktop.__doc__
