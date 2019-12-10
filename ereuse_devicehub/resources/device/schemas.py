@@ -129,7 +129,7 @@ class Computer(Device):
     transfer_state = EnumField(enums.TransferState, description=m.Computer.transfer_state.comment)
     receiver_address = SanitizedStr(validate=f.validate.Length(max=42))
     deliverynote_address = SanitizedStr(validate=f.validate.Length(max=42))
-                            
+
 
 class Desktop(Computer):
     __doc__ = m.Desktop.__doc__

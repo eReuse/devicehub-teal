@@ -155,8 +155,8 @@ class Computer(DisplayMixin, Device):
         self.owner_address = ... # type: UUID
         self.transfer_state = ...
         self.receiver_address = ... # type: str
-         self.deliverynote_address = ... # type: str
-    
+        self.deliverynote_address = ... # type: str
+
     @property
     def actions(self) -> List:
         pass
