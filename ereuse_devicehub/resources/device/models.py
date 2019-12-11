@@ -7,6 +7,7 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
+from flask import g
 from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
@@ -16,6 +17,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
+from sqlalchemy.dialects.postgresql import UUID
 from stdnum import imei, meid
 from teal.db import CASCADE_DEL, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, URL, \
     check_lower, check_range
@@ -27,6 +29,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
+from ereuse_devicehub.resources.user.models import User
 
 
 class Device(Thing):
@@ -380,6 +383,11 @@ class Computer(Device):
     It is a subset of the Linux definition of DMI / DMI decode.
     """
     deposit = Column(Integer, check_range('deposit',min=0,max=100), default=0)
+    author_id = db.Column(UUID(as_uuid=True),
+                          db.ForeignKey(User.id),
+                          nullable=False,
+                          default=lambda: g.user.id)
+    author = db.relationship(User, primaryjoin=author_id == User.id)
 
     def __init__(self, chassis, **kwargs) -> None:
         chassis = ComputerChassis(chassis)

@@ -1,7 +1,7 @@
 import datetime
 
 from marshmallow import post_load, pre_load
-from marshmallow.fields import Boolean, Date, DateTime, Float, Integer, List, Str, String
+from marshmallow.fields import Boolean, Date, DateTime, Float, Integer, List, Str, String, UUID
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
@@ -14,6 +14,7 @@ from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.device import models as m, states
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing, UnitCodes
+from ereuse_devicehub.resources.user import schemas as s_user
 
 
 class Device(Thing):
@@ -124,6 +125,9 @@ class Computer(Device):
     deposit = Integer(dump_only=True,
                        data_key='deposit',
                        description=m.Computer.deposit.__doc__)
+    # author_id = NestedOn(s_user.User,only_query='author_id')
+    author_id = UUID(dump_only=True,
+                                data_key='author_id')
 
 class Desktop(Computer):
     __doc__ = m.Desktop.__doc__
