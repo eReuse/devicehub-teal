@@ -9,7 +9,7 @@ from sqlalchemy import TEXT
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
-from teal.db import CASCADE_OWN, UUIDLtree
+from teal.db import CASCADE_OWN, UUIDLtree, check_range
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import create_view, db, exp, f
@@ -73,6 +73,12 @@ class Lot(Thing):
     """All devices, including components, inside this lot and its
     descendants.
     """
+    deposit = db.Column(db.Integer, check_range('deposit',min=0,max=100), default=0)
+    author_id = db.Column(UUID(as_uuid=True),
+                          db.ForeignKey(User.id),
+                          nullable=False,
+                          default=lambda: g.user.id)
+    author = db.relationship(User, primaryjoin=author_id == User.id)
 
     def __init__(self, name: str, closed: bool = closed.default.arg,
                  description: str = None) -> None:
