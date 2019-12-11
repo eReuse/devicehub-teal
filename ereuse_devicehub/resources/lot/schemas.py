@@ -17,3 +17,9 @@ class Lot(Thing):
     children = NestedOn('Lot', many=True, dump_only=True)
     parents = NestedOn('Lot', many=True, dump_only=True)
     url = URL(dump_only=True, description=m.Lot.url.__doc__)
+    deposit = f.Integer(dump_only=True,
+                       data_key='deposit',
+                       description=m.Lot.deposit.__doc__)
+    # author_id = NestedOn(s_user.User,only_query='author_id')
+    author_id = f.UUID(dump_only=True,
+                                data_key='author_id')
