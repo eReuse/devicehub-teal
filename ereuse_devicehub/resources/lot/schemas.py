@@ -1,11 +1,12 @@
 from marshmallow import fields as f
-from teal.marshmallow import SanitizedStr, URL
+from teal.marshmallow import SanitizedStr, URL, EnumField
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.lot import models as m
 from ereuse_devicehub.resources.models import STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
+from ereuse_devicehub.resources.enums import TransferState
 
 
 class Lot(Thing):
@@ -21,5 +22,5 @@ class Lot(Thing):
                        data_key='deposit',
                        description=m.Lot.deposit.__doc__)
     # author_id = NestedOn(s_user.User,only_query='author_id')
-    author_id = f.UUID(dump_only=True,
-                                data_key='author_id')
+    author_id = f.UUID(dump_only=True)
+    tranfer_state = EnumField(TransferState, description=m.Lot.transfer_state.comment)
