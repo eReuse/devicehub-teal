@@ -368,3 +368,25 @@ class ErasureStandards(Enum):
                         and all(isinstance(step, actions.StepRandom) for step in other_steps):
                     standards.add(cls.HMG_IS5)
         return standards
+
+@unique
+class TransferState(Enum):
+    """State of transfer for a given Lot of devices.
+    """
+
+    """
+    * Initial: No transfer action in place.
+    * Initiated: The transfer action has been initiated by orginator.
+    * Accepted: The  transfer action has been accepted by destinator.
+
+    Devicehub specially raises user awareness when an action
+    has a Severity of ``Warning`` or greater.
+    """
+
+    Initial = 0
+    Initiated = 1
+    Accepted = 2
+    Completed = 3
+
+    def __str__(self):
+        return self.name

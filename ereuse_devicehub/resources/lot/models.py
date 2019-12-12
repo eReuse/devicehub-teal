@@ -5,17 +5,18 @@ from typing import Union
 from boltons import urlutils
 from citext import CIText
 from flask import g
-from sqlalchemy import TEXT
+from sqlalchemy import TEXT, Enum as DBEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
-from teal.db import CASCADE_OWN, UUIDLtree, check_range
+from teal.db import CASCADE_OWN, UUIDLtree, check_range, IntEnum
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import create_view, db, exp, f
 from ereuse_devicehub.resources.device.models import Component, Device
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.enums import TransferState
 
 
 class Lot(Thing):
@@ -79,6 +80,8 @@ class Lot(Thing):
                           nullable=False,
                           default=lambda: g.user.id)
     author = db.relationship(User, primaryjoin=author_id == User.id)
+    transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
+    transfer_state.comment = TransferState.__doc__
 
     def __init__(self, name: str, closed: bool = closed.default.arg,
                  description: str = None) -> None:
