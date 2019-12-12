@@ -8,7 +8,8 @@ from teal.marshmallow import ValidationError
 from teal.resource import View
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest
+from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest, \
+    InitTransfer
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import SnapshotSoftware
@@ -31,6 +32,8 @@ class ActionView(View):
         if json['type'] == VisualTest.t:
             pass
             # TODO JN add compute rate with new visual test and old components device
+        if json['type'] == InitTransfer.t:
+            return self.transfer_ownership()
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
         db.session.add(action)
@@ -103,3 +106,7 @@ class ActionView(View):
         ret.status_code = 201
         db.session.commit()
         return ret
+
+    def transfer_ownership(self):
+        """Perform a InitTransfer action to change author_id of device"""
+        pass

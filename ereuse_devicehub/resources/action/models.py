@@ -1377,6 +1377,10 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     """
 
 
+class InitTransfer(Trade):
+    """The act of transfer ownership of devices between two agents"""
+
+
 class Sell(Trade):
     """The act of taking money from a buyer in exchange of a device."""
 
@@ -1443,32 +1447,6 @@ class Receive(JoinedTableMixin, ActionWithMultipleDevices):
     role = Column(DBEnum(ReceiverRole),
                   nullable=False,
                   default=ReceiverRole.Intermediary)
-
-
-class ShareDeliveryNote(JoinedTableMixin, ActionWithMultipleDevices):
-    """To share a DeliveryNote to between owners."""
-    # New variables for DeliveryNote
-    supplier = db.Column()  # String, nullable, ...
-    supplier.comment = """Name of the organization/agent that create DeliveryNote."""
-    date_delivery_note = db.Column()
-    date_delivery_note.comment = """Date of note creation."""
-    # Is the same of lot id??
-    id_delivery_note = db.Column(UUID(as_uuid=True))
-    id_delivery_note.comment = """Unique id of lot and delivery note."""
-    deposit = db.Column()
-    deposit.comment = """Total amount of deposit devices in Lot."""
-    address_note = db.Column(UUID(as_uuid=True))
-    address_note.comment = """Address identifier in the blockchain."""
-
-    agent_id = Column(UUID(as_uuid=True),
-                      ForeignKey(Agent.id),
-                      nullable=False,
-                      default=lambda: g.user.individual.id)
-
-
-class ConfirmDeliveryNote(JoinedTableMixin, ActionWithMultipleDevices):
-    """To confirm a DeliveryNote that has been shared."""
-    pass
 
 
 class Migrate(JoinedTableMixin, ActionWithMultipleDevices):
