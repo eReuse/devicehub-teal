@@ -141,13 +141,16 @@ class DisplayMixin:
 class Computer(DisplayMixin, Device):
     components = ...  # type: Column
     chassis = ...  # type: Column
+    deposit = ... # type: Column
+    author_id = ... # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.components = ...  # type: Set[Component]
         self.actions_parent = ...  # type: Set[e.Action]
         self.chassis = ...  # type: ComputerChassis
-
+        self.author_id = ... 
+    
     @property
     def actions(self) -> List:
         pass
