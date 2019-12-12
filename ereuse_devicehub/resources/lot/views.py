@@ -43,6 +43,11 @@ class LotView(View):
         patch_schema = self.resource_def.SCHEMA(only=('name', 'description'), partial=True)
         l = request.get_json(schema=patch_schema)
         lot = Lot.query.filter_by(id=id).one()
+        if lot.transfer_state.name == 'Initial':
+            # Initial lot transfer state case
+            # deposit = self.get_lot_deposit(lot)
+            # Do something with deposit variable
+            pass
         for key, value in l.items():
             setattr(lot, key, value)
         db.session.commit()
@@ -122,6 +127,18 @@ class LotView(View):
             nodes.append(node)
         if path:
             cls._p(node['nodes'], path)
+
+    def get_lot_deposit(self, l: Lot):
+        """Return lot deposit value"""
+        return l.deposit
+
+    def change_state(self):
+        """Change state of Lot"""
+        pass
+
+    def transfer_ownership_lot(self):
+        """Perform a InitTransfer action to change author_id of lot"""
+        pass
 
 
 class LotBaseChildrenView(View):
