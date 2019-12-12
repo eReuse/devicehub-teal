@@ -401,6 +401,10 @@ class Trade(ActionWithMultipleDevices):
     confirms = NestedOn(Organize)
 
 
+class InitTransfer(Trade):
+    __doc__ = m.InitTransfer.__doc__
+
+
 class Sell(Trade):
     __doc__ = m.Sell.__doc__
 
@@ -436,15 +440,6 @@ class TransferOwnershipBlockchain(Trade):
 class Receive(ActionWithMultipleDevices):
     __doc__ = m.Receive.__doc__
     role = EnumField(ReceiverRole)
-
-
-class ShareDeliveryNote(ActionWithMultipleDevices):
-    __doc__ = m.ShareDeliveryNote.__doc__
-    supplier = SanitizedStr(validate=Length(max=STR_SIZE), data_key='supplierName')
-    date_delivery_note = DateTime(data_key='dateDeliveryNote')
-    deposit = Integer(data_key='depositValue')
-    address_note = UUID(dump_only=True)
-    id_delivery_note = UUID(dump_only=True)
 
 
 class Migrate(ActionWithMultipleDevices):

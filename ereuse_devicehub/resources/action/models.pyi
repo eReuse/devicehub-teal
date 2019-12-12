@@ -493,6 +493,10 @@ class Trade(ActionWithMultipleDevices):
         self.confirms = ...  # type: Organize
 
 
+class InitTransfer(Trade):
+    pass
+
+
 class Sell(Trade):
     pass
 
@@ -531,10 +535,6 @@ class Receive(ActionWithMultipleDevices):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.role = ...  # type: ReceiverRole
-
-
-class ShareDeliveryNote(ActionWithMultipleDevices):
-    pass
 
 
 class Migrate(ActionWithMultipleDevices):

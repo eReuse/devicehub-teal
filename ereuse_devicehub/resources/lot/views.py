@@ -129,6 +129,18 @@ class LotView(View):
         if path:
             cls._p(node['nodes'], path)
 
+    def get_lot_deposit(self, l: Lot):
+        """Return lot deposit value"""
+        return l.deposit
+
+    def change_state(self):
+        """Change state of Lot"""
+        pass
+
+    def transfer_ownership_lot(self):
+        """Perform a InitTransfer action to change author_id of lot"""
+        pass
+
 
 class LotBaseChildrenView(View):
     """Base class for adding / removing children devices and
