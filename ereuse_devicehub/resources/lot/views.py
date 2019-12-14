@@ -40,7 +40,7 @@ class LotView(View):
         return ret
 
     def patch(self, id):
-        patch_schema = self.resource_def.SCHEMA(only=('name', 'description'), partial=True)
+        patch_schema = self.resource_def.SCHEMA(only=('name', 'description', 'transfer_state', 'receiver', 'deposit'), partial=True)
         l = request.get_json(schema=patch_schema)
         lot = Lot.query.filter_by(id=id).one()
         for key, value in l.items():

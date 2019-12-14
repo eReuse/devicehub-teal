@@ -24,3 +24,4 @@ class Lot(Thing):
     # author_id = NestedOn(s_user.User,only_query='author_id')
     author_id = f.UUID(dump_only=True)
     tranfer_state = EnumField(TransferState, description=m.Lot.transfer_state.comment)
+    receiver = SanitizedStr(validate=f.validate.Length(max=42))
