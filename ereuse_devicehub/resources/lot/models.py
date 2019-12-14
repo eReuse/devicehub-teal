@@ -71,6 +71,7 @@ class Lot(Thing):
     author = db.relationship(User, primaryjoin=author_id == User.id)
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
+    receiver = db.Column(CIText(), default='', nullable=False)
 
     def __init__(self, name: str, closed: bool = closed.default.arg,
                  description: str = None) -> None:
