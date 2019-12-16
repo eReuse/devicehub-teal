@@ -44,7 +44,7 @@ class Lot(Thing):
         self.children = ...  # type: Set[Lot]
         self.author_id = ... # type: UUID
         self.transfer_state = ...
-        self.receiver = ... # type: str
+        self.receiver_id = ... # type: str
 
     def add_children(self, *children: Union[Lot, uuid.UUID]):
         pass
