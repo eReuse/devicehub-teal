@@ -28,6 +28,7 @@ class User(Thing):
         self.individuals = ...  # type: Set[Individual]
         self.token = ...  # type: UUID
         self.inventories = ...  # type: Set[Inventory]
+        self.ethereum_address = ... # type: str
 
     @property
     def individual(self) -> Union[Individual, None]:

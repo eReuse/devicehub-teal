@@ -370,7 +370,7 @@ class ErasureStandards(Enum):
         return standards
 
 @unique
-class TransferState(Enum):
+class TransferState(IntEnum):
     """State of transfer for a given Lot of devices.
     """
 

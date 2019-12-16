@@ -15,7 +15,7 @@ class UserView(View):
 
 def login():
     # We use custom schema as we only want to parse a subset of user
-    user_s = g.resource_def.SCHEMA(only=('email', 'password'))  # type: UserS
+    user_s = g.resource_def.SCHEMA(only=('email', 'password', 'ethereum_address'))  # type: UserS
     # noinspection PyArgumentList
     u = request.get_json(schema=user_s)
     user = User.query.filter_by(email=u['email']).one_or_none()
