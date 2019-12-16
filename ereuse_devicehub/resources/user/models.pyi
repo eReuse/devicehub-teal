@@ -17,6 +17,7 @@ class User(Thing):
     password = ...  # type: Column
     token = ...  # type: Column
     inventories = ...  # type: relationship
+    ethereum_address = ... # type: Column
 
     def __init__(self, email: str, password: str = None,
                  inventories: Set[Inventory] = None) -> None:

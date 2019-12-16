@@ -70,7 +70,12 @@ class Lot(Thing):
     author = db.relationship(User, primaryjoin=author_id == User.id)
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
-    receiver = db.Column(CIText(), default='', nullable=False)
+    receiver_id = db.Column(UUID(as_uuid=False),
+                          db.ForeignKey(User.ethereum_address),
+                          nullable=True,
+                          default=lambda: g.user.ethereum_address)
+    receiver = db.relationship(User, primaryjoin=receiver_id == User.ethereum_address)
+    delivery_note_address = db.Column(CIText(), nullable=True)
 
     def __init__(self, name: str, closed: bool = closed.default.arg,
                  description: str = None) -> None:

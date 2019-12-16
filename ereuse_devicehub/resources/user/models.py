@@ -24,6 +24,7 @@ class User(Thing):
                                   backref=db.backref('users', lazy=True, collection_class=set),
                                   secondary=lambda: UserInventory.__table__,
                                   collection_class=set)
+    ethereum_address = Column(UUID(as_uuid=False), unique=True)
 
     # todo set restriction that user has, at least, one active db
 
