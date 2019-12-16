@@ -27,7 +27,9 @@ class Lot(Thing):
     deposit = ... # type: Column
     author_id = ... # type: Column
     transfer_state = ... # type: Column
-    receiver = ... # type: Column
+    receiver_id = ... # type: Column
+    receiver = ... # type: relationship
+    delivery_note_address = ... # type: Column
 
     def __init__(self, name: str, closed: bool = closed.default.arg) -> None:
         super().__init__()
