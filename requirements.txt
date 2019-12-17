@@ -32,3 +32,4 @@ flask-weasyprint==0.5
 weasyprint==44
 psycopg2-binary==2.8.3
 sortedcontainers==2.1.0
+tqdm==4.32.2

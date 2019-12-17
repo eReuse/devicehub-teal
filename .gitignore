@@ -106,6 +106,8 @@ ENV/
 
 # Other
 .idea/
+.vscode/
 .DS_Store
 /app.py
 
+.vscode/settings.json
