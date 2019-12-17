@@ -1,6 +1,6 @@
 import datetime
 
-from marshmallow import post_load, pre_load
+from marshmallow import post_load, pre_load, fields as f
 from marshmallow.fields import Boolean, Date, DateTime, Float, Integer, List, Str, String, UUID
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
@@ -128,6 +128,9 @@ class Computer(Device):
     # author_id = NestedOn(s_user.User,only_query='author_id')
     author_id = UUID(dump_only=True,
                                 data_key='author_id')
+    transfer_state = EnumField(enums.TransferState, description=m.Computer.transfer_state.comment)
+    receiver_id = SanitizedStr(validate=f.validate.Length(max=42))
+                            
 
 class Desktop(Computer):
     __doc__ = m.Desktop.__doc__

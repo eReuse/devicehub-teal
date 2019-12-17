@@ -109,5 +109,3 @@ ENV/
 .vscode/
 .DS_Store
 /app.py
-
-.vscode/settings.json

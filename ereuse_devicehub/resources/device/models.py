@@ -20,14 +20,14 @@ from sqlalchemy_utils import ColorType
 from sqlalchemy.dialects.postgresql import UUID
 from stdnum import imei, meid
 from teal.db import CASCADE_DEL, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, URL, \
-    check_lower, check_range
+    check_lower, check_range, IntEnum
 from teal.enums import Layouts
 from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
-    DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity
+    DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity, TransferState
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -388,6 +388,13 @@ class Computer(Device):
                           nullable=False,
                           default=lambda: g.user.id)
     author = db.relationship(User, primaryjoin=author_id == User.id)
+    transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
+    transfer_state.comment = TransferState.__doc__
+    receiver_id = db.Column(CIText(),
+                          db.ForeignKey(User.ethereum_address),
+                          nullable=True)
+    receiver = db.relationship(User, primaryjoin=receiver_id == User.ethereum_address)
+    delivery_note_address = db.Column(CIText(), nullable=True)
 
     def __init__(self, chassis, **kwargs) -> None:
         chassis = ComputerChassis(chassis)
