@@ -72,8 +72,7 @@ class Lot(Thing):
     transfer_state.comment = TransferState.__doc__
     receiver_id = db.Column(CIText(),
                           db.ForeignKey(User.ethereum_address),
-                          nullable=True,
-                          default=lambda: g.user.ethereum_address)
+                          nullable=True)
     receiver = db.relationship(User, primaryjoin=receiver_id == User.ethereum_address)
     delivery_note_address = db.Column(CIText(), nullable=True)
 
