@@ -41,10 +41,10 @@ class LotView(View):
         return ret
 
     def patch(self, id):
-        patch_schema = self.resource_def.SCHEMA(only=('name', 'description', 'transfer_state', 'receiver_id', 'deposit', 'delivery_note_address', 'devices'), partial=True)
+        patch_schema = self.resource_def.SCHEMA(only=('name', 'description', 'transfer_state', 'receiver_id', 'deposit', 'delivery_note_address', 'devices', 'author_id'), partial=True)
         l = request.get_json(schema=patch_schema)
         lot = Lot.query.filter_by(id=id).one()
-        device_fields = ['transfer_state', 'receiver_id', 'deposit', 'delivery_note_address']
+        device_fields = ['transfer_state', 'receiver_id', 'deposit', 'delivery_note_address', 'author_id']
         computers = [x for x in lot.all_devices if isinstance(x, Computer)]
         for key, value in l.items():
             setattr(lot, key, value)
