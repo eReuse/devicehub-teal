@@ -10,10 +10,11 @@ from flask import Response, jsonify, request
 from marshmallow import Schema as MarshmallowSchema, fields as f
 from teal.marshmallow import EnumField
 from teal.resource import View
+from sqlalchemy.orm import joinedload
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
-from ereuse_devicehub.resources.device.models import Device
+from ereuse_devicehub.resources.device.models import Device, Computer
 from ereuse_devicehub.resources.lot.models import Lot, Path
 
 
@@ -40,16 +41,16 @@ class LotView(View):
         return ret
 
     def patch(self, id):
-        patch_schema = self.resource_def.SCHEMA(only=('name', 'description', 'transfer_state', 'receiver_id', 'deposit', 'delivery_note_address'), partial=True)
+        patch_schema = self.resource_def.SCHEMA(only=('name', 'description', 'transfer_state', 'receiver_id', 'deposit', 'delivery_note_address', 'devices'), partial=True)
         l = request.get_json(schema=patch_schema)
         lot = Lot.query.filter_by(id=id).one()
-        if lot.transfer_state.name == 'Initial':
-            # Initial lot transfer state case
-            # deposit = self.get_lot_deposit(lot)
-            # Do something with deposit variable
-            pass
+        device_fields = ['transfer_state', 'receiver_id', 'deposit', 'delivery_note_address']
+        computers = [x for x in lot.all_devices if isinstance(x, Computer)]
         for key, value in l.items():
             setattr(lot, key, value)
+            if key in device_fields:
+                for dev in computers:
+                    setattr(dev, key, value)
         db.session.commit()
         return Response(status=204)
 
