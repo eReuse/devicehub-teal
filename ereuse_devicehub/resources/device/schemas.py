@@ -126,10 +126,10 @@ class Computer(Device):
                        data_key='deposit',
                        description=m.Computer.deposit.__doc__)
     # author_id = NestedOn(s_user.User,only_query='author_id')
-    author_id = UUID(dump_only=True,
-                                data_key='author_id')
+    owner_address = SanitizedStr(validate=f.validate.Length(max=42))
     transfer_state = EnumField(enums.TransferState, description=m.Computer.transfer_state.comment)
-    receiver_id = SanitizedStr(validate=f.validate.Length(max=42))
+    receiver_address = SanitizedStr(validate=f.validate.Length(max=42))
+    deliverynote_address = SanitizedStr(validate=f.validate.Length(max=42))
                             
 
 class Desktop(Computer):

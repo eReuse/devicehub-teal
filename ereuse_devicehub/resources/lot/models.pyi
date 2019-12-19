@@ -25,11 +25,12 @@ class Lot(Thing):
     all_devices = ...  # type: relationship
     parents = ...  # type: relationship
     deposit = ... # type: Column
-    author_id = ... # type: Column
+    owner_address = ... # type: Column
+    owner = ... # type: relationship
     transfer_state = ... # type: Column
-    receiver_id = ... # type: Column
+    receiver_address = ... # type: Column
     receiver = ... # type: relationship
-    delivery_note_address = ... # type: Column
+    deliverynote_address = ... # type: Column
 
     def __init__(self, name: str, closed: bool = closed.default.arg) -> None:
         super().__init__()
@@ -42,9 +43,10 @@ class Lot(Thing):
         self.all_devices = ...  # type: Set[Device]
         self.parents = ...  # type: Set[Lot]
         self.children = ...  # type: Set[Lot]
-        self.author_id = ... # type: UUID
+        self.owner_address = ... # type: UUID
         self.transfer_state = ...
-        self.receiver_id = ... # type: str
+        self.receiver_address = ... # type: str
+        self.deliverynote_address = ... # type: str
 
     def add_children(self, *children: Union[Lot, uuid.UUID]):
         pass
