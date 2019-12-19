@@ -142,19 +142,20 @@ class Computer(DisplayMixin, Device):
     components = ...  # type: Column
     chassis = ...  # type: Column
     deposit = ... # type: Column
-    author_id = ... # type: Column
+    owner_address = ... # type: Column
     transfer_state = ... # type: Column
-    receiver_id = ... # type: Column
-    delivery_note_address = ... # type: Column
+    receiver_address = ... # type: Column
+    deliverynote_address = ... # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.components = ...  # type: Set[Component]
         self.actions_parent = ...  # type: Set[e.Action]
         self.chassis = ...  # type: ComputerChassis
-        self.author_id = ... # type: UUID
+        self.owner_address = ... # type: UUID
         self.transfer_state = ...
-        self.receiver_id = ... # type: str
+        self.receiver_address = ... # type: str
+         self.deliverynote_address = ... # type: str
     
     @property
     def actions(self) -> List:

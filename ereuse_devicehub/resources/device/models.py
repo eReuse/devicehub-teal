@@ -382,18 +382,18 @@ class Computer(Device):
     It is a subset of the Linux definition of DMI / DMI decode.
     """
     deposit = Column(Integer, check_range('deposit',min=0,max=100), default=0)
-    author_id = db.Column(UUID(as_uuid=True),
-                          db.ForeignKey(User.id),
+    owner_address = db.Column(CIText(),
+                          db.ForeignKey(User.ethereum_address),
                           nullable=False,
-                          default=lambda: g.user.id)
-    author = db.relationship(User, primaryjoin=author_id == User.id)
+                          default=lambda: g.user.ethereum_address)
+    author = db.relationship(User, primaryjoin=owner_address == User.ethereum_address)
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
-    receiver_id = db.Column(CIText(),
+    receiver_address = db.Column(CIText(),
                           db.ForeignKey(User.ethereum_address),
                           nullable=True)
-    receiver = db.relationship(User, primaryjoin=receiver_id == User.ethereum_address)
-    delivery_note_address = db.Column(CIText(), nullable=True)
+    receiver = db.relationship(User, primaryjoin=receiver_address == User.ethereum_address)
+    deliverynote_address = db.Column(CIText(), nullable=True)
 
     def __init__(self, chassis, **kwargs) -> None:
         chassis = ComputerChassis(chassis)
