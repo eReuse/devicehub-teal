@@ -122,8 +122,7 @@ class Computer(Device):
                        dump_only=True,
                        collection_class=set,
                        description=m.Computer.privacy.__doc__)
-    deposit = Integer(dump_only=True,
-                       data_key='deposit',
+    deposit = Integer(validate=f.validate.Range(min=0, max=100),
                        description=m.Computer.deposit.__doc__)
     # author_id = NestedOn(s_user.User,only_query='author_id')
     owner_address = SanitizedStr(validate=f.validate.Length(max=42))
