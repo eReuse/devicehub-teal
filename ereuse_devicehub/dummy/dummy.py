@@ -169,8 +169,8 @@ class Dummy:
     def user_client(self, email: str, password: str, name: str, ethereum_address: str):
         user1 = User(email=email, password=password, ethereum_address=ethereum_address)
 
-        user2 = User(email='user2@test.com', password='1234', ethereum_address='0x56EbFdbAA98f52027A9776456e4fcD5d91090818')
-        user3 = User(email='user3@test.com', password='1234', ethereum_address='0xF88618956696aB7e56Cb7bc87d9848E921C4FDaA')
+        user2 = User(email='user2@dhub.com', password='1234', ethereum_address='0x56EbFdbAA98f52027A9776456e4fcD5d91090818')
+        user3 = User(email='user3@dhub.com', password='1234', ethereum_address='0xF88618956696aB7e56Cb7bc87d9848E921C4FDaA')
 
         user1.individuals.add(Person(name=name))
         db.session.add(user1)
