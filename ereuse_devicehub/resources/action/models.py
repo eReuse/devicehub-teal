@@ -1419,6 +1419,9 @@ class DisposeProduct(Trade):
     #     performing :class:`.ToDispose` + :class:`.Receive` to a
     #     ``RecyclingCenter``.
 
+class TransferOwnershipBlockchain(Trade):
+    """ The act of change owenership of devices between two users (ethereum address)"""
+
 
 class MakeAvailable(ActionWithMultipleDevices):
     """The act of setting willingness for trading."""

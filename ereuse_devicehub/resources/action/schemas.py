@@ -425,6 +425,10 @@ class DisposeProduct(Trade):
     __doc__ = m.DisposeProduct.__doc__
 
 
+class TransferOwnershipBlockchain(Trade):
+    __doc__ = m.TransferOwnershipBlockchain.__doc__
+
+
 class Receive(ActionWithMultipleDevices):
     __doc__ = m.Receive.__doc__
     role = EnumField(ReceiverRole)
