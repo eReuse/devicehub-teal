@@ -66,6 +66,8 @@ class Dummy:
             out = runner.invoke('org', 'add', *self.ORG).output
             org_id = json.loads(out)['id']
             user1 = self.user_client('user@dhub.com', '1234', 'user1', '0xC79F7fE80B5676fe38D8187b79d55F7A61e702b2')
+            user2 = self.user_client('user2@dhub.com', '1234', 'user2', '0x56EbFdbAA98f52027A9776456e4fcD5d91090818')
+            user3 = self.user_client('user3@dhub.com', '1234', 'user3', '0xF88618956696aB7e56Cb7bc87d9848E921C4FDaA')
 
             # todo put user's agent into Org
             for id in self.TAGS:
@@ -117,19 +119,20 @@ class Dummy:
                 'devices': list(itertools.islice(pcs, len(pcs) // 2))
             },
             res=m.Action)
-
-        parent, _ = user1.post(({'name': 'Parent'}), res=Lot)
-        child, _ = user1.post(({'name': 'Child'}), res=Lot)
-        parent, _ = user1.post({},
-                              res=Lot,
-                              item='{}/children'.format(parent['id']),
-                              query=[('id', child['id'])])
+        lot_user, _ = user1.post({'name': 'LotUser'}, res=Lot)
 
         lot, _ = user1.post({},
                            res=Lot,
-                           item='{}/devices'.format(child['id']),
+                           item='{}/devices'.format(lot_user['id']),
                            query=[('id', pc) for pc in itertools.islice(pcs, len(pcs) // 3)])
         assert len(lot['devices'])
+
+        # Adding Blockchaing Lot information (delivery note address & transfer state)
+
+        lot_user2, _ = user2.post({'name': 'LotUser2'}, res=Lot)
+
+        lot_user3, _ = user3.post(({'name': 'LotUser3'}), res=Lot)
+
 
         # Keep this at the bottom
         inventory, _ = user1.get(res=Device)
@@ -147,7 +150,8 @@ class Dummy:
         user1.post({'type': m.Prepare.t, 'devices': [sample_pc]}, res=m.Action)
         user1.post({'type': m.Ready.t, 'devices': [sample_pc]}, res=m.Action)
         user1.post({'type': m.Price.t, 'device': sample_pc, 'currency': 'EUR', 'price': 85},
-                  res=m.Action)
+                    res=m.Action)
+
         # todo test reserve
         user1.post(  # Sell device
             {
@@ -169,13 +173,8 @@ class Dummy:
     def user_client(self, email: str, password: str, name: str, ethereum_address: str):
         user1 = User(email=email, password=password, ethereum_address=ethereum_address)
 
-        user2 = User(email='user2@dhub.com', password='1234', ethereum_address='0x56EbFdbAA98f52027A9776456e4fcD5d91090818')
-        user3 = User(email='user3@dhub.com', password='1234', ethereum_address='0xF88618956696aB7e56Cb7bc87d9848E921C4FDaA')
-
         user1.individuals.add(Person(name=name))
         db.session.add(user1)
-        db.session.add(user2)
-        db.session.add(user3)
 
         db.session.commit()
         client = UserClient(self.app, user1.email, password,
