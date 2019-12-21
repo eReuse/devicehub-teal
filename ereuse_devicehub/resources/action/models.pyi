@@ -525,6 +525,10 @@ class DisposeProduct(Trade):
     pass
 
 
+class TransferOwnershipBlockchain(Trade):
+    pass
+
+
 class Receive(ActionWithMultipleDevices):
     role = ...  # type:Column
 
