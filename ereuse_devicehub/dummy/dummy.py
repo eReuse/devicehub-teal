@@ -119,20 +119,36 @@ class Dummy:
                 'devices': list(itertools.islice(pcs, len(pcs) // 2))
             },
             res=m.Action)
-        lot_user, _ = user1.post({'name': 'LotUser'}, res=Lot)
+
+        lot_user, _ = user1.post({'name': 'LoteStephan'}, res=Lot)
+
+        lot_user2, _ = user1.post({'name': 'LoteSergio'}, res=Lot)
+
+        lot_user3, _ = user1.post({'name': 'LoteManos'}, res=Lot)
+
+        lot_user4, _ = user1.post({'name': 'LoteJordi'}, res=Lot)
 
         lot, _ = user1.post({},
                            res=Lot,
                            item='{}/devices'.format(lot_user['id']),
-                           query=[('id', pc) for pc in itertools.islice(pcs, len(pcs) // 3)])
+                           query=[('id', pc) for pc in itertools.islice(pcs, 1, 4)])
         assert len(lot['devices'])
 
-        # Adding Blockchaing Lot information (delivery note address & transfer state)
+        lot2, _ = user1.post({},
+                    res=Lot,
+                    item='{}/devices'.format(lot_user2['id']),
+                    query=[('id', pc) for pc in itertools.islice(pcs, 4, 6)])
 
-        lot_user2, _ = user2.post({'name': 'LotUser2'}, res=Lot)
 
-        lot_user3, _ = user3.post(({'name': 'LotUser3'}), res=Lot)
-
+        lot3, _ = user1.post({},
+                    res=Lot,
+                    item='{}/devices'.format(lot_user3['id']),
+                    query=[('id', pc) for pc in itertools.islice(pcs, 11, 14)])
+        
+        lot4, _ = user1.post({},
+            res=Lot,
+            item='{}/devices'.format(lot_user4['id']),
+            query=[('id', pc) for pc in itertools.islice(pcs, 14, 16)])
 
         # Keep this at the bottom
         inventory, _ = user1.get(res=Device)
@@ -171,13 +187,13 @@ class Dummy:
         print('⭐ Done.')
 
     def user_client(self, email: str, password: str, name: str, ethereum_address: str):
-        user1 = User(email=email, password=password, ethereum_address=ethereum_address)
+        user = User(email=email, password=password, ethereum_address=ethereum_address)
 
-        user1.individuals.add(Person(name=name))
-        db.session.add(user1)
+        user.individuals.add(Person(name=name))
+        db.session.add(user)
 
         db.session.commit()
-        client = UserClient(self.app, user1.email, password,
+        client = UserClient(self.app, user.email, password,
                             response_wrapper=self.app.response_class)
         client.login()
         return client
