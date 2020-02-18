@@ -508,9 +508,10 @@ class Mobile(Device):
     meid.comment = """The Mobile Equipment Identifier as a hexadecimal 
     string.
     """
-    ram_size = db.Column(db.Integer, check_range(1, ))
+    ram_size = db.Column(db.Integer, check_range('ram_size', min=128, max=36000))
     ram_size.comment = """The total of RAM of the device in MB."""
-    data_storage_size = db.Column(db.Integer)
+    data_storage_size = db.Column(db.Integer, check_range('data_storage_size', 0, 10 ** 8))
+    data_storage_size.comment = """The total of data storage of the device in MB"""
 
     @validates('imei')
     def validate_imei(self, _, value: int):
