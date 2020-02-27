@@ -14,10 +14,10 @@ from sqlalchemy.orm import joinedload
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
-from ereuse_devicehub.resources.deliverynote.models import DeliveryNote
+from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 
 
-class DeliveryNoteView(View):
+class DeliverynoteView(View):
     class FindArgs(MarshmallowSchema):
         """Allowed arguments for the ``find``
         method (GET collection) endpoint
@@ -26,7 +26,7 @@ class DeliveryNoteView(View):
 
     def post(self):
         l = request.get_json()
-        dlvnote = DeliveryNote(**l)
+        dlvnote = Deliverynote(**l)
         db.session.add(dlvnote)
         db.session().final_flush()
         ret = self.schema.jsonify(dlvnote)
@@ -37,7 +37,7 @@ class DeliveryNoteView(View):
     # def patch(self, id):
     #     patch_schema = self.resource_def.SCHEMA(only=('name', 'description', 'transfer_state', 'receiver_address', 'deposit', 'deliverynote_address', 'devices', 'owner_address'), partial=True)
     #     d = request.get_json(schema=patch_schema)
-    #     dlvnote = DeliveryNote.query.filter_by(id=id).one()
+    #     dlvnote = Deliverynote.query.filter_by(id=id).one()
     #     device_fields = ['transfer_state', 'receiver_address', 'deposit', 'deliverynote_address', 'owner_address']
     #     computers = [x for x in dlvnote.all_devices if isinstance(x, Computer)]
     #     for key, value in d.items():
@@ -51,7 +51,7 @@ class DeliveryNoteView(View):
     def one(self, id: uuid.UUID):
         """Gets one action."""
         import pdb; pdb.set_trace()
-        deliverynote = DeliveryNote.query.filter_by(id=id).one()  # type: DeliveryNote
+        deliverynote = Deliverynote.query.filter_by(id=id).one()  # type: Deliverynote
         return self.schema.jsonify(deliverynote)
 
     @teal.cache.cache(datetime.timedelta(minutes=5))
@@ -71,9 +71,9 @@ class DeliveryNoteView(View):
         Otherwise it just returns the standard flat view of lots that
         you can filter.
         """
-        query = DeliveryNote.query
+        query = Deliverynote.query
         if args['search']:
-            query = query.filter(DeliveryNote.name.ilike(args['search'] + '%'))
+            query = query.filter(Deliverynote.name.ilike(args['search'] + '%'))
         dlvnote = query.paginate(per_page=6 if args['search'] else 30)
         return things_response(
             self.schema.dump(dlvnote.items, many=True, nested=0),
@@ -81,7 +81,7 @@ class DeliveryNoteView(View):
         )
 
     def delete(self, id):
-        dlvnote = DeliveryNote.query.filter_by(id=id).one()
+        dlvnote = Deliverynote.query.filter_by(id=id).one()
         dlvnote.delete()
         db.session.commit()
         return Response(status=204)
