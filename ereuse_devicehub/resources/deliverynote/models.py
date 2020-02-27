@@ -18,67 +18,29 @@ from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.enums import TransferState
 
 
-class DeliveryNote(Thing):
+class Deliverynote(Thing):
     id = db.Column(UUID(as_uuid=True), primary_key=True)  # uuid is generated on init by default
-    # creator = db.relationship(User, primaryjoin=owner_address == User.ethereum_address)
     documentID = db.Column(CIText(), nullable=False)
-    # supplier = db.relationship(User, primaryjoin=owner_address == User.ethereum_address)
+    creator_id = Column(Integer, ForeignKey(User.id))
+    creator = db.relationship(User, primaryjoin=creator_id == User.id)
+    supplier_id = Column(Integer, ForeignKey(User.id))
+    supplier = db.relationship(User, primaryjoin=supplier_id == User.id)
+    date = db.Column(db.DateTime, nullable=False)
     # deposit = db.Column(db.Integer, check_range('deposit', min=0, max=100), default=0)
-    # owner_address = db.Column(CIText(),
-    #                       db.ForeignKey(User.ethereum_address),
-    #                       nullable=False,
-    #                       default=lambda: g.user.ethereum_address)
-    # transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
-    # transfer_state.comment = TransferState.__doc__
-    # lots = db.relationship(Lot,
-    #                        backref=db.backref('deliverynotes', lazy=True, collection_class=set),
-    #                        secondary=lambda: LotDevice.__table__,
-    #                        lazy=True,
-    #                        collection_class=set)
-    """The **children** devices that the lot has.
-
-    # Note that the lot can have more devices, if they are inside
-    # descendant lots.
-    # """
-    # parents = db.relationship(lambda: Lot,
-    #                           viewonly=True,
-    #                           lazy=True,
-    #                           collection_class=set,
-    #                           secondary=lambda: LotParent.__table__,
-    #                           primaryjoin=lambda: Lot.id == LotParent.child_id,
-    #                           secondaryjoin=lambda: LotParent.parent_id == Lot.id,
-    #                           cascade='refresh-expire',  # propagate changes outside ORM
-    #                           backref=db.backref('children',
-    #                                              viewonly=True,
-    #                                              lazy=True,
-    #                                              cascade='refresh-expire',
-    #                                              collection_class=set)
-    #                           )
-    # """The parent lots."""
-
-    # all_devices = db.relationship(Device,
-    #                               viewonly=True,
-    #                               lazy=True,
-    #                               collection_class=set,
-    #                               secondary=lambda: LotDeviceDescendants.__table__,
-    #                               primaryjoin=lambda: Lot.id == LotDeviceDescendants.ancestor_lot_id,
-    #                               secondaryjoin=lambda: LotDeviceDescendants.device_id == Device.id)
-    # """All devices, including components, inside this lot and its
-    # descendants.
-    # """
-    # deposit = db.Column(db.Integer, check_range('deposit', min=0, max=100), default=0)
-    # owner_address = db.Column(CIText(),
-    #                       db.ForeignKey(User.ethereum_address),
-    #                       nullable=False,
-    #                       default=lambda: g.user.ethereum_address)
-    # owner = db.relationship(User, primaryjoin=owner_address == User.ethereum_address)
-    # transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
-    # transfer_state.comment = TransferState.__doc__
-    # receiver_address = db.Column(CIText(),
-    #                       db.ForeignKey(User.ethereum_address),
-    #                       nullable=True)
-    # receiver = db.relationship(User, primaryjoin=receiver_address == User.ethereum_address)
-    # deliverynote_address = db.Column(CIText(), nullable=True)
+    deposit = db.Column(CIText(), nullable=False)
+    # The following fiels are supposed to be 0:N relationships
+    # to SnapshotDelivery entity.
+    # At this stage of implementation they will treated as a
+    # comma-separated string of the devices expexted/transfered
+    expected_devices = db.Column(CIText(), nullable=False)
+    transferred_devices = db.Column(CIText(), nullable=False)
+    transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
+    transfer_state.comment = TransferState.__doc__
+    lots = db.relationship(Lot,
+                           backref=db.backref('deliverynotes', lazy=True, collection_class=set),
+                           secondary=lambda: LotDevice.__table__,
+                           lazy=True,
+                           collection_class=set)
 
     def __init__(self) -> None:
         """Initializes a delivery note
@@ -92,7 +54,7 @@ class DeliveryNote(Thing):
     @property
     def url(self) -> urlutils.URL:
         """The URL where to GET this action."""
-        return urlutils.URL(url_for_resource(DeliveryNote, item_id=self.id))
+        return urlutils.URL(url_for_resource(Deliverynote, item_id=self.id))
 
 
     # def delete(self):
@@ -125,7 +87,7 @@ class DeliveryNote(Thing):
 
     def __repr__(self) -> str:
         # return '<Lot {0.name} devices={0.devices!r}>'.format(self)
-        return '<DeliveryNote {0.documentID}>'.format(self)
+        return '<Deliverynote {0.documentID}>'.format(self)
 
 
 # class LotDevice(db.Model):

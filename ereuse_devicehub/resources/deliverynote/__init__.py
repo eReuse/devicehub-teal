@@ -5,12 +5,12 @@ from teal.resource import Converters, Resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.deliverynote import schemas
-from ereuse_devicehub.resources.deliverynote.views import DeliveryNoteView
+from ereuse_devicehub.resources.deliverynote.views import DeliverynoteView
 
 
-class DeliveryNoteDef(Resource):
-    SCHEMA = schemas.DeliveryNote
-    VIEW = DeliveryNoteView
+class DeliverynoteDef(Resource):
+    SCHEMA = schemas.Deliverynote
+    VIEW = DeliverynoteView
     # AUTH = True
     AUTH = False
     ID_CONVERTER = Converters.uuid
