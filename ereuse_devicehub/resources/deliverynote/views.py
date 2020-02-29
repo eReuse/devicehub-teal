@@ -15,6 +15,7 @@ from sqlalchemy.orm import joinedload
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.deliverynote.models import Deliverynote
+from ereuse_devicehub.resources.lot.models import Lot
 
 
 class DeliverynoteView(View):
@@ -25,8 +26,14 @@ class DeliverynoteView(View):
         search = f.Str(missing=None)
 
     def post(self):
-        l = request.get_json()
-        dlvnote = Deliverynote(**l)
+        # Create delivery note
+        dn = request.get_json()
+        dlvnote = Deliverynote(**dn)
+        # Create a lot
+        lot_name = dlvnote.supplier_email + "_" + datetime.datetime.utcnow().strftime("%B-%d-%Y")
+        new_lot = Lot(name=lot_name)
+        dlvnote.lot_id = new_lot.id
+        db.session.add(new_lot)
         db.session.add(dlvnote)
         db.session().final_flush()
         ret = self.schema.jsonify(dlvnote)
@@ -50,7 +57,6 @@ class DeliverynoteView(View):
 
     def one(self, id: uuid.UUID):
         """Gets one action."""
-        import pdb; pdb.set_trace()
         deliverynote = Deliverynote.query.filter_by(id=id).one()  # type: Deliverynote
         return self.schema.jsonify(deliverynote)
 

@@ -15,17 +15,25 @@ from teal.resource import url_for_resource
 from ereuse_devicehub.db import create_view, db, exp, f
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.enums import TransferState
 
 
 class Deliverynote(Thing):
     id = db.Column(UUID(as_uuid=True), primary_key=True)  # uuid is generated on init by default
-    documentID = db.Column(CIText(), nullable=False)
-    creator_id = Column(Integer, ForeignKey(User.id))
+    document_id = db.Column(CIText(), nullable=False)
+    creator_id = db.Column(UUID(as_uuid=True),
+                          db.ForeignKey(User.id),
+                          nullable=False,
+                          default=lambda: g.user.id)
     creator = db.relationship(User, primaryjoin=creator_id == User.id)
-    supplier_id = Column(Integer, ForeignKey(User.id))
-    supplier = db.relationship(User, primaryjoin=supplier_id == User.id)
-    date = db.Column(db.DateTime, nullable=False)
+    supplier_email = db.Column(CIText(),
+                          db.ForeignKey(User.email),
+                          nullable=False,
+                          default=lambda: g.user.email)
+    supplier = db.relationship(User, primaryjoin=lambda: Deliverynote.supplier_email == User.email)
+    # supplier = db.relationship(User)
+    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     # deposit = db.Column(db.Integer, check_range('deposit', min=0, max=100), default=0)
     deposit = db.Column(CIText(), nullable=False)
     # The following fiels are supposed to be 0:N relationships
@@ -36,16 +44,26 @@ class Deliverynote(Thing):
     transferred_devices = db.Column(CIText(), nullable=False)
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
+    lot_id = db.Column(UUID(as_uuid=True),
+                          db.ForeignKey(Lot.id),
+                          nullable=False)
     lots = db.relationship(Lot,
                            backref=db.backref('deliverynotes', lazy=True, collection_class=set),
-                           secondary=lambda: LotDevice.__table__,
                            lazy=True,
+                           primaryjoin=Lot.id == lot_id,
                            collection_class=set)
 
-    def __init__(self) -> None:
+    def __init__(self, document_id: str, deposit: str,
+                 supplier_email: str,
+                 expected_devices: str,
+                 transferred_devices: str) -> None:
         """Initializes a delivery note
         """
-        super().__init__(id=uuid.uuid4())
+        super().__init__(id=uuid.uuid4(),
+                         document_id=document_id, deposit=deposit,
+                         supplier_email=supplier_email,
+                         expected_devices=expected_devices,
+                         transferred_devices=transferred_devices)
 
     @property
     def type(self) -> str:

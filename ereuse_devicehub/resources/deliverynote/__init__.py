@@ -11,8 +11,8 @@ from ereuse_devicehub.resources.deliverynote.views import DeliverynoteView
 class DeliverynoteDef(Resource):
     SCHEMA = schemas.Deliverynote
     VIEW = DeliverynoteView
-    # AUTH = True
-    AUTH = False
+    AUTH = True
+    # AUTH = False
     ID_CONVERTER = Converters.uuid
 
     def __init__(self, app,
@@ -25,6 +25,5 @@ class DeliverynoteDef(Resource):
                  url_defaults=None,
                  root_path=None,
                  cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        import pdb; pdb.set_trace()
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
