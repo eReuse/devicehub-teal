@@ -41,19 +41,14 @@ class DeliverynoteView(View):
         db.session.commit()
         return ret
 
-    # def patch(self, id):
-    #     patch_schema = self.resource_def.SCHEMA(only=('name', 'description', 'transfer_state', 'receiver_address', 'deposit', 'deliverynote_address', 'devices', 'owner_address'), partial=True)
-    #     d = request.get_json(schema=patch_schema)
-    #     dlvnote = Deliverynote.query.filter_by(id=id).one()
-    #     device_fields = ['transfer_state', 'receiver_address', 'deposit', 'deliverynote_address', 'owner_address']
-    #     computers = [x for x in dlvnote.all_devices if isinstance(x, Computer)]
-    #     for key, value in d.items():
-    #         setattr(dlvnote, key, value)
-    #         if key in device_fields:
-    #             for dev in computers:
-    #                 setattr(dev, key, value)
-    #     db.session.commit()
-    #     return Response(status=204)
+    def patch(self, id):
+        patch_schema = self.resource_def.SCHEMA(only=('transfer_state', 'receiver_address', 'supplier_email', 'ethereum_address'), partial=True)
+        d = request.get_json(schema=patch_schema)
+        dlvnote = Deliverynote.query.filter_by(id=id).one()
+        for key, value in d.items():
+            setattr(dlvnote, key, value)
+        db.session.commit()
+        return Response(status=204)
 
     def one(self, id: uuid.UUID):
         """Gets one action."""
