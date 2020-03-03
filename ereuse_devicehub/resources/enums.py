@@ -9,6 +9,7 @@ import inflection
 class SnapshotSoftware(Enum):
     """The software used to perform the Snapshot."""
     Workbench = 'Workbench'
+    WorkbenchAndroid = 'WorkbenchAndroid'
     AndroidApp = 'AndroidApp'
     Web = 'Web'
     DesktopApp = 'DesktopApp'

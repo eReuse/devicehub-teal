@@ -496,6 +496,8 @@ class Mobile(Device):
     ram_size.comment = """The total of RAM of the device in MB."""
     data_storage_size = db.Column(db.Integer, check_range('data_storage_size', 0, 10 ** 8))
     data_storage_size.comment = """The total of data storage of the device in MB"""
+    display_size = db.Column(db.Float(decimal_return_scale=1), check_range('display_size', min=0.1, max=30.0))
+    display_size.comment = """The total size of the device screen"""
 
     @validates('imei')
     def validate_imei(self, _, value: int):

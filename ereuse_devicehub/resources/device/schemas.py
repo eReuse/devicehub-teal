@@ -189,6 +189,9 @@ class Mobile(Device):
     data_storage_size = Integer(validate=Range(0, 10 ** 8),
                                 data_key='dataStorageSize',
                                 description=m.Mobile.data_storage_size)
+    display_size = Float(validate=Range(min=0.1, max=30.0),
+                         data_key='displaySize',
+                         description=m.Mobile.display_size.comment)
 
     @pre_load
     def convert_check_imei(self, data):

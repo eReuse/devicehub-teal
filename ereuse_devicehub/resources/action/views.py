@@ -55,8 +55,8 @@ class ActionView(View):
         # snapshot, and we want to wait to flush snapshot at the end
         device = snapshot_json.pop('device')  # type: Computer
         components = None
-        if snapshot_json['software'] == SnapshotSoftware.Workbench:
-            components = snapshot_json.pop('components')  # type: List[Component]
+        if snapshot_json['software'] == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid):
+            components = snapshot_json.pop('components', None)  # type: List[Component]
         snapshot = Snapshot(**snapshot_json)
 
         # Remove new actions from devices so they don't interfere with sync
@@ -94,6 +94,8 @@ class ActionView(View):
                 snapshot.actions.add(rate_computer)
                 if price:
                     snapshot.actions.add(price)
+        elif snapshot.software == SnapshotSoftware.WorkbenchAndroid:
+            pass    # TODO try except to compute RateMobile
 
         db.session.add(snapshot)
         db.session().final_flush()
