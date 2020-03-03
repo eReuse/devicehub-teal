@@ -1,18 +1,15 @@
 import uuid
 from datetime import datetime
-from typing import Union
 
 from boltons import urlutils
 from citext import CIText
 from flask import g
-from sqlalchemy import TEXT, Enum as DBEnum
+from sqlalchemy.types import ARRAY
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy_utils import LtreeType
-from sqlalchemy_utils.types.ltree import LQUERY
-from teal.db import CASCADE_OWN, UUIDLtree, check_range, IntEnum
+from teal.db import CASCADE_OWN, check_range, IntEnum
 from teal.resource import url_for_resource
 
-from ereuse_devicehub.db import create_view, db, exp, f
+from ereuse_devicehub.db import db, f
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.lot.models import Lot
@@ -33,20 +30,19 @@ class Deliverynote(Thing):
                           default=lambda: g.user.email)
     supplier = db.relationship(User, primaryjoin=lambda: Deliverynote.supplier_email == User.email)
     receiver_address = db.Column(CIText(),
-                          db.ForeignKey(User.email))
-                          # nullable=False)
-    receiver = db.relationship(User, primaryjoin=lambda: Deliverynote.receiver_address== User.email)
-    # supplier = db.relationship(User)
+                          db.ForeignKey(User.email),
+                          nullable=False,
+                          default=lambda: g.user.email)
+    receiver = db.relationship(User, primaryjoin=lambda: Deliverynote.receiver_address == User.email)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     date.comment = 'The date the DeliveryNote initiated'
-    # deposit = db.Column(db.Integer, check_range('deposit', min=0, max=100), default=0)
-    deposit = db.Column(CIText(), nullable=False)
-    # The following fiels are supposed to be 0:N relationships
+    deposit = db.Column(db.Integer, check_range('deposit', min=0, max=100), default=0)
+    # The following fields are supposed to be 0:N relationships
     # to SnapshotDelivery entity.
     # At this stage of implementation they will treated as a
     # comma-separated string of the devices expexted/transfered
-    expected_devices = db.Column(CIText(), nullable=False)
-    transferred_devices = db.Column(CIText(), nullable=True)
+    expected_devices = db.Column(db.ARRAY(db.Integer, dimensions=1), nullable=False)
+    transferred_devices = db.Column(db.ARRAY(db.Integer, dimensions=1), nullable=True)
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
     ethereum_address = db.Column(CIText(), unique=True, default=None)

@@ -12,7 +12,6 @@ class DeliverynoteDef(Resource):
     SCHEMA = schemas.Deliverynote
     VIEW = DeliverynoteView
     AUTH = True
-    # AUTH = False
     ID_CONVERTER = Converters.uuid
 
     def __init__(self, app,
