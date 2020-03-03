@@ -219,6 +219,7 @@ class Mobile(Device):
     meid = ...  # type: Column
     ram_size = ...  # type: Column
     data_storage_size = ...  # type: Column
+    display_size = ... # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -226,6 +227,7 @@ class Mobile(Device):
         self.meid = ...  # type: Optional[str]
         self.ram_size = ...  # type: Optional[int]
         self.data_storage_size = ...  # type: Optional[int]
+        self.display_size = ...  # type: Optional[float]
 
 
 class Smartphone(Mobile):
