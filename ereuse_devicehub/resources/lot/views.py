@@ -57,7 +57,7 @@ class LotView(View):
     def one(self, id: uuid.UUID):
         """Gets one action."""
         lot = Lot.query.filter_by(id=id).one()  # type: Lot
-        return self.schema.jsonify(lot)
+        return self.schema.jsonify(lot, nested=2)
 
     @teal.cache.cache(datetime.timedelta(minutes=5))
     def find(self, args: dict):
@@ -77,7 +77,7 @@ class LotView(View):
         you can filter.
         """
         if args['format'] == LotFormat.UiTree:
-            lots = self.schema.dump(Lot.query, many=True, nested=1)
+            lots = self.schema.dump(Lot.query, many=True, nested=2)
             ret = {
                 'items': {l['id']: l for l in lots},
                 'tree': self.ui_tree(),
