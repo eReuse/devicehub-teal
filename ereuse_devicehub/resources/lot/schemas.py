@@ -4,6 +4,7 @@ from teal.marshmallow import SanitizedStr, URL, EnumField
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.lot import models as m
+from ereuse_devicehub.resources.deliverynote import schemas as s_deliverynote
 from ereuse_devicehub.resources.models import STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.enums import TransferState
@@ -24,4 +25,4 @@ class Lot(Thing):
     owner_address = SanitizedStr(validate=f.validate.Length(max=42))
     transfer_state = EnumField(TransferState, description=m.Lot.transfer_state.comment)
     receiver_address = SanitizedStr(validate=f.validate.Length(max=42))
-    deliverynote_address = SanitizedStr(validate=f.validate.Length(max=42))
+    deliverynotes = NestedOn(s_deliverynote.Deliverynote, many=True, dump_only=True)
