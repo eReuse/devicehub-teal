@@ -1377,6 +1377,10 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     """
 
 
+class InitTransfer(Trade):
+    """The act of transfer ownership of devices between two agents"""
+
+
 class Sell(Trade):
     """The act of taking money from a buyer in exchange of a device."""
 

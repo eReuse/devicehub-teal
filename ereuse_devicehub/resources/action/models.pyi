@@ -493,6 +493,10 @@ class Trade(ActionWithMultipleDevices):
         self.confirms = ...  # type: Organize
 
 
+class InitTransfer(Trade):
+    pass
+
+
 class Sell(Trade):
     pass
 

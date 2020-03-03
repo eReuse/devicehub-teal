@@ -26,6 +26,7 @@ class Lot(Thing):
     description.comment = """A comment about the lot."""
     closed = db.Column(db.Boolean, default=False, nullable=False)
     closed.comment = """A closed lot cannot be modified anymore."""
+
     devices = db.relationship(Device,
                               backref=db.backref('lots', lazy=True, collection_class=set),
                               secondary=lambda: LotDevice.__table__,

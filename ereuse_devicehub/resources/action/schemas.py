@@ -397,6 +397,10 @@ class Trade(ActionWithMultipleDevices):
     confirms = NestedOn(Organize)
 
 
+class InitTransfer(Trade):
+    __doc__ = m.InitTransfer.__doc__
+
+
 class Sell(Trade):
     __doc__ = m.Sell.__doc__
 
