@@ -47,3 +47,8 @@ class DeliverynoteView(View):
             setattr(dlvnote, key, value)
         db.session.commit()
         return Response(status=204)
+
+    def one(self, id: uuid.UUID):
+        """Get one delivery note"""
+        deliverynote = Deliverynote.query.filter_by(id=id).one()  # type Deliverynote
+        return self.schema.jsonify(Deliverynote)
