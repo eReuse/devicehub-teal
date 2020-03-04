@@ -25,4 +25,4 @@ class Lot(Thing):
     owner_address = SanitizedStr(validate=f.validate.Length(max=42))
     transfer_state = EnumField(TransferState, description=m.Lot.transfer_state.comment)
     receiver_address = SanitizedStr(validate=f.validate.Length(max=42))
-    deliverynotes = NestedOn(s_deliverynote.Deliverynote, many=True, dump_only=True)
+    deliverynote = NestedOn(s_deliverynote.Deliverynote, dump_only=True)

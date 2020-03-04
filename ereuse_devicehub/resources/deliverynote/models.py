@@ -49,11 +49,10 @@ class Deliverynote(Thing):
     lot_id = db.Column(UUID(as_uuid=True),
                           db.ForeignKey(Lot.id),
                           nullable=False)
-    lots = db.relationship(Lot,
-                           backref=db.backref('deliverynotes', lazy=True, collection_class=set),
-                           lazy=True,
-                           primaryjoin=Lot.id == lot_id,
-                           collection_class=set)
+    lot = db.relationship(Lot,
+                          backref=db.backref('deliverynote', uselist=False, lazy=True),
+                          lazy=True,
+                          primaryjoin=Lot.id == lot_id)
 
     def __init__(self, document_id: str, deposit: str, date,
                  supplier_email: str,
