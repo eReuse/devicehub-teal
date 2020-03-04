@@ -38,8 +38,6 @@ class DeliverynoteView(View):
 
     def patch(self, id):
         patch_schema = self.resource_def.SCHEMA(only=('transfer_state',
-                                                      'transferred_devices',
-                                                      'supplier_email',
                                                       'ethereum_address'), partial=True)
         d = request.get_json(schema=patch_schema)
         dlvnote = Deliverynote.query.filter_by(id=id).one()
@@ -51,4 +49,4 @@ class DeliverynoteView(View):
     def one(self, id: uuid.UUID):
         """Get one delivery note"""
         deliverynote = Deliverynote.query.filter_by(id=id).one()  # type Deliverynote
-        return self.schema.jsonify(Deliverynote)
+        return self.schema.jsonify(deliverynote)
