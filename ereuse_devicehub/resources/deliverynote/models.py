@@ -56,13 +56,15 @@ class Deliverynote(Thing):
 
     def __init__(self, document_id: str, deposit: str, date,
                  supplier_email: str,
-                 expected_devices: str) -> None:
+                 expected_devices: str,
+                 transfer_state: TransferState) -> None:
         """Initializes a delivery note
         """
         super().__init__(id=uuid.uuid4(),
                          document_id=document_id, deposit=deposit, date=date,
                          supplier_email=supplier_email,
-                         expected_devices=expected_devices)
+                         expected_devices=expected_devices,
+                         transfer_state=transfer_state)
 
     @property
     def type(self) -> str:
