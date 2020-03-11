@@ -21,6 +21,7 @@ class DevicehubConfig(Config):
                                      import_resource(agent),
                                      import_resource(lot),
                                      import_resource(deliverynote),
+                                     import_resource(proof),
                                      import_resource(documents),
                                      import_resource(inventory)),
                                )
