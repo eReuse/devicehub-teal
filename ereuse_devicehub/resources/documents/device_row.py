@@ -4,7 +4,7 @@ from flask import current_app
 
 from ereuse_devicehub.resources.action.models import BenchmarkDataStorage, RateComputer, \
     TestDataStorage
-from ereuse_devicehub.resources.device import models as d
+from ereuse_devicehub.resources.device import models as d, states
 
 
 class DeviceRow(OrderedDict):
@@ -35,10 +35,22 @@ class DeviceRow(OrderedDict):
         self['Manufacturer'] = device.manufacturer
         # self['State'] = device.last_action_of()
         self['Registered in'] = format(device.created, '%c')
-        self['Price'] = device.price
+        try:
+            self['Physical state'] = device.last_action_of(*states.Physical.actions()).t
+        except:
+            self['Physical state'] = ''
+        try:
+            self['Trading state'] = device.last_action_of(*states.Trading.actions()).t
+        except:
+            self['Trading state'] = ''
+        self['Price'] = device.price.price or ''
         if isinstance(device, d.Computer):
             self['Processor'] = device.processor_model
-            self['RAM (GB)'] = device.ram_size
+            self['RAM (MB)'] = device.ram_size
+            self['Data Storage Size (MB)'] = device.data_storage_size
+        if isinstance(device, d.Mobile):
+            self['Display Size'] = device.display_size
+            self['RAM (MB)'] = device.ram_size
             self['Data Storage Size (MB)'] = device.data_storage_size
         rate = device.rate
         if rate:
@@ -61,7 +73,7 @@ class DeviceRow(OrderedDict):
         # todo put an input specific order (non alphabetic) & where are a list of types components
         for type in sorted(current_app.resources[d.Component.t].subresources_types):  # type: str
             max = self.NUMS.get(type, 4)
-            if type not in ['Component', 'HardDrive', 'SolidStateDrive']:
+            if type not in ['Component', 'HardDrive', 'SolidStateDrive', 'Camera', 'Battery']:
                 i = 1
                 for component in (r for r in self.device.components if r.type == type):
                     self.fill_component(type, i, component)
