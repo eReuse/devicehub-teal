@@ -31,7 +31,8 @@ def test_api_docs(client: Client):
         '/documents/devices/',
         '/documents/static/{filename}',
         '/tags/{tag_id}/device/{device_id}',
-        '/devices/static/{filename}'
+        '/devices/static/{filename}',
+        '/deliverynotes/'
     }
     assert docs['info'] == {'title': 'Devicehub', 'version': '0.2'}
     assert docs['components']['securitySchemes']['bearerAuth'] == {
@@ -42,4 +43,4 @@ def test_api_docs(client: Client):
         'scheme': 'basic',
         'name': 'Authorization'
     }
-    assert len(docs['definitions']) == 114
+    assert len(docs['definitions']) == 116
