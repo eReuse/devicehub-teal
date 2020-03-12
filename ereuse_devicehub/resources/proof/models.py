@@ -25,7 +25,7 @@ from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import Action, DisposeProduct, \
-    EraseBasic, Rate
+    EraseBasic, Rate, Trade
 from ereuse_devicehub.resources.models import Thing
 
 
@@ -79,7 +79,7 @@ class Proof(Thing):
 
 
 class ProofTransfer(JoinedTableMixin, Proof):
-    transfer_id = Column(BigInteger, ForeignKey(Action.id), nullable=False)
+    transfer_id = Column(UUID, ForeignKey(Trade.id), nullable=False)
     transfer = relationship(DisposeProduct,
                             primaryjoin=DisposeProduct.id == transfer_id)
 
@@ -88,7 +88,7 @@ class ProofDataWipe(JoinedTableMixin, Proof):
     erasure_type = Column(CIText())
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     result = db.Column(db.Boolean, default=False, nullable=False)
-    erasure_id = Column(BigInteger, ForeignKey(EraseBasic.id), nullable=False)
+    erasure_id = Column(UUID, ForeignKey(EraseBasic.id), nullable=False)
     erasure = relationship(EraseBasic,
                            backref=backref('proofs_datawipe',
                                            lazy=True,
@@ -98,13 +98,13 @@ class ProofDataWipe(JoinedTableMixin, Proof):
 
 class ProofFunction(JoinedTableMixin, Proof):
     disk_usage = db.Column(db.Integer, default=0)
-    rate_id = Column(BigInteger, ForeignKey(Rate.id), nullable=False)
+    rate_id = Column(UUID, ForeignKey(Rate.id), nullable=False)
     rate = relationship(Rate,
                         primaryjoin=Rate.id == rate_id)
 
 
 class ProofReuse(JoinedTableMixin, Proof):
-    price = db.Column(db.Integer, required=True)
+    price = db.Column(db.Integer)
 
 
 class ProofRecycling(JoinedTableMixin, Proof):

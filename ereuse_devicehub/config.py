@@ -7,7 +7,8 @@ from teal.config import Config
 from teal.enums import Currency
 from teal.utils import import_resource
 
-from ereuse_devicehub.resources import action, agent, deliverynote, inventory, lot, tag, user
+from ereuse_devicehub.resources import action, agent, deliverynote, inventory, \
+    lot, proof, tag, user
 from ereuse_devicehub.resources.device import definitions
 from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import PriceSoftware

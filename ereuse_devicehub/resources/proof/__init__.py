@@ -1,13 +1,14 @@
 from teal.resource import Converters, Resource
 
-from ereuse_devicehub.resources.action import schemas
+from ereuse_devicehub.resources.proof import schemas
 from ereuse_devicehub.resources.proof.views import ProofView
 
 
 class ProofDef(Resource):
     SCHEMA = schemas.Proof
     VIEW = ProofView
-    AUTH = True
+    # AUTH = True
+    AUTH = False
     ID_CONVERTER = Converters.uuid
 
 

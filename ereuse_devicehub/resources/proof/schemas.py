@@ -16,7 +16,8 @@ from ereuse_devicehub.resources.action import schemas as s_action
 class Proof(Thing):
     __doc__ = m.Proof.__doc__
     id = UUID(dump_only=True)
-    ethereumHashes = SanitizedStr(default='', validate=Length(max=STR_BIG_SIZE))
+    ethereum_hashes = SanitizedStr(default='', validate=Length(max=STR_BIG_SIZE),
+                                   data_key="ethereumHashes")
     url = URL(dump_only=True, description=m.Proof.url.__doc__)
 
 
@@ -32,7 +33,7 @@ class ProofDataWipe(Proof):
     erasure_type = SanitizedStr(default='')
     date = DateTime()
     result = Boolean(missing=False)
-    erasure = NestedOn(s_action.EraseBasic, required=True, only_query='id')
+    erasure = NestedOn(s_action.EraseBasic, dump_only=True, only_query='id')
 
 
 class ProofFunction(Proof):

@@ -24,15 +24,16 @@ class ProofView(View):
             raise ValidationError('JSON is not correct.')
         # todo there should be a way to better get subclassess resource
         #   defs
+        proofs = list()
         if json['batch']:
-            for proof in json['proofs']:
-                resource_def = app.resources[proof['type']]
-                a = resource_def.schema.load(json)
-                Model = db.Model._decl_class_registry.data[json['type']]()
-                action = Model(**a)
-                db.session.add(action)
-                db.session().final_flush()
-                ret = self.schema.jsonify(action)
+            for prf in json['proofs']:
+                resource_def = app.resources[prf['type']]
+                p = resource_def.schema.load(prf)
+                Model = db.Model._decl_class_registry.data[prf['type']]()
+                proof = Model(**p)
+                db.session.add(proof)
+                proofs.append(self.schema.dump(proof))
             db.session.commit()
+            ret = self.schema.jsonify(proofs)
             ret.status_code = 201
             return ret
