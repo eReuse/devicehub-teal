@@ -3,42 +3,30 @@
 """
 
 from collections import Iterable
-from contextlib import suppress
-from datetime import datetime, timedelta, timezone
-from decimal import Decimal, ROUND_HALF_EVEN, ROUND_UP
+from datetime import datetime
 from typing import Optional, Set, Union
 from uuid import uuid4
 
-import inflection
-import teal.db
 from boltons import urlutils
 from citext import CIText
 from flask import current_app as app, g
 from sortedcontainers import SortedSet
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Enum as DBEnum, \
-    Float, ForeignKey, Integer, Interval, JSON, Numeric, SmallInteger, Unicode, event, orm
+from sqlalchemy import BigInteger, Column, Enum as DBEnum, \
+    ForeignKey, Integer, Unicode
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship, validates
-from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
-from teal.db import CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, \
-    POLYMORPHIC_ON, StrictVersionType, URL, check_lower, check_range
-from teal.enums import Country, Currency, Subdivision
+from teal.db import CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, \
+    POLYMORPHIC_ON, StrictVersionType, URL
 from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.agent.models import Agent
-from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Desktop, \
-    Device, Laptop, Server
-from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, BiosAccessRange, \
-    ErasureStandards, FunctionalityRange, PhysicalErasureMethod, PriceSoftware, \
-    R_NEGATIVE, R_POSITIVE, RatingRange, ReceiverRole, Severity, SnapshotSoftware, \
-    TestDataStorageLength
-from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
-from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.action.models import Action, DisposeProduct, \
+    EraseBasic, Rate
+from ereuse_devicehub.resources.models import Thing
 
 
 class JoinedTableMixin:
@@ -100,7 +88,7 @@ class ProofDataWipe(JoinedTableMixin, Proof):
     erasure_type = Column(CIText())
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     result = db.Column(db.Boolean, default=False, nullable=False)
-    erasure_id = Column(BigInteger, ForeignKey(Device.id), nullable=False)
+    erasure_id = Column(BigInteger, ForeignKey(EraseBasic.id), nullable=False)
     erasure = relationship(EraseBasic,
                            backref=backref('proofs_datawipe',
                                            lazy=True,

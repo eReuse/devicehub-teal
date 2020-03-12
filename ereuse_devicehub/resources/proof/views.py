@@ -28,16 +28,11 @@ class ProofView(View):
             for proof in json['proofs']:
                 resource_def = app.resources[proof['type']]
                 a = resource_def.schema.load(json)
-                if json['type'] == Snapshot.t:
-                    return self.snapshot(a, resource_def)
-                if json['type'] == VisualTest.t:
-                    pass
-                    # TODO JN add compute rate with new visual test and old components device
                 Model = db.Model._decl_class_registry.data[json['type']]()
                 action = Model(**a)
                 db.session.add(action)
                 db.session().final_flush()
                 ret = self.schema.jsonify(action)
-                ret.status_code = 201
-                db.session.commit()
-                return ret
+            db.session.commit()
+            ret.status_code = 201
+            return ret
