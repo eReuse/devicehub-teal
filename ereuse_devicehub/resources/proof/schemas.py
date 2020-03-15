@@ -31,9 +31,9 @@ class ProofTransfer(Proof):
 class ProofDataWipe(Proof):
     __doc__ = m.ProofDataWipe.__doc__
     erasure_type = SanitizedStr(default='')
-    date = DateTime()
+    date = DateTime('iso', required=True)
     result = Boolean(missing=False)
-    erasure = NestedOn(s_action.EraseBasic, dump_only=True, only_query='id')
+    erasure = NestedOn(s_action.EraseBasic, only_query='id')
 
 
 class ProofFunction(Proof):

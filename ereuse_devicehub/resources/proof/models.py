@@ -49,10 +49,6 @@ class Proof(Thing):
         """The URL where to GET this proof."""
         return urlutils.URL(url_for_resource(Proof, item_id=self.id))
 
-    @property
-    def certificate(self) -> Optional[urlutils.URL]:
-        return None
-
     # noinspection PyMethodParameters
     @declared_attr
     def __mapper_args__(cls):
@@ -81,35 +77,43 @@ class Proof(Thing):
 class ProofTransfer(JoinedTableMixin, Proof):
     transfer_id = Column(UUID, ForeignKey(Trade.id), nullable=False)
     transfer = relationship(DisposeProduct,
+                            backref=backref("proof_transfer",
+                                            lazy=True,
+                                            cascade=CASCADE_OWN),
+                            uselist=False,
                             primaryjoin=DisposeProduct.id == transfer_id)
 
 
 class ProofDataWipe(JoinedTableMixin, Proof):
-    erasure_type = Column(CIText())
-    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    result = db.Column(db.Boolean, default=False, nullable=False)
-    erasure_id = Column(UUID, ForeignKey(EraseBasic.id), nullable=False)
+    erasure_type = Column(CIText(), default='', nullable=False)
+    date = Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    result = Column(db.Boolean, default=False, nullable=False)
+    result.comment = """Identifies proof datawipe as a result."""
+    erasure_id = Column(UUID(as_uuid=True), ForeignKey(EraseBasic.id), nullable=False)
     erasure = relationship(EraseBasic,
-                           backref=backref('proofs_datawipe',
+                           backref=backref('proof_datawipe',
                                            lazy=True,
                                            cascade=CASCADE_OWN),
                            primaryjoin=EraseBasic.id == erasure_id)
 
 
 class ProofFunction(JoinedTableMixin, Proof):
-    disk_usage = db.Column(db.Integer, default=0)
+    disk_usage = Column(db.Integer, default=0)
     rate_id = Column(UUID, ForeignKey(Rate.id), nullable=False)
     rate = relationship(Rate,
+                       backref=backref('proof_function',
+                                       lazy=True,
+                                       cascade=CASCADE_OWN),
                         primaryjoin=Rate.id == rate_id)
 
 
 class ProofReuse(JoinedTableMixin, Proof):
-    price = db.Column(db.Integer)
+    price = Column(db.Integer)
 
 
 class ProofRecycling(JoinedTableMixin, Proof):
-    collection_point = Column(CIText())
+    collection_point = Column(CIText(), default='', nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    contact = Column(CIText())
-    ticket = Column(CIText())
-    gps_location = Column(CIText())
+    contact = Column(CIText(), default='', nullable=False)
+    ticket = Column(CIText(), default='', nullable=False)
+    gps_location = Column(CIText(), default='', nullable=False)

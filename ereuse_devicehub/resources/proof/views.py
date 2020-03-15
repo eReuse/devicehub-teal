@@ -2,12 +2,13 @@ from distutils.version import StrictVersion
 from typing import List
 from uuid import UUID
 
-from flask import current_app as app, request
+from flask import current_app as app, request, jsonify
 from sqlalchemy.util import OrderedSet
 from teal.marshmallow import ValidationError
 from teal.resource import View
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.device.models import Component, Computer
@@ -34,6 +35,9 @@ class ProofView(View):
                 db.session.add(proof)
                 proofs.append(self.schema.dump(proof))
             db.session.commit()
-            ret = self.schema.jsonify(proofs)
-            ret.status_code = 201
-            return ret
+            response = jsonify({
+                'items': proofs,
+                'url': request.path
+            })
+            response.status_code = 201
+            return response
