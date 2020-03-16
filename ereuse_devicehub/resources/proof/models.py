@@ -42,7 +42,7 @@ class Proof(Thing):
     """
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     type = Column(Unicode, nullable=False)
-    ethereum_hashes = Column(CIText(), default='', nullable=False)
+    ethereum_hash = Column(CIText(), default='', nullable=False)
 
     @property
     def url(self) -> urlutils.URL:
