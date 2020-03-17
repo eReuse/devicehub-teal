@@ -130,3 +130,5 @@ class ProofRecycling(JoinedTableMixin, Proof):
     contact = Column(CIText(), default='', nullable=False)
     ticket = Column(CIText(), default='', nullable=False)
     gps_location = Column(CIText(), default='', nullable=False)
+    recycler_code = Column(CIText(), default='', nullable=False)
+

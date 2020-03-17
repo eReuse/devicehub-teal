@@ -57,8 +57,9 @@ class ProofReuse(Proof):
 
 class ProofRecycling(Proof):
     __doc__ = m.ProofRecycling.__doc__
-    collection_point = SanitizedStr(default='')
-    date = DateTime()
-    contact = SanitizedStr(default='')
-    ticket = SanitizedStr(default='')
-    gps_location = SanitizedStr(default='')
+    collection_point = SanitizedStr(default='', data_key='collectionPoint', required=True)
+    date = DateTime('iso', required=True)
+    contact = SanitizedStr(default='', required=True)
+    ticket = SanitizedStr(default='', required=True)
+    gps_location = SanitizedStr(default='', data_key='gpsLocation', required=True)
+    recycler_code = SanitizedStr(default='', data_key='recyclerCode', required=True)
