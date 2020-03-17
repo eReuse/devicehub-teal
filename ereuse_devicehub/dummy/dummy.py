@@ -68,6 +68,7 @@ class Dummy:
             user1 = self.user_client('user@dhub.com', '1234', 'user1', '0xC79F7fE80B5676fe38D8187b79d55F7A61e702b2')
             user2 = self.user_client('user2@dhub.com', '1234', 'user2', '0x56EbFdbAA98f52027A9776456e4fcD5d91090818')
             user3 = self.user_client('user3@dhub.com', '1234', 'user3', '0xF88618956696aB7e56Cb7bc87d9848E921C4FDaA')
+            user4 = self.user_client('user4@dhub.com', '1234', 'user4', '0x37be35ae7eced44ca25e4683e98425fc7830a8a5')
 
             # todo put user's agent into Org
             for id in self.TAGS:
@@ -122,11 +123,11 @@ class Dummy:
 
         lot_user, _ = user1.post({'name': 'LoteStephan'}, res=Lot)
 
-        lot_user2, _ = user1.post({'name': 'LoteSergio'}, res=Lot)
+        lot_user2, _ = user2.post({'name': 'LoteSergio'}, res=Lot)
 
-        lot_user3, _ = user1.post({'name': 'LoteManos'}, res=Lot)
+        lot_user3, _ = user3.post({'name': 'LoteManos'}, res=Lot)
 
-        lot_user4, _ = user1.post({'name': 'LoteJordi'}, res=Lot)
+        lot_user4, _ = user4.post({'name': 'LoteJordi'}, res=Lot)
 
         lot, _ = user1.post({},
                            res=Lot,
@@ -134,18 +135,17 @@ class Dummy:
                            query=[('id', pc) for pc in itertools.islice(pcs, 1, 4)])
         assert len(lot['devices'])
 
-        lot2, _ = user1.post({},
+        lot2, _ = user2.post({},
                     res=Lot,
                     item='{}/devices'.format(lot_user2['id']),
                     query=[('id', pc) for pc in itertools.islice(pcs, 4, 6)])
 
-
-        lot3, _ = user1.post({},
+        lot3, _ = user3.post({},
                     res=Lot,
                     item='{}/devices'.format(lot_user3['id']),
                     query=[('id', pc) for pc in itertools.islice(pcs, 11, 14)])
         
-        lot4, _ = user1.post({},
+        lot4, _ = user4.post({},
             res=Lot,
             item='{}/devices'.format(lot_user4['id']),
             query=[('id', pc) for pc in itertools.islice(pcs, 14, 16)])
