@@ -88,7 +88,7 @@ class ProofDevice(db.Model):
 
 
 class ProofTransfer(JoinedTableMixin, Proof):
-    transfer_id = Column(UUID, ForeignKey(Trade.id), nullable=False)
+    transfer_id = Column(UUID(as_uuid=True), ForeignKey(Trade.id), nullable=False)
     transfer = relationship(DisposeProduct,
                             backref=backref("proof_transfer",
                                             lazy=True,

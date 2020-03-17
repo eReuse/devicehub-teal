@@ -32,6 +32,7 @@ class ProofTransfer(Proof):
     __doc__ = m.ProofTransfer.__doc__
     transfer = NestedOn(s_action.DisposeProduct,
                         required=True,
+                        data_key='transferID',
                         only_query='id')
 
 
