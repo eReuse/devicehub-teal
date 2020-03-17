@@ -312,7 +312,7 @@ class Display(DisplayMixin, Component):
 
 
 class Battery(Component):
-    __doc__ = m.Battery
+    __doc__ = m.Battery.__doc__
 
     wireless = Boolean(description=m.Battery.wireless.comment)
     technology = EnumField(enums.BatteryTechnology, description=m.Battery.technology.comment)
@@ -320,7 +320,7 @@ class Battery(Component):
 
 
 class Camera(Component):
-    __doc__ = m.Camera
+    __doc__ = m.Camera.__doc__
 
     focal_length = Integer(data_key='focalLength')
     video_height = Integer(data_key='videoHeight')

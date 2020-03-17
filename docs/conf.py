@@ -33,7 +33,7 @@ from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.schemas import Thing
 
 project = 'Devicehub'
-copyright = '2018, eReuse.org team'
+copyright = '2020, eReuse.org team'
 author = 'eReuse.org team'
 
 # The short X.Y version

@@ -63,4 +63,4 @@ Schema
 ******
 
 .. dhlist::
-    :module: ereuse_devicehub.resources.event.schemas
+    :module: ereuse_devicehub.resources.action.schemas
