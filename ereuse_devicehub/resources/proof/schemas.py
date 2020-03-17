@@ -11,6 +11,7 @@ from ereuse_devicehub.resources.proof import models as m
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.action import schemas as s_action
+from ereuse_devicehub.resources.device import schemas as s_device
 
 
 class Proof(Thing):
@@ -19,6 +20,12 @@ class Proof(Thing):
     ethereum_hash = SanitizedStr(default='', validate=Length(max=STR_BIG_SIZE),
                                    data_key="ethereumHash", required=True)
     url = URL(dump_only=True, description=m.Proof.url.__doc__)
+    devices = NestedOn(s_device.Device,
+                       many=True,
+                       required=True,  # todo test ensuring len(devices) >= 1
+                       only_query='id',
+                       data_key='deviceIDs',
+                       collection_class=OrderedSet)
 
 
 class ProofTransfer(Proof):

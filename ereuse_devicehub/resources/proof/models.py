@@ -26,6 +26,7 @@ from teal.resource import url_for_resource
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import Action, DisposeProduct, \
     EraseBasic, Rate, Trade
+from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
 
 
@@ -43,6 +44,11 @@ class Proof(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     type = Column(Unicode, nullable=False)
     ethereum_hash = Column(CIText(), default='', nullable=False)
+    devices = relationship(Device,
+                           backref=backref('proofs_multiple', lazy=True),
+                           secondary=lambda: ProofDevice.__table__,
+                           order_by=lambda: Device.id,
+                           collection_class=OrderedSet)
 
     @property
     def url(self) -> urlutils.URL:
@@ -72,6 +78,13 @@ class Proof(Thing):
 
     def __repr__(self):
         return '<{0.t} {0.id} >'.format(self)
+
+
+
+class ProofDevice(db.Model):
+    device_id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
+    proof_id = Column(UUID(as_uuid=True), ForeignKey(Proof.id),
+                      primary_key=True)
 
 
 class ProofTransfer(JoinedTableMixin, Proof):
