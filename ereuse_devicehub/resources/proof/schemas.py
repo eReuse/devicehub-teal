@@ -45,8 +45,9 @@ class ProofDataWipe(Proof):
 
 class ProofFunction(Proof):
     __doc__ = m.ProofFunction.__doc__
-    disk_usage = Integer()
-    rate = NestedOn(s_action.Rate, required=True, only_query='id')
+    disk_usage = Integer(data_key='diskUsage')
+    rate = NestedOn(s_action.Rate, required=True,
+                    only_query='id', data_key='rateID')
 
 
 class ProofReuse(Proof):

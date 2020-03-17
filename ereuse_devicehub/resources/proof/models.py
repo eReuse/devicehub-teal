@@ -112,7 +112,7 @@ class ProofDataWipe(JoinedTableMixin, Proof):
 
 class ProofFunction(JoinedTableMixin, Proof):
     disk_usage = Column(db.Integer, default=0)
-    rate_id = Column(UUID, ForeignKey(Rate.id), nullable=False)
+    rate_id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), nullable=False)
     rate = relationship(Rate,
                        backref=backref('proof_function',
                                        lazy=True,
