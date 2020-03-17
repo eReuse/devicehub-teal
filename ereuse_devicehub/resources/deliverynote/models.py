@@ -4,8 +4,9 @@ from datetime import datetime
 from boltons import urlutils
 from citext import CIText
 from flask import g
+from typing import Iterable
 from sqlalchemy.types import ARRAY
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from teal.db import CASCADE_OWN, check_range, IntEnum
 from teal.resource import url_for_resource
 
@@ -41,7 +42,8 @@ class Deliverynote(Thing):
     # to SnapshotDelivery entity.
     # At this stage of implementation they will treated as a
     # comma-separated string of the devices expexted/transfered
-    expected_devices = db.Column(db.ARRAY(db.Integer, dimensions=1), nullable=False)
+    expected_devices = db.Column(JSONB, nullable=False)
+    # expected_devices = db.Column(db.ARRAY(JSONB, dimensions=1), nullable=False)
     transferred_devices = db.Column(db.ARRAY(db.Integer, dimensions=1), nullable=True)
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
@@ -55,8 +57,8 @@ class Deliverynote(Thing):
                           primaryjoin=Lot.id == lot_id)
 
     def __init__(self, document_id: str, deposit: str, date,
-                 supplier_email: str,
-                 expected_devices: str,
+                 supplier_email:  str,
+                 expected_devices: Iterable,
                  transfer_state: TransferState) -> None:
         """Initializes a delivery note
         """

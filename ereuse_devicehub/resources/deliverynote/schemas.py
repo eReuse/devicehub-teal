@@ -22,8 +22,7 @@ class Deliverynote(Thing):
     date = f.DateTime('iso', required=True)
     deposit = f.Integer(validate=f.validate.Range(min=0, max=100),
                        description=m.Deliverynote.deposit.__doc__)
-    ethereum_address = f.String(description='User identifier address inside the Blockchain',
-                                data_key='ethereumAddress')
-    expected_devices = f.List(f.Integer(), required=True, data_key='expectedDevices')
+    ethereum_address = f.String(description='User identifier address inside the Blockchain')
+    expected_devices = f.List(f.Dict, required=True, data_key='expectedDevices')
     transferred_devices = f.List(f.Integer(), required=False, data_key='transferredDevices')
     transfer_state = EnumField(TransferState, description=m.Lot.transfer_state.comment)
