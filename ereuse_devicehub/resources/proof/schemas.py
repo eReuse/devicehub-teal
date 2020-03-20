@@ -12,6 +12,7 @@ from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.action import schemas as s_action
 from ereuse_devicehub.resources.device import schemas as s_device
+from ereuse_devicehub.resources.user import schemas as s_user
 
 
 class Proof(Thing):
@@ -20,40 +21,40 @@ class Proof(Thing):
     ethereum_hash = SanitizedStr(default='', validate=Length(max=STR_BIG_SIZE),
                                    data_key="ethereumHash", required=True)
     url = URL(dump_only=True, description=m.Proof.url.__doc__)
-    devices = NestedOn(s_device.Device,
-                       many=True,
-                       required=True,  # todo test ensuring len(devices) >= 1
-                       only_query='id',
-                       data_key='deviceIDs',
-                       collection_class=OrderedSet)
+    device = NestedOn(s_device.Device, only_query='id', required=True, data_key='deviceID')
 
 
 class ProofTransfer(Proof):
     __doc__ = m.ProofTransfer.__doc__
     transfer = NestedOn(s_action.DisposeProduct,
                         required=True,
-                        data_key='transferID',
                         only_query='id')
 
 
 class ProofDataWipe(Proof):
     __doc__ = m.ProofDataWipe.__doc__
-    erasure_type = SanitizedStr(default='', data_key='erasureType')
+    erasure_type = String(default='', data_key='erasureType')
     date = DateTime('iso', required=True)
     result = Boolean(required=True)
+    proof_author = NestedOn(s_user.User, only_query='id', data_key='proofAuthor')
     erasure = NestedOn(s_action.EraseBasic, only_query='id', data_key='erasureID')
 
 
 class ProofFunction(Proof):
     __doc__ = m.ProofFunction.__doc__
     disk_usage = Integer(data_key='diskUsage')
+    proof_author = NestedOn(s_user.User, only_query='id', data_key='proofAuthor')
     rate = NestedOn(s_action.Rate, required=True,
                     only_query='id', data_key='rateID')
 
 
 class ProofReuse(Proof):
     __doc__ = m.ProofReuse.__doc__
-    price = Integer()
+    receiver_segment = String(default='', data_key='receiverSegment', required=True)
+    id_receipt = String(default='', data_key='idReceipt', required=True)
+    supplier = NestedOn(s_user.User, only_query='ethereum_address', required=True, data_key='supplierAddress')
+    receiver = NestedOn(s_user.User, only_query='ethereum_address', required=True, data_key='receiverAddress')
+    price = Integer(required=True)
 
 
 class ProofRecycling(Proof):

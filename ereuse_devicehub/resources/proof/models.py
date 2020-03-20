@@ -28,6 +28,7 @@ from ereuse_devicehub.resources.action.models import Action, DisposeProduct, \
     EraseBasic, Rate, Trade
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
+from ereuse_devicehub.resources.user import User
 
 
 class JoinedTableMixin:
@@ -44,11 +45,13 @@ class Proof(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     type = Column(Unicode, nullable=False)
     ethereum_hash = Column(CIText(), default='', nullable=False)
-    devices = relationship(Device,
-                           backref=backref('proofs_multiple', lazy=True),
-                           secondary=lambda: ProofDevice.__table__,
-                           order_by=lambda: Device.id,
-                           collection_class=OrderedSet)
+    device_id = db.Column(BigInteger,
+                          db.ForeignKey(Device.id),
+                          nullable=False)
+    device = db.relationship(Device,
+                             backref=db.backref('devices', uselist=True, lazy=True),
+                             lazy=True,
+                             primaryjoin=Device.id == device_id)
 
     @property
     def url(self) -> urlutils.URL:
@@ -81,19 +84,13 @@ class Proof(Thing):
 
 
 
-class ProofDevice(db.Model):
-    device_id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
-    proof_id = Column(UUID(as_uuid=True), ForeignKey(Proof.id),
-                      primary_key=True)
-
-
 class ProofTransfer(JoinedTableMixin, Proof):
     transfer_id = Column(UUID(as_uuid=True), ForeignKey(Trade.id), nullable=False)
     transfer = relationship(DisposeProduct,
                             backref=backref("proof_transfer",
                                             lazy=True,
+                                            uselist=False,
                                             cascade=CASCADE_OWN),
-                            uselist=False,
                             primaryjoin=DisposeProduct.id == transfer_id)
 
 
@@ -102,33 +99,55 @@ class ProofDataWipe(JoinedTableMixin, Proof):
     date = Column(db.DateTime, nullable=False, default=datetime.utcnow)
     result = Column(db.Boolean, default=False, nullable=False)
     result.comment = """Identifies proof datawipe as a result."""
+    proof_author_id = Column(CIText(),
+                          db.ForeignKey(User.ethereum_address),
+                          nullable=False,
+                          default=lambda: g.user.ethereum_address)
+    proof_author = relationship(User, primaryjoin=lambda: ProofDataWipe.proof_author_id == User.ethereum_address)
     erasure_id = Column(UUID(as_uuid=True), ForeignKey(EraseBasic.id), nullable=False)
     erasure = relationship(EraseBasic,
                            backref=backref('proof_datawipe',
                                            lazy=True,
+                                           uselist=False,
                                            cascade=CASCADE_OWN),
                            primaryjoin=EraseBasic.id == erasure_id)
 
 
 class ProofFunction(JoinedTableMixin, Proof):
     disk_usage = Column(db.Integer, default=0)
+    proof_author_id = Column(CIText(),
+                          db.ForeignKey(User.ethereum_address),
+                          nullable=False,
+                          default=lambda: g.user.ethereum_address)
+    proof_author = db.relationship(User, primaryjoin=lambda: ProofFunction.proof_author_id == User.ethereum_address)
     rate_id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), nullable=False)
     rate = relationship(Rate,
                        backref=backref('proof_function',
                                        lazy=True,
+                                       uselist=False,
                                        cascade=CASCADE_OWN),
                         primaryjoin=Rate.id == rate_id)
 
 
 class ProofReuse(JoinedTableMixin, Proof):
+    receiver_segment = Column(CIText(), default='', nullable=False)
+    id_receipt = Column(CIText(), default='', nullable=False)
+    supplier_id = db.Column(CIText(),
+                         db.ForeignKey(User.ethereum_address),
+                         nullable=False,
+                         default=lambda: g.user.ethereum_address)
+    supplier = db.relationship(User, primaryjoin=lambda: ProofReuse.supplier_id == User.ethereum_address)
+    receiver_id = db.Column(CIText(),
+                         db.ForeignKey(User.ethereum_address),
+                         nullable=False)
+    receiver = db.relationship(User, primaryjoin=lambda: ProofReuse.receiver_id == User.ethereum_address)
     price = Column(db.Integer)
 
 
 class ProofRecycling(JoinedTableMixin, Proof):
     collection_point = Column(CIText(), default='', nullable=False)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date = Column(db.DateTime, nullable=False, default=datetime.utcnow)
     contact = Column(CIText(), default='', nullable=False)
     ticket = Column(CIText(), default='', nullable=False)
     gps_location = Column(CIText(), default='', nullable=False)
     recycler_code = Column(CIText(), default='', nullable=False)
-
