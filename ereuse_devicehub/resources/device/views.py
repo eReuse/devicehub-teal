@@ -98,7 +98,7 @@ class DeviceView(View):
         if isinstance(dev, Computer):
             resource_def = app.resources['Computer']
             # TODO check how to handle the 'actions_one'
-            patch_schema = resource_def.SCHEMA(only=['ethereum_address', 'actions_one'], partial=True)
+            patch_schema = resource_def.SCHEMA(only=['ethereum_address', 'transfer_state', 'deliverynote_address', 'actions_one'], partial=True)
             json = request.get_json(schema=patch_schema)
             # TODO check how to handle the 'actions_one'
             json.pop('actions_one')
