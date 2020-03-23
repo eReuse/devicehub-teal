@@ -1,5 +1,5 @@
 from flask import current_app as app
-from marshmallow import Schema as MarshmallowSchema, ValidationError, validates_schema
+from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema
 from marshmallow.fields import Boolean, DateTime, Integer, Nested, String, UUID
 from marshmallow.validate import Length
 from sqlalchemy.util import OrderedSet
@@ -26,9 +26,11 @@ class Proof(Thing):
 
 class ProofTransfer(Proof):
     __doc__ = m.ProofTransfer.__doc__
-    transfer = NestedOn(s_action.DisposeProduct,
-                        required=True,
-                        only_query='id')
+    deposit = Integer()
+    supplier_id = SanitizedStr(validate=f.validate.Length(max=STR_SIZE),
+                                  load_only=True, required=True, data_key='supplierID')
+    receiver_id = SanitizedStr(validate=f.validate.Length(max=STR_SIZE),
+                                  load_only=True, required=True, data_key='receiverID')
 
 
 class ProofDataWipe(Proof):

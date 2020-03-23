@@ -85,13 +85,16 @@ class Proof(Thing):
 
 
 class ProofTransfer(JoinedTableMixin, Proof):
-    transfer_id = Column(UUID(as_uuid=True), ForeignKey(Trade.id), nullable=False)
-    transfer = relationship(DisposeProduct,
-                            backref=backref("proof_transfer",
-                                            lazy=True,
-                                            uselist=False,
-                                            cascade=CASCADE_OWN),
-                            primaryjoin=DisposeProduct.id == transfer_id)
+    supplier_id = db.Column(CIText(),
+                         db.ForeignKey(User.ethereum_address),
+                         nullable=False,
+                         default=lambda: g.user.ethereum_address)
+    supplier = db.relationship(User, primaryjoin=lambda: ProofTransfer.supplier_id == User.ethereum_address)
+    receiver_id = db.Column(CIText(),
+                         db.ForeignKey(User.ethereum_address),
+                         nullable=False)
+    receiver = db.relationship(User, primaryjoin=lambda: ProofTransfer.receiver_id == User.ethereum_address)
+    deposit = Column(db.Integer, default=0)
 
 
 class ProofDataWipe(JoinedTableMixin, Proof):
