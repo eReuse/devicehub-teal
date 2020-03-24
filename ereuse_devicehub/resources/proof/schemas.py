@@ -21,31 +21,34 @@ class Proof(Thing):
     ethereum_hash = SanitizedStr(default='', validate=Length(max=STR_BIG_SIZE),
                                    data_key="ethereumHash", required=True)
     url = URL(dump_only=True, description=m.Proof.url.__doc__)
-    device = NestedOn(s_device.Device, only_query='id', required=True, data_key='deviceID')
+    device_id = Integer(load_only=True, data_key='deviceID')
+    device = NestedOn(s_device.Device, dump_only=True)
 
 
 class ProofTransfer(Proof):
     __doc__ = m.ProofTransfer.__doc__
-    deposit = Integer()
-    supplier_id = SanitizedStr(validate=f.validate.Length(max=STR_SIZE),
-                                  load_only=True, required=True, data_key='supplierID')
-    receiver_id = SanitizedStr(validate=f.validate.Length(max=STR_SIZE),
-                                  load_only=True, required=True, data_key='receiverID')
+    deposit = Integer(validate=f.validate.Range(min=0, max=100))
+    supplier_id = UUID(load_only=True, required=True, data_key='supplierID')
+    receiver_id = UUID(load_only=True, required=True, data_key='receiverID')
 
 
 class ProofDataWipe(Proof):
     __doc__ = m.ProofDataWipe.__doc__
-    erasure_type = String(default='', data_key='erasureType')
+    # erasure_type = String(default='', data_key='erasureType')
     date = DateTime('iso', required=True)
     result = Boolean(required=True)
-    proof_author = NestedOn(s_user.User, only_query='id', data_key='proofAuthor')
+    proof_author_id = SanitizedStr(validate=f.validate.Length(max=STR_SIZE),
+                                   load_only=True, required=True, data_key='proofAuthor')
+    proof_author = NestedOn(s_user.User, dump_only=True)
     erasure = NestedOn(s_action.EraseBasic, only_query='id', data_key='erasureID')
 
 
 class ProofFunction(Proof):
     __doc__ = m.ProofFunction.__doc__
-    disk_usage = Integer(data_key='diskUsage')
-    proof_author = NestedOn(s_user.User, only_query='id', data_key='proofAuthor')
+    disk_usage = Integer(validate=f.validate.Range(min=0, max=100), data_key='diskUsage')
+    proof_author_id = SanitizedStr(validate=f.validate.Length(max=STR_SIZE),
+                                   load_only=True, required=True, data_key='proofAuthor')
+    proof_author = NestedOn(s_user.User, dump_only=True)
     rate = NestedOn(s_action.Rate, required=True,
                     only_query='id', data_key='rateID')
 
@@ -54,8 +57,8 @@ class ProofReuse(Proof):
     __doc__ = m.ProofReuse.__doc__
     receiver_segment = String(default='', data_key='receiverSegment', required=True)
     id_receipt = String(default='', data_key='idReceipt', required=True)
-    supplier = NestedOn(s_user.User, only_query='ethereum_address', required=True, data_key='supplierAddress')
-    receiver = NestedOn(s_user.User, only_query='ethereum_address', required=True, data_key='receiverAddress')
+    supplier_id = UUID(load_only=True, required=True, data_key='supplierID')
+    receiver_id = UUID(load_only=True, required=True, data_key='receiverID')
     price = Integer(required=True)
 
 

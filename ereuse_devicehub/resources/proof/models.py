@@ -49,7 +49,7 @@ class Proof(Thing):
                           db.ForeignKey(Device.id),
                           nullable=False)
     device = db.relationship(Device,
-                             backref=db.backref('devices', uselist=True, lazy=True),
+                             backref=db.backref('proofs_device', uselist=True, lazy=True),
                              lazy=True,
                              primaryjoin=Device.id == device_id)
 
@@ -85,28 +85,28 @@ class Proof(Thing):
 
 
 class ProofTransfer(JoinedTableMixin, Proof):
-    supplier_id = db.Column(CIText(),
-                         db.ForeignKey(User.ethereum_address),
+    supplier_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey(User.id),
                          nullable=False,
-                         default=lambda: g.user.ethereum_address)
-    supplier = db.relationship(User, primaryjoin=lambda: ProofTransfer.supplier_id == User.ethereum_address)
-    receiver_id = db.Column(CIText(),
-                         db.ForeignKey(User.ethereum_address),
+                         default=lambda: g.user.id)
+    supplier = db.relationship(User, primaryjoin=lambda: ProofTransfer.supplier_id == User.id)
+    receiver_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey(User.id),
                          nullable=False)
-    receiver = db.relationship(User, primaryjoin=lambda: ProofTransfer.receiver_id == User.ethereum_address)
+    receiver = db.relationship(User, primaryjoin=lambda: ProofTransfer.receiver_id == User.id)
     deposit = Column(db.Integer, default=0)
 
 
 class ProofDataWipe(JoinedTableMixin, Proof):
-    erasure_type = Column(CIText(), default='', nullable=False)
+    # erasure_type = Column(CIText(), default='', nullable=False)
     date = Column(db.DateTime, nullable=False, default=datetime.utcnow)
     result = Column(db.Boolean, default=False, nullable=False)
     result.comment = """Identifies proof datawipe as a result."""
-    proof_author_id = Column(CIText(),
-                          db.ForeignKey(User.ethereum_address),
+    proof_author_id = Column(UUID(as_uuid=True),
+                          db.ForeignKey(User.id),
                           nullable=False,
-                          default=lambda: g.user.ethereum_address)
-    proof_author = relationship(User, primaryjoin=lambda: ProofDataWipe.proof_author_id == User.ethereum_address)
+                          default=lambda: g.user.id)
+    proof_author = relationship(User, primaryjoin=lambda: ProofDataWipe.proof_author_id == User.id)
     erasure_id = Column(UUID(as_uuid=True), ForeignKey(EraseBasic.id), nullable=False)
     erasure = relationship(EraseBasic,
                            backref=backref('proof_datawipe',
@@ -118,11 +118,11 @@ class ProofDataWipe(JoinedTableMixin, Proof):
 
 class ProofFunction(JoinedTableMixin, Proof):
     disk_usage = Column(db.Integer, default=0)
-    proof_author_id = Column(CIText(),
-                          db.ForeignKey(User.ethereum_address),
+    proof_author_id = Column(UUID(as_uuid=True),
+                          db.ForeignKey(User.id),
                           nullable=False,
-                          default=lambda: g.user.ethereum_address)
-    proof_author = db.relationship(User, primaryjoin=lambda: ProofFunction.proof_author_id == User.ethereum_address)
+                          default=lambda: g.user.id)
+    proof_author = db.relationship(User, primaryjoin=lambda: ProofFunction.proof_author_id == User.id)
     rate_id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), nullable=False)
     rate = relationship(Rate,
                        backref=backref('proof_function',
@@ -135,15 +135,15 @@ class ProofFunction(JoinedTableMixin, Proof):
 class ProofReuse(JoinedTableMixin, Proof):
     receiver_segment = Column(CIText(), default='', nullable=False)
     id_receipt = Column(CIText(), default='', nullable=False)
-    supplier_id = db.Column(CIText(),
-                         db.ForeignKey(User.ethereum_address),
+    supplier_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey(User.id),
                          nullable=False,
-                         default=lambda: g.user.ethereum_address)
-    supplier = db.relationship(User, primaryjoin=lambda: ProofReuse.supplier_id == User.ethereum_address)
-    receiver_id = db.Column(CIText(),
-                         db.ForeignKey(User.ethereum_address),
+                         default=lambda: g.user.id)
+    supplier = db.relationship(User, primaryjoin=lambda: ProofReuse.supplier_id == User.id)
+    receiver_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey(User.id),
                          nullable=False)
-    receiver = db.relationship(User, primaryjoin=lambda: ProofReuse.receiver_id == User.ethereum_address)
+    receiver = db.relationship(User, primaryjoin=lambda: ProofReuse.receiver_id == User.id)
     price = Column(db.Integer)
 
 
