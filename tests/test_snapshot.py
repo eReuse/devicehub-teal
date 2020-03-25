@@ -229,6 +229,28 @@ def _test_snapshot_computer_no_hid(user: UserClient):
     user.post(s, res=Snapshot)
 
 
+def test_snapshot_post_without_hid(user: UserClient):
+    """Tests the post snapshot endpoint (validation, etc), data correctness,
+    and relationship correctness with HID field generated with type - model - manufacturer - S/N.
+    """
+    snapshot = snapshot_and_check(user, file('basic.snapshot.nohid'),
+                                  action_types=(
+                                      BenchmarkProcessor.t,
+                                      VisualTest.t,
+                                      RateComputer.t
+                                  ),
+                                  perform_second_snapshot=False)
+    assert snapshot['software'] == 'Workbench'
+    assert snapshot['version'] == '11.0b9'
+    assert snapshot['uuid'] == '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
+    assert snapshot['elapsed'] == 4
+    assert snapshot['author']['id'] == user.user['id']
+    assert 'actions' not in snapshot['device']
+    assert 'author' not in snapshot['device']
+    response = user.post(snapshot, res=Snapshot)
+    assert response.status == 201
+
+
 def test_snapshot_mismatch_id():
     """Tests uploading a device with an ID from another device."""
     # Note that this won't happen as in this new version
@@ -417,7 +439,8 @@ def assert_similar_device(device1: dict, device2: dict):
     assert isinstance(device1, dict) and device1
     assert isinstance(device2, dict) and device2
     for key in 'serialNumber', 'model', 'manufacturer', 'type':
-        assert device1.get(key, '').lower() == device2.get(key, '').lower()
+        if (device1.get(key, '') is not None) and (device2.get(key, '') is not None):
+            assert device1.get(key, '').lower() == device2.get(key, '').lower()
 
 
 def assert_similar_components(components1: List[dict], components2: List[dict]):
