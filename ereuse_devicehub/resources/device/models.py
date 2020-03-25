@@ -51,13 +51,13 @@ class Device(Thing):
     internally for software; users should not use this.
     """
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
-    hid = Column(Unicode(), check_lower('hid'), unique=True)
+    hid = Column(Unicode(), check_lower('hid'), unique=False)
     hid.comment = """The Hardware ID (HID) is the unique ID traceability 
     systems use to ID a device globally. This field is auto-generated
     from Devicehub using literal identifiers from the device,
     so it can re-generated *offline*.    
     """ + HID_CONVERSION_DOC
-    model = Column(Unicode, check_lower('model'))
+    model = Column(Unicode(), check_lower('model'))
     model.comment = """The model of the device in lower case.
     
     The model is the unambiguous, as technical as possible, denomination

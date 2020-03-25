@@ -20,7 +20,7 @@ from ereuse_devicehub.resources.user import schemas as s_user
 class Device(Thing):
     __doc__ = m.Device.__doc__
     id = Integer(description=m.Device.id.comment, dump_only=True)
-    hid = SanitizedStr(lower=True, dump_only=True, description=m.Device.hid.comment)
+    hid = SanitizedStr(lower=True, description=m.Device.hid.comment)
     tags = NestedOn('Tag',
                     many=True,
                     collection_class=OrderedSet,
