@@ -38,7 +38,7 @@ class ProofDataWipe(Proof):
     date = DateTime('iso', required=True)
     result = Boolean(required=True)
     proof_author_id = SanitizedStr(validate=f.validate.Length(max=STR_SIZE),
-                                   load_only=True, required=True, data_key='proofAuthor')
+                                   load_only=True, required=True, data_key='proofAuthorID')
     proof_author = NestedOn(s_user.User, dump_only=True)
     erasure = NestedOn(s_action.EraseBasic, only_query='id', data_key='erasureID')
 
@@ -47,7 +47,7 @@ class ProofFunction(Proof):
     __doc__ = m.ProofFunction.__doc__
     disk_usage = Integer(validate=f.validate.Range(min=0, max=100), data_key='diskUsage')
     proof_author_id = SanitizedStr(validate=f.validate.Length(max=STR_SIZE),
-                                   load_only=True, required=True, data_key='proofAuthor')
+                                   load_only=True, required=True, data_key='proofAuthorID')
     proof_author = NestedOn(s_user.User, dump_only=True)
     rate = NestedOn(s_action.Rate, required=True,
                     only_query='id', data_key='rateID')
