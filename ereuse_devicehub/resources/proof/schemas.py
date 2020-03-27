@@ -57,8 +57,8 @@ class ProofReuse(Proof):
     __doc__ = m.ProofReuse.__doc__
     receiver_segment = String(default='', data_key='receiverSegment', required=True)
     id_receipt = String(default='', data_key='idReceipt', required=True)
-    supplier_id = UUID(load_only=True, required=True, data_key='supplierID')
-    receiver_id = UUID(load_only=True, required=True, data_key='receiverID')
+    supplier_id = UUID(load_only=True, required=False, data_key='supplierID')
+    receiver_id = UUID(load_only=True, required=False, data_key='receiverID')
     price = Integer(required=True)
 
 

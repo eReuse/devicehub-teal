@@ -137,12 +137,14 @@ class ProofReuse(JoinedTableMixin, Proof):
     id_receipt = Column(CIText(), default='', nullable=False)
     supplier_id = db.Column(UUID(as_uuid=True),
                          db.ForeignKey(User.id),
-                         nullable=False,
-                         default=lambda: g.user.id)
+                         # nullable=False,
+                         # default=lambda: g.user.id)
+                         nullable=True)
     supplier = db.relationship(User, primaryjoin=lambda: ProofReuse.supplier_id == User.id)
     receiver_id = db.Column(UUID(as_uuid=True),
                          db.ForeignKey(User.id),
-                         nullable=False)
+                         # nullable=False)
+                         nullable=True)
     receiver = db.relationship(User, primaryjoin=lambda: ProofReuse.receiver_id == User.id)
     price = Column(db.Integer)
 
