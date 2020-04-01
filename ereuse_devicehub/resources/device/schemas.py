@@ -126,11 +126,11 @@ class Computer(Device):
     deposit = Integer(validate=f.validate.Range(min=0, max=100),
                        description=m.Computer.deposit.__doc__)
     # author_id = NestedOn(s_user.User,only_query='author_id')
-    owner_address = SanitizedStr(validate=f.validate.Length(max=42))
+    owner_id = UUID(data_key='ownerID')
     transfer_state = EnumField(enums.TransferState, description=m.Computer.transfer_state.comment)
-    receiver_address = SanitizedStr(validate=f.validate.Length(max=42))
+    receiver_id = UUID(data_key='receiverID')
     deliverynote_address = SanitizedStr(validate=f.validate.Length(max=42))
-                            
+
 
 class Desktop(Computer):
     __doc__ = m.Desktop.__doc__

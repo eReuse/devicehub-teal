@@ -52,22 +52,22 @@ class Device(Thing):
     """
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     hid = Column(Unicode(), check_lower('hid'), unique=True)
-    hid.comment = """The Hardware ID (HID) is the unique ID traceability 
+    hid.comment = """The Hardware ID (HID) is the unique ID traceability
     systems use to ID a device globally. This field is auto-generated
     from Devicehub using literal identifiers from the device,
-    so it can re-generated *offline*.    
+    so it can re-generated *offline*.
     """ + HID_CONVERSION_DOC
     model = Column(Unicode, check_lower('model'))
     model.comment = """The model of the device in lower case.
-    
+
     The model is the unambiguous, as technical as possible, denomination
-    for the product. This field, among others, is used to identify 
+    for the product. This field, among others, is used to identify
     the product.
     """
     manufacturer = Column(Unicode(), check_lower('manufacturer'))
     manufacturer.comment = """The normalized name of the manufacturer,
     in lower case.
-    
+
     Although as of now Devicehub does not enforce normalization,
     users can choose a list of normalized manufacturer names
     from the own ``/manufacturers`` REST endpoint.
@@ -76,7 +76,7 @@ class Device(Thing):
     serial_number.comment = """The serial number of the device in lower case."""
     brand = db.Column(CIText())
     brand.comment = """A naming for consumers. This field can represent
-    several models, so it can be ambiguous, and it is not used to 
+    several models, so it can be ambiguous, and it is not used to
     identify the product.
     """
     generation = db.Column(db.SmallInteger, check_range('generation', 0))
@@ -94,14 +94,14 @@ class Device(Thing):
     color = Column(ColorType)
     color.comment = """The predominant color of the device."""
     production_date = Column(db.DateTime)
-    production_date.comment = """The date of production of the device. 
+    production_date.comment = """The date of production of the device.
     This is timezone naive, as Workbench cannot report this data
     with timezone information.
     """
     variant = Column(db.CIText())
     variant.comment = """A variant or sub-model of the device."""
     sku = db.Column(db.CIText())
-    sku.comment = """The Stock Keeping Unit (SKU), i.e. a 
+    sku.comment = """The Stock Keeping Unit (SKU), i.e. a
     merchant-specific identifier for a product or service.
     """
     image = db.Column(db.URL)
@@ -312,17 +312,17 @@ class DisplayMixin:
     size = Column(Float(decimal_return_scale=1), check_range('size', 2, 150), nullable=False)
     size.comment = """The size of the monitor in inches."""
     technology = Column(DBEnum(DisplayTech))
-    technology.comment = """The technology the monitor uses to display 
+    technology.comment = """The technology the monitor uses to display
     the image.
     """
     resolution_width = Column(SmallInteger, check_range('resolution_width', 10, 20000),
                               nullable=False)
-    resolution_width.comment = """The maximum horizontal resolution the 
+    resolution_width.comment = """The maximum horizontal resolution the
     monitor can natively support in pixels.
     """
     resolution_height = Column(SmallInteger, check_range('resolution_height', 10, 20000),
                                nullable=False)
-    resolution_height.comment = """The maximum vertical resolution the 
+    resolution_height.comment = """The maximum vertical resolution the
     monitor can natively support in pixels.
     """
     refresh_rate = Column(SmallInteger, check_range('refresh_rate', 10, 1000))
@@ -384,17 +384,17 @@ class Computer(Device):
     """
     ethereum_address = Column(CIText(), unique=True, default=None)
     deposit = Column(Integer, check_range('deposit',min=0,max=100), default=0)
-    owner_address = db.Column(CIText(),
-                          db.ForeignKey(User.ethereum_address),
+    owner_id = db.Column(UUID(as_uuid=True),
+                          db.ForeignKey(User.id),
                           nullable=False,
-                          default=lambda: g.user.ethereum_address)
-    author = db.relationship(User, primaryjoin=owner_address == User.ethereum_address)
+                          default=lambda: g.user.id)
+    author = db.relationship(User, primaryjoin=owner_id == User.id)
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
-    receiver_address = db.Column(CIText(),
-                          db.ForeignKey(User.ethereum_address),
+    receiver_id = db.Column(UUID(as_uuid=True),
+                          db.ForeignKey(User.id),
                           nullable=True)
-    receiver = db.relationship(User, primaryjoin=receiver_address == User.ethereum_address)
+    receiver = db.relationship(User, primaryjoin=receiver_id == User.id)
     deliverynote_address = db.Column(CIText(), nullable=True)
 
     def __init__(self, chassis, **kwargs) -> None:
@@ -502,11 +502,11 @@ class Mobile(Device):
 
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     imei = Column(BigInteger)
-    imei.comment = """The International Mobile Equipment Identity of 
+    imei.comment = """The International Mobile Equipment Identity of
     the smartphone as an integer.
     """
     meid = Column(Unicode)
-    meid.comment = """The Mobile Equipment Identifier as a hexadecimal 
+    meid.comment = """The Mobile Equipment Identifier as a hexadecimal
     string.
     """
     ram_size = db.Column(db.Integer, check_range(1, ))
@@ -639,7 +639,7 @@ class Motherboard(JoinedComponentTableMixin, Component):
 
 class NetworkMixin:
     speed = Column(SmallInteger, check_range('speed', min=10, max=10000))
-    speed.comment = """The maximum speed this network adapter can handle, 
+    speed.comment = """The maximum speed this network adapter can handle,
     in mbps.
     """
     wireless = Column(Boolean, nullable=False, default=False)
@@ -698,7 +698,7 @@ class Battery(JoinedComponentTableMixin, Component):
     technology = db.Column(db.Enum(BatteryTechnology))
     size = db.Column(db.Integer, nullable=False)
     size.comment = """Maximum battery capacity by design, in mAh.
-    
+
     Use BatteryTest's "size" to get the actual size of the battery.
     """
 
