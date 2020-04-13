@@ -1,10 +1,10 @@
 import datetime
 
 import marshmallow
-from flask import current_app as app, render_template, request
+from flask import current_app as app, render_template, request, Response
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
-from marshmallow import fields, fields as f, validate as v
+from marshmallow import fields, fields as f, validate as v, ValidationError
 from teal import query
 from teal.cache import cache
 from teal.resource import View
@@ -15,7 +15,7 @@ from ereuse_devicehub.query import SearchQueryParser, things_response
 from ereuse_devicehub.resources import search
 from ereuse_devicehub.resources.action import models as actions
 from ereuse_devicehub.resources.device import states
-from ereuse_devicehub.resources.device.models import Device, Manufacturer
+from ereuse_devicehub.resources.device.models import Device, Manufacturer, Computer
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
 from ereuse_devicehub.resources.tag.model import Tag
@@ -93,6 +93,23 @@ class DeviceView(View):
         """
         return super().get(id)
 
+    def patch(self, id):
+        dev = Device.query.filter_by(id=id).one()
+        if isinstance(dev, Computer):
+            resource_def = app.resources['Computer']
+            # TODO check how to handle the 'actions_one'
+            patch_schema = resource_def.SCHEMA(only=['ethereum_address', 'transfer_state', 'deliverynote_address', 'actions_one'], partial=True)
+            json = request.get_json(schema=patch_schema)
+            # TODO check how to handle the 'actions_one'
+            json.pop('actions_one')
+            if not dev:
+                raise ValueError('Device non existent')
+            for key, value in json.items():
+                setattr(dev,key,value)
+            db.session.commit()
+            return Response(status=204)
+        raise ValueError('Cannot patch a non computer')
+
     def one(self, id: int):
         """Gets one device."""
         if not request.authorization:
@@ -110,7 +127,7 @@ class DeviceView(View):
         return self.schema.jsonify(device)
 
     @auth.Auth.requires_auth
-    @cache(datetime.timedelta(minutes=1))
+    # @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
         """Gets many devices."""
         # Compute query

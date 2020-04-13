@@ -33,8 +33,8 @@ class Lot(Thing):
                               lazy=True,
                               collection_class=set)
     """The **children** devices that the lot has.
-    
-    Note that the lot can have more devices, if they are inside 
+
+    Note that the lot can have more devices, if they are inside
     descendant lots.
     """
     parents = db.relationship(lambda: Lot,
@@ -64,11 +64,11 @@ class Lot(Thing):
     descendants.
     """
     deposit = db.Column(db.Integer, check_range('deposit', min=0, max=100), default=0)
-    owner_address = db.Column(CIText(),
-                          db.ForeignKey(User.ethereum_address),
+    owner_id = db.Column(UUID(as_uuid=True),
+                          db.ForeignKey(User.id),
                           nullable=False,
-                          default=lambda: g.user.ethereum_address)
-    owner = db.relationship(User, primaryjoin=owner_address == User.ethereum_address)
+                          default=lambda: g.user.id)
+    owner = db.relationship(User, primaryjoin=owner_id == User.id)
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
     receiver_address = db.Column(CIText(),

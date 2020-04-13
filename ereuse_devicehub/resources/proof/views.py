@@ -33,7 +33,8 @@ class ProofView(View):
                 Model = db.Model._decl_class_registry.data[prf['type']]()
                 proof = Model(**p)
                 db.session.add(proof)
-                proofs.append(self.schema.dump(proof))
+                proofs.append(resource_def.schema.dump(proof))
+            db.session().final_flush()
             db.session.commit()
             response = jsonify({
                 'items': proofs,

@@ -59,7 +59,7 @@ class LotView(View):
         lot = Lot.query.filter_by(id=id).one()  # type: Lot
         return self.schema.jsonify(lot, nested=2)
 
-    @teal.cache.cache(datetime.timedelta(minutes=5))
+    # @teal.cache.cache(datetime.timedelta(minutes=5))
     def find(self, args: dict):
         """Gets lots.
 

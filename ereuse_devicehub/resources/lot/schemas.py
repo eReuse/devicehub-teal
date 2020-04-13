@@ -22,7 +22,7 @@ class Lot(Thing):
     deposit = f.Integer(validate=f.validate.Range(min=0, max=100),
                        description=m.Lot.deposit.__doc__)
     # author_id = NestedOn(s_user.User,only_query='author_id')
-    owner_address = SanitizedStr(validate=f.validate.Length(max=42))
+    owner_id = f.UUID(data_key='ownerID')
     transfer_state = EnumField(TransferState, description=m.Lot.transfer_state.comment)
     receiver_address = SanitizedStr(validate=f.validate.Length(max=42))
     deliverynote = NestedOn(s_deliverynote.Deliverynote, dump_only=True)
