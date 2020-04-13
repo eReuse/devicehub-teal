@@ -92,7 +92,7 @@ class DeviceView(View):
             description: The device or devices.
         """
         return super().get(id)
-        
+
     def patch(self, id):
         dev = Device.query.filter_by(id=id).one()
         if isinstance(dev, Computer):
@@ -109,7 +109,7 @@ class DeviceView(View):
             db.session.commit()
             return Response(status=204)
         raise ValueError('Cannot patch a non computer')
-    
+
     def one(self, id: int):
         """Gets one device."""
         if not request.authorization:
@@ -127,7 +127,7 @@ class DeviceView(View):
         return self.schema.jsonify(device)
 
     @auth.Auth.requires_auth
-    @cache(datetime.timedelta(minutes=1))
+    # @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
         """Gets many devices."""
         # Compute query
