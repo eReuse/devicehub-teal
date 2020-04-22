@@ -1,7 +1,7 @@
 import datetime
 
 import marshmallow
-from flask import current_app as app, render_template, request, Response
+from flask import g, current_app as app, render_template, request, Response
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
 from marshmallow import fields, fields as f, validate as v, ValidationError
@@ -19,6 +19,7 @@ from ereuse_devicehub.resources.device.models import Device, Manufacturer, Compu
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
 from ereuse_devicehub.resources.tag.model import Tag
+from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 
 
 class OfType(f.Str):
@@ -60,7 +61,9 @@ class Filters(query.Query):
     # todo This part of the query is really slow
     # And forces usage of distinct, as it returns many rows
     # due to having multiple paths to the same
-    lot = query.Join(Device.id == LotDeviceDescendants.device_id, LotQ)
+    lot = query.Join((Device.id == LotDeviceDescendants.device_id)
+                     & (Deliverynote.lot_id == LotDeviceDescendants.ancestor_lot_id),
+                     LotQ)
 
 
 class Sorting(query.Sort):
@@ -139,7 +142,11 @@ class DeviceView(View):
         )
 
     def query(self, args):
-        query = Device.query.distinct()  # todo we should not force to do this if the query is ok
+        # query = Device.query.distinct()  # todo we should not force to do this if the query is ok
+        query = Device.query.distinct() \
+                            .filter(Computer.owner_id == g.user.id) \
+                            .filter(Deliverynote.receiver_address == g.user.email)
+
         search_p = args.get('search', None)
         if search_p:
             properties = DeviceSearch.properties
