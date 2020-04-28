@@ -156,7 +156,7 @@ class DeviceView(View):
         return query.filter(*args['filter']).order_by(*args['sort'])
 
 
-    def user_filter(self, query):
+    def visibility_filter(self, query):
         filterqs = request.args.get('filter', None)
         if (filterqs and
            'lot' not in filterqs):
