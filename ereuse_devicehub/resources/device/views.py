@@ -152,7 +152,7 @@ class DeviceView(View):
             ).order_by(
                 search.Search.rank(properties, search_p) + search.Search.rank(tags, search_p)
             )
-        query = self.user_filter(query)
+        query = self.visibility_filter(query)
         return query.filter(*args['filter']).order_by(*args['sort'])
 
 
