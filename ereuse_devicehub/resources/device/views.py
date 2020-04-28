@@ -61,8 +61,7 @@ class Filters(query.Query):
     # todo This part of the query is really slow
     # And forces usage of distinct, as it returns many rows
     # due to having multiple paths to the same
-    lot = query.Join((Device.id == LotDeviceDescendants.device_id)
-                     & (Deliverynote.lot_id == LotDeviceDescendants.ancestor_lot_id),
+    lot = query.Join((Device.id == LotDeviceDescendants.device_id),
                      LotQ)
 
 
@@ -142,10 +141,7 @@ class DeviceView(View):
         )
 
     def query(self, args):
-        # query = Device.query.distinct()  # todo we should not force to do this if the query is ok
-        query = Device.query.distinct() \
-                            .filter(Computer.owner_id == g.user.id) \
-                            .filter(Deliverynote.receiver_address == g.user.email)
+        query = Device.query.distinct()  # todo we should not force to do this if the query is ok
 
         search_p = args.get('search', None)
         if search_p:
@@ -156,8 +152,17 @@ class DeviceView(View):
             ).order_by(
                 search.Search.rank(properties, search_p) + search.Search.rank(tags, search_p)
             )
+        query = self.user_filter(query)
         return query.filter(*args['filter']).order_by(*args['sort'])
 
+
+    def user_filter(self, query):
+        filterqs = request.args.get('filter', None)
+        if (filterqs and
+           'lot' not in filterqs):
+            query = query.filter((Computer.id == Device.id), (Computer.owner_id == g.user.id))
+            pass
+        return query
 
 class ManufacturerView(View):
     class FindArgs(marshmallow.Schema):
