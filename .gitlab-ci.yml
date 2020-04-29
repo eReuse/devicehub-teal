@@ -1,0 +1,54 @@
+# Official language image. Look for the different tagged releases at:
+# https://hub.docker.com/r/library/python/tags/
+image: python:3.7-stretch
+
+services:
+  - postgres:11
+
+variables:
+  # Change pip's cache directory to be inside the project directory since we can
+  # only cache local items.
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  
+  # Configure postgres service (https://hub.docker.com/_/postgres/)
+  POSTGRES_DB: dh_test
+  POSTGRES_USER: dhub
+  POSTGRES_PASSWORD: ereuse
+
+# Pip's cache doesn't store the python packages
+# https://pip.pypa.io/en/stable/reference/pip_install/#caching
+#
+# If you want to also cache the installed packages, you have to install
+# them in a virtualenv and cache it as well.
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+test:
+  tags:
+    - UPC
+
+  before_script:
+    # install psql
+    - apt-get update -y && apt-get install -y postgresql-client
+    - psql --version 
+
+    # official way to provide password to psql http://www.postgresql.org/docs/9.3/static/libpq-envars.html
+    - export PGPASSWORD=$POSTGRES_PASSWORD
+
+    # enable postgres extensions
+    - psql -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION pgcrypto SCHEMA public;"
+    - psql -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION ltree SCHEMA public;"
+    - psql -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION citext SCHEMA public;"
+    - psql -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION pg_trgm SCHEMA public;"
+
+    # prepare virtualenv and install requirements
+    - python -V  # Print out python version for debugging
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+
+  script:
+    - pytest --maxfail=5 tests/
