@@ -25,7 +25,8 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
 from ereuse_devicehub.db import db
-target_metadata = declarative_base().metadata
+from ereuse_devicehub.resources.models import Thing
+target_metadata = Thing.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
