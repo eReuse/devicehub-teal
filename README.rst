@@ -86,6 +86,23 @@ Testing
    password ``ereuse``.
 3. Execute at the root folder of the project ``python3 setup.py test``.
 
+
+Migrations
+**********
+At this stage, migrations are created manually. To create a revision file
+execute:
+
+.. code:: bash
+
+   $ alembic revision -m "This is migration name"
+
+Then edit the generated file with the necessary operations to perform the migration.
+Apply migrations using:
+
+.. code:: bash
+
+   $ alembic upgrade head
+
 Generating the docs
 *******************
 
