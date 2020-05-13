@@ -53,8 +53,6 @@ def app(request, _app: Devicehub) -> Devicehub:
         _app.init_db(name='Test Inventory',
                      org_name='FooOrg',
                      org_id='foo-org-id',
-                     tag_url=boltons.urlutils.URL('https://example.com'),
-                     tag_token=uuid.UUID('52dacef0-6bcb-4919-bfed-f10d2c96ecee'),
                      erase=False,
                      common=True)
 

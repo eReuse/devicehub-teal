@@ -20,9 +20,7 @@ class TagDef(Resource):
 
     ORG_H = 'The name of an existing organization in the DB. '
     'By default the organization operating this Devicehub.'
-    PROV_H = 'The Base URL of the provider; scheme + domain. Ex: "https://foo.com". '
-    'By default set to the actual Devicehub.'
-    CLI_SCHEMA = schema.Tag(only=('id', 'provider', 'org', 'secondary'))
+    CLI_SCHEMA = schema.Tag(only=('id', 'org', 'secondary'))
 
     def __init__(self, app: Teal, import_name=__name__.split('.')[0], static_folder=None,
                  static_url_path=None,
@@ -49,24 +47,21 @@ class TagDef(Resource):
                           methods={'PUT'})
 
     @option('-o', '--org', help=ORG_H)
-    @option('-p', '--provider', help=PROV_H)
     @option('-s', '--sec', help=Tag.secondary.comment)
     @argument('id')
     def create_tag(self,
                    id: str,
                    org: str = None,
-                   sec: str = None,
-                   provider: str = None):
+                   sec: str = None):
         """Create a tag with the given ID."""
         db.session.add(Tag(**self.schema.load(
-            dict(id=id, org=org, secondary=sec, provider=provider)
+            dict(id=id, org=org, secondary=sec)
         )))
         db.session.commit()
 
     @option('--org', help=ORG_H)
-    @option('--provider', help=PROV_H)
     @argument('path', type=cli.Path(writable=True))
-    def create_tags_csv(self, path: pathlib.Path, org: str, provider: str):
+    def create_tags_csv(self, path: pathlib.Path, org: str):
         """Creates tags by reading CSV from ereuse-tag.
 
         CSV must have the following columns:
@@ -77,6 +72,6 @@ class TagDef(Resource):
         with path.open() as f:
             for id, sec in csv.reader(f):
                 db.session.add(Tag(**self.schema.load(
-                    dict(id=id, org=org, secondary=sec, provider=provider)
+                    dict(id=id, org=org, secondary=sec)
                 )))
         db.session.commit()

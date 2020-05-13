@@ -41,8 +41,6 @@ class TagView(View):
         # todo do we use this?
         t = request.get_json()
         tag = Tag(**t)
-        if tag.like_etag():
-            raise CannotCreateETag(tag.id)
         db.session.add(tag)
         db.session().final_flush()
         db.session.commit()
@@ -98,12 +96,6 @@ class TagNotLinked(ValidationError):
     def __init__(self, id):
         message = 'The tag {} is not linked to a device.'.format(id)
         super().__init__(message, field_names=['device'])
-
-
-class CannotCreateETag(ValidationError):
-    def __init__(self, id: str):
-        message = 'Only sysadmin can create an eReuse.org Tag ({})'.format(id)
-        super().__init__(message)
 
 
 class LinkedToAnotherDevice(ValidationError):

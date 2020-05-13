@@ -70,14 +70,6 @@ class Devicehub(Teal):
     @click.option('--org-id', '-oi',
                   default='foo-bar',
                   help='The Tax ID of the organization.')
-    @click.option('--tag-url', '-tu',
-                  type=ereuse_utils.cli.URL(scheme=True, host=True, path=False),
-                  default='http://example.com',
-                  help='The base url (scheme and host) of the tag provider.')
-    @click.option('--tag-token', '-tt',
-                  type=click.UUID,
-                  default='899c794e-1737-4cea-9232-fdc507ab7106',
-                  help='The token provided by the tag provider. It is an UUID.')
     @click.option('--erase/--no-erase',
                   default=False,
                   help='Delete the schema before? '
@@ -88,8 +80,6 @@ class Devicehub(Teal):
     def init_db(self, name: str,
                 org_name: str,
                 org_id: str,
-                tag_url: boltons.urlutils.URL,
-                tag_token: uuid.UUID,
                 erase: bool,
                 common: bool):
         """Creates an inventory.
@@ -109,7 +99,7 @@ class Devicehub(Teal):
             assert not db.has_schema(self.id), 'Schema {} already exists.'.format(self.id)
             exclude_schema = 'common' if not common else None
             self._init_db(exclude_schema=exclude_schema)
-            InventoryDef.set_inventory_config(name, org_name, org_id, tag_url, tag_token)
+            InventoryDef.set_inventory_config(name, org_name, org_id)
             DeviceSearch.set_all_devices_tokens_if_empty(self.db.session)
             self._init_resources(exclude_schema=exclude_schema)
             self.db.session.commit()
@@ -138,5 +128,3 @@ class Devicehub(Teal):
     def _prepare_request(self):
         """Prepares request stuff."""
         inv = g.inventory = Inventory.current  # type: Inventory
-        g.tag_provider = DevicehubClient(base_url=inv.tag_provider,
-                                         token=DevicehubClient.encode_token(inv.tag_token))

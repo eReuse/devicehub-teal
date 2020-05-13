@@ -84,8 +84,6 @@ def test_inventory_create_delete_user(cli, tdb1, tdb2):
         inv = Inventory.query.one()  # type: Inventory
         assert inv.id == 'tdb1'
         assert inv.name == 'Test DB1'
-        assert inv.tag_provider == URL('https://example.com')
-        assert inv.tag_token == UUID('3c66a6ad-22de-4db6-ac46-d8982522ec40')
         assert db.has_schema('tdb1')
         org = Organization.query.one()  # type: Organization
         # assert inv.org_id == org.id

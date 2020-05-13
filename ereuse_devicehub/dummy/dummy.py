@@ -23,17 +23,10 @@ class Dummy:
     TAGS = (
         'tag1',
         'tag2',
-        'tag3'
+        'tag3',
+        'tag00'
     )
     """Tags to create."""
-    ET = (
-        ('DT-AAAAA', 'A0000000000001'),
-        ('DT-BBBBB', 'A0000000000002'),
-        ('DT-CCCCC', 'A0000000000003'),
-        ('DT-BRRAB', '04970DA2A15984'),
-        ('DT-XXXXX', '04e4bc5af95980')
-    )
-    """eTags to create."""
     ORG = 'eReuse.org CAT', '-t', 'G-60437761', '-c', 'ES'
     """An organization to create."""
 
@@ -42,23 +35,13 @@ class Dummy:
         self.app = app
         self.app.cli.command('dummy', short_help='Creates dummy devices and users.')(self.run)
 
-    @click.option('--tag-url', '-tu',
-                  type=ereuse_utils.cli.URL(scheme=True, host=True, path=False),
-                  default='http://localhost:8081',
-                  help='The base url (scheme and host) of the tag provider.')
-    @click.option('--tag-token', '-tt',
-                  type=click.UUID,
-                  default='899c794e-1737-4cea-9232-fdc507ab7106',
-                  help='The token provided by the tag provider. It is an UUID.')
     @click.confirmation_option(prompt='This command (re)creates the DB from scratch.'
                                       'Do you want to continue?')
-    def run(self, tag_url, tag_token):
+    def run(self):
         runner = self.app.test_cli_runner()
         self.app.init_db('Dummy',
                          'ACME',
                          'acme-id',
-                         tag_url,
-                         tag_token,
                          erase=True,
                          common=True)
         print('Creating stuff...'.ljust(30), end='')
@@ -73,15 +56,9 @@ class Dummy:
             # todo put user's agent into Org
             for id in self.TAGS:
                 user1.post({'id': id}, res=Tag)
-            for id, sec in self.ET:
-                runner.invoke('tag', 'add', id,
-                              '-p', 'https://t.devicetag.io',
-                              '-s', sec,
-                              '-o', org_id)
             # create tag for pc-laudem
             runner.invoke('tag', 'add', 'tagA',
-                          '-p', 'https://t.devicetag.io',
-                          '-s', 'tagA-secondary')
+                          '-s', 'tagA-secondary', '-o', org_id)
         files = tuple(Path(__file__).parent.joinpath('files').iterdir())
         print('done.')
         sample_pc = None  # We treat this one as a special sample for demonstrations
@@ -102,8 +79,8 @@ class Dummy:
                               res=m.Action)
         assert sample_pc
         print('PC sample is', sample_pc)
-        # Link tags and eTags
-        for tag, pc in zip((self.TAGS[1], self.TAGS[2], self.ET[0][0], self.ET[1][1]), pcs):
+        # Link tags
+        for tag, pc in zip((self.TAGS[1], self.TAGS[2]), pcs):
             user1.put({}, res=Tag, item='{}/device/{}'.format(tag, pc), status=204)
 
         # Perform generic actions

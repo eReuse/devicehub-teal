@@ -10,9 +10,6 @@ class Inventory(Thing):
     id.comment = """The name of the inventory as in the URL and schema."""
     name = db.Column(db.CIText(), nullable=False, unique=True)
     name.comment = """The human name of the inventory."""
-    tag_provider = db.Column(db.URL(), nullable=False)
-    tag_token = db.Column(db.UUID(as_uuid=True), unique=True, nullable=False)
-    tag_token.comment = """The token to access a Tag service."""
     # todo no validation that UUID is from an existing organization
     org_id = db.Column(db.UUID(as_uuid=True), nullable=False)
 

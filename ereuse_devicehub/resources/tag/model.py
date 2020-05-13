@@ -38,10 +38,6 @@ class Tag(Thing):
                        primaryjoin=Organization.id == org_id,
                        collection_class=set)
     """The organization that issued the tag."""
-    provider = Column(URL())
-    provider.comment = """The tag provider URL. If None, the provider is
-    this Devicehub.
-    """
     device_id = Column(BigInteger,
                        # We don't want to delete the tag on device deletion, only set to null
                        ForeignKey(Device.id, ondelete=DB_CASCADE_SET_NULL))
@@ -60,16 +56,6 @@ class Tag(Thing):
 
     def __init__(self, id: str, **kwargs) -> None:
         super().__init__(id=id, **kwargs)
-
-    def like_etag(self):
-        """Checks if the tag conforms to the `eTag spec <http:
-        //devicehub.ereuse.org/tags.html#etags>`_.
-        """
-        with suppress(ValueError):
-            provider, id = self.id.split('-')
-            if len(provider) == 2 and 5 <= len(id) <= 10:
-                return True
-        return False
 
     @classmethod
     def from_an_id(cls, id: str) -> Query:

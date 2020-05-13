@@ -25,16 +25,12 @@ class InventoryDef(Resource):
     def set_inventory_config(cls,
                              name: str = None,
                              org_name: str = None,
-                             org_id: str = None,
-                             tag_url: boltons.urlutils.URL = None,
-                             tag_token: uuid.UUID = None):
+                             org_id: str = None):
         try:
             inventory = Inventory.current
         except ResourceNotFound:  # No inventory defined in db yet
             inventory = Inventory(id=current_app.id,
-                                  name=name,
-                                  tag_provider=tag_url,
-                                  tag_token=tag_token)
+                                  name=name)
             db.session.add(inventory)
         if org_name or org_id:
             from ereuse_devicehub.resources.agent.models import Organization
@@ -43,10 +39,6 @@ class InventoryDef(Resource):
             except ResourceNotFound:
                 org = Organization(tax_id=org_id, name=org_name)
             org.default_of = inventory
-        if tag_url:
-            inventory.tag_provider = tag_url
-        if tag_token:
-            inventory.tag_token = tag_token
 
     @classmethod
     def delete_inventory(cls):

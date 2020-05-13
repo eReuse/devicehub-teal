@@ -19,8 +19,6 @@ class Tag(Thing):
                       description=m.Tag.id.comment,
                       validator=without_slash,
                       required=True)
-    provider = URL(description=m.Tag.provider.comment,
-                   validator=without_slash)
     device = NestedOn(Device, dump_only=True)
     org = NestedOn(Organization, collection_class=OrderedSet, only_query='id')
     secondary = SanitizedStr(lower=True, description=m.Tag.secondary.comment)

@@ -15,7 +15,6 @@ class Tag(Thing):
     id = ...  # type: Column
     org_id = ...  # type: Column
     org = ...  # type: relationship
-    provider = ...  # type: Column
     device_id = ...  # type: Column
     device = ...  # type: relationship
     secondary = ...  # type: Column
@@ -23,13 +22,11 @@ class Tag(Thing):
     def __init__(self, id: str,
                  org: Organization = None,
                  secondary: str = None,
-                 provider: URL = None,
                  device: Device = None) -> None:
         super().__init__()
         self.id = ...  # type: str
         self.org_id = ...  # type: UUID
         self.org = ...  # type: Organization
-        self.provider = ...  # type: URL
         self.device_id = ...  # type: int
         self.device = ...  # type: Device
         self.secondary = ...  # type: str
