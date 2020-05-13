@@ -2,7 +2,7 @@ from distutils.version import StrictVersion
 from typing import List
 from uuid import UUID
 
-from flask import current_app as app, request
+from flask import current_app as app, request, g
 from sqlalchemy.util import OrderedSet
 from teal.marshmallow import ValidationError
 from teal.resource import View
@@ -13,6 +13,8 @@ from ereuse_devicehub.resources.action.models import Action, RateComputer, Snaps
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import SnapshotSoftware
+from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
+
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
@@ -56,6 +58,7 @@ class ActionView(View):
         # Note that if we set the device / components into the snapshot
         # model object, when we flush them to the db we will flush
         # snapshot, and we want to wait to flush snapshot at the end
+
         device = snapshot_json.pop('device')  # type: Computer
         components = None
         if snapshot_json['software'] == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid):
@@ -73,6 +76,11 @@ class ActionView(View):
         assert not device.actions_one
         assert all(not c.actions_one for c in components) if components else True
         db_device, remove_actions = resource_def.sync.run(device, components)
+
+        # Check ownership of (non-component) device to from current.user
+        if(db_device.owner_id != g.user.id):
+            raise InsufficientPermission()
+
         del device  # Do not use device anymore
         snapshot.device = db_device
         snapshot.actions |= remove_actions | actions_device  # Set actions to snapshot
