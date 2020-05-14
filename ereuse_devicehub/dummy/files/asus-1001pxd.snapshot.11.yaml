@@ -171,6 +171,7 @@
     "model": "1001PXD",
     "serialNumber": "B8OAAS048286",
     "tags": [
+    {"name_tag": "Tag00", "type": "Tag"}
     ],
     "type": "Laptop"
   },

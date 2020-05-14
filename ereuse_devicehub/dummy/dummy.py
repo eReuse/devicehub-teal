@@ -54,11 +54,10 @@ class Dummy:
             user4 = self.user_client('user4@dhub.com', '1234', 'user4', '0x37be35ae7eced44ca25e4683e98425fc7830a8a5')
 
             # todo put user's agent into Org
-            for id in self.TAGS:
-                user1.post({'id': id}, res=Tag)
+            for tag in self.TAGS:
+                user1.post({'name_tag': tag}, res=Tag)
             # create tag for pc-laudem
-            runner.invoke('tag', 'add', 'tagA',
-                          '-s', 'tagA-secondary', '-o', org_id)
+            runner.invoke('tag', 'add', 'tagA', '-o', org_id)
         files = tuple(Path(__file__).parent.joinpath('files').iterdir())
         print('done.')
         sample_pc = None  # We treat this one as a special sample for demonstrations

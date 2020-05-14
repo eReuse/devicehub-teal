@@ -154,7 +154,7 @@
     }
     ],
     "tags": [
-    {"id": "Tag00", "type": "Tag"}
+    {"name_tag": "Tag00", "type": "Tag"}
     ]
   },
   "version": "11.0a6",

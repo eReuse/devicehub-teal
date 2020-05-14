@@ -130,11 +130,11 @@
     "serialNumber": "CZC901381R",
     "tags": [
     {
-      "id": "tagA-secondary",
+      "name_tag": "tagA",
       "type": "Tag"
     },
     {
-      "id": "tagA",
+      "name_tag": "tagA-secondary",
       "type": "Tag"
     }
     ],

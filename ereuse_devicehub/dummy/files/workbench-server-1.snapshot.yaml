@@ -18,7 +18,7 @@ device:
   manufacturer: d1mr
   tags:
     - type: Tag
-      id: tag1
+      name_tag: tag1
   actions:
     - type: VisualTest
       appearanceRange: A
