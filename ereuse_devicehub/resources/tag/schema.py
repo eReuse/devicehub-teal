@@ -1,4 +1,4 @@
-from marshmallow.fields import Boolean
+from marshmallow import fields as f
 from sqlalchemy.util import OrderedSet
 from teal.marshmallow import SanitizedStr, URL
 
@@ -15,12 +15,9 @@ def without_slash(x: str) -> bool:
 
 
 class Tag(Thing):
-    id = SanitizedStr(lower=True,
-                      description=m.Tag.id.comment,
-                      validator=without_slash,
-                      required=True)
+    id = f.UUID(dump_only=True)
+    name_tag = SanitizedStr(lower=True, description=m.Tag.name_tag.comment)
     device = NestedOn(Device, dump_only=True)
     org = NestedOn(Organization, collection_class=OrderedSet, only_query='id')
-    secondary = SanitizedStr(lower=True, description=m.Tag.secondary.comment)
-    printable = Boolean(dump_only=True, decsription=m.Tag.printable.__doc__)
+    printable = f.Boolean(dump_only=True, decsription=m.Tag.printable.__doc__)
     url = URL(dump_only=True, description=m.Tag.url.__doc__)

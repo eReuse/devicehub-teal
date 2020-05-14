@@ -1,7 +1,9 @@
 from flask import Response, current_app as app, g, redirect, request
+from flask.json import jsonify
 from flask_sqlalchemy import Pagination
 from teal.marshmallow import ValidationError
 from teal.resource import View, url_for_resource
+from werkzeug.exceptions import UnprocessableEntity
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
@@ -12,12 +14,12 @@ from ereuse_devicehub.resources.tag import Tag
 class TagView(View):
     def post(self):
         """Creates a tag."""
-        num = request.args.get('num', type=int)
-        if num:
-            res = self._create_many_regular_tags(num)
-        else:
-            res = self._post_one()
-        return res
+        t = request.get_json()
+        tag = Tag(**t)
+        db.session.add(tag)
+        db.session().final_flush()
+        db.session.commit()
+        return Response(status=201)
 
     def find(self, args: dict):
         tags = Tag.query.filter(Tag.is_printable_q()) \
@@ -30,21 +32,12 @@ class TagView(View):
 
     def _create_many_regular_tags(self, num: int):
         tags_id, _ = g.tag_provider.post('/', {}, query=[('num', num)])
-        tags = [Tag(id=tag_id, provider=g.inventory.tag_provider) for tag_id in tags_id]
+        tags = [Tag(id=tag_id) for tag_id in tags_id]
         db.session.add_all(tags)
         db.session().final_flush()
         response = things_response(self.schema.dump(tags, many=True, nested=1), code=201)
         db.session.commit()
         return response
-
-    def _post_one(self):
-        # todo do we use this?
-        t = request.get_json()
-        tag = Tag(**t)
-        db.session.add(tag)
-        db.session().final_flush()
-        db.session.commit()
-        return Response(status=201)
 
 
 class TagDeviceView(View):

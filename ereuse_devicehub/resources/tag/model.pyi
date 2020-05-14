@@ -13,29 +13,26 @@ from ereuse_devicehub.resources.models import Thing
 
 class Tag(Thing):
     id = ...  # type: Column
+    name_tag = ... # type: Column
     org_id = ...  # type: Column
     org = ...  # type: relationship
     device_id = ...  # type: Column
     device = ...  # type: relationship
-    secondary = ...  # type: Column
 
     def __init__(self, id: str,
                  org: Organization = None,
                  secondary: str = None,
                  device: Device = None) -> None:
         super().__init__()
-        self.id = ...  # type: str
+        self.id = ...  # type: UUID
+        self.name_tag = ...  # type: str
         self.org_id = ...  # type: UUID
         self.org = ...  # type: Organization
         self.device_id = ...  # type: int
         self.device = ...  # type: Device
-        self.secondary = ...  # type: str
 
     @classmethod
-    def from_an_id(cls, id: str) -> Query:
-        pass
-
-    def like_etag(self) -> bool:
+    def from_an_id(cls, name_tag: str) -> Query:
         pass
 
     @property

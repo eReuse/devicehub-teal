@@ -1,3 +1,4 @@
+import uuid
 from contextlib import suppress
 from typing import Set
 
@@ -24,8 +25,10 @@ class Tags(Set['Tag']):
 
 
 class Tag(Thing):
-    id = Column(db.CIText(), primary_key=True)
+    id = db.Column(UUID(as_uuid=True), primary_key=True)  # uuid is generated on init by default
     id.comment = """The ID of the tag."""
+    name_tag = Column(db.CIText())
+    name_tag.comment = """The primary identifier tag."""
     org_id = Column(UUID(as_uuid=True),
                     ForeignKey(Organization.id),
                     primary_key=True,
@@ -40,45 +43,30 @@ class Tag(Thing):
     """The organization that issued the tag."""
     device_id = Column(BigInteger,
                        # We don't want to delete the tag on device deletion, only set to null
+                       # JN TODO change to delete tag on device?
                        ForeignKey(Device.id, ondelete=DB_CASCADE_SET_NULL))
     device = relationship(Device,
                           backref=backref('tags', lazy=True, collection_class=Tags),
                           primaryjoin=Device.id == device_id)
     """The device linked to this tag."""
-    secondary = Column(db.CIText(), index=True)
-    secondary.comment = """A secondary identifier for this tag. 
-    It has the same constraints as the main one. Only needed in special cases.
-    """
 
     __table_args__ = (
         db.Index('device_id_index', device_id, postgresql_using='hash'),
     )
 
-    def __init__(self, id: str, **kwargs) -> None:
-        super().__init__(id=id, **kwargs)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(id=uuid.uuid4(), **kwargs)
 
     @classmethod
-    def from_an_id(cls, id: str) -> Query:
+    def from_an_id(cls, name_tag: str) -> Query:
         """Query to look for a tag from a possible identifier."""
-        return cls.query.filter((cls.id == id) | (cls.secondary == id))
+        return cls.query.filter((cls.name_tag == name_tag))
 
-    @validates('id', 'secondary')
+    @validates('name_tag')
     def does_not_contain_slash(self, _, value: str):
         if '/' in value:
             raise ValidationError('Tags cannot contain slashes (/).')
         return value
-
-    @validates('provider')
-    def use_only_domain(self, _, url: URL):
-        if url.path:
-            raise ValidationError('Provider can only contain scheme and host',
-                                  field_names=['provider'])
-        return url
-
-    __table_args__ = (
-        UniqueConstraint(id, org_id, name='one tag id per organization'),
-        UniqueConstraint(secondary, org_id, name='one secondary tag per organization')
-    )
 
     @property
     def type(self) -> str:

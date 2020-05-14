@@ -20,7 +20,7 @@ class TagDef(Resource):
 
     ORG_H = 'The name of an existing organization in the DB. '
     'By default the organization operating this Devicehub.'
-    CLI_SCHEMA = schema.Tag(only=('id', 'org', 'secondary'))
+    CLI_SCHEMA = schema.Tag(only=('name_tag', 'org'))
 
     def __init__(self, app: Teal, import_name=__name__.split('.')[0], static_folder=None,
                  static_url_path=None,
@@ -47,15 +47,13 @@ class TagDef(Resource):
                           methods={'PUT'})
 
     @option('-o', '--org', help=ORG_H)
-    @option('-s', '--sec', help=Tag.secondary.comment)
-    @argument('id')
+    @argument('name_tag')
     def create_tag(self,
-                   id: str,
-                   org: str = None,
-                   sec: str = None):
+                   name_tag: str,
+                   org: str = None):
         """Create a tag with the given ID."""
         db.session.add(Tag(**self.schema.load(
-            dict(id=id, org=org, secondary=sec)
+            dict(name_tag=name_tag, org=org)
         )))
         db.session.commit()
 
@@ -70,8 +68,8 @@ class TagDef(Resource):
         2. Secondary id tag (or empty)
         """
         with path.open() as f:
-            for id, sec in csv.reader(f):
+            for name_tag in csv.reader(f):
                 db.session.add(Tag(**self.schema.load(
-                    dict(id=id, org=org, secondary=sec)
+                    dict(name_tag=name_tag, org=org)
                 )))
         db.session.commit()
