@@ -151,40 +151,43 @@ class Sync:
         """
         assert inspect(device).transient, 'Device cannot be already synced from DB'
         assert all(inspect(tag).transient for tag in device.tags), 'Tags cannot be synced from DB'
+        # todo suppress this raise...??
         if not device.tags and not device.hid:
             # We cannot identify this device
+            # todo register device but with Severity Warning on Device cause hid are null/incomplete
             raise NeedsId()
         db_device = None
         if device.hid:
             with suppress(ResourceNotFound):
                 db_device = Device.query.filter_by(hid=device.hid).one()
-        try:
-            tags = {Tag.from_an_id(tag.id).one() for tag in device.tags}  # type: Set[Tag]
-        except ResourceNotFound:
-            raise ResourceNotFound('tag you are linking to device {}'.format(device))
-        linked_tags = {tag for tag in tags if tag.device_id}  # type: Set[Tag]
-        if linked_tags:
-            sample_tag = next(iter(linked_tags))
-            for tag in linked_tags:
-                if tag.device_id != sample_tag.device_id:
-                    raise MismatchBetweenTags(tag, sample_tag)  # Tags linked to different devices
-            if db_device:  # Device from hid
-                if sample_tag.device_id != db_device.id:  # Device from hid != device from tags
-                    raise MismatchBetweenTagsAndHid(db_device.id, db_device.hid)
-            else:  # There was no device from hid
-                if sample_tag.device.physical_properties != device.physical_properties:
-                    # Incoming physical props of device != props from tag's device
-                    # which means that the devices are not the same
-                    raise MismatchBetweenProperties(sample_tag.device.physical_properties,
-                                                    device.physical_properties)
-                db_device = sample_tag.device
+        # TODO decide in which cases a new device are really new and which one are the same and needs to merge
+        # try:
+        #     tags = {Tag.from_an_id(tag.name_tag).one() for tag in device.tags}  # type: Set[Tag]
+        # except ResourceNotFound:
+        #     raise ResourceNotFound('tag you are linking to device {}'.format(device))
+        # linked_tags = {tag for tag in tags if tag.device_id}  # type: Set[Tag]
+        # if linked_tags:
+        #     sample_tag = next(iter(linked_tags))
+        #     for tag in linked_tags:
+        #         if tag.device_id != sample_tag.device_id:
+        #             raise MismatchBetweenTags(tag, sample_tag)  # Tags linked to different devices
+        #     if db_device:  # Device from hid
+        #         if sample_tag.device_id != db_device.id:  # Device from hid != device from tags
+        #             raise MismatchBetweenTagsAndHid(db_device.id, db_device.hid)
+        #     else:  # There was no device from hid
+        #         if sample_tag.device.physical_properties != device.physical_properties:
+        #             # Incoming physical props of device != props from tag's device
+        #             # which means that the devices are not the same
+        #             raise MismatchBetweenProperties(sample_tag.device.physical_properties,
+        #                                             device.physical_properties)
+        #         db_device = sample_tag.device
         if db_device:  # Device from hid or tags
             self.merge(device, db_device)
         else:  # Device is new and tags are not linked to a device
             device.tags.clear()  # We don't want to add the transient dummy tags
             db.session.add(device)
             db_device = device
-        db_device.tags |= tags  # Union of tags the device had plus the (potentially) new ones
+        # db_device.tags |= tags  # Union of tags the device had plus the (potentially) new ones
         try:
             db.session.flush()
         except IntegrityError as e:

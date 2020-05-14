@@ -10,7 +10,7 @@ class MismatchBetweenIds(ValidationError):
 
 class NeedsId(ValidationError):
     def __init__(self):
-        message = 'We couldn\'t get an ID for this device. Is this a custom PC?'
+        message = 'We couldn\'t get a complete HID for this device. Type, manufacturer, model and serial number are empty'
         super().__init__(message)
 
 
