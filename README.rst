@@ -89,12 +89,48 @@ Testing
 
 Migrations
 **********
-At this stage, migrations are created manually. To create a revision file
-execute:
+At this stage, migration files are created manually. To apply the migrations we follow
+a hybrid approach.
+
+* When a schema is to be created in the db we create a revision file holding **all** the
+necessary table definitions. For example have a look on the migration file holding the initial
+declarations. There you see a full list of tables to be created. You just need to specify
+the env variable **dhi**. To create a revision file execute:
 
 .. code:: bash
 
-   $ alembic revision -m "This is migration name"
+   $ alembic revision -m "My initial base revision"
+
+Then run
+
+.. code:: bash
+
+   $ export dhi=dbtest; dh inv add --common --name dbtest
+
+This command will create the schemas, tables in the specified database and will stamp the
+migration file you have created as the base schema for future migrations. For more info
+in migration stamping please see [here](https://alembic.sqlalchemy.org/en/latest/cookbook.html)
+
+Whenever you want to create a new schema just create a new revision with:
+
+.. code:: bash
+
+   $ alembic revision -m "My new base revision"
+
+and add there **all** the tables that the new database will have. Next, you can add the
+new inventory and stamp the revision as the new base.
+
+.. code:: bash
+
+   $ export dhi=dbtest; dh inv add --name dbtest
+
+
+* When you want to alter a table, column or perform another operation on tables, create
+  a revision file
+
+.. code:: bash
+
+   $ alembic revision -m "A table change"
 
 Then edit the generated file with the necessary operations to perform the migration.
 Apply migrations using:
@@ -102,6 +138,13 @@ Apply migrations using:
 .. code:: bash
 
    $ alembic upgrade head
+
+* Whenever you to see a full list of migrations use
+
+.. code:: bash
+
+   $ alembic history
+
 
 Generating the docs
 *******************
