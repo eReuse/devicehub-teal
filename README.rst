@@ -109,7 +109,7 @@ Then run
 
 This command will create the schemas, tables in the specified database and will stamp the
 migration file you have created as the base schema for future migrations. For more info
-in migration stamping please see [here](https://alembic.sqlalchemy.org/en/latest/cookbook.html)
+in migration stamping please see https://alembic.sqlalchemy.org/en/latest/cookbook.html
 
 Whenever you want to create a new schema just create a new revision with:
 
@@ -122,7 +122,7 @@ new inventory and stamp the revision as the new base.
 
 .. code:: bash
 
-   $ export dhi=dbtest; dh inv add --name dbtest
+   $ export dhi=dbtest2; dh inv add --name dbtest2
 
 
 * When you want to alter a table, column or perform another operation on tables, create
