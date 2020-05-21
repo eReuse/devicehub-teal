@@ -12,7 +12,6 @@ from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import Remove
-from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
 from ereuse_devicehub.resources.tag.model import Tag
 
@@ -151,11 +150,8 @@ class Sync:
         """
         assert inspect(device).transient, 'Device cannot be already synced from DB'
         assert all(inspect(tag).transient for tag in device.tags), 'Tags cannot be synced from DB'
-        if not device.tags and not device.hid:
-            # We cannot identify this device
-            raise NeedsId()
         db_device = None
-        if device.hid:
+        if device.hid is not None:
             with suppress(ResourceNotFound):
                 db_device = Device.query.filter_by(hid=device.hid).one()
         try:

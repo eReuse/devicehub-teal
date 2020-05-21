@@ -247,6 +247,7 @@ def test_snapshot_post_without_hid(user: UserClient):
     assert snapshot['author']['id'] == user.user['id']
     assert 'actions' not in snapshot['device']
     assert 'author' not in snapshot['device']
+    assert snapshot['severity'] == 'Warning'
     response = user.post(snapshot, res=Snapshot)
     assert response.status == 201
 
