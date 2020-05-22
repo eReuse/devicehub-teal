@@ -89,57 +89,59 @@ Testing
 
 Migrations
 **********
-At this stage, migration files are created manually. To apply the migrations we follow
-a hybrid approach.
-
-* When a schema is to be created in the db we create a revision file holding **all** the
-necessary table definitions. For example have a look on the migration file holding the initial
-declarations. There you see a full list of tables to be created. You just need to specify
-the env variable **dhi**. To create a revision file execute:
+At this stage, migration files are created manually.
+Set up the database:
 
 .. code:: bash
 
-   $ alembic revision -m "My initial base revision"
+   $ sudo su - postgres
+   $ bash $PATH_TO_DEVIHUBTEAL/examples/create-db.sh devicehub dhub
 
-Then run
+Initialize the database:
 
 .. code:: bash
 
    $ export dhi=dbtest; dh inv add --common --name dbtest
 
-This command will create the schemas, tables in the specified database and will stamp the
-migration file you have created as the base schema for future migrations. For more info
-in migration stamping please see https://alembic.sqlalchemy.org/en/latest/cookbook.html
-
-Whenever you want to create a new schema just create a new revision with:
+This command will create the schemas, tables in the specified database.
+Then we need to stamp the initial migration.
 
 .. code:: bash
 
-   $ alembic revision -m "My new base revision"
-
-and add there **all** the tables that the new database will have. Next, you can add the
-new inventory and stamp the revision as the new base.
-
-.. code:: bash
-
-   $ export dhi=dbtest2; dh inv add --name dbtest2
+   $ alembic stamp head
 
 
-* When you want to alter a table, column or perform another operation on tables, create
-  a revision file
+This command will set the revision **fbb7e2a0cde0_initial**  as our initial migration.
+For more info in migration stamping please see https://alembic.sqlalchemy.org/en/latest/cookbook.html
+
+
+Whenever a change needed eg to create a new schema, alter an existing table, column or perform any
+operation on tables, create a new revision file:
 
 .. code:: bash
 
    $ alembic revision -m "A table change"
 
-Then edit the generated file with the necessary operations to perform the migration.
+This command will create a new revision file with name `<revision_id>_a_table_change`.
+Edit the generated file with the necessary operations to perform the migration:
+
+.. code:: bash
+
+   $ alembic edit <revision_id>
+
 Apply migrations using:
 
 .. code:: bash
 
-   $ alembic upgrade head
+   $ alembic -x inventory=dbtest upgrade head
 
-* Whenever you to see a full list of migrations use
+Then to go back to previous db version:
+
+.. code:: bash
+
+   $ alembic -x inventory=dbtest downgrade <revision_id>
+
+To see a full list of migrations use
 
 .. code:: bash
 

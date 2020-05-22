@@ -19,6 +19,12 @@ branch_labels = ${repr(branch_labels)}
 depends_on = ${repr(depends_on)}
 
 
+def get_inv():
+    INV = context.get_x_argument(as_dictionary=True).get('inventory')
+    if not INV:
+        raise ValueError("Inventory value is not specified")
+    return INV
+
 def upgrade():
     ${upgrades if upgrades else "pass"}
 

@@ -124,12 +124,6 @@ class Devicehub(Teal):
         else:
             self.db.create_all()
 
-        from alembic.config import Config
-        from alembic import command
-
-        alembic_cfg = Config('alembic.ini')
-        command.stamp(alembic_cfg, "head")
-
         return True
 
     @click.confirmation_option(prompt='Are you sure you want to delete the inventory {}?'
