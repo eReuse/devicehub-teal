@@ -13,10 +13,16 @@ $ fab -H devel.ereuse.org bootstrap
 """
 
 import os
+import sys
 from fabric import task
 
 
-PACKAGES = ['git', 'postgresql', 'postgresql-client']
+PACKAGES_BASE = ['git', 'python3', 'python3-virtualenv', 'postgresql', 'postgresql-client']
+
+PACKAGES_WEASYPRINT = ['build-essential', 'python3-dev', 'python3-pip', 'python3-setuptools', 'python3-wheel', 'python3-cffi',
+                       'libcairo2', 'libpango-1.0-0', 'libpangocairo-1.0-0', 'libgdk-pixbuf2.0-0', 'libffi-dev', 'shared-mime-info']
+
+PACKAGES = PACKAGES_BASE + PACKAGES_WEASYPRINT
 
 GIT_REPO_URL = 'https://github.com/eReuse/devicehub-teal.git'
 
@@ -33,16 +39,18 @@ def bootstrap(c, domain='api.ereuse.org', branch='testing'):
 
     Usually it's only required to run once by host.
     """
-    # install_apt_dependencies(c)
+    install_apt_dependencies(c)
 
     deployment = AppDeployment(domain, c)
+
     deployment.clone_devicehub_repository()
     deployment.install_package_requirements()
-    deployment.setup_wsgi_app()
 
     # TODO(@slamora)
-    # initialize database
-    # configure apache2 + wsgi & restart service
+    deployment.initialize_database()
+
+    deployment.setup_wsgi_app()
+    # deployment.configure_apache2()
 
 
 def install_apt_dependencies(c):
@@ -76,14 +84,53 @@ class AppDeployment:
             'path': self.git_clone_path,
         }
         self.c.run('rm -rf {}'.format(params['path']))
-        self.c.run('git clone -b {branch} --single-branch {repo} {path}'.format(**params))
+        # TODO use optimized clone (only target branch)
+        # self.c.run('git clone -b {branch} --single-branch {repo} {path}'.format(**params))
+        self.c.run('git clone -b {branch} {repo} {path}'.format(**params))
 
     def install_package_requirements(self):
-        self.c.run('virtualenv -p python3 {}'.format(self.venv_path))
+        self.c.run('python3 -m virtualenv -p python3.7 {}'.format(self.venv_path))
         self.c.run('{}/bin/pip install -r {}/requirements.txt'.format(self.venv_path, self.git_clone_path))
 
+    def initialize_database(self):
+        self.c.run('{}/bin/pip install -e {}'.format(self.venv_path, self.git_clone_path))
+        self.c.run('{}/bin/pip install alembic'.format(self.venv_path))
+
+        # TODO run the following commands when PR #30 is merged
+        """
+        # Playground with alembic migrations
+        sudo su - postgres
+        bash examples/create-db.sh devicehub dhub
+        exit
+        git checkout feature/alembic-migrations
+        export dhi=dbtest; dh inv add --common --name dbtest
+
+        """
+
     def setup_wsgi_app(self):
+        self.c.sudo('apt-get install -qy libapache2-mod-wsgi-py3')
+
         wsgi_file = os.path.join(self.git_clone_path, 'examples/wsgi.py')
         wsgi_path = os.path.join(self.base_path, 'source')
         self.c.run('mkdir -p {}'.format(wsgi_path))
         self.c.run('cp {file} {path}'.format(file=wsgi_file, path=wsgi_path))
+
+    def configure_apache2(self):
+        """Configure apache2 + wsgi & restart service"""
+        # 1. read examples/apache.conf and set domain
+        # TODO update apache config with
+        # https://flask.palletsprojects.com/en/1.1.x/deploying/mod_wsgi/#support-for-automatic-reloading
+
+        # 2. cp examples/apache.conf /etc/apache2/sites-available/{domain}.conf
+
+        # 3. enable site
+        # a2ensite api.app.usody.com.conf
+
+        # check if everything is OK (e.g. apache running? wget {domain})
+        result = self.c.run('apachectl configtest')
+        if result.failed:
+            sys.exit('Error while autoconfiguring apache.\n' + result.stderr)
+
+        # 4. Restart apache
+
+        # XXX. touch the .wsgi file to trigger a reload in mod_wsgi (REQUIRED ON UPDATING NOT ON BOOSTRAP)
