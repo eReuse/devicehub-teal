@@ -374,3 +374,13 @@ def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
                          query=[('id', device_id)],
                          status=200)
     assert not len(lot['devices'])
+
+
+def test_lot_get_info_description(app: Devicehub, user: UserClient):
+    """Tests GET a lot info endpoint and return description of a lot.
+    """
+    l, _ = user.post({'name': 'Foo', 'description': 'Test comment field'}, res=Lot)
+    assert l['name'] == 'Foo'
+    url_endpoint = l['id'] + '/info'
+    l, _ = user.get(res=Lot, item=url_endpoint)
+    assert l['description'] == 'Test comment field'

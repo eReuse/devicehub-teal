@@ -215,3 +215,16 @@ class LotDeviceView(LotBaseChildrenView):
 
     def _delete(self, lot: Lot, ids: Set[int]):
         lot.devices.difference_update(Device.query.filter(Device.id.in_(ids)))
+
+
+class LotDescription(View):
+    """View for adding and removing child devices from a lot.
+
+     Ex. ``lot/<id>/info``.
+     """
+
+    class ListArgs(ma.Schema):
+        id = ma.fields.List(ma.fields.Integer())
+
+        def _get(self, l: Lot):
+            return l.description

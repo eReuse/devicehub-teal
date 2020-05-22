@@ -6,7 +6,7 @@ from teal.resource import Converters, Resource
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.lot import schemas
 from ereuse_devicehub.resources.lot.views import LotBaseChildrenView, LotChildrenView, \
-    LotDeviceView, LotView
+    LotDeviceView, LotView, LotDescriptionView
 
 
 class LotDef(Resource):
@@ -33,6 +33,10 @@ class LotDef(Resource):
         self.add_url_rule('/<{}:{}>/devices'.format(self.ID_CONVERTER.value, self.ID_NAME),
                           view_func=lot_device,
                           methods={'POST', 'DELETE'})
+        lot_info = LotDescriptionView.as_view('lot-info', definition=self, auth=app.auth)
+        self.add_url_rule('/<{}>/info'.format(self.ID_CONVERTER.value),
+                          view_func=lot_info,
+                          methods={'GET'})
 
     def init_db(self, db: 'db.SQLAlchemy', exclude_schema=None):
         # Create functions

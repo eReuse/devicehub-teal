@@ -16,6 +16,7 @@ class Lot(Thing):
     description = SanitizedStr(description=m.Lot.description.comment)
     closed = f.Boolean(missing=False, description=m.Lot.closed.comment)
     devices = NestedOn(s_device.Device, many=True, dump_only=True)
+    devices = NestedOn(s_device.Device, many=True, dump_only=True)
     children = NestedOn('Lot', many=True, dump_only=True)
     parents = NestedOn('Lot', many=True, dump_only=True)
     url = URL(dump_only=True, description=m.Lot.url.__doc__)
