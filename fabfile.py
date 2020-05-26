@@ -38,7 +38,7 @@ TASK_COMMON_HELP = {
 @task(
     help=TASK_COMMON_HELP,
 )
-def bootstrap(c, domain='api.ereuse.org', branch='testing'):
+def bootstrap(c, domain='api.ereuse.org', branch='master'):
     """
     Prepare a machine to host a devihub instance
 
@@ -46,7 +46,7 @@ def bootstrap(c, domain='api.ereuse.org', branch='testing'):
     """
     install_apt_dependencies(c)
 
-    deployment = AppDeployment(domain, c)
+    deployment = AppDeployment(domain, branch, c)
 
     deployment.clone_devicehub_repository()
     deployment.install_package_requirements()
@@ -61,12 +61,12 @@ def bootstrap(c, domain='api.ereuse.org', branch='testing'):
 @task(
     help=TASK_COMMON_HELP,
 )
-def upgrade(c, domain='api.ereuse.org'):
+def upgrade(c, domain='api.ereuse.org', branch='master'):
     """
     Upgrade a running instance of devicehub to the latest version of
     the specified git branch.
     """
-    deployment = AppDeployment(domain, c)
+    deployment = AppDeployment(domain, branch, c)
     deployment.upgrade_devicehub_code()
     deployment.upgrade_package_requirements()
     deployment.upgrade_database_schema()
@@ -91,15 +91,16 @@ class AppDeployment:
     GIT_CLONE_DIR = 'devicehub'
     VENV_DIR = 'venv'
 
-    def __init__(self, domain, connection):
+    def __init__(self, domain, branch, connection):
         self.c = connection
+        self.branch = branch
         self.base_path = os.path.join(self.SITES_PATH, domain)
         self.git_clone_path = os.path.join(self.base_path, self.GIT_CLONE_DIR)
         self.venv_path = os.path.join(self.base_path, self.VENV_DIR)
 
     def clone_devicehub_repository(self):
         params = {
-            'branch': 'testing',
+            'branch': self.branch,
             'repo': GIT_REPO_URL,
             'path': self.git_clone_path,
         }
