@@ -19,19 +19,24 @@ from fabric import task
 
 PACKAGES_BASE = ['git', 'python3', 'python3-virtualenv', 'postgresql', 'postgresql-client']
 
-PACKAGES_WEASYPRINT = ['build-essential', 'python3-dev', 'python3-pip', 'python3-setuptools', 'python3-wheel', 'python3-cffi',
-                       'libcairo2', 'libpango-1.0-0', 'libpangocairo-1.0-0', 'libgdk-pixbuf2.0-0', 'libffi-dev', 'shared-mime-info']
+PACKAGES_WEASYPRINT = ['build-essential', 'python3-dev', 'python3-pip', 'python3-setuptools',
+                       'python3-wheel', 'python3-cffi', 'libcairo2', 'libpango-1.0-0',
+                       'libpangocairo-1.0-0', 'libgdk-pixbuf2.0-0', 'libffi-dev',
+                       'shared-mime-info']
 
 PACKAGES = PACKAGES_BASE + PACKAGES_WEASYPRINT
 
 GIT_REPO_URL = 'https://github.com/eReuse/devicehub-teal.git'
 
 
-@task(
-    help={
+TASK_COMMON_HELP = {
         'domain': 'domain where app will be deployed',
         'branch': 'select branch to clone from git',
     }
+
+
+@task(
+    help=TASK_COMMON_HELP,
 )
 def bootstrap(c, domain='api.ereuse.org', branch='testing'):
     """
@@ -50,7 +55,22 @@ def bootstrap(c, domain='api.ereuse.org', branch='testing'):
     deployment.initialize_database()
 
     deployment.setup_wsgi_app()
-    # deployment.configure_apache2()
+    deployment.setup_apache2()
+
+
+@task(
+    help=TASK_COMMON_HELP,
+)
+def upgrade(c, domain='api.ereuse.org'):
+    """
+    Upgrade a running instance of devicehub to the latest version of
+    the specified git branch.
+    """
+    deployment = AppDeployment(domain, c)
+    deployment.upgrade_devicehub_code()
+    deployment.upgrade_package_requirements()
+    deployment.upgrade_database_schema()
+    deployment.restart_services()
 
 
 def install_apt_dependencies(c):
@@ -62,7 +82,7 @@ def install_apt_dependencies(c):
 class AppDeployment:
     """
     app dir schema:
-    ~/sites/domain/
+    ~/sites/<domain>/
         devicehub   # source code
         source      # wsgi app
         venv        # python virtual environment
@@ -88,8 +108,19 @@ class AppDeployment:
         # self.c.run('git clone -b {branch} --single-branch {repo} {path}'.format(**params))
         self.c.run('git clone -b {branch} {repo} {path}'.format(**params))
 
+    def upgrade_devicehub_code(self):
+        params = {
+            'path': self.git_clone_path,
+        }
+        result = self.c.run('cd {path} && git pull --ff-only'.format(**params))
+        if result.failed:
+            raise RuntimeError("Error retrieving latest devicehub code: {}".format(result.stderr))
+
     def install_package_requirements(self):
         self.c.run('python3 -m virtualenv -p python3.7 {}'.format(self.venv_path))
+        self.upgrade_package_requirements()
+
+    def upgrade_package_requirements(self):
         self.c.run('{}/bin/pip install -r {}/requirements.txt'.format(self.venv_path, self.git_clone_path))
 
     def initialize_database(self):
@@ -107,6 +138,12 @@ class AppDeployment:
 
         """
 
+    def upgrade_database_schema(self):
+        # TODO run the following commands when PR #30 is merged
+        """
+        alembic -x inventory=dbtest upgrade head
+        """
+
     def setup_wsgi_app(self):
         self.c.sudo('apt-get install -qy libapache2-mod-wsgi-py3')
 
@@ -115,8 +152,11 @@ class AppDeployment:
         self.c.run('mkdir -p {}'.format(wsgi_path))
         self.c.run('cp {file} {path}'.format(file=wsgi_file, path=wsgi_path))
 
-    def configure_apache2(self):
+    def setup_apache2(self):
         """Configure apache2 + wsgi & restart service"""
+        # 0. install apache2
+        self.c.sudo('apt-get install -qy apache2')
+
         # 1. read examples/apache.conf and set domain
         # TODO update apache config with
         # https://flask.palletsprojects.com/en/1.1.x/deploying/mod_wsgi/#support-for-automatic-reloading
@@ -127,10 +167,13 @@ class AppDeployment:
         # a2ensite api.app.usody.com.conf
 
         # check if everything is OK (e.g. apache running? wget {domain})
-        result = self.c.run('apachectl configtest')
+        result = self.c.sudo('apachectl configtest')
         if result.failed:
             sys.exit('Error while autoconfiguring apache.\n' + result.stderr)
 
         # 4. Restart apache
+        # self.c.sudo("systemctl restart apache2")
 
+    def restart_services(self):
         # XXX. touch the .wsgi file to trigger a reload in mod_wsgi (REQUIRED ON UPDATING NOT ON BOOSTRAP)
+        self.c.sudo("systemctl reload apache2")
