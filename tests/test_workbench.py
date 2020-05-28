@@ -14,6 +14,7 @@ from ereuse_devicehub.resources.tag.model import Tag
 from tests.conftest import file
 
 
+@pytest.mark.mvp
 def test_workbench_server_condensed(user: UserClient):
     """As :def:`.test_workbench_server_phases` but all the actions
     condensed in only one big ``Snapshot`` file, as described
@@ -67,6 +68,7 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['tags'][0]['id'] == 'tag1'
 
 
+@pytest.mark.mvp
 @pytest.mark.xfail(reason='Functionality not yet developed.')
 def test_workbench_server_phases(user: UserClient):
     """Tests the phases described in the docs section `Snapshots from
@@ -134,6 +136,7 @@ def test_workbench_server_phases(user: UserClient):
     assert len(pc['actions']) == 10  # todo shall I add child actions?
 
 
+@pytest.mark.mvp
 def test_real_hp_11(user: UserClient):
     s = file('real-hp.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
@@ -160,11 +163,13 @@ def test_real_hp_11(user: UserClient):
     # todo check rating
 
 
+@pytest.mark.mvp
 def test_real_toshiba_11(user: UserClient):
     s = file('real-toshiba.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
 
 
+@pytest.mark.mvp
 def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     """Checks the values of the device, components,
     actions and their relationships of a real pc.
@@ -277,17 +282,20 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert mother['hid'] == 'motherboard-asustek_computer_inc-1001pxd-eee0123456789'
 
 
+@pytest.mark.mvp
 def test_real_custom(user: UserClient):
     s = file('real-custom.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s, status=NeedsId)
     # todo insert with tag
 
 
+@pytest.mark.mvp
 def test_real_hp_quad_core(user: UserClient):
     s = file('real-hp-quad-core.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
 
 
+@pytest.mark.mvp
 def test_real_eee_1000h(user: UserClient):
     s = file('asus-eee-1000h.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
@@ -305,6 +313,7 @@ SNAPSHOTS_NEED_ID = {
 """Snapshots that do not generate HID requiring a custom ID."""
 
 
+@pytest.mark.mvp
 @pytest.mark.parametrize('file',
                          (pytest.param(f, id=f.name)
                           for f in pathlib.Path(__file__).parent.joinpath('workbench_files').iterdir())
@@ -320,12 +329,14 @@ def test_workbench_fixtures(file: pathlib.Path, user: UserClient):
               status=201 if file.name not in SNAPSHOTS_NEED_ID else NeedsId)
 
 
+@pytest.mark.mvp
 def test_workbench_asus_1001pxd_rate_low(user: UserClient):
     """Tests an Asus 1001pxd with a low rate."""
     s = file('asus-1001pxd.snapshot')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
 
 
+@pytest.mark.mvp
 def test_david(user: UserClient):
     s = file('david.lshw.snapshot')
     snapshot, _ = user.post(res=em.Snapshot, data=s)

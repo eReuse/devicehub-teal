@@ -15,6 +15,7 @@ from tests import conftest
 from tests.conftest import file
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_device_filters():
     schema = Filters()
@@ -47,6 +48,7 @@ def test_device_filters():
                                     'Server', 'Dell%', 'Computer', 'bcn-%'}
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_device_sort():
     schema = Sorting()
@@ -54,6 +56,7 @@ def test_device_sort():
     assert str(r) == 'device.created ASC'
 
 
+@pytest.mark.mvp
 @pytest.fixture()
 def device_query_dummy(app: Devicehub):
     """3 computers, where:
@@ -98,6 +101,7 @@ def device_query_dummy(app: Devicehub):
         db.session.commit()
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(device_query_dummy.__name__)
 def test_device_query_no_filters(user: UserClient):
     i, _ = user.get(res=Device)
@@ -106,12 +110,14 @@ def test_device_query_no_filters(user: UserClient):
     )
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(device_query_dummy.__name__)
 def test_device_query_filter_type(user: UserClient):
     i, _ = user.get(res=Device, query=[('filter', {'type': ['Desktop', 'Laptop']})])
     assert ('1', '2', '3') == tuple(d['serialNumber'] for d in i['items'])
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(device_query_dummy.__name__)
 def test_device_query_filter_sort(user: UserClient):
     i, _ = user.get(res=Device, query=[
@@ -121,6 +127,7 @@ def test_device_query_filter_sort(user: UserClient):
     assert ('4', '3', '2', '1') == tuple(d['serialNumber'] for d in i['items'])
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(device_query_dummy.__name__)
 def test_device_query_filter_lots(user: UserClient):
     parent, _ = user.post({'name': 'Parent'}, res=Lot)
@@ -171,6 +178,7 @@ def test_device_query_filter_lots(user: UserClient):
     ), 'Adding both lots is redundant in this case and we have the 4 elements.'
 
 
+@pytest.mark.mvp
 def test_device_query(user: UserClient):
     """Checks result of inventory."""
     user.post(conftest.file('basic.snapshot'), res=Snapshot)
@@ -183,6 +191,7 @@ def test_device_query(user: UserClient):
     assert not pc['tags']
 
 
+@pytest.mark.mvp
 def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClient):
     """Ensures DeviceSearch can regenerate itself when the table is empty."""
     user.post(file('basic.snapshot'), res=Snapshot)
@@ -198,6 +207,7 @@ def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClie
     assert i['items']
 
 
+@pytest.mark.mvp
 def test_device_search_regenerate_table(app: DeviceSearch, user: UserClient):
     user.post(file('basic.snapshot'), res=Snapshot)
     i, _ = user.get(res=Device, query=[('search', 'Desktop')])
@@ -213,6 +223,7 @@ def test_device_search_regenerate_table(app: DeviceSearch, user: UserClient):
     assert i['items'], 'Regenerated re-made the table'
 
 
+@pytest.mark.mvp
 def test_device_query_search(user: UserClient):
     # todo improve
     user.post(file('basic.snapshot'), res=Snapshot)
@@ -226,6 +237,7 @@ def test_device_query_search(user: UserClient):
     assert len(i['items']) == 1
 
 
+@pytest.mark.mvp
 def test_device_query_search_synonyms_asus(user: UserClient):
     user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
     i, _ = user.get(res=Device, query=[('search', 'asustek')])
@@ -234,6 +246,7 @@ def test_device_query_search_synonyms_asus(user: UserClient):
     assert 1 == len(i['items'])
 
 
+@pytest.mark.mvp
 def test_device_query_search_synonyms_intel(user: UserClient):
     s = file('real-hp.snapshot.11')
     s['device']['model'] = 'foo'  # The model had the word 'HP' in it

@@ -12,8 +12,7 @@ from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.action.models import Action, BenchmarkDataStorage, \
-    BenchmarkProcessor, EraseSectors, RateComputer, Snapshot, SnapshotRequest, VisualTest, \
-    MeasureBattery, BenchmarkRamSysbench, StressTest
+    BenchmarkProcessor, EraseSectors, RateComputer, Snapshot, SnapshotRequest, VisualTest
 from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import SolidStateDrive
@@ -25,6 +24,7 @@ from ereuse_devicehub.resources.user.models import User
 from tests.conftest import file
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures('auth_app_context')
 def test_snapshot_model():
     """Tests creating a Snapshot with its relationships ensuring correct
@@ -55,12 +55,14 @@ def test_snapshot_model():
     assert device.url == urlutils.URL('http://localhost/devices/1')
 
 
+@pytest.mark.mvp
 def test_snapshot_schema(app: Devicehub):
     with app.app_context():
         s = file('basic.snapshot')
         app.resources['Snapshot'].schema.load(s)
 
 
+@pytest.mark.mvp
 def test_snapshot_post(user: UserClient):
     """Tests the post snapshot endpoint (validation, etc), data correctness,
     and relationship correctness.
@@ -96,6 +98,7 @@ def test_snapshot_post(user: UserClient):
     assert rate['snapshot']['id'] == snapshot['id']
 
 
+@pytest.mark.mvp
 def test_snapshot_component_add_remove(user: UserClient):
     """Tests adding and removing components and some don't generate HID.
     All computers generate HID.
@@ -209,6 +212,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert all(c['parent'] == pc2_id for c in pc2['components'])
 
 
+@pytest.mark.mvp
 def _test_snapshot_computer_no_hid(user: UserClient):
     """Tests inserting a computer that doesn't generate a HID, neither
     some of its components.
@@ -229,6 +233,7 @@ def _test_snapshot_computer_no_hid(user: UserClient):
     user.post(s, res=Snapshot)
 
 
+@pytest.mark.mvp
 def test_snapshot_post_without_hid(user: UserClient):
     """Tests the post snapshot endpoint (validation, etc), data correctness,
     and relationship correctness with HID field generated with type - model - manufacturer - S/N.
@@ -251,6 +256,7 @@ def test_snapshot_post_without_hid(user: UserClient):
     assert response.status == 201
 
 
+@pytest.mark.mvp
 def test_snapshot_mismatch_id():
     """Tests uploading a device with an ID from another device."""
     # Note that this won't happen as in this new version
@@ -258,6 +264,7 @@ def test_snapshot_mismatch_id():
     pass
 
 
+@pytest.mark.mvp
 def test_snapshot_tag_inner_tag(tag_id: str, user: UserClient, app: Devicehub):
     """Tests a posting Snapshot with a local tag."""
     b = file('basic.snapshot')
@@ -270,6 +277,7 @@ def test_snapshot_tag_inner_tag(tag_id: str, user: UserClient, app: Devicehub):
         assert tag.device_id == 1, 'Tag should be linked to the first device'
 
 
+@pytest.mark.mvp
 def test_snapshot_tag_inner_tag_mismatch_between_tags_and_hid(user: UserClient, tag_id: str):
     """Ensures one device cannot 'steal' the tag from another one."""
     pc1 = file('basic.snapshot')
@@ -281,6 +289,7 @@ def test_snapshot_tag_inner_tag_mismatch_between_tags_and_hid(user: UserClient, 
     user.post(pc2, res=Snapshot, status=MismatchBetweenTagsAndHid)
 
 
+@pytest.mark.mvp
 def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
     """Tests a snapshot performed to device 1 with tag A and then to
     device 2 with tag B. Both don't have HID but are different type.
@@ -300,12 +309,14 @@ def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
     user.post(pc2, res=Snapshot, status=MismatchBetweenProperties)
 
 
+@pytest.mark.mvp
 def test_snapshot_upload_twice_uuid_error(user: UserClient):
     pc1 = file('basic.snapshot')
     user.post(pc1, res=Snapshot)
     user.post(pc1, res=Snapshot, status=UniqueViolation)
 
 
+@pytest.mark.mvp
 def test_snapshot_component_containing_components(user: UserClient):
     """There is no reason for components to have components and when
     this happens it is always an error.
@@ -322,6 +333,7 @@ def test_snapshot_component_containing_components(user: UserClient):
     user.post(s, res=Snapshot, status=ValidationError)
 
 
+@pytest.mark.mvp
 def test_erase_privacy_standards_endtime_sort(user: UserClient):
     """Tests a Snapshot with EraseSectors and the resulting privacy
     properties.
@@ -401,37 +413,6 @@ def test_test_data_storage(user: UserClient):
     assert incidence_test['severity'] == 'Error'
 
 
-@pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
-def test_snapshot_computer_monitor(user: UserClient):
-    """Tests that a snapshot of computer monitor device create correctly."""
-    s = file('computer-monitor.snapshot')
-    snapshot_and_check(user, s, action_types=('RateMonitor',))
-
-
-@pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
-def test_snapshot_mobile_smartphone_imei_manual_rate(user: UserClient):
-    """Tests that a snapshot of smartphone device is creat correctly."""
-    s = file('smartphone.snapshot')
-    snapshot = snapshot_and_check(user, s, action_types=('VisualTest',))
-    mobile, _ = user.get(res=m.Device, item=snapshot['device']['id'])
-    assert mobile['imei'] == 3568680000414120
-
-
-@pytest.mark.xfail(reason='Test not developed')
-def test_snapshot_components_none():
-    """Tests that a snapshot without components does not remove them
-    from the computer.
-    """
-
-
-# TODO JN is really necessary in which cases??
-@pytest.mark.xfail(reason='Test not developed')
-def test_snapshot_components_empty():
-    """Tests that a snapshot whose components are an empty list remove
-    all its components.
-    """
-
-
 def assert_similar_device(device1: dict, device2: dict):
     """Like :class:`ereuse_devicehub.resources.device.models.Device.
     is_similar()` but adapted for testing.
@@ -497,14 +478,7 @@ def snapshot_and_check(user: UserClient,
         return snapshot
 
 
-@pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
-def test_snapshot_keyboard(user: UserClient):
-    s = file('keyboard.snapshot')
-    snapshot = snapshot_and_check(user, s, action_types=('VisualTest',))
-    keyboard = snapshot['device']
-    assert keyboard['layout'] == 'ES'
-
-
+@pytest.mark.mvp
 @pytest.mark.xfail(reason='Debug and rewrite it')
 def test_pc_rating_rate_none(user: UserClient):
     """Tests a Snapshot with EraseSectors."""
@@ -513,14 +487,7 @@ def test_pc_rating_rate_none(user: UserClient):
     snapshot, _ = user.post(res=Snapshot, data=s)
 
 
+@pytest.mark.mvp
 def test_pc_2(user: UserClient):
     s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=s)
-
-
-@pytest.mark.xfail(reason='Add battery component assets')
-def test_snapshot_pc_with_battery_component(user: UserClient):
-    pc1 = file('acer.happy.battery.snapshot')
-    snapshot = snapshot_and_check(user, pc1,
-                                  action_types=(StressTest.t, BenchmarkRamSysbench.t),
-                                  perform_second_snapshot=False)

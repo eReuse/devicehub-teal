@@ -15,6 +15,7 @@ from tests import conftest
 from tests.conftest import file
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_workbench_rate_db():
     rate = RateComputer(processor=0.1,
@@ -94,6 +95,7 @@ def test_price_from_rate():
     assert price.warranty2 == Decimal('124.47')
 
 
+@pytest.mark.mvp
 def test_when_rate_must_not_compute(user: UserClient):
     """Test to check if rate is computed in case of should not be calculated:
         1. Snapshot haven't visual test
@@ -130,6 +132,7 @@ def test_when_rate_must_not_compute(user: UserClient):
     assert 'rate' not in snapshot['device']
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_multiple_rates(user: UserClient):
     """Tests submitting two rates from Workbench,

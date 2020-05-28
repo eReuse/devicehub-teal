@@ -22,6 +22,7 @@ from tests import conftest
 """
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_model_children():
     """Tests the property Lot.children
@@ -65,6 +66,7 @@ def test_lot_model_children():
     assert not l3.parents
 
 
+@pytest.mark.mvp
 def test_lot_modify_patch_endpoint_and_delete(user: UserClient):
     """Creates and modifies lot properties through the endpoint."""
     l, _ = user.post({'name': 'foo', 'description': 'baz'}, res=Lot)
@@ -79,6 +81,7 @@ def test_lot_modify_patch_endpoint_and_delete(user: UserClient):
     user.get(res=Lot, item=l['id'], status=404)
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_device_relationship():
     device = Desktop(serial_number='foo',
@@ -298,6 +301,7 @@ def test_lot_roots():
     assert set(Lot.roots()) == {l1, l3}
 
 
+@pytest.mark.mvp
 def test_post_get_lot(user: UserClient):
     """Tests submitting and retreiving a basic lot."""
     l, _ = user.post({'name': 'Foo'}, res=Lot)
@@ -345,6 +349,7 @@ def test_lot_post_add_children_view_ui_tree_normal(user: UserClient):
     assert lots[0]['name'] == 'Parent'
 
 
+@pytest.mark.mvp
 def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
     """Tests adding a device to a lot using POST and
     removing it with DELETE.

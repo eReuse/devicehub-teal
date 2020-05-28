@@ -28,6 +28,7 @@ from ereuse_devicehub.resources.enums import AppearanceRange, ComputerChassis, F
 from tests import conftest
 
 
+@pytest.mark.mvp
 def test_rate_data_storage_rate():
     """Test to check if compute data storage rate have same value than
     previous score version.
@@ -63,6 +64,7 @@ def test_rate_data_storage_rate():
     assert math.isclose(data_storage_rate, 3.70, rel_tol=0.001)
 
 
+@pytest.mark.mvp
 def test_rate_data_storage_size_is_null():
     """Test where input DataStorage.size = NULL, BenchmarkDataStorage.read_speed = 0,
     BenchmarkDataStorage.write_speed = 0 is like no DataStorage has been detected;
@@ -75,6 +77,7 @@ def test_rate_data_storage_size_is_null():
     assert data_storage_rate is None
 
 
+@pytest.mark.mvp
 def test_rate_no_data_storage():
     """Test without data storage devices."""
 
@@ -84,6 +87,7 @@ def test_rate_no_data_storage():
     assert data_storage_rate is None
 
 
+@pytest.mark.mvp
 def test_rate_ram_rate():
     """Test to check if compute ram rate have same value than previous
     score version only with 1 RamModule.
@@ -96,6 +100,7 @@ def test_rate_ram_rate():
     assert math.isclose(ram_rate, 2.02, rel_tol=0.002), 'RamRate returns incorrect value(rate)'
 
 
+@pytest.mark.mvp
 def test_rate_ram_rate_2modules():
     """Test to check if compute ram rate have same value than previous
     score version with 2 RamModule.
@@ -109,6 +114,7 @@ def test_rate_ram_rate_2modules():
     assert math.isclose(ram_rate, 3.79, rel_tol=0.001), 'RamRate returns incorrect value(rate)'
 
 
+@pytest.mark.mvp
 def test_rate_ram_rate_4modules():
     """Test to check if compute ram rate have same value than previous
     score version with 2 RamModule.
@@ -124,6 +130,7 @@ def test_rate_ram_rate_4modules():
     assert math.isclose(ram_rate, 1.993, rel_tol=0.001), 'RamRate returns incorrect value(rate)'
 
 
+@pytest.mark.mvp
 def test_rate_ram_module_size_is_0():
     """Test where input data RamModule.size = 0; is like no RamModule
     has been detected.
@@ -135,6 +142,7 @@ def test_rate_ram_module_size_is_0():
     assert ram_rate is None
 
 
+@pytest.mark.mvp
 def test_rate_ram_speed_is_null():
     """Test where RamModule.speed is NULL (not detected) but has size."""
 
@@ -151,6 +159,7 @@ def test_rate_ram_speed_is_null():
     assert math.isclose(ram_rate, 1.25, rel_tol=0.004), 'RamRate returns incorrect value(rate)'
 
 
+@pytest.mark.mvp
 def test_rate_no_ram_module():
     """Test without RamModule."""
     ram0 = RamModule()
@@ -159,6 +168,7 @@ def test_rate_no_ram_module():
     assert ram_rate is None
 
 
+@pytest.mark.mvp
 def test_rate_processor_rate():
     """Test to check if compute processor rate have same value than previous
     score version only with 1 core.
@@ -173,6 +183,7 @@ def test_rate_processor_rate():
     assert math.isclose(processor_rate, 1, rel_tol=0.001)
 
 
+@pytest.mark.mvp
 def test_rate_processor_rate_2cores():
     """Test to check if compute processor rate have same value than previous
     score version with 2 cores.
@@ -194,6 +205,7 @@ def test_rate_processor_rate_2cores():
     assert math.isclose(processor_rate, 3.93, rel_tol=0.002)
 
 
+@pytest.mark.mvp
 def test_rate_processor_with_null_cores():
     """Test with processor device have null number of cores."""
     cpu = Processor(cores=None, speed=3.3)
@@ -204,6 +216,7 @@ def test_rate_processor_with_null_cores():
     assert math.isclose(processor_rate, 1.38, rel_tol=0.003)
 
 
+@pytest.mark.mvp
 def test_rate_processor_with_null_speed():
     """Test with processor device have null speed value."""
     cpu = Processor(cores=1, speed=None)
@@ -214,6 +227,7 @@ def test_rate_processor_with_null_speed():
     assert math.isclose(processor_rate, 1.06, rel_tol=0.001)
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_rate_computer_1193():
     """Test rate computer characteristics:
@@ -267,6 +281,7 @@ def test_rate_computer_1193():
     assert math.isclose(rate_pc.rating, 4.61, rel_tol=0.001)
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_rate_computer_1201():
     """Test rate computer characteristics:
@@ -318,6 +333,7 @@ def test_rate_computer_1201():
     assert math.isclose(rate_pc.rating, 3.48, rel_tol=0.001)
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_rate_computer_multiple_ram_module():
     """Test rate computer characteristics:
@@ -376,6 +392,7 @@ def test_rate_computer_multiple_ram_module():
     assert rate_pc.rating == 1.57
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_rate_computer_one_ram_module():
     """Test rate computer characteristics:
