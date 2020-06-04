@@ -278,7 +278,7 @@ def test_rate_computer_1193():
 
     assert math.isclose(rate_pc.processor, 3.95, rel_tol=0.001)
 
-    assert math.isclose(rate_pc.rating, 4.61, rel_tol=0.001)
+    assert math.isclose(rate_pc.rating, 3.91, rel_tol=0.001)
 
 
 @pytest.mark.mvp
@@ -330,7 +330,7 @@ def test_rate_computer_1201():
 
     assert math.isclose(rate_pc.processor, 3.93, rel_tol=0.001)
 
-    assert math.isclose(rate_pc.rating, 3.48, rel_tol=0.001)
+    assert math.isclose(rate_pc.rating, 3.08, rel_tol=0.001)
 
 
 @pytest.mark.mvp
@@ -389,7 +389,7 @@ def test_rate_computer_multiple_ram_module():
 
     assert math.isclose(rate_pc.processor, 1, rel_tol=0.001)
 
-    assert rate_pc.rating == 1.57
+    assert rate_pc.rating == 1.37
 
 
 @pytest.mark.mvp
@@ -443,7 +443,7 @@ def test_rate_computer_one_ram_module():
 
     assert math.isclose(rate_pc.processor, 4.09, rel_tol=0.001)
 
-    assert math.isclose(rate_pc.rating, 2.5, rel_tol=0.001)
+    assert math.isclose(rate_pc.rating, 2.1, rel_tol=0.001)
 
 
 @pytest.mark.xfail(reason='Data Storage rate actually requires a DSSBenchmark')

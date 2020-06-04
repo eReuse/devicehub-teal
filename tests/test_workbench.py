@@ -37,6 +37,7 @@ def test_workbench_server_condensed(user: UserClient):
         ('BenchmarkProcessorSysbench', 5),
         ('StressTest', 1),
         ('EraseSectors', 6),
+        ('EreusePrice', 1),
         ('BenchmarkRamSysbench', 1),
         ('BenchmarkProcessor', 5),
         ('Install', 6),
@@ -59,7 +60,7 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['ramSize'] == 2048, 'There are 3 RAM: 2 x 1024 and 1 None sizes'
     assert device['rate']['closed']
     assert device['rate']['severity'] == 'Info'
-    assert device['rate']['rating'] == 0
+    assert device['rate']['rating'] == 1
     assert device['rate']['type'] == RateComputer.t
     # TODO JN why haven't same order in actions??
     assert device['actions'][2]['type'] == VisualTest.t
@@ -191,20 +192,13 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     # assert pc['actions'][0]['functionalityRange'] == 'B'
     # TODO add appearance and functionality Range in device[rate]
 
-    assert rate['processorRange'] == 'VERY_LOW'
-    assert rate['ramRange'] == 'VERY_LOW'
-    assert rate['ratingRange'] == 'VERY_LOW'
+    assert rate['processorRange'] == 'LOW'
+    assert rate['ramRange'] == 'LOW'
+    assert rate['ratingRange'] == 'LOW'
     assert rate['ram'] == 1.53
     # TODO add camelCase instead of snake_case
     assert rate['dataStorage'] == 3.76
     assert rate['type'] == 'RateComputer'
-    # TODO change pc[actions] TestBios instead of rate[biosRange]
-    # assert rate['biosRange'] == 'C'
-    assert rate['appearance'] == 0, 'appearance B equals 0 points'
-    # todo fix gets correctly functionality rates values not equals to 0.
-    assert rate['functionality'] == 0, 'functionality A equals 0.4 points'
-    # why this assert?? -2 < rating < 4.7
-    # assert rate['rating'] > 0 and rate['rating'] != 1
     components = snapshot['components']
     wifi = components[0]
     assert wifi['hid'] == 'networkadapter-qualcomm_atheros-' \
@@ -238,7 +232,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert em.BenchmarkRamSysbench.t in action_types
     assert em.StressTest.t in action_types
     assert em.Snapshot.t in action_types
-    assert len(actions) == 7
+    assert len(actions) == 8
     gpu = components[3]
     assert gpu['model'] == 'atom processor d4xx/d5xx/n4xx/n5xx integrated graphics controller'
     assert gpu['manufacturer'] == 'intel corporation'
@@ -248,8 +242,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert em.BenchmarkRamSysbench.t in action_types
     assert em.StressTest.t in action_types
     assert em.Snapshot.t in action_types
-    # todo why?? change action types 3 to 5
-    assert len(action_types) == 5
+    assert len(action_types) == 6
     sound = components[4]
     assert sound['model'] == 'nm10/ich7 family high definition audio controller'
     sound = components[5]
@@ -271,8 +264,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert em.TestDataStorage.t in action_types
     assert em.EraseBasic.t in action_types
     assert em.Snapshot.t in action_types
-    # todo why?? change action types 6 to 8
-    assert len(action_types) == 8
+    assert len(action_types) == 9
     erase = next(e for e in hdd['actions'] if e['type'] == em.EraseBasic.t)
     assert erase['endTime']
     assert erase['startTime']

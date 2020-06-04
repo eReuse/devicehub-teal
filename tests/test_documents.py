@@ -170,7 +170,6 @@ def test_export_computer_monitor(user: UserClient):
     assert fixture_csv[1] == export_csv[1], 'Component information are not equal'
 
 
-@pytest.mark.mvp
 def test_export_keyboard(user: UserClient):
     """Test a export device type keyboard."""
     snapshot, _ = user.post(file('keyboard.snapshot'), res=Snapshot)

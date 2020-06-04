@@ -83,16 +83,16 @@ def test_price_from_rate():
                device=pc)
     _, price = RateComputer.compute(pc)
 
-    assert price.price == Decimal('92.2001')
-    assert price.retailer.standard.amount == Decimal('40.9714')
-    assert price.platform.standard.amount == Decimal('18.8434')
-    assert price.refurbisher.standard.amount == Decimal('32.3853')
+    assert price.price == Decimal('78.2001')
+    assert price.retailer.standard.amount == Decimal('34.7502')
+    assert price.platform.standard.amount == Decimal('15.9821')
+    assert price.refurbisher.standard.amount == Decimal('27.4678')
     assert price.price >= price.retailer.standard.amount + price.platform.standard.amount \
            + price.refurbisher.standard.amount
-    assert price.retailer.warranty2.amount == Decimal('55.3085')
-    assert price.platform.warranty2.amount == Decimal('25.4357')
-    assert price.refurbisher.warranty2.amount == Decimal('43.7259')
-    assert price.warranty2 == Decimal('124.47')
+    assert price.retailer.warranty2.amount == Decimal('46.9103')
+    assert price.platform.warranty2.amount == Decimal('21.5735')
+    assert price.refurbisher.warranty2.amount == Decimal('37.0864')
+    assert price.warranty2 == Decimal('105.57')
 
 
 @pytest.mark.mvp
@@ -167,12 +167,12 @@ def test_multiple_rates(user: UserClient):
     assert rate1.processor == 3.95
     assert rate1.ram == 3.8
 
-    assert rate1.appearance == 0.3
-    assert rate1.functionality == 0.4
+    assert rate1.appearance is None
+    assert rate1.functionality is None
 
-    assert rate1.rating == 4.62
+    assert rate1.rating == 3.92
 
-    assert price1.price == Decimal('92.4001')
+    assert price1.price == Decimal('78.4001')
 
     cpu.actions_one.add(BenchmarkProcessor(rate=16069.44))
     ssd = SolidStateDrive(size=476940)
@@ -194,9 +194,9 @@ def test_multiple_rates(user: UserClient):
     assert rate2.processor == 3.78
     assert rate2.ram == 3.95
 
-    assert rate2.appearance == 0
-    assert rate2.functionality == -0.5
+    assert rate2.appearance is None
+    assert rate2.functionality is None
 
-    assert rate2.rating == 3.43
+    assert rate2.rating == 3.93
 
-    assert price2.price == Decimal('68.6001')
+    assert price2.price == Decimal('78.6001')

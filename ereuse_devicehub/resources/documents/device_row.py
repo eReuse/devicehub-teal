@@ -43,7 +43,10 @@ class DeviceRow(OrderedDict):
             self['Trading state'] = device.last_action_of(*states.Trading.actions()).t
         except:
             self['Trading state'] = ''
-        self['Price'] = device.price.price or ''
+        try:
+            self['Price'] = device.price
+        except:
+            self['Price'] = ''
         if isinstance(device, d.Computer):
             self['Processor'] = device.processor_model
             self['RAM (MB)'] = device.ram_size
@@ -73,7 +76,7 @@ class DeviceRow(OrderedDict):
         # todo put an input specific order (non alphabetic) & where are a list of types components
         for type in sorted(current_app.resources[d.Component.t].subresources_types):  # type: str
             max = self.NUMS.get(type, 4)
-            if type not in ['Component', 'HardDrive', 'SolidStateDrive', 'Camera', 'Battery']:
+            if type not in ['Component', 'HardDrive', 'SolidStateDrive']:
                 i = 1
                 for component in (r for r in self.device.components if r.type == type):
                     self.fill_component(type, i, component)
