@@ -74,6 +74,13 @@ class Lot(Thing):
         pass
 
 
+class LotDevice(db.Model):
+    device_id = ...  # type: Column
+    lot_id = ...  # type: Column
+    created = ...  # type: Column
+    author_id = ...  # type: Column
+
+
 class Path:
     id = ...  # type: Column
     lot_id = ...  # type: Column
