@@ -86,6 +86,68 @@ Testing
    password ``ereuse``.
 3. Execute at the root folder of the project ``python3 setup.py test``.
 
+
+Migrations
+**********
+At this stage, migration files are created manually.
+Set up the database:
+
+.. code:: bash
+
+   $ sudo su - postgres
+   $ bash $PATH_TO_DEVIHUBTEAL/examples/create-db.sh devicehub dhub
+
+Initialize the database:
+
+.. code:: bash
+
+   $ export dhi=dbtest; dh inv add --common --name dbtest
+
+This command will create the schemas, tables in the specified database.
+Then we need to stamp the initial migration.
+
+.. code:: bash
+
+   $ alembic stamp head
+
+
+This command will set the revision **fbb7e2a0cde0_initial**  as our initial migration.
+For more info in migration stamping please see https://alembic.sqlalchemy.org/en/latest/cookbook.html
+
+
+Whenever a change needed eg to create a new schema, alter an existing table, column or perform any
+operation on tables, create a new revision file:
+
+.. code:: bash
+
+   $ alembic revision -m "A table change"
+
+This command will create a new revision file with name `<revision_id>_a_table_change`.
+Edit the generated file with the necessary operations to perform the migration:
+
+.. code:: bash
+
+   $ alembic edit <revision_id>
+
+Apply migrations using:
+
+.. code:: bash
+
+   $ alembic -x inventory=dbtest upgrade head
+
+Then to go back to previous db version:
+
+.. code:: bash
+
+   $ alembic -x inventory=dbtest downgrade <revision_id>
+
+To see a full list of migrations use
+
+.. code:: bash
+
+   $ alembic history
+
+
 Generating the docs
 *******************
 
