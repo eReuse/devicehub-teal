@@ -288,6 +288,7 @@ def test_lot_unite_graphs_and_find():
     assert l4 not in l3 and l5 not in l3 and l6 not in l3 and l7 not in l3 and l8 not in l3
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_roots():
     """Tests getting the method Lot.roots."""

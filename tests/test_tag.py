@@ -105,7 +105,7 @@ def test_tag_get_device_from_tag_endpoint(app: Devicehub, user: UserClient):
     with app.app_context():
         # Create a pc with a tag
         tag = Tag(id='foo-bar')
-        pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower)
+        pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
         pc.tags.add(tag)
         db.session.add(pc)
         db.session.commit()
@@ -174,7 +174,7 @@ def test_tag_manual_link_search(app: Devicehub, user: UserClient):
     """
     with app.app_context():
         db.session.add(Tag('foo-bar', secondary='foo-sec'))
-        desktop = Desktop(serial_number='foo', chassis=ComputerChassis.AllInOne)
+        desktop = Desktop(serial_number='foo', chassis=ComputerChassis.AllInOne, owner_id=user.user['id'])
         db.session.add(desktop)
         db.session.commit()
         desktop_id = desktop.id

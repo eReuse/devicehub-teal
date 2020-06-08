@@ -7,7 +7,7 @@ import pytest
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.resources.action import models as em
-from ereuse_devicehub.resources.action.models import RateComputer, VisualTest
+from ereuse_devicehub.resources.action.models import RateComputer, BenchmarkProcessor
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag.model import Tag
@@ -63,9 +63,7 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['rate']['rating'] == 1
     assert device['rate']['type'] == RateComputer.t
     # TODO JN why haven't same order in actions??
-    assert device['actions'][2]['type'] == VisualTest.t
-    assert device['actions'][2]['appearanceRange'] == 'A'
-    assert device['actions'][2]['functionalityRange'] == 'B'
+    assert device['actions'][2]['type'] == BenchmarkProcessor.t
     assert device['tags'][0]['id'] == 'tag1'
 
 
