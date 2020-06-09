@@ -21,13 +21,10 @@ The requirements are:
    `dependencies <http://weasyprint.readthedocs.io/en/stable/install.html>`__.
 
 Install Devicehub with *pip*:
-``pip3 install ereuse-devicehub -U --pre``.
+``pip3 install -U -r requirements.txt -e .``.
 
 Running
 *******
-Download, or copy the contents, of `this file <examples/app.py>`__, and
-call the new file ``app.py``.
-
 Create a PostgreSQL database called *devicehub* by running
 `create-db <examples/create-db.sh>`__:
 
@@ -40,28 +37,18 @@ Create a PostgreSQL database called *devicehub* by running
 -  In MacOS: ``bash examples/create-db.sh devicehub dhub``, and password
    ``ereuse``.
 
-Create the tables in the database by executing in the same directory
-where ``app.py`` is:
+Using the `dh` tool for set up with one or multiple inventories.
+Create the tables in the database by executing:
 
 .. code:: bash
 
-   $ flask init-db
+   $  export dhi=dbtest;  dh inv add --common --name dbtest
 
 Finally, run the app:
 
 .. code:: bash
 
-   $ flask run
-
-The error ``flask: command not found`` can happen when you are not in a
-*virtual environment*. Try executing then ``python3 -m flask``.
-
-Execute ``flask`` only to know all the administration options Devicehub
-offers.
-
-See the `Flask
-quickstart <http://flask.pocoo.org/docs/1.0/quickstart/>`__ for more
-info.
+   $ export dhi=dbtest;dh run --debugger
 
 The error ‘bdist_wheel’ can happen when you work with a *virtual environment*.
 To fix it, install in the *virtual environment* wheel
@@ -70,9 +57,14 @@ package. ``pip3 install wheel``
 Multiple instances
 ------------------
 Devicehub can run as a single inventory or with multiple inventories,
-each inventory being an instance of the ``devicehub``. To execute
-one instance, use the ``flask`` command, to execute multiple instances
-use the ``dh`` command. The ``dh`` command is like ``flask``, but
+each inventory being an instance of the ``devicehub``. To add a new inventory 
+execute:
+
+.. code:: bash
+
+   $ export dhi=dbtest;  dh inv add --name dbtest
+
+Note: The ``dh`` command is like ``flask``, but
 it allows you to create and delete instances, and interface to them
 directly.
 
