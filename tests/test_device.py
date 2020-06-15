@@ -297,6 +297,8 @@ def test_sync_execute_register_no_hid_tag_not_linked(tag_id: str):
     """
     tag = Tag(id=tag_id)
     pc = d.Desktop(**conftest.file('pc-components.db')['device'], tags=OrderedSet([tag]))
+    from flask import g
+    db.session.add(g.user)
     returned_pc = Sync().execute_register(pc)
     db.session.commit()
     assert returned_pc == pc
