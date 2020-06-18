@@ -264,17 +264,14 @@ class Device(Thing):
         many models in session.
         """
         assert isinstance(with_device, int)
-        merge_actions = Device.query.filter_by(id=with_device).one().actions()
+        merge_actions = Device.query.filter_by(id=with_device).one().actions
         for action in merge_actions:
-            self.actions.append(action)
+            action.device = self
         # We need to refresh the models involved in this operation
         # outside the session / ORM control so the models
         # that have relationships to this model
         # with the cascade 'refresh-expire' can welcome the changes
         db.session.refresh(self)
-
-
-
 
     @declared_attr
     def __mapper_args__(cls):
