@@ -1,10 +1,12 @@
 import datetime
+import uuid
 
 import marshmallow
 from flask import current_app as app, render_template, request, Response
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
-from marshmallow import fields, fields as f, validate as v, ValidationError
+from marshmallow import fields, fields as f, validate as v, ValidationError, \
+    Schema as MarshmallowSchema
 from teal import query
 from teal.cache import cache
 from teal.resource import View
@@ -150,6 +152,33 @@ class DeviceView(View):
                 search.Search.rank(properties, search_p) + search.Search.rank(tags, search_p)
             )
         return query.filter(*args['filter']).order_by(*args['sort'])
+
+
+class DeviceMergeView(View):
+
+    """View for merging two devices
+    Ex. ``device/<id>/merge/id=X``.
+    """
+    class FindArgs(MarshmallowSchema):
+        id = fields.Integer()
+
+    def get_merge_id(self) -> uuid.UUID:
+        args = self.QUERY_PARSER.parse(self.find_args, request, locations=('querystring',))
+        return args['id']
+
+    def post(self, id: uuid.UUID):
+        device = Device.query.filter_by(id=id).one()
+        with_device = self.get_merge_id()
+        device.merge_device(with_device)
+
+        db.session().final_flush()
+        ret = self.schema.jsonify(device)
+        ret.status_code = 201
+
+        db.session.commit()
+        return ret
+
+
 
 
 class ManufacturerView(View):

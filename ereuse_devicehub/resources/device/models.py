@@ -256,6 +256,26 @@ class Device(Thing):
                                         key=attrgetter('type'))  # last test of each type
         return self._warning_actions(current_tests)
 
+    def merge_device(self, with_device):
+        """Merge the current device with `with_device` by
+        adding all `with_device` actions under the current device.
+
+        This operation is highly costly as it forces refreshing
+        many models in session.
+        """
+        assert isinstance(with_device, int)
+        merge_actions = Device.query.filter_by(id=with_device).one().actions()
+        for action in merge_actions:
+            self.actions.append(action)
+        # We need to refresh the models involved in this operation
+        # outside the session / ORM control so the models
+        # that have relationships to this model
+        # with the cascade 'refresh-expire' can welcome the changes
+        db.session.refresh(self)
+
+
+
+
     @declared_attr
     def __mapper_args__(cls):
         """Defines inheritance.
