@@ -264,9 +264,17 @@ class Device(Thing):
         many models in session.
         """
         assert isinstance(with_device, int)
-        merge_actions = Device.query.filter_by(id=with_device).one().actions
-        for action in merge_actions:
-            action.device = self
+        w_device = Device.query.filter_by(id=with_device).one()
+        for action in w_device.actions:
+
+            if action.parent:
+                action.parent = self
+            else:
+                action.device_id = self.id
+
+        for component in w_device.components:
+            if component.parent:
+                component.parent = self
         # We need to refresh the models involved in this operation
         # outside the session / ORM control so the models
         # that have relationships to this model
