@@ -1,5 +1,6 @@
 import datetime
 import uuid
+from itertools import filterfalse
 
 import marshmallow
 from flask import current_app as app, render_template, request, Response
@@ -21,6 +22,7 @@ from ereuse_devicehub.resources.device.models import Device, Manufacturer, Compu
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
 from ereuse_devicehub.resources.tag.model import Tag
+from ereuse_devicehub.resources.enums import SnapshotSoftware
 
 
 class OfType(f.Str):
@@ -168,8 +170,8 @@ class DeviceMergeView(View):
 
     def post(self, id: uuid.UUID):
         device = Device.query.filter_by(id=id).one()
-        with_device = self.get_merge_id()
-        device.merge_device(with_device)
+        with_device = Device.query.filter_by(id=self.get_merge_id()).one()
+        self.merge_devices(device, with_device)
 
         db.session().final_flush()
         ret = self.schema.jsonify(device)
@@ -177,6 +179,30 @@ class DeviceMergeView(View):
 
         db.session.commit()
         return ret
+
+    def merge_devices(self, base_device, with_device):
+        """Merge the current device with `with_device` by
+        adding all `with_device` actions under the current device.
+
+        This operation is highly costly as it forces refreshing
+        many models in session.
+        """
+        snapshots = sorted(filterfalse(lambda x: not isinstance(x, actions.Snapshot), (base_device.actions + with_device.actions)))
+        workbench_snapshots = [ s for s in snapshots if s.software == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid)]
+        latest_snapshot_device = [ d for d in (base_device, with_device) if d.id == snapshots[-1].device.id][0]
+        latest_snapshotworkbench_device = [ d for d in (base_device, with_device) if d.id == workbench_snapshots[-1].device.id][0]
+
+        for action in (base_device.actions + with_device.actions):
+            latest_snapshot_device.actions.append(action)
+
+
+        for c in latest_snapshotworkbench_device.components:
+            latest_snapshot_device.components.append(c)
+        # We need to refresh the models involved in this operation
+        # outside the session / ORM control so the models
+        # that have relationships to this model
+        # with the cascade 'refresh-expire' can welcome the changes
+        db.session.refresh(self)
 
 
 
