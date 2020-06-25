@@ -159,7 +159,7 @@ class DeviceView(View):
 class DeviceMergeView(View):
 
     """View for merging two devices
-    Ex. ``device/<id>/merge/id=X``.
+    Ex. ``devices/<id>/merge/id=X``.
     """
     class FindArgs(MarshmallowSchema):
         id = fields.Integer()
@@ -192,12 +192,21 @@ class DeviceMergeView(View):
         latest_snapshot_device = [ d for d in (base_device, with_device) if d.id == snapshots[-1].device.id][0]
         latest_snapshotworkbench_device = [ d for d in (base_device, with_device) if d.id == workbench_snapshots[-1].device.id][0]
 
-        for action in (base_device.actions + with_device.actions):
-            latest_snapshot_device.actions.append(action)
+        # Adding actions of with_device
+        for action in with_device.actions:
+            base.actions.append(action)
 
-
+        # Keeping the components of latest SnapshotWorkbench
+        base_device.components.clear()
         for c in latest_snapshotworkbench_device.components:
-            latest_snapshot_device.components.append(c)
+            base_device.components.append(c)
+
+        # Properties from latest Snapshot
+        base_device.type = latest_snapshot_device.type
+        base_device.hid = latest_snapshot_device.hid
+        base_device.manufacturer = latest_snapshot_device.manufacturer
+        base_device.model = latest_snapshot_device.model
+        base_device.chassis = latest_snapshot_device.chassis
         # We need to refresh the models involved in this operation
         # outside the session / ORM control so the models
         # that have relationships to this model
