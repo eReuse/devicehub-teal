@@ -159,7 +159,7 @@ class DeviceView(View):
 class DeviceMergeView(View):
 
     """View for merging two devices
-    Ex. ``devices/<id>/merge/id=X``.
+    Ex. ``device/<id>/merge/id=X``.
     """
     class FindArgs(MarshmallowSchema):
         id = fields.Integer()
@@ -191,15 +191,23 @@ class DeviceMergeView(View):
         workbench_snapshots = [ s for s in snapshots if s.software == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid)]
         latest_snapshot_device = [ d for d in (base_device, with_device) if d.id == snapshots[-1].device.id][0]
         latest_snapshotworkbench_device = [ d for d in (base_device, with_device) if d.id == workbench_snapshots[-1].device.id][0]
-
         # Adding actions of with_device
-        for action in with_device.actions:
-            base.actions.append(action)
+        with_actions_one = [a for a in with_device.actions if isinstance(a, actions.ActionWithOneDevice)]
+        with_actions_multiple = [a for a in with_device.actions if isinstance(a, actions.ActionWithMultipleDevices)]
+
+        for action in with_actions_one:
+            if action.parent:
+                action.parent = base_device
+            else:
+                base_device.actions_one.add(action)
+        for action in with_actions_multiple:
+            if action.parent:
+                action.parent = base_device
+            else:
+                base_device.actions_multiple.add(action)
 
         # Keeping the components of latest SnapshotWorkbench
-        base_device.components.clear()
-        for c in latest_snapshotworkbench_device.components:
-            base_device.components.append(c)
+        base_device.components = latest_snapshotworkbench_device.components
 
         # Properties from latest Snapshot
         base_device.type = latest_snapshot_device.type
@@ -207,13 +215,6 @@ class DeviceMergeView(View):
         base_device.manufacturer = latest_snapshot_device.manufacturer
         base_device.model = latest_snapshot_device.model
         base_device.chassis = latest_snapshot_device.chassis
-        # We need to refresh the models involved in this operation
-        # outside the session / ORM control so the models
-        # that have relationships to this model
-        # with the cascade 'refresh-expire' can welcome the changes
-        db.session.refresh(self)
-
-
 
 
 class ManufacturerView(View):
