@@ -48,7 +48,6 @@ def test_device_filters():
                                     'Server', 'Dell%', 'Computer', 'bcn-%'}
 
 
-@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_device_sort():
     schema = Sorting()
@@ -56,7 +55,6 @@ def test_device_sort():
     assert str(r) == 'device.created ASC'
 
 
-@pytest.mark.mvp
 @pytest.fixture()
 def device_query_dummy(app: Devicehub):
     """3 computers, where:
@@ -101,7 +99,6 @@ def device_query_dummy(app: Devicehub):
         db.session.commit()
 
 
-@pytest.mark.mvp
 @pytest.mark.usefixtures(device_query_dummy.__name__)
 def test_device_query_no_filters(user: UserClient):
     i, _ = user.get(res=Device)
@@ -110,14 +107,12 @@ def test_device_query_no_filters(user: UserClient):
     )
 
 
-@pytest.mark.mvp
 @pytest.mark.usefixtures(device_query_dummy.__name__)
 def test_device_query_filter_type(user: UserClient):
     i, _ = user.get(res=Device, query=[('filter', {'type': ['Desktop', 'Laptop']})])
     assert ('1', '2', '3') == tuple(d['serialNumber'] for d in i['items'])
 
 
-@pytest.mark.mvp
 @pytest.mark.usefixtures(device_query_dummy.__name__)
 def test_device_query_filter_sort(user: UserClient):
     i, _ = user.get(res=Device, query=[
@@ -127,7 +122,6 @@ def test_device_query_filter_sort(user: UserClient):
     assert ('4', '3', '2', '1') == tuple(d['serialNumber'] for d in i['items'])
 
 
-@pytest.mark.mvp
 @pytest.mark.usefixtures(device_query_dummy.__name__)
 def test_device_query_filter_lots(user: UserClient):
     parent, _ = user.post({'name': 'Parent'}, res=Lot)
