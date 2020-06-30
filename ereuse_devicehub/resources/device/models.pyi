@@ -142,7 +142,7 @@ class Computer(DisplayMixin, Device):
     components = ...  # type: Column
     chassis = ...  # type: Column
     deposit = ... # type: Column
-    owner_id = ... # type: Column
+    owner_address = ... # type: Column
     transfer_state = ... # type: Column
     receiver_address = ... # type: Column
     deliverynote_address = ... # type: Column
@@ -152,7 +152,7 @@ class Computer(DisplayMixin, Device):
         self.components = ...  # type: Set[Component]
         self.actions_parent = ...  # type: Set[e.Action]
         self.chassis = ...  # type: ComputerChassis
-        self.owner_id = ... # type: UUID
+        self.owner_address = ... # type: UUID
         self.transfer_state = ...
         self.receiver_address = ... # type: str
         self.deliverynote_address = ... # type: str
