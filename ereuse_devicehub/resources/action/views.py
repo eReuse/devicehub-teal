@@ -102,7 +102,6 @@ class ActionView(View):
         # Check if HID is null and add Severity:Warning to Snapshot
         if snapshot.device.hid is None:
             snapshot.severity = Severity.Warning
-            snapshot.device.hid = ''
         db.session.add(snapshot)
         db.session().final_flush()
         ret = self.schema.jsonify(snapshot)  # transform it back

@@ -151,7 +151,7 @@ class Sync:
         assert inspect(device).transient, 'Device cannot be already synced from DB'
         assert all(inspect(tag).transient for tag in device.tags), 'Tags cannot be synced from DB'
         db_device = None
-        if device.hid is not None:
+        if device.hid:
             with suppress(ResourceNotFound):
                 db_device = Device.query.filter_by(hid=device.hid).one()
         try:
