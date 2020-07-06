@@ -4,12 +4,14 @@ from teal.marshmallow import ValidationError
 from teal.resource import View, url_for_resource
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub import auth
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag import Tag
 
 
 class TagView(View):
+    @auth.Auth.requires_auth
     def post(self):
         """Creates a tag."""
         num = request.args.get('num', type=int)
@@ -19,8 +21,10 @@ class TagView(View):
             res = self._post_one()
         return res
 
+    @auth.Auth.requires_auth
     def find(self, args: dict):
         tags = Tag.query.filter(Tag.is_printable_q()) \
+            .filter_by(owner=g.user) \
             .order_by(Tag.created.desc()) \
             .paginate(per_page=200)  # type: Pagination
         return things_response(
