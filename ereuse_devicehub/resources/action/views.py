@@ -12,7 +12,7 @@ from ereuse_devicehub.resources.action.models import Action, RateComputer, Snaps
     InitTransfer
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.device.models import Component, Computer
-from ereuse_devicehub.resources.enums import SnapshotSoftware
+from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
@@ -98,8 +98,10 @@ class ActionView(View):
                 if price:
                     snapshot.actions.add(price)
         elif snapshot.software == SnapshotSoftware.WorkbenchAndroid:
-            pass    # TODO try except to compute RateMobile
-
+            pass  # TODO try except to compute RateMobile
+        # Check if HID is null and add Severity:Warning to Snapshot
+        if snapshot.device.hid is None:
+            snapshot.severity = Severity.Warning
         db.session.add(snapshot)
         db.session().final_flush()
         ret = self.schema.jsonify(snapshot)  # transform it back
