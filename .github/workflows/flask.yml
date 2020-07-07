@@ -63,5 +63,5 @@ jobs:
 
     - name: Run Tests
       run: |
-        pytest --maxfail=5 tests/
+        pytest -m mvp --maxfail=5 tests/
 

@@ -1423,6 +1423,7 @@ class DisposeProduct(Trade):
     #     performing :class:`.ToDispose` + :class:`.Receive` to a
     #     ``RecyclingCenter``.
 
+
 class TransferOwnershipBlockchain(Trade):
     """ The act of change owenership of devices between two users (ethereum address)"""
 
@@ -1550,6 +1551,7 @@ def update_parent(target: Union[EraseBasic, Test, Install], device: Device, _, _
 
 class InvalidRangeForPrice(ValueError):
     pass
+
 
 class Transferred(ActionWithMultipleDevices):
     """Transferred through blockchain."""

@@ -20,9 +20,6 @@ device:
     - type: Tag
       id: tag1
   actions:
-    - type: VisualTest
-      appearanceRange: A
-      functionalityRange: B
     - type: BenchmarkRamSysbench
       rate: 2444
       elapsed: 1

@@ -267,6 +267,7 @@ class MigrateFromDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.MigrateFrom
 
+
 class TransferredDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Transferred

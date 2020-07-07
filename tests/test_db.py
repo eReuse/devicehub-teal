@@ -1,9 +1,11 @@
 import datetime
 from uuid import UUID
 
+import pytest
 from teal.db import UniqueViolation
 
 
+@pytest.mark.mvp
 def test_unique_violation():
     class IntegrityErrorMock:
         def __init__(self) -> None:
