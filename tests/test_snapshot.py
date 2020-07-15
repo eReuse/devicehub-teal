@@ -99,7 +99,6 @@ def test_snapshot_post(user: UserClient):
 
 
 @pytest.mark.mvp
-@pytest.mark.xfail(reason='Needs to fix it')
 def test_snapshot_component_add_remove(user: UserClient):
     """Tests adding and removing components and some don't generate HID.
     All computers generate HID.
@@ -120,7 +119,8 @@ def test_snapshot_component_add_remove(user: UserClient):
     s1 = file('1-device-with-components.snapshot')
     snapshot1 = snapshot_and_check(user,
                                    s1,
-                                   action_types=(BenchmarkProcessor.t,),
+                                   action_types=(BenchmarkProcessor.t,
+                                                 RateComputer.t),
                                    perform_second_snapshot=False)
     pc1_id = snapshot1['device']['id']
     pc1, _ = user.get(res=m.Device, item=pc1_id)
@@ -128,12 +128,12 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c2s', 'p1c3s')
     # Components contain parent
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    # pc has two actions: Snapshot and the BenchmarkProcessor
-    assert len(pc1['actions']) == 2
+    # pc has three actions: Snapshot, BenchmarkProcessor and RateComputer
+    assert len(pc1['actions']) == 3
     assert pc1['actions'][1]['type'] == Snapshot.t
     # p1c1s has Snapshot
     p1c1s, _ = user.get(res=m.Device, item=pc1['components'][0]['id'])
-    assert tuple(e['type'] for e in p1c1s['actions']) == ('Snapshot',)
+    assert tuple(e['type'] for e in p1c1s['actions']) == ('Snapshot', 'RateComputer')
 
     # We register a new device
     # It has the processor of the first one (p1c2s)
@@ -141,7 +141,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     # Actions PC1: Snapshot, Remove. PC2: Snapshot
     s2 = file('2-second-device-with-components-of-first.snapshot')
     # num_actions = 2 = Remove, Add
-    snapshot2 = snapshot_and_check(user, s2, action_types=('Remove',),
+    snapshot2 = snapshot_and_check(user, s2, action_types=('Remove', 'RateComputer'),
                                    perform_second_snapshot=False)
     pc2_id = snapshot2['device']['id']
     pc1, _ = user.get(res=m.Device, item=pc1_id)
@@ -149,15 +149,15 @@ def test_snapshot_component_add_remove(user: UserClient):
     # PC1
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c3s')
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    assert tuple(e['type'] for e in pc1['actions']) == ('BenchmarkProcessor', 'Snapshot', 'Remove')
+    assert tuple(e['type'] for e in pc1['actions']) == ('BenchmarkProcessor', 'Snapshot', 'RateComputer', 'Remove')
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p1c2s', 'p2c1s')
     assert all(c['parent'] == pc2_id for c in pc2['components'])
-    assert tuple(e['type'] for e in pc2['actions']) == ('Snapshot',)
+    assert tuple(e['type'] for e in pc2['actions']) == ('Snapshot', 'RateComputer')
     # p1c2s has two Snapshots, a Remove and an Add
     p1c2s, _ = user.get(res=m.Device, item=pc2['components'][0]['id'])
     assert tuple(e['type'] for e in p1c2s['actions']) == (
-        'BenchmarkProcessor', 'Snapshot', 'Snapshot', 'Remove'
+        'BenchmarkProcessor', 'Snapshot', 'RateComputer', 'Snapshot', 'Remove', 'RateComputer'
     )
 
     # We register the first device again, but removing motherboard
@@ -165,7 +165,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     # We have created 1 Remove (from PC2's processor back to PC1)
     # PC 0: p1c2s, p1c3s. PC 1: p2c1s
     s3 = file('3-first-device-but-removing-motherboard-and-adding-processor-from-2.snapshot')
-    snapshot_and_check(user, s3, ('Remove',), perform_second_snapshot=False)
+    snapshot_and_check(user, s3, ('Remove', 'RateComputer'), perform_second_snapshot=False)
     pc1, _ = user.get(res=m.Device, item=pc1_id)
     pc2, _ = user.get(res=m.Device, item=pc2_id)
     # PC1
@@ -175,14 +175,17 @@ def test_snapshot_component_add_remove(user: UserClient):
         # id, type, components, snapshot
         ('BenchmarkProcessor', []),  # first BenchmarkProcessor
         ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # first Snapshot1
+        ('RateComputer', ['p1c1s', 'p1c2s', 'p1c3s']),
         ('Remove', ['p1c2s']),  # Remove Processor in Snapshot2
-        ('Snapshot', ['p1c2s', 'p1c3s'])  # This Snapshot3
+        ('Snapshot', ['p1c2s', 'p1c3s']),  # This Snapshot3
+        ('RateComputer', ['p1c2s', 'p1c3s'])
     )
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
     assert all(c['parent'] == pc2_id for c in pc2['components'])
     assert tuple(e['type'] for e in pc2['actions']) == (
         'Snapshot',  # Second Snapshot
+        'RateComputer',
         'Remove'  # the processor we added in 2.
     )
     # p1c2s has Snapshot, Remove and Add
@@ -190,23 +193,26 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert tuple(get_actions_info(p1c2s['actions'])) == (
         ('BenchmarkProcessor', []),  # first BenchmarkProcessor
         ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # First Snapshot to PC1
+        ('RateComputer', ['p1c1s', 'p1c2s', 'p1c3s']),
         ('Snapshot', ['p1c2s', 'p2c1s']),  # Second Snapshot to PC2
         ('Remove', ['p1c2s']),  # ...which caused p1c2s to be removed form PC1
+        ('RateComputer', ['p1c2s', 'p2c1s']),
         ('Snapshot', ['p1c2s', 'p1c3s']),  # The third Snapshot to PC1
-        ('Remove', ['p1c2s'])  # ...which caused p1c2 to be removed from PC2
+        ('Remove', ['p1c2s']),  # ...which caused p1c2 to be removed from PC2
+        ('RateComputer', ['p1c2s', 'p1c3s'])
     )
 
     # We register the first device but without the processor,
     # adding a graphic card and adding a new component
     s4 = file('4-first-device-but-removing-processor.snapshot-and-adding-graphic-card')
-    snapshot_and_check(user, s4, perform_second_snapshot=False)
+    snapshot_and_check(user, s4, ('RateComputer',), perform_second_snapshot=False)
     pc1, _ = user.get(res=m.Device, item=pc1_id)
     pc2, _ = user.get(res=m.Device, item=pc2_id)
     # PC 0: p1c3s, p1c4s. PC1: p2c1s
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c3s', 'p1c4s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    # This last Snapshot only
-    assert get_actions_info(pc1['actions'])[-1] == ('Snapshot', ['p1c3s', 'p1c4s'])
+    # This last Action only
+    assert get_actions_info(pc1['actions'])[-1] == ('RateComputer', ['p1c3s', 'p1c4s'])
     # PC2
     # We haven't changed PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
