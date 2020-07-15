@@ -66,7 +66,6 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['tags'][0]['id'] == 'tag1'
 
 
-@pytest.mark.mvp
 @pytest.mark.xfail(reason='Functionality not yet developed.')
 def test_workbench_server_phases(user: UserClient):
     """Tests the phases described in the docs section `Snapshots from
@@ -274,7 +273,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
 @pytest.mark.mvp
 def test_real_custom(user: UserClient):
     s = file('real-custom.snapshot.11')
-    snapshot, _ = user.post(res=em.Snapshot, data=s, status=NeedsId)
+    snapshot, _ = user.post(res=em.Snapshot, data=s, status=201)
     # todo insert with tag
 
 
@@ -303,6 +302,7 @@ SNAPSHOTS_NEED_ID = {
 
 
 @pytest.mark.xfail(reason='It needs to be fixed.')
+@pytest.mark.mvp
 @pytest.mark.parametrize('file',
                          (pytest.param(f, id=f.name)
                           for f in pathlib.Path(__file__).parent.joinpath('workbench_files').iterdir())
