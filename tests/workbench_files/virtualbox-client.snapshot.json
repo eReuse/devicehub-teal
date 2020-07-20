@@ -8,7 +8,7 @@
   "elapsed": 0,
   "device": {
     "actions": [],
-    "type": "Computer",
+    "type": "Desktop",
     "manufacturer": "innotek GmbH",
     "model": "VirtualBox",
     "serialNumber": "0",
@@ -18,7 +18,14 @@
   },
   "components": [
     {
-      "actions": [],
+      "actions": [
+        {
+          "elapsed": 13,
+          "readSpeed": 106.0,
+          "writeSpeed": 126.6,
+          "type": "BenchmarkDataStorage"
+        }
+      ],
       "type": "HardDrive",
       "manufacturer": null,
       "model": "VBOX HARDDISK",

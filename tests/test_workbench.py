@@ -301,7 +301,6 @@ SNAPSHOTS_NEED_ID = {
 """Snapshots that do not generate HID requiring a custom ID."""
 
 
-@pytest.mark.xfail(reason='It needs to be fixed.')
 @pytest.mark.mvp
 @pytest.mark.parametrize('file',
                          (pytest.param(f, id=f.name)
@@ -315,7 +314,7 @@ def test_workbench_fixtures(file: pathlib.Path, user: UserClient):
     s = json.load(file.open())
     user.post(res=em.Snapshot,
               data=s,
-              status=201 if file.name not in SNAPSHOTS_NEED_ID else NeedsId)
+              status=201)
 
 
 @pytest.mark.mvp
