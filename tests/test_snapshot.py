@@ -12,7 +12,8 @@ from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.action.models import Action, BenchmarkDataStorage, \
-    BenchmarkProcessor, EraseSectors, RateComputer, Snapshot, SnapshotRequest, VisualTest
+    BenchmarkProcessor, EraseSectors, RateComputer, Snapshot, SnapshotRequest, VisualTest, \
+    EreusePrice
 from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import SolidStateDrive
@@ -342,7 +343,6 @@ def test_snapshot_component_containing_components(user: UserClient):
 
 
 @pytest.mark.mvp
-@pytest.mark.xfail(reason='It needs to be fixed.')
 def test_erase_privacy_standards_endtime_sort(user: UserClient):
     """Tests a Snapshot with EraseSectors and the resulting privacy
     properties.
@@ -355,7 +355,9 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     snapshot = snapshot_and_check(user, s, action_types=(
         EraseSectors.t,
         BenchmarkDataStorage.t,
-        BenchmarkProcessor.t
+        BenchmarkProcessor.t,
+        RateComputer.t,
+        EreusePrice.t
     ), perform_second_snapshot=False)
     # Perform a new snapshot changing the erasure time, as if
     # it is a new erasure performed after.
@@ -366,7 +368,9 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     snapshot = snapshot_and_check(user, s, action_types=(
         EraseSectors.t,
         BenchmarkDataStorage.t,
-        BenchmarkProcessor.t
+        BenchmarkProcessor.t,
+        RateComputer.t,
+        EreusePrice.t
     ), perform_second_snapshot=False)
 
     # The actual test
@@ -374,7 +378,7 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     storage, _ = user.get(res=m.Device, item=storage['id'])  # Let's get storage actions too
     # order: endTime ascending
     #        erasure1/2 have an user defined time and others actions endTime = created
-    erasure1, erasure2, benchmark_hdd1, _snapshot1, benchmark_hdd2, _snapshot2 = storage['actions']
+    erasure1, erasure2, benchmark_hdd1, _snapshot1, _, _, benchmark_hdd2, _snapshot2 = storage['actions'][:8]
     assert erasure1['type'] == erasure2['type'] == 'EraseSectors'
     assert benchmark_hdd1['type'] == benchmark_hdd2['type'] == 'BenchmarkDataStorage'
     assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
