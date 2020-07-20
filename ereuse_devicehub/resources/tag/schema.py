@@ -3,6 +3,7 @@ from sqlalchemy.util import OrderedSet
 from teal.marshmallow import SanitizedStr, URL
 
 from ereuse_devicehub.marshmallow import NestedOn
+from ereuse_devicehub.resources.user.schemas import User
 from ereuse_devicehub.resources.agent.schemas import Organization
 from ereuse_devicehub.resources.device.schemas import Device
 from ereuse_devicehub.resources.schemas import Thing
@@ -22,6 +23,7 @@ class Tag(Thing):
     provider = URL(description=m.Tag.provider.comment,
                    validator=without_slash)
     device = NestedOn(Device, dump_only=True)
+    owner = NestedOn(User, only_query='id')
     org = NestedOn(Organization, collection_class=OrderedSet, only_query='id')
     secondary = SanitizedStr(lower=True, description=m.Tag.secondary.comment)
     printable = Boolean(dump_only=True, decsription=m.Tag.printable.__doc__)

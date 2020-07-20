@@ -77,10 +77,12 @@ class Dummy:
                 runner.invoke('tag', 'add', id,
                               '-p', 'https://t.devicetag.io',
                               '-s', sec,
+                              '-u', user1.user["id"],
                               '-o', org_id)
             # create tag for pc-laudem
             runner.invoke('tag', 'add', 'tagA',
                           '-p', 'https://t.devicetag.io',
+                          '-u', user1.user["id"],
                           '-s', 'tagA-secondary')
         files = tuple(Path(__file__).parent.joinpath('files').iterdir())
         print('done.')
@@ -144,7 +146,7 @@ class Dummy:
                     res=Lot,
                     item='{}/devices'.format(lot_user3['id']),
                     query=[('id', pc) for pc in itertools.islice(pcs, 11, 14)])
-        
+
         lot4, _ = user4.post({},
             res=Lot,
             item='{}/devices'.format(lot_user4['id']),

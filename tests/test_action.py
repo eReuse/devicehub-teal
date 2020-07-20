@@ -20,6 +20,7 @@ from tests import conftest
 from tests.conftest import create_user, file
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_author():
     """Checks the default created author.
@@ -36,6 +37,7 @@ def test_author():
     assert e.author == user
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_erase_basic():
     erasure = models.EraseBasic(
@@ -54,6 +56,7 @@ def test_erase_basic():
     assert not erasure.standards, 'EraseBasic themselves do not have standards'
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_validate_device_data_storage():
     """Checks the validation for data-storage-only actions works."""
@@ -68,6 +71,7 @@ def test_validate_device_data_storage():
         )
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_erase_sectors_steps_erasure_standards_hmg_is5():
     erasure = models.EraseSectors(
@@ -89,6 +93,7 @@ def test_erase_sectors_steps_erasure_standards_hmg_is5():
     assert {enums.ErasureStandards.HMG_IS5} == erasure.standards
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_test_data_storage_working():
     """Tests TestDataStorage with the resulting properties in Device."""
@@ -121,6 +126,7 @@ def test_test_data_storage_working():
     assert hdd.problems == []
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_install():
     hdd = HardDrive(serial_number='sn')
@@ -131,6 +137,7 @@ def test_install():
     db.session.commit()
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_update_components_action_one():
     computer = Desktop(serial_number='sn1',
@@ -159,6 +166,7 @@ def test_update_components_action_one():
     assert len(test.components) == 1
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_update_components_action_multiple():
     computer = Desktop(serial_number='sn1',
@@ -188,6 +196,7 @@ def test_update_components_action_multiple():
     assert ready.components
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_update_parent():
     computer = Desktop(serial_number='sn1',
@@ -208,6 +217,7 @@ def test_update_parent():
     assert not benchmark.parent
 
 
+@pytest.mark.mvp
 @pytest.mark.parametrize('action_model_state',
                          (pytest.param(ams, id=ams[0].__class__.__name__)
                           for ams in [
@@ -230,6 +240,7 @@ def test_generic_action(action_model_state: Tuple[models.Action, states.Trading]
     assert device['physical'] == state.name
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_live():
     """Tests inserting a Live into the database and GETting it."""
@@ -255,18 +266,7 @@ def test_live():
     assert device['physical'] == states.Physical.InUse.name
 
 
-@pytest.mark.xfail(reson='Functionality not developed.')
-def test_live_geoip():
-    """Tests performing a Live action using the GEOIP library."""
-
-
-@pytest.mark.xfail(reson='Develop reserve')
-def test_reserve_and_cancel(user: UserClient):
-    """Performs a reservation and then cancels it,
-    checking the attribute `reservees`.
-    """
-
-
+@pytest.mark.mvp
 @pytest.mark.parametrize('action_model_state',
                          (pytest.param(ams, id=ams[0].__name__)
                           for ams in [
@@ -296,11 +296,7 @@ def test_trade(action_model_state: Tuple[Type[models.Action], states.Trading], u
     assert device['trading'] == state.name
 
 
-@pytest.mark.xfail(reson='Develop migrate')
-def test_migrate():
-    pass
-
-
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_price_custom():
     computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1',
@@ -322,6 +318,7 @@ def test_price_custom():
     assert c['price']['id'] == p['id']
 
 
+@pytest.mark.mvp
 def test_price_custom_client(user: UserClient):
     """As test_price_custom but creating the price through the API."""
     s = file('basic.snapshot')
@@ -339,16 +336,7 @@ def test_price_custom_client(user: UserClient):
     assert 25 == device['price']['price']
 
 
-@pytest.mark.xfail(reson='Develop test')
-def test_ereuse_price():
-    """Tests the several ways of creating eReuse Price, emulating
-    from an AggregateRate and ensuring that the different Range
-    return correct results.
-    """
-    # important to check Range.low no returning warranty2
-    # Range.verylow not returning nothing
-
-
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_erase_physical():
     erasure = models.ErasePhysical(
@@ -357,27 +345,3 @@ def test_erase_physical():
     )
     db.session.add(erasure)
     db.session.commit()
-
-
-@pytest.mark.xfail(reson='develop')
-def test_measure_battery():
-    """Tests the MeasureBattery."""
-    # todo jn
-
-
-@pytest.mark.xfail(reson='develop')
-def test_test_camera():
-    """Tests the TestCamera."""
-    # todo jn
-
-
-@pytest.mark.xfail(reson='develop')
-def test_test_keyboard():
-    """Tests the TestKeyboard."""
-    # todo jn
-
-
-@pytest.mark.xfail(reson='develop')
-def test_test_trackpad():
-    """Tests the TestTrackpad."""
-    # todo jn

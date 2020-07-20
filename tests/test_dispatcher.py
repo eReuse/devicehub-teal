@@ -11,12 +11,14 @@ def noop():
     pass
 
 
+@pytest.mark.mvp
 @pytest.fixture()
 def dispatcher(app: Devicehub, config: TestConfig) -> PathDispatcher:
     PathDispatcher.call = Mock(side_effect=lambda *args: args[0])
     return PathDispatcher(config_cls=config)
 
 
+@pytest.mark.mvp
 def test_dispatcher_default(dispatcher: PathDispatcher):
     """The dispatcher returns not found for an URL that does not
     route to an app.
@@ -27,6 +29,7 @@ def test_dispatcher_default(dispatcher: PathDispatcher):
     assert app == PathDispatcher.NOT_FOUND
 
 
+@pytest.mark.mvp
 def test_dispatcher_return_app(dispatcher: PathDispatcher):
     """The dispatcher returns the correct app for the URL."""
     # Note that the dispatcher does not check if the URL points
@@ -38,6 +41,7 @@ def test_dispatcher_return_app(dispatcher: PathDispatcher):
     assert app.id == 'test'
 
 
+@pytest.mark.mvp
 def test_dispatcher_users(dispatcher: PathDispatcher):
     """Users special endpoint returns an app."""
     # For now returns the first app, as all apps

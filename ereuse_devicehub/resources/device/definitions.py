@@ -4,7 +4,7 @@ from teal.resource import Converters, Resource
 
 from ereuse_devicehub.resources.device import schemas
 from ereuse_devicehub.resources.device.models import Manufacturer
-from ereuse_devicehub.resources.device.views import DeviceView, ManufacturerView
+from ereuse_devicehub.resources.device.views import DeviceView, DeviceMergeView, ManufacturerView
 
 
 class DeviceDef(Resource):
@@ -25,6 +25,13 @@ class DeviceDef(Resource):
                  cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
+        device_merge = DeviceMergeView.as_view('merge-devices', definition=self, auth=app.auth)
+        if self.AUTH:
+            device_merge = app.auth.requires_auth(device_merge)
+        self.add_url_rule('/<{}:{}>/merge/'.format(self.ID_CONVERTER.value, self.ID_NAME),
+                          view_func=device_merge,
+                          methods={'POST'})
 
 
 class ComputerDef(DeviceDef):
