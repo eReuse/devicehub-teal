@@ -55,7 +55,9 @@ def bootstrap(c, domain='api.ereuse.org', branch='master'):
     deployment.initialize_database()
 
     deployment.setup_wsgi_app()
-    deployment.setup_apache2()
+    # deployment.setup_apache2()
+    deployment.setup_nginx()
+    deployment.setup_gunicorn()
 
 
 @task(
@@ -152,6 +154,29 @@ class AppDeployment:
         wsgi_path = os.path.join(self.base_path, 'source')
         self.c.run('mkdir -p {}'.format(wsgi_path))
         self.c.run('cp {file} {path}'.format(file=wsgi_file, path=wsgi_path))
+
+    def setup_nginx(self):
+        """Configure ngnix & restart service"""
+        # 0. install nginx
+        file_conf = os.path.join(self.git_clone_path, 'examples/01_api.dh.usody.net.conf')
+        file_conf_nginx = os.path.split(file_conf)[-1]
+        self.c.sudo('apt-get install -qy nginx')
+        self.c.sudo('cp {} /etc/nginx/sites-available/'.format(file_conf))
+        self.c.sudo('ln -sf /etc/nginx/sites-available/{} /etc/nginx/sites-enabled/'.format(file_conf_nginx))
+        result = self.c.sudo('nginx -t')
+        if result.failed:
+            sys.exit('Error while autoconfiguring nginx.\n' + result.stderr)
+        #self.c.sudo('systemctl restart nginx')
+
+    def setup_gunicorn(self):
+        """Configure gunicorn & restart service"""
+        # 0. install nginx
+        file_conf = os.path.join(self.git_clone_path, 'examples/gunicorn.service')
+        self.c.sudo('cp {} /etc/systemd/system/'.format(file_conf))
+        self.c.sudo('mkdir -p /var/log/ereuse')
+        self.c.sudo('chown ereuse.ereuse /var/log/ereuse')
+        #self.c.sudo('systemctl daemon-reload')
+        #self.c.sudo('systemctl restart gunicorn.service')
 
     def setup_apache2(self):
         """Configure apache2 + wsgi & restart service"""

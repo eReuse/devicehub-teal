@@ -10,7 +10,7 @@ at each files to know what to configure.
 
 Config with nginx and gunicorn
 ==============================
-0.- dependencies of gunicorn with pip install gunicorn in venv active
+0.- dependencies of gunicorn in requirements.txt 
 1.- install nginx with apt-get install nginx
 2.- cp 01_api.dh.usody.net.conf /etc/nginx/sites-available/01_api.dh.usody.net.conf
 3.- ln -sf /etc/nginx/sites-available/01_api.dh.usody.net.conf /etc/nginx/sites-enabled/
