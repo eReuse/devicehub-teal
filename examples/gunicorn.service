@@ -1,0 +1,17 @@
+# /etc/systemd/system/gunicorn.service
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=ereuse
+Group=ereuse
+#Group=www-data
+WorkingDirectory=/home/ereuse/sites/api.dh.usody.net/
+ExecStart=/home/ereuse/sites/api.dh.usody.net/venv/bin/gunicorn --access-logfile /var/log/ereuse/api.dh.usody.net.log --workers 1 --bind 127.0.0.1:5005 source.wsgi:application
+
+# if you want increase the debug of logs you can use some thing like this line 
+# ExecStart=/home/ereuse/sites/api.dh.usody.net/venv/bin/gunicorn --log-level=debug --access-logfile /var/log/ereuse/api.dh.usody.net.log --workers 1 --bind 127.0.0.1:5005 source.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
