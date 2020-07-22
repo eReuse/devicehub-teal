@@ -209,7 +209,7 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
     """Creates and consumes tags with a secondary id, linking them
     through Workbench to a device
     and getting them through search."""
-    t = Tag('foo', secondary='bar')
+    t = Tag('foo', secondary='bar', owner_id=user.user['id'])
     db.session.add(t)
     db.session.flush()
     assert Tag.from_an_id('bar').one() == t
