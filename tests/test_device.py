@@ -256,12 +256,14 @@ def test_sync_execute_register_desktop_existing_no_tag():
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_sync_execute_register_desktop_no_hid_no_tag():
+def test_sync_execute_register_desktop_no_hid_no_tag(user: UserClient):
     """Syncs a d.Desktop without HID and no tag.
 
     This should fail as we don't have a way to identify it.
     """
-    pc = d.Desktop(**conftest.file('pc-components.db')['device'])
+    device = conftest.file('pc-components.db')['device']
+    device['owner_id'] = user.user['id']
+    pc = d.Desktop(**device)
     # 1: device has no HID
     pc.hid = pc.model = None
     with pytest.raises(NeedsId):
