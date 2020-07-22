@@ -24,10 +24,10 @@ from tests.conftest import file
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_create_tag():
+def test_create_tag(user: UserClient):
     """Creates a tag specifying a custom organization."""
     org = Organization(name='bar', tax_id='bartax')
-    tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'))
+    tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id'])
     db.session.add(tag)
     db.session.commit()
     tag = Tag.query.one()
@@ -37,9 +37,9 @@ def test_create_tag():
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_create_tag_default_org():
+def test_create_tag_default_org(user: UserClient):
     """Creates a tag using the default organization."""
-    tag = Tag(id='foo-1')
+    tag = Tag(id='foo-1', owner_id=user.user['id'])
     assert not tag.org_id, 'org-id is set as default value so it should only load on flush'
     # We don't want the organization to load, or it would make this
     # object, from transient to new (added to session)
@@ -62,17 +62,18 @@ def test_create_tag_no_slash():
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_create_two_same_tags():
+def test_create_two_same_tags(user: UserClient):
     """Ensures there cannot be two tags with the same ID and organization."""
-    db.session.add(Tag(id='foo-bar'))
-    db.session.add(Tag(id='foo-bar'))
+
+    db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
+    db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
     with raises(UniqueViolation):
         db.session.commit()
     db.session.rollback()
     # And it works if tags are in different organizations
-    db.session.add(Tag(id='foo-bar'))
+    db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
     org2 = Organization(name='org 2', tax_id='tax id org 2')
-    db.session.add(Tag(id='foo-bar', org=org2))
+    db.session.add(Tag(id='foo-bar', org=org2, owner_id=user.user['id']))
     db.session.commit()
 
 
@@ -104,7 +105,7 @@ def test_tag_get_device_from_tag_endpoint(app: Devicehub, user: UserClient):
     """Checks getting a linked device from a tag endpoint"""
     with app.app_context():
         # Create a pc with a tag
-        tag = Tag(id='foo-bar')
+        tag = Tag(id='foo-bar', owner_id=user.user['id'])
         pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
         pc.tags.add(tag)
         db.session.add(pc)
@@ -117,7 +118,7 @@ def test_tag_get_device_from_tag_endpoint(app: Devicehub, user: UserClient):
 def test_tag_get_device_from_tag_endpoint_no_linked(app: Devicehub, user: UserClient):
     """As above, but when the tag is not linked."""
     with app.app_context():
-        db.session.add(Tag(id='foo-bar'))
+        db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
         db.session.commit()
     user.get(res=Tag, item='foo-bar/device', status=TagNotLinked)
 
@@ -135,9 +136,9 @@ def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: Us
     it should raise an exception.
     """
     with app.app_context():
-        db.session.add(Tag(id='foo-bar'))
+        db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
         org2 = Organization(name='org 2', tax_id='tax id org 2')
-        db.session.add(Tag(id='foo-bar', org=org2))
+        db.session.add(Tag(id='foo-bar', org=org2, owner_id=user.user['id']))
         db.session.commit()
     user.get(res=Tag, item='foo-bar/device', status=MultipleResourcesFound)
 
@@ -173,7 +174,7 @@ def test_tag_manual_link_search(app: Devicehub, user: UserClient):
     Checks search has the term.
     """
     with app.app_context():
-        db.session.add(Tag('foo-bar', secondary='foo-sec'))
+        db.session.add(Tag('foo-bar', secondary='foo-sec', owner_id=user.user['id']))
         desktop = Desktop(serial_number='foo', chassis=ComputerChassis.AllInOne, owner_id=user.user['id'])
         db.session.add(desktop)
         db.session.commit()
@@ -277,7 +278,7 @@ def test_get_tags_endpoint(user: UserClient, app: Devicehub,
     # Prepare test
     with app.app_context():
         org = Organization(name='bar', tax_id='bartax')
-        tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'))
+        tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id'])
         db.session.add(tag)
         db.session.commit()
         assert not tag.printable
