@@ -5,7 +5,7 @@ import requests_mock
 from boltons.urlutils import URL
 from ereuse_utils.session import DevicehubClient
 from pytest import raises
-from teal.db import MultipleResourcesFound, ResourceNotFound, UniqueViolation
+from teal.db import MultipleResourcesFound, ResourceNotFound, UniqueViolation, DBError
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.client import UserClient
@@ -67,7 +67,8 @@ def test_create_two_same_tags(user: UserClient):
 
     db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
     db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
-    with raises(UniqueViolation):
+
+    with raises(DBError):
         db.session.commit()
     db.session.rollback()
     # And it works if tags are in different organizations
