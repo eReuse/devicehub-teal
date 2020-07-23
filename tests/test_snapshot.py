@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 from boltons import urlutils
-from teal.db import UniqueViolation
+from teal.db import UniqueViolation, DBError
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.client import UserClient
@@ -274,7 +274,7 @@ def test_snapshot_mismatch_id():
 
 
 @pytest.mark.mvp
-def test_snapshot_tag_inner_tag(tag_id: str, user: UserClient, app: Devicehub):
+def test_snapshot_tag_inner_tag(user: UserClient, tag_id: str, app: Devicehub):
     """Tests a posting Snapshot with a local tag."""
     b = file('basic.snapshot')
     b['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
@@ -322,7 +322,7 @@ def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
 def test_snapshot_upload_twice_uuid_error(user: UserClient):
     pc1 = file('basic.snapshot')
     user.post(pc1, res=Snapshot)
-    user.post(pc1, res=Snapshot, status=UniqueViolation)
+    user.post(pc1, res=Snapshot, status=DBError)
 
 
 @pytest.mark.mvp
