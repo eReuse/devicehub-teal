@@ -66,6 +66,7 @@ class TagDef(Resource):
         )))
         db.session.commit()
 
+    @option('-u', '--owner', help=OWNER_H)
     @option('--org', help=ORG_H)
     @option('--provider', help=PROV_H)
     @argument('path', type=cli.Path(writable=True))

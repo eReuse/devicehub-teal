@@ -147,8 +147,9 @@ def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: Us
 @pytest.mark.mvp
 def test_tag_create_tags_cli(app: Devicehub, user: UserClient):
     """Checks creating tags with the CLI endpoint."""
+    owner_id = user.user['id']
     runner = app.test_cli_runner()
-    runner.invoke('tag', 'add', 'id1')
+    runner.invoke('tag', 'add', 'id1', '-u', owner_id)
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
         assert tag.id == 'id1'
@@ -159,8 +160,10 @@ def test_tag_create_tags_cli(app: Devicehub, user: UserClient):
 def test_tag_create_etags_cli(app: Devicehub, user: UserClient):
     """Creates an eTag through the CLI."""
     # todo what happens to organization?
+    owner_id = user.user['id']
     runner = app.test_cli_runner()
-    runner.invoke('tag', 'add', '-p', 'https://t.ereuse.org', '-s', 'foo', 'DT-BARBAR')
+    args = ('tag', 'add', '-p', 'https://t.ereuse.org', '-s', 'foo', 'DT-BARBAR', '-u', owner_id)
+    runner.invoke(*args)
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
         assert tag.id == 'dt-barbar'
@@ -234,9 +237,10 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
 @pytest.mark.mvp
 def test_tag_create_tags_cli_csv(app: Devicehub, user: UserClient):
     """Checks creating tags with the CLI endpoint using a CSV."""
+    owner_id = user.user['id']
     csv = pathlib.Path(__file__).parent / 'files' / 'tags-cli.csv'
     runner = app.test_cli_runner()
-    runner.invoke('tag', 'add-csv', str(csv))
+    runner.invoke('tag', 'add-csv', str(csv), '-u', owner_id)
     with app.app_context():
         t1 = Tag.from_an_id('id1').one()
         t2 = Tag.from_an_id('sec1').one()
