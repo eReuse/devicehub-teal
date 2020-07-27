@@ -125,6 +125,7 @@ class AppDeployment:
 
     def upgrade_package_requirements(self):
         self.c.run('{}/bin/pip install -r {}/requirements.txt'.format(self.venv_path, self.git_clone_path))
+        self.c.run('{}/bin/pip install gunicorn==20.0.4'.format(self.venv_path))
 
     def initialize_database(self):
         self.c.run('{}/bin/pip install -e {}'.format(self.venv_path, self.git_clone_path))
@@ -173,8 +174,8 @@ class AppDeployment:
         # 0. install nginx
         file_conf = os.path.join(self.git_clone_path, 'examples/gunicorn.service')
         self.c.sudo('cp {} /etc/systemd/system/'.format(file_conf))
-        self.c.sudo('mkdir -p /var/log/ereuse')
-        self.c.sudo('chown ereuse.ereuse /var/log/ereuse')
+        self.c.sudo('mkdir -p /var/log/gunicorn')
+        self.c.sudo('chown ereuse.ereuse /var/log/gunicorn')
         #self.c.sudo('systemctl daemon-reload')
         #self.c.sudo('systemctl restart gunicorn.service')
 
