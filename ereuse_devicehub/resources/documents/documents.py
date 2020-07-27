@@ -18,7 +18,8 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.device.views import DeviceView
-from ereuse_devicehub.resources.documents.device_row import DeviceRow
+
+from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow
 
 
 class Format(enum.Enum):
@@ -138,13 +139,13 @@ class StockDocumentView(DeviceView):
         cw = csv.writer(data)
         first = True
         for device in query:
-            d = DeviceRow(device)
+            d = StockRow(device)
             if first:
                 cw.writerow(d.keys())
                 first = False
             cw.writerow(d.values())
         output = make_response(data.getvalue())
-        output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+        output.headers['Content-Disposition'] = 'attachment; filename=stock.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
 

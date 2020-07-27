@@ -51,10 +51,6 @@ class DeviceRow(OrderedDict):
             self['Processor'] = device.processor_model
             self['RAM (MB)'] = device.ram_size
             self['Data Storage Size (MB)'] = device.data_storage_size
-        if isinstance(device, d.Mobile):
-            self['Display Size'] = device.display_size
-            self['RAM (MB)'] = device.ram_size
-            self['Data Storage Size (MB)'] = device.data_storage_size
         rate = device.rate
         if rate:
             self['Rate'] = rate.rating
@@ -135,3 +131,49 @@ class DeviceRow(OrderedDict):
             self['{} {} Speed (MHz)'.format(type, i)] = component.speed
 
         # todo add Display, NetworkAdapter, etc...
+
+
+class StockRow(OrderedDict):
+    def __init__(self, device: d.Device) -> None:
+        super().__init__()
+        self.device = device
+        self['Type'] = device.t
+        if isinstance(device, d.Computer):
+            self['Chassis'] = device.chassis
+        else:
+            self['Chassis'] = ''
+        self['Serial Number'] = device.serial_number
+        self['Model'] = device.model
+        self['Manufacturer'] = device.manufacturer
+        self['Registered in'] = format(device.created, '%c')
+        try:
+            self['Physical state'] = device.last_action_of(*states.Physical.actions()).t
+        except:
+            self['Physical state'] = ''
+        try:
+            self['Trading state'] = device.last_action_of(*states.Trading.actions()).t
+        except:
+            self['Trading state'] = ''
+        try:
+            self['Price'] = device.price
+        except:
+            self['Price'] = ''
+        try:
+            self['Processor'] = device.processor_model
+            self['RAM (MB)'] = device.ram_size
+            self['Data Storage Size (MB)'] = device.data_storage_size
+        except:
+            self['Processor'] = ''
+            self['RAM (MB)'] = ''
+            self['Data Storage Size (MB)'] = ''
+        rate = device.rate
+        if rate:
+            self['Rate'] = rate.rating
+            self['Range'] = rate.rating_range
+            assert isinstance(rate, RateComputer)
+            self['Processor Rate'] = rate.processor
+            self['Processor Range'] = rate.processor_range
+            self['RAM Rate'] = rate.ram
+            self['RAM Range'] = rate.ram_range
+            self['Data Storage Rate'] = rate.data_storage
+            self['Data Storage Range'] = rate.data_storage_range
