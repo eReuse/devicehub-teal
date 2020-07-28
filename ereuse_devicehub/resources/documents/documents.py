@@ -134,7 +134,7 @@ class LotsDocumentView(LotView):
         return self.generate_lots_csv(Lot.query)
 
     def generate_lots_csv(self, query):
-        """Get device query and put information in csv format."""
+        """Get lot query and put information in csv format."""
         data = StringIO()
         cw = csv.writer(data)
         first = True
@@ -154,7 +154,7 @@ class LotRow(OrderedDict):
     def __init__(self, lot: Lot) -> None:
         super().__init__()
         self.lot = lot
-        # General information about device
+        # General information about lot
         self['Id'] = lot.id.hex
         self['Name'] = lot.name
         self['Registered in'] = format(lot.created, '%c')
