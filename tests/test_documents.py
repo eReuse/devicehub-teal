@@ -9,6 +9,7 @@ from pathlib import Path
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.documents import documents
+from ereuse_devicehub.resources.lot.models import Lot
 from tests.conftest import file
 
 
@@ -223,3 +224,21 @@ def test_export_multiple_different_devices(user: UserClient):
         del row[8]
 
     assert fixture_csv == export_csv
+
+
+@pytest.mark.mvp
+def test_get_document_lots(user: UserClient):
+    """Tests submitting and retreiving all lots."""
+
+    l, _ = user.post({'name': 'Lot1', 'description': 'comments,lot1,testcomment,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot2', 'description': 'comments,lot2,testcomment,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot3', 'description': 'comments,lot3,testcomment,'}, res=Lot)
+
+    csv_str, _ = user.get(res=documents.DocumentDef.t,
+                          item='lots/',
+                          accept='text/csv')
+    f = StringIO(csv_str)
+    obj_csv = csv.reader(f, f)
+    export_csv = list(obj_csv)
+    assert len(export_csv) == 4
+    assert export_csv[0] == ['Id', 'Name', 'Registered in', 'Description']
