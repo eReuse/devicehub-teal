@@ -68,7 +68,6 @@ def test_snapshot_post(user: UserClient):
     """Tests the post snapshot endpoint (validation, etc), data correctness,
     and relationship correctness.
     """
-    # TODO add all action_types to check, how to add correctly??
     snapshot = snapshot_and_check(user, file('basic.snapshot'),
                                   action_types=(
                                       BenchmarkProcessor.t,
@@ -219,50 +218,20 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
     assert all(c['parent'] == pc2_id for c in pc2['components'])
 
-
-def _test_snapshot_computer_no_hid(user: UserClient):
-    """Tests inserting a computer that doesn't generate a HID, neither
-    some of its components.
-    """
-    # PC with 2 components. PC doesn't have HID and neither 1st component
-    s = file('basic.snapshot')
-    del s['device']['model']
-    del s['components'][0]['model']
-    user.post(s, res=Snapshot, status=NeedsId)
-    # The system tells us that it could not register the device because
-    # the device (computer) cannot generate a HID.
-    # In such case we need to specify an ``id`` so the system can
-    # recognize the device. The ``id`` can reference to the same
-    # device, it already existed in the DB, or to a placeholder,
-    # if the device is new in the DB.
-    user.post(s, res=m.Device)
-    s['device']['id'] = 1  # Assign the ID of the placeholder
-    user.post(s, res=Snapshot)
-
-
 @pytest.mark.mvp
-@pytest.mark.xfail(reason='Needs to fix it')
 def test_snapshot_post_without_hid(user: UserClient):
     """Tests the post snapshot endpoint (validation, etc), data correctness,
     and relationship correctness with HID field generated with type - model - manufacturer - S/N.
     """
-    snapshot = snapshot_and_check(user, file('basic.snapshot.nohid'),
-                                  action_types=(
-                                      BenchmarkProcessor.t,
-                                      VisualTest.t,
-                                      RateComputer.t
-                                  ),
-                                  perform_second_snapshot=False)
-    assert snapshot['software'] == 'Workbench'
-    assert snapshot['version'] == '11.0b9'
-    assert snapshot['uuid'] == '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
-    assert snapshot['elapsed'] == 4
-    assert snapshot['author']['id'] == user.user['id']
-    assert 'actions' not in snapshot['device']
-    assert 'author' not in snapshot['device']
-    assert snapshot['severity'] == 'Warning'
-    response = user.post(snapshot, res=Snapshot)
-    assert response.status == 201
+    snapshot_no_hid = file('basic.snapshot.nohid')
+    response_snapshot, response_status = user.post(res=Snapshot, data=snapshot_no_hid)
+    assert response_snapshot['software'] == 'Workbench'
+    assert response_snapshot['version'] == '11.0b9'
+    assert response_snapshot['uuid'] == '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
+    assert response_snapshot['elapsed'] == 4
+    assert response_snapshot['author']['id'] == user.user['id']
+    assert response_snapshot['severity'] == 'Warning'
+    assert response_status.status_code == 201
 
 
 @pytest.mark.mvp
