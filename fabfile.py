@@ -99,6 +99,7 @@ class AppDeployment:
         self.base_path = os.path.join(self.SITES_PATH, domain)
         self.git_clone_path = os.path.join(self.base_path, self.GIT_CLONE_DIR)
         self.venv_path = os.path.join(self.base_path, self.VENV_DIR)
+        self.setup_tag_provider()
 
     def clone_devicehub_repository(self):
         params = {
@@ -141,6 +142,20 @@ class AppDeployment:
         export dhi=dbtest; dh inv add --common --name dbtest
 
         """
+
+    def setup_tag_provider(self):
+        """
+        We need define the correct tag_provider in common.inventory
+        """
+        text_info = """
+        devicehub_testing=# SELECT * FROM common.inventory;
+
+                    updated            |            created            |    id     |   name   |    tag_provider    |              tag_token               |                org_id
+        -------------------------------+-------------------------------+-----------+----------+--------------------+--------------------------------------+--------------------------------------
+        2020-07-16 16:53:57.722325+02 | 2020-07-16 16:53:57.725848+02 | usodybeta | Test 1   | http://example.com | 9f564863-2d28-4b69-a541-a08c5b34d422 | df7496df-d3e4-4286-a76a-350464e00181
+        """
+        print("It is necessary modify manualy tha tag_provider")
+        print(text_info)
 
     def upgrade_database_schema(self):
         # TODO run the following commands when PR #30 is merged

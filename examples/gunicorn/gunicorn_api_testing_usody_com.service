@@ -1,0 +1,16 @@
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn_api_testing_usody_com.socket
+After=network.target
+
+[Service]
+Type=notify
+User=ereuse
+Group=ereuse
+#Group=www-data
+WorkingDirectory=/home/ereuse/sites/api.testing.usody.com/
+ExecStart=/home/ereuse/sites/api.testing.usody.com/venv/bin/gunicorn --log-file /var/log/gunicorn/api.testing.usody.com.log --workers 4 --bind unix:/run/gunicorn/api.testing.usody.com.sock source.wsgi:application
+#ExecStart=/home/ereuse/sites/api.testing.usody.com/venv/bin/gunicorn --log-level=debug --capture-output --log-file /var/log/gunicorn/api.testing.usody.com.log --workers 4 --bind unix:/run/gunicorn/api.testing.usody.com.sock source.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
