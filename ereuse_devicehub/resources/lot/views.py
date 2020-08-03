@@ -94,6 +94,10 @@ class LotView(View):
             )
         return jsonify(ret)
 
+    def query(self, args):
+        query = Lot.query.distinct()
+        return query
+
     def delete(self, id):
         lot = Lot.query.filter_by(id=id).one()
         lot.delete()

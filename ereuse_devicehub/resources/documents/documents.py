@@ -131,7 +131,8 @@ class DevicesDocumentView(DeviceView):
 
 class LotsDocumentView(LotView):
     def find(self, args: dict):
-        return self.generate_lots_csv(Lot.query)
+        query = self.query(args)
+        return self.generate_lots_csv(query)
 
     def generate_lots_csv(self, query):
         """Get lot query and put information in csv format."""
