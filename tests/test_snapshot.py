@@ -291,7 +291,7 @@ def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
 def test_snapshot_upload_twice_uuid_error(user: UserClient):
     pc1 = file('basic.snapshot')
     user.post(pc1, res=Snapshot)
-    user.post(pc1, res=Snapshot, status=DBError)
+    user.post(pc1, res=Snapshot, status=UniqueViolation)
 
 
 @pytest.mark.mvp
