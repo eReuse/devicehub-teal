@@ -153,7 +153,6 @@ class DocumentDef(Resource):
     __type__ = 'Document'
     SCHEMA = None
     VIEW = None  # We do not want to create default / documents endpoint
-    AUTH = False
 
     def __init__(self, app,
                  import_name=__name__,
@@ -171,18 +170,17 @@ class DocumentDef(Resource):
         get = {'GET'}
 
         view = DocumentView.as_view('main', definition=self, auth=app.auth)
-        if self.AUTH:
-            view = app.auth.requires_auth(view)
+
+        view = app.auth.requires_auth(view)
         self.add_url_rule('/erasures/', defaults=d, view_func=view, methods=get)
         self.add_url_rule('/erasures/<{}:{}>'.format(self.ID_CONVERTER.value, self.ID_NAME),
                           view_func=view, methods=get)
         devices_view = DevicesDocumentView.as_view('devicesDocumentView',
                                                    definition=self,
                                                    auth=app.auth)
+        devices_view = app.auth.requires_auth(devices_view)
 
         stock_view = StockDocumentView.as_view('stockDocumentView', definition=self)
 
-        if self.AUTH:
-            devices_view = app.auth.requires_auth(devices_view)
         self.add_url_rule('/devices/', defaults=d, view_func=devices_view, methods=get)
         self.add_url_rule('/stock/', defaults=d, view_func=stock_view, methods=get)
