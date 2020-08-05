@@ -386,12 +386,12 @@ def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
 @pytest.mark.mvp
 def test_get_all_lots(user: UserClient):
     """Tests submitting and retreiving all lots."""
-    l, _ = user.post({'name': 'Lot1', 'description': 'comments,lot1,testcomment,'}, res=Lot)
-    l, _ = user.post({'name': 'Lot2', 'description': 'comments,lot2,testcomment,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot1', 'description': 'comments1,lot1,testcomment,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot2', 'description': 'comments2,lot2,testcomment,'}, res=Lot)
     l, _ = user.post({'name': 'Lot3', 'description': 'comments3,lot3,testcomment,'}, res=Lot)
 
     l, _ = user.get(res=Lot)
     assert l['items'][0]['name'] == 'Lot1'
-    assert l['items'][0]['description'] == 'comments,lot1,testcomment,'
+    assert l['items'][0]['description'] == 'comments1,lot1,testcomment,'
     assert l['items'][2]['name'] == 'Lot3'
-    assert l['items'][2]['description'] == 'comments,lot3,testcomment,'
+    assert l['items'][2]['description'] == 'comments3,lot3,testcomment,'
