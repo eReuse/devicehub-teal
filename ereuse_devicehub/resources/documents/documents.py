@@ -139,7 +139,7 @@ class StockDocumentView(DeviceView):
         cw = csv.writer(data)
         first = True
         for device in query:
-          d = StockRow(device)
+            d = StockRow(device)
             if first:
                 cw.writerow(d.keys())
                 first = False
