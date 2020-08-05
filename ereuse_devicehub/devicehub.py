@@ -13,12 +13,13 @@ from teal.teal import Teal
 from teal.db import SchemaSQLAlchemy
 
 from ereuse_devicehub.auth import Auth
-from ereuse_devicehub.client import Client
+from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.db import db
 from ereuse_devicehub.dummy.dummy import Dummy
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.inventory import Inventory, InventoryDef
+from ereuse_devicehub.resources.user import User
 from ereuse_devicehub.templating import Environment
 
 
@@ -151,3 +152,8 @@ class Devicehub(Teal):
         inv = g.inventory = Inventory.current  # type: Inventory
         g.tag_provider = DevicehubClient(base_url=inv.tag_provider,
                                          token=DevicehubClient.encode_token(inv.tag_token))
+
+    def create_client(self, email='user@dhub.com', password='1234'):
+        client = UserClient(self, email, password, response_wrapper=self.response_class)
+        client.login()
+        return client
