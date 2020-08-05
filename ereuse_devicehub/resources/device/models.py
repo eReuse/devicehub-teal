@@ -52,7 +52,7 @@ class Device(Thing):
     """
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     hid = Column(Unicode(), check_lower('hid'), unique=False)
-    hid.comment = """The Hardware ID (HID) is the unique ID traceability
+    hid.comment = """The Hardware ID (HID) is the ID traceability
     systems use to ID a device globally. This field is auto-generated
     from Devicehub using literal identifiers from the device,
     so it can re-generated *offline*.

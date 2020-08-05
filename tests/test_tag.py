@@ -22,6 +22,7 @@ from tests import conftest
 from tests.conftest import file
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_tag():
     """Creates a tag specifying a custom organization."""
@@ -34,6 +35,7 @@ def test_create_tag():
     assert tag.provider == URL('http://foo.bar')
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_tag_default_org():
     """Creates a tag using the default organization."""
@@ -47,6 +49,7 @@ def test_create_tag_default_org():
     assert tag.org.name == 'FooOrg'  # as defined in the settings
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_tag_no_slash():
     """Checks that no tags can be created that contain a slash."""
@@ -57,6 +60,7 @@ def test_create_tag_no_slash():
         Tag('bar', secondary='/')
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_two_same_tags():
     """Ensures there cannot be two tags with the same ID and organization."""
@@ -72,6 +76,7 @@ def test_create_two_same_tags():
     db.session.commit()
 
 
+@pytest.mark.mvp
 def test_tag_post(app: Devicehub, user: UserClient):
     """Checks the POST method of creating a tag."""
     user.post({'id': 'foo'}, res=Tag)
@@ -79,6 +84,7 @@ def test_tag_post(app: Devicehub, user: UserClient):
         assert Tag.query.filter_by(id='foo').one()
 
 
+@pytest.mark.mvp
 def test_tag_post_etag(user: UserClient):
     """Ensures users cannot create eReuse.org tags through POST;
     only terminal.
@@ -93,12 +99,13 @@ def test_tag_post_etag(user: UserClient):
     user.post({'id': 'FOO-123456'}, res=Tag)
 
 
+@pytest.mark.mvp
 def test_tag_get_device_from_tag_endpoint(app: Devicehub, user: UserClient):
     """Checks getting a linked device from a tag endpoint"""
     with app.app_context():
         # Create a pc with a tag
         tag = Tag(id='foo-bar')
-        pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower)
+        pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
         pc.tags.add(tag)
         db.session.add(pc)
         db.session.commit()
@@ -106,6 +113,7 @@ def test_tag_get_device_from_tag_endpoint(app: Devicehub, user: UserClient):
     assert computer['serialNumber'] == 'sn1'
 
 
+@pytest.mark.mvp
 def test_tag_get_device_from_tag_endpoint_no_linked(app: Devicehub, user: UserClient):
     """As above, but when the tag is not linked."""
     with app.app_context():
@@ -114,11 +122,13 @@ def test_tag_get_device_from_tag_endpoint_no_linked(app: Devicehub, user: UserCl
     user.get(res=Tag, item='foo-bar/device', status=TagNotLinked)
 
 
+@pytest.mark.mvp
 def test_tag_get_device_from_tag_endpoint_no_tag(user: UserClient):
     """As above, but when there is no tag with such ID."""
     user.get(res=Tag, item='foo-bar/device', status=ResourceNotFound)
 
 
+@pytest.mark.mvp
 def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: UserClient):
     """As above, but when there are two tags with the same ID, the
     system should not return any of both (to be deterministic) so
@@ -132,6 +142,7 @@ def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: Us
     user.get(res=Tag, item='foo-bar/device', status=MultipleResourcesFound)
 
 
+@pytest.mark.mvp
 def test_tag_create_tags_cli(app: Devicehub, user: UserClient):
     """Checks creating tags with the CLI endpoint."""
     runner = app.test_cli_runner()
@@ -142,6 +153,7 @@ def test_tag_create_tags_cli(app: Devicehub, user: UserClient):
         assert tag.org.id == Organization.get_default_org_id()
 
 
+@pytest.mark.mvp
 def test_tag_create_etags_cli(app: Devicehub, user: UserClient):
     """Creates an eTag through the CLI."""
     # todo what happens to organization?
@@ -154,6 +166,7 @@ def test_tag_create_etags_cli(app: Devicehub, user: UserClient):
         assert tag.provider == URL('https://t.ereuse.org')
 
 
+@pytest.mark.mvp
 def test_tag_manual_link_search(app: Devicehub, user: UserClient):
     """Tests linking manually a tag through PUT /tags/<id>/device/<id>
 
@@ -161,7 +174,7 @@ def test_tag_manual_link_search(app: Devicehub, user: UserClient):
     """
     with app.app_context():
         db.session.add(Tag('foo-bar', secondary='foo-sec'))
-        desktop = Desktop(serial_number='foo', chassis=ComputerChassis.AllInOne)
+        desktop = Desktop(serial_number='foo', chassis=ComputerChassis.AllInOne, owner_id=user.user['id'])
         db.session.add(desktop)
         db.session.commit()
         desktop_id = desktop.id
@@ -189,6 +202,7 @@ def test_tag_manual_link_search(app: Devicehub, user: UserClient):
     assert i['items']
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_tag_secondary_workbench_link_find(user: UserClient):
     """Creates and consumes tags with a secondary id, linking them
@@ -215,6 +229,7 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
     assert len(r['items']) == 1
 
 
+@pytest.mark.mvp
 def test_tag_create_tags_cli_csv(app: Devicehub, user: UserClient):
     """Checks creating tags with the CLI endpoint using a CSV."""
     csv = pathlib.Path(__file__).parent / 'files' / 'tags-cli.csv'
@@ -232,7 +247,8 @@ def test_tag_multiple_secondary_org(user: UserClient):
     user.post({'id': 'foo1', 'secondary': 'bar'}, res=Tag, status=UniqueViolation)
 
 
-def test_crate_num_regular_tags(user: UserClient, requests_mock: requests_mock.mocker.Mocker):
+@pytest.mark.mvp
+def test_create_num_regular_tags(user: UserClient, requests_mock: requests_mock.mocker.Mocker):
     """Create regular tags. This is done using a tag provider that
     returns IDs. These tags are printable.
     """
@@ -252,6 +268,7 @@ def test_crate_num_regular_tags(user: UserClient, requests_mock: requests_mock.m
     assert data['items'][1]['printable']
 
 
+@pytest.mark.mvp
 def test_get_tags_endpoint(user: UserClient, app: Devicehub,
                            requests_mock: requests_mock.mocker.Mocker):
     """Performs GET /tags after creating 3 tags, 2 printable and one

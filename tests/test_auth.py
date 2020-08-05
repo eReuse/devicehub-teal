@@ -8,6 +8,7 @@ from ereuse_devicehub.devicehub import Devicehub
 from tests.conftest import create_user
 
 
+@pytest.mark.mvp
 def test_authenticate_success(app: Devicehub):
     """Checks the authenticate method."""
     with app.app_context():
@@ -16,6 +17,7 @@ def test_authenticate_success(app: Devicehub):
         assert response_user == user
 
 
+@pytest.mark.mvp
 def test_authenticate_error(app: Devicehub):
     """Tests the authenticate method with wrong token values."""
     with app.app_context():
@@ -29,6 +31,7 @@ def test_authenticate_error(app: Devicehub):
             app.auth.authenticate(token='this is a wrong uuid')
 
 
+@pytest.mark.mvp
 def test_auth_view(user: UserClient, client: Client):
     """Tests authentication at endpoint / view."""
     user.get(res='User', item=user.user['id'], status=200)
