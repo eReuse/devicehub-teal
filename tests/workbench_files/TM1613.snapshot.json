@@ -18,7 +18,13 @@
   },
   "components": [
     {
-      "actions": [],
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 11969.98,
+          "elapsed": 0
+        }
+      ],
       "type": "Processor",
       "manufacturer": "Intel Corp.",
       "model": "Intel Core i5-6200U CPU @ 2.30GHz",
