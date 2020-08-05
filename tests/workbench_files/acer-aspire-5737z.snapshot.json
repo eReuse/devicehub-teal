@@ -18,7 +18,13 @@
   },
   "components": [
     {
-      "actions": [],
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 11969.98,
+          "elapsed": 0
+        }
+      ],
       "type": "Processor",
       "manufacturer": "Intel Corp.",
       "model": "Intel Core2 Duo CPU T6400 @ 2.00GHz",
@@ -31,7 +37,14 @@
       "generation": null
     },
     {
-      "actions": [],
+      "actions": [
+        {
+          "elapsed": 13,
+          "readSpeed": 106.0,
+          "writeSpeed": 26.6,
+          "type": "BenchmarkDataStorage"
+        }
+      ],
       "type": "HardDrive",
       "manufacturer": "Western Digital",
       "model": "WDC WD5000BEVT-2",
