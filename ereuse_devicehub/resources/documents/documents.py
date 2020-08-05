@@ -139,13 +139,13 @@ class StockDocumentView(DeviceView):
         cw = csv.writer(data)
         first = True
         for device in query:
-            d = StockRow(device)
+          d = StockRow(device)
             if first:
                 cw.writerow(d.keys())
                 first = False
             cw.writerow(d.values())
         output = make_response(data.getvalue())
-        output.headers['Content-Disposition'] = 'attachment; filename=stock.csv'
+        output.headers['Content-Disposition'] = 'attachment; filename=devices-stock.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
 

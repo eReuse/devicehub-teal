@@ -125,7 +125,11 @@ def file(name: str) -> dict:
 def tag_id(app: Devicehub) -> str:
     """Creates a tag and returns its id."""
     with app.app_context():
-        t = Tag(id='foo')
+        if User.query.count():
+            user = User.query.one()
+        else:
+            user = create_user()
+        t = Tag(id='foo', owner_id=user.id)
         db.session.add(t)
         db.session.commit()
         return t.id

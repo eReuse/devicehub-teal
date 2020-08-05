@@ -18,7 +18,13 @@
   },
   "components": [
     {
-      "actions": [],
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 11969.98,
+          "elapsed": 0
+        }
+      ],
       "type": "Processor",
       "manufacturer": "Intel Corp.",
       "model": "Intel Pentium M processor 1.60GHz",
@@ -50,7 +56,14 @@
       "interface": "DDR"
     },
     {
-      "actions": [],
+      "actions": [
+        {
+          "elapsed": 13,
+          "readSpeed": 106.0,
+          "writeSpeed": 26.6,
+          "type": "BenchmarkDataStorage"
+        }
+      ],
       "type": "HardDrive",
       "manufacturer": "Fujitsu",
       "model": "MHT2080A",
