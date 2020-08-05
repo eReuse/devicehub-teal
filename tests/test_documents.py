@@ -226,9 +226,11 @@ def test_export_multiple_different_devices(user: UserClient):
 
 
 @pytest.mark.mvp
-def test_report_devices_stock_control(user: UserClient):
+def test_report_devices_stock_control(user: UserClient, user2: UserClient):
     """Test export device information in a csv file."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+    snapshot2, _ = user2.post(file('basic.snapshot2'), res=Snapshot)
+
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='stock/',
                           accept='text/csv',
@@ -241,6 +243,9 @@ def test_report_devices_stock_control(user: UserClient):
     with Path(__file__).parent.joinpath('files').joinpath('basic-stock.csv').open() as csv_file:
         obj_csv = csv.reader(csv_file)
         fixture_csv = list(obj_csv)
+
+    assert user.user['id'] != user2.user['id']
+    assert len(export_csv) == 2
 
     assert isinstance(datetime.strptime(export_csv[1][5], '%c'), datetime), \
         'Register in field is not a datetime'
