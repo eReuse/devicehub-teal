@@ -93,6 +93,18 @@ def user(app: Devicehub) -> UserClient:
         return client
 
 
+@pytest.fixture()
+def user2(app: Devicehub) -> UserClient:
+    """Gets a client with a logged-in dummy user."""
+    with app.app_context():
+        password = 'foo'
+        email = 'foo2@foo.com'
+        user = create_user(email=email, password=password)
+        client = UserClient(app, user.email, password, response_wrapper=app.response_class)
+        client.login()
+        return client
+
+
 def create_user(email='foo@foo.com', password='foo') -> User:
     user = User(email=email, password=password)
     user.individuals.add(Person(name='Timmy'))
