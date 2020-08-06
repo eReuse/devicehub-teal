@@ -10,7 +10,7 @@ import flask
 import flask_weasyprint
 import teal.marshmallow
 from boltons import urlutils
-from flask import make_response
+from flask import make_response, g
 from teal.cache import cache
 from teal.resource import Resource
 
@@ -130,7 +130,7 @@ class DevicesDocumentView(DeviceView):
 class StockDocumentView(DeviceView):
     # @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
-        query = self.query(args)
+        query = (x for x in self.query(args) if x.owner_id==g.user.id)
         return self.generate_post_csv(query)
 
     def generate_post_csv(self, query):
@@ -182,6 +182,7 @@ class DocumentDef(Resource):
                                                    auth=app.auth)
 
         stock_view = StockDocumentView.as_view('stockDocumentView', definition=self)
+        stock_view = app.auth.requires_auth(stock_view)
 
         if self.AUTH:
             devices_view = app.auth.requires_auth(devices_view)
