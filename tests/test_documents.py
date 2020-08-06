@@ -13,7 +13,7 @@ from tests.conftest import file
 
 
 @pytest.mark.mvp
-def test_erasure_certificate_public_one(user: UserClient):
+def test_erasure_certificate_public_one(user: UserClient, client: Client):
     """Public user can get certificate from one device as HTML or PDF."""
     s = file('erase-sectors.snapshot')
     snapshot, _ = user.post(s, res=Snapshot)
@@ -25,7 +25,7 @@ def test_erasure_certificate_public_one(user: UserClient):
     assert '<html' in doc
     assert '2018' in doc
 
-    doc, response = user.get(res=documents.DocumentDef.t,
+    doc, response = client.get(res=documents.DocumentDef.t,
                                item='erasures/{}'.format(snapshot['device']['id']),
                                query=[('format', 'PDF')],
                                accept='application/pdf')
@@ -33,7 +33,7 @@ def test_erasure_certificate_public_one(user: UserClient):
 
     erasure = next(e for e in snapshot['actions'] if e['type'] == 'EraseSectors')
 
-    doc, response = user.get(res=documents.DocumentDef.t,
+    doc, response = client.get(res=documents.DocumentDef.t,
                                item='erasures/{}'.format(erasure['id']),
                                accept=ANY)
     assert 'html' in response.content_type
@@ -68,8 +68,8 @@ def test_erasure_certificate_private_query(user: UserClient):
 
 
 @pytest.mark.mvp
-def test_erasure_certificate_wrong_id(user: UserClient):
-    user.get(res=documents.DocumentDef.t, item='erasures/this-is-not-an-id',
+def test_erasure_certificate_wrong_id(client: Client):
+    client.get(res=documents.DocumentDef.t, item='erasures/this-is-not-an-id',
                status=teal.marshmallow.ValidationError)
 
 
