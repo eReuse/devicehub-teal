@@ -25,7 +25,7 @@ components:
     speed: 1333
   - type: Processor
     serialNumber: p1s
-    model: p1ml
+    model: p1mla
     manufacturer: p1mr
     speed: 1.6
     actions:
