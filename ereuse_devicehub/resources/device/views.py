@@ -3,7 +3,7 @@ import uuid
 from itertools import filterfalse
 
 import marshmallow
-from flask import current_app as app, render_template, request, Response
+from flask import g, current_app as app, render_template, request, Response
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
 from marshmallow import fields, fields as f, validate as v, ValidationError, \
@@ -64,7 +64,8 @@ class Filters(query.Query):
     # todo This part of the query is really slow
     # And forces usage of distinct, as it returns many rows
     # due to having multiple paths to the same
-    lot = query.Join(Device.id == LotDeviceDescendants.device_id, LotQ)
+    lot = query.Join((Device.id == LotDeviceDescendants.device_id),
+                     LotQ)
 
 
 class Sorting(query.Sort):
@@ -153,8 +154,17 @@ class DeviceView(View):
             ).order_by(
                 search.Search.rank(properties, search_p) + search.Search.rank(tags, search_p)
             )
+        query = self.visibility_filter(query)
         return query.filter(*args['filter']).order_by(*args['sort'])
 
+
+    def visibility_filter(self, query):
+        filterqs = request.args.get('filter', None)
+        if (filterqs and
+           'lot' not in filterqs):
+            query = query.filter((Computer.id == Device.id), (Computer.owner_id == g.user.id))
+            pass
+        return query
 
 class DeviceMergeView(View):
 
