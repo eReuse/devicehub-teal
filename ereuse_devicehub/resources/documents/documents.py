@@ -18,7 +18,6 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.device.views import DeviceView
-
 from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow
 
 
@@ -130,7 +129,7 @@ class DevicesDocumentView(DeviceView):
 class StockDocumentView(DeviceView):
     # @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
-        query = (x for x in self.query(args) if x.owner_id==g.user.id)
+        query = (x for x in self.query(args) if x.owner_id == g.user.id)
         return self.generate_post_csv(query)
 
     def generate_post_csv(self, query):

@@ -30,27 +30,23 @@ class DeviceRow(OrderedDict):
         self['Tag 1'] = self['Tag 2'] = self['Tag 3'] = ''
         for i, tag in zip(range(1, 3), device.tags):
             self['Tag {}'.format(i)] = format(tag)
-        self['Serial Number'] = device.serial_number
-        self['Model'] = device.model
-        self['Manufacturer'] = device.manufacturer
-        # self['State'] = device.last_action_of()
+        self['Serial Number'] = convert_none_to_empty_str(device.serial_number)
+        self['Model'] = convert_none_to_empty_str(device.model)
+        self['Manufacturer'] = convert_none_to_empty_str(device.manufacturer)
         self['Registered in'] = format(device.created, '%c')
         try:
             self['Physical state'] = device.last_action_of(*states.Physical.actions()).t
-        except:
+        except LookupError:
             self['Physical state'] = ''
         try:
             self['Trading state'] = device.last_action_of(*states.Trading.actions()).t
-        except:
+        except LookupError:
             self['Trading state'] = ''
-        try:
-            self['Price'] = device.price
-        except:
-            self['Price'] = ''
+        self['Price'] = convert_none_to_empty_str(device.price)
         if isinstance(device, d.Computer):
-            self['Processor'] = device.processor_model
-            self['RAM (MB)'] = device.ram_size
-            self['Data Storage Size (MB)'] = device.data_storage_size
+            self['Processor'] = convert_none_to_empty_str(device.processor_model)
+            self['RAM (MB)'] = convert_none_to_empty_str(device.ram_size)
+            self['Data Storage Size (MB)'] = convert_none_to_empty_str(device.data_storage_size)
         rate = device.rate
         if rate:
             self['Rate'] = rate.rating
@@ -137,35 +133,27 @@ class StockRow(OrderedDict):
     def __init__(self, device: d.Device) -> None:
         super().__init__()
         self.device = device
-        self['Type'] = device.t
+        self['Type'] = convert_none_to_empty_str(device.t)
         if isinstance(device, d.Computer):
             self['Chassis'] = device.chassis
         else:
             self['Chassis'] = ''
-        self['Serial Number'] = device.serial_number
-        self['Model'] = device.model
-        self['Manufacturer'] = device.manufacturer
+        self['Serial Number'] = convert_none_to_empty_str(device.serial_number)
+        self['Model'] = convert_none_to_empty_str(device.model)
+        self['Manufacturer'] = convert_none_to_empty_str(device.manufacturer)
         self['Registered in'] = format(device.created, '%c')
         try:
             self['Physical state'] = device.last_action_of(*states.Physical.actions()).t
-        except:
+        except LookupError:
             self['Physical state'] = ''
         try:
             self['Trading state'] = device.last_action_of(*states.Trading.actions()).t
-        except:
+        except LookupError:
             self['Trading state'] = ''
-        try:
-            self['Price'] = device.price
-        except:
-            self['Price'] = ''
-        try:
-            self['Processor'] = device.processor_model
-            self['RAM (MB)'] = device.ram_size
-            self['Data Storage Size (MB)'] = device.data_storage_size
-        except:
-            self['Processor'] = ''
-            self['RAM (MB)'] = ''
-            self['Data Storage Size (MB)'] = ''
+            self['Price'] = convert_none_to_empty_str(device.price)
+            self['Processor'] = convert_none_to_empty_str(device.processor_model)
+            self['RAM (MB)'] = convert_none_to_empty_str(device.ram_size)
+            self['Data Storage Size (MB)'] = convert_none_to_empty_str(device.data_storage_size)
         rate = device.rate
         if rate:
             self['Rate'] = rate.rating
@@ -177,3 +165,9 @@ class StockRow(OrderedDict):
             self['RAM Range'] = rate.ram_range
             self['Data Storage Rate'] = rate.data_storage
             self['Data Storage Range'] = rate.data_storage_range
+
+
+def convert_none_to_empty_str(s):
+    if s is None:
+        return ''
+    return s

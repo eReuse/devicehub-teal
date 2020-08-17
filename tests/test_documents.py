@@ -1,10 +1,11 @@
-import pytest
-import teal.marshmallow
-from ereuse_utils.test import ANY
 import csv
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
+
+import pytest
+import teal.marshmallow
+from ereuse_utils.test import ANY
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.resources.action.models import Snapshot
