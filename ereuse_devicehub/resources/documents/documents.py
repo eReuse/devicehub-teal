@@ -22,6 +22,7 @@ from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow
 
 from flask import g, request
 
+
 class Format(enum.Enum):
     HTML = 'HTML'
     PDF = 'PDF'
@@ -107,7 +108,7 @@ class DocumentView(DeviceView):
 class DevicesDocumentView(DeviceView):
     @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
-        query = self.query(args)
+        query = (x for x in self.query(args) if x.owner_id == g.user.id)
         return self.generate_post_csv(query)
 
     def generate_post_csv(self, query):
@@ -155,6 +156,7 @@ class DocumentDef(Resource):
     SCHEMA = None
     VIEW = None  # We do not want to create default / documents endpoint
     AUTH = False
+
     def __init__(self, app,
                  import_name=__name__,
                  static_folder='static',
@@ -183,13 +185,11 @@ class DocumentDef(Resource):
         devices_view = DevicesDocumentView.as_view('devicesDocumentView',
                                                    definition=self,
                                                    auth=app.auth)
+        devices_view = app.auth.requires_auth(devices_view)
 
         stock_view = StockDocumentView.as_view('stockDocumentView', definition=self)
         stock_view = app.auth.requires_auth(stock_view)
 
-        if self.AUTH:
-            devices_view = app.auth.requires_auth(devices_view)
-          
         self.add_url_rule('/devices/', defaults=d, view_func=devices_view, methods=get)
 
         stock_view = StockDocumentView.as_view('stockDocumentView', definition=self, auth=app.auth)
