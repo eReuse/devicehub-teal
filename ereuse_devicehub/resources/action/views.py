@@ -77,10 +77,6 @@ class ActionView(View):
         assert all(not c.actions_one for c in components) if components else True
         db_device, remove_actions = resource_def.sync.run(device, components)
 
-        # Check ownership of (non-component) device to from current.user
-        if(db_device.owner_id != g.user.id):
-            raise InsufficientPermission()
-
         del device  # Do not use device anymore
         snapshot.device = db_device
         snapshot.actions |= remove_actions | actions_device  # Set actions to snapshot
@@ -95,8 +91,11 @@ class ActionView(View):
                 component.actions_one |= actions
                 snapshot.actions |= actions
 
-        # Compute ratings
         if snapshot.software == SnapshotSoftware.Workbench:
+            # Check ownership of (non-component) device to from current.user
+            if db_device.owner_id != g.user.id:
+                raise InsufficientPermission()
+            # Compute ratings
             try:
                 rate_computer, price = RateComputer.compute(db_device)
             except CannotRate:
