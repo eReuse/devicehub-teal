@@ -20,6 +20,7 @@ from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.device.views import DeviceView
 from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow
 
+from flask import g, request
 
 class Format(enum.Enum):
     HTML = 'HTML'
@@ -154,7 +155,6 @@ class DocumentDef(Resource):
     SCHEMA = None
     VIEW = None  # We do not want to create default / documents endpoint
     AUTH = False
-
     def __init__(self, app,
                  import_name=__name__,
                  static_folder='static',
@@ -171,11 +171,15 @@ class DocumentDef(Resource):
         get = {'GET'}
 
         view = DocumentView.as_view('main', definition=self, auth=app.auth)
+
+        # TODO @cayop This two lines never pass
         if self.AUTH:
             view = app.auth.requires_auth(view)
+
         self.add_url_rule('/erasures/', defaults=d, view_func=view, methods=get)
         self.add_url_rule('/erasures/<{}:{}>'.format(self.ID_CONVERTER.value, self.ID_NAME),
                           view_func=view, methods=get)
+
         devices_view = DevicesDocumentView.as_view('devicesDocumentView',
                                                    definition=self,
                                                    auth=app.auth)
@@ -185,5 +189,9 @@ class DocumentDef(Resource):
 
         if self.AUTH:
             devices_view = app.auth.requires_auth(devices_view)
+          
         self.add_url_rule('/devices/', defaults=d, view_func=devices_view, methods=get)
+
+        stock_view = StockDocumentView.as_view('stockDocumentView', definition=self, auth=app.auth)
+        stock_view = app.auth.requires_auth(stock_view)
         self.add_url_rule('/stock/', defaults=d, view_func=stock_view, methods=get)
