@@ -1,39 +1,38 @@
 import uuid
 from datetime import datetime
+from typing import Iterable
 
 from boltons import urlutils
 from citext import CIText
 from flask import g
-from typing import Iterable
-from sqlalchemy.types import ARRAY
 from sqlalchemy.dialects.postgresql import UUID, JSONB
-from teal.db import CASCADE_OWN, check_range, IntEnum
+from teal.db import check_range, IntEnum
 from teal.resource import url_for_resource
 
-from ereuse_devicehub.db import db, f
+from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.enums import TransferState
+from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.lot.models import Lot
-from ereuse_devicehub.resources.enums import TransferState
 
 
 class Deliverynote(Thing):
     id = db.Column(UUID(as_uuid=True), primary_key=True)  # uuid is generated on init by default
     document_id = db.Column(CIText(), nullable=False)
     creator_id = db.Column(UUID(as_uuid=True),
-                          db.ForeignKey(User.id),
-                          nullable=False,
-                          default=lambda: g.user.id)
+                           db.ForeignKey(User.id),
+                           nullable=False,
+                           default=lambda: g.user.id)
     creator = db.relationship(User, primaryjoin=creator_id == User.id)
     supplier_email = db.Column(CIText(),
-                          db.ForeignKey(User.email),
-                          nullable=False,
-                          default=lambda: g.user.email)
+                               db.ForeignKey(User.email),
+                               nullable=False,
+                               default=lambda: g.user.email)
     supplier = db.relationship(User, primaryjoin=lambda: Deliverynote.supplier_email == User.email)
     receiver_address = db.Column(CIText(),
-                          db.ForeignKey(User.email),
-                          nullable=False,
-                          default=lambda: g.user.email)
+                                 db.ForeignKey(User.email),
+                                 nullable=False,
+                                 default=lambda: g.user.email)
     receiver = db.relationship(User, primaryjoin=lambda: Deliverynote.receiver_address == User.email)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     date.comment = 'The date the DeliveryNote initiated'
@@ -49,15 +48,15 @@ class Deliverynote(Thing):
     transfer_state.comment = TransferState.__doc__
     ethereum_address = db.Column(CIText(), unique=True, default=None)
     lot_id = db.Column(UUID(as_uuid=True),
-                          db.ForeignKey(Lot.id),
-                          nullable=False)
+                       db.ForeignKey(Lot.id),
+                       nullable=False)
     lot = db.relationship(Lot,
                           backref=db.backref('deliverynote', uselist=False, lazy=True),
                           lazy=True,
                           primaryjoin=Lot.id == lot_id)
 
     def __init__(self, document_id: str, deposit: str, date,
-                 supplier_email:  str,
+                 supplier_email: str,
                  expected_devices: Iterable,
                  transfer_state: TransferState) -> None:
         """Initializes a delivery note

@@ -370,6 +370,7 @@ class ErasureStandards(Enum):
                     standards.add(cls.HMG_IS5)
         return standards
 
+
 @unique
 class TransferState(IntEnum):
     """State of transfer for a given Lot of devices.

@@ -15,7 +15,6 @@ from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 
-
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
 

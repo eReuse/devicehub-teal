@@ -20,7 +20,6 @@ from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.device.views import DeviceView
 from ereuse_devicehub.resources.documents.device_row import DeviceRow
 
-from flask import g, request
 
 class Format(enum.Enum):
     HTML = 'HTML'
@@ -155,6 +154,7 @@ class DocumentDef(Resource):
     SCHEMA = None
     VIEW = None  # We do not want to create default / documents endpoint
     AUTH = False
+
     def __init__(self, app,
                  import_name=__name__,
                  static_folder='static',

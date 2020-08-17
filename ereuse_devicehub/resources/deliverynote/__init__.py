@@ -1,9 +1,7 @@
-import pathlib
 from typing import Callable, Iterable, Tuple
 
 from teal.resource import Converters, Resource
 
-from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.deliverynote import schemas
 from ereuse_devicehub.resources.deliverynote.views import DeliverynoteView
 

@@ -6,7 +6,6 @@ class WrongCredentials(Unauthorized):
 
 
 class InsufficientPermission(Forbidden):
-
     description = (
         "You don't have the permissions to access the requested"
         "resource. It is either read-protected or not readable by the"
