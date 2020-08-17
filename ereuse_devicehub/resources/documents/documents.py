@@ -20,6 +20,7 @@ from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.device.views import DeviceView
 from ereuse_devicehub.resources.documents.device_row import DeviceRow
 
+from flask import g, request
 
 class Format(enum.Enum):
     HTML = 'HTML'
@@ -126,12 +127,34 @@ class DevicesDocumentView(DeviceView):
         return output
 
 
+class StockDocumentView(DeviceView):
+    # @cache(datetime.timedelta(minutes=1))
+    def find(self, args: dict):
+        query = self.query(args)
+        return self.generate_post_csv(query)
+
+    def generate_post_csv(self, query):
+        """Get device query and put information in csv format."""
+        data = StringIO()
+        cw = csv.writer(data)
+        first = True
+        for device in query:
+            d = DeviceRow(device)
+            if first:
+                cw.writerow(d.keys())
+                first = False
+            cw.writerow(d.values())
+        output = make_response(data.getvalue())
+        output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+        output.headers['Content-type'] = 'text/csv'
+        return output
+
+
 class DocumentDef(Resource):
     __type__ = 'Document'
     SCHEMA = None
     VIEW = None  # We do not want to create default / documents endpoint
     AUTH = False
-
     def __init__(self, app,
                  import_name=__name__,
                  static_folder='static',
@@ -148,14 +171,22 @@ class DocumentDef(Resource):
         get = {'GET'}
 
         view = DocumentView.as_view('main', definition=self, auth=app.auth)
+
+        # TODO @cayop This two lines never pass
         if self.AUTH:
             view = app.auth.requires_auth(view)
+
         self.add_url_rule('/erasures/', defaults=d, view_func=view, methods=get)
         self.add_url_rule('/erasures/<{}:{}>'.format(self.ID_CONVERTER.value, self.ID_NAME),
                           view_func=view, methods=get)
+
         devices_view = DevicesDocumentView.as_view('devicesDocumentView',
                                                    definition=self,
                                                    auth=app.auth)
-        if self.AUTH:
-            devices_view = app.auth.requires_auth(devices_view)
+
+        devices_view = app.auth.requires_auth(devices_view)
         self.add_url_rule('/devices/', defaults=d, view_func=devices_view, methods=get)
+
+        stock_view = StockDocumentView.as_view('stockDocumentView', definition=self, auth=app.auth)
+        stock_view = app.auth.requires_auth(stock_view)
+        self.add_url_rule('/stock/', defaults=d, view_func=stock_view, methods=get)

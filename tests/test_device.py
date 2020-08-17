@@ -256,16 +256,17 @@ def test_sync_execute_register_desktop_existing_no_tag():
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_sync_execute_register_desktop_no_hid_no_tag():
+def test_sync_execute_register_desktop_no_hid_no_tag(user: UserClient):
     """Syncs a d.Desktop without HID and no tag.
-
-    This should fail as we don't have a way to identify it.
+    This should not fail as we don't have a way to identify it.
     """
-    pc = d.Desktop(**conftest.file('pc-components.db')['device'])
+    device = conftest.file('pc-components.db')['device']
+    device['owner_id'] = user.user['id']
+    pc = d.Desktop(**device)
     # 1: device has no HID
     pc.hid = pc.model = None
-    with pytest.raises(NeedsId):
-        Sync().execute_register(pc)
+    returned_pc = Sync().execute_register(pc)
+    assert returned_pc == pc
 
 
 @pytest.mark.mvp
@@ -391,14 +392,14 @@ def test_sync_execute_register_mismatch_between_tags_and_hid():
 
 
 @pytest.mark.mvp
-@pytest.mark.xfail(reason='It needs to be fixed.')
 def test_get_device(app: Devicehub, user: UserClient):
     """Checks GETting a d.Desktop with its components."""
     with app.app_context():
         pc = d.Desktop(model='p1mo',
                        manufacturer='p1ma',
                        serial_number='p1s',
-                       chassis=ComputerChassis.Tower)
+                       chassis=ComputerChassis.Tower,
+                       owner_id=user.user['id'])
         pc.components = OrderedSet([
             d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
             d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
@@ -428,14 +429,14 @@ def test_get_device(app: Devicehub, user: UserClient):
 
 
 @pytest.mark.mvp
-@pytest.mark.xfail(reason='It needs to be fixed.')
 def test_get_devices(app: Devicehub, user: UserClient):
     """Checks GETting multiple devices."""
     with app.app_context():
         pc = d.Desktop(model='p1mo',
                        manufacturer='p1ma',
                        serial_number='p1s',
-                       chassis=ComputerChassis.Tower)
+                       chassis=ComputerChassis.Tower,
+                       owner_id=user.user['id'])
         pc.components = OrderedSet([
             d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
             d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
@@ -443,11 +444,13 @@ def test_get_devices(app: Devicehub, user: UserClient):
         pc1 = d.Desktop(model='p2mo',
                         manufacturer='p2ma',
                         serial_number='p2s',
-                        chassis=ComputerChassis.Tower)
+                        chassis=ComputerChassis.Tower,
+                        owner_id=user.user['id'])
         pc2 = d.Laptop(model='p3mo',
                        manufacturer='p3ma',
                        serial_number='p3s',
-                       chassis=ComputerChassis.Netbook)
+                       chassis=ComputerChassis.Netbook,
+                       owner_id=user.user['id'])
         db.session.add_all((pc, pc1, pc2))
         db.session.commit()
     devices, _ = user.get(res=d.Device)

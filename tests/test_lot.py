@@ -13,7 +13,7 @@ from tests import conftest
 
     try:
         with db.session.begin_nested():
-            
+
     except Exception as e:
         db.session.commit()
         print(e)
@@ -351,7 +351,6 @@ def test_lot_post_add_children_view_ui_tree_normal(user: UserClient):
 
 
 @pytest.mark.mvp
-@pytest.mark.xfail(reason='It needs to be fixed.')
 def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
     """Tests adding a device to a lot using POST and
     removing it with DELETE.
@@ -361,7 +360,8 @@ def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
         device = Desktop(serial_number='foo',
                          model='bar',
                          manufacturer='foobar',
-                         chassis=ComputerChassis.Lunchbox)
+                         chassis=ComputerChassis.Lunchbox,
+                         owner_id=user.user['id'])
         db.session.add(device)
         db.session.commit()
         device_id = device.id
