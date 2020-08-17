@@ -14,7 +14,6 @@ from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.device import models as m, states
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing, UnitCodes
-from ereuse_devicehub.resources.user import schemas as s_user
 
 
 class Device(Thing):
@@ -124,7 +123,7 @@ class Computer(Device):
                        description=m.Computer.privacy.__doc__)
     ethereum_address = SanitizedStr(validate=f.validate.Length(max=42))
     deposit = Integer(validate=f.validate.Range(min=0, max=100),
-                       description=m.Computer.deposit.__doc__)
+                      description=m.Computer.deposit.__doc__)
     # author_id = NestedOn(s_user.User,only_query='author_id')
     owner_id = UUID(data_key='ownerID')
     transfer_state = EnumField(enums.TransferState, description=m.Computer.transfer_state.comment)

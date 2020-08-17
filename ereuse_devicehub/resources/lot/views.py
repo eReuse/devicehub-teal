@@ -1,24 +1,20 @@
-import datetime
 import uuid
 from collections import deque
 from enum import Enum
 from typing import Dict, List, Set, Union
 
 import marshmallow as ma
-import teal.cache
 from flask import Response, jsonify, request, g
 from marshmallow import Schema as MarshmallowSchema, fields as f
+from sqlalchemy import or_
 from teal.marshmallow import EnumField
 from teal.resource import View
-from sqlalchemy import or_
-from sqlalchemy.orm import joinedload
 
-from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
+from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 from ereuse_devicehub.resources.device.models import Device, Computer
 from ereuse_devicehub.resources.lot.models import Lot, Path
-from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 
 
 class LotFormat(Enum):
@@ -44,7 +40,9 @@ class LotView(View):
         return ret
 
     def patch(self, id):
-        patch_schema = self.resource_def.SCHEMA(only=('name', 'description', 'transfer_state', 'receiver_address', 'deposit', 'deliverynote_address', 'devices', 'owner_address'), partial=True)
+        patch_schema = self.resource_def.SCHEMA(only=(
+            'name', 'description', 'transfer_state', 'receiver_address', 'deposit', 'deliverynote_address', 'devices',
+            'owner_address'), partial=True)
         l = request.get_json(schema=patch_schema)
         lot = Lot.query.filter_by(id=id).one()
         device_fields = ['transfer_state', 'receiver_address', 'deposit', 'deliverynote_address', 'owner_address']

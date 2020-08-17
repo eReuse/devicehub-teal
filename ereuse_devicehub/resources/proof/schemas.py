@@ -1,17 +1,15 @@
-from flask import current_app as app
-from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema
-from marshmallow.fields import Boolean, DateTime, Integer, Nested, String, UUID
+from marshmallow import fields as f
+from marshmallow import fields as f
+from marshmallow.fields import Boolean, DateTime, Integer, String, UUID
 from marshmallow.validate import Length
-from sqlalchemy.util import OrderedSet
 from teal.marshmallow import SanitizedStr, URL
-from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
-from ereuse_devicehub.resources.proof import models as m
-from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
-from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.action import schemas as s_action
 from ereuse_devicehub.resources.device import schemas as s_device
+from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
+from ereuse_devicehub.resources.proof import models as m
+from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user import schemas as s_user
 
 
@@ -19,7 +17,7 @@ class Proof(Thing):
     __doc__ = m.Proof.__doc__
     id = UUID(dump_only=True)
     ethereum_hash = SanitizedStr(default='', validate=Length(max=STR_BIG_SIZE),
-                                   data_key="ethereumHash", required=True)
+                                 data_key="ethereumHash", required=True)
     url = URL(dump_only=True, description=m.Proof.url.__doc__)
     device_id = Integer(load_only=True, data_key='deviceID')
     device = NestedOn(s_device.Device, dump_only=True)

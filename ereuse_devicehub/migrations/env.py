@@ -1,13 +1,9 @@
 from __future__ import with_statement
 
-import os
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from alembic import context
+from sqlalchemy import create_engine
 
 from ereuse_devicehub.config import DevicehubConfig
 
@@ -24,9 +20,10 @@ fileConfig(config.config_file_name)
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.models import Thing
+
 target_metadata = Thing.metadata
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

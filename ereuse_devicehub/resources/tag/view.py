@@ -3,8 +3,8 @@ from flask_sqlalchemy import Pagination
 from teal.marshmallow import ValidationError
 from teal.resource import View, url_for_resource
 
-from ereuse_devicehub.db import db
 from ereuse_devicehub import auth
+from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag import Tag
