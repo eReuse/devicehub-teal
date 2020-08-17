@@ -66,7 +66,8 @@ User.main                          GET                      /users/
 """
 
 
-@pytest.mark.mvp_one
+@pytest.mark.mvp
+@pytest.mark.xfail(reason='We need think about specifications.')
 def test_users(user: UserClient, client: Client):
     """
     User.main POST /users/
@@ -76,7 +77,6 @@ def test_users(user: UserClient, client: Client):
     url = "/users/"
     ## User validated
     # GET
-    import pdb; pdb.set_trace()
     content, res = user.get(url, None)
     assert res.status_code == 200
     content, res = client.get(url, None)
@@ -116,78 +116,51 @@ def test_users(user: UserClient, client: Client):
     assert res.status_code == 405
 
 
-
-
 @pytest.mark.mvp
-def test_get_static(client: Client):
-    """ static GET /static/<path:filename> """
-    content, res = client.get("/static/file1.jpg", None)
-    assert res.status_code == 200
-
-
-@pytest.mark.mvp_one
-def test_get_device(app: Devicehub, user: UserClient, client: Client):
+def test_get_device(app: Devicehub, user: UserClient, user2: UserClient):
     """Checks GETting a d.Desktop with its components."""
 
-    with app.app_context():
-        pc = d.Desktop(model='p1mo',
-                       manufacturer='p1ma',
-                       serial_number='p1s',
-                       chassis=ComputerChassis.Tower,
-                       owner_id=user.user['id'])
-        db.session.add(pc)
-        db.session.add(TestConnectivity(device=pc,
-                                        severity=Severity.Info,
-                                        agent=Person(name='Timmy'),
-                                        author=User(email='bar@bar.com')))
-        db.session.commit()
-
-    pc, res = user.get("/devices/1/", None)
+    user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
+    pc, res = user.get("/devices/1", None)
     assert res.status_code == 200
+    assert len(pc['actions']) == 9
 
-    pc = pc['items'][0]
-    assert len(pc['actions']) == 1
-    assert pc['actions'][0]['type'] == 'TestConnectivity'
-    assert pc['actions'][0]['device'] == 1
-    assert pc['actions'][0]['severity'] == 'Info'
-    assert UUID(pc['actions'][0]['author'])
-    assert 'actions_components' not in pc, 'actions_components are internal use only'
-    assert 'actions_one' not in pc, 'they are internal use only'
-    assert 'author' not in pc
-    assert pc['hid'] == 'desktop-p1ma-p1mo-p1s'
-    assert pc['model'] == 'p1mo'
-    assert pc['manufacturer'] == 'p1ma'
-    assert pc['serialNumber'] == 'p1s'
-    assert pc['type'] == d.Desktop.t
+    pc2, res2 = user2.get("/devices/1", None)
+    assert res2.status_code == 200
+    assert len(pc['actions']) == 0
 
 
 @pytest.mark.mvp
-def test_get_devices(app: Devicehub, user: UserClient, client: Client):
+def test_get_devices(app: Devicehub, user: UserClient, user2: UserClient):
     """Checks GETting multiple devices."""
 
-    with app.app_context():
-        pc = d.Desktop(model='p1mo',
-                       manufacturer='p1ma',
-                       serial_number='p1s',
-                       chassis=ComputerChassis.Tower,
-                       owner_id=user.user['id'])
-        pc.components = OrderedSet([
-            d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
-            d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
-        ])
-        pc1 = d.Desktop(model='p2mo',
-                        manufacturer='p2ma',
-                        serial_number='p2s',
-                        chassis=ComputerChassis.Tower,
-                        owner_id=user.user['id'])
-        pc2 = d.Laptop(model='p3mo',
-                       manufacturer='p3ma',
-                       serial_number='p3s',
-                       chassis=ComputerChassis.Netbook,
-                       owner_id=user.user['id'])
-        db.session.add_all((pc, pc1, pc2))
-        db.session.commit()
+    user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
+    url = '/devices/?filter={"type":["Computer"]}'
 
-    devices, res = client.get("/devices/", None)
-    assert len(devices) == 3
+    devices, res = user.get(url, None)
+    devices2, res2 = user2.get(url, None)
     assert res.status_code == 200
+    assert res2.status_code == 200
+    assert len(devices['items']) == 1
+    assert len(devices2['items']) == 0
+
+
+@pytest.mark.mvp
+def test_get_tag(app: Devicehub, user: UserClient, user2: UserClient):
+    """Creates a tag specifying a custom organization."""
+    with app.app_context():
+        # Create a pc with a tag
+        tag = Tag(id='foo-bar', owner_id=user.user['id'])
+        pc = d.Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
+        pc.tags.add(tag)
+        db.session.add(pc)
+        db.session.commit()
+    computer, res = user.get(res=Tag, item='foo-bar/device')
+
+    url = "/tags/?foo-bar/device"
+    computer, res = user.get(url, None)
+    computer2, res2 = user2.get(url, None)
+    assert res.status_code == 200
+    assert res2.status_code == 200
+    assert len(computer['items']) == 1
+    assert len(computer2['items']) == 0
