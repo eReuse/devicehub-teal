@@ -1,10 +1,10 @@
 from uuid import uuid4
 
+from citext import CIText
 from flask import current_app as app
 from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import EmailType, PasswordType
-from citext import CIText
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.inventory.model import Inventory

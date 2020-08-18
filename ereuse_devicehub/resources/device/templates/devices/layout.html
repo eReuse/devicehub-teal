@@ -2,14 +2,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link href="https://stackpath.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css"
-        rel="stylesheet"
-        integrity="sha384-+ENW/yibaokMnme+vBLnHMphUYxHs34h9lpdbSLuAwGkOKFRl4C34WkjazBtb7eT"
-        crossorigin="anonymous">
-  <script src="https://use.fontawesome.com/7553aecc27.js"></script>
-  <title>Devicehub | {{ device.__format__('t') }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="https://stackpath.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-+ENW/yibaokMnme+vBLnHMphUYxHs34h9lpdbSLuAwGkOKFRl4C34WkjazBtb7eT"
+          crossorigin="anonymous">
+    <script src="https://use.fontawesome.com/7553aecc27.js"></script>
+    <title>Devicehub | {{ device.__format__('t') }}</title>
     <style>
         /*Sticky footer*/
         html {
@@ -36,174 +36,174 @@
         <a href="https://www.usody.com/" target="_blank">
             <h1 align="center">Usody Public Link</h1>
         </a>
-  </div>
+    </div>
 </nav>
 <div class="container-fluid">
-  <div class="row">
-    <div class="page-header col-md-6 col-md-offset-3">
-      <h1>{{ device.__format__('t') }}<br>
-        <small>{{ device.__format__('s') }}</small>
-      </h1>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-3">
-    </div>
-    <div class="col-md-6">
-      <ul>
-        {% for key, value in device.physical_properties.items() %}
-          <li>{{ key }}: {{ value }}
-        {% endfor %}
-      </ul>
-      {% if isinstance(device, d.Computer) %}
-        <div class="table-responsive">
-          <table class="table table-striped">
-            <thead>
-            <tr>
-              <th></th>
-              <th>Range</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% if device.processor_model %}
-              <tr>
-                <td>
-                  CPU – {{ device.processor_model }}
-                </td>
-                <td>
-                    Processor Rate = {% if device.rate %}
-                    {{ device.rate.processor_range }}
-                    ({{ device.rate.processor }})
-                  {% endif %}
-                </td>
-              </tr>
-            {% endif %}
-            {% if device.ram_size %}
-              <tr>
-                <td>
-                  RAM – {{ device.ram_size // 1000 }} GB
-                  {{ macros.component_type(device.components, 'RamModule') }}
-                </td>
-                <td>
-                    RAM Rate = {% if device.rate %}
-                    {{ device.rate.ram_range }}
-                    ({{ device.rate.ram }})
-                  {% endif %}
-                </td>
-              </tr>
-            {% endif %}
-            {% if device.data_storage_size %}
-              <tr>
-                <td>
-                  Data Storage – {{ device.data_storage_size // 1000 }} GB
-                  {{ macros.component_type(device.components, 'SolidStateDrive') }}
-                  {{ macros.component_type(device.components, 'HardDrive') }}
-                </td>
-                <td>
-                    Data Storage Rate = {% if device.rate %}
-                    {{ device.rate.data_storage_range }}
-                    ({{ device.rate.data_storage }})
-                  {% endif %}
-                </td>
-              </tr>
-            {% endif %}
-            {% if device.graphic_card_model %}
-              <tr>
-                <td>
-                  Graphics – {{ device.graphic_card_model }}
-                  {{ macros.component_type(device.components, 'GraphicCard') }}
-                </td>
-                <td></td>
-              </tr>
-            {% endif %}
-            {% if device.network_speeds %}
-              <tr>
-                <td>
-                  Network –
-                  {% if device.network_speeds[0] %}
-                    Ethernet
-                    {% if device.network_speeds[0] != None %}
-                      max. {{ device.network_speeds[0] }} Mbps
-                    {% endif %}
-                  {% endif %}
-                  {% if device.network_speeds[0] and device.network_speeds[1] %}
-                    +
-                  {% endif %}
-                  {% if device.network_speeds[1] %}
-                    WiFi
-                    {% if device.network_speeds[1] != None %}
-                      max. {{ device.network_speeds[1] }} Mbps
-                    {% endif %}
-                  {% endif %}
-                  {{ macros.component_type(device.components, 'NetworkAdapter') }}
-                </td>
-                <td></td>
-              </tr>
-            {% endif %}
-            {% if device.rate %}
-              <tr class="active">
-                <td class="text-right">
-                  Total rate
-                </td>
-                <td>
-                  {{ device.rate.rating_range }}
-                  ({{ device.rate.rating }})
-                </td>
-              </tr>
-            {% endif %}
-            {% if device.rate and device.rate.price %}
-              <tr class="active">
-                <td class="text-right">
-                  Algorithm price
-                </td>
-                <td>
-                  {{ device.rate.price }}
-                </td>
-              </tr>
-            {% endif %}
-            {% if device.price %}
-              <tr class="active">
-                <td class="text-right">
-                  Actual price
-                </td>
-                <td>
-                  {{ device.price }}
-                </td>
-              </tr>
-            {% endif %}
-            </tbody>
-          </table>
+    <div class="row">
+        <div class="page-header col-md-6 col-md-offset-3">
+            <h1>{{ device.__format__('t') }}<br>
+                <small>{{ device.__format__('s') }}</small>
+            </h1>
         </div>
-        <h4>Public traceability log of the device</h4>
-        <div class="text-right">
-          <small>Latest one.</small>
-        </div>
-        <ol>
-          {% for action in device.actions|reverse %}
-            <li>
-              <strong>
-                {{ action.type }}
-              </strong>
-              —
-              {{ action }}
-              <br>
-              <div class="text-muted">
-                <small>
-                  {{ action._date_str }}
-                </small>
-              </div>
-              {% if action.certificate %}
-                <a href="{{ action.certificate.to_text() }}">See the certificate</a>
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ol>
-        <div class="text-right">
-          <small>Oldest one.</small>
-        </div>
-      {% endif %}
     </div>
-  </div>
+    <div class="row">
+        <div class="col-md-3">
+        </div>
+        <div class="col-md-6">
+            <ul>
+                {% for key, value in device.physical_properties.items() %}
+                    <li>{{ key }}: {{ value }}
+                {% endfor %}
+            </ul>
+            {% if isinstance(device, d.Computer) %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>Range</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% if device.processor_model %}
+                            <tr>
+                                <td>
+                                    CPU – {{ device.processor_model }}
+                                </td>
+                                <td>
+                                    Processor Rate = {% if device.rate %}
+                                    {{ device.rate.processor_range }}
+                                    ({{ device.rate.processor }})
+                                {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        {% if device.ram_size %}
+                            <tr>
+                                <td>
+                                    RAM – {{ device.ram_size // 1000 }} GB
+                                    {{ macros.component_type(device.components, 'RamModule') }}
+                                </td>
+                                <td>
+                                    RAM Rate = {% if device.rate %}
+                                    {{ device.rate.ram_range }}
+                                    ({{ device.rate.ram }})
+                                {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        {% if device.data_storage_size %}
+                            <tr>
+                                <td>
+                                    Data Storage – {{ device.data_storage_size // 1000 }} GB
+                                    {{ macros.component_type(device.components, 'SolidStateDrive') }}
+                                    {{ macros.component_type(device.components, 'HardDrive') }}
+                                </td>
+                                <td>
+                                    Data Storage Rate = {% if device.rate %}
+                                    {{ device.rate.data_storage_range }}
+                                    ({{ device.rate.data_storage }})
+                                {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        {% if device.graphic_card_model %}
+                            <tr>
+                                <td>
+                                    Graphics – {{ device.graphic_card_model }}
+                                    {{ macros.component_type(device.components, 'GraphicCard') }}
+                                </td>
+                                <td></td>
+                            </tr>
+                        {% endif %}
+                        {% if device.network_speeds %}
+                            <tr>
+                                <td>
+                                    Network –
+                                    {% if device.network_speeds[0] %}
+                                        Ethernet
+                                        {% if device.network_speeds[0] != None %}
+                                            max. {{ device.network_speeds[0] }} Mbps
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if device.network_speeds[0] and device.network_speeds[1] %}
+                                        +
+                                    {% endif %}
+                                    {% if device.network_speeds[1] %}
+                                        WiFi
+                                        {% if device.network_speeds[1] != None %}
+                                            max. {{ device.network_speeds[1] }} Mbps
+                                        {% endif %}
+                                    {% endif %}
+                                    {{ macros.component_type(device.components, 'NetworkAdapter') }}
+                                </td>
+                                <td></td>
+                            </tr>
+                        {% endif %}
+                        {% if device.rate %}
+                            <tr class="active">
+                                <td class="text-right">
+                                    Total rate
+                                </td>
+                                <td>
+                                    {{ device.rate.rating_range }}
+                                    ({{ device.rate.rating }})
+                                </td>
+                            </tr>
+                        {% endif %}
+                        {% if device.rate and device.rate.price %}
+                            <tr class="active">
+                                <td class="text-right">
+                                    Algorithm price
+                                </td>
+                                <td>
+                                    {{ device.rate.price }}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        {% if device.price %}
+                            <tr class="active">
+                                <td class="text-right">
+                                    Actual price
+                                </td>
+                                <td>
+                                    {{ device.price }}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                <h4>Public traceability log of the device</h4>
+                <div class="text-right">
+                    <small>Latest one.</small>
+                </div>
+                <ol>
+                    {% for action in device.actions|reverse %}
+                        <li>
+                            <strong>
+                                {{ action.type }}
+                            </strong>
+                            —
+                            {{ action }}
+                            <br>
+                            <div class="text-muted">
+                                <small>
+                                    {{ action._date_str }}
+                                </small>
+                            </div>
+                            {% if action.certificate %}
+                                <a href="{{ action.certificate.to_text() }}">See the certificate</a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ol>
+                <div class="text-right">
+                    <small>Oldest one.</small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 <footer class="container-fluid footer">
     <div class="row">

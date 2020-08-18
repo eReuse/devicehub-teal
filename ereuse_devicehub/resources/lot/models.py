@@ -5,7 +5,7 @@ from typing import Union
 from boltons import urlutils
 from citext import CIText
 from flask import g
-from sqlalchemy import TEXT, Enum as DBEnum
+from sqlalchemy import TEXT
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
@@ -14,9 +14,9 @@ from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import create_view, db, exp, f
 from ereuse_devicehub.resources.device.models import Component, Device
+from ereuse_devicehub.resources.enums import TransferState
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.enums import TransferState
 
 
 class Lot(Thing):
@@ -65,15 +65,15 @@ class Lot(Thing):
     """
     deposit = db.Column(db.Integer, check_range('deposit', min=0, max=100), default=0)
     owner_id = db.Column(UUID(as_uuid=True),
-                          db.ForeignKey(User.id),
-                          nullable=False,
-                          default=lambda: g.user.id)
+                         db.ForeignKey(User.id),
+                         nullable=False,
+                         default=lambda: g.user.id)
     owner = db.relationship(User, primaryjoin=owner_id == User.id)
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
     receiver_address = db.Column(CIText(),
-                          db.ForeignKey(User.ethereum_address),
-                          nullable=True)
+                                 db.ForeignKey(User.ethereum_address),
+                                 nullable=True)
     receiver = db.relationship(User, primaryjoin=receiver_address == User.ethereum_address)
     deliverynote_address = db.Column(CIText(), nullable=True)
 

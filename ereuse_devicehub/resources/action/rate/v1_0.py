@@ -3,7 +3,7 @@ from itertools import groupby
 from typing import Dict, Iterable, Tuple
 
 from ereuse_devicehub.resources.action.models import BenchmarkDataStorage, BenchmarkProcessor, \
-    BenchmarkProcessorSysbench, RateComputer, VisualTest
+    BenchmarkProcessorSysbench, RateComputer
 from ereuse_devicehub.resources.action.rate.rate import BaseRate
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Processor, \
     RamModule

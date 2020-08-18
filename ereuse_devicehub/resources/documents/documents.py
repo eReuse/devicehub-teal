@@ -11,7 +11,7 @@ import flask
 import flask_weasyprint
 import teal.marshmallow
 from boltons import urlutils
-from flask import make_response
+from flask import make_response, g
 from teal.cache import cache
 from teal.resource import Resource
 
@@ -19,11 +19,12 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.device.views import DeviceView
+from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow
 from ereuse_devicehub.resources.documents.device_row import DeviceRow
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
 
-from flask import g, request
+
 
 class Format(enum.Enum):
     HTML = 'HTML'
@@ -110,7 +111,7 @@ class DocumentView(DeviceView):
 class DevicesDocumentView(DeviceView):
     @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
-        query = self.query(args)
+        query = (x for x in self.query(args) if x.owner_id == g.user.id)
         return self.generate_post_csv(query)
 
     def generate_post_csv(self, query):
@@ -169,7 +170,7 @@ class LotRow(OrderedDict):
 class StockDocumentView(DeviceView):
     # @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
-        query = self.query(args)
+        query = (x for x in self.query(args) if x.owner_id == g.user.id)
         return self.generate_post_csv(query)
 
     def generate_post_csv(self, query):
@@ -178,13 +179,13 @@ class StockDocumentView(DeviceView):
         cw = csv.writer(data)
         first = True
         for device in query:
-            d = DeviceRow(device)
+            d = StockRow(device)
             if first:
                 cw.writerow(d.keys())
                 first = False
             cw.writerow(d.values())
         output = make_response(data.getvalue())
-        output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+        output.headers['Content-Disposition'] = 'attachment; filename=devices-stock.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
 
@@ -194,6 +195,7 @@ class DocumentDef(Resource):
     SCHEMA = None
     VIEW = None  # We do not want to create default / documents endpoint
     AUTH = False
+
     def __init__(self, app,
                  import_name=__name__,
                  static_folder='static',
@@ -222,8 +224,11 @@ class DocumentDef(Resource):
         devices_view = DevicesDocumentView.as_view('devicesDocumentView',
                                                    definition=self,
                                                    auth=app.auth)
-
         devices_view = app.auth.requires_auth(devices_view)
+
+        stock_view = StockDocumentView.as_view('stockDocumentView', definition=self)
+        stock_view = app.auth.requires_auth(stock_view)
+
         self.add_url_rule('/devices/', defaults=d, view_func=devices_view, methods=get)
 
         lots_view = LotsDocumentView.as_view('lotsDocumentView', definition=self)

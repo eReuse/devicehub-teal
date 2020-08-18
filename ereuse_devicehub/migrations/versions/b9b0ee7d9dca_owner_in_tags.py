@@ -5,14 +5,10 @@ Revises: 151253ac5c55
 Create Date: 2020-06-30 17:41:28.611314
 
 """
-from alembic import op
-from alembic import context
 import sqlalchemy as sa
-import sqlalchemy_utils
+from alembic import context
+from alembic import op
 from sqlalchemy.dialects import postgresql
-import citext
-import teal
-
 
 # revision identifiers, used by Alembic.
 revision = 'b9b0ee7d9dca'
@@ -26,6 +22,7 @@ def get_inv():
     if not INV:
         raise ValueError("Inventory value is not specified")
     return INV
+
 
 def upgrade():
     op.add_column('tag', sa.Column('owner_id', postgresql.UUID(), nullable=True), schema=f'{get_inv()}')
