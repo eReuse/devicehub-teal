@@ -2,30 +2,22 @@
 
 """
 
-from collections import Iterable
 from datetime import datetime
-from typing import Optional, Set, Union
 from uuid import uuid4
 
 from boltons import urlutils
 from citext import CIText
-from flask import current_app as app, g
-from sortedcontainers import SortedSet
-from sqlalchemy import BigInteger, Column, Enum as DBEnum, \
-    ForeignKey, Integer, Unicode
+from flask import g
+from sqlalchemy import BigInteger, Column, ForeignKey, Unicode
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.orm import backref, relationship, validates
-from sqlalchemy.util import OrderedSet
+from sqlalchemy.orm import backref, relationship
 from teal.db import CASCADE_OWN, INHERIT_COND, POLYMORPHIC_ID, \
-    POLYMORPHIC_ON, StrictVersionType, URL
-from teal.marshmallow import ValidationError
+    POLYMORPHIC_ON
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import Action, DisposeProduct, \
-    EraseBasic, Rate, Trade
+from ereuse_devicehub.resources.action.models import EraseBasic, Rate
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user import User
@@ -83,16 +75,15 @@ class Proof(Thing):
         return '<{0.t} {0.id} >'.format(self)
 
 
-
 class ProofTransfer(JoinedTableMixin, Proof):
     supplier_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey(User.id),
-                         nullable=False,
-                         default=lambda: g.user.id)
+                            db.ForeignKey(User.id),
+                            nullable=False,
+                            default=lambda: g.user.id)
     supplier = db.relationship(User, primaryjoin=lambda: ProofTransfer.supplier_id == User.id)
     receiver_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey(User.id),
-                         nullable=False)
+                            db.ForeignKey(User.id),
+                            nullable=False)
     receiver = db.relationship(User, primaryjoin=lambda: ProofTransfer.receiver_id == User.id)
     deposit = Column(db.Integer, default=0)
 
@@ -103,9 +94,9 @@ class ProofDataWipe(JoinedTableMixin, Proof):
     result = Column(db.Boolean, default=False, nullable=False)
     result.comment = """Identifies proof datawipe as a result."""
     proof_author_id = Column(UUID(as_uuid=True),
-                          db.ForeignKey(User.id),
-                          nullable=False,
-                          default=lambda: g.user.id)
+                             db.ForeignKey(User.id),
+                             nullable=False,
+                             default=lambda: g.user.id)
     proof_author = relationship(User, primaryjoin=lambda: ProofDataWipe.proof_author_id == User.id)
     erasure_id = Column(UUID(as_uuid=True), ForeignKey(EraseBasic.id), nullable=False)
     erasure = relationship(EraseBasic,
@@ -119,16 +110,16 @@ class ProofDataWipe(JoinedTableMixin, Proof):
 class ProofFunction(JoinedTableMixin, Proof):
     disk_usage = Column(db.Integer, default=0)
     proof_author_id = Column(UUID(as_uuid=True),
-                          db.ForeignKey(User.id),
-                          nullable=False,
-                          default=lambda: g.user.id)
+                             db.ForeignKey(User.id),
+                             nullable=False,
+                             default=lambda: g.user.id)
     proof_author = db.relationship(User, primaryjoin=lambda: ProofFunction.proof_author_id == User.id)
     rate_id = Column(UUID(as_uuid=True), ForeignKey(Rate.id), nullable=False)
     rate = relationship(Rate,
-                       backref=backref('proof_function',
-                                       lazy=True,
-                                       uselist=False,
-                                       cascade=CASCADE_OWN),
+                        backref=backref('proof_function',
+                                        lazy=True,
+                                        uselist=False,
+                                        cascade=CASCADE_OWN),
                         primaryjoin=Rate.id == rate_id)
 
 
@@ -136,15 +127,15 @@ class ProofReuse(JoinedTableMixin, Proof):
     receiver_segment = Column(CIText(), default='', nullable=False)
     id_receipt = Column(CIText(), default='', nullable=False)
     supplier_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey(User.id),
-                         # nullable=False,
-                         # default=lambda: g.user.id)
-                         nullable=True)
+                            db.ForeignKey(User.id),
+                            # nullable=False,
+                            # default=lambda: g.user.id)
+                            nullable=True)
     supplier = db.relationship(User, primaryjoin=lambda: ProofReuse.supplier_id == User.id)
     receiver_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey(User.id),
-                         # nullable=False)
-                         nullable=True)
+                            db.ForeignKey(User.id),
+                            # nullable=False)
+                            nullable=True)
     receiver = db.relationship(User, primaryjoin=lambda: ProofReuse.receiver_id == User.id)
     price = Column(db.Integer)
 

@@ -1,8 +1,8 @@
 from contextlib import suppress
 from typing import Set
 
-from flask import g
 from boltons import urlutils
+from flask import g
 from sqlalchemy import BigInteger, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship, validates
@@ -13,8 +13,8 @@ from teal.resource import url_for_resource
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.models import Thing
+from ereuse_devicehub.resources.user.models import User
 
 
 class Tags(Set['Tag']):

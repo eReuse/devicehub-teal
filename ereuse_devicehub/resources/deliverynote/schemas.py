@@ -1,13 +1,12 @@
 from marshmallow import fields as f
-from teal.marshmallow import SanitizedStr, URL, EnumField
+from teal.marshmallow import SanitizedStr, EnumField
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.deliverynote import models as m
-from ereuse_devicehub.resources.user import schemas as s_user
-from ereuse_devicehub.resources.device import schemas as s_device
+from ereuse_devicehub.resources.enums import TransferState
 from ereuse_devicehub.resources.models import STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
-from ereuse_devicehub.resources.enums import TransferState
+from ereuse_devicehub.resources.user import schemas as s_user
 
 
 class Deliverynote(Thing):
@@ -21,7 +20,7 @@ class Deliverynote(Thing):
     receiver = NestedOn(s_user.User, dump_only=True)
     date = f.DateTime('iso', required=True)
     deposit = f.Integer(validate=f.validate.Range(min=0, max=100),
-                       description=m.Deliverynote.deposit.__doc__)
+                        description=m.Deliverynote.deposit.__doc__)
     ethereum_address = f.String(description='User identifier address inside the Blockchain')
     expected_devices = f.List(f.Dict, required=True, data_key='expectedDevices')
     transferred_devices = f.List(f.Integer(), required=False, data_key='transferredDevices')

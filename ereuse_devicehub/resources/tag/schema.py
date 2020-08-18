@@ -3,11 +3,11 @@ from sqlalchemy.util import OrderedSet
 from teal.marshmallow import SanitizedStr, URL
 
 from ereuse_devicehub.marshmallow import NestedOn
-from ereuse_devicehub.resources.user.schemas import User
 from ereuse_devicehub.resources.agent.schemas import Organization
 from ereuse_devicehub.resources.device.schemas import Device
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.tag import model as m
+from ereuse_devicehub.resources.user.schemas import User
 
 
 def without_slash(x: str) -> bool:

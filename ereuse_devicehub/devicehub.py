@@ -9,8 +9,8 @@ import ereuse_utils.cli
 from ereuse_utils.session import DevicehubClient
 from flask.globals import _app_ctx_stack, g
 from flask_sqlalchemy import SQLAlchemy
-from teal.teal import Teal
 from teal.db import SchemaSQLAlchemy
+from teal.teal import Teal
 
 from ereuse_devicehub.auth import Auth
 from ereuse_devicehub.client import Client, UserClient
@@ -19,7 +19,6 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.dummy.dummy import Dummy
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.inventory import Inventory, InventoryDef
-from ereuse_devicehub.resources.user import User
 from ereuse_devicehub.templating import Environment
 
 
@@ -116,7 +115,6 @@ class Devicehub(Teal):
             self._init_resources(exclude_schema=exclude_schema)
             self.db.session.commit()
         print('done.')
-
 
     def _init_db(self, exclude_schema=None) -> bool:
         if exclude_schema:
