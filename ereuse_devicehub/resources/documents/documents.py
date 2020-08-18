@@ -133,7 +133,7 @@ class DevicesDocumentView(DeviceView):
 
 class LotsDocumentView(LotView):
     def find(self, args: dict):
-        query = self.query(args)
+        query = (x for x in self.query(args) if x.owner_id == g.user.id)
         return self.generate_lots_csv(query)
 
     def generate_lots_csv(self, query):
