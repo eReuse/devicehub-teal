@@ -6,16 +6,19 @@ from typing import Dict, List, Set, Union
 
 import marshmallow as ma
 import teal.cache
-from flask import Response, jsonify, request
+from flask import Response, jsonify, request, g
 from marshmallow import Schema as MarshmallowSchema, fields as f
 from teal.marshmallow import EnumField
 from teal.resource import View
+from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
+from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.device.models import Device, Computer
 from ereuse_devicehub.resources.lot.models import Lot, Path
+from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 
 
 class LotFormat(Enum):
@@ -85,14 +88,22 @@ class LotView(View):
             }
         else:
             query = Lot.query
+            query = self.visibility_filter(query)
             if args['search']:
                 query = query.filter(Lot.name.ilike(args['search'] + '%'))
             lots = query.paginate(per_page=6 if args['search'] else 30)
             return things_response(
-                self.schema.dump(lots.items, many=True, nested=0),
+                self.schema.dump(lots.items, many=True, nested=2),
                 lots.page, lots.per_page, lots.total, lots.prev_num, lots.next_num
             )
         return jsonify(ret)
+
+    def visibility_filter(self, query):
+        query = query.outerjoin(Deliverynote) \
+            .filter(or_(Deliverynote.receiver_address == g.user.email,
+                        Deliverynote.supplier_email == g.user.email,
+                        Lot.owner_id == g.user.id))
+        return query
 
     def query(self, args):
         query = Lot.query.distinct()

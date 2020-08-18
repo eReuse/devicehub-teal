@@ -19,7 +19,7 @@ def test_erasure_certificate_public_one(user: UserClient, client: Client):
     s = file('erase-sectors.snapshot')
     snapshot, _ = user.post(s, res=Snapshot)
 
-    doc, response = client.get(res=documents.DocumentDef.t,
+    doc, response = user.get(res=documents.DocumentDef.t,
                                item='erasures/{}'.format(snapshot['device']['id']),
                                accept=ANY)
     assert 'html' in response.content_type
@@ -146,7 +146,7 @@ def test_export_empty(user: UserClient):
     assert len(export_csv) == 0, 'Csv is not empty'
 
 
-@pytest.mark.mvp
+@pytest.mark.xfail(reason='Feature not developed (Beta)')
 def test_export_computer_monitor(user: UserClient):
     """Test a export device type computer monitor."""
     snapshot, _ = user.post(file('computer-monitor.snapshot'), res=Snapshot)
@@ -171,6 +171,7 @@ def test_export_computer_monitor(user: UserClient):
     assert fixture_csv[1] == export_csv[1], 'Component information are not equal'
 
 
+@pytest.mark.xfail(reason='Feature not developed (Beta)')
 def test_export_keyboard(user: UserClient):
     """Test a export device type keyboard."""
     snapshot, _ = user.post(file('keyboard.snapshot'), res=Snapshot)
@@ -194,7 +195,7 @@ def test_export_keyboard(user: UserClient):
     assert fixture_csv[1] == export_csv[1], 'Component information are not equal'
 
 
-@pytest.mark.mvp
+@pytest.mark.xfail(reason='Feature not developed (Beta)')
 def test_export_multiple_different_devices(user: UserClient):
     """Test function 'Export' of multiple different device types (like
     computers, keyboards, monitors, etc..)
