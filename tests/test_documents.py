@@ -263,18 +263,35 @@ def test_report_devices_stock_control(user: UserClient, user2: UserClient):
 
 
 @pytest.mark.mvp
-def test_get_document_lots(user: UserClient):
+def test_get_document_lots(user: UserClient, user2: UserClient):
     """Tests submitting and retreiving all lots."""
 
-    l, _ = user.post({'name': 'Lot1', 'description': 'comments,lot1,testcomment,'}, res=Lot)
-    l, _ = user.post({'name': 'Lot2', 'description': 'comments,lot2,testcomment,'}, res=Lot)
-    l, _ = user.post({'name': 'Lot3', 'description': 'comments,lot3,testcomment,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot1', 'description': 'comments,lot1,testcomment-lot1,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot2', 'description': 'comments,lot2,testcomment-lot2,'}, res=Lot)
+    l, _ = user2.post({'name': 'Lot3-User2', 'description': 'comments,lot3,testcomment-lot3,'}, res=Lot)
 
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='lots/',
                           accept='text/csv')
+
+    csv2_str, _ = user2.get(res=documents.DocumentDef.t,
+                            item='lots/',
+                            accept='text/csv')
+
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)
-    assert len(export_csv) == 4
-    assert export_csv[0] == ['Id', 'Name', 'Registered in', 'Description']
+
+    f = StringIO(csv2_str)
+    obj2_csv = csv.reader(f, f)
+    export2_csv = list(obj2_csv)
+
+    assert len(export_csv) == 3
+    assert len(export2_csv) == 2
+
+    assert export_csv[0] == export2_csv[0] == ['Id', 'Name', 'Registered in', 'Description']
+
+    assert export_csv[1][1] == 'Lot1' or 'Lot2'
+    assert export_csv[1][3] == 'comments,lot1,testcomment-lot1,' or 'comments,lot2,testcomment-lot2,'
+    assert export2_csv[1][1] == 'Lot3-User2'
+    assert export2_csv[1][3] == 'comments,lot3,testcomment-lot3,'
