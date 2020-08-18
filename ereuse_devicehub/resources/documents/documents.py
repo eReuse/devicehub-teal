@@ -129,6 +129,7 @@ class DevicesDocumentView(DeviceView):
         output.headers['Content-type'] = 'text/csv'
         return output
 
+
 class LotsDocumentView(LotView):
     def find(self, args: dict):
         query = self.query(args)
