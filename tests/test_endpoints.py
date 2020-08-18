@@ -127,7 +127,7 @@ def test_get_device(app: Devicehub, user: UserClient, user2: UserClient):
 
     pc2, res2 = user2.get("/devices/1", None)
     assert res2.status_code == 200
-    assert len(pc['actions']) == 0
+    assert pc2 == {}
 
 
 @pytest.mark.mvp
