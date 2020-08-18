@@ -103,6 +103,10 @@ class LotView(View):
                         Lot.owner_id == g.user.id))
         return query
 
+    def query(self, args):
+        query = Lot.query.distinct()
+        return query
+
     def delete(self, id):
         lot = Lot.query.filter_by(id=id).one()
         lot.delete()

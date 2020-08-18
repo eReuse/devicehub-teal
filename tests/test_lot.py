@@ -381,3 +381,14 @@ def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
                          query=[('id', device_id)],
                          status=200)
     assert not len(lot['devices'])
+
+
+@pytest.mark.mvp
+def test_get_multiple_lots(user: UserClient):
+    """Tests submitting and retreiving multiple lots."""
+    l, _ = user.post({'name': 'Lot1', 'description': 'comments1,lot1,testcomment,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot2', 'description': 'comments2,lot2,testcomment,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot3', 'description': 'comments3,lot3,testcomment,'}, res=Lot)
+
+    l, _ = user.get(res=Lot)
+    assert len(l) == 3

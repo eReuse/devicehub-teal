@@ -50,6 +50,7 @@ def test_api_docs(client: Client):
         '/diy-and-gardenings/{id}/merge/',
         '/documents/devices/',
         '/documents/erasures/',
+        '/documents/lots/',
         '/documents/static/{filename}',
         '/documents/stock/',
         '/drills/{id}/merge/',
