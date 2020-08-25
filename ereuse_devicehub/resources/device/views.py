@@ -129,6 +129,8 @@ class DeviceView(View):
     @auth.Auth.requires_auth
     def one_private(self, id: int):
         device = Device.query.filter_by(id=id).one()
+        if hasattr(device, 'owner_id') and device.owner_id != g.user.id:
+            device = {}
         return self.schema.jsonify(device)
 
     @auth.Auth.requires_auth
