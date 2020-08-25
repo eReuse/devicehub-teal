@@ -6,6 +6,7 @@ from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.deliverynote.models import Deliverynote
+from ereuse_devicehub.resources.device.models import Computer
 from ereuse_devicehub.resources.lot.models import Lot
 
 
@@ -32,17 +33,17 @@ class DeliverynoteView(View):
                                                       'ethereum_address'), partial=True)
         d = request.get_json(schema=patch_schema)
         dlvnote = Deliverynote.query.filter_by(id=id).one()
-        # device_fields = ['transfer_state',  'deliverynote_address']
-        # computers = [x for x in dlvnote.transferred_devices if isinstance(x, Computer)]
+        device_fields = ['transfer_state', 'deliverynote_address']
+        computers = [x for x in dlvnote.transferred_devices if isinstance(x, Computer)]
         for key, value in d.items():
             setattr(dlvnote, key, value)
             # Transalate ethereum_address attribute
-            # devKey = key
-            # if key == 'ethereum_address':
-            #     devKey = 'deliverynote_address'
-            # if devKey in device_fields:
-            #     for dev in computers:
-            #         setattr(dev, devKey, value)
+            devKey = key
+            if key == 'ethereum_address':
+                devKey = 'deliverynote_address'
+            if devKey in device_fields:
+                for dev in computers:
+                    setattr(dev, devKey, value)
 
         db.session.commit()
         return Response(status=204)
