@@ -9,10 +9,10 @@ test_requires = [
 
 setup(
     name='ereuse-devicehub',
-    version='1.0a1',
+    version='0.1.0a1',
     url='https://github.com/ereuse/devicehub-teal',
     project_urls={
-        'Documentation': 'http://devicheub.ereuse.org',
+        'Documentation': 'http://devicehub.ereuse.org',
         'Code': 'http://github.com/ereuse/devicehub-teal',
         'Issue tracker': 'https://tree.taiga.io/project/ereuseorg-devicehub/issues?q=rules'
     },
