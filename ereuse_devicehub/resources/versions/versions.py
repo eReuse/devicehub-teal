@@ -1,7 +1,7 @@
 import flask
 import json
 import teal.marshmallow
-import ereuse_utils
+import pkg_resources
 
 from typing import Callable, Iterable, Tuple
 from flask import make_response, g
@@ -11,7 +11,8 @@ from teal.resource import Resource, View
 class VersionView(View):
     def get(self, *args, **kwargs):
         """Get version."""
-        v = "{}".format(ereuse_utils.version('ereuse-devicehub'))
+
+        v = "{}".format(pkg_resources.require('ereuse-devicehub')[0].version)
         return json.dumps({'devicehub': v})
 
 
@@ -37,5 +38,5 @@ class VersionDef(Resource):
         d = {'devicehub': '0.1.0a'}
         get = {'GET'}
 
-        version_view = VersionView.as_view('stockDocumentView', definition=self)
+        version_view = VersionView.as_view('VersionView', definition=self)
         self.add_url_rule('/', defaults=d, view_func=version_view, methods=get)
