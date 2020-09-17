@@ -1,19 +1,35 @@
 import flask
 import json
+import requests
 import teal.marshmallow
 import pkg_resources
 
 from typing import Callable, Iterable, Tuple
+from urllib.parse import urlparse
 from flask import make_response, g
 from teal.resource import Resource, View
 
+from ereuse_devicehub.resources.inventory.model import Inventory
+
+
+def get_tag_version():
+    """Get version of microservice ereuse-tag."""
+    path = "/versions/version/"
+    url = urlparse(Inventory.current.tag_provider.to_text())._replace(path=path)
+    res = requests.get(url.geturl())
+    if res.status_code == 200:
+        return json.loads(res.content)
+    else:
+        return {}
 
 class VersionView(View):
     def get(self, *args, **kwargs):
-        """Get version."""
-
-        v = "{}".format(pkg_resources.require('ereuse-devicehub')[0].version)
-        return json.dumps({'devicehub': v})
+        """Get version of DeviceHub and ereuse-tag."""
+        dh_version = pkg_resources.require('ereuse-devicehub')[0].version
+        tag_version = get_tag_version()
+        versions = {'devicehub': dh_version}
+        versions.update(tag_version)
+        return json.dumps(versions)
 
 
 class VersionDef(Resource):
