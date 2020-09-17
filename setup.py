@@ -1,6 +1,10 @@
-from pathlib import Path
+import re
 
+from pathlib import Path
 from setuptools import find_packages, setup
+
+with open("ereuse_devicehub/__init__.py", encoding="utf8") as f:
+    version = re.search(r'__version__ = "(.*?)"', f.read()).group(1)
 
 test_requires = [
     'pytest',
@@ -9,7 +13,7 @@ test_requires = [
 
 setup(
     name='ereuse-devicehub',
-    version='0.1.0a1',
+    version=version,
     url='https://github.com/ereuse/devicehub-teal',
     project_urls={
         'Documentation': 'http://devicehub.ereuse.org',
