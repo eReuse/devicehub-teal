@@ -12,11 +12,17 @@ from teal.resource import Resource, View
 from ereuse_devicehub.resources.inventory.model import Inventory
 
 
-def get_tag_version():
+def get_tag_version(app):
     """Get version of microservice ereuse-tag."""
+
     path = "/versions/version/"
     url = urlparse(Inventory.current.tag_provider.to_text())._replace(path=path)
-    res = requests.get(url.geturl())
+    try:
+        res = requests.get(url.geturl())
+    except requests.exceptions.ConnectionError:
+        app.logger.error("The microservice Tags is down!!")
+        return {}
+
     if res.status_code == 200:
         return json.loads(res.content)
     else:
@@ -25,9 +31,10 @@ def get_tag_version():
 class VersionView(View):
     def get(self, *args, **kwargs):
         """Get version of DeviceHub and ereuse-tag."""
+
         dh_version = pkg_resources.require('ereuse-devicehub')[0].version
-        tag_version = get_tag_version()
-        versions = {'devicehub': dh_version}
+        tag_version = get_tag_version(self.resource_def.app)
+        versions = {'devicehub': dh_version, "ereuse_tag": "0.0.0"}
         versions.update(tag_version)
         return json.dumps(versions)
 
@@ -40,9 +47,9 @@ class VersionDef(Resource):
 
     def __init__(self, app,
                  import_name=__name__,
-                 static_folder='static',
+                 static_folder=None,
                  static_url_path=None,
-                 template_folder='templates',
+                 template_folder=None,
                  url_prefix=None,
                  subdomain=None,
                  url_defaults=None,
@@ -51,7 +58,7 @@ class VersionDef(Resource):
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
 
-        d = {'devicehub': '0.1.0a'}
+        d = {'devicehub': '1.0a'}
         get = {'GET'}
 
         version_view = VersionView.as_view('VersionView', definition=self)
