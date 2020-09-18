@@ -1,8 +1,10 @@
 import datetime
+import pkg_resources
+import pytest
+
 from uuid import UUID
 from flask import g
 
-import pytest
 from colour import Color
 from ereuse_utils.naming import Naming
 from ereuse_utils.test import ANY
@@ -115,6 +117,16 @@ def test_users(user: UserClient, client: Client):
     content, res = client.patch(url, None)
     assert res.status_code == 405
 
+
+@pytest.mark.mvp
+def test_get_version(app: Devicehub, client: Client):
+    """Checks GETting versions of services."""
+
+    content, res = client.get("/versions/", None)
+    dh_version = pkg_resources.require('ereuse-devicehub')[0].version
+    version = {'devicehub': dh_version, 'ereuse_tag': '0.0.0'}
+    assert res.status_code == 200
+    assert content == version
 
 @pytest.mark.mvp
 def test_get_device(app: Devicehub, user: UserClient, user2: UserClient):
