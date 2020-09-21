@@ -34,7 +34,6 @@ TASK_COMMON_HELP = {
         'branch': 'select branch to clone from git',
     }
 
-
 @task(
     help=TASK_COMMON_HELP,
 )
@@ -76,9 +75,9 @@ def upgrade(c, domain='api.ereuse.org', branch='master'):
 
 
 def install_apt_dependencies(c):
-    c.sudo('apt-get update -qy')
-    c.sudo('apt-get install -qy {}'.format(' '.join(PACKAGES)))
-    c.sudo('sudo -u postgres psql postgres -c "SELECT version()" | grep PostgreSQL')
+    c.run('apt-get update -qy')
+    c.run('apt-get install -qy {}'.format(' '.join(PACKAGES)))
+    c.run('sudo -u postgres psql postgres -c "SELECT version()" | grep PostgreSQL')
 
 
 class AppDeployment:
