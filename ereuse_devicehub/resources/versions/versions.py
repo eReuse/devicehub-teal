@@ -1,8 +1,8 @@
+import re
 import flask
 import json
 import requests
 import teal.marshmallow
-import pkg_resources
 
 from typing import Callable, Iterable, Tuple
 from urllib.parse import urlparse
@@ -31,8 +31,8 @@ def get_tag_version(app):
 class VersionView(View):
     def get(self, *args, **kwargs):
         """Get version of DeviceHub and ereuse-tag."""
-
-        dh_version = pkg_resources.require('ereuse-devicehub')[0].version
+        with open("ereuse_devicehub/__init__.py", encoding="utf8") as f:
+            dh_version = re.search(r'__version__ = "(.*?)"', f.read()).group(1)
         tag_version = get_tag_version(self.resource_def.app)
         versions = {'devicehub': dh_version, "ereuse_tag": "0.0.0"}
         versions.update(tag_version)
