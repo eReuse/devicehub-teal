@@ -123,7 +123,8 @@ def test_get_version(app: Devicehub, client: Client):
     """Checks GETting versions of services."""
 
     content, res = client.get("/versions/", None)
-    dh_version = pkg_resources.require('ereuse-devicehub')[0].version
+    with open("ereuse_devicehub/__init__.py", encoding="utf8") as f:
+            dh_version = re.search(r'__version__ = "(.*?)"', f.read()).group(1)
     version = {'devicehub': dh_version, 'ereuse_tag': '0.0.0'}
     assert res.status_code == 200
     assert content == version
