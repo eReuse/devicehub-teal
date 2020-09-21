@@ -1,5 +1,5 @@
 import datetime
-import pkg_resources
+import re
 import pytest
 
 from uuid import UUID
