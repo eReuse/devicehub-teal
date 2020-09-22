@@ -1,4 +1,3 @@
-import re
 import flask
 import json
 import requests
@@ -10,6 +9,7 @@ from flask import make_response, g
 from teal.resource import Resource, View
 
 from ereuse_devicehub.resources.inventory.model import Inventory
+from ereuse_devicehub import __version__
 
 
 def get_tag_version(app):
@@ -31,10 +31,9 @@ def get_tag_version(app):
 class VersionView(View):
     def get(self, *args, **kwargs):
         """Get version of DeviceHub and ereuse-tag."""
-        with open("ereuse_devicehub/__init__.py", encoding="utf8") as f:
-            dh_version = re.search(r'__version__ = "(.*?)"', f.read()).group(1)
+
         tag_version = get_tag_version(self.resource_def.app)
-        versions = {'devicehub': dh_version, "ereuse_tag": "0.0.0"}
+        versions = {'devicehub': __version__, "ereuse_tag": "0.0.0"}
         versions.update(tag_version)
         return json.dumps(versions)
 
@@ -58,7 +57,7 @@ class VersionDef(Resource):
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
 
-        d = {'devicehub': '0.0.0'}
+        d = {'devicehub': __version__, "ereuse_tag": "0.0.0"}
         get = {'GET'}
 
         version_view = VersionView.as_view('VersionView', definition=self)

@@ -1,5 +1,4 @@
 import datetime
-import re
 import pytest
 
 from uuid import UUID
@@ -13,6 +12,7 @@ from sqlalchemy.util import OrderedSet
 from teal.db import ResourceNotFound
 from teal.enums import Layouts
 
+from ereuse_devicehub import __version__
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
@@ -123,9 +123,8 @@ def test_get_version(app: Devicehub, client: Client):
     """Checks GETting versions of services."""
 
     content, res = client.get("/versions/", None)
-    with open("ereuse_devicehub/__init__.py", encoding="utf8") as f:
-            dh_version = re.search(r'__version__ = "(.*?)"', f.read()).group(1)
-    version = {'devicehub': dh_version, 'ereuse_tag': '0.0.0'}
+
+    version = {'devicehub': __version__, 'ereuse_tag': '0.0.0'}
     assert res.status_code == 200
     assert content == version
 
