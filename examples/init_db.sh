@@ -9,16 +9,15 @@ user=$2
 pass=$3
 
 grant="GRANT ALL PRIVILEGES ON DATABASE $db TO $user;" # Give access to the db
-pgcrypto='psql -d $db -c "CREATE EXTENSION pgcrypto SCHEMA public;"' # Enable pgcrypto
-ltree='psql -d $db -c "CREATE EXTENSION ltree SCHEMA public;"' # Enable ltree
-citext='psql -d $db -c "CREATE EXTENSION citext SCHEMA public;"' # Enable citext
-pg_trgm='psql -d $db -c "CREATE EXTENSION pg_trgm SCHEMA public;"' # Enable pg_trgm
+pgcrypto='CREATE EXTENSION pgcrypto SCHEMA public;' # Enable pgcrypto
+ltree='CREATE EXTENSION ltree SCHEMA public;' # Enable ltree
+citext='CREATE EXTENSION citext SCHEMA public;' # Enable citext
+pg_trgm='CREATE EXTENSION pg_trgm SCHEMA public;' # Enable pg_trgm
 
 su - postgres -c "createdb $db" # Create main database
-su - postgres -c "psql -c \"CREATE USER $user WITH PASSWORD '$pass';\"" # Create user Devicehub uses to access db
-
-su - postgres -c 'psql -c "$grant"'
-su - postgres -c '$pgcrypto'
-su - postgres -c '$ltree'
-su - postgres -c '$citext'
-su - postgres -c '$pg_trgm'
+su - postgres -c "psql -a -c \"CREATE USER $user WITH PASSWORD '$pass';\"" # Create user Devicehub uses to access db
+su - postgres -c "psql -a -c \"$grant\""
+su - postgres -c "psql -d $db -c \"$pgcrypto\""
+su - postgres -c "psql -d $db -c \"$ltree\""
+su - postgres -c "psql -d $db -c \"$citext\""
+su - postgres -c "psql -d $db -c \"$pg_trgm\""

@@ -86,7 +86,7 @@ class AppDeployment:
         source      # wsgi app
         venv        # python virtual environment
     """
-    SITES_PATH = '~/sites/'
+    SITES_PATH = '/home/ereuse/sites/'
     GIT_CLONE_DIR = 'devicehub'
     VENV_DIR = 'venv'
 
@@ -116,7 +116,6 @@ class AppDeployment:
         self.c.run('su - postgres -c \'psql postgres -c "SELECT version()" | grep PostgreSQL\'')
 
     def bootstrap(self):
-        import pdb; pdb.set_trace()
         self.install_apt_dependencies()
         self.clone_devicehub_repository()
         self.install_package_requirements()
@@ -158,6 +157,8 @@ class AppDeployment:
             password)
         self.c.run(command)
 
+    def dh_inv_add(self):
+        # import pdb; pdb.set_trace()
         command = 'export dhi=dbtest; {}/bin/dh inv add --common --name dbtest'.format(
             self.venv_path)
         self.c.run(self.cmd(command))
@@ -259,4 +260,4 @@ class AppDeployment:
         self.c.sudo("systemctl reload apache2")
 
 
-app = AppDeployment('api.usody.net', 'testing')
+app = AppDeployment('api.usody.net', 'feature/fabfile-continuous-deployment')
