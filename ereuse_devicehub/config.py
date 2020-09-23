@@ -1,3 +1,4 @@
+import os
 from distutils.version import StrictVersion
 from itertools import chain
 from typing import Set
@@ -27,7 +28,12 @@ class DevicehubConfig(Config):
                                      import_resource(inventory)),
                                )
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
-    SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/devicehub'  # type: str
+    DB_USER = os.environ.get('db_user') or 'dhub'
+    DB_PASSWORD = os.environ.get('dh_pass') or 'ereuse'
+    DB_HOST = os.environ.get('db_host') or 'localhost'
+    DB_DATABASE = os.environ.get('db') or 'devicehub'
+    URI = '{}:{}@{}/{}'.format(DB_USER, DB_PASSWORD, DB_HOST, DB_DATABASE)
+    SQLALCHEMY_DATABASE_URI = 'postgresql://{}'.format(URI)
     MIN_WORKBENCH = StrictVersion('11.0a1')  # type: StrictVersion
     """The minimum version of ereuse.org workbench that this devicehub
     accepts. we recommend not changing this value.
