@@ -17,7 +17,7 @@ class User(Thing):
     password = ...  # type: Column
     token = ...  # type: Column
     inventories = ...  # type: relationship
-    ethereum_address = ... # type: Column
+    ethereum_address = ...  # type: Column
 
     def __init__(self, email: str, password: str = None,
                  inventories: Set[Inventory] = None) -> None:
@@ -28,7 +28,7 @@ class User(Thing):
         self.individuals = ...  # type: Set[Individual]
         self.token = ...  # type: UUID
         self.inventories = ...  # type: Set[Inventory]
-        self.ethereum_address = ... # type: str
+        self.ethereum_address = ...  # type: str
 
     @property
     def individual(self) -> Union[Individual, None]:

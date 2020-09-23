@@ -93,6 +93,18 @@ def user(app: Devicehub) -> UserClient:
         return client
 
 
+@pytest.fixture()
+def user2(app: Devicehub) -> UserClient:
+    """Gets a client with a logged-in dummy user."""
+    with app.app_context():
+        password = 'foo'
+        email = 'foo2@foo.com'
+        user = create_user(email=email, password=password)
+        client = UserClient(app, user.email, password, response_wrapper=app.response_class)
+        client.login()
+        return client
+
+
 def create_user(email='foo@foo.com', password='foo') -> User:
     user = User(email=email, password=password)
     user.individuals.add(Person(name='Timmy'))
@@ -125,7 +137,11 @@ def file(name: str) -> dict:
 def tag_id(app: Devicehub) -> str:
     """Creates a tag and returns its id."""
     with app.app_context():
-        t = Tag(id='foo')
+        if User.query.count():
+            user = User.query.one()
+        else:
+            user = create_user()
+        t = Tag(id='foo', owner_id=user.id)
         db.session.add(t)
         db.session.commit()
         return t.id

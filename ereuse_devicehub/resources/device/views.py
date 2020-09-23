@@ -1,10 +1,12 @@
 import datetime
+import uuid
+from itertools import filterfalse
 
 import marshmallow
-from flask import current_app as app, render_template, request, Response
+from flask import g, current_app as app, render_template, request, Response
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
-from marshmallow import fields, fields as f, validate as v, ValidationError
+from marshmallow import fields, fields as f, validate as v, Schema as MarshmallowSchema
 from teal import query
 from teal.cache import cache
 from teal.resource import View
@@ -17,6 +19,7 @@ from ereuse_devicehub.resources.action import models as actions
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Device, Manufacturer, Computer
 from ereuse_devicehub.resources.device.search import DeviceSearch
+from ereuse_devicehub.resources.enums import SnapshotSoftware
 from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
 from ereuse_devicehub.resources.tag.model import Tag
 
@@ -60,7 +63,8 @@ class Filters(query.Query):
     # todo This part of the query is really slow
     # And forces usage of distinct, as it returns many rows
     # due to having multiple paths to the same
-    lot = query.Join(Device.id == LotDeviceDescendants.device_id, LotQ)
+    lot = query.Join((Device.id == LotDeviceDescendants.device_id),
+                     LotQ)
 
 
 class Sorting(query.Sort):
@@ -98,14 +102,15 @@ class DeviceView(View):
         if isinstance(dev, Computer):
             resource_def = app.resources['Computer']
             # TODO check how to handle the 'actions_one'
-            patch_schema = resource_def.SCHEMA(only=['ethereum_address', 'transfer_state', 'deliverynote_address', 'actions_one'], partial=True)
+            patch_schema = resource_def.SCHEMA(
+                only=['ethereum_address', 'transfer_state', 'deliverynote_address', 'actions_one'], partial=True)
             json = request.get_json(schema=patch_schema)
             # TODO check how to handle the 'actions_one'
             json.pop('actions_one')
             if not dev:
                 raise ValueError('Device non existent')
             for key, value in json.items():
-                setattr(dev,key,value)
+                setattr(dev, key, value)
             db.session.commit()
             return Response(status=204)
         raise ValueError('Cannot patch a non computer')
@@ -124,6 +129,8 @@ class DeviceView(View):
     @auth.Auth.requires_auth
     def one_private(self, id: int):
         device = Device.query.filter_by(id=id).one()
+        if hasattr(device, 'owner_id') and device.owner_id != g.user.id:
+            device = {}
         return self.schema.jsonify(device)
 
     @auth.Auth.requires_auth
@@ -149,7 +156,80 @@ class DeviceView(View):
             ).order_by(
                 search.Search.rank(properties, search_p) + search.Search.rank(tags, search_p)
             )
+        query = self.visibility_filter(query)
         return query.filter(*args['filter']).order_by(*args['sort'])
+
+    def visibility_filter(self, query):
+        filterqs = request.args.get('filter', None)
+        if (filterqs and
+                'lot' not in filterqs):
+            query = query.filter((Computer.id == Device.id), (Computer.owner_id == g.user.id))
+            pass
+        return query
+
+
+class DeviceMergeView(View):
+    """View for merging two devices
+    Ex. ``device/<id>/merge/id=X``.
+    """
+
+    class FindArgs(MarshmallowSchema):
+        id = fields.Integer()
+
+    def get_merge_id(self) -> uuid.UUID:
+        args = self.QUERY_PARSER.parse(self.find_args, request, locations=('querystring',))
+        return args['id']
+
+    def post(self, id: uuid.UUID):
+        device = Device.query.filter_by(id=id).one()
+        with_device = Device.query.filter_by(id=self.get_merge_id()).one()
+        self.merge_devices(device, with_device)
+
+        db.session().final_flush()
+        ret = self.schema.jsonify(device)
+        ret.status_code = 201
+
+        db.session.commit()
+        return ret
+
+    def merge_devices(self, base_device, with_device):
+        """Merge the current device with `with_device` by
+        adding all `with_device` actions under the current device.
+
+        This operation is highly costly as it forces refreshing
+        many models in session.
+        """
+        snapshots = sorted(
+            filterfalse(lambda x: not isinstance(x, actions.Snapshot), (base_device.actions + with_device.actions)))
+        workbench_snapshots = [s for s in snapshots if
+                               s.software == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid)]
+        latest_snapshot_device = [d for d in (base_device, with_device) if d.id == snapshots[-1].device.id][0]
+        latest_snapshotworkbench_device = \
+            [d for d in (base_device, with_device) if d.id == workbench_snapshots[-1].device.id][0]
+        # Adding actions of with_device
+        with_actions_one = [a for a in with_device.actions if isinstance(a, actions.ActionWithOneDevice)]
+        with_actions_multiple = [a for a in with_device.actions if isinstance(a, actions.ActionWithMultipleDevices)]
+
+        for action in with_actions_one:
+            if action.parent:
+                action.parent = base_device
+            else:
+                base_device.actions_one.add(action)
+        for action in with_actions_multiple:
+            if action.parent:
+                action.parent = base_device
+            else:
+                base_device.actions_multiple.add(action)
+
+        # Keeping the components of latest SnapshotWorkbench
+        base_device.components = latest_snapshotworkbench_device.components
+
+        # Properties from latest Snapshot
+        base_device.type = latest_snapshot_device.type
+        base_device.hid = latest_snapshot_device.hid
+        base_device.manufacturer = latest_snapshot_device.manufacturer
+        base_device.model = latest_snapshot_device.model
+        base_device.chassis = latest_snapshot_device.chassis
 
 
 class ManufacturerView(View):

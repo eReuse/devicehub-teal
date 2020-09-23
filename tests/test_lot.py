@@ -13,7 +13,7 @@ from tests import conftest
 
     try:
         with db.session.begin_nested():
-            
+
     except Exception as e:
         db.session.commit()
         print(e)
@@ -22,6 +22,7 @@ from tests import conftest
 """
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_model_children():
     """Tests the property Lot.children
@@ -65,6 +66,7 @@ def test_lot_model_children():
     assert not l3.parents
 
 
+@pytest.mark.mvp
 def test_lot_modify_patch_endpoint_and_delete(user: UserClient):
     """Creates and modifies lot properties through the endpoint."""
     l, _ = user.post({'name': 'foo', 'description': 'baz'}, res=Lot)
@@ -79,6 +81,7 @@ def test_lot_modify_patch_endpoint_and_delete(user: UserClient):
     user.get(res=Lot, item=l['id'], status=404)
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_device_relationship():
     device = Desktop(serial_number='foo',
@@ -285,6 +288,7 @@ def test_lot_unite_graphs_and_find():
     assert l4 not in l3 and l5 not in l3 and l6 not in l3 and l7 not in l3 and l8 not in l3
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_roots():
     """Tests getting the method Lot.roots."""
@@ -298,6 +302,7 @@ def test_lot_roots():
     assert set(Lot.roots()) == {l1, l3}
 
 
+@pytest.mark.mvp
 def test_post_get_lot(user: UserClient):
     """Tests submitting and retreiving a basic lot."""
     l, _ = user.post({'name': 'Foo'}, res=Lot)
@@ -345,6 +350,7 @@ def test_lot_post_add_children_view_ui_tree_normal(user: UserClient):
     assert lots[0]['name'] == 'Parent'
 
 
+@pytest.mark.mvp
 def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
     """Tests adding a device to a lot using POST and
     removing it with DELETE.
@@ -354,7 +360,8 @@ def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
         device = Desktop(serial_number='foo',
                          model='bar',
                          manufacturer='foobar',
-                         chassis=ComputerChassis.Lunchbox)
+                         chassis=ComputerChassis.Lunchbox,
+                         owner_id=user.user['id'])
         db.session.add(device)
         db.session.commit()
         device_id = device.id
@@ -374,3 +381,14 @@ def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
                          query=[('id', device_id)],
                          status=200)
     assert not len(lot['devices'])
+
+
+@pytest.mark.mvp
+def test_get_multiple_lots(user: UserClient):
+    """Tests submitting and retreiving multiple lots."""
+    l, _ = user.post({'name': 'Lot1', 'description': 'comments1,lot1,testcomment,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot2', 'description': 'comments2,lot2,testcomment,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot3', 'description': 'comments3,lot3,testcomment,'}, res=Lot)
+
+    l, _ = user.get(res=Lot)
+    assert len(l) == 3

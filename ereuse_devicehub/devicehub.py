@@ -9,10 +9,11 @@ import ereuse_utils.cli
 from ereuse_utils.session import DevicehubClient
 from flask.globals import _app_ctx_stack, g
 from flask_sqlalchemy import SQLAlchemy
+from teal.db import SchemaSQLAlchemy
 from teal.teal import Teal
 
 from ereuse_devicehub.auth import Auth
-from ereuse_devicehub.client import Client
+from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.db import db
 from ereuse_devicehub.dummy.dummy import Dummy
@@ -115,6 +116,15 @@ class Devicehub(Teal):
             self.db.session.commit()
         print('done.')
 
+    def _init_db(self, exclude_schema=None) -> bool:
+        if exclude_schema:
+            assert isinstance(self.db, SchemaSQLAlchemy)
+            self.db.create_all(exclude_schema=exclude_schema)
+        else:
+            self.db.create_all()
+
+        return True
+
     @click.confirmation_option(prompt='Are you sure you want to delete the inventory {}?'
                                .format(os.environ.get('dhi')))
     def delete_inventory(self):
@@ -140,3 +150,8 @@ class Devicehub(Teal):
         inv = g.inventory = Inventory.current  # type: Inventory
         g.tag_provider = DevicehubClient(base_url=inv.tag_provider,
                                          token=DevicehubClient.encode_token(inv.tag_token))
+
+    def create_client(self, email='user@dhub.com', password='1234'):
+        client = UserClient(self, email, password, response_wrapper=self.response_class)
+        client.login()
+        return client

@@ -18,7 +18,13 @@
   },
   "components": [
     {
-      "actions": [],
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 11969.98,
+          "elapsed": 0
+        }
+      ],
       "type": "Processor",
       "manufacturer": "Intel Corp.",
       "model": "Intel Xeon CPU E5520 @ 2.27GHz",
@@ -97,7 +103,14 @@
       "speed": 1066.0
     },
     {
-      "actions": [],
+      "actions": [
+        {
+          "elapsed": 13,
+          "readSpeed": 106.0,
+          "writeSpeed": 26.6,
+          "type": "BenchmarkDataStorage"
+        }
+      ],
       "type": "HardDrive",
       "manufacturer": "Western Digital",
       "model": "WDC WDS120G1G0A-",
@@ -107,7 +120,14 @@
       "variant": "1000"
     },
     {
-      "actions": [],
+      "actions": [
+        {
+          "elapsed": 13,
+          "readSpeed": 106.0,
+          "writeSpeed": 26.6,
+          "type": "BenchmarkDataStorage"
+        }
+      ],
       "type": "HardDrive",
       "manufacturer": "Seagate",
       "model": "ST160LM000 HM161",

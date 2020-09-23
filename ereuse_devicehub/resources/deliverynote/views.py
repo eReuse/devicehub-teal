@@ -1,22 +1,12 @@
 import datetime
 import uuid
-from collections import deque
-from enum import Enum
-from typing import Dict, List, Set, Union
 
-import marshmallow as ma
-import teal.cache
-from flask import Response, jsonify, request
-from marshmallow import Schema as MarshmallowSchema, fields as f
-from teal.marshmallow import EnumField
+from flask import Response, request
 from teal.resource import View
-from sqlalchemy.orm import joinedload
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 from ereuse_devicehub.resources.lot.models import Lot
-from ereuse_devicehub.resources.device.models import Computer
 
 
 class DeliverynoteView(View):
@@ -53,7 +43,7 @@ class DeliverynoteView(View):
             # if devKey in device_fields:
             #     for dev in computers:
             #         setattr(dev, devKey, value)
-         
+
         db.session.commit()
         return Response(status=204)
 

@@ -7,17 +7,17 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
-from flask import g
 from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
+from flask import g
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
     Sequence, SmallInteger, Unicode, inspect, text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
-from sqlalchemy.dialects.postgresql import UUID
 from stdnum import imei, meid
 from teal.db import CASCADE_DEL, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, URL, \
     check_lower, check_range, IntEnum
@@ -52,7 +52,7 @@ class Device(Thing):
     """
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     hid = Column(Unicode(), check_lower('hid'), unique=False)
-    hid.comment = """The Hardware ID (HID) is the unique ID traceability
+    hid.comment = """The Hardware ID (HID) is the ID traceability
     systems use to ID a device globally. This field is auto-generated
     from Devicehub using literal identifiers from the device,
     so it can re-generated *offline*.
@@ -382,17 +382,17 @@ class Computer(Device):
     It is a subset of the Linux definition of DMI / DMI decode.
     """
     ethereum_address = Column(CIText(), unique=True, default=None)
-    deposit = Column(Integer, check_range('deposit',min=0,max=100), default=0)
+    deposit = Column(Integer, check_range('deposit', min=0, max=100), default=0)
     owner_id = db.Column(UUID(as_uuid=True),
-                          db.ForeignKey(User.id),
-                          nullable=False,
-                          default=lambda: g.user.id)
+                         db.ForeignKey(User.id),
+                         nullable=False,
+                         default=lambda: g.user.id)
     author = db.relationship(User, primaryjoin=owner_id == User.id)
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
     receiver_id = db.Column(UUID(as_uuid=True),
-                          db.ForeignKey(User.id),
-                          nullable=True)
+                            db.ForeignKey(User.id),
+                            nullable=True)
     receiver = db.relationship(User, primaryjoin=receiver_id == User.id)
     deliverynote_address = db.Column(CIText(), nullable=True)
 

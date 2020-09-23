@@ -18,7 +18,13 @@
   },
   "components": [
     {
-      "actions": [],
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 11969.98,
+          "elapsed": 0
+        }
+      ],
       "type": "Processor",
       "manufacturer": "Intel Corp.",
       "model": "Intel Core i3 CPU 530 @ 2.93GHz",
@@ -75,7 +81,14 @@
       "speed": 1333.0
     },
     {
-      "actions": [],
+      "actions": [
+        {
+          "elapsed": 13,
+          "readSpeed": 106.0,
+          "writeSpeed": 26.6,
+          "type": "BenchmarkDataStorage"
+        }
+      ],
       "type": "HardDrive",
       "manufacturer": "Western Digital",
       "model": "WDC WD3200AAJS-6",

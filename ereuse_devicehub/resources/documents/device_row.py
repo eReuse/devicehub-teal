@@ -30,28 +30,23 @@ class DeviceRow(OrderedDict):
         self['Tag 1'] = self['Tag 2'] = self['Tag 3'] = ''
         for i, tag in zip(range(1, 3), device.tags):
             self['Tag {}'.format(i)] = format(tag)
-        self['Serial Number'] = device.serial_number
-        self['Model'] = device.model
-        self['Manufacturer'] = device.manufacturer
-        # self['State'] = device.last_action_of()
+        self['Serial Number'] = convert_none_to_empty_str(device.serial_number)
+        self['Model'] = convert_none_to_empty_str(device.model)
+        self['Manufacturer'] = convert_none_to_empty_str(device.manufacturer)
         self['Registered in'] = format(device.created, '%c')
         try:
             self['Physical state'] = device.last_action_of(*states.Physical.actions()).t
-        except:
+        except LookupError:
             self['Physical state'] = ''
         try:
             self['Trading state'] = device.last_action_of(*states.Trading.actions()).t
-        except:
+        except LookupError:
             self['Trading state'] = ''
-        self['Price'] = device.price.price or ''
+        self['Price'] = convert_none_to_empty_str(device.price)
         if isinstance(device, d.Computer):
-            self['Processor'] = device.processor_model
-            self['RAM (MB)'] = device.ram_size
-            self['Data Storage Size (MB)'] = device.data_storage_size
-        if isinstance(device, d.Mobile):
-            self['Display Size'] = device.display_size
-            self['RAM (MB)'] = device.ram_size
-            self['Data Storage Size (MB)'] = device.data_storage_size
+            self['Processor'] = convert_none_to_empty_str(device.processor_model)
+            self['RAM (MB)'] = convert_none_to_empty_str(device.ram_size)
+            self['Data Storage Size (MB)'] = convert_none_to_empty_str(device.data_storage_size)
         rate = device.rate
         if rate:
             self['Rate'] = rate.rating
@@ -73,7 +68,7 @@ class DeviceRow(OrderedDict):
         # todo put an input specific order (non alphabetic) & where are a list of types components
         for type in sorted(current_app.resources[d.Component.t].subresources_types):  # type: str
             max = self.NUMS.get(type, 4)
-            if type not in ['Component', 'HardDrive', 'SolidStateDrive', 'Camera', 'Battery']:
+            if type not in ['Component', 'HardDrive', 'SolidStateDrive']:
                 i = 1
                 for component in (r for r in self.device.components if r.type == type):
                     self.fill_component(type, i, component)
@@ -132,3 +127,47 @@ class DeviceRow(OrderedDict):
             self['{} {} Speed (MHz)'.format(type, i)] = component.speed
 
         # todo add Display, NetworkAdapter, etc...
+
+
+class StockRow(OrderedDict):
+    def __init__(self, device: d.Device) -> None:
+        super().__init__()
+        self.device = device
+        self['Type'] = convert_none_to_empty_str(device.t)
+        if isinstance(device, d.Computer):
+            self['Chassis'] = device.chassis
+        else:
+            self['Chassis'] = ''
+        self['Serial Number'] = convert_none_to_empty_str(device.serial_number)
+        self['Model'] = convert_none_to_empty_str(device.model)
+        self['Manufacturer'] = convert_none_to_empty_str(device.manufacturer)
+        self['Registered in'] = format(device.created, '%c')
+        try:
+            self['Physical state'] = device.last_action_of(*states.Physical.actions()).t
+        except LookupError:
+            self['Physical state'] = ''
+        try:
+            self['Trading state'] = device.last_action_of(*states.Trading.actions()).t
+        except LookupError:
+            self['Trading state'] = ''
+            self['Price'] = convert_none_to_empty_str(device.price)
+            self['Processor'] = convert_none_to_empty_str(device.processor_model)
+            self['RAM (MB)'] = convert_none_to_empty_str(device.ram_size)
+            self['Data Storage Size (MB)'] = convert_none_to_empty_str(device.data_storage_size)
+        rate = device.rate
+        if rate:
+            self['Rate'] = rate.rating
+            self['Range'] = rate.rating_range
+            assert isinstance(rate, RateComputer)
+            self['Processor Rate'] = rate.processor
+            self['Processor Range'] = rate.processor_range
+            self['RAM Rate'] = rate.ram
+            self['RAM Range'] = rate.ram_range
+            self['Data Storage Rate'] = rate.data_storage
+            self['Data Storage Range'] = rate.data_storage_range
+
+
+def convert_none_to_empty_str(s):
+    if s is None:
+        return ''
+    return s

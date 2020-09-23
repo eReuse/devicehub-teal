@@ -1,6 +1,5 @@
-from typing import Iterable
-
 import math
+from typing import Iterable
 
 from ereuse_devicehub.resources.device.models import Device
 

@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 from boltons import urlutils
-from teal.db import UniqueViolation
+from teal.db import UniqueViolation, DBError
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.client import UserClient
@@ -13,7 +13,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.action.models import Action, BenchmarkDataStorage, \
     BenchmarkProcessor, EraseSectors, RateComputer, Snapshot, SnapshotRequest, VisualTest, \
-    MeasureBattery, BenchmarkRamSysbench, StressTest
+    EreusePrice
 from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import SolidStateDrive
@@ -25,6 +25,7 @@ from ereuse_devicehub.resources.user.models import User
 from tests.conftest import file
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures('auth_app_context')
 def test_snapshot_model():
     """Tests creating a Snapshot with its relationships ensuring correct
@@ -55,17 +56,18 @@ def test_snapshot_model():
     assert device.url == urlutils.URL('http://localhost/devices/1')
 
 
+@pytest.mark.mvp
 def test_snapshot_schema(app: Devicehub):
     with app.app_context():
         s = file('basic.snapshot')
         app.resources['Snapshot'].schema.load(s)
 
 
+@pytest.mark.mvp
 def test_snapshot_post(user: UserClient):
     """Tests the post snapshot endpoint (validation, etc), data correctness,
     and relationship correctness.
     """
-    # TODO add all action_types to check, how to add correctly??
     snapshot = snapshot_and_check(user, file('basic.snapshot'),
                                   action_types=(
                                       BenchmarkProcessor.t,
@@ -96,6 +98,7 @@ def test_snapshot_post(user: UserClient):
     assert rate['snapshot']['id'] == snapshot['id']
 
 
+@pytest.mark.mvp
 def test_snapshot_component_add_remove(user: UserClient):
     """Tests adding and removing components and some don't generate HID.
     All computers generate HID.
@@ -116,7 +119,8 @@ def test_snapshot_component_add_remove(user: UserClient):
     s1 = file('1-device-with-components.snapshot')
     snapshot1 = snapshot_and_check(user,
                                    s1,
-                                   action_types=(BenchmarkProcessor.t,),
+                                   action_types=(BenchmarkProcessor.t,
+                                                 RateComputer.t),
                                    perform_second_snapshot=False)
     pc1_id = snapshot1['device']['id']
     pc1, _ = user.get(res=m.Device, item=pc1_id)
@@ -124,12 +128,12 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c2s', 'p1c3s')
     # Components contain parent
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    # pc has two actions: Snapshot and the BenchmarkProcessor
-    assert len(pc1['actions']) == 2
+    # pc has three actions: Snapshot, BenchmarkProcessor and RateComputer
+    assert len(pc1['actions']) == 3
     assert pc1['actions'][1]['type'] == Snapshot.t
     # p1c1s has Snapshot
     p1c1s, _ = user.get(res=m.Device, item=pc1['components'][0]['id'])
-    assert tuple(e['type'] for e in p1c1s['actions']) == ('Snapshot',)
+    assert tuple(e['type'] for e in p1c1s['actions']) == ('Snapshot', 'RateComputer')
 
     # We register a new device
     # It has the processor of the first one (p1c2s)
@@ -137,7 +141,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     # Actions PC1: Snapshot, Remove. PC2: Snapshot
     s2 = file('2-second-device-with-components-of-first.snapshot')
     # num_actions = 2 = Remove, Add
-    snapshot2 = snapshot_and_check(user, s2, action_types=('Remove',),
+    snapshot2 = snapshot_and_check(user, s2, action_types=('Remove', 'RateComputer'),
                                    perform_second_snapshot=False)
     pc2_id = snapshot2['device']['id']
     pc1, _ = user.get(res=m.Device, item=pc1_id)
@@ -145,15 +149,15 @@ def test_snapshot_component_add_remove(user: UserClient):
     # PC1
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c3s')
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    assert tuple(e['type'] for e in pc1['actions']) == ('BenchmarkProcessor', 'Snapshot', 'Remove')
+    assert tuple(e['type'] for e in pc1['actions']) == ('BenchmarkProcessor', 'Snapshot', 'RateComputer', 'Remove')
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p1c2s', 'p2c1s')
     assert all(c['parent'] == pc2_id for c in pc2['components'])
-    assert tuple(e['type'] for e in pc2['actions']) == ('Snapshot',)
+    assert tuple(e['type'] for e in pc2['actions']) == ('Snapshot', 'RateComputer')
     # p1c2s has two Snapshots, a Remove and an Add
     p1c2s, _ = user.get(res=m.Device, item=pc2['components'][0]['id'])
     assert tuple(e['type'] for e in p1c2s['actions']) == (
-        'BenchmarkProcessor', 'Snapshot', 'Snapshot', 'Remove'
+        'BenchmarkProcessor', 'Snapshot', 'RateComputer', 'Snapshot', 'Remove', 'RateComputer'
     )
 
     # We register the first device again, but removing motherboard
@@ -161,7 +165,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     # We have created 1 Remove (from PC2's processor back to PC1)
     # PC 0: p1c2s, p1c3s. PC 1: p2c1s
     s3 = file('3-first-device-but-removing-motherboard-and-adding-processor-from-2.snapshot')
-    snapshot_and_check(user, s3, ('Remove',), perform_second_snapshot=False)
+    snapshot_and_check(user, s3, ('Remove', 'RateComputer'), perform_second_snapshot=False)
     pc1, _ = user.get(res=m.Device, item=pc1_id)
     pc2, _ = user.get(res=m.Device, item=pc2_id)
     # PC1
@@ -171,14 +175,17 @@ def test_snapshot_component_add_remove(user: UserClient):
         # id, type, components, snapshot
         ('BenchmarkProcessor', []),  # first BenchmarkProcessor
         ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # first Snapshot1
+        ('RateComputer', ['p1c1s', 'p1c2s', 'p1c3s']),
         ('Remove', ['p1c2s']),  # Remove Processor in Snapshot2
-        ('Snapshot', ['p1c2s', 'p1c3s'])  # This Snapshot3
+        ('Snapshot', ['p1c2s', 'p1c3s']),  # This Snapshot3
+        ('RateComputer', ['p1c2s', 'p1c3s'])
     )
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
     assert all(c['parent'] == pc2_id for c in pc2['components'])
     assert tuple(e['type'] for e in pc2['actions']) == (
         'Snapshot',  # Second Snapshot
+        'RateComputer',
         'Remove'  # the processor we added in 2.
     )
     # p1c2s has Snapshot, Remove and Add
@@ -186,71 +193,48 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert tuple(get_actions_info(p1c2s['actions'])) == (
         ('BenchmarkProcessor', []),  # first BenchmarkProcessor
         ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # First Snapshot to PC1
+        ('RateComputer', ['p1c1s', 'p1c2s', 'p1c3s']),
         ('Snapshot', ['p1c2s', 'p2c1s']),  # Second Snapshot to PC2
         ('Remove', ['p1c2s']),  # ...which caused p1c2s to be removed form PC1
+        ('RateComputer', ['p1c2s', 'p2c1s']),
         ('Snapshot', ['p1c2s', 'p1c3s']),  # The third Snapshot to PC1
-        ('Remove', ['p1c2s'])  # ...which caused p1c2 to be removed from PC2
+        ('Remove', ['p1c2s']),  # ...which caused p1c2 to be removed from PC2
+        ('RateComputer', ['p1c2s', 'p1c3s'])
     )
 
     # We register the first device but without the processor,
     # adding a graphic card and adding a new component
     s4 = file('4-first-device-but-removing-processor.snapshot-and-adding-graphic-card')
-    snapshot_and_check(user, s4, perform_second_snapshot=False)
+    snapshot_and_check(user, s4, ('RateComputer',), perform_second_snapshot=False)
     pc1, _ = user.get(res=m.Device, item=pc1_id)
     pc2, _ = user.get(res=m.Device, item=pc2_id)
     # PC 0: p1c3s, p1c4s. PC1: p2c1s
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c3s', 'p1c4s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    # This last Snapshot only
-    assert get_actions_info(pc1['actions'])[-1] == ('Snapshot', ['p1c3s', 'p1c4s'])
+    # This last Action only
+    assert get_actions_info(pc1['actions'])[-1] == ('RateComputer', ['p1c3s', 'p1c4s'])
     # PC2
     # We haven't changed PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
     assert all(c['parent'] == pc2_id for c in pc2['components'])
 
-
-def _test_snapshot_computer_no_hid(user: UserClient):
-    """Tests inserting a computer that doesn't generate a HID, neither
-    some of its components.
-    """
-    # PC with 2 components. PC doesn't have HID and neither 1st component
-    s = file('basic.snapshot')
-    del s['device']['model']
-    del s['components'][0]['model']
-    user.post(s, res=Snapshot, status=NeedsId)
-    # The system tells us that it could not register the device because
-    # the device (computer) cannot generate a HID.
-    # In such case we need to specify an ``id`` so the system can
-    # recognize the device. The ``id`` can reference to the same
-    # device, it already existed in the DB, or to a placeholder,
-    # if the device is new in the DB.
-    user.post(s, res=m.Device)
-    s['device']['id'] = 1  # Assign the ID of the placeholder
-    user.post(s, res=Snapshot)
-
-
+@pytest.mark.mvp
 def test_snapshot_post_without_hid(user: UserClient):
     """Tests the post snapshot endpoint (validation, etc), data correctness,
     and relationship correctness with HID field generated with type - model - manufacturer - S/N.
     """
-    snapshot = snapshot_and_check(user, file('basic.snapshot.nohid'),
-                                  action_types=(
-                                      BenchmarkProcessor.t,
-                                      VisualTest.t,
-                                      RateComputer.t
-                                  ),
-                                  perform_second_snapshot=False)
-    assert snapshot['software'] == 'Workbench'
-    assert snapshot['version'] == '11.0b9'
-    assert snapshot['uuid'] == '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
-    assert snapshot['elapsed'] == 4
-    assert snapshot['author']['id'] == user.user['id']
-    assert 'actions' not in snapshot['device']
-    assert 'author' not in snapshot['device']
-    response = user.post(snapshot, res=Snapshot)
-    assert response.status == 201
+    snapshot_no_hid = file('basic.snapshot.nohid')
+    response_snapshot, response_status = user.post(res=Snapshot, data=snapshot_no_hid)
+    assert response_snapshot['software'] == 'Workbench'
+    assert response_snapshot['version'] == '11.0b9'
+    assert response_snapshot['uuid'] == '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
+    assert response_snapshot['elapsed'] == 4
+    assert response_snapshot['author']['id'] == user.user['id']
+    assert response_snapshot['severity'] == 'Warning'
+    assert response_status.status_code == 201
 
 
+@pytest.mark.mvp
 def test_snapshot_mismatch_id():
     """Tests uploading a device with an ID from another device."""
     # Note that this won't happen as in this new version
@@ -258,7 +242,8 @@ def test_snapshot_mismatch_id():
     pass
 
 
-def test_snapshot_tag_inner_tag(tag_id: str, user: UserClient, app: Devicehub):
+@pytest.mark.mvp
+def test_snapshot_tag_inner_tag(user: UserClient, tag_id: str, app: Devicehub):
     """Tests a posting Snapshot with a local tag."""
     b = file('basic.snapshot')
     b['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
@@ -270,6 +255,7 @@ def test_snapshot_tag_inner_tag(tag_id: str, user: UserClient, app: Devicehub):
         assert tag.device_id == 1, 'Tag should be linked to the first device'
 
 
+@pytest.mark.mvp
 def test_snapshot_tag_inner_tag_mismatch_between_tags_and_hid(user: UserClient, tag_id: str):
     """Ensures one device cannot 'steal' the tag from another one."""
     pc1 = file('basic.snapshot')
@@ -281,6 +267,7 @@ def test_snapshot_tag_inner_tag_mismatch_between_tags_and_hid(user: UserClient, 
     user.post(pc2, res=Snapshot, status=MismatchBetweenTagsAndHid)
 
 
+@pytest.mark.mvp
 def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
     """Tests a snapshot performed to device 1 with tag A and then to
     device 2 with tag B. Both don't have HID but are different type.
@@ -300,12 +287,14 @@ def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
     user.post(pc2, res=Snapshot, status=MismatchBetweenProperties)
 
 
+@pytest.mark.mvp
 def test_snapshot_upload_twice_uuid_error(user: UserClient):
     pc1 = file('basic.snapshot')
     user.post(pc1, res=Snapshot)
     user.post(pc1, res=Snapshot, status=UniqueViolation)
 
 
+@pytest.mark.mvp
 def test_snapshot_component_containing_components(user: UserClient):
     """There is no reason for components to have components and when
     this happens it is always an error.
@@ -322,6 +311,7 @@ def test_snapshot_component_containing_components(user: UserClient):
     user.post(s, res=Snapshot, status=ValidationError)
 
 
+@pytest.mark.mvp
 def test_erase_privacy_standards_endtime_sort(user: UserClient):
     """Tests a Snapshot with EraseSectors and the resulting privacy
     properties.
@@ -334,7 +324,9 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     snapshot = snapshot_and_check(user, s, action_types=(
         EraseSectors.t,
         BenchmarkDataStorage.t,
-        BenchmarkProcessor.t
+        BenchmarkProcessor.t,
+        RateComputer.t,
+        EreusePrice.t
     ), perform_second_snapshot=False)
     # Perform a new snapshot changing the erasure time, as if
     # it is a new erasure performed after.
@@ -345,7 +337,9 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     snapshot = snapshot_and_check(user, s, action_types=(
         EraseSectors.t,
         BenchmarkDataStorage.t,
-        BenchmarkProcessor.t
+        BenchmarkProcessor.t,
+        RateComputer.t,
+        EreusePrice.t
     ), perform_second_snapshot=False)
 
     # The actual test
@@ -353,7 +347,7 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     storage, _ = user.get(res=m.Device, item=storage['id'])  # Let's get storage actions too
     # order: endTime ascending
     #        erasure1/2 have an user defined time and others actions endTime = created
-    erasure1, erasure2, benchmark_hdd1, _snapshot1, benchmark_hdd2, _snapshot2 = storage['actions']
+    erasure1, erasure2, benchmark_hdd1, _snapshot1, _, _, benchmark_hdd2, _snapshot2 = storage['actions'][:8]
     assert erasure1['type'] == erasure2['type'] == 'EraseSectors'
     assert benchmark_hdd1['type'] == benchmark_hdd2['type'] == 'BenchmarkDataStorage'
     assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
@@ -399,37 +393,6 @@ def test_test_data_storage(user: UserClient):
         if ev.get('reallocatedSectorCount', None) == 15
     )
     assert incidence_test['severity'] == 'Error'
-
-
-@pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
-def test_snapshot_computer_monitor(user: UserClient):
-    """Tests that a snapshot of computer monitor device create correctly."""
-    s = file('computer-monitor.snapshot')
-    snapshot_and_check(user, s, action_types=('RateMonitor',))
-
-
-@pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
-def test_snapshot_mobile_smartphone_imei_manual_rate(user: UserClient):
-    """Tests that a snapshot of smartphone device is creat correctly."""
-    s = file('smartphone.snapshot')
-    snapshot = snapshot_and_check(user, s, action_types=('VisualTest',))
-    mobile, _ = user.get(res=m.Device, item=snapshot['device']['id'])
-    assert mobile['imei'] == 3568680000414120
-
-
-@pytest.mark.xfail(reason='Test not developed')
-def test_snapshot_components_none():
-    """Tests that a snapshot without components does not remove them
-    from the computer.
-    """
-
-
-# TODO JN is really necessary in which cases??
-@pytest.mark.xfail(reason='Test not developed')
-def test_snapshot_components_empty():
-    """Tests that a snapshot whose components are an empty list remove
-    all its components.
-    """
 
 
 def assert_similar_device(device1: dict, device2: dict):
@@ -497,14 +460,7 @@ def snapshot_and_check(user: UserClient,
         return snapshot
 
 
-@pytest.mark.xfail(reason='Not implemented yet, new rate is need it')
-def test_snapshot_keyboard(user: UserClient):
-    s = file('keyboard.snapshot')
-    snapshot = snapshot_and_check(user, s, action_types=('VisualTest',))
-    keyboard = snapshot['device']
-    assert keyboard['layout'] == 'ES'
-
-
+@pytest.mark.mvp
 @pytest.mark.xfail(reason='Debug and rewrite it')
 def test_pc_rating_rate_none(user: UserClient):
     """Tests a Snapshot with EraseSectors."""
@@ -513,14 +469,7 @@ def test_pc_rating_rate_none(user: UserClient):
     snapshot, _ = user.post(res=Snapshot, data=s)
 
 
+@pytest.mark.mvp
 def test_pc_2(user: UserClient):
     s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=s)
-
-
-@pytest.mark.xfail(reason='Add battery component assets')
-def test_snapshot_pc_with_battery_component(user: UserClient):
-    pc1 = file('acer.happy.battery.snapshot')
-    snapshot = snapshot_and_check(user, pc1,
-                                  action_types=(StressTest.t, BenchmarkRamSysbench.t),
-                                  perform_second_snapshot=False)

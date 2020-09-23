@@ -1,11 +1,11 @@
-name: Django CI
+name: Flask CI
 
 on:
   push:
     branches: [master, testing]
   pull_request:
     branches: [master, testing]
- 
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -46,6 +46,9 @@ jobs:
         sudo apt-get update -qy
         sudo apt-get -y install postgresql-client
         python -m pip install --upgrade pip
+        pip install virtualenv
+        virtualenv env
+        source env/bin/activate
         pip install flake8 pytest
         pip install -r requirements.txt
 
@@ -63,5 +66,6 @@ jobs:
 
     - name: Run Tests
       run: |
-        pytest --maxfail=5 tests/
+        source env/bin/activate
+        pytest -m mvp --maxfail=5 tests/
 

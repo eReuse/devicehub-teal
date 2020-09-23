@@ -2,6 +2,7 @@ import csv
 import datetime
 import enum
 import uuid
+from collections import OrderedDict
 from io import StringIO
 from typing import Callable, Iterable, Tuple
 
@@ -10,7 +11,7 @@ import flask
 import flask_weasyprint
 import teal.marshmallow
 from boltons import urlutils
-from flask import make_response
+from flask import make_response, g
 from teal.cache import cache
 from teal.resource import Resource
 
@@ -18,7 +19,11 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.device.views import DeviceView
+from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow
 from ereuse_devicehub.resources.documents.device_row import DeviceRow
+from ereuse_devicehub.resources.lot import LotView
+from ereuse_devicehub.resources.lot.models import Lot
+
 
 
 class Format(enum.Enum):
@@ -106,7 +111,7 @@ class DocumentView(DeviceView):
 class DevicesDocumentView(DeviceView):
     @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
-        query = self.query(args)
+        query = (x for x in self.query(args) if x.owner_id == g.user.id)
         return self.generate_post_csv(query)
 
     def generate_post_csv(self, query):
@@ -122,6 +127,65 @@ class DevicesDocumentView(DeviceView):
             cw.writerow(d.values())
         output = make_response(data.getvalue())
         output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+        output.headers['Content-type'] = 'text/csv'
+        return output
+
+
+class LotsDocumentView(LotView):
+    def find(self, args: dict):
+        query = (x for x in self.query(args) if x.owner_id == g.user.id)
+        return self.generate_lots_csv(query)
+
+    def generate_lots_csv(self, query):
+        """Get lot query and put information in csv format."""
+        data = StringIO()
+        cw = csv.writer(data)
+        first = True
+        for lot in query:
+            l = LotRow(lot)
+            if first:
+                cw.writerow(l.keys())
+                first = False
+            cw.writerow(l.values())
+        output = make_response(data.getvalue())
+        output.headers['Content-Disposition'] = 'attachment; filename=lots-info.csv'
+        output.headers['Content-type'] = 'text/csv'
+        return output
+
+
+class LotRow(OrderedDict):
+    def __init__(self, lot: Lot) -> None:
+        super().__init__()
+        self.lot = lot
+        # General information about lot
+        self['Id'] = lot.id.hex
+        self['Name'] = lot.name
+        self['Registered in'] = format(lot.created, '%c')
+        try:
+            self['Description'] = lot.description
+        except:
+            self['Description'] = ''
+
+
+class StockDocumentView(DeviceView):
+    # @cache(datetime.timedelta(minutes=1))
+    def find(self, args: dict):
+        query = (x for x in self.query(args) if x.owner_id == g.user.id)
+        return self.generate_post_csv(query)
+
+    def generate_post_csv(self, query):
+        """Get device query and put information in csv format."""
+        data = StringIO()
+        cw = csv.writer(data)
+        first = True
+        for device in query:
+            d = StockRow(device)
+            if first:
+                cw.writerow(d.keys())
+                first = False
+            cw.writerow(d.values())
+        output = make_response(data.getvalue())
+        output.headers['Content-Disposition'] = 'attachment; filename=devices-stock.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
 
@@ -148,14 +212,29 @@ class DocumentDef(Resource):
         get = {'GET'}
 
         view = DocumentView.as_view('main', definition=self, auth=app.auth)
+
+        # TODO @cayop This two lines never pass
         if self.AUTH:
             view = app.auth.requires_auth(view)
+
         self.add_url_rule('/erasures/', defaults=d, view_func=view, methods=get)
         self.add_url_rule('/erasures/<{}:{}>'.format(self.ID_CONVERTER.value, self.ID_NAME),
                           view_func=view, methods=get)
+
         devices_view = DevicesDocumentView.as_view('devicesDocumentView',
                                                    definition=self,
                                                    auth=app.auth)
-        if self.AUTH:
-            devices_view = app.auth.requires_auth(devices_view)
+        devices_view = app.auth.requires_auth(devices_view)
+
+        stock_view = StockDocumentView.as_view('stockDocumentView', definition=self)
+        stock_view = app.auth.requires_auth(stock_view)
+
         self.add_url_rule('/devices/', defaults=d, view_func=devices_view, methods=get)
+
+        lots_view = LotsDocumentView.as_view('lotsDocumentView', definition=self)
+        lots_view = app.auth.requires_auth(lots_view)
+        self.add_url_rule('/lots/', defaults=d, view_func=lots_view, methods=get)
+
+        stock_view = StockDocumentView.as_view('stockDocumentView', definition=self, auth=app.auth)
+        stock_view = app.auth.requires_auth(stock_view)
+        self.add_url_rule('/stock/', defaults=d, view_func=stock_view, methods=get)

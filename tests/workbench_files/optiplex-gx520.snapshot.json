@@ -18,7 +18,13 @@
   },
   "components": [
     {
-      "actions": [],
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 11969.98,
+          "elapsed": 0
+        }
+      ],
       "type": "Processor",
       "manufacturer": "Intel Corp.",
       "model": "Intel Pentium 4 CPU 3.00GHz",
@@ -52,7 +58,14 @@
       "speed": 533.0
     },
     {
-      "actions": [],
+      "actions": [
+        {
+          "elapsed": 13,
+          "readSpeed": 106.0,
+          "writeSpeed": 26.6,
+          "type": "BenchmarkDataStorage"
+        }
+      ],
       "type": "HardDrive",
       "manufacturer": "Seagate",
       "model": "ST3808110AS",

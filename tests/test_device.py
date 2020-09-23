@@ -1,5 +1,6 @@
 import datetime
 from uuid import UUID
+from flask import g
 
 import pytest
 from colour import Color
@@ -22,14 +23,15 @@ from ereuse_devicehub.resources.device.schemas import Device as DeviceS
 from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, MismatchBetweenTagsAndHid, \
     Sync
 from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech, Severity, \
-    SnapshotSoftware
+    SnapshotSoftware, TransferState
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
 from tests import conftest
 from tests.conftest import file
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_device_model():
     """Tests that the correctness of the device model and its relationships."""
     pc = d.Desktop(model='p1mo',
@@ -76,6 +78,7 @@ def test_device_problems():
     pass
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_device_schema():
     """Ensures the user does not upload non-writable or extra fields."""
@@ -84,7 +87,8 @@ def test_device_schema():
     device_s.dump(d.Device(id=1))
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_physical_properties():
     c = d.Motherboard(slots=2,
                       usb=3,
@@ -118,14 +122,21 @@ def test_physical_properties():
         'ram_slots': None
     }
     assert pc.physical_properties == {
-        'model': 'foo',
+        'chassis': ComputerChassis.Tower,
+        'deliverynote_address': None,
+        'deposit': 0,
+        'ethereum_address': None,
         'manufacturer': 'bar',
+        'model': 'foo',
+        'owner_id': pc.owner_id,
+        'receiver_id': None,
         'serial_number': 'foo-bar',
-        'chassis': ComputerChassis.Tower
+        'transfer_state': TransferState.Initial
     }
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_component_similar_one():
     snapshot = conftest.file('pc-components.db')
     pc = snapshot['device']
@@ -147,7 +158,8 @@ def test_component_similar_one():
         assert componentA.similar_one(pc, blacklist={componentA.id})
 
 
-@pytest.mark.usefixtures('auth_app_context')
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_add_remove():
     # Original state:
     # pc has c1 and c2
@@ -178,7 +190,8 @@ def test_add_remove():
     assert actions[0].components == OrderedSet([c3])
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_sync_run_components_empty():
     """Syncs a device that has an empty components list. The system should
     remove all the components from the device.
@@ -195,7 +208,8 @@ def test_sync_run_components_empty():
     assert not pc.components
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_sync_run_components_none():
     """Syncs a device that has a None components. The system should
     keep all the components from the device.
@@ -212,7 +226,8 @@ def test_sync_run_components_none():
     assert db_pc.components == pc.components
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_sync_execute_register_desktop_new_desktop_no_tag():
     """Syncs a new d.Desktop with HID and without a tag, creating it."""
     # Case 1: device does not exist on DB
@@ -221,7 +236,8 @@ def test_sync_execute_register_desktop_new_desktop_no_tag():
     assert pc.physical_properties == db_pc.physical_properties
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_sync_execute_register_desktop_existing_no_tag():
     """Syncs an existing d.Desktop with HID and without a tag."""
     pc = d.Desktop(**conftest.file('pc-components.db')['device'])
@@ -232,23 +248,29 @@ def test_sync_execute_register_desktop_existing_no_tag():
         **conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
     # 1: device exists on DB
     db_pc = Sync().execute_register(pc)
+    pc.deposit = 0
+    pc.owner_id = db_pc.owner_id
+    pc.transfer_state = TransferState.Initial
     assert pc.physical_properties == db_pc.physical_properties
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_sync_execute_register_desktop_no_hid_no_tag():
+def test_sync_execute_register_desktop_no_hid_no_tag(user: UserClient):
     """Syncs a d.Desktop without HID and no tag.
-
-    This should fail as we don't have a way to identify it.
+    This should not fail as we don't have a way to identify it.
     """
-    pc = d.Desktop(**conftest.file('pc-components.db')['device'])
+    device = conftest.file('pc-components.db')['device']
+    device['owner_id'] = user.user['id']
+    pc = d.Desktop(**device)
     # 1: device has no HID
     pc.hid = pc.model = None
-    with pytest.raises(NeedsId):
-        Sync().execute_register(pc)
+    returned_pc = Sync().execute_register(pc)
+    assert returned_pc == pc
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_sync_execute_register_desktop_tag_not_linked():
     """Syncs a new d.Desktop with HID and a non-linked tag.
 
@@ -266,7 +288,8 @@ def test_sync_execute_register_desktop_tag_not_linked():
     assert d.Desktop.query.one() == pc, 'd.Desktop had to be set to db'
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_sync_execute_register_no_hid_tag_not_linked(tag_id: str):
     """Validates registering a d.Desktop without HID and a non-linked tag.
 
@@ -276,6 +299,7 @@ def test_sync_execute_register_no_hid_tag_not_linked(tag_id: str):
     """
     tag = Tag(id=tag_id)
     pc = d.Desktop(**conftest.file('pc-components.db')['device'], tags=OrderedSet([tag]))
+    db.session.add(g.user)
     returned_pc = Sync().execute_register(pc)
     db.session.commit()
     assert returned_pc == pc
@@ -288,6 +312,7 @@ def test_sync_execute_register_no_hid_tag_not_linked(tag_id: str):
     assert d.Desktop.query.one() == pc, 'd.Desktop had to be set to db'
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_sync_execute_register_tag_does_not_exist():
     """Ensures not being able to register if the tag does not exist,
@@ -300,7 +325,8 @@ def test_sync_execute_register_tag_does_not_exist():
         Sync().execute_register(pc)
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_sync_execute_register_tag_linked_same_device():
     """If the tag is linked to the device, regardless if it has HID,
     the system should match the device through the tag.
@@ -320,7 +346,8 @@ def test_sync_execute_register_tag_linked_same_device():
     assert next(iter(db_pc.tags)).id == 'foo'
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_sync_execute_register_tag_linked_other_device_mismatch_between_tags():
     """Checks that sync raises an error if finds that at least two passed-in
     tags are not linked to the same device.
@@ -341,7 +368,8 @@ def test_sync_execute_register_tag_linked_other_device_mismatch_between_tags():
         Sync().execute_register(pc1)
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_sync_execute_register_mismatch_between_tags_and_hid():
     """Checks that sync raises an error if it finds that the HID does
     not point at the same device as the tag does.
@@ -363,13 +391,15 @@ def test_sync_execute_register_mismatch_between_tags_and_hid():
         Sync().execute_register(pc1)
 
 
+@pytest.mark.mvp
 def test_get_device(app: Devicehub, user: UserClient):
     """Checks GETting a d.Desktop with its components."""
     with app.app_context():
         pc = d.Desktop(model='p1mo',
                        manufacturer='p1ma',
                        serial_number='p1s',
-                       chassis=ComputerChassis.Tower)
+                       chassis=ComputerChassis.Tower,
+                       owner_id=user.user['id'])
         pc.components = OrderedSet([
             d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
             d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
@@ -398,13 +428,15 @@ def test_get_device(app: Devicehub, user: UserClient):
     assert pc['type'] == d.Desktop.t
 
 
+@pytest.mark.mvp
 def test_get_devices(app: Devicehub, user: UserClient):
     """Checks GETting multiple devices."""
     with app.app_context():
         pc = d.Desktop(model='p1mo',
                        manufacturer='p1ma',
                        serial_number='p1s',
-                       chassis=ComputerChassis.Tower)
+                       chassis=ComputerChassis.Tower,
+                       owner_id=user.user['id'])
         pc.components = OrderedSet([
             d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
             d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
@@ -412,11 +444,13 @@ def test_get_devices(app: Devicehub, user: UserClient):
         pc1 = d.Desktop(model='p2mo',
                         manufacturer='p2ma',
                         serial_number='p2s',
-                        chassis=ComputerChassis.Tower)
+                        chassis=ComputerChassis.Tower,
+                        owner_id=user.user['id'])
         pc2 = d.Laptop(model='p3mo',
                        manufacturer='p3ma',
                        serial_number='p3s',
-                       chassis=ComputerChassis.Netbook)
+                       chassis=ComputerChassis.Netbook,
+                       owner_id=user.user['id'])
         db.session.add_all((pc, pc1, pc2))
         db.session.commit()
     devices, _ = user.get(res=d.Device)
@@ -426,7 +460,8 @@ def test_get_devices(app: Devicehub, user: UserClient):
     )
 
 
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_computer_monitor():
     m = d.ComputerMonitor(technology=DisplayTech.LCD,
                           manufacturer='foo',
@@ -439,6 +474,7 @@ def test_computer_monitor():
     db.session.commit()
 
 
+@pytest.mark.mvp
 def test_manufacturer(user: UserClient):
     m, r = user.get(res='Manufacturer', query=[('search', 'asus')])
     assert m == {'items': [{'name': 'Asus', 'url': 'https://en.wikipedia.org/wiki/Asus'}]}
@@ -446,6 +482,7 @@ def test_manufacturer(user: UserClient):
     assert r.expires > datetime.datetime.now()
 
 
+@pytest.mark.mvp
 @pytest.mark.xfail(reason='Develop functionality')
 def test_manufacturer_enforced():
     """Ensures that non-computer devices can submit only
@@ -453,6 +490,7 @@ def test_manufacturer_enforced():
     """
 
 
+@pytest.mark.mvp
 def test_device_properties_format(app: Devicehub, user: UserClient):
     user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
     with app.app_context():
@@ -475,6 +513,7 @@ def test_device_properties_format(app: Devicehub, user: UserClient):
         assert format(hdd, 's') == 'seagate 5SV4TQA6 – 152 GB'
 
 
+@pytest.mark.mvp
 def test_device_public(user: UserClient, client: Client):
     s, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
     html, _ = client.get(res=d.Device, item=s['device']['id'], accept=ANY)
@@ -482,6 +521,7 @@ def test_device_public(user: UserClient, client: Client):
     assert '00:24:8C:7F:CF:2D – 100 Mbps' in html
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_computer_accessory_model():
     sai = d.SAI()
@@ -493,6 +533,7 @@ def test_computer_accessory_model():
     db.session.commit()
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_networking_model():
     router = d.Router(speed=1000, wireless=True)

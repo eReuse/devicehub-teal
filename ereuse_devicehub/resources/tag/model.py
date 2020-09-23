@@ -2,6 +2,7 @@ from contextlib import suppress
 from typing import Set
 
 from boltons import urlutils
+from flask import g
 from sqlalchemy import BigInteger, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship, validates
@@ -13,6 +14,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
+from ereuse_devicehub.resources.user.models import User
 
 
 class Tags(Set['Tag']):
@@ -26,6 +28,11 @@ class Tags(Set['Tag']):
 class Tag(Thing):
     id = Column(db.CIText(), primary_key=True)
     id.comment = """The ID of the tag."""
+    owner_id = Column(UUID(as_uuid=True),
+                      ForeignKey(User.id),
+                      nullable=False,
+                      default=lambda: g.user.id)
+    owner = relationship(User, primaryjoin=owner_id == User.id)
     org_id = Column(UUID(as_uuid=True),
                     ForeignKey(Organization.id),
                     primary_key=True,
@@ -50,7 +57,7 @@ class Tag(Thing):
                           primaryjoin=Device.id == device_id)
     """The device linked to this tag."""
     secondary = Column(db.CIText(), index=True)
-    secondary.comment = """A secondary identifier for this tag. 
+    secondary.comment = """A secondary identifier for this tag.
     It has the same constraints as the main one. Only needed in special cases.
     """
 

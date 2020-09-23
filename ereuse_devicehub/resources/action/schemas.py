@@ -454,8 +454,6 @@ class MigrateTo(Migrate):
 class MigrateFrom(Migrate):
     __doc__ = m.MigrateFrom.__doc__
 
-    
+
 class Transferred(ActionWithMultipleDevices):
     __doc__ = m.Transferred.__doc__
-
-

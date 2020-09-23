@@ -5,7 +5,7 @@ import requests_mock
 from boltons.urlutils import URL
 from ereuse_utils.session import DevicehubClient
 from pytest import raises
-from teal.db import MultipleResourcesFound, ResourceNotFound, UniqueViolation
+from teal.db import MultipleResourcesFound, ResourceNotFound, UniqueViolation, DBError
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.client import UserClient
@@ -22,11 +22,12 @@ from tests import conftest
 from tests.conftest import file
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_create_tag():
+def test_create_tag(user: UserClient):
     """Creates a tag specifying a custom organization."""
     org = Organization(name='bar', tax_id='bartax')
-    tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'))
+    tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id'])
     db.session.add(tag)
     db.session.commit()
     tag = Tag.query.one()
@@ -34,10 +35,11 @@ def test_create_tag():
     assert tag.provider == URL('http://foo.bar')
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_create_tag_default_org():
+def test_create_tag_default_org(user: UserClient):
     """Creates a tag using the default organization."""
-    tag = Tag(id='foo-1')
+    tag = Tag(id='foo-1', owner_id=user.user['id'])
     assert not tag.org_id, 'org-id is set as default value so it should only load on flush'
     # We don't want the organization to load, or it would make this
     # object, from transient to new (added to session)
@@ -47,6 +49,7 @@ def test_create_tag_default_org():
     assert tag.org.name == 'FooOrg'  # as defined in the settings
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_tag_no_slash():
     """Checks that no tags can be created that contain a slash."""
@@ -57,21 +60,25 @@ def test_create_tag_no_slash():
         Tag('bar', secondary='/')
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_create_two_same_tags():
+def test_create_two_same_tags(user: UserClient):
     """Ensures there cannot be two tags with the same ID and organization."""
-    db.session.add(Tag(id='foo-bar'))
-    db.session.add(Tag(id='foo-bar'))
-    with raises(UniqueViolation):
+
+    db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
+    db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
+
+    with raises(DBError):
         db.session.commit()
     db.session.rollback()
     # And it works if tags are in different organizations
-    db.session.add(Tag(id='foo-bar'))
+    db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
     org2 = Organization(name='org 2', tax_id='tax id org 2')
-    db.session.add(Tag(id='foo-bar', org=org2))
+    db.session.add(Tag(id='foo-bar', org=org2, owner_id=user.user['id']))
     db.session.commit()
 
 
+@pytest.mark.mvp
 def test_tag_post(app: Devicehub, user: UserClient):
     """Checks the POST method of creating a tag."""
     user.post({'id': 'foo'}, res=Tag)
@@ -79,6 +86,7 @@ def test_tag_post(app: Devicehub, user: UserClient):
         assert Tag.query.filter_by(id='foo').one()
 
 
+@pytest.mark.mvp
 def test_tag_post_etag(user: UserClient):
     """Ensures users cannot create eReuse.org tags through POST;
     only terminal.
@@ -93,12 +101,13 @@ def test_tag_post_etag(user: UserClient):
     user.post({'id': 'FOO-123456'}, res=Tag)
 
 
+@pytest.mark.mvp
 def test_tag_get_device_from_tag_endpoint(app: Devicehub, user: UserClient):
     """Checks getting a linked device from a tag endpoint"""
     with app.app_context():
         # Create a pc with a tag
-        tag = Tag(id='foo-bar')
-        pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower)
+        tag = Tag(id='foo-bar', owner_id=user.user['id'])
+        pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
         pc.tags.add(tag)
         db.session.add(pc)
         db.session.commit()
@@ -106,47 +115,55 @@ def test_tag_get_device_from_tag_endpoint(app: Devicehub, user: UserClient):
     assert computer['serialNumber'] == 'sn1'
 
 
+@pytest.mark.mvp
 def test_tag_get_device_from_tag_endpoint_no_linked(app: Devicehub, user: UserClient):
     """As above, but when the tag is not linked."""
     with app.app_context():
-        db.session.add(Tag(id='foo-bar'))
+        db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
         db.session.commit()
     user.get(res=Tag, item='foo-bar/device', status=TagNotLinked)
 
 
+@pytest.mark.mvp
 def test_tag_get_device_from_tag_endpoint_no_tag(user: UserClient):
     """As above, but when there is no tag with such ID."""
     user.get(res=Tag, item='foo-bar/device', status=ResourceNotFound)
 
 
+@pytest.mark.mvp
 def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: UserClient):
     """As above, but when there are two tags with the same ID, the
     system should not return any of both (to be deterministic) so
     it should raise an exception.
     """
     with app.app_context():
-        db.session.add(Tag(id='foo-bar'))
+        db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
         org2 = Organization(name='org 2', tax_id='tax id org 2')
-        db.session.add(Tag(id='foo-bar', org=org2))
+        db.session.add(Tag(id='foo-bar', org=org2, owner_id=user.user['id']))
         db.session.commit()
     user.get(res=Tag, item='foo-bar/device', status=MultipleResourcesFound)
 
 
+@pytest.mark.mvp
 def test_tag_create_tags_cli(app: Devicehub, user: UserClient):
     """Checks creating tags with the CLI endpoint."""
+    owner_id = user.user['id']
     runner = app.test_cli_runner()
-    runner.invoke('tag', 'add', 'id1')
+    runner.invoke('tag', 'add', 'id1', '-u', owner_id)
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
         assert tag.id == 'id1'
         assert tag.org.id == Organization.get_default_org_id()
 
 
+@pytest.mark.mvp
 def test_tag_create_etags_cli(app: Devicehub, user: UserClient):
     """Creates an eTag through the CLI."""
     # todo what happens to organization?
+    owner_id = user.user['id']
     runner = app.test_cli_runner()
-    runner.invoke('tag', 'add', '-p', 'https://t.ereuse.org', '-s', 'foo', 'DT-BARBAR')
+    args = ('tag', 'add', '-p', 'https://t.ereuse.org', '-s', 'foo', 'DT-BARBAR', '-u', owner_id)
+    runner.invoke(*args)
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
         assert tag.id == 'dt-barbar'
@@ -154,14 +171,15 @@ def test_tag_create_etags_cli(app: Devicehub, user: UserClient):
         assert tag.provider == URL('https://t.ereuse.org')
 
 
+@pytest.mark.mvp
 def test_tag_manual_link_search(app: Devicehub, user: UserClient):
     """Tests linking manually a tag through PUT /tags/<id>/device/<id>
 
     Checks search has the term.
     """
     with app.app_context():
-        db.session.add(Tag('foo-bar', secondary='foo-sec'))
-        desktop = Desktop(serial_number='foo', chassis=ComputerChassis.AllInOne)
+        db.session.add(Tag('foo-bar', secondary='foo-sec', owner_id=user.user['id']))
+        desktop = Desktop(serial_number='foo', chassis=ComputerChassis.AllInOne, owner_id=user.user['id'])
         db.session.add(desktop)
         db.session.commit()
         desktop_id = desktop.id
@@ -189,12 +207,13 @@ def test_tag_manual_link_search(app: Devicehub, user: UserClient):
     assert i['items']
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_tag_secondary_workbench_link_find(user: UserClient):
     """Creates and consumes tags with a secondary id, linking them
     through Workbench to a device
     and getting them through search."""
-    t = Tag('foo', secondary='bar')
+    t = Tag('foo', secondary='bar', owner_id=user.user['id'])
     db.session.add(t)
     db.session.flush()
     assert Tag.from_an_id('bar').one() == t
@@ -215,11 +234,13 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
     assert len(r['items']) == 1
 
 
+@pytest.mark.mvp
 def test_tag_create_tags_cli_csv(app: Devicehub, user: UserClient):
     """Checks creating tags with the CLI endpoint using a CSV."""
+    owner_id = user.user['id']
     csv = pathlib.Path(__file__).parent / 'files' / 'tags-cli.csv'
     runner = app.test_cli_runner()
-    runner.invoke('tag', 'add-csv', str(csv))
+    runner.invoke('tag', 'add-csv', str(csv), '-u', owner_id)
     with app.app_context():
         t1 = Tag.from_an_id('id1').one()
         t2 = Tag.from_an_id('sec1').one()
@@ -232,7 +253,8 @@ def test_tag_multiple_secondary_org(user: UserClient):
     user.post({'id': 'foo1', 'secondary': 'bar'}, res=Tag, status=UniqueViolation)
 
 
-def test_crate_num_regular_tags(user: UserClient, requests_mock: requests_mock.mocker.Mocker):
+@pytest.mark.mvp
+def test_create_num_regular_tags(user: UserClient, requests_mock: requests_mock.mocker.Mocker):
     """Create regular tags. This is done using a tag provider that
     returns IDs. These tags are printable.
     """
@@ -252,6 +274,7 @@ def test_crate_num_regular_tags(user: UserClient, requests_mock: requests_mock.m
     assert data['items'][1]['printable']
 
 
+@pytest.mark.mvp
 def test_get_tags_endpoint(user: UserClient, app: Devicehub,
                            requests_mock: requests_mock.mocker.Mocker):
     """Performs GET /tags after creating 3 tags, 2 printable and one
@@ -260,7 +283,7 @@ def test_get_tags_endpoint(user: UserClient, app: Devicehub,
     # Prepare test
     with app.app_context():
         org = Organization(name='bar', tax_id='bartax')
-        tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'))
+        tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id'])
         db.session.add(tag)
         db.session.commit()
         assert not tag.printable

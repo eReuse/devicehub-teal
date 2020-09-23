@@ -16,6 +16,7 @@ from ereuse_devicehub.resources.user.models import User
 from tests.conftest import app_context, create_user
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(app_context.__name__)
 def test_create_user_method_with_agent(app: Devicehub):
     """Tests creating an user through the main method.
@@ -41,6 +42,7 @@ def test_create_user_method_with_agent(app: Devicehub):
     assert individual.email == user.email
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(app_context.__name__)
 def test_create_user_email_insensitive():
     """Ensures email is case insensitive."""
@@ -53,6 +55,7 @@ def test_create_user_email_insensitive():
     assert u1.email == 'foo@foo.com'
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(app_context.__name__)
 def test_hash_password():
     """Tests correct password hashing and equaling."""
@@ -61,6 +64,7 @@ def test_hash_password():
     assert user.password == 'foo'
 
 
+@pytest.mark.mvp
 def test_login_success(client: Client, app: Devicehub):
     """Tests successfully performing login.
     This checks that:
@@ -83,6 +87,7 @@ def test_login_success(client: Client, app: Devicehub):
     assert user['inventories'][0]['id'] == 'test'
 
 
+@pytest.mark.mvp
 def test_login_failure(client: Client, app: Devicehub):
     """Tests performing wrong login."""
     # Wrong password

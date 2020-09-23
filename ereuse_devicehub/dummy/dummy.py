@@ -77,10 +77,12 @@ class Dummy:
                 runner.invoke('tag', 'add', id,
                               '-p', 'https://t.devicetag.io',
                               '-s', sec,
+                              '-u', user1.user["id"],
                               '-o', org_id)
             # create tag for pc-laudem
             runner.invoke('tag', 'add', 'tagA',
                           '-p', 'https://t.devicetag.io',
+                          '-u', user1.user["id"],
                           '-s', 'tagA-secondary')
         files = tuple(Path(__file__).parent.joinpath('files').iterdir())
         print('done.')
@@ -99,7 +101,7 @@ class Dummy:
                     # Make one hdd ErasePhysical
                     hdd = next(hdd for hdd in s['components'] if hdd['type'] == 'HardDrive')
                     user1.post({'type': 'ErasePhysical', 'method': 'Shred', 'device': hdd['id']},
-                              res=m.Action)
+                               res=m.Action)
         assert sample_pc
         print('PC sample is', sample_pc)
         # Link tags and eTags
@@ -130,25 +132,25 @@ class Dummy:
         lot_user4, _ = user4.post({'name': 'LoteJordi'}, res=Lot)
 
         lot, _ = user1.post({},
-                           res=Lot,
-                           item='{}/devices'.format(lot_user['id']),
-                           query=[('id', pc) for pc in itertools.islice(pcs, 1, 4)])
+                            res=Lot,
+                            item='{}/devices'.format(lot_user['id']),
+                            query=[('id', pc) for pc in itertools.islice(pcs, 1, 4)])
         assert len(lot['devices'])
 
         lot2, _ = user2.post({},
-                    res=Lot,
-                    item='{}/devices'.format(lot_user2['id']),
-                    query=[('id', pc) for pc in itertools.islice(pcs, 4, 6)])
+                             res=Lot,
+                             item='{}/devices'.format(lot_user2['id']),
+                             query=[('id', pc) for pc in itertools.islice(pcs, 4, 6)])
 
         lot3, _ = user3.post({},
-                    res=Lot,
-                    item='{}/devices'.format(lot_user3['id']),
-                    query=[('id', pc) for pc in itertools.islice(pcs, 11, 14)])
-        
+                             res=Lot,
+                             item='{}/devices'.format(lot_user3['id']),
+                             query=[('id', pc) for pc in itertools.islice(pcs, 11, 14)])
+
         lot4, _ = user4.post({},
-            res=Lot,
-            item='{}/devices'.format(lot_user4['id']),
-            query=[('id', pc) for pc in itertools.islice(pcs, 14, 16)])
+                             res=Lot,
+                             item='{}/devices'.format(lot_user4['id']),
+                             query=[('id', pc) for pc in itertools.islice(pcs, 14, 16)])
 
         # Keep this at the bottom
         inventory, _ = user1.get(res=Device)
@@ -166,7 +168,7 @@ class Dummy:
         user1.post({'type': m.Prepare.t, 'devices': [sample_pc]}, res=m.Action)
         user1.post({'type': m.Ready.t, 'devices': [sample_pc]}, res=m.Action)
         user1.post({'type': m.Price.t, 'device': sample_pc, 'currency': 'EUR', 'price': 85},
-                    res=m.Action)
+                   res=m.Action)
 
         # todo test reserve
         user1.post(  # Sell device

@@ -7,6 +7,7 @@ from ereuse_devicehub.resources.agent.schemas import Organization
 from ereuse_devicehub.resources.device.schemas import Device
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.tag import model as m
+from ereuse_devicehub.resources.user.schemas import User
 
 
 def without_slash(x: str) -> bool:
@@ -22,6 +23,7 @@ class Tag(Thing):
     provider = URL(description=m.Tag.provider.comment,
                    validator=without_slash)
     device = NestedOn(Device, dump_only=True)
+    owner = NestedOn(User, only_query='id')
     org = NestedOn(Organization, collection_class=OrderedSet, only_query='id')
     secondary = SanitizedStr(lower=True, description=m.Tag.secondary.comment)
     printable = Boolean(dump_only=True, decsription=m.Tag.printable.__doc__)
