@@ -102,6 +102,7 @@ class AppDeployment:
         self.db_user = 'dhub'
         self.db_pass = 'ereuse'
         self.db = 'devicehub'
+        self.db_host = 'localhost'
         self.def_cmds()
 
     def def_cmds(self):
@@ -215,14 +216,18 @@ class AppDeployment:
         """
 
     def setup_wsgi_app(self):
-        self.c.sudo('apt-get install -qy libapache2-mod-wsgi-py3')
+        self.c.run('apt-get install -qy libapache2-mod-wsgi-py3')
 
         wsgi_file = os.path.join(self.git_clone_path, 'examples/wsgi.py')
         wsgi_path = os.path.join(self.base_path, 'source')
-        """
-        open wdgi
-        wsgi.format(user, password, host, db)
-        """
+
+        f = open('examples/wsgi_template.py')
+        wsgi = f.read().format(self.db_user, self.db_pass, self.db_host, self.db)
+        f.close()
+        f = open('examples/wsgi.py', 'w')
+        f.write(wsgi)
+        f.close()
+
         self.c.run('mkdir -p {}'.format(wsgi_path))
         self.c.run('cp {file} {path}'.format(file=wsgi_file, path=wsgi_path))
 
