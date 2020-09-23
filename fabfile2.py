@@ -99,10 +99,19 @@ class AppDeployment:
         self.git_clone_path = os.path.join(self.base_path, self.GIT_CLONE_DIR)
         self.venv_path = os.path.join(self.base_path, self.VENV_DIR)
         self.setup_tag_provider()
-        self.cmd = 'su - ereuse -c \'{}\''.format
         self.db_user = 'dhub'
         self.db_pass = 'ereuse'
         self.db = 'devicehub'
+        self.def_cmds()
+
+    def def_cmds(self):
+        # General command for ereuse
+        self.cmd = 'su - ereuse -c \'{}\''.format
+
+        # Command for ereuse into of enviroment
+        path_env = 'su - ereuse -c \'cd {}; source ../venv/bin/activate;'.format(self.git_clone_path)
+        path_env += '{}\''
+        self.cmd_env = path_env.format
 
     def connection(self):
         connect = Connection(self.host)
@@ -110,16 +119,16 @@ class AppDeployment:
         connect.port = self.port
         return connect
 
-    def install_apt_dependencies(self):
-        self.c.run('apt-get update -qy')
-        self.c.run('apt-get install -qy {}'.format(' '.join(PACKAGES)))
-        self.c.run('su - postgres -c \'psql postgres -c "SELECT version()" | grep PostgreSQL\'')
-
     def bootstrap(self):
         self.install_apt_dependencies()
         self.clone_devicehub_repository()
         self.install_package_requirements()
         self.initialize_database()
+
+    def install_apt_dependencies(self):
+        self.c.run('apt-get update -qy')
+        self.c.run('apt-get install -qy {}'.format(' '.join(PACKAGES)))
+        self.c.run('su - postgres -c \'psql postgres -c "SELECT version()" | grep PostgreSQL\'')
 
     def clone_devicehub_repository(self):
         params = {
@@ -137,32 +146,33 @@ class AppDeployment:
         self.c.run(self.cmd('python3 -m virtualenv -p python3.7 {}'.format(self.venv_path)))
         self.upgrade_package_requirements()
 
-        command = '{}/bin/pip install -e {}'.format(self.venv_path, self.git_clone_path)
-        self.c.run(self.cmd(command))
-        self.c.run(self.cmd('{}/bin/pip install alembic'.format(self.venv_path)))
+        command = 'pip install -e {}'.format(self.git_clone_path)
+        self.c.run(self.cmd_env(command))
+        self.c.run(self.cmd_env('pip install alembic'))
 
     def upgrade_package_requirements(self):
-        command = self.cmd('{}/bin/pip install -r {}/requirements.txt'.format(
-            self.venv_path, self.git_clone_path))
+        command = self.cmd_env('pip install -r {}/requirements.txt'.format(self.git_clone_path))
         self.c.run(command)
-        self.c.run(self.cmd('{}/bin/pip install gunicorn==20.0.4'.format(self.venv_path)))
+        self.c.run(self.cmd_env('pip install gunicorn==20.0.4'))
 
     def initialize_database(self):
         # create database, user and extensions
         command = 'sh {}/examples/init_db.sh {} {} {}'.format(self.git_clone_path, self.db,
-            self.user, self.password)
+            self.db_user, self.db_pass)
         self.c.run(command)
 
         # create schemes in database
-        command = 'export dhi=dbtest; {}/bin/dh inv add --common --name dbtest'.format(
-            self.venv_path)
-        self.c.run(self.cmd(command))
+        command = 'export dhi=dbtest; dh inv add --common --name dbtest'
+        self.c.run(self.cmd_env(command))
+        self.create_alembic()
 
-        # create the first stamp for alembic
     def create_alembic(self):
-        import pdb; pdb.set_trace()
-        command = '{}/bin/alembic stamp head'.format(self.venv_path)
-        self.c.run(self.cmd(command))
+        # create the first stamp for alembic
+        mkdir = 'mkdir -p {}/ereuse_devicehub/migrations'.format(self.git_clone_path)
+        self.c.run(self.cmd(mkdir))
+        command = 'cd ereuse_devicehub/; ../../venv/bin/alembic -c alembic.ini stamp head'
+        # command = t.format(self.git_clone_path)
+        self.c.run(self.cmd_env(command))
 
 
         # TODO run the following commands when PR #30 is merged
