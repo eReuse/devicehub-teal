@@ -137,6 +137,10 @@ class AppDeployment:
         self.c.run(self.cmd('python3 -m virtualenv -p python3.7 {}'.format(self.venv_path)))
         self.upgrade_package_requirements()
 
+        command = '{}/bin/pip install -e {}'.format(self.venv_path, self.git_clone_path)
+        self.c.run(self.cmd(command))
+        self.c.run(self.cmd('{}/bin/pip install alembic'.format(self.venv_path)))
+
     def upgrade_package_requirements(self):
         command = self.cmd('{}/bin/pip install -r {}/requirements.txt'.format(
             self.venv_path, self.git_clone_path))
@@ -144,24 +148,22 @@ class AppDeployment:
         self.c.run(self.cmd('{}/bin/pip install gunicorn==20.0.4'.format(self.venv_path)))
 
     def initialize_database(self):
-        db = self.db
-        user = self.db_user
-        password = self.db_pass
-
-        command = '{}/bin/pip install -e {}'.format(self.venv_path, self.git_clone_path)
-        self.c.run(self.cmd(command))
-
-        self.c.run(self.cmd('{}/bin/pip install alembic'.format(self.venv_path)))
-
-        command = 'sh {}/examples/init_db.sh {} {} {}'.format(self.git_clone_path, db, user,
-            password)
+        # create database, user and extensions
+        command = 'sh {}/examples/init_db.sh {} {} {}'.format(self.git_clone_path, self.db,
+            self.user, self.password)
         self.c.run(command)
 
-    def dh_inv_add(self):
-        # import pdb; pdb.set_trace()
+        # create schemes in database
         command = 'export dhi=dbtest; {}/bin/dh inv add --common --name dbtest'.format(
             self.venv_path)
         self.c.run(self.cmd(command))
+
+        # create the first stamp for alembic
+    def create_alembic(self):
+        import pdb; pdb.set_trace()
+        command = '{}/bin/alembic stamp head'.format(self.venv_path)
+        self.c.run(self.cmd(command))
+
 
         # TODO run the following commands when PR #30 is merged
         """
@@ -207,6 +209,10 @@ class AppDeployment:
 
         wsgi_file = os.path.join(self.git_clone_path, 'examples/wsgi.py')
         wsgi_path = os.path.join(self.base_path, 'source')
+        """
+        open wdgi
+        wsgi.format(user, password, host, db)
+        """
         self.c.run('mkdir -p {}'.format(wsgi_path))
         self.c.run('cp {file} {path}'.format(file=wsgi_file, path=wsgi_path))
 
