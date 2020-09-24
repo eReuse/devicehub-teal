@@ -259,12 +259,13 @@ class AppDeployment:
 
     def setup_gunicorn(self):
         """Configure gunicorn & restart service"""
-        file_conf = os.path.join(self.git_clone_path, 'examples/gunicorn/gunicorn.service')
-        self.c.sudo('cp {} /etc/systemd/system/'.format(file_conf))
-        self.c.sudo('mkdir -p /var/log/gunicorn')
-        self.c.sudo('chown ereuse.ereuse /var/log/gunicorn')
-        #self.c.sudo('systemctl daemon-reload')
-        #self.c.sudo('systemctl restart gunicorn.service')
+        self.c.run('mkdir -p /var/log/gunicorn')
+        self.c.run('chown {user}.{user} -R /var/log/gunicorn'.format(user=self.user))
+        self.gunicorn_conf_services()
+        self.gunicorn_conf_socket()
+
+        self.c.run('systemctl daemon-reload')
+        self.c.run('systemctl start gunicorn_{}.service'.format(self.name_service))
 
     def gunicorn_conf_services(self):
         """ Configure gunicorn service file """
@@ -281,8 +282,27 @@ class AppDeployment:
         f.write(gunicorn_service)
         f.close()
 
-        self.c.run('mkdir -p /var/log/{}'.format(self.user))
-        self.c.run('chown {user}.{user} /var/log/{user}'.format(user=self.user))
+        command = 'scp -P {port} {file} {user}@{host}:{path}'.format(
+            port=self.c.port,
+            file=base_file,
+            user=self.c.user,
+            host=self.c.host,
+            path='/etc/systemd/system/'
+        )
+        os.system(command)
+
+    def gunicorn_conf_socket(self):
+        """ Configure gunicorn socket file """
+        base_file = 'examples/gunicorn/gunicorn_{}.socket'.format(self.name_service)
+        f = open('examples/gunicorn/gunicorn_template.socket')
+        gunicorn_service = f.read().format(
+            user=self.user,
+            domain=self.domain
+        )
+        f.close()
+        f = open(base_file, 'w')
+        f.write(gunicorn_service)
+        f.close()
 
         command = 'scp -P {port} {file} {user}@{host}:{path}'.format(
             port=self.c.port,
