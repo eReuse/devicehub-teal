@@ -1,0 +1,14 @@
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn_{name_service}.socket
+After=network.target
+
+[Service]
+Type=notify
+User={user}
+Group={user}
+WorkingDirectory={base_path}
+ExecStart={base_path}/venv/bin/gunicorn --log-file /var/log/gunicorn/{domain}.log --workers 4 --bind unix:/run/gunicorn/{domain}.sock source.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

@@ -75,9 +75,6 @@ def upgrade(c, domain='api.ereuse.org', branch='master'):
     deployment.restart_services()
 
 
-
-
-
 class AppDeployment:
     """
     app dir schema:
@@ -99,18 +96,22 @@ class AppDeployment:
         self.git_clone_path = os.path.join(self.base_path, self.GIT_CLONE_DIR)
         self.venv_path = os.path.join(self.base_path, self.VENV_DIR)
         self.setup_tag_provider()
+        self.user = 'ereuse'
         self.db_user = 'dhub'
         self.db_pass = 'ereuse'
         self.db = 'devicehub'
         self.db_host = 'localhost'
+        self.domain = domain
+        self.name_service = domain.replace('.', '_')
         self.def_cmds()
 
     def def_cmds(self):
         # General command for ereuse
-        self.cmd = 'su - ereuse -c \'{}\''.format
+        base = 'su - {} '.format(self.user)
+        self.cmd = (base + '-c \'{}\'').format
 
         # Command for ereuse into of enviroment
-        path_env = 'su - ereuse -c \'cd {}; source ../venv/bin/activate;'.format(self.git_clone_path)
+        path_env = (base + ' -c \'cd {}; source ../venv/bin/activate;').format(self.git_clone_path)
         path_env += '{}\''
         self.cmd_env = path_env.format
 
@@ -258,35 +259,39 @@ class AppDeployment:
 
     def setup_gunicorn(self):
         """Configure gunicorn & restart service"""
-        # 0. install nginx
-        file_conf = os.path.join(self.git_clone_path, 'examples/gunicorn.service')
+        file_conf = os.path.join(self.git_clone_path, 'examples/gunicorn/gunicorn.service')
         self.c.sudo('cp {} /etc/systemd/system/'.format(file_conf))
         self.c.sudo('mkdir -p /var/log/gunicorn')
         self.c.sudo('chown ereuse.ereuse /var/log/gunicorn')
         #self.c.sudo('systemctl daemon-reload')
         #self.c.sudo('systemctl restart gunicorn.service')
 
-    def setup_apache2(self):
-        """Configure apache2 + wsgi & restart service"""
-        # 0. install apache2
-        self.c.sudo('apt-get install -qy apache2')
+    def gunicorn_conf_services(self):
+        """ Configure gunicorn service file """
+        base_file = 'examples/gunicorn/gunicorn_{}.service'.format(self.name_service)
+        f = open('examples/gunicorn/gunicorn_template.service')
+        gunicorn_service = f.read().format(
+            name_service=self.name_service,
+            user=self.user,
+            base_path=self.base_path,
+            domain=self.domain
+        )
+        f.close()
+        f = open(base_file, 'w')
+        f.write(gunicorn_service)
+        f.close()
 
-        # 1. read examples/apache.conf and set domain
-        # TODO update apache config with
-        # https://flask.palletsprojects.com/en/1.1.x/deploying/mod_wsgi/#support-for-automatic-reloading
+        self.c.run('mkdir -p /var/log/{}'.format(self.user))
+        self.c.run('chown {user}.{user} /var/log/{user}'.format(user=self.user))
 
-        # 2. cp examples/apache.conf /etc/apache2/sites-available/{domain}.conf
-
-        # 3. enable site
-        # a2ensite api.app.usody.com.conf
-
-        # check if everything is OK (e.g. apache running? wget {domain})
-        result = self.c.sudo('apachectl configtest')
-        if result.failed:
-            sys.exit('Error while autoconfiguring apache.\n' + result.stderr)
-
-        # 4. Restart apache
-        # self.c.sudo("systemctl restart apache2")
+        command = 'scp -P {port} {file} {user}@{host}:{path}'.format(
+            port=self.c.port,
+            file=base_file,
+            user=self.c.user,
+            host=self.c.host,
+            path='/etc/systemd/system/'
+        )
+        os.system(command)
 
     def restart_services(self):
         # XXX. touch the .wsgi file to trigger a reload in mod_wsgi (REQUIRED ON UPDATING NOT ON BOOSTRAP)
