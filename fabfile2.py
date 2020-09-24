@@ -218,18 +218,30 @@ class AppDeployment:
     def setup_wsgi_app(self):
         self.c.run('apt-get install -qy libapache2-mod-wsgi-py3')
 
-        wsgi_file = os.path.join(self.git_clone_path, 'examples/wsgi.py')
+        wsgi_file = 'examples/wsgi.py'
         wsgi_path = os.path.join(self.base_path, 'source')
 
         f = open('examples/wsgi_template.py')
-        wsgi = f.read().format(self.db_user, self.db_pass, self.db_host, self.db)
+        wsgi = f.read().format(
+            user=self.db_user,
+            password=self.db_pass,
+            host=self.db_host,
+            database=self.db
+        )
         f.close()
-        f = open('examples/wsgi.py', 'w')
+        f = open(wsgi_file, 'w')
         f.write(wsgi)
         f.close()
 
         self.c.run('mkdir -p {}'.format(wsgi_path))
-        self.c.run('cp {file} {path}'.format(file=wsgi_file, path=wsgi_path))
+        command = 'scp -P {port} {file} {user}@{host}:{path}'.format(
+            port=self.c.port,
+            file=wsgi_file,
+            user=self.c.user,
+            host=self.c.host,
+            path=wsgi_path
+        )
+        os.system(command)
 
     def setup_nginx(self):
         """Configure ngnix & restart service"""
