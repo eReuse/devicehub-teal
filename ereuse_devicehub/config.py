@@ -12,6 +12,7 @@ from ereuse_devicehub.resources import action, agent, deliverynote, inventory, \
 from ereuse_devicehub.resources.device import definitions
 from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import PriceSoftware
+from ereuse_devicehub.resources.versions import versions
 
 
 class DevicehubConfig(Config):
@@ -24,7 +25,8 @@ class DevicehubConfig(Config):
                                      import_resource(deliverynote),
                                      import_resource(proof),
                                      import_resource(documents),
-                                     import_resource(inventory)),
+                                     import_resource(inventory),
+                                     import_resource(versions)),
                                )
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/devicehub'  # type: str
