@@ -126,6 +126,10 @@ class AppDeployment:
         self.clone_devicehub_repository()
         self.install_package_requirements()
         self.initialize_database()
+        self.setup_wsgi_app()
+        self.setup_gunicorn()
+        self.setup_letsencrypt()
+        self.setup_nginx()
 
     def install_apt_dependencies(self):
         self.c.run('apt-get update -qy')
@@ -173,20 +177,8 @@ class AppDeployment:
         mkdir = 'mkdir -p {}/ereuse_devicehub/migrations'.format(self.git_clone_path)
         self.c.run(self.cmd(mkdir))
         command = 'cd ereuse_devicehub/; ../../venv/bin/alembic -c alembic.ini stamp head'
-        # command = t.format(self.git_clone_path)
         self.c.run(self.cmd_env(command))
 
-
-        # TODO run the following commands when PR #30 is merged
-        """
-        # Playground with alembic migrations
-        sudo su - postgres
-        bash examples/create-db.sh devicehub dhub
-        exit
-        git checkout feature/alembic-migrations
-        export dhi=dbtest; dh inv add --common --name dbtest
-
-        """
 
     def setup_tag_provider(self):
         """
@@ -235,27 +227,7 @@ class AppDeployment:
         f.close()
 
         self.c.run('mkdir -p {}'.format(wsgi_path))
-        command = 'scp -P {port} {file} {user}@{host}:{path}'.format(
-            port=self.c.port,
-            file=wsgi_file,
-            user=self.c.user,
-            host=self.c.host,
-            path=wsgi_path
-        )
-        os.system(command)
-
-    def setup_nginx(self):
-        """Configure ngnix & restart service"""
-        # 0. install nginx
-        file_conf = os.path.join(self.git_clone_path, 'examples/01_api.dh.usody.net.conf')
-        file_conf_nginx = os.path.split(file_conf)[-1]
-        self.c.sudo('apt-get install -qy nginx')
-        self.c.sudo('cp {} /etc/nginx/sites-available/'.format(file_conf))
-        self.c.sudo('ln -sf /etc/nginx/sites-available/{} /etc/nginx/sites-enabled/'.format(file_conf_nginx))
-        result = self.c.sudo('nginx -t')
-        if result.failed:
-            sys.exit('Error while autoconfiguring nginx.\n' + result.stderr)
-        #self.c.sudo('systemctl restart nginx')
+        self.scp(wsgi_file, wsgi_path)
 
     def setup_gunicorn(self):
         """Configure gunicorn & restart service"""
@@ -281,15 +253,7 @@ class AppDeployment:
         f = open(base_file, 'w')
         f.write(gunicorn_service)
         f.close()
-
-        command = 'scp -P {port} {file} {user}@{host}:{path}'.format(
-            port=self.c.port,
-            file=base_file,
-            user=self.c.user,
-            host=self.c.host,
-            path='/etc/systemd/system/'
-        )
-        os.system(command)
+        self.scp(base_file, '/etc/systemd/system/')
 
     def gunicorn_conf_socket(self):
         """ Configure gunicorn socket file """
@@ -303,18 +267,51 @@ class AppDeployment:
         f = open(base_file, 'w')
         f.write(gunicorn_service)
         f.close()
+        self.scp(base_file, '/etc/systemd/system/')
 
+    def setup_nginx(self):
+        """Configure ngnix & restart service"""
+        self.c.run('apt-get install -qy nginx')
+        self.nginx_conf_site()
+        self.c.run('systemctl restart nginx')
+
+    def nginx_conf_site(self):
+        """ Configure gunicorn socket file """
+        file_name = '00_{}.conf'.format(self.domain)
+        base_file = 'examples/nginx/{}'.format(file_name)
+        f = open('examples/nginx/site_template.conf')
+        site = f.read().format(
+            domain=self.domain
+        )
+        f.close()
+        f = open(base_file, 'w')
+        f.write(site)
+        f.close()
+        self.scp(base_file, '/etc/nginx/sites-available/')
+        self.c.run('ln -sf /etc/nginx/sites-available/{} /etc/nginx/sites-enabled/'.format(
+            file_name)
+        )
+        self.c.run('nginx -t')
+
+    def setup_letsencrypt(self):
+        self.c.run('apt-get install -qy letsencrypt')
+        file_input = 'examples/letsencrypt/options-ssl-nginx.conf'
+        file_output = '/etc/letsencrypt/options-ssl-nginx.conf'
+        self.scp(file_input, file_output)
+
+    def scp(self, file_in, path_out):
         command = 'scp -P {port} {file} {user}@{host}:{path}'.format(
             port=self.c.port,
-            file=base_file,
+            file=file_in,
             user=self.c.user,
             host=self.c.host,
-            path='/etc/systemd/system/'
+            path=path_out
         )
         os.system(command)
 
     def restart_services(self):
-        # XXX. touch the .wsgi file to trigger a reload in mod_wsgi (REQUIRED ON UPDATING NOT ON BOOSTRAP)
+        # XXX. touch the .wsgi file to trigger a reload in mod_wsgi
+        # (REQUIRED ON UPDATING NOT ON BOOSTRAP)
         self.c.sudo("systemctl reload apache2")
 
 
