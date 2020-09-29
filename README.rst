@@ -37,6 +37,11 @@ Create a PostgreSQL database called *devicehub* by running
 -  In MacOS: ``bash examples/create-db.sh devicehub dhub``, and password
    ``ereuse``.
 
+Configure project using environment file (you can use provided example as quickstart):                    
+.. code:: bash 
+   
+   $ cp examples/env.example .env
+
 Using the `dh` tool for set up with one or multiple inventories.
 Create the tables in the database by executing:
 

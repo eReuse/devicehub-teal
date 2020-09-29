@@ -1,8 +1,9 @@
 import datetime
+import pytest
+
 from uuid import UUID
 from flask import g
 
-import pytest
 from colour import Color
 from ereuse_utils.naming import Naming
 from ereuse_utils.test import ANY
@@ -11,6 +12,7 @@ from sqlalchemy.util import OrderedSet
 from teal.db import ResourceNotFound
 from teal.enums import Layouts
 
+from ereuse_devicehub import __version__
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
@@ -115,6 +117,16 @@ def test_users(user: UserClient, client: Client):
     content, res = client.patch(url, None)
     assert res.status_code == 405
 
+
+@pytest.mark.mvp
+def test_get_version(app: Devicehub, client: Client):
+    """Checks GETting versions of services."""
+
+    content, res = client.get("/versions/", None)
+
+    version = {'devicehub': __version__, 'ereuse_tag': '0.0.0'}
+    assert res.status_code == 200
+    assert content == version
 
 @pytest.mark.mvp
 def test_get_device(app: Devicehub, user: UserClient, user2: UserClient):

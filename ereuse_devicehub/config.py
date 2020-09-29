@@ -2,6 +2,7 @@ import os
 from distutils.version import StrictVersion
 from itertools import chain
 from typing import Set
+from decouple import config
 
 from teal.auth import TokenAuth
 from teal.config import Config
@@ -13,6 +14,7 @@ from ereuse_devicehub.resources import action, agent, deliverynote, inventory, \
 from ereuse_devicehub.resources.device import definitions
 from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import PriceSoftware
+from ereuse_devicehub.resources.versions import versions
 
 
 class DevicehubConfig(Config):
@@ -25,15 +27,20 @@ class DevicehubConfig(Config):
                                      import_resource(deliverynote),
                                      import_resource(proof),
                                      import_resource(documents),
-                                     import_resource(inventory)),
+                                     import_resource(inventory),
+                                     import_resource(versions)),
                                )
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
-    DB_USER = os.environ.get('db_user') or 'dhub'
-    DB_PASSWORD = os.environ.get('dh_pass') or 'ereuse'
-    DB_HOST = os.environ.get('db_host') or 'localhost'
-    DB_DATABASE = os.environ.get('db') or 'devicehub'
-    URI = '{}:{}@{}/{}'.format(DB_USER, DB_PASSWORD, DB_HOST, DB_DATABASE)
-    SQLALCHEMY_DATABASE_URI = 'postgresql://{}'.format(URI)
+
+    DB_USER = config('DB_USER', 'dhub')
+    DB_PASSWORD = config('DB_PASSWORD', 'ereuse')
+    DB_HOST = config('DB_HOST', 'localhost')
+    DB_DATABASE = config('DB_DATABASE', 'devicehub')
+    SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{pw}@{host}/{db}'.format(
+        user=DB_USER,
+        pw=DB_PASSWORD,
+        host=DB_HOST,
+        db=DB_DATABASE)  # type: str
     MIN_WORKBENCH = StrictVersion('11.0a1')  # type: StrictVersion
     """The minimum version of ereuse.org workbench that this devicehub
     accepts. we recommend not changing this value.
