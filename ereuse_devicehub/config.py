@@ -1,6 +1,7 @@
 from distutils.version import StrictVersion
 from itertools import chain
 from typing import Set
+from decouple import config
 
 from teal.auth import TokenAuth
 from teal.config import Config
@@ -29,7 +30,16 @@ class DevicehubConfig(Config):
                                      import_resource(versions)),
                                )
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
-    SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/devicehub'  # type: str
+    DB_USER = config('DB_USER', 'dhub')
+    DB_PASSWORD = config('DB_PASSWORD', 'ereuse')
+    DB_HOST = config('DB_HOST', 'localhost')
+    DB_DATABASE = config('DB_DATABASE', 'devicehub')
+    SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{pw}@{host}/{db}'.format(
+        user=DB_USER,
+        pw=DB_PASSWORD,
+        host=DB_HOST,
+        db=DB_DATABASE,
+    )  # type: str
     MIN_WORKBENCH = StrictVersion('11.0a1')  # type: StrictVersion
     """The minimum version of ereuse.org workbench that this devicehub
     accepts. we recommend not changing this value.
