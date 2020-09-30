@@ -218,25 +218,28 @@ class AppDeployment:
         """
 
     def setup_wsgi_app(self):
-        self.c.run('apt-get install -qy libapache2-mod-wsgi-py3')
-
-        wsgi_file = 'examples/wsgi.py'
+        wsgi_file = os.path.join(self.git_clone_path, 'examples/wsgi.py')
         wsgi_path = os.path.join(self.base_path, 'source')
-
-        f = open('examples/wsgi_template.py')
-        wsgi = f.read().format(
-            user=self.db_user,
-            password=self.db_pass,
-            host=self.db_host,
-            database=self.db
-        )
-        f.close()
-        f = open(wsgi_file, 'w')
-        f.write(wsgi)
-        f.close()
-
         self.c.run('mkdir -p {}'.format(wsgi_path))
-        self.scp(wsgi_file, wsgi_path)
+        self.c.run('cp {file} {path}'.format(file=wsgi_file, path=wsgi_path))
+
+        # wsgi_file = 'examples/wsgi.py'
+        # wsgi_path = os.path.join(self.base_path, 'source')
+
+        # f = open('examples/wsgi_template.py')
+        # wsgi = f.read().format(
+            # user=self.db_user,
+            # password=self.db_pass,
+            # host=self.db_host,
+            # database=self.db
+        # )
+        # f.close()
+        # f = open(wsgi_file, 'w')
+        # f.write(wsgi)
+        # f.close()
+
+        # self.c.run('mkdir -p {}'.format(wsgi_path))
+        # self.scp(wsgi_file, wsgi_path)
 
     def setup_gunicorn(self):
         """Configure gunicorn & restart service"""
