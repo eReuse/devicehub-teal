@@ -162,10 +162,19 @@ class AppDeployment:
         self.c.run(self.cmd_env('pip install gunicorn==20.0.4'))
 
     def initialize_database(self):
-        # create database, user and extensions
+        """ create database, user and extensions """
         command = 'sh {}/examples/init_db.sh {} {} {}'.format(self.git_clone_path, self.db,
-            self.db_user, self.db_pass)
+                                                              self.db_user, self.db_pass)
         self.c.run(command)
+
+        tmpl = open('examples/env.template', 'r')
+        env = tmpl.read().format(user=self.db_user, pw=self.db_pass, host=self.host, db=self.db)
+        tmpl.close()
+        env_domain = 'examples/env_{}'.format(self.domain)
+        tmpl = open(env_domain, 'w')
+        tmpl.write(env)
+        tmpl.close()
+        self.scp(env_domain, '{}/.env'.format(self.git_clone_path))
 
         # create schemes in database
         command = 'export dhi=dbtest; dh inv add --common --name dbtest'
