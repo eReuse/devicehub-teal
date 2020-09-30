@@ -99,7 +99,8 @@ def test_api_docs(client: Client):
         '/video-scalers/{id}/merge/',
         '/videoconferences/{id}/merge/',
         '/videos/{id}/merge/',
-        '/wireless-access-points/{id}/merge/'
+        '/wireless-access-points/{id}/merge/',
+        '/versions/'
     }
     assert docs['info'] == {'title': 'Devicehub', 'version': '0.2'}
     assert docs['components']['securitySchemes']['bearerAuth'] == {
