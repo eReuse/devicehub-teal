@@ -60,21 +60,6 @@ def bootstrap(c, domain='api.ereuse.org', branch='master'):
     deployment.setup_gunicorn()
 
 
-@task(
-    help=TASK_COMMON_HELP,
-)
-def upgrade(c, domain='api.ereuse.org', branch='master'):
-    """
-    Upgrade a running instance of devicehub to the latest version of
-    the specified git branch.
-    """
-    deployment = AppDeployment(domain, branch, c)
-    deployment.upgrade_devicehub_code()
-    deployment.upgrade_package_requirements()
-    deployment.upgrade_database_schema()
-    deployment.restart_services()
-
-
 class AppDeployment:
     """
     app dir schema:
@@ -104,8 +89,10 @@ class AppDeployment:
         self.domain = domain
         self.name_service = domain.replace('.', '_')
         self.def_cmds()
+        self.inventory = 'dbtest'
 
     def def_cmds(self):
+        """ Definition of commands in the remote server """
         # General command for ereuse
         base = 'su - {} '.format(self.user)
         self.cmd = (base + '-c \'{}\'').format
@@ -116,12 +103,14 @@ class AppDeployment:
         self.cmd_env = path_env.format
 
     def connection(self):
+        """ Definition of the connection """
         connect = Connection(self.host)
         connect.user = 'root'
         connect.port = self.port
         return connect
 
     def bootstrap(self):
+        """ Method for to do the first deployment """
         self.install_apt_dependencies()
         self.clone_devicehub_repository()
         self.install_package_requirements()
@@ -131,12 +120,28 @@ class AppDeployment:
         self.setup_letsencrypt()
         self.setup_nginx()
 
+    def upgrade(self):
+        """
+        Upgrade a running instance of devicehub to the latest version of
+        the specified git branch.
+        """
+        self.upgrade_devicehub_code()
+        self.upgrade_package_requirements()
+        self.upgrade_database_schema()
+        self.restart_services()
+
     def install_apt_dependencies(self):
+        """
+        Install debiandependencies than you need for run debicehub
+        """
         self.c.run('apt-get update -qy')
         self.c.run('apt-get install -qy {}'.format(' '.join(PACKAGES)))
         self.c.run('su - postgres -c \'psql postgres -c "SELECT version()" | grep PostgreSQL\'')
 
     def clone_devicehub_repository(self):
+        """
+        To do the first download of sources from the github repository
+        """
         params = {
             'branch': self.branch,
             'repo': GIT_REPO_URL,
@@ -149,6 +154,7 @@ class AppDeployment:
         self.c.run(self.cmd('git clone -b {branch} {repo} {path}'.format(**params)))
 
     def install_package_requirements(self):
+        """ Installing python packages required """
         self.c.run(self.cmd('python3 -m virtualenv -p python3.7 {}'.format(self.venv_path)))
         self.upgrade_package_requirements()
 
@@ -157,6 +163,7 @@ class AppDeployment:
         self.c.run(self.cmd_env('pip install alembic'))
 
     def upgrade_package_requirements(self):
+        """ Upgrade python packages """
         command = self.cmd_env('pip install -r {}/requirements.txt'.format(self.git_clone_path))
         self.c.run(command)
         self.c.run(self.cmd_env('pip install gunicorn==20.0.4'))
@@ -177,12 +184,12 @@ class AppDeployment:
         self.scp(env_domain, '{}/.env'.format(self.git_clone_path))
 
         # create schemes in database
-        command = 'export dhi=dbtest; dh inv add --common --name dbtest'
-        self.c.run(self.cmd_env(command))
+        command = 'export dhi={inventory}; dh inv add --common --name {inventory}'
+        self.c.run(self.cmd_env(command.format(inventory=self.inventory)))
         self.create_alembic()
 
     def create_alembic(self):
-        # create the first stamp for alembic
+        """ create the first stamp for alembic """
         mkdir = 'mkdir -p {}/ereuse_devicehub/migrations'.format(self.git_clone_path)
         self.c.run(self.cmd(mkdir))
         command = 'cd ereuse_devicehub/; ../../venv/bin/alembic -c alembic.ini stamp head'
@@ -203,43 +210,11 @@ class AppDeployment:
         print("It is necessary modify manualy tha tag_provider")
         print(text_info)
 
-    def upgrade_devicehub_code(self):
-        params = {
-            'path': self.git_clone_path,
-        }
-        result = self.c.run(self.cmd('cd {path} && git pull --ff-only'.format(**params)))
-        if result.failed:
-            raise RuntimeError("Error retrieving latest devicehub code: {}".format(result.stderr))
-
-    def upgrade_database_schema(self):
-        # TODO run the following commands when PR #30 is merged
-        """
-        alembic -x inventory=dbtest upgrade head
-        """
-
     def setup_wsgi_app(self):
         wsgi_file = os.path.join(self.git_clone_path, 'examples/wsgi.py')
         wsgi_path = os.path.join(self.base_path, 'source')
         self.c.run('mkdir -p {}'.format(wsgi_path))
         self.c.run('cp {file} {path}'.format(file=wsgi_file, path=wsgi_path))
-
-        # wsgi_file = 'examples/wsgi.py'
-        # wsgi_path = os.path.join(self.base_path, 'source')
-
-        # f = open('examples/wsgi_template.py')
-        # wsgi = f.read().format(
-            # user=self.db_user,
-            # password=self.db_pass,
-            # host=self.db_host,
-            # database=self.db
-        # )
-        # f.close()
-        # f = open(wsgi_file, 'w')
-        # f.write(wsgi)
-        # f.close()
-
-        # self.c.run('mkdir -p {}'.format(wsgi_path))
-        # self.scp(wsgi_file, wsgi_path)
 
     def setup_gunicorn(self):
         """Configure gunicorn & restart service"""
@@ -321,10 +296,26 @@ class AppDeployment:
         )
         os.system(command)
 
+    def upgrade_devicehub_code(self):
+        params = {
+            'path': self.git_clone_path,
+        }
+        result = self.c.run(self.cmd('cd {path} && git pull --ff-only'.format(**params)))
+        if result.failed:
+            raise RuntimeError("Error retrieving latest devicehub code: {}".format(result.stderr))
+
+    def upgrade_database_schema(self):
+        """
+        Run the following command for upgrade the database structure
+        """
+        command = 'alembic -x inventory={inventory} upgrade head'.format(inventory=self.inventory)
+        result = self.c.run(self.cmd_env(command)
+
     def restart_services(self):
-        # XXX. touch the .wsgi file to trigger a reload in mod_wsgi
-        # (REQUIRED ON UPDATING NOT ON BOOSTRAP)
-        self.c.sudo("systemctl reload apache2")
+        """ Restarting gunicorn is enough for the restart the services """
+        self.c.sudo(stop_gunicorn_sock)
+        self.c.sudo(stop_gunicorn_service)
+        self.c.sudo(start_gunicorn_service)
 
 
 app = AppDeployment('api.usody.net', 'feature/fabfile-continuous-deployment')
