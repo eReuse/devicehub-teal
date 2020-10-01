@@ -307,3 +307,24 @@ def test_get_tags_endpoint(user: UserClient, app: Devicehub,
     assert data['items'][0]['printable']
     assert data['items'][1]['id'] == 'tag1id'
     assert data['items'][1]['printable'], 'Tags made this way are printable'
+
+
+@pytest.mark.mvp
+def test_get_tag_permissions(app: Devicehub, user: UserClient, user2: UserClient):
+    """Creates a tag specifying a custom organization."""
+    with app.app_context():
+        # Create a pc with a tag
+        tag = Tag(id='foo-bar', owner_id=user.user['id'])
+        pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
+        pc.tags.add(tag)
+        db.session.add(pc)
+        db.session.commit()
+    computer, res = user.get(res=Tag, item='foo-bar/device')
+
+    url = "/tags/?foo-bar/device"
+    computer, res = user.get(url, None)
+    computer2, res2 = user2.get(url, None)
+    assert res.status_code == 200
+    assert res2.status_code == 200
+    assert len(computer['items']) == 1
+    assert len(computer2['items']) == 0

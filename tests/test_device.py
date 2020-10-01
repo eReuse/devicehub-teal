@@ -461,6 +461,34 @@ def test_get_devices(app: Devicehub, user: UserClient):
 
 
 @pytest.mark.mvp
+def test_get_device_permissions(app: Devicehub, user: UserClient, user2: UserClient):
+    """Checks GETting a d.Desktop with its components."""
+
+    user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
+    pc, res = user.get("/devices/1", None)
+    assert res.status_code == 200
+    assert len(pc['actions']) == 9
+
+    pc2, res2 = user2.get("/devices/1", None)
+    assert res2.status_code == 200
+    assert pc2 == {}
+
+
+@pytest.mark.mvp
+def test_get_devices_permissions(app: Devicehub, user: UserClient, user2: UserClient):
+    """Checks GETting multiple devices."""
+
+    user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
+    url = '/devices/?filter={"type":["Computer"]}'
+
+    devices, res = user.get(url, None)
+    devices2, res2 = user2.get(url, None)
+    assert res.status_code == 200
+    assert res2.status_code == 200
+    assert len(devices['items']) == 1
+    assert len(devices2['items']) == 0
+
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_computer_monitor():
     m = d.ComputerMonitor(technology=DisplayTech.LCD,
