@@ -309,13 +309,18 @@ class AppDeployment:
         Run the following command for upgrade the database structure
         """
         command = 'alembic -x inventory={inventory} upgrade head'.format(inventory=self.inventory)
-        result = self.c.run(self.cmd_env(command)
+        self.c.run(self.cmd_env(command))
 
     def restart_services(self):
         """ Restarting gunicorn is enough for the restart the services """
-        self.c.sudo(stop_gunicorn_sock)
-        self.c.sudo(stop_gunicorn_service)
-        self.c.sudo(start_gunicorn_service)
+        stop_gunicorn_sock = "systemctl stop gunicorn_{domain}.socket".format(domain=self.name_service)
+        stop_gunicorn_service = "systemctl stop gunicorn_{domain}.service".format(
+            domain=self.name_service)
+        start_gunicorn_service = "systemctl start gunicorn_{domain}.service".format(
+            domain=self.name_service)
+        self.c.run(stop_gunicorn_sock)
+        self.c.run(stop_gunicorn_service)
+        self.c.run(start_gunicorn_service)
 
 
 app = AppDeployment('api.usody.net', 'feature/fabfile-continuous-deployment')
