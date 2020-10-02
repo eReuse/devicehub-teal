@@ -90,6 +90,7 @@ class AppDeployment:
         self.name_service = domain.replace('.', '_')
         self.def_cmds()
         self.inventory = 'dbtest'
+        self.tmp = '/tmp/fabfile'
 
     def def_cmds(self):
         """ Definition of commands in the remote server """
@@ -170,24 +171,24 @@ class AppDeployment:
 
     def initialize_database(self):
         """ create database, user and extensions """
-        path_orig = '/tmp/fabfile/init.sql'
+        path_orig = '{}/init.sql'.format(self.tmp)
         path_dest = '/var/lib/postgresql'
         f_sql = open('templates/init.sql', 'r')
-        sql = f_sql.format(user=self.user, db=self.db, db_pass=self.db_pass)
+        sql = f_sql.read().format(user=self.db_user, db=self.db, db_pass=self.db_pass)
         f_sql.close()
-        os.system('mkdir -p /tmp/fabfile')
+        os.system('mkdir -p {}'.format(self.tmp))
         f_sql = open(path_orig, 'w')
         f_sql.write(sql)
         f_sql.close()
         
         self.scp(path_orig, path_dest)
-        command = 'su - postgres -c "psql -f ~/init.sql'
+        command = 'su - postgres -c "psql -f ~/init.sql"'
         self.c.run(command)
 
         tmpl = open('templates/env.template', 'r')
         env = tmpl.read().format(user=self.db_user, pw=self.db_pass, host=self.host, db=self.db)
         tmpl.close()
-        env_domain = 'templates/env_{}'.format(self.domain)
+        env_domain = '{}/env_{}'.format(self.tmp, self.domain)
         tmpl = open(env_domain, 'w')
         tmpl.write(env)
         tmpl.close()
@@ -197,7 +198,8 @@ class AppDeployment:
         command = 'export dhi={inventory}; dh inv add --common --name {inventory}'
         self.c.run(self.cmd_env(command.format(inventory=self.inventory)))
         self.create_alembic()
-        os.system('rm -fr /tmp/fabfile')
+        os.system('rm -fr {}'.format(self.tmp))
+        self.c.run('rm -fr {}/init.sql'.format(path_dest))
 
     def create_alembic(self):
         """ create the first stamp for alembic """

@@ -1,5 +1,5 @@
 CREATE DATABASE {db};
-CREATE USER {user} WITH PASSWORD '{pass}';
+CREATE USER {user} WITH PASSWORD '{db_pass}';
 GRANT ALL PRIVILEGES ON DATABASE {db} TO {user};
 \c {db}
 CREATE EXTENSION pgcrypto SCHEMA public;
