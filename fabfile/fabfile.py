@@ -180,7 +180,6 @@ class AppDeployment:
         f_sql = open(path_orig, 'w')
         f_sql.write(sql)
         f_sql.close()
-        
         self.scp(path_orig, path_dest)
         command = 'su - postgres -c "psql -f ~/init.sql"'
         self.c.run(command)
@@ -243,34 +242,36 @@ class AppDeployment:
         """ Configure gunicorn service file """
         os.system('mkdir -p {}'.format(self.tmp))
         base_file = '{}/gunicorn_{}.service'.format(self.tmp, self.name_service)
-        f = open('templates/gunicorn/gunicorn_template.service')
-        gunicorn_service = f.read().format(
+        fgun = open('templates/gunicorn/gunicorn_template.service')
+        gunicorn_service = fgun.read().format(
             name_service=self.name_service,
             user=self.user,
             base_path=self.base_path,
             domain=self.domain
         )
-        f.close()
-        f = open(base_file, 'w')
-        f.write(gunicorn_service)
-        f.close()
+        fgun.close()
+        fgun = open(base_file, 'w')
+        fgun.write(gunicorn_service)
+        fgun.close()
         self.scp(base_file, '/etc/systemd/system/')
+        self.c.run('systemctl enable gunicorn_{}.service'.format(self.name_service))
         os.system('rm -fr {}'.format(self.tmp))
 
     def gunicorn_conf_socket(self):
         """ Configure gunicorn socket file """
         os.system('mkdir -p {}'.format(self.tmp))
         base_file = '{}/gunicorn_{}.socket'.format(self.tmp, self.name_service)
-        f = open('templates/gunicorn/gunicorn_template.socket')
-        gunicorn_service = f.read().format(
+        fgun = open('templates/gunicorn/gunicorn_template.socket')
+        gunicorn_service = fgun.read().format(
             user=self.user,
             domain=self.domain
         )
-        f.close()
-        f = open(base_file, 'w')
-        f.write(gunicorn_service)
-        f.close()
+        fgun.close()
+        fgun = open(base_file, 'w')
+        fgun.write(gunicorn_service)
+        fgun.close()
         self.scp(base_file, '/etc/systemd/system/')
+        self.c.run('systemctl enable gunicorn_{}.socket'.format(self.name_service))
         os.system('rm -fr {}'.format(self.tmp))
 
     def setup_nginx(self):
@@ -284,28 +285,29 @@ class AppDeployment:
         os.system('mkdir -p {}'.format(self.tmp))
         file_name = '00_{}.conf'.format(self.domain)
         base_file = '{}/{}'.format(self.tmp, file_name)
-        f = open('templates/nginx/site_template.conf')
-        site = f.read().format(
+        fninx = open('templates/nginx/site_template.conf')
+        site = fninx.read().format(
             domain=self.domain
         )
-        f.close()
-        f = open(base_file, 'w')
-        f.write(site)
-        f.close()
+        fninx.close()
+        fninx = open(base_file, 'w')
+        fninx.write(site)
+        fninx.close()
         self.scp(base_file, '/etc/nginx/sites-available/')
         self.c.run('ln -sf /etc/nginx/sites-available/{} /etc/nginx/sites-enabled/'.format(
-            file_name)
-        )
+            file_name))
         self.c.run('nginx -t')
         os.system('rm -fr {}'.format(self.tmp))
 
     def setup_letsencrypt(self):
+        """ Install letsencrypt and add options for use it in nginx """
         self.c.run('apt-get install -qy letsencrypt')
         file_input = 'templates/letsencrypt/options-ssl-nginx.conf'
         file_output = '/etc/letsencrypt/options-ssl-nginx.conf'
         self.scp(file_input, file_output)
 
     def scp(self, file_in, path_out):
+        """ Comand for use scp to the server of deployment """
         command = 'scp -P {port} {file} {user}@{host}:{path}'.format(
             port=self.c.port,
             file=file_in,
@@ -316,6 +318,7 @@ class AppDeployment:
         os.system(command)
 
     def upgrade_devicehub_code(self):
+        """ Update code using git pull """
         params = {
             'path': self.git_clone_path,
         }
@@ -332,11 +335,13 @@ class AppDeployment:
 
     def restart_services(self):
         """ Restarting gunicorn is enough for the restart the services """
-        stop_gunicorn_sock = "systemctl stop gunicorn_{domain}.socket".format(domain=self.name_service)
+        stop_gunicorn_sock = "systemctl stop gunicorn_{domain}.socket".format(
+            domain=self.name_service)
         stop_gunicorn_service = "systemctl stop gunicorn_{domain}.service".format(
             domain=self.name_service)
         start_gunicorn_service = "systemctl start gunicorn_{domain}.service".format(
             domain=self.name_service)
+
         self.c.run(stop_gunicorn_sock)
         self.c.run(stop_gunicorn_service)
         self.c.run(start_gunicorn_service)
