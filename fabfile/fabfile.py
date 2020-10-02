@@ -224,10 +224,10 @@ class AppDeployment:
         print(text_info)
 
     def setup_wsgi_app(self):
-        wsgi_file = os.path.join(self.git_clone_path, 'templates/wsgi.py')
+        """ Installing wsgi file """
         wsgi_path = os.path.join(self.base_path, 'source')
         self.c.run('mkdir -p {}'.format(wsgi_path))
-        self.c.run('cp {file} {path}'.format(file=wsgi_file, path=wsgi_path))
+        self.scp('templates/wsgi.py', wsgi_path)
 
     def setup_gunicorn(self):
         """Configure gunicorn & restart service"""
@@ -241,7 +241,8 @@ class AppDeployment:
 
     def gunicorn_conf_services(self):
         """ Configure gunicorn service file """
-        base_file = 'templates/gunicorn/gunicorn_{}.service'.format(self.name_service)
+        os.system('mkdir -p {}'.format(self.tmp))
+        base_file = '{}/gunicorn_{}.service'.format(self.tmp, self.name_service)
         f = open('templates/gunicorn/gunicorn_template.service')
         gunicorn_service = f.read().format(
             name_service=self.name_service,
@@ -254,10 +255,12 @@ class AppDeployment:
         f.write(gunicorn_service)
         f.close()
         self.scp(base_file, '/etc/systemd/system/')
+        os.system('rm -fr {}'.format(self.tmp))
 
     def gunicorn_conf_socket(self):
         """ Configure gunicorn socket file """
-        base_file = 'templates/gunicorn/gunicorn_{}.socket'.format(self.name_service)
+        os.system('mkdir -p {}'.format(self.tmp))
+        base_file = '{}/gunicorn_{}.socket'.format(self.tmp, self.name_service)
         f = open('templates/gunicorn/gunicorn_template.socket')
         gunicorn_service = f.read().format(
             user=self.user,
@@ -268,6 +271,7 @@ class AppDeployment:
         f.write(gunicorn_service)
         f.close()
         self.scp(base_file, '/etc/systemd/system/')
+        os.system('rm -fr {}'.format(self.tmp))
 
     def setup_nginx(self):
         """Configure ngnix & restart service"""
@@ -277,8 +281,9 @@ class AppDeployment:
 
     def nginx_conf_site(self):
         """ Configure gunicorn socket file """
+        os.system('mkdir -p {}'.format(self.tmp))
         file_name = '00_{}.conf'.format(self.domain)
-        base_file = 'templates/nginx/{}'.format(file_name)
+        base_file = '{}/{}'.format(self.tmp, file_name)
         f = open('templates/nginx/site_template.conf')
         site = f.read().format(
             domain=self.domain
@@ -292,6 +297,7 @@ class AppDeployment:
             file_name)
         )
         self.c.run('nginx -t')
+        os.system('rm -fr {}'.format(self.tmp))
 
     def setup_letsencrypt(self):
         self.c.run('apt-get install -qy letsencrypt')
