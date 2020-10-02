@@ -170,14 +170,24 @@ class AppDeployment:
 
     def initialize_database(self):
         """ create database, user and extensions """
-        command = 'sh {}/examples/init_db.sh {} {} {}'.format(self.git_clone_path, self.db,
-                                                              self.db_user, self.db_pass)
+        path_orig = '/tmp/fabfile/init.sql'
+        path_dest = '/var/lib/postgresql'
+        f_sql = open('templates/init.sql', 'r')
+        sql = f_sql.format(user=self.user, db=self.db, db_pass=self.db_pass)
+        f_sql.close()
+        os.system('mkdir -p /tmp/fabfile')
+        f_sql = open(path_orig, 'w')
+        f_sql.write(sql)
+        f_sql.close()
+        
+        self.scp(path_orig, path_dest)
+        command = 'su - postgres -c "psql -f ~/init.sql'
         self.c.run(command)
 
-        tmpl = open('examples/env.template', 'r')
+        tmpl = open('templates/env.template', 'r')
         env = tmpl.read().format(user=self.db_user, pw=self.db_pass, host=self.host, db=self.db)
         tmpl.close()
-        env_domain = 'examples/env_{}'.format(self.domain)
+        env_domain = 'templates/env_{}'.format(self.domain)
         tmpl = open(env_domain, 'w')
         tmpl.write(env)
         tmpl.close()
@@ -187,6 +197,7 @@ class AppDeployment:
         command = 'export dhi={inventory}; dh inv add --common --name {inventory}'
         self.c.run(self.cmd_env(command.format(inventory=self.inventory)))
         self.create_alembic()
+        os.system('rm -fr /tmp/fabfile')
 
     def create_alembic(self):
         """ create the first stamp for alembic """
@@ -211,7 +222,7 @@ class AppDeployment:
         print(text_info)
 
     def setup_wsgi_app(self):
-        wsgi_file = os.path.join(self.git_clone_path, 'examples/wsgi.py')
+        wsgi_file = os.path.join(self.git_clone_path, 'templates/wsgi.py')
         wsgi_path = os.path.join(self.base_path, 'source')
         self.c.run('mkdir -p {}'.format(wsgi_path))
         self.c.run('cp {file} {path}'.format(file=wsgi_file, path=wsgi_path))
@@ -228,8 +239,8 @@ class AppDeployment:
 
     def gunicorn_conf_services(self):
         """ Configure gunicorn service file """
-        base_file = 'examples/gunicorn/gunicorn_{}.service'.format(self.name_service)
-        f = open('examples/gunicorn/gunicorn_template.service')
+        base_file = 'templates/gunicorn/gunicorn_{}.service'.format(self.name_service)
+        f = open('templates/gunicorn/gunicorn_template.service')
         gunicorn_service = f.read().format(
             name_service=self.name_service,
             user=self.user,
@@ -244,8 +255,8 @@ class AppDeployment:
 
     def gunicorn_conf_socket(self):
         """ Configure gunicorn socket file """
-        base_file = 'examples/gunicorn/gunicorn_{}.socket'.format(self.name_service)
-        f = open('examples/gunicorn/gunicorn_template.socket')
+        base_file = 'templates/gunicorn/gunicorn_{}.socket'.format(self.name_service)
+        f = open('templates/gunicorn/gunicorn_template.socket')
         gunicorn_service = f.read().format(
             user=self.user,
             domain=self.domain
@@ -265,8 +276,8 @@ class AppDeployment:
     def nginx_conf_site(self):
         """ Configure gunicorn socket file """
         file_name = '00_{}.conf'.format(self.domain)
-        base_file = 'examples/nginx/{}'.format(file_name)
-        f = open('examples/nginx/site_template.conf')
+        base_file = 'templates/nginx/{}'.format(file_name)
+        f = open('templates/nginx/site_template.conf')
         site = f.read().format(
             domain=self.domain
         )
@@ -282,7 +293,7 @@ class AppDeployment:
 
     def setup_letsencrypt(self):
         self.c.run('apt-get install -qy letsencrypt')
-        file_input = 'examples/letsencrypt/options-ssl-nginx.conf'
+        file_input = 'templates/letsencrypt/options-ssl-nginx.conf'
         file_output = '/etc/letsencrypt/options-ssl-nginx.conf'
         self.scp(file_input, file_output)
 
