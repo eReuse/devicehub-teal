@@ -26,13 +26,8 @@ PACKAGES_WEASYPRINT = ['build-essential', 'python3-dev', 'python3-pip', 'python3
 
 PACKAGES = PACKAGES_BASE + PACKAGES_WEASYPRINT
 
-GIT_REPO_URL = 'https://github.com/eReuse/devicehub-teal.git'
+GIT_REPO_URL = 'https://github.com/eReuse/tag.git'
 
-# TODO apply this help in the future command fab
-TASK_COMMON_HELP = {
-        'domain': 'domain where app will be deployed',
-        'branch': 'select branch to clone from git',
-    }
 
 class AppDeployment:
     """
@@ -43,7 +38,7 @@ class AppDeployment:
         venv        # python virtual environment
     """
     SITES_PATH = '/home/ereuse/sites/'
-    GIT_CLONE_DIR = 'devicehub'
+    GIT_CLONE_DIR = 'tag'
     VENV_DIR = 'venv'
 
     def __init__(self, domain, branch, host='localhost', port=10022):
@@ -56,9 +51,9 @@ class AppDeployment:
         self.venv_path = os.path.join(self.base_path, self.VENV_DIR)
         self.setup_tag_provider()
         self.user = 'ereuse'
-        self.db_user = 'dhub'
+        self.db_user = 'dtag'
         self.db_pass = 'ereuse'
-        self.db = 'devicehub'
+        self.db = 'tag'
         self.db_host = 'localhost'
         self.domain = domain
         self.name_service = domain.replace('.', '_')
@@ -97,7 +92,7 @@ class AppDeployment:
 
     def upgrade(self):
         """
-        Upgrade a running instance of devicehub to the latest version of
+        Upgrade a running instance of tag to the latest version of
         the specified git branch.
         """
         self.upgrade_devicehub_code()
@@ -107,7 +102,7 @@ class AppDeployment:
 
     def install_apt_dependencies(self):
         """
-        Install debiande pendencies than you need for run debicehub
+        Install debian dependencies than you need for run debicehub
         """
         self.c.run('apt-get update -qy')
         self.c.run('apt-get install -qy {}'.format(' '.join(PACKAGES)))
@@ -147,7 +142,7 @@ class AppDeployment:
         """ create database, user and extensions """
         path_orig = '{}/init.sql'.format(self.tmp)
         path_dest = '/var/lib/postgresql'
-        f_sql = open('templates/dhub.sql', 'r')
+        f_sql = open('templates/tag.sql', 'r')
         sql = f_sql.read().format(user=self.db_user, db=self.db, db_pass=self.db_pass)
         f_sql.close()
         os.system('mkdir -p {}'.format(self.tmp))
@@ -168,9 +163,9 @@ class AppDeployment:
         self.scp(env_domain, '{}/.env'.format(self.git_clone_path))
 
         # create schemes in database
-        command = 'export dhi={inventory}; dh inv add --common --name {inventory}'
-        self.c.run(self.cmd_env(command.format(inventory=self.inventory)))
-        self.create_alembic()
+        # command = 'export dhi={inventory}; dh inv add --common --name {inventory}'
+        # self.c.run(self.cmd_env(command.format(inventory=self.inventory)))
+        # self.create_alembic()
         os.system('rm -fr {}'.format(self.tmp))
         self.c.run('rm -fr {}/init.sql'.format(path_dest))
 
@@ -330,4 +325,4 @@ class AppDeployment:
         self.start_gunicorn()
 
 
-app = AppDeployment('api.usody.net', 'testing')
+app = AppDeployment('tag.usody.net', 'testing')
