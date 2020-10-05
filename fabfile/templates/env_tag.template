@@ -1,0 +1,7 @@
+DB_USER='{user}'
+DB_PASSWORD='{pw}'
+DB_HOST='{host}'
+DB_DATABASE='{db}'
+TAG_PROVIDER_ID = '{tag_provider}'
+TAG_HASH_SALT = '{tag_hash_salt}'
+DEVICEHUBS = '{{"{token}": "{url}"}}'

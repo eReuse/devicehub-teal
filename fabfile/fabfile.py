@@ -54,7 +54,6 @@ class AppDeployment:
         self.base_path = os.path.join(self.SITES_PATH, domain)
         self.git_clone_path = os.path.join(self.base_path, self.GIT_CLONE_DIR)
         self.venv_path = os.path.join(self.base_path, self.VENV_DIR)
-        self.setup_tag_provider()
         self.user = 'ereuse'
         self.db_user = 'dhub'
         self.db_pass = 'ereuse'
@@ -65,6 +64,8 @@ class AppDeployment:
         self.def_cmds()
         self.inventory = 'dbtest'
         self.tmp = '/tmp/fabfile'
+        self.tag_url = 'http://localhost'
+        self.tag_token = '1a896c8d-011c-4ea6-89d4-74e413fea962'
 
     def def_cmds(self):
         """ Definition of commands in the remote server """
@@ -168,8 +169,7 @@ class AppDeployment:
         self.scp(env_domain, '{}/.env'.format(self.git_clone_path))
 
         # create schemes in database
-        command = 'export dhi={inventory}; dh inv add --common --name {inventory}'
-        self.c.run(self.cmd_env(command.format(inventory=self.inventory)))
+        self.setup_tag_provider()
         self.create_alembic()
         os.system('rm -fr {}'.format(self.tmp))
         self.c.run('rm -fr {}/init.sql'.format(path_dest))
@@ -185,16 +185,17 @@ class AppDeployment:
     def setup_tag_provider(self):
         """
         We need define the correct tag_provider in common.inventory
-        """
-        text_info = """
         devicehub_testing=# SELECT * FROM common.inventory;
 
                     updated            |            created            |    id     |   name   |    tag_provider    |              tag_token               |                org_id
         -------------------------------+-------------------------------+-----------+----------+--------------------+--------------------------------------+--------------------------------------
         2020-07-16 16:53:57.722325+02 | 2020-07-16 16:53:57.725848+02 | usodybeta | Test 1   | http://example.com | 9f564863-2d28-4b69-a541-a08c5b34d422 | df7496df-d3e4-4286-a76a-350464e00181
         """
-        print("It is necessary modify manualy tha tag_provider")
-        print(text_info)
+        command = 'export dhi={inventory}; dh inv add --common --name {inventory}'
+        command += ' --tag-url {tag_url} --tag-token {tag_token}'
+        command = command.format(inventory=self.inventory, tag_url=self.tag_url,
+                                 tag_token=self.tag_token)
+        self.c.run(self.cmd_env(command))
 
     def setup_wsgi_app(self):
         """ Installing wsgi file """

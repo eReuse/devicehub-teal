@@ -42,24 +42,34 @@ class AppDeployment:
     VENV_DIR = 'venv'
 
     def __init__(self, domain, branch, host='localhost', port=10022):
+        # BASES
+        self.domain = domain
+        self.branch = branch
         self.host = host
         self.port = port
-        self.branch = branch
-        self.c = self.connection()
+
+        # PATHS
         self.base_path = os.path.join(self.SITES_PATH, domain)
         self.git_clone_path = os.path.join(self.base_path, self.GIT_CLONE_DIR)
         self.venv_path = os.path.join(self.base_path, self.VENV_DIR)
-        self.setup_tag_provider()
+
+        # VARS
         self.user = 'ereuse'
         self.db_user = 'dtag'
         self.db_pass = 'ereuse'
         self.db = 'tag'
         self.db_host = 'localhost'
-        self.domain = domain
-        self.name_service = domain.replace('.', '_')
-        self.def_cmds()
         self.inventory = 'dbtest'
+        self.tag_provider = 'TD'
+        self.tag_hash_salt = '$6f/Wspgaswc1xJq5xj'
+        self.token = "7ad6eb73-d95c-4cdf-bf9f-b33be4e514b3"
+        self.devicehub_url = "http://api.usody.com/testdb"
+        self.name_service = domain.replace('.', '_')
         self.tmp = '/tmp/fabfile'
+
+        # INIT FUNCTIONS
+        self.c = self.connection()
+        self.def_cmds()
 
     def def_cmds(self):
         """ Definition of commands in the remote server """
@@ -153,8 +163,10 @@ class AppDeployment:
         command = 'su - postgres -c "psql -f ~/init.sql"'
         self.c.run(command)
 
-        tmpl = open('templates/env.template', 'r')
-        env = tmpl.read().format(user=self.db_user, pw=self.db_pass, host=self.host, db=self.db)
+        tmpl = open('templates/env_tag.template', 'r')
+        env = tmpl.read().format(user=self.db_user, pw=self.db_pass, host=self.host, db=self.db,
+                tag_provider=self.tag_provider, tag_hash_salt=self.tag_hash_salt, token=self.token,
+                url=self.devicehub_url)
         tmpl.close()
         env_domain = '{}/env_{}'.format(self.tmp, self.domain)
         tmpl = open(env_domain, 'w')
@@ -171,31 +183,18 @@ class AppDeployment:
 
     def create_alembic(self):
         """ create the first stamp for alembic """
-        mkdir = 'mkdir -p {}/ereuse_devicehub/migrations'.format(self.git_clone_path)
+        mkdir = 'mkdir -p {}/ereuse_tag/migrations'.format(self.git_clone_path)
         self.c.run(self.cmd(mkdir))
-        command = 'cd ereuse_devicehub/; ../../venv/bin/alembic -c alembic.ini stamp head'
+        command = 'cd ereuse_tag/; ../../venv/bin/alembic -c alembic.ini stamp head'
         self.c.run(self.cmd_env(command))
 
-
-    def setup_tag_provider(self):
-        """
-        We need define the correct tag_provider in common.inventory
-        """
-        text_info = """
-        devicehub_testing=# SELECT * FROM common.inventory;
-
-                    updated            |            created            |    id     |   name   |    tag_provider    |              tag_token               |                org_id
-        -------------------------------+-------------------------------+-----------+----------+--------------------+--------------------------------------+--------------------------------------
-        2020-07-16 16:53:57.722325+02 | 2020-07-16 16:53:57.725848+02 | usodybeta | Test 1   | http://example.com | 9f564863-2d28-4b69-a541-a08c5b34d422 | df7496df-d3e4-4286-a76a-350464e00181
-        """
-        print("It is necessary modify manualy tha tag_provider")
-        print(text_info)
 
     def setup_wsgi_app(self):
         """ Installing wsgi file """
         wsgi_path = os.path.join(self.base_path, 'source')
+        wsgi_orig = os.path.join(wsgi_path, 'wsgi.py')
         self.c.run('mkdir -p {}'.format(wsgi_path))
-        self.scp('templates/wsgi.py', wsgi_path)
+        self.scp('templates/wsgi_tag.py', wsgi_orig)
 
     def setup_gunicorn(self):
         """Configure gunicorn & restart service"""
