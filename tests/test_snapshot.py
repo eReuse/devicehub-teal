@@ -473,3 +473,16 @@ def test_pc_rating_rate_none(user: UserClient):
 def test_pc_2(user: UserClient):
     s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=s)
+
+
+@pytest.mark.one
+def test_backup_snapshot_with_error_500(user: UserClient):
+    snapshot_no_hid = file('basic.snapshot.nohid')
+    response_snapshot, response_status = user.post(res=Snapshot, data=snapshot_no_hid)
+    assert response_snapshot['software'] == 'Workbench'
+    assert response_snapshot['version'] == '11.0b9'
+    assert response_snapshot['uuid'] == '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
+    assert response_snapshot['elapsed'] == 4
+    assert response_snapshot['author']['id'] == user.user['id']
+    assert response_snapshot['severity'] == 'Warning'
+    assert response_status.status_code == 201
