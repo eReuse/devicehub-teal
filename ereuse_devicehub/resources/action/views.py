@@ -1,5 +1,6 @@
 import os
 import json
+import copy
 from time import time
 from distutils.version import StrictVersion
 from typing import List
@@ -28,11 +29,12 @@ def save_snapshot_in_file(snapshot_json):
     This function allow save a snapshot in json format un a TMP_SNAPSHOTS directory
     The file need to be saved with one name format with the stamptime and uuid joins
     """
+    name_file = "{uuid}_{time}.json".format(uuid=snapshot_json['uuid'], time=int(time()))
+    path_name = "{tmp}/{file}".format(tmp=TMP_SNAPSHOTS, file=name_file)
+
     if not os.path.isdir(TMP_SNAPSHOTS):
         os.system('mkdir -p {}'.format(TMP_SNAPSHOTS))
 
-    name_file = "{uuid}_{time}.json".format(uuid=snapshot_json['uuid'], time=int(time()))
-    path_name = "{tmp}/{file}".format(tmp=TMP_SNAPSHOTS, file=name_file)
     snapshot_file = open(path_name, 'w')
     snapshot_file.write(json.dumps(snapshot_json))
     snapshot_file.close()
@@ -78,62 +80,67 @@ class ActionView(View):
         # model object, when we flush them to the db we will flush
         # snapshot, and we want to wait to flush snapshot at the end
 
-        device = snapshot_json.pop('device')  # type: Computer
-        components = None
-        if snapshot_json['software'] == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid):
-            components = snapshot_json.pop('components', None)  # type: List[Component]
-        snapshot = Snapshot(**snapshot_json)
+        snapshot_json_bakup = copy.copy(snapshot_json)
+        try:
+            device = snapshot_json.pop('device')  # type: Computer
+            components = None
+            if snapshot_json['software'] == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid):
+                components = snapshot_json.pop('components', None)  # type: List[Component]
+            snapshot = Snapshot(**snapshot_json)
 
-        # Remove new actions from devices so they don't interfere with sync
-        actions_device = set(e for e in device.actions_one)
-        device.actions_one.clear()
-        if components:
-            actions_components = tuple(set(e for e in c.actions_one) for c in components)
-            for component in components:
-                component.actions_one.clear()
+            # Remove new actions from devices so they don't interfere with sync
+            actions_device = set(e for e in device.actions_one)
+            device.actions_one.clear()
+            if components:
+                actions_components = tuple(set(e for e in c.actions_one) for c in components)
+                for component in components:
+                    component.actions_one.clear()
 
-        assert not device.actions_one
-        assert all(not c.actions_one for c in components) if components else True
-        db_device, remove_actions = resource_def.sync.run(device, components)
+            assert not device.actions_one
+            assert all(not c.actions_one for c in components) if components else True
+            db_device, remove_actions = resource_def.sync.run(device, components)
 
-        del device  # Do not use device anymore
-        snapshot.device = db_device
-        snapshot.actions |= remove_actions | actions_device  # Set actions to snapshot
-        # commit will change the order of the components by what
-        # the DB wants. Let's get a copy of the list so we preserve order
-        ordered_components = OrderedSet(x for x in snapshot.components)
+            del device  # Do not use device anymore
+            snapshot.device = db_device
+            snapshot.actions |= remove_actions | actions_device  # Set actions to snapshot
+            # commit will change the order of the components by what
+            # the DB wants. Let's get a copy of the list so we preserve order
+            ordered_components = OrderedSet(x for x in snapshot.components)
 
-        # Add the new actions to the db-existing devices and components
-        db_device.actions_one |= actions_device
-        if components:
-            for component, actions in zip(ordered_components, actions_components):
-                component.actions_one |= actions
-                snapshot.actions |= actions
+            # Add the new actions to the db-existing devices and components
+            db_device.actions_one |= actions_device
+            if components:
+                for component, actions in zip(ordered_components, actions_components):
+                    component.actions_one |= actions
+                    snapshot.actions |= actions
 
-        if snapshot.software == SnapshotSoftware.Workbench:
-            # Check ownership of (non-component) device to from current.user
-            if db_device.owner_id != g.user.id:
-                raise InsufficientPermission()
-            # Compute ratings
-            try:
-                rate_computer, price = RateComputer.compute(db_device)
-            except CannotRate:
-                pass
-            else:
-                snapshot.actions.add(rate_computer)
-                if price:
-                    snapshot.actions.add(price)
-        elif snapshot.software == SnapshotSoftware.WorkbenchAndroid:
-            pass  # TODO try except to compute RateMobile
-        # Check if HID is null and add Severity:Warning to Snapshot
-        if snapshot.device.hid is None:
-            snapshot.severity = Severity.Warning
-        db.session.add(snapshot)
-        db.session().final_flush()
-        ret = self.schema.jsonify(snapshot)  # transform it back
-        ret.status_code = 201
-        db.session.commit()
-        return ret
+            if snapshot.software == SnapshotSoftware.Workbench:
+                # Check ownership of (non-component) device to from current.user
+                if db_device.owner_id != g.user.id:
+                    raise InsufficientPermission()
+                # Compute ratings
+                try:
+                    rate_computer, price = RateComputer.compute(db_device)
+                except CannotRate:
+                    pass
+                else:
+                    snapshot.actions.add(rate_computer)
+                    if price:
+                        snapshot.actions.add(price)
+            elif snapshot.software == SnapshotSoftware.WorkbenchAndroid:
+                pass  # TODO try except to compute RateMobile
+            # Check if HID is null and add Severity:Warning to Snapshot
+            if snapshot.device.hid is None:
+                snapshot.severity = Severity.Warning
+            db.session.add(snapshot)
+            db.session().final_flush()
+            ret = self.schema.jsonify(snapshot)  # transform it back
+            ret.status_code = 201
+            db.session.commit()
+            return ret
+        except Exception as err:
+            save_snapshot_in_file(snapshot_json_bakup)
+            raise err
 
     def transfer_ownership(self):
         """Perform a InitTransfer action to change author_id of device"""
