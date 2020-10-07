@@ -1,9 +1,12 @@
+import os
+import json
+import pytest
+
 from datetime import datetime, timedelta, timezone
 from operator import itemgetter
 from typing import List, Tuple
 from uuid import uuid4
 
-import pytest
 from boltons import urlutils
 from teal.db import UniqueViolation, DBError
 from teal.marshmallow import ValidationError
@@ -22,7 +25,7 @@ from ereuse_devicehub.resources.device.sync import MismatchBetweenProperties, \
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.views import TMP_SNAPSHOTS
+from ereuse_devicehub.resources.action.views import TMP_SNAPSHOTS, save_snapshot_in_file
 from tests.conftest import file
 
 
@@ -476,6 +479,28 @@ def test_pc_2(user: UserClient):
     snapshot, _ = user.post(res=Snapshot, data=s)
 
 
+@pytest.mark.ones
+def test_save_snapshot_in_file():
+    """ This test check if works the function save_snapshot_in_file """
+    snapshot_no_hid = file('basic.snapshot.nohid')
+    save_snapshot_in_file(snapshot_no_hid)
+
+    uuid = snapshot_no_hid['uuid']
+    files = [x for x in os.listdir(TMP_SNAPSHOTS) if uuid in x]
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    if files:
+        path_snapshot = "{dir}/{file}".format(dir=TMP_SNAPSHOTS, file=files[0])
+        file_snapshot = open(path_snapshot)
+        snapshot = json.loads(file_snapshot.read())
+        file_snapshot.close()
+        os.remove(path_snapshot)
+
+    assert snapshot['software'] == snapshot_no_hid['software']
+    assert snapshot['version'] == snapshot_no_hid['version']
+    assert snapshot['uuid'] == uuid
+
+
 @pytest.mark.one
 def test_backup_snapshot_with_error_500(user: UserClient):
     """ This test check if the file snapshot is create when some snapshot is wrong """
@@ -490,6 +515,7 @@ def test_backup_snapshot_with_error_500(user: UserClient):
         file_snapshot = open(path_snapshot)
         snapshot = json.loads(file_snapshot.read())
         file_snapshot.close()
+        os.remove(path_snapshot)
 
     assert snapshot['software'] == 'Workbench'
     assert snapshot['version'] == '11.0b9'
