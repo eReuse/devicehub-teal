@@ -22,6 +22,7 @@ from ereuse_devicehub.resources.device.sync import MismatchBetweenProperties, \
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.views import TMP_SNAPSHOTS
 from tests.conftest import file
 
 
@@ -477,12 +478,20 @@ def test_pc_2(user: UserClient):
 
 @pytest.mark.one
 def test_backup_snapshot_with_error_500(user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
     snapshot_no_hid = file('basic.snapshot.nohid')
-    response_snapshot, response_status = user.post(res=Snapshot, data=snapshot_no_hid)
-    assert response_snapshot['software'] == 'Workbench'
-    assert response_snapshot['version'] == '11.0b9'
-    assert response_snapshot['uuid'] == '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
-    assert response_snapshot['elapsed'] == 4
-    assert response_snapshot['author']['id'] == user.user['id']
-    assert response_snapshot['severity'] == 'Warning'
-    assert response_status.status_code == 201
+    _, response_status = user.post(res=Snapshot, data=snapshot_no_hid)
+    uuid = '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
+    files = [x for x in os.listdir(TMP_SNAPSHOTS) if uuid in x]
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    if files:
+        path_snapshot = "{dir}/{file}".format(dir=TMP_SNAPSHOTS, file=files[0])
+        file_snapshot = open(path_snapshot)
+        snapshot = json.loads(file_snapshot.read())
+        file_snapshot.close()
+
+    assert snapshot['software'] == 'Workbench'
+    assert snapshot['version'] == '11.0b9'
+    assert snapshot['uuid'] == uuid
+    assert response_status.status_code == 500
