@@ -479,7 +479,7 @@ def test_pc_2(user: UserClient):
     snapshot, _ = user.post(res=Snapshot, data=s)
 
 
-@pytest.mark.ones
+@pytest.mark.mvp
 def test_save_snapshot_in_file():
     """ This test check if works the function save_snapshot_in_file """
     snapshot_no_hid = file('basic.snapshot.nohid')
@@ -506,7 +506,7 @@ def test_backup_snapshot_with_error_500(user: UserClient):
     """ This test check if the file snapshot is create when some snapshot is wrong """
     snapshot_no_hid = file('basic.snapshot.nohid')
     _, response_status = user.post(res=Snapshot, data=snapshot_no_hid)
-    uuid = '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
+    uuid = snapshot_no_hid['uuid']
     files = [x for x in os.listdir(TMP_SNAPSHOTS) if uuid in x]
 
     snapshot = {'software': '', 'version': '', 'uuid': ''}
@@ -517,7 +517,7 @@ def test_backup_snapshot_with_error_500(user: UserClient):
         file_snapshot.close()
         os.remove(path_snapshot)
 
-    assert snapshot['software'] == 'Workbench'
-    assert snapshot['version'] == '11.0b9'
+    assert snapshot['software'] == snapshot_no_hid['software']
+    assert snapshot['version'] == snapshot_no_hid['version']
     assert snapshot['uuid'] == uuid
     assert response_status.status_code == 500
