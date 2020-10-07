@@ -22,7 +22,7 @@ SUPPORTED_WORKBENCH = StrictVersion('11.0')
 TMP_SNAPSHOTS = 'tmp/snapshots'
 
 
-def save_snapshot_on_file(snapshot_json):
+def save_snapshot_in_file(snapshot_json):
     """
     This function allow save a snapshot in json format un a TMP_SNAPSHOTS directory
     The file need to be saved with one name format with the stamptime and uuid joins
