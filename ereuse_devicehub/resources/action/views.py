@@ -1,3 +1,5 @@
+import os
+from time import time
 from distutils.version import StrictVersion
 from typing import List
 from uuid import UUID
@@ -16,6 +18,23 @@ from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
+
+TMP_SNAPSHOTS = 'tmp/snapshots'
+
+
+def save_snapshot_on_file(snapshot_json):
+    """
+    This function allow save a snapshot in json format un a TMP_SNAPSHOTS directory
+    The file need to be saved with one name format with the stamptime and uuid joins
+    """
+    if not os.path.isdir(TMP_SNAPSHOTS):
+        os.system('mkdir -p {}'.format(TMP_SNAPSHOTS))
+
+    name_file = "{uuid}_{time}.json".format(uuid=snapshot_json['uuid'], time=int(time()))
+    path_name = "{tmp}/{file}".format(tmp=TMP_SNAPSHOTS, file=name_file)
+    snapshot_file = open(path_name, 'w')
+    snapshot_file.write(json.dumps(snapshot_json))
+    snapshot_file.close()
 
 
 class ActionView(View):
