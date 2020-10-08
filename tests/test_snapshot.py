@@ -3,6 +3,7 @@ import json
 import pytest
 
 from datetime import datetime, timedelta, timezone
+from requests.exceptions import HTTPError
 from operator import itemgetter
 from typing import List, Tuple
 from uuid import uuid4
@@ -25,7 +26,7 @@ from ereuse_devicehub.resources.device.sync import MismatchBetweenProperties, \
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.action.views import TMP_SNAPSHOTS, save_snapshot_in_file
+from ereuse_devicehub.resources.action.views import TMP_SNAPSHOTS, save_json
 from tests.conftest import file
 
 
@@ -483,7 +484,7 @@ def test_pc_2(user: UserClient):
 def test_save_snapshot_in_file():
     """ This test check if works the function save_snapshot_in_file """
     snapshot_no_hid = file('basic.snapshot.nohid')
-    save_snapshot_in_file(snapshot_no_hid)
+    save_json(snapshot_no_hid)
 
     uuid = snapshot_no_hid['uuid']
     files = [x for x in os.listdir(TMP_SNAPSHOTS) if uuid in x]
@@ -501,15 +502,17 @@ def test_save_snapshot_in_file():
     assert snapshot['uuid'] == uuid
 
 
-@pytest.mark.one
-def test_backup_snapshot_with_error_500(user: UserClient):
+@pytest.mark.mvp
+def test_backup_snapshot_with_errors(user: UserClient):
     """ This test check if the file snapshot is create when some snapshot is wrong """
-    snapshot_no_hid = file('basic.snapshot.nohid')
-    _, response_status = user.post(res=Snapshot, data=snapshot_no_hid)
+    snapshot_no_hid = file('basic.snapshot.badly_formed')
     uuid = snapshot_no_hid['uuid']
-    files = [x for x in os.listdir(TMP_SNAPSHOTS) if uuid in x]
 
     snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(KeyError):
+        response = user.post(res=Snapshot, data=snapshot_no_hid)
+
+    files = [x for x in os.listdir(TMP_SNAPSHOTS) if uuid in x]
     if files:
         path_snapshot = "{dir}/{file}".format(dir=TMP_SNAPSHOTS, file=files[0])
         file_snapshot = open(path_snapshot)
@@ -520,4 +523,3 @@ def test_backup_snapshot_with_error_500(user: UserClient):
     assert snapshot['software'] == snapshot_no_hid['software']
     assert snapshot['version'] == snapshot_no_hid['version']
     assert snapshot['uuid'] == uuid
-    assert response_status.status_code == 500
