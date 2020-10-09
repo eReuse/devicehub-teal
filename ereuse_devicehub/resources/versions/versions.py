@@ -6,9 +6,11 @@ import teal.marshmallow
 from typing import Callable, Iterable, Tuple
 from urllib.parse import urlparse
 from flask import make_response, g
+from flask.json import jsonify
 from teal.resource import Resource, View
 
 from ereuse_devicehub.resources.inventory.model import Inventory
+from ereuse_devicehub.resources.versions.schemas import Versions
 from ereuse_devicehub import __version__
 
 
@@ -35,6 +37,10 @@ class VersionView(View):
         tag_version = get_tag_version(self.resource_def.app)
         versions = {'devicehub': __version__, "ereuse_tag": "0.0.0"}
         versions.update(tag_version)
+
+        ret = jsonify(versions)
+        ret.status_code = 200
+        # return ret
         return json.dumps(versions)
 
 
