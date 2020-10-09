@@ -10,7 +10,6 @@ from flask.json import jsonify
 from teal.resource import Resource, View
 
 from ereuse_devicehub.resources.inventory.model import Inventory
-from ereuse_devicehub.resources.versions.schemas import Versions
 from ereuse_devicehub import __version__
 
 
@@ -40,8 +39,7 @@ class VersionView(View):
 
         ret = jsonify(versions)
         ret.status_code = 200
-        # return ret
-        return json.dumps(versions)
+        return ret
 
 
 class VersionDef(Resource):
