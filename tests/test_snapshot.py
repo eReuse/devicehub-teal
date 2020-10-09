@@ -492,9 +492,9 @@ def test_save_snapshot_in_file():
     snapshot = {'software': '', 'version': '', 'uuid': ''}
     if files:
         path_snapshot = os.path.join(TMP_SNAPSHOTS, files[0])
-        file_snapshot = open(path_snapshot)
-        snapshot = json.loads(file_snapshot.read())
-        file_snapshot.close()
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
         os.remove(path_snapshot)
 
     assert snapshot['software'] == snapshot_no_hid['software']
@@ -515,9 +515,9 @@ def test_backup_snapshot_with_errors(user: UserClient):
     files = [x for x in os.listdir(TMP_SNAPSHOTS) if uuid in x]
     if files:
         path_snapshot = os.path.join(TMP_SNAPSHOTS, files[0])
-        file_snapshot = open(path_snapshot)
-        snapshot = json.loads(file_snapshot.read())
-        file_snapshot.close()
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
         os.remove(path_snapshot)
 
     assert snapshot['software'] == snapshot_no_hid['software']

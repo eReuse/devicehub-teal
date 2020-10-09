@@ -35,9 +35,9 @@ def save_json(req_json):
     if not os.path.isdir(TMP_SNAPSHOTS):
         os.system('mkdir -p {}'.format(TMP_SNAPSHOTS))
 
-    snapshot_file = open(path_name, 'w')
-    snapshot_file.write(json.dumps(req_json))
-    snapshot_file.close()
+    with open(path_name, 'w') as snapshot_file:
+        snapshot_file.write(json.dumps(req_json))
+
     return path_name
 
 
