@@ -491,7 +491,7 @@ def test_save_snapshot_in_file():
 
     snapshot = {'software': '', 'version': '', 'uuid': ''}
     if files:
-        path_snapshot = "{dir}/{file}".format(dir=TMP_SNAPSHOTS, file=files[0])
+        path_snapshot = os.path.join(dir=TMP_SNAPSHOTS, file=files[0])
         file_snapshot = open(path_snapshot)
         snapshot = json.loads(file_snapshot.read())
         file_snapshot.close()
@@ -514,7 +514,7 @@ def test_backup_snapshot_with_errors(user: UserClient):
 
     files = [x for x in os.listdir(TMP_SNAPSHOTS) if uuid in x]
     if files:
-        path_snapshot = "{dir}/{file}".format(dir=TMP_SNAPSHOTS, file=files[0])
+        path_snapshot = os.path.join(dir=TMP_SNAPSHOTS, file=files[0])
         file_snapshot = open(path_snapshot)
         snapshot = json.loads(file_snapshot.read())
         file_snapshot.close()

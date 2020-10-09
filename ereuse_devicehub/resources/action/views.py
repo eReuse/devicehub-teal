@@ -30,7 +30,7 @@ def save_json(req_json):
     The file need to be saved with one name format with the stamptime and uuid joins
     """
     name_file = "{uuid}_{time}.json".format(uuid=req_json.get('uuid', ''), time=int(time()))
-    path_name = "{tmp}/{file}".format(tmp=TMP_SNAPSHOTS, file=name_file)
+    path_name = os.path.join(tmp=TMP_SNAPSHOTS, file=name_file)
 
     if not os.path.isdir(TMP_SNAPSHOTS):
         os.system('mkdir -p {}'.format(TMP_SNAPSHOTS))
