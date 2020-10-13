@@ -2,12 +2,10 @@ import os
 import json
 from time import time
 from distutils.version import StrictVersion
-from typing import List
 from uuid import UUID
 
 from flask import current_app as app, request, g
 from sqlalchemy.util import OrderedSet
-from marshmallow.exceptions import ValidationError as mValidationError
 from teal.marshmallow import ValidationError
 from teal.resource import View
 
@@ -15,7 +13,6 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest, \
     InitTransfer
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
-from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 
