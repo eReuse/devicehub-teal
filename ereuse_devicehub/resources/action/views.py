@@ -2,7 +2,7 @@
 
 import os
 import json
-from time import time
+from datetime import datetime
 from distutils.version import StrictVersion
 from uuid import UUID
 
@@ -21,12 +21,18 @@ from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
 
-def save_json(req_json, tmp_snapshots):
+def save_json(req_json, tmp_snapshots, user):
     """
     This function allow save a snapshot in json format un a TMP_SNAPSHOTS directory
     The file need to be saved with one name format with the stamptime and uuid joins
     """
-    name_file = "{uuid}_{time}.json".format(uuid=req_json.get('uuid', ''), time=int(time()))
+    uuid = req_json.get('uuid', '')
+    now = datetime.now()
+    year = now.year
+    month = now.month
+    day = now.day
+
+    name_file = f"{uuid}_{user}_{year}-{month}-{day}.json"
     path_name = os.path.join(tmp_snapshots, name_file)
 
     if not os.path.isdir(tmp_snapshots):
@@ -43,7 +49,7 @@ class ActionView(View):
         """Posts an action."""
         json = request.get_json(validate=False)
         tmp_snapshots = app.config['TMP_SNAPSHOTS']
-        path_snapshot = save_json(json, tmp_snapshots)
+        path_snapshot = save_json(json, tmp_snapshots, g.user.email)
         if not json or 'type' not in json:
             raise ValidationError('Resource needs a type.')
         # todo there should be a way to better get subclassess resource

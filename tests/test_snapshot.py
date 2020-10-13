@@ -481,11 +481,11 @@ def test_pc_2(user: UserClient):
 
 
 @pytest.mark.mvp
-def test_save_snapshot_in_file(app: Devicehub):
+def test_save_snapshot_in_file(app: Devicehub, user: UserClient):
     """ This test check if works the function save_snapshot_in_file """
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
     snapshot_no_hid = file('basic.snapshot.nohid')
-    save_json(snapshot_no_hid, tmp_snapshots)
+    save_json(snapshot_no_hid, tmp_snapshots, user.user['email'])
 
     uuid = snapshot_no_hid['uuid']
     files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
