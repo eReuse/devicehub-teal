@@ -26,7 +26,7 @@ from ereuse_devicehub.resources.device.sync import MismatchBetweenProperties, \
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.action.views import TMP_SNAPSHOTS, save_json
+from ereuse_devicehub.resources.action.views import save_json
 from tests.conftest import file
 
 
@@ -481,17 +481,18 @@ def test_pc_2(user: UserClient):
 
 
 @pytest.mark.mvp
-def test_save_snapshot_in_file():
+def test_save_snapshot_in_file(app: Devicehub):
     """ This test check if works the function save_snapshot_in_file """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
     snapshot_no_hid = file('basic.snapshot.nohid')
-    save_json(snapshot_no_hid)
+    save_json(snapshot_no_hid, tmp_snapshots)
 
     uuid = snapshot_no_hid['uuid']
-    files = [x for x in os.listdir(TMP_SNAPSHOTS) if uuid in x]
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
 
     snapshot = {'software': '', 'version': '', 'uuid': ''}
     if files:
-        path_snapshot = os.path.join(TMP_SNAPSHOTS, files[0])
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
         with open(path_snapshot) as file_snapshot:
             snapshot = json.loads(file_snapshot.read())
 
@@ -503,8 +504,9 @@ def test_save_snapshot_in_file():
 
 
 @pytest.mark.mvp
-def test_backup_snapshot_with_errors(user: UserClient):
+def test_backup_snapshot_with_errors(app: Devicehub, user: UserClient):
     """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
     snapshot_no_hid = file('basic.snapshot.badly_formed')
     uuid = snapshot_no_hid['uuid']
 
@@ -512,9 +514,9 @@ def test_backup_snapshot_with_errors(user: UserClient):
     with pytest.raises(KeyError):
         response = user.post(res=Snapshot, data=snapshot_no_hid)
 
-    files = [x for x in os.listdir(TMP_SNAPSHOTS) if uuid in x]
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
     if files:
-        path_snapshot = os.path.join(TMP_SNAPSHOTS, files[0])
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
         with open(path_snapshot) as file_snapshot:
             snapshot = json.loads(file_snapshot.read())
 

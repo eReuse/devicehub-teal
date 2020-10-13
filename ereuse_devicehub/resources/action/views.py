@@ -1,3 +1,5 @@
+""" This is the view for Snapshots """
+
 import os
 import json
 from time import time
@@ -18,19 +20,17 @@ from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
-TMP_SNAPSHOTS = 'tmp/snapshots'
 
-
-def save_json(req_json):
+def save_json(req_json, tmp_snapshots):
     """
     This function allow save a snapshot in json format un a TMP_SNAPSHOTS directory
     The file need to be saved with one name format with the stamptime and uuid joins
     """
     name_file = "{uuid}_{time}.json".format(uuid=req_json.get('uuid', ''), time=int(time()))
-    path_name = os.path.join(TMP_SNAPSHOTS, name_file)
+    path_name = os.path.join(tmp_snapshots, name_file)
 
-    if not os.path.isdir(TMP_SNAPSHOTS):
-        os.system('mkdir -p {}'.format(TMP_SNAPSHOTS))
+    if not os.path.isdir(tmp_snapshots):
+        os.system('mkdir -p {}'.format(tmp_snapshots))
 
     with open(path_name, 'w') as snapshot_file:
         snapshot_file.write(json.dumps(req_json))
@@ -42,7 +42,8 @@ class ActionView(View):
     def post(self):
         """Posts an action."""
         json = request.get_json(validate=False)
-        path_snapshot = save_json(json)
+        tmp_snapshots = app.config['TMP_SNAPSHOTS']
+        path_snapshot = save_json(json, tmp_snapshots)
         if not json or 'type' not in json:
             raise ValidationError('Resource needs a type.')
         # todo there should be a way to better get subclassess resource
