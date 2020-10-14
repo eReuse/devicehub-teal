@@ -1,0 +1,22 @@
+type: Snapshot
+uuid: 127fad1c-a3f2-4677-9dab-4a370071a882
+version: 11.0
+software: Workbench
+elapsed: 4
+device: 
+  type: Laptop
+  chassis: Microtower
+  serialNumber: d2s
+  model: d2ml
+  manufacturer: d2mr
+components: 
+  - type: RamModule
+    serialNumber: rm2s
+    model: rm2ml
+    manufacturer: rm2mr
+    speed: 1333
+  - type: Processor
+    serialNumber: p2s
+    model: p2ml
+    manufacturer: p2mr
+    speed: 1.6

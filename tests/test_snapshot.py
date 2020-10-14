@@ -525,3 +525,101 @@ def test_backup_snapshot_with_errors(app: Devicehub, user: UserClient):
     assert snapshot['software'] == snapshot_no_hid['software']
     assert snapshot['version'] == snapshot_no_hid['version']
     assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_failed_missing_cpu_benchmark(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    snapshot_error = file('failed.snapshot.500.missing-cpu-benchmark')
+    uuid = snapshot_error['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(TypeError):
+        user.post(res=Snapshot, data=snapshot_error)
+
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        os.remove(path_snapshot)
+
+    assert snapshot['software'] == snapshot_error['software']
+    assert snapshot['version'] == snapshot_error['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_failed_missing_hdd_benchmark(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    snapshot_error = file('failed.snapshot.500.missing-hdd-benchmark')
+    uuid = snapshot_error['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(TypeError):
+        user.post(res=Snapshot, data=snapshot_error)
+
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        os.remove(path_snapshot)
+
+    assert snapshot['software'] == snapshot_error['software']
+    assert snapshot['version'] == snapshot_error['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_failed_null_chassis(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    snapshot_error = file('failed.snapshot.422.null-chassis')
+    uuid = snapshot_error['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    # import pdb; pdb.set_trace()
+    with pytest.raises(TypeError):
+        user.post(res=Snapshot, data=snapshot_error)
+
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        os.remove(path_snapshot)
+
+    assert snapshot['software'] == snapshot_error['software']
+    assert snapshot['version'] == snapshot_error['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_failed_missing_chassis(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    snapshot_error = file('failed.snapshot.422.missing-chassis')
+    uuid = snapshot_error['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(TypeError):
+        user.post(res=Snapshot, data=snapshot_error)
+
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        os.remove(path_snapshot)
+
+    assert snapshot['software'] == snapshot_error['software']
+    assert snapshot['version'] == snapshot_error['version']
+    assert snapshot['uuid'] == uuid
+
