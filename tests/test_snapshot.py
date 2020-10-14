@@ -99,6 +99,26 @@ def test_snapshot_post(user: UserClient):
 
 
 @pytest.mark.mvp
+def test_snapshot_update_timeupdated(user: UserClient):
+    """
+    Tests for check if one computer have the time mark updated when one component of it is updated
+    """
+    computer1 = file('1-device-with-components.snapshot')
+    snapshot = snapshot_and_check(user,
+                                  computer1,
+                                  action_types=(BenchmarkProcessor.t,
+                                                RateComputer.t),
+                                  perform_second_snapshot=False)
+    computer2 = file('2-second-device-with-components-of-first.snapshot')
+    snapshot_and_check(user, computer2, action_types=('Remove', 'RateComputer'),
+                       perform_second_snapshot=False)
+    # import pdb; pdb.set_trace()
+    pc1_id = snapshot['device']['id']
+    pc1, _ = user.get(res=m.Device, item=pc1_id)
+    assert pc1['updated'] != snapshot['updated']
+
+
+@pytest.mark.mvp
 def test_snapshot_component_add_remove(user: UserClient):
     """Tests adding and removing components and some don't generate HID.
     All computers generate HID.
