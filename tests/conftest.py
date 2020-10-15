@@ -30,6 +30,7 @@ class TestConfig(DevicehubConfig):
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/dh_test'
     TESTING = True
     SERVER_NAME = 'localhost'
+    TMP_SNAPSHOTS = '/tmp/snapshots'
 
 
 @pytest.fixture(scope='session')

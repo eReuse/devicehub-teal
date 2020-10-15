@@ -116,3 +116,6 @@ ENV/
 
 # Environment
 .env
+
+# Temporal dir
+tmp/

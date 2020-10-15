@@ -1,9 +1,13 @@
+import os
+import json
+import pytest
+
 from datetime import datetime, timedelta, timezone
+from requests.exceptions import HTTPError
 from operator import itemgetter
 from typing import List, Tuple
 from uuid import uuid4
 
-import pytest
 from boltons import urlutils
 from teal.db import UniqueViolation, DBError
 from teal.marshmallow import ValidationError
@@ -22,6 +26,7 @@ from ereuse_devicehub.resources.device.sync import MismatchBetweenProperties, \
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.action.views import save_json
 from tests.conftest import file
 
 
@@ -473,3 +478,147 @@ def test_pc_rating_rate_none(user: UserClient):
 def test_pc_2(user: UserClient):
     s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=s)
+
+
+@pytest.mark.mvp
+def test_save_snapshot_in_file(app: Devicehub, user: UserClient):
+    """ This test check if works the function save_snapshot_in_file """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    snapshot_no_hid = file('basic.snapshot.nohid')
+    save_json(snapshot_no_hid, tmp_snapshots, user.user['email'])
+
+    uuid = snapshot_no_hid['uuid']
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    if files:
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        os.remove(path_snapshot)
+
+    assert snapshot['software'] == snapshot_no_hid['software']
+    assert snapshot['version'] == snapshot_no_hid['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_backup_snapshot_with_errors(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    snapshot_no_hid = file('basic.snapshot.badly_formed')
+    uuid = snapshot_no_hid['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(KeyError):
+        response = user.post(res=Snapshot, data=snapshot_no_hid)
+
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        os.remove(path_snapshot)
+
+    assert snapshot['software'] == snapshot_no_hid['software']
+    assert snapshot['version'] == snapshot_no_hid['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_failed_missing_cpu_benchmark(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    snapshot_error = file('failed.snapshot.500.missing-cpu-benchmark')
+    uuid = snapshot_error['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(TypeError):
+        user.post(res=Snapshot, data=snapshot_error)
+
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        os.remove(path_snapshot)
+
+    assert snapshot['software'] == snapshot_error['software']
+    assert snapshot['version'] == snapshot_error['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_failed_missing_hdd_benchmark(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    snapshot_error = file('failed.snapshot.500.missing-hdd-benchmark')
+    uuid = snapshot_error['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(TypeError):
+        user.post(res=Snapshot, data=snapshot_error)
+
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        os.remove(path_snapshot)
+
+    assert snapshot['software'] == snapshot_error['software']
+    assert snapshot['version'] == snapshot_error['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_failed_null_chassis(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    snapshot_error = file('failed.snapshot.422.null-chassis')
+    uuid = snapshot_error['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(TypeError):
+        user.post(res=Snapshot, data=snapshot_error)
+
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        os.remove(path_snapshot)
+
+    assert snapshot['software'] == snapshot_error['software']
+    assert snapshot['version'] == snapshot_error['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_failed_missing_chassis(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    snapshot_error = file('failed.snapshot.422.missing-chassis')
+    uuid = snapshot_error['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(TypeError):
+        user.post(res=Snapshot, data=snapshot_error)
+
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        os.remove(path_snapshot)
+
+    assert snapshot['software'] == snapshot_error['software']
+    assert snapshot['version'] == snapshot_error['version']
+    assert snapshot['uuid'] == uuid
+
