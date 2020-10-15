@@ -134,6 +134,12 @@ def file(name: str) -> dict:
         return yaml.load(f)
 
 
+def file_workbench(name: str) -> dict:
+    """Opens and parses a YAML file from the ``files`` subdir."""
+    with Path(__file__).parent.joinpath('workbench_files').joinpath(name + '.json').open() as f:
+        return yaml.load(f)
+
+
 @pytest.fixture()
 def tag_id(app: Devicehub) -> str:
     """Creates a tag and returns its id."""
