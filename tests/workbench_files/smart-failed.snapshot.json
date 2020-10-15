@@ -1,0 +1,133 @@
+{
+  "elapsed": 295,
+  "device": {
+    "sku": null,
+    "model": "Inspiron 1210",
+    "chassis": "Laptop",
+    "version": "A04",
+    "manufacturer": "Dell Inc.",
+    "actions": [
+      {
+        "elapsed": 60,
+        "type": "StressTest",
+        "severity": "Info"
+      },
+      {
+        "elapsed": 15,
+        "rate": 15.2835,
+        "type": "BenchmarkRamSysbench"
+      }
+    ],
+    "serialNumber": "JGXDVF1",
+    "type": "Laptop"
+  },
+  "closed": true,
+  "uuid": "f6b8a152-7358-44a5-982d-2a23c235fe7b",
+  "software": "Workbench",
+  "version": "11.0b11",
+  "components": [
+    {
+      "actions": [
+        {
+          "elapsed": 0,
+          "rate": 6383.4,
+          "type": "BenchmarkProcessor"
+        },
+        {
+          "elapsed": 172,
+          "rate": 171.7227,
+          "type": "BenchmarkProcessorSysbench"
+        }
+      ],
+      "model": "Intel Atom CPU Z530 @ 1.60GHz",
+      "brand": "Atom",
+      "generation": null,
+      "speed": 1.3330000000000002,
+      "threads": 2,
+      "cores": 1,
+      "manufacturer": "Intel Corp.",
+      "address": 32,
+      "serialNumber": null,
+      "type": "Processor"
+    },
+    {
+      "size": 1024.0,
+      "interface": "DDR2",
+      "model": null,
+      "format": "SODIMM",
+      "manufacturer": null,
+      "actions": [],
+      "serialNumber": null,
+      "type": "RamModule"
+    },
+    {
+      "size": 12.114858378849794,
+      "model": "X332G 121W1 LCD Monitor",
+      "technology": "LCD",
+      "actions": [],
+      "productionDate": "2008-01-06T00:00:00",
+      "resolutionHeight": 800,
+      "resolutionWidth": 1280,
+      "manufacturer": "SEC \"X332G 121W1\"",
+      "refreshRate": 60,
+      "serialNumber": null,
+      "type": "Display"
+    },
+    {
+      "size": 80026.361856,
+      "interface": "ATA",
+      "model": "SAMSUNG HS082HB",
+      "manufacturer": null,
+      "actions": [
+        {
+          "elapsed": 25,
+          "writeSpeed": 14.9,
+          "readSpeed": 36.2,
+          "type": "BenchmarkDataStorage"
+        },
+        {
+          "severity": "Info",
+          "length": "Short",
+          "reallocatedSectorCount": 0,
+          "assessment": true,
+          "powerCycleCount": 2169,
+          "elapsed": 6,
+          "status": "Completed: read failure",
+          "offlineUncorrectable": 182042944,
+          "lifetime": 4634,
+          "currentPendingSectorCount": 473302660,
+          "type": "TestDataStorage"
+        }
+      ],
+      "variant": "0-05",
+      "serialNumber": "S17QJ16QA13332",
+      "type": "HardDrive"
+    },
+    {
+      "type": "GraphicCard",
+      "model": "US15W/US15X SCH Poulsbo Graphics Controller",
+      "manufacturer": "Intel Corporation",
+      "actions": [],
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "usb": 4,
+      "biosDate": "2009-05-03T00:00:00",
+      "pcmcia": 0,
+      "manufacturer": "Dell Inc.",
+      "ramSlots": 1,
+      "ramMaxSize": 1,
+      "type": "Motherboard",
+      "model": "0X605H",
+      "serial": 0,
+      "firewire": 0,
+      "version": "A04",
+      "actions": [],
+      "serialNumber": ".JGXDVF1.CN1296191H0074.",
+      "slots": 0
+    }
+  ],
+  "endTime": "2020-09-11T23:16:44.892808+00:00",
+  "type": "Snapshot"
+}

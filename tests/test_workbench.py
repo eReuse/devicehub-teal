@@ -333,3 +333,8 @@ def test_david(user: UserClient):
 def test_eresueprice_computer_type(user: UserClient):
     s = file_workbench('computer-type.snapshot')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
+
+@pytest.mark.mvp
+def test_datastorage_results_exceeds_range(user: UserClient):
+    s = file_workbench('smart-failed.snapshot')
+    snapshot, _ = user.post(res=em.Snapshot, data=s)
