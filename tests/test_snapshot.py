@@ -583,7 +583,6 @@ def test_snapshot_failed_null_chassis(app: Devicehub, user: UserClient):
     uuid = snapshot_error['uuid']
 
     snapshot = {'software': '', 'version': '', 'uuid': ''}
-    # import pdb; pdb.set_trace()
     with pytest.raises(TypeError):
         user.post(res=Snapshot, data=snapshot_error)
 

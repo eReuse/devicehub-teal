@@ -31,8 +31,10 @@ def save_json(req_json, tmp_snapshots, user):
     year = now.year
     month = now.month
     day = now.day
+    hour = now.hour
+    minutes = now.min
 
-    name_file = f"{uuid}_{user}_{year}-{month}-{day}.json"
+    name_file = f"{year}-{month}-{day}-{hour}-{minutes}_{user}_{uuid}.json"
     path_name = os.path.join(tmp_snapshots, name_file)
 
     if not os.path.isdir(tmp_snapshots):
