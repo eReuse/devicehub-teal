@@ -337,4 +337,4 @@ def test_eresueprice_computer_type(user: UserClient):
 @pytest.mark.mvp
 def test_datastorage_results_exceeds_range(user: UserClient):
     s = file_workbench('smart-failed.snapshot')
-    snapshot, _ = user.post(res=em.Snapshot, data=s)
+    snapshot, _ = user.post(res=em.Snapshot, data=s, status=201)
