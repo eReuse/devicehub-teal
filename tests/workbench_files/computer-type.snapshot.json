@@ -1,0 +1,135 @@
+{
+  "device": {
+    "manufacturer": "Render",
+    "chassis": "Virtual",
+    "sku": "1234567890",
+    "actions": [
+      {
+        "type": "StressTest",
+        "elapsed": 60,
+        "severity": "Info"
+      },
+      {
+        "type": "BenchmarkRamSysbench",
+        "rate": 47.3516,
+        "elapsed": 47
+      }
+    ],
+    "model": "Pinetrail",
+    "serialNumber": "0123456789",
+    "type": "Computer",
+    "version": "Revision A"
+  },
+  "endTime": "2020-09-11T18:59:14.395622+00:00",
+  "closed": true,
+  "components": [
+    {
+      "model": "NM10/ICH7 Family High Definition Audio Controller",
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "serialNumber": null,
+      "actions": []
+    },
+    {
+      "model": "USB2.0-Camera",
+      "type": "SoundCard",
+      "manufacturer": "Generic",
+      "serialNumber": "200901010001",
+      "actions": []
+    },
+    {
+      "cores": 1,
+      "model": "Intel Atom CPU N455 @ 1.66GHz",
+      "brand": "Atom",
+      "manufacturer": "Intel Corp.",
+      "actions": [
+        {
+          "type": "BenchmarkProcessorSysbench",
+          "rate": 164.4763,
+          "elapsed": 165
+        },
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 6667.6,
+          "elapsed": 0
+        }
+      ],
+      "speed": 1.667,
+      "generation": null,
+      "serialNumber": null,
+      "type": "Processor",
+      "address": 64,
+      "threads": 2
+    },
+    {
+      "format": "SODIMM",
+      "manufacturer": "7576aces",
+      "interface": "DDR3",
+      "actions": [],
+      "model": null,
+      "speed": 667.0,
+      "serialNumber": "7A7B7C7D",
+      "type": "RamModule",
+      "size": 1024.0
+    },
+    {
+      "manufacturer": "Toshiba",
+      "interface": "ATA",
+      "serialNumber": "907HT0RKT",
+      "model": "MK1665GS",
+      "actions": [
+        {
+          "type": "BenchmarkDataStorage",
+          "readSpeed": 81.1,
+          "writeSpeed": 24.6,
+          "elapsed": 14
+        },
+        {
+          "reallocatedSectorCount": 47,
+          "powerCycleCount": 147,
+          "assessment": true,
+          "currentPendingSectorCount": 0,
+          "offlineUncorrectable": 0,
+          "elapsed": 114,
+          "status": "Completed without error",
+          "type": "TestDataStorage",
+          "length": "Short",
+          "lifetime": 98,
+          "severity": "Info"
+        }
+      ],
+      "type": "HardDrive",
+      "size": 160041.88569599998,
+      "variant": "1M"
+    },
+    {
+      "manufacturer": "Intel Corporation",
+      "serialNumber": null,
+      "model": "Atom Processor D4xx/D5xx/N4xx/N5xx Integrated Graphics Controller",
+      "memory": null,
+      "actions": [],
+      "type": "GraphicCard"
+    },
+    {
+      "firewire": 0,
+      "serial": 1,
+      "actions": [],
+      "model": "Pinetrail",
+      "pcmcia": 0,
+      "serialNumber": "400",
+      "usb": 5,
+      "slots": 0,
+      "manufacturer": "Render",
+      "ramMaxSize": 2,
+      "version": "6.00",
+      "biosDate": "2011-02-28T00:00:00",
+      "type": "Motherboard",
+      "ramSlots": 2
+    }
+  ],
+  "elapsed": 11215,
+  "uuid": "426ba7a5-7d73-4555-817e-562cead08e48",
+  "version": "11.0b11",
+  "software": "Workbench",
+  "type": "Snapshot"
+}
