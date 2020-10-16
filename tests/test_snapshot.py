@@ -115,13 +115,11 @@ def test_snapshot_update_timefield_updated(user: UserClient):
                                                 RateComputer.t),
                                   perform_second_snapshot=False)
     computer2 = file('2-second-device-with-components-of-first.snapshot')
-    pc1_id = snapshot['device']['id']
-    pc1, _ = user.get(res=m.Device, item=pc1_id)
     snapshot_and_check(user, computer2, action_types=('Remove', 'RateComputer'),
                        perform_second_snapshot=False)
     pc1_id = snapshot['device']['id']
     pc1, _ = user.get(res=m.Device, item=pc1_id)
-    assert pc1['updated'] != snapshot['updated']
+    assert pc1['updated'] != snapshot['device']['updated']
 
 
 @pytest.mark.mvp
