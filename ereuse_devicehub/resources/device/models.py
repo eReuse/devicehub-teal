@@ -28,7 +28,7 @@ from teal.resource import url_for_resource
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity, TransferState
-from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
+from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing, update_timestamp
 from ereuse_devicehub.resources.user.models import User
 
 
@@ -881,3 +881,59 @@ class Manufacturer(db.Model):
                 'COPY common.manufacturer FROM STDIN (FORMAT csv)',
                 f
             )
+
+
+
+update_timestamp(Computer)
+update_timestamp(Desktop)
+update_timestamp(Laptop)
+update_timestamp(Server)
+update_timestamp(Monitor)
+update_timestamp(ComputerMonitor)
+update_timestamp(TelevisionSet)
+update_timestamp(Projector)
+update_timestamp(Mobile)
+update_timestamp(Smartphone)
+update_timestamp(Tablet)
+update_timestamp(Cellphone)
+update_timestamp(Component)
+update_timestamp(GraphicCard)
+update_timestamp(DataStorage)
+update_timestamp(HardDrive)
+update_timestamp(SolidStateDrive)
+update_timestamp(Motherboard)
+update_timestamp(NetworkAdapter)
+update_timestamp(Processor)
+update_timestamp(RamModule)
+update_timestamp(SoundCard)
+update_timestamp(Display)
+update_timestamp(Battery)
+update_timestamp(Camera)
+update_timestamp(ComputerAccessory)
+update_timestamp(SAI)
+update_timestamp(Keyboard)
+update_timestamp(Mouse)
+update_timestamp(MemoryCardReader)
+update_timestamp(Networking)
+update_timestamp(Router)
+update_timestamp(Switch)
+update_timestamp(Hub)
+update_timestamp(WirelessAccessPoint)
+update_timestamp(Printer)
+update_timestamp(LabelPrinter)
+update_timestamp(Sound)
+update_timestamp(Microphone)
+update_timestamp(Video)
+update_timestamp(VideoScaler)
+update_timestamp(Videoconference)
+update_timestamp(Cooking)
+update_timestamp(Mixer)
+update_timestamp(DIYAndGardening)
+update_timestamp(Drill)
+update_timestamp(PackOfScrewdrivers)
+update_timestamp(Home)
+update_timestamp(Dehumidifier)
+update_timestamp(Stairs)
+update_timestamp(Recreation)
+update_timestamp(Bike)
+update_timestamp(Racket)
