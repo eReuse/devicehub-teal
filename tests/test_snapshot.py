@@ -393,7 +393,6 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
     get_snapshot, _ = user.get(res=Action, item=_snapshot2['id'])
     assert get_snapshot['actions'][0]['endTime'] == '2018-06-01T07:14:00+00:00'
-    import pdb; pdb.set_trace()
     assert snapshot == get_snapshot
     erasure, _ = user.get(res=Action, item=erasure1['id'])
     assert len(erasure['steps']) == 2
