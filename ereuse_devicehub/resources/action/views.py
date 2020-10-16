@@ -1,6 +1,9 @@
-from distutils.version import StrictVersion
+""" This is the view for Snapshots """
+
+import os
+import json
 from datetime import datetime
-from typing import List
+from distutils.version import StrictVersion
 from uuid import UUID
 
 from flask import current_app as app, request, g
@@ -12,17 +15,43 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest, \
     InitTransfer
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
-from ereuse_devicehub.resources.device.models import Component, Computer
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
 
+def save_json(req_json, tmp_snapshots, user):
+    """
+    This function allow save a snapshot in json format un a TMP_SNAPSHOTS directory
+    The file need to be saved with one name format with the stamptime and uuid joins
+    """
+    uuid = req_json.get('uuid', '')
+    now = datetime.now()
+    year = now.year
+    month = now.month
+    day = now.day
+    hour = now.hour
+    minutes = now.min
+
+    name_file = f"{year}-{month}-{day}-{hour}-{minutes}_{user}_{uuid}.json"
+    path_name = os.path.join(tmp_snapshots, name_file)
+
+    if not os.path.isdir(tmp_snapshots):
+        os.system('mkdir -p {}'.format(tmp_snapshots))
+
+    with open(path_name, 'w') as snapshot_file:
+        snapshot_file.write(json.dumps(req_json))
+
+    return path_name
+
+
 class ActionView(View):
     def post(self):
         """Posts an action."""
         json = request.get_json(validate=False)
+        tmp_snapshots = app.config['TMP_SNAPSHOTS']
+        path_snapshot = save_json(json, tmp_snapshots, g.user.email)
         if not json or 'type' not in json:
             raise ValidationError('Resource needs a type.')
         # todo there should be a way to better get subclassess resource
@@ -30,11 +59,14 @@ class ActionView(View):
         resource_def = app.resources[json['type']]
         a = resource_def.schema.load(json)
         if json['type'] == Snapshot.t:
-            return self.snapshot(a, resource_def)
+            response = self.snapshot(a, resource_def)
+            os.remove(path_snapshot)
+            return response
         if json['type'] == VisualTest.t:
             pass
             # TODO JN add compute rate with new visual test and old components device
         if json['type'] == InitTransfer.t:
+            os.remove(path_snapshot)
             return self.transfer_ownership()
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
@@ -45,6 +77,7 @@ class ActionView(View):
         ret = self.schema.jsonify(action)
         ret.status_code = 201
         db.session.commit()
+        os.remove(path_snapshot)
         return ret
 
     def one(self, id: UUID):

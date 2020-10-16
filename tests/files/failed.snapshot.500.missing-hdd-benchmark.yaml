@@ -1,0 +1,31 @@
+type: Snapshot
+uuid: 2afa5413-9858-4577-8273-a027a647fed0
+version: 11.0
+software: Workbench
+elapsed: 4
+device: 
+  type: Desktop
+  chassis: Microtower
+  serialNumber: d3s
+  model: d3ml
+  manufacturer: d3mr
+components: 
+  - type: RamModule
+    serialNumber: rm3s
+    model: rm3ml
+    manufacturer: rm3mr
+    speed: 1333
+  - type: Processor
+    serialNumber: p3s
+    model: p3ml
+    manufacturer: p3mr
+    speed: 1.6
+    size: 160041.88569599998
+    model: hdd3m
+    type: HardDrive
+    manufacturer: hdd3mr
+    serialNumber: hdd3s
+    actions: 
+      - type: BenchmarkProcessor
+        rate: 2410
+        elapsed: 11

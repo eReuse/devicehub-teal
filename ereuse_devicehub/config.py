@@ -44,6 +44,9 @@ class DevicehubConfig(Config):
     """The minimum version of ereuse.org workbench that this devicehub
     accepts. we recommend not changing this value.
     """
+
+    TMP_SNAPSHOTS = config('TMP_SNAPSHOTS', '/tmp/snapshots')
+    """This var is for save a snapshots in json format when fail something"""
     API_DOC_CONFIG_TITLE = 'Devicehub'
     API_DOC_CONFIG_VERSION = '0.2'
     API_DOC_CONFIG_COMPONENTS = {
