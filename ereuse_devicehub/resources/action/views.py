@@ -70,8 +70,9 @@ class ActionView(View):
             return self.transfer_ownership()
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
-        for d in action.devices:
-            d.updated = datetime.now()
+        if hasattr(action, 'devices'):
+            for d in action.devices:
+                d.updated = datetime.now()
         db.session.add(action)
         db.session().final_flush()
         ret = self.schema.jsonify(action)
