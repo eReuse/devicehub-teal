@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from flask_sqlalchemy import event
 
 from ereuse_devicehub.db import db
 
@@ -34,3 +35,9 @@ class Thing(db.Model):
         # to be able to use sorted containers
         self.created = kwargs.get('created', datetime.now(timezone.utc))
         super().__init__(**kwargs)
+
+def on_update_time(mapper, connection, thing_obj):
+    thing_obj.updated = datetime.now()
+
+def update_timestamp(thing_obj):
+    event.listen(thing_obj, 'before_update', on_update_time)
