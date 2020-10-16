@@ -1,4 +1,5 @@
 from distutils.version import StrictVersion
+from datetime import datetime
 from typing import List
 from uuid import UUID
 
@@ -37,6 +38,8 @@ class ActionView(View):
             return self.transfer_ownership()
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
+        for d in action.devices:
+            d.updated = datetime.now()
         db.session.add(action)
         db.session().final_flush()
         ret = self.schema.jsonify(action)
@@ -109,6 +112,8 @@ class ActionView(View):
         if snapshot.device.hid is None:
             snapshot.severity = Severity.Warning
         db.session.add(snapshot)
+        for action in snapshot.actions:
+            action.device.updated = datetime.now()
         db.session().final_flush()
         ret = self.schema.jsonify(snapshot)  # transform it back
         ret.status_code = 201

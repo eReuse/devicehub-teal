@@ -238,6 +238,8 @@ def test_generic_action(action_model_state: Tuple[models.Action, states.Trading]
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
     assert device['actions'][-1]['id'] == action['id']
     assert device['physical'] == state.name
+    # Check if the update of device is changed
+    assert snapshot['device']['updated'] != device['updated']
 
 
 @pytest.mark.mvp
