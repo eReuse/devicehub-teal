@@ -133,6 +133,35 @@ def test_export_full_snapshot(user: UserClient):
 
 
 @pytest.mark.mvp
+def test_export_extended(user: UserClient):
+    """Test a export device with all information and a lot of components."""
+    snapshot, _ = user.post(file('real-eee-1001pxd.snapshot.12'), res=Snapshot)
+    csv_str, _ = user.get(res=documents.DocumentDef.t,
+                          item='devices/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
+    f = StringIO(csv_str)
+    obj_csv = csv.reader(f, f)
+    export_csv = list(obj_csv)
+
+    # Open fixture csv and transform to list
+    with Path(__file__).parent.joinpath('files').joinpath(
+            'proposal_extended_csv_report.csv').open() as csv_file:
+        obj_csv = csv.reader(csv_file)
+        fixture_csv = list(obj_csv)
+
+    assert isinstance(datetime.strptime(export_csv[1][8], '%c'), datetime), \
+        'Register in field is not a datetime'
+
+    # Pop dates fields from csv lists to compare them
+    fixture_csv[1] = fixture_csv[1][:8] + fixture_csv[1][9:]
+    export_csv[1] = export_csv[1][:8] + export_csv[1][9:]
+
+    assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
+    assert fixture_csv[1] == export_csv[1], 'Computer information are not equal'
+
+
+@pytest.mark.mvp
 def test_export_empty(user: UserClient):
     """Test to check works correctly exporting csv without any information,
     export a placeholder device.
