@@ -139,7 +139,6 @@ def test_export_extended(app: Devicehub, user: UserClient):
     assert fixture_csv[1][20:80] == export_csv[1][20:80], 'Computer information are not equal'
     assert fixture_csv[2][:17] == export_csv[2][:17], 'Computer information are not equal'
     assert fixture_csv[2][20:80] == export_csv[2][20:80], 'Computer information are not equal'
-    assert fixture_csv[2][81:104] == export_csv[2][81:104], 'Computer information are not equal'
     assert fixture_csv[2][105:128] == export_csv[2][105:128], 'Computer information are not equal'
     assert fixture_csv[2][129:] == export_csv[2][129:], 'Computer information are not equal'
 
