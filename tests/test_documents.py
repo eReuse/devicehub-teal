@@ -88,53 +88,20 @@ def test_export_basic_snapshot(user: UserClient):
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
     f = StringIO(csv_str)
-    obj_csv = csv.reader(f, f)
+    obj_csv = csv.reader(f, f, delimiter=';', quotechar='"')
     export_csv = list(obj_csv)
 
     # Open fixture csv and transform to list
     with Path(__file__).parent.joinpath('files').joinpath('basic.csv').open() as csv_file:
-        obj_csv = csv.reader(csv_file)
+        obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
         fixture_csv = list(obj_csv)
 
-    assert isinstance(datetime.strptime(export_csv[1][8], '%c'), datetime), \
+    assert isinstance(datetime.strptime(export_csv[1][17], '%c'), datetime), \
         'Register in field is not a datetime'
 
-    # Pop dates fields from csv lists to compare them
-    fixture_csv[1] = fixture_csv[1][:8] + fixture_csv[1][9:]
-    export_csv[1] = export_csv[1][:8] + export_csv[1][9:]
-
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
-    assert fixture_csv[1] == export_csv[1], 'Computer information are not equal'
-
-
-@pytest.mark.mvp
-def test_export_full_snapshot(user: UserClient):
-    """Test a export device with all information and a lot of components."""
-    snapshot, _ = user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
-    csv_str, _ = user.get(res=documents.DocumentDef.t,
-                          item='devices/',
-                          accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
-    f = StringIO(csv_str)
-    obj_csv = csv.reader(f, f)
-    export_csv = list(obj_csv)
-
-    # Open fixture csv and transform to list
-    with Path(__file__).parent.joinpath('files').joinpath('real-eee-1001pxd.csv').open() \
-            as csv_file:
-        obj_csv = csv.reader(csv_file)
-        fixture_csv = list(obj_csv)
-
-    assert isinstance(datetime.strptime(export_csv[1][8], '%c'), datetime), \
-        'Register in field is not a datetime'
-
-    # Pop dates fields from csv lists to compare them
-    fixture_csv[1] = fixture_csv[1][:8] + fixture_csv[1][9:]
-    export_csv[1] = export_csv[1][:8] + export_csv[1][9:]
-
-    assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
-    assert fixture_csv[1] == export_csv[1], 'Computer information are not equal'
-
+    assert fixture_csv[1][:17] == export_csv[1][:17], 'Computer information are not equal'
+    assert fixture_csv[1][20:] == export_csv[1][20:], 'Computer information are not equal'
 
 @pytest.mark.mvp
 def test_export_extended(app: Devicehub, user: UserClient):
@@ -164,12 +131,13 @@ def test_export_extended(app: Devicehub, user: UserClient):
         obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
         fixture_csv = list(obj_csv)
 
+    assert isinstance(datetime.strptime(export_csv[1][17], '%c'), datetime), \
+        'Register in field is not a datetime'
+
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert fixture_csv[1][:17] == export_csv[1][:17], 'Computer information are not equal'
     assert fixture_csv[1][20:80] == export_csv[1][20:80], 'Computer information are not equal'
-    assert fixture_csv[1][81:104] == export_csv[1][81:104], 'Computer information are not equal'
-    assert fixture_csv[1][105:128] == export_csv[1][105:128], 'Computer information are not equal'
-    assert fixture_csv[1][129:] == export_csv[1][129:], 'Computer information are not equal'
+    assert fixture_csv[1][81:] == export_csv[1][81:], 'Computer information are not equal'
     assert fixture_csv[2][:17] == export_csv[2][:17], 'Computer information are not equal'
     assert fixture_csv[2][20:80] == export_csv[2][20:80], 'Computer information are not equal'
     assert fixture_csv[2][81:104] == export_csv[2][81:104], 'Computer information are not equal'
