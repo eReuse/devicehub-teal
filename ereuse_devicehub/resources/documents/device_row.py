@@ -52,7 +52,7 @@ class DeviceRow(OrderedDict):
         self['Device Type'] = device.t
         self['Device Chassis'] = ''
         if isinstance(device, d.Computer):
-            self['Chassis'] = device.chassis
+            self['Device Chassis'] = device.chassis.name
         self['Serial Number'] = none2str(device.serial_number)
         self['Model'] = none2str(device.model)
         self['Manufacturer'] = none2str(device.manufacturer)
@@ -85,14 +85,20 @@ class DeviceRow(OrderedDict):
         rate = device.rate
         if rate:
             self['Device Rate'] = rate.rating
-            self['Device Range'] = rate.rating_range
+            self['Device Range'] = rate.rating_range.name
             assert isinstance(rate, RateComputer)
             self['Processor Rate'] = rate.processor
-            self['Processor Range'] = rate.processor_range
+            self['Processor Range'] = rate.processor_range.name
             self['RAM Rate'] = rate.ram
-            self['RAM Range'] = rate.ram_range
+            self['RAM Range'] = rate.ram_range.name
             self['Data Storage Rate'] = rate.data_storage
-            self['Data Storage Range'] = rate.data_storage_range
+            self['Data Storage Range'] = rate.data_storage_range.name
+
+        benchram = get_action(device, 'BenchmarkRamSysbench')
+        if benchram:
+            self['Benchmark RamSysbench (points)'] = none2str(benchram.rate)
+        else:
+            self['Benchmark RamSysbench (points)'] = ''
 
     def components(self):
         """Function to get all components information of a device."""
@@ -100,7 +106,6 @@ class DeviceRow(OrderedDict):
         for ctype in self.ORDER_COMPONENTS: # ctype: str
             cmax = self.NUMS.get(ctype, 4)
             i = 1
-            # import pdb; pdb.set_trace()
             l_ctype = [ctype]
             if ctype == d.DataStorage.t:
                 l_ctype = [ctype, d.HardDrive.t, d.SolidStateDrive.t]
@@ -120,8 +125,6 @@ class DeviceRow(OrderedDict):
         :param component: device.components
         """
         # Basic fields for all components
-        # import pdb; pdb.set_trace()
-        # print(ctype + '| ' + format(component))
         self['{} {}'.format(ctype, i)] = format(component) if component else ''
         if component is None:
             self['{} {} Manufacturer'.format(ctype, i)] = ''
@@ -135,46 +138,48 @@ class DeviceRow(OrderedDict):
         if ctype == d.Processor.t:
             self.get_processor(ctype, i, component)
 
+        if ctype == d.RamModule.t:
+            self.get_ram(ctype, i, component)
+
         if ctype == d.DataStorage.t:
             self.get_datastorage(ctype, i, component)
 
         if ctype == d.GraphicCard.t:
-            self.get_graphicCard(ctype, i, component)
-
-
-        """Particular fields for component GraphicCard."""
-        if isinstance(component, d.GraphicCard):
-            self['{} {} Memory (MB)'.format(ctype, i)] = component.memory
-
-        """Particular fields for component DataStorage.t -> 
-        (HardDrive, SolidStateDrive)
-        """
-        if isinstance(component, d.DataStorage):
-            self['{} {} Size (MB)'.format(ctype, i)] = component.size
-            self['{} {} Privacy'.format(ctype, i)] = component.privacy
-            try:
-                self['{} {} Lifetime'.format(ctype, i)] = component.last_action_of(
-                    TestDataStorage).lifetime
-            except:
-                self['{} {} Lifetime'.format(ctype, i)] = ''
-
-
-        """Particular fields for component RamModule."""
-        if isinstance(component, d.RamModule):
-            self['{} {} Size (MB)'.format(ctype, i)] = component.size
-            self['{} {} Speed (MHz)'.format(ctype, i)] = component.speed
-
-        # todo add Display, NetworkAdapter, etc...
-
+            self.get_graphic_card(ctype, i, component)
 
     def get_processor(self, ctype, i, component):
         """Particular fields for component Processor."""
-        if not component is None:
-            self['{} {} Number of cores'.format(ctype, i)] = none2str(component.cores)
-            self['{} {} Speed (GHz)'.format(ctype, i)] = none2str(component.speed)
-        else:
+        if component is None:
             self['{} {} Number of cores'.format(ctype, i)] = ''
             self['{} {} Speed (GHz)'.format(ctype, i)] = ''
+            self['Benchmark {} {} (points)'.format(ctype, i)] = ''
+            self['Benchmark ProcessorSysbench {} {} (points)'.format(ctype, i)] = ''
+            return
+
+        self['{} {} Number of cores'.format(ctype, i)] = none2str(component.cores)
+        self['{} {} Speed (GHz)'.format(ctype, i)] = none2str(component.speed)
+
+        benchmark = get_action(component, 'BenchmarkProcessor')
+        if not benchmark:
+            self['Benchmark {} {} (points)'.format(ctype, i)] = ''
+        else:
+            self['Benchmark {} {} (points)'.format(ctype, i)] = benchmark.rate
+
+        sysbench = get_action(component, 'BenchmarkProcessorSysbench')
+        if not sysbench:
+            self['Benchmark ProcessorSysbench {} {} (points)'.format(ctype, i)] = ''
+            return
+        self['Benchmark ProcessorSysbench {} {} (points)'.format(ctype, i)] = sysbench.rate
+
+    def get_ram(self, ctype, i, component):
+        """Particular fields for component Ram Module."""
+        if component is None:
+            self['{} {} Size (MB)'.format(ctype, i)] = ''
+            self['{} {} Speed (MHz)'.format(ctype, i)] = ''
+            return
+
+        self['{} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
+        self['{} {} Speed (MHz)'.format(ctype, i)] = none2str(component.speed)
 
     def get_datastorage(self, ctype, i, component):
         """Particular fields for component DataStorage.
@@ -196,6 +201,11 @@ class DeviceRow(OrderedDict):
             self['Erasure {} {} Steps End Time'.format(ctype, i)] = ''
             self['Benchmark {} {} Read Speed (MB/s)'.format(ctype, i)] = ''
             self['Benchmark {} {} Writing speed (MB/s)'.format(ctype, i)] = ''
+            self['Test {} {} Software'.format(ctype, i)] = ''
+            self['Test {} {} Type'.format(ctype, i)] = ''
+            self['Test {} {} Result'.format(ctype, i)] = ''
+            self['Test {} {} Power on (hours used)'.format(ctype, i)] = ''
+            self['Test {} {} Lifetime remaining (percentage)'.format(ctype, i)] = ''
             return
 
         self['{} {} Size'.format(ctype, i)] = none2str(component.size)
@@ -216,43 +226,61 @@ class DeviceRow(OrderedDict):
             self['Erasure {} {} Steps'.format(ctype, i)] = ''
             self['Erasure {} {} Steps Start Time'.format(ctype, i)] = ''
             self['Erasure {} {} Steps End Time'.format(ctype, i)] = ''
-            self['Benchmark {} {} Read Speed (MB/s)'.format(ctype, i)] = ''
-            self['Benchmark {} {} Writing speed (MB/s)'.format(ctype, i)] = ''
-            return
+        else:
+            self['Erasure {} {}'.format(ctype, i)] = none2str(component.hid)
+            serial_number = none2str(component.serial_number)
+            self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
+            self['Erasure {} {} Size'.format(ctype, i)] = none2str(component.size)
+            # TODO @cayop This line is hardcoded we need change this in the future
+            self['Erasure {} {} Software'.format(ctype, i)] = 'Workbench 11.0'
 
+            result = get_result(erasure.severity)
+            self['Erasure {} {} Result'.format(ctype, i)] = result
+            self['Erasure {} {} Type'.format(ctype, i)] = erasure.type
+            self['Erasure {} {} Method'.format(ctype, i)] = erasure.method
+            self['Erasure {} {} Elapsed'.format(ctype, i)] = format(erasure.elapsed)
+            self['Erasure {} {} Date'.format(ctype, i)] = format(erasure.created)
+            steps = ','.join((format(x) for x in erasure.steps))
+            self['Erasure {} {} Steps'.format(ctype, i)] = steps
+            steps_start_time = ','.join((format(x.start_time) for x in erasure.steps))
+            self['Erasure {} {} Steps Start Time'.format(ctype, i)] = steps_start_time
+            steps_end_time = ','.join((format(x.end_time) for x in erasure.steps))
+            self['Erasure {} {} Steps End Time'.format(ctype, i)] = steps_end_time
 
-        self['Erasure {} {}'.format(ctype, i)] = none2str(component.hid)
-        serial_number = none2str(component.serial_number)
-        self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
-        self['Erasure {} {} Size'.format(ctype, i)] = none2str(component.size)
-        # TODO @cayop This line is hardcoded we need change this in the future
-        self['Erasure {} {} Software'.format(ctype, i)] = 'Workbench 11.0'
-
-        result = get_result_erasure(erasure.severity)
-        self['Erasure {} {} Result'.format(ctype, i)] = result
-        self['Erasure {} {} Type'.format(ctype, i)] = erasure.type
-        self['Erasure {} {} Method'.format(ctype, i)] = erasure.method
-        self['Erasure {} {} Elapsed'.format(ctype, i)] = format(erasure.elapsed)
-        self['Erasure {} {} Date'.format(ctype, i)] = format(erasure.created)
-        steps = ','.join((format(x) for x in erasure.steps))
-        self['Erasure {} {} Steps'.format(ctype, i)] = steps
-        steps_start_time = ','.join((format(x.start_time) for x in erasure.steps))
-        self['Erasure {} {} Steps Start Time'.format(ctype, i)] = steps_start_time
-        steps_end_time = ','.join((format(x.end_time) for x in erasure.steps))
-        self['Erasure {} {} Steps End Time'.format(ctype, i)] = steps_end_time
-
-        benchmarks = [a for a in component.actions if a.type == 'BenchmarkDataStorage']
-        benchmark = benchmarks[-1] if benchmarks else None
+        benchmark = get_action(component, 'BenchmarkDataStorage')
         if not benchmark:
             self['Benchmark {} {} Read Speed (MB/s)'.format(ctype, i)] = ''
             self['Benchmark {} {} Writing speed (MB/s)'.format(ctype, i)] = ''
+        else:
+            self['Benchmark {} {} Read Speed (MB/s)'.format(ctype, i)] = none2str(
+                benchmark.read_speed)
+            self['Benchmark {} {} Writing speed (MB/s)'.format(ctype, i)] = none2str(
+                benchmark.write_speed)
+
+        test_storage = get_action(component, 'TestDataStorage')
+        if not test_storage:
+            self['Test {} {} Software'.format(ctype, i)] = ''
+            self['Test {} {} Type'.format(ctype, i)] = ''
+            self['Test {} {} Result'.format(ctype, i)] = ''
+            self['Test {} {} Power on (hours used)'.format(ctype, i)] = ''
+            self['Test {} {} Lifetime remaining (percentage)'.format(ctype, i)] = ''
             return
 
-        self['Benchmark {} {} Read Speed (MB/s)'.format(ctype, i)] = benchmark.read_speed
-        self['Benchmark {} {} Writing speed (MB/s)'.format(ctype, i)] = benchmark.write_speed
+        self['Test {} {} Software'.format(ctype, i)] = 'Workbench 11.0'
+        self['Test {} {} Type'.format(ctype, i)] = test_storage.length.value
+        self['Test {} {} Result'.format(ctype, i)] = get_result(test_storage.severity)
+        self['Test {} {} Power on (hours used)'.format(ctype, i)] = none2str(
+            test_storage.power_cycle_count)
+        self['Test {} {} Lifetime remaining (percentage)'.format(ctype, i)] = none2str(
+            test_storage.lifetime)
 
-    def get_graphicCard(self, ctype, i, component):
-            self['{} {} Memory (MB)'.format(ctype, i)] = component.memory
+    def get_graphic_card(self, ctype, i, component):
+        """Particular fields for component GraphicCard."""
+        if component is None:
+            self['{} {} Memory (MB)'.format(ctype, i)] = ''
+            return
+
+        self['{} {} Memory (MB)'.format(ctype, i)] = none2str(component.memory)
 
 
 class StockRow(OrderedDict):
@@ -293,7 +321,7 @@ class StockRow(OrderedDict):
             self['Data Storage Range'] = rate.data_storage_range
 
 
-def get_result_erasure(severity):
+def get_result(severity):
     """ For the csv is necessary simplify the message of results """
     type_of_results = {
         Severity.Error: 'Failure',
@@ -308,4 +336,9 @@ def none2str(string):
     """ convert none to empty str """
     if string is None:
         return ''
-    return string
+    return format(string)
+
+def get_action(component, action):
+    """ Filter one action from a component or return None """
+    result = [a for a in component.actions if a.type == action]
+    return result[-1] if result else None
