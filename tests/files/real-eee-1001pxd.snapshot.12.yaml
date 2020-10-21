@@ -3,7 +3,7 @@
   {
     "type": "NetworkAdapter",
     "model": "AR9285 Wireless Network Adapter",
-    "serialNumber": "74:2f:68:8b:fd:c8",
+    "serialNumber": "74:2f:68:8b:fd:c9",
     "manufacturer": "Qualcomm Atheros",
     "wireless": true,
     "actions": []
@@ -11,7 +11,7 @@
   {
     "type": "NetworkAdapter",
     "model": "AR8152 v2.0 Fast Ethernet",
-    "serialNumber": "14:da:e9:42:f6:7c",
+    "serialNumber": "14:da:e9:42:f6:7b",
     "manufacturer": "Qualcomm Atheros",
     "speed": 100,
     "wireless": false,
@@ -22,10 +22,10 @@
     "cores": 1,
     "threads": 1,
     "address": 64,
-    "model": "Intel Atom CPU N455 @ 1.66GHz",
+    "model": "Intel Atom CPU N455 @ 2.66GHz",
     "serialNumber": null,
     "manufacturer": "Intel Corp.",
-    "speed": 1.667,
+    "speed": 2.667,
     "actions": [
     {
       "type": "BenchmarkProcessorSysbench",
@@ -77,7 +77,7 @@
     "model": "HTS54322",
     "size": 238475,
     "interface": "ATA",
-    "serialNumber": "E2024242CV86HJ",
+    "serialNumber": "E2024242CV86MM",
     "manufacturer": "Hitachi",
     "actions": [
     {
@@ -117,7 +117,7 @@
     "model": "1001PXD",
     "slots": 2,
     "pcmcia": 0,
-    "serialNumber": "Eee0123456789",
+    "serialNumber": "Eee0123456720",
     "usb": 5,
     "manufacturer": "ASUSTeK Computer INC.",
     "actions": [
@@ -137,7 +137,7 @@
   "device": {
     "type": "Laptop",
     "model": "1001PXD",
-    "serialNumber": "B8OAAS048286",
+    "serialNumber": "B8OAAS048285",
     "manufacturer": "ASUSTeK Computer INC.",
     "chassis": "Netbook",
     "actions": [
