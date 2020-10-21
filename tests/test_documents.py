@@ -139,13 +139,13 @@ def test_export_full_snapshot(user: UserClient):
 @pytest.mark.mvp
 def test_export_extended(app: Devicehub, user: UserClient):
     """Test a export device with all information and a lot of components."""
-    snapshot, _ = user.post(file('real-eee-1001pxd.snapshot.12'), res=Snapshot, status=201)
-    # import pdb; pdb.set_trace()
+    snapshot1, _ = user.post(file('real-eee-1001pxd.snapshot.12'), res=Snapshot, status=201)
+    snapshot2, _ = user.post(file('complete.export.snapshot'), res=Snapshot, status=201)
     with app.app_context():
         # Create a pc with a tag
         tag = Tag(id='foo', owner_id=user.user['id'])
         # pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
-        pc = d.Device.query.filter_by(id=snapshot['device']['id']).first()
+        pc = d.Device.query.filter_by(id=snapshot1['device']['id']).first()
         pc.tags.add(tag)
         db.session.add(pc)
         db.session.commit()
@@ -155,24 +155,26 @@ def test_export_extended(app: Devicehub, user: UserClient):
                           query=[('filter', {'type': ['Computer']})])
 
     f = StringIO(csv_str)
-    obj_csv = csv.reader(f, f)
+    obj_csv = csv.reader(f, f, delimiter=';', quotechar='"')
     export_csv = list(obj_csv)
 
     # Open fixture csv and transform to list
     with Path(__file__).parent.joinpath('files').joinpath(
             'proposal_extended_csv_report.csv').open() as csv_file:
-        obj_csv = csv.reader(csv_file)
+        obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
         fixture_csv = list(obj_csv)
 
-    # assert isinstance(datetime.strptime(export_csv[1][8], '%c'), datetime), \
-        'Register in field is not a datetime'
-
-    # Pop dates fields from csv lists to compare them
-    # fixture_csv[1] = fixture_csv[1][:8] + fixture_csv[1][9:]
-    # export_csv[1] = export_csv[1][:8] + export_csv[1][9:]
-
-    # assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
-    # assert fixture_csv[1] == export_csv[1], 'Computer information are not equal'
+    assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
+    assert fixture_csv[1][:17] == export_csv[1][:17], 'Computer information are not equal'
+    assert fixture_csv[1][20:80] == export_csv[1][20:80], 'Computer information are not equal'
+    assert fixture_csv[1][81:104] == export_csv[1][81:104], 'Computer information are not equal'
+    assert fixture_csv[1][105:128] == export_csv[1][105:128], 'Computer information are not equal'
+    assert fixture_csv[1][129:] == export_csv[1][129:], 'Computer information are not equal'
+    assert fixture_csv[2][:17] == export_csv[2][:17], 'Computer information are not equal'
+    assert fixture_csv[2][20:80] == export_csv[2][20:80], 'Computer information are not equal'
+    assert fixture_csv[2][81:104] == export_csv[2][81:104], 'Computer information are not equal'
+    assert fixture_csv[2][105:128] == export_csv[2][105:128], 'Computer information are not equal'
+    assert fixture_csv[2][129:] == export_csv[2][129:], 'Computer information are not equal'
 
 
 @pytest.mark.mvp
