@@ -138,6 +138,9 @@ class DeviceRow(OrderedDict):
         if ctype == d.DataStorage.t:
             self.get_datastorage(ctype, i, component)
 
+        if ctype == d.GraphicCard.t:
+            self.get_graphicCard(ctype, i, component)
+
 
         """Particular fields for component GraphicCard."""
         if isinstance(component, d.GraphicCard):
@@ -247,6 +250,9 @@ class DeviceRow(OrderedDict):
 
         self['Benchmark {} {} Read Speed (MB/s)'.format(ctype, i)] = benchmark.read_speed
         self['Benchmark {} {} Writing speed (MB/s)'.format(ctype, i)] = benchmark.write_speed
+
+    def get_graphicCard(self, ctype, i, component):
+            self['{} {} Memory (MB)'.format(ctype, i)] = component.memory
 
 
 class StockRow(OrderedDict):
