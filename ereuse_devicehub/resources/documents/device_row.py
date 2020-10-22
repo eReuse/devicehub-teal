@@ -31,10 +31,14 @@ class DeviceRow(OrderedDict):
         d.SoundCard.t,
     ]
 
-    # TODO Add more fields information
     def __init__(self, device: d.Device) -> None:
         super().__init__()
         self.device = device
+        snapshot = get_action(device, 'Snapshot')
+        software = ''
+        if snapshot:
+            software = "{software} {version}".format(
+                software=snapshot.software.name, version=snapshot.version)
         # General information about device
         self['System ID'] = device.id
         self['Public Link'] = '{url}{id}'.format(url=url_for('Device.main', _external=True),
@@ -48,17 +52,16 @@ class DeviceRow(OrderedDict):
             self['Tag {} ID'.format(i)] = tag.id
             self['Tag {} Organization'.format(i)] = tag.org.name
 
-        self['Hardware ID'] = device.hid
+        self['Device Hardware ID'] = device.hid
         self['Device Type'] = device.t
         self['Device Chassis'] = ''
         if isinstance(device, d.Computer):
             self['Device Chassis'] = device.chassis.name
-        self['Serial Number'] = none2str(device.serial_number)
-        self['Model'] = none2str(device.model)
-        self['Manufacturer'] = none2str(device.manufacturer)
+        self['Device Serial Number'] = none2str(device.serial_number)
+        self['Device Model'] = none2str(device.model)
+        self['Device Manufacturer'] = none2str(device.manufacturer)
         self['Registered in'] = format(device.created, '%c')
-        # TODO @cayop we need redefined how save in actions the origin of the action
-        self['Registered (process)'] = 'Workbench 11.0'
+        self['Registered (process)'] = software
         self['Updated in (software)'] = device.updated
         self['Updated in (web)'] = ''
 
@@ -70,7 +73,6 @@ class DeviceRow(OrderedDict):
             self['Trading state'] = device.last_action_of(*states.Trading.actions()).t
         except LookupError:
             self['Trading state'] = ''
-        self['Price'] = none2str(device.price)
         if isinstance(device, d.Computer):
             self['Processor'] = none2str(device.processor_model)
             self['RAM (MB)'] = none2str(device.ram_size)
@@ -93,6 +95,8 @@ class DeviceRow(OrderedDict):
             self['RAM Range'] = rate.ram_range.name
             self['Data Storage Rate'] = rate.data_storage
             self['Data Storage Range'] = rate.data_storage_range.name
+        
+        self['Price'] = none2str(device.price)
 
         benchram = get_action(device, 'BenchmarkRamSysbench')
         if benchram:
@@ -186,15 +190,15 @@ class DeviceRow(OrderedDict):
            A DataStorage can be HardDrive or SolidStateDrive.
         """
         if component is None:
-            self['{} {} Size'.format(ctype, i)] = ''
+            self['{} {} Size (MB)'.format(ctype, i)] = ''
             self['Erasure {} {}'.format(ctype, i)] = ''
             self['Erasure {} {} Serial Number'.format(ctype, i)] = ''
-            self['Erasure {} {} Size'.format(ctype, i)] = ''
+            self['Erasure {} {} Size (MB)'.format(ctype, i)] = ''
             self['Erasure {} {} Software'.format(ctype, i)] = ''
             self['Erasure {} {} Result'.format(ctype, i)] = ''
             self['Erasure {} {} Type'.format(ctype, i)] = ''
             self['Erasure {} {} Method'.format(ctype, i)] = ''
-            self['Erasure {} {} Elapsed'.format(ctype, i)] = ''
+            self['Erasure {} {} Elapsed (hours)'.format(ctype, i)] = ''
             self['Erasure {} {} Date'.format(ctype, i)] = ''
             self['Erasure {} {} Steps'.format(ctype, i)] = ''
             self['Erasure {} {} Steps Start Time'.format(ctype, i)] = ''
@@ -208,7 +212,13 @@ class DeviceRow(OrderedDict):
             self['Test {} {} Lifetime remaining (percentage)'.format(ctype, i)] = ''
             return
 
-        self['{} {} Size'.format(ctype, i)] = none2str(component.size)
+        snapshot = get_action(component, 'Snapshot')
+        software = ''
+        if snapshot:
+            software = "{software} {version}".format(
+                software=snapshot.software.name, version=snapshot.version)
+
+        self['{} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
 
         erasures = [a for a in component.actions if a.type in ['EraseBasic', 'EraseSectors']]
         erasure = erasures[-1] if erasures else None
@@ -216,12 +226,12 @@ class DeviceRow(OrderedDict):
             self['Erasure {} {}'.format(ctype, i)] = none2str(component.hid)
             serial_number = none2str(component.serial_number)
             self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
-            self['Erasure {} {} Size'.format(ctype, i)] = none2str(component.size)
+            self['Erasure {} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
             self['Erasure {} {} Software'.format(ctype, i)] = ''
             self['Erasure {} {} Result'.format(ctype, i)] = ''
             self['Erasure {} {} Type'.format(ctype, i)] = ''
             self['Erasure {} {} Method'.format(ctype, i)] = ''
-            self['Erasure {} {} Elapsed'.format(ctype, i)] = ''
+            self['Erasure {} {} Elapsed (hours)'.format(ctype, i)] = ''
             self['Erasure {} {} Date'.format(ctype, i)] = ''
             self['Erasure {} {} Steps'.format(ctype, i)] = ''
             self['Erasure {} {} Steps Start Time'.format(ctype, i)] = ''
@@ -230,15 +240,14 @@ class DeviceRow(OrderedDict):
             self['Erasure {} {}'.format(ctype, i)] = none2str(component.hid)
             serial_number = none2str(component.serial_number)
             self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
-            self['Erasure {} {} Size'.format(ctype, i)] = none2str(component.size)
-            # TODO @cayop This line is hardcoded we need change this in the future
-            self['Erasure {} {} Software'.format(ctype, i)] = 'Workbench 11.0'
+            self['Erasure {} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
+            self['Erasure {} {} Software'.format(ctype, i)] = software
 
             result = get_result(erasure.severity)
             self['Erasure {} {} Result'.format(ctype, i)] = result
             self['Erasure {} {} Type'.format(ctype, i)] = erasure.type
             self['Erasure {} {} Method'.format(ctype, i)] = erasure.method
-            self['Erasure {} {} Elapsed'.format(ctype, i)] = format(erasure.elapsed)
+            self['Erasure {} {} Elapsed (hours)'.format(ctype, i)] = format(erasure.elapsed)
             self['Erasure {} {} Date'.format(ctype, i)] = format(erasure.created)
             steps = ','.join((format(x) for x in erasure.steps))
             self['Erasure {} {} Steps'.format(ctype, i)] = steps
@@ -266,7 +275,7 @@ class DeviceRow(OrderedDict):
             self['Test {} {} Lifetime remaining (percentage)'.format(ctype, i)] = ''
             return
 
-        self['Test {} {} Software'.format(ctype, i)] = 'Workbench 11.0'
+        self['Test {} {} Software'.format(ctype, i)] = software
         self['Test {} {} Type'.format(ctype, i)] = test_storage.length.value
         self['Test {} {} Result'.format(ctype, i)] = get_result(test_storage.severity)
         self['Test {} {} Power on (hours used)'.format(ctype, i)] = none2str(
