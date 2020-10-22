@@ -101,6 +101,7 @@ def test_export_basic_snapshot(user: UserClient):
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert fixture_csv[1][:17] == export_csv[1][:17], 'Computer information are not equal'
+    assert fixture_csv[1][18] == export_csv[1][18], 'Computer information are not equal'
     assert fixture_csv[1][20:] == export_csv[1][20:], 'Computer information are not equal'
 
 @pytest.mark.mvp
@@ -136,9 +137,19 @@ def test_export_extended(app: Devicehub, user: UserClient):
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert fixture_csv[1][:17] == export_csv[1][:17], 'Computer information are not equal'
-    assert fixture_csv[1][20:80] == export_csv[1][20:80], 'Computer information are not equal'
+    assert fixture_csv[1][18] == export_csv[1][18], 'Computer information are not equal'
+    assert fixture_csv[1][20:79] == export_csv[1][20:79], 'Computer information are not equal'
+    assert fixture_csv[1][80] == export_csv[1][80], 'Computer information are not equal'
+    assert fixture_csv[1][83:] == export_csv[1][83:], 'Computer information are not equal'
     assert fixture_csv[2][:17] == export_csv[2][:17], 'Computer information are not equal'
-    assert fixture_csv[2][20:80] == export_csv[2][20:80], 'Computer information are not equal'
+    assert fixture_csv[2][18] == export_csv[2][18], 'Computer information are not equal'
+    assert fixture_csv[2][20:79] == export_csv[2][20:79], 'Computer information are not equal'
+    assert fixture_csv[2][80] == export_csv[2][80], 'Computer information are not equal'
+    assert fixture_csv[2][83:103] == export_csv[2][83:103], 'Computer information are not equal'
+    assert fixture_csv[2][104] == export_csv[2][104], 'Computer information are not equal'
+    assert fixture_csv[2][107:127] == export_csv[2][107:127], 'Computer information are not equal'
+    assert fixture_csv[2][128] == export_csv[2][128], 'Computer information are not equal'
+    assert fixture_csv[2][131:] == export_csv[2][131:], 'Computer information are not equal'
 
 
 @pytest.mark.mvp
