@@ -95,6 +95,15 @@ class DeviceRow(OrderedDict):
             self['RAM Range'] = rate.ram_range.name
             self['Data Storage Rate'] = rate.data_storage
             self['Data Storage Range'] = rate.data_storage_range.name
+        else:
+            self['Device Rate'] = ''
+            self['Device Range'] = ''
+            self['Processor Rate'] = ''
+            self['Processor Range'] = ''
+            self['RAM Rate'] = ''
+            self['RAM Range'] = ''
+            self['Data Storage Rate'] = ''
+            self['Data Storage Range'] = ''
         
         self['Price'] = none2str(device.price)
 
