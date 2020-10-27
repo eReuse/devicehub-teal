@@ -37,10 +37,10 @@ class Thing(db.Model):
         super().__init__(**kwargs)
 
 
-def on_update_time(mapper, connection, thing_obj):
+def update_object_timestamp(mapper, connection, thing_obj):
     """ This function update the stamptime of field updated """
-    thing_obj.updated = datetime.now()
+    thing_obj.updated = datetime.now(timezone.utc)
 
-def update_timestamp(thing_obj):
+def listener_reset_field_updated_in_actual_time(thing_obj):
     """ This function launch a event than listen like a signal when some object is saved """
-    event.listen(thing_obj, 'before_update', on_update_time)
+    event.listen(thing_obj, 'before_update', update_object_timestamp, propagate=True)
