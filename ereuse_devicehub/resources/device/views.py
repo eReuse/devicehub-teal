@@ -170,35 +170,29 @@ class DeviceView(View):
 
 class DeviceMergeView(View):
     """View for merging two devices
-    Ex. ``device/<id>/merge/id=X``.
+    Ex. ``device/<dev1_id>/merge/<dev2_id>``.
     """
 
-    class FindArgs(MarshmallowSchema):
-        id = fields.Integer()
+    def post(self, dev1_id: int, dev2_id: int):
+        device = self.merge_devices(dev1_id, dev2_id)
 
-    def get_merge_id(self) -> uuid.UUID:
-        args = self.QUERY_PARSER.parse(self.find_args, request, locations=('querystring',))
-        return args['id']
-
-    def post(self, id: uuid.UUID):
-        device = Device.query.filter_by(id=id).one()
-        with_device = Device.query.filter_by(id=self.get_merge_id()).one()
-        self.merge_devices(device, with_device)
-
-        db.session().final_flush()
         ret = self.schema.jsonify(device)
         ret.status_code = 201
 
         db.session.commit()
         return ret
 
-    def merge_devices(self, base_device, with_device):
-        """Merge the current device with `with_device` by
-        adding all `with_device` actions under the current device.
+    @auth.Auth.requires_auth
+    def merge_devices(self, dev1_id, dev2_id):
+        """Merge the current device with `with_device` (dev2_id) by
+        adding all `with_device` actions under the current device, (dev1_id).
 
         This operation is highly costly as it forces refreshing
         many models in session.
         """
+        # base_device = Device.query.filter_by(id=dev1_id, owner_id=g.user.id).one()
+        base_device = Device.query.filter_by(id=dev1_id).one()
+        with_device = Device.query.filter_by(id=dev2_id).one()
         snapshots = sorted(
             filterfalse(lambda x: not isinstance(x, actions.Snapshot), (base_device.actions + with_device.actions)))
         workbench_snapshots = [s for s in snapshots if
@@ -222,14 +216,20 @@ class DeviceMergeView(View):
                 base_device.actions_multiple.add(action)
 
         # Keeping the components of latest SnapshotWorkbench
-        base_device.components = latest_snapshotworkbench_device.components
+        # base_device.components = latest_snapshotworkbench_device.components
+        base_device.components = with_device.components
 
         # Properties from latest Snapshot
-        base_device.type = latest_snapshot_device.type
-        base_device.hid = latest_snapshot_device.hid
-        base_device.manufacturer = latest_snapshot_device.manufacturer
-        base_device.model = latest_snapshot_device.model
-        base_device.chassis = latest_snapshot_device.chassis
+
+        base_device.type = with_device.type
+        base_device.hid = with_device.hid
+        base_device.manufacturer = with_device.manufacturer
+        base_device.model = with_device.model
+        base_device.chassis = with_device.chassis
+
+        db.session().add(base_device)
+        db.session().final_flush()
+        return base_device
 
 
 class ManufacturerView(View):
