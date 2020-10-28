@@ -1163,6 +1163,7 @@ class EreusePrice(Price):
     value agreed by a circuit or platform.
     """
     MULTIPLIER = {
+        Computer: 20,
         Desktop: 20,
         Laptop: 30
     }
@@ -1205,7 +1206,7 @@ class EreusePrice(Price):
                 }
             }
         }
-        SCHEMA[Server] = SCHEMA[Desktop]
+        SCHEMA[Server] = SCHEMA[Computer] = SCHEMA[Desktop]
 
         def __init__(self, device, rating_range, role, price: Decimal) -> None:
             cls = device.__class__ if device.__class__ != Server else Desktop
