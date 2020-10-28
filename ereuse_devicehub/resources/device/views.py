@@ -209,9 +209,9 @@ class DeviceMergeView(View):
 
         # Moving the tags from `with_device` to `base_device`
         # Union of tags the device had plus the (potentially) new ones
-        self.base_device.tags |= self.with_device.tags
+        self.base_device.tags.update([x for x in self.with_device.tags])
         self.with_device.tags.clear()  # We don't want to add the transient dummy tags
-        # db.session.add(self.with_device)
+        db.session.add(self.with_device)
 
         # Moving the actions from `with_device` to `base_device`
         for action in with_actions_one:
