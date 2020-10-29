@@ -502,6 +502,26 @@ def test_save_snapshot_in_file(app: Devicehub, user: UserClient):
     assert snapshot['version'] == snapshot_no_hid['version']
     assert snapshot['uuid'] == uuid
 
+@pytest.mark.mvp
+def test_save_snapshot_with_debug(app: Devicehub, user: UserClient):
+    """ This test check if works the function save_snapshot_in_file """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    snapshot_file = file('basic.snapshot.with_debug')
+    debug = snapshot_file['debug']
+    user.post(res=Snapshot, data=snapshot_file)
+
+    uuid = snapshot_file['uuid']
+    files = [x for x in os.listdir(tmp_snapshots) if uuid in x]
+
+    if files:
+        path_snapshot = os.path.join(tmp_snapshots, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        os.remove(path_snapshot)
+
+    assert snapshot['debug'] == debug
+
 
 @pytest.mark.mvp
 def test_backup_snapshot_with_errors(app: Devicehub, user: UserClient):
