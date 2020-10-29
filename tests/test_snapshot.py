@@ -528,6 +528,7 @@ def test_save_snapshot_in_file(app: Devicehub, user: UserClient):
     snapshot = {'software': '', 'version': '', 'uuid': ''}
     if files:
         path_snapshot = os.path.join(tmp_snapshots, files[0])
+        assert not "0001-01-01 00:00:00" in path_snapshot
         with open(path_snapshot) as file_snapshot:
             snapshot = json.loads(file_snapshot.read())
 
