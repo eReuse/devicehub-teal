@@ -105,6 +105,25 @@ def test_snapshot_post(user: UserClient):
 
 
 @pytest.mark.mvp
+def test_snapshot_update_timefield_updated(user: UserClient):
+    """
+    Tests for check if one computer have the time mark updated when one component of it is updated
+    """
+    computer1 = file('1-device-with-components.snapshot')
+    snapshot = snapshot_and_check(user,
+                                  computer1,
+                                  action_types=(BenchmarkProcessor.t,
+                                                RateComputer.t),
+                                  perform_second_snapshot=False)
+    computer2 = file('2-second-device-with-components-of-first.snapshot')
+    snapshot_and_check(user, computer2, action_types=('Remove', 'RateComputer'),
+                       perform_second_snapshot=False)
+    pc1_id = snapshot['device']['id']
+    pc1, _ = user.get(res=m.Device, item=pc1_id)
+    assert pc1['updated'] != snapshot['device']['updated']
+
+
+@pytest.mark.mvp
 def test_snapshot_component_add_remove(user: UserClient):
     """Tests adding and removing components and some don't generate HID.
     All computers generate HID.
@@ -130,6 +149,7 @@ def test_snapshot_component_add_remove(user: UserClient):
                                    perform_second_snapshot=False)
     pc1_id = snapshot1['device']['id']
     pc1, _ = user.get(res=m.Device, item=pc1_id)
+    update1_pc1 = pc1['updated']
     # Parent contains components
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c2s', 'p1c3s')
     # Components contain parent
@@ -152,6 +172,10 @@ def test_snapshot_component_add_remove(user: UserClient):
     pc2_id = snapshot2['device']['id']
     pc1, _ = user.get(res=m.Device, item=pc1_id)
     pc2, _ = user.get(res=m.Device, item=pc2_id)
+    # Check if the update_timestamp is updated
+    update1_pc2 = pc2['updated']
+    update2_pc1 = pc1['updated']
+    assert update1_pc1 != update2_pc1
     # PC1
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c3s')
     assert all(c['parent'] == pc1_id for c in pc1['components'])
@@ -174,6 +198,12 @@ def test_snapshot_component_add_remove(user: UserClient):
     snapshot_and_check(user, s3, ('Remove', 'RateComputer'), perform_second_snapshot=False)
     pc1, _ = user.get(res=m.Device, item=pc1_id)
     pc2, _ = user.get(res=m.Device, item=pc2_id)
+    # Check if the update_timestamp is updated
+    update2_pc2 = pc2['updated']
+    update3_pc1 = pc1['updated']
+    assert not update3_pc1 in [update1_pc1, update2_pc1]
+    assert update1_pc2 != update2_pc2
+
     # PC1
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c2s', 'p1c3s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
@@ -214,6 +244,11 @@ def test_snapshot_component_add_remove(user: UserClient):
     snapshot_and_check(user, s4, ('RateComputer',), perform_second_snapshot=False)
     pc1, _ = user.get(res=m.Device, item=pc1_id)
     pc2, _ = user.get(res=m.Device, item=pc2_id)
+    # Check if the update_timestamp is updated
+    update3_pc2 = pc2['updated']
+    update4_pc1 = pc1['updated']
+    assert not update4_pc1 in [update1_pc1, update2_pc1, update3_pc1]
+    assert update3_pc2 == update2_pc2
     # PC 0: p1c3s, p1c4s. PC1: p2c1s
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c3s', 'p1c4s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
@@ -496,6 +531,7 @@ def test_save_snapshot_in_file(app: Devicehub, user: UserClient):
     snapshot = {'software': '', 'version': '', 'uuid': ''}
     if files:
         path_snapshot = os.path.join(path_dir_base, files[0])
+        assert not "0001-01-01 00:00:00" in path_snapshot
         with open(path_snapshot) as file_snapshot:
             snapshot = json.loads(file_snapshot.read())
 

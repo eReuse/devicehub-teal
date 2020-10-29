@@ -33,7 +33,7 @@ def save_json(req_json, tmp_snapshots, user):
     month = now.month
     day = now.day
     hour = now.hour
-    minutes = now.min
+    minutes = now.minute
 
     name_file = f"{year}-{month}-{day}-{hour}-{minutes}_{user}_{uuid}.json"
     path_dir_base = os.path.join(tmp_snapshots, user)

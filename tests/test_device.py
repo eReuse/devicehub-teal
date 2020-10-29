@@ -53,7 +53,7 @@ def test_device_model():
     # Removing a component from pc doesn't delete the component
     pc.components.remove(net)
     db.session.commit()
-    pc = d.Device.query.first()  # this is the same as querying for d.Desktop directly
+    pc = d.Device.query.filter_by(id=pc.id).first()  # this is the same as querying for d.Desktop directly
     assert pc.components == {graphic}
     network_adapter = d.NetworkAdapter.query.one()
     assert network_adapter not in pc.components
