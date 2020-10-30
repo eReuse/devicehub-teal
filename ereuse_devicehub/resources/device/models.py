@@ -32,6 +32,7 @@ from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing, listener_reset
 from ereuse_devicehub.resources.user.models import User
 
 
+
 class Device(Thing):
     """Base class for any type of physical object that can be identified.
 
@@ -105,6 +106,12 @@ class Device(Thing):
     """
     image = db.Column(db.URL)
     image.comment = "An image of the device."
+
+    owner_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey(User.id),
+                         nullable=False,
+                         default=lambda: g.user.id)
+    owner = db.relationship(User, primaryjoin=owner_id == User.id)
 
     _NON_PHYSICAL_PROPS = {
         'id',
