@@ -2,6 +2,7 @@
 
 import os
 import json
+import shutil
 from datetime import datetime
 from distutils.version import StrictVersion
 from uuid import UUID
@@ -35,15 +36,29 @@ def save_json(req_json, tmp_snapshots, user):
     minutes = now.minute
 
     name_file = f"{year}-{month}-{day}-{hour}-{minutes}_{user}_{uuid}.json"
-    path_name = os.path.join(tmp_snapshots, name_file)
+    path_dir_base = os.path.join(tmp_snapshots, user)
+    path_errors = os.path.join(path_dir_base, 'errors')
+    path_fixeds = os.path.join(path_dir_base, 'fixeds')
+    path_name = os.path.join(path_errors, name_file)
 
-    if not os.path.isdir(tmp_snapshots):
-        os.system('mkdir -p {}'.format(tmp_snapshots))
+    if not os.path.isdir(path_dir_base):
+        os.system(f'mkdir -p {path_errors}')
+        os.system(f'mkdir -p {path_fixeds}')
 
     with open(path_name, 'w') as snapshot_file:
         snapshot_file.write(json.dumps(req_json))
 
     return path_name
+
+
+def move_json(tmp_snapshots, path_name, user):
+    """
+    This function move the json than it's correct
+    """
+    path_dir_base = os.path.join(tmp_snapshots, user)
+    if os.path.isfile(path_name):
+        shutil.copy(path_name, path_dir_base)
+        os.remove(path_name)
 
 
 class ActionView(View):
@@ -52,6 +67,7 @@ class ActionView(View):
         json = request.get_json(validate=False)
         tmp_snapshots = app.config['TMP_SNAPSHOTS']
         path_snapshot = save_json(json, tmp_snapshots, g.user.email)
+        json.pop('debug', None)
         if not json or 'type' not in json:
             raise ValidationError('Resource needs a type.')
         # todo there should be a way to better get subclassess resource
@@ -60,13 +76,13 @@ class ActionView(View):
         a = resource_def.schema.load(json)
         if json['type'] == Snapshot.t:
             response = self.snapshot(a, resource_def)
-            os.remove(path_snapshot)
+            move_json(tmp_snapshots, path_snapshot, g.user.email)
             return response
         if json['type'] == VisualTest.t:
             pass
             # TODO JN add compute rate with new visual test and old components device
         if json['type'] == InitTransfer.t:
-            os.remove(path_snapshot)
+            move_json(tmp_snapshots, path_snapshot, g.user.email)
             return self.transfer_ownership()
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
@@ -75,7 +91,7 @@ class ActionView(View):
         ret = self.schema.jsonify(action)
         ret.status_code = 201
         db.session.commit()
-        os.remove(path_snapshot)
+        move_json(tmp_snapshots, path_snapshot, g.user.email)
         return ret
 
     def one(self, id: UUID):
