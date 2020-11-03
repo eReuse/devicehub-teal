@@ -19,9 +19,7 @@ depends_on = None
 
 
 def get_inv():
-    # import pdb; pdb.set_trace()
     INV = context.get_x_argument(as_dictionary=True).get('inventory')
-    INV = 'dbtest'
     if not INV:
         raise ValueError("Inventory value is not specified")
     return INV
