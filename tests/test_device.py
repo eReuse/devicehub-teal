@@ -128,7 +128,6 @@ def test_physical_properties():
         'ethereum_address': None,
         'manufacturer': 'bar',
         'model': 'foo',
-        'owner_id': pc.owner_id,
         'receiver_id': None,
         'serial_number': 'foo-bar',
         'transfer_state': TransferState.Initial
@@ -401,8 +400,9 @@ def test_get_device(app: Devicehub, user: UserClient):
                        chassis=ComputerChassis.Tower,
                        owner_id=user.user['id'])
         pc.components = OrderedSet([
-            d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
-            d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
+            d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s', 
+                owner_id=user.user['id']),
+            d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500, owner_id=user.user['id'])
         ])
         db.session.add(pc)
         # todo test is an abstract class. replace with another one
@@ -438,8 +438,10 @@ def test_get_devices(app: Devicehub, user: UserClient):
                        chassis=ComputerChassis.Tower,
                        owner_id=user.user['id'])
         pc.components = OrderedSet([
-            d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
-            d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
+            d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s',
+                owner_id=user.user['id']),
+            d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500,
+                owner_id=user.user['id'])
         ])
         pc1 = d.Desktop(model='p2mo',
                         manufacturer='p2ma',
@@ -551,22 +553,22 @@ def test_device_public(user: UserClient, client: Client):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_computer_accessory_model():
-    sai = d.SAI()
+def test_computer_accessory_model(user: UserClient):
+    sai = d.SAI(owner_id=user.user['id'])
     db.session.add(sai)
-    keyboard = d.Keyboard(layout=Layouts.ES)
+    keyboard = d.Keyboard(layout=Layouts.ES, owner_id=user.user['id'])
     db.session.add(keyboard)
-    mouse = d.Mouse()
+    mouse = d.Mouse(owner_id=user.user['id'])
     db.session.add(mouse)
     db.session.commit()
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_networking_model():
-    router = d.Router(speed=1000, wireless=True)
+def test_networking_model(user: UserClient):
+    router = d.Router(speed=1000, wireless=True, owner_id=user.user['id'])
     db.session.add(router)
-    switch = d.Switch(speed=1000, wireless=False)
+    switch = d.Switch(speed=1000, wireless=False, owner_id=user.user['id'])
     db.session.add(switch)
     db.session.commit()
 
