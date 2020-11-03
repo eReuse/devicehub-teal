@@ -119,6 +119,7 @@ class Device(Thing):
         'created',
         'updated',
         'parent_id',
+        'owner_id',
         'hid',
         'production_date',
         'color',  # these are only user-input thus volatile
