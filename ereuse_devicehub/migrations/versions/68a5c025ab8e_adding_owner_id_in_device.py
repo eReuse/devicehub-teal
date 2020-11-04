@@ -23,31 +23,43 @@ def get_inv():
         raise ValueError("Inventory value is not specified")
     return INV
 
+
+def upgrade_data():
+    con = op.get_bind()
+    computers = con.execute(f"select id, owner_id from {get_inv()}.computer")
+    for c in computers:
+        id_dev = c.id
+        id_owner = c.owner_id
+        sql = f"update {get_inv()}.device set owner_id='{id_owner}' where id={id_dev};"
+        con.execute(sql)
+
+    values = f"{get_inv()}.component.id, {get_inv()}.computer.owner_id"
+    table = f"{get_inv()}.component"
+    joins = f"inner join {get_inv()}.computer"
+    on = f"on {table}.parent_id={get_inv()}.computer.id"
+    sql = f"select {values} from {table} {joins} {on}"
+
+    components = con.execute(sql)
+    for c in components:
+        id = c.id
+        id_owner = c.owner_id
+        sql = f"update {get_inv()}.device set owner_id='{id_owner}' where id={id};"
+        con.execute(sql)
+
+
 def upgrade():
     # We need get the actual computers with owner_id
     # because when add a column in device this reset the values of the owner_id
     # in the computer tables
-    con = op.get_bind()
-    # computers = con.execute(f"select id, owner_id from {get_inv()}.computer")
-
     op.add_column('device', sa.Column('owner_id', postgresql.UUID(), 
-        sa.ForeignKeyConstraint(['owner_id'], ['common.user.id'], ),
         nullable=True), schema=f'{get_inv()}')
     op.create_foreign_key("fk_device_owner_id_user_id",
                           "device", "user",
                           ["owner_id"], ["id"],
                           ondelete="SET NULL",
                           source_schema=f'{get_inv()}', referent_schema='common')
-    sql = f"select {get_inv()}.component.id, {get_inv()}.computer.owner_id from \
-            {get_inv()}.component \
-            inner join {get_inv()}.computer on \
-            {get_inv()}.component.parent_id={get_inv()}.computer.id"
 
-    components = con.execute(sql)
-    for id_component, id_owner in components:
-        _sql = f"update {get_inv()}.component set owner_id={id_owner} where id={id_component}"
-        con.execute(_sql)
-
+    upgrade_data()
 
 
 def downgrade():
