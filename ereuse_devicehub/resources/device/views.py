@@ -146,7 +146,7 @@ class DeviceView(View):
         )
 
     def query(self, args):
-        query = Device.query.distinct()  # todo we should not force to do this if the query is ok
+        query = Device.query.filter((Device.owner_id == g.user.id)).distinct()
         search_p = args.get('search', None)
         if search_p:
             properties = DeviceSearch.properties
@@ -156,16 +156,7 @@ class DeviceView(View):
             ).order_by(
                 search.Search.rank(properties, search_p) + search.Search.rank(tags, search_p)
             )
-        query = self.visibility_filter(query)
         return query.filter(*args['filter']).order_by(*args['sort'])
-
-    def visibility_filter(self, query):
-        filterqs = request.args.get('filter', None)
-        if (filterqs and
-                'lot' not in filterqs):
-            query = query.filter((Computer.id == Device.id), (Computer.owner_id == g.user.id))
-            pass
-        return query
 
 
 class DeviceMergeView(View):
