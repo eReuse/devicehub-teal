@@ -1,5 +1,7 @@
-from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.db import db
+
+from ereuse_devicehub.resources.device import models as m
+[x.owner_id for x in m.Device.query.filter((m.Computer.id == m.Device.id)).all()]
 
 def migrate(app):
     with app.app_context():
