@@ -574,8 +574,9 @@ def test_networking_model(user: UserClient):
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_cooking_mixer():
-    mixer = d.Mixer(serial_number='foo', model='bar', manufacturer='foobar')
+def test_cooking_mixer(user: UserClient):
+    mixer = d.Mixer(serial_number='foo', model='bar', manufacturer='foobar',
+                    owner_id=user.user['id'])
     db.session.add(mixer)
     db.session.commit()
 
