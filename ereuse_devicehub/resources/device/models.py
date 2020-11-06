@@ -577,7 +577,8 @@ class Component(Device):
         """
         assert self.hid is None, 'Don\'t use this method with a component that has HID'
         component = self.__class__.query \
-            .filter_by(parent=parent, hid=None, **self.physical_properties) \
+            .filter_by(parent=parent, hid=None, owner_id=self.owner_id, 
+                       **self.physical_properties) \
             .filter(~Component.id.in_(blacklist)) \
             .first()
         if not component:
