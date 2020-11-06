@@ -98,7 +98,7 @@ class DeviceView(View):
         return super().get(id)
 
     def patch(self, id):
-        dev = Device.query.filter_by(id=id).one()
+        dev = Device.query.filter_by(id=id, owner_id=g.user.id).one()
         if isinstance(dev, Computer):
             resource_def = app.resources['Computer']
             # TODO check how to handle the 'actions_one'
@@ -128,9 +128,9 @@ class DeviceView(View):
 
     @auth.Auth.requires_auth
     def one_private(self, id: int):
-        device = Device.query.filter_by(id=id).one()
-        if hasattr(device, 'owner_id') and device.owner_id != g.user.id:
-            device = {}
+        device = Device.query.filter_by(id=id, owner_id=g.user.id).first()
+        if not device:
+            return self.one_public(id)
         return self.schema.jsonify(device)
 
     @auth.Auth.requires_auth
@@ -172,8 +172,8 @@ class DeviceMergeView(View):
         return args['id']
 
     def post(self, id: uuid.UUID):
-        device = Device.query.filter_by(id=id).one()
-        with_device = Device.query.filter_by(id=self.get_merge_id()).one()
+        device = Device.query.filter_by(id=id, owner_id=g.user.id).one()
+        with_device = Device.query.filter_by(id=self.get_merge_id(), owner_id=g.user.id).one()
         self.merge_devices(device, with_device)
 
         db.session().final_flush()
