@@ -1,6 +1,7 @@
 import os
 import json
 import pytest
+import uuid
 
 from datetime import datetime, timedelta, timezone
 from requests.exceptions import HTTPError
@@ -102,6 +103,24 @@ def test_snapshot_post(user: UserClient):
     assert rate['components'] == snapshot['components']
     assert rate['snapshot']['id'] == snapshot['id']
 
+
+@pytest.mark.mvp
+def test_same_device_tow_users(user: UserClient, user2: UserClient):
+    """Two users can up the same snapshot and the system save 2 computers"""
+    user.post(file('basic.snapshot'), res=Snapshot)
+    i, _ = user.get(res=m.Device)
+    pc = next(d for d in i['items'] if d['type'] == 'Desktop')
+    pc_id = pc['id']
+    assert i['items'][0]['url'] == f'/devices/{pc_id}'
+
+    basic_snapshot = file('basic.snapshot')
+    basic_snapshot['uuid'] = f"{uuid.uuid4()}"
+    user2.post(basic_snapshot, res=Snapshot)
+    i2, _ = user2.get(res=m.Device)
+    pc2 = next(d for d in i2['items'] if d['type'] == 'Desktop')
+    assert pc['id'] != pc2['id']
+    assert pc['ownerID'] != pc2['ownerID']
+    assert pc['hid'] == pc2['hid']
 
 @pytest.mark.mvp
 def test_snapshot_update_timefield_updated(user: UserClient):
