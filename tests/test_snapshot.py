@@ -252,7 +252,9 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c3s', 'p1c4s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
     # This last Action only
-    assert get_actions_info(pc1['actions'])[-1] == ('RateComputer', ['p1c3s', 'p1c4s'])
+    act = get_actions_info(pc1['actions'])[-1]
+    assert 'RateComputer' in act
+    assert set(act[1]) == {'p1c3s', 'p1c4s'}
     # PC2
     # We haven't changed PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
