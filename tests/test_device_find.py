@@ -1,4 +1,5 @@
 import pytest
+import uuid
 from teal.utils import compiled
 
 from ereuse_devicehub.client import UserClient
@@ -184,6 +185,26 @@ def test_device_query(user: UserClient):
     assert len(pc['components']) == 3
     assert not pc['tags']
 
+
+@pytest.mark.mvp
+def test_device_query_permitions(user: UserClient, user2: UserClient):
+    """Checks result of inventory for two users"""
+    user.post(file('basic.snapshot'), res=Snapshot)
+    i, _ = user.get(res=Device)
+    pc1 = next(d for d in i['items'] if d['type'] == 'Desktop')
+
+    i2, _ = user2.get(res=Device)
+    assert i2['items'] == []
+
+    basic_snapshot = file('basic.snapshot')
+    basic_snapshot['uuid'] = f"{uuid.uuid4()}"
+    user2.post(basic_snapshot, res=Snapshot)
+    i2, _ = user2.get(res=Device)
+    pc2 = next(d for d in i2['items'] if d['type'] == 'Desktop')
+    
+    assert pc1['id'] != pc2['id']
+    assert pc1['hid'] == pc2['hid']
+    
 
 @pytest.mark.mvp
 def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClient):
