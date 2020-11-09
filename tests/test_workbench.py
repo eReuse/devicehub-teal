@@ -11,7 +11,7 @@ from ereuse_devicehub.resources.action.models import RateComputer, BenchmarkProc
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag.model import Tag
-from tests.conftest import file
+from tests.conftest import file, file_workbench
 
 
 @pytest.mark.mvp
@@ -327,4 +327,9 @@ def test_workbench_asus_1001pxd_rate_low(user: UserClient):
 @pytest.mark.mvp
 def test_david(user: UserClient):
     s = file('david.lshw.snapshot')
+    snapshot, _ = user.post(res=em.Snapshot, data=s)
+
+
+def test_eresueprice_computer_type(user: UserClient):
+    s = file_workbench('computer-type.snapshot')
     snapshot, _ = user.post(res=em.Snapshot, data=s)

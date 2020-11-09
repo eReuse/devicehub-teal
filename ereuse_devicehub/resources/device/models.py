@@ -28,7 +28,7 @@ from teal.resource import url_for_resource
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity, TransferState
-from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
+from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing, listener_reset_field_updated_in_actual_time
 from ereuse_devicehub.resources.user.models import User
 
 
@@ -881,3 +881,6 @@ class Manufacturer(db.Model):
                 'COPY common.manufacturer FROM STDIN (FORMAT csv)',
                 f
             )
+
+
+listener_reset_field_updated_in_actual_time(Device)
