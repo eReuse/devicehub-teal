@@ -58,3 +58,30 @@ def test_simple_merge(app: Devicehub, user: UserClient):
         for com in components1_excluded:
             assert not com in pc1.components
 
+@pytest.mark.mvp
+def test_merge_two_device_with_differents_tags(app: Devicehub, user: UserClient):
+    """ Check if is correct to do a manual merge of 2 diferents devices with diferents tags """
+    snapshot1, _ = user.post(import_snap('real-custom.snapshot.11'), res=m.Snapshot)
+    snapshot2, _ = user.post(import_snap('real-hp.snapshot.11'), res=m.Snapshot)
+    pc1_id = snapshot1['device']['id']
+    pc2_id = snapshot2['device']['id']
+
+    with app.app_context():
+        pc1 = d.Device.query.filter_by(id=pc1_id).one()
+        pc2 = d.Device.query.filter_by(id=pc2_id).one()
+
+        tag1 = Tag(id='fii-bor', owner_id=user.user['id'])
+        tag2 = Tag(id='foo-bar', owner_id=user.user['id'])
+        pc1.tags.add(tag1)
+        pc2.tags.add(tag2)
+        db.session.add(pc1)
+        db.session.add(pc2)
+        db.session.commit()
+
+        uri = '/devices/%d/merge/%d' % (pc1_id, pc2_id)
+        result, _ = user.post({'id': 1}, uri=uri, status=201)
+
+        assert pc1.hid == pc2.hid
+        assert tag1 in pc1.tags
+        assert tag2 in pc1.tags
+
