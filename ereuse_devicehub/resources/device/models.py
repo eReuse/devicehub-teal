@@ -16,8 +16,10 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
+from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
+from sqlalchemy import event
 from stdnum import imei, meid
 from teal.db import CASCADE_DEL, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, URL, \
     check_lower, check_range, IntEnum
@@ -135,8 +137,7 @@ class Device(Thing):
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
-        with suppress(TypeError):
-            self.hid = Naming.hid(self.type, self.manufacturer, self.model, self.serial_number)
+        self.set_hid()
 
     @property
     def actions(self) -> list:
@@ -268,6 +269,10 @@ class Device(Thing):
         if cls.t == 'Device':
             args[POLYMORPHIC_ON] = cls.type
         return args
+
+    def set_hid(self):
+        with suppress(TypeError):
+            self.hid = Naming.hid(self.type, self.manufacturer, self.model, self.serial_number)
 
     def last_action_of(self, *types):
         """Gets the last action of the given types.
@@ -451,6 +456,18 @@ class Computer(Device):
             (hdd.privacy for hdd in self.components if isinstance(hdd, DataStorage))
             if privacy
         )
+
+    def add_mac_to_hid(self) -> str:
+        """Returns the Naming.hid with the first mac of network adapter, 
+        following an alphabetical order.
+        """
+        self.set_hid()
+        if not self.hid:
+            return
+        macs_network= [c.serial_number for c in self.components if c.type == 'NetworkAdapter']
+        macs_network.sort()
+        mac = "-"+macs_network[0] if macs_network else ''
+        self.hid += mac
 
     def __format__(self, format_spec):
         if not format_spec:
@@ -656,6 +673,17 @@ class NetworkMixin:
 
 class NetworkAdapter(JoinedComponentTableMixin, NetworkMixin, Component):
     pass
+
+
+@event.listens_for(NetworkAdapter.parent, Events.set.__name__, propagate=True)
+def update_hid(target: NetworkAdapter, device: Device, _, __):
+    """Syncs the :attr:`parent.hid` with the parent of the device."""
+    target.parent = None
+    if isinstance(device, Component):
+        if device.parent:
+            device.parent.add_mac_to_hid()
+
+        target.parent = device.parent
 
 
 class Processor(JoinedComponentTableMixin, Component):
