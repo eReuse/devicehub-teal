@@ -230,6 +230,7 @@ class DeviceMergeView(View):
         base_device.manufacturer = latest_snapshot_device.manufacturer
         base_device.model = latest_snapshot_device.model
         base_device.chassis = latest_snapshot_device.chassis
+        base_device.add_mac_to_hid()
 
 
 class ManufacturerView(View):
