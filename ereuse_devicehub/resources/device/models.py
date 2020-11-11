@@ -16,10 +16,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
-from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
-from sqlalchemy import event
 from stdnum import imei, meid
 from teal.db import CASCADE_DEL, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, URL, \
     check_lower, check_range, IntEnum
@@ -673,17 +671,6 @@ class NetworkMixin:
 
 class NetworkAdapter(JoinedComponentTableMixin, NetworkMixin, Component):
     pass
-
-
-@event.listens_for(NetworkAdapter.parent, Events.set.__name__, propagate=True)
-def update_hid(target: NetworkAdapter, device: Device, _, __):
-    """Syncs the :attr:`parent.hid` with the parent of the device."""
-    target.parent = None
-    if isinstance(device, Component):
-        if device.parent:
-            device.parent.add_mac_to_hid()
-
-        target.parent = device.parent
 
 
 class Processor(JoinedComponentTableMixin, Component):
