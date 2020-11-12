@@ -5,11 +5,6 @@ device:
   type: Desktop
   chassis: Tower
 components:
-  - manufacturer: p1c4m
-    serialNumber: p1c4s
-    type: NetworkAdapter
-    speed: 1000
-    wireless: False
   - manufacturer: p1c3m
     serialNumber: p1c3s
     type: GraphicCard
