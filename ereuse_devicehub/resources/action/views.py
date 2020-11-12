@@ -13,6 +13,7 @@ from teal.marshmallow import ValidationError
 from teal.resource import View
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.device.models import Device, Computer
 from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest, \
     InitTransfer
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
@@ -99,6 +100,7 @@ class ActionView(View):
         action = Action.query.filter_by(id=id).one()
         return self.schema.jsonify(action)
 
+
     def snapshot(self, snapshot_json: dict, resource_def):
         """Performs a Snapshot.
 
@@ -112,6 +114,8 @@ class ActionView(View):
         components = None
         if snapshot_json['software'] == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid):
             components = snapshot_json.pop('components', None)  # type: List[Component]
+            if isinstance(device, Computer) and device.hid:
+                device.add_mac_to_hid(components_snap=components)
         snapshot = Snapshot(**snapshot_json)
 
         # Remove new actions from devices so they don't interfere with sync

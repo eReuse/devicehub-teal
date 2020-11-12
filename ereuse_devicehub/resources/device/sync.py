@@ -72,7 +72,6 @@ class Sync:
             # We only want to perform Add/Remove to not new components
             actions = self.add_remove(db_device, not_new_components)
             db_device.components = db_components
-            db_device.add_mac_to_hid()
         return db_device, actions
 
     def execute_register_component(self,
