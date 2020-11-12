@@ -455,17 +455,21 @@ class Computer(Device):
             if privacy
         )
 
-    def add_mac_to_hid(self) -> str:
+    def add_mac_to_hid(self, components_snap=None):
         """Returns the Naming.hid with the first mac of network adapter, 
         following an alphabetical order.
         """
         self.set_hid()
         if not self.hid:
             return
-        macs_network= [c.serial_number for c in self.components if c.type == 'NetworkAdapter']
+        components = self.components if components_snap == None else components_snap
+        macs_network= [c.serial_number for c in components if c.type == 'NetworkAdapter']
         macs_network.sort()
-        mac = "-"+macs_network[0] if macs_network else ''
-        self.hid += mac
+        mac = macs_network[0] if macs_network else ''
+        if not mac or mac in self.hid:
+            return
+        mac = f"-{mac}"
+        self.hid += mac 
 
     def __format__(self, format_spec):
         if not format_spec:
