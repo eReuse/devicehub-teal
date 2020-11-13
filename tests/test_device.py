@@ -604,7 +604,7 @@ def test_cooking_mixer_api(user: UserClient):
 def test_hid_with_mac(app: Devicehub, user: UserClient):
     """Checks hid with mac."""
     snapshot = file('asus-eee-1000h.snapshot.11')
-    s, _ = user.post(snapshot, res=m.Snapshot)
+    user.post(snapshot, res=m.Snapshot)
     pc, _ = user.get(res=d.Device, item=1)
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
 
@@ -614,7 +614,7 @@ def test_hid_without_mac(app: Devicehub, user: UserClient):
     """Checks hid without mac."""
     snapshot = file('asus-eee-1000h.snapshot.11')
     snapshot['components'] = [c for c in snapshot['components'] if c['type'] != 'NetworkAdapter']
-    s, _ = user.post(snapshot, res=m.Snapshot)
+    user.post(snapshot, res=m.Snapshot)
     pc, _ = user.get(res=d.Device, item=1)
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
 
@@ -625,7 +625,7 @@ def test_hid_with_mac_none(app: Devicehub, user: UserClient):
     snapshot = file('asus-eee-1000h.snapshot.11')
     network = [c for c in snapshot['components'] if c['type'] == 'NetworkAdapter'][0]
     network['serialNumber'] = None
-    s, _ = user.post(snapshot, res=m.Snapshot)
+    user.post(snapshot, res=m.Snapshot)
     pc, _ = user.get(res=d.Device, item=1)
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
 
@@ -639,9 +639,10 @@ def test_hid_with_2networkadapters(app: Devicehub, user: UserClient):
     snapshot['components'].append(network2)
     network['serialNumber'] = 'a0:24:8c:7f:cf:2d'
     user.post(snapshot, res=m.Snapshot)
-    # pc, _ = user.get(res=d.Device, item=1)
-    assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
     devices, _ = user.get(res=d.Device)
+
+    laptop = devices['items'][0]
+    assert laptop['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
     assert len([c for c in devices['items'] if c['type'] == 'Laptop']) == 1
 
 
@@ -661,9 +662,10 @@ def test_hid_with_2network_and_drop_no_mac_in_hid(app: Devicehub, user: UserClie
     snapshot['components'] = [c for c in snapshot['components'] if c != network]
     user.post(snapshot, res=m.Snapshot)
     devices, _ = user.get(res=d.Device)
+    laptop = devices['items'][0]
+    assert laptop['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
     assert len([c for c in devices['items'] if c['type'] == 'Laptop']) == 1
-    assert devices['items'][0]['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
-    assert len([c for c in devices['items'][0]['components'] if c['type'] == 'NetworkAdapter']) == 1
+    assert len([c for c in laptop['components'] if c['type'] == 'NetworkAdapter']) == 1
 
 
 @pytest.mark.mvp
