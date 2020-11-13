@@ -462,14 +462,15 @@ class Computer(Device):
         self.set_hid()
         if not self.hid:
             return
-        components = self.components if components_snap == None else components_snap
-        macs_network= [c.serial_number for c in components if c.type == 'NetworkAdapter']
+        components = self.components if components_snap is None else components_snap
+        macs_network = [c.serial_number for c in components
+                        if c.type == 'NetworkAdapter' and c.serial_number is not None]
         macs_network.sort()
         mac = macs_network[0] if macs_network else ''
         if not mac or mac in self.hid:
             return
         mac = f"-{mac}"
-        self.hid += mac 
+        self.hid += mac
 
     def __format__(self, format_spec):
         if not format_spec:
