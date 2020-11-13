@@ -663,6 +663,7 @@ def test_hid_with_2network_and_drop_no_mac_in_hid(app: Devicehub, user: UserClie
     devices, _ = user.get(res=d.Device)
     assert len([c for c in devices['items'] if c['type'] == 'Laptop']) == 1
     assert devices['items'][0]['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    assert len([c for c in devices['items'][0]['components'] if c['type'] == 'NetworkAdapter']) == 1
 
 
 @pytest.mark.mvp
