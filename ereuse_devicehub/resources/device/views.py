@@ -6,10 +6,13 @@ import marshmallow
 from flask import g, current_app as app, render_template, request, Response
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
+from sqlalchemy.util import OrderedSet
 from marshmallow import fields, fields as f, validate as v, Schema as MarshmallowSchema
 from teal import query
+from teal.db import ResourceNotFound
 from teal.cache import cache
 from teal.resource import View
+from teal.marshmallow import ValidationError
 
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
@@ -170,66 +173,78 @@ class DeviceView(View):
 
 class DeviceMergeView(View):
     """View for merging two devices
-    Ex. ``device/<id>/merge/id=X``.
+    Ex. ``device/<dev1_id>/merge/<dev2_id>``.
     """
 
-    class FindArgs(MarshmallowSchema):
-        id = fields.Integer()
+    def post(self, dev1_id: int, dev2_id: int):
+        device = self.merge_devices(dev1_id, dev2_id)
 
-    def get_merge_id(self) -> uuid.UUID:
-        args = self.QUERY_PARSER.parse(self.find_args, request, locations=('querystring',))
-        return args['id']
-
-    def post(self, id: uuid.UUID):
-        device = Device.query.filter_by(id=id).one()
-        with_device = Device.query.filter_by(id=self.get_merge_id()).one()
-        self.merge_devices(device, with_device)
-
-        db.session().final_flush()
         ret = self.schema.jsonify(device)
         ret.status_code = 201
 
         db.session.commit()
         return ret
 
-    def merge_devices(self, base_device, with_device):
-        """Merge the current device with `with_device` by
-        adding all `with_device` actions under the current device.
+    @auth.Auth.requires_auth
+    def merge_devices(self, dev1_id: int, dev2_id: int) -> Device:
+        """Merge the current device with `with_device` (dev2_id) by
+        adding all `with_device` actions under the current device, (dev1_id).
 
         This operation is highly costly as it forces refreshing
         many models in session.
         """
-        snapshots = sorted(
-            filterfalse(lambda x: not isinstance(x, actions.Snapshot), (base_device.actions + with_device.actions)))
-        workbench_snapshots = [s for s in snapshots if
-                               s.software == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid)]
-        latest_snapshot_device = [d for d in (base_device, with_device) if d.id == snapshots[-1].device.id][0]
-        latest_snapshotworkbench_device = \
-            [d for d in (base_device, with_device) if d.id == workbench_snapshots[-1].device.id][0]
-        # Adding actions of with_device
-        with_actions_one = [a for a in with_device.actions if isinstance(a, actions.ActionWithOneDevice)]
-        with_actions_multiple = [a for a in with_device.actions if isinstance(a, actions.ActionWithMultipleDevices)]
+        # base_device = Device.query.filter_by(id=dev1_id, owner_id=g.user.id).one()
+        self.base_device = Device.query.filter_by(id=dev1_id).one()
+        self.with_device = Device.query.filter_by(id=dev2_id).one()
 
+        if not self.base_device.type == self.with_device.type:
+            # Validation than we are speaking of the same kind of devices
+            raise ValidationError('The devices is not the same type.')
+
+        # Adding actions of self.with_device
+        with_actions_one = [a for a in self.with_device.actions
+                            if isinstance(a, actions.ActionWithOneDevice)]
+        with_actions_multiple = [a for a in self.with_device.actions
+                                 if isinstance(a, actions.ActionWithMultipleDevices)]
+
+        # Moving the tags from `with_device` to `base_device`
+        # Union of tags the device had plus the (potentially) new ones
+        self.base_device.tags.update([x for x in self.with_device.tags])
+        self.with_device.tags.clear()  # We don't want to add the transient dummy tags
+        db.session.add(self.with_device)
+
+        # Moving the actions from `with_device` to `base_device`
         for action in with_actions_one:
             if action.parent:
-                action.parent = base_device
+                action.parent = self.base_device
             else:
-                base_device.actions_one.add(action)
+                self.base_device.actions_one.add(action)
         for action in with_actions_multiple:
             if action.parent:
-                action.parent = base_device
+                action.parent = self.base_device
             else:
-                base_device.actions_multiple.add(action)
+                self.base_device.actions_multiple.add(action)
 
-        # Keeping the components of latest SnapshotWorkbench
-        base_device.components = latest_snapshotworkbench_device.components
+        # Keeping the components of with_device
+        components = OrderedSet(c for c in self.with_device.components)
+        self.base_device.components = components
 
-        # Properties from latest Snapshot
-        base_device.type = latest_snapshot_device.type
-        base_device.hid = latest_snapshot_device.hid
-        base_device.manufacturer = latest_snapshot_device.manufacturer
-        base_device.model = latest_snapshot_device.model
-        base_device.chassis = latest_snapshot_device.chassis
+        # Properties from with_device
+        self.merge()
+
+        db.session().add(self.base_device)
+        db.session().final_flush()
+        return self.base_device
+
+    def merge(self):
+        """Copies the physical properties of the base_device to the with_device.
+        This method mutates base_device.
+        """
+        for field_name, value in self.with_device.physical_properties.items():
+            if value is not None:
+                setattr(self.base_device, field_name, value)
+
+        self.base_device.hid = self.with_device.hid
 
 
 class ManufacturerView(View):

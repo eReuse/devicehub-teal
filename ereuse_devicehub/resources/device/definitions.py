@@ -27,11 +27,13 @@ class DeviceDef(Resource):
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
 
         device_merge = DeviceMergeView.as_view('merge-devices', definition=self, auth=app.auth)
+
         if self.AUTH:
             device_merge = app.auth.requires_auth(device_merge)
-        self.add_url_rule('/<{}:{}>/merge/'.format(self.ID_CONVERTER.value, self.ID_NAME),
-                          view_func=device_merge,
-                          methods={'POST'})
+
+        path = '/<{value}:dev1_id>/merge/<{value}:dev2_id>'.format(value=self.ID_CONVERTER.value)
+
+        self.add_url_rule(path, view_func=device_merge, methods={'POST'})
 
 
 class ComputerDef(DeviceDef):
