@@ -228,11 +228,6 @@ class DonateDef(ActionDef):
     SCHEMA = schemas.Donate
 
 
-class RentDef(ActionDef):
-    VIEW = None
-    SCHEMA = schemas.Rent
-
-
 class MakeAvailable(ActionDef):
     VIEW = None
     SCHEMA = schemas.MakeAvailable
