@@ -460,8 +460,12 @@ class Transferred(ActionWithMultipleDevices):
 
 class Assigned(ActionWithMultipleDevices):
     __doc__ = m.Assigned.__doc__
-    shipping_date = DateTime(data_key='shippingDate')
-    invoice_number = SanitizedStr(validate=Length(max=STR_SIZE), data_key='invoiceNumber')
-    price = NestedOn(Price)
-    to = NestedOn(s_agent.Agent, only_query='id', required=True, comment=m.Trade.to_comment)
-    confirms = NestedOn(Organize)
+    agent = NestedOn(s_agent.Agent, only_query='id', required=False, comment=m.Trade.to_comment)
+    description = SanitizedStr(default='', description=m.Action.description.comment)
+    start_time = DateTime(data_key='startTime', description=m.Action.start_time.comment)
+    end_time = DateTime(data_key='endTime', description=m.Action.end_time.comment)
+    assigned = SanitizedStr(validate=Length(min=1, max=STR_BIG_SIZE),
+                            required=False,
+                            description='The code of the agent to assigned.')
+    n_beneficiaries = Integer(validate=[Range(min=1, error="Value must be greater than 0")],
+                              required=True)
