@@ -1472,6 +1472,14 @@ class MigrateFrom(Migrate):
     pass
 
 
+class Assigned(JoinedTableMixin, ActionWithMultipleDevices):
+    """The act of assigned one list of devices to one person of the system or not
+    """
+    assigned = Column(CIText(), default='', nullable=True)
+    assigned.comment = """ This is a internal code for mainteing the secrets of the personal datas of the new holder """
+    n_beneficiaries = Column(Numeric(precision=4), check_range('n_beneficiaries', 0), nullable=False)
+
+
 # Listeners
 # Listeners validate values and keep relationships synced
 

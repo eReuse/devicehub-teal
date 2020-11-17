@@ -457,3 +457,11 @@ class MigrateFrom(Migrate):
 
 class Transferred(ActionWithMultipleDevices):
     __doc__ = m.Transferred.__doc__
+
+class Assigned(ActionWithMultipleDevices):
+    __doc__ = m.Assigned.__doc__
+    shipping_date = DateTime(data_key='shippingDate')
+    invoice_number = SanitizedStr(validate=Length(max=STR_SIZE), data_key='invoiceNumber')
+    price = NestedOn(Price)
+    to = NestedOn(s_agent.Agent, only_query='id', required=True, comment=m.Trade.to_comment)
+    confirms = NestedOn(Organize)
