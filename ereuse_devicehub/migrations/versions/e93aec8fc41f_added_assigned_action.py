@@ -45,6 +45,7 @@ def upgrade():
         schema=f'{get_inv()}'
     )
 
+    op.add_column('device', sa.Column('inuse', sa.Boolean(), nullable=True), schema=f'{get_inv()}')
 
 def downgrade():
     op.drop_table('allocate', schema=f'{get_inv()}')
