@@ -64,21 +64,20 @@ class Remove(ActionWithOneDevice):
 
 class Allocate(ActionWithMultipleDevices):
     __doc__ = m.Allocate.__doc__
-    to = NestedOn(s_user.User,
-                  description='The user the devices are allocated to.')
-    organization = SanitizedStr(validate=Length(max=STR_SIZE),
-                                description='The organization where the '
-                                            'user was when this happened.')
+    agent = NestedOn(s_agent.Agent, only_query='id', required=False, comment=m.Trade.to_comment)
+    description = SanitizedStr(default='', description=m.Action.description.comment)
+    start_time = DateTime(data_key='start_time', description=m.Action.start_time.comment)
+    end_time = DateTime(data_key='end_time', description=m.Action.end_time.comment)
+    code = SanitizedStr(validate=Length(min=1, max=STR_BIG_SIZE),
+                            required=False,
+                            description='The code of the agent to assigned.')
+    end_users = Integer(validate=[Range(min=1, error="Value must be greater than 0")],
+                              required=True)
 
 
 class Deallocate(ActionWithMultipleDevices):
     __doc__ = m.Deallocate.__doc__
-    from_rel = Nested(s_user.User,
-                      data_key='from',
-                      description='The user where the devices are not allocated to anymore.')
-    organization = SanitizedStr(validate=Length(max=STR_SIZE),
-                                description='The organization where the '
-                                            'user was when this happened.')
+    end_time = DateTime(data_key='end_time', description=m.Action.end_time.comment)
 
 
 class EraseBasic(ActionWithOneDevice):
@@ -457,15 +456,3 @@ class MigrateFrom(Migrate):
 
 class Transferred(ActionWithMultipleDevices):
     __doc__ = m.Transferred.__doc__
-
-class Assigned(ActionWithMultipleDevices):
-    __doc__ = m.Assigned.__doc__
-    agent = NestedOn(s_agent.Agent, only_query='id', required=False, comment=m.Trade.to_comment)
-    description = SanitizedStr(default='', description=m.Action.description.comment)
-    start_time = DateTime(data_key='startTime', description=m.Action.start_time.comment)
-    end_time = DateTime(data_key='endTime', description=m.Action.end_time.comment)
-    assigned = SanitizedStr(validate=Length(min=1, max=STR_BIG_SIZE),
-                            required=False,
-                            description='The code of the agent to assigned.')
-    n_beneficiaries = Integer(validate=[Range(min=1, error="Value must be greater than 0")],
-                              required=True)

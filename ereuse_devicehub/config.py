@@ -14,7 +14,7 @@ from ereuse_devicehub.resources.device import definitions
 from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import PriceSoftware
 from ereuse_devicehub.resources.versions import versions
-from ereuse_devicehub.resources.assigned import definitions as assigned_def
+from ereuse_devicehub.resources.allocate import definitions as allocate_def
 
 
 class DevicehubConfig(Config):
@@ -29,7 +29,7 @@ class DevicehubConfig(Config):
                                      import_resource(documents),
                                      import_resource(inventory),
                                      import_resource(versions),
-                                     import_resource(assigned_def)),
+                                     import_resource(allocate_def)),
                                )
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
     DB_USER = config('DB_USER', 'dhub')

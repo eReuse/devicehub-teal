@@ -27,9 +27,18 @@ def get_inv():
     return INV
 
 def upgrade():
-    op.create_table('assigned',
-        sa.Column('assigned', citext.CIText(), nullable=True, comment=' This is a internal code for mainteing the secrets of the personal datas of the new holder '),
-        sa.Column('n_beneficiaries', sa.Numeric(precision=4), nullable=False),
+    op.drop_table('allocate')
+    op.create_table('allocate',
+        sa.Column('code', citext.CIText(), nullable=True, comment=' This is a internal code for mainteing the secrets of the personal datas of the new holder '),
+        sa.Column('end_users', sa.Numeric(precision=4), nullable=False),
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
+        sa.PrimaryKeyConstraint('id'),
+        schema=f'{get_inv()}'
+    )
+
+    op.drop_table('deallocate')
+    op.create_table('deallocate',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
         sa.PrimaryKeyConstraint('id'),
@@ -38,4 +47,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table('assigned')
+    op.drop_table('allocate')

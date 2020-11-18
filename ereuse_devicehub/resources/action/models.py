@@ -312,15 +312,19 @@ class Remove(ActionWithOneDevice):
 
 
 class Allocate(JoinedTableMixin, ActionWithMultipleDevices):
-    to_id = Column(UUID, ForeignKey(User.id))
-    to = relationship(User, primaryjoin=User.id == to_id)
-    organization = Column(CIText())
+    """The act of assigned one list of devices to one person of the system or not
+    """
+    code = Column(CIText(), default='', nullable=True)
+    code.comment = """ This is a internal code for mainteing the secrets of the personal datas of the new holder """
+    end_users = Column(Numeric(precision=4), check_range('end_users', 0), nullable=False)
 
 
 class Deallocate(JoinedTableMixin, ActionWithMultipleDevices):
-    from_id = Column(UUID, ForeignKey(User.id))
-    from_rel = relationship(User, primaryjoin=User.id == from_id)
-    organization = Column(CIText())
+    @property
+    def allocate(self):
+        """The URL of the allocate than closes one allocate. """
+        allocate = [a for a in self.devices[0].actions if is_instance(action, 'Allocate')][-1]
+        return urlutils.URL(url_for_resource('Allocate', item=allocate))
 
 
 class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
@@ -1470,14 +1474,6 @@ class MigrateTo(Migrate):
 
 class MigrateFrom(Migrate):
     pass
-
-
-class Assigned(JoinedTableMixin, ActionWithMultipleDevices):
-    """The act of assigned one list of devices to one person of the system or not
-    """
-    assigned = Column(CIText(), default='', nullable=True)
-    assigned.comment = """ This is a internal code for mainteing the secrets of the personal datas of the new holder """
-    n_beneficiaries = Column(Numeric(precision=4), check_range('n_beneficiaries', 0), nullable=False)
 
 
 # Listeners
