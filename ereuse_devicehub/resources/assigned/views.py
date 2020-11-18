@@ -10,7 +10,7 @@ from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import Assigned
 
 
-class RentingView(View):
+class AssignedView(View):
     @auth.Auth.requires_auth
     def get(self, id: uuid.UUID) -> Assigned:
         return super().get(id)
