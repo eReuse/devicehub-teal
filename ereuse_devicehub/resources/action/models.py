@@ -320,11 +320,7 @@ class Allocate(JoinedTableMixin, ActionWithMultipleDevices):
 
 
 class Deallocate(JoinedTableMixin, ActionWithMultipleDevices):
-    @property
-    def allocate(self):
-        """The URL of the allocate than closes one allocate. """
-        allocate = [a for a in self.devices[0].actions if is_instance(action, 'Allocate')][-1]
-        return urlutils.URL(url_for_resource('Allocate', item=allocate))
+    pass
 
 
 class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):

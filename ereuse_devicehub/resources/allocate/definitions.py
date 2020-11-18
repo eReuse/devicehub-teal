@@ -9,7 +9,6 @@ class AssignedDef(Resource):
     SCHEMA = schemas.Allocate
 
 
-# class EndAssignedDef(Resource):
-    # VIEW = DeAllocateView
-    # SCHEMA = schemas.DeAllocate
-
+class EndAssignedDef(Resource):
+    VIEW = DeAllocateView
+    SCHEMA = schemas.Deallocate
