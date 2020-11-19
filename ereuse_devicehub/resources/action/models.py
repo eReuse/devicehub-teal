@@ -1433,21 +1433,25 @@ class MakeAvailable(ActionWithMultipleDevices):
 class Receive(JoinedTableMixin, ActionWithMultipleDevices):
     """The act of physically taking delivery of a device.
 
-    The receiver confirms that the devices have arrived, and thus,
-    they are the
+    The Agent confirm than the device changes hands and have a new possessor
     :attr:`ereuse_devicehub.resources.device.models.Device.physical_possessor`.
-
-    This differs from :class:`.Trade` in that trading changes the
-    political possession. As an example, a transporter can *receive*
-    a device but it is not it's owner. After the delivery, the
-    transporter performs another *receive* to the final owner.
-
-    The receiver can optionally take a
-    :class:`ereuse_devicehub.resources.enums.ReceiverRole`.
     """
-    role = Column(DBEnum(ReceiverRole),
-                  nullable=False,
-                  default=ReceiverRole.Intermediary)
+    agent_from_id = Column(UUID(as_uuid=True),
+                      ForeignKey(Agent.id),
+                      nullable=False,
+                      default=lambda: g.user.individual.id)
+    agent_from = relationship(Agent,
+                        backref=backref('actions_agent', lazy=True, **_sorted_actions),
+                        primaryjoin=agent_from_id == Agent.id)
+    agent_from_id.comment = """ This device go from this agent """
+    agent_to_id = Column(UUID(as_uuid=True),
+                      ForeignKey(Agent.id),
+                      nullable=False,
+                      default=lambda: g.user.individual.id)
+    agent_to = relationship(Agent,
+                        backref=backref('actions_agent', lazy=True, **_sorted_actions),
+                        primaryjoin=agent_to_id == Agent.id)
+    agent_to_id.comment = """ This device go to this agent """
 
 
 class Migrate(JoinedTableMixin, ActionWithMultipleDevices):

@@ -222,6 +222,22 @@ class Device(Thing):
             return states.Physical(action.__class__)
 
     @property
+    def traking(self):
+        """The actual traking state, None otherwise."""
+        from ereuse_devicehub.resources.device import states
+        with suppress(LookupError, ValueError):
+            action = self.last_action_of(*states.Traking.actions())
+            return states.Traking(action.__class__)
+
+    @property
+    def usage(self):
+        """The actual usage state, None otherwise."""
+        from ereuse_devicehub.resources.device import states
+        with suppress(LookupError, ValueError):
+            action = self.last_action_of(*states.Usage.actions())
+            return states.Usage(action.__class__)
+
+    @property
     def physical_possessor(self):
         """The actual physical possessor or None.
 
@@ -240,7 +256,7 @@ class Device(Thing):
         from ereuse_devicehub.resources.action.models import Receive
         with suppress(LookupError):
             action = self.last_action_of(Receive)
-            return action.agent
+            return action.to
 
     @property
     def working(self):
