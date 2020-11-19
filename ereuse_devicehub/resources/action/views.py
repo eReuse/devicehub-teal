@@ -14,8 +14,9 @@ from teal.marshmallow import ValidationError
 from teal.resource import View
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest, \
-    InitTransfer
+from ereuse_devicehub.query import things_response
+from ereuse_devicehub.resources.action.models import (Action, RateComputer, Snapshot, VisualTest, 
+    InitTransfer, Receive)
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
@@ -173,7 +174,23 @@ class ActionView(View):
 class ReceiveView(View):
 
     def post(self):
-        return jsonify('Ok')
+        # return jsonify('Ok')
+        """ Create one receive """
+        res_json = request.get_json()
+        receive = Receive(**res_json)
+        db.session.add(receive)
+        db.session().final_flush()
+        ret = self.schema.jsonify(receive)
+        ret.status_code = 201
+        db.session.commit()
+        return ret
 
-    def find(self, args):
-        return jsonify('Ok find')
+    def find(self, args: dict):
+        receives = Receive.query.filter_by(author=g.user) \
+            .order_by(Receive.created.desc()) \
+            .paginate(per_page=200)
+        return things_response(
+            self.schema.dump(receives.items, many=True, nested=0),
+            receives.page, receives.per_page, receives.total,
+            receives.prev_num, receives.next_num
+        )

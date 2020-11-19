@@ -11,6 +11,7 @@ from teal.resource import Schema
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.action import models as m
+from ereuse_devicehub.resources.action import schemas as s_action
 from ereuse_devicehub.resources.agent import schemas as s_agent
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.enums import AppearanceRange, BiosAccessRange, FunctionalityRange, \
@@ -433,7 +434,9 @@ class TransferOwnershipBlockchain(Trade):
 
 class Receive(ActionWithMultipleDevices):
     __doc__ = m.Receive.__doc__
-    role = EnumField(ReceiverRole)
+    agent_from = NestedOn(s_agent.Agent, only_query='id', required=False, comment=m.Receive.agent_from_id.comment)
+    agent_to = NestedOn(s_agent.Agent, only_query='id', required=False, comment=m.Receive.agent_to_id.comment)
+    action = NestedOn(s_action.Action, only_query='id', required=False, comment=m.Receive.action_id.comment)
 
 
 class Migrate(ActionWithMultipleDevices):
