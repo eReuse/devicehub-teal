@@ -6,6 +6,7 @@ import shutil
 from datetime import datetime
 from distutils.version import StrictVersion
 from uuid import UUID
+from flask.json import jsonify
 
 from flask import current_app as app, request, g
 from sqlalchemy.util import OrderedSet
@@ -168,3 +169,11 @@ class ActionView(View):
     def transfer_ownership(self):
         """Perform a InitTransfer action to change author_id of device"""
         pass
+
+class ReceiveView(View):
+
+    def post(self):
+        return jsonify('Ok')
+
+    def find(self, args):
+        return jsonify('Ok find')
