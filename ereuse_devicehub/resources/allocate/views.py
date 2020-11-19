@@ -7,7 +7,7 @@ from teal.resource import View
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
-from ereuse_devicehub.resources.action.models import Allocate, Deallocate
+from ereuse_devicehub.resources.action.models import Allocate
 
 
 class AllocateView(View):
@@ -41,37 +41,3 @@ class AllocateView(View):
         """Gets one action."""
         allocate = Allocate.query.filter_by(id=id, author=g.user).one()
         return self.schema.jsonify(allocate, nested=2)
-
-
-class DeAllocateView(View):
-    @auth.Auth.requires_auth
-    def get(self, id: uuid.UUID) -> Allocate:
-        return super().get(id)
-
-    @auth.Auth.requires_auth
-    def post(self):
-        """ Create one Deallocate """
-        res_json = request.get_json()
-        deallocate = Deallocate(**res_json)
-        db.session.add(deallocate)
-        db.session().final_flush()
-        ret = self.schema.jsonify(deallocate)
-        ret.status_code = 201
-        db.session.commit()
-        return ret
-
-    def find(self, args: dict):
-        deallocates = Deallocate.query.filter_by(author=g.user) \
-            .order_by(Deallocate.created.desc()) \
-            .paginate(per_page=200)
-        return things_response(
-            self.schema.dump(deallocates.items, many=True, nested=0),
-            deallocates.page, deallocates.per_page, deallocates.total,
-            deallocates.prev_num, deallocates.next_num
-        )
-
-    def one(self, id: uuid.UUID):
-        """Gets one action."""
-        deallocate = Deallocate.query.filter_by(id=id, author=g.user).one()
-        res = self.schema.jsonify(deallocate, nested=2)
-        return res
