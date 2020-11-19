@@ -530,11 +530,9 @@ class TransferOwnershipBlockchain(Trade):
 
 
 class Receive(ActionWithMultipleDevices):
-    role = ...  # type:Column
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.role = ...  # type: ReceiverRole
+    agent_from = ...  # type: relationship
+    agent_to = ...  # type: relationship
+    action = ...  # type: relationship
 
 
 class Migrate(ActionWithMultipleDevices):

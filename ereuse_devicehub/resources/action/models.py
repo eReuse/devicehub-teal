@@ -1450,8 +1450,15 @@ class Receive(JoinedTableMixin, ActionWithMultipleDevices):
                       default=lambda: g.user.individual.id)
     agent_to = relationship(Agent,
                         backref=backref('actions_agent', lazy=True, **_sorted_actions),
-                        primaryjoin=agent_to_id == Agent.id)
+                        primaryjoin=agent_to_id == Action.id)
     agent_to_id.comment = """ This device go to this agent """
+    action_id = Column(UUID(as_uuid=True),
+                      ForeignKey(Action.id),
+                      nullable=True)
+    action = relationship(Action,
+                        backref=backref('actions_id', lazy=True, **_sorted_actions),
+                        primaryjoin=action_id == Action.id)
+    action_id.comment = """ This Receive confirm this action """
 
 
 class Migrate(JoinedTableMixin, ActionWithMultipleDevices):
