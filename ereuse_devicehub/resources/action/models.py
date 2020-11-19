@@ -1441,7 +1441,7 @@ class Receive(JoinedTableMixin, ActionWithMultipleDevices):
                       nullable=False,
                       default=lambda: g.user.individual.id)
     agent_from = relationship(Agent,
-                        backref=backref('actions_agent', lazy=True, **_sorted_actions),
+                        backref=backref('receive_agent_from', lazy=True, **_sorted_actions),
                         primaryjoin=agent_from_id == Agent.id)
     agent_from_id.comment = """ This device go from this agent """
     agent_to_id = Column(UUID(as_uuid=True),
@@ -1449,8 +1449,8 @@ class Receive(JoinedTableMixin, ActionWithMultipleDevices):
                       nullable=False,
                       default=lambda: g.user.individual.id)
     agent_to = relationship(Agent,
-                        backref=backref('actions_agent', lazy=True, **_sorted_actions),
-                        primaryjoin=agent_to_id == Action.id)
+                        backref=backref('receive_agent_to', lazy=True, **_sorted_actions),
+                        primaryjoin=agent_to_id == Agent.id)
     agent_to_id.comment = """ This device go to this agent """
     action_id = Column(UUID(as_uuid=True),
                       ForeignKey(Action.id),
