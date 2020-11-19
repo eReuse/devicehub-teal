@@ -38,15 +38,8 @@ def upgrade():
     )
 
     op.drop_table('deallocate', schema=f'{get_inv()}')
-    op.create_table('deallocate',
-        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-        schema=f'{get_inv()}'
-    )
 
-    op.add_column('device', sa.Column('inuse', sa.Boolean(), nullable=True), schema=f'{get_inv()}')
+    op.add_column('device', sa.Column('allocate', sa.Boolean(), nullable=True), schema=f'{get_inv()}')
 
 def downgrade():
     op.drop_table('allocate', schema=f'{get_inv()}')
-    op.drop_table('deallocate', schema=f'{get_inv()}')

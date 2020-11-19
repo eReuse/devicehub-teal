@@ -319,10 +319,6 @@ class Allocate(JoinedTableMixin, ActionWithMultipleDevices):
     end_users = Column(Numeric(precision=4), check_range('end_users', 0), nullable=False)
 
 
-class Deallocate(JoinedTableMixin, ActionWithMultipleDevices):
-    pass
-
-
 class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """An erasure attempt to a ``DataStorage``. The action contains
     information about success and nature of the erasure.

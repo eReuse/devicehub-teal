@@ -75,11 +75,6 @@ class Allocate(ActionWithMultipleDevices):
                               required=True)
 
 
-class Deallocate(ActionWithMultipleDevices):
-    __doc__ = m.Deallocate.__doc__
-    end_time = DateTime(data_key='end_time', description=m.Action.end_time.comment)
-
-
 class EraseBasic(ActionWithOneDevice):
     __doc__ = m.EraseBasic.__doc__
     steps = NestedOn('Step', many=True)
