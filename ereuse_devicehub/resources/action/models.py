@@ -1430,37 +1430,6 @@ class MakeAvailable(ActionWithMultipleDevices):
     pass
 
 
-class Receive(JoinedTableMixin, ActionWithMultipleDevices):
-    """The act of physically taking delivery of a device.
-
-    The Agent confirm than the device changes hands and have a new possessor
-    :attr:`ereuse_devicehub.resources.device.models.Device.physical_possessor`.
-    """
-    agent_from_id = Column(UUID(as_uuid=True),
-                      ForeignKey(Agent.id),
-                      nullable=False,
-                      default=lambda: g.user.individual.id)
-    agent_from = relationship(Agent,
-                        backref=backref('receive_agent_from', lazy=True, **_sorted_actions),
-                        primaryjoin=agent_from_id == Agent.id)
-    agent_from_id.comment = """ This device go from this agent """
-    agent_to_id = Column(UUID(as_uuid=True),
-                      ForeignKey(Agent.id),
-                      nullable=False,
-                      default=lambda: g.user.individual.id)
-    agent_to = relationship(Agent,
-                        backref=backref('receive_agent_to', lazy=True, **_sorted_actions),
-                        primaryjoin=agent_to_id == Agent.id)
-    agent_to_id.comment = """ This device go to this agent """
-    action_id = Column(UUID(as_uuid=True),
-                      ForeignKey(Action.id),
-                      nullable=True)
-    action = relationship(Action,
-                        backref=backref('actions_id', lazy=True, **_sorted_actions),
-                        primaryjoin=action_id == Action.id)
-    action_id.comment = """ This Receive confirm this action """
-
-
 class Migrate(JoinedTableMixin, ActionWithMultipleDevices):
     """Moves the devices to a new database/inventory. Devices cannot be
     modified anymore at the previous database.

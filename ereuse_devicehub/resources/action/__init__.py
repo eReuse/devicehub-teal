@@ -3,7 +3,7 @@ from typing import Callable, Iterable, Tuple
 from teal.resource import Converters, Resource
 
 from ereuse_devicehub.resources.action import schemas
-from ereuse_devicehub.resources.action.views import ActionView, ReceiveView
+from ereuse_devicehub.resources.action.views import ActionView
 from ereuse_devicehub.resources.device.sync import Sync
 
 
@@ -246,11 +246,6 @@ class ToDisposeProductDef(ActionDef):
 class DisposeProductDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.DisposeProduct
-
-
-class ReceiveDef(ActionDef):
-    VIEW = ReceiveView
-    SCHEMA = schemas.Receive
 
 
 class MigrateToDef(ActionDef):

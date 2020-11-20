@@ -256,7 +256,7 @@ class Device(Thing):
         from ereuse_devicehub.resources.action.models import Receive
         with suppress(LookupError):
             action = self.last_action_of(Receive)
-            return action.to
+            return action.agent_to
 
     @property
     def working(self):

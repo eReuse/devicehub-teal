@@ -432,13 +432,6 @@ class TransferOwnershipBlockchain(Trade):
     __doc__ = m.TransferOwnershipBlockchain.__doc__
 
 
-class Receive(ActionWithMultipleDevices):
-    __doc__ = m.Receive.__doc__
-    agent_from = NestedOn(s_agent.Agent, only_query='id', required=False, comment=m.Receive.agent_from_id.comment)
-    agent_to = NestedOn(s_agent.Agent, only_query='id', required=False, comment=m.Receive.agent_to_id.comment)
-    action = NestedOn(s_action.Action, only_query='id', required=False, comment=m.Receive.action_id.comment)
-
-
 class Migrate(ActionWithMultipleDevices):
     __doc__ = m.Migrate.__doc__
     other = URL()

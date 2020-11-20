@@ -41,23 +41,10 @@ def upgrade():
     op.drop_table('deallocate', schema=f'{get_inv()}')
 
     # Add allocate as a column in device
-    op.add_column('device', sa.Column('allocate', sa.Boolean(), nullable=True), schema=f'{get_inv()}')
+    op.add_column('device', sa.Column('allocated', sa.Boolean(), nullable=True), schema=f'{get_inv()}')
 
     # Receive action
     op.drop_table('receive', schema=f'{get_inv()}')
-    op.create_table('receive',
-        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('agent_from_id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('agent_to_id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('action_id', postgresql.UUID(as_uuid=True), nullable=True),
-
-        sa.ForeignKeyConstraint(['agent_from_id'], [f'{get_inv()}.agent.id'], ),
-        sa.ForeignKeyConstraint(['agent_to_id'], [f'{get_inv()}.agent.id'], ),
-        sa.ForeignKeyConstraint(['action_id'], [f'{get_inv()}.action.id'], ),
-        sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-        schema=f'{get_inv()}'
-    )
 
 def downgrade():
     op.drop_table('allocate', schema=f'{get_inv()}')

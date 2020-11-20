@@ -64,7 +64,8 @@ class Traking(State):
 
     :cvar Receive: The device changes hands
     """
-    Receive = e.Receive
+    # Receive = e.Receive
+    pass
 
     
 class Usage(State):
