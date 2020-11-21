@@ -38,7 +38,14 @@ def upgrade():
         schema=f'{get_inv()}'
     )
 
+    # Deallocate action
     op.drop_table('deallocate', schema=f'{get_inv()}')
+    op.create_table('deallocate',
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
+        sa.PrimaryKeyConstraint('id'),
+        schema=f'{get_inv()}'
+    )
 
     # Add allocate as a column in device
     op.add_column('device', sa.Column('allocated', sa.Boolean(), nullable=True), schema=f'{get_inv()}')

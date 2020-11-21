@@ -1,43 +1,39 @@
-import uuid
-# from typing import Callable, Iterable, Tuple
 from flask import g, request
-# from flask.json import jsonify
 from teal.resource import View
 
-from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
-from ereuse_devicehub.resources.action.models import Allocate
+from ereuse_devicehub.resources.action.models import Allocate, Deallocate
 
 
-class AllocateView(View):
-    @auth.Auth.requires_auth
-    def get(self, id: uuid.UUID) -> Allocate:
-        return super().get(id)
+class AllocateMix():
+    model = None
 
-    @auth.Auth.requires_auth
     def post(self):
-        """ Create one allocate """
+        """ Create one res_obj """
         res_json = request.get_json()
-        allocate = Allocate(**res_json)
-        db.session.add(allocate)
+        res_obj = model(**res_json)
+        db.session.add(res_obj)
         db.session().final_flush()
-        ret = self.schema.jsonify(allocate)
+        ret = self.schema.jsonify(res_obj)
         ret.status_code = 201
         db.session.commit()
         return ret
 
     def find(self, args: dict):
-        allocates = Allocate.query.filter_by(author=g.user) \
-            .order_by(Allocate.created.desc()) \
+        res_objs = model.query.filter_by(author=g.user) \
+            .order_by(model.created.desc()) \
             .paginate(per_page=200)
         return things_response(
-            self.schema.dump(allocates.items, many=True, nested=0),
-            allocates.page, allocates.per_page, allocates.total,
-            allocates.prev_num, allocates.next_num
+            self.schema.dump(res_objs.items, many=True, nested=0),
+            res_objs.page, res_objs.per_page, res_objs.total,
+            res_objs.prev_num, res_objs.next_num
         )
 
-    def one(self, id: uuid.UUID):
-        """Gets one action."""
-        allocate = Allocate.query.filter_by(id=id, author=g.user).one()
-        return self.schema.jsonify(allocate, nested=2)
+
+class AllocateView(AllocateMix):
+    model = Allocate
+
+
+class DeallocateView(AllocateMix):
+    model = Deallocate
