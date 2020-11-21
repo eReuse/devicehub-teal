@@ -69,11 +69,15 @@ class Allocate(ActionWithMultipleDevices):
     description = SanitizedStr(default='', description=m.Action.description.comment)
     start_time = DateTime(data_key='start_time', description=m.Action.start_time.comment)
     end_time = DateTime(data_key='end_time', description=m.Action.end_time.comment)
-    code = SanitizedStr(validate=Length(min=1, max=STR_BIG_SIZE),
+    code = SanitizedStr(data_key='Transaction', validate=Length(min=1, max=STR_BIG_SIZE),
                             required=False,
                             description='The code of the agent to assigned.')
     end_users = Integer(validate=[Range(min=1, error="Value must be greater than 0")],
                               required=True)
+
+
+class Deallocate(ActionWithMultipleDevices):
+    __doc__ = m.Deallocate.__doc__
 
 
 class EraseBasic(ActionWithOneDevice):
