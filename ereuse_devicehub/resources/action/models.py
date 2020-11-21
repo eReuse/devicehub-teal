@@ -43,7 +43,7 @@ from ereuse_devicehub.resources.device.models import Component, Computer, DataSt
     Device, Laptop, Server
 from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, BiosAccessRange, \
     ErasureStandards, FunctionalityRange, PhysicalErasureMethod, PriceSoftware, \
-    R_NEGATIVE, R_POSITIVE, RatingRange, ReceiverRole, Severity, SnapshotSoftware, \
+    R_NEGATIVE, R_POSITIVE, RatingRange, Severity, SnapshotSoftware, \
     TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
@@ -91,7 +91,7 @@ class Action(Thing):
     end_time = Column(db.TIMESTAMP(timezone=True))
     end_time.comment = """When the action ends. For some actions like reservations
     the time when they expire, for others like renting
-    the time the end rents. For punctual actions it is the time 
+    the time the end rents. For punctual actions it is the time
     they are performed; it differs with ``created`` in which
     created is the where the system received the action.
     """
@@ -115,7 +115,7 @@ class Action(Thing):
                           backref=backref('authored_actions', lazy=True, collection_class=set),
                           primaryjoin=author_id == User.id)
     author_id.comment = """The user that recorded this action in the system.
-     
+
     This does not necessarily has to be the person that produced
     the action in the real world. For that purpose see
     ``agent``.
@@ -129,9 +129,8 @@ class Action(Thing):
     agent = relationship(Agent,
                          backref=backref('actions_agent', lazy=True, **_sorted_actions),
                          primaryjoin=agent_id == Agent.id)
-    agent_id.comment = """The direct performer or driver of the action. 
-    e.g. John wrote a book.
-    
+    agent_id.comment = """The direct performer or driver of the action. e.g. John wrote a book.
+
     It can differ with the user that registered the action in the
     system, which can be in their behalf.
     """
@@ -142,14 +141,14 @@ class Action(Thing):
                               order_by=lambda: Component.id,
                               collection_class=OrderedSet)
     components.comment = """The components that are affected by the action.
-    
+  
     When performing actions to parent devices their components are
     affected too.
-    
+
     For example: an ``Allocate`` is performed to a Computer and this
     relationship is filled with the components the computer had
     at the time of the action.
-    
+
     For Add and Remove though, this has another meaning: the components
     that are added or removed.
     """
@@ -157,9 +156,9 @@ class Action(Thing):
     parent = relationship(Computer,
                           backref=backref('actions_parent', lazy=True, **_sorted_actions),
                           primaryjoin=parent_id == Computer.id)
-    parent_id.comment = """For actions that are performed to components, 
+    parent_id.comment = """For actions that are performed to components,
     the device parent at that time.
-    
+   
     For example: for a ``EraseBasic`` performed on a data storage, this
     would point to the computer that contained this data storage, if any.
     """
@@ -323,6 +322,7 @@ class Deallocate(JoinedTableMixin, ActionWithMultipleDevices):
     """The act of deallocate one list of devices to one person of the system or not
     """
     pass
+
 
 class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """An erasure attempt to a ``DataStorage``. The action contains
@@ -534,7 +534,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)
     software = Column(DBEnum(SnapshotSoftware), nullable=False)
     elapsed = Column(Interval)
-    elapsed.comment = """For Snapshots made with Workbench, the total amount 
+    elapsed.comment = """For Snapshots made with Workbench, the total amount
     of time it took to complete.
     """
 
@@ -681,11 +681,11 @@ class MeasureBattery(TestMixin, Test):
     voltage = db.Column(db.Integer, nullable=False)
     voltage.comment = """The actual voltage of the battery, in mV."""
     cycle_count = db.Column(db.Integer)
-    cycle_count.comment = """The number of full charges – discharges 
+    cycle_count.comment = """The number of full charges – discharges
     cycles.
     """
     health = db.Column(db.Enum(BatteryHealth))
-    health.comment = """The health of the Battery. 
+    health.comment = """The health of the Battery.
     Only reported in Android.
     """
 
@@ -884,12 +884,12 @@ class TestBios(TestMixin, Test):
     beeps_power_on = Column(Boolean)
     beeps_power_on.comment = """Whether there are no beeps or error
     codes when booting up.
-    
+
     Reference: R2 provision 6 page 23.
     """
     access_range = Column(DBEnum(BiosAccessRange))
     access_range.comment = """Difficulty to modify the boot menu.
-     
+
     This is used as an usability measure for accessing and modifying
     a bios, specially as something as important as modifying the boot
     menu.
@@ -1349,7 +1349,7 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     extend `Schema's Trade <http://schema.org/TradeAction>`_.
     """
     shipping_date = Column(db.TIMESTAMP(timezone=True))
-    shipping_date.comment = """When are the devices going to be ready 
+    shipping_date.comment = """When are the devices going to be ready
     for shipping?
     """
     invoice_number = Column(CIText())
@@ -1358,7 +1358,7 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     price = relationship(Price,
                          backref=backref('trade', lazy=True, uselist=False),
                          primaryjoin=price_id == Price.id)
-    price_id.comment = """The price set for this trade.            
+    price_id.comment = """The price set for this trade.
     If no price is set it is supposed that the trade was
     not payed, usual in donations.
         """
@@ -1372,8 +1372,7 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     confirms = relationship(Organize,
                             backref=backref('confirmation', lazy=True, uselist=False),
                             primaryjoin=confirms_id == Organize.id)
-    confirms_id.comment = """An organize action that this association confirms.                
-    
+    confirms_id.comment = """An organize action that this association confirms.
     For example, a ``Sell`` or ``Rent``
     can confirm a ``Reserve`` action.
     """
@@ -1529,6 +1528,36 @@ def update_parent(target: Union[EraseBasic, Test, Install], device: Device, _, _
     target.parent = None
     if isinstance(device, Component):
         target.parent = device.parent
+
+
+@event.listens_for(Allocate.devices, 'append')
+def update_allocated(target: Allocate, device, initiatort):
+    """Mark one device as allocated."""
+
+#    for device in target.devices:
+    actions = [a for a in device.actions]
+    actions.sort(key=lambda x: x.created)
+    actions.reverse()
+    allocate = None
+    #import pdb; pdb.set_trace()
+    for a in actions:
+        if isinstance(a, Allocate):
+            allocate = a
+            break
+        if isinstance(a, Deallocate):
+            break
+
+    if allocate:
+        txt = "You need deallocate before allocate this device again"
+        same_allocate = [
+            allocate.code == target.code,
+            allocate.start_time == target.start_time,
+            allocate.end_users == target.end_users
+        ]
+        assert all(same_allocate), txt
+
+        import pdb; pdb.set_trace()
+        target.allocated = True
 
 
 class InvalidRangeForPrice(ValueError):
