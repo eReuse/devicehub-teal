@@ -75,9 +75,46 @@ class Allocate(ActionWithMultipleDevices):
     end_users = Integer(validate=[Range(min=1, error="Value must be greater than 0")],
                               required=True)
 
+    @validates_schema
+    def validate_allocate(self, data: dict):
+        for device in data['devices']:
+            actions = [a for a in device.actions]
+            actions.sort(key=lambda x: x.created)
+            actions.reverse()
+            allocate = None
+
+            for a in actions:
+                if isinstance(a, m.Allocate):
+                    allocate = a
+                    break
+                if isinstance(a, m.Deallocate):
+                    break
+
+            if allocate:
+                txt = "You need deallocate before allocate this device again"
+                same_allocate = [
+                    allocate.code == data['code'],
+                    allocate.start_time == data['start_time'],
+                    allocate.end_users == data['end_users']
+                ]
+                if not all(same_allocate):
+                    raise ValidationError(txt)
+
+                device.allocated = True
+
 
 class Deallocate(ActionWithMultipleDevices):
     __doc__ = m.Deallocate.__doc__
+
+    @validates_schema
+    def validate_deallocate(self, data: dict):
+        txt = "Sorry some of this devices are actually deallocate"
+
+        for device in data['devices']:
+            if hasattr(device, 'allocated') and device.allocated:
+                device.allocated = False
+            else:
+                raise ValidationError(txt)
 
 
 class EraseBasic(ActionWithOneDevice):

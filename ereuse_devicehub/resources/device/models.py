@@ -106,6 +106,9 @@ class Device(Thing):
     image = db.Column(db.URL)
     image.comment = "An image of the device."
 
+    allocated = db.Column(Boolean, default=False)
+    allocated.comment = "An image of the device."
+
     _NON_PHYSICAL_PROPS = {
         'id',
         'type',
@@ -125,7 +128,8 @@ class Device(Thing):
         'variant',
         'version',
         'sku',
-        'image'
+        'image',
+        'allocated'
     }
 
     __table_args__ = (

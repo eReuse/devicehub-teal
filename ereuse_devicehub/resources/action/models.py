@@ -1530,36 +1530,6 @@ def update_parent(target: Union[EraseBasic, Test, Install], device: Device, _, _
         target.parent = device.parent
 
 
-@event.listens_for(Allocate.devices, 'append')
-def update_allocated(target: Allocate, device, initiatort):
-    """Mark one device as allocated."""
-
-#    for device in target.devices:
-    actions = [a for a in device.actions]
-    actions.sort(key=lambda x: x.created)
-    actions.reverse()
-    allocate = None
-    #import pdb; pdb.set_trace()
-    for a in actions:
-        if isinstance(a, Allocate):
-            allocate = a
-            break
-        if isinstance(a, Deallocate):
-            break
-
-    if allocate:
-        txt = "You need deallocate before allocate this device again"
-        same_allocate = [
-            allocate.code == target.code,
-            allocate.start_time == target.start_time,
-            allocate.end_users == target.end_users
-        ]
-        assert all(same_allocate), txt
-
-        import pdb; pdb.set_trace()
-        target.allocated = True
-
-
 class InvalidRangeForPrice(ValueError):
     pass
 
