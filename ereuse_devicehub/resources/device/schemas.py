@@ -65,6 +65,7 @@ class Device(Thing):
     variant = SanitizedStr(description=m.Device.variant.comment)
     sku = SanitizedStr(description=m.Device.sku.comment)
     image = URL(description=m.Device.image.comment)
+    allocated = Boolean(description=m.Device.allocated.comment)
 
     @pre_load
     def from_actions_to_actions_one(self, data: dict):
