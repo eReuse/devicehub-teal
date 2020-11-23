@@ -68,43 +68,44 @@ class Allocate(ActionWithMultipleDevices):
     agent = NestedOn(s_agent.Agent, only_query='id', required=False, comment=m.Trade.to_comment)
     description = SanitizedStr(default='', description=m.Action.description.comment)
     start_time = DateTime(data_key='start_time', description=m.Action.start_time.comment)
-    end_time = DateTime(data_key='end_time', description=m.Action.end_time.comment)
+    end_time = DateTime(data_key='end_time', required=False,
+                        description=m.Action.end_time.comment)
     code = SanitizedStr(data_key='Transaction', validate=Length(min=1, max=STR_BIG_SIZE),
-                            required=False,
-                            description='The code of the agent to assigned.')
+                        required=False,
+                        description='The code of the agent to assigned.')
     end_users = Integer(validate=[Range(min=1, error="Value must be greater than 0")],
-                              required=True)
+                        required=True)
 
     @validates_schema
     def validate_allocate(self, data: dict):
+        txt = "You need deallocate before allocate this device again"
         for device in data['devices']:
+            if device.allocated == False:
+                device.allocated = True
+                continue
+
             actions = [a for a in device.actions]
             actions.sort(key=lambda x: x.created)
             actions.reverse()
-            allocate = None
 
-            for a in actions:
-                if isinstance(a, m.Allocate):
-                    allocate = a
+            for allocate in actions:
+                if isinstance(allocate, m.Allocate):
+                    same_allocate = [
+                        allocate.code == data['code'],
+                        allocate.start_time == data['start_time'],
+                        allocate.end_users == data['end_users']
+                    ]
+                    if not all(same_allocate):
+                        raise ValidationError(txt)
+                if isinstance(allocate, m.Deallocate):
                     break
-                if isinstance(a, m.Deallocate):
-                    break
 
-            if allocate:
-                txt = "You need deallocate before allocate this device again"
-                same_allocate = [
-                    allocate.code == data['code'],
-                    allocate.start_time == data['start_time'],
-                    allocate.end_users == data['end_users']
-                ]
-                if not all(same_allocate):
-                    raise ValidationError(txt)
-
-                device.allocated = True
+            device.allocated = True
 
 
 class Deallocate(ActionWithMultipleDevices):
     __doc__ = m.Deallocate.__doc__
+    start_time = DateTime(data_key='start_time', description=m.Action.start_time.comment)
 
     @validates_schema
     def validate_deallocate(self, data: dict):
