@@ -1,9 +1,11 @@
 import ipaddress
+import copy
+import pytest
+
 from datetime import timedelta
 from decimal import Decimal
 from typing import Tuple, Type
 
-import pytest
 from flask import current_app as app, g
 from sqlalchemy.util import OrderedSet
 from teal.enums import Currency, Subdivision
@@ -266,6 +268,76 @@ def test_live():
     assert live['country'] == 'ES'
     device, _ = client.get(res=Device, item=live['device']['id'])
     assert device['usage'] == states.Usage.InUse.name
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_allocate(user: UserClient):
+    """ Tests allocate """
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    post_request = {"Transaction": "ccc", "name": "John", "end_users": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "start_time": "2020-11-01T02:00:00+00:00",
+                    "end_time": "2020-12-01T02:00:00+00:00"
+    }
+
+    allocate, _ = user.post(res=models.Allocate, data=post_request)
+    allocate_get, _ = user.get(res=models.Action, item=allocate['id'])
+    for f in ('name', 'Transaction', 'created', 'start_time', 'end_users'):
+        assert allocate_get[f] == allocate[f]
+    # Normal allocate
+    device, _ = user.get(res=Device, item=device_id)
+    assert device['allocated'] == True
+    action = [a for a in device['actions'] if a['type'] == 'Allocate'][0]
+    assert action['Transaction'] == allocate['Transaction']
+    assert action['created'] == allocate['created']
+    assert action['start_time'] == allocate['start_time']
+    assert action['end_users'] == allocate['end_users']
+    assert action['name'] == allocate['name']
+
+    post_bad_request1 = copy.copy(post_request)
+    post_bad_request1['end_users'] = 2
+    post_bad_request2 = copy.copy(post_request)
+    post_bad_request2['start_time'] = "2020-11-01T02:00:00+00:01"
+    post_bad_request3 = copy.copy(post_request)
+    post_bad_request3['Transaction'] = "aaa"
+    res1, _ = user.post(res=models.Allocate, data=post_bad_request1, status=422)
+    res2, _ = user.post(res=models.Allocate, data=post_bad_request2, status=422)
+    res3, _ = user.post(res=models.Allocate, data=post_bad_request3, status=422)
+    for r in (res1, res2, res3):
+        assert r['code'] == 422
+        assert r['type'] == 'ValidationError'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_deallocate(user: UserClient):
+    """ Tests deallocate """
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    post_deallocate = {"start_time": "2020-11-01T02:00:00+00:00",
+                      "devices": [device_id]
+    }
+    res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
+    assert res['code'] == 422
+    assert res['type'] == 'ValidationError'
+    post_allocate = {"Transaction": "ccc", "name": "John", "end_users": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "start_time": "2020-11-01T02:00:00+00:00",
+                    "end_time": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_allocate)
+    device, _ = user.get(res=Device, item=device_id)
+    assert device['allocated'] == True
+    deallocate, _ = user.post(res=models.Deallocate, data=post_deallocate)
+    assert deallocate['start_time'] == post_deallocate['start_time']
+    assert deallocate['devices'][0]['id'] == device_id
+    assert deallocate['devices'][0]['allocated'] == False
+    res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
+    assert res['code'] == 422
+    assert res['type'] == 'ValidationError'
 
 
 @pytest.mark.mvp
