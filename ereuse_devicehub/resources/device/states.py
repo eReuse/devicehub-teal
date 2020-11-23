@@ -72,7 +72,9 @@ class Usage(State):
     """Usage states.
 
     :cvar Allocate: The device is allocate in other Agent (organization, person ...)
+    :cvar Deallocate: The device is deallocate and return to the owner
     :cvar InUse: The device is being reported to be in active use. 
     """
     Allocate = e.Allocate
+    Deallocate = e.Deallocate
     InUse = e.Live

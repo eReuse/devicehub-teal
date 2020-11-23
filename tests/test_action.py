@@ -265,7 +265,7 @@ def test_live():
     assert live['subdivision'] == 'ES-CA'
     assert live['country'] == 'ES'
     device, _ = client.get(res=Device, item=live['device']['id'])
-    assert device['physical'] == states.Physical.InUse.name
+    assert device['usage'] == states.Usage.InUse.name
 
 
 @pytest.mark.mvp

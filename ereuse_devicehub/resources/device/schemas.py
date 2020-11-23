@@ -52,6 +52,8 @@ class Device(Thing):
     price = NestedOn('Price', dump_only=True, description=m.Device.price.__doc__)
     trading = EnumField(states.Trading, dump_only=True, description=m.Device.trading.__doc__)
     physical = EnumField(states.Physical, dump_only=True, description=m.Device.physical.__doc__)
+    traking= EnumField(states.Traking, dump_only=True, description=m.Device.physical.__doc__)
+    usage = EnumField(states.Usage, dump_only=True, description=m.Device.physical.__doc__)
     physical_possessor = NestedOn('Agent', dump_only=True, data_key='physicalPossessor')
     production_date = DateTime('iso',
                                description=m.Device.updated.comment,

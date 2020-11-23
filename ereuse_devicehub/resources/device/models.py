@@ -257,10 +257,12 @@ class Device(Thing):
         and :class:`ereuse_devicehub.resources.action.models.Receive`
         changes it.
         """
-        from ereuse_devicehub.resources.action.models import Receive
-        with suppress(LookupError):
-            action = self.last_action_of(Receive)
-            return action.agent_to
+        pass
+        # TODO @cayop uncomment this lines for link the possessor with the device
+        # from ereuse_devicehub.resources.action.models import Receive
+        # with suppress(LookupError):
+            # action = self.last_action_of(Receive)
+            # return action.agent_to
 
     @property
     def working(self):
