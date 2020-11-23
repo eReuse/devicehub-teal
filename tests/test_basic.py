@@ -100,7 +100,7 @@ def test_api_docs(client: Client):
         '/videoconferences/{dev1_id}/merge/{dev2_id}',
         '/videos/{dev1_id}/merge/{dev2_id}',
         '/wireless-access-points/{dev1_id}/merge/{dev2_id}',
-        '/versions/'
+        '/versions/',
         '/allocates/',
         '/deallocates/',
     }
