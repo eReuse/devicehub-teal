@@ -1295,25 +1295,9 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     information about its state (in the form of a ``Snapshot`` action)
     and usage statistics.
     """
-    ip = Column(IP, nullable=False,
-                comment='The IP where the live was triggered.')
-    subdivision_confidence = Column(SmallInteger,
-                                    check_range('subdivision_confidence', 0, 100),
-                                    nullable=False)
-    subdivision = Column(DBEnum(Subdivision), nullable=False)
-    city = Column(Unicode(STR_SM_SIZE), check_lower('city'), nullable=False)
-    city_confidence = Column(SmallInteger,
-                             check_range('city_confidence', 0, 100),
-                             nullable=False)
-    isp = Column(Unicode(STR_SM_SIZE), check_lower('isp'), nullable=False)
-    organization = Column(Unicode(STR_SM_SIZE), check_lower('organization'))
-    organization_type = Column(Unicode(STR_SM_SIZE), check_lower('organization_type'))
-
-    @property
-    def country(self) -> Country:
-        return self.subdivision.country
-    # todo relate to snapshot
-    # todo testing
+    serial_number = Column(Unicode(), check_lower('serial_number'))
+    serial_number.comment = """The serial number of the HardDisk in lower case."""
+    time = Column(Interval)
 
 
 class Organize(JoinedTableMixin, ActionWithMultipleDevices):
