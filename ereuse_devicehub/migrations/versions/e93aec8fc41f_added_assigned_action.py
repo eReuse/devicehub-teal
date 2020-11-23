@@ -53,5 +53,17 @@ def upgrade():
     # Receive action
     op.drop_table('receive', schema=f'{get_inv()}')
 
+    # Live action
+    op.drop_table('live', schema=f'{get_inv()}')
+    op.create_table('live',
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('serial_number', sa.Unicode(), nullable=True,
+                  comment='The serial number of the Hard Disk in lower case.'),
+        sa.Column('time', sa.Interval(), nullable=True),
+        sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
+        sa.PrimaryKeyConstraint('id'),
+        schema=f'{get_inv()}'
+    )
+
 def downgrade():
     op.drop_table('allocate', schema=f'{get_inv()}')
