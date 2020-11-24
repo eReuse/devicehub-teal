@@ -16,7 +16,7 @@ from teal.resource import View
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import (Action, RateComputer, Snapshot, VisualTest, 
-    InitTransfer)
+    InitTransfer, Live)
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
@@ -160,12 +160,29 @@ class ActionView(View):
         # Check if HID is null and add Severity:Warning to Snapshot
         if snapshot.device.hid is None:
             snapshot.severity = Severity.Warning
+        self.live(snapshot)
         db.session.add(snapshot)
         db.session().final_flush()
         ret = self.schema.jsonify(snapshot)  # transform it back
         ret.status_code = 201
         db.session.commit()
         return ret
+
+    def live(self, snapshot):
+        test_hdd= [a for a in snapshot.actions if a.type == "TestDataStorage"]
+        if not (test_hdd and snapshot.device.allocated):
+            return
+
+        test_hdd = test_hdd[0]
+        time = test_hdd.power_cycle_count
+        if time:
+            data_live = {'time': time,
+                         'serial_number': test_hdd.device.serial_number,
+                         'device': snapshot.device
+            }
+            live = Live(**data_live)
+            snapshot.actions.add(live)
+            
 
     def transfer_ownership(self):
         """Perform a InitTransfer action to change author_id of device"""

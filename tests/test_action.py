@@ -10,8 +10,9 @@ from flask import current_app as app, g
 from sqlalchemy.util import OrderedSet
 from teal.enums import Currency, Subdivision
 
-from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
+from ereuse_devicehub.client import UserClient
+from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.action import models
 from ereuse_devicehub.resources.device import states
@@ -245,29 +246,30 @@ def test_generic_action(action_model_state: Tuple[models.Action, states.Trading]
 
 
 @pytest.mark.mvp
-@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
-def test_live():
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_live(user: UserClient, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
-    db_live = models.Live(ip=ipaddress.ip_address('79.147.10.10'),
-                          subdivision_confidence=84,
-                          subdivision=Subdivision['ES-CA'],
-                          city='barcelona',
-                          city_confidence=20,
-                          isp='acme',
-                          device=Desktop(serial_number='sn1', model='ml1', manufacturer='mr1',
-                                         chassis=ComputerChassis.Docking),
-                          organization='acme1',
-                          organization_type='acme1bis')
-    db.session.add(db_live)
-    db.session.commit()
-    client = UserClient(app, 'foo@foo.com', 'foo', response_wrapper=app.response_class)
-    client.login()
-    live, _ = client.get(res=models.Action, item=str(db_live.id))
-    assert live['ip'] == '79.147.10.10'
-    assert live['subdivision'] == 'ES-CA'
-    assert live['country'] == 'ES'
-    device, _ = client.get(res=Device, item=live['device']['id'])
-    assert device['usage'] == states.Usage.InUse.name
+    acer = file('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(acer, res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    db_device = Device.query.filter_by(id=1).one()
+    post_request = {"Transaction": "ccc", "name": "John", "end_users": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "start_time": "2020-11-01T02:00:00+00:00",
+                    "end_time": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_request)
+    acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
+    hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
+    hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
+    hdd_action['powerCycleCount'] += 1000
+    snapshot, _ = user.post(acer, res=models.Snapshot)
+    db_device = Device.query.filter_by(id=1).one()
+    action_live = [a for a in db_device.actions if a.type == 'Live']
+    assert len(action_live) == 1
+    assert action_live[0].time == 6293
+    assert action_live[0].serial_number == 'wd-wx11a80w7430'
 
 
 @pytest.mark.mvp

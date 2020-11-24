@@ -1297,7 +1297,7 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """
     serial_number = Column(Unicode(), check_lower('serial_number'))
     serial_number.comment = """The serial number of the Hard Disk in lower case."""
-    time = Column(Interval, nullable=True)
+    time = Column(SmallInteger, nullable=False)
 
 
 class Organize(JoinedTableMixin, ActionWithMultipleDevices):
