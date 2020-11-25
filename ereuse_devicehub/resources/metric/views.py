@@ -7,6 +7,11 @@ from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.metric.schema import Metric
 
 
+def last_action(dev, action):
+    act = [e for e in reversed(dev.actions) if isinstance(e, action)]
+    return act[0] if act else None 
+
+
 class MetricsView(View):
     def find(self, args: dict):
 
@@ -27,8 +32,8 @@ class MetricsView(View):
         devices = m.Device.query.filter(m.Device.allocated==True)
         count = 0
         for dev in devices:
-            live = dev.last_action_of(Live)
-            allocate = dev.last_action_of(Allocate)
+            live = last_action(dev, Live)
+            allocate = last_action(dev, Allocate)
             if not live:
                 continue
             if allocate and allocate.created > live.created:

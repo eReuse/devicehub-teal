@@ -90,3 +90,26 @@ def test_second_hdd_metrics(user: UserClient):
     res, _ = user.get("/metrics/")
     assert res == metrics
 
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_metrics_with_live_null(user: UserClient):
+    """ Checks one standard query of metrics """
+    # Insert computer
+    acer = file('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(acer, res=ma.Snapshot)
+    device_id = snapshot['device']['id']
+    post_request = {"Transaction": "ccc", "name": "John", "end_users": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "start_time": "2020-11-01T02:00:00+00:00",
+                    "end_time": "2020-12-01T02:00:00+00:00"
+                   }
+
+    # Create Allocate
+    user.post(res=ma.Allocate, data=post_request)
+
+    # Check metrics if we change the hdd we need a result of one device
+    metrics = {'allocateds': 1, 'live': 0}
+    res, _ = user.get("/metrics/")
+    assert res == metrics
+
