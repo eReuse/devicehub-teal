@@ -52,7 +52,7 @@ def test_simple_metrics(user: UserClient):
     data = {"start_time": today-delta,
             "end_time": today+delta
            }
-    metrics = {'allocateds': 1, 'live': 1, 'null': 0}
+    metrics = {'allocateds': 1, 'live': 1}
     res, _ = user.get("/metrics/", query_string=data)
     assert res == metrics
 
@@ -98,7 +98,7 @@ def test_second_hdd_metrics(user: UserClient):
     data = {"start_time": today-delta,
             "end_time": today+delta
            }
-    metrics = {'allocateds': 1, 'live': 2, 'null': 0}
+    metrics = {'allocateds': 1, 'live': 2}
     res, _ = user.get("/metrics/", query_string=data)
     assert res == metrics
 
