@@ -1510,8 +1510,7 @@ def update_components_action_one(target: ActionWithOneDevice, device: Device, __
         target.components.clear()
         if isinstance(device, Computer):
             target.components |= device.components
-    else:
-        if isinstance(device, Computer):
+    elif isinstance(device, Computer):
             device.add_mac_to_hid()
 
 

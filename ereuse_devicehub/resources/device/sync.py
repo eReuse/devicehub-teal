@@ -52,7 +52,6 @@ class Sync:
                     of the passed-in components.
                  2. A list of Add / Remove (not yet added to session).
         """
-        
         db_device = self.execute_register(device)
         db_components, actions = OrderedSet(), OrderedSet()
         if components is not None:  # We have component info (see above)

@@ -100,7 +100,6 @@ class ActionView(View):
         action = Action.query.filter_by(id=id).one()
         return self.schema.jsonify(action)
 
-
     def snapshot(self, snapshot_json: dict, resource_def):
         """Performs a Snapshot.
 

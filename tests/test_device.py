@@ -1,5 +1,5 @@
-import datetime
 import copy
+import datetime
 import pytest
 
 from uuid import UUID
