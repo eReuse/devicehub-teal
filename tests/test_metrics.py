@@ -1,6 +1,4 @@
 import pytest
-from datetime import timedelta
-from datetime import datetime
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.resources.action import models as ma
@@ -47,13 +45,8 @@ def test_simple_metrics(user: UserClient):
     user.post(acer, res=ma.Snapshot)
 
     # Check metrics
-    today = datetime.now()
-    delta = timedelta(days=30)
-    data = {"start_time": today-delta,
-            "end_time": today+delta
-           }
     metrics = {'allocateds': 1, 'live': 1}
-    res, _ = user.get("/metrics/", query_string=data)
+    res, _ = user.get("/metrics/")
     assert res == metrics
 
 
@@ -92,13 +85,8 @@ def test_second_hdd_metrics(user: UserClient):
     hdd['serialNumber'] = 'WD-WX11A80W7440'
     user.post(acer, res=ma.Snapshot)
 
-    # Check metrics
-    today = datetime.now()
-    delta = timedelta(days=30)
-    data = {"start_time": today-delta,
-            "end_time": today+delta
-           }
-    metrics = {'allocateds': 1, 'live': 2}
-    res, _ = user.get("/metrics/", query_string=data)
+    # Check metrics if we change the hdd we need a result of one device
+    metrics = {'allocateds': 1, 'live': 1}
+    res, _ = user.get("/metrics/")
     assert res == metrics
 
