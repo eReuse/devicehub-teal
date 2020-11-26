@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+from dateutil.tz import tzutc
 from flask import current_app as app
 from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema
 from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, Nested, String, \
@@ -65,57 +67,56 @@ class Remove(ActionWithOneDevice):
 
 class Allocate(ActionWithMultipleDevices):
     __doc__ = m.Allocate.__doc__
-    agent = NestedOn(s_agent.Agent, only_query='id', required=False, comment=m.Trade.to_comment)
-    description = SanitizedStr(default='', description=m.Action.description.comment)
-    start_time = DateTime(data_key='start_time', description=m.Action.start_time.comment)
+    start_time = DateTime(data_key='start_time', required=True,
+                          description=m.Action.start_time.comment)
     end_time = DateTime(data_key='end_time', required=False,
                         description=m.Action.end_time.comment)
-    code = SanitizedStr(data_key='Transaction', validate=Length(min=1, max=STR_BIG_SIZE),
+    code = SanitizedStr(data_key='transaction', validate=Length(min=1, max=STR_BIG_SIZE),
                         required=False,
                         description='The code of the agent to assigned.')
-    end_users = Integer(validate=[Range(min=1, error="Value must be greater than 0")],
-                        required=True)
+    end_users = Integer(validate=[Range(min=1, error="Value must be greater than 0")])
 
     @validates_schema
     def validate_allocate(self, data: dict):
+        txt = "You need to allocate for a day before today"
+        delay = timedelta(days=1)
+        today = datetime.now().replace(tzinfo=tzutc()) + delay
+        start_time = data['start_time'].replace(tzinfo=tzutc())
+        if start_time > today:
+            raise ValidationError(txt)
+
         txt = "You need deallocate before allocate this device again"
         for device in data['devices']:
-            if device.allocated == False:
-                device.allocated = True
-                continue
-
-            actions = [a for a in device.actions]
-            actions.sort(key=lambda x: x.created)
-            actions.reverse()
-
-            for allocate in actions:
-                if isinstance(allocate, m.Allocate):
-                    same_allocate = [
-                        allocate.code == data['code'],
-                        allocate.start_time == data['start_time'],
-                        allocate.end_users == data['end_users']
-                    ]
-                    if not all(same_allocate):
-                        raise ValidationError(txt)
-                if isinstance(allocate, m.Deallocate):
-                    break
+            if device.allocated:
+                raise ValidationError(txt)
 
             device.allocated = True
 
 
 class Deallocate(ActionWithMultipleDevices):
     __doc__ = m.Deallocate.__doc__
-    start_time = DateTime(data_key='start_time', description=m.Action.start_time.comment)
+    start_time = DateTime(data_key='start_time', required=True,
+                          description=m.Action.start_time.comment)
+    code = SanitizedStr(data_key='transaction', validate=Length(min=1, max=STR_BIG_SIZE),
+                        required=False,
+                        description='The code of the agent to assigned.')
 
     @validates_schema
     def validate_deallocate(self, data: dict):
-        txt = "Sorry some of this devices are actually deallocate"
+        txt = "You need to deallocate for a day before today"
+        import pdb; pdb.set_trace()
+        delay = timedelta(days=1)
+        today = datetime.now().replace(tzinfo=tzutc()) + delay
+        start_time = data['start_time'].replace(tzinfo=tzutc())
+        if start_time > today:
+            raise ValidationError(txt)
 
+        txt = "Sorry some of this devices are actually deallocate"
         for device in data['devices']:
-            if hasattr(device, 'allocated') and device.allocated:
-                device.allocated = False
-            else:
+            if not device.allocated:
                 raise ValidationError(txt)
+
+            device.allocated = False
 
 
 class EraseBasic(ActionWithOneDevice):

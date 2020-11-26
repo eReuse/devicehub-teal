@@ -2,7 +2,7 @@ import ipaddress
 import copy
 import pytest
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Tuple, Type
 
@@ -278,21 +278,22 @@ def test_allocate(user: UserClient):
     """ Tests allocate """
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
-    post_request = {"Transaction": "ccc", "name": "John", "end_users": 1,
-                    "devices": [device_id], "description": "aaa",
+    post_request = {"transaction": "ccc", 
+                    "name": "John", 
+                    "severity": "Info",
+                    "end_users": 1,
+                    "devices": [device_id], 
+                    "description": "aaa",
                     "start_time": "2020-11-01T02:00:00+00:00",
                     "end_time": "2020-12-01T02:00:00+00:00"
     }
 
     allocate, _ = user.post(res=models.Allocate, data=post_request)
-    allocate_get, _ = user.get(res=models.Action, item=allocate['id'])
-    for f in ('name', 'Transaction', 'created', 'start_time', 'end_users'):
-        assert allocate_get[f] == allocate[f]
     # Normal allocate
     device, _ = user.get(res=Device, item=device_id)
     assert device['allocated'] == True
     action = [a for a in device['actions'] if a['type'] == 'Allocate'][0]
-    assert action['Transaction'] == allocate['Transaction']
+    assert action['transaction'] == allocate['transaction']
     assert action['created'] == allocate['created']
     assert action['start_time'] == allocate['start_time']
     assert action['end_users'] == allocate['end_users']
@@ -303,7 +304,7 @@ def test_allocate(user: UserClient):
     post_bad_request2 = copy.copy(post_request)
     post_bad_request2['start_time'] = "2020-11-01T02:00:00+00:01"
     post_bad_request3 = copy.copy(post_request)
-    post_bad_request3['Transaction'] = "aaa"
+    post_bad_request3['transaction'] = "aaa"
     res1, _ = user.post(res=models.Allocate, data=post_bad_request1, status=422)
     res2, _ = user.post(res=models.Allocate, data=post_bad_request2, status=422)
     res3, _ = user.post(res=models.Allocate, data=post_bad_request3, status=422)
@@ -314,17 +315,40 @@ def test_allocate(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_allocate_bad_dates(user: UserClient):
+    """ Tests allocate """
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    delta = timedelta(days=30)
+    future = datetime.now() + delta
+    post_request = {"transaction": "ccc", 
+                    "name": "John", 
+                    "severity": "Info",
+                    "end_users": 1,
+                    "devices": [device_id], 
+                    "description": "aaa",
+                    "start_time": future,
+    }
+
+    res, _ = user.post(res=models.Allocate, data=post_request, status=422)
+    assert res['code'] == 422
+    assert res['type'] == 'ValidationError'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_deallocate(user: UserClient):
     """ Tests deallocate """
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
     post_deallocate = {"start_time": "2020-11-01T02:00:00+00:00",
-                      "devices": [device_id]
+                       "transaction": "ccc",
+                       "devices": [device_id]
     }
     res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
     assert res['code'] == 422
     assert res['type'] == 'ValidationError'
-    post_allocate = {"Transaction": "ccc", "name": "John", "end_users": 1,
+    post_allocate = {"transaction": "ccc", "name": "John", "end_users": 1,
                     "devices": [device_id], "description": "aaa",
                     "start_time": "2020-11-01T02:00:00+00:00",
                     "end_time": "2020-12-01T02:00:00+00:00"
@@ -338,6 +362,28 @@ def test_deallocate(user: UserClient):
     assert deallocate['devices'][0]['id'] == device_id
     assert deallocate['devices'][0]['allocated'] == False
     res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
+    assert res['code'] == 422
+    assert res['type'] == 'ValidationError'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_deallocate_bad_dates(user: UserClient):
+    """ Tests deallocate with bad date of start_time """
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    delta = timedelta(days=30)
+    future = datetime.now() + delta
+    post_deallocate = {"start_time": future,
+                       "devices": [device_id]
+    }
+    post_allocate = {"devices": [device_id], "description": "aaa",
+                     "start_time": "2020-11-01T02:00:00+00:00"
+    }
+
+    import pdb; pdb.set_trace()
+    user.post(res=models.Allocate, data=post_allocate)
+    res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=400)
     assert res['code'] == 422
     assert res['type'] == 'ValidationError'
 
