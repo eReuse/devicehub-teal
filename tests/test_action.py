@@ -381,9 +381,8 @@ def test_deallocate_bad_dates(user: UserClient):
                      "start_time": "2020-11-01T02:00:00+00:00"
     }
 
-    import pdb; pdb.set_trace()
     user.post(res=models.Allocate, data=post_allocate)
-    res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=400)
+    res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
     assert res['code'] == 422
     assert res['type'] == 'ValidationError'
 

@@ -104,7 +104,6 @@ class Deallocate(ActionWithMultipleDevices):
     @validates_schema
     def validate_deallocate(self, data: dict):
         txt = "You need to deallocate for a day before today"
-        import pdb; pdb.set_trace()
         delay = timedelta(days=1)
         today = datetime.now().replace(tzinfo=tzutc()) + delay
         start_time = data['start_time'].replace(tzinfo=tzutc())
