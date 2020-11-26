@@ -16,7 +16,7 @@ def test_simple_metrics(user: UserClient):
     user.post(lenovo, res=ma.Snapshot)
     snapshot, _ = user.post(acer, res=ma.Snapshot)
     device_id = snapshot['device']['id']
-    post_request = {"Transaction": "ccc", "name": "John", "end_users": 1,
+    post_request = {"transaction": "ccc", "name": "John", "end_users": 1,
                     "devices": [device_id], "description": "aaa",
                     "start_time": "2020-11-01T02:00:00+00:00",
                     "end_time": "2020-12-01T02:00:00+00:00"
@@ -58,7 +58,7 @@ def test_second_hdd_metrics(user: UserClient):
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=ma.Snapshot)
     device_id = snapshot['device']['id']
-    post_request = {"Transaction": "ccc", "name": "John", "end_users": 1,
+    post_request = {"transaction": "ccc", "name": "John", "end_users": 1,
                     "devices": [device_id], "description": "aaa",
                     "start_time": "2020-11-01T02:00:00+00:00",
                     "end_time": "2020-12-01T02:00:00+00:00"
@@ -99,7 +99,7 @@ def test_metrics_with_live_null(user: UserClient):
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=ma.Snapshot)
     device_id = snapshot['device']['id']
-    post_request = {"Transaction": "ccc", "name": "John", "end_users": 1,
+    post_request = {"transaction": "ccc", "name": "John", "end_users": 1,
                     "devices": [device_id], "description": "aaa",
                     "start_time": "2020-11-01T02:00:00+00:00",
                     "end_time": "2020-12-01T02:00:00+00:00"
