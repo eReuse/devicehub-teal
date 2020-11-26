@@ -253,7 +253,7 @@ def test_live(user: UserClient, app: Devicehub):
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
     db_device = Device.query.filter_by(id=1).one()
-    post_request = {"Transaction": "ccc", "name": "John", "end_users": 1,
+    post_request = {"transaction": "ccc", "name": "John", "end_users": 1,
                     "devices": [device_id], "description": "aaa",
                     "start_time": "2020-11-01T02:00:00+00:00",
                     "end_time": "2020-12-01T02:00:00+00:00"

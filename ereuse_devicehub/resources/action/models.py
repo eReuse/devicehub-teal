@@ -321,7 +321,9 @@ class Allocate(JoinedTableMixin, ActionWithMultipleDevices):
 class Deallocate(JoinedTableMixin, ActionWithMultipleDevices):
     """The act of deallocate one list of devices to one person of the system or not
     """
-    pass
+    code = Column(CIText(), default='', nullable=True)
+    code.comment = """ This is a internal code for mainteing the secrets of the personal datas of the new holder """
+    end_users = Column(Numeric(precision=4), check_range('end_users', 0), nullable=True)
 
 
 class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
