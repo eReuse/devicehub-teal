@@ -253,10 +253,10 @@ def test_live(user: UserClient, app: Devicehub):
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
     db_device = Device.query.filter_by(id=1).one()
-    post_request = {"transaction": "ccc", "name": "John", "end_users": 1,
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
-                    "start_time": "2020-11-01T02:00:00+00:00",
-                    "end_time": "2020-12-01T02:00:00+00:00"
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
     }
 
     user.post(res=models.Allocate, data=post_request)
@@ -281,11 +281,11 @@ def test_allocate(user: UserClient):
     post_request = {"transaction": "ccc", 
                     "name": "John", 
                     "severity": "Info",
-                    "end_users": 1,
+                    "endUsers": 1,
                     "devices": [device_id], 
                     "description": "aaa",
-                    "start_time": "2020-11-01T02:00:00+00:00",
-                    "end_time": "2020-12-01T02:00:00+00:00"
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     allocate, _ = user.post(res=models.Allocate, data=post_request)
@@ -295,14 +295,14 @@ def test_allocate(user: UserClient):
     action = [a for a in device['actions'] if a['type'] == 'Allocate'][0]
     assert action['transaction'] == allocate['transaction']
     assert action['created'] == allocate['created']
-    assert action['start_time'] == allocate['start_time']
-    assert action['end_users'] == allocate['end_users']
+    assert action['startTime'] == allocate['startTime']
+    assert action['endUsers'] == allocate['endUsers']
     assert action['name'] == allocate['name']
 
     post_bad_request1 = copy.copy(post_request)
-    post_bad_request1['end_users'] = 2
+    post_bad_request1['endUsers'] = 2
     post_bad_request2 = copy.copy(post_request)
-    post_bad_request2['start_time'] = "2020-11-01T02:00:00+00:01"
+    post_bad_request2['startTime'] = "2020-11-01T02:00:00+00:01"
     post_bad_request3 = copy.copy(post_request)
     post_bad_request3['transaction'] = "aaa"
     res1, _ = user.post(res=models.Allocate, data=post_bad_request1, status=422)
@@ -341,24 +341,24 @@ def test_deallocate(user: UserClient):
     """ Tests deallocate """
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
-    post_deallocate = {"start_time": "2020-11-01T02:00:00+00:00",
+    post_deallocate = {"startTime": "2020-11-01T02:00:00+00:00",
                        "transaction": "ccc",
                        "devices": [device_id]
     }
     res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
     assert res['code'] == 422
     assert res['type'] == 'ValidationError'
-    post_allocate = {"transaction": "ccc", "name": "John", "end_users": 1,
+    post_allocate = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
-                    "start_time": "2020-11-01T02:00:00+00:00",
-                    "end_time": "2020-12-01T02:00:00+00:00"
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
     }
 
     user.post(res=models.Allocate, data=post_allocate)
     device, _ = user.get(res=Device, item=device_id)
     assert device['allocated'] == True
     deallocate, _ = user.post(res=models.Deallocate, data=post_deallocate)
-    assert deallocate['start_time'] == post_deallocate['start_time']
+    assert deallocate['startTime'] == post_deallocate['startTime']
     assert deallocate['devices'][0]['id'] == device_id
     assert deallocate['devices'][0]['allocated'] == False
     res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
@@ -374,11 +374,11 @@ def test_deallocate_bad_dates(user: UserClient):
     device_id = snapshot['device']['id']
     delta = timedelta(days=30)
     future = datetime.now() + delta
-    post_deallocate = {"start_time": future,
+    post_deallocate = {"startTime": future,
                        "devices": [device_id]
     }
     post_allocate = {"devices": [device_id], "description": "aaa",
-                     "start_time": "2020-11-01T02:00:00+00:00"
+                     "startTime": "2020-11-01T02:00:00+00:00"
     }
 
     user.post(res=models.Allocate, data=post_allocate)

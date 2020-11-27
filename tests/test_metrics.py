@@ -16,10 +16,10 @@ def test_simple_metrics(user: UserClient):
     user.post(lenovo, res=ma.Snapshot)
     snapshot, _ = user.post(acer, res=ma.Snapshot)
     device_id = snapshot['device']['id']
-    post_request = {"transaction": "ccc", "name": "John", "end_users": 1,
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
-                    "start_time": "2020-11-01T02:00:00+00:00",
-                    "end_time": "2020-12-01T02:00:00+00:00"
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
                    }
 
     # Create Allocate
@@ -58,10 +58,10 @@ def test_second_hdd_metrics(user: UserClient):
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=ma.Snapshot)
     device_id = snapshot['device']['id']
-    post_request = {"transaction": "ccc", "name": "John", "end_users": 1,
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
-                    "start_time": "2020-11-01T02:00:00+00:00",
-                    "end_time": "2020-12-01T02:00:00+00:00"
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
                    }
 
     # Create Allocate
@@ -99,10 +99,10 @@ def test_metrics_with_live_null(user: UserClient):
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=ma.Snapshot)
     device_id = snapshot['device']['id']
-    post_request = {"transaction": "ccc", "name": "John", "end_users": 1,
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
-                    "start_time": "2020-11-01T02:00:00+00:00",
-                    "end_time": "2020-12-01T02:00:00+00:00"
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
                    }
 
     # Create Allocate
