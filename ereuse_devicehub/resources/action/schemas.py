@@ -67,14 +67,14 @@ class Remove(ActionWithOneDevice):
 
 class Allocate(ActionWithMultipleDevices):
     __doc__ = m.Allocate.__doc__
-    start_time = DateTime(data_key='start_time', required=True,
+    start_time = DateTime(data_key='startTime', required=True,
                           description=m.Action.start_time.comment)
-    end_time = DateTime(data_key='end_time', required=False,
+    end_time = DateTime(data_key='endTime', required=False,
                         description=m.Action.end_time.comment)
     code = SanitizedStr(data_key='transaction', validate=Length(min=1, max=STR_BIG_SIZE),
                         required=False,
                         description='The code of the agent to assigned.')
-    end_users = Integer(validate=[Range(min=1, error="Value must be greater than 0")])
+    end_users = Integer(data_key='endUsers', validate=[Range(min=1, error="Value must be greater than 0")])
 
     @validates_schema
     def validate_allocate(self, data: dict):
@@ -95,7 +95,7 @@ class Allocate(ActionWithMultipleDevices):
 
 class Deallocate(ActionWithMultipleDevices):
     __doc__ = m.Deallocate.__doc__
-    start_time = DateTime(data_key='start_time', required=True,
+    start_time = DateTime(data_key='startTime', required=True,
                           description=m.Action.start_time.comment)
     code = SanitizedStr(data_key='transaction', validate=Length(min=1, max=STR_BIG_SIZE),
                         required=False,

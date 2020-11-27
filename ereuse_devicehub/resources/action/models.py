@@ -323,7 +323,6 @@ class Deallocate(JoinedTableMixin, ActionWithMultipleDevices):
     """
     code = Column(CIText(), default='', nullable=True)
     code.comment = """ This is a internal code for mainteing the secrets of the personal datas of the new holder """
-    end_users = Column(Numeric(precision=4), check_range('end_users', 0), nullable=True)
 
 
 class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):

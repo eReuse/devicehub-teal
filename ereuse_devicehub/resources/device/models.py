@@ -152,7 +152,7 @@ class Device(Thing):
 
         Actions are returned by descending ``created`` time.
         """
-        return sorted(chain(self.actions_multiple, self.actions_one))
+        return sorted(chain(self.actions_multiple, self.actions_one), key=lambda x: x.created)
 
     @property
     def problems(self):
@@ -298,7 +298,9 @@ class Device(Thing):
         """
         try:
             # noinspection PyTypeHints
-            return next(e for e in reversed(self.actions) if isinstance(e, types))
+            actions = self.actions
+            actions.sort(key=lambda x: x.created)
+            return next(e for e in reversed(actions) if isinstance(e, types))
         except StopIteration:
             raise LookupError('{!r} does not contain actions of types {}.'.format(self, types))
 

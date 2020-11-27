@@ -3,7 +3,7 @@ from typing import Callable, Iterable, Tuple
 from teal.resource import Converters, Resource
 
 from ereuse_devicehub.resources.action import schemas
-from ereuse_devicehub.resources.action.views import ActionView
+from ereuse_devicehub.resources.action.views import ActionView, AllocateView, DeallocateView
 from ereuse_devicehub.resources.device.sync import Sync
 
 
@@ -196,6 +196,16 @@ class ReadyDef(ActionDef):
 class ToPrepareDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.ToPrepare
+
+
+class AllocateDef(ActionDef):
+    VIEW = AllocateView
+    SCHEMA = schemas.Allocate
+
+
+class DeallocateDef(ActionDef):
+    VIEW = DeallocateView
+    SCHEMA = schemas.Deallocate
 
 
 class PrepareDef(ActionDef):
