@@ -65,16 +65,16 @@ class ActionView(View):
     def post(self):
         """Posts an action."""
         json = request.get_json(validate=False)
-        tmp_snapshots = app.config['TMP_SNAPSHOTS']
-        path_snapshot = save_json(json, tmp_snapshots, g.user.email)
-        json.pop('debug', None)
         if not json or 'type' not in json:
             raise ValidationError('Resource needs a type.')
         # todo there should be a way to better get subclassess resource
         #   defs
         resource_def = app.resources[json['type']]
-        a = resource_def.schema.load(json)
         if json['type'] == Snapshot.t:
+            tmp_snapshots = app.config['TMP_SNAPSHOTS']
+            path_snapshot = save_json(json, tmp_snapshots, g.user.email)
+            json.pop('debug', None)
+            a = resource_def.schema.load(json)
             response = self.snapshot(a, resource_def)
             move_json(tmp_snapshots, path_snapshot, g.user.email)
             return response
@@ -82,8 +82,8 @@ class ActionView(View):
             pass
             # TODO JN add compute rate with new visual test and old components device
         if json['type'] == InitTransfer.t:
-            move_json(tmp_snapshots, path_snapshot, g.user.email)
             return self.transfer_ownership()
+        a = resource_def.schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
         db.session.add(action)
@@ -91,7 +91,6 @@ class ActionView(View):
         ret = self.schema.jsonify(action)
         ret.status_code = 201
         db.session.commit()
-        move_json(tmp_snapshots, path_snapshot, g.user.email)
         return ret
 
     def one(self, id: UUID):
