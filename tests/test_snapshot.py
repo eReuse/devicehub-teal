@@ -558,8 +558,7 @@ def test_action_no_snapshot_without_save_file(app: Devicehub, user: UserClient):
     action = {'type': Ready.t, 'devices': [snapshot['device']['id']]}
     action, _ = user.post(action, res=Action)
 
-    files = [x for x in os.listdir(path_dir_base) if '.json' in x]
-    assert len(files) == 0
+    assert os.path.exists(tmp_snapshots) == False
 
 @pytest.mark.mvp
 def test_save_snapshot_with_debug(app: Devicehub, user: UserClient):
