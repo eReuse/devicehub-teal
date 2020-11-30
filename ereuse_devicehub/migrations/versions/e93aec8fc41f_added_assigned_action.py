@@ -30,7 +30,7 @@ def upgrade():
     # Allocate action
     op.drop_table('allocate', schema=f'{get_inv()}')
     op.create_table('allocate',
-        sa.Column('code', citext.CIText(), nullable=True, comment=' This is a internal code for mainteing the secrets of the personal datas of the new holder '),
+        sa.Column('transaction', citext.CIText(), nullable=True, comment='The code used from the owner for relation with external tool.'),
         sa.Column('end_users', sa.Numeric(precision=4), nullable=True),
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
@@ -41,7 +41,7 @@ def upgrade():
     # Deallocate action
     op.drop_table('deallocate', schema=f'{get_inv()}')
     op.create_table('deallocate',
-        sa.Column('code', citext.CIText(), nullable=True, comment=' This is a internal code for mainteing the secrets of the personal datas of the new holder '),
+        sa.Column('transaction', citext.CIText(), nullable=True, comment='The code used from the owner for relation with external tool.'),
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
         sa.PrimaryKeyConstraint('id'),

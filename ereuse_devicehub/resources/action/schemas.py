@@ -71,9 +71,10 @@ class Allocate(ActionWithMultipleDevices):
                           description=m.Action.start_time.comment)
     end_time = DateTime(data_key='endTime', required=False,
                         description=m.Action.end_time.comment)
-    code = SanitizedStr(data_key='transaction', validate=Length(min=1, max=STR_BIG_SIZE),
+    transaction = SanitizedStr(validate=Length(min=1, max=STR_BIG_SIZE),
                         required=False,
-                        description='The code of the agent to assigned.')
+                        description='The code used from the owner for \
+                                relation with external tool.')
     end_users = Integer(data_key='endUsers', validate=[Range(min=1, error="Value must be greater than 0")])
 
     @validates_schema
@@ -97,9 +98,10 @@ class Deallocate(ActionWithMultipleDevices):
     __doc__ = m.Deallocate.__doc__
     start_time = DateTime(data_key='startTime', required=True,
                           description=m.Action.start_time.comment)
-    code = SanitizedStr(data_key='transaction', validate=Length(min=1, max=STR_BIG_SIZE),
+    transaction = SanitizedStr(validate=Length(min=1, max=STR_BIG_SIZE),
                         required=False,
-                        description='The code of the agent to assigned.')
+                        description='The code used from the owner for \
+                                relation with external tool.')
 
     @validates_schema
     def validate_deallocate(self, data: dict):
