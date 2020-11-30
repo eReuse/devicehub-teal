@@ -143,6 +143,7 @@ class DeviceView(View):
         # Compute query
         query = self.query(args)
         devices = query.paginate(page=args['page'], per_page=30)  # type: Pagination
+        import pdb; pdb.set_trace()
         return things_response(
             self.schema.dump(devices.items, many=True, nested=1),
             devices.page, devices.per_page, devices.total, devices.prev_num, devices.next_num

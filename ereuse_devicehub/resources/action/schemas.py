@@ -39,6 +39,12 @@ class Action(Thing):
     parent = NestedOn(s_device.Computer, dump_only=True, description=m.Action.parent_id.comment)
     url = URL(dump_only=True, description=m.Action.url.__doc__)
 
+    @validates_schema
+    def validate_end_time(self, data: dict):
+        if 'end_time' in data:
+            import pdb; pdb.set_trace()
+        pass
+
 
 class ActionWithOneDevice(Action):
     __doc__ = m.ActionWithOneDevice.__doc__
