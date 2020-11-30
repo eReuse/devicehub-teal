@@ -689,3 +689,15 @@ def test_snapshot_failed_missing_chassis(app: Devicehub, user: UserClient):
     assert snapshot['version'] == snapshot_error['version']
     assert snapshot['uuid'] == uuid
 
+
+@pytest.mark.mvp
+def test_snapshot_failed_end_time_bug(app: Devicehub, user: UserClient):
+    """ This test check if the end_time = 0001-01-01 00:00:00+00:00
+    and then we get a /devices, this create a crash
+    """
+    snapshot = file('asus-end_time_bug88.snapshot')
+    user.post(res=Snapshot, data=snapshot)
+    devices, _ = user.get("/devices/")
+
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    shutil.rmtree(tmp_snapshots)
