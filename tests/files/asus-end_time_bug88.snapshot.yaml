@@ -1,0 +1,135 @@
+{
+  "closed": true,
+  "components": [
+  {
+    "actions": [],
+    "manufacturer": "Intel Corporation",
+    "model": "NM10/ICH7 Family High Definition Audio Controller",
+    "serialNumber": null,
+    "type": "SoundCard"
+  },
+  {
+    "actions": [],
+    "manufacturer": "Azurewave",
+    "model": "USB 2.0 UVC VGA WebCam",
+    "serialNumber": "0x0001",
+    "type": "SoundCard"
+  },
+  {
+    "actions": [],
+    "format": "DIMM",
+    "interface": "DDR2",
+    "manufacturer": null,
+    "model": null,
+    "serialNumber": null,
+    "size": 1024,
+    "speed": 667.0,
+    "type": "RamModule"
+  },
+  {
+    "address": 64,
+    "cores": 1,
+    "actions": [
+    {
+      "elapsed": 165,
+      "rate": 164.8342,
+      "type": "BenchmarkProcessorSysbench"
+    },
+    {
+      "elapsed": 0,
+      "rate": 6665.7,
+      "type": "BenchmarkProcessor"
+    }
+    ],
+    "manufacturer": "Intel Corp.",
+    "model": "Intel Atom CPU N455 @ 1.66GHz",
+    "serialNumber": null,
+    "speed": 1.667,
+    "threads": 2,
+    "type": "Processor"
+  },
+  {
+    "actions": [
+    {
+      "elapsed": 16,
+      "readSpeed": 66.2,
+      "type": "BenchmarkDataStorage",
+      "writeSpeed": 21.8
+    }
+    ],
+    "interface": "ATA",
+    "manufacturer": "Hitachi",
+    "model": "HTS54322",
+    "serialNumber": "E2024242CV86HJ",
+    "size": 238475,
+    "type": "HardDrive"
+  },
+  {
+    "actions": [],
+    "manufacturer": "Qualcomm Atheros",
+    "model": "AR9285 Wireless Network Adapter",
+    "serialNumber": "74:2f:68:8b:fd:c8",
+    "type": "NetworkAdapter",
+    "wireless": true
+  },
+  {
+    "actions": [],
+    "manufacturer": "Qualcomm Atheros",
+    "model": "AR8152 v2.0 Fast Ethernet",
+    "serialNumber": "14:da:e9:42:f6:7c",
+    "speed": 100,
+    "type": "NetworkAdapter",
+    "wireless": false
+  },
+  {
+    "actions": [],
+    "manufacturer": "Intel Corporation",
+    "memory": 256.0,
+    "model": "Atom Processor D4xx/D5xx/N4xx/N5xx Integrated Graphics Controller",
+    "serialNumber": null,
+    "type": "GraphicCard"
+  },
+  {
+    "actions": [
+    {
+      "type": "TestBios",
+      "accessRange": "A",
+    }
+    ],
+    "firewire": 0,
+    "manufacturer": "ASUSTeK Computer INC.",
+    "model": "1001PXD",
+    "pcmcia": 0,
+    "serial": 1,
+    "serialNumber": "Eee0123456789",
+    "slots": 2,
+    "type": "Motherboard",
+    "usb": 5
+  }
+  ],
+  "device": {
+    "chassis": "Netbook",
+    "actions": [
+    {
+      "elapsed": 16,
+      "rate": 15.8978,
+      "type": "BenchmarkRamSysbench"
+    },
+    {
+      "appearanceRange": "A",
+      "functionalityRange": "A",
+      "type": "VisualTest"
+    }
+    ],
+    "manufacturer": "ASUSTeK Computer INC.",
+    "model": "1001PXD",
+    "serialNumber": "B8OAAS048286",
+    "type": "Laptop"
+  },
+  "elapsed": 6,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "software": "Workbench",
+  "type": "Snapshot",
+  "uuid": "7dc4d19c-914e-4652-a381-d641325fb9c2",
+  "version": "11.0a6"
+}
