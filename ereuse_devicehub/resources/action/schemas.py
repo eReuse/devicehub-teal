@@ -13,11 +13,10 @@ from teal.resource import Schema
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.action import models as m
-from ereuse_devicehub.resources.action import schemas as s_action
 from ereuse_devicehub.resources.agent import schemas as s_agent
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.enums import AppearanceRange, BiosAccessRange, FunctionalityRange, \
-    PhysicalErasureMethod, R_POSITIVE, RatingRange, ReceiverRole, \
+    PhysicalErasureMethod, R_POSITIVE, RatingRange, \
     Severity, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
