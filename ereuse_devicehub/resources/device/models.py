@@ -107,7 +107,7 @@ class Device(Thing):
     image.comment = "An image of the device."
 
     allocated = db.Column(Boolean, default=False)
-    allocated.comment = "An image of the device."
+    allocated.comment = "device is allocated or not."
 
     _NON_PHYSICAL_PROPS = {
         'id',
