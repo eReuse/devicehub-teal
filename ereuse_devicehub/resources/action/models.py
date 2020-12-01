@@ -1299,6 +1299,9 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     information about its state (in the form of a ``Snapshot`` action)
     and usage statistics.
     """
+    final_user_code = Column(CIText(), default='', nullable=True)
+    final_user_code.comment = """This is a internal code for mainteing the secrets of the
+        personal datas of the new holder"""
     serial_number = Column(Unicode(), check_lower('serial_number'))
     serial_number.comment = """The serial number of the Hard Disk in lower case."""
     time = Column(SmallInteger, nullable=False)

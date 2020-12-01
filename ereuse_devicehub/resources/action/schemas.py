@@ -412,15 +412,9 @@ class Prepare(ActionWithMultipleDevices):
 
 class Live(ActionWithOneDevice):
     __doc__ = m.Live.__doc__
-    ip = IP(dump_only=True)
-    subdivision_confidence = Integer(dump_only=True, data_key='subdivisionConfidence')
-    subdivision = EnumField(Subdivision, dump_only=True)
-    country = EnumField(Country, dump_only=True)
-    city = SanitizedStr(lower=True, dump_only=True)
-    city_confidence = Integer(dump_only=True, data_key='cityConfidence')
-    isp = SanitizedStr(lower=True, dump_only=True)
-    organization = SanitizedStr(lower=True, dump_only=True)
-    organization_type = SanitizedStr(lower=True, dump_only=True, data_key='organizationType')
+    final_user_code = SanitizedStr(data_key="finalUserCode", dump_only=True)
+    serial_number = SanitizedStr(data_key="serialNumber", dump_only=True)
+    time = Integer(dump_only=False)
 
 
 class Organize(ActionWithMultipleDevices):
