@@ -279,6 +279,7 @@ def test_allocate(user: UserClient):
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", 
+                    "finalUserCode": "aabbcc",
                     "name": "John", 
                     "severity": "Info",
                     "endUsers": 1,
@@ -294,6 +295,7 @@ def test_allocate(user: UserClient):
     assert device['allocated'] == True
     action = [a for a in device['actions'] if a['type'] == 'Allocate'][0]
     assert action['transaction'] == allocate['transaction']
+    assert action['finalUserCode'] == allocate['finalUserCode']
     assert action['created'] == allocate['created']
     assert action['startTime'] == allocate['startTime']
     assert action['endUsers'] == allocate['endUsers']
@@ -322,6 +324,7 @@ def test_allocate_bad_dates(user: UserClient):
     delta = timedelta(days=30)
     future = datetime.now() + delta
     post_request = {"transaction": "ccc", 
+                    "finalUserCode": "aabbcc",
                     "name": "John", 
                     "severity": "Info",
                     "end_users": 1,

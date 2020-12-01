@@ -313,6 +313,9 @@ class Remove(ActionWithOneDevice):
 class Allocate(JoinedTableMixin, ActionWithMultipleDevices):
     """The act of allocate one list of devices to one person
     """
+    final_user_code = Column(CIText(), default='', nullable=True)
+    final_user_code.comment = """This is a internal code for mainteing the secrets of the
+        personal datas of the new holder"""
     transaction = Column(CIText(), default='', nullable=True)
     transaction.comment = "The code used from the owner for relation with external tool."
     end_users = Column(Numeric(precision=4), check_range('end_users', 0), nullable=True)
