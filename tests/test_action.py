@@ -255,6 +255,7 @@ def test_live(user: UserClient, app: Devicehub):
     db_device = Device.query.filter_by(id=1).one()
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
                     "startTime": "2020-11-01T02:00:00+00:00",
                     "endTime": "2020-12-01T02:00:00+00:00"
     }
@@ -269,6 +270,8 @@ def test_live(user: UserClient, app: Devicehub):
     action_live = [a for a in db_device.actions if a.type == 'Live']
     assert len(action_live) == 1
     assert action_live[0].time == 6293
+    assert action_live[0].hours_of_use == 0
+    assert action_live[0].final_user_code == post_request['finalUserCode']
     assert action_live[0].serial_number == 'wd-wx11a80w7430'
 
 

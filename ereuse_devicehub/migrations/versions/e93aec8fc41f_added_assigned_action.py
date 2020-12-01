@@ -60,8 +60,6 @@ def upgrade():
     op.drop_table('live', schema=f'{get_inv()}')
     op.create_table('live',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('final_user_code', citext.CIText(), default='', nullable=True,
-            comment = "This is a internal code for mainteing the secrets of the personal datas of the new holder"),
         sa.Column('serial_number', sa.Unicode(), nullable=True,
                   comment='The serial number of the Hard Disk in lower case.'),
         sa.Column('time', sa.SmallInteger(), nullable=True),

@@ -415,6 +415,7 @@ class Live(ActionWithOneDevice):
     final_user_code = SanitizedStr(data_key="finalUserCode", dump_only=True)
     serial_number = SanitizedStr(data_key="serialNumber", dump_only=True)
     time = Integer(dump_only=False)
+    hours_of_use = Integer(dump_only=False)
 
 
 class Organize(ActionWithMultipleDevices):

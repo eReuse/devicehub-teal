@@ -1299,13 +1299,39 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     information about its state (in the form of a ``Snapshot`` action)
     and usage statistics.
     """
-    final_user_code = Column(CIText(), default='', nullable=True)
-    final_user_code.comment = """This is a internal code for mainteing the secrets of the
-        personal datas of the new holder"""
     serial_number = Column(Unicode(), check_lower('serial_number'))
     serial_number.comment = """The serial number of the Hard Disk in lower case."""
     time = Column(SmallInteger, nullable=False)
 
+    @property
+    def final_user_code(self):
+        """ show the final_user_code of the last action Allocate."""
+        actions = self.device.actions
+        actions.sort(key=lambda x: x.created)
+        for e in reversed(actions):
+            if isinstance(e, Allocate) and e.created < self.created:
+                return e.final_user_code
+
+    @property
+    def hours_of_use(self):
+        """Show how many hours is used one device from the last check"""
+        actions = self.device.actions
+        actions.sort(key=lambda x: x.created)
+        # import pdb; pdb.set_trace()
+        for e in reversed(actions):
+            if isinstance(e, Snapshot) and e.created < self.created:
+                return self.time - self.get_last_power_cycle(e)
+
+            if isinstance(e, Live) and e.created < self.created:
+                return self.time - e.time
+
+    def get_last_power_cycle(self, snapshot):
+        test_hdd= [a for a in snapshot.actions if a.type == "TestDataStorage"]
+        if not (test_hdd and snapshot.device.allocated):
+            return 0
+
+        return test_hdd[0].power_cycle_count
+                
 
 class Organize(JoinedTableMixin, ActionWithMultipleDevices):
     """The act of manipulating/administering/supervising/controlling
