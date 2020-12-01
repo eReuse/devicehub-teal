@@ -71,7 +71,7 @@ class Allocate(ActionWithMultipleDevices):
                           description=m.Action.start_time.comment)
     end_time = DateTime(data_key='endTime', required=False,
                         description=m.Action.end_time.comment)
-    final_user_code = SanitizedStr(data_key="finalUserCode"
+    final_user_code = SanitizedStr(data_key="finalUserCode",
                                    validate=Length(min=1, max=STR_BIG_SIZE),
                                    required=False,
                                    description='This is a internal code for mainteing the secrets of the \

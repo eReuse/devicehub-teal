@@ -31,7 +31,7 @@ def upgrade():
     op.drop_table('allocate', schema=f'{get_inv()}')
     op.create_table('allocate',
         sa.Column('final_user_code', citext.CIText(), default='', nullable=True,
-            comment = "This is a internal code for mainteing the secrets of the personal datas of the new holder")
+            comment = "This is a internal code for mainteing the secrets of the personal datas of the new holder"),
         sa.Column('transaction', citext.CIText(), nullable=True, comment='The code used from the owner for relation with external tool.'),
         sa.Column('end_users', sa.Numeric(precision=4), nullable=True),
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
