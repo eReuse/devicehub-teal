@@ -17,6 +17,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import (Action, RateComputer, Snapshot, VisualTest, 
     InitTransfer, Live, Allocate, Deallocate)
+from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
@@ -142,6 +143,16 @@ class ActionView(View):
         # model object, when we flush them to the db we will flush
         # snapshot, and we want to wait to flush snapshot at the end
 
+        # If the device is allocated, then snapshot is a live 
+        live = self.live(snapshot_json)
+        if live:
+            db.session.add(live)
+            db.session().final_flush()
+            ret = self.schema.jsonify(live)  # transform it back
+            ret.status_code = 201
+            db.session.commit()
+            return ret
+
         device = snapshot_json.pop('device')  # type: Computer
         components = None
         if snapshot_json['software'] == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid):
@@ -192,7 +203,7 @@ class ActionView(View):
         # Check if HID is null and add Severity:Warning to Snapshot
         if snapshot.device.hid is None:
             snapshot.severity = Severity.Warning
-        self.live(snapshot)
+
         db.session.add(snapshot)
         db.session().final_flush()
         ret = self.schema.jsonify(snapshot)  # transform it back
@@ -201,22 +212,38 @@ class ActionView(View):
         return ret
 
     def live(self, snapshot):
-        test_hdd= [a for a in snapshot.actions if a.type == "TestDataStorage"]
-        if not (test_hdd and snapshot.device.allocated):
+        """If the device.allocated == True, then this snapshot create an action live."""
+        device = snapshot.get('device')  # type: Computer
+        # TODO @cayop dependency of pulls 85 and 83
+        # if the pr/85 and pr/83 is merged, then you need change this way for get the device
+        if not Device.query.filter(Device.hid==device.hid).count():
             return
 
-        test_hdd = test_hdd[0]
-        time = test_hdd.power_cycle_count
-        if time:
-            data_live = {'time': time,
-                         'serial_number': test_hdd.device.serial_number,
-                         'device': snapshot.device
-            }
-            live = Live(**data_live)
-            snapshot.actions.add(live)
-            
+        device = Device.query.filter(Device.hid==device.hid).one()
+
+        if not device.allocated:
+            return
+
+        time = 0
+        serial_number = ''
+        for hd in snapshot['components']:
+            if not isinstance(hd, DataStorage):
+                continue
+            for act in hd.actions:
+                if not act.type == "TestDataStorage":
+                    continue
+                time = act.power_cycle_count
+                serial_number = hd.serial_number
+
+        if not serial_number:
+            return
+
+        data_live = {'time': time,
+                     'serial_number': serial_number,
+                     'device': device}
+
+        return Live(**data_live)
 
     def transfer_ownership(self):
         """Perform a InitTransfer action to change author_id of device"""
         pass
-

@@ -270,7 +270,7 @@ def test_live(user: UserClient, app: Devicehub):
     action_live = [a for a in db_device.actions if a.type == 'Live']
     assert len(action_live) == 1
     assert action_live[0].time == 6293
-    assert action_live[0].hours_of_use == 0
+    assert action_live[0].hours_of_use == 1000
     assert action_live[0].final_user_code == post_request['finalUserCode']
     assert action_live[0].serial_number == 'wd-wx11a80w7430'
 

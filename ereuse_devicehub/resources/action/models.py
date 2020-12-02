@@ -1317,7 +1317,6 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         """Show how many hours is used one device from the last check"""
         actions = self.device.actions
         actions.sort(key=lambda x: x.created)
-        # import pdb; pdb.set_trace()
         for e in reversed(actions):
             if isinstance(e, Snapshot) and e.created < self.created:
                 return self.time - self.get_last_power_cycle(e)
@@ -1326,11 +1325,11 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
                 return self.time - e.time
 
     def get_last_power_cycle(self, snapshot):
-        test_hdd= [a for a in snapshot.actions if a.type == "TestDataStorage"]
-        if not (test_hdd and snapshot.device.allocated):
-            return 0
+        for a in snapshot.actions:
+            if a.type == 'TestDataStorage' and a.device.serial_number == self.serial_number:
+                return a.power_cycle_count
 
-        return test_hdd[0].power_cycle_count
+        return 0
                 
 
 class Organize(JoinedTableMixin, ActionWithMultipleDevices):
