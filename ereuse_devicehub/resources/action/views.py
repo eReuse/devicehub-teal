@@ -216,7 +216,7 @@ class ActionView(View):
         device = snapshot.get('device')  # type: Computer
         # TODO @cayop dependency of pulls 85 and 83
         # if the pr/85 and pr/83 is merged, then you need change this way for get the device
-        if not Device.query.filter(Device.hid==device.hid).count():
+        if not device.hid or not Device.query.filter(Device.hid==device.hid).count():
             return
 
         device = Device.query.filter(Device.hid==device.hid).one()
