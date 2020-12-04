@@ -62,7 +62,8 @@ def upgrade():
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('serial_number', sa.Unicode(), nullable=True,
                   comment='The serial number of the Hard Disk in lower case.'),
-        sa.Column('time', sa.SmallInteger(), nullable=True),
+        sa.Column('usage_time_hdd', sa.Interval(), nullable=True),
+        sa.Column('snapshot_uuid', postgresql.UUID(as_uuid=True), nullable=False),
         sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
         sa.PrimaryKeyConstraint('id'),
         schema=f'{get_inv()}'

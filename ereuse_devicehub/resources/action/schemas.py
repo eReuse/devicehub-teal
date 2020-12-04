@@ -414,8 +414,9 @@ class Live(ActionWithOneDevice):
     __doc__ = m.Live.__doc__
     final_user_code = SanitizedStr(data_key="finalUserCode", dump_only=True)
     serial_number = SanitizedStr(data_key="serialNumber", dump_only=True)
-    time = Integer(dump_only=False)
-    hours_of_use = Integer(dump_only=False)
+    usage_time_hdd = TimeDelta(data_key="usageTimeHdd", precision=TimeDelta.HOURS, dump_only=True)
+    usage_time_allocate = TimeDelta(data_key="usageTimeAllocate", 
+                                    precision=TimeDelta.HOURS, dump_only=True)
 
 
 class Organize(ActionWithMultipleDevices):

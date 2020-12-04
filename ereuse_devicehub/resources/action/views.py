@@ -3,7 +3,7 @@
 import os
 import json
 import shutil
-from datetime import datetime
+from datetime import datetime, timedelta
 from distutils.version import StrictVersion
 from uuid import UUID
 from flask.json import jsonify
@@ -12,6 +12,7 @@ from flask import current_app as app, request, g, redirect
 from sqlalchemy.util import OrderedSet
 from teal.marshmallow import ValidationError
 from teal.resource import View
+from teal.db import ResourceNotFound
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
@@ -211,38 +212,69 @@ class ActionView(View):
         db.session.commit()
         return ret
 
+    def get_hdd_details(self, snapshot, device):
+        """We get the liftime and serial_number of the disk"""
+        usage_time_hdd = None
+        serial_number = None
+        for hd in snapshot['components']:
+            if not isinstance(hd, DataStorage):
+                continue
+
+            serial_number = hd.serial_number
+            for act in hd.actions:
+                if not act.type == "TestDataStorage":
+                    continue
+                usage_time_hdd = act.lifetime
+                break
+
+            if usage_time_hdd:
+                break
+
+        if not serial_number:
+            "There aren't any disk"
+            raise ResourceNotFound("There aren't any disk in this device {}".format(device))
+        return usage_time_hdd, serial_number
+
     def live(self, snapshot):
         """If the device.allocated == True, then this snapshot create an action live."""
         device = snapshot.get('device')  # type: Computer
         # TODO @cayop dependency of pulls 85 and 83
         # if the pr/85 and pr/83 is merged, then you need change this way for get the device
         if not device.hid or not Device.query.filter(Device.hid==device.hid).count():
-            return
+            return None
 
         device = Device.query.filter(Device.hid==device.hid).one()
 
         if not device.allocated:
-            return
+            return None
 
-        time = 0
-        serial_number = ''
-        for hd in snapshot['components']:
-            if not isinstance(hd, DataStorage):
-                continue
-            for act in hd.actions:
-                if not act.type == "TestDataStorage":
-                    continue
-                time = act.power_cycle_count
-                serial_number = hd.serial_number
+        usage_time_hdd, serial_number = self.get_hdd_details(snapshot, device)
 
-        if not serial_number:
-            return
-
-        data_live = {'time': time,
+        data_live = {'usage_time_hdd': usage_time_hdd,
                      'serial_number': serial_number,
+                     'snapshot_uuid': snapshot['uuid'],
+                     'description': '',
                      'device': device}
 
-        return Live(**data_live)
+        live = Live(**data_live)
+
+        if not usage_time_hdd:
+            warning = f"We don't found any TestDataStorage for disk sn: {serial_number}"
+            live.severity = Severity.Warning
+            live.description = warning
+            return live
+
+        live.sort_actions()
+        diff_time = live.diff_time()
+        if diff_time is None:
+            warning = "Don't exist one previus live or snapshot as reference"
+            live.description += warning
+            live.severity = Severity.Warning
+        elif diff_time < timedelta(0):
+            warning = "The difference with the last live/snapshot is negative"
+            live.description += warning
+            live.severity = Severity.Warning
+        return live
 
     def transfer_ownership(self):
         """Perform a InitTransfer action to change author_id of device"""

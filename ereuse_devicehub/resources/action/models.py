@@ -10,6 +10,7 @@ to a structure based on:
 Within the above general classes are subclasses in A order.
 """
 
+import copy
 from collections import Iterable
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
@@ -1301,7 +1302,8 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """
     serial_number = Column(Unicode(), check_lower('serial_number'))
     serial_number.comment = """The serial number of the Hard Disk in lower case."""
-    time = Column(SmallInteger, nullable=False)
+    usage_time_hdd = Column(Interval, nullable=True)
+    snapshot_uuid = Column(UUID(as_uuid=True))
 
     @property
     def final_user_code(self):
@@ -1311,26 +1313,65 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         for e in reversed(actions):
             if isinstance(e, Allocate) and e.created < self.created:
                 return e.final_user_code
+        return ''
 
     @property
-    def hours_of_use(self):
+    def usage_time_allocate(self):
         """Show how many hours is used one device from the last check"""
-        actions = self.device.actions
-        actions.sort(key=lambda x: x.created)
-        for e in reversed(actions):
-            if isinstance(e, Snapshot) and e.created < self.created:
-                return self.time - self.get_last_power_cycle(e)
+        self.sort_actions()
+        if self.usage_time_hdd is None:
+            return self.last_usage_time_allocate()
 
+        delta_zero = timedelta(0)
+        diff_time = self.diff_time()
+        if diff_time is None:
+            return delta_zero
+
+        if diff_time < delta_zero:
+            return delta_zero
+        return diff_time
+
+    def sort_actions(self):
+        self.actions = copy.copy(self.device.actions)
+        self.actions.sort(key=lambda x: x.created)
+        self.actions.reverse()
+
+    def last_usage_time_allocate(self):
+        """If we don't have self.usage_time_hdd then we need search the last
+           usage_time_allocate valid"""
+        for e in self.actions:
             if isinstance(e, Live) and e.created < self.created:
-                return self.time - e.time
+                if not e.usage_time_allocate:
+                    continue
+                return e.usage_time_allocate
+        return timedelta(0)
 
-    def get_last_power_cycle(self, snapshot):
+    def diff_time(self):
+        for e in self.actions:
+            if e.created > self.created:
+                continue
+
+            if isinstance(e, Snapshot):
+                last_time = self.get_last_lifetime(e)
+                if not last_time:
+                    continue
+                return self.usage_time_hdd - last_time
+
+            if isinstance(e, Live):
+                if e.snapshot_uuid == self.snapshot_uuid:
+                    continue
+
+                if not e.usage_time_hdd:
+                    continue
+                return self.usage_time_hdd - e.usage_time_hdd
+        return None
+
+    def get_last_lifetime(self, snapshot):
         for a in snapshot.actions:
             if a.type == 'TestDataStorage' and a.device.serial_number == self.serial_number:
-                return a.power_cycle_count
+                return a.lifetime
+        return None
 
-        return 0
-                
 
 class Organize(JoinedTableMixin, ActionWithMultipleDevices):
     """The act of manipulating/administering/supervising/controlling
