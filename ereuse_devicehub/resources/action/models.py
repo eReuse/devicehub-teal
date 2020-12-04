@@ -1337,8 +1337,8 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         self.actions.reverse()
 
     def last_usage_time_allocate(self):
-        """If we don't have self.usage_time_hdd then we need search the last
-           usage_time_allocate valid"""
+        """If we don't have self.usage_time_hdd then we need search the last 
+           action Live with usage_time_allocate valid"""
         for e in self.actions:
             if isinstance(e, Live) and e.created < self.created:
                 if not e.usage_time_allocate:

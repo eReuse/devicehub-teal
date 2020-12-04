@@ -267,7 +267,7 @@ class ActionView(View):
         live.sort_actions()
         diff_time = live.diff_time()
         if diff_time is None:
-            warning = "Don't exist one previus live or snapshot as reference"
+            warning = "Don't exist one previous live or snapshot as reference"
             live.description += warning
             live.severity = Severity.Warning
         elif diff_time < timedelta(0):
