@@ -383,7 +383,7 @@ def test_live_without_hdd_3(user: UserClient, app: Devicehub):
     assert live['type'] == 'Live'
     assert live['serialNumber'] == 'wd-wx11a80w7430'
     assert live['severity'] == 'Warning'
-    description = "Don't exist one previus live or snapshot as reference"
+    description = "Don't exist one previous live or snapshot as reference"
     assert live['description'] == description
     db_live = models.Live.query.filter_by(id=live['id']).one()
     assert str(db_live.usage_time_hdd) == '195 days, 12:00:00'
