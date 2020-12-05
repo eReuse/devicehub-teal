@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+from dateutil.tz import tzutc
 from flask import current_app as app
 from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema
 from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, Nested, String, \
@@ -14,7 +16,7 @@ from ereuse_devicehub.resources.action import models as m
 from ereuse_devicehub.resources.agent import schemas as s_agent
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.enums import AppearanceRange, BiosAccessRange, FunctionalityRange, \
-    PhysicalErasureMethod, R_POSITIVE, RatingRange, ReceiverRole, \
+    PhysicalErasureMethod, R_POSITIVE, RatingRange, \
     Severity, SnapshotSoftware, TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
@@ -64,21 +66,62 @@ class Remove(ActionWithOneDevice):
 
 class Allocate(ActionWithMultipleDevices):
     __doc__ = m.Allocate.__doc__
-    to = NestedOn(s_user.User,
-                  description='The user the devices are allocated to.')
-    organization = SanitizedStr(validate=Length(max=STR_SIZE),
-                                description='The organization where the '
-                                            'user was when this happened.')
+    start_time = DateTime(data_key='startTime', required=True,
+                          description=m.Action.start_time.comment)
+    end_time = DateTime(data_key='endTime', required=False,
+                        description=m.Action.end_time.comment)
+    final_user_code = SanitizedStr(data_key="finalUserCode",
+                                   validate=Length(min=1, max=STR_BIG_SIZE),
+                                   required=False,
+                                   description='This is a internal code for mainteing the secrets of the \
+                                               personal datas of the new holder')
+    transaction = SanitizedStr(validate=Length(min=1, max=STR_BIG_SIZE),
+                        required=False,
+                        description='The code used from the owner for \
+                                relation with external tool.')
+    end_users = Integer(data_key='endUsers', validate=[Range(min=1, error="Value must be greater than 0")])
+
+    @validates_schema
+    def validate_allocate(self, data: dict):
+        txt = "You need to allocate for a day before today"
+        delay = timedelta(days=1)
+        today = datetime.now().replace(tzinfo=tzutc()) + delay
+        start_time = data['start_time'].replace(tzinfo=tzutc())
+        if start_time > today:
+            raise ValidationError(txt)
+
+        txt = "You need deallocate before allocate this device again"
+        for device in data['devices']:
+            if device.allocated:
+                raise ValidationError(txt)
+
+            device.allocated = True
 
 
 class Deallocate(ActionWithMultipleDevices):
     __doc__ = m.Deallocate.__doc__
-    from_rel = Nested(s_user.User,
-                      data_key='from',
-                      description='The user where the devices are not allocated to anymore.')
-    organization = SanitizedStr(validate=Length(max=STR_SIZE),
-                                description='The organization where the '
-                                            'user was when this happened.')
+    start_time = DateTime(data_key='startTime', required=True,
+                          description=m.Action.start_time.comment)
+    transaction = SanitizedStr(validate=Length(min=1, max=STR_BIG_SIZE),
+                        required=False,
+                        description='The code used from the owner for \
+                                relation with external tool.')
+
+    @validates_schema
+    def validate_deallocate(self, data: dict):
+        txt = "You need to deallocate for a day before today"
+        delay = timedelta(days=1)
+        today = datetime.now().replace(tzinfo=tzutc()) + delay
+        start_time = data['start_time'].replace(tzinfo=tzutc())
+        if start_time > today:
+            raise ValidationError(txt)
+
+        txt = "Sorry some of this devices are actually deallocate"
+        for device in data['devices']:
+            if not device.allocated:
+                raise ValidationError(txt)
+
+            device.allocated = False
 
 
 class EraseBasic(ActionWithOneDevice):
@@ -369,15 +412,11 @@ class Prepare(ActionWithMultipleDevices):
 
 class Live(ActionWithOneDevice):
     __doc__ = m.Live.__doc__
-    ip = IP(dump_only=True)
-    subdivision_confidence = Integer(dump_only=True, data_key='subdivisionConfidence')
-    subdivision = EnumField(Subdivision, dump_only=True)
-    country = EnumField(Country, dump_only=True)
-    city = SanitizedStr(lower=True, dump_only=True)
-    city_confidence = Integer(dump_only=True, data_key='cityConfidence')
-    isp = SanitizedStr(lower=True, dump_only=True)
-    organization = SanitizedStr(lower=True, dump_only=True)
-    organization_type = SanitizedStr(lower=True, dump_only=True, data_key='organizationType')
+    final_user_code = SanitizedStr(data_key="finalUserCode", dump_only=True)
+    serial_number = SanitizedStr(data_key="serialNumber", dump_only=True)
+    usage_time_hdd = TimeDelta(data_key="usageTimeHdd", precision=TimeDelta.HOURS, dump_only=True)
+    usage_time_allocate = TimeDelta(data_key="usageTimeAllocate", 
+                                    precision=TimeDelta.HOURS, dump_only=True)
 
 
 class Organize(ActionWithMultipleDevices):
@@ -435,11 +474,6 @@ class DisposeProduct(Trade):
 
 class TransferOwnershipBlockchain(Trade):
     __doc__ = m.TransferOwnershipBlockchain.__doc__
-
-
-class Receive(ActionWithMultipleDevices):
-    __doc__ = m.Receive.__doc__
-    role = EnumField(ReceiverRole)
 
 
 class Migrate(ActionWithMultipleDevices):
