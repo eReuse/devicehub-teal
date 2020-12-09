@@ -503,8 +503,8 @@ def test_allocate_bad_dates(user: UserClient):
     """ Tests allocate """
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
-    delta = timedelta(days=30)
-    future = datetime.now() + delta
+    delay = timedelta(days=30)
+    future = datetime.now().replace(tzinfo=tzutc()) + delay
     post_request = {"transaction": "ccc", 
                     "finalUserCode": "aabbcc",
                     "name": "John", 
