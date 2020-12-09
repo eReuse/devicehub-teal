@@ -239,10 +239,12 @@ class ActionView(View):
         device = snapshot.get('device')  # type: Computer
         # TODO @cayop dependency of pulls 85
         # if the pr/85 is merged, then you need change this way for get the device
-        if not device.hid or not Device.query.filter(Device.hid==device.hid, owner_id=g.user.id).count():
+        if not device.hid or not Device.query.filter(
+            Device.hid==device.hid, Device.owner_id==g.user.id).count():
             return None
 
-        device = Device.query.filter(Device.hid==device.hid, owner_id=g.user.id).one()
+        device = Device.query.filter(
+            Device.hid==device.hid, Device.owner_id==g.user.id).one()
 
         if not device.allocated:
             return None
