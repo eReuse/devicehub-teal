@@ -3,18 +3,22 @@
 import os
 import json
 import shutil
-from datetime import datetime
+from datetime import datetime, timedelta
 from distutils.version import StrictVersion
 from uuid import UUID
+from flask.json import jsonify
 
-from flask import current_app as app, request, g
+from flask import current_app as app, request, g, redirect
 from sqlalchemy.util import OrderedSet
 from teal.marshmallow import ValidationError
 from teal.resource import View
+from teal.db import ResourceNotFound
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest, \
-    InitTransfer
+from ereuse_devicehub.query import things_response
+from ereuse_devicehub.resources.action.models import (Action, RateComputer, Snapshot, VisualTest, 
+    InitTransfer, Live, Allocate, Deallocate)
+from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
@@ -59,6 +63,38 @@ def move_json(tmp_snapshots, path_name, user):
     if os.path.isfile(path_name):
         shutil.copy(path_name, path_dir_base)
         os.remove(path_name)
+
+
+class AllocateMix():
+    model = None
+
+    def post(self):
+        """ Create one res_obj """
+        res_json = request.get_json()
+        res_obj = self.model(**res_json)
+        db.session.add(res_obj)
+        db.session().final_flush()
+        ret = self.schema.jsonify(res_obj)
+        ret.status_code = 201
+        db.session.commit()
+        return ret
+
+    def find(self, args: dict):
+        res_objs = self.model.query.filter_by(author=g.user) \
+            .order_by(self.model.created.desc()) \
+            .paginate(per_page=200)
+        return things_response(
+            self.schema.dump(res_objs.items, many=True, nested=0),
+            res_objs.page, res_objs.per_page, res_objs.total,
+            res_objs.prev_num, res_objs.next_num
+        )
+
+
+class AllocateView(AllocateMix, View):
+    model = Allocate
+
+class DeallocateView(AllocateMix, View):
+    model = Deallocate
 
 
 class ActionView(View):
@@ -106,6 +142,16 @@ class ActionView(View):
         # Note that if we set the device / components into the snapshot
         # model object, when we flush them to the db we will flush
         # snapshot, and we want to wait to flush snapshot at the end
+
+        # If the device is allocated, then snapshot is a live 
+        live = self.live(snapshot_json)
+        if live:
+            db.session.add(live)
+            db.session().final_flush()
+            ret = self.schema.jsonify(live)  # transform it back
+            ret.status_code = 201
+            db.session.commit()
+            return ret
 
         device = snapshot_json.pop('device')  # type: Computer
         components = None
@@ -157,12 +203,77 @@ class ActionView(View):
         # Check if HID is null and add Severity:Warning to Snapshot
         if snapshot.device.hid is None:
             snapshot.severity = Severity.Warning
+
         db.session.add(snapshot)
         db.session().final_flush()
         ret = self.schema.jsonify(snapshot)  # transform it back
         ret.status_code = 201
         db.session.commit()
         return ret
+
+    def get_hdd_details(self, snapshot, device):
+        """We get the liftime and serial_number of the disk"""
+        usage_time_hdd = None
+        serial_number = None
+        for hd in snapshot['components']:
+            if not isinstance(hd, DataStorage):
+                continue
+
+            serial_number = hd.serial_number
+            for act in hd.actions:
+                if not act.type == "TestDataStorage":
+                    continue
+                usage_time_hdd = act.lifetime
+                break
+
+            if usage_time_hdd:
+                break
+
+        if not serial_number:
+            "There aren't any disk"
+            raise ResourceNotFound("There aren't any disk in this device {}".format(device))
+        return usage_time_hdd, serial_number
+
+    def live(self, snapshot):
+        """If the device.allocated == True, then this snapshot create an action live."""
+        device = snapshot.get('device')  # type: Computer
+        # TODO @cayop dependency of pulls 85 and 83
+        # if the pr/85 and pr/83 is merged, then you need change this way for get the device
+        if not device.hid or not Device.query.filter(Device.hid==device.hid).count():
+            return None
+
+        device = Device.query.filter(Device.hid==device.hid).one()
+
+        if not device.allocated:
+            return None
+
+        usage_time_hdd, serial_number = self.get_hdd_details(snapshot, device)
+
+        data_live = {'usage_time_hdd': usage_time_hdd,
+                     'serial_number': serial_number,
+                     'snapshot_uuid': snapshot['uuid'],
+                     'description': '',
+                     'device': device}
+
+        live = Live(**data_live)
+
+        if not usage_time_hdd:
+            warning = f"We don't found any TestDataStorage for disk sn: {serial_number}"
+            live.severity = Severity.Warning
+            live.description = warning
+            return live
+
+        live.sort_actions()
+        diff_time = live.diff_time()
+        if diff_time is None:
+            warning = "Don't exist one previous live or snapshot as reference"
+            live.description += warning
+            live.severity = Severity.Warning
+        elif diff_time < timedelta(0):
+            warning = "The difference with the last live/snapshot is negative"
+            live.description += warning
+            live.severity = Severity.Warning
+        return live
 
     def transfer_ownership(self):
         """Perform a InitTransfer action to change author_id of device"""

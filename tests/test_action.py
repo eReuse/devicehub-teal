@@ -1,15 +1,18 @@
 import ipaddress
-from datetime import timedelta
+import copy
+import pytest
+
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Tuple, Type
 
-import pytest
 from flask import current_app as app, g
 from sqlalchemy.util import OrderedSet
 from teal.enums import Currency, Subdivision
 
-from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
+from ereuse_devicehub.client import UserClient
+from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.action import models
 from ereuse_devicehub.resources.device import states
@@ -243,29 +246,329 @@ def test_generic_action(action_model_state: Tuple[models.Action, states.Trading]
 
 
 @pytest.mark.mvp
-@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
-def test_live():
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_live(user: UserClient, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
-    db_live = models.Live(ip=ipaddress.ip_address('79.147.10.10'),
-                          subdivision_confidence=84,
-                          subdivision=Subdivision['ES-CA'],
-                          city='barcelona',
-                          city_confidence=20,
-                          isp='acme',
-                          device=Desktop(serial_number='sn1', model='ml1', manufacturer='mr1',
-                                         chassis=ComputerChassis.Docking),
-                          organization='acme1',
-                          organization_type='acme1bis')
-    db.session.add(db_live)
-    db.session.commit()
-    client = UserClient(app, 'foo@foo.com', 'foo', response_wrapper=app.response_class)
-    client.login()
-    live, _ = client.get(res=models.Action, item=str(db_live.id))
-    assert live['ip'] == '79.147.10.10'
-    assert live['subdivision'] == 'ES-CA'
-    assert live['country'] == 'ES'
-    device, _ = client.get(res=Device, item=live['device']['id'])
-    assert device['physical'] == states.Physical.InUse.name
+    acer = file('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(acer, res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    db_device = Device.query.filter_by(id=1).one()
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_request)
+    acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
+    hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
+    hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
+    hdd_action['lifetime'] += 1000
+    snapshot, _ = user.post(acer, res=models.Snapshot)
+    db_device = Device.query.filter_by(id=1).one()
+    action_live = [a for a in db_device.actions if a.type == 'Live']
+    assert len(action_live) == 1
+    assert action_live[0].usage_time_hdd == timedelta(hours=hdd_action['lifetime'])
+    assert action_live[0].usage_time_allocate == timedelta(hours=1000)
+    assert action_live[0].final_user_code == post_request['finalUserCode']
+    assert action_live[0].serial_number == 'wd-wx11a80w7430'
+    assert str(action_live[0].snapshot_uuid) == acer['uuid']
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_live_without_TestDataStorage(user: UserClient, app: Devicehub):
+    """Tests inserting a Live into the database and GETting it.
+       If the live don't have a TestDataStorage, then save live and response None
+    """
+    acer = file('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(acer, res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    db_device = Device.query.filter_by(id=1).one()
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_request)
+    acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
+    actions = [a for a in acer['components'][7]['actions'] if a['type'] != 'TestDataStorage']
+    acer['components'][7]['actions'] = actions
+    live, _ = user.post(acer, res=models.Snapshot)
+    assert live['type'] == 'Live'
+    assert live['serialNumber'] == 'wd-wx11a80w7430'
+    assert live['severity'] == 'Warning'
+    description = "We don't found any TestDataStorage for disk sn: wd-wx11a80w7430"
+    assert live['description'] == description
+    db_live = models.Live.query.filter_by(id=live['id']).one()
+    assert db_live.usage_time_hdd is None
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_live_without_hdd_1(user: UserClient, app: Devicehub):
+    """Tests inserting a Live into the database and GETting it.
+       The snapshot have hdd but the live no, and response 404
+    """
+    acer = file('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(acer, res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    db_device = Device.query.filter_by(id=1).one()
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_request)
+    acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
+    components = [a for a in acer['components'] if a['type'] != 'HardDrive']
+    acer['components'] = components
+    response, _ = user.post(acer, res=models.Snapshot, status=404)
+    assert "The There aren't any disk in this device" in response['message']
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_live_without_hdd_2(user: UserClient, app: Devicehub):
+    """Tests inserting a Live into the database and GETting it.
+       The snapshot haven't hdd and the live neither, and response 404
+    """
+    acer = file('acer.happy.battery.snapshot')
+    components = [a for a in acer['components'] if a['type'] != 'HardDrive']
+    acer['components'] = components
+    snapshot, _ = user.post(acer, res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    db_device = Device.query.filter_by(id=1).one()
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_request)
+    acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
+    response, _ = user.post(acer, res=models.Snapshot, status=404)
+    assert "The There aren't any disk in this device" in response['message']
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_live_without_hdd_3(user: UserClient, app: Devicehub):
+    """Tests inserting a Live into the database and GETting it.
+       The snapshot haven't hdd and the live have, and save the live
+       with usage_time_allocate == 0
+    """
+    acer = file('acer.happy.battery.snapshot')
+    acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
+    components = [a for a in acer['components'] if a['type'] != 'HardDrive']
+    acer['components'] = components
+    snapshot, _ = user.post(acer, res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    db_device = Device.query.filter_by(id=1).one()
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_request)
+    acer = file('acer.happy.battery.snapshot')
+    live, _ = user.post(acer, res=models.Snapshot)
+    assert live['type'] == 'Live'
+    assert live['serialNumber'] == 'wd-wx11a80w7430'
+    assert live['severity'] == 'Warning'
+    description = "Don't exist one previous live or snapshot as reference"
+    assert live['description'] == description
+    db_live = models.Live.query.filter_by(id=live['id']).one()
+    assert str(db_live.usage_time_hdd) == '195 days, 12:00:00'
+    assert str(db_live.usage_time_allocate) == '0:00:00'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_live_with_hdd_with_old_time(user: UserClient, app: Devicehub):
+    """Tests inserting a Live into the database and GETting it.
+       The snapshot hdd have a lifetime higher than lifetime of the live action
+       save the live with usage_time_allocate == 0
+    """
+    acer = file('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(acer, res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    db_device = Device.query.filter_by(id=1).one()
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_request)
+    acer = file('acer.happy.battery.snapshot')
+    acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
+    action = [a for a in acer['components'][7]['actions'] if a['type'] == 'TestDataStorage']
+    action[0]['lifetime'] -= 100
+    live, _ = user.post(acer, res=models.Snapshot)
+    assert live['type'] == 'Live'
+    assert live['serialNumber'] == 'wd-wx11a80w7430'
+    assert live['severity'] == 'Warning'
+    description = "The difference with the last live/snapshot is negative"
+    assert live['description'] == description
+    db_live = models.Live.query.filter_by(id=live['id']).one()
+    assert str(db_live.usage_time_hdd) == '191 days, 8:00:00'
+    assert str(db_live.usage_time_allocate) == '0:00:00'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_live_search_last_allocate(user: UserClient, app: Devicehub):
+    """Tests inserting a Live into the database and GETting it.
+    """
+    acer = file('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(acer, res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    db_device = Device.query.filter_by(id=1).one()
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_request)
+    acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
+    hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
+    hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
+    hdd_action['lifetime'] += 1000
+    live, _ = user.post(acer, res=models.Snapshot)
+    acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec4"
+    actions = [a for a in acer['components'][7]['actions'] if a['type'] != 'TestDataStorage']
+    acer['components'][7]['actions'] = actions
+    live, _ = user.post(acer, res=models.Snapshot)
+    assert live['usageTimeAllocate'] == 1000
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_allocate(user: UserClient):
+    """ Tests allocate """
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    post_request = {"transaction": "ccc", 
+                    "finalUserCode": "aabbcc",
+                    "name": "John", 
+                    "severity": "Info",
+                    "endUsers": 1,
+                    "devices": [device_id], 
+                    "description": "aaa",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00",
+    }
+
+    allocate, _ = user.post(res=models.Allocate, data=post_request)
+    # Normal allocate
+    device, _ = user.get(res=Device, item=device_id)
+    assert device['allocated'] == True
+    action = [a for a in device['actions'] if a['type'] == 'Allocate'][0]
+    assert action['transaction'] == allocate['transaction']
+    assert action['finalUserCode'] == allocate['finalUserCode']
+    assert action['created'] == allocate['created']
+    assert action['startTime'] == allocate['startTime']
+    assert action['endUsers'] == allocate['endUsers']
+    assert action['name'] == allocate['name']
+
+    post_bad_request1 = copy.copy(post_request)
+    post_bad_request1['endUsers'] = 2
+    post_bad_request2 = copy.copy(post_request)
+    post_bad_request2['startTime'] = "2020-11-01T02:00:00+00:01"
+    post_bad_request3 = copy.copy(post_request)
+    post_bad_request3['transaction'] = "aaa"
+    res1, _ = user.post(res=models.Allocate, data=post_bad_request1, status=422)
+    res2, _ = user.post(res=models.Allocate, data=post_bad_request2, status=422)
+    res3, _ = user.post(res=models.Allocate, data=post_bad_request3, status=422)
+    for r in (res1, res2, res3):
+        assert r['code'] == 422
+        assert r['type'] == 'ValidationError'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_allocate_bad_dates(user: UserClient):
+    """ Tests allocate """
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    delta = timedelta(days=30)
+    future = datetime.now() + delta
+    post_request = {"transaction": "ccc", 
+                    "finalUserCode": "aabbcc",
+                    "name": "John", 
+                    "severity": "Info",
+                    "end_users": 1,
+                    "devices": [device_id], 
+                    "description": "aaa",
+                    "start_time": future,
+    }
+
+    res, _ = user.post(res=models.Allocate, data=post_request, status=422)
+    assert res['code'] == 422
+    assert res['type'] == 'ValidationError'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_deallocate(user: UserClient):
+    """ Tests deallocate """
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    post_deallocate = {"startTime": "2020-11-01T02:00:00+00:00",
+                       "transaction": "ccc",
+                       "devices": [device_id]
+    }
+    res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
+    assert res['code'] == 422
+    assert res['type'] == 'ValidationError'
+    post_allocate = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_allocate)
+    device, _ = user.get(res=Device, item=device_id)
+    assert device['allocated'] == True
+    deallocate, _ = user.post(res=models.Deallocate, data=post_deallocate)
+    assert deallocate['startTime'] == post_deallocate['startTime']
+    assert deallocate['devices'][0]['id'] == device_id
+    assert deallocate['devices'][0]['allocated'] == False
+    res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
+    assert res['code'] == 422
+    assert res['type'] == 'ValidationError'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_deallocate_bad_dates(user: UserClient):
+    """ Tests deallocate with bad date of start_time """
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    delta = timedelta(days=30)
+    future = datetime.now() + delta
+    post_deallocate = {"startTime": future,
+                       "devices": [device_id]
+    }
+    post_allocate = {"devices": [device_id], "description": "aaa",
+                     "startTime": "2020-11-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_allocate)
+    res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
+    assert res['code'] == 422
+    assert res['type'] == 'ValidationError'
 
 
 @pytest.mark.mvp

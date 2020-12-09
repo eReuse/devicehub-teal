@@ -447,26 +447,8 @@ class Prepare(ActionWithMultipleDevices):
 
 
 class Live(ActionWithOneDevice):
-    ip = ...  # type: Column
-    subdivision_confidence = ...  # type: Column
-    subdivision = ...  # type: Column
-    city = ...  # type: Column
-    city_confidence = ...  # type: Column
-    isp = ...  # type: Column
-    organization = ...  # type: Column
-    organization_type = ...  # type: Column
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.ip = ...  # type: Union[ipaddress.IPv4Address, ipaddress.IPv6Address]
-        self.subdivision_confidence = ...  # type: int
-        self.subdivision = ...  # type: enums.Subdivision
-        self.city = ...  # type: str
-        self.city_confidence = ...  # type: int
-        self.isp = ...  # type: str
-        self.organization = ...  # type: str
-        self.organization_type = ...  # type: str
-        self.country = ...  # type: Country
+    serial_number = ...  # type: Column
+    time = ...  # type: Column
 
 
 class Organize(ActionWithMultipleDevices):
@@ -527,14 +509,15 @@ class DisposeProduct(Trade):
 
 class TransferOwnershipBlockchain(Trade):
     pass
+    
+    
+class Allocate(ActionWithMultipleDevices):
+    code = ...  # type: Column
+    end_users = ...  # type: Column
 
-
-class Receive(ActionWithMultipleDevices):
-    role = ...  # type:Column
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.role = ...  # type: ReceiverRole
+    
+class Deallocate(ActionWithMultipleDevices):
+    code = ...  # type: Column
 
 
 class Migrate(ActionWithMultipleDevices):
