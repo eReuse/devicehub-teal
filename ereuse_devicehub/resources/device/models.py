@@ -106,6 +106,9 @@ class Device(Thing):
     image = db.Column(db.URL)
     image.comment = "An image of the device."
 
+    allocated = db.Column(Boolean, default=False)
+    allocated.comment = "device is allocated or not."
+
     _NON_PHYSICAL_PROPS = {
         'id',
         'type',
@@ -125,7 +128,8 @@ class Device(Thing):
         'variant',
         'version',
         'sku',
-        'image'
+        'image',
+        'allocated'
     }
 
     __table_args__ = (
@@ -147,7 +151,7 @@ class Device(Thing):
 
         Actions are returned by descending ``created`` time.
         """
-        return sorted(chain(self.actions_multiple, self.actions_one))
+        return sorted(chain(self.actions_multiple, self.actions_one), key=lambda x: x.created)
 
     @property
     def problems(self):
@@ -221,6 +225,22 @@ class Device(Thing):
             return states.Physical(action.__class__)
 
     @property
+    def traking(self):
+        """The actual traking state, None otherwise."""
+        from ereuse_devicehub.resources.device import states
+        with suppress(LookupError, ValueError):
+            action = self.last_action_of(*states.Traking.actions())
+            return states.Traking(action.__class__)
+
+    @property
+    def usage(self):
+        """The actual usage state, None otherwise."""
+        from ereuse_devicehub.resources.device import states
+        with suppress(LookupError, ValueError):
+            action = self.last_action_of(*states.Usage.actions())
+            return states.Usage(action.__class__)
+
+    @property
     def physical_possessor(self):
         """The actual physical possessor or None.
 
@@ -236,10 +256,12 @@ class Device(Thing):
         and :class:`ereuse_devicehub.resources.action.models.Receive`
         changes it.
         """
-        from ereuse_devicehub.resources.action.models import Receive
-        with suppress(LookupError):
-            action = self.last_action_of(Receive)
-            return action.agent
+        pass
+        # TODO @cayop uncomment this lines for link the possessor with the device
+        # from ereuse_devicehub.resources.action.models import Receive
+        # with suppress(LookupError):
+            # action = self.last_action_of(Receive)
+            # return action.agent_to
 
     @property
     def working(self):
@@ -279,7 +301,9 @@ class Device(Thing):
         """
         try:
             # noinspection PyTypeHints
-            return next(e for e in reversed(self.actions) if isinstance(e, types))
+            actions = self.actions
+            actions.sort(key=lambda x: x.created)
+            return next(e for e in reversed(actions) if isinstance(e, types))
         except StopIteration:
             raise LookupError('{!r} does not contain actions of types {}.'.format(self, types))
 
