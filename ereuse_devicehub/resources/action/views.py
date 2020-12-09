@@ -239,15 +239,30 @@ class ActionView(View):
             raise ResourceNotFound("There aren't any disk in this device {}".format(device))
         return usage_time_hdd, serial_number
 
+    def get_hid(self, snapshot):
+        device = snapshot.get('device')  # type: Computer
+        components = snapshot.get('components')
+        if not device:
+            return None
+        macs = [c.serial_number for c in components
+                        if c.type == 'NetworkAdapter' and c.serial_number is not None]
+        macs.sort()
+        mac = ''
+        hid = device.hid
+        if macs:
+            mac = "-{mac}".format(mac=macs[0])
+        hid += mac
+        return hid
+
     def live(self, snapshot):
         """If the device.allocated == True, then this snapshot create an action live."""
-        device = snapshot.get('device')  # type: Computer
-        # TODO @cayop dependency of pulls 85 and 83
-        # if the pr/85 and pr/83 is merged, then you need change this way for get the device
-        if not device.hid or not Device.query.filter(Device.hid==device.hid).count():
+        # TODO @cayop dependency of pulls 83
+        # if the pr/83 is merged, then you need change this way for get the device
+        hid = self.get_hid(snapshot)
+        if not hid or not Device.query.filter(Device.hid==hid).count():
             return None
 
-        device = Device.query.filter(Device.hid==device.hid).one()
+        device = Device.query.filter(Device.hid==hid).one()
 
         if not device.allocated:
             return None
