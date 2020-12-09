@@ -100,7 +100,10 @@ def test_api_docs(client: Client):
         '/videoconferences/{dev1_id}/merge/{dev2_id}',
         '/videos/{dev1_id}/merge/{dev2_id}',
         '/wireless-access-points/{dev1_id}/merge/{dev2_id}',
-        '/versions/'
+        '/versions/',
+        '/allocates/',
+        '/deallocates/',
+        '/metrics/',
     }
     assert docs['info'] == {'title': 'Devicehub', 'version': '0.2'}
     assert docs['components']['securitySchemes']['bearerAuth'] == {
@@ -111,4 +114,4 @@ def test_api_docs(client: Client):
         'scheme': 'basic',
         'name': 'Authorization'
     }
-    assert len(docs['definitions']) == 122
+    assert len(docs['definitions']) == 124
