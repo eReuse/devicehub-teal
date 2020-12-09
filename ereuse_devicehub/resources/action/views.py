@@ -244,11 +244,15 @@ class ActionView(View):
         components = snapshot.get('components')
         if not device:
             return None
+        if not components:
+            return device.hid
         macs = [c.serial_number for c in components
-                        if c.type == 'NetworkAdapter' and c.serial_number is not None]
+                if c.type == 'NetworkAdapter' and c.serial_number is not None]
         macs.sort()
         mac = ''
         hid = device.hid
+        if not hid:
+            return hid
         if macs:
             mac = "-{mac}".format(mac=macs[0])
         hid += mac
