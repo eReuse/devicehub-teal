@@ -18,7 +18,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.action.models import Action, BenchmarkDataStorage, \
     BenchmarkProcessor, EraseSectors, RateComputer, Snapshot, SnapshotRequest, VisualTest, \
-    EreusePrice
+    EreusePrice, Ready
 from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import SolidStateDrive
@@ -540,6 +540,25 @@ def test_save_snapshot_in_file(app: Devicehub, user: UserClient):
     assert snapshot['software'] == snapshot_no_hid['software']
     assert snapshot['version'] == snapshot_no_hid['version']
     assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_action_no_snapshot_without_save_file(app: Devicehub, user: UserClient):
+    """ This test check if the function save_snapshot_in_file not work when we 
+    send one other action different to snapshot
+    """
+    s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
+    snapshot, _ = user.post(res=Snapshot, data=s)
+
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    path_dir_base = os.path.join(tmp_snapshots, user.user['email'])
+
+    shutil.rmtree(tmp_snapshots)
+
+    action = {'type': Ready.t, 'devices': [snapshot['device']['id']]}
+    action, _ = user.post(action, res=Action)
+
+    assert os.path.exists(tmp_snapshots) == False
 
 @pytest.mark.mvp
 def test_save_snapshot_with_debug(app: Devicehub, user: UserClient):
