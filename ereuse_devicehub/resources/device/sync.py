@@ -155,6 +155,8 @@ class Sync:
         if device.hid:
             with suppress(ResourceNotFound):
                 db_device = Device.query.filter_by(hid=device.hid, owner_id=g.user.id).one()
+        if db_device and db_device.allocated:
+            raise ResourceNotFound('device is actually allocated {}'.format(device))
         try:
             tags = {Tag.from_an_id(tag.id).one() for tag in device.tags}  # type: Set[Tag]
         except ResourceNotFound:

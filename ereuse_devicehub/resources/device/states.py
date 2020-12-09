@@ -51,11 +51,30 @@ class Physical(State):
     :cvar Preparing: The device is going to be or being prepared.
     :cvar Prepared: The device has been prepared.
     :cvar Ready: The device is in working conditions.
-    :cvar InUse: The device is being reported to be in active use.
     """
     ToBeRepaired = e.ToRepair
     Repaired = e.Repair
     Preparing = e.ToPrepare
     Prepared = e.Prepare
     Ready = e.Ready
+
+
+class Traking(State):
+    """Traking states.
+
+    :cvar Receive: The device changes hands
+    """
+    # Receive = e.Receive
+    pass
+
+    
+class Usage(State):
+    """Usage states.
+
+    :cvar Allocate: The device is allocate in other Agent (organization, person ...)
+    :cvar Deallocate: The device is deallocate and return to the owner
+    :cvar InUse: The device is being reported to be in active use. 
+    """
+    Allocate = e.Allocate
+    Deallocate = e.Deallocate
     InUse = e.Live

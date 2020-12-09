@@ -10,6 +10,7 @@ to a structure based on:
 Within the above general classes are subclasses in A order.
 """
 
+import copy
 from collections import Iterable
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
@@ -43,7 +44,7 @@ from ereuse_devicehub.resources.device.models import Component, Computer, DataSt
     Device, Laptop, Server
 from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, BiosAccessRange, \
     ErasureStandards, FunctionalityRange, PhysicalErasureMethod, PriceSoftware, \
-    R_NEGATIVE, R_POSITIVE, RatingRange, ReceiverRole, Severity, SnapshotSoftware, \
+    R_NEGATIVE, R_POSITIVE, RatingRange, Severity, SnapshotSoftware, \
     TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
@@ -91,7 +92,7 @@ class Action(Thing):
     end_time = Column(db.TIMESTAMP(timezone=True))
     end_time.comment = """When the action ends. For some actions like reservations
     the time when they expire, for others like renting
-    the time the end rents. For punctual actions it is the time 
+    the time the end rents. For punctual actions it is the time
     they are performed; it differs with ``created`` in which
     created is the where the system received the action.
     """
@@ -115,7 +116,7 @@ class Action(Thing):
                           backref=backref('authored_actions', lazy=True, collection_class=set),
                           primaryjoin=author_id == User.id)
     author_id.comment = """The user that recorded this action in the system.
-     
+
     This does not necessarily has to be the person that produced
     the action in the real world. For that purpose see
     ``agent``.
@@ -129,9 +130,8 @@ class Action(Thing):
     agent = relationship(Agent,
                          backref=backref('actions_agent', lazy=True, **_sorted_actions),
                          primaryjoin=agent_id == Agent.id)
-    agent_id.comment = """The direct performer or driver of the action. 
-    e.g. John wrote a book.
-    
+    agent_id.comment = """The direct performer or driver of the action. e.g. John wrote a book.
+
     It can differ with the user that registered the action in the
     system, which can be in their behalf.
     """
@@ -142,14 +142,14 @@ class Action(Thing):
                               order_by=lambda: Component.id,
                               collection_class=OrderedSet)
     components.comment = """The components that are affected by the action.
-    
+  
     When performing actions to parent devices their components are
     affected too.
-    
+
     For example: an ``Allocate`` is performed to a Computer and this
     relationship is filled with the components the computer had
     at the time of the action.
-    
+
     For Add and Remove though, this has another meaning: the components
     that are added or removed.
     """
@@ -157,9 +157,9 @@ class Action(Thing):
     parent = relationship(Computer,
                           backref=backref('actions_parent', lazy=True, **_sorted_actions),
                           primaryjoin=parent_id == Computer.id)
-    parent_id.comment = """For actions that are performed to components, 
+    parent_id.comment = """For actions that are performed to components,
     the device parent at that time.
-    
+   
     For example: for a ``EraseBasic`` performed on a data storage, this
     would point to the computer that contained this data storage, if any.
     """
@@ -312,15 +312,21 @@ class Remove(ActionWithOneDevice):
 
 
 class Allocate(JoinedTableMixin, ActionWithMultipleDevices):
-    to_id = Column(UUID, ForeignKey(User.id))
-    to = relationship(User, primaryjoin=User.id == to_id)
-    organization = Column(CIText())
+    """The act of allocate one list of devices to one person
+    """
+    final_user_code = Column(CIText(), default='', nullable=True)
+    final_user_code.comment = """This is a internal code for mainteing the secrets of the
+        personal datas of the new holder"""
+    transaction = Column(CIText(), default='', nullable=True)
+    transaction.comment = "The code used from the owner for relation with external tool."
+    end_users = Column(Numeric(precision=4), check_range('end_users', 0), nullable=True)
 
 
 class Deallocate(JoinedTableMixin, ActionWithMultipleDevices):
-    from_id = Column(UUID, ForeignKey(User.id))
-    from_rel = relationship(User, primaryjoin=User.id == from_id)
-    organization = Column(CIText())
+    """The act of deallocate one list of devices to one person of the system or not
+    """
+    transaction= Column(CIText(), default='', nullable=True)
+    transaction.comment = "The code used from the owner for relation with external tool."
 
 
 class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
@@ -533,7 +539,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)
     software = Column(DBEnum(SnapshotSoftware), nullable=False)
     elapsed = Column(Interval)
-    elapsed.comment = """For Snapshots made with Workbench, the total amount 
+    elapsed.comment = """For Snapshots made with Workbench, the total amount
     of time it took to complete.
     """
 
@@ -680,11 +686,11 @@ class MeasureBattery(TestMixin, Test):
     voltage = db.Column(db.Integer, nullable=False)
     voltage.comment = """The actual voltage of the battery, in mV."""
     cycle_count = db.Column(db.Integer)
-    cycle_count.comment = """The number of full charges – discharges 
+    cycle_count.comment = """The number of full charges – discharges
     cycles.
     """
     health = db.Column(db.Enum(BatteryHealth))
-    health.comment = """The health of the Battery. 
+    health.comment = """The health of the Battery.
     Only reported in Android.
     """
 
@@ -883,12 +889,12 @@ class TestBios(TestMixin, Test):
     beeps_power_on = Column(Boolean)
     beeps_power_on.comment = """Whether there are no beeps or error
     codes when booting up.
-    
+
     Reference: R2 provision 6 page 23.
     """
     access_range = Column(DBEnum(BiosAccessRange))
     access_range.comment = """Difficulty to modify the boot menu.
-     
+
     This is used as an usability measure for accessing and modifying
     a bios, specially as something as important as modifying the boot
     menu.
@@ -1294,25 +1300,77 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     information about its state (in the form of a ``Snapshot`` action)
     and usage statistics.
     """
-    ip = Column(IP, nullable=False,
-                comment='The IP where the live was triggered.')
-    subdivision_confidence = Column(SmallInteger,
-                                    check_range('subdivision_confidence', 0, 100),
-                                    nullable=False)
-    subdivision = Column(DBEnum(Subdivision), nullable=False)
-    city = Column(Unicode(STR_SM_SIZE), check_lower('city'), nullable=False)
-    city_confidence = Column(SmallInteger,
-                             check_range('city_confidence', 0, 100),
-                             nullable=False)
-    isp = Column(Unicode(STR_SM_SIZE), check_lower('isp'), nullable=False)
-    organization = Column(Unicode(STR_SM_SIZE), check_lower('organization'))
-    organization_type = Column(Unicode(STR_SM_SIZE), check_lower('organization_type'))
+    serial_number = Column(Unicode(), check_lower('serial_number'))
+    serial_number.comment = """The serial number of the Hard Disk in lower case."""
+    usage_time_hdd = Column(Interval, nullable=True)
+    snapshot_uuid = Column(UUID(as_uuid=True))
 
     @property
-    def country(self) -> Country:
-        return self.subdivision.country
-    # todo relate to snapshot
-    # todo testing
+    def final_user_code(self):
+        """ show the final_user_code of the last action Allocate."""
+        actions = self.device.actions
+        actions.sort(key=lambda x: x.created)
+        for e in reversed(actions):
+            if isinstance(e, Allocate) and e.created < self.created:
+                return e.final_user_code
+        return ''
+
+    @property
+    def usage_time_allocate(self):
+        """Show how many hours is used one device from the last check"""
+        self.sort_actions()
+        if self.usage_time_hdd is None:
+            return self.last_usage_time_allocate()
+
+        delta_zero = timedelta(0)
+        diff_time = self.diff_time()
+        if diff_time is None:
+            return delta_zero
+
+        if diff_time < delta_zero:
+            return delta_zero
+        return diff_time
+
+    def sort_actions(self):
+        self.actions = copy.copy(self.device.actions)
+        self.actions.sort(key=lambda x: x.created)
+        self.actions.reverse()
+
+    def last_usage_time_allocate(self):
+        """If we don't have self.usage_time_hdd then we need search the last 
+           action Live with usage_time_allocate valid"""
+        for e in self.actions:
+            if isinstance(e, Live) and e.created < self.created:
+                if not e.usage_time_allocate:
+                    continue
+                return e.usage_time_allocate
+        return timedelta(0)
+
+    def diff_time(self):
+        for e in self.actions:
+            if e.created > self.created:
+                continue
+
+            if isinstance(e, Snapshot):
+                last_time = self.get_last_lifetime(e)
+                if not last_time:
+                    continue
+                return self.usage_time_hdd - last_time
+
+            if isinstance(e, Live):
+                if e.snapshot_uuid == self.snapshot_uuid:
+                    continue
+
+                if not e.usage_time_hdd:
+                    continue
+                return self.usage_time_hdd - e.usage_time_hdd
+        return None
+
+    def get_last_lifetime(self, snapshot):
+        for a in snapshot.actions:
+            if a.type == 'TestDataStorage' and a.device.serial_number == self.serial_number:
+                return a.lifetime
+        return None
 
 
 class Organize(JoinedTableMixin, ActionWithMultipleDevices):
@@ -1348,7 +1406,7 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     extend `Schema's Trade <http://schema.org/TradeAction>`_.
     """
     shipping_date = Column(db.TIMESTAMP(timezone=True))
-    shipping_date.comment = """When are the devices going to be ready 
+    shipping_date.comment = """When are the devices going to be ready
     for shipping?
     """
     invoice_number = Column(CIText())
@@ -1357,7 +1415,7 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     price = relationship(Price,
                          backref=backref('trade', lazy=True, uselist=False),
                          primaryjoin=price_id == Price.id)
-    price_id.comment = """The price set for this trade.            
+    price_id.comment = """The price set for this trade.
     If no price is set it is supposed that the trade was
     not payed, usual in donations.
         """
@@ -1371,8 +1429,7 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     confirms = relationship(Organize,
                             backref=backref('confirmation', lazy=True, uselist=False),
                             primaryjoin=confirms_id == Organize.id)
-    confirms_id.comment = """An organize action that this association confirms.                
-    
+    confirms_id.comment = """An organize action that this association confirms.
     For example, a ``Sell`` or ``Rent``
     can confirm a ``Reserve`` action.
     """
@@ -1432,26 +1489,6 @@ class TransferOwnershipBlockchain(Trade):
 class MakeAvailable(ActionWithMultipleDevices):
     """The act of setting willingness for trading."""
     pass
-
-
-class Receive(JoinedTableMixin, ActionWithMultipleDevices):
-    """The act of physically taking delivery of a device.
-
-    The receiver confirms that the devices have arrived, and thus,
-    they are the
-    :attr:`ereuse_devicehub.resources.device.models.Device.physical_possessor`.
-
-    This differs from :class:`.Trade` in that trading changes the
-    political possession. As an example, a transporter can *receive*
-    a device but it is not it's owner. After the delivery, the
-    transporter performs another *receive* to the final owner.
-
-    The receiver can optionally take a
-    :class:`ereuse_devicehub.resources.enums.ReceiverRole`.
-    """
-    role = Column(DBEnum(ReceiverRole),
-                  nullable=False,
-                  default=ReceiverRole.Intermediary)
 
 
 class Migrate(JoinedTableMixin, ActionWithMultipleDevices):
