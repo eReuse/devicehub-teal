@@ -2,6 +2,7 @@ import os
 import json
 import shutil
 import pytest
+import uuid
 
 from datetime import datetime, timedelta, timezone
 from requests.exceptions import HTTPError
@@ -103,6 +104,24 @@ def test_snapshot_post(user: UserClient):
     assert rate['components'] == snapshot['components']
     assert rate['snapshot']['id'] == snapshot['id']
 
+
+@pytest.mark.mvp
+def test_same_device_tow_users(user: UserClient, user2: UserClient):
+    """Two users can up the same snapshot and the system save 2 computers"""
+    user.post(file('basic.snapshot'), res=Snapshot)
+    i, _ = user.get(res=m.Device)
+    pc = next(d for d in i['items'] if d['type'] == 'Desktop')
+    pc_id = pc['id']
+    assert i['items'][0]['url'] == f'/devices/{pc_id}'
+
+    basic_snapshot = file('basic.snapshot')
+    basic_snapshot['uuid'] = f"{uuid.uuid4()}"
+    user2.post(basic_snapshot, res=Snapshot)
+    i2, _ = user2.get(res=m.Device)
+    pc2 = next(d for d in i2['items'] if d['type'] == 'Desktop')
+    assert pc['id'] != pc2['id']
+    assert pc['ownerID'] != pc2['ownerID']
+    assert pc['hid'] == pc2['hid']
 
 @pytest.mark.mvp
 def test_snapshot_update_timefield_updated(user: UserClient):
@@ -253,7 +272,9 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c3s', 'p1c4s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
     # This last Action only
-    assert get_actions_info(pc1['actions'])[-1] == ('RateComputer', ['p1c3s', 'p1c4s'])
+    act = get_actions_info(pc1['actions'])[-1]
+    assert 'RateComputer' in act
+    assert set(act[1]) == {'p1c3s', 'p1c4s'}
     # PC2
     # We haven't changed PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
