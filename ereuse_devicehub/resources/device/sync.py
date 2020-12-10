@@ -4,6 +4,7 @@ from itertools import groupby
 from typing import Iterable, Set
 
 import yaml
+from flask import g
 from sqlalchemy import inspect
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.util import OrderedSet
@@ -101,7 +102,7 @@ class Sync:
         assert inspect(component).transient, 'Component should not be synced from DB'
         try:
             if component.hid:
-                db_component = Device.query.filter_by(hid=component.hid).one()
+                db_component = Device.query.filter_by(hid=component.hid, owner_id=g.user.id).one()
                 assert isinstance(db_component, Device), \
                     '{} must be a component'.format(db_component)
             else:
@@ -153,7 +154,7 @@ class Sync:
         db_device = None
         if device.hid:
             with suppress(ResourceNotFound):
-                db_device = Device.query.filter_by(hid=device.hid).one()
+                db_device = Device.query.filter_by(hid=device.hid, owner_id=g.user.id).one()
         if db_device and db_device.allocated:
             raise ResourceNotFound('device is actually allocated {}'.format(device))
         try:
@@ -204,6 +205,9 @@ class Sync:
 
         This method mutates db_device.
         """
+        if db_device.owner_id != g.user.id:
+            return 
+
         for field_name, value in device.physical_properties.items():
             if value is not None:
                 setattr(db_device, field_name, value)
@@ -234,8 +238,11 @@ class Sync:
                 return component.parent or Device(id=0)  # Computer with id 0 is our Identity
 
             for parent, _components in groupby(sorted(adding, key=g_parent), key=g_parent):
-                if parent.id != 0:  # Is not Computer Identity
-                    actions.add(Remove(device=parent, components=OrderedSet(_components)))
+                set_components = OrderedSet(_components)
+                check_owners = (x.owner_id == g.user.id for x in set_components)
+                # Is not Computer Identity and all components have the correct owner
+                if parent.id != 0 and all(check_owners):
+                    actions.add(Remove(device=parent, components=set_components))
         return actions
 
 

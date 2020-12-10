@@ -101,7 +101,7 @@ class DeviceView(View):
         return super().get(id)
 
     def patch(self, id):
-        dev = Device.query.filter_by(id=id).one()
+        dev = Device.query.filter_by(id=id, owner_id=g.user.id).one()
         if isinstance(dev, Computer):
             resource_def = app.resources['Computer']
             # TODO check how to handle the 'actions_one'
@@ -131,9 +131,9 @@ class DeviceView(View):
 
     @auth.Auth.requires_auth
     def one_private(self, id: int):
-        device = Device.query.filter_by(id=id).one()
-        if hasattr(device, 'owner_id') and device.owner_id != g.user.id:
-            device = {}
+        device = Device.query.filter_by(id=id, owner_id=g.user.id).first()
+        if not device:
+            return self.one_public(id)
         return self.schema.jsonify(device)
 
     @auth.Auth.requires_auth
@@ -149,7 +149,7 @@ class DeviceView(View):
         )
 
     def query(self, args):
-        query = Device.query.distinct()  # todo we should not force to do this if the query is ok
+        query = Device.query.filter((Device.owner_id == g.user.id)).distinct()
         search_p = args.get('search', None)
         if search_p:
             properties = DeviceSearch.properties
@@ -159,16 +159,7 @@ class DeviceView(View):
             ).order_by(
                 search.Search.rank(properties, search_p) + search.Search.rank(tags, search_p)
             )
-        query = self.visibility_filter(query)
         return query.filter(*args['filter']).order_by(*args['sort'])
-
-    def visibility_filter(self, query):
-        filterqs = request.args.get('filter', None)
-        if (filterqs and
-                'lot' not in filterqs):
-            query = query.filter((Computer.id == Device.id), (Computer.owner_id == g.user.id))
-            pass
-        return query
 
 
 class DeviceMergeView(View):
@@ -194,8 +185,13 @@ class DeviceMergeView(View):
         many models in session.
         """
         # base_device = Device.query.filter_by(id=dev1_id, owner_id=g.user.id).one()
-        self.base_device = Device.query.filter_by(id=dev1_id).one()
-        self.with_device = Device.query.filter_by(id=dev2_id).one()
+        self.base_device = Device.query.filter_by(id=dev1_id, owner_id=g.user.id).one()
+        self.with_device = Device.query.filter_by(id=dev2_id, owner_id=g.user.id).one()
+
+        if self.base_device.allocated or self.with_device.allocated:
+            # Validation than any device is allocated
+            msg = 'The device is allocated, please deallocated before merge.'
+            raise ValidationError(msg)
 
         if not self.base_device.type == self.with_device.type:
             # Validation than we are speaking of the same kind of devices
