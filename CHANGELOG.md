@@ -15,3 +15,4 @@ ml).
 - [addend] #87 allocate, deallocate and live actions
 - [fixed] #89 save json on disk only for shapshots
 - [addend] #83 add owner_id in all kind of device
+- [addend] #85 add mac of network adapter to device hid
