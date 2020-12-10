@@ -41,6 +41,15 @@ class Action(Thing):
     parent = NestedOn(s_device.Computer, dump_only=True, description=m.Action.parent_id.comment)
     url = URL(dump_only=True, description=m.Action.url.__doc__)
 
+    @validates_schema
+    def validate_times(self, data: dict):
+        unix_time = datetime.fromisoformat("1970-01-02 00:00:00+00:00")
+        if 'end_time' in data and data['end_time'] < unix_time:
+            data['end_time'] = unix_time
+
+        if 'start_time' in data and data['start_time'] < unix_time:
+            data['start_time'] = unix_time
+
 
 class ActionWithOneDevice(Action):
     __doc__ = m.ActionWithOneDevice.__doc__
