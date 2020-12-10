@@ -260,13 +260,13 @@ class ActionView(View):
 
     def live(self, snapshot):
         """If the device.allocated == True, then this snapshot create an action live."""
-        # TODO @cayop dependency of pulls 83
-        # if the pr/83 is merged, then you need change this way for get the device
         hid = self.get_hid(snapshot)
-        if not hid or not Device.query.filter(Device.hid==hid).count():
+        if not hid or not Device.query.filter(
+            Device.hid==hid, Device.owner_id==g.user.id).count():
             return None
 
-        device = Device.query.filter(Device.hid==hid).one()
+        device = Device.query.filter(
+            Device.hid==hid, Device.owner_id==g.user.id).one()
 
         if not device.allocated:
             return None

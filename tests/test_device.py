@@ -130,7 +130,6 @@ def test_physical_properties():
         'ethereum_address': None,
         'manufacturer': 'bar',
         'model': 'foo',
-        'owner_id': pc.owner_id,
         'receiver_id': None,
         'serial_number': 'foo-bar',
         'transfer_state': TransferState.Initial
@@ -140,6 +139,7 @@ def test_physical_properties():
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_component_similar_one():
+    user = User.query.filter().first()
     snapshot = conftest.file('pc-components.db')
     pc = snapshot['device']
     snapshot['components'][0]['serial_number'] = snapshot['components'][1]['serial_number'] = None
@@ -148,7 +148,8 @@ def test_component_similar_one():
     db.session.add(pc)
     db.session.flush()
     # Let's create a new component named 'A' similar to 1
-    componentA = d.Component(model=component1.model, manufacturer=component1.manufacturer)
+    componentA = d.Component(model=component1.model, manufacturer=component1.manufacturer,
+                             owner_id=user.id)
     similar_to_a = componentA.similar_one(pc, set())
     assert similar_to_a == component1
     # d.Component B does not have the same model
@@ -167,16 +168,17 @@ def test_add_remove():
     # pc has c1 and c2
     # pc2 has c3
     # c4 is not with any pc
+    user = User.query.filter().first()
     values = conftest.file('pc-components.db')
     pc = values['device']
     c1, c2 = (d.Component(**c) for c in values['components'])
     pc = d.Desktop(**pc, components=OrderedSet([c1, c2]))
     db.session.add(pc)
-    c3 = d.Component(serial_number='nc1')
+    c3 = d.Component(serial_number='nc1', owner_id=user.id)
     pc2 = d.Desktop(serial_number='s2',
                     components=OrderedSet([c3]),
                     chassis=ComputerChassis.Microtower)
-    c4 = d.Component(serial_number='c4s')
+    c4 = d.Component(serial_number='c4s', owner_id=user.id)
     db.session.add(pc2)
     db.session.add(c4)
     db.session.commit()
@@ -315,14 +317,16 @@ def test_sync_execute_register_no_hid_tag_not_linked(tag_id: str):
 
 
 @pytest.mark.mvp
-@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_sync_execute_register_tag_does_not_exist():
     """Ensures not being able to register if the tag does not exist,
     even if the device has HID or it existed before.
 
     Tags have to be created before trying to link them through a Snapshot.
     """
+    user = User.query.filter().first()
     pc = d.Desktop(**conftest.file('pc-components.db')['device'], tags=OrderedSet([Tag('foo')]))
+    pc.owner_id = user.id
     with raises(ResourceNotFound):
         Sync().execute_register(pc)
 
@@ -403,8 +407,9 @@ def test_get_device(app: Devicehub, user: UserClient):
                        chassis=ComputerChassis.Tower,
                        owner_id=user.user['id'])
         pc.components = OrderedSet([
-            d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
-            d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
+            d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s', 
+                owner_id=user.user['id']),
+            d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500, owner_id=user.user['id'])
         ])
         db.session.add(pc)
         # todo test is an abstract class. replace with another one
@@ -440,8 +445,10 @@ def test_get_devices(app: Devicehub, user: UserClient):
                        chassis=ComputerChassis.Tower,
                        owner_id=user.user['id'])
         pc.components = OrderedSet([
-            d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s'),
-            d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
+            d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s',
+                owner_id=user.user['id']),
+            d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500,
+                owner_id=user.user['id'])
         ])
         pc1 = d.Desktop(model='p2mo',
                         manufacturer='p2ma',
@@ -463,17 +470,21 @@ def test_get_devices(app: Devicehub, user: UserClient):
 
 
 @pytest.mark.mvp
-def test_get_device_permissions(app: Devicehub, user: UserClient, user2: UserClient):
+def test_get_device_permissions(app: Devicehub, user: UserClient, user2: UserClient, 
+        client: Client):
     """Checks GETting a d.Desktop with its components."""
 
-    user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
-    pc, res = user.get("/devices/1", None)
+    s, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
+    pc, res = user.get(res=d.Device, item=s['device']['id'])
     assert res.status_code == 200
     assert len(pc['actions']) == 9
 
-    pc2, res2 = user2.get("/devices/1", None)
+    html, _ = client.get(res=d.Device, item=s['device']['id'], accept=ANY)
+    assert 'intel atom cpu n270 @ 1.60ghz' in html
+    assert '00:24:8C:7F:CF:2D – 100 Mbps' in html
+    pc2, res2 = user2.get(res=d.Device, item=s['device']['id'], accept=ANY)
     assert res2.status_code == 200
-    assert pc2 == {}
+    assert pc2 == html
 
 
 @pytest.mark.mvp
@@ -553,29 +564,30 @@ def test_device_public(user: UserClient, client: Client):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_computer_accessory_model():
-    sai = d.SAI()
+def test_computer_accessory_model(user: UserClient):
+    sai = d.SAI(owner_id=user.user['id'])
     db.session.add(sai)
-    keyboard = d.Keyboard(layout=Layouts.ES)
+    keyboard = d.Keyboard(layout=Layouts.ES, owner_id=user.user['id'])
     db.session.add(keyboard)
-    mouse = d.Mouse()
+    mouse = d.Mouse(owner_id=user.user['id'])
     db.session.add(mouse)
     db.session.commit()
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_networking_model():
-    router = d.Router(speed=1000, wireless=True)
+def test_networking_model(user: UserClient):
+    router = d.Router(speed=1000, wireless=True, owner_id=user.user['id'])
     db.session.add(router)
-    switch = d.Switch(speed=1000, wireless=False)
+    switch = d.Switch(speed=1000, wireless=False, owner_id=user.user['id'])
     db.session.add(switch)
     db.session.commit()
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_cooking_mixer():
-    mixer = d.Mixer(serial_number='foo', model='bar', manufacturer='foobar')
+def test_cooking_mixer(user: UserClient):
+    mixer = d.Mixer(serial_number='foo', model='bar', manufacturer='foobar',
+                    owner_id=user.user['id'])
     db.session.add(mixer)
     db.session.commit()
 

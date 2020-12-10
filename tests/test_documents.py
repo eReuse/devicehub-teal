@@ -4,6 +4,7 @@ from io import StringIO
 from pathlib import Path
 
 import pytest
+from werkzeug.exceptions import Unauthorized
 import teal.marshmallow
 from ereuse_utils.test import ANY
 
@@ -78,6 +79,29 @@ def test_erasure_certificate_wrong_id(client: Client):
     client.get(res=documents.DocumentDef.t, item='erasures/this-is-not-an-id',
                status=teal.marshmallow.ValidationError)
 
+
+@pytest.mark.mvp
+def test_export_csv_permitions(user: UserClient, user2: UserClient, client: Client):
+    """Test export device information in a csv file with others users."""
+    snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+    csv_user, _ = user.get(res=documents.DocumentDef.t,
+                          item='devices/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
+
+    csv_user2, _ = user2.get(res=documents.DocumentDef.t,
+                          item='devices/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
+
+    _, res = client.get(res=documents.DocumentDef.t,
+                          item='devices/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})], status=401)
+    assert res.status_code == 401
+
+    assert len(csv_user) > 0
+    assert len(csv_user2) == 0
 
 @pytest.mark.mvp
 def test_export_basic_snapshot(user: UserClient):

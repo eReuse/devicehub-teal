@@ -32,6 +32,7 @@ from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing, listener_reset
 from ereuse_devicehub.resources.user.models import User
 
 
+
 class Device(Thing):
     """Base class for any type of physical object that can be identified.
 
@@ -106,6 +107,11 @@ class Device(Thing):
     image = db.Column(db.URL)
     image.comment = "An image of the device."
 
+    owner_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey(User.id),
+                         nullable=False,
+                         default=lambda: g.user.id)
+    owner = db.relationship(User, primaryjoin=owner_id == User.id)
     allocated = db.Column(Boolean, default=False)
     allocated.comment = "device is allocated or not."
 
@@ -115,6 +121,7 @@ class Device(Thing):
         'created',
         'updated',
         'parent_id',
+        'owner_id',
         'hid',
         'production_date',
         'color',  # these are only user-input thus volatile
@@ -613,7 +620,8 @@ class Component(Device):
         """
         assert self.hid is None, 'Don\'t use this method with a component that has HID'
         component = self.__class__.query \
-            .filter_by(parent=parent, hid=None, **self.physical_properties) \
+            .filter_by(parent=parent, hid=None, owner_id=self.owner_id, 
+                       **self.physical_properties) \
             .filter(~Component.id.in_(blacklist)) \
             .first()
         if not component:
