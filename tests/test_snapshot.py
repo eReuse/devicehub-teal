@@ -727,3 +727,37 @@ def test_snapshot_failed_missing_chassis(app: Devicehub, user: UserClient):
     assert snapshot['version'] == snapshot_error['version']
     assert snapshot['uuid'] == uuid
 
+
+@pytest.mark.mvp
+def test_snapshot_failed_end_time_bug(app: Devicehub, user: UserClient):
+    """ This test check if the end_time = 0001-01-01 00:00:00+00:00
+    and then we get a /devices, this create a crash
+    """
+    snapshot_file = file('asus-end_time_bug88.snapshot')
+    snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
+    device, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    end_times = [x['endTime'] for x in device['actions']]
+
+    assert '1970-01-02T00:00:00+00:00' in end_times
+    assert not '0001-01-01T00:00:00+00:00' in end_times
+
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    shutil.rmtree(tmp_snapshots)
+
+@pytest.mark.mvp
+def test_snapshot_not_failed_end_time_bug(app: Devicehub, user: UserClient):
+    """ This test check if the end_time != 0001-01-01 00:00:00+00:00
+    and then we get a /devices, this create a crash
+    """
+    snapshot_file = file('asus-end_time_bug88.snapshot')
+    snapshot_file['endTime'] = '2001-01-01 00:00:00+00:00'
+    snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
+    device, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    end_times = [x['endTime'] for x in device['actions']]
+
+    assert not '1970-01-02T00:00:00+00:00' in end_times
+    assert not '0001-01-01T00:00:00+00:00' in end_times
+    assert '2001-01-01T00:00:00+00:00' in end_times
+
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    shutil.rmtree(tmp_snapshots)

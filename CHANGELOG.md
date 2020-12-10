@@ -16,3 +16,4 @@ ml).
 - [fixed] #89 save json on disk only for shapshots
 - [addend] #83 add owner_id in all kind of device
 - [addend] #85 add mac of network adapter to device hid
+- [fixed] #91 The most old time allow is 1970-01-01
