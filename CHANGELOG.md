@@ -11,9 +11,11 @@ ml).
 ## testing
   [1.0.2-beta]
 
+## [1.0.3-beta]
+- [addend] #85 add mac of network adapter to device hid
+
 ## [1.0.2-beta]
 - [addend] #87 allocate, deallocate and live actions
 - [fixed] #89 save json on disk only for shapshots
 - [addend] #83 add owner_id in all kind of device
-- [addend] #85 add mac of network adapter to device hid
 - [fixed] #91 The most old time allow is 1970-01-01
