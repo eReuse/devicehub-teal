@@ -40,6 +40,8 @@ def upgrade():
     macs = {}
     for c in computers:
         hids[c.id] = c.hid
+        if not c.serial_number:
+            continue
         try:
             macs[c.id].append(c.serial_number)
             macs[c.id].sort()
@@ -52,8 +54,6 @@ def upgrade():
         if not id_dev in macs:
             continue
         mac = macs[id_dev][0]
-        if not mac:
-            continue
         new_hid = "{}-{}".format(hid, mac)
 
         sql = f"update {get_inv()}.device set hid='{new_hid}' where id={id_dev};"
