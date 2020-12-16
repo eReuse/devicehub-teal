@@ -101,7 +101,7 @@ class Computer(Device):
                           collection_class=OrderedSet,
                           description='The components that are inside this computer.')
     chassis = EnumField(enums.ComputerChassis,
-                        required=False,
+                        required=True,
                         description=m.Computer.chassis.comment)
     ram_size = Integer(dump_only=True,
                        data_key='ramSize',
