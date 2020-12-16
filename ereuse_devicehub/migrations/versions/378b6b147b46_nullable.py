@@ -27,7 +27,7 @@ def get_inv():
     return INV
 
 def upgrade():
-    op.alter_column('{get_inv()}.computer', 'chassis', nullable=True)
+    op.alter_column('computer', 'chassis', nullable=True, schema=f'{get_inv()}')
     # pass
 
 
