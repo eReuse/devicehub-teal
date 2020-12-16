@@ -410,7 +410,7 @@ class Computer(Device):
     ``Server``. The property ``chassis`` defines it more granularly.
     """
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
-    chassis = Column(DBEnum(ComputerChassis), nullable=False)
+    chassis = Column(DBEnum(ComputerChassis), nullable=True)
     chassis.comment = """The physical form of the computer.
 
     It is a subset of the Linux definition of DMI / DMI decode.
