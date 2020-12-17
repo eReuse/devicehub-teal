@@ -684,7 +684,7 @@ def test_snapshot_not_failed_null_chassis(app: Devicehub, user: UserClient):
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
     path_dir_base = os.path.join(tmp_snapshots, user.user['email'], 'errors')
     snapshot_error = file('desktop-9644w8n-lenovo-0169622.snapshot')
-    snapshot_error['device']['chassis'] = 'Nothing'
+    snapshot_error['device']['chassis'] = None 
     uuid = snapshot_error['uuid']
 
     snapshot, res = user.post(res=Snapshot, data=snapshot_error)

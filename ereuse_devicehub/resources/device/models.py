@@ -430,9 +430,12 @@ class Computer(Device):
     receiver = db.relationship(User, primaryjoin=receiver_id == User.id)
     deliverynote_address = db.Column(CIText(), nullable=True)
 
-    def __init__(self, chassis, **kwargs) -> None:
-        chassis = ComputerChassis(chassis)
-        super().__init__(chassis=chassis, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        if args:
+            chassis = ComputerChassis(args[0])
+            super().__init__(chassis=chassis, **kwargs)
+        else:
+            super().__init__(*args, **kwargs)
 
     @property
     def actions(self) -> list:

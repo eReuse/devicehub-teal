@@ -1,5 +1,5 @@
 from contextlib import suppress
-from enum import Enum, IntEnum, unique, EnumMeta
+from enum import Enum, IntEnum, unique
 from typing import Set, Union
 
 import inflection
@@ -207,20 +207,9 @@ class DisplayTech(Enum):
         return self.name
 
 
-class DefaultEnumMeta(EnumMeta):
-    default = object()
-
-    def __call__(cls, value=default, *args, **kwargs):
-        # import pdb; pdb.set_trace()
-        if value is DefaultEnumMeta.default:
-            # Assume the first enum is default
-            return next(iter(cls))
-        return super().__call__(value, *args, **kwargs)
-
 @unique
-class ComputerChassis(Enum, metaclass=DefaultEnumMeta):
+class ComputerChassis(Enum):
     """The chassis of a computer."""
-    Nothing = None
     Tower = 'Tower'
     Docking = 'Docking'
     AllInOne = 'All in one'

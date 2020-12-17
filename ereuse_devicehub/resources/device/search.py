@@ -112,16 +112,27 @@ class DeviceSearch(db.Model):
         if isinstance(device, Computer):
             # Aggregate the values of all the components of pc
             Comp = aliased(Component)
-            tokens.extend((
-                (db.func.string_agg(db.cast(Comp.id, db.TEXT), ' '), search.Weight.D),
-                (db.func.string_agg(Comp.model, ' '), search.Weight.C),
-                (db.func.string_agg(Comp.manufacturer, ' '), search.Weight.D),
-                (db.func.string_agg(Comp.serial_number, ' '), search.Weight.B),
-                (db.func.string_agg(Comp.type, ' '), search.Weight.B),
-                ('Computer', search.Weight.C),
-                ('PC', search.Weight.C),
-                (inflection.humanize(device.chassis.name), search.Weight.B),
-            ))
+            if device.chassis:
+                tokens.extend((
+                    (db.func.string_agg(db.cast(Comp.id, db.TEXT), ' '), search.Weight.D),
+                    (db.func.string_agg(Comp.model, ' '), search.Weight.C),
+                    (db.func.string_agg(Comp.manufacturer, ' '), search.Weight.D),
+                    (db.func.string_agg(Comp.serial_number, ' '), search.Weight.B),
+                    (db.func.string_agg(Comp.type, ' '), search.Weight.B),
+                    ('Computer', search.Weight.C),
+                    ('PC', search.Weight.C),
+                    (inflection.humanize(device.chassis.name), search.Weight.B),
+                ))
+            else:
+                tokens.extend((
+                    (db.func.string_agg(db.cast(Comp.id, db.TEXT), ' '), search.Weight.D),
+                    (db.func.string_agg(Comp.model, ' '), search.Weight.C),
+                    (db.func.string_agg(Comp.manufacturer, ' '), search.Weight.D),
+                    (db.func.string_agg(Comp.serial_number, ' '), search.Weight.B),
+                    (db.func.string_agg(Comp.type, ' '), search.Weight.B),
+                    ('Computer', search.Weight.C),
+                    ('PC', search.Weight.C),
+                ))
 
         properties = session \
             .query(search.Search.vectorize(*tokens)) \
