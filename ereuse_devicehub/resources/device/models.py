@@ -370,14 +370,17 @@ class DisplayMixin:
         Regular values are ``4/3``, ``5/4``, ``16/9``, ``21/9``,
         ``14/10``, ``19/10``, ``16/10``.
         """
-        return Fraction(self.resolution_width, self.resolution_height)
+        if self.resolution_height and self.resolution_width:
+            return Fraction(self.resolution_width, self.resolution_height)
 
     # noinspection PyUnresolvedReferences
     @aspect_ratio.expression
     def aspect_ratio(cls):
         # The aspect ratio to use as SQL in the DB
         # This allows comparing resolutions
-        return db.func.round(cls.resolution_width / cls.resolution_height, 2)
+        if cls.resolution_height and cls.resolution_width:
+            return db.func.round(cls.resolution_width / cls.resolution_height, 2)
+        return 4/3
 
     @hybrid_property
     def widescreen(self):
@@ -390,7 +393,9 @@ class DisplayMixin:
         return self.aspect_ratio > 4.001 / 3
 
     def __str__(self) -> str:
-        return '{0.t} {0.serial_number} {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
+        if self.size:
+            return '{0.t} {0.serial_number} {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
+        return '{0.t} {0.serial_number} 0in ({0.aspect_ratio}) {0.technology}'.format(self)
 
     def __format__(self, format_spec: str) -> str:
         v = ''
@@ -398,7 +403,10 @@ class DisplayMixin:
             v += '{0.t} {0.model}'.format(self)
         if 's' in format_spec:
             v += '({0.manufacturer}) S/N {0.serial_number}'.format(self)
-            v += '– {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
+            if self.size:
+                v += '– {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
+            else:
+                v += '– 0in ({0.aspect_ratio}) {0.technology}'.format(self)
         return v
 
 
