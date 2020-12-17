@@ -260,9 +260,8 @@ class TestBios(Test):
 
 class VisualTest(Test):
     __doc__ = m.VisualTest.__doc__
-    appearance_range = EnumField(AppearanceRange, required=True, data_key='appearanceRange')
+    appearance_range = EnumField(AppearanceRange, data_key='appearanceRange')
     functionality_range = EnumField(FunctionalityRange,
-                                    required=True,
                                     data_key='functionalityRange')
     labelling = Boolean()
 

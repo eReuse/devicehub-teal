@@ -342,19 +342,19 @@ class Device(Thing):
 
 class DisplayMixin:
     """Base class for the Display Component and the Monitor Device."""
-    size = Column(Float(decimal_return_scale=1), check_range('size', 2, 150), nullable=False)
+    size = Column(Float(decimal_return_scale=1), check_range('size', 2, 150), nullable=True)
     size.comment = """The size of the monitor in inches."""
     technology = Column(DBEnum(DisplayTech))
     technology.comment = """The technology the monitor uses to display
     the image.
     """
     resolution_width = Column(SmallInteger, check_range('resolution_width', 10, 20000),
-                              nullable=False)
+                              nullable=True)
     resolution_width.comment = """The maximum horizontal resolution the
     monitor can natively support in pixels.
     """
     resolution_height = Column(SmallInteger, check_range('resolution_height', 10, 20000),
-                               nullable=False)
+                               nullable=True)
     resolution_height.comment = """The maximum vertical resolution the
     monitor can natively support in pixels.
     """

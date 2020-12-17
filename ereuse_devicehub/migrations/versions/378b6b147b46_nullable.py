@@ -28,6 +28,9 @@ def get_inv():
 
 def upgrade():
     op.alter_column('computer', 'chassis', nullable=True, schema=f'{get_inv()}')
+    op.alter_column('display', 'size', nullable=True, schema=f'{get_inv()}')
+    op.alter_column('display', 'resolution_width', nullable=True, schema=f'{get_inv()}')
+    op.alter_column('display', 'resolution_height', nullable=True, schema=f'{get_inv()}')
     # pass
 
 
