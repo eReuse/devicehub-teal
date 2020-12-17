@@ -372,15 +372,14 @@ class DisplayMixin:
         """
         if self.resolution_height and self.resolution_width:
             return Fraction(self.resolution_width, self.resolution_height)
+        return 0
 
     # noinspection PyUnresolvedReferences
     @aspect_ratio.expression
     def aspect_ratio(cls):
         # The aspect ratio to use as SQL in the DB
         # This allows comparing resolutions
-        if cls.resolution_height and cls.resolution_width:
-            return db.func.round(cls.resolution_width / cls.resolution_height, 2)
-        return 4/3
+        return db.func.round(cls.resolution_width / cls.resolution_height, 2)
 
     @hybrid_property
     def widescreen(self):
