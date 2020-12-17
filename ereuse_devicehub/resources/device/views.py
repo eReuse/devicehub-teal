@@ -241,6 +241,7 @@ class DeviceMergeView(View):
                 setattr(self.base_device, field_name, value)
 
         self.base_device.hid = self.with_device.hid
+        self.base_device.add_mac_to_hid()
 
 
 class ManufacturerView(View):

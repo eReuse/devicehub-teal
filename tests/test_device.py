@@ -1,8 +1,10 @@
+import copy
 import datetime
+import pytest
+
 from uuid import UUID
 from flask import g
 
-import pytest
 from colour import Color
 from ereuse_utils.naming import Naming
 from ereuse_utils.test import ANY
@@ -608,3 +610,111 @@ def test_cooking_mixer_api(user: UserClient):
     mixer, _ = user.get(res=d.Device, item=snapshot['device']['id'])
     assert mixer['type'] == 'Mixer'
     assert mixer['serialNumber'] == 'foo'
+
+
+@pytest.mark.mvp
+def test_hid_with_mac(app: Devicehub, user: UserClient):
+    """Checks hid with mac."""
+    snapshot = file('asus-eee-1000h.snapshot.11')
+    user.post(snapshot, res=m.Snapshot)
+    pc, _ = user.get(res=d.Device, item=1)
+    assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+
+
+@pytest.mark.mvp
+def test_hid_without_mac(app: Devicehub, user: UserClient):
+    """Checks hid without mac."""
+    snapshot = file('asus-eee-1000h.snapshot.11')
+    snapshot['components'] = [c for c in snapshot['components'] if c['type'] != 'NetworkAdapter']
+    user.post(snapshot, res=m.Snapshot)
+    pc, _ = user.get(res=d.Device, item=1)
+    assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
+
+
+@pytest.mark.mvp
+def test_hid_with_mac_none(app: Devicehub, user: UserClient):
+    """Checks hid with mac = None."""
+    snapshot = file('asus-eee-1000h.snapshot.11')
+    network = [c for c in snapshot['components'] if c['type'] == 'NetworkAdapter'][0]
+    network['serialNumber'] = None
+    user.post(snapshot, res=m.Snapshot)
+    pc, _ = user.get(res=d.Device, item=1)
+    assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
+
+
+@pytest.mark.mvp
+def test_hid_with_2networkadapters(app: Devicehub, user: UserClient):
+    """Checks hid with 2 networks adapters"""
+    snapshot = file('asus-eee-1000h.snapshot.11')
+    network = [c for c in snapshot['components'] if c['type'] == 'NetworkAdapter'][0]
+    network2 = copy.copy(network)
+    snapshot['components'].append(network2)
+    network['serialNumber'] = 'a0:24:8c:7f:cf:2d'
+    user.post(snapshot, res=m.Snapshot)
+    devices, _ = user.get(res=d.Device)
+
+    laptop = devices['items'][0]
+    assert laptop['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    assert len([c for c in devices['items'] if c['type'] == 'Laptop']) == 1
+
+
+@pytest.mark.mvp
+def test_hid_with_2network_and_drop_no_mac_in_hid(app: Devicehub, user: UserClient):
+    """Checks hid with 2 networks adapters and next drop the network is not used in hid"""
+    snapshot = file('asus-eee-1000h.snapshot.11')
+    network = [c for c in snapshot['components'] if c['type'] == 'NetworkAdapter'][0]
+    network2 = copy.copy(network)
+    snapshot['components'].append(network2)
+    network['serialNumber'] = 'a0:24:8c:7f:cf:2d'
+    user.post(snapshot, res=m.Snapshot)
+    pc, _ = user.get(res=d.Device, item=1)
+    assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+
+    snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abb'
+    snapshot['components'] = [c for c in snapshot['components'] if c != network]
+    user.post(snapshot, res=m.Snapshot)
+    devices, _ = user.get(res=d.Device)
+    laptop = devices['items'][0]
+    assert laptop['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    assert len([c for c in devices['items'] if c['type'] == 'Laptop']) == 1
+    assert len([c for c in laptop['components'] if c['type'] == 'NetworkAdapter']) == 1
+
+
+@pytest.mark.mvp
+def test_hid_with_2network_and_drop_mac_in_hid(app: Devicehub, user: UserClient):
+    """Checks hid with 2 networks adapters and next drop the network is used in hid"""
+    # One tipical snapshot with 2 network cards
+    snapshot = file('asus-eee-1000h.snapshot.11')
+    network = [c for c in snapshot['components'] if c['type'] == 'NetworkAdapter'][0]
+    network2 = copy.copy(network)
+    snapshot['components'].append(network2)
+    network['serialNumber'] = 'a0:24:8c:7f:cf:2d'
+    user.post(snapshot, res=m.Snapshot)
+    pc, _ = user.get(res=d.Device, item=1)
+    assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+
+    # we drop the network card then is used for to build the hid
+    snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abb'
+    snapshot['components'] = [c for c in snapshot['components'] if c != network2]
+    user.post(snapshot, res=m.Snapshot)
+    devices, _ = user.get(res=d.Device)
+    laptops = [c for c in devices['items'] if c['type'] == 'Laptop']
+    assert len(laptops) == 2
+    hids = [h['hid'] for h in laptops]
+    proof_hid = ['laptop-asustek_computer_inc-1000h-94oaaq021116-a0:24:8c:7f:cf:2d',
+                 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d']
+    assert all([h in proof_hid for h in hids])
+
+    # we drop all network cards
+    snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abc'
+    snapshot['components'] = [c for c in snapshot['components'] if not c in [network, network2]]
+    user.post(snapshot, res=m.Snapshot)
+    devices, _ = user.get(res=d.Device)
+    laptops = [c for c in devices['items'] if c['type'] == 'Laptop']
+    assert len(laptops) == 3
+    hids = [h['hid'] for h in laptops]
+    proof_hid = ['laptop-asustek_computer_inc-1000h-94oaaq021116-a0:24:8c:7f:cf:2d',
+                 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d',
+                 'laptop-asustek_computer_inc-1000h-94oaaq021116']
+    assert all([h in proof_hid for h in hids])
+

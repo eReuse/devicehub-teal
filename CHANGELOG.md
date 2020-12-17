@@ -11,6 +11,9 @@ ml).
 ## testing
   [1.0.2-beta]
 
+## [1.0.3-beta]
+- [addend] #85 add mac of network adapter to device hid
+
 ## [1.0.2-beta]
 - [addend] #87 allocate, deallocate and live actions
 - [fixed] #89 save json on disk only for shapshots

@@ -260,7 +260,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     # We register the first device but without the processor,
     # adding a graphic card and adding a new component
     s4 = file('4-first-device-but-removing-processor.snapshot-and-adding-graphic-card')
-    snapshot_and_check(user, s4, ('RateComputer',), perform_second_snapshot=False)
+    snapshot4 = snapshot_and_check(user, s4, ('RateComputer',), perform_second_snapshot=False)
     pc1, _ = user.get(res=m.Device, item=pc1_id)
     pc2, _ = user.get(res=m.Device, item=pc2_id)
     # Check if the update_timestamp is updated
@@ -269,12 +269,10 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert not update4_pc1 in [update1_pc1, update2_pc1, update3_pc1]
     assert update3_pc2 == update2_pc2
     # PC 0: p1c3s, p1c4s. PC1: p2c1s
-    assert {c['serialNumber'] for c in pc1['components']} == {'p1c3s', 'p1c4s'}
+    assert {c['serialNumber'] for c in pc1['components']} == {'p1c3s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
     # This last Action only
-    act = get_actions_info(pc1['actions'])[-1]
-    assert 'RateComputer' in act
-    assert set(act[1]) == {'p1c3s', 'p1c4s'}
+    assert get_actions_info(pc1['actions'])[-1] == ('RateComputer', ['p1c3s'])
     # PC2
     # We haven't changed PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)

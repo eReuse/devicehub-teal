@@ -52,7 +52,7 @@ def test_workbench_server_condensed(user: UserClient):
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
     assert device['dataStorageSize'] == 1100
     assert device['chassis'] == 'Tower'
-    assert device['hid'] == 'desktop-d1mr-d1ml-d1s'
+    assert device['hid'] == 'desktop-d1mr-d1ml-d1s-na1-s'
     assert device['graphicCardModel'] == device['components'][0]['model'] == 'gc1-1ml'
     assert device['networkSpeeds'] == [1000, 58]
     assert device['processorModel'] == device['components'][3]['model'] == 'p1-1ml'
@@ -138,7 +138,7 @@ def test_real_hp_11(user: UserClient):
     s = file('real-hp.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     pc = snapshot['device']
-    assert pc['hid'] == 'desktop-hewlett-packard-hp_compaq_8100_elite_sff-czc0408yjg'
+    assert pc['hid'] == 'desktop-hewlett-packard-hp_compaq_8100_elite_sff-czc0408yjg-6c:62:6d:81:22:9f'
     assert pc['chassis'] == 'Tower'
     assert set(e['type'] for e in snapshot['actions']) == {
         'EreusePrice',
@@ -179,7 +179,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert pc['model'] == '1001pxd'
     assert pc['serialNumber'] == 'b8oaas048286'
     assert pc['manufacturer'] == 'asustek computer inc.'
-    assert pc['hid'] == 'laptop-asustek_computer_inc-1001pxd-b8oaas048286'
+    assert pc['hid'] == 'laptop-asustek_computer_inc-1001pxd-b8oaas048286-14:da:e9:42:f6:7c'
     assert pc['tags'] == []
     assert pc['networkSpeeds'] == [100, 0], 'Although it has WiFi we do not know the speed'
     assert pc['rate']

@@ -146,8 +146,7 @@ class Device(Thing):
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
-        with suppress(TypeError):
-            self.hid = Naming.hid(self.type, self.manufacturer, self.model, self.serial_number)
+        self.set_hid()
 
     @property
     def actions(self) -> list:
@@ -297,6 +296,10 @@ class Device(Thing):
         if cls.t == 'Device':
             args[POLYMORPHIC_ON] = cls.type
         return args
+
+    def set_hid(self):
+        with suppress(TypeError):
+            self.hid = Naming.hid(self.type, self.manufacturer, self.model, self.serial_number)
 
     def last_action_of(self, *types):
         """Gets the last action of the given types.
@@ -482,6 +485,23 @@ class Computer(Device):
             (hdd.privacy for hdd in self.components if isinstance(hdd, DataStorage))
             if privacy
         )
+
+    def add_mac_to_hid(self, components_snap=None):
+        """Returns the Naming.hid with the first mac of network adapter, 
+        following an alphabetical order.
+        """
+        self.set_hid()
+        if not self.hid:
+            return
+        components = self.components if components_snap is None else components_snap
+        macs_network = [c.serial_number for c in components
+                        if c.type == 'NetworkAdapter' and c.serial_number is not None]
+        macs_network.sort()
+        mac = macs_network[0] if macs_network else ''
+        if not mac or mac in self.hid:
+            return
+        mac = f"-{mac}"
+        self.hid += mac
 
     def __format__(self, format_spec):
         if not format_spec:

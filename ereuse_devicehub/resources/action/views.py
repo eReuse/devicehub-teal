@@ -15,6 +15,9 @@ from teal.resource import View
 from teal.db import ResourceNotFound
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.device.models import Device, Computer
+from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest, \
+    InitTransfer
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import (Action, RateComputer, Snapshot, VisualTest, 
     InitTransfer, Live, Allocate, Deallocate)
@@ -157,6 +160,8 @@ class ActionView(View):
         components = None
         if snapshot_json['software'] == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid):
             components = snapshot_json.pop('components', None)  # type: List[Component]
+            if isinstance(device, Computer) and device.hid:
+                device.add_mac_to_hid(components_snap=components)
         snapshot = Snapshot(**snapshot_json)
 
         # Remove new actions from devices so they don't interfere with sync
@@ -234,17 +239,34 @@ class ActionView(View):
             raise ResourceNotFound("There aren't any disk in this device {}".format(device))
         return usage_time_hdd, serial_number
 
+    def get_hid(self, snapshot):
+        device = snapshot.get('device')  # type: Computer
+        components = snapshot.get('components')
+        if not device:
+            return None
+        if not components:
+            return device.hid
+        macs = [c.serial_number for c in components
+                if c.type == 'NetworkAdapter' and c.serial_number is not None]
+        macs.sort()
+        mac = ''
+        hid = device.hid
+        if not hid:
+            return hid
+        if macs:
+            mac = "-{mac}".format(mac=macs[0])
+        hid += mac
+        return hid
+
     def live(self, snapshot):
         """If the device.allocated == True, then this snapshot create an action live."""
-        device = snapshot.get('device')  # type: Computer
-        # TODO @cayop dependency of pulls 85
-        # if the pr/85 is merged, then you need change this way for get the device
-        if not device.hid or not Device.query.filter(
-            Device.hid==device.hid, Device.owner_id==g.user.id).count():
+        hid = self.get_hid(snapshot)
+        if not hid or not Device.query.filter(
+            Device.hid==hid, Device.owner_id==g.user.id).count():
             return None
 
         device = Device.query.filter(
-            Device.hid==device.hid, Device.owner_id==g.user.id).one()
+            Device.hid==hid, Device.owner_id==g.user.id).one()
 
         if not device.allocated:
             return None
