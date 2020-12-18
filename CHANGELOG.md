@@ -6,13 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## master
-  [1.0.1-beta]
+  [1.0.2-beta]
 
 ## testing
   [1.0.3-beta]
 
 ## [1.0.3-beta]
 - [addend] #85 add mac of network adapter to device hid
+- [addend] #95 adding endpoint for check the hash of one report
 - [changed] #94 change form of snapshot manual
 
 ## [1.0.2-beta]
