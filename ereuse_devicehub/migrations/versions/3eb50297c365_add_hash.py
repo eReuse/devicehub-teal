@@ -5,12 +5,13 @@ Revises: 378b6b147b46
 Create Date: 2020-12-18 16:26:15.453694
 
 """
-from alembic import context
-from alembic import op
-import sqlalchemy as sa
-import sqlalchemy_utils
+
 import citext
-import teal
+import sqlalchemy as sa
+
+from alembic import op
+from alembic import context
+from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
@@ -29,10 +30,10 @@ def get_inv():
 def upgrade():
     # Report Hash table
     op.create_table('report_hash',
-                    sa.Column('id', sa.BigInteger(), nullable=False),
+                    sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('created', sa.TIMESTAMP(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'),
                               nullable=False, comment='When Devicehub created this.'),
-                    sa.Column('hash', citext.CIText(), nullable=False),
+                    sa.Column('hash3', citext.CIText(), nullable=False),
                     sa.PrimaryKeyConstraint('id'),
                     schema=f'{get_inv()}'
                     )
