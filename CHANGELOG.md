@@ -9,10 +9,11 @@ ml).
   [1.0.1-beta]
 
 ## testing
-  [1.0.2-beta]
+  [1.0.3-beta]
 
 ## [1.0.3-beta]
 - [addend] #85 add mac of network adapter to device hid
+- [changed] #94 change form of snapshot manual
 
 ## [1.0.2-beta]
 - [addend] #87 allocate, deallocate and live actions
