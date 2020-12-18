@@ -101,7 +101,6 @@ class Computer(Device):
                           collection_class=OrderedSet,
                           description='The components that are inside this computer.')
     chassis = EnumField(enums.ComputerChassis,
-                        required=True,
                         description=m.Computer.chassis.comment)
     ram_size = Integer(dump_only=True,
                        data_key='ramSize',
@@ -149,17 +148,17 @@ class Server(Computer):
 
 class DisplayMixin:
     __doc__ = m.DisplayMixin.__doc__
-    size = Float(description=m.DisplayMixin.size.comment, validate=Range(2, 150), required=True)
+    size = Float(description=m.DisplayMixin.size.comment, validate=Range(2, 150))
     technology = EnumField(enums.DisplayTech,
                            description=m.DisplayMixin.technology.comment)
     resolution_width = Integer(data_key='resolutionWidth',
                                validate=Range(10, 20000),
                                description=m.DisplayMixin.resolution_width.comment,
-                               required=True)
+                               )
     resolution_height = Integer(data_key='resolutionHeight',
                                 validate=Range(10, 20000),
                                 description=m.DisplayMixin.resolution_height.comment,
-                                required=True)
+                                )
     refresh_rate = Integer(data_key='refreshRate', validate=Range(10, 1000))
     contrast_ratio = Integer(data_key='contrastRatio', validate=Range(100, 100000))
     touchable = Boolean(description=m.DisplayMixin.touchable.comment)

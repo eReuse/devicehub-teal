@@ -342,19 +342,19 @@ class Device(Thing):
 
 class DisplayMixin:
     """Base class for the Display Component and the Monitor Device."""
-    size = Column(Float(decimal_return_scale=1), check_range('size', 2, 150), nullable=False)
+    size = Column(Float(decimal_return_scale=1), check_range('size', 2, 150), nullable=True)
     size.comment = """The size of the monitor in inches."""
     technology = Column(DBEnum(DisplayTech))
     technology.comment = """The technology the monitor uses to display
     the image.
     """
     resolution_width = Column(SmallInteger, check_range('resolution_width', 10, 20000),
-                              nullable=False)
+                              nullable=True)
     resolution_width.comment = """The maximum horizontal resolution the
     monitor can natively support in pixels.
     """
     resolution_height = Column(SmallInteger, check_range('resolution_height', 10, 20000),
-                               nullable=False)
+                               nullable=True)
     resolution_height.comment = """The maximum vertical resolution the
     monitor can natively support in pixels.
     """
@@ -370,7 +370,9 @@ class DisplayMixin:
         Regular values are ``4/3``, ``5/4``, ``16/9``, ``21/9``,
         ``14/10``, ``19/10``, ``16/10``.
         """
-        return Fraction(self.resolution_width, self.resolution_height)
+        if self.resolution_height and self.resolution_width:
+            return Fraction(self.resolution_width, self.resolution_height)
+        return 0
 
     # noinspection PyUnresolvedReferences
     @aspect_ratio.expression
@@ -390,7 +392,9 @@ class DisplayMixin:
         return self.aspect_ratio > 4.001 / 3
 
     def __str__(self) -> str:
-        return '{0.t} {0.serial_number} {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
+        if self.size:
+            return '{0.t} {0.serial_number} {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
+        return '{0.t} {0.serial_number} 0in ({0.aspect_ratio}) {0.technology}'.format(self)
 
     def __format__(self, format_spec: str) -> str:
         v = ''
@@ -398,7 +402,10 @@ class DisplayMixin:
             v += '{0.t} {0.model}'.format(self)
         if 's' in format_spec:
             v += '({0.manufacturer}) S/N {0.serial_number}'.format(self)
-            v += '– {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
+            if self.size:
+                v += '– {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
+            else:
+                v += '– 0in ({0.aspect_ratio}) {0.technology}'.format(self)
         return v
 
 
@@ -410,7 +417,7 @@ class Computer(Device):
     ``Server``. The property ``chassis`` defines it more granularly.
     """
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
-    chassis = Column(DBEnum(ComputerChassis), nullable=False)
+    chassis = Column(DBEnum(ComputerChassis), nullable=True)
     chassis.comment = """The physical form of the computer.
 
     It is a subset of the Linux definition of DMI / DMI decode.
@@ -430,9 +437,12 @@ class Computer(Device):
     receiver = db.relationship(User, primaryjoin=receiver_id == User.id)
     deliverynote_address = db.Column(CIText(), nullable=True)
 
-    def __init__(self, chassis, **kwargs) -> None:
-        chassis = ComputerChassis(chassis)
-        super().__init__(chassis=chassis, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        if args:
+            chassis = ComputerChassis(args[0])
+            super().__init__(chassis=chassis, **kwargs)
+        else:
+            super().__init__(*args, **kwargs)
 
     @property
     def actions(self) -> list:

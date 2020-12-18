@@ -679,24 +679,17 @@ def test_snapshot_failed_missing_hdd_benchmark(app: Devicehub, user: UserClient)
 
 
 @pytest.mark.mvp
-def test_snapshot_failed_null_chassis(app: Devicehub, user: UserClient):
+def test_snapshot_not_failed_null_chassis(app: Devicehub, user: UserClient):
     """ This test check if the file snapshot is create when some snapshot is wrong """
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
     path_dir_base = os.path.join(tmp_snapshots, user.user['email'], 'errors')
-    snapshot_error = file('failed.snapshot.422.null-chassis')
+    snapshot_error = file('desktop-9644w8n-lenovo-0169622.snapshot')
+    snapshot_error['device']['chassis'] = None 
     uuid = snapshot_error['uuid']
 
-    snapshot = {'software': '', 'version': '', 'uuid': ''}
-    with pytest.raises(TypeError):
-        user.post(res=Snapshot, data=snapshot_error)
+    snapshot, res = user.post(res=Snapshot, data=snapshot_error)
 
-    files = [x for x in os.listdir(path_dir_base) if uuid in x]
-    if files:
-        path_snapshot = os.path.join(path_dir_base, files[0])
-        with open(path_snapshot) as file_snapshot:
-            snapshot = json.loads(file_snapshot.read())
-
-        shutil.rmtree(tmp_snapshots)
+    shutil.rmtree(tmp_snapshots)
 
     assert snapshot['software'] == snapshot_error['software']
     assert snapshot['version'] == snapshot_error['version']

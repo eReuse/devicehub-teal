@@ -120,7 +120,6 @@ class DeviceSearch(db.Model):
                 (db.func.string_agg(Comp.type, ' '), search.Weight.B),
                 ('Computer', search.Weight.C),
                 ('PC', search.Weight.C),
-                (inflection.humanize(device.chassis.name), search.Weight.B),
             ))
 
         properties = session \
