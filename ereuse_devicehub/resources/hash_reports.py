@@ -21,7 +21,7 @@ class ReportHash(db.Model):
     hash3.comment = """The normalized name of the hash."""
 
 
-def insert_hash(bfile=b'hello'):
+def insert_hash(bfile):
     hash3 = hashlib.sha3_256(bfile).hexdigest()
     db_hash = ReportHash(hash3=hash3)
     db.session.add(db_hash)
