@@ -11,20 +11,19 @@ import flask
 import flask_weasyprint
 import teal.marshmallow
 from boltons import urlutils
-from flask import make_response, g
+from flask import make_response, g, request
+from flask.json import jsonify
 from teal.cache import cache
-from teal.resource import Resource
+from teal.resource import Resource, View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.device.views import DeviceView
 from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow
-from ereuse_devicehub.resources.documents.device_row import DeviceRow
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
-from ereuse_devicehub.resources.hash_reports import insert_hash
-
+from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash
 
 
 class Format(enum.Enum):
@@ -193,6 +192,19 @@ class StockDocumentView(DeviceView):
         return output
 
 
+class CheckView(View):
+    model = ReportHash
+
+    def get(self):
+        qry = dict(request.values)
+        hash3 = qry['hash']
+
+        result = False
+        if ReportHash.query.filter_by(hash3=hash3).count():
+            result = True
+        return jsonify(result)
+
+
 class DocumentDef(Resource):
     __type__ = 'Document'
     SCHEMA = None
@@ -241,3 +253,6 @@ class DocumentDef(Resource):
         stock_view = StockDocumentView.as_view('stockDocumentView', definition=self, auth=app.auth)
         stock_view = app.auth.requires_auth(stock_view)
         self.add_url_rule('/stock/', defaults=d, view_func=stock_view, methods=get)
+
+        check_view = CheckView.as_view('CheckView', definition=self, auth=app.auth)
+        self.add_url_rule('/check/', defaults={}, view_func=check_view, methods=get)

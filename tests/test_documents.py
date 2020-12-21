@@ -144,6 +144,9 @@ def test_check_insert_hash(app: Devicehub, user: UserClient):
                           query=[('filter', {'type': ['Computer']})])
     hash3 = hashlib.sha3_256(csv_str.encode('utf-8')).hexdigest()
     assert ReportHash.query.filter_by(hash3=hash3).count() == 1
+    result, status = user.get(res=documents.DocumentDef.t, item='check/', query=[('hash', hash3)])
+    assert status.status_code == 200
+    assert result == True
 
 
 @pytest.mark.mvp
