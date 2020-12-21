@@ -135,7 +135,7 @@ def test_export_basic_snapshot(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_check_insert_hash(app: Devicehub, user: UserClient):
+def test_check_insert_hash(app: Devicehub, user: UserClient, client: Client):
     """Test export device information in a csv file."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
     csv_str, _ = user.get(res=documents.DocumentDef.t,
@@ -144,9 +144,16 @@ def test_check_insert_hash(app: Devicehub, user: UserClient):
                           query=[('filter', {'type': ['Computer']})])
     hash3 = hashlib.sha3_256(csv_str.encode('utf-8')).hexdigest()
     assert ReportHash.query.filter_by(hash3=hash3).count() == 1
-    result, status = user.get(res=documents.DocumentDef.t, item='check/', query=[('hash', hash3)])
+    result, status = client.get(res=documents.DocumentDef.t, item='check/', query=[('hash', hash3)])
     assert status.status_code == 200
     assert result == True
+
+    ff = open('/tmp/test.csv', 'w')
+    ff.write(csv_str)
+    ff.close()
+
+    a= open('/tmp/test.csv').read()
+    assert hash3 == hashlib.sha3_256(a.encode('utf-8')).hexdigest()
 
 
 @pytest.mark.mvp

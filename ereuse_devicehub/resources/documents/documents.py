@@ -117,7 +117,7 @@ class DevicesDocumentView(DeviceView):
     def generate_post_csv(self, query):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', quotechar='"')
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
         first = True
         for device in query:
             d = DeviceRow(device)
@@ -126,8 +126,8 @@ class DevicesDocumentView(DeviceView):
                 first = False
             cw.writerow(d.values())
         bfile = data.getvalue().encode('utf-8')
-        insert_hash(bfile)
         output = make_response(bfile)
+        insert_hash(bfile)
         output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
@@ -197,10 +197,10 @@ class CheckView(View):
 
     def get(self):
         qry = dict(request.values)
-        hash3 = qry['hash']
+        hash3 = qry.get('hash')
 
         result = False
-        if ReportHash.query.filter_by(hash3=hash3).count():
+        if hash3 and ReportHash.query.filter_by(hash3=hash3).count():
             result = True
         return jsonify(result)
 
