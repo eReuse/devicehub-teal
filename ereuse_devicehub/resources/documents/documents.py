@@ -23,6 +23,7 @@ from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow
 from ereuse_devicehub.resources.documents.device_row import DeviceRow
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.hash_reports import insert_hash
 
 
 
@@ -125,7 +126,9 @@ class DevicesDocumentView(DeviceView):
                 cw.writerow(d.keys())
                 first = False
             cw.writerow(d.values())
-        output = make_response(data.getvalue().encode('utf-8'))
+        bfile = data.getvalue().encode('utf-8')
+        insert_hash(bfile)
+        output = make_response(bfile)
         output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
