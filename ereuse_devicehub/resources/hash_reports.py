@@ -17,6 +17,11 @@ class ReportHash(db.Model):
     id.comment = """The identifier of the device for this database. Used only
     internally for software; users should not use this.
     """
+    created = db.Column(db.TIMESTAMP(timezone=True),
+                        nullable=False,
+                        index=True,
+                        server_default=db.text('CURRENT_TIMESTAMP'))
+    created.comment = """When Devicehub created this."""
     hash3 = db.Column(CIText(), nullable=False)
     hash3.comment = """The normalized name of the hash."""
 
