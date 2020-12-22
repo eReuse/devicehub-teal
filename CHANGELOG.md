@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## master
-  [1.0.1-beta]
+  [1.0.3-beta]
 
 ## testing
   [1.0.3-beta]
