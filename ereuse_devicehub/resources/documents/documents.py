@@ -11,19 +11,19 @@ import flask
 import flask_weasyprint
 import teal.marshmallow
 from boltons import urlutils
-from flask import make_response, g
+from flask import make_response, g, request
+from flask.json import jsonify
 from teal.cache import cache
-from teal.resource import Resource
+from teal.resource import Resource, View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.device.views import DeviceView
 from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow
-from ereuse_devicehub.resources.documents.device_row import DeviceRow
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
-
+from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash
 
 
 class Format(enum.Enum):
@@ -117,7 +117,7 @@ class DevicesDocumentView(DeviceView):
     def generate_post_csv(self, query):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', quotechar='"')
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
         first = True
         for device in query:
             d = DeviceRow(device)
@@ -125,7 +125,9 @@ class DevicesDocumentView(DeviceView):
                 cw.writerow(d.keys())
                 first = False
             cw.writerow(d.values())
-        output = make_response(data.getvalue().encode('utf-8'))
+        bfile = data.getvalue().encode('utf-8')
+        output = make_response(bfile)
+        insert_hash(bfile)
         output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
@@ -190,6 +192,19 @@ class StockDocumentView(DeviceView):
         return output
 
 
+class CheckView(View):
+    model = ReportHash
+
+    def get(self):
+        qry = dict(request.values)
+        hash3 = qry.get('hash')
+
+        result = False
+        if hash3 and ReportHash.query.filter_by(hash3=hash3).count():
+            result = True
+        return jsonify(result)
+
+
 class DocumentDef(Resource):
     __type__ = 'Document'
     SCHEMA = None
@@ -238,3 +253,6 @@ class DocumentDef(Resource):
         stock_view = StockDocumentView.as_view('stockDocumentView', definition=self, auth=app.auth)
         stock_view = app.auth.requires_auth(stock_view)
         self.add_url_rule('/stock/', defaults=d, view_func=stock_view, methods=get)
+
+        check_view = CheckView.as_view('CheckView', definition=self, auth=app.auth)
+        self.add_url_rule('/check/', defaults={}, view_func=check_view, methods=get)

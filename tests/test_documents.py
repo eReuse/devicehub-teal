@@ -1,4 +1,5 @@
 import csv
+import hashlib
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
@@ -15,7 +16,9 @@ from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.device import models as d
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
+from ereuse_devicehub.resources.hash_reports import ReportHash
 from ereuse_devicehub.db import db
+from tests import conftest
 from tests.conftest import file
 
 
@@ -103,6 +106,7 @@ def test_export_csv_permitions(user: UserClient, user2: UserClient, client: Clie
     assert len(csv_user) > 0
     assert len(csv_user2) == 0
 
+
 @pytest.mark.mvp
 def test_export_basic_snapshot(user: UserClient):
     """Test export device information in a csv file."""
@@ -127,6 +131,30 @@ def test_export_basic_snapshot(user: UserClient):
     assert fixture_csv[1][:17] == export_csv[1][:17], 'Computer information are not equal'
     assert fixture_csv[1][18] == export_csv[1][18], 'Computer information are not equal'
     assert fixture_csv[1][20:] == export_csv[1][20:], 'Computer information are not equal'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_check_insert_hash(app: Devicehub, user: UserClient, client: Client):
+    """Test export device information in a csv file."""
+    snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+    csv_str, _ = user.get(res=documents.DocumentDef.t,
+                          item='devices/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
+    hash3 = hashlib.sha3_256(csv_str.encode('utf-8')).hexdigest()
+    assert ReportHash.query.filter_by(hash3=hash3).count() == 1
+    result, status = client.get(res=documents.DocumentDef.t, item='check/', query=[('hash', hash3)])
+    assert status.status_code == 200
+    assert result == True
+
+    ff = open('/tmp/test.csv', 'w')
+    ff.write(csv_str)
+    ff.close()
+
+    a= open('/tmp/test.csv').read()
+    assert hash3 == hashlib.sha3_256(a.encode('utf-8')).hexdigest()
+
 
 @pytest.mark.mvp
 def test_export_extended(app: Devicehub, user: UserClient):
