@@ -262,11 +262,12 @@ def test_live(user: UserClient, app: Devicehub):
     }
 
     user.post(res=models.Allocate, data=post_request)
-    acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
     hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
     hdd_action['lifetime'] += 1000
-    snapshot, _ = user.post(acer, res=models.Snapshot)
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    snapshot, _ = user.post(acer, res=models.Live)
     db_device = Device.query.filter_by(id=1).one()
     action_live = [a for a in db_device.actions if a.type == 'Live']
     assert len(action_live) == 1
@@ -274,6 +275,7 @@ def test_live(user: UserClient, app: Devicehub):
     assert action_live[0].usage_time_allocate == timedelta(hours=1000)
     assert action_live[0].final_user_code == post_request['finalUserCode']
     assert action_live[0].serial_number == 'wd-wx11a80w7430'
+    assert action_live[0].licence_version == '1.0'
     assert str(action_live[0].snapshot_uuid) == acer['uuid']
 
 @pytest.mark.mvp
@@ -297,9 +299,9 @@ def test_live_without_TestDataStorage(user: UserClient, app: Devicehub):
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     actions = [a for a in acer['components'][7]['actions'] if a['type'] != 'TestDataStorage']
     acer['components'][7]['actions'] = actions
-    live, _ = user.post(acer, res=models.Snapshot)
-    assert live['type'] == 'Live'
-    assert live['serialNumber'] == 'wd-wx11a80w7430'
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    live, _ = user.post(acer, res=models.Live)
     assert live['severity'] == 'Warning'
     description = "We don't found any TestDataStorage for disk sn: wd-wx11a80w7430"
     assert live['description'] == description
@@ -328,7 +330,9 @@ def test_live_without_hdd_1(user: UserClient, app: Devicehub):
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     components = [a for a in acer['components'] if a['type'] != 'HardDrive']
     acer['components'] = components
-    response, _ = user.post(acer, res=models.Snapshot, status=404)
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    response, _ = user.post(acer, res=models.Live, status=404)
     assert "The There aren't any disk in this device" in response['message']
 
 
@@ -353,7 +357,9 @@ def test_live_without_hdd_2(user: UserClient, app: Devicehub):
 
     user.post(res=models.Allocate, data=post_request)
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
-    response, _ = user.post(acer, res=models.Snapshot, status=404)
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    response, _ = user.post(acer, res=models.Live, status=404)
     assert "The There aren't any disk in this device" in response['message']
 
 
@@ -380,9 +386,9 @@ def test_live_without_hdd_3(user: UserClient, app: Devicehub):
 
     user.post(res=models.Allocate, data=post_request)
     acer = file('acer.happy.battery.snapshot')
-    live, _ = user.post(acer, res=models.Snapshot)
-    assert live['type'] == 'Live'
-    assert live['serialNumber'] == 'wd-wx11a80w7430'
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    live, _ = user.post(acer, res=models.Live)
     assert live['severity'] == 'Warning'
     description = "Don't exist one previous live or snapshot as reference"
     assert live['description'] == description
@@ -414,9 +420,9 @@ def test_live_with_hdd_with_old_time(user: UserClient, app: Devicehub):
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     action = [a for a in acer['components'][7]['actions'] if a['type'] == 'TestDataStorage']
     action[0]['lifetime'] -= 100
-    live, _ = user.post(acer, res=models.Snapshot)
-    assert live['type'] == 'Live'
-    assert live['serialNumber'] == 'wd-wx11a80w7430'
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    live, _ = user.post(acer, res=models.Live)
     assert live['severity'] == 'Warning'
     description = "The difference with the last live/snapshot is negative"
     assert live['description'] == description
@@ -446,11 +452,14 @@ def test_live_search_last_allocate(user: UserClient, app: Devicehub):
     hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
     hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
     hdd_action['lifetime'] += 1000
-    live, _ = user.post(acer, res=models.Snapshot)
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    live, _ = user.post(acer, res=models.Live)
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec4"
     actions = [a for a in acer['components'][7]['actions'] if a['type'] != 'TestDataStorage']
     acer['components'][7]['actions'] = actions
-    live, _ = user.post(acer, res=models.Snapshot)
+    live, _ = user.post(acer, res=models.Live)
+    import pdb; pdb.set_trace()
     assert live['usageTimeAllocate'] == 1000
 
 

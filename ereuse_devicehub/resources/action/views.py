@@ -96,8 +96,114 @@ class AllocateMix():
 class AllocateView(AllocateMix, View):
     model = Allocate
 
+
 class DeallocateView(AllocateMix, View):
     model = Deallocate
+
+
+class LiveView(View):
+    def post(self):
+        """Posts an action."""
+        res_json = request.get_json(validate=False)
+        tmp_snapshots = app.config['TMP_SNAPSHOTS']
+        path_live = save_json(res_json, tmp_snapshots, g.user.email)
+        res_json_valid = request.get_json()
+        live = self.live(res_json_valid)
+        db.session.add(live)
+        db.session().final_flush()
+        ret = self.schema.jsonify(live)
+        ret.status_code = 201
+        db.session.commit()
+        move_json(tmp_snapshots, path_live, g.user.email)
+        return ret
+
+    def get_hdd_details(self, snapshot, device):
+        """We get the liftime and serial_number of the disk"""
+        usage_time_hdd = None
+        serial_number = None
+        for hd in snapshot['components']:
+            if not isinstance(hd, DataStorage):
+                continue
+
+            serial_number = hd.serial_number
+            for act in hd.actions:
+                if not act.type == "TestDataStorage":
+                    continue
+                usage_time_hdd = act.lifetime
+                break
+
+            if usage_time_hdd:
+                break
+
+        if not serial_number:
+            """There aren't any disk"""
+            raise ResourceNotFound("There aren't any disk in this device {}".format(device))
+        return usage_time_hdd, serial_number
+
+    def get_hid(self, snapshot):
+        device = snapshot.get('device')  # type: Computer
+        components = snapshot.get('components')
+        if not device:
+            return None
+        if not components:
+            return device.hid
+        macs = [c.serial_number for c in components
+                if c.type == 'NetworkAdapter' and c.serial_number is not None]
+        macs.sort()
+        mac = ''
+        hid = device.hid
+        if not hid:
+            return hid
+        if macs:
+            mac = "-{mac}".format(mac=macs[0])
+        hid += mac
+        return hid
+
+    def live(self, snapshot):
+        """If the device.allocated == True, then this snapshot create an action live."""
+        hid = self.get_hid(snapshot)
+        if not hid or not Device.query.filter(
+            Device.hid==hid, Device.owner_id==g.user.id).count():
+            raise ValidationError('Device not exist.')
+
+        device = Device.query.filter(
+            Device.hid==hid, Device.owner_id==g.user.id).one()
+        # Is not necessary
+        if not device:
+            raise ValidationError('Device not exist.')
+        if not device.allocated:
+            raise ValidationError('Sorry this device is not allocated.')
+
+        usage_time_hdd, serial_number = self.get_hdd_details(snapshot, device)
+
+        data_live = {'usage_time_hdd': usage_time_hdd,
+                     'serial_number': serial_number,
+                     'snapshot_uuid': snapshot['uuid'],
+                     'description': '',
+                     'software': snapshot['software'],
+                     'software_version': snapshot['version'],
+                     'licence_version': snapshot['licence_version'],
+                     'device': device}
+
+        live = Live(**data_live)
+
+        if not usage_time_hdd:
+            warning = f"We don't found any TestDataStorage for disk sn: {serial_number}"
+            live.severity = Severity.Warning
+            live.description = warning
+            return live
+
+        live.sort_actions()
+        diff_time = live.diff_time()
+        if diff_time is None:
+            warning = "Don't exist one previous live or snapshot as reference"
+            live.description += warning
+            live.severity = Severity.Warning
+        elif diff_time < timedelta(0):
+            warning = "The difference with the last live/snapshot is negative"
+            live.description += warning
+            live.severity = Severity.Warning
+        return live
 
 
 class ActionView(View):
@@ -145,16 +251,6 @@ class ActionView(View):
         # Note that if we set the device / components into the snapshot
         # model object, when we flush them to the db we will flush
         # snapshot, and we want to wait to flush snapshot at the end
-
-        # If the device is allocated, then snapshot is a live 
-        live = self.live(snapshot_json)
-        if live:
-            db.session.add(live)
-            db.session().final_flush()
-            ret = self.schema.jsonify(live)  # transform it back
-            ret.status_code = 201
-            db.session.commit()
-            return ret
 
         device = snapshot_json.pop('device')  # type: Computer
         components = None
@@ -215,89 +311,6 @@ class ActionView(View):
         ret.status_code = 201
         db.session.commit()
         return ret
-
-    def get_hdd_details(self, snapshot, device):
-        """We get the liftime and serial_number of the disk"""
-        usage_time_hdd = None
-        serial_number = None
-        for hd in snapshot['components']:
-            if not isinstance(hd, DataStorage):
-                continue
-
-            serial_number = hd.serial_number
-            for act in hd.actions:
-                if not act.type == "TestDataStorage":
-                    continue
-                usage_time_hdd = act.lifetime
-                break
-
-            if usage_time_hdd:
-                break
-
-        if not serial_number:
-            "There aren't any disk"
-            raise ResourceNotFound("There aren't any disk in this device {}".format(device))
-        return usage_time_hdd, serial_number
-
-    def get_hid(self, snapshot):
-        device = snapshot.get('device')  # type: Computer
-        components = snapshot.get('components')
-        if not device:
-            return None
-        if not components:
-            return device.hid
-        macs = [c.serial_number for c in components
-                if c.type == 'NetworkAdapter' and c.serial_number is not None]
-        macs.sort()
-        mac = ''
-        hid = device.hid
-        if not hid:
-            return hid
-        if macs:
-            mac = "-{mac}".format(mac=macs[0])
-        hid += mac
-        return hid
-
-    def live(self, snapshot):
-        """If the device.allocated == True, then this snapshot create an action live."""
-        hid = self.get_hid(snapshot)
-        if not hid or not Device.query.filter(
-            Device.hid==hid, Device.owner_id==g.user.id).count():
-            return None
-
-        device = Device.query.filter(
-            Device.hid==hid, Device.owner_id==g.user.id).one()
-
-        if not device.allocated:
-            return None
-
-        usage_time_hdd, serial_number = self.get_hdd_details(snapshot, device)
-
-        data_live = {'usage_time_hdd': usage_time_hdd,
-                     'serial_number': serial_number,
-                     'snapshot_uuid': snapshot['uuid'],
-                     'description': '',
-                     'device': device}
-
-        live = Live(**data_live)
-
-        if not usage_time_hdd:
-            warning = f"We don't found any TestDataStorage for disk sn: {serial_number}"
-            live.severity = Severity.Warning
-            live.description = warning
-            return live
-
-        live.sort_actions()
-        diff_time = live.diff_time()
-        if diff_time is None:
-            warning = "Don't exist one previous live or snapshot as reference"
-            live.description += warning
-            live.severity = Severity.Warning
-        elif diff_time < timedelta(0):
-            warning = "The difference with the last live/snapshot is negative"
-            live.description += warning
-            live.severity = Severity.Warning
-        return live
 
     def transfer_ownership(self):
         """Perform a InitTransfer action to change author_id of device"""
