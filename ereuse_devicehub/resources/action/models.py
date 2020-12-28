@@ -1321,6 +1321,7 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     @property
     def usage_time_allocate(self):
         """Show how many hours is used one device from the last check"""
+        import pdb; pdb.set_trace()
         self.sort_actions()
         if self.usage_time_hdd is None:
             return self.last_usage_time_allocate()
@@ -1350,7 +1351,6 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         return timedelta(0)
 
     def diff_time(self):
-        import pdb; pdb.set_trace()
         for e in self.actions:
             if e.created > self.created:
                 continue

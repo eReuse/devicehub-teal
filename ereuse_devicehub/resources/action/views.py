@@ -121,6 +121,7 @@ class LiveView(View):
         """We get the liftime and serial_number of the disk"""
         usage_time_hdd = None
         serial_number = None
+        import pdb; pdb.set_trace()
         for hd in snapshot['components']:
             if not isinstance(hd, DataStorage):
                 continue
@@ -174,6 +175,7 @@ class LiveView(View):
         if not device.allocated:
             raise ValidationError('Sorry this device is not allocated.')
 
+        import pdb; pdb.set_trace()
         usage_time_hdd, serial_number = self.get_hdd_details(snapshot, device)
 
         data_live = {'usage_time_hdd': usage_time_hdd,
