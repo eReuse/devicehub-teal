@@ -454,12 +454,10 @@ def test_live_search_last_allocate(user: UserClient, app: Devicehub):
     hdd_action['lifetime'] += 1000
     acer.pop('elapsed')
     acer['licence_version'] = '1.0.0'
-    import pdb; pdb.set_trace()
     live, _ = user.post(acer, res=models.Live)
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec4"
     actions = [a for a in acer['components'][7]['actions'] if a['type'] != 'TestDataStorage']
     acer['components'][7]['actions'] = actions
-    import pdb; pdb.set_trace()
     live, _ = user.post(acer, res=models.Live)
     assert live['usageTimeAllocate'] == 1000
 

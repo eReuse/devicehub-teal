@@ -432,10 +432,6 @@ class Live(ActionWithOneDevice):
                          description='The software that generated this Snapshot.')
     version = Version(required=True, description='The version of the software.')
     final_user_code = SanitizedStr(data_key="finalUserCode", dump_only=True)
-    software = EnumField(SnapshotSoftware,
-                         required=True,
-                         description='The software that generated this Snapshot.')
-    version = Version(required=True, description='The version of the software.')
     licence_version = Version(required=True, description='The version of the software.')
     components = NestedOn(s_device.Component,
                           many=True,
@@ -443,7 +439,8 @@ class Live(ActionWithOneDevice):
                                       'at the moment of this Snapshot.'
                                       'Order is preserved, so the component num 0 when'
                                       'submitting is the component num 0 when returning it back.')
-    usage_time_allocate = TimeDelta(data_key='usageTimeAllocate', required=False,)
+    usage_time_allocate = TimeDelta(data_key='usageTimeAllocate', required=False,
+                                    precision=TimeDelta.HOURS, dump_only=True)
 
 
 class Organize(ActionWithMultipleDevices):
