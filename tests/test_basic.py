@@ -105,6 +105,8 @@ def test_api_docs(client: Client):
         '/allocates/',
         '/deallocates/',
         '/metrics/',
+        '/licences/',
+        '/lives/',
     }
     assert docs['info'] == {'title': 'Devicehub', 'version': '0.2'}
     assert docs['components']['securitySchemes']['bearerAuth'] == {

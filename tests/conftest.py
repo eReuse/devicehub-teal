@@ -31,6 +31,7 @@ class TestConfig(DevicehubConfig):
     TESTING = True
     SERVER_NAME = 'localhost'
     TMP_SNAPSHOTS = '/tmp/snapshots'
+    TMP_LIVES = '/tmp/lives'
 
 
 @pytest.fixture(scope='session')

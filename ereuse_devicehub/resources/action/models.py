@@ -1304,6 +1304,9 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     serial_number.comment = """The serial number of the Hard Disk in lower case."""
     usage_time_hdd = Column(Interval, nullable=True)
     snapshot_uuid = Column(UUID(as_uuid=True))
+    software = Column(DBEnum(SnapshotSoftware), nullable=False)
+    software_version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)
+    licence_version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)
 
     @property
     def final_user_code(self):

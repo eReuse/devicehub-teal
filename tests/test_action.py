@@ -1,4 +1,7 @@
+import os
 import ipaddress
+import json
+import shutil
 import copy
 import pytest
 
@@ -12,7 +15,7 @@ from sqlalchemy.util import OrderedSet
 from teal.enums import Currency, Subdivision
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.client import UserClient
+from ereuse_devicehub.client import UserClient, Client
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.action import models
@@ -248,7 +251,7 @@ def test_generic_action(action_model_state: Tuple[models.Action, states.Trading]
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_live(user: UserClient, app: Devicehub):
+def test_live(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
@@ -262,11 +265,12 @@ def test_live(user: UserClient, app: Devicehub):
     }
 
     user.post(res=models.Allocate, data=post_request)
-    acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
     hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
     hdd_action['lifetime'] += 1000
-    snapshot, _ = user.post(acer, res=models.Snapshot)
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    snapshot, _ = client.post(acer, res=models.Live)
     db_device = Device.query.filter_by(id=1).one()
     action_live = [a for a in db_device.actions if a.type == 'Live']
     assert len(action_live) == 1
@@ -274,11 +278,12 @@ def test_live(user: UserClient, app: Devicehub):
     assert action_live[0].usage_time_allocate == timedelta(hours=1000)
     assert action_live[0].final_user_code == post_request['finalUserCode']
     assert action_live[0].serial_number == 'wd-wx11a80w7430'
+    assert action_live[0].licence_version == '1.0'
     assert str(action_live[0].snapshot_uuid) == acer['uuid']
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_live_without_TestDataStorage(user: UserClient, app: Devicehub):
+def test_live_without_TestDataStorage(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it.
        If the live don't have a TestDataStorage, then save live and response None
     """
@@ -297,9 +302,9 @@ def test_live_without_TestDataStorage(user: UserClient, app: Devicehub):
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     actions = [a for a in acer['components'][7]['actions'] if a['type'] != 'TestDataStorage']
     acer['components'][7]['actions'] = actions
-    live, _ = user.post(acer, res=models.Snapshot)
-    assert live['type'] == 'Live'
-    assert live['serialNumber'] == 'wd-wx11a80w7430'
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    live, _ = client.post(acer, res=models.Live)
     assert live['severity'] == 'Warning'
     description = "We don't found any TestDataStorage for disk sn: wd-wx11a80w7430"
     assert live['description'] == description
@@ -309,7 +314,7 @@ def test_live_without_TestDataStorage(user: UserClient, app: Devicehub):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_live_without_hdd_1(user: UserClient, app: Devicehub):
+def test_live_without_hdd_1(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it.
        The snapshot have hdd but the live no, and response 404
     """
@@ -328,13 +333,15 @@ def test_live_without_hdd_1(user: UserClient, app: Devicehub):
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     components = [a for a in acer['components'] if a['type'] != 'HardDrive']
     acer['components'] = components
-    response, _ = user.post(acer, res=models.Snapshot, status=404)
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    response, _ = client.post(acer, res=models.Live, status=404)
     assert "The There aren't any disk in this device" in response['message']
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_live_without_hdd_2(user: UserClient, app: Devicehub):
+def test_live_without_hdd_2(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it.
        The snapshot haven't hdd and the live neither, and response 404
     """
@@ -353,13 +360,15 @@ def test_live_without_hdd_2(user: UserClient, app: Devicehub):
 
     user.post(res=models.Allocate, data=post_request)
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
-    response, _ = user.post(acer, res=models.Snapshot, status=404)
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    response, _ = client.post(acer, res=models.Live, status=404)
     assert "The There aren't any disk in this device" in response['message']
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_live_without_hdd_3(user: UserClient, app: Devicehub):
+def test_live_without_hdd_3(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it.
        The snapshot haven't hdd and the live have, and save the live
        with usage_time_allocate == 0
@@ -380,9 +389,9 @@ def test_live_without_hdd_3(user: UserClient, app: Devicehub):
 
     user.post(res=models.Allocate, data=post_request)
     acer = file('acer.happy.battery.snapshot')
-    live, _ = user.post(acer, res=models.Snapshot)
-    assert live['type'] == 'Live'
-    assert live['serialNumber'] == 'wd-wx11a80w7430'
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    live, _ = client.post(acer, res=models.Live)
     assert live['severity'] == 'Warning'
     description = "Don't exist one previous live or snapshot as reference"
     assert live['description'] == description
@@ -393,7 +402,7 @@ def test_live_without_hdd_3(user: UserClient, app: Devicehub):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_live_with_hdd_with_old_time(user: UserClient, app: Devicehub):
+def test_live_with_hdd_with_old_time(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it.
        The snapshot hdd have a lifetime higher than lifetime of the live action
        save the live with usage_time_allocate == 0
@@ -414,9 +423,9 @@ def test_live_with_hdd_with_old_time(user: UserClient, app: Devicehub):
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     action = [a for a in acer['components'][7]['actions'] if a['type'] == 'TestDataStorage']
     action[0]['lifetime'] -= 100
-    live, _ = user.post(acer, res=models.Snapshot)
-    assert live['type'] == 'Live'
-    assert live['serialNumber'] == 'wd-wx11a80w7430'
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    live, _ = client.post(acer, res=models.Live)
     assert live['severity'] == 'Warning'
     description = "The difference with the last live/snapshot is negative"
     assert live['description'] == description
@@ -427,13 +436,12 @@ def test_live_with_hdd_with_old_time(user: UserClient, app: Devicehub):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_live_search_last_allocate(user: UserClient, app: Devicehub):
+def test_live_search_last_allocate(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it.
     """
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=1).one()
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
                     "finalUserCode": "abcdefjhi",
@@ -446,12 +454,65 @@ def test_live_search_last_allocate(user: UserClient, app: Devicehub):
     hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
     hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
     hdd_action['lifetime'] += 1000
-    live, _ = user.post(acer, res=models.Snapshot)
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    live, _ = client.post(acer, res=models.Live)
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec4"
     actions = [a for a in acer['components'][7]['actions'] if a['type'] != 'TestDataStorage']
     acer['components'][7]['actions'] = actions
-    live, _ = user.post(acer, res=models.Snapshot)
+    live, _ = client.post(acer, res=models.Live)
     assert live['usageTimeAllocate'] == 1000
+
+
+@pytest.mark.mvp
+def test_save_live_json(app: Devicehub, user: UserClient, client: Client):
+    """ This test check if works the function save_snapshot_in_file """
+    acer = file('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(acer, res=models.Snapshot)
+    debug = 'AAA'
+    acer['debug'] = debug
+    device_id = snapshot['device']['id']
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_request)
+    acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
+    hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
+    hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
+    hdd_action['lifetime'] += 1000
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    live, _ = client.post(acer, res=models.Live)
+
+    tmp_snapshots = app.config['TMP_LIVES']
+    path_dir_base = os.path.join(tmp_snapshots)
+
+    uuid = acer['uuid']
+    files = [x for x in os.listdir(path_dir_base) if uuid in x]
+
+    snapshot = {'debug': ''}
+    if files:
+        path_snapshot = os.path.join(path_dir_base, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        shutil.rmtree(tmp_snapshots)
+
+    assert snapshot['debug'] == debug
+    
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_licences(client: Client):
+    """Tests inserting a Live into the database and GETting it.
+    """
+    licences, _ = client.get('/licences/')
+    licences = json.loads(licences)
+    assert licences[0]['USOdyPrivacyPolicyVersion'] == 'v.1'
 
 
 @pytest.mark.mvp

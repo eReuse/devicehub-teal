@@ -13,6 +13,8 @@ ml).
 
 ## [1.0.4-beta]
 - [addend] #95 adding endpoint for check the hash of one report
+- [addend] #98 adding endpoint for insert a new live
+- [addend] #98 adding endpoint for get all licences in one query
 
 ## [1.0.3-beta]
 - [addend] #85 add mac of network adapter to device hid

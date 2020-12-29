@@ -420,10 +420,26 @@ class Prepare(ActionWithMultipleDevices):
 
 class Live(ActionWithOneDevice):
     __doc__ = m.Live.__doc__
+    """
+    The Snapshot updates the state of the device with information about
+    its components and actions performed at them.
+
+    See docs for more info.
+    """
+    uuid = UUID()
+    software = EnumField(SnapshotSoftware,
+                         required=True,
+                         description='The software that generated this Snapshot.')
+    version = Version(required=True, description='The version of the software.')
     final_user_code = SanitizedStr(data_key="finalUserCode", dump_only=True)
-    serial_number = SanitizedStr(data_key="serialNumber", dump_only=True)
-    usage_time_hdd = TimeDelta(data_key="usageTimeHdd", precision=TimeDelta.HOURS, dump_only=True)
-    usage_time_allocate = TimeDelta(data_key="usageTimeAllocate", 
+    licence_version = Version(required=True, description='The version of the software.')
+    components = NestedOn(s_device.Component,
+                          many=True,
+                          description='A list of components that are inside of the device'
+                                      'at the moment of this Snapshot.'
+                                      'Order is preserved, so the component num 0 when'
+                                      'submitting is the component num 0 when returning it back.')
+    usage_time_allocate = TimeDelta(data_key='usageTimeAllocate', required=False,
                                     precision=TimeDelta.HOURS, dump_only=True)
 
 
