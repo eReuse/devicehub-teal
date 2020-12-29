@@ -6,21 +6,17 @@ import shutil
 from datetime import datetime, timedelta
 from distutils.version import StrictVersion
 from uuid import UUID
-from flask.json import jsonify
 
-from flask import current_app as app, request, g, redirect
+from flask import current_app as app, request, g
 from sqlalchemy.util import OrderedSet
 from teal.marshmallow import ValidationError
 from teal.resource import View
 from teal.db import ResourceNotFound
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Device, Computer
-from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest, \
-    InitTransfer
 from ereuse_devicehub.query import things_response
-from ereuse_devicehub.resources.action.models import (Action, RateComputer, Snapshot, VisualTest, 
-    InitTransfer, Live, Allocate, Deallocate)
+from ereuse_devicehub.resources.action.models import (Action, RateComputer, Snapshot, VisualTest,
+                                                      InitTransfer, Live, Allocate, Deallocate)
 from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
@@ -29,7 +25,7 @@ from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
 
-def save_json(req_json, tmp_snapshots, user):
+def save_json(req_json, tmp_snapshots, user, live=False):
     """
     This function allow save a snapshot in json format un a TMP_SNAPSHOTS directory
     The file need to be saved with one name format with the stamptime and uuid joins
@@ -44,6 +40,8 @@ def save_json(req_json, tmp_snapshots, user):
 
     name_file = f"{year}-{month}-{day}-{hour}-{minutes}_{user}_{uuid}.json"
     path_dir_base = os.path.join(tmp_snapshots, user)
+    if live:
+        path_dir_base = tmp_snapshots
     path_errors = os.path.join(path_dir_base, 'errors')
     path_fixeds = os.path.join(path_dir_base, 'fixeds')
     path_name = os.path.join(path_errors, name_file)
@@ -58,11 +56,13 @@ def save_json(req_json, tmp_snapshots, user):
     return path_name
 
 
-def move_json(tmp_snapshots, path_name, user):
+def move_json(tmp_snapshots, path_name, user, live=False):
     """
     This function move the json than it's correct
     """
     path_dir_base = os.path.join(tmp_snapshots, user)
+    if live:
+        path_dir_base = tmp_snapshots
     if os.path.isfile(path_name):
         shutil.copy(path_name, path_dir_base)
         os.remove(path_name)
@@ -105,16 +105,17 @@ class LiveView(View):
     def post(self):
         """Posts an action."""
         res_json = request.get_json(validate=False)
-        tmp_snapshots = app.config['TMP_SNAPSHOTS']
-        path_live = save_json(res_json, tmp_snapshots, g.user.email)
-        res_json_valid = request.get_json()
+        tmp_snapshots = app.config['TMP_LIVES']
+        path_live = save_json(res_json, tmp_snapshots, '', live=True)
+        res_json.pop('debug', None)
+        res_json_valid = self.schema.load(res_json)
         live = self.live(res_json_valid)
         db.session.add(live)
         db.session().final_flush()
         ret = self.schema.jsonify(live)
         ret.status_code = 201
         db.session.commit()
-        move_json(tmp_snapshots, path_live, g.user.email)
+        move_json(tmp_snapshots, path_live, '', live=True)
         return ret
 
     def get_hdd_details(self, snapshot, device):
@@ -163,11 +164,11 @@ class LiveView(View):
         """If the device.allocated == True, then this snapshot create an action live."""
         hid = self.get_hid(snapshot)
         if not hid or not Device.query.filter(
-            Device.hid==hid, Device.owner_id==g.user.id).count():
+            Device.hid==hid).count():
             raise ValidationError('Device not exist.')
 
         device = Device.query.filter(
-            Device.hid==hid, Device.owner_id==g.user.id).one()
+            Device.hid==hid).one()
         # Is not necessary
         if not device:
             raise ValidationError('Device not exist.')
@@ -183,6 +184,8 @@ class LiveView(View):
                      'software': snapshot['software'],
                      'software_version': snapshot['version'],
                      'licence_version': snapshot['licence_version'],
+                     'author_id': device.owner_id,
+                     'agent_id': device.owner.individual.id,
                      'device': device}
 
         live = Live(**data_live)

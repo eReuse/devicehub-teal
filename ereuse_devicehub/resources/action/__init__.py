@@ -217,6 +217,7 @@ class PrepareDef(ActionDef):
 class LiveDef(ActionDef):
     VIEW = LiveView
     SCHEMA = schemas.Live
+    AUTH = False
 
 
 class ReserveDef(ActionDef):
