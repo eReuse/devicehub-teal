@@ -7,7 +7,9 @@ class LicenceView(View):
     def get(self, *args, **kwargs):
         """Get version of DeviceHub and ereuse-tag."""
 
-        with open('licences.txt') as f:
+        app = self.resource_def.app
+        path_licences = app.config['LICENCES']
+        with open(path_licences) as f:
             licences = f.read()
 
         ret = jsonify(licences)

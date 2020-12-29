@@ -51,6 +51,7 @@ class DevicehubConfig(Config):
 
     TMP_SNAPSHOTS = config('TMP_SNAPSHOTS', '/tmp/snapshots')
     TMP_LIVES = config('TMP_LIVES', '/tmp/lives')
+    LICENCES = config('LICENCES', './licences.txt')
     """This var is for save a snapshots in json format when fail something"""
     API_DOC_CONFIG_TITLE = 'Devicehub'
     API_DOC_CONFIG_VERSION = '0.2'
