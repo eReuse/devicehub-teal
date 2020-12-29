@@ -29,21 +29,23 @@ def test_simple_metrics(user: UserClient):
     hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
     hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
     hdd_action['powerCycleCount'] += 1000
-    user.post(acer, res=ma.Snapshot)
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    user.post(acer, res=ma.Live)
 
     # Create a live
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec4"
     hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
     hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
     hdd_action['powerCycleCount'] += 1000
-    user.post(acer, res=ma.Snapshot)
+    user.post(acer, res=ma.Live)
 
     # Create an other live
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec5"
     hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
     hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
     hdd_action['powerCycleCount'] += 1000
-    user.post(acer, res=ma.Snapshot)
+    user.post(acer, res=ma.Live)
 
     # Check metrics
     metrics = {'allocateds': 1, 'live': 1}
@@ -72,20 +74,22 @@ def test_second_hdd_metrics(user: UserClient):
     hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
     hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
     hdd_action['powerCycleCount'] += 1000
-    user.post(acer, res=ma.Snapshot)
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    user.post(acer, res=ma.Live)
 
     # Create a live
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec4"
     hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
     hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
     hdd_action['powerCycleCount'] += 1000
-    user.post(acer, res=ma.Snapshot)
+    user.post(acer, res=ma.Live)
 
     # Create a second device
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec5"
     hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
     hdd['serialNumber'] = 'WD-WX11A80W7440'
-    user.post(acer, res=ma.Snapshot)
+    user.post(acer, res=ma.Live)
 
     # Check metrics if we change the hdd we need a result of one device
     metrics = {'allocateds': 1, 'live': 1}
