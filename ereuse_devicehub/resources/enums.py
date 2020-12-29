@@ -13,6 +13,7 @@ class SnapshotSoftware(Enum):
     AndroidApp = 'AndroidApp'
     Web = 'Web'
     DesktopApp = 'DesktopApp'
+    WorkbenchDesktop = 'WorkbenchDesktop'
 
     def __str__(self):
         return self.name
