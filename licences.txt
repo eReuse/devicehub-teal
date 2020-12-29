@@ -1,0 +1,38 @@
+[
+   {
+      "WorkbenchDesktopVersion": "v.1",
+      "USOdyPrivacyPolicyVersion": "v.1",
+      "Language": "CAT",
+      "Description": "Recollim informació bàsica bla bla bla"
+   },
+   {
+      "WorkbenchesktopVersion": "v.1",
+      "USOdyPrivacyPolicyVersion": "v.2",
+      "Language": "CAT",
+      "Description": "Recollim informació bàsica bla bla bla i a partir de tal data les dades d’hores d’ús les usem també per estimar la durabilitat"
+   },
+   {
+      "WorkbenchDesktopVersion": "v.1.1",
+      "USOdyPrivacyPolicyVersion": "v.3",
+      "Language": "CAT",
+      "Description": "Recollim informació bàsica bla bla bla pero ara també recollim la versió del sistema operatiu"
+   },
+   {
+      "WorkbenchDesktopVersion": "v.1",
+      "USOdyPrivacyPolicyVersion": "v.1",
+      "Language": "EN",
+      "Description": "We collect basic information blah blah blah"
+   },
+   {
+      "WorkbenchDesktopVersion": "v.1",
+      "USOdyPrivacyPolicyVersion": "v.2",
+      "Language": "EN",
+      "Description": "We collect basic information blah blah blah and from that date we also use the usage time data to estimate durability"
+   },
+   {
+      "WorkbenchDesktopVersion": "v.1.1",
+      "USOdyPrivacyPolicyVersion": "v.3",
+      "Language": "EN",
+      "Description": "We collect basic information blah blah blah but now we also collect the operating system version"
+   }
+]

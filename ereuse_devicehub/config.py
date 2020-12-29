@@ -14,6 +14,7 @@ from ereuse_devicehub.resources.device import definitions
 from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import PriceSoftware
 from ereuse_devicehub.resources.versions import versions
+from ereuse_devicehub.resources.licences import licences
 from ereuse_devicehub.resources.metric import definitions as metric_def
 
 
@@ -29,6 +30,7 @@ class DevicehubConfig(Config):
                                      import_resource(documents),
                                      import_resource(inventory),
                                      import_resource(versions),
+                                     import_resource(licences),
                                      import_resource(metric_def),
                                ),)
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
@@ -48,6 +50,7 @@ class DevicehubConfig(Config):
     """
 
     TMP_SNAPSHOTS = config('TMP_SNAPSHOTS', '/tmp/snapshots')
+    TMP_LIVES = config('TMP_LIVES', '/tmp/lives')
     """This var is for save a snapshots in json format when fail something"""
     API_DOC_CONFIG_TITLE = 'Devicehub'
     API_DOC_CONFIG_VERSION = '0.2'
