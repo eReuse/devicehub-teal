@@ -281,6 +281,32 @@ def test_live(user: UserClient, client: Client, app: Devicehub):
     assert action_live[0].licence_version == '1.0'
     assert str(action_live[0].snapshot_uuid) == acer['uuid']
 
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_live_example(user: UserClient, client: Client, app: Devicehub):
+    """Tests inserting a Live into the database and GETting it."""
+    acer = file('snapshotLive')
+    snapshot, _ = user.post(acer, res=models.Snapshot)
+    device_id = snapshot['device']['id']
+    db_device = Device.query.filter_by(id=1).one()
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=models.Allocate, data=post_request)
+
+    acer = file('live')
+    live, _ = client.post(acer, res=models.Live)
+    db_device = Device.query.filter_by(id=1).one()
+    action_live = [a for a in db_device.actions if a.type == 'Live']
+    assert len(action_live) == 1
+    assert str(action_live[0].snapshot_uuid) == acer['uuid']
+
+
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_without_TestDataStorage(user: UserClient, client: Client, app: Devicehub):

@@ -1,0 +1,14 @@
+{"uuid": "3b6a9288-0ba6-4bdd-862a-2b1f660e7114", "type": "Snapshot", "software": "Workbench", "version": "11.0b9", "elapsed": 8.08529806137085, "device": {"serialNumber": "Default string", "manufacturer": "System manufacturer", "sku": "SKU", "model": "To be filled by O.E.M.", "type": "Desktop", "chassis": "Tower"}, "components": [{"type": "Motherboard", "manufacturer": "ASUSTeK COMPUTER INC.", "model": "PRIME B350M-A", "serialNumber": "170398047405335"}, {"type": "Processor", "manufacturer": "AMD", "model": "AMD Ryzen 7 1700X Eight-Core Processor", "speed": 3.775, "address": 64, "cores": 8, "threads": 16,
+    "actions": [
+    {
+      "elapsed": 172,
+      "rate": 171.6818,
+      "type": "BenchmarkProcessorSysbench"
+    },
+    {
+      "elapsed": 0,
+      "rate": 6383.8,
+      "type": "BenchmarkProcessor"
+    }
+    ],
+}, {"type": "RamModule", "format": "DIMM", "size": 8192.0, "manufacturer": "G-Skill", "speed": 3000}, {"type": "RamModule", "format": "DIMM", "size": 8192.0, "manufacturer": "G-Skill", "speed": 3000}, {"type": "DataStorage", "model": "OCZ-VERTEX3", "serialNumber": "OCZ-Z497M0BE7524G5Y3", "interface": "ATA", "size": 120034, "actions": [{"type": "TestDataStorage", "powerCycleCount": 3772, "length": "Short", "status": "Completed without error", "elapsed": 0.23526978492736816}, {"type": "BenchmarkDataStorage", "writeSpeed": 665.086895851833, "readSpeed": 3148.876876875565, "elapsed": 0.45989012718200684}]}, {"type": "DataStorage", "model": "Samsung SSD 860 EVO 500GB", "serialNumber": "S3Z2NB0KB60292K", "interface": "ATA", "size": 500107, "actions": [{"type": "TestDataStorage", "powerCycleCount": 1874, "length": "Short", "status": "Completed without error", "elapsed": 0.19500422477722168}, {"type": "BenchmarkDataStorage", "writeSpeed": 668.8626650506853, "readSpeed": 3495.253333362175, "elapsed": 0.45978426933288574}]}, {"type": "GraphicCard", "manufacturer": "Advanced Micro Devices, Inc.", "model": "Radeon RX Vega"}, {"type": "NetworkAdapter", "manufacturer": "Realtek", "model": "Realtek PCIe GbE Family Controller", "serialNumber": "88:D7:F6:42:F5:03", "wireless": false, "speed": 1000}]}

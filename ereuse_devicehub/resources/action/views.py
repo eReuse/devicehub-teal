@@ -108,6 +108,8 @@ class LiveView(View):
         tmp_snapshots = app.config['TMP_LIVES']
         path_live = save_json(res_json, tmp_snapshots, '', live=True)
         res_json.pop('debug', None)
+        res_json.pop('elapsed', None)
+        res_json.pop('os', None)
         res_json_valid = self.schema.load(res_json)
         live = self.live(res_json_valid)
         db.session.add(live)

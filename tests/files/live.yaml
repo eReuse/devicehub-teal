@@ -1,0 +1,112 @@
+{
+  "uuid": "3a36788c-977a-4dca-8da6-11b2c067605d",
+  "type": "Snapshot",
+  "software": "WorkbenchDesktop",
+  "version": "1.1",
+  "os": "Windows 10",
+  "elapsed": 8.700594902038574,
+  "device": {
+    "serialNumber": "Default string",
+    "manufacturer": "System manufacturer",
+    "sku": "SKU",
+    "model": "To be filled by O.E.M.",
+    "type": "Desktop",
+    "chassis": "Tower"
+  },
+  "components": [
+    {
+      "type": "Motherboard",
+      "manufacturer": "ASUSTeK COMPUTER INC.",
+      "model": "PRIME B350M-A",
+      "serialNumber": "170398047405335"
+    },
+    {
+      "type": "Processor",
+      "manufacturer": "AMD",
+      "model": "AMD Ryzen 7 1700X Eight-Core Processor",
+      "speed": 3.775,
+      "address": 64,
+      "cores": 8,
+      "threads": 16,
+      "serialNumber": null
+    },
+    {
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 8192.0,
+      "manufacturer": "G-Skill",
+      "speed": 3000,
+      "interface": null,
+      "serialNumber": null
+    },
+    {
+      "type": "RamModule",
+      "format": "DIMM",
+      "size": 8192.0,
+      "manufacturer": "G-Skill",
+      "speed": 3000,
+      "interface": null,
+      "serialNumber": null
+    },
+    {
+      "model": "OCZ-VERTEX3",
+      "serialNumber": "OCZ-Z497M0BE7524G5Y3",
+      "interface": "ATA",
+      "size": 120034,
+      "type": "SolidStateDrive",
+      "actions": [
+        {
+          "type": "TestDataStorage",
+          "powerCycleCount": 3821,
+          "length": "Short",
+          "status": "Completed without error",
+          "elapsed": 0.23179006576538086
+        },
+        {
+          "type": "BenchmarkDataStorage",
+          "writeSpeed": 904.2566402212553,
+          "readSpeed": 3360.8205129630537,
+          "elapsed": 0.5097715854644775
+        }
+      ]
+    },
+    {
+      "model": "Samsung SSD 860 EVO 500GB",
+      "serialNumber": "S3Z2NB0KB60292K",
+      "interface": "ATA",
+      "size": 500107,
+      "type": "SolidStateDrive",
+      "actions": [
+        {
+          "type": "TestDataStorage",
+          "powerCycleCount": 1924,
+          "length": "Short",
+          "status": "Completed without error",
+          "elapsed": 0.18494343757629395
+        },
+        {
+          "type": "BenchmarkDataStorage",
+          "writeSpeed": 922.3115489498899,
+          "readSpeed": 3855.058823544439,
+          "elapsed": 0.45442771911621094
+        }
+      ]
+    },
+    {
+      "type": "GraphicCard",
+      "manufacturer": "Advanced Micro Devices, Inc.",
+      "model": "Radeon RX Vega",
+      "memory": 8190,
+      "serialNumber": null
+    },
+    {
+      "type": "NetworkAdapter",
+      "manufacturer": "Realtek",
+      "model": "Realtek PCIe GbE Family Controller",
+      "serialNumber": "88:D7:F6:42:F5:03",
+      "wireless": false,
+      "speed": 1000
+    }
+  ],
+  "licence_version": "3.0.0"
+}
