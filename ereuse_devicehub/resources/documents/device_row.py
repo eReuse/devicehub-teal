@@ -5,6 +5,7 @@ from flask import url_for
 
 from ereuse_devicehub.resources.enums import Severity
 from ereuse_devicehub.resources.device import models as d, states
+from ereuse_devicehub.resources.action import models as da
 from ereuse_devicehub.resources.action.models import (BenchmarkDataStorage, RateComputer,
                                                       TestDataStorage)
 
@@ -360,3 +361,12 @@ def get_action(component, action):
     """ Filter one action from a component or return None """
     result = [a for a in component.actions if a.type == action]
     return result[-1] if result else None
+
+
+class ActionRow(OrderedDict):
+
+    def __init__(self, action: da.Action) -> None:
+        super().__init__()
+        self.action = action
+        # General information about action
+        self['type'] = action.type

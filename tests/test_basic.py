@@ -49,6 +49,7 @@ def test_api_docs(client: Client):
         '/displays/{dev1_id}/merge/{dev2_id}',
         '/diy-and-gardenings/{dev1_id}/merge/{dev2_id}',
         '/documents/devices/',
+        '/documents/actions/',
         '/documents/erasures/',
         '/documents/lots/',
         '/documents/static/{filename}',

@@ -20,7 +20,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.device.views import DeviceView
-from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow
+from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow, ActionRow
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash
@@ -129,6 +129,32 @@ class DevicesDocumentView(DeviceView):
         output = make_response(bfile)
         insert_hash(bfile)
         output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+        output.headers['Content-type'] = 'text/csv'
+        return output
+
+
+class ActionsDocumentView(DeviceView):
+    @cache(datetime.timedelta(minutes=1))
+    def find(self, args: dict):
+        query = (x for x in self.query(args) if x.owner_id == g.user.id)
+        return self.generate_post_csv(query)
+
+    def generate_post_csv(self, query):
+        """Get device query and put information in csv format."""
+        data = StringIO()
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        first = True
+        for device in query:
+            for action in device.actions:
+                d = ActionRow(action)
+                if first:
+                    cw.writerow(d.keys())
+                    first = False
+                cw.writerow(d.values())
+        bfile = data.getvalue().encode('utf-8')
+        output = make_response(bfile)
+        insert_hash(bfile)
+        output.headers['Content-Disposition'] = 'attachment; filename=actions_export.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
 
@@ -256,3 +282,9 @@ class DocumentDef(Resource):
 
         check_view = CheckView.as_view('CheckView', definition=self, auth=app.auth)
         self.add_url_rule('/check/', defaults={}, view_func=check_view, methods=get)
+
+        actions_view = ActionsDocumentView.as_view('ActionsDocumentView', 
+                                                   definition=self, 
+                                                   auth=app.auth)
+        actions_view = app.auth.requires_auth(actions_view)
+        self.add_url_rule('/actions/', defaults=d, view_func=actions_view, methods=get)
