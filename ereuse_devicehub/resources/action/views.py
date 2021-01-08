@@ -170,7 +170,7 @@ class LiveView(View):
             raise ValidationError('Device not exist.')
 
         device = Device.query.filter(
-            Device.hid==hid).one()
+            Device.hid==hid, Device.allocated==True).one()
         # Is not necessary
         if not device:
             raise ValidationError('Device not exist.')

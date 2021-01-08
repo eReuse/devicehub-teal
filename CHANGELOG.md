@@ -15,6 +15,8 @@ ml).
 - [addend] #95 adding endpoint for check the hash of one report
 - [addend] #98 adding endpoint for insert a new live
 - [addend] #98 adding endpoint for get all licences in one query
+- [bugfix] #100 fixing bug of scheme live
+- [bugfix] #101 fixing bug when 2 users have one device and launch one live
 
 ## [1.0.3-beta]
 - [addend] #85 add mac of network adapter to device hid
