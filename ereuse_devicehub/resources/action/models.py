@@ -32,8 +32,8 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
-from teal.db import CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, \
-    POLYMORPHIC_ON, StrictVersionType, URL, check_lower, check_range
+from teal.db import (CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, 
+    POLYMORPHIC_ON, StrictVersionType, URL, check_lower, check_range, ResourceNotFound)
 from teal.enums import Country, Currency, Subdivision
 from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
@@ -542,6 +542,26 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     elapsed.comment = """For Snapshots made with Workbench, the total amount
     of time it took to complete.
     """
+
+    def get_last_lifetimes(self):
+        """We get the lifetime and serial_number of the first disk"""
+        hdds = []
+        components = copy.copy(self.components)
+        components.sort(key=lambda x: x.created)
+        for hd in components:
+            data = {'serial_number': None, 'lifetime': 0}
+            if not isinstance(hd, DataStorage):
+                continue
+
+            data['serial_number'] = hd.serial_number
+            for act in hd.actions:
+                if not act.type == "TestDataStorage":
+                    continue
+                data['lifetime'] = act.lifetime
+                break
+            hdds.append(data)
+
+        return hdds
 
     def __str__(self) -> str:
         return '{}. {} version {}.'.format(self.severity, self.software, self.version)

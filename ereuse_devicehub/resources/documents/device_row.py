@@ -365,8 +365,14 @@ def get_action(component, action):
 
 class ActionRow(OrderedDict):
 
-    def __init__(self, action: da.Action) -> None:
+    def __init__(self, allocate): 
         super().__init__()
-        self.action = action
-        # General information about action
-        self['type'] = action.type
+        # General information about allocates, deallocate and lives
+        self['Hid'] = allocate['hid']
+        self['Start'] = allocate['start']
+        self['UserCode'] = allocate['userCode']
+        self['NumUsers'] = allocate['numUsers']
+        self['AllocateLifetime'] = allocate['allocateLifetime']
+        self['Type'] = allocate['type']
+        self['LiveCreate'] = allocate['liveCreate']
+        self['LiveLifetime'] = allocate['liveLifetime']

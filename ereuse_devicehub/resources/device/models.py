@@ -1,4 +1,5 @@
 import pathlib
+import copy
 from contextlib import suppress
 from fractions import Fraction
 from itertools import chain
@@ -316,6 +317,54 @@ class Device(Thing):
 
     def _warning_actions(self, actions):
         return sorted(ev for ev in actions if ev.severity >= Severity.Warning)
+
+    def get_metrics(self):
+        """
+        This method get a list of values for calculate a metrics from a spreadsheet
+        """
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        allocates =  []
+        from ereuse_devicehub.resources.action.models import Snapshot, Allocate, Deallocate, Live
+        for act in actions:
+            if isinstance(act, Snapshot):
+                snapshot = act
+                lifestimes = snapshot.get_last_lifetimes()
+                lifetime = 0
+                if lifestimes:
+                    lifetime = lifestimes[0]['lifetime']
+
+            if isinstance(act, Allocate):
+                allo = {'type': 'Allocate',
+                        'userCode': act.final_user_code,
+                        'numUsers': act.end_users,
+                        'hid': self.hid,
+                        'liveCreate': 0,
+                        'liveLifetime': 0,
+                        'start': act.start_time,
+                        'allocateLifetime': lifetime}
+                allocates.append(allo)
+
+            if isinstance(act, Live):
+                allocate = copy.copy(allo)
+                lifetime = act.usage_time_hdd
+                allocate['type'] = 'Live'
+                allocate['liveCreate'] = act.created
+                allocate['liveLifetime'] = lifetime
+                allocates.append(allocate)
+
+            if isinstance(act, Deallocate):
+                deallo = {'type': 'Deallocate',
+                          'userCode': '',
+                          'numUsers': '',
+                          'hid': self.hid,
+                          'liveCreate': 0,
+                          'liveLifetime': lifetime,
+                          'start': act.start_time,
+                          'allocateLifetime': 0}
+                allocates.append(deallo)
+
+            return allocates
 
     def __lt__(self, other):
         return self.id < other.id

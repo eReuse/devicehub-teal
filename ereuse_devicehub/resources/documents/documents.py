@@ -145,8 +145,8 @@ class ActionsDocumentView(DeviceView):
         cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
         first = True
         for device in query:
-            for action in device.actions:
-                d = ActionRow(action)
+            for allocate in device.get_metrics():
+                d = ActionRow(allocate)
                 if first:
                     cw.writerow(d.keys())
                     first = False

@@ -124,7 +124,9 @@ class LiveView(View):
         """We get the liftime and serial_number of the disk"""
         usage_time_hdd = None
         serial_number = None
-        for hd in snapshot['components']:
+        components = [c for c in snapshot['components']]
+        components.sort(key=lambda x: x.created)
+        for hd in components:
             if not isinstance(hd, DataStorage):
                 continue
 
