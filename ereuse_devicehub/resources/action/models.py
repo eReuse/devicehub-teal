@@ -557,9 +557,9 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             for act in hd.actions:
                 if not act.type == "TestDataStorage":
                     continue
-                data['lifetime'] = act.lifetime
-                if not isinstance(act.lifetime, int):
-                    data['lifetime'] = act.lifetime.total_seconds()
+                if not act.lifetime:
+                    continue
+                data['lifetime'] = act.lifetime.total_seconds()
                 break
             hdds.append(data)
 
