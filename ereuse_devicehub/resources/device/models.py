@@ -1,4 +1,5 @@
 import pathlib
+import copy
 from contextlib import suppress
 from fractions import Fraction
 from itertools import chain
@@ -316,6 +317,57 @@ class Device(Thing):
 
     def _warning_actions(self, actions):
         return sorted(ev for ev in actions if ev.severity >= Severity.Warning)
+
+    def get_metrics(self):
+        """
+        This method get a list of values for calculate a metrics from a spreadsheet
+        """
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        allocates =  []
+        for act in actions:
+            if act.type == 'Snapshot':
+                snapshot = act
+                lifestimes = snapshot.get_last_lifetimes()
+                lifetime = 0
+                if lifestimes:
+                    lifetime = lifestimes[0]['lifetime']
+
+            if act.type == 'Allocate':
+                allo = {'type': 'Allocate',
+                        'userCode': act.final_user_code,
+                        'numUsers': act.end_users,
+                        'hid': self.hid,
+                        'liveCreate': 0,
+                        'liveLifetime': 0,
+                        'start': act.start_time,
+                        'allocateLifetime': lifetime}
+                allocates.append(allo)
+
+            if act.type == 'Live':
+                allocate = copy.copy(allo)
+                lifetime = act.usage_time_hdd.total_seconds()
+                allocate['type'] = 'Live'
+                allocate['liveCreate'] = act.created
+                for hd in lifestimes:
+                    if hd['serial_number'] == act.serial_number:
+                        lifetime = hd['lifetime']
+                        break
+                allocate['liveLifetime'] = lifetime
+                allocates.append(allocate)
+
+            if act.type == 'Deallocate':
+                deallo = {'type': 'Deallocate',
+                          'userCode': '',
+                          'numUsers': '',
+                          'hid': self.hid,
+                          'liveCreate': 0,
+                          'liveLifetime': lifetime,
+                          'start': act.start_time,
+                          'allocateLifetime': 0}
+                allocates.append(deallo)
+
+        return allocates
 
     def __lt__(self, other):
         return self.id < other.id

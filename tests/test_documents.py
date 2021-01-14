@@ -11,7 +11,7 @@ from ereuse_utils.test import ANY
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.devicehub import Devicehub
-from ereuse_devicehub.resources.action.models import Snapshot
+from ereuse_devicehub.resources.action.models import Snapshot, Allocate, Live
 from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.device import models as d
 from ereuse_devicehub.resources.lot.models import Lot
@@ -85,7 +85,7 @@ def test_erasure_certificate_wrong_id(client: Client):
 
 @pytest.mark.mvp
 def test_export_csv_permitions(user: UserClient, user2: UserClient, client: Client):
-    """Test export device information in a csv file with others users."""
+    """test export device information in a csv file with others users."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
     csv_user, _ = user.get(res=documents.DocumentDef.t,
                           item='devices/',
@@ -108,6 +108,47 @@ def test_export_csv_permitions(user: UserClient, user2: UserClient, client: Clie
 
 
 @pytest.mark.mvp
+def test_export_csv_actions(user: UserClient, user2: UserClient, client: Client):
+    """Test export device information in a csv file with others users."""
+    acer = file('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(acer, res=Snapshot)
+    device_id = snapshot['device']['id']
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=Allocate, data=post_request)
+    hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
+    hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
+    hdd_action['lifetime'] += 1000
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    snapshot, _ = client.post(acer, res=Live)
+
+    csv_user, _ = user.get(res=documents.DocumentDef.t,
+                          item='actions/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
+
+    csv_user2, _ = user2.get(res=documents.DocumentDef.t,
+                          item='actions/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
+
+    _, res = client.get(res=documents.DocumentDef.t,
+                          item='actions/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})], status=401)
+    assert res.status_code == 401
+
+    assert len(csv_user) > 0
+    assert len(csv_user2) == 0
+
+
+@pytest.mark.mvp 
 def test_export_basic_snapshot(user: UserClient):
     """Test export device information in a csv file."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)

@@ -15,6 +15,7 @@ ml).
 - [addend] #95 adding endpoint for check the hash of one report
 - [addend] #98 adding endpoint for insert a new live
 - [addend] #98 adding endpoint for get all licences in one query
+- [addend] #102 adding endpoint for download metrics
 - [bugfix] #100 fixing bug of scheme live
 - [bugfix] #101 fixing bug when 2 users have one device and launch one live
 
