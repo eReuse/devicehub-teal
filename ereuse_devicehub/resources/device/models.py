@@ -325,16 +325,15 @@ class Device(Thing):
         actions = copy.copy(self.actions)
         actions.sort(key=lambda x: x.created)
         allocates =  []
-        from ereuse_devicehub.resources.action.models import Snapshot, Allocate, Deallocate, Live
         for act in actions:
-            if isinstance(act, Snapshot):
+            if act.type == 'Snapshot':
                 snapshot = act
                 lifestimes = snapshot.get_last_lifetimes()
                 lifetime = 0
                 if lifestimes:
                     lifetime = lifestimes[0]['lifetime']
 
-            if isinstance(act, Allocate):
+            if act.type == 'Allocate':
                 allo = {'type': 'Allocate',
                         'userCode': act.final_user_code,
                         'numUsers': act.end_users,
@@ -345,15 +344,19 @@ class Device(Thing):
                         'allocateLifetime': lifetime}
                 allocates.append(allo)
 
-            if isinstance(act, Live):
+            if act.type == 'Live':
                 allocate = copy.copy(allo)
-                lifetime = act.usage_time_hdd
+                lifetime = act.usage_time_hdd.total_seconds()
                 allocate['type'] = 'Live'
                 allocate['liveCreate'] = act.created
+                for hd in lifestimes:
+                    if hd['serial_number'] == act.serial_number:
+                        lifetime = hd['lifetime']
+                        break
                 allocate['liveLifetime'] = lifetime
                 allocates.append(allocate)
 
-            if isinstance(act, Deallocate):
+            if act.type == 'Deallocate':
                 deallo = {'type': 'Deallocate',
                           'userCode': '',
                           'numUsers': '',
@@ -364,7 +367,7 @@ class Device(Thing):
                           'allocateLifetime': 0}
                 allocates.append(deallo)
 
-            return allocates
+        return allocates
 
     def __lt__(self, other):
         return self.id < other.id
