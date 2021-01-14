@@ -346,7 +346,7 @@ class Device(Thing):
 
             if act.type == 'Live':
                 allocate = copy.copy(allo)
-                lifetime = act.usage_time_hdd
+                lifetime = act.usage_time_hdd.total_seconds()
                 allocate['type'] = 'Live'
                 allocate['liveCreate'] = act.created
                 for hd in lifestimes:
