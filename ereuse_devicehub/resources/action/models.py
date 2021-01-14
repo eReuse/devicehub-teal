@@ -546,7 +546,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     def get_last_lifetimes(self):
         """We get the lifetime and serial_number of the first disk"""
         hdds = []
-        components = copy.copy(self.components)
+        components = [c for c in self.components]
         components.sort(key=lambda x: x.created)
         for hd in components:
             data = {'serial_number': None, 'lifetime': 0}
@@ -557,7 +557,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             for act in hd.actions:
                 if not act.type == "TestDataStorage":
                     continue
-                data['lifetime'] = act.lifetime
+                data['lifetime'] = act.lifetime.total_seconds()
                 break
             hdds.append(data)
 
