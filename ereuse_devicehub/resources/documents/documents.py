@@ -231,6 +231,15 @@ class CheckView(View):
         return jsonify(result)
 
 
+class StampsView(View):
+    """
+    This view render one public ans static page for see the links for to do the check
+    of one csv file
+    """
+    def get(self):
+        return flask.render_template('documents/stamp.html')
+
+
 class DocumentDef(Resource):
     __type__ = 'Document'
     SCHEMA = None
@@ -282,6 +291,9 @@ class DocumentDef(Resource):
 
         check_view = CheckView.as_view('CheckView', definition=self, auth=app.auth)
         self.add_url_rule('/check/', defaults={}, view_func=check_view, methods=get)
+
+        stamps_view = StampsView.as_view('StampsView', definition=self, auth=app.auth)
+        self.add_url_rule('/stamps/', defaults={}, view_func=stamps_view, methods=get)
 
         actions_view = ActionsDocumentView.as_view('ActionsDocumentView', 
                                                    definition=self, 
