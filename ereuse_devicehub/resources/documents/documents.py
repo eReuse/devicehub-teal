@@ -237,7 +237,11 @@ class StampsView(View):
     of one csv file
     """
     def get(self):
-        return flask.render_template('documents/stamp.html')
+        url = urlutils.URL(request.url)
+        url.normalize()
+        url.path_parts = url.path_parts[:-2] + ['check', '']
+        url_path = url.to_text() 
+        return flask.render_template('documents/stamp.html', rq_url=url_path)
 
 
 class DocumentDef(Resource):
