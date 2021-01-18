@@ -55,6 +55,7 @@ def test_api_docs(client: Client):
         '/documents/static/{filename}',
         '/documents/stock/',
         '/documents/check/',
+        '/documents/stamps/',
         '/drills/{dev1_id}/merge/{dev2_id}',
         '/graphic-cards/{dev1_id}/merge/{dev2_id}',
         '/hard-drives/{dev1_id}/merge/{dev2_id}',
