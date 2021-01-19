@@ -179,7 +179,7 @@ def test_live_export_csv2(user: UserClient, client: Client, app: Devicehub):
 def test_live_example2(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
     acer = file('acer-happy.snapshot-test1')
-    snapshot, _ = user.post(acer, res=models.Snapshot)
+    snapshot, _ = user.post(acer, res=Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
@@ -188,11 +188,11 @@ def test_live_example2(user: UserClient, client: Client, app: Devicehub):
                     "endTime": "2020-12-01T02:00:00+00:00"
     }
 
-    user.post(res=models.Allocate, data=post_request)
+    user.post(res=Allocate, data=post_request)
 
     acer = file('acer-happy.live-test1')
-    live, _ = client.post(acer, res=models.Live)
-    db_device = Device.query.filter_by(id=device_id).one()
+    live, _ = client.post(acer, res=Live)
+    db_device = d.Device.query.filter_by(id=device_id).one()
     action_live = [a for a in db_device.actions if a.type == 'Live']
     assert len(action_live) == 1
     assert str(action_live[0].snapshot_uuid) == acer['uuid']
