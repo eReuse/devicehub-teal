@@ -370,9 +370,9 @@ class ActionRow(OrderedDict):
         # General information about allocates, deallocate and lives
         self['Hid'] = allocate['hid']
         self['Start'] = allocate['start']
-        self['UserCode'] = allocate['userCode']
-        self['NumUsers'] = allocate['numUsers']
-        self['AllocateLifetime'] = allocate['allocateLifetime']
+        self['finalUserCode'] = allocate['finalUserCode']
+        self['numEndUsers'] = allocate['numEndUsers']
+        self['usageTimeAllocate'] = allocate['usageTimeAllocate']
         self['Type'] = allocate['type']
         self['LiveCreate'] = allocate['liveCreate']
-        self['LiveLifetime'] = allocate['liveLifetime']
+        self['usageTimeHdd'] = allocate['usageTimeHdd']
