@@ -559,7 +559,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
                     continue
                 if not act.lifetime:
                     continue
-                data['lifetime'] = act.lifetime.total_seconds()
+                data['lifetime'] = act.lifetime.total_seconds()/3600
                 break
             hdds.append(data)
 
@@ -1370,6 +1370,17 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
                     continue
                 return e.usage_time_allocate
         return timedelta(0)
+
+    def get_last_snapshot_lifetime(self):
+        for e in self.actions:
+            if e.created > self.created:
+                continue
+
+            if isinstance(e, Snapshot):
+                last_time = self.get_last_lifetime(e)
+                if not last_time:
+                    continue
+                return last_time
 
     def diff_time(self):
         for e in self.actions:

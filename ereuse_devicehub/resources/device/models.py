@@ -335,36 +335,31 @@ class Device(Thing):
 
             if act.type == 'Allocate':
                 allo = {'type': 'Allocate',
-                        'userCode': act.final_user_code,
-                        'numUsers': act.end_users,
+                        'finalUserCode': act.final_user_code,
+                        'numEndUsers': act.end_users,
                         'hid': self.hid,
                         'liveCreate': 0,
-                        'liveLifetime': 0,
+                        'usageTimeHdd': 0,
                         'start': act.start_time,
-                        'allocateLifetime': lifetime}
+                        'usageTimeAllocate': lifetime}
                 allocates.append(allo)
 
             if act.type == 'Live':
                 allocate = copy.copy(allo)
-                lifetime = act.usage_time_hdd.total_seconds()
                 allocate['type'] = 'Live'
                 allocate['liveCreate'] = act.created
-                for hd in lifestimes:
-                    if hd['serial_number'] == act.serial_number:
-                        lifetime = hd['lifetime']
-                        break
-                allocate['liveLifetime'] = lifetime
+                allocate['usageTimeHdd'] = act.usage_time_hdd.total_seconds()/3600
                 allocates.append(allocate)
 
             if act.type == 'Deallocate':
                 deallo = {'type': 'Deallocate',
-                          'userCode': '',
-                          'numUsers': '',
+                          'finalUserCode': '',
+                          'numEndUsers': '',
                           'hid': self.hid,
                           'liveCreate': 0,
-                          'liveLifetime': lifetime,
+                          'usageTimeHdd': lifetime,
                           'start': act.start_time,
-                          'allocateLifetime': 0}
+                          'usageTimeAllocate': 0}
                 allocates.append(deallo)
 
         return allocates

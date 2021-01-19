@@ -148,6 +148,56 @@ def test_export_csv_actions(user: UserClient, user2: UserClient, client: Client)
     assert len(csv_user2) == 0
 
 
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_live_export_csv2(user: UserClient, client: Client, app: Devicehub):
+    """Tests inserting a Live into the database and GETting it."""
+    acer = file('acer-happy.snapshot-test1')
+    snapshot, _ = user.post(acer, res=Snapshot)
+    device_id = snapshot['device']['id']
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=Allocate, data=post_request)
+
+    acer = file('acer-happy.live-test1')
+    live, _ = client.post(acer, res=Live)
+    csv_user, _ = user.get(res=documents.DocumentDef.t,
+                          item='actions/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
+
+    assert "4692" in csv_user
+    assert "8692" in csv_user
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_live_example2(user: UserClient, client: Client, app: Devicehub):
+    """Tests inserting a Live into the database and GETting it."""
+    acer = file('acer-happy.snapshot-test1')
+    snapshot, _ = user.post(acer, res=Snapshot)
+    device_id = snapshot['device']['id']
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=Allocate, data=post_request)
+
+    acer = file('acer-happy.live-test1')
+    live, _ = client.post(acer, res=Live)
+    db_device = d.Device.query.filter_by(id=device_id).one()
+    action_live = [a for a in db_device.actions if a.type == 'Live']
+    assert len(action_live) == 1
+    assert str(action_live[0].snapshot_uuid) == acer['uuid']
+
+
 @pytest.mark.mvp 
 def test_export_basic_snapshot(user: UserClient):
     """Test export device information in a csv file."""
