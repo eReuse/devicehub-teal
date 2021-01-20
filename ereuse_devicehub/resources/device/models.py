@@ -335,6 +335,7 @@ class Device(Thing):
 
             if act.type == 'Allocate':
                 allo = {'type': 'Allocate',
+                        'systemId': self.id,
                         'finalUserCode': act.final_user_code,
                         'numEndUsers': act.end_users,
                         'hid': self.hid,
@@ -353,6 +354,7 @@ class Device(Thing):
 
             if act.type == 'Deallocate':
                 deallo = {'type': 'Deallocate',
+                          'systemId': self.id,
                           'finalUserCode': '',
                           'numEndUsers': '',
                           'hid': self.hid,

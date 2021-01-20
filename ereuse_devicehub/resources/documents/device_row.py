@@ -368,11 +368,12 @@ class ActionRow(OrderedDict):
     def __init__(self, allocate): 
         super().__init__()
         # General information about allocates, deallocate and lives
+        self['SystemId'] = allocate['systemId']
         self['Hid'] = allocate['hid']
         self['Start'] = allocate['start']
-        self['finalUserCode'] = allocate['finalUserCode']
-        self['numEndUsers'] = allocate['numEndUsers']
-        self['usageTimeAllocate'] = allocate['usageTimeAllocate']
+        self['FinalUserCode'] = allocate['finalUserCode']
+        self['NumEndUsers'] = allocate['numEndUsers']
+        self['UsageTimeAllocate'] = allocate['usageTimeAllocate']
         self['Type'] = allocate['type']
         self['LiveCreate'] = allocate['liveCreate']
-        self['usageTimeHdd'] = allocate['usageTimeHdd']
+        self['UsageTimeHdd'] = allocate['usageTimeHdd']

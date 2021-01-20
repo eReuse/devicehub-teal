@@ -173,6 +173,7 @@ def test_live_export_csv2(user: UserClient, client: Client, app: Devicehub):
 
     assert "4692" in csv_user
     assert "8692" in csv_user
+    assert "SystemId" in csv_user
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
