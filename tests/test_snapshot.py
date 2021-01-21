@@ -764,7 +764,9 @@ def test_snapshot_bug_smallint_hdd(app: Devicehub, user: UserClient):
     snapshot_file = file('asus-eee-1000h.snapshot.bug1857')
     snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
 
-    # assert '2001-01-01T00:00:00+00:00' in end_times
+    act = [act for act in snapshot['actions'] if act['type'] == 'TestDataStorage'][0]
+    assert act['currentPendingSectorCount'] == 473302660 
+    assert act['offlineUncorrectable'] == 182042944
 
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
     shutil.rmtree(tmp_snapshots)
