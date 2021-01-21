@@ -754,3 +754,19 @@ def test_snapshot_not_failed_end_time_bug(app: Devicehub, user: UserClient):
 
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
     shutil.rmtree(tmp_snapshots)
+
+
+@pytest.mark.mvp
+def test_snapshot_bug_smallint_hdd(app: Devicehub, user: UserClient):
+    """ This test check if the end_time != 0001-01-01 00:00:00+00:00
+    and then we get a /devices, this create a crash
+    """
+    snapshot_file = file('asus-eee-1000h.snapshot.bug1857')
+    snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
+
+    act = [act for act in snapshot['actions'] if act['type'] == 'TestDataStorage'][0]
+    assert act['currentPendingSectorCount'] == 473302660 
+    assert act['offlineUncorrectable'] == 182042944
+
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    shutil.rmtree(tmp_snapshots)
