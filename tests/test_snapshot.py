@@ -372,6 +372,28 @@ def test_snapshot_component_containing_components(user: UserClient):
 
 
 @pytest.mark.mvp
+def test_ereuse_price(user: UserClient):
+    """Tests a Snapshot with EraseSectors and the resulting privacy
+    properties.
+
+    This tests ensures that only the last erasure is picked up, as
+    erasures have always custom endTime value set.
+    """
+    s = file('erase-sectors.snapshot')
+    assert s['components'][0]['actions'][0]['endTime'] == '2018-06-01T09:12:06+02:00'
+    s['device']['type'] = 'Server'
+    snapshot = snapshot_and_check(user, s, action_types=(
+        EraseSectors.t,
+        BenchmarkDataStorage.t,
+        BenchmarkProcessor.t,
+        RateComputer.t,
+        EreusePrice.t
+    ), perform_second_snapshot=False)
+    ereuse_price = snapshot['actions'][-1]
+    assert len(ereuse_price) > 0
+
+
+@pytest.mark.mvp
 def test_erase_privacy_standards_endtime_sort(user: UserClient):
     """Tests a Snapshot with EraseSectors and the resulting privacy
     properties.
