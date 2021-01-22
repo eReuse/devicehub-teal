@@ -1193,7 +1193,8 @@ class EreusePrice(Price):
     MULTIPLIER = {
         Computer: 20,
         Desktop: 20,
-        Laptop: 30
+        Laptop: 30,
+        Server: 40
     }
 
     class Type:
