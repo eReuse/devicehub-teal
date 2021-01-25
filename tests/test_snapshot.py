@@ -201,11 +201,13 @@ def test_snapshot_component_add_remove(user: UserClient):
     # PC1
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c3s')
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    assert tuple(e['type'] for e in pc1['actions']) == ('BenchmarkProcessor', 'Snapshot', 'RateComputer', 'Remove')
+    assert tuple(e['type'] for e in pc1['actions']) == ('Snapshot', 'RateComputer', 'Remove')
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p1c2s', 'p2c1s')
     assert all(c['parent'] == pc2_id for c in pc2['components'])
-    assert tuple(e['type'] for e in pc2['actions']) == ('Snapshot', 'RateComputer')
+    assert tuple(e['type'] for e in pc2['actions']) == (
+        'BenchmarkProcessor', 'Snapshot', 'RateComputer', 'Snapshot', 'Remove', 'RateComputer'
+    )
     # p1c2s has two Snapshots, a Remove and an Add
     p1c2s, _ = user.get(res=m.Device, item=pc2['components'][0]['id'])
     assert tuple(e['type'] for e in p1c2s['actions']) == (
@@ -230,12 +232,16 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c2s', 'p1c3s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
     assert tuple(get_actions_info(pc1['actions'])) == (
-        # id, type, components, snapshot
-        ('BenchmarkProcessor', []),  # first BenchmarkProcessor
-        ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # first Snapshot1
+        ('BenchmarkProcessor', []), 
+        ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']), 
+        ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']), 
+        ('RateComputer', ['p1c1s', 'p1c2s', 'p1c3s']), 
         ('RateComputer', ['p1c1s', 'p1c2s', 'p1c3s']),
-        ('Remove', ['p1c2s']),  # Remove Processor in Snapshot2
-        ('Snapshot', ['p1c2s', 'p1c3s']),  # This Snapshot3
+        ('Snapshot', ['p1c2s', 'p2c1s']), 
+        ('Remove', ['p1c2s']), ('Remove', ['p1c2s']), 
+        ('RateComputer', ['p1c2s', 'p2c1s']), 
+        ('Snapshot', ['p1c2s', 'p1c3s']), 
+        ('Remove', ['p1c2s']), 
         ('RateComputer', ['p1c2s', 'p1c3s'])
     )
     # PC2
@@ -480,8 +486,9 @@ def test_test_data_storage(user: UserClient):
     assert incidence_test['severity'] == 'Error'
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_erase(user: UserClient):
+def test_erase_changing_hdd_between_pcs(user: UserClient):
     """Tests when we erase one device and next change the disk in other device we 
     want see in the second device the disks erase."""
     s1 = file('erase-sectors-2-hdd.snapshot')
