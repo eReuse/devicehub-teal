@@ -13,6 +13,7 @@ from uuid import uuid4
 from boltons import urlutils
 from teal.db import UniqueViolation, DBError
 from teal.marshmallow import ValidationError
+from ereuse_utils.test import ANY
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
@@ -29,7 +30,9 @@ from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.action.views import save_json
+from ereuse_devicehub.resources.documents import documents
 from tests.conftest import file
+from tests import conftest
 
 
 @pytest.mark.mvp
@@ -475,6 +478,31 @@ def test_test_data_storage(user: UserClient):
         if ev.get('reallocatedSectorCount', None) == 15
     )
     assert incidence_test['severity'] == 'Error'
+
+
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_erase(user: UserClient):
+    """Tests when we erase one device and next change the disk in other device we 
+    want see in the second device the disks erase."""
+    s1 = file('erase-sectors-2-hdd.snapshot')
+    s2 = file('erase-sectors-2-hdd.snapshot2')
+    snapshot1, _ = user.post(res=Snapshot, data=s1)
+    snapshot2, _ = user.post(res=Snapshot, data=s2)
+    dev1 = m.Device.query.filter_by(id=snapshot1['device']['id']).one()
+    dev2 = m.Device.query.filter_by(id=snapshot2['device']['id']).one()
+    tag1 = Tag(id='dev1', device=dev1)
+    tag2 = Tag(id='dev2', device=dev2)
+    db.session.commit()
+
+    assert dev2.components[1].actions[2].parent == dev2
+    doc1, response = user.get(res=documents.DocumentDef.t,
+                               item='erasures/{}'.format(dev1.id),
+                               accept=ANY)
+    doc2, response = user.get(res=documents.DocumentDef.t,
+                               item='erasures/{}'.format(dev2.id),
+                               accept=ANY)
+    assert not 'dev1' in doc2
+    assert 'dev2' in doc2
 
 
 def assert_similar_device(device1: dict, device2: dict):
