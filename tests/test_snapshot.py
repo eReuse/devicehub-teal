@@ -201,13 +201,11 @@ def test_snapshot_component_add_remove(user: UserClient):
     # PC1
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c3s')
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    assert tuple(e['type'] for e in pc1['actions']) == ('Snapshot', 'RateComputer', 'Remove')
+    assert tuple(e['type'] for e in pc1['actions']) == ('BenchmarkProcessor', 'Snapshot', 'RateComputer', 'Remove')
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p1c2s', 'p2c1s')
     assert all(c['parent'] == pc2_id for c in pc2['components'])
-    assert tuple(e['type'] for e in pc2['actions']) == (
-        'BenchmarkProcessor', 'Snapshot', 'RateComputer', 'Snapshot', 'Remove', 'RateComputer'
-    )
+    assert tuple(e['type'] for e in pc2['actions']) == ('Snapshot', 'RateComputer')
     # p1c2s has two Snapshots, a Remove and an Add
     p1c2s, _ = user.get(res=m.Device, item=pc2['components'][0]['id'])
     assert tuple(e['type'] for e in p1c2s['actions']) == (
@@ -232,16 +230,12 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c2s', 'p1c3s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
     assert tuple(get_actions_info(pc1['actions'])) == (
-        ('BenchmarkProcessor', []), 
-        ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']), 
-        ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']), 
-        ('RateComputer', ['p1c1s', 'p1c2s', 'p1c3s']), 
+        # id, type, components, snapshot
+        ('BenchmarkProcessor', []),  # first BenchmarkProcessor
+        ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # first Snapshot1
         ('RateComputer', ['p1c1s', 'p1c2s', 'p1c3s']),
-        ('Snapshot', ['p1c2s', 'p2c1s']), 
-        ('Remove', ['p1c2s']), ('Remove', ['p1c2s']), 
-        ('RateComputer', ['p1c2s', 'p2c1s']), 
-        ('Snapshot', ['p1c2s', 'p1c3s']), 
-        ('Remove', ['p1c2s']), 
+        ('Remove', ['p1c2s']),  # Remove Processor in Snapshot2
+        ('Snapshot', ['p1c2s', 'p1c3s']),  # This Snapshot3
         ('RateComputer', ['p1c2s', 'p1c3s'])
     )
     # PC2
@@ -486,32 +480,6 @@ def test_test_data_storage(user: UserClient):
     assert incidence_test['severity'] == 'Error'
 
 
-@pytest.mark.mvp
-@pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_erase_changing_hdd_between_pcs(user: UserClient):
-    """Tests when we erase one device and next change the disk in other device we 
-    want see in the second device the disks erase."""
-    s1 = file('erase-sectors-2-hdd.snapshot')
-    s2 = file('erase-sectors-2-hdd.snapshot2')
-    snapshot1, _ = user.post(res=Snapshot, data=s1)
-    snapshot2, _ = user.post(res=Snapshot, data=s2)
-    dev1 = m.Device.query.filter_by(id=snapshot1['device']['id']).one()
-    dev2 = m.Device.query.filter_by(id=snapshot2['device']['id']).one()
-    tag1 = Tag(id='dev1', device=dev1)
-    tag2 = Tag(id='dev2', device=dev2)
-    db.session.commit()
-
-    assert dev2.components[1].actions[2].parent == dev2
-    doc1, response = user.get(res=documents.DocumentDef.t,
-                               item='erasures/{}'.format(dev1.id),
-                               accept=ANY)
-    doc2, response = user.get(res=documents.DocumentDef.t,
-                               item='erasures/{}'.format(dev2.id),
-                               accept=ANY)
-    assert not 'dev1' in doc2
-    assert 'dev2' in doc2
-
-
 def assert_similar_device(device1: dict, device2: dict):
     """Like :class:`ereuse_devicehub.resources.device.models.Device.
     is_similar()` but adapted for testing.
@@ -578,6 +546,32 @@ def snapshot_and_check(user: UserClient,
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_erase_changing_hdd_between_pcs(user: UserClient):
+    """Tests when we erase one device and next change the disk in other device we 
+    want see in the second device the disks erase."""
+    s1 = file('erase-sectors-2-hdd.snapshot')
+    s2 = file('erase-sectors-2-hdd.snapshot2')
+    snapshot1, _ = user.post(res=Snapshot, data=s1)
+    snapshot2, _ = user.post(res=Snapshot, data=s2)
+    dev1 = m.Device.query.filter_by(id=snapshot1['device']['id']).one()
+    dev2 = m.Device.query.filter_by(id=snapshot2['device']['id']).one()
+    tag1 = Tag(id='dev1', device=dev1)
+    tag2 = Tag(id='dev2', device=dev2)
+    db.session.commit()
+
+    assert dev2.components[1].actions[2].parent == dev1
+    doc1, response = user.get(res=documents.DocumentDef.t,
+                               item='erasures/{}'.format(dev1.id),
+                               accept=ANY)
+    doc2, response = user.get(res=documents.DocumentDef.t,
+                               item='erasures/{}'.format(dev2.id),
+                               accept=ANY)
+    assert 'dev1' in doc2
+    assert 'dev2' in doc2
+
+
+@pytest.mark.mvp
 @pytest.mark.xfail(reason='Debug and rewrite it')
 def test_pc_rating_rate_none(user: UserClient):
     """Tests a Snapshot with EraseSectors."""
@@ -590,6 +584,7 @@ def test_pc_rating_rate_none(user: UserClient):
 def test_pc_2(user: UserClient):
     s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=s)
+
 
 
 @pytest.mark.mvp
