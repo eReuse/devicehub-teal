@@ -72,7 +72,6 @@ class Sync:
             # We only want to perform Add/Remove to not new components
             actions = self.add_remove(db_device, not_new_components)
             db_device.components = db_components
-            self.change_parent_actions_components(db_device)
         return db_device, actions
 
     def execute_register_component(self,
@@ -245,13 +244,6 @@ class Sync:
                 if parent.id != 0 and all(check_owners):
                     actions.add(Remove(device=parent, components=set_components))
         return actions
-
-    @staticmethod
-    def change_parent_actions_components(device: Computer): 
-        # import pdb; pdb.set_trace()
-        for c in set(device.components):
-            for act in c.actions:
-                act.parent = device
 
 
 class MismatchBetweenTags(ValidationError):
