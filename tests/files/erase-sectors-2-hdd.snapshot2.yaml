@@ -1,0 +1,141 @@
+{
+  "version": "11.0a3",
+  "device": {
+    "serialNumber": 'fooz',
+    "manufacturer": 'bar',
+    "model": 'baz',
+    "type": "Desktop",
+    "actions": [],
+    "chassis": "Tower"
+  },
+  "elapsed": 7631,
+  "software": "Workbench",
+  "type": "Snapshot",
+  "closed": false,
+  "uuid": "5387668a-8d21-4053-a1ac-36efb97fc4ea",
+  "components": [
+  {
+    "serialNumber": null,
+    "threads": 2,
+    "manufacturer": "Intel Corp.",
+    "address": 64,
+    "model": "Intel Core i3-2100 CPU @ 3.10GHz",
+    "type": "Processor",
+    "actions": [
+    {
+      "elapsed": 0,
+      "rate": 6665.7,
+      "type": "BenchmarkProcessor"
+    }
+    ],
+    "cores": 2,
+    "speed": 1.6071410000000002
+  },
+  {
+    "manufacturer": "Intel Corporation",
+    "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
+    "type": "SoundCard",
+    "actions": [],
+    "serialNumber": null
+  },
+  {
+    "serialNumber": "8F179435",
+    "size": 4096,
+    "manufacturer": "Kingston",
+    "format": "DIMM",
+    "model": "9905403-038.A00LF",
+    "type": "RamModule",
+    "actions": [],
+    "interface": "DDR3",
+    "speed": 1333.0
+  },
+  {
+    "manufacturer": "Realtek Semiconductor Co., Ltd.",
+    "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
+    "type": "NetworkAdapter",
+    "actions": [],
+    "serialNumber": "f4:6d:04:12:9b:85",
+    "speed": 1000,
+    "wireless": false
+  },
+  {
+    "serialNumber": "WD-WCAV29008961",
+    "size": 305245,
+    "manufacturer": "Western Digital",
+    "model": "WDC WD3200AAJS-2",
+    "type": "HardDrive",
+    "actions": [
+    {
+      "lifetime": 24658,
+      "assessment": false,
+      "elapsed": 131,
+      "length": "Short",
+      "offlineUncorrectable": 1,
+      "severity": "Error",
+      "currentPendingSectorCount": 1,
+      "powerCycleCount": 1253,
+      "reallocatedSectorCount": 15,
+      "type": "TestDataStorage",
+      "status": "Completed: read failure"
+    },
+    {
+      "readSpeed": 63.3,
+      "type": "BenchmarkDataStorage",
+      "elapsed": 18,
+      "writeSpeed": 20.1
+    }
+    ],
+    "interface": "ATA"
+  },
+  {
+    "serialNumber": "WD-WCAV27984668",
+    "size": 305245,
+    "manufacturer": "Western Digital",
+    "model": "WDC WD3200AAJS-0",
+    "type": "HardDrive",
+    "actions": [
+    {
+      "lifetime": 21979,
+      "assessment": true,
+      "elapsed": 115,
+      "length": "Short",
+      "offlineUncorrectable": 0,
+      "severity": "Info",
+      "currentPendingSectorCount": 0,
+      "powerCycleCount": 1956,
+      "reallocatedSectorCount": 0,
+      "type": "TestDataStorage",
+      "status": "Completed without error"
+    },
+    {
+      "readSpeed": 63.3,
+      "type": "BenchmarkDataStorage",
+      "elapsed": 18,
+      "writeSpeed": 20.1
+    }
+    ],
+    "interface": "ATA"
+  },
+  {
+    "serialNumber": null,
+    "manufacturer": "Intel Corporation",
+    "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
+    "type": "GraphicCard",
+    "actions": [],
+    "memory": 256.0
+  },
+  {
+    "pcmcia": 0,
+    "serial": 1,
+    "manufacturer": "ASUSTeK Computer INC.",
+    "model": "P8H61-M LE",
+    "type": "Motherboard",
+    "actions": [],
+    "slots": 2,
+    "usb": 2,
+    "firewire": 0,
+    "serialNumber": "109192430003458"
+  }
+  ],
+  "endTime": "2018-07-13T10:48:36.738398+00:00"
+}

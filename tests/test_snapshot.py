@@ -13,6 +13,7 @@ from uuid import uuid4
 from boltons import urlutils
 from teal.db import UniqueViolation, DBError
 from teal.marshmallow import ValidationError
+from ereuse_utils.test import ANY
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
@@ -29,7 +30,9 @@ from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.action.views import save_json
+from ereuse_devicehub.resources.documents import documents
 from tests.conftest import file
+from tests import conftest
 
 
 @pytest.mark.mvp
@@ -543,6 +546,32 @@ def snapshot_and_check(user: UserClient,
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_erase_changing_hdd_between_pcs(user: UserClient):
+    """Tests when we erase one device and next change the disk in other device we 
+    want see in the second device the disks erase."""
+    s1 = file('erase-sectors-2-hdd.snapshot')
+    s2 = file('erase-sectors-2-hdd.snapshot2')
+    snapshot1, _ = user.post(res=Snapshot, data=s1)
+    snapshot2, _ = user.post(res=Snapshot, data=s2)
+    dev1 = m.Device.query.filter_by(id=snapshot1['device']['id']).one()
+    dev2 = m.Device.query.filter_by(id=snapshot2['device']['id']).one()
+    tag1 = Tag(id='dev1', device=dev1)
+    tag2 = Tag(id='dev2', device=dev2)
+    db.session.commit()
+
+    assert dev2.components[1].actions[2].parent == dev1
+    doc1, response = user.get(res=documents.DocumentDef.t,
+                               item='erasures/{}'.format(dev1.id),
+                               accept=ANY)
+    doc2, response = user.get(res=documents.DocumentDef.t,
+                               item='erasures/{}'.format(dev2.id),
+                               accept=ANY)
+    assert 'dev1' in doc2
+    assert 'dev2' in doc2
+
+
+@pytest.mark.mvp
 @pytest.mark.xfail(reason='Debug and rewrite it')
 def test_pc_rating_rate_none(user: UserClient):
     """Tests a Snapshot with EraseSectors."""
@@ -555,6 +584,7 @@ def test_pc_rating_rate_none(user: UserClient):
 def test_pc_2(user: UserClient):
     s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=s)
+
 
 
 @pytest.mark.mvp
