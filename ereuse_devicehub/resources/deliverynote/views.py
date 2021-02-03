@@ -28,8 +28,7 @@ class DeliverynoteView(View):
         return ret
 
     def patch(self, id):
-        patch_schema = self.resource_def.SCHEMA(only=('transfer_state',
-                                                      'ethereum_address'), partial=True)
+        patch_schema = self.resource_def.SCHEMA(only=('transfer_state'), partial=True)
         d = request.get_json(schema=patch_schema)
         dlvnote = Deliverynote.query.filter_by(id=id).one()
         # device_fields = ['transfer_state',  'deliverynote_address']

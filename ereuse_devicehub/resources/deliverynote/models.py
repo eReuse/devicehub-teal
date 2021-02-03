@@ -46,7 +46,6 @@ class Deliverynote(Thing):
     transferred_devices = db.Column(db.ARRAY(db.Integer, dimensions=1), nullable=True)
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
-    ethereum_address = db.Column(CIText(), unique=True, default=None)
     lot_id = db.Column(UUID(as_uuid=True),
                        db.ForeignKey(Lot.id),
                        nullable=False)
