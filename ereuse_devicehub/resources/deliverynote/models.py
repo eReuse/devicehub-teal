@@ -83,4 +83,4 @@ class Deliverynote(Thing):
         db.session.delete(self)
 
     def __repr__(self) -> str:
-        return '<Deliverynote {0.documentID}>'.format(self)
+        return '<Deliverynote {0.document_id}>'.format(self)
