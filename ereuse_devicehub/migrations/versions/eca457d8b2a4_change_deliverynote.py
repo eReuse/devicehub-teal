@@ -28,7 +28,11 @@ def get_inv():
 
 def upgrade():
     op.drop_column('deliverynote', 'ethereum_address', schema=f'{get_inv()}')
+    op.drop_column('computer', 'deliverynote_address', schema=f'{get_inv()}')
+    op.drop_column('lot', 'deliverynote_address', schema=f'{get_inv()}')
 
 
 def downgrade():
     op.add_column('deliverynote', sa.Column('ethereum_address', citext.CIText(), nullable=True), schema=f'{get_inv()}')
+    op.add_column('computer', sa.Column('deliverynote_address', citext.CIText(), nullable=True), schema=f'{get_inv()}')
+    op.add_column('lot', sa.Column('deliverynote_address', citext.CIText(), nullable=True), schema=f'{get_inv()}')

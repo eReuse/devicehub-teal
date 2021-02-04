@@ -484,7 +484,6 @@ class Computer(Device):
                             db.ForeignKey(User.id),
                             nullable=True)
     receiver = db.relationship(User, primaryjoin=receiver_id == User.id)
-    deliverynote_address = db.Column(CIText(), nullable=True)
 
     def __init__(self, *args, **kwargs) -> None:
         if args:

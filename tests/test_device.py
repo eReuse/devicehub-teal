@@ -125,7 +125,6 @@ def test_physical_properties():
     }
     assert pc.physical_properties == {
         'chassis': ComputerChassis.Tower,
-        'deliverynote_address': None,
         'deposit': 0,
         'ethereum_address': None,
         'manufacturer': 'bar',

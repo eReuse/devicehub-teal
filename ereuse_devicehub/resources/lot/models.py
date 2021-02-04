@@ -75,7 +75,6 @@ class Lot(Thing):
                                  db.ForeignKey(User.ethereum_address),
                                  nullable=True)
     receiver = db.relationship(User, primaryjoin=receiver_address == User.ethereum_address)
-    deliverynote_address = db.Column(CIText(), nullable=True)
 
     def __init__(self, name: str, closed: bool = closed.default.arg,
                  description: str = None) -> None:

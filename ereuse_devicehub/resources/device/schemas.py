@@ -130,7 +130,6 @@ class Computer(Device):
     owner_id = UUID(data_key='ownerID')
     transfer_state = EnumField(enums.TransferState, description=m.Computer.transfer_state.comment)
     receiver_id = UUID(data_key='receiverID')
-    deliverynote_address = SanitizedStr(validate=f.validate.Length(max=42))
 
 
 class Desktop(Computer):
