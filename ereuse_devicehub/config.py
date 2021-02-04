@@ -9,7 +9,7 @@ from teal.enums import Currency
 from teal.utils import import_resource
 
 from ereuse_devicehub.resources import action, agent, deliverynote, inventory, \
-    lot, proof, tag, user
+    lot, tag, user
 from ereuse_devicehub.resources.device import definitions
 from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import PriceSoftware
@@ -26,7 +26,6 @@ class DevicehubConfig(Config):
                                      import_resource(agent),
                                      import_resource(lot),
                                      import_resource(deliverynote),
-                                     import_resource(proof),
                                      import_resource(documents),
                                      import_resource(inventory),
                                      import_resource(versions),
