@@ -580,7 +580,7 @@ def test_save_live_json(app: Devicehub, user: UserClient, client: Client):
 
     snapshot = {'debug': ''}
     if files:
-        path_snapshot = os.path.join(path_dir_base, files[0])
+        path_snapshot = os.path.join(path_dir_base, files[-1])
         with open(path_snapshot) as file_snapshot:
             snapshot = json.loads(file_snapshot.read())
 
