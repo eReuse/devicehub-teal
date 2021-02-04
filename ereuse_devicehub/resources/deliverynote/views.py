@@ -16,7 +16,7 @@ class DeliverynoteView(View):
         dn = request.get_json()
         dlvnote = Deliverynote(**dn)
         # Create a lot
-        lot_name = dlvnote.document_id + "_" + datetime.datetime.utcnow().strftime("%B-%d-%Y")
+        lot_name = dlvnote.supplier_email + "_" + datetime.datetime.utcnow().strftime("%B-%d-%Y")
         new_lot = Lot(name=lot_name)
         dlvnote.lot_id = new_lot.id
         db.session.add(new_lot)
