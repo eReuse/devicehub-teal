@@ -18,6 +18,8 @@ ml).
 - [addend] #102 adding endpoint for download metrics
 - [bugfix] #100 fixing bug of scheme live
 - [bugfix] #101 fixing bug when 2 users have one device and launch one live
+- [changes] #114 clean blockchein of deliverynote
+- [remove] #114 remove proof system 
 
 ## [1.0.3-beta]
 - [addend] #85 add mac of network adapter to device hid
