@@ -41,11 +41,11 @@ class LotView(View):
 
     def patch(self, id):
         patch_schema = self.resource_def.SCHEMA(only=(
-            'name', 'description', 'transfer_state', 'receiver_address', 'deposit', 'devices',
+            'name', 'description', 'transfer_state', 'receiver_address', 'amount', 'devices',
             'owner_address'), partial=True)
         l = request.get_json(schema=patch_schema)
         lot = Lot.query.filter_by(id=id).one()
-        device_fields = ['transfer_state', 'receiver_address', 'deposit', 'owner_address']
+        device_fields = ['transfer_state', 'receiver_address', 'amount', 'owner_address']
         computers = [x for x in lot.all_devices if isinstance(x, Computer)]
         for key, value in l.items():
             setattr(lot, key, value)
@@ -142,9 +142,9 @@ class LotView(View):
         if path:
             cls._p(node['nodes'], path)
 
-    def get_lot_deposit(self, l: Lot):
-        """Return lot deposit value"""
-        return l.deposit
+    def get_lot_amount(self, l: Lot):
+        """Return lot amount value"""
+        return l.amount
 
     def change_state(self):
         """Change state of Lot"""

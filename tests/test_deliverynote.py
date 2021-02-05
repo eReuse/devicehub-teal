@@ -26,7 +26,7 @@ def test_simple_deliverynote(user: UserClient, app: Devicehub):
     }]
     note = {'date': datetime(2020, 2, 14, 23, 0, tzinfo=tzutc()),
             'documentID': 'DocBBE001',
-            'deposit': 0,
+            'amount': 0,
             'transfer_state': "Initial",
             'expectedDevices': inventory,
             'supplierEmail': user.user['email']}

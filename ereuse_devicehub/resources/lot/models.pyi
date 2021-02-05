@@ -24,7 +24,7 @@ class Lot(Thing):
     description = ...  # type: Column
     all_devices = ...  # type: relationship
     parents = ...  # type: relationship
-    deposit = ...  # type: Column
+    amount = ...  # type: Column
     owner_address = ...  # type: Column
     owner = ...  # type: relationship
     transfer_state = ...  # type: Column

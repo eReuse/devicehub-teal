@@ -125,7 +125,7 @@ def test_physical_properties():
     }
     assert pc.physical_properties == {
         'chassis': ComputerChassis.Tower,
-        'deposit': 0,
+        'amount': 0,
         'ethereum_address': None,
         'manufacturer': 'bar',
         'model': 'foo',
@@ -251,7 +251,7 @@ def test_sync_execute_register_desktop_existing_no_tag():
         **conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
     # 1: device exists on DB
     db_pc = Sync().execute_register(pc)
-    pc.deposit = 0
+    pc.amount = 0
     pc.owner_id = db_pc.owner_id
     pc.transfer_state = TransferState.Initial
     assert pc.physical_properties == db_pc.physical_properties

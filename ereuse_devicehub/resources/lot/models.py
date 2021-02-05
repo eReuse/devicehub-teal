@@ -63,7 +63,7 @@ class Lot(Thing):
     """All devices, including components, inside this lot and its
     descendants.
     """
-    deposit = db.Column(db.Integer, check_range('deposit', min=0, max=100), default=0)
+    amount = db.Column(db.Integer, check_range('amount', min=0, max=100), default=0)
     owner_id = db.Column(UUID(as_uuid=True),
                          db.ForeignKey(User.id),
                          nullable=False,

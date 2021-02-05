@@ -36,7 +36,7 @@ class Deliverynote(Thing):
     receiver = db.relationship(User, primaryjoin=lambda: Deliverynote.receiver_address == User.email)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     date.comment = 'The date the DeliveryNote initiated'
-    deposit = db.Column(db.Integer, check_range('deposit', min=0, max=100), default=0)
+    amount = db.Column(db.Integer, check_range('amount', min=0, max=100), default=0)
     # The following fields are supposed to be 0:N relationships
     # to SnapshotDelivery entity.
     # At this stage of implementation they will treated as a
@@ -54,14 +54,14 @@ class Deliverynote(Thing):
                           lazy=True,
                           primaryjoin=Lot.id == lot_id)
 
-    def __init__(self, document_id: str, deposit: str, date,
+    def __init__(self, document_id: str, amount: str, date,
                  supplier_email: str,
                  expected_devices: Iterable,
                  transfer_state: TransferState) -> None:
         """Initializes a delivery note
         """
         super().__init__(id=uuid.uuid4(),
-                         document_id=document_id, deposit=deposit, date=date,
+                         document_id=document_id, amount=amount, date=date,
                          supplier_email=supplier_email,
                          expected_devices=expected_devices,
                          transfer_state=transfer_state)

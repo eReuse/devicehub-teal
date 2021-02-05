@@ -27,6 +27,9 @@ def get_inv():
 
 def upgrade():
     op.drop_column('deliverynote', 'ethereum_address', schema=f'{get_inv()}')
+    op.alter_column('deliverynote', 'deposit', new_column_name='amount')
+    op.alter_column('computer', 'deposit', new_column_name='amount')
+    op.alter_column('lot', 'deposit', new_column_name='amount')
     op.drop_column('computer', 'deliverynote_address', schema=f'{get_inv()}')
     op.drop_column('lot', 'deliverynote_address', schema=f'{get_inv()}')
     op.drop_table('proof_function', schema=f'{get_inv()}')
@@ -41,6 +44,9 @@ def upgrade():
 
 def downgrade():
     op.add_column('deliverynote', sa.Column('ethereum_address', citext.CIText(), nullable=True), schema=f'{get_inv()}')
+    op.alter_column('deliverynote', 'amount', new_column_name='deposit')
+    op.alter_column('computer', 'amount', new_column_name='deposit')
+    op.alter_column('lot', 'amount', new_column_name='deposit')
     op.add_column('computer', sa.Column('deliverynote_address', citext.CIText(), nullable=True), schema=f'{get_inv()}')
     op.add_column('lot', sa.Column('deliverynote_address', citext.CIText(), nullable=True), schema=f'{get_inv()}')
     op.create_table('proof',

@@ -19,8 +19,8 @@ class Lot(Thing):
     children = NestedOn('Lot', many=True, dump_only=True)
     parents = NestedOn('Lot', many=True, dump_only=True)
     url = URL(dump_only=True, description=m.Lot.url.__doc__)
-    deposit = f.Integer(validate=f.validate.Range(min=0, max=100),
-                        description=m.Lot.deposit.__doc__)
+    amount = f.Integer(validate=f.validate.Range(min=0, max=100),
+                        description=m.Lot.amount.__doc__)
     # author_id = NestedOn(s_user.User,only_query='author_id')
     owner_id = f.UUID(data_key='ownerID')
     transfer_state = EnumField(TransferState, description=m.Lot.transfer_state.comment)

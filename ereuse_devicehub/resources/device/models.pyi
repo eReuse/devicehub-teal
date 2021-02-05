@@ -141,7 +141,7 @@ class DisplayMixin:
 class Computer(DisplayMixin, Device):
     components = ...  # type: Column
     chassis = ...  # type: Column
-    deposit = ...  # type: Column
+    amount = ...  # type: Column
     owner_address = ...  # type: Column
     transfer_state = ...  # type: Column
     receiver_address = ...  # type: Column
