@@ -32,9 +32,10 @@ class DeviceRow(OrderedDict):
         d.SoundCard.t,
     ]
 
-    def __init__(self, device: d.Device) -> None:
+    def __init__(self, device: d.Device, document_ids: dict) -> None:
         super().__init__()
         self.device = device
+        self.document_id = document_ids.get(device.id, '')
         snapshot = get_action(device, 'Snapshot')
         software = ''
         if snapshot:
@@ -42,6 +43,7 @@ class DeviceRow(OrderedDict):
                 software=snapshot.software.name, version=snapshot.version)
         # General information about device
         self['System ID'] = device.id
+        self['DocumentID'] = self.document_id
         self['Public Link'] = '{url}{id}'.format(url=url_for('Device.main', _external=True),
                 id=device.id)
         self['Tag 1 Type'] = self['Tag 1 ID'] = self['Tag 1 Organization'] = ''
