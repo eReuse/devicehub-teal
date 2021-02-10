@@ -188,8 +188,8 @@ class Dummy:
         # For netbook: to preapre -> torepair -> to dispose -> disposed
         print('⭐ Done.')
 
-    def user_client(self, email: str, password: str, name: str, ethereum_address: str):
-        user = User(email=email, password=password, ethereum_address=ethereum_address)
+    def user_client(self, email: str, password: str, name: str:
+        user = User(email=email, password=password)
 
         user.individuals.add(Person(name=name))
         db.session.add(user)

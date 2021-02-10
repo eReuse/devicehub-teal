@@ -25,11 +25,10 @@ class User(Thing):
                                   backref=db.backref('users', lazy=True, collection_class=set),
                                   secondary=lambda: UserInventory.__table__,
                                   collection_class=set)
-    ethereum_address = Column(CIText(), unique=True, default=None)
 
     # todo set restriction that user has, at least, one active db
 
-    def __init__(self, email, password=None, ethereum_address=None, inventories=None) -> None:
+    def __init__(self, email, password=None, inventories=None) -> None:
         """Creates an user.
         :param email:
         :param password:
@@ -38,7 +37,7 @@ class User(Thing):
         inventory.
         """
         inventories = inventories or {Inventory.current}
-        super().__init__(email=email, password=password, ethereum_address=ethereum_address, inventories=inventories)
+        super().__init__(email=email, password=password, inventories=inventories)
 
     def __repr__(self) -> str:
         return '<User {0.email}>'.format(self)
@@ -51,11 +50,6 @@ class User(Thing):
     def individual(self):
         """The individual associated for this database, or None."""
         return next(iter(self.individuals), None)
-
-    @property
-    def get_ethereum_address(self):
-        """The ethereum address in Blockchain, or None."""
-        return next(iter(self.ethereum_address), None)
 
 
 class UserInventory(db.Model):

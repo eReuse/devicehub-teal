@@ -471,7 +471,6 @@ class Computer(Device):
 
     It is a subset of the Linux definition of DMI / DMI decode.
     """
-    ethereum_address = Column(CIText(), unique=True, default=None)
     amount = Column(Integer, check_range('amount', min=0, max=100), default=0)
     owner_id = db.Column(UUID(as_uuid=True),
                          db.ForeignKey(User.id),

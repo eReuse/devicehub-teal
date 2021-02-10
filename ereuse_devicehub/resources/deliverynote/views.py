@@ -35,13 +35,6 @@ class DeliverynoteView(View):
         # computers = [x for x in dlvnote.transferred_devices if isinstance(x, Computer)]
         for key, value in d.items():
             setattr(dlvnote, key, value)
-            # Transalate ethereum_address attribute
-            # devKey = key
-            # if key == 'ethereum_address':
-            #     devKey = 'deliverynote_address'
-            # if devKey in device_fields:
-            #     for dev in computers:
-            #         setattr(dev, devKey, value)
 
         db.session.commit()
         return Response(status=204)

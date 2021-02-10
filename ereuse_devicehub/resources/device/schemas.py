@@ -123,7 +123,6 @@ class Computer(Device):
                        dump_only=True,
                        collection_class=set,
                        description=m.Computer.privacy.__doc__)
-    ethereum_address = SanitizedStr(validate=f.validate.Length(max=42))
     amount = Integer(validate=f.validate.Range(min=0, max=100),
                       description=m.Computer.amount.__doc__)
     # author_id = NestedOn(s_user.User,only_query='author_id')

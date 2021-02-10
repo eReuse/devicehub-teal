@@ -144,7 +144,7 @@ class Computer(DisplayMixin, Device):
     amount = ...  # type: Column
     owner_address = ...  # type: Column
     transfer_state = ...  # type: Column
-    receiver_address = ...  # type: Column
+    receiver_id = ...  # uuid: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
