@@ -65,10 +65,10 @@ class Dummy:
         with click_spinner.spinner():
             out = runner.invoke('org', 'add', *self.ORG).output
             org_id = json.loads(out)['id']
-            user1 = self.user_client('user@dhub.com', '1234', 'user1', '0xC79F7fE80B5676fe38D8187b79d55F7A61e702b2')
-            user2 = self.user_client('user2@dhub.com', '1234', 'user2', '0x56EbFdbAA98f52027A9776456e4fcD5d91090818')
-            user3 = self.user_client('user3@dhub.com', '1234', 'user3', '0xF88618956696aB7e56Cb7bc87d9848E921C4FDaA')
-            user4 = self.user_client('user4@dhub.com', '1234', 'user4', '0x37be35ae7eced44ca25e4683e98425fc7830a8a5')
+            user1 = self.user_client('user@dhub.com', '1234', 'user1')
+            user2 = self.user_client('user2@dhub.com', '1234', 'user2')
+            user3 = self.user_client('user3@dhub.com', '1234', 'user3')
+            user4 = self.user_client('user4@dhub.com', '1234', 'user4')
 
             # todo put user's agent into Org
             for id in self.TAGS:
@@ -188,7 +188,7 @@ class Dummy:
         # For netbook: to preapre -> torepair -> to dispose -> disposed
         print('⭐ Done.')
 
-    def user_client(self, email: str, password: str, name: str:
+    def user_client(self, email: str, password: str, name: str):
         user = User(email=email, password=password)
 
         user.individuals.add(Person(name=name))

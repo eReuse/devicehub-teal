@@ -126,7 +126,6 @@ def test_physical_properties():
     assert pc.physical_properties == {
         'chassis': ComputerChassis.Tower,
         'amount': 0,
-        'ethereum_address': None,
         'manufacturer': 'bar',
         'model': 'foo',
         'receiver_id': None,

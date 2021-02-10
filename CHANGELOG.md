@@ -18,7 +18,7 @@ ml).
 - [addend] #102 adding endpoint for download metrics
 - [bugfix] #100 fixing bug of scheme live
 - [bugfix] #101 fixing bug when 2 users have one device and launch one live
-- [changes] #114 clean blockchein of deliverynote
+- [changes] #114 clean blockchain of all models
 - [remove] #114 remove proof system 
 
 ## [1.0.3-beta]
