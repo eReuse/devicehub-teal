@@ -584,7 +584,7 @@ def test_save_live_json(app: Devicehub, user: UserClient, client: Client):
         with open(path_snapshot) as file_snapshot:
             snapshot = json.loads(file_snapshot.read())
 
-        shutil.rmtree(tmp_snapshots)
+    shutil.rmtree(tmp_snapshots)
 
     assert snapshot['debug'] == debug
     
