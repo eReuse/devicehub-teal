@@ -1628,8 +1628,3 @@ def update_parent(target: Union[EraseBasic, Test, Install], device: Device, _, _
 
 class InvalidRangeForPrice(ValueError):
     pass
-
-
-class Transferred(ActionWithMultipleDevices):
-    """Transferred through blockchain."""
-    pass

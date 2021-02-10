@@ -534,7 +534,3 @@ class MigrateTo(Migrate):
 
 class MigrateFrom(Migrate):
     pass
-
-
-class Transferred(ActionWithMultipleDevices):
-    pass
