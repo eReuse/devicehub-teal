@@ -35,4 +35,4 @@ def test_simple_deliverynote(user: UserClient, app: Devicehub):
     db_note = Deliverynote.query.filter_by(id=deliverynote['id']).one()
 
     assert deliverynote['documentID'] == note['documentID']
-    assert user.user['email'] in db_note.lot.name
+    assert deliverynote['documentID'] in db_note.lot.name
