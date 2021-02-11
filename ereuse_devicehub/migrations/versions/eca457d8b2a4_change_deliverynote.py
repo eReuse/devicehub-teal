@@ -30,14 +30,16 @@ def upgrade():
     op.alter_column('deliverynote', 'deposit', new_column_name='amount', schema=f'{get_inv()}')
     op.alter_column('computer', 'deposit', new_column_name='amount', schema=f'{get_inv()}')
     op.alter_column('lot', 'deposit', new_column_name='amount', schema=f'{get_inv()}')
+    op.drop_column('lot', 'deliverynote_address', schema=f'{get_inv()}')
     op.drop_column('computer', 'deliverynote_address', schema=f'{get_inv()}')
     op.drop_column('computer', 'ethereum_address', schema=f'{get_inv()}')
-    op.drop_column('user', 'ethereum_address', schema='common')
-    op.drop_column('lot', 'deliverynote_address', schema=f'{get_inv()}')
-
     op.drop_column('lot', 'receiver_address', schema=f'{get_inv()}')
-    op.add_column('lot', sa.Column('receiver_address', citext.CIText(), nullable=True), schema=f'{get_inv()}')
-    op.add_column('lot', sa.ForeignKeyConstraint(['receiver_address'], ['common.user.email'],), schema=f'{get_inv()}')
+    op.add_column('lot', sa.Column('receiver_address', citext.CIText(), 
+                  sa.ForeignKey('common.user.email'), nullable=True),
+                  schema=f'{get_inv()}')
+
+    op.drop_column('user', 'ethereum_address', schema='common')
+
 
     op.drop_table('proof_function', schema=f'{get_inv()}')
     op.drop_table('proof_data_wipe', schema=f'{get_inv()}')
@@ -61,9 +63,13 @@ def downgrade():
 
     # =====
     op.add_column('computer', sa.Column('ethereum_address', citext.CIText(), nullable=True), schema=f'{get_inv()}')
-    op.add_column('user', sa.Column('ethereum_address', citext.CIText(), nullable=True), schema='common')
-    op.add_column('lot', sa.Column('receiver_address', citext.CIText(), nullable=True), schema=f'{get_inv()}')
-    op.add_column('lot', sa.ForeignKeyConstraint(['receiver_address'], ['common.user.ethereum_address'],), schema=f'{get_inv()}')
+    op.add_column('user', sa.Column('ethereum_address', citext.CIText(), unique=True, nullable=True), schema='common')
+
+
+    op.drop_column('lot', 'receiver_address', schema=f'{get_inv()}')
+    op.add_column('lot', sa.Column('receiver_address', citext.CIText(), 
+                  sa.ForeignKey('common.user.ethereum_address'), nullable=True),
+                  schema=f'{get_inv()}')
 
     # =====
     op.create_table('proof',
