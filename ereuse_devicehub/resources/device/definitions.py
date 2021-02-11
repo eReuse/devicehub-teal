@@ -33,7 +33,7 @@ class DeviceDef(Resource):
 
         path = '/<{value}:dev1_id>/merge/<{value}:dev2_id>'.format(value=self.ID_CONVERTER.value)
 
-        self.add_url_rule(path, view_func=device_merge, methods={'POST'})
+        # self.add_url_rule(path, view_func=device_merge, methods={'POST'})
 
 
 class ComputerDef(DeviceDef):
