@@ -216,13 +216,13 @@ def test_export_basic_snapshot(user: UserClient):
         obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
         fixture_csv = list(obj_csv)
 
-    assert isinstance(datetime.strptime(export_csv[1][17], '%c'), datetime), \
+    assert isinstance(datetime.strptime(export_csv[1][18], '%c'), datetime), \
         'Register in field is not a datetime'
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
-    assert fixture_csv[1][:17] == export_csv[1][:17], 'Computer information are not equal'
-    assert fixture_csv[1][18] == export_csv[1][18], 'Computer information are not equal'
-    assert fixture_csv[1][20:] == export_csv[1][20:], 'Computer information are not equal'
+    assert fixture_csv[1][:18] == export_csv[1][:18], 'Computer information are not equal'
+    assert fixture_csv[1][19] == export_csv[1][19], 'Computer information are not equal'
+    assert fixture_csv[1][21:] == export_csv[1][21:], 'Computer information are not equal'
 
 
 @pytest.mark.mvp
@@ -276,24 +276,24 @@ def test_export_extended(app: Devicehub, user: UserClient):
         obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
         fixture_csv = list(obj_csv)
 
-    assert isinstance(datetime.strptime(export_csv[1][17], '%c'), datetime), \
+    assert isinstance(datetime.strptime(export_csv[1][18], '%c'), datetime), \
         'Register in field is not a datetime'
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
-    assert fixture_csv[1][:17] == export_csv[1][:17], 'Computer information are not equal'
-    assert fixture_csv[1][18] == export_csv[1][18], 'Computer information are not equal'
-    assert fixture_csv[1][20:79] == export_csv[1][20:79], 'Computer information are not equal'
-    assert fixture_csv[1][80] == export_csv[1][80], 'Computer information are not equal'
-    assert fixture_csv[1][83:] == export_csv[1][83:], 'Computer information are not equal'
-    assert fixture_csv[2][:17] == export_csv[2][:17], 'Computer information are not equal'
-    assert fixture_csv[2][18] == export_csv[2][18], 'Computer information are not equal'
-    assert fixture_csv[2][20:79] == export_csv[2][20:79], 'Computer information are not equal'
-    assert fixture_csv[2][80] == export_csv[2][80], 'Computer information are not equal'
-    assert fixture_csv[2][83:103] == export_csv[2][83:103], 'Computer information are not equal'
-    assert fixture_csv[2][104] == export_csv[2][104], 'Computer information are not equal'
-    assert fixture_csv[2][107:127] == export_csv[2][107:127], 'Computer information are not equal'
-    assert fixture_csv[2][128] == export_csv[2][128], 'Computer information are not equal'
-    assert fixture_csv[2][131:] == export_csv[2][131:], 'Computer information are not equal'
+    assert fixture_csv[1][:18] == export_csv[1][:18], 'Computer information are not equal'
+    assert fixture_csv[1][19] == export_csv[1][19], 'Computer information are not equal'
+    assert fixture_csv[1][21:80] == export_csv[1][21:80], 'Computer information are not equal'
+    assert fixture_csv[1][81] == export_csv[1][81], 'Computer information are not equal'
+    assert fixture_csv[1][84:] == export_csv[1][84:], 'Computer information are not equal'
+    assert fixture_csv[2][:18] == export_csv[2][:18], 'Computer information are not equal'
+    assert fixture_csv[2][19] == export_csv[2][19], 'Computer information are not equal'
+    assert fixture_csv[2][21:80] == export_csv[2][21:80], 'Computer information are not equal'
+    assert fixture_csv[2][81] == export_csv[2][81], 'Computer information are not equal'
+    assert fixture_csv[2][84:104] == export_csv[2][84:104], 'Computer information are not equal'
+    assert fixture_csv[2][105] == export_csv[2][105], 'Computer information are not equal'
+    assert fixture_csv[2][108:128] == export_csv[2][108:128], 'Computer information are not equal'
+    assert fixture_csv[2][129] == export_csv[2][129], 'Computer information are not equal'
+    assert fixture_csv[2][132:] == export_csv[2][132:], 'Computer information are not equal'
 
 
 @pytest.mark.mvp

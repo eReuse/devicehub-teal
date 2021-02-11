@@ -19,6 +19,7 @@ from teal.resource import Resource, View
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
+from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 from ereuse_devicehub.resources.device.views import DeviceView
 from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow, ActionRow
 from ereuse_devicehub.resources.lot import LotView
@@ -119,8 +120,9 @@ class DevicesDocumentView(DeviceView):
         data = StringIO()
         cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
         first = True
+        document_ids = self.get_documents_id()
         for device in query:
-            d = DeviceRow(device)
+            d = DeviceRow(device, document_ids)
             if first:
                 cw.writerow(d.keys())
                 first = False
@@ -131,6 +133,12 @@ class DevicesDocumentView(DeviceView):
         output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
+
+    def get_documents_id(self):
+        # documentIds = {dev_id: document_id, ...}
+        deliverys = Deliverynote.query.all()
+        documentIds = {x.id: d.document_id for d in deliverys for x in d.lot.devices}
+        return documentIds
 
 
 class ActionsDocumentView(DeviceView):
