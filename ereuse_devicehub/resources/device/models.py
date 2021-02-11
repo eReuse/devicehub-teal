@@ -194,6 +194,33 @@ class Device(Thing):
                 if isinstance(c, ColumnProperty)
                 and not getattr(c, 'foreign_keys', None)
                 and c.key not in self._NON_PHYSICAL_PROPS}
+        
+    @property
+    def public_properties(self) -> Dict[str, object or None]:
+        """Fields that describe the properties of a device than next show 
+           in the public page.
+
+        :return A dictionary:
+                - Column.
+                - Actual value of the column or None.
+        """
+        non_public = ['amount', 'transfer_state', 'receiver_id']
+        hide_properties = list(self._NON_PHYSICAL_PROPS) + non_public
+        return {c.key: getattr(self, c.key, None)
+                for c in inspect(self.__class__).attrs
+                if isinstance(c, ColumnProperty)
+                and not getattr(c, 'foreign_keys', None)
+                and c.key not in hide_properties}
+
+    @property
+    def public_actions(self) -> List[object]:
+        """Actions than we want show in public page as traceability log section
+        :return a list of actions:
+        """
+        hide_actions = ['Price']
+        actions = [ac for ac in self.actions if not ac.t in hide_actions]
+        actions.reverse()
+        return actions
 
     @property
     def url(self) -> urlutils.URL:
