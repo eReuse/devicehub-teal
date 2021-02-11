@@ -63,7 +63,7 @@ class Lot(Thing):
     """All devices, including components, inside this lot and its
     descendants.
     """
-    deposit = db.Column(db.Integer, check_range('deposit', min=0, max=100), default=0)
+    amount = db.Column(db.Integer, check_range('amount', min=0, max=100), default=0)
     owner_id = db.Column(UUID(as_uuid=True),
                          db.ForeignKey(User.id),
                          nullable=False,
@@ -72,10 +72,10 @@ class Lot(Thing):
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
     receiver_address = db.Column(CIText(),
-                                 db.ForeignKey(User.ethereum_address),
-                                 nullable=True)
-    receiver = db.relationship(User, primaryjoin=receiver_address == User.ethereum_address)
-    deliverynote_address = db.Column(CIText(), nullable=True)
+                                 db.ForeignKey(User.email),
+                                 nullable=False,
+                                 default=lambda: g.user.email)
+    receiver = db.relationship(User, primaryjoin=receiver_address == User.email)
 
     def __init__(self, name: str, closed: bool = closed.default.arg,
                  description: str = None) -> None:

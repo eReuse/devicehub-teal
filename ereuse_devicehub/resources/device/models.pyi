@@ -141,11 +141,10 @@ class DisplayMixin:
 class Computer(DisplayMixin, Device):
     components = ...  # type: Column
     chassis = ...  # type: Column
-    deposit = ...  # type: Column
+    amount = ...  # type: Column
     owner_address = ...  # type: Column
     transfer_state = ...  # type: Column
-    receiver_address = ...  # type: Column
-    deliverynote_address = ...  # type: Column
+    receiver_id = ...  # uuid: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -155,7 +154,6 @@ class Computer(DisplayMixin, Device):
         self.owner_address = ...  # type: UUID
         self.transfer_state = ...
         self.receiver_address = ...  # type: str
-        self.deliverynote_address = ...  # type: str
 
     @property
     def actions(self) -> List:

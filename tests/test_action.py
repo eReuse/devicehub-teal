@@ -279,6 +279,8 @@ def test_live(user: UserClient, client: Client, app: Devicehub):
     assert action_live[0].serial_number == 'wd-wx11a80w7430'
     assert action_live[0].licence_version == '1.0'
     assert str(action_live[0].snapshot_uuid) == acer['uuid']
+    tmp_snapshots = app.config['TMP_LIVES']
+    shutil.rmtree(tmp_snapshots)
 
 
 @pytest.mark.mvp
@@ -303,6 +305,8 @@ def test_live_example(user: UserClient, client: Client, app: Devicehub):
     action_live = [a for a in db_device.actions if a.type == 'Live']
     assert len(action_live) == 1
     assert str(action_live[0].snapshot_uuid) == acer['uuid']
+    tmp_snapshots = app.config['TMP_LIVES']
+    shutil.rmtree(tmp_snapshots)
 
 
 @pytest.mark.mvp
@@ -330,6 +334,8 @@ def test_live_two_users(user: UserClient, user2: UserClient, client: Client, app
     action_live = [a for a in db_device.actions if a.type == 'Live']
     assert len(action_live) == 1
     assert str(action_live[0].snapshot_uuid) == acer['uuid']
+    tmp_snapshots = app.config['TMP_LIVES']
+    shutil.rmtree(tmp_snapshots)
 
 
 @pytest.mark.mvp
@@ -363,6 +369,8 @@ def test_live_two_allocated(user: UserClient, user2: UserClient, client: Client,
     live, _ = client.post(acer, res=models.Live, status=422)
     message = 'Expected only one Device but multiple where found'
     assert live['message'] == message
+    tmp_snapshots = app.config['TMP_LIVES']
+    shutil.rmtree(tmp_snapshots)
 
 
 @pytest.mark.mvp
@@ -394,6 +402,8 @@ def test_live_without_TestDataStorage(user: UserClient, client: Client, app: Dev
     assert live['description'] == description
     db_live = models.Live.query.filter_by(id=live['id']).one()
     assert db_live.usage_time_hdd is None
+    tmp_snapshots = app.config['TMP_LIVES']
+    shutil.rmtree(tmp_snapshots)
 
 
 @pytest.mark.mvp
@@ -421,6 +431,8 @@ def test_live_without_hdd_1(user: UserClient, client: Client, app: Devicehub):
     acer['licence_version'] = '1.0.0'
     response, _ = client.post(acer, res=models.Live, status=404)
     assert "The There aren't any disk in this device" in response['message']
+    tmp_snapshots = app.config['TMP_LIVES']
+    shutil.rmtree(tmp_snapshots)
 
 
 @pytest.mark.mvp
@@ -448,6 +460,8 @@ def test_live_without_hdd_2(user: UserClient, client: Client, app: Devicehub):
     acer['licence_version'] = '1.0.0'
     response, _ = client.post(acer, res=models.Live, status=404)
     assert "The There aren't any disk in this device" in response['message']
+    tmp_snapshots = app.config['TMP_LIVES']
+    shutil.rmtree(tmp_snapshots)
 
 
 @pytest.mark.mvp
@@ -482,6 +496,8 @@ def test_live_without_hdd_3(user: UserClient, client: Client, app: Devicehub):
     db_live = models.Live.query.filter_by(id=live['id']).one()
     assert str(db_live.usage_time_hdd) == '195 days, 12:00:00'
     assert str(db_live.usage_time_allocate) == '0:00:00'
+    tmp_snapshots = app.config['TMP_LIVES']
+    shutil.rmtree(tmp_snapshots)
 
 
 @pytest.mark.mvp
@@ -516,6 +532,8 @@ def test_live_with_hdd_with_old_time(user: UserClient, client: Client, app: Devi
     db_live = models.Live.query.filter_by(id=live['id']).one()
     assert str(db_live.usage_time_hdd) == '191 days, 8:00:00'
     assert str(db_live.usage_time_allocate) == '0:00:00'
+    tmp_snapshots = app.config['TMP_LIVES']
+    shutil.rmtree(tmp_snapshots)
 
 
 @pytest.mark.mvp
@@ -546,6 +564,8 @@ def test_live_search_last_allocate(user: UserClient, client: Client, app: Device
     acer['components'][7]['actions'] = actions
     live, _ = client.post(acer, res=models.Live)
     assert live['usageTimeAllocate'] == 1000
+    tmp_snapshots = app.config['TMP_LIVES']
+    shutil.rmtree(tmp_snapshots)
 
 
 @pytest.mark.mvp
@@ -580,7 +600,7 @@ def test_save_live_json(app: Devicehub, user: UserClient, client: Client):
 
     snapshot = {'debug': ''}
     if files:
-        path_snapshot = os.path.join(path_dir_base, files[0])
+        path_snapshot = os.path.join(path_dir_base, files[-1])
         with open(path_snapshot) as file_snapshot:
             snapshot = json.loads(file_snapshot.read())
 

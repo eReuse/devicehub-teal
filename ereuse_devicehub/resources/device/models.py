@@ -471,8 +471,7 @@ class Computer(Device):
 
     It is a subset of the Linux definition of DMI / DMI decode.
     """
-    ethereum_address = Column(CIText(), unique=True, default=None)
-    deposit = Column(Integer, check_range('deposit', min=0, max=100), default=0)
+    amount = Column(Integer, check_range('amount', min=0, max=100), default=0)
     owner_id = db.Column(UUID(as_uuid=True),
                          db.ForeignKey(User.id),
                          nullable=False,
@@ -484,7 +483,6 @@ class Computer(Device):
                             db.ForeignKey(User.id),
                             nullable=True)
     receiver = db.relationship(User, primaryjoin=receiver_id == User.id)
-    deliverynote_address = db.Column(CIText(), nullable=True)
 
     def __init__(self, *args, **kwargs) -> None:
         if args:
