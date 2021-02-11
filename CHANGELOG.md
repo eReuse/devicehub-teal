@@ -19,6 +19,8 @@ ml).
 - [bugfix] #100 fixing bug of scheme live
 - [bugfix] #101 fixing bug when 2 users have one device and launch one live
 - [changes] #114 clean blockchain of all models
+- [changes] #118 deactivate manual merge
+- [changes] #118 clean datas of public information of devices
 - [remove] #114 remove proof system 
 
 ## [1.0.3-beta]
