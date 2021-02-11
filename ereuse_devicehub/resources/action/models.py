@@ -619,7 +619,8 @@ class BenchmarkDataStorage(Benchmark):
     write_speed = Column(Float(decimal_return_scale=2), nullable=False)
 
     def __str__(self) -> str:
-        return 'Read: {} MB/s, write: {} MB/s'.format(self.read_speed, self.write_speed)
+        return 'Read: {0:.2f} MB/s, write: {0:.2f} MB/s'.format(
+                self.read_speed, self.write_speed)
 
 
 class BenchmarkWithRate(Benchmark):
@@ -628,7 +629,7 @@ class BenchmarkWithRate(Benchmark):
     rate = Column(Float, nullable=False)
 
     def __str__(self) -> str:
-        return '{} points'.format(self.rate)
+        return '{0:.2f} points'.format(self.rate)
 
 
 class BenchmarkProcessor(BenchmarkWithRate):
@@ -1022,7 +1023,10 @@ class Rate(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         return args
 
     def __str__(self) -> str:
-        return '{} (v.{})'.format(self.rating_range, self.version)
+        if self.version:
+            return '{} (v.{})'.format(self.rating_range, self.version)
+
+        return '{}'.format(self.rating_range)
 
     @classmethod
     def compute(cls, device) -> 'RateComputer':

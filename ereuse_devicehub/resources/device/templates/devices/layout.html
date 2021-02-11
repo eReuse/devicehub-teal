@@ -51,8 +51,8 @@
         </div>
         <div class="col-md-6">
             <ul>
-                {% for key, value in device.physical_properties.items() %}
-                    <li>{{ key }}: {{ value }}
+                {% for key, value in device.public_properties.items() %}
+		    <li>{{ key }}: {{ value }}</li>
                 {% endfor %}
             </ul>
             {% if isinstance(device, d.Computer) %}
@@ -151,26 +151,6 @@
                                 </td>
                             </tr>
                         {% endif %}
-                        {% if device.rate and device.rate.price %}
-                            <tr class="active">
-                                <td class="text-right">
-                                    Algorithm price
-                                </td>
-                                <td>
-                                    {{ device.rate.price }}
-                                </td>
-                            </tr>
-                        {% endif %}
-                        {% if device.price %}
-                            <tr class="active">
-                                <td class="text-right">
-                                    Actual price
-                                </td>
-                                <td>
-                                    {{ device.price }}
-                                </td>
-                            </tr>
-                        {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -179,7 +159,7 @@
                     <small>Latest one.</small>
                 </div>
                 <ol>
-                    {% for action in device.actions|reverse %}
+                    {% for action in device.public_actions %}
                         <li>
                             <strong>
                                 {{ action.type }}
