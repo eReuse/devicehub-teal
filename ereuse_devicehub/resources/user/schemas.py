@@ -19,7 +19,6 @@ class User(Thing):
                    description='Use this token in an Authorization header to access the app.'
                                'The token can change overtime.')
     inventories = NestedOn(Inventory, many=True, dump_only=True)
-    ethereum_address = String(description='User identifier address inside the Blockchain')
 
     def __init__(self,
                  only=None,

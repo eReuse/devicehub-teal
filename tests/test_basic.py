@@ -80,7 +80,6 @@ def test_api_docs(client: Client):
         '/pack-of-screwdrivers/{dev1_id}/merge/{dev2_id}',
         '/printers/{dev1_id}/merge/{dev2_id}',
         '/processors/{dev1_id}/merge/{dev2_id}',
-        '/proofs/',
         '/rackets/{dev1_id}/merge/{dev2_id}',
         '/ram-modules/{dev1_id}/merge/{dev2_id}',
         '/recreations/{dev1_id}/merge/{dev2_id}',
@@ -119,4 +118,4 @@ def test_api_docs(client: Client):
         'scheme': 'basic',
         'name': 'Authorization'
     }
-    assert len(docs['definitions']) == 124
+    assert len(docs['definitions']) == 118
