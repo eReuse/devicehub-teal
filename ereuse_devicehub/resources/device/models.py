@@ -376,7 +376,9 @@ class Device(Thing):
                 allocate = copy.copy(allo)
                 allocate['type'] = 'Live'
                 allocate['liveCreate'] = act.created
-                allocate['usageTimeHdd'] = act.usage_time_hdd.total_seconds()/3600
+                allocate['usageTimeHdd'] = 0
+                if act.usage_time_hdd:
+                    allocate['usageTimeHdd'] = act.usage_time_hdd.total_seconds()/3600
                 allocates.append(allocate)
 
             if act.type == 'Deallocate':
