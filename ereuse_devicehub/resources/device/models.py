@@ -217,7 +217,7 @@ class Device(Thing):
         """Actions than we want show in public page as traceability log section
         :return a list of actions:
         """
-        hide_actions = ['Price']
+        hide_actions = ['Price', 'EreusePrice']
         actions = [ac for ac in self.actions if not ac.t in hide_actions]
         actions.reverse()
         return actions
