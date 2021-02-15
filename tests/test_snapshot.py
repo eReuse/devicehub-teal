@@ -822,3 +822,18 @@ def test_snapshot_bug_smallint_hdd(app: Devicehub, user: UserClient):
 
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
     shutil.rmtree(tmp_snapshots)
+
+
+@pytest.mark.mvp
+def test_snapshot_mobil(app: Devicehub, user: UserClient):
+    """ This test check if the end_time != 0001-01-01 00:00:00+00:00
+    and then we get a /devices, this create a crash
+    """
+    snapshot_file = file('mobil')
+    snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
+    device, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    shutil.rmtree(tmp_snapshots)
+
+
