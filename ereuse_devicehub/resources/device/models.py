@@ -352,8 +352,8 @@ class Device(Thing):
         actions = copy.copy(self.actions)
         actions.sort(key=lambda x: x.created)
         allocates =  []
+        lifetime = 0
         for act in actions:
-            lifetime = 0
             if act.type == 'Snapshot':
                 snapshot = act
                 lifestimes = snapshot.get_last_lifetimes()
