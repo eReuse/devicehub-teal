@@ -39,10 +39,34 @@
 <div class="container-fluid">
     <div class="page-header col-md-6 col-md-offset-3">
       <div class="row">
+      {% if result.0 == 'Ok' %}
+        <div class="alert alert-info" role="alert">
+	  {{ result.1 }}
+        </div>
+      {% elif result.0 == 'Bad' %}
+        <div class="alert alert-danger" role="alert">
+	  {{ result.1 }}
+        </div>
+      {% endif %}
+      </div>
+      <div class="row">
 	      <a href="http://dlt.ereuse.org/stamps/create?url={{ rq_url }}" target="_blank">Add one new check in your csv</a>
       </div>
       <div class="row">
 	      <a href="http://dlt.ereuse.org/stamps/check?url={{ rq_url }}" target="_blank">Verify a CSV file in here.</a>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="page-header col-md-6 col-md-offset-3">
+	If you want us to verify a document issued by us, upload it using the following form
+      </div>
+      <div class="col-md-6 col-md-offset-3">
+      <form enctype="multipart/form-data" action="" method="post">
+        <label for="name">Document: </label>
+        <input type="file" name="docUpload" accept="text/csv,application/pdf" /><br />
+        <input type="submit" id="send-signup" name="signup" value="Verify" />
+      </form>
       </div>
     </div>
 </div>

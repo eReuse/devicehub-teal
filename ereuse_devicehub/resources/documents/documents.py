@@ -24,7 +24,7 @@ from ereuse_devicehub.resources.device.views import DeviceView
 from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow, ActionRow
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
-from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash
+from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash, verify_hash
 
 
 class Format(enum.Enum):
@@ -244,12 +244,28 @@ class StampsView(View):
     This view render one public ans static page for see the links for to do the check
     of one csv file
     """
-    def get(self):
+    def get_url_path(self):
         url = urlutils.URL(request.url)
         url.normalize()
         url.path_parts = url.path_parts[:-2] + ['check', '']
-        url_path = url.to_text() 
-        return flask.render_template('documents/stamp.html', rq_url=url_path)
+        return url.to_text() 
+
+    def get(self):
+        result = ('', '')
+        return flask.render_template('documents/stamp.html', rq_url=self.get_url_path(),
+                result=result)
+
+    def post(self):
+        result = ('', '')
+        if 'docUpload' in request.files:
+            file_check = request.files['docUpload']
+            result = ('Bad', 'Sorry, this file has not been produced by this website')
+            if file_check.mimetype in ['text/csv', 'application/pdf']:
+                if verify_hash(file_check):
+                    result = ('Ok', 'Yes, this file has been produced by this website')
+
+        return flask.render_template('documents/stamp.html', rq_url=self.get_url_path(),
+                result=result)
 
 
 class DocumentDef(Resource):
@@ -305,7 +321,7 @@ class DocumentDef(Resource):
         self.add_url_rule('/check/', defaults={}, view_func=check_view, methods=get)
 
         stamps_view = StampsView.as_view('StampsView', definition=self, auth=app.auth)
-        self.add_url_rule('/stamps/', defaults={}, view_func=stamps_view, methods=get)
+        self.add_url_rule('/stamps/', defaults={}, view_func=stamps_view, methods={'GET', 'POST'})
 
         actions_view = ActionsDocumentView.as_view('ActionsDocumentView', 
                                                    definition=self, 
