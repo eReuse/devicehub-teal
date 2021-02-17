@@ -1,8 +1,9 @@
 import csv
 import hashlib
 from datetime import datetime
-from io import StringIO
+from io import StringIO, BytesIO
 from pathlib import Path
+from flask import url_for
 
 import pytest
 from werkzeug.exceptions import Unauthorized
@@ -459,3 +460,40 @@ def test_get_document_lots(user: UserClient, user2: UserClient):
     assert export_csv[1][3] == 'comments,lot1,testcomment-lot1,' or 'comments,lot2,testcomment-lot2,'
     assert export2_csv[1][1] == 'Lot3-User2'
     assert export2_csv[1][3] == 'comments,lot3,testcomment-lot3,'
+
+
+@pytest.mark.mvp 
+def test_verify_stamp(user: UserClient, client: Client):
+    """Test verify stamp of one export device information in a csv file."""
+    snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+    csv_str, _ = user.get(res=documents.DocumentDef.t,
+                          item='devices/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
+    
+    response, _ = client.post(res=documents.DocumentDef.t,
+            item='stamps/',
+            content_type='multipart/form-data',
+            accept='text/html',
+            data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')), 'example.csv')]}, 
+            status=200)
+    assert "alert alert-info" in response
+    assert not "alert alert-danger" in response
+
+    response, _ = client.post(res=documents.DocumentDef.t,
+            item='stamps/',
+            content_type='multipart/form-data',
+            accept='text/html',
+            data={'docUpload': [(BytesIO(b'abc'), 'example.csv')]},
+            status=200)
+
+    assert not "alert alert-info" in response
+    assert "alert alert-danger" in response
+
+    response, _ = client.get(res=documents.DocumentDef.t,
+            item='stamps/',
+            accept='text/html',
+            status=200)
+
+    assert not "alert alert-info" in response
+    assert not "alert alert-danger" in response
