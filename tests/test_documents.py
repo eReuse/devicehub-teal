@@ -481,19 +481,136 @@ def test_verify_stamp(user: UserClient, client: Client):
     assert not "alert alert-danger" in response
 
     response, _ = client.post(res=documents.DocumentDef.t,
-            item='stamps/',
-            content_type='multipart/form-data',
-            accept='text/html',
-            data={'docUpload': [(BytesIO(b'abc'), 'example.csv')]},
-            status=200)
+                              item='stamps/',
+                              content_type='multipart/form-data',
+                              accept='text/html',
+                              data={'docUpload': [(BytesIO(b'abc'), 'example.csv')]},
+                              status=200)
 
     assert not "alert alert-info" in response
     assert "alert alert-danger" in response
 
     response, _ = client.get(res=documents.DocumentDef.t,
-            item='stamps/',
-            accept='text/html',
-            status=200)
+                             item='stamps/',
+                             accept='text/html',
+                             status=200)
 
     assert not "alert alert-info" in response
     assert not "alert alert-danger" in response
+
+
+@pytest.mark.mvp 
+def test_verify_stamp_log_info(user: UserClient, client: Client):
+    """Test verify stamp of one export lots-info in a csv file."""
+    
+    l, _ = user.post({'name': 'Lot1', 'description': 'comments,lot1,testcomment-lot1,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot2', 'description': 'comments,lot2,testcomment-lot2,'}, res=Lot)
+
+    csv_str, _ = user.get(res=documents.DocumentDef.t,
+                          item='lots/',
+                          accept='text/csv')
+
+    response, _ = client.post(res=documents.DocumentDef.t,
+                              item='stamps/',
+                              content_type='multipart/form-data',
+                              accept='text/html',
+                              data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')), 
+                                    'example.csv')]}, 
+                              status=200)
+    assert "alert alert-info" in response
+
+
+@pytest.mark.mvp
+def test_verify_stamp_devices_stock(user: UserClient, client: Client):
+    """Test verify stamp of one export device information in a csv file."""
+
+    snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+
+    csv_str, _ = user.get(res=documents.DocumentDef.t,
+                          item='stock/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
+
+    response, _ = client.post(res=documents.DocumentDef.t,
+                              item='stamps/',
+                              content_type='multipart/form-data',
+                              accept='text/html',
+                              data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')),
+                                    'example.csv')]}, 
+                              status=200)
+    assert "alert alert-info" in response
+
+
+@pytest.mark.mvp
+def test_verify_stamp_csv_actions(user: UserClient, client: Client):
+    """Test verify stamp of one export device information in a csv file with others users."""
+    acer = file('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(acer, res=Snapshot)
+    device_id = snapshot['device']['id']
+    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
+                    "devices": [device_id], "description": "aaa",
+                    "finalUserCode": "abcdefjhi",
+                    "startTime": "2020-11-01T02:00:00+00:00",
+                    "endTime": "2020-12-01T02:00:00+00:00"
+    }
+
+    user.post(res=Allocate, data=post_request)
+    hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
+    hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
+    hdd_action['lifetime'] += 1000
+    acer.pop('elapsed')
+    acer['licence_version'] = '1.0.0'
+    snapshot, _ = client.post(acer, res=Live)
+
+    csv_str, _ = user.get(res=documents.DocumentDef.t,
+                          item='actions/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
+
+    response, _ = client.post(res=documents.DocumentDef.t,
+                              item='stamps/',
+                              content_type='multipart/form-data',
+                              accept='text/html',
+                              data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')), 
+                                    'example.csv')]}, 
+                              status=200)
+    assert "alert alert-info" in response
+
+
+@pytest.mark.mvp
+def test_verify_stamp_erasure_certificate(user: UserClient, client: Client):
+    """Test verify stamp of one export certificate in PDF."""
+    s = file('erase-sectors.snapshot')
+    snapshot, response = user.post(s, res=Snapshot)
+    # import pdb; pdb.set_trace()
+
+    doc, _ = user.get(res=documents.DocumentDef.t,
+                             item='erasures/',
+                             query=[('filter', {'id': [snapshot['device']['id']]})],
+                             accept=ANY)
+
+    response, _ = client.post(res=documents.DocumentDef.t,
+                              item='stamps/',
+                              content_type='multipart/form-data',
+                              accept='text/html',
+                              data={'docUpload': [(BytesIO(bytes(doc, 'utf-8')), 
+                                    'example.csv')]}, 
+                              status=200)
+    assert "alert alert-danger" in response
+
+    doc, _ = user.get(res=documents.DocumentDef.t,
+                             item='erasures/',
+                             query=[
+                                 ('filter', {'id': [snapshot['device']['id']]}),
+                                 ('format', 'PDF')
+                             ],
+                             accept='application/pdf')
+
+    response, _ = client.post(res=documents.DocumentDef.t,
+                              item='stamps/',
+                              content_type='multipart/form-data',
+                              accept='text/html',
+                              data={'docUpload': [(BytesIO(doc), 
+                                    'example.csv')]}, 
+                              status=200)
+    assert "alert alert-info" in response
