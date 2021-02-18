@@ -77,6 +77,7 @@ class DocumentView(DeviceView):
             res = flask_weasyprint.render_pdf(
                 flask_weasyprint.HTML(string=template), download_filename='{}.pdf'.format(type)
             )
+            insert_hash(res.data)
         else:
             res = flask.make_response(template)
         return res
@@ -183,7 +184,9 @@ class LotsDocumentView(LotView):
                 cw.writerow(l.keys())
                 first = False
             cw.writerow(l.values())
-        output = make_response(data.getvalue())
+        bfile = data.getvalue().encode('utf-8')
+        output = make_response(bfile)
+        insert_hash(bfile)
         output.headers['Content-Disposition'] = 'attachment; filename=lots-info.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
@@ -220,7 +223,9 @@ class StockDocumentView(DeviceView):
                 cw.writerow(d.keys())
                 first = False
             cw.writerow(d.values())
-        output = make_response(data.getvalue())
+        bfile = data.getvalue().encode('utf-8')
+        output = make_response(bfile)
+        insert_hash(bfile)
         output.headers['Content-Disposition'] = 'attachment; filename=devices-stock.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
