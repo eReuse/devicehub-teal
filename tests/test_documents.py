@@ -459,3 +459,18 @@ def test_get_document_lots(user: UserClient, user2: UserClient):
     assert export_csv[1][3] == 'comments,lot1,testcomment-lot1,' or 'comments,lot2,testcomment-lot2,'
     assert export2_csv[1][1] == 'Lot3-User2'
     assert export2_csv[1][3] == 'comments,lot3,testcomment-lot3,'
+
+
+@pytest.mark.mvp
+def test_get_document_internal_stats(user: UserClient):
+    """Tests for get teh internal stats."""
+
+    # import pdb; pdb.set_trace()
+    csv_str, _ = user.get(res=documents.DocumentDef.t,
+                            item='internalstats/')
+
+    f = StringIO(csv_str)
+    obj_csv = csv.reader(f, f)
+    export_csv = list(obj_csv)
+
+    assert len(export_csv) == 0

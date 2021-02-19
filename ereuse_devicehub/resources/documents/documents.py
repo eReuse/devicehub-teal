@@ -252,6 +252,13 @@ class StampsView(View):
         return flask.render_template('documents/stamp.html', rq_url=url_path)
 
 
+class InternalStatsView(View):
+
+    def get(self):
+        result = ''
+        return jsonify(result)
+
+
 class DocumentDef(Resource):
     __type__ = 'Document'
     SCHEMA = None
@@ -306,6 +313,9 @@ class DocumentDef(Resource):
 
         stamps_view = StampsView.as_view('StampsView', definition=self, auth=app.auth)
         self.add_url_rule('/stamps/', defaults={}, view_func=stamps_view, methods=get)
+
+        stamps_view = InternalStatsView.as_view('InternalStatsView', definition=self, auth=app.auth)
+        self.add_url_rule('/internalstats/', defaults={}, view_func=stamps_view, methods=get)
 
         actions_view = ActionsDocumentView.as_view('ActionsDocumentView', 
                                                    definition=self, 
