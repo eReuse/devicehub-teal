@@ -465,7 +465,6 @@ def test_get_document_lots(user: UserClient, user2: UserClient):
 def test_get_document_internal_stats(user: UserClient):
     """Tests for get teh internal stats."""
 
-    # import pdb; pdb.set_trace()
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                             item='internalstats/')
 
