@@ -414,6 +414,8 @@ def test_report_devices_stock_control(user: UserClient, user2: UserClient):
     assert user.user['id'] != user2.user['id']
     assert len(export_csv) == 2
 
+    export_csv[0] = export_csv[0][0].split(';')
+    export_csv[1] = export_csv[1][0].split(';')
     assert isinstance(datetime.strptime(export_csv[1][5], '%c'), datetime), \
         'Register in field is not a datetime'
 
