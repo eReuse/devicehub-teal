@@ -5,6 +5,7 @@ import uuid
 from collections import OrderedDict
 from io import StringIO
 from typing import Callable, Iterable, Tuple
+from decouple import config
 
 import boltons
 import flask
@@ -12,6 +13,7 @@ import flask_weasyprint
 import teal.marshmallow
 from boltons import urlutils
 from flask import make_response, g, request
+from flask import current_app as app
 from flask.json import jsonify
 from teal.cache import cache
 from teal.resource import Resource, View
@@ -253,27 +255,27 @@ class StampsView(View):
         return flask.render_template('documents/stamp.html', rq_url=url_path)
 
 
-class InternalStatsView(View):
-
-    def get(self):
-        return self.get_datas()
-
-    def get_datas(self):
-        actions = evs.Action.query.filter(
+class InternalStatsView(DeviceView):
+    @cache(datetime.timedelta(minutes=1))
+    def find(self, args: dict):
+        if not g.user.email == app.config['EMAIL_ADMIN']:
+            return jsonify('')
+        query = evs.Action.query.filter(
             evs.Action.type.in_(('Snapshot', 'Live', 'Allocate', 'Deallocate')))
+        return self.generate_post_csv(query)
+
+
+    def generate_post_csv(self, query):
         d = {}
-        for ac in actions:
+        for ac in query:
             create = '{}-{}'.format(ac.created.year, ac.created.month)
             user = ac.author.email
 
             if not user in d:
-                d[user] = {}
-
+                    d[user] = {}
             if not create in d[user]:
                 d[user][create] = []
-
             d[user][create].append(ac)
-
 
         data = StringIO()
         cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
@@ -345,11 +347,14 @@ class DocumentDef(Resource):
         stamps_view = StampsView.as_view('StampsView', definition=self, auth=app.auth)
         self.add_url_rule('/stamps/', defaults={}, view_func=stamps_view, methods=get)
 
-        stamps_view = InternalStatsView.as_view('InternalStatsView', definition=self, auth=app.auth)
-        self.add_url_rule('/internalstats/', defaults={}, view_func=stamps_view, methods=get)
+        internalstats_view = InternalStatsView.as_view(
+            'InternalStatsView', definition=self, auth=app.auth)
+        internalstats_view = app.auth.requires_auth(internalstats_view)
+        self.add_url_rule('/internalstats/', defaults=d, view_func=internalstats_view,
+                          methods=get)
 
-        actions_view = ActionsDocumentView.as_view('ActionsDocumentView', 
-                                                   definition=self, 
+        actions_view = ActionsDocumentView.as_view('ActionsDocumentView',
+                                                   definition=self,
                                                    auth=app.auth)
         actions_view = app.auth.requires_auth(actions_view)
         self.add_url_rule('/actions/', defaults=d, view_func=actions_view, methods=get)
