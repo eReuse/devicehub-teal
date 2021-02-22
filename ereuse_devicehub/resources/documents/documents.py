@@ -21,7 +21,8 @@ from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 from ereuse_devicehub.resources.device.views import DeviceView
-from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow, ActionRow
+from ereuse_devicehub.resources.documents.device_row import (DeviceRow, StockRow, ActionRow,
+                                                             InternalStatsRow)
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash
@@ -212,7 +213,7 @@ class StockDocumentView(DeviceView):
     def generate_post_csv(self, query):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data)
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
         first = True
         for device in query:
             d = StockRow(device)
@@ -255,8 +256,38 @@ class StampsView(View):
 class InternalStatsView(View):
 
     def get(self):
-        result = ''
-        return jsonify(result)
+        return self.get_datas()
+
+    def get_datas(self):
+        actions = evs.Action.query.filter(
+            evs.Action.type.in_(('Snapshot', 'Live', 'Allocate', 'Deallocate')))
+        d = {}
+        for ac in actions:
+            create = '{}-{}'.format(ac.created.year, ac.created.month)
+            user = ac.author.email
+
+            if not user in d:
+                d[user] = {}
+
+            if not create in d[user]:
+                d[user][create] = []
+
+            d[user][create].append(ac)
+
+
+        data = StringIO()
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        cw.writerow(InternalStatsRow('', "2000-1", []).keys())
+        for user, createds in d.items():
+            for create, actions in createds.items():
+                cw.writerow(InternalStatsRow(user, create, actions).values())
+
+        bfile = data.getvalue().encode('utf-8')
+        output = make_response(bfile)
+        insert_hash(bfile)
+        output.headers['Content-Disposition'] = 'attachment; filename=internal-stats.csv'
+        output.headers['Content-type'] = 'text/csv'
+        return output
 
 
 class DocumentDef(Resource):
