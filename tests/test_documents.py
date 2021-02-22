@@ -462,14 +462,29 @@ def test_get_document_lots(user: UserClient, user2: UserClient):
 
 
 @pytest.mark.mvp
-def test_get_document_internal_stats(user: UserClient):
+def test_get_document_internal_stats(user: UserClient, user2: UserClient):
     """Tests for get teh internal stats."""
 
+    # csv_str, _ = user.get(res=documents.DocumentDef.t,
+                            # item='internalstats/')
     csv_str, _ = user.get(res=documents.DocumentDef.t,
-                            item='internalstats/')
+                          item='internalstats/',
+                          accept='text/csv',
+                          query=[])
 
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)
 
-    assert len(export_csv) == 0
+    assert len(export_csv) == 1
+
+    csv_str, _ = user2.get(res=documents.DocumentDef.t,
+                          item='internalstats/',
+                          accept='text/csv',
+                          query=[])
+
+    f = StringIO(csv_str)
+    obj_csv = csv.reader(f, f)
+    export_csv = list(obj_csv)
+
+    assert csv_str.strip() == '""'
