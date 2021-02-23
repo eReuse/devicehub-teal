@@ -32,6 +32,7 @@ class TestConfig(DevicehubConfig):
     SERVER_NAME = 'localhost'
     TMP_SNAPSHOTS = '/tmp/snapshots'
     TMP_LIVES = '/tmp/lives'
+    EMAIL_ADMIN = 'foo@foo.com'
 
 
 @pytest.fixture(scope='session')

@@ -27,7 +27,6 @@ def test_dependencies():
 def test_api_docs(client: Client):
     """Tests /apidocs correct initialization."""
     docs, _ = client.get('/apidocs')
-    # import pdb; pdb.set_trace()
     assert set(docs['paths'].keys()) == {
         '/actions/',
         '/apidocs',
@@ -41,6 +40,7 @@ def test_api_docs(client: Client):
         '/documents/erasures/',
         '/documents/devices/',
         '/documents/stamps/',
+        '/documents/internalstats/',
         '/documents/stock/',
         '/documents/check/',
         '/documents/lots/',
