@@ -441,6 +441,9 @@ class InternalStatsRow(OrderedDict):
 
         canary = False
         for _ac in ac.device.actions:
+            if not _ac.type == 'Snapshot':
+                continue
+
             if _ac.created < ac.created:
                 canary = True
                 break
