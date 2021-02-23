@@ -413,13 +413,20 @@ class InternalStatsRow(OrderedDict):
         for ac in self.actions:
             self.is_snapshot(
                 self.is_deallocate(
-                    self.is_allocate(ac)
+                    self.is_live(
+                        self.is_allocate(ac)
+                    )
                 )
             )
 
     def is_allocate(self, ac):
         if ac.type == 'Allocate':
             self['Allocates'] += 1
+        return ac
+
+    def is_live(self, ac):
+        if ac.type == 'Live':
+            self['Lives'] += 1
         return ac
 
     def is_deallocate(self, ac):
