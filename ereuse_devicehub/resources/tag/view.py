@@ -11,6 +11,13 @@ from ereuse_devicehub.resources.tag import Tag
 
 
 class TagView(View):
+    def one(self, id):
+        """Gets the device from the named tag, /tags/namedtag."""
+        tag = Tag.from_an_id(id).one()  # type: Tag
+        if not tag.device:
+            raise TagNotLinked(tag.id)
+        return redirect(location=url_for_resource(Device, tag.device.id))
+
     @auth.Auth.requires_auth
     def post(self):
         """Creates a tag."""
@@ -37,7 +44,6 @@ class TagView(View):
     def _create_many_regular_tags(self, num: int):
         tags_id, _ = g.tag_provider.post('/', {}, query=[('num', num)])
         tags = [Tag(id=tag_id, provider=g.inventory.tag_provider) for tag_id in tags_id]
-        import pdb; pdb.set_trace()
         db.session.add_all(tags)
         db.session().final_flush()
         response = things_response(self.schema.dump(tags, many=True, nested=1), code=201)
@@ -45,8 +51,6 @@ class TagView(View):
         return response
 
     def _post_one(self):
-        # todo do we use this?
-        # import pdb; pdb.set_trace()
         t = request.get_json()
         tag = Tag(**t)
         if tag.like_etag():
@@ -62,7 +66,6 @@ class TagDeviceView(View):
 
     def one(self, id):
         """Gets the device from the tag."""
-        import pdb; pdb.set_trace()
         tag = Tag.from_an_id(id).one()  # type: Tag
         if not tag.device:
             raise TagNotLinked(tag.id)
@@ -71,9 +74,9 @@ class TagDeviceView(View):
         return app.resources[Device.t].schema.jsonify(tag.device)
 
     # noinspection PyMethodOverriding
+    @auth.Auth.requires_auth
     def put(self, tag_id: str, device_id: str):
         """Links an existing tag with a device."""
-        import pdb; pdb.set_trace()
         tag = Tag.from_an_id(tag_id).one()  # type: Tag
         if tag.device_id:
             if tag.device_id == device_id:
@@ -81,7 +84,10 @@ class TagDeviceView(View):
             else:
                 raise LinkedToAnotherDevice(tag.device_id)
         else:
+            # Check if this device exist for this woner
+            Device.query.filter_by(owner=g.user).filter_by(id=device_id).one()
             tag.device_id = device_id
+
         db.session().final_flush()
         db.session.commit()
         return Response(status=204)
