@@ -16,8 +16,10 @@ class TagView(View):
         """Creates a tag."""
         num = request.args.get('num', type=int)
         if num:
+            # create unnamed tag
             res = self._create_many_regular_tags(num)
         else:
+            # create named tag
             res = self._post_one()
         return res
 
@@ -35,6 +37,7 @@ class TagView(View):
     def _create_many_regular_tags(self, num: int):
         tags_id, _ = g.tag_provider.post('/', {}, query=[('num', num)])
         tags = [Tag(id=tag_id, provider=g.inventory.tag_provider) for tag_id in tags_id]
+        import pdb; pdb.set_trace()
         db.session.add_all(tags)
         db.session().final_flush()
         response = things_response(self.schema.dump(tags, many=True, nested=1), code=201)
@@ -43,6 +46,7 @@ class TagView(View):
 
     def _post_one(self):
         # todo do we use this?
+        # import pdb; pdb.set_trace()
         t = request.get_json()
         tag = Tag(**t)
         if tag.like_etag():
@@ -58,6 +62,7 @@ class TagDeviceView(View):
 
     def one(self, id):
         """Gets the device from the tag."""
+        import pdb; pdb.set_trace()
         tag = Tag.from_an_id(id).one()  # type: Tag
         if not tag.device:
             raise TagNotLinked(tag.id)
@@ -68,6 +73,7 @@ class TagDeviceView(View):
     # noinspection PyMethodOverriding
     def put(self, tag_id: str, device_id: str):
         """Links an existing tag with a device."""
+        import pdb; pdb.set_trace()
         tag = Tag.from_an_id(tag_id).one()  # type: Tag
         if tag.device_id:
             if tag.device_id == device_id:
