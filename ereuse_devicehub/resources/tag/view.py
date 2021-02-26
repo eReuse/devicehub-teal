@@ -66,11 +66,19 @@ class TagDeviceView(View):
 
     def one(self, id):
         """Gets the device from the tag."""
+        if request.authorization:
+            return self.one_authorization(id)
+
         tag = Tag.from_an_id(id).one()  # type: Tag
         if not tag.device:
             raise TagNotLinked(tag.id)
-        if not request.authorization:
-            return redirect(location=url_for_resource(Device, tag.device.id))
+        return redirect(location=url_for_resource(Device, tag.device.id))
+
+    @auth.Auth.requires_auth
+    def one_authorization(self, id):
+        tag = Tag.from_an_id(id).filter_by(owner=g.user).one()  # type: Tag
+        if not tag.device:
+            raise TagNotLinked(tag.id)
         return app.resources[Device.t].schema.jsonify(tag.device)
 
     # noinspection PyMethodOverriding
