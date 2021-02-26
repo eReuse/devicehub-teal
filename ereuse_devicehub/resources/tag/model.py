@@ -30,12 +30,12 @@ class Tag(Thing):
     id.comment = """The ID of the tag."""
     owner_id = Column(UUID(as_uuid=True),
                       ForeignKey(User.id),
+                      primary_key=True,
                       nullable=False,
                       default=lambda: g.user.id)
     owner = relationship(User, primaryjoin=owner_id == User.id)
     org_id = Column(UUID(as_uuid=True),
                     ForeignKey(Organization.id),
-                    primary_key=True,
                     # If we link with the Organization object this instance
                     # will be set as persistent and added to session
                     # which is something we don't want to enforce by default
@@ -98,8 +98,7 @@ class Tag(Thing):
 
     __table_args__ = (
         UniqueConstraint(id, owner_id, name='one tag id per owner'),
-        # UniqueConstraint(id, org_id, name='one tag id per organization'),
-        # UniqueConstraint(secondary, org_id, name='one secondary tag per organization')
+        UniqueConstraint(secondary, org_id, name='one secondary tag per organization')
     )
 
     @property
