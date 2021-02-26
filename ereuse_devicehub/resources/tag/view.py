@@ -97,6 +97,10 @@ class TagDeviceView(View):
     def delete(self, tag_id: str, device_id: str):
         tag = Tag.from_an_id(tag_id).filter_by(owner=g.user).one()  # type: Tag
         device = Device.query.filter_by(owner=g.user).filter_by(id=device_id).one()
+        if tag.provider:
+            # if is an unamed tag not do nothing
+            return Response(status=204)
+
         if tag.device == device:
             tag.device_id = None
             db.session().final_flush()
