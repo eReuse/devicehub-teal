@@ -24,9 +24,13 @@ def get_inv():
 
 def upgrade():
     op.drop_constraint('one tag id per organization', 'tag', schema=f'{get_inv()}')
+    op.drop_constraint('one secondary tag per organization', 'tag', schema=f'{get_inv()}')
     op.create_primary_key('one tag id per owner',  'tag', ['id', 'owner_id'], schema=f'{get_inv()}'),
+    op.create_unique_constraint('one secondary tag per owner',  'tag', ['secondary', 'owner_id'], schema=f'{get_inv()}'),
 
 
 def downgrade():
     op.drop_constraint('one tag id per owner', 'tag', schema=f'{get_inv()}')
+    op.drop_constraint('one secondary tag per owner', 'tag', schema=f'{get_inv()}')
     op.create_primary_key('one tag id per organization',  'tag', ['id', 'org_id'], schema=f'{get_inv()}'),
+    op.create_unique_constraint('one secondary tag per organization',  'tag', ['secondary', 'org_id'], schema=f'{get_inv()}'),

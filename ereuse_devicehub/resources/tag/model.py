@@ -98,7 +98,7 @@ class Tag(Thing):
 
     __table_args__ = (
         UniqueConstraint(id, owner_id, name='one tag id per owner'),
-        UniqueConstraint(secondary, org_id, name='one secondary tag per organization')
+        UniqueConstraint(secondary, owner_id, name='one secondary tag per organization')
     )
 
     @property
