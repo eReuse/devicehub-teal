@@ -97,8 +97,9 @@ class Tag(Thing):
         return url
 
     __table_args__ = (
-        UniqueConstraint(id, org_id, name='one tag id per organization'),
-        UniqueConstraint(secondary, org_id, name='one secondary tag per organization')
+        UniqueConstraint(id, owner_id, name='one tag id per owner'),
+        # UniqueConstraint(id, org_id, name='one tag id per organization'),
+        # UniqueConstraint(secondary, org_id, name='one secondary tag per organization')
     )
 
     @property

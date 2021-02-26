@@ -77,7 +77,8 @@ class TagDeviceView(View):
     @auth.Auth.requires_auth
     def put(self, tag_id: str, device_id: str):
         """Links an existing tag with a device."""
-        tag = Tag.from_an_id(tag_id).one()  # type: Tag
+        # tag = Tag.from_an_id(tag_id).one()  # type: Tag
+        tag = Tag.from_an_id(tag_id).filter_by(owner=g.user).one()  # type: Tag
         if tag.device_id:
             if tag.device_id == device_id:
                 return Response(status=204)
@@ -90,6 +91,16 @@ class TagDeviceView(View):
 
         db.session().final_flush()
         db.session.commit()
+        return Response(status=204)
+
+    @auth.Auth.requires_auth
+    def delete(self, tag_id: str, device_id: str):
+        tag = Tag.from_an_id(tag_id).filter_by(owner=g.user).one()  # type: Tag
+        device = Device.query.filter_by(owner=g.user).filter_by(id=device_id).one()
+        if tag.device == device:
+            tag.device_id = None
+            db.session().final_flush()
+            db.session.commit()
         return Response(status=204)
 
 

@@ -51,13 +51,16 @@ def test_create_tag_default_org(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_create_tag_no_slash():
-    """Checks that no tags can be created that contain a slash."""
-    with raises(ValidationError):
-        Tag('/')
-
-    with raises(ValidationError):
-        Tag('bar', secondary='/')
+def test_create_same_tag_default_org_two_users(user: UserClient, user2: UserClient):
+    """Creates a tag using the default organization."""
+    # import pdb; pdb.set_trace()
+    tag = Tag(id='foo-1', owner_id=user.user['id'])
+    tag2 = Tag(id='foo-1', owner_id=user2.user['id'])
+    db.session.add(tag)
+    db.session.add(tag2)
+    db.session.commit()
+    assert tag.org.name == 'FooOrg'  # as defined in the settings
+    assert tag2.org.name == 'FooOrg'  # as defined in the settings
 
 
 @pytest.mark.mvp
@@ -76,6 +79,17 @@ def test_create_two_same_tags(user: UserClient):
     org2 = Organization(name='org 2', tax_id='tax id org 2')
     db.session.add(Tag(id='foo-bar', org=org2, owner_id=user.user['id']))
     db.session.commit()
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_create_tag_no_slash():
+    """Checks that no tags can be created that contain a slash."""
+    with raises(ValidationError):
+        Tag('/')
+
+    with raises(ValidationError):
+        Tag('bar', secondary='/')
 
 
 @pytest.mark.mvp
