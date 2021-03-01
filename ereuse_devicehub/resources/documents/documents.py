@@ -291,6 +291,10 @@ class InternalStatsView(DeviceView):
         output.headers['Content-type'] = 'text/csv'
         return output
 
+class WbConfDocumentView(DeviceView):
+    def get(self, wbtype: str):
+        return jsonify('')
+
 
 class DocumentDef(Resource):
     __type__ = 'Document'
@@ -358,3 +362,9 @@ class DocumentDef(Resource):
                                                    auth=app.auth)
         actions_view = app.auth.requires_auth(actions_view)
         self.add_url_rule('/actions/', defaults=d, view_func=actions_view, methods=get)
+
+        wbconf_view = ActionsDocumentView.as_view('WbConfDocumentView',
+                                                  definition=self,
+                                                  auth=app.auth)
+        wbconf_view = app.auth.requires_auth(wbconf_view)
+        self.add_url_rule('/wbconf/', defaults=d, view_func=wbconf_view, methods=get)

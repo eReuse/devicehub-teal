@@ -465,7 +465,7 @@ def test_get_document_lots(user: UserClient, user2: UserClient):
 
 @pytest.mark.mvp
 def test_get_document_internal_stats(user: UserClient, user2: UserClient):
-    """Tests for get teh internal stats."""
+    """Tests for get the internal stats."""
 
     # csv_str, _ = user.get(res=documents.DocumentDef.t,
                             # item='internalstats/')
@@ -490,3 +490,10 @@ def test_get_document_internal_stats(user: UserClient, user2: UserClient):
     export_csv = list(obj_csv)
 
     assert csv_str.strip() == '""'
+
+@pytest.mark.mvp
+def test_get_wbconf(user: UserClient):
+    """Tests for get env file for usb wb."""
+
+    csv_str, _ = user.get(res=documents.DocumentDef.t,
+                          item='wbconf/')
