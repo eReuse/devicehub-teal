@@ -37,6 +37,49 @@ def test_create_tag(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_delete_tags(user: UserClient, client: Client):
+    """Delete a named tag."""
+    # Delete Tag Named
+    # import pdb; pdb.set_trace()
+    pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
+    db.session.add(pc)
+    db.session.commit()
+    tag = Tag(id='bar', owner_id=user.user['id'], device_id=pc.id)
+    db.session.add(tag)
+    db.session.commit()
+    tag = Tag.query.one()
+    assert tag.id == 'bar'
+    # Is not possible delete one tag linked to one device
+    res, _ = user.delete(res=Tag, item=tag.id, status=422)
+    msg = 'The tag bar is linked to device'
+    assert msg in res['message'][0]
+
+    tag.device_id = None
+    db.session.add(tag)
+    db.session.commit()
+    # Is not possible delete one tag from an anonymous user
+    client.delete(res=Tag, item=tag.id, status=401)
+
+    # Is possible delete one normal tag
+    user.delete(res=Tag, item=tag.id)
+    user.get(res=Tag, item=tag.id, status=404)
+
+    # Delete Tag UnNamed
+    org = Organization(name='bar', tax_id='bartax')
+    tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id'])
+    db.session.add(tag)
+    db.session.commit()
+    tag = Tag.query.one()
+    assert tag.id == 'bar-1'
+    res, _ = user.delete(res=Tag, item=tag.id, status=422)
+    msg = 'This tag {} is unnamed tag. It is imposible delete.'.format(tag.id)
+    assert msg in res['message']
+    tag = Tag.query.one()
+    assert tag.id == 'bar-1'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_tag_default_org(user: UserClient):
     """Creates a tag using the default organization."""
     tag = Tag(id='foo-1', owner_id=user.user['id'])

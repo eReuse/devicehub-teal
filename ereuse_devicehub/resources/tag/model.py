@@ -125,6 +125,19 @@ class Tag(Thing):
         """Return a SQLAlchemy filter expression for printable queries."""
         return cls.org_id == Organization.get_default_org_id()
 
+    def delete(self):
+        """Deletes the tag.
+
+        This method removes the tag if is named tag and don't have any linked device.
+        """
+        if self.device:
+            raise TagLinked(self)
+        if self.provider:
+            # if is an unnamed tag not delete
+            raise TagUnnamed(self.id)
+
+        db.session.delete(self)
+
     def __repr__(self) -> str:
         return '<Tag {0.id} org:{0.org_id} device:{0.device_id}>'.format(self)
 
@@ -133,3 +146,15 @@ class Tag(Thing):
 
     def __format__(self, format_spec: str) -> str:
         return '{0.org.name} {0.id}'.format(self)
+
+
+class TagLinked(ValidationError):
+    def __init__(self, tag):
+        message = 'The tag {} is linked to device {}.'.format(tag.id, tag.device.id)
+        super().__init__(message, field_names=['device'])
+
+        
+class TagUnnamed(ValidationError):
+    def __init__(self, id):
+        message = 'This tag {} is unnamed tag. It is imposible delete.'.format(id)
+        super().__init__(message, field_names=['device'])

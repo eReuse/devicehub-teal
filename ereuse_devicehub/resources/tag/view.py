@@ -60,6 +60,14 @@ class TagView(View):
         db.session.commit()
         return Response(status=201)
 
+    @auth.Auth.requires_auth
+    def delete(self, id):
+        tag = Tag.from_an_id(id).filter_by(owner=g.user).one()
+        tag.delete()
+        db.session().final_flush()
+        db.session.commit()
+        return Response(status=204)
+
 
 class TagDeviceView(View):
     """Endpoints to work with the device of the tag; /tags/23/device."""
