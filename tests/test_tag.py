@@ -33,6 +33,26 @@ def test_create_tag(user: UserClient):
     tag = Tag.query.one()
     assert tag.id == 'bar-1'
     assert tag.provider == URL('http://foo.bar')
+    res, _ = user.get(res=Tag, item=tag.id, status=422)
+    assert res['type'] == 'TagNotLinked'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_create_tag_with_device(user: UserClient):
+    """Creates a tag specifying linked with one device."""
+    pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
+    db.session.add(pc)
+    db.session.commit()
+    tag = Tag(id='bar', owner_id=user.user['id'])
+    db.session.add(tag)
+    db.session.commit()
+    data = '{tag_id}/device/{device_id}'.format(tag_id=tag.id, device_id=pc.id)
+    user.put({}, res=Tag, item=data, status=204)
+    user.get(res=Tag, item='{}/device'.format(tag.id))
+    user.delete({}, res=Tag, item=data, status=204)
+    res, _ = user.get(res=Tag, item='{}/device'.format(tag.id), status=422)
+    assert res['type'] == 'TagNotLinked'
 
 
 @pytest.mark.mvp
@@ -40,7 +60,6 @@ def test_create_tag(user: UserClient):
 def test_delete_tags(user: UserClient, client: Client):
     """Delete a named tag."""
     # Delete Tag Named
-    # import pdb; pdb.set_trace()
     pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
     db.session.add(pc)
     db.session.commit()
@@ -96,7 +115,6 @@ def test_create_tag_default_org(user: UserClient):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_same_tag_default_org_two_users(user: UserClient, user2: UserClient):
     """Creates a tag using the default organization."""
-    # import pdb; pdb.set_trace()
     tag = Tag(id='foo-1', owner_id=user.user['id'])
     tag2 = Tag(id='foo-1', owner_id=user2.user['id'])
     db.session.add(tag)
