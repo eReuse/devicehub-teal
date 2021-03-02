@@ -293,14 +293,14 @@ class InternalStatsView(DeviceView):
         return output
 
 
-class WbConfDocumentView(View):
+class WbConfDocumentView(DeviceView):
     def get(self, wbtype: str):
         if not wbtype.lower() in ['usodyrate', 'usodywipe']:
             return jsonify('')
 
-        data = {'token': '111',
-                'host': 'localhost',
-                'inventory': 'dbtest'
+        data = {'token': g.user.token,
+                'host': app.config['DB_HOST'],
+                'inventory': app.config['DB_SCHEMA']
                 }
         data['erase'] = False if wbtype == 'usodyrate' else True
 
