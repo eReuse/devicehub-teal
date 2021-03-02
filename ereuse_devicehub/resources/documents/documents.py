@@ -1,7 +1,8 @@
 import csv
-import datetime
 import enum
 import uuid
+import datetime
+import pathlib
 from collections import OrderedDict
 from io import StringIO
 from typing import Callable, Iterable, Tuple
@@ -251,7 +252,7 @@ class StampsView(View):
         url = urlutils.URL(request.url)
         url.normalize()
         url.path_parts = url.path_parts[:-2] + ['check', '']
-        url_path = url.to_text() 
+        url_path = url.to_text()
         return flask.render_template('documents/stamp.html', rq_url=url_path)
 
 
@@ -291,9 +292,23 @@ class InternalStatsView(DeviceView):
         output.headers['Content-type'] = 'text/csv'
         return output
 
-class WbConfDocumentView(DeviceView):
+
+class WbConfDocumentView(View):
     def get(self, wbtype: str):
-        return jsonify('')
+        if not wbtype.lower() in ['usodyrate', 'usodywipe']:
+            return jsonify('')
+
+        data = {'token': '111',
+                'host': 'localhost',
+                'inventory': 'dbtest'
+                }
+        data['erase'] = False if wbtype == 'usodyrate' else True
+
+        env = flask.render_template('documents/env', **data)
+        output = make_response(env)
+        output.headers['Content-Disposition'] = 'attachment; filename=.env'
+        output.headers['Content-type'] = 'text/plain'
+        return output
 
 
 class DocumentDef(Resource):
@@ -363,8 +378,8 @@ class DocumentDef(Resource):
         actions_view = app.auth.requires_auth(actions_view)
         self.add_url_rule('/actions/', defaults=d, view_func=actions_view, methods=get)
 
-        wbconf_view = ActionsDocumentView.as_view('WbConfDocumentView',
+        wbconf_view = WbConfDocumentView.as_view('WbConfDocumentView',
                                                   definition=self,
                                                   auth=app.auth)
         wbconf_view = app.auth.requires_auth(wbconf_view)
-        self.add_url_rule('/wbconf/', defaults=d, view_func=wbconf_view, methods=get)
+        self.add_url_rule('/wbconf/<string:wbtype>', view_func=wbconf_view, methods=get)

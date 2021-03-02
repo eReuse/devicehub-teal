@@ -495,5 +495,8 @@ def test_get_document_internal_stats(user: UserClient, user2: UserClient):
 def test_get_wbconf(user: UserClient):
     """Tests for get env file for usb wb."""
 
-    csv_str, _ = user.get(res=documents.DocumentDef.t,
-                          item='wbconf/')
+    env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodyrate', accept=ANY)
+    assert 'WB_ERASE = False' in env
+
+    env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodywipe', accept=ANY)
+    assert 'WB_ERASE = True' in env
