@@ -304,9 +304,9 @@ class WbConfDocumentView(DeviceView):
                 }
         data['erase'] = False if wbtype == 'usodyrate' else True
 
-        env = flask.render_template('documents/env', **data)
+        env = flask.render_template('documents/wbConfiguration.ini', **data)
         output = make_response(env)
-        output.headers['Content-Disposition'] = 'attachment; filename=.env'
+        output.headers['Content-Disposition'] = 'attachment; filename=Configuration.ini'
         output.headers['Content-type'] = 'text/plain'
         return output
 
