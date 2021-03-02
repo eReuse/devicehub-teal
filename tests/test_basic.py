@@ -56,7 +56,8 @@ def test_api_docs(client: Client):
         '/tags/',
         '/tags/{tag_id}/device/{device_id}',
         '/users/',
-        '/users/login/'
+        '/users/login/',
+        '/users/logout/',
         # '/devices/{dev1_id}/merge/{dev2_id}',
         # '/batteries/{dev1_id}/merge/{dev2_id}',
         # '/bikes/{dev1_id}/merge/{dev2_id}',
