@@ -6,10 +6,9 @@ Create Date: 2021-03-03 10:39:19.331027
 
 """
 from alembic import op
+from alembic import context
 import sqlalchemy as sa
-import sqlalchemy_utils
 import citext
-import teal
 
 
 # revision identifiers, used by Alembic.
@@ -25,9 +24,11 @@ def get_inv():
         raise ValueError("Inventory value is not specified")
     return INV
 
+
 def upgrade():
-    pass
+    op.add_column('device', sa.Column('code', citext.CIText(),
+                                      nullable=True), schema=f'{get_inv()}')
 
 
 def downgrade():
-    pass
+    op.drop_column('device', 'code', schema=f'{get_inv()}')
