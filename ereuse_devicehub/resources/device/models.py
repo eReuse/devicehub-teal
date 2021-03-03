@@ -8,6 +8,7 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
+from flask_sqlalchemy import event
 from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
 from flask import g
 from more_itertools import unique_everseen
@@ -27,6 +28,7 @@ from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.device.utils import Hashids
 from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity, TransferState
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing, listener_reset_field_updated_in_actual_time
@@ -115,6 +117,7 @@ class Device(Thing):
     owner = db.relationship(User, primaryjoin=owner_id == User.id)
     allocated = db.Column(Boolean, default=False)
     allocated.comment = "device is allocated or not."
+    code = db.Column(db.CIText(), nullable=True, unique=True)
 
     _NON_PHYSICAL_PROPS = {
         'id',
@@ -137,7 +140,8 @@ class Device(Thing):
         'version',
         'sku',
         'image',
-        'allocated'
+        'allocated',
+        'code'
     }
 
     __table_args__ = (
@@ -1023,3 +1027,12 @@ class Manufacturer(db.Model):
 
 
 listener_reset_field_updated_in_actual_time(Device)
+
+
+def create_code(mapper, connection, thing_obj):
+    """ This function create the code for every device."""
+    thing_obj.code = Hashids(thing_obj.id)
+
+def listener_reset_field_updated_in_actual_time(thing_obj):
+    """ This function launch a event than listen like a signal when some device is create."""
+    event.listen(thing_obj, 'after_create', create_code, propagate=True)
