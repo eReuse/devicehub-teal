@@ -5,10 +5,11 @@ Revises: eca457d8b2a4
 Create Date: 2021-03-03 10:39:19.331027
 
 """
+import citext
+import sqlalchemy as sa
 from alembic import op
 from alembic import context
-import sqlalchemy as sa
-import citext
+from ereuse_devicehub.resources.device.utils import Hashids
 
 
 # revision identifiers, used by Alembic.
@@ -25,8 +26,13 @@ def get_inv():
     return INV
 
 
+def create_code(context):
+    _id = context.get_current_parameters()['id']
+    return Hashids(_id)
+
 def upgrade():
     op.add_column('device', sa.Column('code', citext.CIText(),
+                                      default=create_code,
                                       nullable=True), schema=f'{get_inv()}')
 
 

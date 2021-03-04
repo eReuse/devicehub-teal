@@ -1029,10 +1029,12 @@ class Manufacturer(db.Model):
 listener_reset_field_updated_in_actual_time(Device)
 
 
-def create_code(mapper, connection, thing_obj):
-    """ This function create the code for every device."""
-    thing_obj.code = Hashids(thing_obj.id)
+# def create_code(mapper, connection, thing_obj):
+    # """ This function create the code for every device."""
+    # thing_obj.code = Hashids(thing_obj.id)
 
-def listener_reset_field_updated_in_actual_time(thing_obj):
-    """ This function launch a event than listen like a signal when some device is create."""
-    event.listen(thing_obj, 'after_create', create_code, propagate=True)
+# def listener_create_code(thing_obj):
+    # """ This function launch a event than listen like a signal when some device is create."""
+    # event.listen(thing_obj, 'before_create', create_code)
+
+# listener_create_code(Device)
