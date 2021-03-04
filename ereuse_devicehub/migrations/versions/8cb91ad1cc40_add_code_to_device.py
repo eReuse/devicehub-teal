@@ -9,7 +9,6 @@ import citext
 import sqlalchemy as sa
 from alembic import op
 from alembic import context
-from ereuse_devicehub.resources.device.utils import Hashids
 
 
 # revision identifiers, used by Alembic.
@@ -26,13 +25,9 @@ def get_inv():
     return INV
 
 
-def create_code(context):
-    _id = context.get_current_parameters()['id']
-    return Hashids(_id)
-
 def upgrade():
     op.add_column('device', sa.Column('code', citext.CIText(),
-                                      default=create_code,
+                                      unique=True,
                                       nullable=True), schema=f'{get_inv()}')
 
 

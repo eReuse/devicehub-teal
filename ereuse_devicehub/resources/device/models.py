@@ -28,12 +28,18 @@ from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.utils import Hashids
+from ereuse_devicehub.resources.device.utils import hashids
 from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity, TransferState
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing, listener_reset_field_updated_in_actual_time
 from ereuse_devicehub.resources.user.models import User
 
+
+def create_code(context):
+    _id = Device.query.order_by(Device.id.desc()).first() or 1
+    if not _id == 1:
+        _id = _id.id + 1
+    return hashids(_id)
 
 
 class Device(Thing):
@@ -117,7 +123,7 @@ class Device(Thing):
     owner = db.relationship(User, primaryjoin=owner_id == User.id)
     allocated = db.Column(Boolean, default=False)
     allocated.comment = "device is allocated or not."
-    code = db.Column(db.CIText(), nullable=True, unique=True)
+    code = db.Column(db.CIText(), nullable=True, unique=True, default=create_code)
 
     _NON_PHYSICAL_PROPS = {
         'id',
