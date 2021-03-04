@@ -65,3 +65,6 @@ class DevicehubConfig(Config):
     PRICE_VERSION = StrictVersion('1.0')
     PRICE_CURRENCY = Currency.EUR
     """Official versions."""
+
+    """Admin email"""
+    EMAIL_ADMIN = config('EMAIL_ADMIN', '')

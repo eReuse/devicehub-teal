@@ -5,6 +5,7 @@ import uuid
 from collections import OrderedDict
 from io import StringIO
 from typing import Callable, Iterable, Tuple
+from decouple import config
 
 import boltons
 import flask
@@ -12,6 +13,7 @@ import flask_weasyprint
 import teal.marshmallow
 from boltons import urlutils
 from flask import make_response, g, request
+from flask import current_app as app
 from flask.json import jsonify
 from teal.cache import cache
 from teal.resource import Resource, View
@@ -21,7 +23,8 @@ from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 from ereuse_devicehub.resources.device.views import DeviceView
-from ereuse_devicehub.resources.documents.device_row import DeviceRow, StockRow, ActionRow
+from ereuse_devicehub.resources.documents.device_row import (DeviceRow, StockRow, ActionRow,
+                                                             InternalStatsRow)
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash, verify_hash
@@ -215,7 +218,7 @@ class StockDocumentView(DeviceView):
     def generate_post_csv(self, query):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data)
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
         first = True
         for device in query:
             d = StockRow(device)
@@ -277,6 +280,43 @@ class StampsView(View):
                 result=result)
 
 
+class InternalStatsView(DeviceView):
+    @cache(datetime.timedelta(minutes=1))
+    def find(self, args: dict):
+        if not g.user.email == app.config['EMAIL_ADMIN']:
+            return jsonify('')
+        query = evs.Action.query.filter(
+            evs.Action.type.in_(('Snapshot', 'Live', 'Allocate', 'Deallocate')))
+        return self.generate_post_csv(query)
+
+
+    def generate_post_csv(self, query):
+        d = {}
+        for ac in query:
+            create = '{}-{}'.format(ac.created.year, ac.created.month)
+            user = ac.author.email
+
+            if not user in d:
+                    d[user] = {}
+            if not create in d[user]:
+                d[user][create] = []
+            d[user][create].append(ac)
+
+        data = StringIO()
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        cw.writerow(InternalStatsRow('', "2000-1", []).keys())
+        for user, createds in d.items():
+            for create, actions in createds.items():
+                cw.writerow(InternalStatsRow(user, create, actions).values())
+
+        bfile = data.getvalue().encode('utf-8')
+        output = make_response(bfile)
+        insert_hash(bfile)
+        output.headers['Content-Disposition'] = 'attachment; filename=internal-stats.csv'
+        output.headers['Content-type'] = 'text/csv'
+        return output
+
+
 class DocumentDef(Resource):
     __type__ = 'Document'
     SCHEMA = None
@@ -332,8 +372,14 @@ class DocumentDef(Resource):
         stamps_view = StampsView.as_view('StampsView', definition=self, auth=app.auth)
         self.add_url_rule('/stamps/', defaults={}, view_func=stamps_view, methods={'GET', 'POST'})
 
-        actions_view = ActionsDocumentView.as_view('ActionsDocumentView', 
-                                                   definition=self, 
+        internalstats_view = InternalStatsView.as_view(
+            'InternalStatsView', definition=self, auth=app.auth)
+        internalstats_view = app.auth.requires_auth(internalstats_view)
+        self.add_url_rule('/internalstats/', defaults=d, view_func=internalstats_view,
+                          methods=get)
+
+        actions_view = ActionsDocumentView.as_view('ActionsDocumentView',
+                                                   definition=self,
                                                    auth=app.auth)
         actions_view = app.auth.requires_auth(actions_view)
         self.add_url_rule('/actions/', defaults=d, view_func=actions_view, methods=get)

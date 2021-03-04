@@ -379,3 +379,84 @@ class ActionRow(OrderedDict):
         self['Type'] = allocate['type']
         self['LiveCreate'] = allocate['liveCreate']
         self['UsageTimeHdd'] = allocate['usageTimeHdd']
+
+
+class InternalStatsRow(OrderedDict):
+
+    def __init__(self, user, create, actions):
+        super().__init__()
+        # General information about all internal stats
+        # user, quart, month, year:
+        #    Snapshot (Registers)
+        #    Snapshots (Update)
+        #    Snapshots (All)
+        #    Allocate
+        #    Deallocate
+        #    Live
+        self.actions = actions
+        year, month = create.split('-')
+
+        self['User'] = user
+        self['Year'] = year
+        self['Quarter'] = self.quarter(month)
+        self['Month'] = month
+        self['Snapshot (Registers)'] = 0
+        self['Snapshot (Update)'] = 0
+        self['Snapshot (All)'] = 0
+        self['Allocates'] = 0
+        self['Deallocates'] = 0
+        self['Lives'] = 0
+
+        self.count_actions()
+
+    def count_actions(self):
+        for ac in self.actions:
+            self.is_snapshot(
+                self.is_deallocate(
+                    self.is_live(
+                        self.is_allocate(ac)
+                    )
+                )
+            )
+
+    def is_allocate(self, ac):
+        if ac.type == 'Allocate':
+            self['Allocates'] += 1
+        return ac
+
+    def is_live(self, ac):
+        if ac.type == 'Live':
+            self['Lives'] += 1
+        return ac
+
+    def is_deallocate(self, ac):
+        if ac.type == 'Deallocate':
+            self['Deallocates'] += 1
+        return ac
+
+    def is_snapshot(self, ac):
+        if not ac.type == 'Snapshot':
+            return
+        self['Snapshot (All)'] += 1
+
+        canary = False
+        for _ac in ac.device.actions:
+            if not _ac.type == 'Snapshot':
+                continue
+
+            if _ac.created < ac.created:
+                canary = True
+                break
+
+        if canary:
+            self['Snapshot (Update)'] += 1
+        else:
+            self['Snapshot (Registers)'] += 1
+
+    def quarter(self, month):
+        q = {1: 'Q1', 2: 'Q1', 3: 'Q1',
+             4: 'Q2', 5: 'Q2', 6: 'Q2',
+             7: 'Q3', 8: 'Q3', 9: 'Q3',
+             10: 'Q4', 11: 'Q4', 12: 'Q4',
+             }
+        return q[int(month)]

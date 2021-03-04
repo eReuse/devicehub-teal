@@ -415,6 +415,8 @@ def test_report_devices_stock_control(user: UserClient, user2: UserClient):
     assert user.user['id'] != user2.user['id']
     assert len(export_csv) == 2
 
+    export_csv[0] = export_csv[0][0].split(';')
+    export_csv[1] = export_csv[1][0].split(';')
     assert isinstance(datetime.strptime(export_csv[1][5], '%c'), datetime), \
         'Register in field is not a datetime'
 
@@ -614,3 +616,32 @@ def test_verify_stamp_erasure_certificate(user: UserClient, client: Client):
                                     'example.csv')]}, 
                               status=200)
     assert "alert alert-info" in response
+
+
+@pytest.mark.mvp
+def test_get_document_internal_stats(user: UserClient, user2: UserClient):
+    """Tests for get teh internal stats."""
+
+    # csv_str, _ = user.get(res=documents.DocumentDef.t,
+                            # item='internalstats/')
+    csv_str, _ = user.get(res=documents.DocumentDef.t,
+                          item='internalstats/',
+                          accept='text/csv',
+                          query=[])
+
+    f = StringIO(csv_str)
+    obj_csv = csv.reader(f, f)
+    export_csv = list(obj_csv)
+
+    assert len(export_csv) == 1
+
+    csv_str, _ = user2.get(res=documents.DocumentDef.t,
+                          item='internalstats/',
+                          accept='text/csv',
+                          query=[])
+
+    f = StringIO(csv_str)
+    obj_csv = csv.reader(f, f)
+    export_csv = list(obj_csv)
+
+    assert csv_str.strip() == '""'

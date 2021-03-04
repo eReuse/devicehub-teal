@@ -12,6 +12,7 @@ ml).
   [1.0.5-beta]
 
 ## [1.0.5-beta]
+- [addend] #124 adding endpoint for extract the internal stats of use
 
 ## [1.0.4-beta]
 - [addend] #95 adding endpoint for check the hash of one report
