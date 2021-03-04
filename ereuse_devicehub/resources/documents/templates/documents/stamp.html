@@ -40,11 +40,11 @@
     <div class="page-header col-md-6 col-md-offset-3">
       <div class="row">
       {% if result.0 == 'Ok' %}
-        <div class="alert alert-info" role="alert">
+        <div class="alert alert-info" style="background-color: #3fb618;" role="alert">
 	  {{ result.1 }}
         </div>
       {% elif result.0 == 'Bad' %}
-        <div class="alert alert-danger" role="alert">
+        <div class="alert alert-danger" style="background-color: #ff0039" role="alert">
 	  {{ result.1 }}
         </div>
       {% endif %}

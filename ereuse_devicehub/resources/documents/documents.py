@@ -264,10 +264,14 @@ class StampsView(View):
         result = ('', '')
         if 'docUpload' in request.files:
             file_check = request.files['docUpload']
-            result = ('Bad', 'Sorry, this file has not been produced by this website')
+            bad = 'There are no coincidences. The attached file data does not come \
+                   from our backend or it has been subsequently modified.'
+            ok = '100% coincidence. The attached file contains data 100% existing in \
+                  to our backend'
+            result = ('Bad', bad)
             if file_check.mimetype in ['text/csv', 'application/pdf']:
                 if verify_hash(file_check):
-                    result = ('Ok', 'Yes, this file has been produced by this website')
+                    result = ('Ok', ok)
 
         return flask.render_template('documents/stamp.html', rq_url=self.get_url_path(),
                 result=result)
