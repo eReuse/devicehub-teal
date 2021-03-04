@@ -124,6 +124,7 @@ class Device(Thing):
     allocated = db.Column(Boolean, default=False)
     allocated.comment = "device is allocated or not."
     code = db.Column(db.CIText(), nullable=True, unique=True, default=create_code)
+    code.comment = "device have a unique code."
 
     _NON_PHYSICAL_PROPS = {
         'id',
