@@ -3,7 +3,7 @@ from typing import Set
 
 from boltons import urlutils
 from flask import g
-from sqlalchemy import BigInteger, Column, ForeignKey, UniqueConstraint
+from sqlalchemy import BigInteger, Column, ForeignKey, UniqueConstraint, Sequence
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship, validates
 from teal.db import DB_CASCADE_SET_NULL, Query, URL
@@ -26,6 +26,10 @@ class Tags(Set['Tag']):
 
 
 class Tag(Thing):
+    internal_id = Column(BigInteger, Sequence('tag_internal_id_seq'), unique=True, nulable=False)
+    internal_id.comment = """The identifier of the tag for this database. Used only
+    internally for software; users should not use this.
+    """
     id = Column(db.CIText(), primary_key=True)
     id.comment = """The ID of the tag."""
     owner_id = Column(UUID(as_uuid=True),

@@ -6,6 +6,7 @@ Create Date: 2021-02-25 18:47:47.441195
 
 """
 from alembic import op
+import sqlalchemy as sa
 from alembic import context
 
 
@@ -27,6 +28,8 @@ def upgrade():
     op.drop_constraint('one secondary tag per organization', 'tag', schema=f'{get_inv()}')
     op.create_primary_key('one tag id per owner',  'tag', ['id', 'owner_id'], schema=f'{get_inv()}'),
     op.create_unique_constraint('one secondary tag per owner',  'tag', ['secondary', 'owner_id'], schema=f'{get_inv()}'),
+    op.add_column('tag', sa.Column('internal_id', sa.BigInteger(), nullable=False,
+                              comment='The identifier of the tag for this database. Used only\n    internally for software; users should not use this.\n'), schema=f'{get_inv()}')
 
 
 def downgrade():
@@ -34,3 +37,6 @@ def downgrade():
     op.drop_constraint('one secondary tag per owner', 'tag', schema=f'{get_inv()}')
     op.create_primary_key('one tag id per organization',  'tag', ['id', 'org_id'], schema=f'{get_inv()}'),
     op.create_unique_constraint('one secondary tag per organization',  'tag', ['secondary', 'org_id'], schema=f'{get_inv()}'),
+    op.drop_column('tag', 'internal_id', schema=f'{get_inv()}')
+    op.drop_column('tag', 'internal_id', schema=f'{get_inv()}')
+    op.execute(f"DROP SEQUENCE {get_inv()}.tag_internal_id_seq;")
