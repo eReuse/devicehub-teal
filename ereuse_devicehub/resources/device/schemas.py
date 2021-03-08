@@ -66,7 +66,8 @@ class Device(Thing):
     sku = SanitizedStr(description=m.Device.sku.comment)
     image = URL(description=m.Device.image.comment)
     allocated = Boolean(description=m.Device.allocated.comment)
-    code = SanitizedStr(description=m.Device.code.comment)
+    devicehub_id = SanitizedStr(data_key='devicehubID',
+                                description=m.Device.devicehub_id.comment)
 
     @pre_load
     def from_actions_to_actions_one(self, data: dict):

@@ -33,16 +33,16 @@ def upgrade_data():
     for d in devices:
         id_dev = d.id
         code = hashcode(d.id)
-        sql = f"update {get_inv()}.device set code='{code}' where id={id_dev};"
+        sql = f"update {get_inv()}.device set devicehub_id='{code}' where id={id_dev};"
         con.execute(sql)
 
 
 def upgrade():
-    op.add_column('device', sa.Column('code', citext.CIText(),
+    op.add_column('device', sa.Column('devicehub_id', citext.CIText(),
                                       unique=True,
                                       nullable=True), schema=f'{get_inv()}')
 
     upgrade_data()
 
 def downgrade():
-    op.drop_column('device', 'code', schema=f'{get_inv()}')
+    op.drop_column('device', 'devicehub_id', schema=f'{get_inv()}')

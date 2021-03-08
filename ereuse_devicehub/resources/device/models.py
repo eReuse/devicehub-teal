@@ -123,8 +123,8 @@ class Device(Thing):
     owner = db.relationship(User, primaryjoin=owner_id == User.id)
     allocated = db.Column(Boolean, default=False)
     allocated.comment = "device is allocated or not."
-    code = db.Column(db.CIText(), nullable=True, unique=True, default=create_code)
-    code.comment = "device have a unique code."
+    devicehub_id = db.Column(db.CIText(), nullable=True, unique=True, default=create_code)
+    devicehub_id.comment = "device have a unique code."
 
     _NON_PHYSICAL_PROPS = {
         'id',
@@ -148,7 +148,7 @@ class Device(Thing):
         'sku',
         'image',
         'allocated',
-        'code'
+        'devicehub_id'
     }
 
     __table_args__ = (
