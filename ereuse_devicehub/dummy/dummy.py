@@ -95,6 +95,7 @@ class Dummy:
                 s, _ = user1.post(res=m.Snapshot, data=snapshot)
                 if s.get('uuid', None) == 'ec23c11b-80b6-42cd-ac5c-73ba7acddbc4':
                     sample_pc = s['device']['id']
+                    sample_pc_devicehub_id = s['device']['devicehubID']
                 else:
                     pcs.add(s['device']['id'])
                 if s.get('uuid', None) == 'de4f495e-c58b-40e1-a33e-46ab5e84767e':  # oreo
@@ -180,9 +181,9 @@ class Dummy:
             res=m.Action)
         # todo Receive
 
-        user1.get(res=Device, item=sample_pc)  # Test
+        user1.get(res=Device, item=sample_pc_devicehub_id)  # Test
         anonymous = self.app.test_client()
-        html, _ = anonymous.get(res=Device, item=sample_pc, accept=ANY)
+        html, _ = anonymous.get(res=Device, item=sample_pc_devicehub_id, accept=ANY)
         assert 'intel core2 duo cpu' in html
 
         # For netbook: to preapre -> torepair -> to dispose -> disposed

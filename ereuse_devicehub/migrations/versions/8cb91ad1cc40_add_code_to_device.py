@@ -32,7 +32,7 @@ def upgrade_data():
     devices = con.execute(f"select id from {get_inv()}.device")
     for d in devices:
         id_dev = d.id
-        code = hashcode(d.id)
+        code = hashcode.encode(d.id)
         sql = f"update {get_inv()}.device set devicehub_id='{code}' where id={id_dev};"
         con.execute(sql)
 
@@ -43,6 +43,7 @@ def upgrade():
                                       nullable=True), schema=f'{get_inv()}')
 
     upgrade_data()
+
 
 def downgrade():
     op.drop_column('device', 'devicehub_id', schema=f'{get_inv()}')

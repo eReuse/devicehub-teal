@@ -374,7 +374,7 @@ class Device(Thing):
 
             if act.type == 'Allocate':
                 allo = {'type': 'Allocate',
-                        'systemId': self.id,
+                        'devicehubID': self.devicehub_id,
                         'finalUserCode': act.final_user_code,
                         'numEndUsers': act.end_users,
                         'hid': self.hid,
@@ -395,7 +395,7 @@ class Device(Thing):
 
             if act.type == 'Deallocate':
                 deallo = {'type': 'Deallocate',
-                          'systemId': self.id,
+                          'devicehubID': self.devicehub_id,
                           'finalUserCode': '',
                           'numEndUsers': '',
                           'hid': self.hid,
@@ -1035,13 +1035,3 @@ class Manufacturer(db.Model):
 
 listener_reset_field_updated_in_actual_time(Device)
 
-
-# def create_code(mapper, connection, thing_obj):
-    # """ This function create the code for every device."""
-    # thing_obj.code = Hashids(thing_obj.id)
-
-# def listener_create_code(thing_obj):
-    # """ This function launch a event than listen like a signal when some device is create."""
-    # event.listen(thing_obj, 'before_create', create_code)
-
-# listener_create_code(Device)

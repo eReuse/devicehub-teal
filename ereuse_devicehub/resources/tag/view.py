@@ -66,8 +66,9 @@ class TagDeviceView(View):
         return app.resources[Device.t].schema.jsonify(tag.device)
 
     # noinspection PyMethodOverriding
-    def put(self, tag_id: str, device_id: str):
+    def put(self, tag_id: str, device_id: int):
         """Links an existing tag with a device."""
+        device_id = int(device_id)
         tag = Tag.from_an_id(tag_id).one()  # type: Tag
         if tag.device_id:
             if tag.device_id == device_id:

@@ -39,7 +39,7 @@ def test_rate_with_multiple_visual_tests(user: UserClient):
     """
     s = file('real-hp.snapshot.11')
     snapshot, _ = user.post(s, res=Snapshot)
-    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
     visual_test = next(e for e in reversed(device['actions']) if e['type'] == VisualTest.t)
 
     assert visual_test['appearanceRange'] == 'B'
@@ -53,7 +53,7 @@ def test_rate_with_multiple_visual_tests(user: UserClient):
         'appearanceRange': 'A',
         'functionalityRange': 'A'
     }, res=Action)
-    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
     visual_test = next(e for e in reversed(device['actions']) if e['type'] == VisualTest.t)
 
     assert visual_test['appearanceRange'] == 'A'
