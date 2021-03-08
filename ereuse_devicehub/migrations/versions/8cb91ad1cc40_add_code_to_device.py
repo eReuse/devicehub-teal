@@ -10,9 +10,7 @@ import sqlalchemy as sa
 from alembic import op
 from alembic import context
 
-from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.utils import hashids
-from ereuse_devicehub.resources.device.models import Device
+from ereuse_devicehub.resources.device.utils import hashcode
 
 
 # revision identifiers, used by Alembic.
@@ -34,7 +32,7 @@ def upgrade_data():
     devices = con.execute(f"select id from {get_inv()}.device")
     for d in devices:
         id_dev = d.id
-        code = hashids(d.id)
+        code = hashcode(d.id)
         sql = f"update {get_inv()}.device set code='{code}' where id={id_dev};"
         con.execute(sql)
 
