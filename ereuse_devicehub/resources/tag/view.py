@@ -6,14 +6,16 @@ from teal.resource import View, url_for_resource
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
+from ereuse_devicehub.resources.utils import hascode
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag import Tag
 
 
 class TagView(View):
-    def one(self, id):
+    def one(self, code):
         """Gets the device from the named tag, /tags/namedtag."""
-        tag = Tag.from_an_id(id).one()  # type: Tag
+        internal_id = hascode.decode(code.upper()) or -1
+        tag = Tag.query.filter_by(internal_id=internal_id).one()  # type: Tag
         if not tag.device:
             raise TagNotLinked(tag.id)
         return redirect(location=url_for_resource(Device, tag.device.id))

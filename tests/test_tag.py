@@ -26,6 +26,7 @@ from tests.conftest import file
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_tag(user: UserClient):
     """Creates a tag specifying a custom organization."""
+    # import pdb; pdb.set_trace()
     org = Organization(name='bar', tax_id='bartax')
     tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id'])
     db.session.add(tag)
@@ -33,7 +34,7 @@ def test_create_tag(user: UserClient):
     tag = Tag.query.one()
     assert tag.id == 'bar-1'
     assert tag.provider == URL('http://foo.bar')
-    res, _ = user.get(res=Tag, item=tag.id, status=422)
+    res, _ = user.get(res=Tag, item=tag.code, status=422)
     assert res['type'] == 'TagNotLinked'
 
 

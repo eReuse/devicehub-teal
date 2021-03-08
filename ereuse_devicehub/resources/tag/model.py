@@ -15,6 +15,7 @@ from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.utils import hascode
 
 
 class Tags(Set['Tag']):
@@ -25,8 +26,10 @@ class Tags(Set['Tag']):
         return ', '.join(format(tag, format_spec) for tag in self).strip()
 
 
+
+
 class Tag(Thing):
-    internal_id = Column(BigInteger, Sequence('tag_internal_id_seq'), unique=True, nulable=False)
+    internal_id = Column(BigInteger, Sequence('tag_internal_id_seq'), unique=True, nullable=False)
     internal_id.comment = """The identifier of the tag for this database. Used only
     internally for software; users should not use this.
     """
@@ -113,7 +116,7 @@ class Tag(Thing):
     def url(self) -> urlutils.URL:
         """The URL where to GET this device."""
         # todo this url only works for printable internal tags
-        return urlutils.URL(url_for_resource(Tag, item_id=self.id))
+        return urlutils.URL(url_for_resource(Tag, item_id=self.code))
 
     @property
     def printable(self) -> bool:
@@ -128,6 +131,10 @@ class Tag(Thing):
     def is_printable_q(cls):
         """Return a SQLAlchemy filter expression for printable queries."""
         return cls.org_id == Organization.get_default_org_id()
+
+    @property
+    def code(self) -> str:
+        return hascode.encode(self.internal_id)
 
     def delete(self):
         """Deletes the tag.
@@ -157,7 +164,7 @@ class TagLinked(ValidationError):
         message = 'The tag {} is linked to device {}.'.format(tag.id, tag.device.id)
         super().__init__(message, field_names=['device'])
 
-        
+
 class TagUnnamed(ValidationError):
     def __init__(self, id):
         message = 'This tag {} is unnamed tag. It is imposible delete.'.format(id)
