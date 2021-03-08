@@ -15,7 +15,7 @@ from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.utils import hascode
+from ereuse_devicehub.resources.utils import hashcode
 
 
 class Tags(Set['Tag']):
@@ -134,7 +134,7 @@ class Tag(Thing):
 
     @property
     def code(self) -> str:
-        return hascode.encode(self.internal_id)
+        return hashcode.encode(self.internal_id)
 
     def delete(self):
         """Deletes the tag.
