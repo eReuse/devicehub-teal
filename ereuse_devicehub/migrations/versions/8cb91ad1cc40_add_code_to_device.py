@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from alembic import op
 from alembic import context
 
-from ereuse_devicehub.resources.device.utils import hashcode
+from ereuse_devicehub.resources.utils import hashcode
 
 
 # revision identifiers, used by Alembic.
