@@ -63,7 +63,7 @@ def test_snapshot_model():
     assert m.Desktop.query.one_or_none() is None
     assert m.Device.query.one_or_none() is None
     # Check properties
-    assert device.url == urlutils.URL('http://localhost/devices/1')
+    assert device.url == urlutils.URL('http://localhost/devices/%s' % device.devicehub_id)
 
 
 @pytest.mark.mvp
@@ -115,7 +115,8 @@ def test_same_device_tow_users(user: UserClient, user2: UserClient):
     i, _ = user.get(res=m.Device)
     pc = next(d for d in i['items'] if d['type'] == 'Desktop')
     pc_id = pc['id']
-    assert i['items'][0]['url'] == f'/devices/{pc_id}'
+    devicehub_id = pc['devicehubID']
+    assert i['items'][0]['url'] == f'/devices/{devicehub_id}'
 
     basic_snapshot = file('basic.snapshot')
     basic_snapshot['uuid'] = f"{uuid.uuid4()}"
@@ -550,7 +551,7 @@ def snapshot_and_check(user: UserClient,
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_erase_changing_hdd_between_pcs(user: UserClient):
-    """Tests when we erase one device and next change the disk in other device we 
+    """Tests when we erase one device and next change the disk in other device we
     want see in the second device the disks erase."""
     s1 = file('erase-sectors-2-hdd.snapshot')
     s2 = file('erase-sectors-2-hdd.snapshot2')
@@ -617,7 +618,7 @@ def test_save_snapshot_in_file(app: Devicehub, user: UserClient):
 
 @pytest.mark.mvp
 def test_action_no_snapshot_without_save_file(app: Devicehub, user: UserClient):
-    """ This test check if the function save_snapshot_in_file not work when we 
+    """ This test check if the function save_snapshot_in_file not work when we
     send one other action different to snapshot
     """
     s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
@@ -738,7 +739,7 @@ def test_snapshot_not_failed_null_chassis(app: Devicehub, user: UserClient):
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
     path_dir_base = os.path.join(tmp_snapshots, user.user['email'], 'errors')
     snapshot_error = file('desktop-9644w8n-lenovo-0169622.snapshot')
-    snapshot_error['device']['chassis'] = None 
+    snapshot_error['device']['chassis'] = None
     uuid = snapshot_error['uuid']
 
     snapshot, res = user.post(res=Snapshot, data=snapshot_error)
@@ -819,7 +820,7 @@ def test_snapshot_bug_smallint_hdd(app: Devicehub, user: UserClient):
     snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
 
     act = [act for act in snapshot['actions'] if act['type'] == 'TestDataStorage'][0]
-    assert act['currentPendingSectorCount'] == 473302660 
+    assert act['currentPendingSectorCount'] == 473302660
     assert act['offlineUncorrectable'] == 182042944
 
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
@@ -837,5 +838,3 @@ def test_snapshot_mobil(app: Devicehub, user: UserClient):
 
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
     shutil.rmtree(tmp_snapshots)
-
-

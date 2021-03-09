@@ -62,7 +62,7 @@ class TagDeviceView(View):
         if not tag.device:
             raise TagNotLinked(tag.id)
         if not request.authorization:
-            return redirect(location=url_for_resource(Device, tag.device.id))
+            return redirect(location=url_for_resource(Device, tag.device.devicehub_id))
         return app.resources[Device.t].schema.jsonify(tag.device)
 
     # noinspection PyMethodOverriding
@@ -93,7 +93,7 @@ def get_device_from_tag(id: str):
     # todo this could be more efficient by Device.query... join with tag
     device = Tag.query.filter_by(id=id).one().device
     if not request.authorization:
-        return redirect(location=url_for_resource(Device, device.id))
+        return redirect(location=url_for_resource(Device, device.devicehub_id))
     if device is None:
         raise TagNotLinked(id)
     return app.resources[Device.t].schema.jsonify(device)

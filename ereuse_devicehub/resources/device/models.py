@@ -236,7 +236,7 @@ class Device(Thing):
     @property
     def url(self) -> urlutils.URL:
         """The URL where to GET this device."""
-        return urlutils.URL(url_for_resource(Device, item_id=self.id))
+        return urlutils.URL(url_for_resource(Device, item_id=self.devicehub_id))
 
     @property
     def rate(self):

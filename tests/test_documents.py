@@ -199,7 +199,7 @@ def test_live_example2(user: UserClient, client: Client, app: Devicehub):
     assert str(action_live[0].snapshot_uuid) == acer['uuid']
 
 
-@pytest.mark.mvp 
+@pytest.mark.mvp
 def test_export_basic_snapshot(user: UserClient):
     """Test export device information in a csv file."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
