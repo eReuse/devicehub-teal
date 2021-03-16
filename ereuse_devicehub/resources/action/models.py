@@ -1446,34 +1446,43 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     This class and its inheritors
     extend `Schema's Trade <http://schema.org/TradeAction>`_.
     """
+    user_from_id = db.Column(UUID(as_uuid=True),
+                             db.ForeignKey(User.id),
+                             nullable=False,
+                             default=lambda: g.user.id)
+    user_from = db.relationship(User, primaryjoin=user_from_id == User.id)
+    user_from_comment = """The user that offers the device due this deal."""
+    user_from_string = Column(CIText())
+    user_from_string_comment = """The user outsite of devicehub that offers the device."""
+    user_to_id = db.Column(UUID(as_uuid=True),
+                           db.ForeignKey(User.id),
+                           nullable=False,
+                           default=lambda: g.user.id)
+    user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
+    user_to_comment = """The user that gets the device due this deal."""
+    user_to_string = Column(CIText())
+    user_to_string_comment = """The user outsite of devicehub that offers the device."""
+    price = Column(Float(decimal_return_scale=2), nullable=True)
+    date = Column(db.TIMESTAMP(timezone=True))
+
+
+class ActionTrade(Trade):
+    """ActionTrade Offer one lot for to do one Trade.
+    """
     shipping_date = Column(db.TIMESTAMP(timezone=True))
     shipping_date.comment = """When are the devices going to be ready
     for shipping?
     """
-    invoice_number = Column(CIText())
-    invoice_number.comment = """The id of the invoice so they can be linked."""
-    price_id = Column(UUID(as_uuid=True), ForeignKey(Price.id))
-    price = relationship(Price,
-                         backref=backref('trade', lazy=True, uselist=False),
-                         primaryjoin=price_id == Price.id)
-    price_id.comment = """The price set for this trade.
-    If no price is set it is supposed that the trade was
-    not payed, usual in donations.
-        """
-    to_id = Column(UUID(as_uuid=True), ForeignKey(Agent.id), nullable=False)
-    # todo compute the org
-    to = relationship(Agent,
-                      backref=backref('actions_to', lazy=True, **_sorted_actions),
-                      primaryjoin=to_id == Agent.id)
-    to_comment = """The agent that gets the device due this deal."""
-    confirms_id = Column(UUID(as_uuid=True), ForeignKey(Organize.id))
-    confirms = relationship(Organize,
-                            backref=backref('confirmation', lazy=True, uselist=False),
-                            primaryjoin=confirms_id == Organize.id)
-    confirms_id.comment = """An organize action that this association confirms.
-    For example, a ``Sell`` or ``Rent``
-    can confirm a ``Reserve`` action.
-    """
+    document_id = Column(CIText())
+    document_id.comment = """The id of one document like invoice so they can be linked."""
+    accepted_by_from = Column(Boolean)
+    accepted_by_to = Column(Boolean)
+    trade = db.Column(UUID(as_uuid=True),
+                      db.ForeignKey(Trade.id),
+                      nullable=True)
+    lot = db.Column(UUID(as_uuid=True),
+                    db.ForeignKey(Trade.id),
+                    nullable=True)
 
 
 class InitTransfer(Trade):
