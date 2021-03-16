@@ -27,7 +27,7 @@ from ereuse_devicehub.resources.documents.device_row import (DeviceRow, StockRow
                                                              InternalStatsRow)
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
-from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash
+from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash, verify_hash
 
 
 class Format(enum.Enum):
@@ -80,6 +80,7 @@ class DocumentView(DeviceView):
             res = flask_weasyprint.render_pdf(
                 flask_weasyprint.HTML(string=template), download_filename='{}.pdf'.format(type)
             )
+            insert_hash(res.data)
         else:
             res = flask.make_response(template)
         return res
@@ -186,7 +187,9 @@ class LotsDocumentView(LotView):
                 cw.writerow(l.keys())
                 first = False
             cw.writerow(l.values())
-        output = make_response(data.getvalue())
+        bfile = data.getvalue().encode('utf-8')
+        output = make_response(bfile)
+        insert_hash(bfile)
         output.headers['Content-Disposition'] = 'attachment; filename=lots-info.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
@@ -223,7 +226,9 @@ class StockDocumentView(DeviceView):
                 cw.writerow(d.keys())
                 first = False
             cw.writerow(d.values())
-        output = make_response(data.getvalue())
+        bfile = data.getvalue().encode('utf-8')
+        output = make_response(bfile)
+        insert_hash(bfile)
         output.headers['Content-Disposition'] = 'attachment; filename=devices-stock.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
@@ -247,12 +252,32 @@ class StampsView(View):
     This view render one public ans static page for see the links for to do the check
     of one csv file
     """
-    def get(self):
+    def get_url_path(self):
         url = urlutils.URL(request.url)
         url.normalize()
         url.path_parts = url.path_parts[:-2] + ['check', '']
-        url_path = url.to_text() 
-        return flask.render_template('documents/stamp.html', rq_url=url_path)
+        return url.to_text() 
+
+    def get(self):
+        result = ('', '')
+        return flask.render_template('documents/stamp.html', rq_url=self.get_url_path(),
+                result=result)
+
+    def post(self):
+        result = ('', '')
+        if 'docUpload' in request.files:
+            file_check = request.files['docUpload']
+            bad = 'There are no coincidences. The attached file data does not come \
+                   from our backend or it has been subsequently modified.'
+            ok = '100% coincidence. The attached file contains data 100% existing in \
+                  to our backend'
+            result = ('Bad', bad)
+            if file_check.mimetype in ['text/csv', 'application/pdf']:
+                if verify_hash(file_check):
+                    result = ('Ok', ok)
+
+        return flask.render_template('documents/stamp.html', rq_url=self.get_url_path(),
+                result=result)
 
 
 class InternalStatsView(DeviceView):
@@ -345,7 +370,7 @@ class DocumentDef(Resource):
         self.add_url_rule('/check/', defaults={}, view_func=check_view, methods=get)
 
         stamps_view = StampsView.as_view('StampsView', definition=self, auth=app.auth)
-        self.add_url_rule('/stamps/', defaults={}, view_func=stamps_view, methods=get)
+        self.add_url_rule('/stamps/', defaults={}, view_func=stamps_view, methods={'GET', 'POST'})
 
         internalstats_view = InternalStatsView.as_view(
             'InternalStatsView', definition=self, auth=app.auth)
