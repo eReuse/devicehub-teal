@@ -1452,16 +1452,12 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
                              default=lambda: g.user.id)
     user_from = db.relationship(User, primaryjoin=user_from_id == User.id)
     user_from_comment = """The user that offers the device due this deal."""
-    user_from_string = Column(CIText())
-    user_from_string_comment = """The user outsite of devicehub that offers the device."""
     user_to_id = db.Column(UUID(as_uuid=True),
                            db.ForeignKey(User.id),
                            nullable=False,
                            default=lambda: g.user.id)
     user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
     user_to_comment = """The user that gets the device due this deal."""
-    user_to_string = Column(CIText())
-    user_to_string_comment = """The user outsite of devicehub that offers the device."""
     price = Column(Float(decimal_return_scale=2), nullable=True)
     date = Column(db.TIMESTAMP(timezone=True))
 

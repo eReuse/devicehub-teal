@@ -460,7 +460,7 @@ class Trade(ActionWithMultipleDevices):
     shipping_date = DateTime(data_key='shippingDate')
     invoice_number = SanitizedStr(validate=Length(max=STR_SIZE), data_key='invoiceNumber')
     price = NestedOn(Price)
-    to = NestedOn(s_agent.Agent, only_query='id', required=True, comment=m.Trade.to_comment)
+    to = NestedOn(s_agent.Agent, only_query='id', required=True, comment=m.Trade.user_to_comment)
     confirms = NestedOn(Organize)
 
 

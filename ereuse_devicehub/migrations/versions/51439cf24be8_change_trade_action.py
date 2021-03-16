@@ -26,32 +26,13 @@ def get_inv():
     return INV
 
 def upgrade():
-    user_from_id = db.Column(UUID(as_uuid=True),
-                             db.ForeignKey(User.id),
-                             nullable=False,
-                             default=lambda: g.user.id)
-    user_from = db.relationship(User, primaryjoin=user_from_id == User.id)
-    user_from_comment = """The user that offers the device due this deal."""
-    user_to_id = db.Column(UUID(as_uuid=True),
-                           db.ForeignKey(User.id),
-                           nullable=False,
-                           default=lambda: g.user.id)
-    user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
-    user_to_comment = """The user that gets the device due this deal."""
-    price = Column(Float(decimal_return_scale=2), nullable=True)
-    date = Column(db.TIMESTAMP(timezone=True))
-    user_to_string = Column(CIText())
-    user_from_string = Column(CIText())
-++++
-
+    op.drop_table('trade', schema=f'{get_inv()}')
     op.create_table('trade',
                     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('date', sa.TIMESTAMP(timezone=True), nullable=True),
-                    sa.Column('user_from_id', postgresql.UUID(as_uuid=True), nullable=True),
-                    sa.Column('user_to_id', postgresql.UUID(as_uuid=True), nullable=True),
-                    sa.Column('user_from_string', citext.CIText(), nullable=True),
-                    sa.Column('user_to_string', citext.CIText(), nullable=True),
                     sa.Column('price', sa.Float(decimal_return_scale=4), nullable=True),
+                    sa.Column('user_from_id', postgresql.UUID(as_uuid=True), nullable=False),
+                    sa.Column('user_to_id', postgresql.UUID(as_uuid=True), nullable=False),
 
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
                     sa.ForeignKeyConstraint(['from_id'], [f'common.user.id'], ),
@@ -62,4 +43,4 @@ def upgrade():
 
 
 def downgrade():
-    pass
+    op.drop_table('trade', schema=f'{get_inv()}')
