@@ -35,8 +35,8 @@ def upgrade():
                     sa.Column('user_to_id', postgresql.UUID(as_uuid=True), nullable=False),
 
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
-                    sa.ForeignKeyConstraint(['from_id'], [f'common.user.id'], ),
-                    sa.ForeignKeyConstraint(['to_id'], [f'common.user.id'], ),
+                    sa.ForeignKeyConstraint(['user_from_id'], [f'common.user.id'], ),
+                    sa.ForeignKeyConstraint(['user_to_id'], [f'common.user.id'], ),
                     sa.PrimaryKeyConstraint('id'),
                     schema=f'{get_inv()}'
                     )
@@ -44,3 +44,21 @@ def upgrade():
 
 def downgrade():
     op.drop_table('trade', schema=f'{get_inv()}')
+    op.create_table('trade',
+                    sa.Column('shipping_date', sa.TIMESTAMP(timezone=True), nullable=True,
+                              comment='When are the devices going to be ready \n    for shipping?\n    '),
+                    sa.Column('invoice_number', citext.CIText(), nullable=True,
+                              comment='The id of the invoice so they can be linked.'),
+                    sa.Column('price_id', postgresql.UUID(as_uuid=True), nullable=True,
+                              comment='The price set for this trade.            \n    If no price is set it is supposed that the trade was\n    not payed, usual in donations.\n        '),
+                    sa.Column('to_id', postgresql.UUID(as_uuid=True), nullable=False),
+                    sa.Column('confirms_id', postgresql.UUID(as_uuid=True), nullable=True,
+                              comment='An organize action that this association confirms.                \n    \n    For example, a ``Sell`` or ``Rent``\n    can confirm a ``Reserve`` action.\n    '),
+                    sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+                    sa.ForeignKeyConstraint(['confirms_id'], [f'{get_inv()}.organize.id'], ),
+                    sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
+                    sa.ForeignKeyConstraint(['price_id'], [f'{get_inv()}.price.id'], ),
+                    sa.ForeignKeyConstraint(['to_id'], [f'{get_inv()}.agent.id'], ),
+                    sa.PrimaryKeyConstraint('id'),
+                    schema=f'{get_inv()}'
+                    )
