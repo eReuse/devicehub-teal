@@ -103,7 +103,7 @@ class TagDeviceView(View):
             else:
                 raise LinkedToAnotherDevice(tag.device_id)
         else:
-            # Check if this device exist for this woner
+            # Check if this device exist for this owner
             Device.query.filter_by(owner=g.user).filter_by(id=device_id).one()
             tag.device_id = device_id
 
