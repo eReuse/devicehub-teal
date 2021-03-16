@@ -32,3 +32,8 @@ def insert_hash(bfile):
     db.session.add(db_hash)
     db.session.commit()
     db.session.flush()
+
+
+def verify_hash(bfile):
+    hash3 = hashlib.sha3_256(bfile.read()).hexdigest()
+    return ReportHash.query.filter(ReportHash.hash3 == hash3).count()
