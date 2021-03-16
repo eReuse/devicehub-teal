@@ -584,7 +584,6 @@ def test_verify_stamp_erasure_certificate(user: UserClient, client: Client):
     """Test verify stamp of one export certificate in PDF."""
     s = file('erase-sectors.snapshot')
     snapshot, response = user.post(s, res=Snapshot)
-    # import pdb; pdb.set_trace()
 
     doc, _ = user.get(res=documents.DocumentDef.t,
                              item='erasures/',
