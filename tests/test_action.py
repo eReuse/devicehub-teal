@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 from dateutil.tz import tzutc
 from decimal import Decimal
 from typing import Tuple, Type
+from pytest import raises
+from json.decoder import JSONDecodeError
 
 from flask import current_app as app, g
 from sqlalchemy.util import OrderedSet
@@ -747,7 +749,7 @@ def test_deallocate_bad_dates(user: UserClient):
                               (models.Rent, states.Trading.Renting),
                               (models.DisposeProduct, states.Trading.ProductDisposed)
                           ]))
-def test_trade(action_model_state: Tuple[Type[models.Action], states.Trading], user: UserClient):
+def test_trade2(action_model_state: Tuple[Type[models.Action], states.Trading], user: UserClient):
     """Tests POSTing all Trade actions."""
     # todo missing None states.Trading for after cancelling renting, for example
     action_model, state = action_model_state
@@ -765,6 +767,30 @@ def test_trade(action_model_state: Tuple[Type[models.Action], states.Trading], u
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
     assert device['actions'][-1]['id'] == action['id']
     assert device['trading'] == state.name
+
+
+@pytest.mark.mvp
+def test_trade(user: UserClient, user2: UserClient):
+    """Tests POST one simple Trade between 2 users of the system."""
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert device['id'] == snapshot['device']['id']
+    request_post = {
+        'userTo': user.user['email'],
+        'documentID': "1",
+        'price': 1.0,
+        'date': "2020-12-01T02:00:00+00:00",
+        'devices': [snapshot['device']['id']]
+    }
+    action, _ = user.post(res=models.Trade, data=request_post, status=200)
+
+    # import pdb; pdb.set_trace()
+    with raises(JSONDecodeError):
+        device1, _ = user.get(res=Device, item=device['id'])
+
+    device2, _ = user2.get(res=Device, item=device['id'])
+    assert device2['id'] == device['id']
+
 
 
 @pytest.mark.mvp
