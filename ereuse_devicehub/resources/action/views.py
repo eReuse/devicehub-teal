@@ -75,18 +75,7 @@ class TradeView(View):
 
     def post(self):
         res_json = request.get_json()
-        devices = res_json['devices']
-        if 'user_to' in res_json:
-            user_to_id = User.query.filter_by(email=res_json['user_to']).one().id
-            res_json.pop('user_to')
-            res_json['user_to_id'] = user_to_id
-            for dev in devices:
-                dev.owner_id = user_to_id
-        if 'user_from' in res_json:
-            res_json['user_from_id'] = User.query.filter_by(email=res_json['user_from']).one().id
-            res_json.pop('user_from')
         res_obj = self.model(**res_json)
-        
         db.session.add(res_obj)
         db.session().final_flush()
         ret = self.schema.jsonify(res_obj)

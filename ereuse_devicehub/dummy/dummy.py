@@ -115,10 +115,11 @@ class Dummy:
             user1.post({'type': model.t, 'devices': [pc]}, res=m.Action)
 
         # Perform a Sell to several devices
+        # import pdb; pdb.set_trace()
         user1.post(
             {
                 'type': m.Sell.t,
-                'to': user1.user['individuals'][0]['id'],
+                'userTo': user1.user['email'],
                 'devices': list(itertools.islice(pcs, len(pcs) // 2))
             },
             res=m.Action)
@@ -174,7 +175,7 @@ class Dummy:
         user1.post(  # Sell device
             {
                 'type': m.Sell.t,
-                'to': user1.user['individuals'][0]['id'],
+                'userTo': user1.user['email'],
                 'devices': [sample_pc]
             },
             res=m.Action)

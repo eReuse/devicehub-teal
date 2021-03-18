@@ -740,6 +740,7 @@ def test_deallocate_bad_dates(user: UserClient):
 
 
 @pytest.mark.mvp
+@pytest.mark.xfail(reason='Old functionality')
 @pytest.mark.parametrize('action_model_state',
                          (pytest.param(ams, id=ams[0].__name__)
                           for ams in [

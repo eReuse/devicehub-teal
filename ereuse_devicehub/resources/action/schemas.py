@@ -21,6 +21,7 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BiosAccessRange, F
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user import schemas as s_user
+from ereuse_devicehub.resources.user.models import User
 
 
 class Action(Thing):
@@ -459,8 +460,22 @@ class Trade(ActionWithMultipleDevices):
     __doc__ = m.Trade.__doc__
     date = DateTime(data_key='date', required=False)
     price = Float(required=False, data_key='price')
-    user_to = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
-    user_from = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
+    user_to_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
+    user_from_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
+
+    @validates_schema
+    def validate_user_to_id(self, data: dict):
+        if 'user_to_id' in data:
+            user_to = User.query.filter_by(email=data['user_to_id']).one()
+            data['user_to_id'] = user_to.id
+            for dev in data['devices']:
+                dev.owner_id = user_to.id
+
+    @validates_schema
+    def validate_user_from_id(self, data: dict):
+        if 'user_from_id' in data:
+            user_to = User.query.filter_by(email=data['user_from_id']).one()
+            data['user_from_id'] = user_to.id
 
 
 class OfferTrade(ActionWithMultipleDevices):
