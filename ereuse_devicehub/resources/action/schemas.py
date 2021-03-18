@@ -457,11 +457,18 @@ class CancelReservation(Organize):
 
 class Trade(ActionWithMultipleDevices):
     __doc__ = m.Trade.__doc__
-    shipping_date = DateTime(data_key='shippingDate')
-    invoice_number = SanitizedStr(validate=Length(max=STR_SIZE), data_key='invoiceNumber')
-    price = NestedOn(Price)
-    to = NestedOn(s_agent.Agent, only_query='id', required=True, comment=m.Trade.user_to_comment)
-    confirms = NestedOn(Organize)
+    date = DateTime(data_key='date', required=False)
+    price = Float(required=False, data_key='price')
+    user_to = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
+    user_from = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
+
+
+class OfferTrade(ActionWithMultipleDevices):
+    __doc__ = m.Trade.__doc__
+    date = DateTime(data_key='date', required=False)
+    document_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='documentID', required=False)
+    price = Float(required=False, data_key='price')
+    user_to = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=True)
 
 
 class InitTransfer(Trade):

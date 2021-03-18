@@ -16,11 +16,13 @@ from teal.db import ResourceNotFound
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import (Action, RateComputer, Snapshot, VisualTest,
-                                                      InitTransfer, Live, Allocate, Deallocate)
+                                                      InitTransfer, Live, Allocate, Deallocate,
+                                                      Trade)
 from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
+from ereuse_devicehub.resources.user.models import User
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
@@ -66,6 +68,31 @@ def move_json(tmp_snapshots, path_name, user, live=False):
     if os.path.isfile(path_name):
         shutil.copy(path_name, path_dir_base)
         os.remove(path_name)
+
+
+class TradeView(View):
+    model = Trade
+
+    def post(self):
+        res_json = request.get_json()
+        devices = res_json['devices']
+        if 'user_to' in res_json:
+            user_to_id = User.query.filter_by(email=res_json['user_to']).one().id
+            res_json.pop('user_to')
+            res_json['user_to_id'] = user_to_id
+            for dev in devices:
+                dev.owner_id = user_to_id
+        if 'user_from' in res_json:
+            res_json['user_from_id'] = User.query.filter_by(email=res_json['user_from']).one().id
+            res_json.pop('user_from')
+        res_obj = self.model(**res_json)
+        
+        db.session.add(res_obj)
+        db.session().final_flush()
+        ret = self.schema.jsonify(res_obj)
+        ret.status_code = 201
+        db.session.commit()
+        return ret
 
 
 class AllocateMix():
