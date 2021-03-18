@@ -776,15 +776,13 @@ def test_trade(user: UserClient, user2: UserClient):
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
     assert device['id'] == snapshot['device']['id']
     request_post = {
-        'userTo': user.user['email'],
-        'documentID': "1",
+        'userTo': user2.user['email'],
         'price': 1.0,
         'date': "2020-12-01T02:00:00+00:00",
         'devices': [snapshot['device']['id']]
     }
-    action, _ = user.post(res=models.Trade, data=request_post, status=200)
+    action, _ = user.post(res=models.Trade, data=request_post)
 
-    # import pdb; pdb.set_trace()
     with raises(JSONDecodeError):
         device1, _ = user.get(res=Device, item=device['id'])
 
