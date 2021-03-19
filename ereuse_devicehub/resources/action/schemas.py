@@ -478,12 +478,13 @@ class Trade(ActionWithMultipleDevices):
             data['user_from_id'] = user_to.id
 
 
-class OfferTrade(ActionWithMultipleDevices):
+class Offer(Trade):
     __doc__ = m.Trade.__doc__
-    date = DateTime(data_key='date', required=False)
     document_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='documentID', required=False)
-    price = Float(required=False, data_key='price')
-    user_to = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=True)
+    accepted_by_from = Boolean(missing=True, description=m.Offer.accepted_by_from.comment)
+    accepted_by_to = Boolean(missing=True, description=m.Offer.accepted_by_to.comment)
+    lot = NestedOn('Lot', dump_only=True)
+    trade = NestedOn('Trade', dump_only=True)
 
 
 class InitTransfer(Trade):

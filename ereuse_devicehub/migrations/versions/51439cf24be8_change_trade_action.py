@@ -35,25 +35,47 @@ def upgrade():
                     sa.Column('user_to_id', postgresql.UUID(as_uuid=True), nullable=False),
 
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
-                    sa.ForeignKeyConstraint(['user_from_id'], [f'common.user.id'], ),
-                    sa.ForeignKeyConstraint(['user_to_id'], [f'common.user.id'], ),
+                    sa.ForeignKeyConstraint(['user_from_id'], ['common.user.id'], ),
+                    sa.ForeignKeyConstraint(['user_to_id'], ['common.user.id'], ),
+                    sa.PrimaryKeyConstraint('id'),
+                    schema=f'{get_inv()}'
+                    )
+
+    op.create_table('offer',
+                    sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+                    sa.Column('document_id', citext.CIText(), nullable=True),
+                    sa.Column('accepted_by_from', sa.Boolean(), nullable=False),
+                    sa.Column('accepted_by_to', sa.Boolean(), nullable=False),
+                    sa.Column('confirm_transfer', sa.Boolean(), nullable=False),
+                    sa.Column('trade_id', postgresql.UUID(as_uuid=True), nullable=False),
+                    sa.Column('lot_id', postgresql.UUID(as_uuid=True), nullable=False),
+
+                    sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.trade.id'], ),
+                    sa.ForeignKeyConstraint(['trade_id'], [f'{get_inv()}.trade.id'], ),
+                    sa.ForeignKeyConstraint(['lot_id'], [f'{get_inv()}.lot.id'], ),
                     sa.PrimaryKeyConstraint('id'),
                     schema=f'{get_inv()}'
                     )
 
 
 def downgrade():
+    op.drop_table('offer', schema=f'{get_inv()}')
     op.drop_table('trade', schema=f'{get_inv()}')
     op.create_table('trade',
                     sa.Column('shipping_date', sa.TIMESTAMP(timezone=True), nullable=True,
-                              comment='When are the devices going to be ready \n    for shipping?\n    '),
+                              comment='When are the devices going to be ready \n    \
+                                      for shipping?\n    '),
                     sa.Column('invoice_number', citext.CIText(), nullable=True,
                               comment='The id of the invoice so they can be linked.'),
                     sa.Column('price_id', postgresql.UUID(as_uuid=True), nullable=True,
-                              comment='The price set for this trade.            \n    If no price is set it is supposed that the trade was\n    not payed, usual in donations.\n        '),
+                              comment='The price set for this trade.            \n    \
+                                      If no price is set it is supposed that the trade was\n   \
+                                      not payed, usual in donations.\n        '),
                     sa.Column('to_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('confirms_id', postgresql.UUID(as_uuid=True), nullable=True,
-                              comment='An organize action that this association confirms.                \n    \n    For example, a ``Sell`` or ``Rent``\n    can confirm a ``Reserve`` action.\n    '),
+                              comment='An organize action that this association confirms. \
+                                      \n    \n    For example, a ``Sell`` or ``Rent``\n   \
+                                      can confirm a ``Reserve`` action.\n    '),
                     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.ForeignKeyConstraint(['confirms_id'], [f'{get_inv()}.organize.id'], ),
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),

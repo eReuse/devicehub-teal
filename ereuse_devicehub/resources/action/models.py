@@ -32,7 +32,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
-from teal.db import (CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, 
+from teal.db import (CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID,
     POLYMORPHIC_ON, StrictVersionType, URL, check_lower, check_range, ResourceNotFound)
 from teal.enums import Country, Currency, Subdivision
 from teal.marshmallow import ValidationError
@@ -48,6 +48,7 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, Bio
     TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
+# from ereuse_devicehub.resources.lot.models import Lot
 
 
 class JoinedTableMixin:
@@ -142,7 +143,7 @@ class Action(Thing):
                               order_by=lambda: Component.id,
                               collection_class=OrderedSet)
     components.comment = """The components that are affected by the action.
-  
+
     When performing actions to parent devices their components are
     affected too.
 
@@ -159,7 +160,7 @@ class Action(Thing):
                           primaryjoin=parent_id == Computer.id)
     parent_id.comment = """For actions that are performed to components,
     the device parent at that time.
-   
+
     For example: for a ``EraseBasic`` performed on a data storage, this
     would point to the computer that contained this data storage, if any.
     """
@@ -1367,7 +1368,7 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         self.actions.reverse()
 
     def last_usage_time_allocate(self):
-        """If we don't have self.usage_time_hdd then we need search the last 
+        """If we don't have self.usage_time_hdd then we need search the last
            action Live with usage_time_allocate valid"""
         for e in self.actions:
             if isinstance(e, Live) and e.created < self.created:
@@ -1462,23 +1463,24 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     date = Column(db.TIMESTAMP(timezone=True))
 
 
-class ActionTrade(Trade):
+class Offer(Trade):
     """ActionTrade Offer one lot for to do one Trade.
-    """
-    shipping_date = Column(db.TIMESTAMP(timezone=True))
-    shipping_date.comment = """When are the devices going to be ready
-    for shipping?
     """
     document_id = Column(CIText())
     document_id.comment = """The id of one document like invoice so they can be linked."""
-    accepted_by_from = Column(Boolean)
-    accepted_by_to = Column(Boolean)
-    trade = db.Column(UUID(as_uuid=True),
-                      db.ForeignKey(Trade.id),
-                      nullable=True)
-    lot = db.Column(UUID(as_uuid=True),
-                    db.ForeignKey(Trade.id),
-                    nullable=True)
+    accepted_by_from = Column(Boolean, default=False)
+    accepted_by_from_common = """Who do the Offer"""
+    accepted_by_to = Column(Boolean, default=False)
+    confirm_transfer = Column(Boolean, default=False)
+    accepted_by_to_common = """Who recive the Offer"""
+    trade_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey(Trade.id),
+                         nullable=True)
+    trade = db.relationship(Trade, primaryjoin=trade_id == Trade.id)
+    lot_id = db.Column(UUID(as_uuid=True),
+                       db.ForeignKey(Trade.id),
+                       nullable=True)
+    # lot = db.relationship(Lot, primaryjoin=lot_id == Lot.id)
 
 
 class InitTransfer(Trade):

@@ -33,6 +33,7 @@ class Trading(State):
           from the facility. It does not mean end-of-life.
     """
     Reserved = e.Reserve
+    Offer = e.Offer
     Cancelled = e.CancelTrade
     Sold = e.Sell
     Donated = e.Donate
