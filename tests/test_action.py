@@ -747,9 +747,11 @@ def test_deallocate_bad_dates(user: UserClient):
                               (models.Rent, states.Trading.Renting),
                               (models.DisposeProduct, states.Trading.ProductDisposed)
                           ]))
-def test_trade(action_model_state: Tuple[Type[models.Action], states.Trading], user: UserClient):
+def test_trade2(action_model_state: Tuple[Type[models.Action], states.Trading], user: UserClient):
     """Tests POSTing all Trade actions."""
     # todo missing None states.Trading for after cancelling renting, for example
+    # import pdb; pdb.set_trace()
+    # Remove this test
     action_model, state = action_model_state
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     action = {
@@ -765,6 +767,20 @@ def test_trade(action_model_state: Tuple[Type[models.Action], states.Trading], u
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
     assert device['actions'][-1]['id'] == action['id']
     assert device['trading'] == state.name
+
+
+@pytest.mark.mvp
+def test_trade(user: UserClient, user2: UserClient):
+    """Tests POST one simple Trade action with both users as system users."""
+    # import pdb; pdb.set_trace()
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    action = {
+        'type': 'Trade',
+        'devices': [snapshot['device']['id']],
+        'user_to': user2.user['email']
+    }
+    action, _ = user.post(action, res=models.Action)
+    assert action['devices'][0]['id'] == snapshot['device']['id']
 
 
 @pytest.mark.mvp
