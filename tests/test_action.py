@@ -609,7 +609,7 @@ def test_save_live_json(app: Devicehub, user: UserClient, client: Client):
     shutil.rmtree(tmp_snapshots)
 
     assert snapshot['debug'] == debug
-    
+
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -627,12 +627,12 @@ def test_allocate(user: UserClient):
     """ Tests allocate """
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
-    post_request = {"transaction": "ccc", 
+    post_request = {"transaction": "ccc",
                     "finalUserCode": "aabbcc",
-                    "name": "John", 
+                    "name": "John",
                     "severity": "Info",
                     "endUsers": 1,
-                    "devices": [device_id], 
+                    "devices": [device_id],
                     "description": "aaa",
                     "startTime": "2020-11-01T02:00:00+00:00",
                     "endTime": "2020-12-01T02:00:00+00:00",
@@ -672,12 +672,12 @@ def test_allocate_bad_dates(user: UserClient):
     device_id = snapshot['device']['id']
     delay = timedelta(days=30)
     future = datetime.now().replace(tzinfo=tzutc()) + delay
-    post_request = {"transaction": "ccc", 
+    post_request = {"transaction": "ccc",
                     "finalUserCode": "aabbcc",
-                    "name": "John", 
+                    "name": "John",
                     "severity": "Info",
                     "end_users": 1,
-                    "devices": [device_id], 
+                    "devices": [device_id],
                     "description": "aaa",
                     "start_time": future,
     }
@@ -771,7 +771,7 @@ def test_trade2(action_model_state: Tuple[Type[models.Action], states.Trading], 
 
 
 @pytest.mark.mvp
-def test_trade(user: UserClient, user2: UserClient):
+def test_trade_endpoint(user: UserClient, user2: UserClient):
     """Tests POST one simple Trade between 2 users of the system."""
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device, _ = user.get(res=Device, item=snapshot['device']['id'])
@@ -790,6 +790,37 @@ def test_trade(user: UserClient, user2: UserClient):
     device2, _ = user2.get(res=Device, item=device['id'])
     assert device2['id'] == device['id']
 
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_offer(user: UserClient):
+    from ereuse_devicehub.resources.user.models import User
+    from ereuse_devicehub.resources.agent.models import Person
+    from ereuse_devicehub.resources.lot.models import Lot
+
+    user2 = User(email='baz@baz.cxm', password='baz')
+    user2.individuals.add(Person(name='Tommy'))
+    db.session.add(user2)
+    db.session.commit()
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    lot = Lot('MyLot')
+    lot.owner_id = user.user['id']
+    device = Device.query.filter_by(id=snapshot['device']['id']).one()
+    lot.devices.add(device)
+    db.session.add(lot)
+    db.session.flush()
+    request_post = {
+        'type': 'Offer',
+        'devices': [device.id],
+        'userTo': user2.email,
+        'price': 0,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'accepted_by_from': True,
+        'lot': lot.id
+    }
+    import pdb; pdb.set_trace()
+    action, _ = user.post(res=models.Action, data=request_post)
 
 
 @pytest.mark.mvp

@@ -260,6 +260,11 @@ class TradeDef(ActionDef):
     SCHEMA = schemas.Trade
 
 
+class OfferDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Offer
+
+
 class ToDisposeProductDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.ToDisposeProduct

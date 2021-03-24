@@ -253,6 +253,9 @@ class ActionView(View):
             return self.transfer_ownership()
         a = resource_def.schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()
+        import pdb; pdb.set_trace()
+        # a['lot_id'] = a['lot'].id
+        # a.pop('lot')
         action = Model(**a)
         db.session.add(action)
         db.session().final_flush()

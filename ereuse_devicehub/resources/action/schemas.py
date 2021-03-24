@@ -470,6 +470,9 @@ class Trade(ActionWithMultipleDevices):
             data['user_to_id'] = user_to.id
             for dev in data['devices']:
                 dev.owner_id = user_to.id
+                if hasattr(dev, 'components'):
+                    for c in dev.components:
+                        c.owner_id = user_to.id
 
     @validates_schema
     def validate_user_from_id(self, data: dict):
@@ -481,10 +484,14 @@ class Trade(ActionWithMultipleDevices):
 class Offer(Trade):
     __doc__ = m.Trade.__doc__
     document_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='documentID', required=False)
-    accepted_by_from = Boolean(missing=True, description=m.Offer.accepted_by_from.comment)
-    accepted_by_to = Boolean(missing=True, description=m.Offer.accepted_by_to.comment)
+    accepted_by_from = Boolean(missing=False, description=m.Offer.accepted_by_from.comment)
+    accepted_by_to = Boolean(missing=False, description=m.Offer.accepted_by_to.comment)
     lot = NestedOn('Lot', dump_only=True)
     trade = NestedOn('Trade', dump_only=True)
+    # lot = NestedOn('Lot',
+                   # many=False,
+                   # required=True,
+                   # only_query='id')
 
 
 class InitTransfer(Trade):
