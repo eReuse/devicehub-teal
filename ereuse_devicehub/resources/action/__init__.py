@@ -250,6 +250,11 @@ class MakeAvailable(ActionDef):
     SCHEMA = schemas.MakeAvailable
 
 
+class TradeDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Trade
+
+
 class CancelTradeDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.CancelTrade
