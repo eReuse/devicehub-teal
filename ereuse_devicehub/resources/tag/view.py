@@ -18,7 +18,7 @@ class TagView(View):
         tag = Tag.query.filter_by(internal_id=internal_id).one()  # type: Tag
         if not tag.device:
             raise TagNotLinked(tag.id)
-        return redirect(location=url_for_resource(Device, tag.device.id))
+        return redirect(location=url_for_resource(Device, tag.device.devicehub_id))
 
     @auth.Auth.requires_auth
     def post(self):
@@ -84,7 +84,7 @@ class TagDeviceView(View):
             raise TagNotLinked(tag.id)
         if not request.authorization:
             return redirect(location=url_for_resource(Device, tag.device.devicehub_id))
-        return app.resources[Device.t].schema.jsonify(tag.device)
+        return app.resources[Device.t].schema.jsonify(tag.device.devicehub_id)
 
     @auth.Auth.requires_auth
     def one_authorization(self, id):
