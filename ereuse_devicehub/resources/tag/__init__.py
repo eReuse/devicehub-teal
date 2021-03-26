@@ -47,6 +47,10 @@ class TagDef(Resource):
                           'device/<{0.ID_CONVERTER.value}:device_id>'.format(DeviceDef),
                           view_func=device_view,
                           methods={'PUT'})
+        self.add_url_rule('/<{0.ID_CONVERTER.value}:tag_id>/'.format(self) +
+                          'device/<{0.ID_CONVERTER.value}:device_id>'.format(DeviceDef),
+                          view_func=device_view,
+                          methods={'DELETE'})
 
     @option('-u', '--owner', help=OWNER_H)
     @option('-o', '--org', help=ORG_H)

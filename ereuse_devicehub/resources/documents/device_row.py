@@ -50,8 +50,7 @@ class DeviceRow(OrderedDict):
         self['Tag 2 Type'] = self['Tag 2 ID'] = self['Tag 2 Organization'] = ''
         self['Tag 3 Type'] = self['Tag 3 ID'] = self['Tag 3 Organization'] = ''
         for i, tag in zip(range(1, 3), device.tags):
-            # TODO @cayop we need redefined how save the Tag Type info
-            self['Tag {} Type'.format(i)] = 'unamed'
+            self['Tag {} Type'.format(i)] = 'unamed' if tag.provider else 'named'
             self['Tag {} ID'.format(i)] = tag.id
             self['Tag {} Organization'.format(i)] = tag.org.name
 
