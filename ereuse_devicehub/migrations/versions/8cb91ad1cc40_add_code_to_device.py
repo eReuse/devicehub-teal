@@ -1,7 +1,7 @@
 """add code to device
 
 Revision ID: 8cb91ad1cc40
-Revises: eca457d8b2a4
+Revises: 6a2a939d5668
 Create Date: 2021-03-03 10:39:19.331027
 
 """
@@ -15,7 +15,7 @@ from ereuse_devicehub.resources.utils import hashcode
 
 # revision identifiers, used by Alembic.
 revision = '8cb91ad1cc40'
-down_revision = 'eca457d8b2a4'
+down_revision = '6a2a939d5668'
 branch_labels = None
 depends_on = None
 
