@@ -251,11 +251,9 @@ class ActionView(View):
             # TODO JN add compute rate with new visual test and old components device
         if json['type'] == InitTransfer.t:
             return self.transfer_ownership()
+        # import pdb; pdb.set_trace()
         a = resource_def.schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()
-        import pdb; pdb.set_trace()
-        # a['lot_id'] = a['lot'].id
-        # a.pop('lot')
         action = Model(**a)
         db.session.add(action)
         db.session().final_flush()

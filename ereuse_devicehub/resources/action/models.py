@@ -1453,13 +1453,11 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     confirm_transfer = Column(Boolean, default=False)
     confirm_transfer_comment = """Transfer of the phisical devices it is confirmed"""
     offer_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey('offer.id',
-                                       user_alter=True,
-                                       name='trade_offer'),
+                         db.ForeignKey('offer.id'),
                          nullable=True)
-    offer = db.relationship('offer',
+    offer = db.relationship('Offer',
                             backref=db.backref('trade', uselist=False, lazy=True),
-                            primaryjoin='Trade.id == Offer.trade_id')
+                            primaryjoin='Trade.offer_id == Offer.id')
 
 
 class Offer(JoinedTableMixin, ActionWithMultipleDevices):

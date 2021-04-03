@@ -464,14 +464,18 @@ class Trade(ActionWithMultipleDevices):
     offer = NestedOn('Offer', dump_only=True)
 
 
-class Offer(Trade):
-    __doc__ = m.Trade.__doc__
+class Offer(ActionWithMultipleDevices):
+    __doc__ = m.Offer.__doc__
     document_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='documentID', required=False)
     date = DateTime(data_key='date', required=False)
     price = Float(required=False, data_key='price')
     user_to_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
     user_from_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
-    lot = NestedOn('Lot', dump_only=True)
+    # lot = NestedOn('Lot', dump_only=True)
+    lot = NestedOn('Lot',
+                   many=False,
+                   required=True,  # todo test ensuring len(devices) >= 1
+                   only_query='id')
 
     @validates_schema
     def validate_user_to_id(self, data: dict):
