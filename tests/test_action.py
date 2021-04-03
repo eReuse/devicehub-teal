@@ -773,6 +773,7 @@ def test_trade2(action_model_state: Tuple[Type[models.Action], states.Trading], 
 
 
 @pytest.mark.mvp
+@pytest.mark.xfail(reason='Old functionality')
 def test_trade_endpoint(user: UserClient, user2: UserClient):
     """Tests POST one simple Trade between 2 users of the system."""
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
@@ -815,10 +816,9 @@ def test_offer(user: UserClient):
         'type': 'Offer',
         'devices': [device.id],
         'userTo': user2.email,
-        'price': 0,
+        'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
-        'accepted_by_from': True,
         'lot': lot.id
     }
     import pdb; pdb.set_trace()
