@@ -26,6 +26,17 @@ def get_inv():
     return INV
 
 def upgrade():
+    currency = sa.Enum('AFN', 'ARS', 'AWG', 'AUD', 'AZN', 'BSD', 'BBD', 'BDT', 'BYR', 'BZD', 'BMD',
+                       'BOB', 'BAM', 'BWP', 'BGN', 'BRL', 'BND', 'KHR', 'CAD', 'KYD', 'CLP', 'CNY',
+                       'COP', 'CRC', 'HRK', 'CUP', 'CZK', 'DKK', 'DOP', 'XCD', 'EGP', 'SVC', 'EEK',
+                       'EUR', 'FKP', 'FJD', 'GHC', 'GIP', 'GTQ', 'GGP', 'GYD', 'HNL', 'HKD', 'HUF',
+                       'ISK', 'INR', 'IDR', 'IRR', 'IMP', 'ILS', 'JMD', 'JPY', 'JEP', 'KZT', 'KPW',
+                       'KRW', 'KGS', 'LAK', 'LVL', 'LBP', 'LRD', 'LTL', 'MKD', 'MYR', 'MUR', 'MXN',
+                       'MNT', 'MZN', 'NAD', 'NPR', 'ANG', 'NZD', 'NIO', 'NGN', 'NOK', 'OMR', 'PKR',
+                       'PAB', 'PYG', 'PEN', 'PHP', 'PLN', 'QAR', 'RON', 'RUB', 'SHP', 'SAR', 'RSD',
+                       'SCR', 'SGD', 'SBD', 'SOS', 'ZAR', 'LKR', 'SEK', 'CHF', 'SRD', 'SYP', 'TWD',
+                       'THB', 'TTD', 'TRY', 'TRL', 'TVD', 'UAH', 'GBP', 'USD', 'UYU', 'UZS', 'VEF', name='currency', create_type=False, checkfirst=True)
+
     op.drop_table('trade', schema=f'{get_inv()}')
     op.create_table('offer',
                     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
@@ -35,21 +46,8 @@ def upgrade():
                     sa.Column('user_from_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('user_to_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('document_id', citext.CIText(), nullable=True),
-                    sa.Column('currency',
-                              sa.Enum('AFN', 'ARS', 'AWG', 'AUD', 'AZN', 'BSD', 'BBD', 'BDT', 'BYR', 'BZD', 'BMD',
-                                      'BOB', 'BAM', 'BWP', 'BGN', 'BRL', 'BND', 'KHR', 'CAD', 'KYD', 'CLP', 'CNY',
-                                      'COP', 'CRC', 'HRK', 'CUP', 'CZK', 'DKK', 'DOP', 'XCD', 'EGP', 'SVC', 'EEK',
-                                      'EUR', 'FKP', 'FJD', 'GHC', 'GIP', 'GTQ', 'GGP', 'GYD', 'HNL', 'HKD', 'HUF',
-                                      'ISK', 'INR', 'IDR', 'IRR', 'IMP', 'ILS', 'JMD', 'JPY', 'JEP', 'KZT', 'KPW',
-                                      'KRW', 'KGS', 'LAK', 'LVL', 'LBP', 'LRD', 'LTL', 'MKD', 'MYR', 'MUR', 'MXN',
-                                      'MNT', 'MZN', 'NAD', 'NPR', 'ANG', 'NZD', 'NIO', 'NGN', 'NOK', 'OMR', 'PKR',
-                                      'PAB', 'PYG', 'PEN', 'PHP', 'PLN', 'QAR', 'RON', 'RUB', 'SHP', 'SAR', 'RSD',
-                                      'SCR', 'SGD', 'SBD', 'SOS', 'ZAR', 'LKR', 'SEK', 'CHF', 'SRD', 'SYP', 'TWD',
-                                      'THB', 'TTD', 'TRY', 'TRL', 'TVD', 'UAH', 'GBP', 'USD', 'UYU', 'UZS', 'VEF',
-                                      'VND', 'YER', 'ZWD', name='currency'), nullable=False,
-                              comment='The currency of this price as for ISO 4217.'),
-
-                    sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.trade.id'], ),
+                    sa.Column("currency", currency, nullable=False),
+                    sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
                     sa.ForeignKeyConstraint(['user_from_id'], ['common.user.id'], ),
                     sa.ForeignKeyConstraint(['user_to_id'], ['common.user.id'], ),
                     sa.ForeignKeyConstraint(['lot_id'], [f'{get_inv()}.lot.id'], ),
@@ -72,8 +70,8 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table('offer', schema=f'{get_inv()}')
     op.drop_table('trade', schema=f'{get_inv()}')
+    op.drop_table('offer', schema=f'{get_inv()}')
     op.create_table('trade',
                     sa.Column('shipping_date', sa.TIMESTAMP(timezone=True), nullable=True,
                               comment='When are the devices going to be ready \n    \
