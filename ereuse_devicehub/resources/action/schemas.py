@@ -458,9 +458,9 @@ class CancelReservation(Organize):
 
 class Trade(ActionWithMultipleDevices):
     __doc__ = m.Trade.__doc__
-    accepted_by_from = Boolean(missing=False, description=m.Offer.accepted_by_from.comment)
-    accepted_by_to = Boolean(missing=False, description=m.Offer.accepted_by_to.comment)
-    confirm_transfer = Boolean(missing=False, description=m.Offer.confirm_transfer.comment)
+    accepted_by_from = Boolean(missing=False, description=m.Trade.accepted_by_from.comment)
+    accepted_by_to = Boolean(missing=False, description=m.Trade.accepted_by_to.comment)
+    confirm_transfer = Boolean(missing=False, description=m.Trade.confirm_transfer.comment)
     offer = NestedOn('Offer', dump_only=True)
 
 
@@ -489,7 +489,6 @@ class Offer(Trade):
         if 'user_from_id' in data:
             user_to = User.query.filter_by(email=data['user_from_id']).one()
             data['user_from_id'] = user_to.id
-
 
 
 class InitTransfer(Trade):

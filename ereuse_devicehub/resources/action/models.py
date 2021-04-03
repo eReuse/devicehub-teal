@@ -1478,7 +1478,7 @@ class Offer(JoinedTableMixin, ActionWithMultipleDevices):
     user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
     user_to_comment = """The user that gets the device due this deal."""
     price = Column(Float(decimal_return_scale=2), nullable=True)
-    currency = Column(DBEnum(Currency), nullable=False, default='EUR')
+    currency = Column(DBEnum(Currency), nullable=False, default=Currency.EUR.name)
     currency.comment = """The currency of this price as for ISO 4217."""
     date = Column(db.TIMESTAMP(timezone=True))
     document_id = Column(CIText())
