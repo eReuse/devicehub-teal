@@ -14,7 +14,7 @@ import citext
 
 # revision identifiers, used by Alembic.
 revision = '51439cf24be8'
-down_revision = 'eca457d8b2a4'
+down_revision = '6a2a939d5668'
 branch_labels = None
 depends_on = None
 
