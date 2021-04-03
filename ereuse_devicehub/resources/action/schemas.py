@@ -458,10 +458,20 @@ class CancelReservation(Organize):
 
 class Trade(ActionWithMultipleDevices):
     __doc__ = m.Trade.__doc__
+    accepted_by_from = Boolean(missing=False, description=m.Offer.accepted_by_from.comment)
+    accepted_by_to = Boolean(missing=False, description=m.Offer.accepted_by_to.comment)
+    confirm_transfer = Boolean(missing=False, description=m.Offer.confirm_transfer.comment)
+    offer = NestedOn('Offer', dump_only=True)
+
+
+class Offer(Trade):
+    __doc__ = m.Trade.__doc__
+    document_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='documentID', required=False)
     date = DateTime(data_key='date', required=False)
     price = Float(required=False, data_key='price')
     user_to_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
     user_from_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
+    lot = NestedOn('Lot', dump_only=True)
 
     @validates_schema
     def validate_user_to_id(self, data: dict):
@@ -480,18 +490,6 @@ class Trade(ActionWithMultipleDevices):
             user_to = User.query.filter_by(email=data['user_from_id']).one()
             data['user_from_id'] = user_to.id
 
-
-class Offer(Trade):
-    __doc__ = m.Trade.__doc__
-    document_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='documentID', required=False)
-    accepted_by_from = Boolean(missing=False, description=m.Offer.accepted_by_from.comment)
-    accepted_by_to = Boolean(missing=False, description=m.Offer.accepted_by_to.comment)
-    lot = NestedOn('Lot', dump_only=True)
-    trade = NestedOn('Trade', dump_only=True)
-    # lot = NestedOn('Lot',
-                   # many=False,
-                   # required=True,
-                   # only_query='id')
 
 
 class InitTransfer(Trade):

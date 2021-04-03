@@ -1446,28 +1446,25 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     This class and its inheritors
     extend `Schema's Trade <http://schema.org/TradeAction>`_.
         """
-    user_from_id = db.Column(UUID(as_uuid=True),
-                             db.ForeignKey(User.id),
-                             nullable=False,
-                             default=lambda: g.user.id)
-    user_from = db.relationship(User, primaryjoin=user_from_id == User.id)
-    user_from_comment = """The user that offers the device due this deal."""
-    user_to_id = db.Column(UUID(as_uuid=True),
-                           db.ForeignKey(User.id),
-                           nullable=False,
-                           default=lambda: g.user.id)
-    user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
-    user_to_comment = """The user that gets the device due this deal."""
-    price = Column(Float(decimal_return_scale=2), nullable=True)
-    date = Column(db.TIMESTAMP(timezone=True))
-    # offer = relationship("Offer", uselist=False, back_populates="Trade")
+    accepted_by_from = Column(Boolean, default=False)
+    accepted_by_from_comment = """Who do the Offer"""
+    accepted_by_to = Column(Boolean, default=False)
+    accepted_by_to_comment = """Who recive the Offer"""
+    confirm_transfer = Column(Boolean, default=False)
+    confirm_transfer_comment = """Transfer of the phisical devices it is confirmed"""
+    offer_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey('offer.id',
+                                       user_alter=True,
+                                       name='trade_offer'),
+                         nullable=True)
+    offer = db.relationship('offer',
+                            backref=db.backref('trade', uselist=False, lazy=True),
+                            primaryjoin='Trade.id == Offer.trade_id')
 
 
-# class Offer(Trade):
 class Offer(JoinedTableMixin, ActionWithMultipleDevices):
     """ActionTrade Offer one lot for to do one Trade.
     """
-    # from ereuse_devicehub.resources.lot.models import Lot
     user_from_id = db.Column(UUID(as_uuid=True),
                              db.ForeignKey(User.id),
                              nullable=False,
@@ -1481,29 +1478,22 @@ class Offer(JoinedTableMixin, ActionWithMultipleDevices):
     user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
     user_to_comment = """The user that gets the device due this deal."""
     price = Column(Float(decimal_return_scale=2), nullable=True)
+    currency = Column(DBEnum(Currency), nullable=False, default='EUR')
+    currency.comment = """The currency of this price as for ISO 4217."""
     date = Column(db.TIMESTAMP(timezone=True))
     document_id = Column(CIText())
     document_id.comment = """The id of one document like invoice so they can be linked."""
-    accepted_by_from = Column(Boolean, default=False)
-    accepted_by_from_common = """Who do the Offer"""
-    accepted_by_to = Column(Boolean, default=False)
-    confirm_transfer = Column(Boolean, default=False)
-    accepted_by_to_common = """Who recive the Offer"""
-    trade_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey(Trade.id),
-                         nullable=True)
-    trade = db.relationship(Trade, primaryjoin=trade_id == Trade.id)
     lot_id = db.Column(UUID(as_uuid=True),
-                       db.ForeignKey('information_schema.lot.id'),
+                       db.ForeignKey('lot.id',
+                                     use_alter=True,
+                                     name='lot_offer'),
                        nullable=True)
-    # lot = relationship("Lot", back_populates="offer")
-    # lot = db.relationship('Lot', primaryjoin='lot_id' == 'Lot.id')
-    # lot = relationship('Lot',
-                       # backref=backref('lot_one',
-                                       # lazy=True,
-                                       # cascade=CASCADE_OWN,
-                                       # **_sorted_actions),
-                       # primaryjoin=lot_id == 'Lot.id')
+    lot = relationship('Lot',
+                       backref=backref('offer',
+                                       lazy=True,
+                                       uselist=False,
+                                       cascade=CASCADE_OWN),
+                       primaryjoin='Offer.lot_id == Lot.id')
 
 
 class InitTransfer(Trade):
