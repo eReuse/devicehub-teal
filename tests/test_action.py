@@ -20,6 +20,9 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.client import UserClient, Client
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources import enums
+from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.agent.models import Person
+from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.action import models
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
@@ -796,11 +799,8 @@ def test_trade_endpoint(user: UserClient, user2: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_offer(user: UserClient):
-    from ereuse_devicehub.resources.user.models import User
-    from ereuse_devicehub.resources.agent.models import Person
-    from ereuse_devicehub.resources.lot.models import Lot
-
+def test_offer_without_to(user: UserClient):
+    """Test one offer with doble confirmation"""
     user2 = User(email='baz@baz.cxm', password='baz')
     user2.individuals.add(Person(name='Tommy'))
     db.session.add(user2)
@@ -815,13 +815,46 @@ def test_offer(user: UserClient):
     request_post = {
         'type': 'Offer',
         'devices': [device.id],
+        'userFrom': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot.id,
+        'confirm': False,
+        'code': 'MAX'
+    }
+    # import pdb; pdb.set_trace()
+    action, _ = user.post(res=models.Action, data=request_post)
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_offer(user: UserClient):
+    """Test one offer with doble confirmation"""
+    user2 = User(email='baz@baz.cxm', password='baz')
+    user2.individuals.add(Person(name='Tommy'))
+    db.session.add(user2)
+    db.session.commit()
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    lot = Lot('MyLot')
+    lot.owner_id = user.user['id']
+    device = Device.query.filter_by(id=snapshot['device']['id']).one()
+    lot.devices.add(device)
+    db.session.add(lot)
+    db.session.flush()
+    request_post = {
+        'type': 'Offer',
+        'devices': [device.id],
+        'userFrom': user.email,
         'userTo': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
-        'lot': lot.id
+        'lot': lot.id,
+        'confirm': True,
+        'userExist': True,
     }
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     action, _ = user.post(res=models.Action, data=request_post)
 
 
