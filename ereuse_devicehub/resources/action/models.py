@@ -1465,14 +1465,12 @@ class Offer(JoinedTableMixin, ActionWithMultipleDevices):
     """
     user_from_id = db.Column(UUID(as_uuid=True),
                              db.ForeignKey(User.id),
-                             nullable=False,
-                             default=lambda: g.user.id)
+                             nullable=False)
     user_from = db.relationship(User, primaryjoin=user_from_id == User.id)
     user_from_comment = """The user that offers the device due this deal."""
     user_to_id = db.Column(UUID(as_uuid=True),
                            db.ForeignKey(User.id),
-                           nullable=False,
-                           default=lambda: g.user.id)
+                           nullable=False)
     user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
     user_to_comment = """The user that gets the device due this deal."""
     price = Column(Float(decimal_return_scale=2), nullable=True)
@@ -1481,6 +1479,10 @@ class Offer(JoinedTableMixin, ActionWithMultipleDevices):
     date = Column(db.TIMESTAMP(timezone=True))
     document_id = Column(CIText())
     document_id.comment = """The id of one document like invoice so they can be linked."""
+    confirm = Column(Boolean, default=False, nullable=False)
+    confirm.comment = """If you need confirmation of the user, you need actevate this field"""
+    code = Column(CIText(), nullable=True)
+    code.comment = """If the user not exist, you need a code to be able to do the traceability"""
     lot_id = db.Column(UUID(as_uuid=True),
                        db.ForeignKey('lot.id',
                                      use_alter=True,

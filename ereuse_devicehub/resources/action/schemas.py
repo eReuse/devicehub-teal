@@ -470,29 +470,68 @@ class Offer(ActionWithMultipleDevices):
     date = DateTime(data_key='date', required=False)
     price = Float(required=False, data_key='price')
     user_to_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
-    user_from_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
-    # lot = NestedOn('Lot', dump_only=True)
+    user_from_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userFrom', required=False)
+    code = SanitizedStr(validate=Length(max=STR_SIZE), data_key='code', required=False)
+    confirm = Boolean(missing=False, description="""If you need confirmation of the user
+            you need actevate this field""")
     lot = NestedOn('Lot',
                    many=False,
-                   required=True,  # todo test ensuring len(devices) >= 1
+                   required=True,
                    only_query='id')
 
     @validates_schema
     def validate_user_to_id(self, data: dict):
-        if 'user_to_id' in data:
-            user_to = User.query.filter_by(email=data['user_to_id']).one()
+        """
+        - if user_exist
+            * confirmation
+            * without confirmation
+        - if user don't exist
+            * without confirmation
+            
+        """
+        # import pdb; pdb.set_trace()
+        if data.get('user_to_id'):
+            user_to = User.query.filter_by(email=data.get('user_to_id')).one()
             data['user_to_id'] = user_to.id
             for dev in data['devices']:
                 dev.owner_id = user_to.id
                 if hasattr(dev, 'components'):
                     for c in dev.components:
                         c.owner_id = user_to.id
+        else:
+            data['confirm'] = False
 
     @validates_schema
     def validate_user_from_id(self, data: dict):
-        if 'user_from_id' in data:
-            user_to = User.query.filter_by(email=data['user_from_id']).one()
-            data['user_from_id'] = user_to.id
+        """
+        - if user_exist
+            * confirmation
+            * without confirmation
+        - if user don't exist
+            * without confirmation
+            
+        """
+        # import pdb; pdb.set_trace()
+        if data.get('user_from_id'):
+            user_from = User.query.filter_by(email=data.get('user_from_id')).one()
+            data['user_from_id'] = user_from.id
+            for dev in data['devices']:
+                dev.owner_id = user_from.id
+                if hasattr(dev, 'components'):
+                    for c in dev.components:
+                        c.owner_id = user_from.id
+        else:
+            data['confirm'] = False
+
+    @validates_schema
+    def validate_code(self, data: dict):
+        """If the user not exist, you need a code to be able to do the traceability"""
+        if data.get('user_from_id') and data.get('user_to_id'):
+            return
+
+        if not data.get('code'):
+            txt = "you need a code to be able to do the traceability"
+            raise ValidationError(txt)
 
 
 class InitTransfer(Trade):
