@@ -119,7 +119,6 @@ class Dummy:
         user1.post(
             {
                 'type': m.Sell.t,
-                'userTo': user1.user['email'],
                 'devices': list(itertools.islice(pcs, len(pcs) // 2))
             },
             res=m.Action)
@@ -175,7 +174,6 @@ class Dummy:
         user1.post(  # Sell device
             {
                 'type': m.Sell.t,
-                'userTo': user1.user['email'],
                 'devices': [sample_pc]
             },
             res=m.Action)
