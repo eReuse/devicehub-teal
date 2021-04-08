@@ -469,8 +469,10 @@ class Offer(ActionWithMultipleDevices):
     document_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='documentID', required=False)
     date = DateTime(data_key='date', required=False)
     price = Float(required=False, data_key='price')
-    user_to_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', required=False)
-    user_from_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userFrom', required=False)
+    user_to_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', missing='',
+                              required=False)
+    user_from_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userFrom', missing='',
+                                required=False)
     code = SanitizedStr(validate=Length(max=STR_SIZE), data_key='code', required=False)
     confirm = Boolean(missing=False, description="""If you need confirmation of the user
             you need actevate this field""")
@@ -482,51 +484,45 @@ class Offer(ActionWithMultipleDevices):
     @validates_schema
     def validate_user_to_id(self, data: dict):
         """
-        - if user_exist
+        - if user_to exist
             * confirmation
             * without confirmation
-        - if user don't exist
+        - if user_to don't exist
             * without confirmation
-            
+
         """
-        # import pdb; pdb.set_trace()
-        if data.get('user_to_id'):
-            user_to = User.query.filter_by(email=data.get('user_to_id')).one()
+        if data['user_to_id']:
+            user_to = User.query.filter_by(email=data['user_to_id']).one()
             data['user_to_id'] = user_to.id
-            for dev in data['devices']:
-                dev.owner_id = user_to.id
-                if hasattr(dev, 'components'):
-                    for c in dev.components:
-                        c.owner_id = user_to.id
+            data['user_to'] = user_to
         else:
             data['confirm'] = False
 
     @validates_schema
     def validate_user_from_id(self, data: dict):
         """
-        - if user_exist
+        - if user_from exist
             * confirmation
             * without confirmation
-        - if user don't exist
+        - if user_from don't exist
             * without confirmation
-            
+
         """
-        # import pdb; pdb.set_trace()
-        if data.get('user_from_id'):
-            user_from = User.query.filter_by(email=data.get('user_from_id')).one()
+        if not (data['user_from_id'] or data['user_to_id']):
+            txt = "you need one user from or user to for to do a offer"
+            raise ValidationError(txt)
+
+        if data['user_from_id']:
+            user_from = User.query.filter_by(email=data['user_from_id']).one()
             data['user_from_id'] = user_from.id
-            for dev in data['devices']:
-                dev.owner_id = user_from.id
-                if hasattr(dev, 'components'):
-                    for c in dev.components:
-                        c.owner_id = user_from.id
+            data['user_from'] = user_from
         else:
             data['confirm'] = False
 
     @validates_schema
     def validate_code(self, data: dict):
         """If the user not exist, you need a code to be able to do the traceability"""
-        if data.get('user_from_id') and data.get('user_to_id'):
+        if data['user_from_id'] and data['user_to_id']:
             return
 
         if not data.get('code'):
