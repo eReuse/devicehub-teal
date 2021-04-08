@@ -800,7 +800,7 @@ def test_trade_endpoint(user: UserClient, user2: UserClient):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_offer_without_to(user: UserClient):
-    """Test one offer with doble confirmation"""
+    """Test one offer without confirmation and without user to"""
     user2 = User(email='baz@baz.cxm', password='baz')
     user2.individuals.add(Person(name='Tommy'))
     db.session.add(user2)
@@ -809,6 +809,10 @@ def test_offer_without_to(user: UserClient):
     lot = Lot('MyLot')
     lot.owner_id = user.user['id']
     device = Device.query.filter_by(id=snapshot['device']['id']).one()
+
+    # check the owner of the device
+    assert device.owner.email == user.email
+
     lot.devices.add(device)
     db.session.add(lot)
     db.session.flush()
@@ -823,13 +827,64 @@ def test_offer_without_to(user: UserClient):
         'confirm': False,
         'code': 'MAX'
     }
-    # import pdb; pdb.set_trace()
     action, _ = user.post(res=models.Action, data=request_post)
+    trade= models.Trade.query.one()
+    assert device in trade.devices
+    assert request_post['code'].lower() in device.owner.email
+    assert device.owner.active == False
+    assert device.owner.phantom == True
+    assert trade.accepted_by_from and trade.accepted_by_to
+    assert device.owner.email != user.email
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_offer(user: UserClient):
+def test_offer_without_from(user: UserClient):
+    """Test one offer without confirmation and without user from"""
+    user2 = User(email='baz@baz.cxm', password='baz')
+    user2.individuals.add(Person(name='Tommy'))
+    db.session.add(user2)
+    db.session.commit()
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    lot = Lot('MyLot')
+    lot.owner_id = user.user['id']
+    device = Device.query.filter_by(id=snapshot['device']['id']).one()
+
+    # check the owner of the device
+    assert device.owner.email == user.email
+    assert device.owner.email != user2.email
+
+    lot.devices.add(device)
+    db.session.add(lot)
+    db.session.flush()
+    request_post = {
+        'type': 'Offer',
+        'devices': [device.id],
+        'userTo': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot.id,
+        'confirm': False,
+        'code': 'MAX'
+    }
+    action, _ = user.post(res=models.Action, data=request_post)
+    trade= models.Trade.query.one()
+
+    phantom_user = trade.offer.user_from
+    assert request_post['code'].lower() in phantom_user.email
+    assert phantom_user.active == False
+    assert phantom_user.phantom == True
+
+    assert user2.email in trade.devices[0].owner.email
+    assert trade.accepted_by_from and trade.accepted_by_to
+    assert device.owner.email != user.email
+    assert device.owner.email == user2.email
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_offer_without_users(user: UserClient):
     """Test one offer with doble confirmation"""
     user2 = User(email='baz@baz.cxm', password='baz')
     user2.individuals.add(Person(name='Tommy'))
@@ -845,6 +900,38 @@ def test_offer(user: UserClient):
     request_post = {
         'type': 'Offer',
         'devices': [device.id],
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot.id,
+        'confirm': False,
+        'code': 'MAX'
+    }
+    action, response = user.post(res=models.Action, data=request_post, status=422)
+    txt = 'you need one user from or user to for to do a offer'
+    assert txt in action['message']['_schema']
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_offer(user: UserClient):
+    """Test one offer with doble confirmation"""
+    user2 = User(email='baz@baz.cxm', password='baz')
+    user2.individuals.add(Person(name='Tommy'))
+    db.session.add(user2)
+    db.session.commit()
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    lot = Lot('MyLot')
+    lot.owner_id = user.user['id']
+    device = Device.query.filter_by(id=snapshot['device']['id']).one()
+    assert device.owner.email == user.email
+    assert device.owner.email != user2.email
+    lot.devices.add(device)
+    db.session.add(lot)
+    db.session.flush()
+    request_post = {
+        'type': 'Offer',
+        'devices': [device.id],
         'userFrom': user.email,
         'userTo': user2.email,
         'price': 10,
@@ -852,10 +939,11 @@ def test_offer(user: UserClient):
         'documentID': '1',
         'lot': lot.id,
         'confirm': True,
-        'userExist': True,
     }
-    # import pdb; pdb.set_trace()
+
     action, _ = user.post(res=models.Action, data=request_post)
+    assert device.owner.email == user.email
+    assert device.owner.email != user2.email
 
 
 @pytest.mark.mvp
