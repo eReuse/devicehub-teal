@@ -115,7 +115,6 @@ class Dummy:
             user1.post({'type': model.t, 'devices': [pc]}, res=m.Action)
 
         # Perform a Sell to several devices
-        # import pdb; pdb.set_trace()
         user1.post(
             {
                 'type': m.Sell.t,
