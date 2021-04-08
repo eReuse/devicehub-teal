@@ -25,6 +25,15 @@ def get_inv():
         raise ValueError("Inventory value is not specified")
     return INV
 
+
+def upgrade_data():
+    con = op.get_bind()
+    sql = "update common.user set active='t';"
+    con.execute(sql)
+    sql = "update common.user set phantom='f';"
+    con.execute(sql)
+
+
 def upgrade():
     currency = sa.Enum('AFN', 'ARS', 'AWG', 'AUD', 'AZN', 'BSD', 'BBD', 'BDT', 'BYR', 'BZD', 'BMD',
                        'BOB', 'BAM', 'BWP', 'BGN', 'BRL', 'BND', 'KHR', 'CAD', 'KYD', 'CLP', 'CNY',
@@ -46,7 +55,7 @@ def upgrade():
                     sa.Column('user_from_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('user_to_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('document_id', citext.CIText(), nullable=True),
-                    sa.Column("currency", currency, nullable=False),
+                    # sa.Column("currency", currency, nullable=False),
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
                     sa.ForeignKeyConstraint(['user_from_id'], ['common.user.id'], ),
                     sa.ForeignKeyConstraint(['user_to_id'], ['common.user.id'], ),
@@ -55,11 +64,13 @@ def upgrade():
                     schema=f'{get_inv()}'
                     )
 
+    op.add_column("offer", sa.Column("currency", currency, nullable=False), schema=f'{get_inv()}')
+
     op.create_table('trade',
                     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-                    sa.Column('accepted_by_from', sa.Boolean(), nullable=False),
-                    sa.Column('accepted_by_to', sa.Boolean(), nullable=False),
-                    sa.Column('confirm_transfer', sa.Boolean(), nullable=False),
+                    sa.Column('accepted_by_from', sa.Boolean(), default=False),
+                    sa.Column('accepted_by_to', sa.Boolean(), default=False),
+                    sa.Column('confirm_transfer', sa.Boolean(), default=False),
                     sa.Column('offer_id', postgresql.UUID(as_uuid=True), nullable=False),
 
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
@@ -67,6 +78,16 @@ def upgrade():
                     sa.PrimaryKeyConstraint('id'),
                     schema=f'{get_inv()}'
                     )
+    op.add_column('user', sa.Column('active', sa.Boolean(), default=True, nullable=True),
+                  schema='common')
+    op.add_column('user', sa.Column('phantom', sa.Boolean(), default=False, nullable=True),
+                  schema='common')
+
+    upgrade_data()
+
+    op.alter_column('user', 'active', nullable=False, schema='common')
+    op.alter_column('user', 'phantom', nullable=False, schema='common')
+
 
 
 def downgrade():
@@ -95,3 +116,5 @@ def downgrade():
                     sa.PrimaryKeyConstraint('id'),
                     schema=f'{get_inv()}'
                     )
+    op.drop_column('user', 'active', schema='common')
+    op.drop_column('user', 'phantom', schema='common')
