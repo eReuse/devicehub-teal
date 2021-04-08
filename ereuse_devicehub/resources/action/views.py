@@ -17,7 +17,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import (Action, RateComputer, Snapshot, VisualTest,
                                                       InitTransfer, Live, Allocate, Deallocate,
-                                                      Trade)
+                                                      Trade, Offer)
 from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
@@ -251,10 +251,11 @@ class ActionView(View):
             # TODO JN add compute rate with new visual test and old components device
         if json['type'] == InitTransfer.t:
             return self.transfer_ownership()
-        # import pdb; pdb.set_trace()
         a = resource_def.schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
+        if json['type'] == Offer.t:
+            return self.offer(action)
         db.session.add(action)
         db.session().final_flush()
         ret = self.schema.jsonify(action)
@@ -339,3 +340,70 @@ class ActionView(View):
     def transfer_ownership(self):
         """Perform a InitTransfer action to change author_id of device"""
         pass
+
+    def offer(self, offer: Offer):
+        self.create_phantom_account(offer)
+        db.session.add(offer)
+        self.create_automatic_trade(offer)
+
+        db.session().final_flush()
+        ret = self.schema.jsonify(offer)
+        ret.status_code = 201
+        db.session.commit()
+        return ret
+
+    def create_phantom_account(self, offer):
+        """
+        If exist both users not to do nothing
+        If exist from but not to:
+            search if exist in the DB
+                if exist use it
+                else create new one
+        The same if exist to but not from
+
+        """
+        if offer.user_from_id and offer.user_to_id:
+            return
+
+        if offer.user_from_id and not offer.user_to_id:
+            email = "{}_{}@dhub.com".format(str(offer.user_from_id), offer.code)
+            users = User.query.filter_by(email=email)
+            if users.first():
+                user = users.first()
+                offer.user_to_id = user.id
+                return
+
+            user = User(email=email, password='', active=False, phantom=True)
+            db.session.add(user)
+            offer.user_to = user
+
+        if not offer.user_from_id and offer.user_to_id:
+            email = "{}_{}@dhub.com".format(str(offer.user_to_id), offer.code)
+            users = User.query.filter_by(email=email)
+            if users.first():
+                user = users.first()
+                offer.user_from_id = user.id
+                return
+
+            user = User(email=email, password='', active=False, phantom=True)
+            db.session.add(user)
+            offer.user_from = user
+
+    def create_automatic_trade(self, offer: Offer):
+        if offer.confirm:
+            return
+
+        # Change the owner for every devices
+        for dev in offer.devices:
+            dev.owner = offer.user_to
+            if hasattr(dev, 'components'):
+                for c in dev.components:
+                    c.owner = offer.user_to
+
+        # Create a new Trade
+        trade = Trade(accepted_by_from=True,
+                      accepted_by_to=True,
+                      offer=offer,
+                      devices=offer.devices
+                      )
+        db.session.add(trade)
