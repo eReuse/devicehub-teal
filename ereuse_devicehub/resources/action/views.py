@@ -369,11 +369,12 @@ class ActionView(View):
             return
 
         if offer.user_from_id and not offer.user_to_id:
+            assert g.user.id == offer.user_from_id
             email = "{}_{}@dhub.com".format(str(offer.user_from_id), offer.code)
             users = User.query.filter_by(email=email)
             if users.first():
                 user = users.first()
-                offer.user_to_id = user.id
+                offer.user_to = user
                 return
 
             user = User(email=email, password='', active=False, phantom=True)
@@ -385,7 +386,7 @@ class ActionView(View):
             users = User.query.filter_by(email=email)
             if users.first():
                 user = users.first()
-                offer.user_from_id = user.id
+                offer.user_from = user
                 return
 
             user = User(email=email, password='', active=False, phantom=True)
