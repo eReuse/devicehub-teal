@@ -514,6 +514,13 @@ class Offer(ActionWithMultipleDevices):
 
         if data['user_from_id']:
             user_from = User.query.filter_by(email=data['user_from_id']).one()
+
+            # are you property of this devices?
+            txt = "Some of this devices don't are of this from user"
+            for x in data['devices']:
+                if not x.owner == user_from:
+                    raise ValidationError(txt)
+
             data['user_from_id'] = user_from.id
             data['user_from'] = user_from
         else:
