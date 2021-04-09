@@ -812,6 +812,8 @@ def test_offer_without_to(user: UserClient):
 
     # check the owner of the device
     assert device.owner.email == user.email
+    for c in device.components:
+        assert c.owner.email == user.email
 
     lot.devices.add(device)
     db.session.add(lot)
@@ -827,7 +829,8 @@ def test_offer_without_to(user: UserClient):
         'confirm': False,
         'code': 'MAX'
     }
-    action, _ = user.post(res=models.Action, data=request_post)
+    user.post(res=models.Action, data=request_post)
+
     trade= models.Trade.query.one()
     assert device in trade.devices
     assert trade.confirm_transfer
@@ -837,6 +840,45 @@ def test_offer_without_to(user: UserClient):
     assert device.owner.phantom == True
     assert trade.accepted_by_from and trade.accepted_by_to
     assert device.owner.email != user.email
+    for c in device.components:
+        assert c.owner.email != user.email
+
+    # check if the user_from is owner of the devices
+    request_post = {
+        'type': 'Offer',
+        'devices': [device.id],
+        'userFrom': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot.id,
+        'confirm': False,
+        'code': 'MAX'
+    }
+    user.post(res=models.Action, data=request_post, status=422)
+
+    # Check if the new phantom account is reused and not duplicated
+    computer = file('1-device-with-components.snapshot')
+    snapshot2, _ = user.post(computer, res=models.Snapshot)
+    lot2 = Lot('MyLot2')
+    lot2.owner_id = user.user['id']
+    lot2.devices.add(device)
+    db.session.add(lot2)
+    db.session.flush()
+    device2 = Device.query.filter_by(id=snapshot2['device']['id']).one()
+    request_post2 = {
+        'type': 'Offer',
+        'devices': [device2.id],
+        'userFrom': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot2.id,
+        'confirm': False,
+        'code': 'MAX'
+    }
+    user.post(res=models.Action, data=request_post2)
+    assert User.query.filter_by(email=device.owner.email).count() == 1
 
 
 @pytest.mark.mvp
