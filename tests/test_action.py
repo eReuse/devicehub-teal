@@ -830,6 +830,8 @@ def test_offer_without_to(user: UserClient):
     action, _ = user.post(res=models.Action, data=request_post)
     trade= models.Trade.query.one()
     assert device in trade.devices
+    assert trade.confirm_transfer
+    assert trade.offer.user_to == device.owner
     assert request_post['code'].lower() in device.owner.email
     assert device.owner.active == False
     assert device.owner.phantom == True
@@ -875,6 +877,7 @@ def test_offer_without_from(user: UserClient):
     assert request_post['code'].lower() in phantom_user.email
     assert phantom_user.active == False
     assert phantom_user.phantom == True
+    assert trade.confirm_transfer
 
     assert user2.email in trade.devices[0].owner.email
     assert trade.accepted_by_from and trade.accepted_by_to
@@ -942,6 +945,7 @@ def test_offer(user: UserClient):
     }
 
     action, _ = user.post(res=models.Action, data=request_post)
+    # no there are transfer of devices
     assert device.owner.email == user.email
     assert device.owner.email != user2.email
 
