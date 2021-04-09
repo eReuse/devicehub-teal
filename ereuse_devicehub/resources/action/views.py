@@ -363,6 +363,9 @@ class ActionView(View):
 
         """
         if offer.user_from_id and offer.user_to_id:
+            # check than the user than want to do the action is one of the users
+            # involved in the action
+            assert g.user.id in [offer.user_from_id, offer.user_to_id]
             return
 
         if offer.user_from_id and not offer.user_to_id:
@@ -403,6 +406,7 @@ class ActionView(View):
         # Create a new Trade
         trade = Trade(accepted_by_from=True,
                       accepted_by_to=True,
+                      confirm_transfer=True,
                       offer=offer,
                       devices=offer.devices
                       )
