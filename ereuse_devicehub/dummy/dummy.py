@@ -115,13 +115,13 @@ class Dummy:
             user1.post({'type': model.t, 'devices': [pc]}, res=m.Action)
 
         # Perform a Sell to several devices
-        user1.post(
-            {
-                'type': m.Sell.t,
-                'to': user1.user['individuals'][0]['id'],
-                'devices': list(itertools.islice(pcs, len(pcs) // 2))
-            },
-            res=m.Action)
+        # user1.post(
+            # {
+                # 'type': m.Sell.t,
+                # 'to': user1.user['individuals'][0]['id'],
+                # 'devices': list(itertools.islice(pcs, len(pcs) // 2))
+            # },
+            # res=m.Action)
 
         lot_user, _ = user1.post({'name': 'LoteStephan'}, res=Lot)
 
@@ -171,13 +171,13 @@ class Dummy:
                    res=m.Action)
 
         # todo test reserve
-        user1.post(  # Sell device
-            {
-                'type': m.Sell.t,
-                'to': user1.user['individuals'][0]['id'],
-                'devices': [sample_pc]
-            },
-            res=m.Action)
+        # user1.post(  # Sell device
+            # {
+                # 'type': m.Sell.t,
+                # 'to': user1.user['individuals'][0]['id'],
+                # 'devices': [sample_pc]
+            # },
+            # res=m.Action)
         # todo Receive
 
         user1.get(res=Device, item=sample_pc)  # Test
