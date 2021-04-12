@@ -23,8 +23,8 @@ class UserDef(Resource):
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
         self.add_url_rule('/login/', view_func=login, methods={'POST'})
-        logout1 = app.auth.requires_auth(logout)
-        self.add_url_rule('/logout/', view_func=logout1, methods={'GET'})
+        logout_view = app.auth.requires_auth(logout)
+        self.add_url_rule('/logout/', view_func=logout_view, methods={'GET'})
 
     @argument('email')
     @option('-i', '--inventory',
