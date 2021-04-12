@@ -328,7 +328,7 @@ class WbConfDocumentView(DeviceView):
                 'inventory': app.config['DB_SCHEMA']
                 }
         data['erase'] = False
-        # data['erase'] = False if wbtype == 'usodyrate' else True
+        # data['erase'] = True if wbtype == 'usodywipe' else False
 
         env = flask.render_template('documents/wbSettings.ini', **data)
         output = make_response(env)
