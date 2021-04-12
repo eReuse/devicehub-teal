@@ -8,7 +8,7 @@ from pytest import raises
 from teal.db import MultipleResourcesFound, ResourceNotFound, UniqueViolation, DBError
 from teal.marshmallow import ValidationError
 
-from ereuse_devicehub.client import UserClient
+from ereuse_devicehub.client import UserClient, Client
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.action.models import Snapshot
@@ -33,6 +33,68 @@ def test_create_tag(user: UserClient):
     tag = Tag.query.one()
     assert tag.id == 'bar-1'
     assert tag.provider == URL('http://foo.bar')
+    res, _ = user.get(res=Tag, item=tag.code, status=422)
+    assert res['type'] == 'TagNotLinked'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_create_tag_with_device(user: UserClient):
+    """Creates a tag specifying linked with one device."""
+    pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
+    db.session.add(pc)
+    db.session.commit()
+    tag = Tag(id='bar', owner_id=user.user['id'])
+    db.session.add(tag)
+    db.session.commit()
+    data = '{tag_id}/device/{device_id}'.format(tag_id=tag.id, device_id=pc.id)
+    user.put({}, res=Tag, item=data, status=204)
+    user.get(res=Tag, item='{}/device'.format(tag.id))
+    user.delete({}, res=Tag, item=data, status=204)
+    res, _ = user.get(res=Tag, item='{}/device'.format(tag.id), status=422)
+    assert res['type'] == 'TagNotLinked'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_delete_tags(user: UserClient, client: Client):
+    """Delete a named tag."""
+    # Delete Tag Named
+    pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
+    db.session.add(pc)
+    db.session.commit()
+    tag = Tag(id='bar', owner_id=user.user['id'], device_id=pc.id)
+    db.session.add(tag)
+    db.session.commit()
+    tag = Tag.query.one()
+    assert tag.id == 'bar'
+    # Is not possible delete one tag linked to one device
+    res, _ = user.delete(res=Tag, item=tag.id, status=422)
+    msg = 'The tag bar is linked to device'
+    assert msg in res['message'][0]
+
+    tag.device_id = None
+    db.session.add(tag)
+    db.session.commit()
+    # Is not possible delete one tag from an anonymous user
+    client.delete(res=Tag, item=tag.id, status=401)
+
+    # Is possible delete one normal tag
+    user.delete(res=Tag, item=tag.id)
+    user.get(res=Tag, item=tag.id, status=404)
+
+    # Delete Tag UnNamed
+    org = Organization(name='bar', tax_id='bartax')
+    tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id'])
+    db.session.add(tag)
+    db.session.commit()
+    tag = Tag.query.one()
+    assert tag.id == 'bar-1'
+    res, _ = user.delete(res=Tag, item=tag.id, status=422)
+    msg = 'This tag {} is unnamed tag. It is imposible delete.'.format(tag.id)
+    assert msg in res['message']
+    tag = Tag.query.one()
+    assert tag.id == 'bar-1'
 
 
 @pytest.mark.mvp
@@ -51,13 +113,15 @@ def test_create_tag_default_org(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_create_tag_no_slash():
-    """Checks that no tags can be created that contain a slash."""
-    with raises(ValidationError):
-        Tag('/')
-
-    with raises(ValidationError):
-        Tag('bar', secondary='/')
+def test_create_same_tag_default_org_two_users(user: UserClient, user2: UserClient):
+    """Creates a tag using the default organization."""
+    tag = Tag(id='foo-1', owner_id=user.user['id'])
+    tag2 = Tag(id='foo-1', owner_id=user2.user['id'])
+    db.session.add(tag)
+    db.session.add(tag2)
+    db.session.commit()
+    assert tag.org.name == 'FooOrg'  # as defined in the settings
+    assert tag2.org.name == 'FooOrg'  # as defined in the settings
 
 
 @pytest.mark.mvp
@@ -75,7 +139,19 @@ def test_create_two_same_tags(user: UserClient):
     db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
     org2 = Organization(name='org 2', tax_id='tax id org 2')
     db.session.add(Tag(id='foo-bar', org=org2, owner_id=user.user['id']))
-    db.session.commit()
+    with raises(DBError):
+        db.session.commit()
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_create_tag_no_slash():
+    """Checks that no tags can be created that contain a slash."""
+    with raises(ValidationError):
+        Tag('/')
+
+    with raises(ValidationError):
+        Tag('bar', secondary='/')
 
 
 @pytest.mark.mvp
@@ -131,17 +207,39 @@ def test_tag_get_device_from_tag_endpoint_no_tag(user: UserClient):
 
 
 @pytest.mark.mvp
-def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: UserClient):
-    """As above, but when there are two tags with the same ID, the
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: UserClient, user2: UserClient, client: Client):
+    """As above, but when there are two tags with the secondary ID, the
     system should not return any of both (to be deterministic) so
     it should raise an exception.
     """
-    with app.app_context():
-        db.session.add(Tag(id='foo-bar', owner_id=user.user['id']))
-        org2 = Organization(name='org 2', tax_id='tax id org 2')
-        db.session.add(Tag(id='foo-bar', org=org2, owner_id=user.user['id']))
+    db.session.add(Tag(id='foo', secondary='bar', owner_id=user.user['id']))
+    db.session.commit()
+
+    db.session.add(Tag(id='foo', secondary='bar', owner_id=user2.user['id']))
+    db.session.commit()
+
+    db.session.add(Tag(id='foo2', secondary='bar', owner_id=user.user['id']))
+    with raises(DBError):
         db.session.commit()
-    user.get(res=Tag, item='foo-bar/device', status=MultipleResourcesFound)
+    db.session.rollback()
+
+    tag1 = Tag.from_an_id('foo').filter_by(owner_id=user.user['id']).one()
+    tag2 = Tag.from_an_id('foo').filter_by(owner_id=user2.user['id']).one()
+    pc1 = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
+    pc2 = Desktop(serial_number='sn2', chassis=ComputerChassis.Tower, owner_id=user2.user['id'])
+    pc1.tags.add(tag1)
+    pc2.tags.add(tag2)
+    db.session.add(pc1)
+    db.session.add(pc2)
+    db.session.commit()
+    computer, _ = user.get(res=Tag, item='foo/device')
+    assert computer['serialNumber'] == 'sn1'
+    computer, _ = user2.get(res=Tag, item='foo/device')
+    assert computer['serialNumber'] == 'sn2'
+
+    _, status = client.get(res=Tag, item='foo/device', status=MultipleResourcesFound)
+    assert status.status_code == 422
 
 
 @pytest.mark.mvp
@@ -216,8 +314,7 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
     t = Tag('foo', secondary='bar', owner_id=user.user['id'])
     db.session.add(t)
     db.session.flush()
-    assert Tag.from_an_id('bar').one() == t
-    assert Tag.from_an_id('foo').one() == t
+    assert Tag.from_an_id('bar').one() == Tag.from_an_id('foo').one()
     with pytest.raises(ResourceNotFound):
         Tag.from_an_id('nope').one()
 

@@ -28,3 +28,4 @@ class Tag(Thing):
     secondary = SanitizedStr(lower=True, description=m.Tag.secondary.comment)
     printable = Boolean(dump_only=True, decsription=m.Tag.printable.__doc__)
     url = URL(dump_only=True, description=m.Tag.url.__doc__)
+    code = SanitizedStr(dump_only=True, description=m.Tag.internal_id.comment)

@@ -3,7 +3,7 @@ from typing import Set
 
 from boltons import urlutils
 from flask import g
-from sqlalchemy import BigInteger, Column, ForeignKey, UniqueConstraint
+from sqlalchemy import BigInteger, Column, ForeignKey, UniqueConstraint, Sequence
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship, validates
 from teal.db import DB_CASCADE_SET_NULL, Query, URL
@@ -15,6 +15,7 @@ from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.utils import hashcode
 
 
 class Tags(Set['Tag']):
@@ -25,17 +26,23 @@ class Tags(Set['Tag']):
         return ', '.join(format(tag, format_spec) for tag in self).strip()
 
 
+
+
 class Tag(Thing):
+    internal_id = Column(BigInteger, Sequence('tag_internal_id_seq'), unique=True, nullable=False)
+    internal_id.comment = """The identifier of the tag for this database. Used only
+    internally for software; users should not use this.
+    """
     id = Column(db.CIText(), primary_key=True)
     id.comment = """The ID of the tag."""
     owner_id = Column(UUID(as_uuid=True),
                       ForeignKey(User.id),
+                      primary_key=True,
                       nullable=False,
                       default=lambda: g.user.id)
     owner = relationship(User, primaryjoin=owner_id == User.id)
     org_id = Column(UUID(as_uuid=True),
                     ForeignKey(Organization.id),
-                    primary_key=True,
                     # If we link with the Organization object this instance
                     # will be set as persistent and added to session
                     # which is something we don't want to enforce by default
@@ -97,8 +104,8 @@ class Tag(Thing):
         return url
 
     __table_args__ = (
-        UniqueConstraint(id, org_id, name='one tag id per organization'),
-        UniqueConstraint(secondary, org_id, name='one secondary tag per organization')
+        UniqueConstraint(id, owner_id, name='one tag id per owner'),
+        UniqueConstraint(secondary, owner_id, name='one secondary tag per organization')
     )
 
     @property
@@ -109,7 +116,7 @@ class Tag(Thing):
     def url(self) -> urlutils.URL:
         """The URL where to GET this device."""
         # todo this url only works for printable internal tags
-        return urlutils.URL(url_for_resource(Tag, item_id=self.id))
+        return urlutils.URL(url_for_resource(Tag, item_id=self.code))
 
     @property
     def printable(self) -> bool:
@@ -125,6 +132,23 @@ class Tag(Thing):
         """Return a SQLAlchemy filter expression for printable queries."""
         return cls.org_id == Organization.get_default_org_id()
 
+    @property
+    def code(self) -> str:
+        return hashcode.encode(self.internal_id)
+
+    def delete(self):
+        """Deletes the tag.
+
+        This method removes the tag if is named tag and don't have any linked device.
+        """
+        if self.device:
+            raise TagLinked(self)
+        if self.provider:
+            # if is an unnamed tag not delete
+            raise TagUnnamed(self.id)
+
+        db.session.delete(self)
+
     def __repr__(self) -> str:
         return '<Tag {0.id} org:{0.org_id} device:{0.device_id}>'.format(self)
 
@@ -133,3 +157,15 @@ class Tag(Thing):
 
     def __format__(self, format_spec: str) -> str:
         return '{0.org.name} {0.id}'.format(self)
+
+
+class TagLinked(ValidationError):
+    def __init__(self, tag):
+        message = 'The tag {} is linked to device {}.'.format(tag.id, tag.device.id)
+        super().__init__(message, field_names=['device'])
+
+
+class TagUnnamed(ValidationError):
+    def __init__(self, id):
+        message = 'This tag {} is unnamed tag. It is imposible delete.'.format(id)
+        super().__init__(message, field_names=['device'])
