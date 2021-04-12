@@ -654,4 +654,5 @@ def test_get_wbconf(user: UserClient):
     assert 'WB_ERASE = False' in env
 
     env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodywipe', accept=ANY)
-    assert 'WB_ERASE = True' in env
+    assert 'WB_ERASE = False' in env
+    # assert 'WB_ERASE = True' in env
