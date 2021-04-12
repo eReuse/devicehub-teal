@@ -327,11 +327,12 @@ class WbConfDocumentView(DeviceView):
                 'host': app.config['DB_HOST'],
                 'inventory': app.config['DB_SCHEMA']
                 }
-        data['erase'] = False if wbtype == 'usodyrate' else True
+        data['erase'] = False
+        # data['erase'] = False if wbtype == 'usodyrate' else True
 
-        env = flask.render_template('documents/wbConfiguration.ini', **data)
+        env = flask.render_template('documents/wbSettings.ini', **data)
         output = make_response(env)
-        output.headers['Content-Disposition'] = 'attachment; filename=Configuration.ini'
+        output.headers['Content-Disposition'] = 'attachment; filename=settings.ini'
         output.headers['Content-type'] = 'text/plain'
         return output
 
