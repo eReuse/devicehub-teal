@@ -20,6 +20,8 @@ from teal.cache import cache
 from teal.resource import Resource, View
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.user.models import Session
+from ereuse_devicehub.resources.enums import SessionType
 from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.deliverynote.models import Deliverynote
@@ -323,7 +325,7 @@ class WbConfDocumentView(DeviceView):
         if not wbtype.lower() in ['usodyrate', 'usodywipe']:
             return jsonify('')
 
-        data = {'token': g.user.token,
+        data = {'token': self.get_token(),
                 'host': app.config['DB_HOST'],
                 'inventory': app.config['DB_SCHEMA']
                 }
@@ -335,6 +337,28 @@ class WbConfDocumentView(DeviceView):
         output.headers['Content-Disposition'] = 'attachment; filename=settings.ini'
         output.headers['Content-type'] = 'text/plain'
         return output
+
+    def get_token(self):
+        internal_session = Session.query.filter_by(user_id=g.user.id,
+                                          type=SessionType.Internal).first()
+        if not internal_session:
+            internal_session = Session(user_id=g.user.id, type=SessionType.Internal)
+            db.session.add(internal_session)
+
+        db.session.commit()
+        return internal_session.token
+
+        # TODO @cayop for when in others iterations we need implement external token
+        # external_session = Session.query.filter_by(user_id=g.user.id,
+                                          # type=SessionType.Internal).first()
+        # if not external_session:
+            # external_session = Session(user_id=g.user.id, type=SessionType.External)
+            # external_session = Session(user_id=g.user.id, type=SessionType.External)
+            # db.session.add(external_session)
+
+        # db.session.commit()
+
+        # return external_session.token
 
 
 class DocumentDef(Resource):
