@@ -12,12 +12,14 @@ from ereuse_utils.test import ANY
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.user.models import Session
 from ereuse_devicehub.resources.action.models import Snapshot, Allocate, Live
 from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.device import models as d
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.hash_reports import ReportHash
+from ereuse_devicehub.resources.enums import SessionType
 from ereuse_devicehub.db import db
 from tests import conftest
 from tests.conftest import file
@@ -200,7 +202,7 @@ def test_live_example2(user: UserClient, client: Client, app: Devicehub):
     assert str(action_live[0].snapshot_uuid) == acer['uuid']
 
 
-@pytest.mark.mvp 
+@pytest.mark.mvp
 def test_export_basic_snapshot(user: UserClient):
     """Test export device information in a csv file."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
@@ -464,7 +466,7 @@ def test_get_document_lots(user: UserClient, user2: UserClient):
     assert export2_csv[1][3] == 'comments,lot3,testcomment-lot3,'
 
 
-@pytest.mark.mvp 
+@pytest.mark.mvp
 def test_verify_stamp(user: UserClient, client: Client):
     """Test verify stamp of one export device information in a csv file."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
@@ -472,12 +474,12 @@ def test_verify_stamp(user: UserClient, client: Client):
                           item='devices/',
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
-    
+
     response, _ = client.post(res=documents.DocumentDef.t,
             item='stamps/',
             content_type='multipart/form-data',
             accept='text/html',
-            data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')), 'example.csv')]}, 
+            data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')), 'example.csv')]},
             status=200)
     assert "alert alert-info" in response
     assert not "alert alert-danger" in response
@@ -501,10 +503,10 @@ def test_verify_stamp(user: UserClient, client: Client):
     assert not "alert alert-danger" in response
 
 
-@pytest.mark.mvp 
+@pytest.mark.mvp
 def test_verify_stamp_log_info(user: UserClient, client: Client):
     """Test verify stamp of one export lots-info in a csv file."""
-    
+
     l, _ = user.post({'name': 'Lot1', 'description': 'comments,lot1,testcomment-lot1,'}, res=Lot)
     l, _ = user.post({'name': 'Lot2', 'description': 'comments,lot2,testcomment-lot2,'}, res=Lot)
 
@@ -516,8 +518,8 @@ def test_verify_stamp_log_info(user: UserClient, client: Client):
                               item='stamps/',
                               content_type='multipart/form-data',
                               accept='text/html',
-                              data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')), 
-                                    'example.csv')]}, 
+                              data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')),
+                                    'example.csv')]},
                               status=200)
     assert "alert alert-info" in response
 
@@ -538,7 +540,7 @@ def test_verify_stamp_devices_stock(user: UserClient, client: Client):
                               content_type='multipart/form-data',
                               accept='text/html',
                               data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')),
-                                    'example.csv')]}, 
+                                    'example.csv')]},
                               status=200)
     assert "alert alert-info" in response
 
@@ -573,8 +575,8 @@ def test_verify_stamp_csv_actions(user: UserClient, client: Client):
                               item='stamps/',
                               content_type='multipart/form-data',
                               accept='text/html',
-                              data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')), 
-                                    'example.csv')]}, 
+                              data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')),
+                                    'example.csv')]},
                               status=200)
     assert "alert alert-info" in response
 
@@ -594,8 +596,8 @@ def test_verify_stamp_erasure_certificate(user: UserClient, client: Client):
                               item='stamps/',
                               content_type='multipart/form-data',
                               accept='text/html',
-                              data={'docUpload': [(BytesIO(bytes(doc, 'utf-8')), 
-                                    'example.csv')]}, 
+                              data={'docUpload': [(BytesIO(bytes(doc, 'utf-8')),
+                                    'example.csv')]},
                               status=200)
     assert "alert alert-danger" in response
 
@@ -611,8 +613,8 @@ def test_verify_stamp_erasure_certificate(user: UserClient, client: Client):
                               item='stamps/',
                               content_type='multipart/form-data',
                               accept='text/html',
-                              data={'docUpload': [(BytesIO(doc), 
-                                    'example.csv')]}, 
+                              data={'docUpload': [(BytesIO(doc),
+                                    'example.csv')]},
                               status=200)
     assert "alert alert-info" in response
 
@@ -646,6 +648,7 @@ def test_get_document_internal_stats(user: UserClient, user2: UserClient):
     assert csv_str.strip() == '""'
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_get_wbconf(user: UserClient):
     """Tests for get env file for usb wb."""
 
@@ -655,3 +658,7 @@ def test_get_wbconf(user: UserClient):
     env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodywipe', accept=ANY)
     assert 'WB_ERASE = False' in env
     # assert 'WB_ERASE = True' in env
+
+    session = Session.query.filter_by(user_id=user.user['id'],
+                                      type=SessionType.Internal).first()
+    assert str(session.token) in env
