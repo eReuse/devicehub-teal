@@ -662,3 +662,5 @@ def test_get_wbconf(user: UserClient):
     session = Session.query.filter_by(user_id=user.user['id'],
                                       type=SessionType.Internal).first()
     assert str(session.token) in env
+    user.user['token'] = str(session.token)
+    snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
