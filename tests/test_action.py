@@ -744,39 +744,6 @@ def test_deallocate_bad_dates(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.xfail(reason='Old functionality')
-@pytest.mark.parametrize('action_model_state',
-                         (pytest.param(ams, id=ams[0].__name__)
-                          for ams in [
-                              (models.MakeAvailable, states.Trading.Available),
-                              (models.Sell, states.Trading.Sold),
-                              (models.Donate, states.Trading.Donated),
-                              (models.Rent, states.Trading.Renting),
-                              (models.DisposeProduct, states.Trading.ProductDisposed)
-                          ]))
-def test_trade2(action_model_state: Tuple[Type[models.Action], states.Trading], user: UserClient):
-    """Tests POSTing all Trade actions."""
-    # todo missing None states.Trading for after cancelling renting, for example
-    # import pdb; pdb.set_trace()
-    # Remove this test
-    action_model, state = action_model_state
-    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    action = {
-        'type': action_model.t,
-        'devices': [snapshot['device']['id']]
-    }
-    if issubclass(action_model, models.Trade):
-        action['to'] = user.user['individuals'][0]['id']
-        action['shippingDate'] = '2018-06-29T12:28:54'
-        action['invoiceNumber'] = 'ABC'
-    action, _ = user.post(action, res=models.Action)
-    assert action['devices'][0]['id'] == snapshot['device']['id']
-    device, _ = user.get(res=Device, item=snapshot['device']['id'])
-    assert device['actions'][-1]['id'] == action['id']
-    assert device['trading'] == state.name
-
-
-@pytest.mark.mvp
-@pytest.mark.xfail(reason='Old functionality')
 def test_trade_endpoint(user: UserClient, user2: UserClient):
     """Tests POST one simple Trade between 2 users of the system."""
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
@@ -820,7 +787,7 @@ def test_offer_without_to(user: UserClient):
     db.session.flush()
     request_post = {
         'type': 'Offer',
-        'devices': [device.id],
+        'devices': [],
         'userFrom': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
@@ -846,7 +813,7 @@ def test_offer_without_to(user: UserClient):
     # check if the user_from is owner of the devices
     request_post = {
         'type': 'Offer',
-        'devices': [device.id],
+        'devices': [],
         'userFrom': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
@@ -860,15 +827,15 @@ def test_offer_without_to(user: UserClient):
     # Check if the new phantom account is reused and not duplicated
     computer = file('1-device-with-components.snapshot')
     snapshot2, _ = user.post(computer, res=models.Snapshot)
+    device2 = Device.query.filter_by(id=snapshot2['device']['id']).one()
     lot2 = Lot('MyLot2')
     lot2.owner_id = user.user['id']
-    lot2.devices.add(device)
+    lot2.devices.add(device2)
     db.session.add(lot2)
     db.session.flush()
-    device2 = Device.query.filter_by(id=snapshot2['device']['id']).one()
     request_post2 = {
         'type': 'Offer',
-        'devices': [device2.id],
+        'devices': [],
         'userFrom': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
@@ -903,7 +870,7 @@ def test_offer_without_from(user: UserClient):
     db.session.flush()
     request_post = {
         'type': 'Offer',
-        'devices': [device.id],
+        'devices': [],
         'userTo': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
@@ -976,7 +943,7 @@ def test_offer(user: UserClient):
     db.session.flush()
     request_post = {
         'type': 'Offer',
-        'devices': [device.id],
+        'devices': [],
         'userFrom': user.email,
         'userTo': user2.email,
         'price': 10,
@@ -991,6 +958,29 @@ def test_offer(user: UserClient):
     assert device.owner.email == user.email
     assert device.owner.email != user2.email
 
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_offer_without_devices(user: UserClient):
+    """Test one offer with doble confirmation"""
+    user2 = User(email='baz@baz.cxm', password='baz')
+    user2.individuals.add(Person(name='Tommy'))
+    db.session.add(user2)
+    db.session.commit()
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    request_post = {
+        'type': 'Offer',
+        'devices': [],
+        'userFrom': user.email,
+        'userTo': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot['id'],
+        'confirm': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    # no there are transfer of devices
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)

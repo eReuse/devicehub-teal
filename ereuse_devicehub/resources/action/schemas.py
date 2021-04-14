@@ -482,6 +482,10 @@ class Offer(ActionWithMultipleDevices):
                    only_query='id')
 
     @validates_schema
+    def validate_lot(self, data: dict):
+        data['devices'] = data['lot'].devices
+
+    @validates_schema
     def validate_user_to_id(self, data: dict):
         """
         - if user_to exist
