@@ -17,6 +17,8 @@ from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
+from ereuse_devicehub.resources.user.models import Session
+from ereuse_devicehub.resources.enums import SessionType
 
 
 class Dummy:
@@ -193,6 +195,10 @@ class Dummy:
 
         user.individuals.add(Person(name=name))
         db.session.add(user)
+        session_external = Session(user=user, type=SessionType.External)
+        session_internal = Session(user=user, type=SessionType.Internal)
+        db.session.add(session_internal)
+        db.session.add(session_external)
 
         db.session.commit()
         client = UserClient(self.app, user.email, password,
