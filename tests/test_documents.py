@@ -10,6 +10,7 @@ from werkzeug.exceptions import Unauthorized
 import teal.marshmallow
 from ereuse_utils.test import ANY
 
+from ereuse_devicehub import auth
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.user.models import Session
@@ -647,6 +648,7 @@ def test_get_document_internal_stats(user: UserClient, user2: UserClient):
 
     assert csv_str.strip() == '""'
 
+
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_get_wbconf(user: UserClient):
@@ -661,6 +663,8 @@ def test_get_wbconf(user: UserClient):
 
     session = Session.query.filter_by(user_id=user.user['id'],
                                       type=SessionType.Internal).first()
-    assert str(session.token) in env
-    user.user['token'] = str(session.token)
+    token = session.token
+    token = auth.Auth.encode(session.token)
+    assert token in env
+    user.user['token'] = token
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
