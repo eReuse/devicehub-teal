@@ -21,6 +21,7 @@ revision = '21afd375a654'
 down_revision = '6a2a939d5668'
 branch_labels = None
 depends_on = None
+comment_update = 'The last time Devicehub recorded a change for this thing.\n'
 
 
 def get_inv():
@@ -29,10 +30,16 @@ def get_inv():
         raise ValueError("Inventory value is not specified")
     return INV
 
+
 def upgrade():
     op.create_table('session',
-                    sa.Column('updated', sa.TIMESTAMP(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False, comment='The last time Devicehub recorded a change for \n    this thing.\n    '),
-                    sa.Column('created', sa.TIMESTAMP(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False, comment='When Devicehub created this.'),
+                    sa.Column('updated', sa.TIMESTAMP(timezone=True),
+                              server_default=sa.text('CURRENT_TIMESTAMP'),
+                              nullable=False,
+                              comment=comment_update),
+                    sa.Column('created', sa.TIMESTAMP(timezone=True),
+                              server_default=sa.text('CURRENT_TIMESTAMP'),
+                              nullable=False, comment='When Devicehub created this.'),
                     sa.Column('id', sa.BigInteger(), nullable=False),
                     sa.Column('expired', sa.BigInteger(), nullable=True),
                     sa.Column('token', postgresql.UUID(as_uuid=True), nullable=False),
@@ -45,9 +52,11 @@ def upgrade():
     )
     op.create_index(op.f('ix_session_created'), 'session', ['created'], unique=False, schema='common')
     op.create_index(op.f('ix_session_updated'), 'session', ['updated'], unique=False, schema='common')
+    op.create_index(op.f('ix_session_token'), 'session', ['token'], unique=True, schema='common')
 
 
 def downgrade():
     op.drop_table('trade', schema=f'{get_inv()}')
     op.drop_index(op.f('ix_session_created'), table_name='session', schema='common')
     op.drop_index(op.f('ix_session_updated'), table_name='session', schema='common')
+    op.drop_index(op.f('ix_session_token'), table_name='session', schema='common')

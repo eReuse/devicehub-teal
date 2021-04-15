@@ -67,3 +67,9 @@ class Session(Thing):
     token = Column(UUID(as_uuid=True), default=uuid4, unique=True, nullable=False)
     type = Column(IntEnum(SessionType), default=SessionType.Internal, nullable=False)
     user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(User.id))
+    user = db.relationship(User,
+                           backref=db.backref('sessions', lazy=True, collection_class=set),
+                           collection_class=set)
+
+    def __str__(self) -> str:
+        return '{0.token}'.format(self)
