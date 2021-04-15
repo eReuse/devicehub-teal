@@ -750,7 +750,6 @@ def test_deallocate_bad_dates(user: UserClient):
 def test_trade(action_model_state: Tuple[Type[models.Action], states.Trading], user: UserClient):
     """Tests POSTing all Trade actions."""
     # todo missing None states.Trading for after cancelling renting, for example
-    # import pdb; pdb.set_trace()
     # Remove this test
     action_model, state = action_model_state
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
