@@ -7,7 +7,6 @@ from teal.resource import View
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.user.exceptions import WrongCredentials
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.user.schemas import User as UserS
 
 
 class UserView(View):
