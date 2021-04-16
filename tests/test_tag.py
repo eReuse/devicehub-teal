@@ -281,8 +281,9 @@ def test_tag_manual_link_search(app: Devicehub, user: UserClient):
         db.session.add(desktop)
         db.session.commit()
         desktop_id = desktop.id
+        devicehub_id = desktop.devicehub_id
     user.put({}, res=Tag, item='foo-bar/device/{}'.format(desktop_id), status=204)
-    device, _ = user.get(res=Device, item=desktop_id)
+    device, _ = user.get(res=Device, item=devicehub_id)
     assert device['tags'][0]['id'] == 'foo-bar'
 
     # Device already linked
@@ -321,7 +322,7 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
     s = file('basic.snapshot')
     s['device']['tags'] = [{'id': 'foo', 'secondary': 'bar', 'type': 'Tag'}]
     snapshot, _ = user.post(s, res=Snapshot)
-    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
     assert device['tags'][0]['id'] == 'foo'
     assert device['tags'][0]['secondary'] == 'bar'
 

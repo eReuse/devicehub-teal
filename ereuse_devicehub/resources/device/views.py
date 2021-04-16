@@ -118,7 +118,7 @@ class DeviceView(View):
             return Response(status=204)
         raise ValueError('Cannot patch a non computer')
 
-    def one(self, id: int):
+    def one(self, id: str):
         """Gets one device."""
         if not request.authorization:
             return self.one_public(id)
@@ -126,12 +126,12 @@ class DeviceView(View):
             return self.one_private(id)
 
     def one_public(self, id: int):
-        device = Device.query.filter_by(id=id).one()
+        device = Device.query.filter_by(devicehub_id=id).one()
         return render_template('devices/layout.html', device=device, states=states)
 
     @auth.Auth.requires_auth
-    def one_private(self, id: int):
-        device = Device.query.filter_by(id=id, owner_id=g.user.id).first()
+    def one_private(self, id: str):
+        device = Device.query.filter_by(devicehub_id=id, owner_id=g.user.id).first()
         if not device:
             return self.one_public(id)
         return self.schema.jsonify(device)

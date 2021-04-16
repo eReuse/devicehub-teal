@@ -105,13 +105,10 @@ class DocumentView(DeviceView):
 
         url_pdf = boltons.urlutils.URL(flask.request.url)
         url_pdf.query_params['format'] = 'PDF'
-        url_web = boltons.urlutils.URL(flask.request.url)
-        url_web.query_params['format'] = 'HTML'
         params = {
             'title': 'Erasure Certificate',
             'erasures': tuple(erasures()),
-            'url_pdf': url_pdf.to_text(),
-            'url_web': url_web.to_text()
+            'url_pdf': url_pdf.to_text()
         }
         return flask.render_template('documents/erasure.html', **params)
 

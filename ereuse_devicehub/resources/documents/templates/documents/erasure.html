@@ -42,13 +42,13 @@
 
                     <dt>Computer where was erase:</dt>
 		    <dd>Title: {{ erasure.parent.__format__('ts') }}</dd>
-		    <dd>SystemId: {{ erasure.parent.id }}</dd>
+		    <dd>DevicehubID: {{ erasure.parent.devicehub_id }}</dd>
 		    <dd>Hid: {{ erasure.parent.hid }}</dd>
 		    <dd>Tags: {{ erasure.parent.tags }}</dd>
 		    
                     <dt>Computer where it resides:</dt>
 		    <dd>Title: {{ erasure.device.parent.__format__('ts') }}</dd>
-		    <dd>SystemId: {{ erasure.device.parent.id }}</dd>
+		    <dd>DevicehubID: {{ erasure.device.parent.devicehub_id }}</dd>
 		    <dd>Hid: {{ erasure.device.parent.hid }}</dd>
 		    <dd>Tags: {{ erasure.device.parent.tags }}</dd>
 
@@ -87,6 +87,6 @@
         <a href="{{ url_pdf }}">Click here to download the PDF.</a>
     </div>
     <div class="print-only">
-        <a href="{{ url_web }}">Verify on-line the integrity of this document</a>
+        <a href="{{ url_for('Document.StampsView', _external=True) }}">Verify on-line the integrity of this document</a>
     </div>
 {% endblock %}

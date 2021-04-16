@@ -18,7 +18,7 @@ class TagView(View):
         tag = Tag.query.filter_by(internal_id=internal_id).one()  # type: Tag
         if not tag.device:
             raise TagNotLinked(tag.id)
-        return redirect(location=url_for_resource(Device, tag.device.id))
+        return redirect(location=url_for_resource(Device, tag.device.devicehub_id))
 
     @auth.Auth.requires_auth
     def post(self):
@@ -82,7 +82,9 @@ class TagDeviceView(View):
         tag = Tag.from_an_id(id).one()  # type: Tag
         if not tag.device:
             raise TagNotLinked(tag.id)
-        return redirect(location=url_for_resource(Device, tag.device.id))
+        if not request.authorization:
+            return redirect(location=url_for_resource(Device, tag.device.devicehub_id))
+        return app.resources[Device.t].schema.jsonify(tag.device.devicehub_id)
 
     @auth.Auth.requires_auth
     def one_authorization(self, id):
@@ -91,11 +93,10 @@ class TagDeviceView(View):
             raise TagNotLinked(tag.id)
         return app.resources[Device.t].schema.jsonify(tag.device)
 
-    # noinspection PyMethodOverriding
     @auth.Auth.requires_auth
-    def put(self, tag_id: str, device_id: str):
+    def put(self, tag_id: str, device_id: int):
         """Links an existing tag with a device."""
-        # tag = Tag.from_an_id(tag_id).one()  # type: Tag
+        device_id = int(device_id)
         tag = Tag.from_an_id(tag_id).filter_by(owner=g.user).one()  # type: Tag
         if tag.device_id:
             if tag.device_id == device_id:
@@ -137,7 +138,7 @@ def get_device_from_tag(id: str):
     # todo this could be more efficient by Device.query... join with tag
     device = Tag.query.filter_by(id=id).one().device
     if not request.authorization:
-        return redirect(location=url_for_resource(Device, device.id))
+        return redirect(location=url_for_resource(Device, device.devicehub_id))
     if device is None:
         raise TagNotLinked(id)
     return app.resources[Device.t].schema.jsonify(device)

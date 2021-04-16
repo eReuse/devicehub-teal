@@ -14,6 +14,7 @@ ml).
 ## [1.0.5-beta]
 - [addend] #124 adding endpoint for extract the internal stats of use
 - [addend] #122 system for verify all documents that it's produced from devicehub
+- [addend] #131 add one code for every device
 
 ## [1.0.4-beta]
 - [addend] #95 adding endpoint for check the hash of one report

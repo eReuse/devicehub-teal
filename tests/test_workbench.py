@@ -53,7 +53,7 @@ def test_workbench_server_condensed(user: UserClient):
     }
     assert snapshot['closed']
     assert snapshot['severity'] == 'Info'
-    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
     assert device['dataStorageSize'] == 1100
     assert device['chassis'] == 'Tower'
     assert device['hid'] == 'desktop-d1mr-d1ml-d1s-na1-s'
@@ -133,7 +133,7 @@ def test_workbench_server_phases(user: UserClient):
     assert snapshot['closed']
     assert snapshot['severity'] == 'Info'
 
-    pc, _ = user.get(res=Device, item=snapshot['id'])
+    pc, _ = user.get(res=Device, item=snapshot['devicehubID'])
     assert len(pc['actions']) == 10  # todo shall I add child actions?
 
 
@@ -177,7 +177,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     """
     s = file('real-eee-1001pxd.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
-    pc, _ = user.get(res=Device, item=snapshot['device']['id'])
+    pc, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
     assert pc['type'] == 'Laptop'
     assert pc['chassis'] == 'Netbook'
     assert pc['model'] == '1001pxd'
@@ -217,7 +217,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert cpu['speed'] == 1.667
     assert 'hid' not in cpu
     assert pc['processorModel'] == cpu['model'] == 'intel atom cpu n455 @ 1.66ghz'
-    cpu, _ = user.get(res=Device, item=cpu['id'])
+    cpu, _ = user.get(res=Device, item=cpu['devicehubID'])
     actions = cpu['actions']
     sysbench = next(e for e in actions if e['type'] == em.BenchmarkProcessorSysbench.t)
     assert sysbench['elapsed'] == 164
@@ -237,7 +237,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert gpu['model'] == 'atom processor d4xx/d5xx/n4xx/n5xx integrated graphics controller'
     assert gpu['manufacturer'] == 'intel corporation'
     assert gpu['memory'] == 256
-    gpu, _ = user.get(res=Device, item=gpu['id'])
+    gpu, _ = user.get(res=Device, item=gpu['devicehubID'])
     action_types = tuple(e['type'] for e in gpu['actions'])
     assert em.BenchmarkRamSysbench.t in action_types
     assert em.StressTest.t in action_types
@@ -256,7 +256,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert hdd['hid'] == 'harddrive-hitachi-hts54322-e2024242cv86hj'
     assert hdd['interface'] == 'ATA'
     assert hdd['size'] == 238475
-    hdd, _ = user.get(res=Device, item=hdd['id'])
+    hdd, _ = user.get(res=Device, item=hdd['devicehubID'])
     action_types = tuple(e['type'] for e in hdd['actions'])
     assert em.BenchmarkRamSysbench.t in action_types
     assert em.StressTest.t in action_types

@@ -35,7 +35,6 @@ class TagDef(Resource):
         )
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
-        _get_device_from_tag = app.auth.requires_auth(get_device_from_tag)
 
         # DeviceTagView URLs
         device_view = TagDeviceView.as_view('tag-device-view', definition=self, auth=app.auth)

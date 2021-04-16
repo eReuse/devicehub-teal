@@ -10,7 +10,7 @@ from ereuse_devicehub.resources.device.views import DeviceView, DeviceMergeView,
 class DeviceDef(Resource):
     SCHEMA = schemas.Device
     VIEW = DeviceView
-    ID_CONVERTER = Converters.int
+    ID_CONVERTER = Converters.string
     AUTH = False  # We manage this at each view
 
     def __init__(self, app,

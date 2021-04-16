@@ -8,6 +8,7 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
+from flask_sqlalchemy import event
 from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
 from flask import g
 from more_itertools import unique_everseen
@@ -27,11 +28,18 @@ from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.utils import hashcode
 from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity, TransferState
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing, listener_reset_field_updated_in_actual_time
 from ereuse_devicehub.resources.user.models import User
 
+
+def create_code(context):
+    _id = Device.query.order_by(Device.id.desc()).first() or 1
+    if not _id == 1:
+        _id = _id.id + 1
+    return hashcode.encode(_id)
 
 
 class Device(Thing):
@@ -115,6 +123,8 @@ class Device(Thing):
     owner = db.relationship(User, primaryjoin=owner_id == User.id)
     allocated = db.Column(Boolean, default=False)
     allocated.comment = "device is allocated or not."
+    devicehub_id = db.Column(db.CIText(), nullable=True, unique=True, default=create_code)
+    devicehub_id.comment = "device have a unique code."
 
     _NON_PHYSICAL_PROPS = {
         'id',
@@ -137,7 +147,8 @@ class Device(Thing):
         'version',
         'sku',
         'image',
-        'allocated'
+        'allocated',
+        'devicehub_id'
     }
 
     __table_args__ = (
@@ -225,7 +236,7 @@ class Device(Thing):
     @property
     def url(self) -> urlutils.URL:
         """The URL where to GET this device."""
-        return urlutils.URL(url_for_resource(Device, item_id=self.id))
+        return urlutils.URL(url_for_resource(Device, item_id=self.devicehub_id))
 
     @property
     def rate(self):
@@ -363,7 +374,7 @@ class Device(Thing):
 
             if act.type == 'Allocate':
                 allo = {'type': 'Allocate',
-                        'systemId': self.id,
+                        'devicehubID': self.devicehub_id,
                         'finalUserCode': act.final_user_code,
                         'numEndUsers': act.end_users,
                         'hid': self.hid,
@@ -384,7 +395,7 @@ class Device(Thing):
 
             if act.type == 'Deallocate':
                 deallo = {'type': 'Deallocate',
-                          'systemId': self.id,
+                          'devicehubID': self.devicehub_id,
                           'finalUserCode': '',
                           'numEndUsers': '',
                           'hid': self.hid,
@@ -1023,3 +1034,4 @@ class Manufacturer(db.Model):
 
 
 listener_reset_field_updated_in_actual_time(Device)
+
