@@ -176,10 +176,10 @@ def test_device_query_filter_lots(user: UserClient):
 @pytest.mark.mvp
 def test_device_query(user: UserClient):
     """Checks result of inventory."""
-    user.post(conftest.file('basic.snapshot'), res=Snapshot)
+    snap, _ = user.post(conftest.file('basic.snapshot'), res=Snapshot)
     i, _ = user.get(res=Device)
     assert i['url'] == '/devices/'
-    assert i['items'][0]['url'] == '/devices/1'
+    assert i['items'][0]['url'] == '/devices/%s' % snap['device']['devicehubID']
     pc = next(d for d in i['items'] if d['type'] == 'Desktop')
     assert len(pc['actions']) == 4
     assert len(pc['components']) == 3

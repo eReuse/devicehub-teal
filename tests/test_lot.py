@@ -369,13 +369,14 @@ def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
         db.session.add(device)
         db.session.commit()
         device_id = device.id
+        devicehub_id = device.devicehub_id
     parent, _ = user.post(({'name': 'lot'}), res=Lot)
     lot, _ = user.post({},
                        res=Lot,
                        item='{}/devices'.format(parent['id']),
                        query=[('id', device_id)])
     assert lot['devices'][0]['id'] == device_id, 'Lot contains device'
-    device, _ = user.get(res=Device, item=device_id)
+    device, _ = user.get(res=Device, item=devicehub_id)
     assert len(device['lots']) == 1
     assert device['lots'][0]['id'] == lot['id'], 'Device is inside lot'
 
@@ -393,7 +394,6 @@ def test_lot_error_add_device_from_other_user(user: UserClient):
     """Tests adding a device to a lot using POST and
     removing it with DELETE.
     """
-    # import pdb; pdb.set_trace()
     user2 = User(email='baz@baz.cxm', password='baz')
     user2.individuals.add(Person(name='Tommy'))
     db.session.add(user2)
@@ -416,7 +416,7 @@ def test_lot_error_add_device_from_other_user(user: UserClient):
     assert lot['devices'][0]['id'] == device_id, 'Lot contains device'
     assert len(lot['devices']) == 1
     with raises(JSONDecodeError):
-        device, _ = user.get(res=Device, item=device_id)
+        device, _ = user.get(res=Device, item=device.devicehub_id)
 
 
 @pytest.mark.mvp

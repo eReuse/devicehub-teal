@@ -247,7 +247,7 @@ def test_generic_action(action_model_state: Tuple[models.Action, states.Trading]
     action = {'type': action_model.t, 'devices': [snapshot['device']['id']]}
     action, _ = user.post(action, res=models.Action)
     assert action['devices'][0]['id'] == snapshot['device']['id']
-    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
     assert device['actions'][-1]['id'] == action['id']
     assert device['physical'] == state.name
     # Check if the update of device is changed
@@ -630,7 +630,8 @@ def test_allocate(user: UserClient):
     """ Tests allocate """
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
-    post_request = {"transaction": "ccc",
+    devicehub_id = snapshot['device']['devicehubID']
+    post_request = {"transaction": "ccc", 
                     "finalUserCode": "aabbcc",
                     "name": "John",
                     "severity": "Info",
@@ -643,7 +644,7 @@ def test_allocate(user: UserClient):
 
     allocate, _ = user.post(res=models.Allocate, data=post_request)
     # Normal allocate
-    device, _ = user.get(res=Device, item=device_id)
+    device, _ = user.get(res=Device, item=devicehub_id)
     assert device['allocated'] == True
     action = [a for a in device['actions'] if a['type'] == 'Allocate'][0]
     assert action['transaction'] == allocate['transaction']
@@ -696,6 +697,7 @@ def test_deallocate(user: UserClient):
     """ Tests deallocate """
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
+    devicehub_id = snapshot['device']['devicehubID']
     post_deallocate = {"startTime": "2020-11-01T02:00:00+00:00",
                        "transaction": "ccc",
                        "devices": [device_id]
@@ -710,7 +712,7 @@ def test_deallocate(user: UserClient):
     }
 
     user.post(res=models.Allocate, data=post_allocate)
-    device, _ = user.get(res=Device, item=device_id)
+    device, _ = user.get(res=Device, item=devicehub_id)
     assert device['allocated'] == True
     deallocate, _ = user.post(res=models.Deallocate, data=post_deallocate)
     assert deallocate['startTime'] == post_deallocate['startTime']
@@ -1000,7 +1002,7 @@ def test_price_custom():
     assert p['price'] == 25.25
     assert p['currency'] == Currency.EUR.name == 'EUR'
 
-    c, _ = client.get(res=Device, item=computer.id)
+    c, _ = client.get(res=Device, item=computer.devicehub_id)
     assert c['price']['id'] == p['id']
 
 
@@ -1018,7 +1020,7 @@ def test_price_custom_client(user: UserClient):
     assert 25 == price['price']
     assert Currency.EUR.name == price['currency']
 
-    device, _ = user.get(res=Device, item=price['device']['id'])
+    device, _ = user.get(res=Device, item=price['device']['devicehubID'])
     assert 25 == device['price']['price']
 
 

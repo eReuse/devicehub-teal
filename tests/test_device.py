@@ -416,7 +416,9 @@ def test_get_device(app: Devicehub, user: UserClient):
                                         agent=Person(name='Timmy'),
                                         author=User(email='bar@bar.com')))
         db.session.commit()
-    pc, _ = user.get(res=d.Device, item=1)
+        devicehub_id = pc.devicehub_id
+
+    pc, _ = user.get(res=d.Device, item=devicehub_id)
     assert len(pc['actions']) == 1
     assert pc['actions'][0]['type'] == 'TestConnectivity'
     assert pc['actions'][0]['device'] == 1
@@ -473,14 +475,14 @@ def test_get_device_permissions(app: Devicehub, user: UserClient, user2: UserCli
     """Checks GETting a d.Desktop with its components."""
 
     s, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
-    pc, res = user.get(res=d.Device, item=s['device']['id'])
+    pc, res = user.get(res=d.Device, item=s['device']['devicehubID'])
     assert res.status_code == 200
     assert len(pc['actions']) == 9
 
-    html, _ = client.get(res=d.Device, item=s['device']['id'], accept=ANY)
+    html, _ = client.get(res=d.Device, item=s['device']['devicehubID'], accept=ANY)
     assert 'intel atom cpu n270 @ 1.60ghz' in html
     assert '00:24:8C:7F:CF:2D – 100 Mbps' in html
-    pc2, res2 = user2.get(res=d.Device, item=s['device']['id'], accept=ANY)
+    pc2, res2 = user2.get(res=d.Device, item=s['device']['devicehubID'], accept=ANY)
     assert res2.status_code == 200
     assert pc2 == html
 
@@ -555,7 +557,7 @@ def test_device_properties_format(app: Devicehub, user: UserClient):
 @pytest.mark.mvp
 def test_device_public(user: UserClient, client: Client):
     s, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
-    html, _ = client.get(res=d.Device, item=s['device']['id'], accept=ANY)
+    html, _ = client.get(res=d.Device, item=s['device']['devicehubID'], accept=ANY)
     assert 'intel atom cpu n270 @ 1.60ghz' in html
     assert '00:24:8C:7F:CF:2D – 100 Mbps' in html
 
@@ -614,8 +616,8 @@ def test_cooking_mixer_api(user: UserClient):
 def test_hid_with_mac(app: Devicehub, user: UserClient):
     """Checks hid with mac."""
     snapshot = file('asus-eee-1000h.snapshot.11')
-    user.post(snapshot, res=m.Snapshot)
-    pc, _ = user.get(res=d.Device, item=1)
+    snap, _ = user.post(snapshot, res=m.Snapshot)
+    pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
 
 
@@ -624,8 +626,8 @@ def test_hid_without_mac(app: Devicehub, user: UserClient):
     """Checks hid without mac."""
     snapshot = file('asus-eee-1000h.snapshot.11')
     snapshot['components'] = [c for c in snapshot['components'] if c['type'] != 'NetworkAdapter']
-    user.post(snapshot, res=m.Snapshot)
-    pc, _ = user.get(res=d.Device, item=1)
+    snap, _ = user.post(snapshot, res=m.Snapshot)
+    pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
 
 
@@ -635,8 +637,8 @@ def test_hid_with_mac_none(app: Devicehub, user: UserClient):
     snapshot = file('asus-eee-1000h.snapshot.11')
     network = [c for c in snapshot['components'] if c['type'] == 'NetworkAdapter'][0]
     network['serialNumber'] = None
-    user.post(snapshot, res=m.Snapshot)
-    pc, _ = user.get(res=d.Device, item=1)
+    snap, _ = user.post(snapshot, res=m.Snapshot)
+    pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
 
 
@@ -664,8 +666,8 @@ def test_hid_with_2network_and_drop_no_mac_in_hid(app: Devicehub, user: UserClie
     network2 = copy.copy(network)
     snapshot['components'].append(network2)
     network['serialNumber'] = 'a0:24:8c:7f:cf:2d'
-    user.post(snapshot, res=m.Snapshot)
-    pc, _ = user.get(res=d.Device, item=1)
+    snap, _ = user.post(snapshot, res=m.Snapshot)
+    pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
 
     snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abb'
@@ -687,8 +689,8 @@ def test_hid_with_2network_and_drop_mac_in_hid(app: Devicehub, user: UserClient)
     network2 = copy.copy(network)
     snapshot['components'].append(network2)
     network['serialNumber'] = 'a0:24:8c:7f:cf:2d'
-    user.post(snapshot, res=m.Snapshot)
-    pc, _ = user.get(res=d.Device, item=1)
+    snap, _ = user.post(snapshot, res=m.Snapshot)
+    pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
 
     # we drop the network card then is used for to build the hid
