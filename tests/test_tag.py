@@ -282,7 +282,7 @@ def test_tag_manual_link_search(app: Devicehub, user: UserClient):
         db.session.commit()
         desktop_id = desktop.id
     user.put({}, res=Tag, item='foo-bar/device/{}'.format(desktop_id), status=204)
-    device, _ = user.get(res=Device, item=1)
+    device, _ = user.get(res=Device, item=desktop_id)
     assert device['tags'][0]['id'] == 'foo-bar'
 
     # Device already linked

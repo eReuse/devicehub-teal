@@ -176,10 +176,10 @@ def test_device_query_filter_lots(user: UserClient):
 @pytest.mark.mvp
 def test_device_query(user: UserClient):
     """Checks result of inventory."""
-    user.post(conftest.file('basic.snapshot'), res=Snapshot)
+    snapshot, _ = user.post(conftest.file('basic.snapshot'), res=Snapshot)
     i, _ = user.get(res=Device)
     assert i['url'] == '/devices/'
-    assert i['items'][0]['url'] == '/devices/1'
+    assert i['items'][0]['url'] == '/devices/{}'.format(snapshot['device']['id'])
     pc = next(d for d in i['items'] if d['type'] == 'Desktop')
     assert len(pc['actions']) == 4
     assert len(pc['components']) == 3
@@ -241,14 +241,14 @@ def test_device_search_regenerate_table(app: DeviceSearch, user: UserClient):
 @pytest.mark.mvp
 def test_device_query_search(user: UserClient):
     # todo improve
-    user.post(file('basic.snapshot'), res=Snapshot)
+    snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
     user.post(file('computer-monitor.snapshot'), res=Snapshot)
     user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
     i, _ = user.get(res=Device, query=[('search', 'desktop')])
-    assert i['items'][0]['id'] == 1
+    assert i['items'][0]['id'] == snapshot['device']['id']
     i, _ = user.get(res=Device, query=[('search', 'intel')])
     assert len(i['items']) == 1
-    i, _ = user.get(res=Device, query=[('search', '1')])
+    i, _ = user.get(res=Device, query=[('search', snapshot['device']['id'])])
     assert len(i['items']) == 1
 
 
