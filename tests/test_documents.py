@@ -265,6 +265,7 @@ def test_export_extended(app: Devicehub, user: UserClient):
         pc.tags.add(tag)
         db.session.add(pc)
         db.session.commit()
+
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='devices/',
                           accept='text/csv',

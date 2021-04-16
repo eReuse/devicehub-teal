@@ -37,6 +37,7 @@ from tests import conftest
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures('auth_app_context')
+# cayop
 def test_snapshot_model():
     """Tests creating a Snapshot with its relationships ensuring correct
     DB mapping.
@@ -63,7 +64,7 @@ def test_snapshot_model():
     assert m.Desktop.query.one_or_none() is None
     assert m.Device.query.one_or_none() is None
     # Check properties
-    assert device.url == urlutils.URL('http://localhost/devices/1')
+    assert device.url == urlutils.URL('http://localhost/devices/3')
 
 
 @pytest.mark.mvp
@@ -315,7 +316,7 @@ def test_snapshot_tag_inner_tag(user: UserClient, tag_id: str, app: Devicehub):
                        action_types=(RateComputer.t, BenchmarkProcessor.t, VisualTest.t))
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
-        assert tag.device_id == 1, 'Tag should be linked to the first device'
+        assert tag.device_id == 3, 'Tag should be linked to the first device'
 
 
 @pytest.mark.mvp
