@@ -1,7 +1,8 @@
 import csv
-import datetime
 import enum
 import uuid
+import datetime
+import pathlib
 from collections import OrderedDict
 from io import StringIO
 from typing import Callable, Iterable, Tuple
@@ -18,7 +19,9 @@ from flask.json import jsonify
 from teal.cache import cache
 from teal.resource import Resource, View
 
+from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.enums import SessionType
 from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.deliverynote.models import Deliverynote
@@ -253,7 +256,7 @@ class StampsView(View):
         url = urlutils.URL(request.url)
         url.normalize()
         url.path_parts = url.path_parts[:-2] + ['check', '']
-        return url.to_text() 
+        return url.to_text()
 
     def get(self):
         result = ('', '')
@@ -312,6 +315,30 @@ class InternalStatsView(DeviceView):
         output.headers['Content-Disposition'] = 'attachment; filename=internal-stats.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
+
+
+class WbConfDocumentView(DeviceView):
+    def get(self, wbtype: str):
+        if not wbtype.lower() in ['usodyrate', 'usodywipe']:
+            return jsonify('')
+
+        data = {'token': self.get_token(),
+                'host': app.config['DB_HOST'],
+                'inventory': app.config['DB_SCHEMA']
+                }
+        data['erase'] = False
+        # data['erase'] = True if wbtype == 'usodywipe' else False
+
+        env = flask.render_template('documents/wbSettings.ini', **data)
+        output = make_response(env)
+        output.headers['Content-Disposition'] = 'attachment; filename=settings.ini'
+        output.headers['Content-type'] = 'text/plain'
+        return output
+
+    def get_token(self):
+        tk = [s.token for s in g.user.sessions if s.type == SessionType.Internal][0]
+        token = auth.Auth.encode(tk)
+        return token
 
 
 class DocumentDef(Resource):
@@ -380,3 +407,9 @@ class DocumentDef(Resource):
                                                    auth=app.auth)
         actions_view = app.auth.requires_auth(actions_view)
         self.add_url_rule('/actions/', defaults=d, view_func=actions_view, methods=get)
+
+        wbconf_view = WbConfDocumentView.as_view('WbConfDocumentView',
+                                                  definition=self,
+                                                  auth=app.auth)
+        wbconf_view = app.auth.requires_auth(wbconf_view)
+        self.add_url_rule('/wbconf/<string:wbtype>', view_func=wbconf_view, methods=get)

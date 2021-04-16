@@ -37,6 +37,7 @@ class DevicehubConfig(Config):
     DB_PASSWORD = config('DB_PASSWORD', 'ereuse')
     DB_HOST = config('DB_HOST', 'localhost')
     DB_DATABASE = config('DB_DATABASE', 'devicehub')
+    DB_SCHEMA = config('DB_SCHEMA', 'dbtest')
     SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{pw}@{host}/{db}'.format(
         user=DB_USER,
         pw=DB_PASSWORD,
