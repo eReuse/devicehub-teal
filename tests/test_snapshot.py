@@ -63,7 +63,7 @@ def test_snapshot_model():
     assert m.Desktop.query.one_or_none() is None
     assert m.Device.query.one_or_none() is None
     # Check properties
-    assert device.url == urlutils.URL('http://localhost/devices/1')
+    assert device.url == urlutils.URL('http://localhost/devices/%s' % device.devicehub_id)
 
 
 @pytest.mark.mvp
@@ -92,7 +92,7 @@ def test_snapshot_post(user: UserClient):
     assert snapshot['author']['id'] == user.user['id']
     assert 'actions' not in snapshot['device']
     assert 'author' not in snapshot['device']
-    device, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    device, _ = user.get(res=m.Device, item=snapshot['device']['devicehubID'])
     key = itemgetter('serialNumber')
     snapshot['components'].sort(key=key)
     device['components'].sort(key=key)
@@ -115,7 +115,8 @@ def test_same_device_tow_users(user: UserClient, user2: UserClient):
     i, _ = user.get(res=m.Device)
     pc = next(d for d in i['items'] if d['type'] == 'Desktop')
     pc_id = pc['id']
-    assert i['items'][0]['url'] == f'/devices/{pc_id}'
+    devicehub_id = pc['devicehubID']
+    assert i['items'][0]['url'] == f'/devices/{devicehub_id}'
 
     basic_snapshot = file('basic.snapshot')
     basic_snapshot['uuid'] = f"{uuid.uuid4()}"
@@ -140,8 +141,8 @@ def test_snapshot_update_timefield_updated(user: UserClient):
     computer2 = file('2-second-device-with-components-of-first.snapshot')
     snapshot_and_check(user, computer2, action_types=('Remove', 'RateComputer'),
                        perform_second_snapshot=False)
-    pc1_id = snapshot['device']['id']
-    pc1, _ = user.get(res=m.Device, item=pc1_id)
+    pc1_devicehub_id = snapshot['device']['devicehubID']
+    pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
     assert pc1['updated'] != snapshot['device']['updated']
 
 
@@ -170,7 +171,8 @@ def test_snapshot_component_add_remove(user: UserClient):
                                                  RateComputer.t),
                                    perform_second_snapshot=False)
     pc1_id = snapshot1['device']['id']
-    pc1, _ = user.get(res=m.Device, item=pc1_id)
+    pc1_devicehub_id = snapshot1['device']['devicehubID']
+    pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
     update1_pc1 = pc1['updated']
     # Parent contains components
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c2s', 'p1c3s')
@@ -180,7 +182,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert len(pc1['actions']) == 3
     assert pc1['actions'][1]['type'] == Snapshot.t
     # p1c1s has Snapshot
-    p1c1s, _ = user.get(res=m.Device, item=pc1['components'][0]['id'])
+    p1c1s, _ = user.get(res=m.Device, item=pc1['components'][0]['devicehubID'])
     assert tuple(e['type'] for e in p1c1s['actions']) == ('Snapshot', 'RateComputer')
 
     # We register a new device
@@ -192,8 +194,9 @@ def test_snapshot_component_add_remove(user: UserClient):
     snapshot2 = snapshot_and_check(user, s2, action_types=('Remove', 'RateComputer'),
                                    perform_second_snapshot=False)
     pc2_id = snapshot2['device']['id']
-    pc1, _ = user.get(res=m.Device, item=pc1_id)
-    pc2, _ = user.get(res=m.Device, item=pc2_id)
+    pc2_devicehub_id = snapshot2['device']['devicehubID']
+    pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
+    pc2, _ = user.get(res=m.Device, item=pc2_devicehub_id)
     # Check if the update_timestamp is updated
     update1_pc2 = pc2['updated']
     update2_pc1 = pc1['updated']
@@ -207,7 +210,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert all(c['parent'] == pc2_id for c in pc2['components'])
     assert tuple(e['type'] for e in pc2['actions']) == ('Snapshot', 'RateComputer')
     # p1c2s has two Snapshots, a Remove and an Add
-    p1c2s, _ = user.get(res=m.Device, item=pc2['components'][0]['id'])
+    p1c2s, _ = user.get(res=m.Device, item=pc2['components'][0]['devicehubID'])
     assert tuple(e['type'] for e in p1c2s['actions']) == (
         'BenchmarkProcessor', 'Snapshot', 'RateComputer', 'Snapshot', 'Remove', 'RateComputer'
     )
@@ -218,8 +221,8 @@ def test_snapshot_component_add_remove(user: UserClient):
     # PC 0: p1c2s, p1c3s. PC 1: p2c1s
     s3 = file('3-first-device-but-removing-motherboard-and-adding-processor-from-2.snapshot')
     snapshot_and_check(user, s3, ('Remove', 'RateComputer'), perform_second_snapshot=False)
-    pc1, _ = user.get(res=m.Device, item=pc1_id)
-    pc2, _ = user.get(res=m.Device, item=pc2_id)
+    pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
+    pc2, _ = user.get(res=m.Device, item=pc2_devicehub_id)
     # Check if the update_timestamp is updated
     update2_pc2 = pc2['updated']
     update3_pc1 = pc1['updated']
@@ -247,7 +250,7 @@ def test_snapshot_component_add_remove(user: UserClient):
         'Remove'  # the processor we added in 2.
     )
     # p1c2s has Snapshot, Remove and Add
-    p1c2s, _ = user.get(res=m.Device, item=pc1['components'][0]['id'])
+    p1c2s, _ = user.get(res=m.Device, item=pc1['components'][0]['devicehubID'])
     assert tuple(get_actions_info(p1c2s['actions'])) == (
         ('BenchmarkProcessor', []),  # first BenchmarkProcessor
         ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # First Snapshot to PC1
@@ -264,8 +267,8 @@ def test_snapshot_component_add_remove(user: UserClient):
     # adding a graphic card and adding a new component
     s4 = file('4-first-device-but-removing-processor.snapshot-and-adding-graphic-card')
     snapshot4 = snapshot_and_check(user, s4, ('RateComputer',), perform_second_snapshot=False)
-    pc1, _ = user.get(res=m.Device, item=pc1_id)
-    pc2, _ = user.get(res=m.Device, item=pc2_id)
+    pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
+    pc2, _ = user.get(res=m.Device, item=pc2_devicehub_id)
     # Check if the update_timestamp is updated
     update3_pc2 = pc2['updated']
     update4_pc1 = pc1['updated']
@@ -429,7 +432,7 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
 
     # The actual test
     storage = next(e for e in snapshot['components'] if e['type'] == SolidStateDrive.t)
-    storage, _ = user.get(res=m.Device, item=storage['id'])  # Let's get storage actions too
+    storage, _ = user.get(res=m.Device, item=storage['devicehubID'])  # Let's get storage actions too
     # order: endTime ascending
     #        erasure1/2 have an user defined time and others actions endTime = created
     erasure1, erasure2, benchmark_hdd1, _snapshot1, _, _, benchmark_hdd2, _snapshot2 = storage['actions'][:8]
@@ -455,17 +458,17 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     assert 'num' not in step2
     assert ['HMG_IS5'] == erasure['standards']
     assert storage['privacy']['type'] == 'EraseSectors'
-    pc, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    pc, _ = user.get(res=m.Device, item=snapshot['device']['devicehubID'])
     assert pc['privacy'] == [storage['privacy']]
 
     # Let's try a second erasure with an error
     s['uuid'] = uuid4()
     s['components'][0]['actions'][0]['severity'] = 'Error'
     snapshot, _ = user.post(s, res=Snapshot)
-    storage, _ = user.get(res=m.Device, item=storage['id'])
+    storage, _ = user.get(res=m.Device, item=storage['devicehubID'])
     assert storage['hid'] == 'solidstatedrive-c1mr-c1ml-c1s'
     assert storage['privacy']['type'] == 'EraseSectors'
-    pc, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    pc, _ = user.get(res=m.Device, item=snapshot['device']['devicehubID'])
     assert pc['privacy'] == [storage['privacy']]
 
 
@@ -548,7 +551,7 @@ def snapshot_and_check(user: UserClient,
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_erase_changing_hdd_between_pcs(user: UserClient):
-    """Tests when we erase one device and next change the disk in other device we 
+    """Tests when we erase one device and next change the disk in other device we
     want see in the second device the disks erase."""
     s1 = file('erase-sectors-2-hdd.snapshot')
     s2 = file('erase-sectors-2-hdd.snapshot2')
@@ -615,7 +618,7 @@ def test_save_snapshot_in_file(app: Devicehub, user: UserClient):
 
 @pytest.mark.mvp
 def test_action_no_snapshot_without_save_file(app: Devicehub, user: UserClient):
-    """ This test check if the function save_snapshot_in_file not work when we 
+    """ This test check if the function save_snapshot_in_file not work when we
     send one other action different to snapshot
     """
     s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
@@ -736,7 +739,7 @@ def test_snapshot_not_failed_null_chassis(app: Devicehub, user: UserClient):
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
     path_dir_base = os.path.join(tmp_snapshots, user.user['email'], 'errors')
     snapshot_error = file('desktop-9644w8n-lenovo-0169622.snapshot')
-    snapshot_error['device']['chassis'] = None 
+    snapshot_error['device']['chassis'] = None
     uuid = snapshot_error['uuid']
 
     snapshot, res = user.post(res=Snapshot, data=snapshot_error)
@@ -780,7 +783,7 @@ def test_snapshot_failed_end_time_bug(app: Devicehub, user: UserClient):
     """
     snapshot_file = file('asus-end_time_bug88.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
-    device, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    device, _ = user.get(res=m.Device, item=snapshot['device']['devicehubID'])
     end_times = [x['endTime'] for x in device['actions']]
 
     assert '1970-01-02T00:00:00+00:00' in end_times
@@ -797,7 +800,7 @@ def test_snapshot_not_failed_end_time_bug(app: Devicehub, user: UserClient):
     snapshot_file = file('asus-end_time_bug88.snapshot')
     snapshot_file['endTime'] = '2001-01-01 00:00:00+00:00'
     snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
-    device, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    device, _ = user.get(res=m.Device, item=snapshot['device']['devicehubID'])
     end_times = [x['endTime'] for x in device['actions']]
 
     assert not '1970-01-02T00:00:00+00:00' in end_times
@@ -817,7 +820,7 @@ def test_snapshot_bug_smallint_hdd(app: Devicehub, user: UserClient):
     snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
 
     act = [act for act in snapshot['actions'] if act['type'] == 'TestDataStorage'][0]
-    assert act['currentPendingSectorCount'] == 473302660 
+    assert act['currentPendingSectorCount'] == 473302660
     assert act['offlineUncorrectable'] == 182042944
 
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
@@ -831,9 +834,7 @@ def test_snapshot_mobil(app: Devicehub, user: UserClient):
     """
     snapshot_file = file('mobil')
     snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
-    device, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    device, _ = user.get(res=m.Device, item=snapshot['device']['devicehubID'])
 
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
     shutil.rmtree(tmp_snapshots)
-
-
