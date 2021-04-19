@@ -788,7 +788,7 @@ def test_offer_without_to(user: UserClient):
     db.session.add(lot)
     db.session.flush()
     request_post = {
-        'type': 'Offer',
+        'type': 'Trade',
         'devices': [],
         'userFrom': user.email,
         'price': 10,
@@ -802,19 +802,21 @@ def test_offer_without_to(user: UserClient):
 
     trade= models.Trade.query.one()
     assert device in trade.devices
-    assert trade.confirm_transfer
-    assert trade.offer.user_to == device.owner
+    # assert trade.confirm_transfer
+    users = [ac.user for ac in trade.acceptances]
+    assert trade.user_to == device.owner
     assert request_post['code'].lower() in device.owner.email
     assert device.owner.active == False
     assert device.owner.phantom == True
-    assert trade.accepted_by_from and trade.accepted_by_to
+    assert trade.user_to in users
+    assert trade.user_from in users
     assert device.owner.email != user.email
     for c in device.components:
         assert c.owner.email != user.email
 
     # check if the user_from is owner of the devices
     request_post = {
-        'type': 'Offer',
+        'type': 'Trade',
         'devices': [],
         'userFrom': user.email,
         'price': 10,
@@ -836,7 +838,7 @@ def test_offer_without_to(user: UserClient):
     db.session.add(lot2)
     db.session.flush()
     request_post2 = {
-        'type': 'Offer',
+        'type': 'Trade',
         'devices': [],
         'userFrom': user.email,
         'price': 10,
@@ -852,12 +854,8 @@ def test_offer_without_to(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_offer_without_from(user: UserClient):
+def test_offer_without_from(user: UserClient, user2: UserClient):
     """Test one offer without confirmation and without user from"""
-    user2 = User(email='baz@baz.cxm', password='baz')
-    user2.individuals.add(Person(name='Tommy'))
-    db.session.add(user2)
-    db.session.commit()
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     lot = Lot('MyLot')
     lot.owner_id = user.user['id']
@@ -871,7 +869,7 @@ def test_offer_without_from(user: UserClient):
     db.session.add(lot)
     db.session.flush()
     request_post = {
-        'type': 'Offer',
+        'type': 'Trade',
         'devices': [],
         'userTo': user2.email,
         'price': 10,
@@ -881,17 +879,19 @@ def test_offer_without_from(user: UserClient):
         'confirm': False,
         'code': 'MAX'
     }
-    action, _ = user.post(res=models.Action, data=request_post)
-    trade= models.Trade.query.one()
+    action, _ = user2.post(res=models.Action, data=request_post)
+    trade = models.Trade.query.one()
 
-    phantom_user = trade.offer.user_from
+    phantom_user = trade.user_from
     assert request_post['code'].lower() in phantom_user.email
     assert phantom_user.active == False
     assert phantom_user.phantom == True
-    assert trade.confirm_transfer
+    # assert trade.confirm_transfer
 
+    users = [ac.user for ac in trade.acceptances]
+    assert trade.user_to in users
+    assert trade.user_from in users
     assert user2.email in trade.devices[0].owner.email
-    assert trade.accepted_by_from and trade.accepted_by_to
     assert device.owner.email != user.email
     assert device.owner.email == user2.email
 
@@ -912,7 +912,7 @@ def test_offer_without_users(user: UserClient):
     db.session.add(lot)
     db.session.flush()
     request_post = {
-        'type': 'Offer',
+        'type': 'Trade',
         'devices': [device.id],
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
@@ -944,7 +944,7 @@ def test_offer(user: UserClient):
     db.session.add(lot)
     db.session.flush()
     request_post = {
-        'type': 'Offer',
+        'type': 'Trade',
         'devices': [],
         'userFrom': user.email,
         'userTo': user2.email,
@@ -970,7 +970,7 @@ def test_offer_without_devices(user: UserClient):
     db.session.commit()
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
     request_post = {
-        'type': 'Offer',
+        'type': 'Trade',
         'devices': [],
         'userFrom': user.email,
         'userTo': user2.email,
