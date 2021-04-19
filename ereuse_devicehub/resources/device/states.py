@@ -23,7 +23,6 @@ class Trading(State):
     """Trading states.
 
     :cvar Reserved: The device has been reserved.
-    :cvar Offer: The devices has been offered for to do a Trade.
     :cvar Trade: The devices has been changed of owner.
     :cvar Cancelled: The device has been cancelled.
     :cvar Sold: The device has been sold.
@@ -35,7 +34,6 @@ class Trading(State):
           from the facility. It does not mean end-of-life.
     """
     Reserved = e.Reserve
-    Offer = e.Offer
     Trade = e.Trade
     Cancelled = e.CancelTrade
     Sold = e.Sell

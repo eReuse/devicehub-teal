@@ -456,16 +456,14 @@ class CancelReservation(Organize):
     __doc__ = m.CancelReservation.__doc__
 
 
+class Confirm(ActionWithMultipleDevices):
+    __doc__ = m.Confirm.__doc__
+    trade = NestedOn('Trade', dump_only=True)
+    user = NestedOn('User', dump_only=True)
+
+
 class Trade(ActionWithMultipleDevices):
     __doc__ = m.Trade.__doc__
-    accepted_by_from = Boolean(missing=False, description=m.Trade.accepted_by_from.comment)
-    accepted_by_to = Boolean(missing=False, description=m.Trade.accepted_by_to.comment)
-    confirm_transfer = Boolean(missing=False, description=m.Trade.confirm_transfer.comment)
-    offer = NestedOn('Offer', dump_only=True)
-
-
-class Offer(ActionWithMultipleDevices):
-    __doc__ = m.Offer.__doc__
     document_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='documentID', required=False)
     date = DateTime(data_key='date', required=False)
     price = Float(required=False, data_key='price')
