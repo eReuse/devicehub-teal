@@ -35,6 +35,7 @@ def upgrade_data():
 
 
 def upgrade():
+    ## Trade
     currency = sa.Enum('AFN', 'ARS', 'AWG', 'AUD', 'AZN', 'BSD', 'BBD', 'BDT', 'BYR', 'BZD', 'BMD',
                        'BOB', 'BAM', 'BWP', 'BGN', 'BRL', 'BND', 'KHR', 'CAD', 'KYD', 'CLP', 'CNY',
                        'COP', 'CRC', 'HRK', 'CUP', 'CZK', 'DKK', 'DOP', 'XCD', 'EGP', 'SVC', 'EEK',
@@ -47,7 +48,7 @@ def upgrade():
                        'THB', 'TTD', 'TRY', 'TRL', 'TVD', 'UAH', 'GBP', 'USD', 'UYU', 'UZS', 'VEF', name='currency', create_type=False, checkfirst=True, schema=f'{get_inv()}')
 
     op.drop_table('trade', schema=f'{get_inv()}')
-    op.create_table('offer',
+    op.create_table('Trade',
                     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('price', sa.Float(decimal_return_scale=4), nullable=True),
                     sa.Column('lot_id', postgresql.UUID(as_uuid=True), nullable=True),
@@ -55,7 +56,6 @@ def upgrade():
                     sa.Column('user_from_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('user_to_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('document_id', citext.CIText(), nullable=True),
-                    # sa.Column("currency", currency, nullable=False),
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
                     sa.ForeignKeyConstraint(['user_from_id'], ['common.user.id'], ),
                     sa.ForeignKeyConstraint(['user_to_id'], ['common.user.id'], ),
@@ -64,20 +64,19 @@ def upgrade():
                     schema=f'{get_inv()}'
                     )
 
-    op.add_column("offer", sa.Column("currency", currency, nullable=False), schema=f'{get_inv()}')
+    op.add_column("trade", sa.Column("currency", currency, nullable=False), schema=f'{get_inv()}')
 
-    op.create_table('trade',
+    op.create_table('confirm',
                     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-                    sa.Column('accepted_by_from', sa.Boolean(), default=False),
-                    sa.Column('accepted_by_to', sa.Boolean(), default=False),
-                    sa.Column('confirm_transfer', sa.Boolean(), default=False),
-                    sa.Column('offer_id', postgresql.UUID(as_uuid=True), nullable=False),
+                    sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False),
 
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
-                    sa.ForeignKeyConstraint(['offer_id'], [f'{get_inv()}.offer.id'], ),
+                    sa.ForeignKeyConstraint(['user_id'], ['common.user.id'], ),
                     sa.PrimaryKeyConstraint('id'),
                     schema=f'{get_inv()}'
                     )
+
+    ## User
     op.add_column('user', sa.Column('active', sa.Boolean(), default=True, nullable=True),
                   schema='common')
     op.add_column('user', sa.Column('phantom', sa.Boolean(), default=False, nullable=True),
@@ -89,10 +88,8 @@ def upgrade():
     op.alter_column('user', 'phantom', nullable=False, schema='common')
 
 
-
 def downgrade():
     op.drop_table('trade', schema=f'{get_inv()}')
-    op.drop_table('offer', schema=f'{get_inv()}')
     op.create_table('trade',
                     sa.Column('shipping_date', sa.TIMESTAMP(timezone=True), nullable=True,
                               comment='When are the devices going to be ready \n    \
