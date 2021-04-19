@@ -1433,6 +1433,29 @@ class CancelReservation(Organize):
     """The act of cancelling a reservation."""
 
 
+class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
+    """Users confirm the offer and change it to trade"""
+    user_id = db.Column(UUID(as_uuid=True),
+                             db.ForeignKey(User.id),
+                             nullable=False)
+    user = db.relationship(User, primaryjoin=user_id == User.id)
+    user_comment = """The user that accept the offer."""
+    trade_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey('trade.id'),
+                         nullable=False)
+    trade = db.relationship('Trade',
+                            backref=backref('acceptances',
+                                            uselist=True, 
+                                            lazy=True),
+                            primaryjoin='Confirm.trade_id == Trade.id')
+
+    def __repr__(self) -> str:
+        origin = 'To'
+        if self.user == self.trade.user_from:
+            origin = 'From'
+        return '<{0.t} {0.id} accepted by {1}>'.format(self, origin)
+
+
 class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     """Trade actions log the political exchange of devices between users.
     Every time a trade action is performed, the old user looses its
@@ -1446,23 +1469,7 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     This class and its inheritors
     extend `Schema's Trade <http://schema.org/TradeAction>`_.
         """
-    accepted_by_from = Column(Boolean, default=False)
-    accepted_by_from_comment = """Who do the Offer"""
-    accepted_by_to = Column(Boolean, default=False)
-    accepted_by_to_comment = """Who recive the Offer"""
-    confirm_transfer = Column(Boolean, default=False)
-    confirm_transfer_comment = """Transfer of the phisical devices it is confirmed"""
-    offer_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey('offer.id'),
-                         nullable=True)
-    offer = db.relationship('Offer',
-                            backref=db.backref('trade', uselist=False, lazy=True),
-                            primaryjoin='Trade.offer_id == Offer.id')
-
-
-class Offer(JoinedTableMixin, ActionWithMultipleDevices):
-    """ActionTrade Offer one lot for to do one Trade.
-    """
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     user_from_id = db.Column(UUID(as_uuid=True),
                              db.ForeignKey(User.id),
                              nullable=False)
@@ -1486,14 +1493,21 @@ class Offer(JoinedTableMixin, ActionWithMultipleDevices):
     lot_id = db.Column(UUID(as_uuid=True),
                        db.ForeignKey('lot.id',
                                      use_alter=True,
-                                     name='lot_offer'),
+                                     name='lot_trade'),
                        nullable=True)
     lot = relationship('Lot',
-                       backref=backref('offer',
+                       backref=backref('trade',
                                        lazy=True,
                                        uselist=False,
                                        cascade=CASCADE_OWN),
-                       primaryjoin='Offer.lot_id == Lot.id')
+                       primaryjoin='Trade.lot_id == Lot.id')
+
+    def __repr__(self) -> str:
+        users_accepted = [x.user for x in self.acceptances]
+        if not self.user_from in users_accepted or not self.user_to in users_accepted:
+            self.t = 'Offer'
+            self.type = 'Offer'
+        return '<{0.t} {0.id} {0.severity} devices={0.devices!r}>'.format(self)
 
 
 class InitTransfer(Trade):
