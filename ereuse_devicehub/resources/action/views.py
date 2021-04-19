@@ -17,7 +17,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import (Action, RateComputer, Snapshot, VisualTest,
                                                       InitTransfer, Live, Allocate, Deallocate,
-                                                      Trade, Offer)
+                                                      Trade, Confirm)
 from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
@@ -254,7 +254,7 @@ class ActionView(View):
         a = resource_def.schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
-        if json['type'] == Offer.t:
+        if json['type'] == Trade.t:
             return self.offer(action)
         db.session.add(action)
         db.session().final_flush()
@@ -341,7 +341,8 @@ class ActionView(View):
         """Perform a InitTransfer action to change author_id of device"""
         pass
 
-    def offer(self, offer: Offer):
+    def offer(self, offer: Trade):
+        self.create_first_confirmation(offer)
         self.create_phantom_account(offer)
         db.session.add(offer)
         self.create_automatic_trade(offer)
@@ -352,7 +353,17 @@ class ActionView(View):
         db.session.commit()
         return ret
 
-    def create_phantom_account(self, offer):
+    def create_first_confirmation(self, offer: Trade) -> None:
+        """Do the first confirmation for the user than do the action"""
+
+        # check than the user than want to do the action is one of the users
+        # involved in the action
+        assert g.user.id in [offer.user_from_id, offer.user_to_id]
+
+        confirm = Confirm(user=g.user, trade=offer, devices=offer.devices)
+        db.session.add(confirm)
+
+    def create_phantom_account(self, offer) -> None:
         """
         If exist both users not to do nothing
         If exist from but not to:
@@ -363,9 +374,6 @@ class ActionView(View):
 
         """
         if offer.user_from_id and offer.user_to_id:
-            # check than the user than want to do the action is one of the users
-            # involved in the action
-            assert g.user.id in [offer.user_from_id, offer.user_to_id]
             return
 
         if offer.user_from_id and not offer.user_to_id:
@@ -393,7 +401,8 @@ class ActionView(View):
             db.session.add(user)
             offer.user_from = user
 
-    def create_automatic_trade(self, offer: Offer):
+    def create_automatic_trade(self, offer: Trade) -> None:
+        # not do nothing if it's neccesary confirmation explicity
         if offer.confirm:
             return
 
@@ -404,11 +413,9 @@ class ActionView(View):
                 for c in dev.components:
                     c.owner = offer.user_to
 
-        # Create a new Trade
-        trade = Trade(accepted_by_from=True,
-                      accepted_by_to=True,
-                      confirm_transfer=True,
-                      offer=offer,
-                      devices=offer.devices
-                      )
-        db.session.add(trade)
+        # Create a new Confirmation for the user who does not perform the action
+        user = offer.user_from
+        if g.user == offer.user_from:
+            user = offer.user_to
+        confirm = Confirm(user=user, trade=offer, devices=offer.devices)
+        db.session.add(confirm)
