@@ -34,44 +34,15 @@ def upgrade_data():
     con.execute(sql)
 
 
-    op.create_table('trade',
-    sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-    sa.Column('user_from_id', postgresql.UUID(as_uuid=True), nullable=False),
-    sa.Column('user_to_id', postgresql.UUID(as_uuid=True), nullable=False),
-    sa.Column('price', sa.Float(decimal_return_scale=2), nullable=True),
-    sa.Column('currency', sa.Enum('AFN', 'ARS', 'AWG', 'AUD', 'AZN', 'BSD', 'BBD', 'BDT', 'BYR', 'BZD', 'BMD', 'BOB', 'BAM', 'BWP', 'BGN', 'BRL', 'BND', 'KHR', 'CAD', 'KYD', 'CLP', 'CNY', 'COP', 'CRC', 'HRK', 'CUP', 'CZK', 'DKK', 'DOP', 'XCD', 'EGP', 'SVC', 'EEK', 'EUR', 'FKP', 'FJD', 'GHC', 'GIP', 'GTQ', 'GGP', 'GYD', 'HNL', 'HKD', 'HUF', 'ISK', 'INR', 'IDR', 'IRR', 'IMP', 'ILS', 'JMD', 'JPY', 'JEP', 'KZT', 'KPW', 'KRW', 'KGS', 'LAK', 'LVL', 'LBP', 'LRD', 'LTL', 'MKD', 'MYR', 'MUR', 'MXN', 'MNT', 'MZN', 'NAD', 'NPR', 'ANG', 'NZD', 'NIO', 'NGN', 'NOK', 'OMR', 'PKR', 'PAB', 'PYG', 'PEN', 'PHP', 'PLN', 'QAR', 'RON', 'RUB', 'SHP', 'SAR', 'RSD', 'SCR', 'SGD', 'SBD', 'SOS', 'ZAR', 'LKR', 'SEK', 'CHF', 'SRD', 'SYP', 'TWD', 'THB', 'TTD', 'TRY', 'TRL', 'TVD', 'UAH', 'GBP', 'USD', 'UYU', 'UZS', 'VEF', 'VND', 'YER', 'ZWD', name='currency'), nullable=False, comment='The currency of this price as for ISO 4217.'),
-    sa.Column('date', sa.TIMESTAMP(timezone=True), nullable=True),
-    sa.Column('document_id', citext.CIText(), nullable=True, comment='The id of one document like invoice so they can be linked.'),
-    sa.Column('confirm', sa.Boolean(), nullable=False, comment='If you need confirmation of the user, you need actevate this field'),
-    sa.Column('code', citext.CIText(), nullable=True, comment='If the user not exist, you need a code to be able to do the traceability'),
-    sa.Column('lot_id', postgresql.UUID(as_uuid=True), nullable=True),
-    sa.ForeignKeyConstraint(['lot_id'], ['lot.id'], name='lot_trade', use_alter=True),
-    sa.ForeignKeyConstraint(['user_from_id'], ['common.user.id'], ),
-    sa.ForeignKeyConstraint(['user_to_id'], ['common.user.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-
-
-
 def upgrade():
     ## Trade
-    currency = sa.Enum('AFN', 'ARS', 'AWG', 'AUD', 'AZN', 'BSD', 'BBD', 'BDT', 'BYR', 'BZD', 'BMD',
-                       'BOB', 'BAM', 'BWP', 'BGN', 'BRL', 'BND', 'KHR', 'CAD', 'KYD', 'CLP', 'CNY',
-                       'COP', 'CRC', 'HRK', 'CUP', 'CZK', 'DKK', 'DOP', 'XCD', 'EGP', 'SVC', 'EEK',
-                       'EUR', 'FKP', 'FJD', 'GHC', 'GIP', 'GTQ', 'GGP', 'GYD', 'HNL', 'HKD', 'HUF',
-                       'ISK', 'INR', 'IDR', 'IRR', 'IMP', 'ILS', 'JMD', 'JPY', 'JEP', 'KZT', 'KPW',
-                       'KRW', 'KGS', 'LAK', 'LVL', 'LBP', 'LRD', 'LTL', 'MKD', 'MYR', 'MUR', 'MXN',
-                       'MNT', 'MZN', 'NAD', 'NPR', 'ANG', 'NZD', 'NIO', 'NGN', 'NOK', 'OMR', 'PKR',
-                       'PAB', 'PYG', 'PEN', 'PHP', 'PLN', 'QAR', 'RON', 'RUB', 'SHP', 'SAR', 'RSD',
-                       'SCR', 'SGD', 'SBD', 'SOS', 'ZAR', 'LKR', 'SEK', 'CHF', 'SRD', 'SYP', 'TWD',
-                       'THB', 'TTD', 'TRY', 'TRL', 'TVD', 'UAH', 'GBP', 'USD', 'UYU', 'UZS', 'VEF', name='currency', create_type=False, checkfirst=True, schema=f'{get_inv()}')
-
     op.drop_table('trade', schema=f'{get_inv()}')
     op.create_table('trade',
                     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('price', sa.Float(decimal_return_scale=4), nullable=True),
                     sa.Column('lot_id', postgresql.UUID(as_uuid=True), nullable=True),
                     sa.Column('date', sa.TIMESTAMP(timezone=True), nullable=True),
+                    sa.Column('currency', postgresql.ENUM(name='dbtest.currency', create_type=False), nullable=False),
                     sa.Column('user_from_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('user_to_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('document_id', citext.CIText(), nullable=True),
@@ -83,7 +54,6 @@ def upgrade():
                     schema=f'{get_inv()}'
                     )
 
-    op.add_column("trade", sa.Column("currency", currency, nullable=False), schema=f'{get_inv()}')
 
     op.create_table('confirm',
                     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
