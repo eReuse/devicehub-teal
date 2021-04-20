@@ -15,6 +15,7 @@ from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 from ereuse_devicehub.resources.device.models import Device, Computer
 from ereuse_devicehub.resources.lot.models import Lot, Path
+from ereuse_devicehub.resources.action.models import TradeNote
 
 
 class LotFormat(Enum):
@@ -224,7 +225,32 @@ class LotDeviceView(LotBaseChildrenView):
         id = ma.fields.List(ma.fields.Integer())
 
     def _post(self, lot: Lot, ids: Set[int]):
+        if lot.trade:
+            lot_device_ids = [d.id for d in lot.devices]
+            new_device_ids = {d for d in ids if not d in lot_device_ids}
+            devices = set(Device.query.filter(Device.id.in_(new_device_ids)).all())
+            txt = 'Adding new device in lot of trade {}'.format(lot.trade.id)
+            note = TradeNote(description=txt,
+                             devices=devices,
+                             trade=lot.trade)
+            db.session.add(note)
+
         lot.devices.update(Device.query.filter(Device.id.in_(ids)))
 
+        if lot.trade:
+            lot.trade.devices = lot.devices
+
+
     def _delete(self, lot: Lot, ids: Set[int]):
+        if lot.trade:
+            devices = set(Device.query.filter(Device.id.in_(ids)).all())
+            txt = 'Removing device from lot of trade {}'.format(lot.trade.id)
+            note = TradeNote(description=txt,
+                             devices=devices,
+                             trade=lot.trade)
+            db.session.add(note)
+
         lot.devices.difference_update(Device.query.filter(Device.id.in_(ids)))
+
+        if lot.trade:
+            lot.trade.devices = lot.devices
