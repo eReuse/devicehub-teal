@@ -76,6 +76,17 @@ def upgrade():
                     schema=f'{get_inv()}'
                     )
 
+    op.create_table('tradenote',
+                    sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+                    sa.Column('trade_id', postgresql.UUID(as_uuid=True), nullable=False),
+
+                    sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
+                    sa.ForeignKeyConstraint(['trade_id'], [f'{get_inv()}.trade.id'], ),
+                    sa.PrimaryKeyConstraint('id'),
+                    schema=f'{get_inv()}'
+                    )
+
+
     ## User
     op.add_column('user', sa.Column('active', sa.Boolean(), default=True, nullable=True),
                   schema='common')
@@ -90,6 +101,8 @@ def upgrade():
 
 def downgrade():
     op.drop_table('trade', schema=f'{get_inv()}')
+    op.drop_table('confirm', schema=f'{get_inv()}')
+    op.drop_table('tradenote', schema=f'{get_inv()}')
     op.create_table('trade',
                     sa.Column('shipping_date', sa.TIMESTAMP(timezone=True), nullable=True,
                               comment='When are the devices going to be ready \n    \
