@@ -1010,12 +1010,25 @@ def test_automatic_note_to_trade(user: UserClient, user2: UserClient):
 
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device = Device.query.filter_by(id=snapshot['device']['id']).one()
+    # add one device
     lot, _ = user.post({},
                        res=Lot,
                        item='{}/devices'.format(lot['id']),
                        query=[('id', device.id)])
     assert len(trade.notes) == 1
-    assert trade.notes[0].device_id == device.id
+    assert trade.notes[0].devices[0] == device
+
+    # remove one device
+    lot, _ = user.delete({},
+                       res=Lot,
+                       item='{}/devices'.format(lot['id']),
+                       query=[('id', device.id)],
+                       status=200)
+
+    assert len(trade.notes) == 2
+    assert trade.notes[0].devices[0] == device
+    assert trade.notes[0].devices[0] == trade.notes[1].devices[0]
+    assert trade.devices == OrderedSet()
 
 
 @pytest.mark.mvp
