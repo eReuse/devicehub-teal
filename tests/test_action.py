@@ -1134,3 +1134,6 @@ def test_endpoint_tradenote(user: UserClient, user2: UserClient):
 
     tradeNote2, _ = user.post(res=models.Action, data=request_post2)
     assert tradeNote2['description'] == txt2
+
+    tradeNote3, _ = user.get(res=models.Action, item=tradeNote2['id'])
+    assert tradeNote3['id'] == tradeNote2['id']
