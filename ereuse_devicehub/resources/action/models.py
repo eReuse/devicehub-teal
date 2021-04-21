@@ -1436,8 +1436,8 @@ class CancelReservation(Organize):
 class TradeNote(JoinedTableMixin, ActionWithMultipleDevices):
     """Note add to one trade"""
     trade_id = db.Column(UUID(as_uuid=True),
-                             db.ForeignKey('trade.id'),
-                             nullable=False)
+                         db.ForeignKey('trade.id'),
+                         nullable=False)
     trade = db.relationship('Trade',
                             backref=backref('notes',
                                             uselist=True, 
