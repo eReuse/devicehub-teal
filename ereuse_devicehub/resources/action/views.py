@@ -70,20 +70,6 @@ def move_json(tmp_snapshots, path_name, user, live=False):
         os.remove(path_name)
 
 
-class TradeView(View):
-    model = Trade
-
-    def post(self):
-        res_json = request.get_json()
-        res_obj = self.model(**res_json)
-        db.session.add(res_obj)
-        db.session().final_flush()
-        ret = self.schema.jsonify(res_obj)
-        ret.status_code = 201
-        db.session.commit()
-        return ret
-
-
 class AllocateMix():
     model = None
 
