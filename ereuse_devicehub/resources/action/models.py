@@ -1447,25 +1447,31 @@ class TradeNote(JoinedTableMixin, ActionWithMultipleDevices):
 
 class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
     """Users confirm the offer and change it to trade"""
+    revoke = Column(Boolean, default=False, nullable=False)
+    revoke.comment = """Used for revoke and other confirm"""
     user_id = db.Column(UUID(as_uuid=True),
-                             db.ForeignKey(User.id),
-                             nullable=False)
+                        db.ForeignKey(User.id),
+                        nullable=False,
+                        default=lambda: g.user.id)
     user = db.relationship(User, primaryjoin=user_id == User.id)
     user_comment = """The user that accept the offer."""
-    trade_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey('trade.id'),
+    action_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey('action.id'),
                          nullable=False)
-    trade = db.relationship('Trade',
+    action = db.relationship('Action',
                             backref=backref('acceptances',
                                             uselist=True, 
                                             lazy=True),
-                            primaryjoin='Confirm.trade_id == Trade.id')
+                            primaryjoin='Confirm.action_id == Action.id')
 
     def __repr__(self) -> str:
-        origin = 'To'
-        if self.user == self.trade.user_from:
-            origin = 'From'
-        return '<{0.t} {0.id} accepted by {1}>'.format(self, origin)
+        if self.action.t in ['Offer', 'Trade']:
+            origin = 'To'
+            if self.user == self.action.user_from:
+                origin = 'From'
+            return '<{0.t} {0.id} accepted by {1}>'.format(self, origin)
+        if self.action == 'Confirm':
+            return '<{0.t} {0.id} Revoke Confirm {0.action.id}>'.format(self)
 
 
 class Trade(JoinedTableMixin, ActionWithMultipleDevices):
