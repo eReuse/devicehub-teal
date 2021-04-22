@@ -8,6 +8,7 @@ from distutils.version import StrictVersion
 from uuid import UUID
 
 from flask import current_app as app, request, g
+from flask.wrappers import Response
 from sqlalchemy.util import OrderedSet
 from teal.marshmallow import ValidationError
 from teal.resource import View
@@ -15,6 +16,8 @@ from teal.db import ResourceNotFound
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
+from ereuse_devicehub.resources.action.schemas import Action as s_Action
+from ereuse_devicehub.resources.action.schemas import Trade as s_Trade
 from ereuse_devicehub.resources.action.models import (Action, RateComputer, Snapshot, VisualTest,
                                                       InitTransfer, Live, Allocate, Deallocate,
                                                       Trade, Confirm)
@@ -251,11 +254,12 @@ class ActionView(View):
             # TODO JN add compute rate with new visual test and old components device
         if json['type'] == InitTransfer.t:
             return self.transfer_ownership()
+        if json['type'] == Trade.t:
+            offer = OfferView(json)
+            return offer.post()
         a = resource_def.schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
-        if json['type'] == Trade.t:
-            return self.offer(action)
         db.session.add(action)
         db.session().final_flush()
         ret = self.schema.jsonify(action)
@@ -340,30 +344,37 @@ class ActionView(View):
     def transfer_ownership(self):
         """Perform a InitTransfer action to change author_id of device"""
         pass
+    
 
-    def offer(self, offer: Trade):
-        self.create_first_confirmation(offer)
-        self.create_phantom_account(offer)
-        db.session.add(offer)
-        self.create_automatic_trade(offer)
+class OfferView():
+    """Handler for manager the offer/trade action register from post"""
 
+    def __init__(self, data):
+        a = s_Trade().load(data)
+        self.offer = Trade(**a)
+        self.create_first_confirmation()
+        self.create_phantom_account()
+        db.session.add(self.offer)
+        self.create_automatic_trade()
+
+    def post(self):
         db.session().final_flush()
-        ret = self.schema.jsonify(offer)
+        ret = s_Action().jsonify(self.offer)
         ret.status_code = 201
         db.session.commit()
         return ret
 
-    def create_first_confirmation(self, offer: Trade) -> None:
+    def create_first_confirmation(self) -> None:
         """Do the first confirmation for the user than do the action"""
 
         # check than the user than want to do the action is one of the users
         # involved in the action
-        assert g.user.id in [offer.user_from_id, offer.user_to_id]
+        assert g.user.id in [self.offer.user_from_id, self.offer.user_to_id]
 
-        confirm = Confirm(user=g.user, trade=offer, devices=offer.devices)
+        confirm = Confirm(user=g.user, trade=self.offer, devices=self.offer.devices)
         db.session.add(confirm)
 
-    def create_phantom_account(self, offer) -> None:
+    def create_phantom_account(self) -> None:
         """
         If exist both users not to do nothing
         If exist from but not to:
@@ -373,49 +384,49 @@ class ActionView(View):
         The same if exist to but not from
 
         """
-        if offer.user_from_id and offer.user_to_id:
+        if self.offer.user_from_id and self.offer.user_to_id:
             return
 
-        if offer.user_from_id and not offer.user_to_id:
-            assert g.user.id == offer.user_from_id
-            email = "{}_{}@dhub.com".format(str(offer.user_from_id), offer.code)
+        if self.offer.user_from_id and not self.offer.user_to_id:
+            assert g.user.id == self.offer.user_from_id
+            email = "{}_{}@dhub.com".format(str(self.offer.user_from_id), self.offer.code)
             users = User.query.filter_by(email=email)
             if users.first():
                 user = users.first()
-                offer.user_to = user
+                self.offer.user_to = user
                 return
 
             user = User(email=email, password='', active=False, phantom=True)
             db.session.add(user)
-            offer.user_to = user
+            self.offer.user_to = user
 
-        if not offer.user_from_id and offer.user_to_id:
-            email = "{}_{}@dhub.com".format(str(offer.user_to_id), offer.code)
+        if not self.offer.user_from_id and self.offer.user_to_id:
+            email = "{}_{}@dhub.com".format(str(self.offer.user_to_id), self.offer.code)
             users = User.query.filter_by(email=email)
             if users.first():
                 user = users.first()
-                offer.user_from = user
+                self.offer.user_from = user
                 return
 
             user = User(email=email, password='', active=False, phantom=True)
             db.session.add(user)
-            offer.user_from = user
+            self.offer.user_from = user
 
-    def create_automatic_trade(self, offer: Trade) -> None:
+    def create_automatic_trade(self) -> None:
         # not do nothing if it's neccesary confirmation explicity
-        if offer.confirm:
+        if self.offer.confirm:
             return
 
         # Change the owner for every devices
-        for dev in offer.devices:
-            dev.owner = offer.user_to
+        for dev in self.offer.devices:
+            dev.owner = self.offer.user_to
             if hasattr(dev, 'components'):
                 for c in dev.components:
-                    c.owner = offer.user_to
+                    c.owner = self.offer.user_to
 
         # Create a new Confirmation for the user who does not perform the action
-        user = offer.user_from
-        if g.user == offer.user_from:
-            user = offer.user_to
-        confirm = Confirm(user=user, trade=offer, devices=offer.devices)
+        user = self.offer.user_from
+        if g.user == self.offer.user_from:
+            user = self.offer.user_to
+        confirm = Confirm(user=user, trade=self.offer, devices=self.offer.devices)
         db.session.add(confirm)
