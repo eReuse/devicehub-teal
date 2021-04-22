@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from dateutil.tz import tzutc
-from flask import current_app as app
+from flask import current_app as app, g
 from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema
 from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, Nested, String, \
     TimeDelta, UUID
@@ -455,6 +455,7 @@ class Reserve(Organize):
 class CancelReservation(Organize):
     __doc__ = m.CancelReservation.__doc__
 
+
 class TradeNote(ActionWithMultipleDevices):
     __doc__ = m.TradeNote.__doc__
     trade = NestedOn('Trade', only_query='id')
@@ -462,8 +463,15 @@ class TradeNote(ActionWithMultipleDevices):
 
 class Confirm(ActionWithMultipleDevices):
     __doc__ = m.Confirm.__doc__
-    trade = NestedOn('Trade', dump_only=True)
-    user = NestedOn('User', dump_only=True)
+    revoke = Boolean(required=False, description="""If you want revoke an other confirmation""")
+    action = NestedOn('Action', only_query='id')
+
+    @validates_schema
+    def validate_revoke(self, data: dict):
+        if data['action'].t == 'Confirm' and data['action'].author != g.user:
+            txt = "you aren't the user of this action"
+            raise ValidationError(txt)
+                
 
 
 class Trade(ActionWithMultipleDevices):
