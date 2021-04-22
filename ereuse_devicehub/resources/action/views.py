@@ -237,6 +237,7 @@ class ActionView(View):
             # TODO JN add compute rate with new visual test and old components device
         if json['type'] == InitTransfer.t:
             return self.transfer_ownership()
+        # import pdb; pdb.set_trace()
         a = resource_def.schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
@@ -346,7 +347,7 @@ class ActionView(View):
         # involved in the action
         assert g.user.id in [offer.user_from_id, offer.user_to_id]
 
-        confirm = Confirm(user=g.user, trade=offer, devices=offer.devices)
+        confirm = Confirm(user=g.user, action=offer, devices=offer.devices)
         db.session.add(confirm)
 
     def create_phantom_account(self, offer) -> None:
@@ -403,5 +404,5 @@ class ActionView(View):
         user = offer.user_from
         if g.user == offer.user_from:
             user = offer.user_to
-        confirm = Confirm(user=user, trade=offer, devices=offer.devices)
+        confirm = Confirm(user=user, action=offer, devices=offer.devices)
         db.session.add(confirm)
