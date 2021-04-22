@@ -1137,3 +1137,72 @@ def test_endpoint_tradenote(user: UserClient, user2: UserClient):
 
     tradeNote3, _ = user.get(res=models.Action, item=tradeNote2['id'])
     assert tradeNote3['id'] == tradeNote2['id']
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_endpoint_confirm(user: UserClient, user2: UserClient):
+    """Check the normal creation and visualization of one confirmation trade"""
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    request_post = {
+        'type': 'Trade',
+        'devices': [],
+        'userFrom': user.email,
+        'userTo': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot['id'],
+        'confirm': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    trade = models.Trade.query.one()
+
+    request_confirm = {
+        'type': 'Confirm',
+        'action': trade.id,
+        'devices': []
+    }
+
+    user2.post(res=models.Action, data=request_confirm)
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_confirm_revoke(user: UserClient, user2: UserClient):
+    """Check the normal revoke one confirmation"""
+    # import pdb; pdb.set_trace()
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    request_post = {
+        'type': 'Trade',
+        'devices': [],
+        'userFrom': user.email,
+        'userTo': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot['id'],
+        'confirm': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    trade = models.Trade.query.one()
+
+    request_confirm = {
+        'type': 'Confirm',
+        'action': trade.id,
+        'devices': []
+    }
+
+    confirm, _ = user2.post(res=models.Action, data=request_confirm)
+
+    request_revoke = {
+        'type': 'Confirm',
+        'action': confirm['id'],
+        'devices': [],
+        'revoke': True,
+    }
+
+    # import pdb; pdb.set_trace()
+    confirm2, _ = user2.post(res=models.Action, data=request_revoke)
+    confirm2, _ = user.post(res=models.Action, data=request_revoke, status=422)
