@@ -16,6 +16,7 @@ ml).
 - [addend] #122 system for verify all documents that it's produced from devicehub
 - [addend] #127 add one code for every named tag
 - [addend] #131 add one code for every device
+- [bugfix] #138 search device with devicehubId
 
 ## [1.0.4-beta]
 - [addend] #95 adding endpoint for check the hash of one report
