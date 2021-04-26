@@ -248,6 +248,8 @@ def test_device_query_search(user: UserClient):
     assert i['items'][0]['id'] == 1
     i, _ = user.get(res=Device, query=[('search', 'intel')])
     assert len(i['items']) == 1
+    i, _ = user.get(res=Device, query=[('search', i['items'][0]['devicehubID'])])
+    assert len(i['items']) == 1
     i, _ = user.get(res=Device, query=[('search', '1')])
     assert len(i['items']) == 1
 

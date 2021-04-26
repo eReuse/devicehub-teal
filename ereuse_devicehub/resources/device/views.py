@@ -54,6 +54,7 @@ class LotQ(query.Query):
 
 class Filters(query.Query):
     id = query.Or(query.Equal(Device.id, fields.Integer()))
+    devicehub_id = query.Or(query.ILike(Device.devicehub_id))
     type = query.Or(OfType(Device.type))
     model = query.ILike(Device.model)
     manufacturer = query.ILike(Device.manufacturer)
@@ -154,10 +155,15 @@ class DeviceView(View):
         if search_p:
             properties = DeviceSearch.properties
             tags = DeviceSearch.tags
+            devicehub_ids = DeviceSearch.devicehub_ids
             query = query.join(DeviceSearch).filter(
-                search.Search.match(properties, search_p) | search.Search.match(tags, search_p)
+                search.Search.match(properties, search_p) |
+                search.Search.match(tags, search_p) |
+                search.Search.match(devicehub_ids, search_p)
             ).order_by(
-                search.Search.rank(properties, search_p) + search.Search.rank(tags, search_p)
+                search.Search.rank(properties, search_p) +
+                search.Search.rank(tags, search_p) +
+                search.Search.rank(devicehub_ids, search_p)
             )
         return query.filter(*args['filter']).order_by(*args['sort'])
 
