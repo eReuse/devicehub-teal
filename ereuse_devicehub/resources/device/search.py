@@ -26,12 +26,14 @@ class DeviceSearch(db.Model):
 
     properties = db.Column(TSVECTOR, nullable=False)
     tags = db.Column(TSVECTOR)
+    devicehub_ids = db.Column(TSVECTOR)
 
     __table_args__ = (
         # todo to add concurrency this should be commited separately
         #   see https://docs.sqlalchemy.org/en/latest/dialects/postgresql.html#indexes-with-concurrently
         db.Index('properties gist', properties, postgresql_using='gist'),
         db.Index('tags gist', tags, postgresql_using='gist'),
+        db.Index('devicehub_ids gist', devicehub_ids, postgresql_using='gist'),
         {
             'prefixes': ['UNLOGGED']
             # Only for temporal tables, can cause table to empty on turn on
@@ -140,10 +142,16 @@ class DeviceSearch(db.Model):
             )
         ).filter(Tag.device_id == device.id).join(Tag.org)
 
+        devicehub_ids = session.query(
+            search.Search.vectorize(
+                (db.func.string_agg(Device.devicehub_id, ' '), search.Weight.A),
+            )
+        ).filter(Device.devicehub_id == device.devicehub_id)
+
         # Note that commit flushes later
         # todo see how to get rid of the one_or_none() by embedding those as subqueries
         # I don't like this but I want the 'on_conflict_on_update' thingie
-        device_document = dict(properties=properties.one_or_none(), tags=tags.one_or_none())
+        device_document = dict(properties=properties.one_or_none(), tags=tags.one_or_none(), devicehub_ids=devicehub_ids.one_or_none())
         insert = postgresql.insert(DeviceSearch.__table__) \
             .values(device_id=device.id, **device_document) \
             .on_conflict_do_update(constraint='device_search_pkey', set_=device_document)
