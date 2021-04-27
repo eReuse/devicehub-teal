@@ -6,10 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## master
-  [1.0.4-beta]
+  [1.0.5-beta]
 
 ## testing
-  [1.0.5-beta]
+  [1.0.6-beta]
+
+## [1.0.6-beta]
 
 ## [1.0.5-beta]
 - [addend] #124 adding endpoint for extract the internal stats of use
