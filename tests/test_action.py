@@ -1166,12 +1166,13 @@ def test_endpoint_confirm(user: UserClient, user2: UserClient):
     }
 
     user2.post(res=models.Action, data=request_confirm)
+    user2.post(res=models.Action, data=request_confirm, status=422)
+    assert len(trade.acceptances) == 2
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_confirm_revoke(user: UserClient, user2: UserClient):
     """Check the normal revoke one confirmation"""
-    # import pdb; pdb.set_trace()
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
     request_post = {
         'type': 'Trade',
@@ -1194,15 +1195,17 @@ def test_confirm_revoke(user: UserClient, user2: UserClient):
         'devices': []
     }
 
-    confirm, _ = user2.post(res=models.Action, data=request_confirm)
+    user2.post(res=models.Action, data=request_confirm)
 
     request_revoke = {
         'type': 'Confirm',
-        'action': confirm['id'],
+        'action': trade.id,
         'devices': [],
         'revoke': True,
     }
 
-    # import pdb; pdb.set_trace()
-    confirm2, _ = user2.post(res=models.Action, data=request_revoke)
-    confirm2, _ = user.post(res=models.Action, data=request_revoke, status=422)
+    user2.post(res=models.Action, data=request_revoke)
+    user2.post(res=models.Action, data=request_revoke, status=422)
+    assert len(trade.acceptances) == 3
+    user2.post(res=models.Action, data=request_confirm)
+    assert len(trade.acceptances) == 4
