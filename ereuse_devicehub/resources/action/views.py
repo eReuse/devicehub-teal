@@ -404,5 +404,6 @@ class ActionView(View):
         user = offer.user_from
         if g.user == offer.user_from:
             user = offer.user_to
+
         confirm = Confirm(user=user, action=offer, devices=offer.devices)
         db.session.add(confirm)
