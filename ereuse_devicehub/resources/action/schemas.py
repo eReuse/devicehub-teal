@@ -1,3 +1,4 @@
+import copy
 from datetime import datetime, timedelta
 from dateutil.tz import tzutc
 from flask import current_app as app, g
@@ -466,12 +467,36 @@ class Confirm(ActionWithMultipleDevices):
     revoke = Boolean(required=False, description="""If you want revoke an other confirmation""")
     action = NestedOn('Action', only_query='id')
 
+
+    @validates_schema
+    def validate_confirm(self, data: dict):
+        if data.get('revoke'):
+            return data
+
+        acceptances = copy.copy(data['action'].acceptances)
+        acceptances.reverse()
+        for ac in acceptances:
+            if ac.user == g.user and ac.revoke:
+                return data
+
+            if ac.user == g.user:
+                txt = "you are confirmed this action before"
+                raise ValidationError(txt)
+
     @validates_schema
     def validate_revoke(self, data: dict):
-        if data['action'].t == 'Confirm' and data['action'].author != g.user:
-            txt = "you aren't the user of this action"
-            raise ValidationError(txt)
-                
+        if not data.get('revoke'):
+            return data
+
+        acceptances = copy.copy(data['action'].acceptances)
+        acceptances.reverse()
+        for ac in acceptances:
+            if ac.user == g.user and not ac.revoke:
+                return data
+
+            if ac.user == g.user and ac.revoke:
+                txt = "you are revoke this action before"
+                raise ValidationError(txt)
 
 
 class Trade(ActionWithMultipleDevices):
