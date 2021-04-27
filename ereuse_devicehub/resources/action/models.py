@@ -1440,7 +1440,7 @@ class TradeNote(JoinedTableMixin, ActionWithMultipleDevices):
                          nullable=False)
     trade = db.relationship('Trade',
                             backref=backref('notes',
-                                            uselist=True, 
+                                            uselist=True,
                                             lazy=True),
                             primaryjoin='TradeNote.trade_id == Trade.id')
 
@@ -1460,8 +1460,10 @@ class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
                          nullable=False)
     action = db.relationship('Action',
                             backref=backref('acceptances',
-                                            uselist=True, 
-                                            lazy=True),
+                                            uselist=True,
+                                            lazy=True,
+                                            order_by=lambda: Action.end_time,
+                                            collection_class=list),
                             primaryjoin='Confirm.action_id == Action.id')
 
     def __repr__(self) -> str:
@@ -1469,9 +1471,10 @@ class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
             origin = 'To'
             if self.user == self.action.user_from:
                 origin = 'From'
+            if self.revoke:
+                self.t = 'Revoke'
+                self.type = 'Revoke'
             return '<{0.t} {0.id} accepted by {1}>'.format(self, origin)
-        if self.action == 'Confirm':
-            return '<{0.t} {0.id} Revoke Confirm {0.action.id}>'.format(self)
 
 
 class Trade(JoinedTableMixin, ActionWithMultipleDevices):
