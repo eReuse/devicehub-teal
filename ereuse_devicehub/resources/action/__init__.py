@@ -4,7 +4,7 @@ from teal.resource import Converters, Resource
 
 from ereuse_devicehub.resources.action import schemas
 from ereuse_devicehub.resources.action.views import (ActionView, AllocateView, DeallocateView,
-                                                     LiveView)
+                                                     LiveView, TradeView)
 from ereuse_devicehub.resources.device.sync import Sync
 
 
@@ -258,6 +258,11 @@ class TradeDef(ActionDef):
 class CancelTradeDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.CancelTrade
+
+
+class TradeDef(ActionDef):
+    VIEW = TradeView
+    SCHEMA = schemas.Trade
 
 
 class ToDisposeProductDef(ActionDef):

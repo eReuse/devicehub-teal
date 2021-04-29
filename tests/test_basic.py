@@ -54,6 +54,7 @@ def test_api_docs(client: Client):
         '/metrics/',
         '/tags/',
         '/tags/{tag_id}/device/{device_id}',
+        '/trades/',
         '/users/',
         '/users/login/'
         # '/devices/{dev1_id}/merge/{dev2_id}',

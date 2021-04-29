@@ -21,6 +21,7 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BiosAccessRange, F
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user import schemas as s_user
+from ereuse_devicehub.resources.user.models import User
 
 
 class Action(Thing):
@@ -455,13 +456,87 @@ class CancelReservation(Organize):
     __doc__ = m.CancelReservation.__doc__
 
 
+class Confirm(ActionWithMultipleDevices):
+    __doc__ = m.Confirm.__doc__
+    trade = NestedOn('Trade', dump_only=True)
+    user = NestedOn('User', dump_only=True)
+
+
 class Trade(ActionWithMultipleDevices):
     __doc__ = m.Trade.__doc__
-    shipping_date = DateTime(data_key='shippingDate')
-    invoice_number = SanitizedStr(validate=Length(max=STR_SIZE), data_key='invoiceNumber')
-    price = NestedOn(Price)
-    to = NestedOn(s_agent.Agent, only_query='id', required=True, comment=m.Trade.to_comment)
-    confirms = NestedOn(Organize)
+    document_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='documentID', required=False)
+    date = DateTime(data_key='date', required=False)
+    price = Float(required=False, data_key='price')
+    user_to_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', missing='',
+                              required=False)
+    user_from_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userFrom', missing='',
+                                required=False)
+    code = SanitizedStr(validate=Length(max=STR_SIZE), data_key='code', required=False)
+    confirm = Boolean(missing=False, description="""If you need confirmation of the user
+            you need actevate this field""")
+    lot = NestedOn('Lot',
+                   many=False,
+                   required=True,
+                   only_query='id')
+
+    @validates_schema
+    def validate_lot(self, data: dict):
+        data['devices'] = data['lot'].devices
+
+    @validates_schema
+    def validate_user_to_id(self, data: dict):
+        """
+        - if user_to exist
+            * confirmation
+            * without confirmation
+        - if user_to don't exist
+            * without confirmation
+
+        """
+        if data['user_to_id']:
+            user_to = User.query.filter_by(email=data['user_to_id']).one()
+            data['user_to_id'] = user_to.id
+            data['user_to'] = user_to
+        else:
+            data['confirm'] = False
+
+    @validates_schema
+    def validate_user_from_id(self, data: dict):
+        """
+        - if user_from exist
+            * confirmation
+            * without confirmation
+        - if user_from don't exist
+            * without confirmation
+
+        """
+        if not (data['user_from_id'] or data['user_to_id']):
+            txt = "you need one user from or user to for to do a offer"
+            raise ValidationError(txt)
+
+        if data['user_from_id']:
+            user_from = User.query.filter_by(email=data['user_from_id']).one()
+
+            # are you property of this devices?
+            txt = "Some of this devices don't are of this from user"
+            for x in data['devices']:
+                if not x.owner == user_from:
+                    raise ValidationError(txt)
+
+            data['user_from_id'] = user_from.id
+            data['user_from'] = user_from
+        else:
+            data['confirm'] = False
+
+    @validates_schema
+    def validate_code(self, data: dict):
+        """If the user not exist, you need a code to be able to do the traceability"""
+        if data['user_from_id'] and data['user_to_id']:
+            return
+
+        if not data.get('code'):
+            txt = "you need a code to be able to do the traceability"
+            raise ValidationError(txt)
 
 
 class InitTransfer(Trade):

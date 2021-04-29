@@ -225,6 +225,10 @@ class LotDeviceView(LotBaseChildrenView):
 
     def _post(self, lot: Lot, ids: Set[int]):
         lot.devices.update(Device.query.filter(Device.id.in_(ids)))
+        if lot.trade:
+            lot.trade.devices = lot.devices
 
     def _delete(self, lot: Lot, ids: Set[int]):
         lot.devices.difference_update(Device.query.filter(Device.id.in_(ids)))
+        if lot.trade:
+            lot.trade.devices = lot.devices
