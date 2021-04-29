@@ -988,50 +988,6 @@ def test_offer_without_devices(user: UserClient):
 
 
 @pytest.mark.mvp
-@pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_automatic_note_to_trade(user: UserClient, user2: UserClient):
-    """Check than there are one note when one device is insert in one trade lot"""
-    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    request_post = {
-        'type': 'Trade',
-        'devices': [],
-        'userFrom': user.email,
-        'userTo': user2.email,
-        'price': 10,
-        'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
-        'lot': lot['id'],
-        'confirm': True,
-    }
-
-    user.post(res=models.Action, data=request_post)
-    trade = models.Trade.query.one()
-    assert trade.notes == []
-
-    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    device = Device.query.filter_by(id=snapshot['device']['id']).one()
-    # add one device
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=[('id', device.id)])
-    assert len(trade.notes) == 1
-    assert trade.notes[0].devices[0] == device
-
-    # remove one device
-    lot, _ = user.delete({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=[('id', device.id)],
-                       status=200)
-
-    assert len(trade.notes) == 2
-    assert trade.notes[0].devices[0] == device
-    assert trade.notes[0].devices[0] == trade.notes[1].devices[0]
-    assert trade.devices == OrderedSet()
-
-
-@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_price_custom():
     computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1',
