@@ -6,15 +6,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## master
-  [1.0.4-beta]
+  [1.0.5-beta]
 
 ## testing
-  [1.0.5-beta]
+  [1.0.6-beta]
+
+## [1.0.6-beta]
 
 ## [1.0.5-beta]
 - [addend] #124 adding endpoint for extract the internal stats of use
 - [addend] #122 system for verify all documents that it's produced from devicehub
+- [addend] #127 add one code for every named tag
 - [addend] #131 add one code for every device
+- [bugfix] #138 search device with devicehubId
 
 ## [1.0.4-beta]
 - [addend] #95 adding endpoint for check the hash of one report
