@@ -988,50 +988,6 @@ def test_offer_without_devices(user: UserClient):
 
 
 @pytest.mark.mvp
-@pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_automatic_tradenote(user: UserClient, user2: UserClient):
-    """Check than there are one note when one device is insert in one trade lot"""
-    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    request_post = {
-        'type': 'Trade',
-        'devices': [],
-        'userFrom': user.email,
-        'userTo': user2.email,
-        'price': 10,
-        'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
-        'lot': lot['id'],
-        'confirm': True,
-    }
-
-    user.post(res=models.Action, data=request_post)
-    trade = models.Trade.query.one()
-    assert trade.notes == []
-
-    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    device = Device.query.filter_by(id=snapshot['device']['id']).one()
-    # add one device
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=[('id', device.id)])
-    assert len(trade.notes) == 1
-    assert trade.notes[0].devices[0] == device
-
-    # remove one device
-    lot, _ = user.delete({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=[('id', device.id)],
-                       status=200)
-
-    assert len(trade.notes) == 2
-    assert trade.notes[0].devices[0] == device
-    assert trade.notes[0].devices[0] == trade.notes[1].devices[0]
-    assert trade.devices == OrderedSet()
-
-
-@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_price_custom():
     computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1',
@@ -1080,63 +1036,6 @@ def test_erase_physical():
     )
     db.session.add(erasure)
     db.session.commit()
-
-
-@pytest.mark.mvp
-@pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_endpoint_tradenote(user: UserClient, user2: UserClient):
-    """Check the normal creation and visualization of one trade note"""
-    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    request_post = {
-        'type': 'Trade',
-        'devices': [],
-        'userFrom': user.email,
-        'userTo': user2.email,
-        'price': 10,
-        'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
-        'lot': lot['id'],
-        'confirm': True,
-    }
-
-    user.post(res=models.Action, data=request_post)
-    trade = models.Trade.query.one()
-
-    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    device = Device.query.filter_by(id=snapshot['device']['id']).one()
-    # add one device
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=[('id', device.id)])
-
-    txt = 'Text of Note'
-    request_post = {
-        'type': 'TradeNote',
-        'description': txt,
-        'devices': [device.id],
-        'trade': trade.id,
-    }
-
-    tradeNote, _ = user.post(res=models.Action, data=request_post)
-
-    assert tradeNote['devices'][0]['id'] == device.id
-    assert tradeNote['description'] == txt
-    assert tradeNote['author']['email'] == user.email
-
-    txt2 = 'Text of Note2'
-    request_post2 = {
-        'type': 'TradeNote',
-        'description': txt2,
-        'devices': [device.id],
-        'trade': trade.id,
-    }
-
-    tradeNote2, _ = user.post(res=models.Action, data=request_post2)
-    assert tradeNote2['description'] == txt2
-
-    tradeNote3, _ = user.get(res=models.Action, item=tradeNote2['id'])
-    assert tradeNote3['id'] == tradeNote2['id']
 
 
 @pytest.mark.mvp

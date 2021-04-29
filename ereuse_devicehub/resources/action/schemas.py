@@ -457,11 +457,6 @@ class CancelReservation(Organize):
     __doc__ = m.CancelReservation.__doc__
 
 
-class TradeNote(ActionWithMultipleDevices):
-    __doc__ = m.TradeNote.__doc__
-    trade = NestedOn('Trade', only_query='id')
-
-
 class Confirm(ActionWithMultipleDevices):
     __doc__ = m.Confirm.__doc__
     revoke = Boolean(required=False, description="""If you want revoke an other confirmation""")

@@ -264,11 +264,6 @@ class CancelTradeDef(ActionDef):
     SCHEMA = schemas.CancelTrade
 
 
-class TradeNoteDef(ActionDef):
-    VIEW = None
-    SCHEMA = schemas.TradeNote
-
-
 class ToDisposeProductDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.ToDisposeProduct
