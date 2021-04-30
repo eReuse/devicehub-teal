@@ -1097,10 +1097,9 @@ def test_confirm_revoke(user: UserClient, user2: UserClient):
     user2.post(res=models.Action, data=request_confirm)
 
     request_revoke = {
-        'type': 'Confirm',
+        'type': 'ConfirmRevoke',
         'action': trade.id,
         'devices': [],
-        'revoke': True,
     }
 
     user2.post(res=models.Action, data=request_revoke)

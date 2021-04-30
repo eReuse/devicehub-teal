@@ -1435,8 +1435,6 @@ class CancelReservation(Organize):
 
 class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
     """Users confirm the offer and change it to trade"""
-    revoke = Column(Boolean, default=False, nullable=False)
-    revoke.comment = """Used for revoke and other confirm"""
     user_id = db.Column(UUID(as_uuid=True),
                         db.ForeignKey(User.id),
                         nullable=False,
@@ -1455,14 +1453,14 @@ class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
                             primaryjoin='Confirm.action_id == Action.id')
 
     def __repr__(self) -> str:
-        if self.action.t in ['Offer', 'Trade']:
+        if self.action.t in ['Trade']:
             origin = 'To'
             if self.user == self.action.user_from:
                 origin = 'From'
-            if self.revoke:
-                self.t = 'Revoke'
-                self.type = 'Revoke'
             return '<{0.t} {0.id} accepted by {1}>'.format(self, origin)
+
+class ConfirmRevoke(Confirm):
+    pass
 
 
 class Trade(JoinedTableMixin, ActionWithMultipleDevices):
@@ -1510,13 +1508,6 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
                                        uselist=False,
                                        cascade=CASCADE_OWN),
                        primaryjoin='Trade.lot_id == Lot.id')
-
-    def __repr__(self) -> str:
-        users_accepted = [x.user for x in self.acceptances]
-        if not self.user_from in users_accepted or not self.user_to in users_accepted:
-            self.t = 'Offer'
-            self.type = 'Offer'
-        return '<{0.t} {0.id} {0.severity} devices={0.devices!r}>'.format(self)
 
 
 class InitTransfer(Trade):

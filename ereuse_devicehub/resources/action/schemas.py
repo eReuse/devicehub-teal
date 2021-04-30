@@ -459,37 +459,34 @@ class CancelReservation(Organize):
 
 class Confirm(ActionWithMultipleDevices):
     __doc__ = m.Confirm.__doc__
-    revoke = Boolean(required=False, description="""If you want revoke an other confirmation""")
     action = NestedOn('Action', only_query='id')
-
 
     @validates_schema
     def validate_confirm(self, data: dict):
-        if data.get('revoke'):
-            return data
-
         acceptances = copy.copy(data['action'].acceptances)
         acceptances.reverse()
         for ac in acceptances:
-            if ac.user == g.user and ac.revoke:
+            if ac.user == g.user and ac.t == 'ConfirmRevoke':
                 return data
 
             if ac.user == g.user:
                 txt = "you are confirmed this action before"
                 raise ValidationError(txt)
 
+
+class ConfirmRevoke(ActionWithMultipleDevices):
+    __doc__ = m.ConfirmRevoke.__doc__
+    action = NestedOn('Action', only_query='id')
+
     @validates_schema
     def validate_revoke(self, data: dict):
-        if not data.get('revoke'):
-            return data
-
         acceptances = copy.copy(data['action'].acceptances)
         acceptances.reverse()
         for ac in acceptances:
-            if ac.user == g.user and not ac.revoke:
+            if ac.user == g.user and not ac.t == 'ConfirmRevoke':
                 return data
 
-            if ac.user == g.user and ac.revoke:
+            if ac.user == g.user and ac.t == 'ConfirmRevoke':
                 txt = "you are revoke this action before"
                 raise ValidationError(txt)
 
