@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 from dateutil.tz import tzutc
 from decimal import Decimal
 from typing import Tuple, Type
+from pytest import raises
+from json.decoder import JSONDecodeError
 
 from flask import current_app as app, g
 from sqlalchemy.util import OrderedSet
@@ -18,6 +20,9 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.client import UserClient, Client
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources import enums
+from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.agent.models import Person
+from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.action import models
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
@@ -607,7 +612,7 @@ def test_save_live_json(app: Devicehub, user: UserClient, client: Client):
     shutil.rmtree(tmp_snapshots)
 
     assert snapshot['debug'] == debug
-    
+
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -628,10 +633,10 @@ def test_allocate(user: UserClient):
     devicehub_id = snapshot['device']['devicehubID']
     post_request = {"transaction": "ccc", 
                     "finalUserCode": "aabbcc",
-                    "name": "John", 
+                    "name": "John",
                     "severity": "Info",
                     "endUsers": 1,
-                    "devices": [device_id], 
+                    "devices": [device_id],
                     "description": "aaa",
                     "startTime": "2020-11-01T02:00:00+00:00",
                     "endTime": "2020-12-01T02:00:00+00:00",
@@ -671,12 +676,12 @@ def test_allocate_bad_dates(user: UserClient):
     device_id = snapshot['device']['id']
     delay = timedelta(days=30)
     future = datetime.now().replace(tzinfo=tzutc()) + delay
-    post_request = {"transaction": "ccc", 
+    post_request = {"transaction": "ccc",
                     "finalUserCode": "aabbcc",
-                    "name": "John", 
+                    "name": "John",
                     "severity": "Info",
                     "end_users": 1,
-                    "devices": [device_id], 
+                    "devices": [device_id],
                     "description": "aaa",
                     "start_time": future,
     }
@@ -740,34 +745,246 @@ def test_deallocate_bad_dates(user: UserClient):
 
 
 @pytest.mark.mvp
-@pytest.mark.parametrize('action_model_state',
-                         (pytest.param(ams, id=ams[0].__name__)
-                          for ams in [
-                              (models.MakeAvailable, states.Trading.Available),
-                              (models.Sell, states.Trading.Sold),
-                              (models.Donate, states.Trading.Donated),
-                              (models.Rent, states.Trading.Renting),
-                              (models.DisposeProduct, states.Trading.ProductDisposed)
-                          ]))
-def test_trade(action_model_state: Tuple[Type[models.Action], states.Trading], user: UserClient):
-    """Tests POSTing all Trade actions."""
-    # todo missing None states.Trading for after cancelling renting, for example
-    # Remove this test
-    action_model, state = action_model_state
+@pytest.mark.xfail(reason='Old functionality')
+def test_trade_endpoint(user: UserClient, user2: UserClient):
+    """Tests POST one simple Trade between 2 users of the system."""
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    action = {
-        'type': action_model.t,
+    device, _ = user.get(res=Device, item=snapshot['device']['id'])
+    assert device['id'] == snapshot['device']['id']
+    request_post = {
+        'userTo': user2.user['email'],
+        'price': 1.0,
+        'date': "2020-12-01T02:00:00+00:00",
         'devices': [snapshot['device']['id']]
     }
-    if issubclass(action_model, models.Trade):
-        action['to'] = user.user['individuals'][0]['id']
-        action['shippingDate'] = '2018-06-29T12:28:54'
-        action['invoiceNumber'] = 'ABC'
-    action, _ = user.post(action, res=models.Action)
-    assert action['devices'][0]['id'] == snapshot['device']['id']
-    device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
-    assert device['actions'][-1]['id'] == action['id']
-    assert device['trading'] == state.name
+    action, _ = user.post(res=models.Trade, data=request_post)
+
+    with raises(JSONDecodeError):
+        device1, _ = user.get(res=Device, item=device['id'])
+
+    device2, _ = user2.get(res=Device, item=device['id'])
+    assert device2['id'] == device['id']
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_offer_without_to(user: UserClient):
+    """Test one offer without confirmation and without user to"""
+    user2 = User(email='baz@baz.cxm', password='baz')
+    user2.individuals.add(Person(name='Tommy'))
+    db.session.add(user2)
+    db.session.commit()
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    lot = Lot('MyLot')
+    lot.owner_id = user.user['id']
+    device = Device.query.filter_by(id=snapshot['device']['id']).one()
+
+    # check the owner of the device
+    assert device.owner.email == user.email
+    for c in device.components:
+        assert c.owner.email == user.email
+
+    lot.devices.add(device)
+    db.session.add(lot)
+    db.session.flush()
+    request_post = {
+        'type': 'Trade',
+        'devices': [],
+        'userFrom': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot.id,
+        'confirm': False,
+        'code': 'MAX'
+    }
+    user.post(res=models.Action, data=request_post)
+
+    trade = models.Trade.query.one()
+    assert device in trade.devices
+    # assert trade.confirm_transfer
+    users = [ac.user for ac in trade.acceptances]
+    assert trade.user_to == device.owner
+    assert request_post['code'].lower() in device.owner.email
+    assert device.owner.active == False
+    assert device.owner.phantom == True
+    assert trade.user_to in users
+    assert trade.user_from in users
+    assert device.owner.email != user.email
+    for c in device.components:
+        assert c.owner.email != user.email
+
+    # check if the user_from is owner of the devices
+    request_post = {
+        'type': 'Trade',
+        'devices': [],
+        'userFrom': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot.id,
+        'confirm': False,
+        'code': 'MAX'
+    }
+    user.post(res=models.Action, data=request_post, status=422)
+    trade = models.Trade.query.one()
+
+    # Check if the new phantom account is reused and not duplicated
+    computer = file('1-device-with-components.snapshot')
+    snapshot2, _ = user.post(computer, res=models.Snapshot)
+    device2 = Device.query.filter_by(id=snapshot2['device']['id']).one()
+    lot2 = Lot('MyLot2')
+    lot2.owner_id = user.user['id']
+    lot2.devices.add(device2)
+    db.session.add(lot2)
+    db.session.flush()
+    request_post2 = {
+        'type': 'Trade',
+        'devices': [],
+        'userFrom': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot2.id,
+        'confirm': False,
+        'code': 'MAX'
+    }
+    user.post(res=models.Action, data=request_post2)
+    assert User.query.filter_by(email=device.owner.email).count() == 1
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_offer_without_from(user: UserClient, user2: UserClient):
+    """Test one offer without confirmation and without user from"""
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    lot = Lot('MyLot')
+    lot.owner_id = user.user['id']
+    device = Device.query.filter_by(id=snapshot['device']['id']).one()
+
+    # check the owner of the device
+    assert device.owner.email == user.email
+    assert device.owner.email != user2.email
+
+    lot.devices.add(device)
+    db.session.add(lot)
+    db.session.flush()
+    request_post = {
+        'type': 'Trade',
+        'devices': [],
+        'userTo': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot.id,
+        'confirm': False,
+        'code': 'MAX'
+    }
+    action, _ = user2.post(res=models.Action, data=request_post)
+    trade = models.Trade.query.one()
+
+    phantom_user = trade.user_from
+    assert request_post['code'].lower() in phantom_user.email
+    assert phantom_user.active == False
+    assert phantom_user.phantom == True
+    # assert trade.confirm_transfer
+
+    users = [ac.user for ac in trade.acceptances]
+    assert trade.user_to in users
+    assert trade.user_from in users
+    assert user2.email in trade.devices[0].owner.email
+    assert device.owner.email != user.email
+    assert device.owner.email == user2.email
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_offer_without_users(user: UserClient):
+    """Test one offer with doble confirmation"""
+    user2 = User(email='baz@baz.cxm', password='baz')
+    user2.individuals.add(Person(name='Tommy'))
+    db.session.add(user2)
+    db.session.commit()
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    lot = Lot('MyLot')
+    lot.owner_id = user.user['id']
+    device = Device.query.filter_by(id=snapshot['device']['id']).one()
+    lot.devices.add(device)
+    db.session.add(lot)
+    db.session.flush()
+    request_post = {
+        'type': 'Trade',
+        'devices': [device.id],
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot.id,
+        'confirm': False,
+        'code': 'MAX'
+    }
+    action, response = user.post(res=models.Action, data=request_post, status=422)
+    txt = 'you need one user from or user to for to do a offer'
+    assert txt in action['message']['_schema']
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_offer(user: UserClient):
+    """Test one offer with doble confirmation"""
+    user2 = User(email='baz@baz.cxm', password='baz')
+    user2.individuals.add(Person(name='Tommy'))
+    db.session.add(user2)
+    db.session.commit()
+    snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    lot = Lot('MyLot')
+    lot.owner_id = user.user['id']
+    device = Device.query.filter_by(id=snapshot['device']['id']).one()
+    assert device.owner.email == user.email
+    assert device.owner.email != user2.email
+    lot.devices.add(device)
+    db.session.add(lot)
+    db.session.flush()
+    request_post = {
+        'type': 'Trade',
+        'devices': [],
+        'userFrom': user.email,
+        'userTo': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot.id,
+        'confirm': True,
+    }
+
+    action, _ = user.post(res=models.Action, data=request_post)
+    # no there are transfer of devices
+    assert device.owner.email == user.email
+    assert device.owner.email != user2.email
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_offer_without_devices(user: UserClient):
+    """Test one offer with doble confirmation"""
+    user2 = User(email='baz@baz.cxm', password='baz')
+    user2.individuals.add(Person(name='Tommy'))
+    db.session.add(user2)
+    db.session.commit()
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    request_post = {
+        'type': 'Trade',
+        'devices': [],
+        'userFrom': user.email,
+        'userTo': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot['id'],
+        'confirm': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    # no there are transfer of devices
 
 
 @pytest.mark.mvp
@@ -819,3 +1036,74 @@ def test_erase_physical():
     )
     db.session.add(erasure)
     db.session.commit()
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_endpoint_confirm(user: UserClient, user2: UserClient):
+    """Check the normal creation and visualization of one confirmation trade"""
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    request_post = {
+        'type': 'Trade',
+        'devices': [],
+        'userFrom': user.email,
+        'userTo': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot['id'],
+        'confirm': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    trade = models.Trade.query.one()
+
+    request_confirm = {
+        'type': 'Confirm',
+        'action': trade.id,
+        'devices': []
+    }
+
+    user2.post(res=models.Action, data=request_confirm)
+    user2.post(res=models.Action, data=request_confirm, status=422)
+    assert len(trade.acceptances) == 2
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_confirm_revoke(user: UserClient, user2: UserClient):
+    """Check the normal revoke one confirmation"""
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    request_post = {
+        'type': 'Trade',
+        'devices': [],
+        'userFrom': user.email,
+        'userTo': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'documentID': '1',
+        'lot': lot['id'],
+        'confirm': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    trade = models.Trade.query.one()
+
+    request_confirm = {
+        'type': 'Confirm',
+        'action': trade.id,
+        'devices': []
+    }
+
+    user2.post(res=models.Action, data=request_confirm)
+
+    request_revoke = {
+        'type': 'ConfirmRevoke',
+        'action': trade.id,
+        'devices': [],
+    }
+
+    user2.post(res=models.Action, data=request_revoke)
+    user2.post(res=models.Action, data=request_revoke, status=422)
+    assert len(trade.acceptances) == 3
+    user2.post(res=models.Action, data=request_confirm)
+    assert len(trade.acceptances) == 4

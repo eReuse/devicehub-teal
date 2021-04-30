@@ -8,6 +8,7 @@ from distutils.version import StrictVersion
 from uuid import UUID
 
 from flask import current_app as app, request, g
+from flask.wrappers import Response
 from sqlalchemy.util import OrderedSet
 from teal.marshmallow import ValidationError
 from teal.resource import View
@@ -16,11 +17,13 @@ from teal.db import ResourceNotFound
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import (Action, RateComputer, Snapshot, VisualTest,
-                                                      InitTransfer, Live, Allocate, Deallocate)
+                                                      InitTransfer, Live, Allocate, Deallocate,
+                                                      Trade, Confirm)
 from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
+from ereuse_devicehub.resources.user.models import User
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
@@ -223,18 +226,20 @@ class ActionView(View):
         #   defs
         resource_def = app.resources[json['type']]
         if json['type'] == Snapshot.t:
-            tmp_snapshots = app.config['TMP_SNAPSHOTS']
-            path_snapshot = save_json(json, tmp_snapshots, g.user.email)
-            json.pop('debug', None)
-            a = resource_def.schema.load(json)
-            response = self.snapshot(a, resource_def)
-            move_json(tmp_snapshots, path_snapshot, g.user.email)
-            return response
+            snapshot = SnapshotView(json, resource_def, self.schema)
+            return snapshot.post()
+
         if json['type'] == VisualTest.t:
             pass
             # TODO JN add compute rate with new visual test and old components device
+
         if json['type'] == InitTransfer.t:
             return self.transfer_ownership()
+
+        if json['type'] == Trade.t:
+            offer = OfferView(json, resource_def, self.schema)
+            return offer.post()
+
         a = resource_def.schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
@@ -250,22 +255,42 @@ class ActionView(View):
         action = Action.query.filter_by(id=id).one()
         return self.schema.jsonify(action)
 
-    def snapshot(self, snapshot_json: dict, resource_def):
-        """Performs a Snapshot.
+    def transfer_ownership(self):
+        """Perform a InitTransfer action to change author_id of device"""
+        pass
+    
 
-        See `Snapshot` section in docs for more info.
-        """
-        # Note that if we set the device / components into the snapshot
-        # model object, when we flush them to the db we will flush
-        # snapshot, and we want to wait to flush snapshot at the end
+class SnapshotView():
+    """Performs a Snapshot.
 
-        device = snapshot_json.pop('device')  # type: Computer
+    See `Snapshot` section in docs for more info.
+    """
+    # Note that if we set the device / components into the snapshot
+    # model object, when we flush them to the db we will flush
+    # snapshot, and we want to wait to flush snapshot at the end
+
+    def __init__(self, snapshot_json: dict, resource_def, schema):
+        self.schema = schema
+        self.snapshot_json = snapshot_json
+        self.resource_def = resource_def
+        self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
+        self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
+        snapshot_json.pop('debug', None)
+        self.snapshot_json = resource_def.schema.load(snapshot_json)
+        self.response = self.build()
+        move_json(self.tmp_snapshots, self.path_snapshot, g.user.email)
+
+    def post(self):
+        return self.response
+
+    def build(self):
+        device = self.snapshot_json.pop('device')  # type: Computer
         components = None
-        if snapshot_json['software'] == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid):
-            components = snapshot_json.pop('components', None)  # type: List[Component]
+        if self.snapshot_json['software'] == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid):
+            components = self.snapshot_json.pop('components', None)  # type: List[Component]
             if isinstance(device, Computer) and device.hid:
                 device.add_mac_to_hid(components_snap=components)
-        snapshot = Snapshot(**snapshot_json)
+        snapshot = Snapshot(**self.snapshot_json)
 
         # Remove new actions from devices so they don't interfere with sync
         actions_device = set(e for e in device.actions_one)
@@ -277,7 +302,7 @@ class ActionView(View):
 
         assert not device.actions_one
         assert all(not c.actions_one for c in components) if components else True
-        db_device, remove_actions = resource_def.sync.run(device, components)
+        db_device, remove_actions = self.resource_def.sync.run(device, components)
 
         del device  # Do not use device anymore
         snapshot.device = db_device
@@ -319,6 +344,89 @@ class ActionView(View):
         db.session.commit()
         return ret
 
-    def transfer_ownership(self):
-        """Perform a InitTransfer action to change author_id of device"""
-        pass
+
+class OfferView():
+    """Handler for manager the offer/trade action register from post"""
+
+    def __init__(self, data, resource_def, schema):
+        self.schema = schema
+        a = resource_def.schema.load(data)
+        self.offer = Trade(**a)
+        self.create_first_confirmation()
+        self.create_phantom_account()
+        db.session.add(self.offer)
+        self.create_automatic_trade()
+
+    def post(self):
+        db.session().final_flush()
+        ret = self.schema.jsonify(self.offer)
+        ret.status_code = 201
+        db.session.commit()
+        return ret
+
+    def create_first_confirmation(self) -> None:
+        """Do the first confirmation for the user than do the action"""
+
+        # check than the user than want to do the action is one of the users
+        # involved in the action
+        assert g.user.id in [self.offer.user_from_id, self.offer.user_to_id]
+
+        confirm = Confirm(user=g.user, action=self.offer, devices=self.offer.devices)
+        db.session.add(confirm)
+
+    def create_phantom_account(self) -> None:
+        """
+        If exist both users not to do nothing
+        If exist from but not to:
+            search if exist in the DB
+                if exist use it
+                else create new one
+        The same if exist to but not from
+
+        """
+        if self.offer.user_from_id and self.offer.user_to_id:
+            return
+
+        if self.offer.user_from_id and not self.offer.user_to_id:
+            assert g.user.id == self.offer.user_from_id
+            email = "{}_{}@dhub.com".format(str(self.offer.user_from_id), self.offer.code)
+            users = User.query.filter_by(email=email)
+            if users.first():
+                user = users.first()
+                self.offer.user_to = user
+                return
+
+            user = User(email=email, password='', active=False, phantom=True)
+            db.session.add(user)
+            self.offer.user_to = user
+
+        if not self.offer.user_from_id and self.offer.user_to_id:
+            email = "{}_{}@dhub.com".format(str(self.offer.user_to_id), self.offer.code)
+            users = User.query.filter_by(email=email)
+            if users.first():
+                user = users.first()
+                self.offer.user_from = user
+                return
+
+            user = User(email=email, password='', active=False, phantom=True)
+            db.session.add(user)
+            self.offer.user_from = user
+
+    def create_automatic_trade(self) -> None:
+        # not do nothing if it's neccesary confirmation explicity
+        if self.offer.confirm:
+            return
+
+        # Change the owner for every devices
+        for dev in self.offer.devices:
+            dev.owner = self.offer.user_to
+            if hasattr(dev, 'components'):
+                for c in dev.components:
+                    c.owner = self.offer.user_to
+
+        # Create a new Confirmation for the user who does not perform the action
+        user = self.offer.user_from
+        if g.user == self.offer.user_from:
+            user = self.offer.user_to
+        confirm = Confirm(user=user, action=self.offer, devices=self.offer.devices)
+        db.session.add(confirm)
