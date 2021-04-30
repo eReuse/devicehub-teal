@@ -1068,6 +1068,7 @@ def test_endpoint_confirm(user: UserClient, user2: UserClient):
     user2.post(res=models.Action, data=request_confirm, status=422)
     assert len(trade.acceptances) == 2
 
+
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_confirm_revoke(user: UserClient, user2: UserClient):
@@ -1094,16 +1095,23 @@ def test_confirm_revoke(user: UserClient, user2: UserClient):
         'devices': []
     }
 
-    user2.post(res=models.Action, data=request_confirm)
-
     request_revoke = {
-        'type': 'ConfirmRevoke',
+        'type': 'Revoke',
         'action': trade.id,
         'devices': [],
     }
 
+
+    # Normal confirmation
+    user2.post(res=models.Action, data=request_confirm)
+
+    # Normal revoke
     user2.post(res=models.Action, data=request_revoke)
+
+    # Error for try duplicate revoke
     user2.post(res=models.Action, data=request_revoke, status=422)
     assert len(trade.acceptances) == 3
+
+    # You can to do one confirmation next of one revoke
     user2.post(res=models.Action, data=request_confirm)
     assert len(trade.acceptances) == 4

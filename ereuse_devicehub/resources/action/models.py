@@ -1459,6 +1459,11 @@ class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
                 origin = 'From'
             return '<{0.t} {0.id} accepted by {1}>'.format(self, origin)
 
+
+class Revoke(Confirm):
+    pass
+
+
 class ConfirmRevoke(Confirm):
     pass
 

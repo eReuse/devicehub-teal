@@ -249,6 +249,7 @@ class MakeAvailable(ActionDef):
     VIEW = None
     SCHEMA = schemas.MakeAvailable
 
+
 class ConfirmDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Confirm
@@ -257,6 +258,11 @@ class ConfirmDef(ActionDef):
 class ConfirmRevokeDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.ConfirmRevoke
+
+
+class RevokeDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Revoke
 
 
 class TradeDef(ActionDef):

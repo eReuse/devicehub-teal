@@ -474,6 +474,27 @@ class Confirm(ActionWithMultipleDevices):
                 raise ValidationError(txt)
 
 
+class Revoke(ActionWithMultipleDevices):
+    __doc__ = m.Revoke.__doc__
+    action = NestedOn('Action', only_query='id')
+
+    @validates_schema
+    def validate_revoke(self, data: dict):
+        acceptances = copy.copy(data['action'].acceptances)
+        acceptances.reverse()
+        # import pdb; pdb.set_trace()
+        for ac in acceptances:
+            if ac.user == g.user and not ac.t == 'ConfirmRevoke':
+                return data
+
+            if ac.user == g.user and ac.t == 'ConfirmRevoke':
+                txt = "you are revoke this action before"
+                raise ValidationError(txt)
+
+        txt = "you can't revoke this action because you did not confirm ir before" 
+        raise ValidationError(txt)
+
+
 class ConfirmRevoke(ActionWithMultipleDevices):
     __doc__ = m.ConfirmRevoke.__doc__
     action = NestedOn('Action', only_query='id')
