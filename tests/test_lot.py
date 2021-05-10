@@ -413,10 +413,8 @@ def test_lot_error_add_device_from_other_user(user: UserClient):
                        res=Lot,
                        item='{}/devices'.format(parent['id']),
                        query=[('id', device_id)])
-    assert lot['devices'][0]['id'] == device_id, 'Lot contains device'
-    assert len(lot['devices']) == 1
-    with raises(JSONDecodeError):
-        device, _ = user.get(res=Device, item=device.devicehub_id)
+    assert lot['devices'] == [], 'Lot contains device'
+    assert len(lot['devices']) == 0
 
 
 @pytest.mark.mvp
