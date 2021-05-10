@@ -1434,7 +1434,9 @@ class CancelReservation(Organize):
 
 
 class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
-    """Users confirm the offer and change it to trade"""
+    """Users confirm the one action trade this confirmation it's link to trade
+       and the devices that confirm
+    """
     user_id = db.Column(UUID(as_uuid=True),
                         db.ForeignKey(User.id),
                         nullable=False,
@@ -1461,11 +1463,14 @@ class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
 
 
 class Revoke(Confirm):
-    pass
+    """Users can revoke one confirmation of one action trade"""
 
 
 class ConfirmRevoke(Confirm):
-    pass
+    """Users can confirm and accept one action revoke"""
+
+    def __repr__(self) -> str:
+        return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
 
 
 class Trade(JoinedTableMixin, ActionWithMultipleDevices):
@@ -1513,6 +1518,9 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
                                        uselist=False,
                                        cascade=CASCADE_OWN),
                        primaryjoin='Trade.lot_id == Lot.id')
+
+    def __repr__(self) -> str:
+        return '<{0.t} {0.id} executed by {0.author}>'.format(self)
 
 
 class InitTransfer(Trade):
