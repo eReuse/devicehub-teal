@@ -14,6 +14,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 from ereuse_devicehub.resources.device.models import Device, Computer
+from ereuse_devicehub.resources.action.models import Confirm, Revoke
 from ereuse_devicehub.resources.lot.models import Lot, Path
 
 
@@ -224,11 +225,48 @@ class LotDeviceView(LotBaseChildrenView):
         id = ma.fields.List(ma.fields.Integer())
 
     def _post(self, lot: Lot, ids: Set[int]):
-        lot.devices.update(Device.query.filter(Device.id.in_(ids)))
+        # get only new devices
+        ids -= {x.id for x in lot.devices}
+        if not ids:
+            return
+
+        users = [g.user.id]
+        if lot.trade:
+            # all users involved in the trade action can modify the lot
+            trade_users = [lot.trade.user_from.id, lot.trade.user_to.id]
+            if g.user in trade_users:
+                users = trade_users
+
+        devices = set(Device.query.filter(Device.id.in_(ids)).filter(
+            Device.owner_id.in_(users)))
+
+        lot.devices.update(devices)
+
         if lot.trade:
             lot.trade.devices = lot.devices
+            if g.user in [lot.trade.user_from, lot.trade.user_to]:
+                confirm = Confirm(action=lot.trade, user=g.user, devices=devices)
+                db.session.add(confirm)
 
     def _delete(self, lot: Lot, ids: Set[int]):
-        lot.devices.difference_update(Device.query.filter(Device.id.in_(ids)))
+        # if there are some devices in ids than not exist now in the lot, then exit
+        if not ids.issubset({x.id for x in lot.devices}):
+            return
+
+        users = [g.user.id]
+        if lot.trade:
+            # all users involved in the trade action can modify the lot
+            trade_users = [lot.trade.user_from.id, lot.trade.user_to.id]
+            if g.user in trade_users:
+                users = trade_users
+
+        devices = set(Device.query.filter(Device.id.in_(ids)).filter(
+            Device.owner_id.in_(users)))
+
+        lot.devices.difference_update(devices)
+
         if lot.trade:
             lot.trade.devices = lot.devices
+            if g.user in [lot.trade.user_from, lot.trade.user_to]:
+                revoke = Revoke(action=lot.trade, user=g.user, devices=devices)
+                db.session.add(revoke)
