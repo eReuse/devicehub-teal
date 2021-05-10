@@ -462,15 +462,11 @@ class Confirm(ActionWithMultipleDevices):
     action = NestedOn('Action', only_query='id')
 
     @validates_schema
-    def validate_confirm(self, data: dict):
-        acceptances = copy.copy(data['action'].acceptances)
-        acceptances.reverse()
-        for ac in acceptances:
-            if ac.user == g.user and ac.t == 'ConfirmRevoke':
-                return data
-
-            if ac.user == g.user:
-                txt = "you are confirmed this action before"
+    def validate_revoke(self, data: dict):
+        for dev in data['devices']:
+            # if device not exist in the Trade, then this query is wrong
+            if not dev in data['action'].devices:
+                txt = "Device {} not exist in the trade".format(dev.devicehub_id)
                 raise ValidationError(txt)
 
 
@@ -480,19 +476,11 @@ class Revoke(ActionWithMultipleDevices):
 
     @validates_schema
     def validate_revoke(self, data: dict):
-        acceptances = copy.copy(data['action'].acceptances)
-        acceptances.reverse()
-        # import pdb; pdb.set_trace()
-        for ac in acceptances:
-            if ac.user == g.user and not ac.t == 'ConfirmRevoke':
-                return data
-
-            if ac.user == g.user and ac.t == 'ConfirmRevoke':
-                txt = "you are revoke this action before"
+        for dev in data['devices']:
+            # if device not exist in the Trade, then this query is wrong
+            if not dev in data['action'].devices:
+                txt = "Device {} not exist in the trade".format(dev.devicehub_id)
                 raise ValidationError(txt)
-
-        txt = "you can't revoke this action because you did not confirm ir before" 
-        raise ValidationError(txt)
 
 
 class ConfirmRevoke(ActionWithMultipleDevices):
@@ -501,14 +489,11 @@ class ConfirmRevoke(ActionWithMultipleDevices):
 
     @validates_schema
     def validate_revoke(self, data: dict):
-        acceptances = copy.copy(data['action'].acceptances)
-        acceptances.reverse()
-        for ac in acceptances:
-            if ac.user == g.user and not ac.t == 'ConfirmRevoke':
-                return data
-
-            if ac.user == g.user and ac.t == 'ConfirmRevoke':
-                txt = "you are revoke this action before"
+        # import pdb; pdb.set_trace()
+        for dev in data['devices']:
+            # if device not exist in the Trade, then this query is wrong
+            if not dev in data['action'].devices:
+                txt = "Device {} not exist in the revoke action".format(dev.devicehub_id)
                 raise ValidationError(txt)
 
 
@@ -531,6 +516,19 @@ class Trade(ActionWithMultipleDevices):
 
     @validates_schema
     def validate_lot(self, data: dict):
+        if not g.user.email in [data['user_from_id'], data['user_to_id']]:
+            txt = "you need to be one of the users of involved in the Trade"
+            raise ValidationError(txt)
+
+        for dev in data['lot'].devices:
+            if not dev.owner == g.user:
+                txt = "you need to be the owner of the devices for to do a trade"
+                raise ValidationError(txt)
+
+        if not data['lot'].owner == g.user:
+            txt = "you need to be the owner of the lot for to do a trade"
+            raise ValidationError(txt)
+
         data['devices'] = data['lot'].devices
 
     @validates_schema
@@ -566,13 +564,6 @@ class Trade(ActionWithMultipleDevices):
 
         if data['user_from_id']:
             user_from = User.query.filter_by(email=data['user_from_id']).one()
-
-            # are you property of this devices?
-            txt = "Some of this devices don't are of this from user"
-            for x in data['devices']:
-                if not x.owner == user_from:
-                    raise ValidationError(txt)
-
             data['user_from_id'] = user_from.id
             data['user_from'] = user_from
         else:
