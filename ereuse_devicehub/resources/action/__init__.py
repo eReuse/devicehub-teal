@@ -3,7 +3,7 @@ from typing import Callable, Iterable, Tuple
 from teal.resource import Converters, Resource
 
 from ereuse_devicehub.resources.action import schemas
-from ereuse_devicehub.resources.action.views import (ActionView, AllocateView, DeallocateView,
+from ereuse_devicehub.resources.action.views.views import (ActionView, AllocateView, DeallocateView,
                                                      LiveView)
 from ereuse_devicehub.resources.device.sync import Sync
 
