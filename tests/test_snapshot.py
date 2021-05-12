@@ -838,3 +838,12 @@ def test_snapshot_mobil(app: Devicehub, user: UserClient):
 
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
     shutil.rmtree(tmp_snapshots)
+
+
+@pytest.mark.mvp
+def test_bug_141(user: UserClient):
+    """This test check one bug that create a problem when try to up one snapshot
+       with a big number in the parameter command_timeout of the DataStorage
+
+    """
+    user.post(file('2021-5-4-13-41_time_out_test_datastorage'), res=Snapshot)
