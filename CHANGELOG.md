@@ -11,6 +11,9 @@ ml).
 ## testing
   [1.0.7-beta]
 
+## [1.0.7-beta]
+- [addend] #140 adding endpoint for download the settings for usb workbench
+
 ## [1.0.6-beta]
 - [bugfix] #143 biginteger instead of integer in TestDataStorage
 
