@@ -742,7 +742,7 @@ class TestDataStorage(TestMixin, Test):
     reallocated_sector_count = Column(SmallInteger)
     power_cycle_count = Column(SmallInteger)
     _reported_uncorrectable_errors = Column('reported_uncorrectable_errors', Integer)
-    command_timeout = Column(Integer)
+    command_timeout = Column(BigInteger)
     current_pending_sector_count = Column(Integer)
     offline_uncorrectable = Column(Integer)
     remaining_lifetime_percentage = Column(SmallInteger)
