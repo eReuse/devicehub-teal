@@ -68,3 +68,6 @@ class DevicehubConfig(Config):
 
     """Admin email"""
     EMAIL_ADMIN = config('EMAIL_ADMIN', '')
+
+    """Definition of path where save the documents of customers"""
+    PATH_DOCUMENTS_STORAGE = config('PATH_DOCUMENTS_STORAGE', '/tmp/')
