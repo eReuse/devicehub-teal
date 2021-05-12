@@ -48,6 +48,7 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, Bio
     TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.tradedocument.models import Document
 
 
 class JoinedTableMixin:
@@ -292,6 +293,20 @@ class ActionWithMultipleDevices(Action):
 class ActionDevice(db.Model):
     device_id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleDevices.id),
+                       primary_key=True)
+
+
+class ActionWithMultipleDocuments(Action):
+    documents = relationship(Document,
+                           backref=backref('actions_multiple', lazy=True, **_sorted_actions),
+                           secondary=lambda: ActionDocument.__table__,
+                           order_by=lambda: Document.id,
+                           collection_class=OrderedSet)
+
+
+class ActionDocument(db.Model):
+    document_id = Column(BigInteger, ForeignKey(Document.id), primary_key=True)
+    action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleDocuments.id),
                        primary_key=True)
 
 
@@ -1473,7 +1488,7 @@ class ConfirmRevoke(Confirm):
         return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
 
 
-class Trade(JoinedTableMixin, ActionWithMultipleDevices):
+class Trade(JoinedTableMixin, ActionWithMultipleDevices, ActionWithMultipleDocuments):
     """Trade actions log the political exchange of devices between users.
     Every time a trade action is performed, the old user looses its
     political possession, for example ownership, in favor of another
@@ -1501,8 +1516,6 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     currency = Column(DBEnum(Currency), nullable=False, default=Currency.EUR.name)
     currency.comment = """The currency of this price as for ISO 4217."""
     date = Column(db.TIMESTAMP(timezone=True))
-    document_id = Column(CIText())
-    document_id.comment = """The id of one document like invoice so they can be linked."""
     confirm = Column(Boolean, default=False, nullable=False)
     confirm.comment = """If you need confirmation of the user, you need actevate this field"""
     code = Column(CIText(), nullable=True)
