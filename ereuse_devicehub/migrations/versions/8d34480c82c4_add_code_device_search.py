@@ -10,7 +10,7 @@ from alembic import context
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
-from ereuse_devicehub.resources.device.search import DeviceSearch
+# from ereuse_devicehub.resources.device.search import DeviceSearch
 
 
 # revision identifiers, used by Alembic.
