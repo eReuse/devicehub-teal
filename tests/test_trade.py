@@ -56,7 +56,6 @@ def test_offer_without_to(user: UserClient):
         'userFrom': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirm': False,
         'code': 'MAX'
@@ -84,7 +83,6 @@ def test_offer_without_to(user: UserClient):
         'userFrom': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirm': False,
         'code': 'MAX'
@@ -107,7 +105,6 @@ def test_offer_without_to(user: UserClient):
         'userFrom': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot2.id,
         'confirm': False,
         'code': 'MAX'
@@ -138,7 +135,6 @@ def test_offer_without_from(user: UserClient, user2: UserClient):
         'userTo': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot.id,
         'confirm': False,
         'code': 'MAX'
@@ -183,7 +179,6 @@ def test_offer_without_users(user: UserClient):
         'devices': [device.id],
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot.id,
         'confirm': False,
         'code': 'MAX'
@@ -217,7 +212,6 @@ def test_offer(user: UserClient):
         'userTo': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot.id,
         'confirm': True,
     }
@@ -244,7 +238,6 @@ def test_offer_without_devices(user: UserClient):
         'userTo': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirm': True,
     }
@@ -272,7 +265,6 @@ def test_endpoint_confirm(user: UserClient, user2: UserClient):
         'userTo': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirm': True,
     }
@@ -313,7 +305,6 @@ def test_confirm_revoke(user: UserClient, user2: UserClient):
         'userTo': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirm': True,
     }
@@ -392,7 +383,6 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
         'userTo': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirm': True,
     }
@@ -580,7 +570,6 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
         'userTo': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirm': True,
     }

@@ -296,9 +296,10 @@ class ActionDevice(db.Model):
                        primary_key=True)
 
 
-class ActionWithMultipleDocuments(Action):
+class ActionWithMultipleDocuments(ActionWithMultipleDevices):
+    # pass
     documents = relationship(Document,
-                           backref=backref('actions_multiple', lazy=True, **_sorted_actions),
+                           backref=backref('actions_multiple_docs', lazy=True, **_sorted_actions),
                            secondary=lambda: ActionDocument.__table__,
                            order_by=lambda: Document.id,
                            collection_class=OrderedSet)
@@ -1448,7 +1449,7 @@ class CancelReservation(Organize):
     """The act of cancelling a reservation."""
 
 
-class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
+class Confirm(JoinedTableMixin, ActionWithMultipleDocuments):
     """Users confirm the one action trade this confirmation it's link to trade
        and the devices that confirm
     """
@@ -1488,7 +1489,7 @@ class ConfirmRevoke(Confirm):
         return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
 
 
-class Trade(JoinedTableMixin, ActionWithMultipleDevices, ActionWithMultipleDocuments):
+class Trade(JoinedTableMixin, ActionWithMultipleDocuments):
     """Trade actions log the political exchange of devices between users.
     Every time a trade action is performed, the old user looses its
     political possession, for example ownership, in favor of another

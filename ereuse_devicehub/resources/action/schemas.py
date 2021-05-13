@@ -499,7 +499,6 @@ class ConfirmRevoke(ActionWithMultipleDevices):
 
 class Trade(ActionWithMultipleDevices):
     __doc__ = m.Trade.__doc__
-    document_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='documentID', required=False)
     date = DateTime(data_key='date', required=False)
     price = Float(required=False, data_key='price')
     user_to_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', missing='',
