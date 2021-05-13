@@ -2,13 +2,15 @@ from uuid import uuid4
 
 from citext import CIText
 from flask import current_app as app
-from sqlalchemy import Column
+from sqlalchemy import Column, BigInteger, Sequence
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import EmailType, PasswordType
+from teal.db import IntEnum
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.inventory.model import Inventory
 from ereuse_devicehub.resources.models import STR_SIZE, Thing
+from ereuse_devicehub.resources.enums import SessionType
 
 
 class User(Thing):
@@ -57,3 +59,17 @@ class UserInventory(db.Model):
     __table_args__ = {'schema': 'common'}
     user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(User.id), primary_key=True)
     inventory_id = db.Column(db.Unicode(), db.ForeignKey(Inventory.id), primary_key=True)
+
+
+class Session(Thing):
+    id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
+    expired = Column(BigInteger, default=0)
+    token = Column(UUID(as_uuid=True), default=uuid4, unique=True, nullable=False)
+    type = Column(IntEnum(SessionType), default=SessionType.Internal, nullable=False)
+    user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(User.id))
+    user = db.relationship(User,
+                           backref=db.backref('sessions', lazy=True, collection_class=set),
+                           collection_class=set)
+
+    def __str__(self) -> str:
+        return '{0.token}'.format(self)

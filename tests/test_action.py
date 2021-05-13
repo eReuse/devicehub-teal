@@ -382,7 +382,7 @@ def test_live_without_TestDataStorage(user: UserClient, client: Client, app: Dev
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=1).one()
+    db_device = Device.query.filter_by(id=device_id).one()
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
                     "finalUserCode": "abcdefjhi",
@@ -415,7 +415,7 @@ def test_live_without_hdd_1(user: UserClient, client: Client, app: Devicehub):
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=1).one()
+    db_device = Device.query.filter_by(id=device_id).one()
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
                     "finalUserCode": "abcdefjhi",
@@ -446,7 +446,7 @@ def test_live_without_hdd_2(user: UserClient, client: Client, app: Devicehub):
     acer['components'] = components
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=1).one()
+    db_device = Device.query.filter_by(id=device_id).one()
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
                     "finalUserCode": "abcdefjhi",
@@ -477,7 +477,7 @@ def test_live_without_hdd_3(user: UserClient, client: Client, app: Devicehub):
     acer['components'] = components
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=1).one()
+    db_device = Device.query.filter_by(id=device_id).one()
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
                     "finalUserCode": "abcdefjhi",
@@ -510,7 +510,7 @@ def test_live_with_hdd_with_old_time(user: UserClient, client: Client, app: Devi
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=1).one()
+    db_device = Device.query.filter_by(id=device_id).one()
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
                     "finalUserCode": "abcdefjhi",

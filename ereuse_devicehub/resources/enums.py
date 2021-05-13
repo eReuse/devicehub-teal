@@ -393,3 +393,24 @@ class TransferState(IntEnum):
 
     def __str__(self):
         return self.name
+    
+
+@unique
+class SessionType(IntEnum):
+    """
+    Enumaration of types of sessions:
+
+    * Internal: permanent Session for internal user. This is used in usb of WorkBench.
+    * External: permanent Session for external users. This is used in usb of WorkBench.
+    * Session: This is used for keep more than one session in the app frontend.
+
+    Devicehub specially raises user awareness when an action
+    has a Severity of ``Warning`` or greater.
+    """
+
+    Internal = 0
+    External = 1
+    Session = 2
+
+    def __str__(self):
+        return self.name
