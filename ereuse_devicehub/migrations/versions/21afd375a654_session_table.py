@@ -18,7 +18,7 @@ from ereuse_devicehub.resources.enums import SessionType
 
 # revision identifiers, used by Alembic.
 revision = '21afd375a654'
-down_revision = '6a2a939d5668'
+down_revision = '398826453b39'
 branch_labels = None
 depends_on = None
 comment_update = 'The last time Devicehub recorded a change for this thing.\n'
