@@ -28,6 +28,8 @@ from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
 from ereuse_devicehub.resources.enums import ComputerChassis, Severity, TestDataStorageLength
+from ereuse_devicehub.resources.tradedocument.models import Document
+
 from tests import conftest
 from tests.conftest import create_user, file
 
@@ -658,10 +660,17 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
     assert device_10.actions[-3].t == 'Revoke'
 
 
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_document_to_lot(user: UserClient, user2: UserClient):
+    """Example of one document inserted into one lot"""
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_add_documentto_lot(user: UserClient, user2: UserClient):
+def test_simple_add_document(user: UserClient):
     """Example of one document inserted into one lot"""
-    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    doc = Document(**{'file_name': 'test', 'owner_id': user.user['id']})
+    db.session.add(doc)
+    db.session.flush()
