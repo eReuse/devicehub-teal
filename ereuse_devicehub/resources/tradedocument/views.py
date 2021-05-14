@@ -9,27 +9,27 @@ from teal.resource import View
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import SearchQueryParser, things_response
-from ereuse_devicehub.resources.tradedocument.models import Document
+from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 
-class DocumentView(View):
+class TradeDocumentView(View):
 
-    # @auth.Auth.requires_auth
     def one(self, id: str):
-        document = Document.query.filter_by(id=id).first()
-        return self.schema.jsonify(document)
+        doc = TradeDocument.query.filter_by(id=id, owner=g.user).one()
+        return self.schema.jsonify(doc)
 
-    # @auth.Auth.requires_auth
     def post(self):
-        """Posts an action."""
-        json = request.get_json(validate=False)
-        resource_def = app.resources[json['type']]
-
-        a = resource_def.schema.load(json)
-        Model = db.Model._decl_class_registry.data[json['type']]()
-        action = Model(**a)
-        db.session.add(action)
+        """Add one document."""
+        data = request.get_json(validate=True)
+        doc = TradeDocument(**data)
+        db.session.add(doc)
         db.session().final_flush()
-        ret = self.schema.jsonify(action)
+        ret = self.schema.jsonify(doc)
         ret.status_code = 201
         db.session.commit()
         return ret
+
+    def delete(self, id):
+        doc = TradeDocument.query.filter_by(id=id, owner=g.user).one()
+        db.session.delete(doc)
+        db.session.commit()
+        return Response(status=204)

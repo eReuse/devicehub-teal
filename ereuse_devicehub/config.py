@@ -12,6 +12,7 @@ from ereuse_devicehub.resources import action, agent, deliverynote, inventory, \
     lot, tag, user
 from ereuse_devicehub.resources.device import definitions
 from ereuse_devicehub.resources.documents import documents
+from ereuse_devicehub.resources.tradedocument import definitions as tradedocument
 from ereuse_devicehub.resources.enums import PriceSoftware
 from ereuse_devicehub.resources.versions import versions
 from ereuse_devicehub.resources.licences import licences
@@ -27,6 +28,7 @@ class DevicehubConfig(Config):
                                      import_resource(lot),
                                      import_resource(deliverynote),
                                      import_resource(documents),
+                                     import_resource(tradedocument),
                                      import_resource(inventory),
                                      import_resource(versions),
                                      import_resource(licences),

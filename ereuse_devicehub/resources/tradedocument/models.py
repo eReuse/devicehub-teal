@@ -24,7 +24,7 @@ from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, Co
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity, TransferState
 
 
-class Document(Thing):
+class TradeDocument(Thing):
     """This represent a document involved in a trade action.
     Every document is added to a lot.
     When this lot is converted in one trade, the action trade is added to the document

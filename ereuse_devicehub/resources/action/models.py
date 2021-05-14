@@ -48,7 +48,7 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, Bio
     TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.tradedocument.models import Document
+from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 
 
 class JoinedTableMixin:
@@ -296,18 +296,17 @@ class ActionDevice(db.Model):
                        primary_key=True)
 
 
-class ActionWithMultipleDocuments(ActionWithMultipleDevices):
-    # pass
-    documents = relationship(Document,
+class ActionWithMultipleTradeDocuments(ActionWithMultipleDevices):
+    documents = relationship(TradeDocument,
                            backref=backref('actions_multiple_docs', lazy=True, **_sorted_actions),
-                           secondary=lambda: ActionDocument.__table__,
-                           order_by=lambda: Document.id,
+                           secondary=lambda: ActionTradeDocument.__table__,
+                           order_by=lambda: TradeDocument.id,
                            collection_class=OrderedSet)
 
 
-class ActionDocument(db.Model):
-    document_id = Column(BigInteger, ForeignKey(Document.id), primary_key=True)
-    action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleDocuments.id),
+class ActionTradeDocument(db.Model):
+    document_id = Column(BigInteger, ForeignKey(TradeDocument.id), primary_key=True)
+    action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleTradeDocuments.id),
                        primary_key=True)
 
 
@@ -1449,7 +1448,7 @@ class CancelReservation(Organize):
     """The act of cancelling a reservation."""
 
 
-class Confirm(JoinedTableMixin, ActionWithMultipleDocuments):
+class Confirm(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     """Users confirm the one action trade this confirmation it's link to trade
        and the devices that confirm
     """
@@ -1489,7 +1488,7 @@ class ConfirmRevoke(Confirm):
         return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
 
 
-class Trade(JoinedTableMixin, ActionWithMultipleDocuments):
+class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     """Trade actions log the political exchange of devices between users.
     Every time a trade action is performed, the old user looses its
     political possession, for example ownership, in favor of another
@@ -1502,7 +1501,6 @@ class Trade(JoinedTableMixin, ActionWithMultipleDocuments):
     This class and its inheritors
     extend `Schema's Trade <http://schema.org/TradeAction>`_.
         """
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     user_from_id = db.Column(UUID(as_uuid=True),
                              db.ForeignKey(User.id),
                              nullable=False)
