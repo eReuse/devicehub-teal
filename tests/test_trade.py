@@ -28,7 +28,7 @@ from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
 from ereuse_devicehub.resources.enums import ComputerChassis, Severity, TestDataStorageLength
-from ereuse_devicehub.resources.tradedocument.models import Document
+from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 
 from tests import conftest
 from tests.conftest import create_user, file
@@ -662,15 +662,31 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_add_document_to_lot(user: UserClient, user2: UserClient):
+def test_simple_add_document(user: UserClient):
     """Example of one document inserted into one lot"""
-    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    doc = TradeDocument(**{'file_name': 'test', 'owner_id': user.user['id']})
+    db.session.add(doc)
+    db.session.flush()
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_simple_add_document(user: UserClient):
+def test_add_document_to_lot(user: UserClient, user2: UserClient, client: Client):
     """Example of one document inserted into one lot"""
-    doc = Document(**{'file_name': 'test', 'owner_id': user.user['id']})
-    db.session.add(doc)
-    db.session.flush()
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    # data = {'file_name': 'test', 'lot': lot['id']}
+    data = {'file_name': 'test'}
+    doc, _ = user.post(res=TradeDocument, data=data)
+    user.get(res=TradeDocument, item=doc['id'])
+    user.delete(res=TradeDocument, item=doc['id'])
+
+    # check permitions
+    doc, _ = user.post(res=TradeDocument, data=data)
+
+    # anonyms users
+    client.get(res=TradeDocument, item=doc['id'], status=401)
+    client.delete(res=TradeDocument, item=doc['id'], status=401)
+
+    # other user
+    user2.get(res=TradeDocument, item=doc['id'], status=404)
+    user2.delete(res=TradeDocument, item=doc['id'], status=404)
