@@ -1,15 +1,40 @@
-
-import marshmallow
-from flask import g, current_app as app, render_template, request, Response
-from flask.json import jsonify
-from flask_sqlalchemy import Pagination
-from marshmallow import fields, fields as f, validate as v, Schema as MarshmallowSchema
+import os
+from datetime import datetime
+from flask import current_app as app, request, g, Response
+from marshmallow import ValidationError
 from teal.resource import View
 
-from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
-from ereuse_devicehub.query import SearchQueryParser, things_response
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
+from ereuse_devicehub.resources.hash_reports import insert_hash
+
+
+def save_doc(data, user):
+    """
+    This function allow save a snapshot in json format un a TMP_SNAPSHOTS directory
+    The file need to be saved with one name format with the stamptime and uuid joins
+    """
+    filename = data['file_name']
+    lot = data['lot']
+    now = datetime.now()
+    year = now.year
+    month = now.month
+    day = now.day
+    hour = now.hour
+    minutes = now.minute
+
+    name_file = f"{year}-{month}-{day}-{hour}-{minutes}_{user}_{filename}"
+    path_dir_base = os.path.join(app.config['PATH_DOCUMENTS_STORAGE'] , user)
+    path = os.path.join(path_dir_base, str(lot.id))
+    path_name = os.path.join(path, name_file)
+
+    os.system(f'mkdir -p {path}')
+
+    with open(path_name, 'wb') as doc_file:
+        doc_file.write(data['file'])
+
+    return path_name
+
 
 class TradeDocumentView(View):
 
@@ -19,7 +44,14 @@ class TradeDocumentView(View):
 
     def post(self):
         """Add one document."""
+        # import pdb; pdb.set_trace()
+
         data = request.get_json(validate=True)
+        data['path_name'] = save_doc(data, g.user.email)
+        bfile = data.pop('file')
+        insert_hash(bfile)
+
+        # import pdb; pdb.set_trace()
         doc = TradeDocument(**data)
         db.session.add(doc)
         db.session().final_flush()
