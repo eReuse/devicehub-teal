@@ -1,7 +1,7 @@
 import os
+import time
 from datetime import datetime
 from flask import current_app as app, request, g, Response
-from marshmallow import ValidationError
 from teal.resource import View
 
 from ereuse_devicehub.db import db
@@ -22,8 +22,9 @@ def save_doc(data, user):
     day = now.day
     hour = now.hour
     minutes = now.minute
+    created = time.time()
 
-    name_file = f"{year}-{month}-{day}-{hour}-{minutes}_{user}_{filename}"
+    name_file = f"{year}-{month}-{day}-{hour}-{minutes}_{created}_{user}_{filename}"
     path_dir_base = os.path.join(app.config['PATH_DOCUMENTS_STORAGE'] , user)
     path = os.path.join(path_dir_base, str(lot.id))
     path_name = os.path.join(path, name_file)
@@ -44,14 +45,12 @@ class TradeDocumentView(View):
 
     def post(self):
         """Add one document."""
-        # import pdb; pdb.set_trace()
 
         data = request.get_json(validate=True)
         data['path_name'] = save_doc(data, g.user.email)
         bfile = data.pop('file')
         insert_hash(bfile)
 
-        # import pdb; pdb.set_trace()
         doc = TradeDocument(**data)
         db.session.add(doc)
         db.session().final_flush()

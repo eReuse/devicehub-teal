@@ -528,7 +528,13 @@ class Trade(ActionWithMultipleDevices):
             txt = "you need to be the owner of the lot for to do a trade"
             raise ValidationError(txt)
 
+        for doc in data['lot'].documents:
+            if not doc.owner == g.user:
+                txt = "you need to be the owner of the documents for to do a trade"
+                raise ValidationError(txt)
+
         data['devices'] = data['lot'].devices
+        data['documents'] = data['lot'].documents
 
     @validates_schema
     def validate_user_to_id(self, data: dict):

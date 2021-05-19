@@ -11,15 +11,15 @@ from ereuse_devicehub.resources.user.models import User
 
 class TradeView():
     """Handler for manager the trade action register from post
- 
+
        request_post = {
            'type': 'Trade',
            'devices': [device_id],
+           'documents': [document_id],
            'userFrom': user2.email,
            'userTo': user.email,
            'price': 10,
            'date': "2020-12-01T02:00:00+00:00",
-           'documentID': '1',
            'lot': lot['id'],
            'confirm': True,
        }
@@ -27,6 +27,7 @@ class TradeView():
     """
 
     def __init__(self, data, resource_def, schema):
+        # import pdb; pdb.set_trace()
         self.schema = schema
         a = resource_def.schema.load(data)
         self.trade = Trade(**a)
@@ -36,7 +37,6 @@ class TradeView():
         self.create_confirmations()
 
     def post(self):
-        # import pdb; pdb.set_trace()
         db.session().final_flush()
         ret = self.schema.jsonify(self.trade)
         ret.status_code = 201
@@ -49,21 +49,25 @@ class TradeView():
         # if the confirmation is mandatory, do automatic confirmation only for
         # owner of the lot
         if self.trade.confirm:
-            confirm = Confirm(user=g.user,
-                              action=self.trade, 
-                              devices=self.trade.devices)
-            db.session.add(confirm)
+            confirm_devs = Confirm(user=g.user,
+                                   action=self.trade,
+                                   devices=self.trade.devices)
+
+            confirm_docs = Confirm(user=g.user,
+                                   action=self.trade,
+                                   documents=self.trade.documents)
+            db.session.add(confirm_devs, confirm_docs)
             return
 
         # check than the user than want to do the action is one of the users
         # involved in the action
         assert g.user.id in [self.trade.user_from_id, self.trade.user_to_id]
 
-        confirm_from = Confirm(user=self.trade.user_from, 
-                               action=self.trade, 
+        confirm_from = Confirm(user=self.trade.user_from,
+                               action=self.trade,
                                devices=self.trade.devices)
-        confirm_to = Confirm(user=self.trade.user_to, 
-                             action=self.trade, 
+        confirm_to = Confirm(user=self.trade.user_to,
+                             action=self.trade,
                              devices=self.trade.devices)
         db.session.add(confirm_from)
         db.session.add(confirm_to)
@@ -292,7 +296,7 @@ class ConfirmRevokeView(ConfirmMixin):
         # Change the owner for every devices
         trade = data['action']
         for dev in data['devices']:
-            # TODO @cayop this should be the author of confirm actions instead of 
+            # TODO @cayop this should be the author of confirm actions instead of
             # author of trade
             dev.owner = trade.author
             if hasattr(dev, 'components'):
