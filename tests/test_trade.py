@@ -1,4 +1,5 @@
 import os
+import base64
 import ipaddress
 import json
 import shutil
@@ -20,6 +21,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.client import UserClient, Client
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources import enums
+from ereuse_devicehub.resources.hash_reports import ReportHash 
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.lot.models import Lot
@@ -671,12 +673,23 @@ def test_simple_add_document(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_add_document_to_lot(user: UserClient, user2: UserClient, client: Client):
+def test_add_document_to_lot(user: UserClient, user2: UserClient, client: Client, app: Devicehub):
     """Example of one document inserted into one lot"""
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    # data = {'file_name': 'test', 'lot': lot['id']}
-    data = {'file_name': 'test'}
-    doc, _ = user.post(res=TradeDocument, data=data)
+    data = {'lot': lot['id'], 'file_name': 'test.csv'}
+    base64_bytes = base64.b64encode(b'This is a test')
+    base64_string = base64_bytes.decode('utf-8')
+    data['file'] = base64_string
+    doc, _ = user.post(res=TradeDocument,
+                       data=data)
+
+    assert len(ReportHash.query.all()) == 1
+
+    path_dir_base = os.path.join(app.config['PATH_DOCUMENTS_STORAGE'] , user.email)
+    path = os.path.join(path_dir_base, lot['id'])
+    assert len(os.listdir(path)) == 1
+    # import pdb; pdb.set_trace()
+
     user.get(res=TradeDocument, item=doc['id'])
     user.delete(res=TradeDocument, item=doc['id'])
 
@@ -690,3 +703,4 @@ def test_add_document_to_lot(user: UserClient, user2: UserClient, client: Client
     # other user
     user2.get(res=TradeDocument, item=doc['id'], status=404)
     user2.delete(res=TradeDocument, item=doc['id'], status=404)
+    shutil.rmtree(path)
