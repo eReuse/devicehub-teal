@@ -27,7 +27,6 @@ class TradeView():
     """
 
     def __init__(self, data, resource_def, schema):
-        # import pdb; pdb.set_trace()
         self.schema = schema
         a = resource_def.schema.load(data)
         self.trade = Trade(**a)
@@ -49,28 +48,34 @@ class TradeView():
         # if the confirmation is mandatory, do automatic confirmation only for
         # owner of the lot
         if self.trade.confirm:
-            confirm_devs = Confirm(user=g.user,
-                                   action=self.trade,
-                                   devices=self.trade.devices)
+            if self.trade.devices:
+                confirm_devs = Confirm(user=g.user,
+                                       action=self.trade,
+                                       devices=self.trade.devices)
+                db.session.add(confirm_devs)
 
-            confirm_docs = Confirm(user=g.user,
-                                   action=self.trade,
-                                   documents=self.trade.documents)
-            db.session.add(confirm_devs, confirm_docs)
+            if self.trade.documents:
+                confirm_docs = Confirm(user=g.user,
+                                       action=self.trade,
+                                       documents=self.trade.documents)
+                db.session.add(confirm_docs)
             return
 
         # check than the user than want to do the action is one of the users
         # involved in the action
         assert g.user.id in [self.trade.user_from_id, self.trade.user_to_id]
 
-        confirm_from = Confirm(user=self.trade.user_from,
-                               action=self.trade,
-                               devices=self.trade.devices)
-        confirm_to = Confirm(user=self.trade.user_to,
-                             action=self.trade,
-                             devices=self.trade.devices)
-        db.session.add(confirm_from)
-        db.session.add(confirm_to)
+        if self.trade.user_from == g.user or self.trade.user_from.phantom:
+            confirm_from = Confirm(user=self.trade.user_from,
+                                   action=self.trade,
+                                   devices=self.trade.devices)
+            db.session.add(confirm_from)
+
+        if self.trade.user_to == g.user or self.trade.user_to.phantom:
+            confirm_to = Confirm(user=self.trade.user_to,
+                                 action=self.trade,
+                                 devices=self.trade.devices)
+            db.session.add(confirm_to)
 
     def create_phantom_account(self) -> None:
         """
@@ -141,7 +146,7 @@ class ConfirmMixin():
         self.schema = schema
         a = resource_def.schema.load(data)
         self.validate(a)
-        if not a['devices']:
+        if not a['devices'] and not a['documents']:
             raise ValidationError('Devices not exist.')
         self.model = self.Model(**a)
 
@@ -169,7 +174,6 @@ class ConfirmView(ConfirmMixin):
         """If there are one device than have one confirmation,
            then remove the list this device of the list of devices of this action
         """
-        # import pdb; pdb.set_trace()
         real_devices = []
         for dev in data['devices']:
             actions = copy.copy(dev.actions)
@@ -181,7 +185,7 @@ class ConfirmView(ConfirmMixin):
                     break
 
                 if ac.t == Confirm.t and not ac.user == g.user:
-                    # If device is confirmed we don't need confirmed again
+                    # If device is confirmed but is not for g.user, then need confirm
                     real_devices.append(dev)
                     break
 

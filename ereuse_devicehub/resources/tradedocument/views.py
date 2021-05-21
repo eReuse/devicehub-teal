@@ -6,6 +6,7 @@ from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
+from ereuse_devicehub.resources.action.models import Confirm, Revoke
 from ereuse_devicehub.resources.hash_reports import insert_hash
 
 
@@ -52,6 +53,14 @@ class TradeDocumentView(View):
         insert_hash(bfile)
 
         doc = TradeDocument(**data)
+        trade = doc.lot.trade
+        if trade:
+            trade.documents.add(doc)
+            confirm = Confirm(action=trade,
+                              user=g.user,
+                              devices=set(),
+                              documents={doc})
+            db.session.add(confirm)
         db.session.add(doc)
         db.session().final_flush()
         ret = self.schema.jsonify(doc)
