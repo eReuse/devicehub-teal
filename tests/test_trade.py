@@ -281,7 +281,8 @@ def test_endpoint_confirm(user: UserClient, user2: UserClient):
     request_confirm = {
         'type': 'Confirm',
         'action': trade.id,
-        'devices': [device_id]
+        'devices': [device_id],
+        'documents': []
     }
 
     user2.post(res=models.Action, data=request_confirm)
@@ -319,13 +320,15 @@ def test_confirm_revoke(user: UserClient, user2: UserClient):
     request_confirm = {
         'type': 'Confirm',
         'action': trade.id,
-        'devices': [device_id]
+        'devices': [device_id],
+        'documents': []
     }
 
     request_revoke = {
         'type': 'Revoke',
         'action': trade.id,
         'devices': [device_id],
+        'documents': []
     }
 
 
@@ -402,9 +405,9 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     request_confirm = {
         'type': 'Confirm',
         'action': trade.id,
-        'devices': [snap1['device']['id'], snap2['device']['id'], snap3['device']['id']]
+        'devices': [snap1['device']['id'], snap2['device']['id'], snap3['device']['id']],
+        'documents': []
     }
-    # import pdb; pdb.set_trace()
     user2.post(res=models.Action, data=request_confirm)
 
     assert trade.devices[0].actions[-1].t == 'Confirm'
@@ -417,7 +420,8 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
         'action': trade.id,
         'devices': [
             snap10['device']['id']
-        ]
+        ],
+        'documents': []
     }
 
     user2.post(res=models.Action, data=request_confirm, status=422)
@@ -484,7 +488,8 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
         'action': device_10.actions[-1].id,
         'devices': [
             snap10['device']['id']
-        ]
+        ],
+        'documents': []
     }
 
     user2.post(res=models.Action, data=request_confirm_revoke)
@@ -496,7 +501,8 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
         'action': device_10.actions[-1].id,
         'devices': [
             snap9['device']['id']
-        ]
+        ],
+        'documents': []
     }
 
     # check validation error
@@ -521,9 +527,9 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
         'action': trade.id,
         'devices': [
             snap10['device']['id']
-        ]
+        ],
+        'documents': []
     }
-    # import pdb; pdb.set_trace()
     user2.post(res=models.Action, data=request_reconfirm)
     assert device_10.actions[-1].t == 'Confirm'
     assert device_10.actions[-1].user == trade.user_from
@@ -610,9 +616,9 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
     # is create one revoke action
     device_10 = trade.devices[-1]
     lot, _ = user.delete({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:], status=200)
+                         res=Lot,
+                         item='{}/devices'.format(lot['id']),
+                         query=devices[-1:], status=200)
     assert len(trade.lot.devices) == len(trade.devices) == 9
     assert not device_10 in trade.devices
     assert device_10.actions[-1].t == 'Revoke'
@@ -642,7 +648,8 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
         'action': device_10.actions[-2].id,
         'devices': [
             snap10['device']['id']
-        ]
+        ],
+        'documents': []
     }
 
     # check validation error
@@ -654,7 +661,8 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
         'action': trade.id,
         'devices': [
             snap10['device']['id']
-        ]
+        ],
+        'documents': []
     }
     user2.post(res=models.Action, data=request_reconfirm)
     assert device_10.actions[-1].t == 'Confirm'
@@ -668,7 +676,10 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_simple_add_document(user: UserClient):
     """Example of one document inserted into one lot"""
-    doc = TradeDocument(**{'file_name': 'test', 'owner_id': user.user['id']})
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    doc = TradeDocument(**{'file_name': 'test',
+                           'owner_id': user.user['id'],
+                           'lot_id': lot['id']})
     db.session.add(doc)
     db.session.flush()
 
@@ -690,7 +701,6 @@ def test_add_document_to_lot(user: UserClient, user2: UserClient, client: Client
     path_dir_base = os.path.join(app.config['PATH_DOCUMENTS_STORAGE'] , user.email)
     path = os.path.join(path_dir_base, lot['id'])
     assert len(os.listdir(path)) == 1
-    # import pdb; pdb.set_trace()
 
     user.get(res=TradeDocument, item=doc['id'])
     user.delete(res=TradeDocument, item=doc['id'])
@@ -714,8 +724,6 @@ def test_usecase1_document(user: UserClient, user2: UserClient):
     """Example of one usecase about confirmation"""
     # the pRp (manatest_usecase_confirmationger) creates a temporary lot
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    path_dir_base = os.path.join(app.config['PATH_DOCUMENTS_STORAGE'] , user.email)
-    path = os.path.join(path_dir_base, lot['id'])
     data = {'lot': lot['id'], 'file_name': 'test.csv'}
     base64_bytes = base64.b64encode(b'This is a test')
     base64_string = base64_bytes.decode('utf-8')
@@ -747,12 +755,11 @@ def test_usecase1_document(user: UserClient, user2: UserClient):
     assert trade.documents[1].actions[-1].user == trade.user_to
     assert trade.documents[0].path_name != trade.documents[1].path_name
 
-    # ========
-    # import pdb; pdb.set_trace()
     # the SCRAP confirms 1 of the 2 documents in its outgoing lot
     request_confirm = {
         'type': 'Confirm',
         'action': trade.id,
+        'devices': [],
         'documents': [trade.documents[0].id]
     }
 
@@ -762,126 +769,152 @@ def test_usecase1_document(user: UserClient, user2: UserClient):
     n_actions = len(trade.documents[0].actions)
 
     # check validation error
-    # request_confirm = {
-        # 'type': 'Confirm',
-        # 'action': trade.id,
-        # 'devices': [
-            # snap10['device']['id']
-        # ]
-    # }
-
-    # user2.post(res=models.Action, data=request_confirm, status=422)
-
-
-    # ========
-    shutil.rmtree(path)
-    """
-    # The manager add 3 device more into the lot
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[7:])
-
-    assert trade.devices[-1].actions[-2].t == 'Trade'
-    assert trade.devices[-1].actions[-1].t == 'Confirm'
-    assert trade.devices[-1].actions[-1].user == trade.user_to
-    assert len(trade.devices[0].actions) == n_actions
-
-
-    # the SCRAP confirms the rest of devices
     request_confirm = {
         'type': 'Confirm',
         'action': trade.id,
-        'devices': [
-            snap1['device']['id'],
-            snap2['device']['id'],
-            snap3['device']['id'],
-            snap4['device']['id'],
-            snap5['device']['id'],
-            snap6['device']['id'],
-            snap7['device']['id'],
-            snap8['device']['id'],
-            snap9['device']['id'],
-            snap10['device']['id']
-        ]
+        'devices': [],
+        'documents': [trade.documents[0].id],
+    }
+
+    user2.post(res=models.Action, data=request_confirm, status=422)
+
+    # Both users can up de documents
+    user2.post(res=TradeDocument, data=data)
+    assert len(trade.documents) == 3
+
+    # user1 confirm document2
+    request_confirm = {
+        'type': 'Confirm',
+        'action': trade.id,
+        'devices': [],
+        'documents': [trade.documents[2].id],
+    }
+
+    assert trade.documents[2].actions[-1].user == trade.user_from
+    assert trade.documents[2].actions[-1].t == 'Confirm'
+
+    user.post(res=models.Action, data=request_confirm)
+    assert trade.documents[2].actions[-1].user == trade.user_to
+    assert trade.documents[2].actions[-1].t == 'Confirm'
+
+    # clean docs of test
+    path_dir_base = os.path.join(app.config['PATH_DOCUMENTS_STORAGE'], user.email)
+    path = os.path.join(path_dir_base, lot['id'])
+
+    path_dir_base_from = os.path.join(app.config['PATH_DOCUMENTS_STORAGE'], user2.email)
+    path_from = os.path.join(path_dir_base_from, lot['id'])
+
+    shutil.rmtree(path)
+    shutil.rmtree(path_from)
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_document_confirm_revoke(user: UserClient, user2: UserClient):
+    """We want check one simple revoke"""
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    data = {'lot': lot['id'], 'file_name': 'test.csv'}
+    base64_bytes = base64.b64encode(b'This is a test')
+    base64_string = base64_bytes.decode('utf-8')
+    data['file'] = base64_string
+    user.post(res=TradeDocument, data=data)
+
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
+    # for the CRAP to confirm it
+    request_post = {
+        'type': 'Trade',
+        'devices': [],
+        'userFrom': user2.email,
+        'userTo': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lot['id'],
+        'confirm': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    trade = models.Trade.query.one()
+
+    # the SCRAP confirms 1 in its outgoing lot
+    request_confirm = {
+        'type': 'Confirm',
+        'action': trade.id,
+        'devices': [],
+        'documents': [trade.documents[0].id]
     }
 
     user2.post(res=models.Action, data=request_confirm)
-    assert trade.devices[-1].actions[-3].t == 'Trade'
-    assert trade.devices[-1].actions[-1].t == 'Confirm'
-    assert trade.devices[-1].actions[-1].user == trade.user_from
-    assert len(trade.devices[0].actions) == n_actions
 
-    # The manager remove one device of the lot and automaticaly
-    # is create one revoke action
-    device_10 = trade.devices[-1]
-    lot, _ = user.delete({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:], status=200)
-    assert len(trade.lot.devices) == len(trade.devices) == 9
-    assert not device_10 in trade.devices
-    assert device_10.actions[-1].t == 'Revoke'
-
-    lot, _ = user.delete({},
-                         res=Lot,
-                         item='{}/devices'.format(lot['id']),
-                         query=devices[-1:], status=200)
-
-    assert device_10.actions[-1].t == 'Revoke'
-    assert device_10.actions[-2].t == 'Confirm'
-
-    # the SCRAP confirms the revoke action
-    request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device_10.actions[-1].id,
-        'devices': [
-            snap10['device']['id']
-        ]
+    # the SCRAP revoke the document
+    request_revoke = {
+        'type': 'Revoke',
+        'action': trade.id,
+        'devices': [],
+        'documents': [trade.documents[0].id]
     }
 
-    user2.post(res=models.Action, data=request_confirm_revoke)
-    assert device_10.actions[-1].t == 'ConfirmRevoke'
-    assert device_10.actions[-2].t == 'Revoke'
+    user2.post(res=models.Action, data=request_revoke)
+    assert trade.documents[0].actions[-1].t == 'Revoke'
+    assert trade.documents[0].actions[-2].t == 'Confirm'
+    user2.post(res=models.Action, data=request_revoke, status=422)
 
-    request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device_10.actions[-1].id,
-        'devices': [
-            snap9['device']['id']
-        ]
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_document_confirm_revoke_confirmRevoke(user: UserClient, user2: UserClient):
+    """We want check one simple revoke"""
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    data = {'lot': lot['id'], 'file_name': 'test.csv'}
+    base64_bytes = base64.b64encode(b'This is a test')
+    base64_string = base64_bytes.decode('utf-8')
+    data['file'] = base64_string
+    user.post(res=TradeDocument, data=data)
+
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
+    # for the CRAP to confirm it
+    request_post = {
+        'type': 'Trade',
+        'devices': [],
+        'userFrom': user2.email,
+        'userTo': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lot['id'],
+        'confirm': True,
     }
 
-    # check validation error
-    user2.post(res=models.Action, data=request_confirm_revoke, status=422)
+    user.post(res=models.Action, data=request_post)
+    trade = models.Trade.query.one()
 
-
-    # The manager add again device_10
-    assert len(trade.devices) == 9
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
-
-    assert device_10.actions[-1].t == 'Confirm'
-    assert device_10 in trade.devices
-    assert len(trade.devices) == 10
-
-
-    # the SCRAP confirms the action trade for device_10
-    request_reconfirm = {
+    # the SCRAP confirms 1 in its outgoing lot
+    request_confirm = {
         'type': 'Confirm',
         'action': trade.id,
-        'devices': [
-            snap10['device']['id']
-        ]
+        'devices': [],
+        'documents': [trade.documents[0].id]
     }
-    user2.post(res=models.Action, data=request_reconfirm)
-    assert device_10.actions[-1].t == 'Confirm'
-    assert device_10.actions[-1].user == trade.user_from
-    assert device_10.actions[-2].t == 'Confirm'
-    assert device_10.actions[-2].user == trade.user_to
-    assert device_10.actions[-3].t == 'ConfirmRevoke'
-    assert len(device_10.actions) == 13
 
-    """
+    user2.post(res=models.Action, data=request_confirm)
+
+    # the SCRAP revoke the document
+    request_revoke = {
+        'type': 'Revoke',
+        'action': trade.id,
+        'devices': [],
+        'documents': [trade.documents[0].id]
+    }
+
+    user2.post(res=models.Action, data=request_revoke)
+
+    # Manager confirmRevoke
+    request_revoke = {
+        'type': 'ConfirmRevoke',
+        'action': trade.id,
+        'devices': [],
+        'documents': [trade.documents[0].id]
+    }
+
+    user.post(res=models.Action, data=request_revoke)
+    assert trade.documents[0].actions[-1].t == 'ConfirmRevoke'
+    assert trade.documents[0].actions[-2].t == 'Revoke'
+    user.post(res=models.Action, data=request_revoke, status=422)
