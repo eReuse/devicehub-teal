@@ -65,13 +65,13 @@ def test_device_model():
     gcard = d.GraphicCard.query.one()
     db.session.delete(pc)
     db.session.flush()
-    assert pc.id == 1
+    assert pc.id == 3
     assert d.Desktop.query.first() is None
     db.session.commit()
     assert d.Desktop.query.first() is None
-    assert network_adapter.id == 2
+    assert network_adapter.id == 4
     assert d.NetworkAdapter.query.first() is not None, 'We removed the network adaptor'
-    assert gcard.id == 3, 'We should still hold a reference to a zombie graphic card'
+    assert gcard.id == 5, 'We should still hold a reference to a zombie graphic card'
     assert d.GraphicCard.query.first() is None, 'We should have deleted it –it was inside the pc'
 
 
@@ -396,74 +396,73 @@ def test_sync_execute_register_mismatch_between_tags_and_hid():
 
 
 @pytest.mark.mvp
-def test_get_device(app: Devicehub, user: UserClient):
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_get_device(user: UserClient):
     """Checks GETting a d.Desktop with its components."""
-    with app.app_context():
-        pc = d.Desktop(model='p1mo',
-                       manufacturer='p1ma',
-                       serial_number='p1s',
-                       chassis=ComputerChassis.Tower,
-                       owner_id=user.user['id'])
-        pc.components = OrderedSet([
-            d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s', 
-                owner_id=user.user['id']),
-            d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500, owner_id=user.user['id'])
-        ])
-        db.session.add(pc)
-        # todo test is an abstract class. replace with another one
-        db.session.add(TestConnectivity(device=pc,
-                                        severity=Severity.Info,
-                                        agent=Person(name='Timmy'),
-                                        author=User(email='bar@bar.com')))
-        db.session.commit()
-        devicehub_id = pc.devicehub_id
-
-    pc, _ = user.get(res=d.Device, item=devicehub_id)
-    assert len(pc['actions']) == 1
-    assert pc['actions'][0]['type'] == 'TestConnectivity'
-    assert pc['actions'][0]['device'] == 1
-    assert pc['actions'][0]['severity'] == 'Info'
-    assert UUID(pc['actions'][0]['author'])
-    assert 'actions_components' not in pc, 'actions_components are internal use only'
-    assert 'actions_one' not in pc, 'they are internal use only'
-    assert 'author' not in pc
-    assert tuple(c['id'] for c in pc['components']) == (2, 3)
-    assert pc['hid'] == 'desktop-p1ma-p1mo-p1s'
-    assert pc['model'] == 'p1mo'
-    assert pc['manufacturer'] == 'p1ma'
-    assert pc['serialNumber'] == 'p1s'
-    assert pc['type'] == d.Desktop.t
+    pc = d.Desktop(model='p1mo',
+                   manufacturer='p1ma',
+                   serial_number='p1s',
+                   chassis=ComputerChassis.Tower,
+                   owner_id=user.user['id'])
+    pc.components = OrderedSet([
+        d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s', 
+            owner_id=user.user['id']),
+        d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500, owner_id=user.user['id'])
+    ])
+    db.session.add(pc)
+    # todo test is an abstract class. replace with another one
+    db.session.add(TestConnectivity(device=pc,
+                                    severity=Severity.Info,
+                                    agent=Person(name='Timmy'),
+                                    author=User(email='bar@bar.com')))
+    db.session.commit()
+    pc_api, _ = user.get(res=d.Device, item=pc.devicehub_id)
+    assert len(pc_api['actions']) == 1
+    assert pc_api['actions'][0]['type'] == 'TestConnectivity'
+    assert pc_api['actions'][0]['device'] == pc.id
+    assert pc_api['actions'][0]['severity'] == 'Info'
+    assert UUID(pc_api['actions'][0]['author'])
+    assert 'actions_components' not in pc_api, 'actions_components are internal use only'
+    assert 'actions_one' not in pc_api, 'they are internal use only'
+    assert 'author' not in pc_api
+    assert tuple(c['id'] for c in pc_api['components']) == tuple(c.id for c in pc.components)
+    assert pc_api['hid'] == 'desktop-p1ma-p1mo-p1s'
+    assert pc_api['model'] == 'p1mo'
+    assert pc_api['manufacturer'] == 'p1ma'
+    assert pc_api['serialNumber'] == 'p1s'
+    assert pc_api['type'] == d.Desktop.t
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_get_devices(app: Devicehub, user: UserClient):
     """Checks GETting multiple devices."""
-    with app.app_context():
-        pc = d.Desktop(model='p1mo',
-                       manufacturer='p1ma',
-                       serial_number='p1s',
-                       chassis=ComputerChassis.Tower,
-                       owner_id=user.user['id'])
-        pc.components = OrderedSet([
-            d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s',
-                owner_id=user.user['id']),
-            d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500,
-                owner_id=user.user['id'])
-        ])
-        pc1 = d.Desktop(model='p2mo',
-                        manufacturer='p2ma',
-                        serial_number='p2s',
-                        chassis=ComputerChassis.Tower,
-                        owner_id=user.user['id'])
-        pc2 = d.Laptop(model='p3mo',
-                       manufacturer='p3ma',
-                       serial_number='p3s',
-                       chassis=ComputerChassis.Netbook,
-                       owner_id=user.user['id'])
-        db.session.add_all((pc, pc1, pc2))
-        db.session.commit()
+    pc = d.Desktop(model='p1mo',
+                   manufacturer='p1ma',
+                   serial_number='p1s',
+                   chassis=ComputerChassis.Tower,
+                   owner_id=user.user['id'])
+    pc.components = OrderedSet([
+        d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s',
+            owner_id=user.user['id']),
+        d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500,
+            owner_id=user.user['id'])
+    ])
+    pc1 = d.Desktop(model='p2mo',
+                    manufacturer='p2ma',
+                    serial_number='p2s',
+                    chassis=ComputerChassis.Tower,
+                    owner_id=user.user['id'])
+    pc2 = d.Laptop(model='p3mo',
+                   manufacturer='p3ma',
+                   serial_number='p3s',
+                   chassis=ComputerChassis.Netbook,
+                   owner_id=user.user['id'])
+    db.session.add_all((pc, pc1, pc2))
+    db.session.commit()
     devices, _ = user.get(res=d.Device)
-    assert tuple(dev['id'] for dev in devices['items']) == (1, 2, 3, 4, 5)
+    ids = (pc.id, pc1.id, pc2.id, pc.components[0].id, pc.components[1].id)
+    assert tuple(dev['id'] for dev in devices['items']) == ids
     assert tuple(dev['type'] for dev in devices['items']) == (
         d.Desktop.t, d.Desktop.t, d.Laptop.t, d.NetworkAdapter.t, d.GraphicCard.t
     )
@@ -536,7 +535,7 @@ def test_device_properties_format(app: Devicehub, user: UserClient):
     user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
     with app.app_context():
         pc = d.Laptop.query.one()  # type: d.Laptop
-        assert format(pc) == 'Laptop 1: model 1000h, S/N 94oaaq021116'
+        assert format(pc) == 'Laptop 3: model 1000h, S/N 94oaaq021116'
         assert format(pc, 't') == 'Netbook 1000h'
         assert format(pc, 's') == '(asustek computer inc.) S/N 94OAAQ021116'
         assert pc.ram_size == 1024
@@ -544,12 +543,12 @@ def test_device_properties_format(app: Devicehub, user: UserClient):
         assert pc.graphic_card_model == 'mobile 945gse express integrated graphics controller'
         assert pc.processor_model == 'intel atom cpu n270 @ 1.60ghz'
         net = next(c for c in pc.components if isinstance(c, d.NetworkAdapter))
-        assert format(net) == 'NetworkAdapter 2: model ar8121/ar8113/ar8114 ' \
+        assert format(net) == 'NetworkAdapter 4: model ar8121/ar8113/ar8114 ' \
                               'gigabit or fast ethernet, S/N 00:24:8c:7f:cf:2d'
         assert format(net, 't') == 'NetworkAdapter ar8121/ar8113/ar8114 gigabit or fast ethernet'
         assert format(net, 's') == 'qualcomm atheros 00:24:8C:7F:CF:2D – 100 Mbps'
         hdd = next(c for c in pc.components if isinstance(c, d.DataStorage))
-        assert format(hdd) == 'HardDrive 7: model st9160310as, S/N 5sv4tqa6'
+        assert format(hdd) == 'HardDrive 9: model st9160310as, S/N 5sv4tqa6'
         assert format(hdd, 't') == 'HardDrive st9160310as'
         assert format(hdd, 's') == 'seagate 5SV4TQA6 – 152 GB'
 

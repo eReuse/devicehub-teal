@@ -32,20 +32,24 @@ def test_workbench_server_condensed(user: UserClient):
         user.post({'id': t['id']}, res=Tag)
 
     snapshot, _ = user.post(res=em.Snapshot, data=s)
+    pc_id = snapshot['device']['id']
+    cpu_id = snapshot['components'][3]['id']
+    ssd_id= snapshot['components'][4]['id']
+    hdd_id = snapshot['components'][5]['id']
     actions = snapshot['actions']
     assert {(action['type'], action['device']) for action in actions} == {
-        ('BenchmarkProcessorSysbench', 5),
-        ('StressTest', 1),
-        ('EraseSectors', 6),
-        ('EreusePrice', 1),
-        ('BenchmarkRamSysbench', 1),
-        ('BenchmarkProcessor', 5),
-        ('Install', 6),
-        ('EraseSectors', 7),
-        ('BenchmarkDataStorage', 6),
-        ('BenchmarkDataStorage', 7),
-        ('TestDataStorage', 6),
-        ('RateComputer', 1)
+        ('BenchmarkProcessorSysbench', cpu_id),
+        ('StressTest', pc_id),
+        ('EraseSectors', ssd_id),
+        ('EreusePrice', pc_id),
+        ('BenchmarkRamSysbench', pc_id),
+        ('BenchmarkProcessor', cpu_id),
+        ('Install', ssd_id),
+        ('EraseSectors', hdd_id),
+        ('BenchmarkDataStorage', ssd_id),
+        ('BenchmarkDataStorage', hdd_id),
+        ('TestDataStorage', ssd_id),
+        ('RateComputer', pc_id)
     }
     assert snapshot['closed']
     assert snapshot['severity'] == 'Info'
