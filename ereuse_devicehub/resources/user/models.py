@@ -62,6 +62,7 @@ class UserInventory(db.Model):
 
 
 class Session(Thing):
+    __table_args__ = {'schema': 'common'}
     id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
     expired = Column(BigInteger, default=0)
     token = Column(UUID(as_uuid=True), default=uuid4, unique=True, nullable=False)
