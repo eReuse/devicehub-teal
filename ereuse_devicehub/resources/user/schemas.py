@@ -9,6 +9,10 @@ from ereuse_devicehub.resources.inventory.schema import Inventory
 from ereuse_devicehub.resources.schemas import Thing
 
 
+class Session(Thing):
+    token = String(dump_only=True)
+
+
 class User(Thing):
     id = UUID(dump_only=True)
     email = Email(required=True)
