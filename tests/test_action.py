@@ -1168,7 +1168,7 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
                        query=devices[:7])
 
     # the manager shares the temporary lot with the SCRAP as an incoming lot 
-    # for the CRAP to confirm it
+    # for the SCRAP to confirm it
     request_post = {
         'type': 'Trade',
         'devices': [],
@@ -1279,6 +1279,7 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     assert device_10.actions[-1].t == 'ConfirmRevoke'
     assert device_10.actions[-2].t == 'Revoke'
 
+    # check validation error
     request_confirm_revoke = {
         'type': 'ConfirmRevoke',
         'action': device_10.actions[-1].id,
@@ -1287,7 +1288,6 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
         ]
     }
 
-    # check validation error
     user2.post(res=models.Action, data=request_confirm_revoke, status=422)
 
 
