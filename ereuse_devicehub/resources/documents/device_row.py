@@ -44,8 +44,10 @@ class DeviceRow(OrderedDict):
         # General information about device
         self['DevicehubID'] = device.devicehub_id
         self['DocumentID'] = self.document_id
-        self['Public Link'] = '{url}{id}'.format(url=url_for('Device.main', _external=True),
-                id=device.devicehub_id)
+        self['Public Link'] = '{url}{id}'.format(
+            url=url_for('Device.main', _external=True),
+            id=device.devicehub_id)
+        self['Lots'] = ', '.join([x.name for x in self.device.lots])
         self['Tag 1 Type'] = self['Tag 1 ID'] = self['Tag 1 Organization'] = ''
         self['Tag 2 Type'] = self['Tag 2 ID'] = self['Tag 2 Organization'] = ''
         self['Tag 3 Type'] = self['Tag 3 ID'] = self['Tag 3 Organization'] = ''
