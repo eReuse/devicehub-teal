@@ -220,13 +220,13 @@ def test_export_basic_snapshot(user: UserClient):
         obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
         fixture_csv = list(obj_csv)
 
-    assert isinstance(datetime.strptime(export_csv[1][18], '%c'), datetime), \
+    assert isinstance(datetime.strptime(export_csv[1][19], '%c'), datetime), \
         'Register in field is not a datetime'
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
-    assert fixture_csv[1][:18] == export_csv[1][:18], 'Computer information are not equal'
-    assert fixture_csv[1][19] == export_csv[1][19], 'Computer information are not equal'
-    assert fixture_csv[1][21:] == export_csv[1][21:], 'Computer information are not equal'
+    assert fixture_csv[1][:19] == export_csv[1][:19], 'Computer information are not equal'
+    assert fixture_csv[1][20] == export_csv[1][20], 'Computer information are not equal'
+    assert fixture_csv[1][22:] == export_csv[1][22:], 'Computer information are not equal'
 
 
 @pytest.mark.mvp
@@ -275,30 +275,33 @@ def test_export_extended(app: Devicehub, user: UserClient):
     obj_csv = csv.reader(f, f, delimiter=';', quotechar='"')
     export_csv = list(obj_csv)
 
+    ff= open('ba.csv', 'w')
+    ff.write(csv_str)
+    ff.close()
     # Open fixture csv and transform to list
     with Path(__file__).parent.joinpath('files').joinpath(
             'proposal_extended_csv_report.csv').open() as csv_file:
         obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
         fixture_csv = list(obj_csv)
 
-    assert isinstance(datetime.strptime(export_csv[1][18], '%c'), datetime), \
+    assert isinstance(datetime.strptime(export_csv[1][19], '%c'), datetime), \
         'Register in field is not a datetime'
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
-    assert fixture_csv[1][:18] == export_csv[1][:18], 'Computer information are not equal'
-    assert fixture_csv[1][19] == export_csv[1][19], 'Computer information are not equal'
-    assert fixture_csv[1][21:80] == export_csv[1][21:80], 'Computer information are not equal'
-    assert fixture_csv[1][81] == export_csv[1][81], 'Computer information are not equal'
-    assert fixture_csv[1][84:] == export_csv[1][84:], 'Computer information are not equal'
-    assert fixture_csv[2][:18] == export_csv[2][:18], 'Computer information are not equal'
-    assert fixture_csv[2][19] == export_csv[2][19], 'Computer information are not equal'
-    assert fixture_csv[2][21:80] == export_csv[2][21:80], 'Computer information are not equal'
-    assert fixture_csv[2][81] == export_csv[2][81], 'Computer information are not equal'
-    assert fixture_csv[2][84:104] == export_csv[2][84:104], 'Computer information are not equal'
-    assert fixture_csv[2][105] == export_csv[2][105], 'Computer information are not equal'
-    assert fixture_csv[2][108:128] == export_csv[2][108:128], 'Computer information are not equal'
-    assert fixture_csv[2][129] == export_csv[2][129], 'Computer information are not equal'
-    assert fixture_csv[2][132:] == export_csv[2][132:], 'Computer information are not equal'
+    assert fixture_csv[1][:19] == export_csv[1][:19], 'Computer information are not equal'
+    assert fixture_csv[1][20] == export_csv[1][20], 'Computer information are not equal'
+    assert fixture_csv[1][22:81] == export_csv[1][22:81], 'Computer information are not equal'
+    assert fixture_csv[1][82] == export_csv[1][82], 'Computer information are not equal'
+    assert fixture_csv[1][85:] == export_csv[1][85:], 'Computer information are not equal'
+    assert fixture_csv[2][:19] == export_csv[2][:19], 'Computer information are not equal'
+    assert fixture_csv[2][20] == export_csv[2][20], 'Computer information are not equal'
+    assert fixture_csv[2][22:81] == export_csv[2][22:81], 'Computer information are not equal'
+    assert fixture_csv[2][82] == export_csv[2][82], 'Computer information are not equal'
+    assert fixture_csv[2][85:105] == export_csv[2][85:105], 'Computer information are not equal'
+    assert fixture_csv[2][106] == export_csv[2][106], 'Computer information are not equal'
+    assert fixture_csv[2][109:129] == export_csv[2][109:129], 'Computer information are not equal'
+    assert fixture_csv[2][130] == export_csv[2][130], 'Computer information are not equal'
+    assert fixture_csv[2][133:] == export_csv[2][133:], 'Computer information are not equal'
 
 
 @pytest.mark.mvp
@@ -656,10 +659,10 @@ def test_get_wbconf(user: UserClient):
     """Tests for get env file for usb wb."""
 
     env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodyrate', accept=ANY)
-    assert 'WB_ERASE = False' in env
+    assert 'WB_ERASE =' in env
 
     env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodywipe', accept=ANY)
-    assert 'WB_ERASE = False' in env
+    assert 'WB_ERASE =' in env
     # assert 'WB_ERASE = True' in env
 
     session = Session.query.filter_by(user_id=user.user['id'],
