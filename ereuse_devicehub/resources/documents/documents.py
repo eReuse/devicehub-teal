@@ -323,8 +323,8 @@ class WbConfDocumentView(DeviceView):
             return jsonify('')
 
         data = {'token': self.get_token(),
-                'host': app.config['DB_HOST'],
-                'inventory': app.config['DB_SCHEMA']
+                'host': app.config['HOST'],
+                'inventory': app.config['SCHEMA']
                 }
         data['erase'] = False
         # data['erase'] = True if wbtype == 'usodywipe' else False
