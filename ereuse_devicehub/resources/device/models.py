@@ -263,6 +263,13 @@ class Device(Thing):
             return states.Trading(action.__class__)
 
     @property
+    def confirm_status(self):
+        """The actual state of confirmation of one Trade, or None if no Trade action
+        has ever been performed to this device."""
+        # TODO @cayop we need implement this functionality
+        return None
+
+    @property
     def physical(self):
         """The actual physical state, None otherwise."""
         from ereuse_devicehub.resources.device import states
