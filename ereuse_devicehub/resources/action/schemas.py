@@ -507,7 +507,7 @@ class Trade(ActionWithMultipleDevices):
     user_from_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userFrom', missing='',
                                 required=False)
     code = SanitizedStr(validate=Length(max=STR_SIZE), data_key='code', required=False)
-    confirm = Boolean(missing=False, description="""If you need confirmation of the user
+    confirm = Boolean(data_key='confirms', missing=False, description="""If you need confirmation of the user
             you need actevate this field""")
     lot = NestedOn('Lot',
                    many=False,
