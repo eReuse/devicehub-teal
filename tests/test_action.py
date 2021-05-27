@@ -791,7 +791,7 @@ def test_offer_without_to(user: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
         'lot': lot['id'],
-        'confirm': False,
+        'confirms': False,
         'code': 'MAX'
     }
     user.post(res=models.Action, data=request_post)
@@ -819,7 +819,7 @@ def test_offer_without_to(user: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
         'lot': lot['id'],
-        'confirm': False,
+        'confirms': False,
         'code': 'MAX'
     }
     user.post(res=models.Action, data=request_post, status=422)
@@ -842,7 +842,7 @@ def test_offer_without_to(user: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
         'lot': lot2.id,
-        'confirm': False,
+        'confirms': False,
         'code': 'MAX'
     }
     user.post(res=models.Action, data=request_post2)
@@ -873,7 +873,7 @@ def test_offer_without_from(user: UserClient, user2: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
         'lot': lot.id,
-        'confirm': False,
+        'confirms': False,
         'code': 'MAX'
     }
     action, _ = user2.post(res=models.Action, data=request_post, status=422)
@@ -918,7 +918,7 @@ def test_offer_without_users(user: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
         'lot': lot.id,
-        'confirm': False,
+        'confirms': False,
         'code': 'MAX'
     }
     action, response = user.post(res=models.Action, data=request_post, status=422)
@@ -952,7 +952,7 @@ def test_offer(user: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
         'lot': lot.id,
-        'confirm': True,
+        'confirms': True,
     }
 
     action, _ = user.post(res=models.Action, data=request_post)
@@ -979,7 +979,7 @@ def test_offer_without_devices(user: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
         'lot': lot['id'],
-        'confirm': True,
+        'confirms': True,
     }
 
     user.post(res=models.Action, data=request_post)
@@ -1058,7 +1058,7 @@ def test_endpoint_confirm(user: UserClient, user2: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
         'lot': lot['id'],
-        'confirm': True,
+        'confirms': True,
     }
 
     user.post(res=models.Action, data=request_post)
@@ -1099,7 +1099,7 @@ def test_confirm_revoke(user: UserClient, user2: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
         'lot': lot['id'],
-        'confirm': True,
+        'confirms': True,
     }
 
     user.post(res=models.Action, data=request_post)
@@ -1178,7 +1178,7 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
         'lot': lot['id'],
-        'confirm': True,
+        'confirms': True,
     }
 
     user.post(res=models.Action, data=request_post)
@@ -1366,7 +1366,7 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
         'lot': lot['id'],
-        'confirm': True,
+        'confirms': True,
     }
 
     user.post(res=models.Action, data=request_post)
