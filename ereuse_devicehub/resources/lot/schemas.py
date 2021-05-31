@@ -26,3 +26,4 @@ class Lot(Thing):
     transfer_state = EnumField(TransferState, description=m.Lot.transfer_state.comment)
     receiver_address = SanitizedStr(validate=f.validate.Length(max=42))
     deliverynote = NestedOn(s_deliverynote.Deliverynote, dump_only=True)
+    is_temporary = f.Boolean(missing=True, data_key='isTemporary')
