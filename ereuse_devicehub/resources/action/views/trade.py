@@ -29,6 +29,8 @@ class TradeView():
     def __init__(self, data, resource_def, schema):
         self.schema = schema
         a = resource_def.schema.load(data)
+        a.pop('user_to_email', '')
+        a.pop('user_from_email', '')
         self.trade = Trade(**a)
         self.create_phantom_account()
         db.session.add(self.trade)
@@ -36,7 +38,6 @@ class TradeView():
         self.create_confirmations()
 
     def post(self):
-        # import pdb; pdb.set_trace()
         db.session().final_flush()
         ret = self.schema.jsonify(self.trade)
         ret.status_code = 201
@@ -57,7 +58,7 @@ class TradeView():
 
         # check than the user than want to do the action is one of the users
         # involved in the action
-        assert g.user.id in [self.trade.user_from_id, self.trade.user_to_id]
+        assert g.user in [self.trade.user_from, self.trade.user_to]
 
         confirm_from = Confirm(user=self.trade.user_from, 
                                action=self.trade, 
@@ -78,12 +79,12 @@ class TradeView():
         The same if exist to but not from
 
         """
-        if self.trade.user_from_id and self.trade.user_to_id:
+        if self.trade.user_from and self.trade.user_to:
             return
 
-        if self.trade.user_from_id and not self.trade.user_to_id:
-            assert g.user.id == self.trade.user_from_id
-            email = "{}_{}@dhub.com".format(str(self.trade.user_from_id), self.trade.code)
+        if self.trade.user_from and not self.trade.user_to:
+            assert g.user == self.trade.user_from
+            email = "{}_{}@dhub.com".format(str(self.trade.user_from.id), self.trade.code)
             users = User.query.filter_by(email=email)
             if users.first():
                 user = users.first()
@@ -94,8 +95,8 @@ class TradeView():
             db.session.add(user)
             self.trade.user_to = user
 
-        if not self.trade.user_from_id and self.trade.user_to_id:
-            email = "{}_{}@dhub.com".format(str(self.trade.user_to_id), self.trade.code)
+        if not self.trade.user_from and self.trade.user_to:
+            email = "{}_{}@dhub.com".format(str(self.trade.user_to.id), self.trade.code)
             users = User.query.filter_by(email=email)
             if users.first():
                 user = users.first()

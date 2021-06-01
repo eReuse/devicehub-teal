@@ -786,7 +786,7 @@ def test_offer_without_to(user: UserClient):
     request_post = {
         'type': 'Trade',
         'devices': [device.id],
-        'userFrom': user.email,
+        'userFromEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
@@ -814,7 +814,7 @@ def test_offer_without_to(user: UserClient):
     request_post = {
         'type': 'Trade',
         'devices': [device.id],
-        'userFrom': user.email,
+        'userFromEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
@@ -837,7 +837,7 @@ def test_offer_without_to(user: UserClient):
     request_post2 = {
         'type': 'Trade',
         'devices': [device2.id],
-        'userFrom': user.email,
+        'userFromEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
@@ -868,7 +868,7 @@ def test_offer_without_from(user: UserClient, user2: UserClient):
     request_post = {
         'type': 'Trade',
         'devices': [device.id],
-        'userTo': user2.email,
+        'userToEmail': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
@@ -878,7 +878,7 @@ def test_offer_without_from(user: UserClient, user2: UserClient):
     }
     action, _ = user2.post(res=models.Action, data=request_post, status=422)
 
-    request_post['userTo'] = user.email
+    request_post['userToEmail'] = user.email
     action, _ = user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
 
@@ -946,8 +946,8 @@ def test_offer(user: UserClient):
     request_post = {
         'type': 'Trade',
         'devices': [],
-        'userFrom': user.email,
-        'userTo': user2.email,
+        'userFromEmail': user.email,
+        'userToEmail': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
@@ -973,8 +973,8 @@ def test_offer_without_devices(user: UserClient):
     request_post = {
         'type': 'Trade',
         'devices': [],
-        'userFrom': user.email,
-        'userTo': user2.email,
+        'userFromEmail': user.email,
+        'userToEmail': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
@@ -1052,8 +1052,8 @@ def test_endpoint_confirm(user: UserClient, user2: UserClient):
     request_post = {
         'type': 'Trade',
         'devices': [device_id],
-        'userFrom': user.email,
-        'userTo': user2.email,
+        'userFromEmail': user.email,
+        'userToEmail': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
@@ -1093,8 +1093,8 @@ def test_confirm_revoke(user: UserClient, user2: UserClient):
     request_post = {
         'type': 'Trade',
         'devices': [device_id],
-        'userFrom': user.email,
-        'userTo': user2.email,
+        'userFromEmail': user.email,
+        'userToEmail': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
@@ -1172,8 +1172,8 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     request_post = {
         'type': 'Trade',
         'devices': [],
-        'userFrom': user2.email,
-        'userTo': user.email,
+        'userFromEmail': user2.email,
+        'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',
@@ -1183,6 +1183,8 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
 
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
+    # l_after, _ = user.get(res=Lot, item=lot['id'])
+    # import pdb; pdb.set_trace()
 
     # the SCRAP confirms 3 of the 10 devices in its outgoing lot
     request_confirm = {
@@ -1360,8 +1362,8 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
     request_post = {
         'type': 'Trade',
         'devices': [],
-        'userFrom': user2.email,
-        'userTo': user.email,
+        'userFromEmail': user2.email,
+        'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
         'documentID': '1',

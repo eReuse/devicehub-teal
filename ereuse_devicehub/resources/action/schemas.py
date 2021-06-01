@@ -502,10 +502,20 @@ class Trade(ActionWithMultipleDevices):
     document_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='documentID', required=False)
     date = DateTime(data_key='date', required=False)
     price = Float(required=False, data_key='price')
-    user_to_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userTo', missing='',
-                              required=False)
-    user_from_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='userFrom', missing='',
-                                required=False)
+    user_to_email = SanitizedStr(
+        validate=Length(max=STR_SIZE), 
+        data_key='userToEmail', 
+        missing='',
+        required=False
+    )
+    user_to = NestedOn(s_user.User, dump_only=True, data_key='userTo')
+    user_from_email = SanitizedStr(
+        validate=Length(max=STR_SIZE),
+        data_key='userFromEmail', 
+        missing='',
+        required=False
+    )
+    user_from = NestedOn(s_user.User, dump_only=True, data_key='userFrom')
     code = SanitizedStr(validate=Length(max=STR_SIZE), data_key='code', required=False)
     confirm = Boolean(data_key='confirms', missing=False, description="""If you need confirmation of the user
             you need actevate this field""")
@@ -516,7 +526,7 @@ class Trade(ActionWithMultipleDevices):
 
     @validates_schema
     def validate_lot(self, data: dict):
-        if not g.user.email in [data['user_from_id'], data['user_to_id']]:
+        if not g.user.email in [data['user_from_email'], data['user_to_email']]:
             txt = "you need to be one of the users of involved in the Trade"
             raise ValidationError(txt)
 
@@ -532,7 +542,7 @@ class Trade(ActionWithMultipleDevices):
         data['devices'] = data['lot'].devices
 
     @validates_schema
-    def validate_user_to_id(self, data: dict):
+    def validate_user_to_email(self, data: dict):
         """
         - if user_to exist
             * confirmation
@@ -541,15 +551,14 @@ class Trade(ActionWithMultipleDevices):
             * without confirmation
 
         """
-        if data['user_to_id']:
-            user_to = User.query.filter_by(email=data['user_to_id']).one()
-            data['user_to_id'] = user_to.id
+        if data['user_to_email']:
+            user_to = User.query.filter_by(email=data['user_to_email']).one()
             data['user_to'] = user_to
         else:
             data['confirm'] = False
 
     @validates_schema
-    def validate_user_from_id(self, data: dict):
+    def validate_user_from_email(self, data: dict):
         """
         - if user_from exist
             * confirmation
@@ -558,13 +567,12 @@ class Trade(ActionWithMultipleDevices):
             * without confirmation
 
         """
-        if not (data['user_from_id'] or data['user_to_id']):
+        if not (data['user_from_email'] or data['user_to_email']):
             txt = "you need one user from or user to for to do a offer"
             raise ValidationError(txt)
 
-        if data['user_from_id']:
-            user_from = User.query.filter_by(email=data['user_from_id']).one()
-            data['user_from_id'] = user_from.id
+        if data['user_from_email']:
+            user_from = User.query.filter_by(email=data['user_from_email']).one()
             data['user_from'] = user_from
         else:
             data['confirm'] = False
@@ -572,7 +580,7 @@ class Trade(ActionWithMultipleDevices):
     @validates_schema
     def validate_code(self, data: dict):
         """If the user not exist, you need a code to be able to do the traceability"""
-        if data['user_from_id'] and data['user_to_id']:
+        if data['user_from_email'] and data['user_to_email']:
             return
 
         if not data.get('code'):
