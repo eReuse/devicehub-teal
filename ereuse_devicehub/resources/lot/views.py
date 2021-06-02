@@ -12,9 +12,8 @@ from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
-from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 from ereuse_devicehub.resources.device.models import Device, Computer
-from ereuse_devicehub.resources.action.models import Confirm, Revoke
+from ereuse_devicehub.resources.action.models import Trade, Confirm, Revoke
 from ereuse_devicehub.resources.lot.models import Lot, Path
 
 
@@ -99,9 +98,9 @@ class LotView(View):
         return jsonify(ret)
 
     def visibility_filter(self, query):
-        query = query.outerjoin(Deliverynote) \
-            .filter(or_(Deliverynote.receiver_address == g.user.email,
-                        Deliverynote.supplier_email == g.user.email,
+        query = query.outerjoin(Trade) \
+            .filter(or_(Trade.user_from == g.user,
+                        Trade.user_to == g.user,
                         Lot.owner_id == g.user.id))
         return query
 
@@ -110,7 +109,7 @@ class LotView(View):
         return query
 
     def delete(self, id):
-        lot = Lot.query.filter_by(id=id).one()
+        lot = Lot.query.filter_by(id=id,).one()
         lot.delete()
         db.session.commit()
         return Response(status=204)
