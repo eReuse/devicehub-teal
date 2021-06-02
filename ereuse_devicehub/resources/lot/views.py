@@ -109,7 +109,7 @@ class LotView(View):
         return query
 
     def delete(self, id):
-        lot = Lot.query.filter_by(id=id,).one()
+        lot = Lot.query.filter_by(id=id, owner=g.user).one()
         lot.delete()
         db.session.commit()
         return Response(status=204)
