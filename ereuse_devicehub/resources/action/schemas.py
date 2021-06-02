@@ -503,22 +503,25 @@ class Trade(ActionWithMultipleDevices):
     date = DateTime(data_key='date', required=False)
     price = Float(required=False, data_key='price')
     user_to_email = SanitizedStr(
-        validate=Length(max=STR_SIZE), 
-        data_key='userToEmail', 
+        validate=Length(max=STR_SIZE),
+        data_key='userToEmail',
         missing='',
         required=False
     )
     user_to = NestedOn(s_user.User, dump_only=True, data_key='userTo')
     user_from_email = SanitizedStr(
         validate=Length(max=STR_SIZE),
-        data_key='userFromEmail', 
+        data_key='userFromEmail',
         missing='',
         required=False
     )
     user_from = NestedOn(s_user.User, dump_only=True, data_key='userFrom')
     code = SanitizedStr(validate=Length(max=STR_SIZE), data_key='code', required=False)
-    confirm = Boolean(data_key='confirms', missing=False, description="""If you need confirmation of the user
-            you need actevate this field""")
+    confirm = Boolean(
+        data_key='confirms',
+        missing=True,
+        description="""If you need confirmation of the user you need actevate this field"""
+    )
     lot = NestedOn('Lot',
                    many=False,
                    required=True,

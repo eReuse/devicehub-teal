@@ -150,7 +150,9 @@ class DeviceView(View):
         )
 
     def query(self, args):
-        query = Device.query.filter((Device.owner_id == g.user.id)).distinct()
+        query = Device.query.filter().distinct()
+        # import pdb; pdb.set_trace()
+        # query = Device.query.filter((Device.owner_id == g.user.id)).distinct()
         search_p = args.get('search', None)
         if search_p:
             properties = DeviceSearch.properties
