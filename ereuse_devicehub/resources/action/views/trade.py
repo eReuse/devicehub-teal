@@ -58,7 +58,9 @@ class TradeView():
 
         # check than the user than want to do the action is one of the users
         # involved in the action
-        assert g.user in [self.trade.user_from, self.trade.user_to]
+        if not g.user in [self.trade.user_from, self.trade.user_to]:
+            txt = "You do not participate in this trading"
+            raise ValidationError(txt)
 
         confirm_from = Confirm(user=self.trade.user_from, 
                                action=self.trade, 
