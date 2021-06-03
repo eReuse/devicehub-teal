@@ -31,7 +31,6 @@ class LotView(View):
 
     def post(self):
         l = request.get_json()
-        l.pop('is_temporary', '')
         lot = Lot(**l)
         db.session.add(lot)
         db.session().final_flush()

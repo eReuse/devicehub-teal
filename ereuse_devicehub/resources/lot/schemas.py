@@ -28,4 +28,3 @@ class Lot(Thing):
     receiver_address = SanitizedStr(validate=f.validate.Length(max=42))
     deliverynote = NestedOn(s_deliverynote.Deliverynote, dump_only=True)
     trade = NestedOn(s_action.Trade, dump_only=True)
-    is_temporary = f.Boolean(missing=True, data_key='isTemporary')
