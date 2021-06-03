@@ -1,5 +1,6 @@
 import pathlib
 import copy
+from flask import g
 from contextlib import suppress
 from fractions import Fraction
 from itertools import chain
@@ -255,12 +256,82 @@ class Device(Thing):
 
     @property
     def trading(self):
-        """The actual trading state, or None if no Trade action has
-        ever been performed to this device."""
+        """The trading state, or None if no Trade action has
+        ever been performed to this device. This extract the posibilities for to do"""
+
+        # import pdb; pdb.set_trace()
+        trade = 'Trade'
+        confirm = 'Confirm'
+        revoke = 'Revoke'
+        revoke_pending = 'RevokePending'
+        confirm_revoke = 'ConfirmRevoke'
+        revoke_confirmed = 'RevokeConfirmed'
+
+        types = [trade, confirm, revoke, confirm_revoke]
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        actions.reverse()
+
+        actions_trade = []
+
+        # get only the actions trade of the last trade
+        for ac in actions:
+            if ac.type in types:
+                actions_trade.append(ac)
+
+            if ac.type == trade:
+                break
+
+        # return the correct status of trade depending of the user
+
+        ##### CASES #####
+        ## User1 == owner of trade (This user have automatic Confirmation)
+        ## =======================
+        ## Confirmation not User1 => Revoke
+        ## Confirmation User1     => Revoke
+        ## Revoke not User1       => ConfirmRevoke
+        ## Revoke User1           => RevokePending
+        ## RevokeConfirmation     => RevokeConfirmed
+        ##
+        ##
+        ## User2 == Not owner of trade
+        ## =======================
+        ## Confirmation not User2 => Confirm
+        ## Confirmation User2     => Revoke
+        ## Revoke not User2       => ConfirmRevoke
+        ## Revoke User2           => RevokePending
+        ## RevokeConfirmation     => RevokeConfirmed
+
+        for ac in actions_trade:
+            if ac.type == confirm_revoke:
+                # can to do revoke_confirmed
+                return confirm_revoke
+
+            if ac.type == revoke and ac.user == g.user:
+                # can todo revoke_pending
+                return revoke_pending
+
+            if ac.type == revoke and ac.user != g.user:
+                # can to do confirm_revoke
+                return revoke
+
+            if ac.type == confirm and (ac.user == g.user or ac.action.author == g.user):
+                # can to do revoke
+                return confirm
+
+            if ac.type == confirm and ac.user != g.user:
+                # can to do confirm
+                return trade
+
+    @property
+    def revoke(self):
+        """If the actual trading state is an revoke action, this property show
+        the id of that revoke"""
         from ereuse_devicehub.resources.device import states
         with suppress(LookupError, ValueError):
             action = self.last_action_of(*states.Trading.actions())
-            return states.Trading(action.__class__)
+            if action.type == 'Revoke':
+                return action.id
 
     @property
     def confirm_status(self):

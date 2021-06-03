@@ -35,6 +35,9 @@ class Trading(State):
     """
     Reserved = e.Reserve
     Trade = e.Trade
+    Confirm = e.Confirm
+    Revoke = e.Revoke
+    ConfirmRevoke = e.ConfirmRevoke
     Cancelled = e.CancelTrade
     Sold = e.Sell
     Donated = e.Donate

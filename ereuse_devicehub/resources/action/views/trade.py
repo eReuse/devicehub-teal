@@ -290,15 +290,18 @@ class ConfirmRevokeView(ConfirmMixin):
                     # then g.user can not to do the ConfirmRevoke more
                     break
 
-        data['devices'] = OrderedSet(real_devices)
+        devices = OrderedSet(real_devices)
+        data['devices'] = devices
 
         # Change the owner for every devices
-        trade = data['action']
-        for dev in data['devices']:
-            # TODO @cayop this should be the author of confirm actions instead of 
-            # author of trade
+        # data['action'] == 'Revoke'
+
+        trade = data['action'].action
+        for dev in devices:
+            # TODO @cayop if it's possible the both users insert devices into a lot, then there are problems
             dev.owner = trade.author
             if hasattr(dev, 'components'):
                 for c in dev.components:
                     c.owner = trade.author
 
+        trade.lot.devices.difference_update(devices)

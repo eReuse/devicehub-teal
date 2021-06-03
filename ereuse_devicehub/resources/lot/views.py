@@ -230,11 +230,12 @@ class LotDeviceView(LotBaseChildrenView):
             return
 
         users = [g.user.id]
-        if lot.trade:
+        # Not for the moment
+        # if lot.trade:
             # all users involved in the trade action can modify the lot
-            trade_users = [lot.trade.user_from.id, lot.trade.user_to.id]
-            if g.user in trade_users:
-                users = trade_users
+            # trade_users = [lot.trade.user_from.id, lot.trade.user_to.id]
+            # if g.user in trade_users:
+                # users = trade_users
 
         devices = set(Device.query.filter(Device.id.in_(ids)).filter(
             Device.owner_id.in_(users)))
