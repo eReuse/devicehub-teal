@@ -13,7 +13,7 @@ from teal.resource import View
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.device.models import Device, Computer
-from ereuse_devicehub.resources.action.models import Trade, Confirm, Revoke
+from ereuse_devicehub.resources.action.models import Trade, Confirm, Revoke, ConfirmRevoke
 from ereuse_devicehub.resources.lot.models import Lot, Path
 
 
@@ -254,6 +254,7 @@ class LotDeviceView(LotBaseChildrenView):
             return
 
         users = [g.user.id]
+        # import pdb; pdb.set_trace()
         if lot.trade:
             # all users involved in the trade action can modify the lot
             trade_users = [lot.trade.user_from.id, lot.trade.user_to.id]
@@ -263,10 +264,36 @@ class LotDeviceView(LotBaseChildrenView):
         devices = set(Device.query.filter(Device.id.in_(ids)).filter(
             Device.owner_id.in_(users)))
 
-        lot.devices.difference_update(devices)
+        if not lot.trade:
+            lot.devices.difference_update(devices)
+            return
 
-        if lot.trade:
+        # if is a trade
+        if not g.user in [lot.trade.user_from, lot.trade.user_to]:
+            # theoretically this case is impossible
+            return
+
+
+        # Now we need to know which devices we need extract of the lot
+        without_confirms = set() # set of devs without confirms of user2
+
+        if g.user == lot.trade.author:
+            for dev in devices:
+                ac = dev.last_action_trading
+                if ac.type == 'Confirm' and ac.user == g.user:
+                    without_confirms.add(dev)
+
+        # we need to mark one revoke for every devs
+        revoke = Revoke(action=lot.trade, user=g.user, devices=devices)
+        db.session.add(revoke)
+
+        if without_confirms:
+            confirm_revoke = ConfirmRevoke(
+                action=revoke,
+                user=g.user,
+                devices=without_confirms
+            )
+            db.session.add(confirm_revoke)
+
+            lot.devices.difference_update(without_confirms)
             lot.trade.devices = lot.devices
-            if g.user in [lot.trade.user_from, lot.trade.user_to]:
-                revoke = Revoke(action=lot.trade, user=g.user, devices=devices)
-                db.session.add(revoke)

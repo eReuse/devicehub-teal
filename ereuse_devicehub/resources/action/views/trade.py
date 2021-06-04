@@ -7,6 +7,7 @@ from teal.marshmallow import ValidationError
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import Trade, Confirm, ConfirmRevoke, Revoke
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.lot.models import Lot
 
 
 class TradeView():
@@ -221,28 +222,55 @@ class RevokeView(ConfirmMixin):
 
     Model = Revoke
 
+    def __init__(self, data, resource_def, schema):
+        self.schema = schema
+        a = resource_def.schema.load(data)
+        self.validate(a)
+
     def validate(self, data):
         """If there are one device than have one confirmation,
            then remove the list this device of the list of devices of this action
         """
-        real_devices = []
+        ### check ###
+        devs_confirm = []
+        if not data['devices']:
+            raise ValidationError('Devices not exist.')
+
         for dev in data['devices']:
-            actions = copy.copy(dev.actions)
-            actions.reverse()
-            for ac in actions:
-                if ac == data['action']:
-                    # data['action'] is a Trade action, if this is the first action
-                    # to find mean that this devices dont have a confirmation
-                    break
+            if dev.last_action_trading.type == 'Confirm':
+                devs_confirm.append(dev)
 
-                if ac.t == 'Revoke' and ac.user == g.user:
-                    break
+        if not len(data['devices']) == len(devs_confirm):
+            txt = "Some of this devices can't be reboked"
+            raise ValidationError(txt)
+        ### End check ###
 
-                if ac.t == Confirm.t and ac.user == g.user:
-                    real_devices.append(dev)
-                    break
+        lot = data['action'].lot
+        devices = set(data['devices'])
+        without_confirms = set() # set of devs without confirms of user2
 
-        data['devices'] = OrderedSet(real_devices)
+        if g.user == lot.trade.author:
+            for dev in devices:
+                ac = dev.last_action_trading
+                if ac.type == 'Confirm' and ac.user == g.user:
+                    without_confirms.add(dev)
+
+        # we need to mark one revoke for every devs
+        revoke = Revoke(action=lot.trade, user=g.user, devices=devices)
+        db.session.add(revoke)
+
+        if without_confirms:
+            confirm_revoke = ConfirmRevoke(
+                action=revoke,
+                user=g.user,
+                devices=without_confirms
+            )
+            db.session.add(confirm_revoke)
+
+            lot.devices.difference_update(without_confirms)
+            lot.trade.devices = lot.devices
+
+        self.model = revoke
 
 
 class ConfirmRevokeView(ConfirmMixin):

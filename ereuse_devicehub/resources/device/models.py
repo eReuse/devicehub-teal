@@ -255,38 +255,31 @@ class Device(Thing):
             return self.last_action_of(Price)
 
     @property
+    def last_action_trading(self):
+        """which is the last action trading"""
+        from ereuse_devicehub.resources.device import states
+        with suppress(LookupError, ValueError):
+            return self.last_action_of(*states.Trading.actions())
+
+    @property
     def trading(self):
         """The trading state, or None if no Trade action has
         ever been performed to this device. This extract the posibilities for to do"""
 
-        # import pdb; pdb.set_trace()
         trade = 'Trade'
         confirm = 'Confirm'
         revoke = 'Revoke'
         revoke_pending = 'RevokePending'
         confirm_revoke = 'ConfirmRevoke'
-        revoke_confirmed = 'RevokeConfirmed'
-
-        types = [trade, confirm, revoke, confirm_revoke]
-        actions = copy.copy(self.actions)
-        actions.sort(key=lambda x: x.created)
-        actions.reverse()
-
-        actions_trade = []
-
-        # get only the actions trade of the last trade
-        for ac in actions:
-            if ac.type in types:
-                actions_trade.append(ac)
-
-            if ac.type == trade:
-                break
+        # revoke_confirmed = 'RevokeConfirmed'
 
         # return the correct status of trade depending of the user
 
         ##### CASES #####
         ## User1 == owner of trade (This user have automatic Confirmation)
         ## =======================
+        ## if the last action is  => only allow to do
+        ## ==========================================
         ## Confirmation not User1 => Revoke
         ## Confirmation User1     => Revoke
         ## Revoke not User1       => ConfirmRevoke
@@ -296,32 +289,35 @@ class Device(Thing):
         ##
         ## User2 == Not owner of trade
         ## =======================
+        ## if the last action is  => only allow to do
+        ## ==========================================
         ## Confirmation not User2 => Confirm
         ## Confirmation User2     => Revoke
         ## Revoke not User2       => ConfirmRevoke
         ## Revoke User2           => RevokePending
         ## RevokeConfirmation     => RevokeConfirmed
 
-        for ac in actions_trade:
-            if ac.type == confirm_revoke:
-                # can to do revoke_confirmed
-                return confirm_revoke
+        ac = self.last_action_trading
 
-            if ac.type == revoke and ac.user == g.user:
-                # can todo revoke_pending
-                return revoke_pending
+        if ac.type == confirm_revoke:
+            # can to do revoke_confirmed
+            return confirm_revoke
 
-            if ac.type == revoke and ac.user != g.user:
-                # can to do confirm_revoke
-                return revoke
+        if ac.type == revoke and ac.user == g.user:
+            # can todo revoke_pending
+            return revoke_pending
 
-            if ac.type == confirm and (ac.user == g.user or ac.action.author == g.user):
-                # can to do revoke
-                return confirm
+        if ac.type == revoke and ac.user != g.user:
+            # can to do confirm_revoke
+            return revoke
 
-            if ac.type == confirm and ac.user != g.user:
-                # can to do confirm
-                return trade
+        if ac.type == confirm and (ac.user == g.user or ac.action.author == g.user):
+            # can to do revoke
+            return confirm
+
+        if ac.type == confirm and ac.user != g.user:
+            # can to do confirm
+            return trade
 
     @property
     def revoke(self):
