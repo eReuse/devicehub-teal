@@ -58,6 +58,8 @@ def upgrade():
                     sa.Column('user_to_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('document_id', citext.CIText(), nullable=True),
                     sa.Column('confirm', sa.Boolean(), nullable=True),
+                    sa.Column('code', citext.CIText(), default='', nullable=True,
+                        comment = "This code is used for traceability"),
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
                     sa.ForeignKeyConstraint(['user_from_id'], ['common.user.id'], ),
                     sa.ForeignKeyConstraint(['user_to_id'], ['common.user.id'], ),
