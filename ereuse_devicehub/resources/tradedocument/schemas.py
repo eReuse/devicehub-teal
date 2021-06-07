@@ -7,7 +7,7 @@ from marshmallow import ValidationError, validates_schema
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.tradedocument import models as m
-from ereuse_devicehub.resources.lot import schemas as s_lot
+# from ereuse_devicehub.resources.lot import schemas as s_lot
 
 
 class TradeDocument(Thing):
@@ -18,7 +18,8 @@ class TradeDocument(Thing):
     description = SanitizedStr(default='', description=m.TradeDocument.description.comment)
     file_name = SanitizedStr(default='', description=m.TradeDocument.file_name.comment)
     file = Raw(type='file')
-    lot = NestedOn(s_lot.Lot, only_query='id', description=m.TradeDocument.lot.__doc__)
+    lot = NestedOn('Lot', only_query='id', description=m.TradeDocument.lot.__doc__)
+    # lot = NestedOn(s_lot.Lot, only_query='id', description=m.TradeDocument.lot.__doc__)
 
 
     @validates_schema
