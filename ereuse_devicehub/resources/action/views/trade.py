@@ -85,6 +85,9 @@ class TradeView():
         if self.trade.user_from and self.trade.user_to:
             return
 
+        if self.trade.confirm:
+            return
+
         if self.trade.user_from and not self.trade.user_to:
             assert g.user == self.trade.user_from
             email = "{}_{}@dhub.com".format(str(self.trade.user_from.id), self.trade.code)
