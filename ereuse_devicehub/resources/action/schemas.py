@@ -596,6 +596,8 @@ class Trade(ActionWithMultipleDevices):
             txt = "you need a code to be able to do the traceability"
             raise ValidationError(txt)
 
+        data['code'] = data['code'].replace('@', '_')
+
 
 class InitTransfer(Trade):
     __doc__ = m.InitTransfer.__doc__
