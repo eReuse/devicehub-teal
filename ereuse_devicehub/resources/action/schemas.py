@@ -592,7 +592,7 @@ class Trade(ActionWithMultipleDevices):
             data['confirm'] = True
             return
 
-        if not data['confirm'] not data.get('code'):
+        if not data['confirm'] and not data.get('code'):
             txt = "you need a code to be able to do the traceability"
             raise ValidationError(txt)
 
