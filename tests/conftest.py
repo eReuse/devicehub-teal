@@ -17,6 +17,8 @@ from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.user.models import Session
+from ereuse_devicehub.resources.enums import SessionType
 
 STARTT = datetime(year=2000, month=1, day=1, hour=1)
 """A dummy starting time to use in tests."""
@@ -112,7 +114,11 @@ def user2(app: Devicehub) -> UserClient:
 def create_user(email='foo@foo.com', password='foo') -> User:
     user = User(email=email, password=password)
     user.individuals.add(Person(name='Timmy'))
+    session_external = Session(user=user, type=SessionType.External)
+    session_internal = Session(user=user, type=SessionType.Internal)
     db.session.add(user)
+    db.session.add(session_internal)
+    db.session.add(session_external)
     db.session.commit()
     return user
 

@@ -6,12 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## master
-  [1.0.5-beta]
-
-## testing
   [1.0.6-beta]
 
+## testing
+  [1.0.7-beta]
+
+## [1.0.7-beta]
+- [addend] #140 adding endpoint for download the settings for usb workbench
+
 ## [1.0.6-beta]
+- [bugfix] #143 biginteger instead of integer in TestDataStorage
 
 ## [1.0.5-beta]
 - [addend] #124 adding endpoint for extract the internal stats of use

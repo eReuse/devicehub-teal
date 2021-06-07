@@ -12,9 +12,8 @@ from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
-from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 from ereuse_devicehub.resources.device.models import Device, Computer
-from ereuse_devicehub.resources.action.models import Confirm, Revoke
+from ereuse_devicehub.resources.action.models import Trade, Confirm, Revoke, ConfirmRevoke
 from ereuse_devicehub.resources.lot.models import Lot, Path
 
 
@@ -98,9 +97,9 @@ class LotView(View):
         return jsonify(ret)
 
     def visibility_filter(self, query):
-        query = query.outerjoin(Deliverynote) \
-            .filter(or_(Deliverynote.receiver_address == g.user.email,
-                        Deliverynote.supplier_email == g.user.email,
+        query = query.outerjoin(Trade) \
+            .filter(or_(Trade.user_from == g.user,
+                        Trade.user_to == g.user,
                         Lot.owner_id == g.user.id))
         return query
 
@@ -109,7 +108,7 @@ class LotView(View):
         return query
 
     def delete(self, id):
-        lot = Lot.query.filter_by(id=id).one()
+        lot = Lot.query.filter_by(id=id, owner=g.user).one()
         lot.delete()
         db.session.commit()
         return Response(status=204)
@@ -253,20 +252,62 @@ class LotDeviceView(LotBaseChildrenView):
         if not ids.issubset({x.id for x in lot.devices}):
             return
 
-        users = [g.user.id]
         if lot.trade:
-            # all users involved in the trade action can modify the lot
-            trade_users = [lot.trade.user_from.id, lot.trade.user_to.id]
-            if g.user in trade_users:
-                users = trade_users
+            return delete_from_trade(lot, ids)
 
+        if not g.user in lot.owner:
+            txt = 'This is not your trade'
+            raise ma.ValidationError(txt)
         devices = set(Device.query.filter(Device.id.in_(ids)).filter(
-            Device.owner_id.in_(users)))
+            Device.owner_id.in_(g.user.id)))
 
         lot.devices.difference_update(devices)
 
-        if lot.trade:
-            lot.trade.devices = lot.devices
-            if g.user in [lot.trade.user_from, lot.trade.user_to]:
-                revoke = Revoke(action=lot.trade, user=g.user, devices=devices)
-                db.session.add(revoke)
+
+def delete_from_trade(lot: Lot, ids: Set[int]):
+    users = [lot.trade.user_from.id, lot.trade.user_to.id]
+    if not g.user.id in users:
+        # theoretically this case is impossible
+        txt = 'This is not your trade'
+        raise ma.ValidationError(txt)
+
+    # import pdb; pdb.set_trace()
+    devices = set(Device.query.filter(Device.id.in_(ids)).filter(
+        Device.owner_id.in_(users)))
+
+    # Now we need to know which devices we need extract of the lot
+    without_confirms = set() # set of devs without confirms of user2
+
+    # if the trade need confirmation, then extract all devs than
+    # have only one confirmation and is from the same user than try to do
+    # now the revoke action
+    if lot.trade.confirm:
+        for dev in devices:
+            # if have only one confirmation
+            # then can be revoked and deleted of the lot
+            # Confirm of dev.trading mean that there are only one confirmation
+            # and the first user than put this device in trade is the actual g.user
+            if dev.trading == 'Confirm': 
+                without_confirms.add(dev)
+                dev.reset_owner()
+
+    # we need to mark one revoke for every devs
+    revoke = Revoke(action=lot.trade, user=g.user, devices=devices)
+    db.session.add(revoke)
+
+    if not lot.trade.confirm:
+        # if the trade is with phantom account
+        without_confirms = devices
+
+    if without_confirms:
+        confirm_revoke = ConfirmRevoke(
+            action=revoke,
+            user=g.user,
+            devices=without_confirms
+        )
+        db.session.add(confirm_revoke)
+
+        lot.devices.difference_update(without_confirms)
+        lot.trade.devices = lot.devices
+
+    return revoke

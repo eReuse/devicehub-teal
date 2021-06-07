@@ -37,6 +37,7 @@ from tests import conftest
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures('auth_app_context')
+# cayop
 def test_snapshot_model():
     """Tests creating a Snapshot with its relationships ensuring correct
     DB mapping.
@@ -318,7 +319,7 @@ def test_snapshot_tag_inner_tag(user: UserClient, tag_id: str, app: Devicehub):
                        action_types=(RateComputer.t, BenchmarkProcessor.t, VisualTest.t))
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
-        assert tag.device_id == 1, 'Tag should be linked to the first device'
+        assert tag.device_id == 3, 'Tag should be linked to the first device'
 
 
 @pytest.mark.mvp
@@ -838,3 +839,12 @@ def test_snapshot_mobil(app: Devicehub, user: UserClient):
 
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
     shutil.rmtree(tmp_snapshots)
+
+
+@pytest.mark.mvp
+def test_bug_141(user: UserClient):
+    """This test check one bug that create a problem when try to up one snapshot
+       with a big number in the parameter command_timeout of the DataStorage
+
+    """
+    user.post(file('2021-5-4-13-41_time_out_test_datastorage'), res=Snapshot)

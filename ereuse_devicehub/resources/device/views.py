@@ -24,6 +24,7 @@ from ereuse_devicehub.resources.device.models import Device, Manufacturer, Compu
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.enums import SnapshotSoftware
 from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
+from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.tag.model import Tag
 
 
@@ -150,7 +151,16 @@ class DeviceView(View):
         )
 
     def query(self, args):
-        query = Device.query.filter((Device.owner_id == g.user.id)).distinct()
+        trades = Trade.query.filter(
+            (Trade.user_from == g.user) | (Trade.user_to == g.user)
+        ).distinct()
+
+        trades_dev_ids = {d.id for t in trades for d in t.devices}
+
+        query = Device.query.filter(
+            (Device.owner_id == g.user.id) | (Device.id.in_(trades_dev_ids))
+        ).distinct()
+
         search_p = args.get('search', None)
         if search_p:
             properties = DeviceSearch.properties
