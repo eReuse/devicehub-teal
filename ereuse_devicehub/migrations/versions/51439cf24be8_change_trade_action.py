@@ -74,10 +74,10 @@ def upgrade():
     op.create_table('confirm',
                     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False),
-                    sa.Column('trade_id', postgresql.UUID(as_uuid=True), nullable=False),
+                    sa.Column('action_id', postgresql.UUID(as_uuid=True), nullable=False),
 
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
-                    sa.ForeignKeyConstraint(['trade_id'], [f'{get_inv()}.trade.id'], ),
+                    sa.ForeignKeyConstraint(['action_id'], [f'{get_inv()}.trade.id'], ),
                     sa.ForeignKeyConstraint(['user_id'], ['common.user.id'], ),
                     sa.PrimaryKeyConstraint('id'),
                     schema=f'{get_inv()}'
