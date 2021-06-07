@@ -230,12 +230,11 @@ class LotDeviceView(LotBaseChildrenView):
             return
 
         users = [g.user.id]
-        # Not for the moment
-        # if lot.trade:
+        if lot.trade:
             # all users involved in the trade action can modify the lot
-            # trade_users = [lot.trade.user_from.id, lot.trade.user_to.id]
-            # if g.user in trade_users:
-                # users = trade_users
+            trade_users = [lot.trade.user_from.id, lot.trade.user_to.id]
+            if g.user in trade_users:
+                users = trade_users
 
         devices = set(Device.query.filter(Device.id.in_(ids)).filter(
             Device.owner_id.in_(users)))
@@ -253,47 +252,60 @@ class LotDeviceView(LotBaseChildrenView):
         if not ids.issubset({x.id for x in lot.devices}):
             return
 
-        users = [g.user.id]
-        # import pdb; pdb.set_trace()
         if lot.trade:
-            # all users involved in the trade action can modify the lot
-            trade_users = [lot.trade.user_from.id, lot.trade.user_to.id]
-            if g.user in trade_users:
-                users = trade_users
+            return delete_from_trade(lot, ids)
 
+        if not g.user in lot.owner:
+            txt = 'This is not your trade'
+            raise ma.ValidationError(txt)
         devices = set(Device.query.filter(Device.id.in_(ids)).filter(
-            Device.owner_id.in_(users)))
+            Device.owner_id.in_(g.user.id)))
 
-        if not lot.trade:
-            lot.devices.difference_update(devices)
-            return
-
-        # if is a trade
-        if not g.user in [lot.trade.user_from, lot.trade.user_to]:
-            # theoretically this case is impossible
-            return
+        lot.devices.difference_update(devices)
 
 
-        # Now we need to know which devices we need extract of the lot
-        without_confirms = set() # set of devs without confirms of user2
+def delete_from_trade(lot: Lot, ids: Set[int]):
+    users = [lot.trade.user_from.id, lot.trade.user_to.id]
+    if not g.user.id in users:
+        # theoretically this case is impossible
+        txt = 'This is not your trade'
+        raise ma.ValidationError(txt)
 
-        if g.user == lot.trade.author:
-            for dev in devices:
-                ac = dev.last_action_trading
-                if ac.type == 'Confirm' and ac.user == g.user:
-                    without_confirms.add(dev)
+    # import pdb; pdb.set_trace()
+    devices = set(Device.query.filter(Device.id.in_(ids)).filter(
+        Device.owner_id.in_(users)))
 
-        # we need to mark one revoke for every devs
-        revoke = Revoke(action=lot.trade, user=g.user, devices=devices)
-        db.session.add(revoke)
+    # Now we need to know which devices we need extract of the lot
+    without_confirms = set() # set of devs without confirms of user2
 
-        if without_confirms:
-            confirm_revoke = ConfirmRevoke(
-                action=revoke,
-                user=g.user,
-                devices=without_confirms
-            )
-            db.session.add(confirm_revoke)
+    # if the trade need confirmation, then extract all devs than
+    # have only one confirmation and is from the same user than try to do
+    # now the revoke action
+    if lot.trade.confirm:
+        for dev in devices:
+            # if have only one confirmation
+            # then can be revoked and deleted of the lot
+            if dev.trading == 'NeedConfirmation':
+                without_confirms.add(dev)
+                dev.reset_owner()
 
-            lot.devices.difference_update(without_confirms)
-            lot.trade.devices = lot.devices
+    # we need to mark one revoke for every devs
+    revoke = Revoke(action=lot.trade, user=g.user, devices=devices)
+    db.session.add(revoke)
+
+    if not lot.trade.confirm:
+        # if the trade is with phantom account
+        without_confirms = devices
+
+    if without_confirms:
+        confirm_revoke = ConfirmRevoke(
+            action=revoke,
+            user=g.user,
+            devices=without_confirms
+        )
+        db.session.add(confirm_revoke)
+
+        lot.devices.difference_update(without_confirms)
+        lot.trade.devices = lot.devices
+
+    return revoke

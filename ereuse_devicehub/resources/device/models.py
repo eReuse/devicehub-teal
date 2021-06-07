@@ -266,8 +266,10 @@ class Device(Thing):
         """The trading state, or None if no Trade action has
         ever been performed to this device. This extract the posibilities for to do"""
 
-        trade = 'Trade'
+        # trade = 'Trade'
         confirm = 'Confirm'
+        need_confirm = 'NeedConfirmation'
+        double_confirm = 'TradeConfirmed'
         revoke = 'Revoke'
         revoke_pending = 'RevokePending'
         confirm_revoke = 'ConfirmRevoke'
@@ -298,26 +300,37 @@ class Device(Thing):
         ## RevokeConfirmation     => RevokeConfirmed
 
         ac = self.last_action_trading
+        if not ac:
+            return 
+
+        first_owner = self.which_user_put_this_device_in_trace()
 
         if ac.type == confirm_revoke:
             # can to do revoke_confirmed
             return confirm_revoke
 
-        if ac.type == revoke and ac.user == g.user:
-            # can todo revoke_pending
-            return revoke_pending
+        if ac.type == revoke: 
+            if ac.user == g.user:
+                # can todo revoke_pending
+                return revoke_pending
+            else:
+                # can to do confirm_revoke
+                return revoke
 
-        if ac.type == revoke and ac.user != g.user:
-            # can to do confirm_revoke
-            return revoke
+        if ac.type == confirm:
+            if not first_owner:
+                return
 
-        if ac.type == confirm and (ac.user == g.user or ac.action.author == g.user):
-            # can to do revoke
-            return confirm
-
-        if ac.type == confirm and ac.user != g.user:
-            # can to do confirm
-            return trade
+            if ac.user == first_owner:
+                if first_owner == g.user:
+                    # can to do revoke
+                    return confirm
+                else:
+                    # can to do confirm
+                    return need_confirm
+            else:
+                # can to do revoke
+                return double_confirm
 
     @property
     def revoke(self):
@@ -421,11 +434,36 @@ class Device(Thing):
         """
         try:
             # noinspection PyTypeHints
-            actions = self.actions
+            actions = copy.copy(self.actions)
             actions.sort(key=lambda x: x.created)
             return next(e for e in reversed(actions) if isinstance(e, types))
         except StopIteration:
             raise LookupError('{!r} does not contain actions of types {}.'.format(self, types))
+
+    def which_user_put_this_device_in_trace(self):
+        """which is the user than put this device in this trade"""
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        actions.reverse()
+        last_ac = None
+        # search the automatic Confirm
+        for ac in actions:
+            if ac.type == 'Trade':
+                return last_ac.user
+            if ac.type == 'Confirm':
+                last_ac = ac
+
+    def change_owner(self, new_user):
+        """util for change the owner one device"""
+        self.owner = new_user
+        if hasattr(self, 'components'):
+            for c in self.components:
+                c.owner = new_user
+
+    def reset_owner(self):
+        """Change the owner with the user put the device into the trade"""
+        user = self.which_user_put_this_device_in_trace()
+        self.change_owner(user)
 
     def _warning_actions(self, actions):
         return sorted(ev for ev in actions if ev.severity >= Severity.Warning)
