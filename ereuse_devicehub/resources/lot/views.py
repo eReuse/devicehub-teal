@@ -285,7 +285,9 @@ def delete_from_trade(lot: Lot, ids: Set[int]):
         for dev in devices:
             # if have only one confirmation
             # then can be revoked and deleted of the lot
-            if dev.trading == 'NeedConfirmation':
+            # Confirm of dev.trading mean that there are only one confirmation
+            # and the first user than put this device in trade is the actual g.user
+            if dev.trading == 'Confirm': 
                 without_confirms.add(dev)
                 dev.reset_owner()
 
