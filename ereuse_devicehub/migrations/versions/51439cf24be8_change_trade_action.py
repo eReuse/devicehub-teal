@@ -77,7 +77,7 @@ def upgrade():
                     sa.Column('action_id', postgresql.UUID(as_uuid=True), nullable=False),
 
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
-                    sa.ForeignKeyConstraint(['action_id'], [f'{get_inv()}.trade.id'], ),
+                    sa.ForeignKeyConstraint(['action_id'], [f'{get_inv()}.action.id'], ),
                     sa.ForeignKeyConstraint(['user_id'], ['common.user.id'], ),
                     sa.PrimaryKeyConstraint('id'),
                     schema=f'{get_inv()}'
