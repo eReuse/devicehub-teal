@@ -714,25 +714,33 @@ class Trade(ActionWithMultipleDevices):
             * without confirmation
 
         """
-        if not (data['user_from_email'] or data['user_to_email']):
-            txt = "you need one user from or user to for to do a offer"
-            raise ValidationError(txt)
-
         if data['user_from_email']:
             user_from = User.query.filter_by(email=data['user_from_email']).one()
             data['user_from'] = user_from
-        else:
-            data['confirm'] = False
+
+    @validates_schema
+    def validate_email_users(self, data: dict):
+        """We need at least one user"""
+        if not (data['user_from_email'] or data['user_to_email']):
+            txt = "you need one user from or user to for to do a trade"
+            raise ValidationError(txt)
+
+        if not g.user.email in [data['user_from_email'], data['user_to_email']]:
+            txt = "you need to be one of participate of the action"
+            raise ValidationError(txt)
 
     @validates_schema
     def validate_code(self, data: dict):
         """If the user not exist, you need a code to be able to do the traceability"""
         if data['user_from_email'] and data['user_to_email']:
+            data['confirm'] = True
             return
 
-        if not data.get('code'):
+        if not data['confirm'] and not data.get('code'):
             txt = "you need a code to be able to do the traceability"
             raise ValidationError(txt)
+
+        data['code'] = data['code'].replace('@', '_')
 
 
 class InitTransfer(Trade):

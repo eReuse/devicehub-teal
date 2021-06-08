@@ -29,14 +29,14 @@ class TradeView():
 
     def __init__(self, data, resource_def, schema):
         self.schema = schema
-        a = resource_def.schema.load(data)
-        a.pop('user_to_email', '')
-        a.pop('user_from_email', '')
-        self.trade = Trade(**a)
+        self.data = resource_def.schema.load(data)
+        self.data.pop('user_to_email', '')
+        self.data.pop('user_from_email', '')
         self.create_phantom_account()
+        self.trade = Trade(**self.data)
         db.session.add(self.trade)
-        self.create_automatic_trade()
         self.create_confirmations()
+        self.create_automatic_trade()
 
     def post(self):
         db.session().final_flush()
@@ -70,17 +70,14 @@ class TradeView():
             txt = "You do not participate in this trading"
             raise ValidationError(txt)
 
-        if self.trade.user_from == g.user or self.trade.user_from.phantom:
-            confirm_from = Confirm(user=self.trade.user_from,
-                                   action=self.trade,
-                                   devices=self.trade.devices)
-            db.session.add(confirm_from)
-
-        if self.trade.user_to == g.user or self.trade.user_to.phantom:
-            confirm_to = Confirm(user=self.trade.user_to,
-                                 action=self.trade,
-                                 devices=self.trade.devices)
-            db.session.add(confirm_to)
+        confirm_from = Confirm(user=self.trade.user_from,
+                               action=self.trade,
+                               devices=self.trade.devices)
+        confirm_to = Confirm(user=self.trade.user_to,
+                             action=self.trade,
+                             devices=self.trade.devices)
+        db.session.add(confirm_from)
+        db.session.add(confirm_to)
 
     def create_phantom_account(self) -> None:
         """
@@ -92,33 +89,40 @@ class TradeView():
         The same if exist to but not from
 
         """
-        if self.trade.user_from and self.trade.user_to:
+        user_from = self.data.get('user_from')
+        user_to = self.data.get('user_to')
+        code = self.data.get('code')
+
+        if user_from and user_to:
             return
 
-        if self.trade.user_from and not self.trade.user_to:
-            assert g.user == self.trade.user_from
-            email = "{}_{}@dhub.com".format(str(self.trade.user_from.id), self.trade.code)
+        if self.data['confirm']:
+            return
+
+        if user_from and not user_to:
+            assert g.user == user_from
+            email = "{}_{}@dhub.com".format(str(user_from.id), code)
             users = User.query.filter_by(email=email)
             if users.first():
                 user = users.first()
-                self.trade.user_to = user
+                self.data['user_to'] = user
                 return
 
             user = User(email=email, password='', active=False, phantom=True)
             db.session.add(user)
-            self.trade.user_to = user
+            self.data['user_to'] = user
 
-        if not self.trade.user_from and self.trade.user_to:
-            email = "{}_{}@dhub.com".format(str(self.trade.user_to.id), self.trade.code)
+        if not user_from and user_to:
+            email = "{}_{}@dhub.com".format(str(user_to.id), code)
             users = User.query.filter_by(email=email)
             if users.first():
                 user = users.first()
-                self.trade.user_from = user
+                self.data['user_from'] = user
                 return
 
             user = User(email=email, password='', active=False, phantom=True)
             db.session.add(user)
-            self.trade.user_from = user
+            self.data['user_from'] = user
 
     def create_automatic_trade(self) -> None:
         # not do nothing if it's neccesary confirmation explicity
@@ -127,10 +131,7 @@ class TradeView():
 
         # Change the owner for every devices
         for dev in self.trade.devices:
-            dev.owner = self.trade.user_to
-            if hasattr(dev, 'components'):
-                for c in dev.components:
-                    c.owner = self.trade.user_to
+            dev.change_owner(self.trade.user_to)
 
 
 class ConfirmMixin():
