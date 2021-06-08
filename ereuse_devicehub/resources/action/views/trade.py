@@ -230,32 +230,6 @@ class RevokeView(ConfirmMixin):
         # import pdb; pdb.set_trace()
         self.model = delete_from_trade(lot, ids)
 
-        # devices = set(data['devices'])
-        # without_confirms = set() # set of devs without confirms of user2
-
-        # if g.user == lot.trade.author:
-            # for dev in devices:
-                # ac = dev.last_action_trading
-                # if ac.type == 'Confirm' and ac.user == g.user:
-                    # without_confirms.add(dev)
-
-        # # we need to mark one revoke for every devs
-        # revoke = Revoke(action=lot.trade, user=g.user, devices=devices)
-        # db.session.add(revoke)
-
-        # if without_confirms:
-            # confirm_revoke = ConfirmRevoke(
-                # action=revoke,
-                # user=g.user,
-                # devices=without_confirms
-            # )
-            # db.session.add(confirm_revoke)
-
-            # lot.devices.difference_update(without_confirms)
-            # lot.trade.devices = lot.devices
-
-        # self.model = revoke
-
 
 class ConfirmRevokeView(ConfirmMixin):
     """Handler for manager the Confirmation register from post
