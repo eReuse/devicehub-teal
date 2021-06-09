@@ -99,6 +99,10 @@ class Lot(Thing):
     def descendants(self):
         return self.descendantsq(self.id)
 
+    @property
+    def is_temporary(self):
+        return False if self.trade else True
+
     @classmethod
     def descendantsq(cls, id):
         _id = UUIDLtree.convert(id)

@@ -1,6 +1,7 @@
+import copy
 from datetime import datetime, timedelta
 from dateutil.tz import tzutc
-from flask import current_app as app
+from flask import current_app as app, g
 from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema
 from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, Nested, String, \
     TimeDelta, UUID
@@ -21,6 +22,7 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BiosAccessRange, F
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user import schemas as s_user
+from ereuse_devicehub.resources.user.models import User
 
 
 class Action(Thing):
@@ -455,13 +457,146 @@ class CancelReservation(Organize):
     __doc__ = m.CancelReservation.__doc__
 
 
+class Confirm(ActionWithMultipleDevices):
+    __doc__ = m.Confirm.__doc__
+    action = NestedOn('Action', only_query='id')
+
+    @validates_schema
+    def validate_revoke(self, data: dict):
+        for dev in data['devices']:
+            # if device not exist in the Trade, then this query is wrong
+            if not dev in data['action'].devices:
+                txt = "Device {} not exist in the trade".format(dev.devicehub_id)
+                raise ValidationError(txt)
+
+
+class Revoke(ActionWithMultipleDevices):
+    __doc__ = m.Revoke.__doc__
+    action = NestedOn('Action', only_query='id')
+
+    @validates_schema
+    def validate_revoke(self, data: dict):
+        for dev in data['devices']:
+            # if device not exist in the Trade, then this query is wrong
+            if not dev in data['action'].devices:
+                txt = "Device {} not exist in the trade".format(dev.devicehub_id)
+                raise ValidationError(txt)
+
+
+class ConfirmRevoke(ActionWithMultipleDevices):
+    __doc__ = m.ConfirmRevoke.__doc__
+    action = NestedOn('Action', only_query='id')
+
+    @validates_schema
+    def validate_revoke(self, data: dict):
+        # import pdb; pdb.set_trace()
+        for dev in data['devices']:
+            # if device not exist in the Trade, then this query is wrong
+            if not dev in data['action'].devices:
+                txt = "Device {} not exist in the revoke action".format(dev.devicehub_id)
+                raise ValidationError(txt)
+
+
 class Trade(ActionWithMultipleDevices):
     __doc__ = m.Trade.__doc__
-    shipping_date = DateTime(data_key='shippingDate')
-    invoice_number = SanitizedStr(validate=Length(max=STR_SIZE), data_key='invoiceNumber')
-    price = NestedOn(Price)
-    to = NestedOn(s_agent.Agent, only_query='id', required=True, comment=m.Trade.to_comment)
-    confirms = NestedOn(Organize)
+    document_id = SanitizedStr(validate=Length(max=STR_SIZE), data_key='documentID', required=False)
+    date = DateTime(data_key='date', required=False)
+    price = Float(required=False, data_key='price')
+    user_to_email = SanitizedStr(
+        validate=Length(max=STR_SIZE),
+        data_key='userToEmail',
+        missing='',
+        required=False
+    )
+    user_to = NestedOn(s_user.User, dump_only=True, data_key='userTo')
+    user_from_email = SanitizedStr(
+        validate=Length(max=STR_SIZE),
+        data_key='userFromEmail',
+        missing='',
+        required=False
+    )
+    user_from = NestedOn(s_user.User, dump_only=True, data_key='userFrom')
+    code = SanitizedStr(validate=Length(max=STR_SIZE), data_key='code', required=False)
+    confirm = Boolean(
+        data_key='confirms',
+        missing=True,
+        description="""If you need confirmation of the user you need actevate this field"""
+    )
+    lot = NestedOn('Lot',
+                   many=False,
+                   required=True,
+                   only_query='id')
+
+    @validates_schema
+    def validate_lot(self, data: dict):
+        if not g.user.email in [data['user_from_email'], data['user_to_email']]:
+            txt = "you need to be one of the users of involved in the Trade"
+            raise ValidationError(txt)
+
+        for dev in data['lot'].devices:
+            if not dev.owner == g.user:
+                txt = "you need to be the owner of the devices for to do a trade"
+                raise ValidationError(txt)
+
+        if not data['lot'].owner == g.user:
+            txt = "you need to be the owner of the lot for to do a trade"
+            raise ValidationError(txt)
+
+        data['devices'] = data['lot'].devices
+
+    @validates_schema
+    def validate_user_to_email(self, data: dict):
+        """
+        - if user_to exist
+            * confirmation
+            * without confirmation
+        - if user_to don't exist
+            * without confirmation
+
+        """
+        if data['user_to_email']:
+            user_to = User.query.filter_by(email=data['user_to_email']).one()
+            data['user_to'] = user_to
+        else:
+            data['confirm'] = False
+
+    @validates_schema
+    def validate_user_from_email(self, data: dict):
+        """
+        - if user_from exist
+            * confirmation
+            * without confirmation
+        - if user_from don't exist
+            * without confirmation
+
+        """
+        if data['user_from_email']:
+            user_from = User.query.filter_by(email=data['user_from_email']).one()
+            data['user_from'] = user_from
+
+    @validates_schema
+    def validate_email_users(self, data: dict):
+        """We need at least one user"""
+        if not (data['user_from_email'] or data['user_to_email']):
+            txt = "you need one user from or user to for to do a trade"
+            raise ValidationError(txt)
+
+        if not g.user.email in [data['user_from_email'], data['user_to_email']]:
+            txt = "you need to be one of participate of the action"
+            raise ValidationError(txt)
+
+    @validates_schema
+    def validate_code(self, data: dict):
+        """If the user not exist, you need a code to be able to do the traceability"""
+        if data['user_from_email'] and data['user_to_email']:
+            data['confirm'] = True
+            return
+
+        if not data['confirm'] and not data.get('code'):
+            txt = "you need a code to be able to do the traceability"
+            raise ValidationError(txt)
+
+        data['code'] = data['code'].replace('@', '_')
 
 
 class InitTransfer(Trade):

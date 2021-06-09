@@ -19,7 +19,7 @@ def login():
     user_s = g.resource_def.SCHEMA(only=('email', 'password'))  # type: UserS
     # noinspection PyArgumentList
     u = request.get_json(schema=user_s)
-    user = User.query.filter_by(email=u['email']).one_or_none()
+    user = User.query.filter_by(email=u['email'], active=True, phantom=False).one_or_none()
     if user and user.password == u['password']:
         schema_with_token = g.resource_def.SCHEMA(exclude=set())
         return schema_with_token.jsonify(user)
