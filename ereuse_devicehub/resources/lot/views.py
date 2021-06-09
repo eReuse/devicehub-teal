@@ -255,11 +255,13 @@ class LotDeviceView(LotBaseChildrenView):
         if lot.trade:
             return delete_from_trade(lot, ids)
 
-        if not g.user in lot.owner:
-            txt = 'This is not your trade'
+        # import pdb; pdb.set_trace()
+        if not g.user == lot.owner:
+            txt = 'This is not your lot'
             raise ma.ValidationError(txt)
+
         devices = set(Device.query.filter(Device.id.in_(ids)).filter(
-            Device.owner_id.in_(g.user.id)))
+            Device.owner_id == g.user.id))
 
         lot.devices.difference_update(devices)
 
