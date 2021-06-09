@@ -1,9 +1,13 @@
 import pytest
 from flask import g
+from pytest import raises
+from json.decoder import JSONDecodeError
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.lot.models import Lot, LotDevice
@@ -382,6 +386,35 @@ def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
                          query=[('id', device_id)],
                          status=200)
     assert not len(lot['devices'])
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_lot_error_add_device_from_other_user(user: UserClient):
+    """Tests adding a device to a lot using POST and
+    removing it with DELETE.
+    """
+    user2 = User(email='baz@baz.cxm', password='baz')
+    user2.individuals.add(Person(name='Tommy'))
+    db.session.add(user2)
+    db.session.commit()
+
+    device = Desktop(serial_number='foo',
+                     model='bar',
+                     manufacturer='foobar',
+                     chassis=ComputerChassis.Lunchbox,
+                     owner_id=user2.id)
+    db.session.add(device)
+    db.session.commit()
+
+    device_id = device.id
+    parent, _ = user.post(({'name': 'lot'}), res=Lot)
+    lot, _ = user.post({},
+                       res=Lot,
+                       item='{}/devices'.format(parent['id']),
+                       query=[('id', device_id)])
+    assert lot['devices'] == [], 'Lot contains device'
+    assert len(lot['devices']) == 0
 
 
 @pytest.mark.mvp

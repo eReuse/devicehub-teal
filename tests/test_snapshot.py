@@ -29,7 +29,7 @@ from ereuse_devicehub.resources.device.sync import MismatchBetweenProperties, \
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.action.views import save_json
+from ereuse_devicehub.resources.action.views.snapshot import save_json
 from ereuse_devicehub.resources.documents import documents
 from tests.conftest import file
 from tests import conftest

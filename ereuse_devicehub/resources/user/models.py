@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from citext import CIText
 from flask import current_app as app
-from sqlalchemy import Column, BigInteger, Sequence
+from sqlalchemy import Column, Boolean, BigInteger, Sequence
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import EmailType, PasswordType
 from teal.db import IntEnum
@@ -23,6 +23,8 @@ class User(Thing):
                                        **kwargs
                                    )))
     token = Column(UUID(as_uuid=True), default=uuid4, unique=True, nullable=False)
+    active = Column(Boolean, default=True, nullable=False)
+    phantom = Column(Boolean, default=False, nullable=False)
     inventories = db.relationship(Inventory,
                                   backref=db.backref('users', lazy=True, collection_class=set),
                                   secondary=lambda: UserInventory.__table__,
@@ -30,16 +32,20 @@ class User(Thing):
 
     # todo set restriction that user has, at least, one active db
 
-    def __init__(self, email, password=None, inventories=None) -> None:
+    def __init__(self, email, password=None, inventories=None, active=True, phantom=False) -> None:
         """Creates an user.
         :param email:
         :param password:
         :param inventories: A set of Inventory where the user has
         access to. If none, the user is granted access to the current
         inventory.
+        :param active: allow active and deactive one account without delete the account
+        :param phantom: it's util for identify the phantom accounts
+        create during the trade actions
         """
         inventories = inventories or {Inventory.current}
-        super().__init__(email=email, password=password, inventories=inventories)
+        super().__init__(email=email, password=password, inventories=inventories,
+                         active=active, phantom=phantom)
 
     def __repr__(self) -> str:
         return '<User {0.email}>'.format(self)
