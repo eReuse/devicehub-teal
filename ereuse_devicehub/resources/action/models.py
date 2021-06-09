@@ -1486,7 +1486,6 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     This class and its inheritors
     extend `Schema's Trade <http://schema.org/TradeAction>`_.
         """
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     user_from_id = db.Column(UUID(as_uuid=True),
                              db.ForeignKey(User.id),
                              nullable=False)
