@@ -12,6 +12,7 @@ ml).
   [1.0.7-beta]
 
 ## [1.0.7-beta]
+- [addend] #135 adding trade system
 - [addend] #140 adding endpoint for download the settings for usb workbench
 
 ## [1.0.6-beta]
