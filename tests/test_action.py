@@ -1642,7 +1642,7 @@ def test_trade_case4(user: UserClient, user2: UserClient):
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
     # The manager add 7 device into the lot
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    snap2, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
+    snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
     devices = [('id', snap1['device']['id']),
                ('id', snap2['device']['id']),
@@ -1708,7 +1708,7 @@ def test_trade_case5(user: UserClient, user2: UserClient):
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
     # The manager add 7 device into the lot
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
+    snap2, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
     devices = [('id', snap1['device']['id']),
                ('id', snap2['device']['id']),
@@ -1716,7 +1716,7 @@ def test_trade_case5(user: UserClient, user2: UserClient):
     lot, _ = user.post({},
                        res=Lot,
                        item='{}/devices'.format(lot['id']),
-                       query=devices[:-1])
+                       query=devices)
 
     # the manager shares the temporary lot with the SCRAP as an incoming lot 
     # for the CRAP to confirm it
@@ -1734,11 +1734,6 @@ def test_trade_case5(user: UserClient, user2: UserClient):
 
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
-
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
 
     device1, device2 = trade.devices
 
@@ -1850,7 +1845,6 @@ def test_trade_case7(user: UserClient, user2: UserClient):
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
     # The manager add 7 device into the lot
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
     devices = [('id', snap1['device']['id'])]
     lot, _ = user.post({},
@@ -1917,7 +1911,6 @@ def test_trade_case8(user: UserClient, user2: UserClient):
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
     # The manager add 7 device into the lot
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
     devices = [('id', snap1['device']['id'])]
     lot, _ = user.post({},
@@ -1996,7 +1989,7 @@ def test_trade_case9(user: UserClient, user2: UserClient):
     lot, _ = user.post({},
                        res=Lot,
                        item='{}/devices'.format(lot['id']),
-                       query=devices)
+                       query=devices[:-1])
 
     # the manager shares the temporary lot with the SCRAP as an incoming lot 
     # for the CRAP to confirm it
@@ -2154,7 +2147,7 @@ def test_trade_case11(user: UserClient, user2: UserClient):
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
     # The manager add 7 device into the lot
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
+    snap2, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
     devices = [('id', snap1['device']['id']),
                ('id', snap2['device']['id'])
@@ -2162,7 +2155,7 @@ def test_trade_case11(user: UserClient, user2: UserClient):
     lot, _ = user.post({},
                        res=Lot,
                        item='{}/devices'.format(lot['id']),
-                       query=devices[:-1])
+                       query=devices)
 
     # the manager shares the temporary lot with the SCRAP as an incoming lot 
     # for the CRAP to confirm it
@@ -2180,12 +2173,6 @@ def test_trade_case11(user: UserClient, user2: UserClient):
 
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
-    # import pdb; pdb.set_trace()
-
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
 
     device1, device = trade.devices
 
@@ -2229,7 +2216,7 @@ def test_trade_case12(user: UserClient, user2: UserClient):
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
     # The manager add 7 device into the lot
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
+    snap2, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
     devices = [('id', snap1['device']['id']),
                ('id', snap2['device']['id'])
@@ -2237,7 +2224,7 @@ def test_trade_case12(user: UserClient, user2: UserClient):
     lot, _ = user.post({},
                        res=Lot,
                        item='{}/devices'.format(lot['id']),
-                       query=devices[:-1])
+                       query=devices)
 
     # the manager shares the temporary lot with the SCRAP as an incoming lot 
     # for the CRAP to confirm it
@@ -2256,11 +2243,6 @@ def test_trade_case12(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
     # import pdb; pdb.set_trace()
-
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
 
     device1, device = trade.devices
 
