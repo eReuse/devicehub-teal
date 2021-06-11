@@ -224,6 +224,7 @@ class LotDeviceView(LotBaseChildrenView):
         id = ma.fields.List(ma.fields.Integer())
 
     def _post(self, lot: Lot, ids: Set[int]):
+        # import pdb; pdb.set_trace()
         # get only new devices
         ids -= {x.id for x in lot.devices}
         if not ids:
@@ -233,7 +234,7 @@ class LotDeviceView(LotBaseChildrenView):
         if lot.trade:
             # all users involved in the trade action can modify the lot
             trade_users = [lot.trade.user_from.id, lot.trade.user_to.id]
-            if g.user in trade_users:
+            if g.user.id in trade_users:
                 users = trade_users
 
         devices = set(Device.query.filter(Device.id.in_(ids)).filter(
