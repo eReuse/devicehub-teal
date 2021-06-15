@@ -25,4 +25,3 @@ class TradeDocument(Thing):
                              description=m.TradeDocument.file_hash.comment)
     url = URL(description=m.TradeDocument.url.comment)
     lot = NestedOn('Lot', only_query='id', description=m.TradeDocument.lot.__doc__)
-    # lot = NestedOn(s_lot.Lot, only_query='id', description=m.TradeDocument.lot.__doc__)

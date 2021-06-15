@@ -28,5 +28,5 @@ class Lot(Thing):
     transfer_state = EnumField(TransferState, description=m.Lot.transfer_state.comment)
     receiver_address = SanitizedStr(validate=f.validate.Length(max=42))
     deliverynote = NestedOn(s_deliverynote.Deliverynote, dump_only=True)
-    documents = NestedOn(s_document.TradeDocument, dump_only=True)
+    documents = NestedOn('TradeDocument', many=True, dump_only=True)
     trade = NestedOn(s_action.Trade, dump_only=True)
