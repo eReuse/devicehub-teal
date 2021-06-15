@@ -77,8 +77,10 @@ class TradeDocument(Thing):
     lot.comment = """Lot to which the document is associated"""
     file_name = Column(db.CIText())
     file_name.comment = """This is the name of the file when user up the document."""
-    path_name = Column(db.CIText())
-    path_name.comment = """This is the name of the file as devicehub save in server."""
+    file_hash = Column(db.CIText())
+    file_hash.comment = """This is the hash of the file produced from frontend."""
+    url = Column(db.CIText())
+    url.comment = """This is the url where resides the document."""
 
     __table_args__ = (
         db.Index('document_id', id, postgresql_using='hash'),
