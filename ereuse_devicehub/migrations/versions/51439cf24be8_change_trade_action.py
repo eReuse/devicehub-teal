@@ -83,7 +83,7 @@ def upgrade():
                     schema=f'{get_inv()}'
                     )
 
-    # ## User
+    ## User
     op.add_column('user', sa.Column('active', sa.Boolean(), default=True, nullable=True),
                   schema='common')
     op.add_column('user', sa.Column('phantom', sa.Boolean(), default=False, nullable=True),
@@ -95,8 +95,86 @@ def upgrade():
     op.alter_column('user', 'phantom', nullable=False, schema='common')
 
 
+    ## TradeDocument
+    op.create_table('trade_document',
+                    sa.Column(
+                        'updated',
+                        sa.TIMESTAMP(timezone=True),
+                        server_default=sa.text('CURRENT_TIMESTAMP'),
+                        nullable=False,
+                        comment='The last time Devicehub recorded a change for \n    this thing.\n    '
+                    ),
+                    sa.Column(
+                        'created',
+                        sa.TIMESTAMP(timezone=True),
+                        server_default=sa.text('CURRENT_TIMESTAMP'),
+                        nullable=False,
+                        comment='When Devicehub created this.'
+                    ),
+                    sa.Column(
+                        'id',
+                        sa.BigInteger(),
+                        nullable=False,
+                        comment='The identifier of the device for this database. Used only\n    internally for software; users should not use this.\n    '
+                    ),
+                    sa.Column(
+                        'date',
+                        sa.DateTime(),
+                        nullable=True,
+                        comment='The date of document, some documents need to have one date\n    '
+                    ),
+                    sa.Column(
+                        'id_document',
+                        citext.CIText(),
+                        nullable=True,
+                        comment='The id of one document like invoice so they can be linked.'
+                    ),
+                    sa.Column(
+                        'description',
+                        citext.CIText(),
+                        nullable=True,
+                        comment='A description of document.'
+                    ),
+                    sa.Column(
+                        'owner_id',
+                        postgresql.UUID(as_uuid=True),
+                        nullable=False
+                    ),
+                    sa.Column(
+                        'lot_id',
+                        postgresql.UUID(as_uuid=True),
+                        nullable=False
+                    ),
+                    sa.Column(
+                        'file_name',
+                        citext.CIText(),
+                        nullable=True,
+                        comment='This is the name of the file when user up the document.'
+                    ),
+                    sa.Column(
+                        'file_hash',
+                         citext.CIText(),
+                         nullable=True,
+                         comment='This is the hash of the file produced from frontend.'
+                    ),
+                    sa.Column(
+                        'url',
+                        citext.CIText(),
+                        nullable=True,
+                        comment='This is the url where resides the document.'
+                    ),
+                    sa.ForeignKeyConstraint(['lot_id'], ['lot.id'],),
+                    sa.ForeignKeyConstraint(['owner_id'], ['common.user.id'],),
+                    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index('document_id', 'trade_document', ['id'], unique=False, postgresql_using='hash')
+    op.create_index(op.f('ix_trade_document_created'), 'trade_document', ['created'], unique=False)
+    op.create_index(op.f('ix_trade_document_updated'), 'trade_document', ['updated'], unique=False)
+
+
 def downgrade():
     op.drop_table('confirm', schema=f'{get_inv()}')
+    op.drop_table('trade', schema=f'{get_inv()}')
     op.drop_table('trade', schema=f'{get_inv()}')
     op.create_table('trade',
                     sa.Column('shipping_date', sa.TIMESTAMP(timezone=True), nullable=True,
