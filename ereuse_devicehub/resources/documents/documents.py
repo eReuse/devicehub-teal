@@ -1,6 +1,7 @@
 import csv
 import enum
 import uuid
+import time
 import datetime
 import pathlib
 from collections import OrderedDict
@@ -22,6 +23,7 @@ from teal.resource import Resource, View
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import SessionType
+from ereuse_devicehub.resources.user.models import Session
 from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.device import models as devs
 from ereuse_devicehub.resources.deliverynote.models import Deliverynote
@@ -323,8 +325,8 @@ class WbConfDocumentView(DeviceView):
             return jsonify('')
 
         data = {'token': self.get_token(),
-                'host': app.config['DB_HOST'],
-                'inventory': app.config['DB_SCHEMA']
+                'host': app.config['HOST'],
+                'inventory': app.config['SCHEMA']
                 }
         data['erase'] = False
         # data['erase'] = True if wbtype == 'usodywipe' else False
@@ -336,7 +338,20 @@ class WbConfDocumentView(DeviceView):
         return output
 
     def get_token(self):
-        tk = [s.token for s in g.user.sessions if s.type == SessionType.Internal][0]
+        if not g.user.sessions:
+            ses = Session(user=g.user)
+            db.session.add(ses)
+            db.session.commit()
+
+        tk = ''
+        now = time.time()
+        for s in g.user.sessions:
+            if s.type == SessionType.Internal and (s.expired == 0 or s.expired > now):
+                tk = s.token
+                break
+
+        assert tk != ''
+
         token = auth.Auth.encode(tk)
         return token
 

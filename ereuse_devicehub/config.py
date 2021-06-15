@@ -46,6 +46,8 @@ class DevicehubConfig(Config):
         host=DB_HOST,
         db=DB_DATABASE,
     )  # type: str
+    SCHEMA = config('SCHEMA', 'dbtest')
+    HOST  = config('HOST', 'localhost')
     MIN_WORKBENCH = StrictVersion('11.0a1')  # type: StrictVersion
     """The minimum version of ereuse.org workbench that this devicehub
     accepts. we recommend not changing this value.
