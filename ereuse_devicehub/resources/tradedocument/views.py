@@ -7,35 +7,7 @@ from teal.resource import View
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.action.models import Confirm, Revoke
-from ereuse_devicehub.resources.hash_reports import insert_hash
-
-
-def save_doc(data, user):
-    """
-    This function allow save a snapshot in json format un a TMP_SNAPSHOTS directory
-    The file need to be saved with one name format with the stamptime and uuid joins
-    """
-    filename = data['file_name']
-    lot = data['lot']
-    now = datetime.now()
-    year = now.year
-    month = now.month
-    day = now.day
-    hour = now.hour
-    minutes = now.minute
-    created = time.time()
-
-    name_file = f"{year}-{month}-{day}-{hour}-{minutes}_{created}_{user}_{filename}"
-    path_dir_base = os.path.join(app.config['PATH_DOCUMENTS_STORAGE'] , user)
-    path = os.path.join(path_dir_base, str(lot.id))
-    path_name = os.path.join(path, name_file)
-
-    os.system(f'mkdir -p {path}')
-
-    with open(path_name, 'wb') as doc_file:
-        doc_file.write(data['file'])
-
-    return path_name
+from ereuse_devicehub.resources.hash_reports import ReportHash
 
 
 class TradeDocumentView(View):
@@ -47,10 +19,11 @@ class TradeDocumentView(View):
     def post(self):
         """Add one document."""
 
+        # import pdb; pdb.set_trace()
         data = request.get_json(validate=True)
-        data['path_name'] = save_doc(data, g.user.email)
-        bfile = data.pop('file')
-        insert_hash(bfile)
+        hash3 = data['file_hash']
+        db_hash = ReportHash(hash3=hash3)
+        db.session.add(db_hash)
 
         doc = TradeDocument(**data)
         trade = doc.lot.trade
