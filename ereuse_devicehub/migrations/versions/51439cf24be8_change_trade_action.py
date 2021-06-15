@@ -167,7 +167,8 @@ def upgrade():
                     ),
                     sa.ForeignKeyConstraint(['lot_id'], ['lot.id'],),
                     sa.ForeignKeyConstraint(['owner_id'], ['common.user.id'],),
-                    sa.PrimaryKeyConstraint('id')
+                    sa.PrimaryKeyConstraint('id'),
+                    schema=f'{get_inv()}'
     )
     op.create_index('document_id', 'trade_document', ['id'], unique=False, postgresql_using='hash')
     op.create_index(op.f('ix_trade_document_created'), 'trade_document', ['created'], unique=False)
