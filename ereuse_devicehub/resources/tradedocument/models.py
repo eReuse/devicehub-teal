@@ -1,28 +1,17 @@
-import os
-
-from itertools import chain
 from citext import CIText
-from flask import current_app as app, g
+from flask import g
 
 from sqlalchemy.dialects.postgresql import UUID
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.user.models import User
 from sortedcontainers import SortedSet
-from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing, listener_reset_field_updated_in_actual_time
+from ereuse_devicehub.resources.models import Thing
 
-from sqlalchemy import BigInteger, Boolean, Column, Float, ForeignKey, Integer, \
-    Sequence, SmallInteger, Unicode, inspect, text
-from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
-from sqlalchemy.util import OrderedSet
-from sqlalchemy_utils import ColorType
-from teal.db import CASCADE_OWN, CASCADE_DEL, POLYMORPHIC_ID, POLYMORPHIC_ON, \
-    check_lower, check_range
-from teal.resource import url_for_resource
+from sqlalchemy import BigInteger, Column, Sequence
+from sqlalchemy.orm import backref
+from teal.db import CASCADE_OWN, URL
 
-from ereuse_devicehub.resources.utils import hashcode
-from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
-    DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity, TransferState
+from ereuse_devicehub.resources.enums import Severity
 
 
 _sorted_documents = {
@@ -37,8 +26,8 @@ class TradeDocument(Thing):
     and the action trade need to be confirmed for the both users of the trade.
     This confirmation can be revoked and this revoked need to be ConfirmRevoke for have
     some efect.
-    
-    This documents can be invoices or list of devices or certificates of erasure of 
+
+    This documents can be invoices or list of devices or certificates of erasure of
     one disk.
 
     Like a Devices one document have actions and is possible add or delete of one lot
@@ -68,7 +57,7 @@ class TradeDocument(Thing):
     lot_id = db.Column(UUID(as_uuid=True),
                          db.ForeignKey('lot.id'),
                          nullable=False)
-    lot = db.relationship('Lot', 
+    lot = db.relationship('Lot',
                           backref=backref('documents',
                                           lazy=True,
                                           cascade=CASCADE_OWN,
@@ -79,7 +68,7 @@ class TradeDocument(Thing):
     file_name.comment = """This is the name of the file when user up the document."""
     file_hash = Column(db.CIText())
     file_hash.comment = """This is the hash of the file produced from frontend."""
-    url = Column(db.CIText())
+    url = db.Column(URL())
     url.comment = """This is the url where resides the document."""
 
     __table_args__ = (

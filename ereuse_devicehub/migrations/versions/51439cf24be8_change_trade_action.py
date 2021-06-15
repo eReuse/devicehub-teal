@@ -5,11 +5,12 @@ Revises: eca457d8b2a4
 Create Date: 2021-03-15 17:40:34.410408
 
 """
+import sqlalchemy as sa
+import citext
+import teal
 from alembic import op
 from alembic import context
 from sqlalchemy.dialects import postgresql
-import sqlalchemy as sa
-import citext
 
 
 # revision identifiers, used by Alembic.
@@ -160,6 +161,7 @@ def upgrade():
                     sa.Column(
                         'url',
                         citext.CIText(),
+                        teal.db.URL(),
                         nullable=True,
                         comment='This is the url where resides the document.'
                     ),
