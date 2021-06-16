@@ -721,11 +721,19 @@ class Trade(ActionWithMultipleDevices):
     @validates_schema
     def validate_email_users(self, data: dict):
         """We need at least one user"""
-        if not (data['user_from_email'] or data['user_to_email']):
+        confirm = data['confirm']
+        user_from = data['user_from_email']
+        user_to = data['user_to_email']
+
+        if not (user_from or user_to):
             txt = "you need one user from or user to for to do a trade"
             raise ValidationError(txt)
 
-        if not g.user.email in [data['user_from_email'], data['user_to_email']]:
+        if confirm and not (user_from and user_to):
+            txt = "you need one user for to do a trade"
+            raise ValidationError(txt)
+
+        if not g.user.email in [user_from, user_to]:
             txt = "you need to be one of participate of the action"
             raise ValidationError(txt)
 
@@ -740,7 +748,8 @@ class Trade(ActionWithMultipleDevices):
             txt = "you need a code to be able to do the traceability"
             raise ValidationError(txt)
 
-        data['code'] = data['code'].replace('@', '_')
+        if not data['confirm']:
+            data['code'] = data['code'].replace('@', '_')
 
 
 class InitTransfer(Trade):
