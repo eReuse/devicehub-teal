@@ -89,7 +89,7 @@ class LotView(View):
             query = self.visibility_filter(query)
             if args['search']:
                 query = query.filter(Lot.name.ilike(args['search'] + '%'))
-            lots = query.paginate(per_page=6 if args['search'] else 30)
+            lots = query.paginate(per_page=6 if args['search'] else query.count())
             return things_response(
                 self.schema.dump(lots.items, many=True, nested=2),
                 lots.page, lots.per_page, lots.total, lots.prev_num, lots.next_num
