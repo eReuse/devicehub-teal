@@ -19,7 +19,6 @@ class TradeDocumentView(View):
     def post(self):
         """Add one document."""
 
-        # import pdb; pdb.set_trace()
         data = request.get_json(validate=True)
         hash3 = data['file_hash']
         db_hash = ReportHash(hash3=hash3)

@@ -1,4 +1,4 @@
-from marshmallow.fields import DateTime, Integer
+from marshmallow.fields import DateTime, Integer, validate
 from teal.marshmallow import SanitizedStr, URL
 # from marshmallow import ValidationError, validates_schema
 
@@ -16,12 +16,16 @@ class TradeDocument(Thing):
                                default='', 
                                description=m.TradeDocument.id_document.comment)
     description = SanitizedStr(default='', 
-                               description=m.TradeDocument.description.comment)
+                               description=m.TradeDocument.description.comment,
+                               validate=validate.Length(max=500))
     file_name = SanitizedStr(data_key='filename',
                              default='',
-                             description=m.TradeDocument.file_name.comment)
+                             description=m.TradeDocument.file_name.comment, 
+                             validate=validate.Length(max=100))
     file_hash = SanitizedStr(data_key='hash',
                              default='',
-                             description=m.TradeDocument.file_hash.comment)
+                             description=m.TradeDocument.file_hash.comment,
+                             validate=validate.Length(max=64))
     url = URL(description=m.TradeDocument.url.comment)
     lot = NestedOn('Lot', only_query='id', description=m.TradeDocument.lot.__doc__)
+    trading = SanitizedStr(dump_only=True, description='')

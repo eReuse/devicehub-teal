@@ -1,3 +1,4 @@
+import copy
 from citext import CIText
 from flask import g
 
@@ -88,6 +89,32 @@ class TradeDocument(Thing):
         """
         return sorted(self.actions_multiple_docs, key=lambda x: x.created)
 
+    @property
+    def trading(self):
+        """The trading state, or None if no Trade action has
+        ever been performed to this device. This extract the posibilities for to do"""
+
+        confirm = 'Confirm'
+        to_confirm = 'ToConfirm'
+        revoke = 'Revoke'
+
+        if not self.actions:
+            return
+
+        actions = copy.copy(self.actions)
+        actions = list(reversed(actions))
+        ac = actions[0]
+
+        if ac.type == confirm:
+            return confirm
+
+        if ac.type == revoke:
+            return revoke
+
+        if ac.type == confirm:
+            if ac.user == self.owner:
+                return confirm
+            return to_confirm
 
     def last_action_of(self, *types):
         """Gets the last action of the given types.

@@ -101,6 +101,16 @@ def upgrade():
                     sa.PrimaryKeyConstraint('id'),
                     schema=f'{get_inv()}'
     )
+    # Action document table
+    op.create_table('action_trade_document',
+                    sa.Column('document_id', sa.BigInteger(), nullable=False),
+                    sa.Column('action_id', postgresql.UUID(as_uuid=True), nullable=False),
+                    sa.ForeignKeyConstraint(['action_id'], [f'{get_inv()}.action.id'], ),
+                    sa.ForeignKeyConstraint(['document_id'], [f'{get_inv()}.trade_document.id'], ),
+                    sa.PrimaryKeyConstraint('document_id', 'action_id'),
+                    schema=f'{get_inv()}'
+                    )
+
     op.create_index('document_id', 'trade_document', ['id'], unique=False, postgresql_using='hash', schema=f'{get_inv()}')
     op.create_index(op.f('ix_trade_document_created'), 'trade_document', ['created'], unique=False, schema=f'{get_inv()}')
     op.create_index(op.f('ix_trade_document_updated'), 'trade_document', ['updated'], unique=False, schema=f'{get_inv()}')
