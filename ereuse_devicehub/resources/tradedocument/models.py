@@ -87,7 +87,7 @@ class TradeDocument(Thing):
 
         Actions are returned by descending ``created`` time.
         """
-        return sorted(self.actions_multiple_docs, key=lambda x: x.created)
+        return sorted(self.actions_docs, key=lambda x: x.created)
 
     @property
     def trading(self):

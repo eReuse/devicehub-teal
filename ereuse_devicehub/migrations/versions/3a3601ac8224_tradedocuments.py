@@ -117,5 +117,6 @@ def upgrade():
 
 
 def downgrade():
+    op.drop_table('action_trade_document', schema=f'{get_inv()}')
     op.drop_table('trade_document', schema=f'{get_inv()}')
 

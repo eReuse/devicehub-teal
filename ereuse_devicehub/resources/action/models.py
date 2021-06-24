@@ -296,9 +296,9 @@ class ActionDevice(db.Model):
                        primary_key=True)
 
 
-class ActionWithMultipleTradeDocuments(ActionWithMultipleDevices):
+class ActionWithMultipleTradeDocuments(Action):
     documents = relationship(TradeDocument,
-                           backref=backref('actions_multiple_docs', lazy=True, **_sorted_actions),
+                           backref=backref('actions_docs', lazy=True, **_sorted_actions),
                            secondary=lambda: ActionTradeDocument.__table__,
                            order_by=lambda: TradeDocument.id,
                            collection_class=OrderedSet)
@@ -1447,8 +1447,36 @@ class Reserve(Organize):
 class CancelReservation(Organize):
     """The act of cancelling a reservation."""
 
+class ConfirmDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
+    """Users confirm the one action trade this confirmation it's link to trade
+       and the document that confirm
+    """
+    user_id = db.Column(UUID(as_uuid=True),
+                        db.ForeignKey(User.id),
+                        nullable=False,
+                        default=lambda: g.user.id)
+    user = db.relationship(User, primaryjoin=user_id == User.id)
+    user_comment = """The user that accept the offer."""
+    action_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey('action.id'),
+                         nullable=False)
+    action = db.relationship('Action',
+                            backref=backref('acceptances_document',
+                                            uselist=True,
+                                            lazy=True,
+                                            order_by=lambda: Action.end_time,
+                                            collection_class=list),
+                            primaryjoin='Confirm.action_id == Action.id')
 
-class Confirm(JoinedTableMixin, ActionWithMultipleTradeDocuments):
+    def __repr__(self) -> str:
+        if self.action.t in ['Trade']:
+            origin = 'To'
+            if self.user == self.action.user_from:
+                origin = 'From'
+            return '<{0.t} {0.id} accepted by {1}>'.format(self, origin)
+
+
+class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
     """Users confirm the one action trade this confirmation it's link to trade
        and the devices that confirm
     """
@@ -1488,7 +1516,7 @@ class ConfirmRevoke(Confirm):
         return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
 
 
-class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):
+class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     """Trade actions log the political exchange of devices between users.
     Every time a trade action is performed, the old user looses its
     political possession, for example ownership, in favor of another
