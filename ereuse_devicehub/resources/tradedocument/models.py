@@ -94,8 +94,9 @@ class TradeDocument(Thing):
         """The trading state, or None if no Trade action has
         ever been performed to this device. This extract the posibilities for to do"""
 
-        confirm = 'Confirm'
-        to_confirm = 'ToConfirm'
+        # import pdb; pdb.set_trace()
+        confirm = 'ConfirmDocument'
+        to_confirm = 'To Confirm'
         revoke = 'Revoke'
 
         if not self.actions:
@@ -105,16 +106,13 @@ class TradeDocument(Thing):
         actions = list(reversed(actions))
         ac = actions[0]
 
-        if ac.type == confirm:
-            return confirm
-
         if ac.type == revoke:
             return revoke
 
         if ac.type == confirm:
             if ac.user == self.owner:
-                return confirm
-            return to_confirm
+                return to_confirm
+            return 'Confirmed'
 
     def last_action_of(self, *types):
         """Gets the last action of the given types.

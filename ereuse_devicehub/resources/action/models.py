@@ -296,7 +296,7 @@ class ActionDevice(db.Model):
                        primary_key=True)
 
 
-class ActionWithMultipleTradeDocuments(Action):
+class ActionWithMultipleTradeDocuments(ActionWithMultipleDevices):
     documents = relationship(TradeDocument,
                            backref=backref('actions_docs', lazy=True, **_sorted_actions),
                            secondary=lambda: ActionTradeDocument.__table__,
@@ -1466,14 +1466,18 @@ class ConfirmDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
                                             lazy=True,
                                             order_by=lambda: Action.end_time,
                                             collection_class=list),
-                            primaryjoin='Confirm.action_id == Action.id')
+                            primaryjoin='ConfirmDocument.action_id == Action.id')
 
     def __repr__(self) -> str:
         if self.action.t in ['Trade']:
             origin = 'To'
             if self.user == self.action.user_from:
                 origin = 'From'
-            return '<{0.t} {0.id} accepted by {1}>'.format(self, origin)
+            return '<{0.t}app/views/inventory/ {0.id} accepted by {1}>'.format(self, origin)
+
+
+class RevokeDocument(ConfirmDocument):
+    pass
 
 
 class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
@@ -1516,7 +1520,7 @@ class ConfirmRevoke(Confirm):
         return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
 
 
-class Trade(JoinedTableMixin, ActionWithMultipleDevices):
+class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     """Trade actions log the political exchange of devices between users.
     Every time a trade action is performed, the old user looses its
     political possession, for example ownership, in favor of another

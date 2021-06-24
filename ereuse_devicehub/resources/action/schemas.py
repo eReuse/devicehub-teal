@@ -56,12 +56,16 @@ class Action(Thing):
 
 class ActionWithOneDevice(Action):
     __doc__ = m.ActionWithOneDevice.__doc__
-    doc = NestedOn(s_document.TradeDocument, only_query='id')
-
-
-class ActionWithOneDocument(Action):
-    __doc__ = m.ActionWithOneDevice.__doc__
     device = NestedOn(s_device.Device, only_query='id')
+
+
+class ActionWithMultipleDocuments(Action):
+    __doc__ = m.ActionWithMultipleTradeDocuments.__doc__
+    documents = NestedOn(s_document.TradeDocument,
+                       many=True,
+                       required=True,  # todo test ensuring len(devices) >= 1
+                       only_query='id',
+                       collection_class=OrderedSet)
 
 
 class ActionWithMultipleDevices(Action):
@@ -476,7 +480,7 @@ class Confirm(ActionWithMultipleDevices):
                 raise ValidationError(txt)
 
 
-class ConfirmDocument(ActionWithOneDocument):
+class ConfirmDocument(ActionWithMultipleDocuments):
     __doc__ = m.Confirm.__doc__
     action = NestedOn('Action', only_query='id')
 
@@ -580,8 +584,8 @@ class Revoke(ActionWithMultipleDevices):
             raise ValidationError(txt)
 
 
-class RevokeDocument(ActionWithOneDocument):
-    __doc__ = m.Revoke.__doc__
+class RevokeDocument(ActionWithMultipleDocuments):
+    __doc__ = m.RevokeDocument.__doc__
     action = NestedOn('Action', only_query='id')
 
     @validates_schema
@@ -598,7 +602,8 @@ class RevokeDocument(ActionWithOneDocument):
            This is not checked in the view becouse the list of documents is inmutable
 
         """
-        if not data['devices'] == OrderedSet():
+        import pdb; pdb.set_trace()
+        if not data['documents'] == OrderedSet():
             return
 
         documents = []
@@ -684,7 +689,7 @@ class ConfirmRevoke(ActionWithMultipleDevices):
             raise ValidationError(txt)
 
 
-class ConfirmRevokeDocument(ActionWithOneDocument):
+class ConfirmRevokeDocument(ActionWithMultipleDocuments):
     __doc__ = m.ConfirmRevoke.__doc__
     action = NestedOn('Action', only_query='id')
 

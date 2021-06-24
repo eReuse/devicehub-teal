@@ -5,7 +5,8 @@ from sqlalchemy.util import OrderedSet
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import Trade, Confirm, ConfirmRevoke, Revoke
+from ereuse_devicehub.resources.action.models import (Trade, Confirm, ConfirmRevoke, 
+                                                      Revoke, RevokeDocument, ConfirmDocument)
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.lot.views import delete_from_trade
 
@@ -152,7 +153,7 @@ class ConfirmMixin():
         self.schema = schema
         a = resource_def.schema.load(data)
         self.validate(a)
-        if not a['devices'] and not a['documents']:
+        if not a['devices']:
             raise ValidationError('Devices not exist.')
         self.model = self.Model(**a)
 
@@ -232,6 +233,137 @@ class RevokeView(ConfirmMixin):
 
 
 class ConfirmRevokeView(ConfirmMixin):
+    """Handler for manager the Confirmation register from post
+
+       request_confirm_revoke = {
+           'type': 'ConfirmRevoke',
+           'action': action_revoke.id,
+           'devices': [device_id]
+       }
+
+    """
+
+    Model = ConfirmRevoke
+
+    def validate(self, data):
+        """All devices need to have the status of revoke."""
+
+        if not data['action'].type == 'Revoke':
+            txt = 'Error: this action is not a revoke action'
+            ValidationError(txt)
+
+        for dev in data['devices']:
+            if not dev.trading == 'Revoke':
+                txt = 'Some of devices do not have revoke to confirm'
+                ValidationError(txt)
+
+        devices = OrderedSet(data['devices'])
+        data['devices'] = devices
+
+        # Change the owner for every devices
+        # data['action'] == 'Revoke'
+
+        trade = data['action'].action
+        for dev in devices:
+            dev.reset_owner()
+
+        trade.lot.devices.difference_update(devices)
+
+
+class ConfirmDocumentMixin():
+    """
+       Very Important:
+       ==============
+       All of this Views than inherit of this class is executed for users
+       than is not owner of the Trade action.
+
+       The owner of Trade action executed this actions of confirm and revoke from the
+       lot
+
+    """
+
+    Model = None
+
+    def __init__(self, data, resource_def, schema):
+        # import pdb; pdb.set_trace()
+        self.schema = schema
+        a = resource_def.schema.load(data)
+        self.validate(a)
+        if not a['documents']:
+            raise ValidationError('Documents not exist.')
+        self.model = self.Model(**a)
+
+    def post(self):
+        db.session().final_flush()
+        ret = self.schema.jsonify(self.model)
+        ret.status_code = 201
+        db.session.commit()
+        return ret
+
+
+class ConfirmDocumentView(ConfirmDocumentMixin):
+    """Handler for manager the Confirmation register from post
+
+       request_confirm = {
+           'type': 'Confirm',
+           'action': trade.id,
+           'devices': [device_id]
+       }
+    """
+
+    Model = Confirm
+
+    def validate(self, data):
+        """If there are one device than have one confirmation,
+           then remove the list this device of the list of devices of this action
+        """
+        real_devices = []
+        for dev in data['devices']:
+            ac = dev.last_action_trading
+            if ac.type == Confirm.t and not ac.user == g.user:
+                real_devices.append(dev)
+
+        data['devices'] = OrderedSet(real_devices)
+
+        # Change the owner for every devices
+        for dev in data['devices']:
+            user_to = data['action'].user_to
+            dev.change_owner(user_to)
+
+
+class RevokeDocumentView(ConfirmDocumentMixin):
+    """Handler for manager the Revoke register from post
+
+       request_revoke = {
+           'type': 'Revoke',
+           'action': trade.id,
+           'devices': [device_id],
+       }
+
+    """
+
+    Model = RevokeDocument
+
+    def __init__(self, data, resource_def, schema):
+        self.schema = schema
+        a = resource_def.schema.load(data)
+        self.validate(a)
+
+    def validate(self, data):
+        """All devices need to have the status of DoubleConfirmation."""
+
+        ### check ###
+        if not data['documents']:
+            raise ValidationError('Documents not exist.')
+
+        for doc in data['documents']:
+            if not doc.trading == 'Confirmed':
+                txt = 'Some of documents do not have enough to confirm for to do a revoke'
+                ValidationError(txt)
+        ### End check ###
+
+
+class ConfirmRevokeDocumentView(ConfirmDocumentMixin):
     """Handler for manager the Confirmation register from post
 
        request_confirm_revoke = {

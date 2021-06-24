@@ -6,7 +6,7 @@ from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
-from ereuse_devicehub.resources.action.models import Confirm, Revoke
+from ereuse_devicehub.resources.action.models import ConfirmDocument
 from ereuse_devicehub.resources.hash_reports import ReportHash
 
 
@@ -28,7 +28,7 @@ class TradeDocumentView(View):
         trade = doc.lot.trade
         if trade:
             trade.documents.add(doc)
-            confirm = Confirm(action=trade,
+            confirm = ConfirmDocument(action=trade,
                               user=g.user,
                               devices=set(),
                               documents={doc})
