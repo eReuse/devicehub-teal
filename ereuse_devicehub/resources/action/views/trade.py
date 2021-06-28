@@ -1,12 +1,11 @@
-import copy
-
 from flask import g
 from sqlalchemy.util import OrderedSet
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import (Trade, Confirm, ConfirmRevoke, 
-                                                      Revoke, RevokeDocument, ConfirmDocument)
+                                                      Revoke, RevokeDocument, ConfirmDocument,
+                                                      ConfirmRevokeDocument)
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.lot.views import delete_from_trade
 
@@ -307,28 +306,22 @@ class ConfirmDocumentView(ConfirmDocumentMixin):
        request_confirm = {
            'type': 'Confirm',
            'action': trade.id,
-           'devices': [device_id]
+           'documents': [document_id],
        }
     """
 
-    Model = Confirm
+    Model = ConfirmDocument
 
     def validate(self, data):
         """If there are one device than have one confirmation,
            then remove the list this device of the list of devices of this action
         """
-        real_devices = []
-        for dev in data['devices']:
-            ac = dev.last_action_trading
-            if ac.type == Confirm.t and not ac.user == g.user:
-                real_devices.append(dev)
-
-        data['devices'] = OrderedSet(real_devices)
-
-        # Change the owner for every devices
-        for dev in data['devices']:
-            user_to = data['action'].user_to
-            dev.change_owner(user_to)
+        for doc in data['documents']:
+            ac = doc.trading
+            if not doc.trading in ['Confirm', 'Need Confirmation']:
+                txt = 'Some of documents do not have enough to confirm for to do a Doble Confirmation'
+                ValidationError(txt)
+        ### End check ###
 
 
 class RevokeDocumentView(ConfirmDocumentMixin):
@@ -337,17 +330,12 @@ class RevokeDocumentView(ConfirmDocumentMixin):
        request_revoke = {
            'type': 'Revoke',
            'action': trade.id,
-           'devices': [device_id],
+           'documents': [document_id],
        }
 
     """
 
     Model = RevokeDocument
-
-    def __init__(self, data, resource_def, schema):
-        self.schema = schema
-        a = resource_def.schema.load(data)
-        self.validate(a)
 
     def validate(self, data):
         """All devices need to have the status of DoubleConfirmation."""
@@ -357,7 +345,7 @@ class RevokeDocumentView(ConfirmDocumentMixin):
             raise ValidationError('Documents not exist.')
 
         for doc in data['documents']:
-            if not doc.trading == 'Confirmed':
+            if not doc.trading in ['Document Confirmed', 'Confirm']:
                 txt = 'Some of documents do not have enough to confirm for to do a revoke'
                 ValidationError(txt)
         ### End check ###
@@ -369,33 +357,21 @@ class ConfirmRevokeDocumentView(ConfirmDocumentMixin):
        request_confirm_revoke = {
            'type': 'ConfirmRevoke',
            'action': action_revoke.id,
-           'devices': [device_id]
+           'documents': [document_id],
        }
 
     """
 
-    Model = ConfirmRevoke
+    Model = ConfirmRevokeDocument
 
     def validate(self, data):
         """All devices need to have the status of revoke."""
 
-        if not data['action'].type == 'Revoke':
+        if not data['action'].type == 'RevokeDocument':
             txt = 'Error: this action is not a revoke action'
             ValidationError(txt)
 
-        for dev in data['devices']:
-            if not dev.trading == 'Revoke':
-                txt = 'Some of devices do not have revoke to confirm'
+        for doc in data['documents']:
+            if not doc.trading == 'Revoke':
+                txt = 'Some of documents do not have revoke to confirm'
                 ValidationError(txt)
-
-        devices = OrderedSet(data['devices'])
-        data['devices'] = devices
-
-        # Change the owner for every devices
-        # data['action'] == 'Revoke'
-
-        trade = data['action'].action
-        for dev in devices:
-            dev.reset_owner()
-
-        trade.lot.devices.difference_update(devices)

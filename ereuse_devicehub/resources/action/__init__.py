@@ -280,7 +280,9 @@ class RevokeDocumentDef(ActionDef):
     SCHEMA = schemas.RevokeDocument
 
 
-
+class ConfirmRevokeDocumentDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.ConfirmRevokeDocument
 
 
 class CancelTradeDef(ActionDef):

@@ -202,6 +202,19 @@ class ActionView(View):
             confirm_revoke = trade_view.ConfirmRevokeView(json, resource_def, self.schema)
             return confirm_revoke.post()
 
+        if json['type'] == 'RevokeDocument':
+            revoke = trade_view.RevokeDocumentView(json, resource_def, self.schema)
+            return revoke.post()
+
+        if json['type'] == 'ConfirmDocument':
+            confirm = trade_view.ConfirmDocumentView(json, resource_def, self.schema)
+            return confirm.post()
+
+        if json['type'] == 'ConfirmRevokeDocument':
+            confirm_revoke = trade_view.ConfirmRevokeDocumentView(json, resource_def, self.schema)
+            return confirm_revoke.post()
+
+        # import pdb; pdb.set_trace()
         a = resource_def.schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)

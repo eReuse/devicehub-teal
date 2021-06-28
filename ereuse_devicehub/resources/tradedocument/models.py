@@ -94,38 +94,41 @@ class TradeDocument(Thing):
         """The trading state, or None if no Trade action has
         ever been performed to this device. This extract the posibilities for to do"""
 
-        # import pdb; pdb.set_trace()
-        confirm = 'ConfirmDocument'
-        to_confirm = 'To Confirm'
+        confirm = 'Confirm'
+        need_confirm = 'Need Confirmation'
+        double_confirm = 'Document Confirmed'
         revoke = 'Revoke'
-
+        revoke_pending = 'Revoke Pending'
+        confirm_revoke = 'Document Revoked'
+        
         if not self.actions:
-            return
+            return 
 
-        actions = copy.copy(self.actions)
-        actions = list(reversed(actions))
-        ac = actions[0]
+        ac = self.actions[-1]
 
-        if ac.type == revoke:
-            return revoke
+        if ac.type == 'ConfirmRevokeDocument':
+            # can to do revoke_confirmed
+            return confirm_revoke
 
-        if ac.type == confirm:
+        if ac.type == 'RevokeDocument': 
+            if ac.user == g.user:
+                # can todo revoke_pending
+                return revoke_pending
+            else:
+                # can to do confirm_revoke
+                return revoke
+
+        if ac.type == 'ConfirmDocument':
             if ac.user == self.owner:
-                return to_confirm
-            return 'Confirmed'
-
-    def last_action_of(self, *types):
-        """Gets the last action of the given types.
-
-        :raise LookupError: Device has not an action of the given type.
-        """
-        try:
-            # noinspection PyTypeHints
-            actions = self.actions
-            actions.sort(key=lambda x: x.created)
-            return next(e for e in reversed(actions) if isinstance(e, types))
-        except StopIteration:
-            raise LookupError('{!r} does not contain actions of types {}.'.format(self, types))
+                if self.owner == g.user:
+                    # can to do revoke
+                    return confirm
+                else:
+                    # can to do confirm
+                    return need_confirm
+            else:
+                # can to do revoke
+                return double_confirm
 
     def _warning_actions(self, actions):
         return sorted(ev for ev in actions if ev.severity >= Severity.Warning)

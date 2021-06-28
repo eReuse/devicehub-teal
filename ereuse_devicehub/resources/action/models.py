@@ -1447,6 +1447,7 @@ class Reserve(Organize):
 class CancelReservation(Organize):
     """The act of cancelling a reservation."""
 
+
 class ConfirmDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     """Users confirm the one action trade this confirmation it's link to trade
        and the document that confirm
@@ -1477,6 +1478,10 @@ class ConfirmDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
 
 
 class RevokeDocument(ConfirmDocument):
+    pass
+
+
+class ConfirmRevokeDocument(ConfirmDocument):
     pass
 
 
