@@ -337,3 +337,8 @@ def test_david(user: UserClient):
 def test_eresueprice_computer_type(user: UserClient):
     s = file_workbench('computer-type.snapshot')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
+
+
+def test_workbench_encoded_snapshot(user: UserClient):
+    s = file_workbench('encoded.snapshot')
+    snapshot, _ = user.post(res=em.Snapshot, data=s)

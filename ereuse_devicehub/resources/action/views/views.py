@@ -4,22 +4,24 @@ from datetime import timedelta
 from distutils.version import StrictVersion
 from uuid import UUID
 
+import jwt
 from flask import current_app as app, request, g
+from teal.db import ResourceNotFound
 from teal.marshmallow import ValidationError
 from teal.resource import View
-from teal.db import ResourceNotFound
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import (Action, Snapshot, VisualTest,
                                                       InitTransfer, Live, Allocate, Deallocate,
                                                       Trade, Confirm, ConfirmRevoke, Revoke)
-from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
-from ereuse_devicehub.resources.enums import Severity
 from ereuse_devicehub.resources.action.views import trade as trade_view
 from ereuse_devicehub.resources.action.views.snapshot import SnapshotView, save_json, move_json
+from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
+from ereuse_devicehub.resources.enums import Severity
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
+
 
 class AllocateMix():
     model = None
@@ -121,11 +123,11 @@ class LiveView(View):
         """If the device.allocated == True, then this snapshot create an action live."""
         hid = self.get_hid(snapshot)
         if not hid or not Device.query.filter(
-            Device.hid==hid).count():
+                Device.hid == hid).count():
             raise ValidationError('Device not exist.')
 
         device = Device.query.filter(
-            Device.hid==hid, Device.allocated==True).one()
+            Device.hid == hid, Device.allocated == True).one()
         # Is not necessary
         if not device:
             raise ValidationError('Device not exist.')
@@ -170,8 +172,12 @@ class ActionView(View):
     def post(self):
         """Posts an action."""
         json = request.get_json(validate=False)
-        if not json or 'type' not in json:
-            raise ValidationError('Resource needs a type.')
+        if not json:
+            raise ValidationError('Post request needs a json.')
+        elif 'type' not in json:
+            # JN TODO Use the user's key instead an empty string
+            key = ''
+            json = jwt.decode(json, key, algorithms="HS256")
         # todo there should be a way to better get subclassess resource
         #   defs
         resource_def = app.resources[json['type']]
@@ -220,4 +226,3 @@ class ActionView(View):
     def transfer_ownership(self):
         """Perform a InitTransfer action to change author_id of device"""
         pass
-
