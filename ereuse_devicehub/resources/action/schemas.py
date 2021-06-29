@@ -543,7 +543,6 @@ class ConfirmDocument(ActionWithMultipleDocuments):
         if data['documents'] == OrderedSet():
             return
 
-        documents = []
         for doc in data['documents']:
             if not doc.lot.trade:
                 return
@@ -553,15 +552,9 @@ class ConfirmDocument(ActionWithMultipleDocuments):
             if not doc.actions:
                 continue
 
-            ac = doc.actions[-1]
-
-            if ac.t == 'ConfirmDocument' and not ac.user == g.user:
-                # If document is confirmed but is not for g.user, then need confirm
-                documents.append(doc)
-
-        if not documents:
-            txt = 'No there are documents to confirm'
-            raise ValidationError(txt)
+            if not doc.trading == 'Need Confirmation': 
+                txt = 'No there are documents to confirm'
+                raise ValidationError(txt)
 
 
 class RevokeDocument(ActionWithMultipleDocuments):
@@ -574,10 +567,10 @@ class RevokeDocument(ActionWithMultipleDocuments):
            This is not checked in the view becouse the list of documents is inmutable
 
         """
+        # import pdb; pdb.set_trace()
         if data['documents'] == OrderedSet():
             return
 
-        documents = []
         for doc in data['documents']:
             if not doc.lot.trade:
                 return
@@ -587,14 +580,9 @@ class RevokeDocument(ActionWithMultipleDocuments):
             if not doc.actions:
                 continue
 
-            ac = doc.actions[-1]
-
-            if ac.t == 'ConfirmDocument' and ac.user == g.user:
-                documents.append(doc)
-
-        if not documents:
-            txt = 'No there are documents to revoke'
-            raise ValidationError(txt)
+            if not doc.trading in ['Document Confirmed', 'Confirm']:
+                txt = 'No there are documents to revoke'
+                raise ValidationError(txt)
 
 
 class ConfirmRevokeDocument(ActionWithMultipleDocuments):
@@ -610,7 +598,6 @@ class ConfirmRevokeDocument(ActionWithMultipleDocuments):
         if data['documents'] == OrderedSet():
             return
 
-        documents = []
         for doc in data['documents']:
             if not doc.lot.trade:
                 return
@@ -618,17 +605,12 @@ class ConfirmRevokeDocument(ActionWithMultipleDocuments):
             if not doc.actions:
                 continue
 
-            ac = doc.actions[-1]
 
-            if ac.t == 'RevokeDocument' and not ac.user == g.user:
-                # If document is revoke before you can Confirm now
-                # and revoke is an action of one other user
-                data['action'] = ac
-                documents.append(doc)
+            if not doc.trading == 'Revoke':
+                txt = 'No there are documents with revoke for confirm'
+                raise ValidationError(txt)
 
-        if not documents:
-            txt = 'No there are documents with revoke for confirm'
-            raise ValidationError(txt)
+            data['action'] = doc.actions[-1]
 
 
 class ConfirmRevoke(ActionWithMultipleDevices):

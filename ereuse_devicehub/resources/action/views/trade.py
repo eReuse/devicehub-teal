@@ -58,7 +58,7 @@ class TradeView():
                 db.session.add(confirm_devs)
 
             if self.trade.documents:
-                confirm_docs = Confirm(user=g.user,
+                confirm_docs = ConfirmDocument(user=g.user,
                                        action=self.trade,
                                        documents=self.trade.documents)
                 db.session.add(confirm_docs)
