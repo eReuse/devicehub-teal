@@ -4,7 +4,6 @@ from datetime import timedelta
 from distutils.version import StrictVersion
 from uuid import UUID
 
-import jwt
 from flask import current_app as app, request, g
 from teal.db import ResourceNotFound
 from teal.marshmallow import ValidationError
@@ -172,12 +171,8 @@ class ActionView(View):
     def post(self):
         """Posts an action."""
         json = request.get_json(validate=False)
-        if not json:
+        if not json or 'type' not in json:
             raise ValidationError('Post request needs a json.')
-        elif 'type' not in json:
-            # JN TODO Use the user's key instead an empty string
-            key = ''
-            json = jwt.decode(json, key, algorithms="HS256")
         # todo there should be a way to better get subclassess resource
         #   defs
         resource_def = app.resources[json['type']]
