@@ -765,7 +765,6 @@ def test_trade_endpoint(user: UserClient, user2: UserClient):
     device2, _ = user2.get(res=Device, item=device['id'])
     assert device2['id'] == device['id']
 
-
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_offer_without_to(user: UserClient):
@@ -789,7 +788,6 @@ def test_offer_without_to(user: UserClient):
         'userFromEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': False,
         'code': 'MAX'
@@ -817,7 +815,6 @@ def test_offer_without_to(user: UserClient):
         'userFromEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': False,
         'code': 'MAX'
@@ -840,7 +837,6 @@ def test_offer_without_to(user: UserClient):
         'userFromEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot2.id,
         'confirms': False,
         'code': 'MAX'
@@ -871,7 +867,6 @@ def test_offer_without_from(user: UserClient, user2: UserClient):
         'userToEmail': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot.id,
         'confirms': False,
         'code': 'MAX'
@@ -916,7 +911,6 @@ def test_offer_without_users(user: UserClient):
         'devices': [device.id],
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot.id,
         'confirms': False,
         'code': 'MAX'
@@ -950,7 +944,6 @@ def test_offer(user: UserClient):
         'userToEmail': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot.id,
         'confirms': True,
     }
@@ -977,7 +970,6 @@ def test_offer_without_devices(user: UserClient):
         'userToEmail': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -1036,7 +1028,6 @@ def test_erase_physical():
     db.session.add(erasure)
     db.session.commit()
 
-
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_endpoint_confirm(user: UserClient, user2: UserClient):
@@ -1056,7 +1047,6 @@ def test_endpoint_confirm(user: UserClient, user2: UserClient):
         'userToEmail': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -1097,7 +1087,6 @@ def test_confirm_revoke(user: UserClient, user2: UserClient):
         'userToEmail': user2.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -1172,7 +1161,6 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -1362,7 +1350,6 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -1477,7 +1464,6 @@ def test_trade_case1(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -1538,7 +1524,6 @@ def test_trade_case2(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -1603,7 +1588,6 @@ def test_trade_case3(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -1661,7 +1645,6 @@ def test_trade_case4(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -1727,7 +1710,6 @@ def test_trade_case5(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -1793,7 +1775,6 @@ def test_trade_case6(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -1861,7 +1842,6 @@ def test_trade_case7(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -1927,7 +1907,6 @@ def test_trade_case8(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -2000,7 +1979,6 @@ def test_trade_case9(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -2081,7 +2059,6 @@ def test_trade_case10(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -2166,7 +2143,6 @@ def test_trade_case11(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -2235,7 +2211,6 @@ def test_trade_case12(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -2310,7 +2285,6 @@ def test_trade_case13(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }
@@ -2385,7 +2359,6 @@ def test_trade_case14(user: UserClient, user2: UserClient):
         'userToEmail': user.email,
         'price': 10,
         'date': "2020-12-01T02:00:00+00:00",
-        'documentID': '1',
         'lot': lot['id'],
         'confirms': True,
     }

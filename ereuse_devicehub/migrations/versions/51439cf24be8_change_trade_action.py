@@ -5,11 +5,12 @@ Revises: eca457d8b2a4
 Create Date: 2021-03-15 17:40:34.410408
 
 """
+import sqlalchemy as sa
+import citext
+import teal
 from alembic import op
 from alembic import context
 from sqlalchemy.dialects import postgresql
-import sqlalchemy as sa
-import citext
 
 
 # revision identifiers, used by Alembic.
@@ -83,7 +84,7 @@ def upgrade():
                     schema=f'{get_inv()}'
                     )
 
-    # ## User
+    ## User
     op.add_column('user', sa.Column('active', sa.Boolean(), default=True, nullable=True),
                   schema='common')
     op.add_column('user', sa.Column('phantom', sa.Boolean(), default=False, nullable=True),

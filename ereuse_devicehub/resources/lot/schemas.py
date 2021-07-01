@@ -5,6 +5,7 @@ from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.deliverynote import schemas as s_deliverynote
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.action import schemas as s_action
+from ereuse_devicehub.resources.tradedocument import schemas as s_document
 from ereuse_devicehub.resources.enums import TransferState
 from ereuse_devicehub.resources.lot import models as m
 from ereuse_devicehub.resources.models import STR_SIZE
@@ -27,4 +28,5 @@ class Lot(Thing):
     transfer_state = EnumField(TransferState, description=m.Lot.transfer_state.comment)
     receiver_address = SanitizedStr(validate=f.validate.Length(max=42))
     deliverynote = NestedOn(s_deliverynote.Deliverynote, dump_only=True)
+    documents = NestedOn('TradeDocument', many=True, dump_only=True)
     trade = NestedOn(s_action.Trade, dump_only=True)

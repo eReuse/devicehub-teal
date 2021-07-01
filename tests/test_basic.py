@@ -55,6 +55,7 @@ def test_api_docs(client: Client):
         '/metrics/',
         '/tags/',
         '/tags/{tag_id}/device/{device_id}',
+        '/trade-documents/',
         '/users/',
         '/users/login/',
         '/users/logout/',
@@ -121,4 +122,4 @@ def test_api_docs(client: Client):
         'scheme': 'basic',
         'name': 'Authorization'
     }
-    assert len(docs['definitions']) == 121
+    assert len(docs['definitions']) == 125

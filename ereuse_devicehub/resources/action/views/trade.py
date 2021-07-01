@@ -1,11 +1,11 @@
-import copy
-
 from flask import g
 from sqlalchemy.util import OrderedSet
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import Trade, Confirm, ConfirmRevoke, Revoke
+from ereuse_devicehub.resources.action.models import (Trade, Confirm, ConfirmRevoke, 
+                                                      Revoke, RevokeDocument, ConfirmDocument,
+                                                      ConfirmRevokeDocument)
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.lot.views import delete_from_trade
 
@@ -16,11 +16,11 @@ class TradeView():
        request_post = {
            'type': 'Trade',
            'devices': [device_id],
+           'documents': [document_id],
            'userFrom': user2.email,
            'userTo': user.email,
            'price': 10,
            'date': "2020-12-01T02:00:00+00:00",
-           'documentID': '1',
            'lot': lot['id'],
            'confirm': True,
        }
@@ -51,10 +51,17 @@ class TradeView():
         # if the confirmation is mandatory, do automatic confirmation only for
         # owner of the lot
         if self.trade.confirm:
-            confirm = Confirm(user=g.user,
-                              action=self.trade,
-                              devices=self.trade.devices)
-            db.session.add(confirm)
+            if self.trade.devices:
+                confirm_devs = Confirm(user=g.user,
+                                       action=self.trade,
+                                       devices=self.trade.devices)
+                db.session.add(confirm_devs)
+
+            if self.trade.documents:
+                confirm_docs = ConfirmDocument(user=g.user,
+                                       action=self.trade,
+                                       documents=self.trade.documents)
+                db.session.add(confirm_docs)
             return
 
         # check than the user than want to do the action is one of the users
@@ -173,7 +180,6 @@ class ConfirmView(ConfirmMixin):
         """If there are one device than have one confirmation,
            then remove the list this device of the list of devices of this action
         """
-        # import pdb; pdb.set_trace()
         real_devices = []
         for dev in data['devices']:
             ac = dev.last_action_trading
@@ -261,3 +267,111 @@ class ConfirmRevokeView(ConfirmMixin):
             dev.reset_owner()
 
         trade.lot.devices.difference_update(devices)
+
+
+class ConfirmDocumentMixin():
+    """
+       Very Important:
+       ==============
+       All of this Views than inherit of this class is executed for users
+       than is not owner of the Trade action.
+
+       The owner of Trade action executed this actions of confirm and revoke from the
+       lot
+
+    """
+
+    Model = None
+
+    def __init__(self, data, resource_def, schema):
+        # import pdb; pdb.set_trace()
+        self.schema = schema
+        a = resource_def.schema.load(data)
+        self.validate(a)
+        if not a['documents']:
+            raise ValidationError('Documents not exist.')
+        self.model = self.Model(**a)
+
+    def post(self):
+        db.session().final_flush()
+        ret = self.schema.jsonify(self.model)
+        ret.status_code = 201
+        db.session.commit()
+        return ret
+
+
+class ConfirmDocumentView(ConfirmDocumentMixin):
+    """Handler for manager the Confirmation register from post
+
+       request_confirm = {
+           'type': 'Confirm',
+           'action': trade.id,
+           'documents': [document_id],
+       }
+    """
+
+    Model = ConfirmDocument
+
+    def validate(self, data):
+        """If there are one device than have one confirmation,
+           then remove the list this device of the list of devices of this action
+        """
+        for doc in data['documents']:
+            ac = doc.trading
+            if not doc.trading in ['Confirm', 'Need Confirmation']:
+                txt = 'Some of documents do not have enough to confirm for to do a Doble Confirmation'
+                ValidationError(txt)
+        ### End check ###
+
+
+class RevokeDocumentView(ConfirmDocumentMixin):
+    """Handler for manager the Revoke register from post
+
+       request_revoke = {
+           'type': 'Revoke',
+           'action': trade.id,
+           'documents': [document_id],
+       }
+
+    """
+
+    Model = RevokeDocument
+
+    def validate(self, data):
+        """All devices need to have the status of DoubleConfirmation."""
+
+        ### check ###
+        if not data['documents']:
+            raise ValidationError('Documents not exist.')
+
+        for doc in data['documents']:
+            if not doc.trading in ['Document Confirmed', 'Confirm']:
+                txt = 'Some of documents do not have enough to confirm for to do a revoke'
+                ValidationError(txt)
+        ### End check ###
+
+
+class ConfirmRevokeDocumentView(ConfirmDocumentMixin):
+    """Handler for manager the Confirmation register from post
+
+       request_confirm_revoke = {
+           'type': 'ConfirmRevoke',
+           'action': action_revoke.id,
+           'documents': [document_id],
+       }
+
+    """
+
+    Model = ConfirmRevokeDocument
+
+    def validate(self, data):
+        """All devices need to have the status of revoke."""
+
+        if not data['action'].type == 'RevokeDocument':
+            txt = 'Error: this action is not a revoke action'
+            ValidationError(txt)
+
+        for doc in data['documents']:
+            if not doc.trading == 'Revoke':
+                txt = 'Some of documents do not have revoke to confirm'
+                ValidationError(txt)
