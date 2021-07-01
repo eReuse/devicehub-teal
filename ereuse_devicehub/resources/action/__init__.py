@@ -270,6 +270,21 @@ class TradeDef(ActionDef):
     SCHEMA = schemas.Trade
 
 
+class ConfirmDocumentDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.ConfirmDocument
+
+
+class RevokeDocumentDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.RevokeDocument
+
+
+class ConfirmRevokeDocumentDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.ConfirmRevokeDocument
+
+
 class CancelTradeDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.CancelTrade

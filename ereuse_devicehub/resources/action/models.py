@@ -48,6 +48,7 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, Bio
     TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 
 
 class JoinedTableMixin:
@@ -292,6 +293,20 @@ class ActionWithMultipleDevices(Action):
 class ActionDevice(db.Model):
     device_id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleDevices.id),
+                       primary_key=True)
+
+
+class ActionWithMultipleTradeDocuments(ActionWithMultipleDevices):
+    documents = relationship(TradeDocument,
+                           backref=backref('actions_docs', lazy=True, **_sorted_actions),
+                           secondary=lambda: ActionTradeDocument.__table__,
+                           order_by=lambda: TradeDocument.id,
+                           collection_class=OrderedSet)
+
+
+class ActionTradeDocument(db.Model):
+    document_id = Column(BigInteger, ForeignKey(TradeDocument.id), primary_key=True)
+    action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleTradeDocuments.id),
                        primary_key=True)
 
 
@@ -1433,6 +1448,43 @@ class CancelReservation(Organize):
     """The act of cancelling a reservation."""
 
 
+class ConfirmDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
+    """Users confirm the one action trade this confirmation it's link to trade
+       and the document that confirm
+    """
+    user_id = db.Column(UUID(as_uuid=True),
+                        db.ForeignKey(User.id),
+                        nullable=False,
+                        default=lambda: g.user.id)
+    user = db.relationship(User, primaryjoin=user_id == User.id)
+    user_comment = """The user that accept the offer."""
+    action_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey('action.id'),
+                         nullable=False)
+    action = db.relationship('Action',
+                            backref=backref('acceptances_document',
+                                            uselist=True,
+                                            lazy=True,
+                                            order_by=lambda: Action.end_time,
+                                            collection_class=list),
+                            primaryjoin='ConfirmDocument.action_id == Action.id')
+
+    def __repr__(self) -> str:
+        if self.action.t in ['Trade']:
+            origin = 'To'
+            if self.user == self.action.user_from:
+                origin = 'From'
+            return '<{0.t}app/views/inventory/ {0.id} accepted by {1}>'.format(self, origin)
+
+
+class RevokeDocument(ConfirmDocument):
+    pass
+
+
+class ConfirmRevokeDocument(ConfirmDocument):
+    pass
+
+
 class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
     """Users confirm the one action trade this confirmation it's link to trade
        and the devices that confirm
@@ -1473,7 +1525,7 @@ class ConfirmRevoke(Confirm):
         return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
 
 
-class Trade(JoinedTableMixin, ActionWithMultipleDevices):
+class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     """Trade actions log the political exchange of devices between users.
     Every time a trade action is performed, the old user looses its
     political possession, for example ownership, in favor of another
@@ -1500,8 +1552,6 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
     currency = Column(DBEnum(Currency), nullable=False, default=Currency.EUR.name)
     currency.comment = """The currency of this price as for ISO 4217."""
     date = Column(db.TIMESTAMP(timezone=True))
-    document_id = Column(CIText())
-    document_id.comment = """The id of one document like invoice so they can be linked."""
     confirm = Column(Boolean, default=False, nullable=False)
     confirm.comment = """If you need confirmation of the user, you need actevate this field"""
     code = Column(CIText(), nullable=True)

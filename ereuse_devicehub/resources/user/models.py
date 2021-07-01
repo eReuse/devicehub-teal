@@ -59,6 +59,13 @@ class User(Thing):
         """The individual associated for this database, or None."""
         return next(iter(self.individuals), None)
 
+    @property
+    def code(self):
+        """Code of phantoms accounts"""
+        if not self.phantom:
+            return
+        return self.email.split('@')[0].split('_')[1]
+
 
 class UserInventory(db.Model):
     """Relationship between users and their inventories."""

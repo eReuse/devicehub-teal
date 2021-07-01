@@ -35,6 +35,7 @@ class TestConfig(DevicehubConfig):
     TMP_SNAPSHOTS = '/tmp/snapshots'
     TMP_LIVES = '/tmp/lives'
     EMAIL_ADMIN = 'foo@foo.com'
+    PATH_DOCUMENTS_STORAGE = '/tmp/trade_documents'
 
 
 @pytest.fixture(scope='session')
