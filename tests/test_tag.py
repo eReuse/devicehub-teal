@@ -19,7 +19,7 @@ from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.tag.view import CannotCreateETag, LinkedToAnotherDevice, \
     TagNotLinked
 from tests import conftest
-from tests.conftest import file
+from tests.conftest import file, yaml2json, json_encode
 
 
 @pytest.mark.mvp
@@ -319,9 +319,9 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
     with pytest.raises(ResourceNotFound):
         Tag.from_an_id('nope').one()
 
-    s = file('basic.snapshot')
+    s = yaml2json('basic.snapshot')
     s['device']['tags'] = [{'id': 'foo', 'secondary': 'bar', 'type': 'Tag'}]
-    snapshot, _ = user.post(s, res=Snapshot)
+    snapshot, _ = user.post(json_encode(s), res=Snapshot)
     device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
     assert device['tags'][0]['id'] == 'foo'
     assert device['tags'][0]['secondary'] == 'bar'

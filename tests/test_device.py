@@ -29,7 +29,7 @@ from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech, Sever
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
 from tests import conftest
-from tests.conftest import file
+from tests.conftest import file, yaml2json, json_encode
 
 
 @pytest.mark.mvp
@@ -138,7 +138,7 @@ def test_physical_properties():
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_component_similar_one():
     user = User.query.filter().first()
-    snapshot = conftest.file('pc-components.db')
+    snapshot = yaml2json('pc-components.db')
     pc = snapshot['device']
     snapshot['components'][0]['serial_number'] = snapshot['components'][1]['serial_number'] = None
     pc = d.Desktop(**pc, components=OrderedSet(d.Component(**c) for c in snapshot['components']))
@@ -167,7 +167,7 @@ def test_add_remove():
     # pc2 has c3
     # c4 is not with any pc
     user = User.query.filter().first()
-    values = conftest.file('pc-components.db')
+    values = yaml2json('pc-components.db')
     pc = values['device']
     c1, c2 = (d.Component(**c) for c in values['components'])
     pc = d.Desktop(**pc, components=OrderedSet([c1, c2]))
@@ -198,7 +198,7 @@ def test_sync_run_components_empty():
     """Syncs a device that has an empty components list. The system should
     remove all the components from the device.
     """
-    s = conftest.file('pc-components.db')
+    s = yaml2json('pc-components.db')
     pc = d.Desktop(**s['device'], components=OrderedSet(d.Component(**c) for c in s['components']))
     db.session.add(pc)
     db.session.commit()
@@ -216,7 +216,7 @@ def test_sync_run_components_none():
     """Syncs a device that has a None components. The system should
     keep all the components from the device.
     """
-    s = conftest.file('pc-components.db')
+    s = yaml2json('pc-components.db')
     pc = d.Desktop(**s['device'], components=OrderedSet(d.Component(**c) for c in s['components']))
     db.session.add(pc)
     db.session.commit()
@@ -233,7 +233,7 @@ def test_sync_run_components_none():
 def test_sync_execute_register_desktop_new_desktop_no_tag():
     """Syncs a new d.Desktop with HID and without a tag, creating it."""
     # Case 1: device does not exist on DB
-    pc = d.Desktop(**conftest.file('pc-components.db')['device'])
+    pc = d.Desktop(**yaml2json('pc-components.db')['device'])
     db_pc = Sync().execute_register(pc)
     assert pc.physical_properties == db_pc.physical_properties
 
@@ -242,12 +242,12 @@ def test_sync_execute_register_desktop_new_desktop_no_tag():
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_sync_execute_register_desktop_existing_no_tag():
     """Syncs an existing d.Desktop with HID and without a tag."""
-    pc = d.Desktop(**conftest.file('pc-components.db')['device'])
+    pc = d.Desktop(**yaml2json('pc-components.db')['device'])
     db.session.add(pc)
     db.session.commit()
 
     pc = d.Desktop(
-        **conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
+        **yaml2json('pc-components.db')['device'])  # Create a new transient non-db object
     # 1: device exists on DB
     db_pc = Sync().execute_register(pc)
     pc.amount = 0
@@ -262,7 +262,7 @@ def test_sync_execute_register_desktop_no_hid_no_tag(user: UserClient):
     """Syncs a d.Desktop without HID and no tag.
     This should not fail as we don't have a way to identify it.
     """
-    device = conftest.file('pc-components.db')['device']
+    device = yaml2json('pc-components.db')['device']
     device['owner_id'] = user.user['id']
     pc = d.Desktop(**device)
     # 1: device has no HID
@@ -283,7 +283,7 @@ def test_sync_execute_register_desktop_tag_not_linked():
     db.session.commit()
 
     # Create a new transient non-db object
-    pc = d.Desktop(**conftest.file('pc-components.db')['device'], tags=OrderedSet([Tag(id='foo')]))
+    pc = d.Desktop(**yaml2json('pc-components.db')['device'], tags=OrderedSet([Tag(id='foo')]))
     returned_pc = Sync().execute_register(pc)
     assert returned_pc == pc
     assert tag.device == pc, 'Tag has to be linked'
@@ -300,7 +300,7 @@ def test_sync_execute_register_no_hid_tag_not_linked(tag_id: str):
     be linked), and thus it creates a new d.Desktop.
     """
     tag = Tag(id=tag_id)
-    pc = d.Desktop(**conftest.file('pc-components.db')['device'], tags=OrderedSet([tag]))
+    pc = d.Desktop(**yaml2json('pc-components.db')['device'], tags=OrderedSet([tag]))
     db.session.add(g.user)
     returned_pc = Sync().execute_register(pc)
     db.session.commit()
@@ -323,7 +323,7 @@ def test_sync_execute_register_tag_does_not_exist():
     Tags have to be created before trying to link them through a Snapshot.
     """
     user = User.query.filter().first()
-    pc = d.Desktop(**conftest.file('pc-components.db')['device'], tags=OrderedSet([Tag('foo')]))
+    pc = d.Desktop(**yaml2json('pc-components.db')['device'], tags=OrderedSet([Tag('foo')]))
     pc.owner_id = user.id
     with raises(ResourceNotFound):
         Sync().execute_register(pc)
@@ -337,12 +337,12 @@ def test_sync_execute_register_tag_linked_same_device():
     (If it has HID it validates both HID and tag point at the same
     device, this his checked in ).
     """
-    orig_pc = d.Desktop(**conftest.file('pc-components.db')['device'])
+    orig_pc = d.Desktop(**yaml2json('pc-components.db')['device'])
     db.session.add(Tag(id='foo', device=orig_pc))
     db.session.commit()
 
     pc = d.Desktop(
-        **conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
+        **yaml2json('pc-components.db')['device'])  # Create a new transient non-db object
     pc.tags.add(Tag(id='foo'))
     db_pc = Sync().execute_register(pc)
     assert db_pc.id == orig_pc.id
@@ -356,16 +356,16 @@ def test_sync_execute_register_tag_linked_other_device_mismatch_between_tags():
     """Checks that sync raises an error if finds that at least two passed-in
     tags are not linked to the same device.
     """
-    pc1 = d.Desktop(**conftest.file('pc-components.db')['device'])
+    pc1 = d.Desktop(**yaml2json('pc-components.db')['device'])
     db.session.add(Tag(id='foo-1', device=pc1))
-    pc2 = d.Desktop(**conftest.file('pc-components.db')['device'])
+    pc2 = d.Desktop(**yaml2json('pc-components.db')['device'])
     pc2.serial_number = 'pc2-serial'
     pc2.hid = Naming.hid(pc2.type, pc2.manufacturer, pc2.model, pc2.serial_number)
     db.session.add(Tag(id='foo-2', device=pc2))
     db.session.commit()
 
     pc1 = d.Desktop(
-        **conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
+        **yaml2json('pc-components.db')['device'])  # Create a new transient non-db object
     pc1.tags.add(Tag(id='foo-1'))
     pc1.tags.add(Tag(id='foo-2'))
     with raises(MismatchBetweenTags):
@@ -380,16 +380,16 @@ def test_sync_execute_register_mismatch_between_tags_and_hid():
 
     In this case we set HID -> pc1 but tag -> pc2
     """
-    pc1 = d.Desktop(**conftest.file('pc-components.db')['device'])
+    pc1 = d.Desktop(**yaml2json('pc-components.db')['device'])
     db.session.add(Tag(id='foo-1', device=pc1))
-    pc2 = d.Desktop(**conftest.file('pc-components.db')['device'])
+    pc2 = d.Desktop(**yaml2json('pc-components.db')['device'])
     pc2.serial_number = 'pc2-serial'
     pc2.hid = Naming.hid(pc2.type, pc2.manufacturer, pc2.model, pc2.serial_number)
     db.session.add(Tag(id='foo-2', device=pc2))
     db.session.commit()
 
     pc1 = d.Desktop(
-        **conftest.file('pc-components.db')['device'])  # Create a new transient non-db object
+        **yaml2json('pc-components.db')['device'])  # Create a new transient non-db object
     pc1.tags.add(Tag(id='foo-2'))
     with raises(MismatchBetweenTagsAndHid):
         Sync().execute_register(pc1)
@@ -623,9 +623,9 @@ def test_hid_with_mac(app: Devicehub, user: UserClient):
 @pytest.mark.mvp
 def test_hid_without_mac(app: Devicehub, user: UserClient):
     """Checks hid without mac."""
-    snapshot = file('asus-eee-1000h.snapshot.11')
+    snapshot = yaml2json('asus-eee-1000h.snapshot.11')
     snapshot['components'] = [c for c in snapshot['components'] if c['type'] != 'NetworkAdapter']
-    snap, _ = user.post(snapshot, res=m.Snapshot)
+    snap, _ = user.post(json_encode(snapshot), res=m.Snapshot)
     pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
 
@@ -633,10 +633,10 @@ def test_hid_without_mac(app: Devicehub, user: UserClient):
 @pytest.mark.mvp
 def test_hid_with_mac_none(app: Devicehub, user: UserClient):
     """Checks hid with mac = None."""
-    snapshot = file('asus-eee-1000h.snapshot.11')
+    snapshot = yaml2json('asus-eee-1000h.snapshot.11')
     network = [c for c in snapshot['components'] if c['type'] == 'NetworkAdapter'][0]
     network['serialNumber'] = None
-    snap, _ = user.post(snapshot, res=m.Snapshot)
+    snap, _ = user.post(json_encode(snapshot), res=m.Snapshot)
     pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
 
@@ -644,12 +644,12 @@ def test_hid_with_mac_none(app: Devicehub, user: UserClient):
 @pytest.mark.mvp
 def test_hid_with_2networkadapters(app: Devicehub, user: UserClient):
     """Checks hid with 2 networks adapters"""
-    snapshot = file('asus-eee-1000h.snapshot.11')
+    snapshot = yaml2json('asus-eee-1000h.snapshot.11')
     network = [c for c in snapshot['components'] if c['type'] == 'NetworkAdapter'][0]
     network2 = copy.copy(network)
     snapshot['components'].append(network2)
     network['serialNumber'] = 'a0:24:8c:7f:cf:2d'
-    user.post(snapshot, res=m.Snapshot)
+    user.post(json_encode(snapshot), res=m.Snapshot)
     devices, _ = user.get(res=d.Device)
 
     laptop = devices['items'][0]
@@ -660,18 +660,18 @@ def test_hid_with_2networkadapters(app: Devicehub, user: UserClient):
 @pytest.mark.mvp
 def test_hid_with_2network_and_drop_no_mac_in_hid(app: Devicehub, user: UserClient):
     """Checks hid with 2 networks adapters and next drop the network is not used in hid"""
-    snapshot = file('asus-eee-1000h.snapshot.11')
+    snapshot = yaml2json('asus-eee-1000h.snapshot.11')
     network = [c for c in snapshot['components'] if c['type'] == 'NetworkAdapter'][0]
     network2 = copy.copy(network)
     snapshot['components'].append(network2)
     network['serialNumber'] = 'a0:24:8c:7f:cf:2d'
-    snap, _ = user.post(snapshot, res=m.Snapshot)
+    snap, _ = user.post(json_encode(snapshot), res=m.Snapshot)
     pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
 
     snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abb'
     snapshot['components'] = [c for c in snapshot['components'] if c != network]
-    user.post(snapshot, res=m.Snapshot)
+    user.post(json_encode(snapshot), res=m.Snapshot)
     devices, _ = user.get(res=d.Device)
     laptop = devices['items'][0]
     assert laptop['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
@@ -683,19 +683,19 @@ def test_hid_with_2network_and_drop_no_mac_in_hid(app: Devicehub, user: UserClie
 def test_hid_with_2network_and_drop_mac_in_hid(app: Devicehub, user: UserClient):
     """Checks hid with 2 networks adapters and next drop the network is used in hid"""
     # One tipical snapshot with 2 network cards
-    snapshot = file('asus-eee-1000h.snapshot.11')
+    snapshot = yaml2json('asus-eee-1000h.snapshot.11')
     network = [c for c in snapshot['components'] if c['type'] == 'NetworkAdapter'][0]
     network2 = copy.copy(network)
     snapshot['components'].append(network2)
     network['serialNumber'] = 'a0:24:8c:7f:cf:2d'
-    snap, _ = user.post(snapshot, res=m.Snapshot)
+    snap, _ = user.post(json_encode(snapshot), res=m.Snapshot)
     pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
 
     # we drop the network card then is used for to build the hid
     snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abb'
     snapshot['components'] = [c for c in snapshot['components'] if c != network2]
-    user.post(snapshot, res=m.Snapshot)
+    user.post(json_encode(snapshot), res=m.Snapshot)
     devices, _ = user.get(res=d.Device)
     laptops = [c for c in devices['items'] if c['type'] == 'Laptop']
     assert len(laptops) == 2
@@ -707,7 +707,7 @@ def test_hid_with_2network_and_drop_mac_in_hid(app: Devicehub, user: UserClient)
     # we drop all network cards
     snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abc'
     snapshot['components'] = [c for c in snapshot['components'] if not c in [network, network2]]
-    user.post(snapshot, res=m.Snapshot)
+    user.post(json_encode(snapshot), res=m.Snapshot)
     devices, _ = user.get(res=d.Device)
     laptops = [c for c in devices['items'] if c['type'] == 'Laptop']
     assert len(laptops) == 3

@@ -23,7 +23,7 @@ from ereuse_devicehub.resources.hash_reports import ReportHash
 from ereuse_devicehub.resources.enums import SessionType
 from ereuse_devicehub.db import db
 from tests import conftest
-from tests.conftest import file
+from tests.conftest import file, yaml2json, json_encode
 
 
 @pytest.mark.mvp
@@ -114,8 +114,8 @@ def test_export_csv_permitions(user: UserClient, user2: UserClient, client: Clie
 @pytest.mark.mvp
 def test_export_csv_actions(user: UserClient, user2: UserClient, client: Client):
     """Test export device information in a csv file with others users."""
-    acer = file('acer.happy.battery.snapshot')
-    snapshot, _ = user.post(acer, res=Snapshot)
+    acer = yaml2json('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(json_encode(acer), res=Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
@@ -156,8 +156,8 @@ def test_export_csv_actions(user: UserClient, user2: UserClient, client: Client)
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_export_csv2(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
-    acer = file('acer-happy.snapshot-test1')
-    snapshot, _ = user.post(acer, res=Snapshot)
+    acer = yaml2json('acer-happy.snapshot-test1')
+    snapshot, _ = user.post(json_encode(acer), res=Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
@@ -168,7 +168,7 @@ def test_live_export_csv2(user: UserClient, client: Client, app: Devicehub):
 
     user.post(res=Allocate, data=post_request)
 
-    acer = file('acer-happy.live-test1')
+    acer = yaml2json('acer-happy.live-test1')
     live, _ = client.post(acer, res=Live)
     csv_user, _ = user.get(res=documents.DocumentDef.t,
                           item='actions/',
@@ -183,8 +183,8 @@ def test_live_export_csv2(user: UserClient, client: Client, app: Devicehub):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_example2(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
-    acer = file('acer-happy.snapshot-test1')
-    snapshot, _ = user.post(acer, res=Snapshot)
+    acer = yaml2json('acer-happy.snapshot-test1')
+    snapshot, _ = user.post(json_encode(acer), res=Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
@@ -195,7 +195,7 @@ def test_live_example2(user: UserClient, client: Client, app: Devicehub):
 
     user.post(res=Allocate, data=post_request)
 
-    acer = file('acer-happy.live-test1')
+    acer = yaml2json('acer-happy.live-test1')
     live, _ = client.post(acer, res=Live)
     db_device = d.Device.query.filter_by(id=device_id).one()
     action_live = [a for a in db_device.actions if a.type == 'Live']
@@ -553,8 +553,8 @@ def test_verify_stamp_devices_stock(user: UserClient, client: Client):
 @pytest.mark.mvp
 def test_verify_stamp_csv_actions(user: UserClient, client: Client):
     """Test verify stamp of one export device information in a csv file with others users."""
-    acer = file('acer.happy.battery.snapshot')
-    snapshot, _ = user.post(acer, res=Snapshot)
+    acer = yaml2json('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(json_encode(acer), res=Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",

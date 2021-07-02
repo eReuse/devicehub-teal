@@ -11,7 +11,7 @@ from ereuse_devicehub.resources.action.models import RateComputer, BenchmarkProc
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag.model import Tag
-from tests.conftest import file, file_workbench
+from tests.conftest import file, file_workbench, yaml2json, json_encode
 
 
 @pytest.mark.mvp
@@ -20,18 +20,18 @@ def test_workbench_server_condensed(user: UserClient):
     condensed in only one big ``Snapshot`` file, as described
     in the docs.
     """
-    s = file('workbench-server-1.snapshot')
-    s['device']['actions'].append(file('workbench-server-2.stress-test'))
+    s = yaml2json('workbench-server-1.snapshot')
+    s['device']['actions'].append(yaml2json('workbench-server-2.stress-test'))
     s['components'][4]['actions'].extend((
-        file('workbench-server-3.erase'),
-        file('workbench-server-4.install')
+        yaml2json('workbench-server-3.erase'),
+        yaml2json('workbench-server-4.install')
     ))
-    s['components'][5]['actions'].append(file('workbench-server-3.erase'))
+    s['components'][5]['actions'].append(yaml2json('workbench-server-3.erase'))
     # Create tags
     for t in s['device']['tags']:
         user.post({'id': t['id']}, res=Tag)
 
-    snapshot, _ = user.post(res=em.Snapshot, data=s)
+    snapshot, _ = user.post(res=em.Snapshot, data=json_encode(s))
     pc_id = snapshot['device']['id']
     cpu_id = snapshot['components'][3]['id']
     ssd_id= snapshot['components'][4]['id']
@@ -77,28 +77,28 @@ def test_workbench_server_phases(user: UserClient):
     actions.html#snapshots-from-workbench>`_.
     """
     # 1. Snapshot with sync / rate / benchmarks / test data storage
-    s = file('workbench-server-1.snapshot')
-    snapshot, _ = user.post(res=em.Snapshot, data=s)
+    s = yaml2json('workbench-server-1.snapshot')
+    snapshot, _ = user.post(res=em.Snapshot, data=json_encode(s))
     assert not snapshot['closed'], 'Snapshot must be waiting for the new actions'
 
     # 2. stress test
-    st = file('workbench-server-2.stress-test')
+    st = yaml2json('workbench-server-2.stress-test')
     st['snapshot'] = snapshot['id']
     stress_test, _ = user.post(res=em.StressTest, data=st)
 
     # 3. erase
     ssd_id, hdd_id = snapshot['components'][4]['id'], snapshot['components'][5]['id']
-    e = file('workbench-server-3.erase')
+    e = yaml2json('workbench-server-3.erase')
     e['snapshot'], e['device'] = snapshot['id'], ssd_id
     erase1, _ = user.post(res=em.EraseSectors, data=e)
 
     # 3 bis. a second erase
-    e = file('workbench-server-3.erase')
+    e = yaml2json('workbench-server-3.erase')
     e['snapshot'], e['device'] = snapshot['id'], hdd_id
     erase2, _ = user.post(res=em.EraseSectors, data=e)
 
     # 4. Install
-    i = file('workbench-server-4.install')
+    i = yaml2json('workbench-server-4.install')
     i['snapshot'], i['device'] = snapshot['id'], ssd_id
     install, _ = user.post(res=em.Install, data=i)
 
@@ -317,7 +317,7 @@ def test_workbench_fixtures(file: pathlib.Path, user: UserClient):
     """
     s = json.load(file.open())
     user.post(res=em.Snapshot,
-              data=s,
+              data=json_encode(s),
               status=201)
 
 

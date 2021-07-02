@@ -13,7 +13,7 @@ from ereuse_devicehub.resources.device.views import Filters, Sorting
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.lot.models import Lot
 from tests import conftest
-from tests.conftest import file
+from tests.conftest import file, yaml2json, json_encode
 
 
 @pytest.mark.mvp
@@ -196,9 +196,9 @@ def test_device_query_permitions(user: UserClient, user2: UserClient):
     i2, _ = user2.get(res=Device)
     assert i2['items'] == []
 
-    basic_snapshot = file('basic.snapshot')
+    basic_snapshot = yaml2json('basic.snapshot')
     basic_snapshot['uuid'] = f"{uuid.uuid4()}"
-    user2.post(basic_snapshot, res=Snapshot)
+    user2.post(json_encode(basic_snapshot), res=Snapshot)
     i2, _ = user2.get(res=Device)
     pc2 = next(d for d in i2['items'] if d['type'] == 'Desktop')
     
@@ -265,9 +265,9 @@ def test_device_query_search_synonyms_asus(user: UserClient):
 
 @pytest.mark.mvp
 def test_device_query_search_synonyms_intel(user: UserClient):
-    s = file('real-hp.snapshot.11')
+    s = yaml2json('real-hp.snapshot.11')
     s['device']['model'] = 'foo'  # The model had the word 'HP' in it
-    user.post(s, res=Snapshot)
+    user.post(json_encode(s), res=Snapshot)
     i, _ = user.get(res=Device, query=[('search', 'hewlett packard')])
     assert 1 == len(i['items'])
     i, _ = user.get(res=Device, query=[('search', 'hewlett')])
