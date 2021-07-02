@@ -3,12 +3,10 @@
 import os
 import json
 import shutil
-import hashlib
 from datetime import datetime
 
 from flask import current_app as app, g
 from sqlalchemy.util import OrderedSet
-from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
@@ -61,15 +59,6 @@ def move_json(tmp_snapshots, path_name, user, live=False):
         os.remove(path_name)
 
 
-def check_hash_snapshot(snapshot_json):
-    debug = snapshot_json.pop('debug')
-    data = json.dumps(snapshot_json).encode('utf-8')
-    hash3 = hashlib.sha3_256(data).hexdigest()
-    if not hash3 in debug['hwinfo']:
-        txt = "This Snapshot is not valid"
-        raise ValidationError(txt)
-
-
 class SnapshotView():
     """Performs a Snapshot.
 
@@ -80,12 +69,12 @@ class SnapshotView():
     # snapshot, and we want to wait to flush snapshot at the end
 
     def __init__(self, snapshot_json: dict, resource_def, schema):
+        # import pdb; pdb.set_trace()
         self.schema = schema
-        self.snapshot_json = snapshot_json
         self.resource_def = resource_def
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
-        check_hash_snapshot(snapshot_json)
+        snapshot_json.pop('debug', None)
         self.snapshot_json = resource_def.schema.load(snapshot_json)
         self.response = self.build()
         move_json(self.tmp_snapshots, self.path_snapshot, g.user.email)

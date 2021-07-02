@@ -1,5 +1,7 @@
 import io
 import uuid
+import jwt
+import ereuse_utils
 from contextlib import redirect_stdout
 from datetime import datetime
 from pathlib import Path
@@ -27,6 +29,7 @@ ENDT = datetime(year=2000, month=1, day=1, hour=2)
 T = {'start_time': STARTT, 'end_time': ENDT}
 """A dummy start_time/end_time to use as function keywords."""
 
+P = '7KU4ZzsEfe'
 
 class TestConfig(DevicehubConfig):
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/dh_test'
@@ -137,10 +140,24 @@ def auth_app_context(app: Devicehub):
         yield app
 
 
-def file(name: str) -> dict:
+def json_encode(dev: str) -> dict:
+    """Encode json."""
+    return jwt.encode(dev,
+                      P,
+                      algorithm="HS256",
+                      json_encoder=ereuse_utils.JSONEncoder
+    )
+
+
+def yaml2json(name: str) -> dict:
     """Opens and parses a YAML file from the ``files`` subdir."""
     with Path(__file__).parent.joinpath('files').joinpath(name + '.yaml').open() as f:
         return yaml.load(f)
+
+
+def file(name: str) -> dict:
+    """Opens and parses a YAML file from the ``files`` subdir. And decode"""
+    return json_encode(yaml2json(name))
 
 
 def file_workbench(name: str) -> dict:

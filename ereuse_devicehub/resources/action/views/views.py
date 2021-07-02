@@ -167,10 +167,22 @@ class LiveView(View):
         return live
 
 
+import jwt
+import ereuse_utils
+def decode_snapshot(data):
+    p = '7KU4ZzsEfe'
+    return jwt.decode(data, p, algorithms="HS256", json_encoder=ereuse_utils.JSONEncoder)
+
+
 class ActionView(View):
     def post(self):
         """Posts an action."""
+
         json = request.get_json(validate=False)
+
+        if not type(json) == dict:
+            json = decode_snapshot(json)
+
         if not json or 'type' not in json:
             raise ValidationError('Post request needs a json.')
         # todo there should be a way to better get subclassess resource

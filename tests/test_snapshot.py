@@ -847,4 +847,5 @@ def test_bug_141(user: UserClient):
        with a big number in the parameter command_timeout of the DataStorage
 
     """
-    user.post(file('2021-5-4-13-41_time_out_test_datastorage'), res=Snapshot)
+    dev = file('2021-5-4-13-41_time_out_test_datastorage')
+    user.post(dev, res=Snapshot)
