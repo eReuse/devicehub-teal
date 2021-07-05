@@ -76,3 +76,4 @@ class DevicehubConfig(Config):
 
     """Definition of path where save the documents of customers"""
     PATH_DOCUMENTS_STORAGE = config('PATH_DOCUMENTS_STORAGE', '/tmp/')
+    JWT_PASS = config('JWT_PASS', '')

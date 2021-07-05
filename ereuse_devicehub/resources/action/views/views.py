@@ -1,5 +1,7 @@
 """ This is the view for Snapshots """
 
+import jwt
+import ereuse_utils
 from datetime import timedelta
 from distutils.version import StrictVersion
 from uuid import UUID
@@ -167,12 +169,9 @@ class LiveView(View):
         return live
 
 
-import jwt
-import ereuse_utils
 def decode_snapshot(data):
-    p = '7KU4ZzsEfe'
     try:
-        return jwt.decode(data['data'], p, algorithms="HS256", json_encoder=ereuse_utils.JSONEncoder)
+        return jwt.decode(data['data'], app.config['JWT_PASS'], algorithms="HS256", json_encoder=ereuse_utils.JSONEncoder)
     except jwt.exceptions.InvalidSignatureError as err:
         txt = 'Invalid snapshot'
         raise ValidationError(txt)
