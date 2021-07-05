@@ -625,10 +625,10 @@ class Computer(Device):
     It is a subset of the Linux definition of DMI / DMI decode.
     """
     amount = Column(Integer, check_range('amount', min=0, max=100), default=0)
-    # owner_id = db.Column(UUID(as_uuid=True),
-                         # db.ForeignKey(User.id),
-                         # nullable=False,
-                         # default=lambda: g.user.id)
+    owner_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey(User.id),
+                         nullable=False,
+                         default=lambda: g.user.id)
     # author = db.relationship(User, primaryjoin=owner_id == User.id)
     transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
     transfer_state.comment = TransferState.__doc__
