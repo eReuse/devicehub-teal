@@ -171,7 +171,11 @@ import jwt
 import ereuse_utils
 def decode_snapshot(data):
     p = '7KU4ZzsEfe'
-    return jwt.decode(data, p, algorithms="HS256", json_encoder=ereuse_utils.JSONEncoder)
+    try:
+        return jwt.decode(data['data'], p, algorithms="HS256", json_encoder=ereuse_utils.JSONEncoder)
+    except jwt.exceptions.InvalidSignatureError as err:
+        txt = 'Invalid snapshot'
+        raise ValidationError(txt)
 
 
 class ActionView(View):
@@ -180,16 +184,23 @@ class ActionView(View):
 
         json = request.get_json(validate=False)
 
-        if not type(json) == dict:
-            json = decode_snapshot(json)
-
         if not json or 'type' not in json:
             raise ValidationError('Post request needs a json.')
         # todo there should be a way to better get subclassess resource
         #   defs
         resource_def = app.resources[json['type']]
         if json['type'] == Snapshot.t:
-            snapshot = SnapshotView(json, resource_def, self.schema)
+            if not 'data' in json:
+                txt = 'Invalid snapshot'
+                raise ValidationError(txt)
+
+            snapshot_data = decode_snapshot(json)
+
+            if not snapshot_data:
+                txt = 'Invalid snapshot'
+                raise ValidationError(txt)
+
+            snapshot = SnapshotView(snapshot_data, resource_def, self.schema)
             return snapshot.post()
 
         if json['type'] == VisualTest.t:
