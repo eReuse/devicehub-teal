@@ -1,5 +1,6 @@
 import itertools
 import json
+import jwt
 from pathlib import Path
 from typing import Set
 
@@ -94,7 +95,7 @@ class Dummy:
             for path in bar:
                 with path.open() as f:
                     snapshot = yaml.load(f)
-                s, _ = user1.post(res=m.Snapshot, data=snapshot)
+                s, _ = user1.post(res=m.Snapshot, data=self.json_encode(snapshot))
                 if s.get('uuid', None) == 'ec23c11b-80b6-42cd-ac5c-73ba7acddbc4':
                     sample_pc = s['device']['id']
                     sample_pc_devicehub_id = s['device']['devicehubID']
@@ -206,3 +207,15 @@ class Dummy:
                             response_wrapper=self.app.response_class)
         client.login()
         return client
+
+    def json_encode(self, dev: str) -> dict:
+        """Encode json."""
+        data = {"type": "Snapshot"}
+        data['data'] = jwt.encode(dev,
+                          self.app.config['JWT_PASS'],
+                          algorithm="HS256",
+                          json_encoder=ereuse_utils.JSONEncoder
+        )
+
+        return data
+

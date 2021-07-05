@@ -409,7 +409,6 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     This tests ensures that only the last erasure is picked up, as
     erasures have always custom endTime value set.
     """
-    # import pdb; pdb.set_trace()
     s = yaml2json('erase-sectors.snapshot')
     assert s['components'][0]['actions'][0]['endTime'] == '2018-06-01T09:12:06+02:00'
     snapshot = snapshot_and_check(user, s, action_types=(

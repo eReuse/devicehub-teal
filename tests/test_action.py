@@ -484,7 +484,7 @@ def test_live_without_hdd_3(user: UserClient, client: Client, app: Devicehub):
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     components = [a for a in acer['components'] if a['type'] != 'HardDrive']
     acer['components'] = components
-    snapshot, _ = user.post(acer, res=models.Snapshot)
+    snapshot, _ = user.post(json_encode(acer), res=models.Snapshot)
     device_id = snapshot['device']['id']
     db_device = Device.query.filter_by(id=device_id).one()
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,

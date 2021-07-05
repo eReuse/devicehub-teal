@@ -5,6 +5,7 @@ import ereuse_utils
 from contextlib import redirect_stdout
 from datetime import datetime
 from pathlib import Path
+from decouple import config
 
 import boltons.urlutils
 import pytest
@@ -28,8 +29,8 @@ ENDT = datetime(year=2000, month=1, day=1, hour=2)
 """A dummy ending time to use in tests."""
 T = {'start_time': STARTT, 'end_time': ENDT}
 """A dummy start_time/end_time to use as function keywords."""
+P = config('JWT_PASS', '')
 
-P = '7KU4ZzsEfe'
 
 class TestConfig(DevicehubConfig):
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/dh_test'
@@ -39,6 +40,7 @@ class TestConfig(DevicehubConfig):
     TMP_LIVES = '/tmp/lives'
     EMAIL_ADMIN = 'foo@foo.com'
     PATH_DOCUMENTS_STORAGE = '/tmp/trade_documents'
+    JWT_PASS = config('JWT_PASS', '')
 
 
 @pytest.fixture(scope='session')
