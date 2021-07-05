@@ -142,11 +142,15 @@ def auth_app_context(app: Devicehub):
 
 def json_encode(dev: str) -> dict:
     """Encode json."""
-    return jwt.encode(dev,
+    data = {"type": "Snapshot"}
+    data['data'] = jwt.encode(dev,
                       P,
                       algorithm="HS256",
                       json_encoder=ereuse_utils.JSONEncoder
     )
+
+    return data
+
 
 
 def yaml2json(name: str) -> dict:

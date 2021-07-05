@@ -112,7 +112,8 @@ def test_snapshot_post(user: UserClient):
 @pytest.mark.mvp
 def test_same_device_tow_users(user: UserClient, user2: UserClient):
     """Two users can up the same snapshot and the system save 2 computers"""
-    user.post(yaml2json('basic.snapshot'), res=Snapshot)
+    # import pdb; pdb.set_trace()
+    user.post(file('basic.snapshot'), res=Snapshot)
     i, _ = user.get(res=m.Device)
     pc = next(d for d in i['items'] if d['type'] == 'Desktop')
     pc_id = pc['id']
@@ -408,6 +409,7 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     This tests ensures that only the last erasure is picked up, as
     erasures have always custom endTime value set.
     """
+    # import pdb; pdb.set_trace()
     s = yaml2json('erase-sectors.snapshot')
     assert s['components'][0]['actions'][0]['endTime'] == '2018-06-01T09:12:06+02:00'
     snapshot = snapshot_and_check(user, s, action_types=(
@@ -465,7 +467,7 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     # Let's try a second erasure with an error
     s['uuid'] = uuid4()
     s['components'][0]['actions'][0]['severity'] = 'Error'
-    snapshot, _ = user.post(s, res=Snapshot)
+    snapshot, _ = user.post(json_encode(s), res=Snapshot)
     storage, _ = user.get(res=m.Device, item=storage['devicehubID'])
     assert storage['hid'] == 'solidstatedrive-c1mr-c1ml-c1s'
     assert storage['privacy']['type'] == 'EraseSectors'
@@ -524,7 +526,7 @@ def snapshot_and_check(user: UserClient,
 
         :return: The last resulting snapshot.
     """
-    snapshot, _ = user.post(res=Snapshot, data=input_snapshot)
+    snapshot, _ = user.post(res=Snapshot, data=json_encode(input_snapshot))
     assert all(e['type'] in action_types for e in snapshot['actions'])
     assert len(snapshot['actions']) == len(action_types)
     # Ensure there is no Remove action after the first Add
