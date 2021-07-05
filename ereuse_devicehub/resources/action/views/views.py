@@ -181,7 +181,6 @@ class ActionView(View):
     def post(self):
         """Posts an action."""
 
-        # import pdb; pdb.set_trace()
         json = request.get_json(validate=False)
 
         if not json or 'type' not in json:
@@ -190,6 +189,10 @@ class ActionView(View):
         #   defs
         resource_def = app.resources[json['type']]
         if json['type'] == Snapshot.t:
+            if json.get('software') == 'Web' and json['device'] == 'Computer':
+                txt = 'Invalid snapshot'
+                raise ValidationError(txt)
+
             if json.get('software') == 'Web':
                 snapshot = SnapshotView(json, resource_def, self.schema)
                 return snapshot.post()
