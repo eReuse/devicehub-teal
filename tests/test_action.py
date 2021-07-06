@@ -2415,3 +2415,9 @@ def test_trade_case14(user: UserClient, user2: UserClient):
     assert device.actions[-4].user == trade.user_from
     assert device.actions[-5].t == 'Trade'
     assert device.actions[-5].author == trade.user_to
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_web_erase(user: UserClient, user2: UserClient):
+    {'type': 'ToErased', 'devices': [174], 'name': 'borrado universal', 'severity': 'Info', 'description': 'nada que describir', 'url': 'http://www.google.com/', 'documentId': '33', 'endTime': '2021-07-07T22:00:00.000Z', 'filename': 'Certificado de borrado1.pdf', 'hash': 'fedbcbd057d25df9915ca9758b7537794148b896b66b3bbc972fe966dcced34b'}
