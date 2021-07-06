@@ -2,6 +2,7 @@ import os
 import time
 from datetime import datetime
 from flask import current_app as app, request, g, Response
+from marshmallow import ValidationError
 from teal.resource import View
 
 from ereuse_devicehub.db import db
@@ -19,7 +20,11 @@ class TradeDocumentView(View):
     def post(self):
         """Add one document."""
 
-        data = request.get_json(validate=True)
+        try:
+            data = request.get_json(validate=True)
+        except ValueError as err:
+            raise ValidationError(err)
+
         hash3 = data['file_hash']
         db_hash = ReportHash(hash3=hash3)
         db.session.add(db_hash)
