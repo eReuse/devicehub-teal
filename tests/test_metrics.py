@@ -3,7 +3,7 @@ import pytest
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.resources.action import models as ma
 from tests import conftest
-from tests.conftest import file
+from tests.conftest import file, yaml2json, json_encode
 
 
 @pytest.mark.mvp
@@ -11,10 +11,10 @@ from tests.conftest import file
 def test_simple_metrics(user: UserClient):
     """ Checks one standard query of metrics """
     # Insert computer
-    lenovo = file('desktop-9644w8n-lenovo-0169622.snapshot')
-    acer = file('acer.happy.battery.snapshot')
-    user.post(lenovo, res=ma.Snapshot)
-    snapshot, _ = user.post(acer, res=ma.Snapshot)
+    lenovo = yaml2json('desktop-9644w8n-lenovo-0169622.snapshot')
+    acer = yaml2json('acer.happy.battery.snapshot')
+    user.post(json_encode(lenovo), res=ma.Snapshot)
+    snapshot, _ = user.post(json_encode(acer), res=ma.Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "finalUserCode": "abcdefjhi",
@@ -58,8 +58,8 @@ def test_simple_metrics(user: UserClient):
 def test_second_hdd_metrics(user: UserClient):
     """ Checks one standard query of metrics """
     # Insert computer
-    acer = file('acer.happy.battery.snapshot')
-    snapshot, _ = user.post(acer, res=ma.Snapshot)
+    acer = yaml2json('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(json_encode(acer), res=ma.Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "finalUserCode": "abcdefjhi",

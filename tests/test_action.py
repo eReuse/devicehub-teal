@@ -29,7 +29,7 @@ from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCar
     RamModule, SolidStateDrive
 from ereuse_devicehub.resources.enums import ComputerChassis, Severity, TestDataStorageLength
 from tests import conftest
-from tests.conftest import create_user, file
+from tests.conftest import create_user, file, yaml2json, json_encode
 
 
 @pytest.mark.mvp
@@ -260,6 +260,7 @@ def test_live(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
+    acer = yaml2json('acer.happy.battery.snapshot')
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
@@ -292,6 +293,7 @@ def test_live(user: UserClient, client: Client, app: Devicehub):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_example(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
+    # import pdb; pdb.set_trace()
     acer = file('snapshotLive')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
@@ -304,7 +306,7 @@ def test_live_example(user: UserClient, client: Client, app: Devicehub):
 
     user.post(res=models.Allocate, data=post_request)
 
-    acer = file('live')
+    acer = yaml2json('live')
     live, _ = client.post(acer, res=models.Live)
     db_device = Device.query.filter_by(id=device_id).one()
     action_live = [a for a in db_device.actions if a.type == 'Live']
@@ -320,9 +322,9 @@ def test_live_two_users(user: UserClient, user2: UserClient, client: Client, app
     """Tests inserting a Live into the database and GETting it."""
     acer = file('snapshotLive')
     snapshot, _ = user.post(acer, res=models.Snapshot)
-    acer2 = file('snapshotLive')
+    acer2 = yaml2json('snapshotLive')
     acer2['uuid'] = '3b6a9288-0ba6-4bdd-862a-2b1f660e7115'
-    snapshot2, _ = user2.post(acer2, res=models.Snapshot)
+    snapshot2, _ = user2.post(json_encode(acer2), res=models.Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
@@ -333,7 +335,7 @@ def test_live_two_users(user: UserClient, user2: UserClient, client: Client, app
 
     user.post(res=models.Allocate, data=post_request)
 
-    acer = file('live')
+    acer = yaml2json('live')
     live, _ = client.post(acer, res=models.Live)
     db_device = Device.query.filter_by(id=device_id).one()
     action_live = [a for a in db_device.actions if a.type == 'Live']
@@ -349,9 +351,9 @@ def test_live_two_allocated(user: UserClient, user2: UserClient, client: Client,
     """Tests inserting a Live into the database and GETting it."""
     acer = file('snapshotLive')
     snapshot, _ = user.post(acer, res=models.Snapshot)
-    acer2 = file('snapshotLive')
+    acer2 = yaml2json('snapshotLive')
     acer2['uuid'] = '3b6a9288-0ba6-4bdd-862a-2b1f660e7115'
-    snapshot2, _ = user2.post(acer2, res=models.Snapshot)
+    snapshot2, _ = user2.post(json_encode(acer2), res=models.Snapshot)
     device_id = snapshot['device']['id']
     device_id2 = snapshot2['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
@@ -370,7 +372,7 @@ def test_live_two_allocated(user: UserClient, user2: UserClient, client: Client,
     user.post(res=models.Allocate, data=post_request)
     user2.post(res=models.Allocate, data=post_request2)
 
-    acer = file('live')
+    acer = yaml2json('live')
     live, _ = client.post(acer, res=models.Live, status=422)
     message = 'Expected only one Device but multiple where found'
     assert live['message'] == message
@@ -396,6 +398,7 @@ def test_live_without_TestDataStorage(user: UserClient, client: Client, app: Dev
     }
 
     user.post(res=models.Allocate, data=post_request)
+    acer = yaml2json('acer.happy.battery.snapshot')
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     actions = [a for a in acer['components'][7]['actions'] if a['type'] != 'TestDataStorage']
     acer['components'][7]['actions'] = actions
@@ -429,6 +432,7 @@ def test_live_without_hdd_1(user: UserClient, client: Client, app: Devicehub):
     }
 
     user.post(res=models.Allocate, data=post_request)
+    acer = yaml2json('acer.happy.battery.snapshot')
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     components = [a for a in acer['components'] if a['type'] != 'HardDrive']
     acer['components'] = components
@@ -446,10 +450,10 @@ def test_live_without_hdd_2(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it.
        The snapshot haven't hdd and the live neither, and response 404
     """
-    acer = file('acer.happy.battery.snapshot')
+    acer = yaml2json('acer.happy.battery.snapshot')
     components = [a for a in acer['components'] if a['type'] != 'HardDrive']
     acer['components'] = components
-    snapshot, _ = user.post(acer, res=models.Snapshot)
+    snapshot, _ = user.post(json_encode(acer), res=models.Snapshot)
     device_id = snapshot['device']['id']
     db_device = Device.query.filter_by(id=device_id).one()
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
@@ -476,11 +480,11 @@ def test_live_without_hdd_3(user: UserClient, client: Client, app: Devicehub):
        The snapshot haven't hdd and the live have, and save the live
        with usage_time_allocate == 0
     """
-    acer = file('acer.happy.battery.snapshot')
+    acer = yaml2json('acer.happy.battery.snapshot')
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     components = [a for a in acer['components'] if a['type'] != 'HardDrive']
     acer['components'] = components
-    snapshot, _ = user.post(acer, res=models.Snapshot)
+    snapshot, _ = user.post(json_encode(acer), res=models.Snapshot)
     device_id = snapshot['device']['id']
     db_device = Device.query.filter_by(id=device_id).one()
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
@@ -491,7 +495,7 @@ def test_live_without_hdd_3(user: UserClient, client: Client, app: Devicehub):
     }
 
     user.post(res=models.Allocate, data=post_request)
-    acer = file('acer.happy.battery.snapshot')
+    acer = yaml2json('acer.happy.battery.snapshot')
     acer.pop('elapsed')
     acer['licence_version'] = '1.0.0'
     live, _ = client.post(acer, res=models.Live)
@@ -524,7 +528,7 @@ def test_live_with_hdd_with_old_time(user: UserClient, client: Client, app: Devi
     }
 
     user.post(res=models.Allocate, data=post_request)
-    acer = file('acer.happy.battery.snapshot')
+    acer = yaml2json('acer.happy.battery.snapshot')
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     action = [a for a in acer['components'][7]['actions'] if a['type'] == 'TestDataStorage']
     action[0]['lifetime'] -= 100
@@ -557,6 +561,7 @@ def test_live_search_last_allocate(user: UserClient, client: Client, app: Device
     }
 
     user.post(res=models.Allocate, data=post_request)
+    acer = yaml2json('acer.happy.battery.snapshot')
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
     hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
     hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
@@ -576,8 +581,8 @@ def test_live_search_last_allocate(user: UserClient, client: Client, app: Device
 @pytest.mark.mvp
 def test_save_live_json(app: Devicehub, user: UserClient, client: Client):
     """ This test check if works the function save_snapshot_in_file """
-    acer = file('acer.happy.battery.snapshot')
-    snapshot, _ = user.post(acer, res=models.Snapshot)
+    acer = yaml2json('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(json_encode(acer), res=models.Snapshot)
     debug = 'AAA'
     acer['debug'] = debug
     device_id = snapshot['device']['id']

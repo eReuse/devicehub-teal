@@ -59,7 +59,6 @@ def move_json(tmp_snapshots, path_name, user, live=False):
         os.remove(path_name)
 
 
-
 class SnapshotView():
     """Performs a Snapshot.
 
@@ -70,8 +69,8 @@ class SnapshotView():
     # snapshot, and we want to wait to flush snapshot at the end
 
     def __init__(self, snapshot_json: dict, resource_def, schema):
+        # import pdb; pdb.set_trace()
         self.schema = schema
-        self.snapshot_json = snapshot_json
         self.resource_def = resource_def
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)

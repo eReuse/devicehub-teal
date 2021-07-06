@@ -1,25 +1,28 @@
 """ This is the view for Snapshots """
 
+import jwt
+import ereuse_utils
 from datetime import timedelta
 from distutils.version import StrictVersion
 from uuid import UUID
 
 from flask import current_app as app, request, g
+from teal.db import ResourceNotFound
 from teal.marshmallow import ValidationError
 from teal.resource import View
-from teal.db import ResourceNotFound
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import (Action, Snapshot, VisualTest,
                                                       InitTransfer, Live, Allocate, Deallocate,
                                                       Trade, Confirm, ConfirmRevoke, Revoke)
-from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
-from ereuse_devicehub.resources.enums import Severity
 from ereuse_devicehub.resources.action.views import trade as trade_view
 from ereuse_devicehub.resources.action.views.snapshot import SnapshotView, save_json, move_json
+from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
+from ereuse_devicehub.resources.enums import Severity
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
+
 
 class AllocateMix():
     model = None
@@ -121,11 +124,11 @@ class LiveView(View):
         """If the device.allocated == True, then this snapshot create an action live."""
         hid = self.get_hid(snapshot)
         if not hid or not Device.query.filter(
-            Device.hid==hid).count():
+                Device.hid == hid).count():
             raise ValidationError('Device not exist.')
 
         device = Device.query.filter(
-            Device.hid==hid, Device.allocated==True).one()
+            Device.hid == hid, Device.allocated == True).one()
         # Is not necessary
         if not device:
             raise ValidationError('Device not exist.')
@@ -166,17 +169,45 @@ class LiveView(View):
         return live
 
 
+def decode_snapshot(data):
+    try:
+        return jwt.decode(data['data'], app.config['JWT_PASS'], algorithms="HS256", json_encoder=ereuse_utils.JSONEncoder)
+    except jwt.exceptions.InvalidSignatureError as err:
+        txt = 'Invalid snapshot'
+        raise ValidationError(txt)
+
+
 class ActionView(View):
     def post(self):
         """Posts an action."""
+
         json = request.get_json(validate=False)
+
         if not json or 'type' not in json:
-            raise ValidationError('Resource needs a type.')
+            raise ValidationError('Post request needs a json.')
         # todo there should be a way to better get subclassess resource
         #   defs
         resource_def = app.resources[json['type']]
         if json['type'] == Snapshot.t:
-            snapshot = SnapshotView(json, resource_def, self.schema)
+            if json.get('software') == 'Web' and json['device'] == 'Computer':
+                txt = 'Invalid snapshot'
+                raise ValidationError(txt)
+
+            if json.get('software') == 'Web':
+                snapshot = SnapshotView(json, resource_def, self.schema)
+                return snapshot.post()
+
+            if not 'data' in json:
+                txt = 'Invalid snapshot'
+                raise ValidationError(txt)
+
+            snapshot_data = decode_snapshot(json)
+
+            if not snapshot_data:
+                txt = 'Invalid snapshot'
+                raise ValidationError(txt)
+
+            snapshot = SnapshotView(snapshot_data, resource_def, self.schema)
             return snapshot.post()
 
         if json['type'] == VisualTest.t:
@@ -233,4 +264,3 @@ class ActionView(View):
     def transfer_ownership(self):
         """Perform a InitTransfer action to change author_id of device"""
         pass
-
