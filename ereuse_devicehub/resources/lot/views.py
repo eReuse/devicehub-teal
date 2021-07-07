@@ -224,7 +224,6 @@ class LotDeviceView(LotBaseChildrenView):
         id = ma.fields.List(ma.fields.Integer())
 
     def _post(self, lot: Lot, ids: Set[int]):
-        # import pdb; pdb.set_trace()
         # get only new devices
         ids -= {x.id for x in lot.devices}
         if not ids:
@@ -249,7 +248,6 @@ class LotDeviceView(LotBaseChildrenView):
         if lot.trade:
             return delete_from_trade(lot, ids)
 
-        # import pdb; pdb.set_trace()
         if not g.user == lot.owner:
             txt = 'This is not your lot'
             raise ma.ValidationError(txt)
@@ -267,7 +265,6 @@ def delete_from_trade(lot: Lot, ids: Set[int]):
         txt = 'This is not your trade'
         raise ma.ValidationError(txt)
 
-    # import pdb; pdb.set_trace()
     devices = set(Device.query.filter(Device.id.in_(ids)).filter(
         Device.owner_id.in_(users)))
 

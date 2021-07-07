@@ -293,7 +293,6 @@ def test_live(user: UserClient, client: Client, app: Devicehub):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_example(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
-    # import pdb; pdb.set_trace()
     acer = file('snapshotLive')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
@@ -1244,7 +1243,6 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
                        res=Lot,
                        item='{}/devices'.format(lot['id']),
                        query=devices[-1:], status=200)
-    # import pdb; pdb.set_trace()
     assert len(trade.lot.devices) == len(trade.devices) == 10
     assert device_10.actions[-1].t == 'Revoke'
 
@@ -1302,7 +1300,6 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
             snap10['device']['id']
         ]
     }
-    # import pdb; pdb.set_trace()
     user2.post(res=models.Action, data=request_reconfirm)
     assert device_10.actions[-1].t == 'Confirm'
     assert device_10.actions[-1].user == trade.user_from
@@ -1680,7 +1677,6 @@ def test_trade_case4(user: UserClient, user2: UserClient):
     # Normal revoke
     user2.post(res=models.Action, data=request_revoke)
 
-    # import pdb; pdb.set_trace()
     assert device1.actions[-2].t == 'Trade'
     assert device1.actions[-1].t == 'Confirm'
     assert device1.actions[-1].user == trade.user_to
@@ -2222,7 +2218,6 @@ def test_trade_case12(user: UserClient, user2: UserClient):
 
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
-    # import pdb; pdb.set_trace()
 
     device1, device = trade.devices
 
@@ -2296,7 +2291,6 @@ def test_trade_case13(user: UserClient, user2: UserClient):
 
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
-    # import pdb; pdb.set_trace()
 
     lot, _ = user2.post({},
                        res=Lot,
@@ -2370,7 +2364,6 @@ def test_trade_case14(user: UserClient, user2: UserClient):
 
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
-    # import pdb; pdb.set_trace()
 
     lot, _ = user2.post({},
                        res=Lot,

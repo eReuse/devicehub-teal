@@ -112,7 +112,6 @@ def test_snapshot_post(user: UserClient):
 @pytest.mark.mvp
 def test_same_device_tow_users(user: UserClient, user2: UserClient):
     """Two users can up the same snapshot and the system save 2 computers"""
-    # import pdb; pdb.set_trace()
     user.post(file('basic.snapshot'), res=Snapshot)
     i, _ = user.get(res=m.Device)
     pc = next(d for d in i['items'] if d['type'] == 'Desktop')

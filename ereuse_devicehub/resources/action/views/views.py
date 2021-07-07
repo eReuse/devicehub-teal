@@ -250,7 +250,6 @@ class ActionView(View):
             confirm_revoke = trade_view.ConfirmRevokeDocumentView(json, resource_def, self.schema)
             return confirm_revoke.post()
 
-        # import pdb; pdb.set_trace()
         a = resource_def.schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
