@@ -227,7 +227,6 @@ class RevokeView(ConfirmMixin):
 
         ids = {d.id for d in data['devices']}
         lot = data['action'].lot
-        # import pdb; pdb.set_trace()
         self.model = delete_from_trade(lot, ids)
 
 
@@ -284,7 +283,6 @@ class ConfirmDocumentMixin():
     Model = None
 
     def __init__(self, data, resource_def, schema):
-        # import pdb; pdb.set_trace()
         self.schema = schema
         a = resource_def.schema.load(data)
         self.validate(a)

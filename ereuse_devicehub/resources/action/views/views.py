@@ -197,11 +197,16 @@ class ActionView(View):
                 snapshot = SnapshotView(json, resource_def, self.schema)
                 return snapshot.post()
 
-            if not 'data' in json:
-                txt = 'Invalid snapshot'
-                raise ValidationError(txt)
+            # TODO @cayop uncomment at four weeks
+            # if not 'data' in json:
+                # txt = 'Invalid snapshot'
+                # raise ValidationError(txt)
 
-            snapshot_data = decode_snapshot(json)
+            # snapshot_data = decode_snapshot(json)
+
+            snapshot_data = json
+            if 'data' in json:
+                snapshot_data = decode_snapshot(json)
 
             if not snapshot_data:
                 txt = 'Invalid snapshot'
@@ -245,7 +250,6 @@ class ActionView(View):
             confirm_revoke = trade_view.ConfirmRevokeDocumentView(json, resource_def, self.schema)
             return confirm_revoke.post()
 
-        # import pdb; pdb.set_trace()
         a = resource_def.schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)

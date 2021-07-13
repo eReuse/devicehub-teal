@@ -6,12 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## master
-  [1.0.6-beta]
-
-## testing
   [1.0.7-beta]
 
+## testing
+  [1.0.8-beta]
+
 ## [1.0.7-beta]
+- [addend] #158 support for encrypted snapshots data
 - [addend] #135 adding trade system
 - [addend] #140 adding endpoint for download the settings for usb workbench
 

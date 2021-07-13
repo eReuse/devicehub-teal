@@ -539,7 +539,6 @@ class ConfirmDocument(ActionWithMultipleDocuments):
         """If there are one device than have one confirmation,
            then remove the list this device of the list of devices of this action
         """
-        # import pdb; pdb.set_trace()
         if data['documents'] == OrderedSet():
             return
 
@@ -567,7 +566,6 @@ class RevokeDocument(ActionWithMultipleDocuments):
            This is not checked in the view becouse the list of documents is inmutable
 
         """
-        # import pdb; pdb.set_trace()
         if data['documents'] == OrderedSet():
             return
 

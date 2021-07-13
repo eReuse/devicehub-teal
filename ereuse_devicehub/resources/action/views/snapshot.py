@@ -69,7 +69,6 @@ class SnapshotView():
     # snapshot, and we want to wait to flush snapshot at the end
 
     def __init__(self, snapshot_json: dict, resource_def, schema):
-        # import pdb; pdb.set_trace()
         self.schema = schema
         self.resource_def = resource_def
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
