@@ -29,6 +29,7 @@ def get_inv():
         raise ValueError("Inventory value is not specified")
     return INV
 
+
 def upgrade():
     # Document table
     op.create_table('document',
@@ -58,14 +59,13 @@ def upgrade():
 
     # ToErased table
     op.create_table('to_erased',
-                    # sa.Column('document_id', sa.BigInteger(), nullable=True),
+                    sa.Column('document_id', sa.BigInteger(), nullable=False),
                     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-                    # sa.ForeignKeyConstraint(['document_id'], [f'{get_inv()}.document.id'], ),
+                    sa.ForeignKeyConstraint(['document_id'], [f'{get_inv()}.document.id'], ),
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
                     sa.PrimaryKeyConstraint('id'),
                     schema=f'{get_inv()}'
                     )
-
 
 
 def downgrade():

@@ -21,7 +21,7 @@ class Document(Thing):
     date = Column(db.DateTime, nullable=True)
     date.comment = """The date of document, some documents need to have one date
     """
-    id_document = Column(CIText(), nullable=True)
+    id_document = Column(CIText(), nullable=False)
     id_document.comment = """The id of one document like invoice so they can be linked."""
     owner_id = db.Column(UUID(as_uuid=True),
                          db.ForeignKey(User.id),

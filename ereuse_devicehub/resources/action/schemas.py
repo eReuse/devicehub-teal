@@ -432,6 +432,8 @@ class Prepare(ActionWithMultipleDevices):
 
 class ToErased(ActionWithMultipleDevices):
     __doc__ = m.ToErased.__doc__
+    document = NestedOn('Document', only_query='id')
+    # device = NestedOn(s_device.Device, only_query='id')
 
 
 class Live(ActionWithOneDevice):

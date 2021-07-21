@@ -1332,16 +1332,24 @@ class ToErased(ActionWithMultipleDevices):
     """
     document_comment = """The user that gets the device due this deal."""
     # document_id = db.Column(BigInteger,
-                       # db.ForeignKey('document.id',
-                                     # use_alter=True,
-                                     # name='document'),
-                       # nullable=False)
-    # document = relationship('EraseDocument',
-                       # backref=backref('actions',
-                                       # lazy=True,
-                                       # uselist=False,
-                                       # cascade=CASCADE_OWN),
-                       # primaryjoin='ToErased.document_id == EraseDocument.id')
+                            # db.ForeignKey('document.id'),
+                            # nullable=False)
+    # document = db.relationship('EraseDocument',
+                               # backref=backref('actions',
+                                               # # lazy=True,
+                                               # # uselist=False,
+                                               # # cascade=CASCADE_OWN),
+                                               # uselist=True,
+                                               # lazy=True,
+                                               # order_by=lambda: Action.end_time,
+                                               # collection_class=list),
+                               # primaryjoin='ToErased.document_id == EraseDocument.id')
+    document_id = Column(BigInteger, ForeignKey('document.id'), nullable=False)
+    document = relationship('Document',
+                          backref=backref('document_one',
+                                          lazy=True,
+                                          cascade=CASCADE_OWN),
+                          primaryjoin='ToErased.document_id == Document.id')
 
 
 class Prepare(ActionWithMultipleDevices):

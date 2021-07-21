@@ -52,12 +52,15 @@ class ErasedView():
         doc_data['type'] = 'ToErased'
         self.document = EraseDocument(**doc_data)
         db.session.add(self.document)
-        db.session.commit()
+        # db.session.commit()
 
     def insert_action(self, data):
         import pdb; pdb.set_trace()
         [data.pop(x, None) for x in ['url', 'documentId', 'filename', 'hash']]
-        self.data = self.schema.load(data)
+        # self.data = self.schema.load(data)
+        # self.data['document_id'] = self.document.id
         # self.data['document'] = self.document
-        self.erased = ToErased(**self.data)
+        # data['document_id'] = self.document.id
+        data['document'] = self.document
+        self.erased = ToErased(**data)
         db.session.add(self.erased)
