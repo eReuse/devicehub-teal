@@ -18,6 +18,7 @@ from ereuse_devicehub.resources.action.models import (Action, Snapshot, VisualTe
                                                       Trade, Confirm, ConfirmRevoke, Revoke)
 from ereuse_devicehub.resources.action.views import trade as trade_view
 from ereuse_devicehub.resources.action.views.snapshot import SnapshotView, save_json, move_json
+from ereuse_devicehub.resources.action.views.documents import ErasedView
 from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
 from ereuse_devicehub.resources.enums import Severity
 
@@ -249,6 +250,10 @@ class ActionView(View):
         if json['type'] == 'ConfirmRevokeDocument':
             confirm_revoke = trade_view.ConfirmRevokeDocumentView(json, resource_def, self.schema)
             return confirm_revoke.post()
+
+        if json['type'] == 'ToErased':
+            erased = ErasedView(json, resource_def.schema)
+            return erased.post()
 
         a = resource_def.schema.load(json)
         Model = db.Model._decl_class_registry.data[json['type']]()

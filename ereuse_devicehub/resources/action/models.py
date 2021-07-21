@@ -1327,6 +1327,23 @@ class ToPrepare(ActionWithMultipleDevices):
     pass
 
 
+class ToErased(ActionWithMultipleDevices):
+    """The device has been selected for insert one proof of erease disk.
+    """
+    document_comment = """The user that gets the device due this deal."""
+    # document_id = db.Column(BigInteger,
+                       # db.ForeignKey('document.id',
+                                     # use_alter=True,
+                                     # name='document'),
+                       # nullable=False)
+    # document = relationship('EraseDocument',
+                       # backref=backref('actions',
+                                       # lazy=True,
+                                       # uselist=False,
+                                       # cascade=CASCADE_OWN),
+                       # primaryjoin='ToErased.document_id == EraseDocument.id')
+
+
 class Prepare(ActionWithMultipleDevices):
     """Work has been performed to the device to a defined point of
     acceptance.

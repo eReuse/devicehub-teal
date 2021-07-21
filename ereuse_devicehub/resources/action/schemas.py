@@ -430,6 +430,10 @@ class Prepare(ActionWithMultipleDevices):
     __doc__ = m.Prepare.__doc__
 
 
+class ToErased(ActionWithMultipleDevices):
+    __doc__ = m.ToErased.__doc__
+
+
 class Live(ActionWithOneDevice):
     __doc__ = m.Live.__doc__
     """
