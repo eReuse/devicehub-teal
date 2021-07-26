@@ -2412,5 +2412,12 @@ def test_trade_case14(user: UserClient, user2: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_action_web_erase(user: UserClient, user2: UserClient):
-    {'type': 'ToErased', 'devices': [174], 'name': 'borrado universal', 'severity': 'Info', 'description': 'nada que describir', 'url': 'http://www.google.com/', 'documentId': '33', 'endTime': '2021-07-07T22:00:00.000Z', 'filename': 'Certificado de borrado1.pdf', 'hash': 'fedbcbd057d25df9915ca9758b7537794148b896b66b3bbc972fe966dcced34b'}
+def test_action_web_erase(user: UserClient):
+    # import pdb; pdb.set_trace()
+    snap, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
+    request = {'type': 'ToErased', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'nada que describir', 'url': 'http://www.google.com/', 'documentId': '33', 'endTime': '2021-07-07T22:00:00.000Z', 'filename': 'Certificado de borrado1.pdf', 'hash': 'fedbcbd057d25df9915ca9758b7537794148b896b66b3bbc972fe966dcced34b'}
+   
+    user.post(res=models.Action, data=request)
+    action = models.ToErased.query.one()
+    for dev in action.devices:
+        assert action in dev.actions
