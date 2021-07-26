@@ -2421,3 +2421,5 @@ def test_action_web_erase(user: UserClient):
     action = models.ToErased.query.one()
     for dev in action.devices:
         assert action in dev.actions
+
+    assert action.document.file_hash == request['hash']
