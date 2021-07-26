@@ -10,25 +10,13 @@ from ereuse_devicehub.resources.action.models import (Trade, Confirm, ConfirmRev
                                                       ConfirmRevokeDocument)
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.action.models import ToErased
-from ereuse_devicehub.resources.documents.models import EraseDocument
-from ereuse_devicehub.resources.documents.schemas import EraseDocument as sh_document
+from ereuse_devicehub.resources.documents.models import Document
+from ereuse_devicehub.resources.device.models import DataStorage 
+from ereuse_devicehub.resources.documents.schemas import Document as sh_document
 
 
 class ErasedView():
-    """Handler for manager the trade action register from post
-
-       request_post = {
-           'type': 'Trade',
-           'devices': [device_id],
-           'documents': [document_id],
-           'userFrom': user2.email,
-           'userTo': user.email,
-           'price': 10,
-           'date': "2020-12-01T02:00:00+00:00",
-           'lot': lot['id'],
-           'confirm': True,
-       }
-
+    """Handler for manager the action register for add to a device one proof of erase
     """
 
     def __init__(self, data, schema):
@@ -37,30 +25,33 @@ class ErasedView():
         self.insert_action(copy.copy(data))
 
     def post(self):
-        # import pdb; pdb.set_trace()
         db.session().final_flush()
-        ret = self.schema.jsonify(self.erased)
+        from flask import jsonify
+        ret = jsonify(self.erased)
         ret.status_code = 201
         db.session.commit()
         return ret
 
     def insert_document(self, data):
-        # import pdb; pdb.set_trace()
         schema = sh_document()
-        [data.pop(x) for x in ['severity', 'devices', 'name', 'description']]
+        [data.pop(x, None) for x in ['severity', 'devices', 'name', 'description']]
         doc_data = schema.load(data)
         doc_data['type'] = 'ToErased'
-        self.document = EraseDocument(**doc_data)
+        self.document = Document(**doc_data)
         db.session.add(self.document)
-        # db.session.commit()
 
     def insert_action(self, data):
-        import pdb; pdb.set_trace()
         [data.pop(x, None) for x in ['url', 'documentId', 'filename', 'hash']]
-        # self.data = self.schema.load(data)
-        # self.data['document_id'] = self.document.id
-        # self.data['document'] = self.document
-        # data['document_id'] = self.document.id
-        data['document'] = self.document
-        self.erased = ToErased(**data)
+        self.data = self.schema.load(data)
+       
+        for dev in self.data['devices']:
+            if not hasattr(dev, 'components'):
+                continue
+
+            for component in dev.components:
+                if isinstance(component, DataStorage):
+                    self.data['devices'].add(component)
+
+        self.data['document'] = self.document
+        self.erased = ToErased(**self.data)
         db.session.add(self.erased)

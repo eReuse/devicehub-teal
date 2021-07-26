@@ -17,6 +17,7 @@ from ereuse_devicehub.resources.action import models as m
 from ereuse_devicehub.resources.agent import schemas as s_agent
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.tradedocument import schemas as s_document
+from ereuse_devicehub.resources.documents import schemas as s_generic_document
 from ereuse_devicehub.resources.enums import AppearanceRange, BiosAccessRange, FunctionalityRange, \
     PhysicalErasureMethod, R_POSITIVE, RatingRange, \
     Severity, SnapshotSoftware, TestDataStorageLength
@@ -432,7 +433,8 @@ class Prepare(ActionWithMultipleDevices):
 
 class ToErased(ActionWithMultipleDevices):
     __doc__ = m.ToErased.__doc__
-    document = NestedOn('Document', only_query='id')
+    document = NestedOn(s_generic_document.Document, only_query='id')
+    # document = NestedOn('EraseDocument')
     # device = NestedOn(s_device.Device, only_query='id')
 
 

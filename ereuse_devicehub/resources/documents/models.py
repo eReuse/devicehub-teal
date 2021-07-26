@@ -1,13 +1,11 @@
 from citext import CIText
 from flask import g
-
+from sqlalchemy import BigInteger, Column, Sequence, Unicode
 from sqlalchemy.dialects.postgresql import UUID
+from teal.db import URL
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.models import Thing, STR_SM_SIZE
-
-from sqlalchemy import BigInteger, Column, Sequence, Unicode
-from teal.db import URL
 
 
 class Document(Thing):
@@ -37,11 +35,3 @@ class Document(Thing):
 
     def __str__(self) -> str:
         return '{0.file_name}'.format(self)
-
-
-class EraseDocument(Document):
-    """This represent a document involved in a erase manual action.
-    This represent the proof.
-
-    """
-    pass

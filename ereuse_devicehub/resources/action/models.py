@@ -1327,26 +1327,15 @@ class ToPrepare(ActionWithMultipleDevices):
     pass
 
 
-class ToErased(ActionWithMultipleDevices):
+class ToErased(JoinedTableMixin, ActionWithMultipleDevices):
     """The device has been selected for insert one proof of erease disk.
     """
     document_comment = """The user that gets the device due this deal."""
-    # document_id = db.Column(BigInteger,
-                            # db.ForeignKey('document.id'),
-                            # nullable=False)
-    # document = db.relationship('EraseDocument',
-                               # backref=backref('actions',
-                                               # # lazy=True,
-                                               # # uselist=False,
-                                               # # cascade=CASCADE_OWN),
-                                               # uselist=True,
-                                               # lazy=True,
-                                               # order_by=lambda: Action.end_time,
-                                               # collection_class=list),
-                               # primaryjoin='ToErased.document_id == EraseDocument.id')
-    document_id = Column(BigInteger, ForeignKey('document.id'), nullable=False)
-    document = relationship('Document',
-                          backref=backref('document_one',
+    document_id = db.Column(BigInteger,
+                            db.ForeignKey('document.id'),
+                            nullable=False)
+    document = db.relationship('Document',
+                          backref=backref('actions',
                                           lazy=True,
                                           cascade=CASCADE_OWN),
                           primaryjoin='ToErased.document_id == Document.id')
