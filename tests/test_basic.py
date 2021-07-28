@@ -40,6 +40,7 @@ def test_api_docs(client: Client):
         '/documents/erasures/',
         '/documents/devices/',
         '/documents/stamps/',
+        '/documents/externalErasureDocuments/',
         '/documents/wbconf/{wbtype}',
         '/documents/internalstats/',
         '/documents/stock/',

@@ -13,6 +13,7 @@ from ereuse_devicehub.resources.action.models import ToErased
 from ereuse_devicehub.resources.documents.models import Document
 from ereuse_devicehub.resources.device.models import DataStorage 
 from ereuse_devicehub.resources.documents.schemas import Document as sh_document
+from ereuse_devicehub.resources.hash_reports import ReportHash
 
 
 class ErasedView():
@@ -39,6 +40,9 @@ class ErasedView():
         doc_data['type'] = 'ToErased'
         self.document = Document(**doc_data)
         db.session.add(self.document)
+        
+        db_hash = ReportHash(hash3=self.document.file_hash)
+        db.session.add(db_hash)
 
     def insert_action(self, data):
         [data.pop(x, None) for x in ['url', 'documentId', 'filename', 'hash']]

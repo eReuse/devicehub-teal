@@ -90,6 +90,7 @@ class DocumentView(DeviceView):
             res = flask.make_response(template)
         return res
 
+
     @staticmethod
     def erasure(query: db.Query):
         def erasures():
@@ -113,6 +114,34 @@ class DocumentView(DeviceView):
             'url_pdf': url_pdf.to_text()
         }
         return flask.render_template('documents/erasure.html', **params)
+
+class ExternalErasureDocumentView(DeviceView):
+    @cache(datetime.timedelta(minutes=1))
+    def find(self, args: dict):
+        query = (x for x in self.query(args) if x.owner_id == g.user.id)
+        return self.generate_post_csv(query)
+
+    def generate_post_csv(self, query):
+        """Get device query and put information in csv format."""
+        data = StringIO()
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        cw.writerow(['Urls'])
+        for device in query:
+            if isinstance(device, devs.Computer):
+                urls = device.external_document_erasure
+                if urls:
+                    cw.writerow(urls)
+            elif isinstance(device, devs.DataStorage):
+                url = device.external_document_erasure
+                if url:
+                    cw.writerow(set(url))
+                    
+        bfile = data.getvalue().encode('utf-8')
+        output = make_response(bfile)
+        insert_hash(bfile)
+        output.headers['Content-Disposition'] = 'attachment; filename=export_urls_external_proof.csv'
+        output.headers['Content-type'] = 'text/csv'
+        return output
 
 
 class DevicesDocumentView(DeviceView):
@@ -291,7 +320,6 @@ class InternalStatsView(DeviceView):
             evs.Action.type.in_(('Snapshot', 'Live', 'Allocate', 'Deallocate')))
         return self.generate_post_csv(query)
 
-
     def generate_post_csv(self, query):
         d = {}
         for ac in query:
@@ -416,6 +444,12 @@ class DocumentDef(Resource):
         internalstats_view = app.auth.requires_auth(internalstats_view)
         self.add_url_rule('/internalstats/', defaults=d, view_func=internalstats_view,
                           methods=get)
+
+        externalErasureDocument_view = ExternalErasureDocumentView.as_view(
+            'ExternalErasureDocumentView', definition=self, auth=app.auth)
+        externalErasureDocument_view = app.auth.requires_auth(externalErasureDocument_view)
+        self.add_url_rule('/externalErasureDocuments/', defaults=d,
+                          view_func=externalErasureDocument_view, methods=get)
 
         actions_view = ActionsDocumentView.as_view('ActionsDocumentView',
                                                    definition=self,

@@ -6,6 +6,7 @@ import copy
 import pytest
 
 from datetime import datetime, timedelta
+from io import BytesIO
 from dateutil.tz import tzutc
 from decimal import Decimal
 from typing import Tuple, Type
@@ -2412,10 +2413,13 @@ def test_trade_case14(user: UserClient, user2: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_action_web_erase(user: UserClient):
-    # import pdb; pdb.set_trace()
+def test_action_web_erase(user: UserClient, client: Client):
+    import hashlib
+    from ereuse_devicehub.resources.documents import documents
+    bfile = BytesIO(b'abc')
+    hash3 = hashlib.sha3_256(bfile.read()).hexdigest()
     snap, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
-    request = {'type': 'ToErased', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'nada que describir', 'url': 'http://www.google.com/', 'documentId': '33', 'endTime': '2021-07-07T22:00:00.000Z', 'filename': 'Certificado de borrado1.pdf', 'hash': 'fedbcbd057d25df9915ca9758b7537794148b896b66b3bbc972fe966dcced34b'}
+    request = {'type': 'ToErased', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'nada que describir', 'url': 'http://www.google.com/', 'documentId': '33', 'endTime': '2021-07-07T22:00:00.000Z', 'filename': 'Certificado de borrado1.pdf', 'hash': hash3}
    
     user.post(res=models.Action, data=request)
     action = models.ToErased.query.one()
@@ -2423,3 +2427,14 @@ def test_action_web_erase(user: UserClient):
         assert action in dev.actions
 
     assert action.document.file_hash == request['hash']
+
+    bfile = BytesIO(b'abc')
+    response, _ = client.post(res=documents.DocumentDef.t,
+            item='stamps/',
+            content_type='multipart/form-data',
+            accept='text/html',
+            data={'docUpload': [(bfile, 'example.csv')]},
+            status=200)
+    assert "alert alert-info" in response
+    assert "100% coincidence." in response
+    assert not "alert alert-danger" in response
