@@ -1,6 +1,7 @@
 from citext import CIText 
 from flask import g
-from sqlalchemy import BigInteger, Column, Sequence, Unicode, Boolean
+from sqlalchemy import BigInteger, Column, Sequence, Unicode, Boolean, ForeignKey
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.dialects.postgresql import UUID
 from teal.db import URL
 from ereuse_devicehub.db import db
@@ -19,10 +20,6 @@ class Document(Thing):
     date = Column(db.DateTime, nullable=True)
     date.comment = """The date of document, some documents need to have one date
     """
-    software = Column(CIText(), nullable=False)
-    software.comment = """Which software is used"""
-    success = Column(Boolean)
-    success.comment = """If the erase was success"""
     id_document = Column(CIText(), nullable=False)
     id_document.comment = """The id of one document like invoice so they can be linked."""
     owner_id = db.Column(UUID(as_uuid=True),
@@ -36,6 +33,25 @@ class Document(Thing):
     file_hash.comment = """This is the hash of the file produced from frontend."""
     url = db.Column(URL(), nullable=False)
     url.comment = """This is the url where resides the document."""
+
+    def __str__(self) -> str:
+        return '{0.file_name}'.format(self)
+
+
+class JoinedTableMixin:
+    # noinspection PyMethodParameters
+    @declared_attr
+    def id(cls):
+        return Column(BigInteger, ForeignKey(Document.id), primary_key=True)
+
+
+class DataWipeDocument(JoinedTableMixin, Document):
+    """This represent a generic document."""
+
+    software = Column(CIText(), nullable=False)
+    software.comment = """Which software is used"""
+    success = Column(Boolean)
+    success.comment = """If the erase was success"""
 
     def __str__(self) -> str:
         return '{0.file_name}'.format(self)

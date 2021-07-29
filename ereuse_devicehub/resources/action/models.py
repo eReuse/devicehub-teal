@@ -1332,13 +1332,13 @@ class DataWipe(JoinedTableMixin, ActionWithMultipleDevices):
     """
     document_comment = """The user that gets the device due this deal."""
     document_id = db.Column(BigInteger,
-                            db.ForeignKey('document.id'),
+                            db.ForeignKey('data_wipe_document.id'),
                             nullable=False)
-    document = db.relationship('Document',
+    document = db.relationship('DataWipeDocument',
                           backref=backref('actions',
                                           lazy=True,
                                           cascade=CASCADE_OWN),
-                          primaryjoin='DataWipe.document_id == Document.id')
+                          primaryjoin='DataWipe.document_id == DataWipeDocument.id')
 
 
 class Prepare(ActionWithMultipleDevices):

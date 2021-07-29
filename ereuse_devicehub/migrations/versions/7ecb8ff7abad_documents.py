@@ -42,8 +42,6 @@ def upgrade():
                     sa.Column('type', sa.Unicode(), nullable=False),
                     sa.Column('date', sa.TIMESTAMP(timezone=True), nullable=True),
                     sa.Column('id_document', sa.Unicode(), nullable=True),
-                    sa.Column('software', sa.Unicode(), nullable=True),
-                    sa.Column('success', sa.Boolean(), nullable=False),
                     sa.Column('owner_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('file_name', sa.Unicode(), nullable=False),
                     sa.Column('file_hash', sa.Unicode(), nullable=False),
@@ -57,6 +55,17 @@ def upgrade():
     op.create_index(op.f('ix_document_created'), 'document', ['created'], unique=False, schema=f'{get_inv()}')
     op.create_index(op.f('ix_document_updated'), 'document', ['updated'], unique=False, schema=f'{get_inv()}')
     op.create_index('document_type_index', 'document', ['type'], unique=False, postgresql_using='hash', schema=f'{get_inv()}')
+
+
+    # DataWipeDocument table
+    op.create_table('data_wipe_document',
+                    sa.Column('id', sa.BigInteger(), nullable=False),
+                    sa.Column('software', sa.Unicode(), nullable=True),
+                    sa.Column('success', sa.Boolean(), nullable=False),
+                    sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.document.id'], ),
+                    sa.PrimaryKeyConstraint('id'),
+                    schema=f'{get_inv()}'
+                    )
 
 
     # DataWipe table

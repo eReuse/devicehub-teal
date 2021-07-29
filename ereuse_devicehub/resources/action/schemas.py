@@ -433,7 +433,7 @@ class Prepare(ActionWithMultipleDevices):
 
 class DataWipe(ActionWithMultipleDevices):
     __doc__ = m.DataWipe.__doc__
-    document = NestedOn(s_generic_document.Document, only_query='id')
+    document = NestedOn(s_generic_document.DataWipeDocument, only_query='id')
 
 
 class Live(ActionWithOneDevice):

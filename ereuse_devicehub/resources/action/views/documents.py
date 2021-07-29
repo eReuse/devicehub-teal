@@ -1,18 +1,10 @@
 import copy
 
-from flask import g
-from sqlalchemy.util import OrderedSet
-from teal.marshmallow import ValidationError
-
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import (Trade, Confirm, ConfirmRevoke, 
-                                                      Revoke, RevokeDocument, ConfirmDocument,
-                                                      ConfirmRevokeDocument)
-from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.action.models import DataWipe
-from ereuse_devicehub.resources.documents.models import Document
+from ereuse_devicehub.resources.documents.models import DataWipeDocument
 from ereuse_devicehub.resources.device.models import DataStorage 
-from ereuse_devicehub.resources.documents.schemas import Document as sh_document
+from ereuse_devicehub.resources.documents.schemas import DataWipeDocument as sh_document
 from ereuse_devicehub.resources.hash_reports import ReportHash
 
 
@@ -38,7 +30,7 @@ class ErasedView():
         [data.pop(x, None) for x in ['severity', 'devices', 'name', 'description']]
         doc_data = schema.load(data)
         doc_data['type'] = 'DataWipe'
-        self.document = Document(**doc_data)
+        self.document = DataWipeDocument(**doc_data)
         db.session.add(self.document)
         
         db_hash = ReportHash(hash3=self.document.file_hash)
