@@ -45,7 +45,7 @@ class ErasedView():
         db.session.add(db_hash)
 
     def insert_action(self, data):
-        [data.pop(x, None) for x in ['url', 'documentId', 'filename', 'hash']]
+        [data.pop(x, None) for x in ['url', 'documentId', 'filename', 'hash', 'software', 'success']]
         self.data = self.schema.load(data)
        
         for dev in self.data['devices']:

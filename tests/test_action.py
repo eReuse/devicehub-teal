@@ -2419,7 +2419,7 @@ def test_action_web_erase(user: UserClient, client: Client):
     bfile = BytesIO(b'abc')
     hash3 = hashlib.sha3_256(bfile.read()).hexdigest()
     snap, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
-    request = {'type': 'DataWipe', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'nada que describir', 'url': 'http://www.google.com/', 'documentId': '33', 'endTime': '2021-07-07T22:00:00.000Z', 'filename': 'Certificado de borrado1.pdf', 'hash': hash3}
+    request = {'type': 'DataWipe', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'nada que describir', 'url': 'http://www.google.com/', 'documentId': '33', 'endTime': '2021-07-07T22:00:00.000Z', 'filename': 'Certificado de borrado1.pdf', 'hash': hash3, 'success': 1, 'software': "Blanco"}
    
     user.post(res=models.Action, data=request)
     action = models.DataWipe.query.one()

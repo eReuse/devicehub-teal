@@ -42,6 +42,8 @@ def upgrade():
                     sa.Column('type', sa.Unicode(), nullable=False),
                     sa.Column('date', sa.TIMESTAMP(timezone=True), nullable=True),
                     sa.Column('id_document', sa.Unicode(), nullable=True),
+                    sa.Column('software', sa.Unicode(), nullable=True),
+                    sa.Column('success', sa.Boolean(), nullable=False),
                     sa.Column('owner_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('file_name', sa.Unicode(), nullable=False),
                     sa.Column('file_hash', sa.Unicode(), nullable=False),

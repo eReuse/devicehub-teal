@@ -1,6 +1,6 @@
-from citext import CIText
+from citext import CIText 
 from flask import g
-from sqlalchemy import BigInteger, Column, Sequence, Unicode
+from sqlalchemy import BigInteger, Column, Sequence, Unicode, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from teal.db import URL
 from ereuse_devicehub.db import db
@@ -19,6 +19,10 @@ class Document(Thing):
     date = Column(db.DateTime, nullable=True)
     date.comment = """The date of document, some documents need to have one date
     """
+    software = Column(CIText(), nullable=False)
+    software.comment = """Which software is used"""
+    success = Column(Boolean)
+    success.comment = """If the erase was success"""
     id_document = Column(CIText(), nullable=False)
     id_document.comment = """The id of one document like invoice so they can be linked."""
     owner_id = db.Column(UUID(as_uuid=True),

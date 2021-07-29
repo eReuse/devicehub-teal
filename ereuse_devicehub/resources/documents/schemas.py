@@ -1,4 +1,4 @@
-from marshmallow.fields import DateTime, Integer, validate
+from marshmallow.fields import DateTime, Integer, validate, Boolean
 from teal.marshmallow import SanitizedStr, URL
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.documents import models as m
@@ -9,6 +9,9 @@ class Document(Thing):
     __doc__ = m.Document.__doc__
     id = Integer(description=m.Document.id.comment, dump_only=True)
     type = SanitizedStr(default='Document')
+    url = URL(description=m.Document.url.comment)
+    success = Boolean(description=m.Document.success.comment)
+    software = SanitizedStr(description=m.Document.software.comment)
     date = DateTime(data_key='endTime', 
                     required=False, 
                     description=m.Document.date.comment)
@@ -23,4 +26,3 @@ class Document(Thing):
                              default='',
                              description=m.Document.file_hash.comment,
                              validate=validate.Length(max=64))
-    url = URL(description=m.Document.url.comment)
