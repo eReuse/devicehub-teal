@@ -251,7 +251,7 @@ class ActionView(View):
             confirm_revoke = trade_view.ConfirmRevokeDocumentView(json, resource_def, self.schema)
             return confirm_revoke.post()
 
-        if json['type'] == 'ToErased':
+        if json['type'] == 'DataWipe':
             erased = ErasedView(json, resource_def.schema)
             return erased.post()
 

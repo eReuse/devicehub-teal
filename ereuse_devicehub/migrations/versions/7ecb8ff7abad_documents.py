@@ -57,8 +57,8 @@ def upgrade():
     op.create_index('document_type_index', 'document', ['type'], unique=False, postgresql_using='hash', schema=f'{get_inv()}')
 
 
-    # ToErased table
-    op.create_table('to_erased',
+    # DataWipe table
+    op.create_table('data_wipe',
                     sa.Column('document_id', sa.BigInteger(), nullable=True),
                     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.ForeignKeyConstraint(['document_id'], [f'{get_inv()}.document.id'], ),
@@ -69,5 +69,5 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table('to_erased', schema=f'{get_inv()}')
+    op.drop_table('data_wipe', schema=f'{get_inv()}')
     op.drop_table('document', schema=f'{get_inv()}')

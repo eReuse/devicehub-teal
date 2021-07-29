@@ -1327,7 +1327,7 @@ class ToPrepare(ActionWithMultipleDevices):
     pass
 
 
-class ToErased(JoinedTableMixin, ActionWithMultipleDevices):
+class DataWipe(JoinedTableMixin, ActionWithMultipleDevices):
     """The device has been selected for insert one proof of erease disk.
     """
     document_comment = """The user that gets the device due this deal."""
@@ -1338,7 +1338,7 @@ class ToErased(JoinedTableMixin, ActionWithMultipleDevices):
                           backref=backref('actions',
                                           lazy=True,
                                           cascade=CASCADE_OWN),
-                          primaryjoin='ToErased.document_id == Document.id')
+                          primaryjoin='DataWipe.document_id == Document.id')
 
 
 class Prepare(ActionWithMultipleDevices):

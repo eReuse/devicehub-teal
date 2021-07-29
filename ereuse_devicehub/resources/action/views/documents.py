@@ -9,7 +9,7 @@ from ereuse_devicehub.resources.action.models import (Trade, Confirm, ConfirmRev
                                                       Revoke, RevokeDocument, ConfirmDocument,
                                                       ConfirmRevokeDocument)
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.action.models import ToErased
+from ereuse_devicehub.resources.action.models import DataWipe
 from ereuse_devicehub.resources.documents.models import Document
 from ereuse_devicehub.resources.device.models import DataStorage 
 from ereuse_devicehub.resources.documents.schemas import Document as sh_document
@@ -37,7 +37,7 @@ class ErasedView():
         schema = sh_document()
         [data.pop(x, None) for x in ['severity', 'devices', 'name', 'description']]
         doc_data = schema.load(data)
-        doc_data['type'] = 'ToErased'
+        doc_data['type'] = 'DataWipe'
         self.document = Document(**doc_data)
         db.session.add(self.document)
         
@@ -57,5 +57,5 @@ class ErasedView():
                     self.data['devices'].add(component)
 
         self.data['document'] = self.document
-        self.erased = ToErased(**self.data)
+        self.erased = DataWipe(**self.data)
         db.session.add(self.erased)

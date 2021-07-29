@@ -199,9 +199,9 @@ class ToPrepareDef(ActionDef):
     SCHEMA = schemas.ToPrepare
 
 
-class ToErasedDef(ActionDef):
+class DataWipeDef(ActionDef):
     VIEW = None
-    SCHEMA = schemas.ToErased
+    SCHEMA = schemas.DataWipe
 
 
 class AllocateDef(ActionDef):

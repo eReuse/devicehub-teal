@@ -700,10 +700,10 @@ class Computer(Device):
     def external_document_erasure(self):
         """Returns the external ``DataStorage`` proof of erasure.
         """
-        from ereuse_devicehub.resources.action.models import ToErased
+        from ereuse_devicehub.resources.action.models import DataWipe
         urls = set()
         try:
-            ev = self.last_action_of(ToErased)
+            ev = self.last_action_of(DataWipe)
             urls.add(ev.document.url.to_text())
         except LookupError:
             pass
@@ -902,9 +902,9 @@ class DataStorage(JoinedComponentTableMixin, Component):
     def external_document_erasure(self):
         """Returns the external ``DataStorage`` proof of erasure.
         """
-        from ereuse_devicehub.resources.action.models import ToErased
+        from ereuse_devicehub.resources.action.models import DataWipe
         try:
-            ev = self.last_action_of(ToErased)
+            ev = self.last_action_of(DataWipe)
             return ev.document.url.to_text()
         except LookupError:
             return None
