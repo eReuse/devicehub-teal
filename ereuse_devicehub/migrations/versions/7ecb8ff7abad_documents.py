@@ -81,4 +81,5 @@ def upgrade():
 
 def downgrade():
     op.drop_table('data_wipe', schema=f'{get_inv()}')
+    op.drop_table('data_wipe_document', schema=f'{get_inv()}')
     op.drop_table('document', schema=f'{get_inv()}')
