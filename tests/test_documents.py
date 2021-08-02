@@ -304,9 +304,9 @@ def test_export_extended(app: Devicehub, user: UserClient):
     assert fixture_csv[2][83] == export_csv[2][83], 'Computer information are not equal'
     assert fixture_csv[2][86:106] == export_csv[2][86:106], 'Computer information are not equal'
     assert fixture_csv[2][108] == export_csv[2][108], 'Computer information are not equal'
-    assert fixture_csv[2][110:130] == export_csv[2][110:130], 'Computer information are not equal'
+    assert fixture_csv[2][111:131] == export_csv[2][111:131], 'Computer information are not equal'
     assert fixture_csv[2][131] == export_csv[2][131], 'Computer information are not equal'
-    assert fixture_csv[2][134:] == export_csv[2][134:], 'Computer information are not equal'
+    assert fixture_csv[2][136:] == export_csv[2][136:], 'Computer information are not equal'
 
 
 @pytest.mark.mvp
