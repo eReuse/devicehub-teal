@@ -10,6 +10,7 @@ ml).
 
 ## testing
   [1.0.8-beta]
+- [bugfix] #161 fixing DataStorage with bigInteger
 
 ## [1.0.7-beta]
 - [addend] #158 support for encrypted snapshots data
