@@ -6,10 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## master
-  [1.0.7-beta]
+  [1.0.8-beta]
 
 ## testing
-  [1.0.8-beta]
+  [1.0.9-beta]
+
+
+## [1.0.8-beta]
+- [bugfix] #161 fixing DataStorage with bigInteger
 
 ## [1.0.7-beta]
 - [addend] #158 support for encrypted snapshots data
