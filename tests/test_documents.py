@@ -16,6 +16,7 @@ from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.user.models import Session
 from ereuse_devicehub.resources.action.models import Snapshot, Allocate, Live
 from ereuse_devicehub.resources.documents import documents
+from ereuse_devicehub.resources.tradedocument.definitions import TradeDocumentDef
 from ereuse_devicehub.resources.device import models as d
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
@@ -679,19 +680,6 @@ def test_get_wbconf(user: UserClient):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_trade_documents(user: UserClient):
-    """Tests for get env file for usb wb."""
+    """Tests upload one document"""
 
-    env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodyrate', accept=ANY)
-    assert 'WB_ERASE =' in env
-
-    env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodywipe', accept=ANY)
-    assert 'WB_ERASE =' in env
-    # assert 'WB_ERASE = True' in env
-
-    session = Session.query.filter_by(user_id=user.user['id'],
-                                      type=SessionType.Internal).first()
-    token = session.token
-    token = auth.Auth.encode(session.token)
-    assert token in env
-    user.user['token'] = token
-    snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+    doc, _ = user.post(res=TradeDocumentDef.t, item='wbconf/usodyrate', accept=ANY)
