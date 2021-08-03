@@ -33,14 +33,16 @@ def test_erasure_certificate_public_one(user: UserClient, client: Client):
     snapshot, _ = user.post(s, res=Snapshot)
 
     doc, response = user.get(res=documents.DocumentDef.t,
-                               item='erasures/{}'.format(snapshot['device']['id']),
-                               accept=ANY)
+                             item='erasures/{}'.format(
+                                 snapshot['device']['id']),
+                             accept=ANY)
     assert 'html' in response.content_type
     assert '<html' in doc
     assert '2018' in doc
 
     doc, response = client.get(res=documents.DocumentDef.t,
-                               item='erasures/{}'.format(snapshot['device']['id']),
+                               item='erasures/{}'.format(
+                                   snapshot['device']['id']),
                                query=[('format', 'PDF')],
                                accept='application/pdf')
     assert 'application/pdf' == response.content_type
@@ -656,6 +658,27 @@ def test_get_document_internal_stats(user: UserClient, user2: UserClient):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_get_wbconf(user: UserClient):
+    """Tests for get env file for usb wb."""
+
+    env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodyrate', accept=ANY)
+    assert 'WB_ERASE =' in env
+
+    env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodywipe', accept=ANY)
+    assert 'WB_ERASE =' in env
+    # assert 'WB_ERASE = True' in env
+
+    session = Session.query.filter_by(user_id=user.user['id'],
+                                      type=SessionType.Internal).first()
+    token = session.token
+    token = auth.Auth.encode(session.token)
+    assert token in env
+    user.user['token'] = token
+    snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_trade_documents(user: UserClient):
     """Tests for get env file for usb wb."""
 
     env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodyrate', accept=ANY)
