@@ -25,7 +25,7 @@ def get_inv():
 def upgrade():
     op.alter_column('test_data_storage', 'reallocated_sector_count', type_=sa.BigInteger(), schema=f'{get_inv()}')
     op.alter_column('test_data_storage', 'power_cycle_count', type_=sa.Integer(), schema=f'{get_inv()}')
-    op.alter_column('test_data_storage', '_reported_uncorrectable_errors', type_=sa.BigInteger(), schema=f'{get_inv()}')
+    op.alter_column('test_data_storage', 'reported_uncorrectable_errors', type_=sa.BigInteger(), schema=f'{get_inv()}')
     op.alter_column('test_data_storage', 'current_pending_sector_count', type_=sa.BigInteger(), schema=f'{get_inv()}')
     op.alter_column('test_data_storage', 'offline_uncorrectable', type_=sa.BigInteger(), schema=f'{get_inv()}')
 
@@ -33,6 +33,6 @@ def upgrade():
 def downgrade():
     op.alter_column('test_data_storage', 'reallocated_sector_count', type_=sa.SmallInteger(), schema=f'{get_inv()}')
     op.alter_column('test_data_storage', 'power_cycle_count', type_=sa.SmallInteger(), schema=f'{get_inv()}')
-    op.alter_column('test_data_storage', '_reported_uncorrectable_errors', type_=sa.Integer(), schema=f'{get_inv()}')
+    op.alter_column('test_data_storage', 'reported_uncorrectable_errors', type_=sa.Integer(), schema=f'{get_inv()}')
     op.alter_column('test_data_storage', 'current_pending_sector_count', type_=sa.Integer(), schema=f'{get_inv()}')
     op.alter_column('test_data_storage', 'offline_uncorrectable', type_=sa.Integer(), schema=f'{get_inv()}')
