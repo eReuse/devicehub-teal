@@ -71,6 +71,8 @@ class TradeDocument(Thing):
     file_hash.comment = """This is the hash of the file produced from frontend."""
     url = db.Column(URL())
     url.comment = """This is the url where resides the document."""
+    weight = db.Column(db.Float(nullable=True))
+    weight.comment = """This is the weight of one container than this document express."""
 
     __table_args__ = (
         db.Index('document_id', id, postgresql_using='hash'),
