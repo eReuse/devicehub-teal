@@ -15,6 +15,7 @@ class DataWipeDocument(Thing):
                     required=False, 
                     description=m.DataWipeDocument.date.comment)
     id_document = SanitizedStr(data_key='documentId', 
+                               required=False,
                                default='', 
                                description=m.DataWipeDocument.id_document.comment)
     file_name = SanitizedStr(data_key='filename',

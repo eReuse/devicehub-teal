@@ -70,7 +70,7 @@ def upgrade():
 
     # DataWipe table
     op.create_table('data_wipe',
-                    sa.Column('document_id', sa.BigInteger(), nullable=True),
+                    sa.Column('document_id', sa.BigInteger(), nullable=False),
                     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.ForeignKeyConstraint(['document_id'], [f'{get_inv()}.document.id'], ),
                     sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
