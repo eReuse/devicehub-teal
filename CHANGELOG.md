@@ -5,10 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.ht
 ml).
 
-## master [1.0.7-beta]
+## master
+  [1.0.8-beta]
 
-## testing [1.0.8-beta]
+## testing
+  [1.0.9-beta]
 - [addend] #159 external document as proof of erase of disk
+
+
+## [1.0.8-beta]
+- [bugfix] #161 fixing DataStorage with bigInteger
 
 ## [1.0.7-beta]
 - [addend] #158 support for encrypted snapshots data
