@@ -8,8 +8,8 @@ class DataWipeDocument(Thing):
     __doc__ = m.DataWipeDocument.__doc__
     id = Integer(description=m.DataWipeDocument.id.comment, dump_only=True)
     type = SanitizedStr(default='DataWipeDocument')
-    url = URL(description=m.DataWipeDocument.url.comment)
-    success = Boolean(description=m.DataWipeDocument.success.comment)
+    url = URL(required= False, description=m.DataWipeDocument.url.comment)
+    success = Boolean(required=False, default=False, description=m.DataWipeDocument.success.comment)
     software = SanitizedStr(description=m.DataWipeDocument.software.comment)
     date = DateTime(data_key='endTime', 
                     required=False, 

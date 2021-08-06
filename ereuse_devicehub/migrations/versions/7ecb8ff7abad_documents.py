@@ -45,7 +45,7 @@ def upgrade():
                     sa.Column('owner_id', postgresql.UUID(as_uuid=True), nullable=False),
                     sa.Column('file_name', sa.Unicode(), nullable=False),
                     sa.Column('file_hash', sa.Unicode(), nullable=False),
-                    sa.Column('url', sa.Unicode(), nullable=False),
+                    sa.Column('url', sa.Unicode(), nullable=True),
 
                     sa.ForeignKeyConstraint(['owner_id'], ['common.user.id'], ),
                     sa.PrimaryKeyConstraint('id'),

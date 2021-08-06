@@ -31,7 +31,7 @@ class Document(Thing):
     file_name.comment = """This is the name of the file when user up the document."""
     file_hash = Column(db.CIText(), nullable=False)
     file_hash.comment = """This is the hash of the file produced from frontend."""
-    url = db.Column(URL(), nullable=False)
+    url = db.Column(URL(), nullable=True)
     url.comment = """This is the url where resides the document."""
 
     def __str__(self) -> str:
@@ -50,7 +50,7 @@ class DataWipeDocument(JoinedTableMixin, Document):
 
     software = Column(CIText(), nullable=True)
     software.comment = """Which software is used"""
-    success = Column(Boolean)
+    success = Column(Boolean, default=False)
     success.comment = """If the erase was success"""
 
     def __str__(self) -> str:
