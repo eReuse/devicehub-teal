@@ -90,6 +90,7 @@ class DocumentView(DeviceView):
             res = flask.make_response(template)
         return res
 
+
     @staticmethod
     def erasure(query: db.Query):
         def erasures():
@@ -290,7 +291,6 @@ class InternalStatsView(DeviceView):
         query = evs.Action.query.filter(
             evs.Action.type.in_(('Snapshot', 'Live', 'Allocate', 'Deallocate')))
         return self.generate_post_csv(query)
-
 
     def generate_post_csv(self, query):
         d = {}

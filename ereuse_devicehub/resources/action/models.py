@@ -1327,6 +1327,20 @@ class ToPrepare(ActionWithMultipleDevices):
     pass
 
 
+class DataWipe(JoinedTableMixin, ActionWithMultipleDevices):
+    """The device has been selected for insert one proof of erease disk.
+    """
+    document_comment = """The user that gets the device due this deal."""
+    document_id = db.Column(BigInteger,
+                            db.ForeignKey('data_wipe_document.id'),
+                            nullable=False)
+    document = db.relationship('DataWipeDocument',
+                          backref=backref('actions',
+                                          lazy=True,
+                                          cascade=CASCADE_OWN),
+                          primaryjoin='DataWipe.document_id == DataWipeDocument.id')
+
+
 class Prepare(ActionWithMultipleDevices):
     """Work has been performed to the device to a defined point of
     acceptance.
