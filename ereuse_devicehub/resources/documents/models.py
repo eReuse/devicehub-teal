@@ -16,7 +16,7 @@ class Document(Thing):
     id.comment = """The identifier of the device for this database. Used only
     internally for software; users should not use this.
     """
-    type = Column(Unicode(STR_SM_SIZE), nullable=False)
+    document_type = Column(Unicode(STR_SM_SIZE), nullable=False)
     date = Column(db.DateTime, nullable=True)
     date.comment = """The date of document, some documents need to have one date
     """

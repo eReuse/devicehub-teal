@@ -1,4 +1,5 @@
 from marshmallow.fields import DateTime, Integer, validate, Boolean
+from marshmallow import post_load
 from teal.marshmallow import SanitizedStr, URL
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.documents import models as m
@@ -7,7 +8,6 @@ from ereuse_devicehub.resources.documents import models as m
 class DataWipeDocument(Thing):
     __doc__ = m.DataWipeDocument.__doc__
     id = Integer(description=m.DataWipeDocument.id.comment, dump_only=True)
-    type = SanitizedStr(default='DataWipeDocument')
     url = URL(required= False, description=m.DataWipeDocument.url.comment)
     success = Boolean(required=False, default=False, description=m.DataWipeDocument.success.comment)
     software = SanitizedStr(description=m.DataWipeDocument.software.comment)
@@ -26,3 +26,7 @@ class DataWipeDocument(Thing):
                              default='',
                              description=m.DataWipeDocument.file_hash.comment,
                              validate=validate.Length(max=64))
+
+    @post_load
+    def get_trade_document(self, data):
+        data['document_type'] = 'DataWipeDocument'

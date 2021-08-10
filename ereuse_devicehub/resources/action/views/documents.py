@@ -29,7 +29,6 @@ class ErasedView():
         schema = sh_document()
         [data.pop(x, None) for x in ['severity', 'devices', 'name', 'description']]
         doc_data = schema.load(data)
-        doc_data['type'] = 'DataWipe'
         self.document = DataWipeDocument(**doc_data)
         db.session.add(self.document)
         
