@@ -43,6 +43,7 @@ def test_api_docs(client: Client):
         '/documents/wbconf/{wbtype}',
         '/documents/internalstats/',
         '/documents/stock/',
+        '/documents/recycle/',
         '/documents/check/',
         '/documents/lots/',
         '/versions/',
