@@ -1,4 +1,3 @@
-import copy
 from citext import CIText
 from flask import g
 

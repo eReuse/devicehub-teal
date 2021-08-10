@@ -283,6 +283,28 @@ class StampsView(View):
                 result=result)
 
 
+class RecycleDocumentView(View):
+    """
+    This view allow save one document as a proof of one container with some weight was send to recycling.
+    """
+
+    def post(self):
+        from flask import jsonify
+        from ereuse_devicehub.resources.documents.models import RecycleDocument
+        from ereuse_devicehub.resources.documents.schemas import RecycleDocument as sh_document
+        data = request.get_data()
+        schema = sh_document()
+        doc = schema.loads(data)
+        document = RecycleDocument(**doc)
+        db.session.add(document)
+
+        db.session().final_flush()
+        ret = jsonify(document)
+        ret.status_code = 201
+        db.session.commit()
+        return ret
+
+
 class InternalStatsView(DeviceView):
     @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
@@ -428,3 +450,7 @@ class DocumentDef(Resource):
                                                   auth=app.auth)
         wbconf_view = app.auth.requires_auth(wbconf_view)
         self.add_url_rule('/wbconf/<string:wbtype>', view_func=wbconf_view, methods=get)
+
+        recycle_doc_view = RecycleDocumentView.as_view('RecycleDocumentView', definition=self, auth=app.auth)
+        self.add_url_rule('/recycle/', defaults={}, view_func=recycle_doc_view, methods={'POST'})
+
