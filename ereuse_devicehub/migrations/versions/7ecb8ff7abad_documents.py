@@ -39,7 +39,7 @@ def upgrade():
                               comment='The last time Document recorded a change for \n    this thing.\n    '),
                     sa.Column('created', sa.TIMESTAMP(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'),
                               nullable=False, comment='When Document created this.'),
-                    sa.Column('type', sa.Unicode(), nullable=False),
+                    sa.Column('document_type', sa.Unicode(), nullable=False),
                     sa.Column('date', sa.TIMESTAMP(timezone=True), nullable=True),
                     sa.Column('id_document', sa.Unicode(), nullable=True),
                     sa.Column('owner_id', postgresql.UUID(as_uuid=True), nullable=False),
@@ -54,7 +54,7 @@ def upgrade():
     op.create_index('generic_document_id', 'document', ['id'], unique=False, postgresql_using='hash', schema=f'{get_inv()}')
     op.create_index(op.f('ix_document_created'), 'document', ['created'], unique=False, schema=f'{get_inv()}')
     op.create_index(op.f('ix_document_updated'), 'document', ['updated'], unique=False, schema=f'{get_inv()}')
-    op.create_index('document_type_index', 'document', ['type'], unique=False, postgresql_using='hash', schema=f'{get_inv()}')
+    op.create_index('document_type_index', 'document', ['document_type'], unique=False, postgresql_using='hash', schema=f'{get_inv()}')
 
 
     # DataWipeDocument table
