@@ -36,7 +36,7 @@ class DataWipeDocument(Thing):
 
 
 class RecycleDocument(Thing):
-    __doc__ = m.DataWipeDocument.__doc__
+    __doc__ = m.RecycleDocument.__doc__
     file_hash = SanitizedStr(data_key='hash',
                              default='',
                              description=m.RecycleDocument.file_hash.comment,

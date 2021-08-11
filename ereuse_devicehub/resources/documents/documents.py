@@ -33,6 +33,8 @@ from ereuse_devicehub.resources.documents.device_row import (DeviceRow, StockRow
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash, verify_hash
+from ereuse_devicehub.resources.documents.models import RecycleDocument
+from ereuse_devicehub.resources.documents.schemas import RecycleDocument as sh_document
 
 
 class Format(enum.Enum):
@@ -289,9 +291,7 @@ class RecycleDocumentView(View):
     """
 
     def post(self):
-        from flask import jsonify
-        from ereuse_devicehub.resources.documents.models import RecycleDocument
-        from ereuse_devicehub.resources.documents.schemas import RecycleDocument as sh_document
+        # import pdb; pdb.set_trace()
         data = request.get_data()
         schema = sh_document()
         doc = schema.loads(data)
