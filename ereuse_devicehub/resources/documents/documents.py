@@ -275,7 +275,6 @@ class StampsView(View):
             ok = '100% coincidence. The attached file contains data 100% existing in \
                   to our backend'
             result = ('Bad', bad)
-            import pdb; pdb.set_trace()
             mime = ['text/csv', 'application/pdf', 'text/plain','text/markdown',
                     'image/jpeg', 'image/png', 'text/html',
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
