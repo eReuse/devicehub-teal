@@ -696,6 +696,25 @@ class Computer(Device):
             if privacy
         )
 
+    @property
+    def external_document_erasure(self):
+        """Returns the external ``DataStorage`` proof of erasure.
+        """
+        from ereuse_devicehub.resources.action.models import DataWipe
+        urls = set()
+        try:
+            ev = self.last_action_of(DataWipe)
+            urls.add(ev.document.url.to_text())
+        except LookupError:
+            pass
+
+        for comp in self.components:
+            if isinstance(comp, DataStorage):
+                doc = comp.external_document_erasure
+                if doc:
+                    urls.add(doc)
+        return urls
+
     def add_mac_to_hid(self, components_snap=None):
         """Returns the Naming.hid with the first mac of network adapter, 
         following an alphabetical order.
@@ -878,6 +897,17 @@ class DataStorage(JoinedComponentTableMixin, Component):
         if 's' in format_spec:
             v += ' – {} GB'.format(self.size // 1000 if self.size else '?')
         return v
+
+    @property
+    def external_document_erasure(self):
+        """Returns the external ``DataStorage`` proof of erasure.
+        """
+        from ereuse_devicehub.resources.action.models import DataWipe
+        try:
+            ev = self.last_action_of(DataWipe)
+            return ev.document.url.to_text()
+        except LookupError:
+            return None
 
 
 class HardDrive(DataStorage):

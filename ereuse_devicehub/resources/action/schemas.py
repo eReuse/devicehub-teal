@@ -17,6 +17,7 @@ from ereuse_devicehub.resources.action import models as m
 from ereuse_devicehub.resources.agent import schemas as s_agent
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.tradedocument import schemas as s_document
+from ereuse_devicehub.resources.documents import schemas as s_generic_document
 from ereuse_devicehub.resources.enums import AppearanceRange, BiosAccessRange, FunctionalityRange, \
     PhysicalErasureMethod, R_POSITIVE, RatingRange, \
     Severity, SnapshotSoftware, TestDataStorageLength
@@ -428,6 +429,11 @@ class ToPrepare(ActionWithMultipleDevices):
 
 class Prepare(ActionWithMultipleDevices):
     __doc__ = m.Prepare.__doc__
+
+
+class DataWipe(ActionWithMultipleDevices):
+    __doc__ = m.DataWipe.__doc__
+    document = NestedOn(s_generic_document.DataWipeDocument, only_query='id')
 
 
 class Live(ActionWithOneDevice):

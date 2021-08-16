@@ -10,6 +10,7 @@ ml).
 
 ## testing
   [1.0.9-beta]
+- [addend] #159 external document as proof of erase of disk
 
 
 ## [1.0.8-beta]
