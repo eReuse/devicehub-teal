@@ -754,12 +754,12 @@ class TestDataStorage(TestMixin, Test):
     status = Column(Unicode(), check_lower('status'), nullable=False)
     lifetime = Column(Interval)
     assessment = Column(Boolean)
-    reallocated_sector_count = Column(SmallInteger)
-    power_cycle_count = Column(SmallInteger)
-    _reported_uncorrectable_errors = Column('reported_uncorrectable_errors', Integer)
+    reallocated_sector_count = Column(BigInteger)
+    power_cycle_count = Column(Integer)
+    _reported_uncorrectable_errors = Column('reported_uncorrectable_errors', BigInteger)
     command_timeout = Column(BigInteger)
-    current_pending_sector_count = Column(Integer)
-    offline_uncorrectable = Column(Integer)
+    current_pending_sector_count = Column(BigInteger)
+    offline_uncorrectable = Column(BigInteger)
     remaining_lifetime_percentage = Column(SmallInteger)
     elapsed = Column(Interval, nullable=False)
 
@@ -1325,6 +1325,20 @@ class ToPrepare(ActionWithMultipleDevices):
     device.
     """
     pass
+
+
+class DataWipe(JoinedTableMixin, ActionWithMultipleDevices):
+    """The device has been selected for insert one proof of erease disk.
+    """
+    document_comment = """The user that gets the device due this deal."""
+    document_id = db.Column(BigInteger,
+                            db.ForeignKey('data_wipe_document.id'),
+                            nullable=False)
+    document = db.relationship('DataWipeDocument',
+                          backref=backref('actions',
+                                          lazy=True,
+                                          cascade=CASCADE_OWN),
+                          primaryjoin='DataWipe.document_id == DataWipeDocument.id')
 
 
 class Prepare(ActionWithMultipleDevices):
