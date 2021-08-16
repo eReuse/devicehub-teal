@@ -11,6 +11,7 @@ ml).
 ## testing
   [1.0.9-beta]
 - [addend] #159 external document as proof of erase of disk
+- [addend] #162 adding lot for devices unassigned
 
 
 ## [1.0.8-beta]
