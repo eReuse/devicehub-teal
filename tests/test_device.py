@@ -500,6 +500,46 @@ def test_get_devices_permissions(app: Devicehub, user: UserClient, user2: UserCl
     assert len(devices['items']) == 1
     assert len(devices2['items']) == 0
 
+
+@pytest.mark.mvp
+def test_get_devices_unassigned(app: Devicehub, user: UserClient):
+    """Checks GETting multiple devices."""
+
+    user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
+    url = '/devices/?filter={"type":["Computer"]}&unassign=0'
+
+    devices, res = user.get(url, None)
+    assert res.status_code == 200
+    assert len(devices['items']) == 1
+
+    url = '/devices/?filter={"type":["Computer"]}&unassign=1'
+
+    devices, res = user.get(url, None)
+    assert res.status_code == 200
+    assert len(devices['items']) == 1
+
+    from ereuse_devicehub.resources.lot.models import Lot
+    device_id = devices['items'][0]['id']
+    my_lot, _ = user.post(({'name': 'My_lot'}), res=Lot)
+    lot, _ = user.post({},
+                       res=Lot,
+                       item='{}/devices'.format(my_lot['id']),
+                       query=[('id', device_id)])
+    assert lot['devices'][0]['id'] == device_id, 'Lot contains device'
+
+    url = '/devices/?filter={"type":["Computer"]}&unassign=0'
+
+    devices, res = user.get(url, None)
+    assert res.status_code == 200
+    assert len(devices['items']) == 1
+
+    url = '/devices/?filter={"type":["Computer"]}&unassign=1'
+
+    devices, res = user.get(url, None)
+    assert res.status_code == 200
+    assert len(devices['items']) == 0
+
+
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_computer_monitor():
