@@ -500,6 +500,19 @@ def test_get_devices_permissions(app: Devicehub, user: UserClient, user2: UserCl
     assert len(devices['items']) == 1
     assert len(devices2['items']) == 0
 
+
+@pytest.mark.mvp
+def test_get_devices_unassigned(app: Devicehub, user: UserClient):
+    """Checks GETting multiple devices."""
+
+    user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
+    url = '/devices/?filter={"type":["Computer"]}&unassign=0'
+
+    devices, res = user.get(url, None)
+    assert res.status_code == 200
+    assert len(devices['items']) == 1
+
+
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_computer_monitor():
