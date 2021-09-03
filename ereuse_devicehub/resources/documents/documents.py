@@ -33,8 +33,8 @@ from ereuse_devicehub.resources.documents.device_row import (DeviceRow, StockRow
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash, verify_hash
-from ereuse_devicehub.resources.documents.models import RecycleDocument
-from ereuse_devicehub.resources.documents.schemas import RecycleDocument as sh_document
+# from ereuse_devicehub.resources.documents.models import RecycleDocument
+# from ereuse_devicehub.resources.documents.schemas import RecycleDocument as sh_document
 
 
 class Format(enum.Enum):
@@ -291,24 +291,24 @@ class StampsView(View):
                 result=result)
 
 
-class RecycleDocumentView(View):
-    """
-    This view allow save one document as a proof of one container with some weight was send to recycling.
-    """
+# class RecycleDocumentView(View):
+#     """
+#     This view allow save one document as a proof of one container with some weight was send to recycling.
+#     """
 
-    def post(self):
-        # import pdb; pdb.set_trace()
-        data = request.get_data()
-        schema = sh_document()
-        doc = schema.loads(data)
-        document = RecycleDocument(**doc)
-        db.session.add(document)
+#     def post(self):
+#         # import pdb; pdb.set_trace()
+#         data = request.get_data()
+#         schema = sh_document()
+#         doc = schema.loads(data)
+#         document = RecycleDocument(**doc)
+#         db.session.add(document)
 
-        db.session().final_flush()
-        ret = jsonify(document)
-        ret.status_code = 201
-        db.session.commit()
-        return ret
+#         db.session().final_flush()
+#         ret = jsonify(document)
+#         ret.status_code = 201
+#         db.session.commit()
+#         return ret
 
 
 class InternalStatsView(DeviceView):
@@ -457,6 +457,5 @@ class DocumentDef(Resource):
         wbconf_view = app.auth.requires_auth(wbconf_view)
         self.add_url_rule('/wbconf/<string:wbtype>', view_func=wbconf_view, methods=get)
 
-        recycle_doc_view = RecycleDocumentView.as_view('RecycleDocumentView', definition=self, auth=app.auth)
-        self.add_url_rule('/recycle/', defaults={}, view_func=recycle_doc_view, methods={'POST'})
-
+        # recycle_doc_view = RecycleDocumentView.as_view('RecycleDocumentView', definition=self, auth=app.auth)
+        # self.add_url_rule('/recycle/', defaults={}, view_func=recycle_doc_view, methods={'POST'})

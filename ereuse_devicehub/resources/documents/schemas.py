@@ -35,21 +35,21 @@ class DataWipeDocument(Thing):
         data['document_type'] = 'DataWipeDocument'
 
 
-class RecycleDocument(Thing):
-    __doc__ = m.RecycleDocument.__doc__
-    file_hash = SanitizedStr(data_key='hash',
-                             default='',
-                             description=m.RecycleDocument.file_hash.comment,
-                             validate=validate.Length(max=64))
-    weight = Float(required=False, validate=Range(0.1), description=m.RecycleDocument.weight.comment)
-    lot = NestedOn('Lot', only_query='id', description=m.RecycleDocument.lot.__doc__)
+# class RecycleDocument(Thing):
+#     __doc__ = m.RecycleDocument.__doc__
+#     file_hash = SanitizedStr(data_key='hash',
+#                              default='',
+#                              description=m.RecycleDocument.file_hash.comment,
+#                              validate=validate.Length(max=64))
+#     weight = Float(required=False, validate=Range(0.1), description=m.RecycleDocument.weight.comment)
+#     lot = NestedOn('Lot', only_query='id', description=m.RecycleDocument.lot.__doc__)
 
-    @post_load
-    def get_trade_document(self, data):
-        tradedocument = TradeDocument.query.filter_by(file_hash=data['file_hash']).one()
-        data['trade_document_id'] = tradedocument.id
-        data['file_name'] = tradedocument.file_name
-        data['date'] = tradedocument.date
-        data['id_document'] = tradedocument.id_document
-        data['url'] = tradedocument.url
-        data['document_type'] = 'RecycleDocument'
+#     @post_load
+#     def get_trade_document(self, data):
+#         tradedocument = TradeDocument.query.filter_by(file_hash=data['file_hash']).one()
+#         data['trade_document_id'] = tradedocument.id
+#         data['file_name'] = tradedocument.file_name
+#         data['date'] = tradedocument.date
+#         data['id_document'] = tradedocument.id_document
+#         data['url'] = tradedocument.url
+#         data['document_type'] = 'RecycleDocument'

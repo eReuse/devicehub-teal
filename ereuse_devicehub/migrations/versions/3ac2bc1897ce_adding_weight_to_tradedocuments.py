@@ -24,6 +24,7 @@ def get_inv():
         raise ValueError("Inventory value is not specified")
     return INV
 
+
 def upgrade():
     op.add_column("trade_document", sa.Column("weight", sa.Float(decimal_return_scale=2), nullable=True), schema=f'{get_inv()}') 
 

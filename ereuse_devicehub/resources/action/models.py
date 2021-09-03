@@ -62,6 +62,15 @@ _sorted_actions = {
     'order_by': lambda: Action.end_time,
     'collection_class': SortedSet
 }
+
+
+def sorted_actions_by(data):
+    return {
+        'order_by': lambda: data,
+        'collection_class': SortedSet
+    }
+
+
 """For db.backref, return the actions sorted by end_time."""
 
 
@@ -1640,6 +1649,35 @@ class TransferOwnershipBlockchain(Trade):
 class MakeAvailable(ActionWithMultipleDevices):
     """The act of setting willingness for trading."""
     pass
+
+
+class MoveOnContainer(JoinedTableMixin, ActionWithMultipleTradeDocuments):
+    """Action than certify one movement of some indescriptible material of
+    one container to an other."""
+
+    weight = db.Column(db.Float(nullable=True))
+    weight.comment = """Weight than go to recycling"""
+    container_from_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey('trade_document.id'),
+        nullable=False
+    )
+    container_from = db.relationship(
+        'TradeDocument',
+        primaryjoin='MoveOnContainer.container_from_id == TradeDocument.id',
+    )
+    container_from_id.comment = """This is the trade document used as container in a incoming lot"""
+
+    container_to_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey('trade_document.id'),
+        nullable=False
+    )
+    container_to = db.relationship(
+        'TradeDocument',
+        primaryjoin='MoveOnContainer.container_to_id == TradeDocument.id',
+    )
+    container_to_id.comment = """This is the trade document used as container in a outgoing lot"""
 
 
 class Migrate(JoinedTableMixin, ActionWithMultipleDevices):

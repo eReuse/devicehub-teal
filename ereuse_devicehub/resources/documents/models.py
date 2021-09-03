@@ -64,26 +64,3 @@ class DataWipeDocument(JoinedTableMixin, Document):
 
     def __str__(self) -> str:
         return '{0.file_name}'.format(self)
-
-
-
-class RecycleDocument(JoinedTableMixin, Document):
-    """Document than proof how any of weight go to recycling."""
-
-    weight = db.Column(db.Float(nullable=True))
-    weight.comment = """Weight than go to recycling"""
-    trade_document_id = db.Column(db.BigInteger, db.ForeignKey('trade_document.id'))
-    trade_document_id.comment = """This is the trade document used for send material to recyle"""
-    lot_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey('lot.id'),
-                         nullable=False)
-    lot_id.comment = """This lot is the input lot if the material that will then go definitively to recycling"""
-    lot = db.relationship('Lot',
-                          backref=backref('recycling_documents',
-                                          lazy=True,
-                                          cascade=CASCADE_OWN,
-                                          **_sorted_documents),
-                            primaryjoin='RecycleDocument.lot_id == Lot.id')
-
-    def __str__(self) -> str:
-        return '{0.file_name}'.format(self)
