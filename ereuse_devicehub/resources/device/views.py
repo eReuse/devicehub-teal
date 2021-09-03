@@ -86,6 +86,7 @@ class DeviceView(View):
         filter = f.Nested(Filters, missing=[])
         sort = f.Nested(Sorting, missing=[Device.id.asc()])
         page = f.Integer(validate=v.Range(min=1), missing=1)
+        unassign = f.Integer(validate=v.Range(min=0, max=1), missing=0)
 
     def get(self, id):
         """Devices view
@@ -161,6 +162,7 @@ class DeviceView(View):
             (Device.owner_id == g.user.id) | (Device.id.in_(trades_dev_ids))
         ).distinct()
 
+        unassign = args.get('unassign', None)
         search_p = args.get('search', None)
         if search_p:
             properties = DeviceSearch.properties
@@ -175,6 +177,11 @@ class DeviceView(View):
                 search.Search.rank(tags, search_p) +
                 search.Search.rank(devicehub_ids, search_p)
             )
+        if unassign:
+            subquery = LotDeviceDescendants.query.with_entities(
+                           LotDeviceDescendants.device_id
+            )
+            query = query.filter(Device.id.notin_(subquery))
         return query.filter(*args['filter']).order_by(*args['sort'])
 
 

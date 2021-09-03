@@ -277,7 +277,13 @@ class StampsView(View):
             ok = '100% coincidence. The attached file contains data 100% existing in \
                   to our backend'
             result = ('Bad', bad)
-            if file_check.mimetype in ['text/csv', 'application/pdf']:
+            mime = ['text/csv', 'application/pdf', 'text/plain','text/markdown',
+                    'image/jpeg', 'image/png', 'text/html',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'application/vnd.oasis.opendocument.spreadsheet',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/msword']
+            if file_check.mimetype in mime:
                 if verify_hash(file_check):
                     result = ('Ok', ok)
 
