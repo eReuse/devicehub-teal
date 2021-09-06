@@ -2478,9 +2478,14 @@ def test_moveonContainer(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_trade)
 
     request_moveOn = {
+        'type': 'MoveOnContainer',
         'weight': 15,
+        'devices': [],
         'container_from': tradedocument_from['id'],
         'container_to': tradedocument_to['id']
     }
-    import pdb; pdb.set_trace()
     doc, _ = user.post(res=models.Action, data=request_moveOn)
+
+    assert doc['weight'] == request_moveOn['weight']
+    assert doc['container_from']['id'] == tradedocument_from['id']
+    assert doc['container_to']['id'] == tradedocument_to['id']

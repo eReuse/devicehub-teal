@@ -840,3 +840,10 @@ class MigrateTo(Migrate):
 
 class MigrateFrom(Migrate):
     __doc__ = m.MigrateFrom.__doc__
+
+
+class MoveOnContainer(Migrate):
+    __doc__ = m.MoveOnContainer.__doc__
+    weight = Integer()
+    container_from = NestedOn('TradeDocument', only_query='id')
+    container_to = NestedOn('TradeDocument', only_query='id')

@@ -43,7 +43,6 @@ def test_api_docs(client: Client):
         '/documents/wbconf/{wbtype}',
         '/documents/internalstats/',
         '/documents/stock/',
-        '/documents/recycle/',
         '/documents/check/',
         '/documents/lots/',
         '/versions/',
@@ -123,4 +122,4 @@ def test_api_docs(client: Client):
         'scheme': 'basic',
         'name': 'Authorization'
     }
-    assert len(docs['definitions']) == 126
+    assert len(docs['definitions']) == 127
