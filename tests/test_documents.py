@@ -716,29 +716,3 @@ def test_trade_documents_with_weight(user: UserClient):
     }
     doc, _ = user.post(res=TradeDocument, data=request_post)
     assert doc['weight'] == request_post['weight']
-
-
-# @pytest.mark.mvp
-# @pytest.mark.usefixtures(conftest.app_context.__name__)
-# def test_recycle_document(user: UserClient):
-#     """Tests upload one document"""
-
-#     lotIn, _ = user.post({'name': 'MyLotIn'}, res=Lot)
-#     lotOut, _ = user.post({'name': 'MyLotOut'}, res=Lot)
-#     url = 'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
-#     request_post = {
-#         'filename': 'test.pdf',
-#         'hash': 'bbbbbbbb',
-#         'url': url,
-#         'weight': 15,
-#         'lot': lotOut['id']
-#     }
-#     tradedocument, _ = user.post(res=TradeDocument, data=request_post)
-#     # import pdb; pdb.set_trace()
-#     request_post2 = {
-#         'weight': 15,
-#         'hash': tradedocument['hash'],
-#         'lot': lotIn['id']
-#     }
-#     doc, _ = user.post(res=documents.DocumentDef.t, item='recycle/', data=request_post2)
-#     assert doc == request_post['filename']
