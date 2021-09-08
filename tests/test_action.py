@@ -2443,7 +2443,7 @@ def test_action_web_erase(user: UserClient, client: Client):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_moveonContainer(user: UserClient, user2: UserClient):
+def test_moveOnDocument(user: UserClient, user2: UserClient):
     lotIn, _ = user.post({'name': 'MyLotIn'}, res=Lot)
     lotOut, _ = user.post({'name': 'MyLotOut'}, res=Lot)
     url = 'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
@@ -2455,9 +2455,10 @@ def test_moveonContainer(user: UserClient, user2: UserClient):
         'lot': lotIn['id']
     }
     tradedocument_from, _ = user.post(res=TradeDocument, data=request_post1)
+    id_hash = 'aaaaaaaaa'
     request_post2 = {
         'filename': 'test.pdf',
-        'hash': 'bbbbbbbb',
+        'hash': id_hash,
         'url': url,
         'weight': 0,
         'lot': lotOut['id']
@@ -2478,14 +2479,16 @@ def test_moveonContainer(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_trade)
 
     request_moveOn = {
-        'type': 'MoveOnContainer',
+        'type': 'MoveOnDocument',
         'weight': 15,
-        'devices': [],
         'container_from': tradedocument_from['id'],
-        'container_to': tradedocument_to['id']
+        'container_to': id_hash
     }
     doc, _ = user.post(res=models.Action, data=request_moveOn)
 
     assert doc['weight'] == request_moveOn['weight']
     assert doc['container_from']['id'] == tradedocument_from['id']
     assert doc['container_to']['id'] == tradedocument_to['id']
+
+    tradedocument_to, _ = user.post(res=TradeDocument, data=request_post2)
+    user.post(res=models.Action, data=request_moveOn, status=422)
