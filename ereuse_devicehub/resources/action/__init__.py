@@ -315,6 +315,6 @@ class MigrateFromDef(ActionDef):
     SCHEMA = schemas.MigrateFrom
 
 
-class MoveOnContainerDef(ActionDef):
+class MoveOnDocumentDef(ActionDef):
     VIEW = None
-    SCHEMA = schemas.MoveOnContainer
+    SCHEMA = schemas.MoveOnDocument

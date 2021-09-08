@@ -1651,7 +1651,7 @@ class MakeAvailable(ActionWithMultipleDevices):
     pass
 
 
-class MoveOnContainer(JoinedTableMixin, ActionWithMultipleTradeDocuments):
+class MoveOnDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     """Action than certify one movement of some indescriptible material of
     one container to an other."""
 
@@ -1664,7 +1664,7 @@ class MoveOnContainer(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     )
     container_from = db.relationship(
         'TradeDocument',
-        primaryjoin='MoveOnContainer.container_from_id == TradeDocument.id',
+        primaryjoin='MoveOnDocument.container_from_id == TradeDocument.id',
     )
     container_from_id.comment = """This is the trade document used as container in a incoming lot"""
 
@@ -1675,7 +1675,7 @@ class MoveOnContainer(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     )
     container_to = db.relationship(
         'TradeDocument',
-        primaryjoin='MoveOnContainer.container_to_id == TradeDocument.id',
+        primaryjoin='MoveOnDocument.container_to_id == TradeDocument.id',
     )
     container_to_id.comment = """This is the trade document used as container in a outgoing lot"""
 
