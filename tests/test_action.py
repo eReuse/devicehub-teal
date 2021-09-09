@@ -2478,11 +2478,13 @@ def test_moveOnDocument(user: UserClient, user2: UserClient):
 
     user.post(res=models.Action, data=request_trade)
 
+    description = 'This is a good description'
     request_moveOn = {
         'type': 'MoveOnDocument',
         'weight': 15,
         'container_from': tradedocument_from['id'],
-        'container_to': id_hash
+        'container_to': id_hash,
+        'description': description
     }
     doc, _ = user.post(res=models.Action, data=request_moveOn)
 
@@ -2490,5 +2492,11 @@ def test_moveOnDocument(user: UserClient, user2: UserClient):
     assert doc['container_from']['id'] == tradedocument_from['id']
     assert doc['container_to']['id'] == tradedocument_to['id']
 
+    mvs= models.MoveOnDocument.query.filter().first()
+    trade_from = TradeDocument.query.filter_by(id=tradedocument_from['id']).one()
+    trade_to = TradeDocument.query.filter_by(id=tradedocument_to['id']).one()
+    assert trade_from in mvs.documents
+    assert trade_to in mvs.documents
+    assert description == mvs.description
     tradedocument_to, _ = user.post(res=TradeDocument, data=request_post2)
     user.post(res=models.Action, data=request_moveOn, status=422)

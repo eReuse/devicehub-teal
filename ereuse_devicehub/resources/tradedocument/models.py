@@ -101,9 +101,8 @@ class TradeDocument(Thing):
         revoke = 'Revoke'
         revoke_pending = 'Revoke Pending'
         confirm_revoke = 'Document Revoked'
-        
         if not self.actions:
-            return 
+            return
 
         ac = self.actions[-1]
 
@@ -111,7 +110,7 @@ class TradeDocument(Thing):
             # can to do revoke_confirmed
             return confirm_revoke
 
-        if ac.type == 'RevokeDocument': 
+        if ac.type == 'RevokeDocument':
             if ac.user == g.user:
                 # can todo revoke_pending
                 return revoke_pending
@@ -131,9 +130,14 @@ class TradeDocument(Thing):
                 # can to do revoke
                 return double_confirm
 
-    def _warning_actions(self, actions):
-        return sorted(ev for ev in actions if ev.severity >= Severity.Warning)
+    @property
+    def total_weight(self):
+        """Return all weight than this container have."""
+        return sum([x.weight for x in self.actions if x.type == 'MoveOnDocument']) + self.weight
 
+    def _warning_actions(self, actions):
+        """Show warning actions"""
+        return sorted(ev for ev in actions if ev.severity >= Severity.Warning)
 
     def __lt__(self, other):
         return self.id < other.id

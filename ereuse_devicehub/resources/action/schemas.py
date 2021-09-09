@@ -2,7 +2,7 @@ import copy
 from datetime import datetime, timedelta
 from dateutil.tz import tzutc
 from flask import current_app as app, g
-from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema, pre_load
+from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema, pre_load, post_load
 from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, Nested, String, \
     TimeDelta, UUID
 from marshmallow.validate import Length, OneOf, Range
@@ -856,7 +856,16 @@ class MoveOnDocument(Action):
         if len(docs) > 1:
             txt = 'This document it is associated in more than one lot'
             raise ValidationError(txt)
+
         if len(docs) < 1:
             txt = 'This document not exist'
             raise ValidationError(txt)
         data['container_to'] = docs[0].id
+
+    @post_load
+    def adding_documents(self, data):
+        """Adding action in the 2 TradeDocuments"""
+        docs = OrderedSet()
+        docs.add(data['container_to'])
+        docs.add(data['container_from'])
+        data['documents'] = docs
