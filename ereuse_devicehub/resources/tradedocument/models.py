@@ -133,7 +133,15 @@ class TradeDocument(Thing):
     @property
     def total_weight(self):
         """Return all weight than this container have."""
-        return sum([x.weight for x in self.actions if x.type == 'MoveOnDocument']) + self.weight
+        weight = self.weight or 0
+        for x in self.actions:
+            if not x.type == 'MoveOnDocument' or not x.weight:
+                continue
+            if self == x.container_from:
+                continue
+            weight += x.weight
+
+        return weight
 
     def _warning_actions(self, actions):
         """Show warning actions"""

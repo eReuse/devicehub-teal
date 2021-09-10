@@ -30,3 +30,4 @@ class TradeDocument(Thing):
     lot = NestedOn('Lot', only_query='id', description=m.TradeDocument.lot.__doc__)
     trading = SanitizedStr(dump_only=True, description='')
     weight = Float(required=False, description=m.TradeDocument.weight.comment)
+    total_weight = Float(required=False, description=m.TradeDocument.weight.comment)
