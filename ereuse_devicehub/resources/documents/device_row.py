@@ -276,7 +276,7 @@ class DeviceRow(OrderedDict):
                 ctype, i)] = erasure.document.software
             self['Erasure {} {} Result'.format(ctype, i)] = get_result(erasure)
             self['Erasure {} {} Certificate URL'.format(
-                ctype, i)] = erasure.document.url.to_text()
+                ctype, i)] = erasure.document.url and erasure.document.url.to_text() or ''
             self['Erasure {} {} Type'.format(ctype, i)] = ''
             self['Erasure {} {} Method'.format(ctype, i)] = ''
             self['Erasure {} {} Elapsed (hours)'.format(ctype, i)] = ''
