@@ -245,7 +245,8 @@ class DeviceRow(OrderedDict):
 
         self['{} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
 
-        erasures = [a for a in component.actions if a.type in [
+        component_actions = sorted(component.actions, key=lambda x: x.created)
+        erasures = [a for a in component_actions if a.type in [
             'EraseBasic', 'EraseSectors', 'DataWipe']]
         erasure = erasures[-1] if erasures else None
         if not erasure:
