@@ -6,10 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## master
-  [1.0.8-beta]
+  [1.0.9-beta]
 
 ## testing
   [1.0.9-beta]
+
+## [1.0.9-beta]
 - [addend] #159 external document as proof of erase of disk
 - [addend] #162 adding lot for devices unassigned
 
