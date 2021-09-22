@@ -183,7 +183,7 @@ def test_live_export_csv2(user: UserClient, client: Client, app: Devicehub):
 
     assert "4692" in csv_user
     assert "8692" in csv_user
-    assert "DevicehubID" in csv_user
+    assert "DHID" in csv_user
 
 
 @pytest.mark.mvp
