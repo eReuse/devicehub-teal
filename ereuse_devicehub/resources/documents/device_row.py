@@ -42,7 +42,7 @@ class DeviceRow(OrderedDict):
             software = "{software} {version}".format(
                 software=snapshot.software.name, version=snapshot.version)
         # General information about device
-        self['DevicehubID'] = device.devicehub_id
+        self['DHID'] = device.devicehub_id
         self['DocumentID'] = self.document_id
         self['Public Link'] = '{url}{id}'.format(
             url=url_for('Device.main', _external=True),
@@ -425,7 +425,7 @@ class ActionRow(OrderedDict):
     def __init__(self, allocate): 
         super().__init__()
         # General information about allocates, deallocate and lives
-        self['DevicehubID'] = allocate['devicehubID']
+        self['DHID'] = allocate['devicehubID']
         self['Hid'] = allocate['hid']
         self['Start'] = allocate['start']
         self['FinalUserCode'] = allocate['finalUserCode']
