@@ -256,6 +256,24 @@ def test_generic_action(action_model_state: Tuple[models.Action, states.Trading]
 
 
 @pytest.mark.mvp
+def test_recycling(user: UserClient):
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    action = {'type': models.Recycling.t, 'devices': [snap['device']['id']]}
+    action, _ = user.post(action, res=models.Action)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+    assert device['actions'][-1]['id'] == action['id']
+
+
+@pytest.mark.mvp
+def test_reuse(user: UserClient):
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    action = {'type': models.Reuse.t, 'devices': [snap['device']['id']]}
+    action, _ = user.post(action, res=models.Action)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+    assert device['actions'][-1]['id'] == action['id']
+
+
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
