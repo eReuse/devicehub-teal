@@ -1341,6 +1341,14 @@ class DataWipe(JoinedTableMixin, ActionWithMultipleDevices):
                           primaryjoin='DataWipe.document_id == DataWipeDocument.id')
 
 
+class Recycling(ActionWithMultipleDevices):
+    """This action mark one devices or container as recycled"""
+
+
+class Reuse(ActionWithMultipleDevices):
+    """This action mark one devices or container as reuse"""
+
+
 class Prepare(ActionWithMultipleDevices):
     """Work has been performed to the device to a defined point of
     acceptance.

@@ -423,6 +423,14 @@ class Ready(ActionWithMultipleDevices):
     __doc__ = m.Ready.__doc__
 
 
+class Recycling(ActionWithMultipleDevices):
+    __doc__ = m.Recycling.__doc__
+
+
+class Reuse(ActionWithMultipleDevices):
+    __doc__ = m.Reuse.__doc__
+
+
 class ToPrepare(ActionWithMultipleDevices):
     __doc__ = m.ToPrepare.__doc__
 
