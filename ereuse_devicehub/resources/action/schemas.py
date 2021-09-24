@@ -423,12 +423,24 @@ class Ready(ActionWithMultipleDevices):
     __doc__ = m.Ready.__doc__
 
 
-class Recycling(ActionWithMultipleDevices):
+class ActionStatus(ActionWithMultipleDevices):
+    rol_user = NestedOn(s_user.User, dump_only=True, exclude=('token',))
+
+
+class Recycling(ActionStatus):
     __doc__ = m.Recycling.__doc__
 
 
-class Reuse(ActionWithMultipleDevices):
-    __doc__ = m.Reuse.__doc__
+class Use(ActionStatus):
+    __doc__ = m.Use.__doc__
+
+
+class Refurbish(ActionStatus):
+    __doc__ = m.Refurbish.__doc__
+
+
+class Management(ActionStatus):
+    __doc__ = m.Management.__doc__
 
 
 class ToPrepare(ActionWithMultipleDevices):

@@ -199,9 +199,19 @@ class RecyclingDef(ActionDef):
     SCHEMA = schemas.Recycling
 
 
-class ReuseDef(ActionDef):
+class UseDef(ActionDef):
     VIEW = None
-    SCHEMA = schemas.Reuse
+    SCHEMA = schemas.Use
+
+
+class RefurbishDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Refurbish
+
+
+class ManagementDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Management
 
 
 class ToPrepareDef(ActionDef):
