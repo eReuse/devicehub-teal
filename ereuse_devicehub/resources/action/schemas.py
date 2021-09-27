@@ -2,7 +2,7 @@ import copy
 from datetime import datetime, timedelta
 from dateutil.tz import tzutc
 from flask import current_app as app, g
-from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema
+from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema, post_load
 from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, Nested, String, \
     TimeDelta, UUID
 from marshmallow.validate import Length, OneOf, Range
@@ -425,6 +425,15 @@ class Ready(ActionWithMultipleDevices):
 
 class ActionStatus(ActionWithMultipleDevices):
     rol_user = NestedOn(s_user.User, dump_only=True, exclude=('token',))
+
+    @post_load
+    def put_rol_user(self, data: dict):
+        for dev in data['devices']:
+            if dev.trading in [None, 'Revoke', 'ConfirmRevoke']:
+                return data
+            trade = [ac for ac in dev.actions if ac.t == 'Trade'][-1]
+            if trade.user_to != g.user:
+                data['rol_user'] = trade.user_to
 
 
 class Recycling(ActionStatus):
