@@ -256,12 +256,118 @@ def test_generic_action(action_model_state: Tuple[models.Action, states.Trading]
 
 
 @pytest.mark.mvp
-def test_recycling(user: UserClient):
+@pytest.mark.parametrize('action_model',
+                         (pytest.param(ams, id=ams.__class__.__name__)
+                          for ams in [
+                              models.Recycling, 
+                              models.Use, 
+                              models.Refurbish, 
+                              models.Management 
+                          ]))
+def test_simple_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
+    """Simple test of status action."""
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    action = {'type': models.Recycling.t, 'devices': [snap['device']['id']]}
+
+    action = {'type': action_model.t, 'devices': [snap['device']['id']]}
     action, _ = user.post(action, res=models.Action)
     device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
     assert device['actions'][-1]['id'] == action['id']
+    assert action['author']['id'] == user.user['id']
+    assert action['rol_user']['id'] == user.user['id']
+
+
+@pytest.mark.mvp
+@pytest.mark.parametrize('action_model',
+                         (pytest.param(ams, id=ams.__class__.__name__)
+                          for ams in [
+                              models.Recycling, 
+                              models.Use, 
+                              models.Refurbish, 
+                              models.Management 
+                          ]))
+def test_outgoinlot_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
+    """Test of status actions in outgoinlot."""
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    user.post({},
+              res=Lot,
+              item='{}/devices'.format(lot['id']),
+              query=[('id', device['id'])])
+
+    request_post = {
+        'type': 'Trade',
+        'devices': [device['id']],
+        'userFromEmail': user.email,
+        'userToEmail': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lot['id'],
+        'confirms': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    action = {'type': action_model.t, 'devices': [device['id']]}
+    action, _ = user.post(action, res=models.Action)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+
+    assert device['actions'][-1]['id'] == action['id']
+    assert action['author']['id'] == user.user['id']
+    assert action['rol_user']['id'] == user2.user['id']
+
+    # Remove device from lot
+    lot, _ = user.delete({},
+                       res=Lot,
+                       item='{}/devices'.format(lot['id']),
+                       query=[('id', device['id'])], status=200)
+
+    action = {'type': action_model.t, 'devices': [device['id']]}
+    action, _ = user.post(action, res=models.Action)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+
+    assert device['actions'][-1]['id'] == action['id']
+    assert action['author']['id'] == user.user['id']
+    assert action['rol_user']['id'] == user.user['id']
+
+
+@pytest.mark.mvp
+@pytest.mark.parametrize('action_model',
+                         (pytest.param(ams, id=ams.__class__.__name__)
+                          for ams in [
+                              models.Recycling, 
+                              models.Use, 
+                              models.Refurbish, 
+                              models.Management 
+                          ]))
+def test_incominglot_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
+    """Test of status actions in outgoinlot."""
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    user.post({},
+              res=Lot,
+              item='{}/devices'.format(lot['id']),
+              query=[('id', device['id'])])
+
+    request_post = {
+        'type': 'Trade',
+        'devices': [device['id']],
+        'userFromEmail': user2.email,
+        'userToEmail': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lot['id'],
+        'confirms': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    action = {'type': action_model.t, 'devices': [device['id']]}
+    action, _ = user.post(action, res=models.Action)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+
+    assert device['actions'][-1]['id'] == action['id']
+    assert action['author']['id'] == user.user['id']
+    assert action['rol_user']['id'] == user.user['id']
 
 
 @pytest.mark.mvp
