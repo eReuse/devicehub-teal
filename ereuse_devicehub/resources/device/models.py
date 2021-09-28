@@ -295,6 +295,9 @@ class Device(Thing):
             if ac.rol_user == history[-1].rol_user:
                 # get only the last action consecutive for the same user
                 history = history[:-1] + [ac]
+                continue
+
+            history.append(ac)
 
         return history
 
