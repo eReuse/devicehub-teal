@@ -371,6 +371,55 @@ def test_incominglot_status_actions(action_model: models.Action, user: UserClien
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_history_status_actions(user: UserClient, user2: UserClient):
+    """Test for check the status actions."""
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device = Device.query.filter_by(id=snap['device']['id']).one()
+
+    # Case 1
+    action = {'type': models.Recycling.t, 'devices': [device.id]}
+    action, _ = user.post(action, res=models.Action)
+
+    assert str(device.actions[-1].id) == action['id']
+    assert action['id'] == str(device.status.id)
+    assert device.status.t == models.Recycling.t
+    assert [action['id']] == [str(ac.id) for ac in device.history_status]
+    
+    # Case 2
+    action2 = {'type': models.Refurbish.t, 'devices': [device.id]}
+    action2, _ = user.post(action2, res=models.Action)
+    assert action2['id'] == str(device.status.id)
+    assert device.status.t == models.Refurbish.t
+    assert [action2['id']] == [str(ac.id) for ac in device.history_status]
+    
+    # Case 3
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    user.post({},
+              res=Lot,
+              item='{}/devices'.format(lot['id']),
+              query=[('id', device.id)])
+
+    request_post = {
+        'type': 'Trade',
+        'devices': [device.id],
+        'userFromEmail': user.email,
+        'userToEmail': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lot['id'],
+        'confirms': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    action3 = {'type': models.Use.t, 'devices': [device.id]}
+    action3, _ = user.post(action3, res=models.Action)
+    assert action3['id'] == str(device.status.id)
+    assert device.status.t == models.Use.t
+    assert [action2['id'], action3['id']] == [str(ac.id) for ac in device.history_status]
+
+
+@pytest.mark.mvp
 def test_reuse(user: UserClient):
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     action = {'type': models.Reuse.t, 'devices': [snap['device']['id']]}
