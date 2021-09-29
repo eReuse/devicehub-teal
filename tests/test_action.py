@@ -420,6 +420,56 @@ def test_history_status_actions(user: UserClient, user2: UserClient):
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_use_changing_owner(user: UserClient, user2: UserClient):
+    """Check if is it possible to do a use action for one device
+       when you are not the owner.
+    """
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device = Device.query.filter_by(id=snap['device']['id']).one()
+
+    assert device.owner.email == user.email
+
+    # Trade
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    user.post({},
+              res=Lot,
+              item='{}/devices'.format(lot['id']),
+              query=[('id', device.id)])
+
+    request_post = {
+        'type': 'Trade',
+        'devices': [device.id],
+        'userFromEmail': user.email,
+        'userToEmail': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lot['id'],
+        'confirms': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    trade = models.Trade.query.one()
+
+    # Doble confirmation and change of owner
+    request_confirm = {
+        'type': 'Confirm',
+        'action': trade.id,
+        'devices': [device.id]
+    }
+
+    user2.post(res=models.Action, data=request_confirm)
+    assert device.owner.email == user2.email
+
+    # Adding action Use
+    action3 = {'type': models.Use.t, 'devices': [device.id]}
+    action3, _ = user.post(action3, res=models.Action)
+    assert action3['id'] == str(device.status.id)
+    assert device.status.t == models.Use.t
+    assert device.owner.email == user2.email
+
+
+@pytest.mark.mvp
 def test_reuse(user: UserClient):
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     action = {'type': models.Reuse.t, 'devices': [snap['device']['id']]}
