@@ -1341,7 +1341,8 @@ class DataWipe(JoinedTableMixin, ActionWithMultipleDevices):
                           primaryjoin='DataWipe.document_id == DataWipeDocument.id')
 
 
-class ActionStatus(JoinedTableMixin, ActionWithMultipleDevices):
+class ActionStatus(JoinedTableMixin, ActionWithMultipleTradeDocuments):
+# class ActionStatus(JoinedTableMixin, ActionWithMultipleDevices):
     """This is a meta-action than mark the status of the devices"""
 
     rol_user_id = db.Column(UUID(as_uuid=True),
@@ -1353,7 +1354,7 @@ class ActionStatus(JoinedTableMixin, ActionWithMultipleDevices):
 
 
 class Recycling(ActionStatus):
-    """This action mark one devices or container as recycling"""
+    """This action mark devices as recycling"""
 
 
 class Use(ActionStatus):
@@ -1487,6 +1488,20 @@ class Reserve(Organize):
 
 class CancelReservation(Organize):
     """The act of cancelling a reservation."""
+
+
+class ActionStatusDocuments(JoinedTableMixin, ActionWithMultipleTradeDocuments):
+    """This is a meta-action than mark the status of the devices"""
+    rol_user_id = db.Column(UUID(as_uuid=True),
+                        db.ForeignKey(User.id),
+                        nullable=False,
+                        default=lambda: g.user.id)
+    rol_user = db.relationship(User, primaryjoin=rol_user_id == User.id)
+    rol_user_comment = """The user that ."""
+
+
+class RecyclingDocument(ActionStatusDocuments):
+    """This action mark one document or container as recycling"""
 
 
 class ConfirmDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
