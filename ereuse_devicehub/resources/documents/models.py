@@ -1,12 +1,21 @@
-from citext import CIText 
 from flask import g
+from citext import CIText 
+from sortedcontainers import SortedSet
 from sqlalchemy import BigInteger, Column, Sequence, Unicode, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.dialects.postgresql import UUID
-from teal.db import URL
+from sqlalchemy.orm import backref
+from teal.db import CASCADE_OWN, URL
+
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.models import Thing, STR_SM_SIZE
+
+
+_sorted_documents = {
+    'order_by': lambda: Document.created,
+    'collection_class': SortedSet
+}
 
 
 class Document(Thing):

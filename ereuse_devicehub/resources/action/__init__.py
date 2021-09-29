@@ -313,3 +313,8 @@ class MigrateToDef(ActionDef):
 class MigrateFromDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.MigrateFrom
+
+
+class MoveOnDocumentDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.MoveOnDocument

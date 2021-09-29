@@ -1,4 +1,4 @@
-from marshmallow.fields import DateTime, Integer, validate
+from marshmallow.fields import DateTime, Integer, Float, validate
 from teal.marshmallow import SanitizedStr, URL
 # from marshmallow import ValidationError, validates_schema
 
@@ -29,3 +29,5 @@ class TradeDocument(Thing):
     url = URL(description=m.TradeDocument.url.comment)
     lot = NestedOn('Lot', only_query='id', description=m.TradeDocument.lot.__doc__)
     trading = SanitizedStr(dump_only=True, description='')
+    weight = Float(required=False, description=m.TradeDocument.weight.comment)
+    total_weight = Float(required=False, description=m.TradeDocument.weight.comment)

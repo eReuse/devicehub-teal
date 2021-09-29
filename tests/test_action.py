@@ -28,6 +28,7 @@ from ereuse_devicehub.resources.action import models
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
     RamModule, SolidStateDrive
+from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.enums import ComputerChassis, Severity, TestDataStorageLength
 from tests import conftest
 from tests.conftest import create_user, file, yaml2json, json_encode
@@ -2438,3 +2439,64 @@ def test_action_web_erase(user: UserClient, client: Client):
     assert "alert alert-info" in response
     assert "100% coincidence." in response
     assert not "alert alert-danger" in response
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_moveOnDocument(user: UserClient, user2: UserClient):
+    lotIn, _ = user.post({'name': 'MyLotIn'}, res=Lot)
+    lotOut, _ = user.post({'name': 'MyLotOut'}, res=Lot)
+    url = 'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
+    request_post1 = {
+        'filename': 'test.pdf',
+        'hash': 'bbbbbbbb',
+        'url': url,
+        'weight': 150,
+        'lot': lotIn['id']
+    }
+    tradedocument_from, _ = user.post(res=TradeDocument, data=request_post1)
+    id_hash = 'aaaaaaaaa'
+    request_post2 = {
+        'filename': 'test.pdf',
+        'hash': id_hash,
+        'url': url,
+        'weight': 0,
+        'lot': lotOut['id']
+    }
+    tradedocument_to, _ = user.post(res=TradeDocument, data=request_post2)
+
+    request_trade = {
+        'type': 'Trade',
+        'devices': [],
+        'userFromEmail': user2.email,
+        'userToEmail': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lotIn['id'],
+        'confirms': True,
+    }
+
+    user.post(res=models.Action, data=request_trade)
+
+    description = 'This is a good description'
+    request_moveOn = {
+        'type': 'MoveOnDocument',
+        'weight': 15,
+        'container_from': tradedocument_from['id'],
+        'container_to': id_hash,
+        'description': description
+    }
+    doc, _ = user.post(res=models.Action, data=request_moveOn)
+
+    assert doc['weight'] == request_moveOn['weight']
+    assert doc['container_from']['id'] == tradedocument_from['id']
+    assert doc['container_to']['id'] == tradedocument_to['id']
+
+    mvs= models.MoveOnDocument.query.filter().first()
+    trade_from = TradeDocument.query.filter_by(id=tradedocument_from['id']).one()
+    trade_to = TradeDocument.query.filter_by(id=tradedocument_to['id']).one()
+    assert trade_from in mvs.documents
+    assert trade_to in mvs.documents
+    assert description == mvs.description
+    tradedocument_to, _ = user.post(res=TradeDocument, data=request_post2)
+    user.post(res=models.Action, data=request_moveOn, status=422)

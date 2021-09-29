@@ -16,6 +16,7 @@ from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.user.models import Session
 from ereuse_devicehub.resources.action.models import Snapshot, Allocate, Live
 from ereuse_devicehub.resources.documents import documents
+from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.device import models as d
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
@@ -677,3 +678,41 @@ def test_get_wbconf(user: UserClient):
     assert token in env
     user.user['token'] = token
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_trade_documents(user: UserClient):
+    """Tests upload one document"""
+
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    request_post = {
+        'filename': 'test.pdf',
+        'hash': 'bbbbbbbb',
+        'url': 'http://www.ereuse.org/',
+        'lot': lot['id']
+    }
+    doc, _ = user.post(res=TradeDocument, data=request_post)
+    assert doc['filename'] == request_post['filename']
+    assert doc['url'] == request_post['url']
+    assert doc['hash'] == request_post['hash']
+    assert doc['lot']['name'] == lot['name']
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_trade_documents_with_weight(user: UserClient):
+    """Tests upload one document"""
+
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    # long url
+    url = 'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
+    request_post = {
+        'filename': 'test.pdf',
+        'hash': 'bbbbbbbb',
+        'url': url,
+        'weight': 15,
+        'lot': lot['id']
+    }
+    doc, _ = user.post(res=TradeDocument, data=request_post)
+    assert doc['weight'] == request_post['weight']
