@@ -2,7 +2,7 @@ import copy
 from datetime import datetime, timedelta
 from dateutil.tz import tzutc
 from flask import current_app as app, g
-from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema, post_load
+from marshmallow import Schema as MarshmallowSchema, ValidationError, fields as f, validates_schema, pre_load, post_load
 from marshmallow.fields import Boolean, DateTime, Decimal, Float, Integer, Nested, String, \
     TimeDelta, UUID
 from marshmallow.validate import Length, OneOf, Range
@@ -25,6 +25,7 @@ from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 from ereuse_devicehub.resources.user import schemas as s_user
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 
 
 class Action(Thing):
@@ -869,3 +870,31 @@ class MigrateTo(Migrate):
 
 class MigrateFrom(Migrate):
     __doc__ = m.MigrateFrom.__doc__
+
+
+class MoveOnDocument(Action):
+    __doc__ = m.MoveOnDocument.__doc__
+    weight = Integer()
+    container_from = NestedOn('TradeDocument', only_query='id')
+    container_to = NestedOn('TradeDocument', only_query='id')
+
+    @pre_load
+    def extract_container(self, data):
+        id_hash = data['container_to']
+        docs = TradeDocument.query.filter_by(owner=g.user, file_hash=id_hash).all()
+        if len(docs) > 1:
+            txt = 'This document it is associated in more than one lot'
+            raise ValidationError(txt)
+
+        if len(docs) < 1:
+            txt = 'This document not exist'
+            raise ValidationError(txt)
+        data['container_to'] = docs[0].id
+
+    @post_load
+    def adding_documents(self, data):
+        """Adding action in the 2 TradeDocuments"""
+        docs = OrderedSet()
+        docs.add(data['container_to'])
+        docs.add(data['container_from'])
+        data['documents'] = docs

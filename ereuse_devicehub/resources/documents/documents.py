@@ -434,3 +434,4 @@ class DocumentDef(Resource):
                                                   auth=app.auth)
         wbconf_view = app.auth.requires_auth(wbconf_view)
         self.add_url_rule('/wbconf/<string:wbtype>', view_func=wbconf_view, methods=get)
+
