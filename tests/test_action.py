@@ -471,6 +471,25 @@ def test_use_changing_owner(user: UserClient, user2: UserClient):
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_recycling_container(user: UserClient):
+    lot, _ = user.post({'name': 'MyLotOut'}, res=Lot)
+    url = 'http://www.ereuse.org/',
+    request_post = {
+        'filename': 'test.pdf',
+        'hash': 'bbbbbbbb',
+        'url': url,
+        'weight': 150,
+        'lot': lot['id']
+    }
+    tradedocument, _ = user.post(res=TradeDocument, data=request_post)
+    action = {'type': models.Recycling.t, 'devices': [], 'documents': [tradedocument['id']]}
+    action, _ = user.post(action, res=models.Action)
+    trade = TradeDocument.query.one()
+    assert str(trade.actions[0].id) == action['id']
+
+
+@pytest.mark.mvp
 def test_reuse(user: UserClient):
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     action = {'type': models.Reuse.t, 'devices': [snap['device']['id']]}

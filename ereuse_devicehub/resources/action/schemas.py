@@ -426,6 +426,11 @@ class Ready(ActionWithMultipleDevices):
 
 class ActionStatus(ActionWithMultipleDevices):
     rol_user = NestedOn(s_user.User, dump_only=True, exclude=('token',))
+    documents = NestedOn(s_document.TradeDocument,
+                       many=True,
+                       required=False,  # todo test ensuring len(devices) >= 1
+                       only_query='id',
+                       collection_class=OrderedSet)
 
     @post_load
     def put_rol_user(self, data: dict):
