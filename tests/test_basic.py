@@ -122,4 +122,4 @@ def test_api_docs(client: Client):
         'scheme': 'basic',
         'name': 'Authorization'
     }
-    assert len(docs['definitions']) == 127
+    assert len(docs['definitions']) == 131
