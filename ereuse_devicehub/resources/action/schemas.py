@@ -424,13 +424,23 @@ class Ready(ActionWithMultipleDevices):
     __doc__ = m.Ready.__doc__
 
 
-class ActionStatus(ActionWithMultipleDevices):
+class ActionStatus(Action):
     rol_user = NestedOn(s_user.User, dump_only=True, exclude=('token',))
+    devices = NestedOn(s_device.Device,
+                       many=True,
+                       required=False,  # todo test ensuring len(devices) >= 1
+                       only_query='id',
+                       collection_class=OrderedSet)
     documents = NestedOn(s_document.TradeDocument,
                        many=True,
                        required=False,  # todo test ensuring len(devices) >= 1
                        only_query='id',
                        collection_class=OrderedSet)
+
+    @pre_load
+    def put_devices(self, data: dict):
+        if not 'devices' in data.keys():
+            data['devices'] = []
 
     @post_load
     def put_rol_user(self, data: dict):
