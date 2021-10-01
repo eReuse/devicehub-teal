@@ -492,7 +492,7 @@ def test_recycling_container(user: UserClient):
 @pytest.mark.mvp
 def test_reuse(user: UserClient):
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    action = {'type': models.Reuse.t, 'devices': [snap['device']['id']]}
+    action = {'type': models.Use.t, 'devices': [snap['device']['id']]}
     action, _ = user.post(action, res=models.Action)
     device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
     assert device['actions'][-1]['id'] == action['id']
