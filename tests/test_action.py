@@ -771,6 +771,29 @@ def test_trade_endpoint(user: UserClient, user2: UserClient):
     device2, _ = user2.get(res=Device, item=device['id'])
     assert device2['id'] == device['id']
 
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_trade_without_device(user: UserClient):
+    """Test one offer with automatic confirmation and without user to"""
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+
+    request_post = {
+        'type': 'Trade',
+        'devices': [],
+        'userFromEmail': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lot['id'],
+        'confirms': False,
+        'code': 'MAX'
+    }
+    user.post(res=models.Action, data=request_post)
+
+    trade = models.Trade.query.one()
+    assert str(trade.lot.id) == lot['id']
+
+
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_offer_without_to(user: UserClient):
