@@ -2564,16 +2564,18 @@ def test_moveOnDocument_bug168(user: UserClient, user2: UserClient):
     description = 'This is a good description'
     request_moveOn = {
         'type': 'MoveOnDocument',
-        'weight': 15,
+        'weight': 4,
         'container_from': tradedocument_from['id'],
         'container_to': id_hash,
         'description': description
     }
     doc, _ = user.post(res=models.Action, data=request_moveOn)
+    trade = models.Trade.query.one()
+    trade_document1 = TradeDocument.query.filter_by(id=tradedocument_from['id']).one()
+    trade_document2 = TradeDocument.query.filter_by(id=tradedocument_to['id']).one()
+    assert trade_document1.total_weight == 150.0
+    assert trade_document2.total_weight == 4.0
+    assert trade_document1.trading == 'Confirm'
+    assert trade_document2.trading == None
 
-    assert doc['weight'] == request_moveOn['weight']
-    assert doc['container_from']['id'] == tradedocument_from['id']
-    assert doc['container_to']['id'] == tradedocument_to['id']
-
-    import pdb; pdb.set_trace()
     tradedocument, _ = user.delete(res=TradeDocument, item=tradedocument_to['id'])
