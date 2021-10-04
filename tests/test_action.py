@@ -771,6 +771,27 @@ def test_trade_endpoint(user: UserClient, user2: UserClient):
     device2, _ = user2.get(res=Device, item=device['id'])
     assert device2['id'] == device['id']
 
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_trade_without_device(user: UserClient, user2: UserClient):
+    """Test one offer with automatic confirmation and without user to"""
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+
+    request_post = {
+        'type': 'Trade',
+        'userFromEmail': user.email,
+        'userToEmail': user2.email,
+        'lot': lot['id'],
+        'confirms': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+
+    trade = models.Trade.query.one()
+    assert str(trade.lot.id) == lot['id']
+
+
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_offer_without_to(user: UserClient):
@@ -2500,3 +2521,61 @@ def test_moveOnDocument(user: UserClient, user2: UserClient):
     assert description == mvs.description
     tradedocument_to, _ = user.post(res=TradeDocument, data=request_post2)
     user.post(res=models.Action, data=request_moveOn, status=422)
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_moveOnDocument_bug168(user: UserClient, user2: UserClient):
+    """If you use one moveOnDocument in a trade Document. Next you can not drop this document."""
+    lotIn, _ = user.post({'name': 'MyLotIn'}, res=Lot)
+    lotOut, _ = user.post({'name': 'MyLotOut'}, res=Lot)
+    url = 'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
+    request_post1 = {
+        'filename': 'test.pdf',
+        'hash': 'bbbbbbbb',
+        'url': url,
+        'weight': 150,
+        'lot': lotIn['id']
+    }
+    tradedocument_from, _ = user.post(res=TradeDocument, data=request_post1)
+    id_hash = 'aaaaaaaaa'
+    request_post2 = {
+        'filename': 'test.pdf',
+        'hash': id_hash,
+        'url': url,
+        'weight': 0,
+        'lot': lotOut['id']
+    }
+    tradedocument_to, _ = user.post(res=TradeDocument, data=request_post2)
+
+    request_trade = {
+        'type': 'Trade',
+        'devices': [],
+        'userFromEmail': user2.email,
+        'userToEmail': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lotIn['id'],
+        'confirms': True,
+    }
+
+    user.post(res=models.Action, data=request_trade)
+
+    description = 'This is a good description'
+    request_moveOn = {
+        'type': 'MoveOnDocument',
+        'weight': 4,
+        'container_from': tradedocument_from['id'],
+        'container_to': id_hash,
+        'description': description
+    }
+    doc, _ = user.post(res=models.Action, data=request_moveOn)
+    trade = models.Trade.query.one()
+    trade_document1 = TradeDocument.query.filter_by(id=tradedocument_from['id']).one()
+    trade_document2 = TradeDocument.query.filter_by(id=tradedocument_to['id']).one()
+    assert trade_document1.total_weight == 150.0
+    assert trade_document2.total_weight == 4.0
+    assert trade_document1.trading == 'Confirm'
+    assert trade_document2.trading == None
+
+    tradedocument, _ = user.delete(res=TradeDocument, item=tradedocument_to['id'])

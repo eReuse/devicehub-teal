@@ -1664,7 +1664,10 @@ class MoveOnDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     )
     container_from = db.relationship(
         'TradeDocument',
-        primaryjoin='MoveOnDocument.container_from_id == TradeDocument.id',
+        backref=backref('containers_from',
+                        lazy=True,
+                        cascade=CASCADE_OWN),
+        primaryjoin='MoveOnDocument.container_from_id == TradeDocument.id'
     )
     container_from_id.comment = """This is the trade document used as container in a incoming lot"""
 
@@ -1675,6 +1678,9 @@ class MoveOnDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     )
     container_to = db.relationship(
         'TradeDocument',
+        backref=backref('containers_to',
+                        lazy=True,
+                        cascade=CASCADE_OWN),
         primaryjoin='MoveOnDocument.container_to_id == TradeDocument.id',
     )
     container_to_id.comment = """This is the trade document used as container in a outgoing lot"""

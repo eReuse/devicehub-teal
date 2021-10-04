@@ -1,3 +1,5 @@
+import copy
+from contextlib import suppress
 from citext import CIText
 from flask import g
 
@@ -101,10 +103,10 @@ class TradeDocument(Thing):
         revoke = 'Revoke'
         revoke_pending = 'Revoke Pending'
         confirm_revoke = 'Document Revoked'
-        if not self.actions:
+        ac = self.last_action_trading()
+        if not ac:
             return
 
-        ac = self.actions[-1]
 
         if ac.type == 'ConfirmRevokeDocument':
             # can to do revoke_confirmed
@@ -142,6 +144,18 @@ class TradeDocument(Thing):
             weight += x.weight
 
         return weight
+
+    def last_action_trading(self):
+        """which is the last action trading"""
+        with suppress(StopIteration, ValueError):
+            actions = copy.copy(self.actions)
+            actions.sort(key=lambda x: x.created)
+            t_trades = ['Trade', 
+                        'Confirm', 
+                        'ConfirmRevokeDocument', 
+                        'RevokeDocument', 
+                        'ConfirmDocument']
+            return next(e for e in reversed(actions) if e.t in t_trades)
 
     def _warning_actions(self, actions):
         """Show warning actions"""
