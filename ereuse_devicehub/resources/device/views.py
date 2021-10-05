@@ -70,7 +70,6 @@ class Filters(query.Query):
     # due to having multiple paths to the same
     lot = query.Join((Device.id == LotDeviceDescendants.device_id),
                      LotQ)
-    active = True
 
 
 class Sorting(query.Sort):
@@ -159,7 +158,7 @@ class DeviceView(View):
 
         trades_dev_ids = {d.id for t in trades for d in t.devices}
 
-        query = Device.query.filter(
+        query = Device.query.filter(Device.active == True).filter(
             (Device.owner_id == g.user.id) | (Device.id.in_(trades_dev_ids))
         ).distinct()
 

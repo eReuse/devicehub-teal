@@ -2512,6 +2512,7 @@ def test_delete_devices(user: UserClient):
    
     action, _ = user.post(res=models.Action, data=request)
 
+    # Check get one device
     user.get(res=Device, item=snap['device']['devicehubID'], status=404)
     db_device = Device.query.filter_by(id=snap['device']['id']).one()
 
@@ -2520,3 +2521,10 @@ def test_delete_devices(user: UserClient):
     assert action_delete.t == 'Delete'
     assert str(action_delete.id) == action['id']
     assert db_device.active == False
+
+
+    # Check use of filter from frontend
+    url = '/devices/?filter={"type":["Computer"]}'
+
+    devices, res = user.get(url, None)
+    assert len(devices['items']) == 0
