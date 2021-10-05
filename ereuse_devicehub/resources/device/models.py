@@ -126,6 +126,7 @@ class Device(Thing):
     allocated.comment = "device is allocated or not."
     devicehub_id = db.Column(db.CIText(), nullable=True, unique=True, default=create_code)
     devicehub_id.comment = "device have a unique code."
+    active = db.Column(Boolean, default=True)
 
     _NON_PHYSICAL_PROPS = {
         'id',
@@ -149,7 +150,8 @@ class Device(Thing):
         'sku',
         'image',
         'allocated',
-        'devicehub_id'
+        'devicehub_id',
+        'active'
     }
 
     __table_args__ = (

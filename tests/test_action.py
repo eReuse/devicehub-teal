@@ -2512,7 +2512,7 @@ def test_delete_devices(user: UserClient):
    
     action, _ = user.post(res=models.Action, data=request)
 
-    user.get(res=Device, item=snap['device']['devicehubID'])
+    user.get(res=Device, item=snap['device']['devicehubID'], status=404)
     db_device = Device.query.filter_by(id=snap['device']['id']).one()
 
     action_delete = sorted(db_device.actions, key=lambda x: x.created)[-1]

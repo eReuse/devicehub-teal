@@ -833,6 +833,11 @@ class TransferOwnershipBlockchain(Trade):
 class Delete(ActionWithMultipleDevices):
     __doc__ = m.Delete.__doc__
 
+    @post_load
+    def deactivate_device(self, data):
+        for dev in data['devices']:
+            dev.active = False
+
 
 class Migrate(ActionWithMultipleDevices):
     __doc__ = m.Migrate.__doc__
