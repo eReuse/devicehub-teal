@@ -1680,6 +1680,12 @@ class MoveOnDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     container_to_id.comment = """This is the trade document used as container in a outgoing lot"""
 
 
+class Delete(JoinedTableMixin, ActionWithMultipleDevices):
+    """The act save in device who and why this devices was delete.
+    We never delete one device, but we can deactivate."""
+    pass
+
+
 class Migrate(JoinedTableMixin, ActionWithMultipleDevices):
     """Moves the devices to a new database/inventory. Devices cannot be
     modified anymore at the previous database.

@@ -255,6 +255,11 @@ class MakeAvailable(ActionDef):
     SCHEMA = schemas.MakeAvailable
 
 
+class Delete(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Delete
+
+
 class ConfirmDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Confirm

@@ -830,6 +830,10 @@ class TransferOwnershipBlockchain(Trade):
     __doc__ = m.TransferOwnershipBlockchain.__doc__
 
 
+class Delete(ActionWithMultipleDevices):
+    __doc__ = m.Delete.__doc__
+
+
 class Migrate(ActionWithMultipleDevices):
     __doc__ = m.Migrate.__doc__
     other = URL()
