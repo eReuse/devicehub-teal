@@ -2500,3 +2500,20 @@ def test_moveOnDocument(user: UserClient, user2: UserClient):
     assert description == mvs.description
     tradedocument_to, _ = user.post(res=TradeDocument, data=request_post2)
     user.post(res=models.Action, data=request_moveOn, status=422)
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_delete_devices(user: UserClient):
+    """This action deactive one device and simulate than one devices is delete."""
+
+    snap, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
+    request = {'type': 'Delete', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z', 'success': 1}
+   
+    user.post(res=models.Action, data=request)
+
+    user.get(res=Device, itm=snap['device']['devicehubID'], status=422)
+    db_device = Device.query.filter_by(id=snap['device']['id'])
+
+    assert db_device.action[-1].t == 'Delete'
+    assert db_device.active == False
