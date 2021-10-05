@@ -2508,12 +2508,15 @@ def test_delete_devices(user: UserClient):
     """This action deactive one device and simulate than one devices is delete."""
 
     snap, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
-    request = {'type': 'Delete', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z', 'success': 1}
+    request = {'type': 'Delete', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z'}
    
-    user.post(res=models.Action, data=request)
+    action, _ = user.post(res=models.Action, data=request)
 
-    user.get(res=Device, itm=snap['device']['devicehubID'], status=422)
-    db_device = Device.query.filter_by(id=snap['device']['id'])
+    user.get(res=Device, item=snap['device']['devicehubID'])
+    db_device = Device.query.filter_by(id=snap['device']['id']).one()
 
-    assert db_device.action[-1].t == 'Delete'
+    action_delete = sorted(db_device.actions, key=lambda x: x.created)[-1]
+
+    assert action_delete.t == 'Delete'
+    assert str(action_delete.id) == action['id']
     assert db_device.active == False
