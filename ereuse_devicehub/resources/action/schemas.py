@@ -836,7 +836,8 @@ class Delete(ActionWithMultipleDevices):
     @post_load
     def deactivate_device(self, data):
         for dev in data['devices']:
-            dev.active = False
+            if dev.last_action_trading is None:
+                dev.active = False
 
 
 class Migrate(ActionWithMultipleDevices):
