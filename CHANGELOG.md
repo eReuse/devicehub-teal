@@ -12,6 +12,7 @@ ml).
   [1.0.10-beta]
 
 ## [1.0.10-beta]
+- [bugfix] #168 can to do a trade without devices.
 
 ## [1.0.9-beta]
 - [addend] #159 external document as proof of erase of disk
