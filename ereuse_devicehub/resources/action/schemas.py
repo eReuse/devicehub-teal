@@ -751,6 +751,11 @@ class Trade(ActionWithMultipleDevices):
                    required=True,
                    only_query='id')
 
+    @pre_load
+    def adding_devices(self, data: dict):
+        if not 'devices' in data.keys():
+            data['devices'] = []
+
     @validates_schema
     def validate_lot(self, data: dict):
         if not g.user.email in [data['user_from_email'], data['user_to_email']]:
