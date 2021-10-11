@@ -467,7 +467,7 @@ class Device(Thing):
         """
         actions = copy.copy(self.actions)
         actions.sort(key=lambda x: x.created)
-        allocates =  []
+        allocates = []
         lifetime = 0
         for act in actions:
             if act.type == 'Snapshot':
@@ -479,6 +479,12 @@ class Device(Thing):
 
             if act.type == 'Allocate':
                 allo = {'type': 'Allocate',
+                        'action_type': 'Status',
+                        'status_receiver': 'Use',
+                        'trade_supplier': '',
+                        'trade_receiver': '',
+                        'trade_confirmed': '',
+                        'action_create_by': 'Receiver',
                         'devicehubID': self.devicehub_id,
                         'finalUserCode': act.final_user_code,
                         'numEndUsers': act.end_users,
@@ -501,6 +507,12 @@ class Device(Thing):
             if act.type == 'Deallocate':
                 deallo = {'type': 'Deallocate',
                           'devicehubID': self.devicehub_id,
+                          'action_type': 'Status',
+                          'status_receiver': 'Use',
+                          'trade_supplier': '',
+                          'trade_receiver': '',
+                          'trade_confirmed': '',
+                          'action_create_by': 'Receiver',
                           'finalUserCode': '',
                           'numEndUsers': '',
                           'hid': self.hid,
@@ -509,6 +521,35 @@ class Device(Thing):
                           'start': act.start_time,
                           'usageTimeAllocate': 0}
                 allocates.append(deallo)
+
+            if act.type == 'Trade':
+                confirm = False
+                if hasattr(act, 'acceptances'):
+                    accept = act.acceptances[-1]
+                    if accept.t == 'Confirm' and accept.user == act.user_to:
+                        confirm = True
+
+                action_create_by = 'Receiver'
+                if act.author == act.user_from:
+                    action_create_by = 'Supplier'
+                trade = {'type': 'Trade',
+                         'action_type': 'Trade',
+                         'trade_supplier': act.user_from,
+                         'trade_receiver': act.user_to,
+                         'trade_confirmed': confirm,
+                         'action_create_by': action_create_by,
+                         'trade_confirmed': confirm,
+                         'devicehubID': self.devicehub_id,
+                         'finalUserCode': '',
+                         'numEndUsers': '',
+                         'hid': self.hid,
+                         'liveCreate': 0,
+                         'usageTimeHdd': lifetime,
+                         'start': act.start_time,
+                         'status_receiver': 'Use',
+                         'usageTimeAllocate': 0
+                        }
+                allocates.append(trade)
 
         return allocates
 
