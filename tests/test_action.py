@@ -257,6 +257,248 @@ def test_generic_action(action_model_state: Tuple[models.Action, states.Trading]
 
 
 @pytest.mark.mvp
+@pytest.mark.parametrize('action_model',
+                         (pytest.param(ams, id=ams.__class__.__name__)
+                          for ams in [
+                              models.Recycling, 
+                              models.Use, 
+                              models.Refurbish, 
+                              models.Management 
+                          ]))
+def test_simple_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
+    """Simple test of status action."""
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+
+    action = {'type': action_model.t, 'devices': [snap['device']['id']]}
+    action, _ = user.post(action, res=models.Action)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+    assert device['actions'][-1]['id'] == action['id']
+    assert action['author']['id'] == user.user['id']
+    assert action['rol_user']['id'] == user.user['id']
+
+
+@pytest.mark.mvp
+@pytest.mark.parametrize('action_model',
+                         (pytest.param(ams, id=ams.__class__.__name__)
+                          for ams in [
+                              models.Recycling, 
+                              models.Use, 
+                              models.Refurbish, 
+                              models.Management 
+                          ]))
+def test_outgoinlot_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
+    """Test of status actions in outgoinlot."""
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    user.post({},
+              res=Lot,
+              item='{}/devices'.format(lot['id']),
+              query=[('id', device['id'])])
+
+    request_post = {
+        'type': 'Trade',
+        'devices': [device['id']],
+        'userFromEmail': user.email,
+        'userToEmail': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lot['id'],
+        'confirms': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    action = {'type': action_model.t, 'devices': [device['id']]}
+    action, _ = user.post(action, res=models.Action)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+
+    assert device['actions'][-1]['id'] == action['id']
+    assert action['author']['id'] == user.user['id']
+    assert action['rol_user']['id'] == user2.user['id']
+
+    # Remove device from lot
+    lot, _ = user.delete({},
+                       res=Lot,
+                       item='{}/devices'.format(lot['id']),
+                       query=[('id', device['id'])], status=200)
+
+    action = {'type': action_model.t, 'devices': [device['id']]}
+    action, _ = user.post(action, res=models.Action)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+
+    assert device['actions'][-1]['id'] == action['id']
+    assert action['author']['id'] == user.user['id']
+    assert action['rol_user']['id'] == user.user['id']
+
+
+@pytest.mark.mvp
+@pytest.mark.parametrize('action_model',
+                         (pytest.param(ams, id=ams.__class__.__name__)
+                          for ams in [
+                              models.Recycling, 
+                              models.Use, 
+                              models.Refurbish, 
+                              models.Management 
+                          ]))
+def test_incominglot_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
+    """Test of status actions in outgoinlot."""
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    user.post({},
+              res=Lot,
+              item='{}/devices'.format(lot['id']),
+              query=[('id', device['id'])])
+
+    request_post = {
+        'type': 'Trade',
+        'devices': [device['id']],
+        'userFromEmail': user2.email,
+        'userToEmail': user.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lot['id'],
+        'confirms': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    action = {'type': action_model.t, 'devices': [device['id']]}
+    action, _ = user.post(action, res=models.Action)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+
+    assert device['actions'][-1]['id'] == action['id']
+    assert action['author']['id'] == user.user['id']
+    assert action['rol_user']['id'] == user.user['id']
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_history_status_actions(user: UserClient, user2: UserClient):
+    """Test for check the status actions."""
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device = Device.query.filter_by(id=snap['device']['id']).one()
+
+    # Case 1
+    action = {'type': models.Recycling.t, 'devices': [device.id]}
+    action, _ = user.post(action, res=models.Action)
+
+    assert str(device.actions[-1].id) == action['id']
+    assert action['id'] == str(device.status.id)
+    assert device.status.t == models.Recycling.t
+    assert [action['id']] == [str(ac.id) for ac in device.history_status]
+    
+    # Case 2
+    action2 = {'type': models.Refurbish.t, 'devices': [device.id]}
+    action2, _ = user.post(action2, res=models.Action)
+    assert action2['id'] == str(device.status.id)
+    assert device.status.t == models.Refurbish.t
+    assert [action2['id']] == [str(ac.id) for ac in device.history_status]
+    
+    # Case 3
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    user.post({},
+              res=Lot,
+              item='{}/devices'.format(lot['id']),
+              query=[('id', device.id)])
+
+    request_post = {
+        'type': 'Trade',
+        'devices': [device.id],
+        'userFromEmail': user.email,
+        'userToEmail': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lot['id'],
+        'confirms': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    action3 = {'type': models.Use.t, 'devices': [device.id]}
+    action3, _ = user.post(action3, res=models.Action)
+    assert action3['id'] == str(device.status.id)
+    assert device.status.t == models.Use.t
+    assert [action2['id'], action3['id']] == [str(ac.id) for ac in device.history_status]
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_use_changing_owner(user: UserClient, user2: UserClient):
+    """Check if is it possible to do a use action for one device
+       when you are not the owner.
+    """
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device = Device.query.filter_by(id=snap['device']['id']).one()
+
+    assert device.owner.email == user.email
+
+    # Trade
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    user.post({},
+              res=Lot,
+              item='{}/devices'.format(lot['id']),
+              query=[('id', device.id)])
+
+    request_post = {
+        'type': 'Trade',
+        'devices': [device.id],
+        'userFromEmail': user.email,
+        'userToEmail': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lot['id'],
+        'confirms': True,
+    }
+
+    user.post(res=models.Action, data=request_post)
+    trade = models.Trade.query.one()
+
+    # Doble confirmation and change of owner
+    request_confirm = {
+        'type': 'Confirm',
+        'action': trade.id,
+        'devices': [device.id]
+    }
+
+    user2.post(res=models.Action, data=request_confirm)
+    assert device.owner.email == user2.email
+
+    # Adding action Use
+    action3 = {'type': models.Use.t, 'devices': [device.id]}
+    action3, _ = user.post(action3, res=models.Action)
+    assert action3['id'] == str(device.status.id)
+    assert device.status.t == models.Use.t
+    assert device.owner.email == user2.email
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_recycling_container(user: UserClient):
+    lot, _ = user.post({'name': 'MyLotOut'}, res=Lot)
+    url = 'http://www.ereuse.org/',
+    request_post = {
+        'filename': 'test.pdf',
+        'hash': 'bbbbbbbb',
+        'url': url,
+        'weight': 150,
+        'lot': lot['id']
+    }
+    tradedocument, _ = user.post(res=TradeDocument, data=request_post)
+    action = {'type': models.Recycling.t, 'devices': [], 'documents': [tradedocument['id']]}
+    action, _ = user.post(action, res=models.Action)
+    trade = TradeDocument.query.one()
+    assert str(trade.actions[0].id) == action['id']
+
+
+@pytest.mark.mvp
+def test_reuse(user: UserClient):
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    action = {'type': models.Use.t, 'devices': [snap['device']['id']]}
+    action, _ = user.post(action, res=models.Action)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+    assert device['actions'][-1]['id'] == action['id']
+
+
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
