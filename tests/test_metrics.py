@@ -2,6 +2,7 @@ import pytest
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.resources.action import models as ma
+from ereuse_devicehub.resources.documents import documents
 from tests import conftest
 from tests.conftest import file, yaml2json, json_encode
 
@@ -120,3 +121,56 @@ def test_metrics_with_live_null(user: UserClient):
     res, _ = user.get("/metrics/")
     assert res == metrics
 
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_metrics_action_status(user: UserClient, user2: UserClient):
+    """ Checks one standard query of metrics """
+    # Insert computer
+    lenovo = yaml2json('desktop-9644w8n-lenovo-0169622.snapshot')
+    snap, _ = user.post(json_encode(lenovo), res=ma.Snapshot)
+    action = {'type': ma.Use.t, 'devices': [snap['device']['id']]}
+    action_use, _ = user.post(action, res=ma.Action)
+    # res, _ = user.get("/metrics/")
+    csv_str, _ = user.get(res=documents.DocumentDef.t,
+                          item='actions/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer']})])
+    import pdb; pdb.set_trace()
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_complet_metrics(user: UserClient, user2: UserClient):
+    """ Checks one standard query of metrics """
+    # Insert computer
+    lenovo = yaml2json('desktop-9644w8n-lenovo-0169622.snapshot')
+    acer = yaml2json('acer.happy.battery.snapshot')
+    snap1, _ = user.post(json_encode(lenovo), res=ma.Snapshot)
+    snap2, _ = user.post(json_encode(acer), res=ma.Snapshot)
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    devices = [('id', snap1['device']['id']),
+               ('id', snap2['device']['id'])
+              ]
+    lot, _ = user.post({},
+                       res=Lot,
+                       item='{}/devices'.format(lot['id']),
+                       query=devices)
+    # request_post = {
+        # 'type': 'Trade',
+        # 'devices': [span1['device']['id'], snap2['device']['id']],
+        # 'userFromEmail': user2.email,
+        # 'userToEmail': user.email,
+        # 'price': 10,
+        # 'date': "2020-12-01T02:00:00+00:00",
+        # 'lot': lot['id'],
+        # 'confirms': True,
+    # }
+
+    # user.post(res=models.Action, data=request_post)
+
+    # ==============================
+    # Check metrics
+    metrics = {'allocateds': 1, 'live': 1}
+    res, _ = user.get("/metrics/")
+    assert res == metrics
