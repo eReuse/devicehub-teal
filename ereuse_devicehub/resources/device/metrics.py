@@ -25,11 +25,15 @@ class Metrics:
         """
         return {'type': '',
                 'action_type': 'Status',
+                'document_name': '',
                 'status_receiver': self.status_receiver,
                 'status_supplier': self.status_supplier,
+                'status_receiver_created': '',
+                'status_supplier_created': '',
                 'trade_supplier': '',
-                'trade_receiver': self.act.author,
+                'trade_receiver': self.act.author.email,
                 'trade_confirmed': '',
+                'trade_weight': 0,
                 'action_create_by': self.action_create_by,
                 'devicehubID': self.devicehub_id,
                 'hid': self.hid,
@@ -54,6 +58,7 @@ class Metrics:
             self.last_trade['status_supplier_created'] = self.act.created
             return
 
+        self.action_create_by = 'Receiver'
         if self.last_trade:
             # if exist one trade action before
             self.last_trade['status_receiver'] = self.act.type
@@ -61,9 +66,8 @@ class Metrics:
             return
 
         # If not exist any trade action for this device
-        self.action_create_by = 'Receiver'
         row = self.get_template_row()
-        row['type'] = 'Status'
+        row['status_receiver_created'] = self.act.created
         self.rows.append(row)
 
     def get_snapshot(self):
@@ -134,8 +138,8 @@ class Metrics:
         self.last_trade = row
         row['type'] = 'Trade'
         row['action_type'] = 'Trade'
-        row['trade_supplier'] = self.act.user_from
-        row['trade_receiver'] = self.act.user_to
+        row['trade_supplier'] = self.act.user_from.email
+        row['trade_receiver'] = self.act.user_to.email
         row['self.status_receiver'] = self.status_receiver
         row['self.status_supplier'] = self.status_supplier
         row['trade_confirmed'] = self.get_confirms()

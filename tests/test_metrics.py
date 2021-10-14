@@ -136,7 +136,11 @@ def test_metrics_action_status(user: UserClient, user2: UserClient):
                           item='actions/',
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
+    head = 'DHID;Hid;Document-Name;Action-Type;Action-User-LastOwner-Supplier;Action-User-LastOwner-Receiver;Action-Create-By;Trade-Confirmed;Status-Supplier;Status-Receiver;Status Supplier – Created Date;Status Receiver – Created Date;Trade-Weight;Allocate-Start;Allocate-User-Code;Allocate-NumUsers;UsageTimeAllocate;Type;LiveCreate;UsageTimeHdd\n'
+    body = '93652;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Status;;foo@foo.com;Receiver;;;Use;;'
+    assert head in csv_str
+    assert body in csv_str
 
 
 @pytest.mark.mvp
@@ -156,6 +160,7 @@ def test_complet_metrics(user: UserClient, user2: UserClient):
                        res=Lot,
                        item='{}/devices'.format(lot['id']),
                        query=devices)
+    import pdb; pdb.set_trace()
     # request_post = {
         # 'type': 'Trade',
         # 'devices': [span1['device']['id'], snap2['device']['id']],
