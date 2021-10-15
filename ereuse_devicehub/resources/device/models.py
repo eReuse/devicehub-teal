@@ -506,7 +506,7 @@ class Device(Thing):
         """
         This method get a list of values for calculate a metrics from a spreadsheet
         """
-        metrics = Metrics(self)
+        metrics = Metrics(device=self)
         return metrics.get_metrics()
 
     def __lt__(self, other):

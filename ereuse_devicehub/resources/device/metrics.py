@@ -1,12 +1,10 @@
 import copy
 
 
-class Metrics:
+class MetricsMix:
     """we want get the data metrics of one device"""
 
-    def __init__(self, device):
-        self.hid = device.hid
-        self.devicehub_id = device.devicehub_id
+    def __init__(self, *args, **kwargs):
         self.actions = copy.copy(device.actions)
         self.actions.sort(key=lambda x: x.created)
         self.rows = []
@@ -43,6 +41,22 @@ class Metrics:
                 'usageTimeHdd': self.lifetime,
                 'start': self.act.created,
                 'usageTimeAllocate': 0}
+
+    def get_metrics(self):
+        """
+        This method get a list of values for calculate a metrics from a spreadsheet
+        """
+        return self.rows
+
+
+class Metrics(MetricsMix):
+    """we want get the data metrics of one device"""
+
+    def __init__(self, *args, **kwargs):
+        device = kwargs.pop('device')
+        super().__init__(*args, **kwargs)
+        self.hid = device.hid
+        self.devicehub_id = device.devicehub_id
 
     def get_action_status(self):
         """
@@ -176,3 +190,14 @@ class Metrics:
                 continue
 
         return self.rows
+
+
+class TradeMetrics(MetricsMix):
+    """we want get the data metrics of one device"""
+
+    def __init__(self, *args, **kwargs):
+        document = kwargs.pop('document')
+        super().__init__(*args, **kwargs)
+        self.hid = document.hash
+        self.devicehub_id = ''
+

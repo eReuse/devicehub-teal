@@ -159,13 +159,31 @@ class ActionsDocumentView(DeviceView):
         data = StringIO()
         cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
         first = True
+        devs_id = []
         for device in query:
+            devs_id.append(device.id)
             for allocate in device.get_metrics():
                 d = ActionRow(allocate)
                 if first:
                     cw.writerow(d.keys())
                     first = False
                 cw.writerow(d.values())
+        from ereuse_devicehub.resources.action.models import Trade
+        from ereuse_devicehub.resources.device.models import Device
+        # import pdb; pdb.set_trace()
+        query_trade = Trade.query.filter(Trade.devices.any(Device.id.in_(devs_id))).all()
+        doc_metrics = []
+
+        for trade in query_trade:
+            doc_metrics.extend(trade.get_metrics())
+
+        for data_row in doc_metrics:
+            row = ActionRow(data_row)
+            if first:
+                cw.writerow(row.keys())
+                first = False
+            cw.writerow(row.values())
+
         bfile = data.getvalue().encode('utf-8')
         output = make_response(bfile)
         insert_hash(bfile)

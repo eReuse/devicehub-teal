@@ -160,7 +160,7 @@ def test_complet_metrics(user: UserClient, user2: UserClient):
                        res=Lot,
                        item='{}/devices'.format(lot['id']),
                        query=devices)
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     # request_post = {
         # 'type': 'Trade',
         # 'devices': [span1['device']['id'], snap2['device']['id']],
