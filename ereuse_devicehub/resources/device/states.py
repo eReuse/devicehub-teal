@@ -83,3 +83,16 @@ class Usage(State):
     Allocate = e.Allocate
     Deallocate = e.Deallocate
     InUse = e.Live
+
+    
+class Status(State):
+    """Define status of device for one user.
+    :cvar Use: The device is in use for one final user.
+    :cvar Refurbish: The device is owned by one refurbisher.
+    :cvar Recycling: The device is sended to recycling.
+    :cvar Management: The device is owned by one Manager.
+    """
+    Use = e.Use
+    Refurbish = e.Refurbish
+    Recycling = e.Recycling
+    Management = e.Management

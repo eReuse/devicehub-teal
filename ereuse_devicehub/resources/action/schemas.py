@@ -424,6 +424,50 @@ class Ready(ActionWithMultipleDevices):
     __doc__ = m.Ready.__doc__
 
 
+class ActionStatus(Action):
+    rol_user = NestedOn(s_user.User, dump_only=True, exclude=('token',))
+    devices = NestedOn(s_device.Device,
+                       many=True,
+                       required=False,  # todo test ensuring len(devices) >= 1
+                       only_query='id',
+                       collection_class=OrderedSet)
+    documents = NestedOn(s_document.TradeDocument,
+                       many=True,
+                       required=False,  # todo test ensuring len(devices) >= 1
+                       only_query='id',
+                       collection_class=OrderedSet)
+
+    @pre_load
+    def put_devices(self, data: dict):
+        if not 'devices' in data.keys():
+            data['devices'] = []
+
+    @post_load
+    def put_rol_user(self, data: dict):
+        for dev in data['devices']:
+            if dev.trading in [None, 'Revoke', 'ConfirmRevoke']:
+                return data
+            trade = [ac for ac in dev.actions if ac.t == 'Trade'][-1]
+            if trade.user_to != g.user:
+                data['rol_user'] = trade.user_to
+
+
+class Recycling(ActionStatus):
+    __doc__ = m.Recycling.__doc__
+
+
+class Use(ActionStatus):
+    __doc__ = m.Use.__doc__
+
+
+class Refurbish(ActionStatus):
+    __doc__ = m.Refurbish.__doc__
+
+
+class Management(ActionStatus):
+    __doc__ = m.Management.__doc__
+
+
 class ToPrepare(ActionWithMultipleDevices):
     __doc__ = m.ToPrepare.__doc__
 

@@ -194,6 +194,26 @@ class ReadyDef(ActionDef):
     SCHEMA = schemas.Ready
 
 
+class RecyclingDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Recycling
+
+
+class UseDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Use
+
+
+class RefurbishDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Refurbish
+
+
+class ManagementDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Management
+
+
 class ToPrepareDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.ToPrepare

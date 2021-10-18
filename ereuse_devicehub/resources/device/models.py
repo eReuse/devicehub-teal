@@ -264,6 +264,46 @@ class Device(Thing):
             return self.last_action_of(*states.Trading.actions())
 
     @property
+    def status(self):
+        """Show the actual status of device for this owner.
+        The status depend of one of this 4 actions:
+            - Use
+            - Refurbish
+            - Recycling
+            - Management
+        """
+        from ereuse_devicehub.resources.device import states
+        with suppress(LookupError, ValueError):
+            return self.last_action_of(*states.Status.actions())
+
+    @property
+    def history_status(self):
+        """Show the history of the status actions of the device.
+        The status depend of one of this 4 actions:
+            - Use
+            - Refurbish
+            - Recycling
+            - Management
+        """
+        from ereuse_devicehub.resources.device import states
+        status_actions = [ac.t for ac in states.Status.actions()]
+        history = []
+        for ac in self.actions:
+            if not ac.t in status_actions:
+                continue
+            if not history:
+                history.append(ac)
+                continue
+            if ac.rol_user == history[-1].rol_user:
+                # get only the last action consecutive for the same user
+                history = history[:-1] + [ac]
+                continue
+
+            history.append(ac)
+
+        return history
+
+    @property
     def trading(self):
         """The trading state, or None if no Trade action has
         ever been performed to this device. This extract the posibilities for to do"""
