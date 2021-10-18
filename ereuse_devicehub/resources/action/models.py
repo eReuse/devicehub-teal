@@ -1352,7 +1352,6 @@ class DataWipe(JoinedTableMixin, ActionWithMultipleDevices):
 
 
 class ActionStatus(JoinedTableMixin, ActionWithMultipleTradeDocuments):
-# class ActionStatus(JoinedTableMixin, ActionWithMultipleDevices):
     """This is a meta-action than mark the status of the devices"""
 
     rol_user_id = db.Column(UUID(as_uuid=True),
@@ -1501,7 +1500,7 @@ class CancelReservation(Organize):
 
 
 class ActionStatusDocuments(JoinedTableMixin, ActionWithMultipleTradeDocuments):
-    """This is a meta-action than mark the status of the devices"""
+    """This is a meta-action that marks the state of the devices."""
     rol_user_id = db.Column(UUID(as_uuid=True),
                         db.ForeignKey(User.id),
                         nullable=False,
