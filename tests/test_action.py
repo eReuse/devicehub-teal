@@ -473,6 +473,7 @@ def test_use_changing_owner(user: UserClient, user2: UserClient):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_recycling_container(user: UserClient):
+    """Test of status action recycling for a container."""
     lot, _ = user.post({'name': 'MyLotOut'}, res=Lot)
     url = 'http://www.ereuse.org/',
     request_post = {
@@ -490,9 +491,42 @@ def test_recycling_container(user: UserClient):
 
 
 @pytest.mark.mvp
-def test_reuse(user: UserClient):
+@pytest.mark.parametrize('action_model',
+                         (pytest.param(ams, id=ams.__class__.__name__)
+                          for ams in [
+                              models.Recycling, 
+                              models.Use, 
+                              models.Refurbish, 
+                              models.Management 
+                          ]))
+def test_status_without_lot(action_model: models.Action, user: UserClient):
+    """Test of status actions for devices without lot."""
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    action = {'type': models.Use.t, 'devices': [snap['device']['id']]}
+    action = {'type': action_model.t, 'devices': [snap['device']['id']]}
+    action, _ = user.post(action, res=models.Action)
+    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+    assert device['actions'][-1]['id'] == action['id']
+
+
+@pytest.mark.mvp
+@pytest.mark.parametrize('action_model',
+                         (pytest.param(ams, id=ams.__class__.__name__)
+                          for ams in [
+                              models.Recycling, 
+                              models.Use, 
+                              models.Refurbish, 
+                              models.Management 
+                          ]))
+def test_status_in_temporary_lot(action_model: models.Action, user: UserClient):
+    """Test of status actions for devices in a temporary lot."""
+    snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    device_id = snap['device']['id']
+    lot, _ = user.post({'name': 'MyLotOut'}, res=Lot)
+    lot, _ = user.post({},
+                       res=Lot,
+                       item='{}/devices'.format(lot['id']),
+                       query=[('id', device_id)])
+    action = {'type': action_model.t, 'devices': [device_id]}
     action, _ = user.post(action, res=models.Action)
     device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
     assert device['actions'][-1]['id'] == action['id']
