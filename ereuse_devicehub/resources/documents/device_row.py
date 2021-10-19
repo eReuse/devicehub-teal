@@ -414,6 +414,8 @@ def none2str(string):
         return ''
     return format(string)
 
+
+
 def get_action(component, action):
     """ Filter one action from a component or return None """
     result = [a for a in component.actions if a.type == action]

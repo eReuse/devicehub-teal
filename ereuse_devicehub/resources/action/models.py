@@ -1640,7 +1640,7 @@ class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):
         metrics = []
         for doc in self.documents:
             m = TradeMetrics(document=doc, Trade=self)
-            metrics.append(m.get_metrics())
+            metrics.extend(m.get_metrics())
         return metrics
 
     def __repr__(self) -> str:

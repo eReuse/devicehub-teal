@@ -32,6 +32,8 @@ from ereuse_devicehub.resources.documents.device_row import (DeviceRow, StockRow
                                                              InternalStatsRow)
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.action.models import Trade
+from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash, verify_hash
 
 
@@ -168,21 +170,16 @@ class ActionsDocumentView(DeviceView):
                     cw.writerow(d.keys())
                     first = False
                 cw.writerow(d.values())
-        from ereuse_devicehub.resources.action.models import Trade
-        from ereuse_devicehub.resources.device.models import Device
-        # import pdb; pdb.set_trace()
         query_trade = Trade.query.filter(Trade.devices.any(Device.id.in_(devs_id))).all()
-        doc_metrics = []
 
         for trade in query_trade:
-            doc_metrics.extend(trade.get_metrics())
-
-        for data_row in doc_metrics:
-            row = ActionRow(data_row)
-            if first:
-                cw.writerow(row.keys())
-                first = False
-            cw.writerow(row.values())
+            data_rows = trade.get_metrics()
+            for row in data_rows:
+                d = ActionRow(row)
+                if first:
+                    cw.writerow(d.keys())
+                    first = False
+                cw.writerow(d.values())
 
         bfile = data.getvalue().encode('utf-8')
         output = make_response(bfile)

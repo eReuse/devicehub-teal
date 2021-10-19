@@ -5,7 +5,6 @@ class MetricsMix:
     """we want get the data metrics of one device"""
 
     def __init__(self, *args, **kwargs):
-        self.actions = copy.copy(device.actions)
         self.actions.sort(key=lambda x: x.created)
         self.rows = []
         self.lifetime = 0
@@ -53,10 +52,11 @@ class Metrics(MetricsMix):
     """we want get the data metrics of one device"""
 
     def __init__(self, *args, **kwargs):
-        device = kwargs.pop('device')
+        self.device = kwargs.pop('device')
+        self.actions = copy.copy(self.device.actions)
         super().__init__(*args, **kwargs)
-        self.hid = device.hid
-        self.devicehub_id = device.devicehub_id
+        self.hid = self.device.hid
+        self.devicehub_id = self.device.devicehub_id
 
     def get_action_status(self):
         """
@@ -196,8 +196,46 @@ class TradeMetrics(MetricsMix):
     """we want get the data metrics of one device"""
 
     def __init__(self, *args, **kwargs):
-        document = kwargs.pop('document')
-        super().__init__(*args, **kwargs)
-        self.hid = document.hash
+        self.document = kwargs.pop('document')
+        self.actions = copy.copy(self.document.actions)
+        self.hid = self.document.file_hash
         self.devicehub_id = ''
+        super().__init__(*args, **kwargs)
 
+    def get_metrics(self):
+        self.last_trade = next(x for x in self.actions if x.t == 'Trade')
+        self.act = self.last_trade
+        row = self.get_template_row()
+
+        row['type'] = 'Trade-Document'
+        row['action_type'] = 'Trade-Document'
+        if self.document.weight:
+            row['type'] = 'Trade-Container'
+            row['action_type'] = 'Trade-Document'
+
+        row['document_name'] = self.document.file_name
+        row['trade_supplier'] = self.last_trade.user_from.email
+        row['trade_receiver'] = self.last_trade.user_to.email
+        row['trade_confirmed'] = self.get_confirms()
+        row['self.status_receiver'] = ''
+        row['self.status_supplier'] = ''
+        row['trade_weight'] = self.document.weight
+        if self.last_trade.author  == self.last_trade.user_from:
+            row['action_create_by'] = 'Supplier'
+        elif self.last_trade.author == self.last_trade.user_to:
+            row['action_create_by'] = 'Receiver'
+
+        self.rows.append(row)
+
+        return self.rows
+
+    def get_confirms(self):
+        """
+        if the action is one trade action, is possible than have a list of confirmations.
+        Get the doble confirm for to know if this trade is confirmed or not.
+        """
+        if hasattr(self.last_trade, 'acceptances'):
+            accept = self.last_trade.acceptances[-1]
+            if accept.t == 'Confirm' and accept.user == self.last_trade.user_to:
+                return True
+        return False
