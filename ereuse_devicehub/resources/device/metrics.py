@@ -38,7 +38,8 @@ class MetricsMix:
                 'numEndUsers': 0,
                 'liveCreate': 0,
                 'usageTimeHdd': self.lifetime,
-                'start': self.act.created,
+                'created': self.act.created,
+                'start': '',
                 'usageTimeAllocate': 0}
 
     def get_metrics(self):
@@ -211,14 +212,14 @@ class TradeMetrics(MetricsMix):
         row['action_type'] = 'Trade-Document'
         if self.document.weight:
             row['type'] = 'Trade-Container'
-            row['action_type'] = 'Trade-Document'
+            row['action_type'] = 'Trade-Container'
 
         row['document_name'] = self.document.file_name
         row['trade_supplier'] = self.last_trade.user_from.email
         row['trade_receiver'] = self.last_trade.user_to.email
         row['trade_confirmed'] = self.get_confirms()
-        row['self.status_receiver'] = ''
-        row['self.status_supplier'] = ''
+        row['status_receiver'] = ''
+        row['status_supplier'] = ''
         row['trade_weight'] = self.document.weight
         if self.last_trade.author  == self.last_trade.user_from:
             row['action_create_by'] = 'Supplier'
@@ -234,8 +235,8 @@ class TradeMetrics(MetricsMix):
         if the action is one trade action, is possible than have a list of confirmations.
         Get the doble confirm for to know if this trade is confirmed or not.
         """
-        if hasattr(self.last_trade, 'acceptances'):
-            accept = self.last_trade.acceptances[-1]
+        if hasattr(self.last_trade, 'acceptances_document'):
+            accept = self.last_trade.acceptances_document[-1]
             if accept.t == 'Confirm' and accept.user == self.last_trade.user_to:
                 return True
         return False

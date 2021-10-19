@@ -440,6 +440,7 @@ class ActionRow(OrderedDict):
         self['Status Supplier – Created Date'] = allocate['status_supplier_created']
         self['Status Receiver – Created Date'] = allocate['status_receiver_created']
         self['Trade-Weight'] = allocate['trade_weight']
+        self['Action-Create'] = allocate['created']
         self['Allocate-Start'] = allocate['start']
         self['Allocate-User-Code'] = allocate['finalUserCode']
         self['Allocate-NumUsers'] = allocate['numEndUsers']
