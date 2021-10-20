@@ -34,6 +34,7 @@ from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, Co
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity, TransferState
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing, listener_reset_field_updated_in_actual_time
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.device.metrics import Metrics
 
 
 def create_code(context):
@@ -206,10 +207,10 @@ class Device(Thing):
                 if isinstance(c, ColumnProperty)
                 and not getattr(c, 'foreign_keys', None)
                 and c.key not in self._NON_PHYSICAL_PROPS}
-        
+
     @property
     def public_properties(self) -> Dict[str, object or None]:
-        """Fields that describe the properties of a device than next show 
+        """Fields that describe the properties of a device than next show
            in the public page.
 
         :return A dictionary:
@@ -341,7 +342,7 @@ class Device(Thing):
 
         ac = self.last_action_trading
         if not ac:
-            return 
+            return
 
         first_owner = self.which_user_put_this_device_in_trace()
 
@@ -349,7 +350,7 @@ class Device(Thing):
             # can to do revoke_confirmed
             return confirm_revoke
 
-        if ac.type == revoke: 
+        if ac.type == revoke:
             if ac.user == g.user:
                 # can todo revoke_pending
                 return revoke_pending
@@ -505,52 +506,8 @@ class Device(Thing):
         """
         This method get a list of values for calculate a metrics from a spreadsheet
         """
-        actions = copy.copy(self.actions)
-        actions.sort(key=lambda x: x.created)
-        allocates =  []
-        lifetime = 0
-        for act in actions:
-            if act.type == 'Snapshot':
-                snapshot = act
-                lifestimes = snapshot.get_last_lifetimes()
-                lifetime = 0
-                if lifestimes:
-                    lifetime = lifestimes[0]['lifetime']
-
-            if act.type == 'Allocate':
-                allo = {'type': 'Allocate',
-                        'devicehubID': self.devicehub_id,
-                        'finalUserCode': act.final_user_code,
-                        'numEndUsers': act.end_users,
-                        'hid': self.hid,
-                        'liveCreate': 0,
-                        'usageTimeHdd': 0,
-                        'start': act.start_time,
-                        'usageTimeAllocate': lifetime}
-                allocates.append(allo)
-
-            if act.type == 'Live':
-                allocate = copy.copy(allo)
-                allocate['type'] = 'Live'
-                allocate['liveCreate'] = act.created
-                allocate['usageTimeHdd'] = 0
-                if act.usage_time_hdd:
-                    allocate['usageTimeHdd'] = act.usage_time_hdd.total_seconds()/3600
-                allocates.append(allocate)
-
-            if act.type == 'Deallocate':
-                deallo = {'type': 'Deallocate',
-                          'devicehubID': self.devicehub_id,
-                          'finalUserCode': '',
-                          'numEndUsers': '',
-                          'hid': self.hid,
-                          'liveCreate': 0,
-                          'usageTimeHdd': lifetime,
-                          'start': act.start_time,
-                          'usageTimeAllocate': 0}
-                allocates.append(deallo)
-
-        return allocates
+        metrics = Metrics(device=self)
+        return metrics.get_metrics()
 
     def __lt__(self, other):
         return self.id < other.id
@@ -749,7 +706,7 @@ class Computer(Device):
         return urls
 
     def add_mac_to_hid(self, components_snap=None):
-        """Returns the Naming.hid with the first mac of network adapter, 
+        """Returns the Naming.hid with the first mac of network adapter,
         following an alphabetical order.
         """
         self.set_hid()
@@ -882,7 +839,7 @@ class Component(Device):
         """
         assert self.hid is None, 'Don\'t use this method with a component that has HID'
         component = self.__class__.query \
-            .filter_by(parent=parent, hid=None, owner_id=self.owner_id, 
+            .filter_by(parent=parent, hid=None, owner_id=self.owner_id,
                        **self.physical_properties) \
             .filter(~Component.id.in_(blacklist)) \
             .first()

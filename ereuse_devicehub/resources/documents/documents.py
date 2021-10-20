@@ -3,11 +3,9 @@ import enum
 import uuid
 import time
 import datetime
-import pathlib
 from collections import OrderedDict
 from io import StringIO
 from typing import Callable, Iterable, Tuple
-from decouple import config
 
 import boltons
 import flask
@@ -32,6 +30,8 @@ from ereuse_devicehub.resources.documents.device_row import (DeviceRow, StockRow
                                                              InternalStatsRow)
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.action.models import Trade
+from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash, verify_hash
 
 
@@ -89,7 +89,6 @@ class DocumentView(DeviceView):
         else:
             res = flask.make_response(template)
         return res
-
 
     @staticmethod
     def erasure(query: db.Query):
@@ -151,7 +150,7 @@ class DevicesDocumentView(DeviceView):
 class ActionsDocumentView(DeviceView):
     @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
-        query = (x for x in self.query(args) if x.owner_id == g.user.id)
+        query = (x for x in self.query(args))
         return self.generate_post_csv(query)
 
     def generate_post_csv(self, query):
@@ -159,13 +158,26 @@ class ActionsDocumentView(DeviceView):
         data = StringIO()
         cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
         first = True
+        devs_id = []
         for device in query:
+            devs_id.append(device.id)
             for allocate in device.get_metrics():
                 d = ActionRow(allocate)
                 if first:
                     cw.writerow(d.keys())
                     first = False
                 cw.writerow(d.values())
+        query_trade = Trade.query.filter(Trade.devices.any(Device.id.in_(devs_id))).all()
+
+        for trade in query_trade:
+            data_rows = trade.get_metrics()
+            for row in data_rows:
+                d = ActionRow(row)
+                if first:
+                    cw.writerow(d.keys())
+                    first = False
+                cw.writerow(d.values())
+
         bfile = data.getvalue().encode('utf-8')
         output = make_response(bfile)
         insert_hash(bfile)
@@ -185,11 +197,11 @@ class LotsDocumentView(LotView):
         cw = csv.writer(data)
         first = True
         for lot in query:
-            l = LotRow(lot)
+            _lot = LotRow(lot)
             if first:
-                cw.writerow(l.keys())
+                cw.writerow(_lot.keys())
                 first = False
-            cw.writerow(l.values())
+            cw.writerow(_lot.values())
         bfile = data.getvalue().encode('utf-8')
         output = make_response(bfile)
         insert_hash(bfile)
@@ -275,7 +287,7 @@ class StampsView(View):
             ok = '100% coincidence. The attached file contains data 100% existing in \
                   to our backend'
             result = ('Bad', bad)
-            mime = ['text/csv', 'application/pdf', 'text/plain','text/markdown',
+            mime = ['text/csv', 'application/pdf', 'text/plain', 'text/markdown',
                     'image/jpeg', 'image/png', 'text/html',
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'application/vnd.oasis.opendocument.spreadsheet',
@@ -304,9 +316,9 @@ class InternalStatsView(DeviceView):
             create = '{}-{}'.format(ac.created.year, ac.created.month)
             user = ac.author.email
 
-            if not user in d:
-                    d[user] = {}
-            if not create in d[user]:
+            if user not in d:
+                d[user] = {}
+            if create not in d[user]:
                 d[user][create] = []
             d[user][create].append(ac)
 
@@ -434,4 +446,3 @@ class DocumentDef(Resource):
                                                   auth=app.auth)
         wbconf_view = app.auth.requires_auth(wbconf_view)
         self.add_url_rule('/wbconf/<string:wbtype>', view_func=wbconf_view, methods=get)
-

@@ -414,6 +414,8 @@ def none2str(string):
         return ''
     return format(string)
 
+
+
 def get_action(component, action):
     """ Filter one action from a component or return None """
     result = [a for a in component.actions if a.type == action]
@@ -427,9 +429,21 @@ class ActionRow(OrderedDict):
         # General information about allocates, deallocate and lives
         self['DHID'] = allocate['devicehubID']
         self['Hid'] = allocate['hid']
-        self['Start'] = allocate['start']
-        self['FinalUserCode'] = allocate['finalUserCode']
-        self['NumEndUsers'] = allocate['numEndUsers']
+        self['Document-Name'] = allocate['document_name']
+        self['Action-Type'] = allocate['action_type']
+        self['Action-User-LastOwner-Supplier'] = allocate['trade_supplier']
+        self['Action-User-LastOwner-Receiver'] = allocate['trade_receiver']
+        self['Action-Create-By'] = allocate['action_create_by']
+        self['Trade-Confirmed'] = allocate['trade_confirmed']
+        self['Status-Supplier'] = allocate['status_supplier']
+        self['Status-Receiver'] = allocate['status_receiver']
+        self['Status Supplier – Created Date'] = allocate['status_supplier_created']
+        self['Status Receiver – Created Date'] = allocate['status_receiver_created']
+        self['Trade-Weight'] = allocate['trade_weight']
+        self['Action-Create'] = allocate['created']
+        self['Allocate-Start'] = allocate['start']
+        self['Allocate-User-Code'] = allocate['finalUserCode']
+        self['Allocate-NumUsers'] = allocate['numEndUsers']
         self['UsageTimeAllocate'] = allocate['usageTimeAllocate']
         self['Type'] = allocate['type']
         self['LiveCreate'] = allocate['liveCreate']

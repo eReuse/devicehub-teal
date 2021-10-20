@@ -49,6 +49,7 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, Bio
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
+from ereuse_devicehub.resources.device.metrics import TradeMetrics
 
 
 class JoinedTableMixin:
@@ -1631,6 +1632,16 @@ class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):
                                        uselist=False,
                                        cascade=CASCADE_OWN),
                        primaryjoin='Trade.lot_id == Lot.id')
+
+    def get_metrics(self):
+        """
+        This method get a list of values for calculate a metrics from a spreadsheet
+        """
+        metrics = []
+        for doc in self.documents:
+            m = TradeMetrics(document=doc, Trade=self)
+            metrics.extend(m.get_metrics())
+        return metrics
 
     def __repr__(self) -> str:
         return '<{0.t} {0.id} executed by {0.author}>'.format(self)
