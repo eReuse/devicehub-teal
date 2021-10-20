@@ -3,11 +3,9 @@ import enum
 import uuid
 import time
 import datetime
-import pathlib
 from collections import OrderedDict
 from io import StringIO
 from typing import Callable, Iterable, Tuple
-from decouple import config
 
 import boltons
 import flask
@@ -92,7 +90,6 @@ class DocumentView(DeviceView):
             res = flask.make_response(template)
         return res
 
-
     @staticmethod
     def erasure(query: db.Query):
         def erasures():
@@ -153,7 +150,7 @@ class DevicesDocumentView(DeviceView):
 class ActionsDocumentView(DeviceView):
     @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
-        query = (x for x in self.query(args) if x.owner_id == g.user.id)
+        query = (x for x in self.query(args))
         return self.generate_post_csv(query)
 
     def generate_post_csv(self, query):
@@ -200,11 +197,11 @@ class LotsDocumentView(LotView):
         cw = csv.writer(data)
         first = True
         for lot in query:
-            l = LotRow(lot)
+            _lot = LotRow(lot)
             if first:
-                cw.writerow(l.keys())
+                cw.writerow(_lot.keys())
                 first = False
-            cw.writerow(l.values())
+            cw.writerow(_lot.values())
         bfile = data.getvalue().encode('utf-8')
         output = make_response(bfile)
         insert_hash(bfile)
@@ -290,7 +287,7 @@ class StampsView(View):
             ok = '100% coincidence. The attached file contains data 100% existing in \
                   to our backend'
             result = ('Bad', bad)
-            mime = ['text/csv', 'application/pdf', 'text/plain','text/markdown',
+            mime = ['text/csv', 'application/pdf', 'text/plain', 'text/markdown',
                     'image/jpeg', 'image/png', 'text/html',
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'application/vnd.oasis.opendocument.spreadsheet',
@@ -319,9 +316,9 @@ class InternalStatsView(DeviceView):
             create = '{}-{}'.format(ac.created.year, ac.created.month)
             user = ac.author.email
 
-            if not user in d:
-                    d[user] = {}
-            if not create in d[user]:
+            if user not in d:
+                d[user] = {}
+            if create not in d[user]:
                 d[user][create] = []
             d[user][create].append(ac)
 
@@ -449,4 +446,3 @@ class DocumentDef(Resource):
                                                   auth=app.auth)
         wbconf_view = app.auth.requires_auth(wbconf_view)
         self.add_url_rule('/wbconf/<string:wbtype>', view_func=wbconf_view, methods=get)
-

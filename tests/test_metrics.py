@@ -134,7 +134,7 @@ def test_metrics_action_status(user: UserClient, user2: UserClient):
                           item='actions/',
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
-    head = 'DHID;Hid;Document-Name;Action-Type;Action-User-LastOwner-Supplier;Action-User-LastOwner-Receiver;Action-Create-By;Trade-Confirmed;Status-Supplier;Status-Receiver;Status Supplier – Created Date;Status Receiver – Created Date;Trade-Weight;Allocate-Start;Allocate-User-Code;Allocate-NumUsers;UsageTimeAllocate;Type;LiveCreate;UsageTimeHdd\n'
+    head = 'DHID;Hid;Document-Name;Action-Type;Action-User-LastOwner-Supplier;Action-User-LastOwner-Receiver;Action-Create-By;Trade-Confirmed;Status-Supplier;Status-Receiver;Status Supplier – Created Date;Status Receiver – Created Date;Trade-Weight;Action-Create;Allocate-Start;Allocate-User-Code;Allocate-NumUsers;UsageTimeAllocate;Type;LiveCreate;UsageTimeHdd\n'
     body = '93652;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Status;;foo@foo.com;Receiver;;;Use;;'
     assert head in csv_str
     assert body in csv_str
@@ -244,7 +244,56 @@ def test_metrics_action_status_for_containers(user: UserClient, user2: UserClien
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
 
-    body1 = '\n;bbbbbbbb;test.pdf;Trade-Document;foo@foo.com;foo2@foo.com;Supplier;False;;Use;;;150.0;'
-    body2 = ';;0;0;Trade-Container;0;0\n'
-    assert body1 in csv_str
-    assert body2 in csv_str
+    body1 = ';bbbbbbbb;test.pdf;Trade-Container;foo@foo.com;foo2@foo.com;Supplier;False;;;;;150.0;'
+    body2 = ';;0;0;Trade-Container;0;0'
+    assert len(csv_str.split('\n')) == 4
+    assert body1 in csv_str.split('\n')[-2]
+    assert body2 in csv_str.split('\n')[-2]
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_visual_metrics_for_old_owners(user: UserClient, user2: UserClient):
+    """ Checks if one old owner can see the metrics in a trade enviroment."""
+    # Insert computer
+    lenovo = yaml2json('desktop-9644w8n-lenovo-0169622.snapshot')
+    snap1, _ = user.post(json_encode(lenovo), res=ma.Snapshot)
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    devices = [('id', snap1['device']['id'])]
+    lot, _ = user.post({},
+                       res=Lot,
+                       item='{}/devices'.format(lot['id']),
+                       query=devices)
+    request_post = {
+        'type': 'Trade',
+        'devices': [snap1['device']['id']],
+        'userFromEmail': user.email,
+        'userToEmail': user2.email,
+        'price': 10,
+        'date': "2020-12-01T02:00:00+00:00",
+        'lot': lot['id'],
+        'confirms': True,
+    }
+    trade, _ = user.post(res=ma.Action, data=request_post)
+
+    request_confirm = {
+        'type': 'Confirm',
+        'action': trade['id'],
+        'devices': [snap1['device']['id']]
+    }
+    user2.post(res=ma.Action, data=request_confirm)
+
+    action = {'type': ma.Refurbish.t, 'devices': [snap1['device']['id']]}
+    action_use, _ = user.post(action, res=ma.Action)
+    csv_supplier, _ = user.get(res=documents.DocumentDef.t,
+                               item='actions/',
+                               accept='text/csv',
+                               query=[('filter', {'type': ['Computer']})])
+    csv_receiver, _ = user2.get(res=documents.DocumentDef.t,
+                               item='actions/',
+                               accept='text/csv',
+                               query=[('filter', {'type': ['Computer']})])
+    body = ';;0;0;Trade;0;0\n'
+
+    assert body in csv_receiver
+    assert body in csv_supplier
