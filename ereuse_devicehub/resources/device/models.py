@@ -36,16 +36,10 @@ from ereuse_devicehub.resources.device.metrics import Metrics
 
 
 def create_code(context):
-    # import pdb; pdb.set_trace()
     _id = Device.query.order_by(Device.id.desc()).first() or 3
     if not _id == 3:
         _id = _id.id + 1
-    code = hashcode.encode(_id)
-
-    # from ereuse_devicehub.resources.tag.model import Tag
-    # tag = Tag(device_id=_id, id=code)
-    # db.session.add(tag)
-    return code
+    return hashcode.encode(_id)
 
 
 class Device(Thing):
@@ -1183,4 +1177,4 @@ def create_code_tag(mapper, connection, device):
 
 
 from flask_sqlalchemy import event
-event.listen(Device, 'after_update', create_code_tag, propagate=True)
+event.listen(Device, 'after_insert', create_code_tag, propagate=True)
