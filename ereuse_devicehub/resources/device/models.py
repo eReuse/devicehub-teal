@@ -9,9 +9,7 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
-from flask_sqlalchemy import event
 from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
-from flask import g
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
     Sequence, SmallInteger, Unicode, inspect, text
@@ -41,7 +39,12 @@ def create_code(context):
     _id = Device.query.order_by(Device.id.desc()).first() or 1
     if not _id == 1:
         _id = _id.id + 1
-    return hashcode.encode(_id)
+    code = hashcode.encode(_id)
+
+    from ereuse_devicehub.resources.tag.model import Tag
+    tag = Tag(device_id=_id, id=code)
+    db.session.add(tag)
+    return code
 
 
 class Device(Thing):
@@ -231,7 +234,7 @@ class Device(Thing):
         :return a list of actions:
         """
         hide_actions = ['Price', 'EreusePrice']
-        actions = [ac for ac in self.actions if not ac.t in hide_actions]
+        actions = [ac for ac in self.actions if ac.t not in hide_actions]
         actions.reverse()
         return actions
 
@@ -288,7 +291,7 @@ class Device(Thing):
         status_actions = [ac.t for ac in states.Status.actions()]
         history = []
         for ac in self.actions:
-            if not ac.t in status_actions:
+            if ac.t not in status_actions:
                 continue
             if not history:
                 history.append(ac)
@@ -318,27 +321,27 @@ class Device(Thing):
 
         # return the correct status of trade depending of the user
 
-        ##### CASES #####
-        ## User1 == owner of trade (This user have automatic Confirmation)
-        ## =======================
-        ## if the last action is  => only allow to do
-        ## ==========================================
-        ## Confirmation not User1 => Revoke
-        ## Confirmation User1     => Revoke
-        ## Revoke not User1       => ConfirmRevoke
-        ## Revoke User1           => RevokePending
-        ## RevokeConfirmation     => RevokeConfirmed
-        ##
-        ##
-        ## User2 == Not owner of trade
-        ## =======================
-        ## if the last action is  => only allow to do
-        ## ==========================================
-        ## Confirmation not User2 => Confirm
-        ## Confirmation User2     => Revoke
-        ## Revoke not User2       => ConfirmRevoke
-        ## Revoke User2           => RevokePending
-        ## RevokeConfirmation     => RevokeConfirmed
+        # #### CASES #####
+        # User1 == owner of trade (This user have automatic Confirmation)
+        # =======================
+        # if the last action is  => only allow to do
+        # ==========================================
+        # Confirmation not User1 => Revoke
+        # Confirmation User1     => Revoke
+        # Revoke not User1       => ConfirmRevoke
+        # Revoke User1           => RevokePending
+        # RevokeConfirmation     => RevokeConfirmed
+        #
+        #
+        # User2 == Not owner of trade
+        # =======================
+        # if the last action is  => only allow to do
+        # ==========================================
+        # Confirmation not User2 => Confirm
+        # Confirmation User2     => Revoke
+        # Revoke not User2       => ConfirmRevoke
+        # Revoke User2           => RevokePending
+        # RevokeConfirmation     => RevokeConfirmed
 
         ac = self.last_action_trading
         if not ac:
@@ -427,8 +430,8 @@ class Device(Thing):
         # TODO @cayop uncomment this lines for link the possessor with the device
         # from ereuse_devicehub.resources.action.models import Receive
         # with suppress(LookupError):
-            # action = self.last_action_of(Receive)
-            # return action.agent_to
+        #     action = self.last_action_of(Receive)
+        #     return action.agent_to
 
     @property
     def working(self):
@@ -1166,4 +1169,3 @@ class Manufacturer(db.Model):
 
 
 listener_reset_field_updated_in_actual_time(Device)
-
