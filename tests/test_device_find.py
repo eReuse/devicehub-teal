@@ -183,7 +183,7 @@ def test_device_query(user: UserClient):
     pc = next(d for d in i['items'] if d['type'] == 'Desktop')
     assert len(pc['actions']) == 4
     assert len(pc['components']) == 3
-    assert not pc['tags']
+    assert pc['tags'][0]['id'] == pc['devicehubID']
 
 
 @pytest.mark.mvp
@@ -201,10 +201,10 @@ def test_device_query_permitions(user: UserClient, user2: UserClient):
     user2.post(json_encode(basic_snapshot), res=Snapshot)
     i2, _ = user2.get(res=Device)
     pc2 = next(d for d in i2['items'] if d['type'] == 'Desktop')
-    
+
     assert pc1['id'] != pc2['id']
     assert pc1['hid'] == pc2['hid']
-    
+
 
 @pytest.mark.mvp
 def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClient):
