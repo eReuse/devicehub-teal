@@ -37,7 +37,6 @@ from tests import conftest
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures('auth_app_context')
-# cayop
 def test_snapshot_model():
     """Tests creating a Snapshot with its relationships ensuring correct
     DB mapping.
@@ -318,7 +317,7 @@ def test_snapshot_tag_inner_tag(user: UserClient, tag_id: str, app: Devicehub):
     snapshot_and_check(user, b,
                        action_types=(RateComputer.t, BenchmarkProcessor.t, VisualTest.t))
     with app.app_context():
-        tag = Tag.query.one()  # type: Tag
+        tag = Tag.query.all()[0]  # type: Tag
         assert tag.device_id == 3, 'Tag should be linked to the first device'
 
 
@@ -358,7 +357,7 @@ def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
 def test_snapshot_upload_twice_uuid_error(user: UserClient):
     pc1 = file('basic.snapshot')
     user.post(pc1, res=Snapshot)
-    user.post(pc1, res=Snapshot, status=UniqueViolation)
+    user.post(pc1, res=Snapshot, status=400)
 
 
 @pytest.mark.mvp

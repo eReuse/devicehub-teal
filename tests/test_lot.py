@@ -361,6 +361,7 @@ def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
     """
     # todo check with components
     with app.app_context():
+        g.user = User.query.one()
         device = Desktop(serial_number='foo',
                          model='bar',
                          manufacturer='foobar',
@@ -391,9 +392,11 @@ def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_lot_error_add_device_from_other_user(user: UserClient):
+    # TODO
     """Tests adding a device to a lot using POST and
     removing it with DELETE.
     """
+    g.user = User.query.one()
     user2 = User(email='baz@baz.cxm', password='baz')
     user2.individuals.add(Person(name='Tommy'))
     db.session.add(user2)

@@ -260,10 +260,10 @@ def test_generic_action(action_model_state: Tuple[models.Action, states.Trading]
 @pytest.mark.parametrize('action_model',
                          (pytest.param(ams, id=ams.__class__.__name__)
                           for ams in [
-                              models.Recycling, 
-                              models.Use, 
-                              models.Refurbish, 
-                              models.Management 
+                              models.Recycling,
+                              models.Use,
+                              models.Refurbish,
+                              models.Management
                           ]))
 def test_simple_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
     """Simple test of status action."""
@@ -281,10 +281,10 @@ def test_simple_status_actions(action_model: models.Action, user: UserClient, us
 @pytest.mark.parametrize('action_model',
                          (pytest.param(ams, id=ams.__class__.__name__)
                           for ams in [
-                              models.Recycling, 
-                              models.Use, 
-                              models.Refurbish, 
-                              models.Management 
+                              models.Recycling,
+                              models.Use,
+                              models.Refurbish,
+                              models.Management
                           ]))
 def test_outgoinlot_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
     """Test of status actions in outgoinlot."""
