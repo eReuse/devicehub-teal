@@ -6,6 +6,7 @@ from fractions import Fraction
 from itertools import chain
 from operator import attrgetter
 from typing import Dict, List, Set
+from flask_sqlalchemy import event
 
 from boltons import urlutils
 from citext import CIText
@@ -1176,5 +1177,4 @@ def create_code_tag(mapper, connection, device):
     db.session.add(tag)
 
 
-from flask_sqlalchemy import event
 event.listen(Device, 'after_insert', create_code_tag, propagate=True)

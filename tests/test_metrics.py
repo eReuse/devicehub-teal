@@ -135,7 +135,7 @@ def test_metrics_action_status(user: UserClient, user2: UserClient):
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
     head = 'DHID;Hid;Document-Name;Action-Type;Action-User-LastOwner-Supplier;Action-User-LastOwner-Receiver;Action-Create-By;Trade-Confirmed;Status-Supplier;Status-Receiver;Status Supplier – Created Date;Status Receiver – Created Date;Trade-Weight;Action-Create;Allocate-Start;Allocate-User-Code;Allocate-NumUsers;UsageTimeAllocate;Type;LiveCreate;UsageTimeHdd\n'
-    body = '93652;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Status;;foo@foo.com;Receiver;;;Use;;'
+    body = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Status;;foo@foo.com;Receiver;;;Use;;'
     assert head in csv_str
     assert body in csv_str
 
@@ -176,7 +176,7 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
 
-    body1_lenovo = '93652;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Trade;foo@foo.com;foo2@foo.com;Supplier;False;Refurbish;Use;'
+    body1_lenovo = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Trade;foo@foo.com;foo2@foo.com;Supplier;False;Refurbish;Use;'
     body2_lenovo = ';;0;0;Trade;0;0\n'
 
     body1_acer = 'J2MA2;laptop-acer-aohappy-lusea0d010038879a01601-00:26:c7:8e:cb:8c;;Trade;foo@foo.com;foo2@foo.com;Supplier;False;;Use;;;0;'
