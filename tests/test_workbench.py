@@ -184,7 +184,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert pc['serialNumber'] == 'b8oaas048286'
     assert pc['manufacturer'] == 'asustek computer inc.'
     assert pc['hid'] == 'laptop-asustek_computer_inc-1001pxd-b8oaas048286-14:da:e9:42:f6:7c'
-    assert pc['tags'] == []
+    assert len(pc['tags']) == 1
     assert pc['networkSpeeds'] == [100, 0], 'Although it has WiFi we do not know the speed'
     assert pc['rate']
     rate = pc['rate']

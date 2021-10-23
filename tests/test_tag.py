@@ -330,8 +330,8 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
     s['device']['tags'] = [{'id': 'foo', 'secondary': 'bar', 'type': 'Tag'}]
     snapshot, _ = user.post(json_encode(s), res=Snapshot)
     device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
-    assert device['tags'][0]['id'] == 'foo'
-    assert device['tags'][0]['secondary'] == 'bar'
+    assert device['tags'][-1]['id'] == 'foo'
+    assert device['tags'][-1]['secondary'] == 'bar'
 
     r, _ = user.get(res=Device, query=[('search', 'foo'), ('filter', {'type': ['Computer']})])
     assert len(r['items']) == 1
