@@ -291,7 +291,7 @@ def test_tag_manual_link_search(app: Devicehub, user: UserClient):
         devicehub_id = desktop.devicehub_id
     user.put({}, res=Tag, item='foo-bar/device/{}'.format(desktop_id), status=204)
     device, _ = user.get(res=Device, item=devicehub_id)
-    assert device['tags'][-1]['id'] == 'foo-bar'
+    assert 'foo-bar' in [x['id'] for x in device['tags']]
 
     # Device already linked
     # Just returns an OK to conform to PUT as anything changes
@@ -330,8 +330,8 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
     s['device']['tags'] = [{'id': 'foo', 'secondary': 'bar', 'type': 'Tag'}]
     snapshot, _ = user.post(json_encode(s), res=Snapshot)
     device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
-    assert device['tags'][-1]['id'] == 'foo'
-    assert device['tags'][-1]['secondary'] == 'bar'
+    assert 'foo' in [x['id'] for x in device['tags']]
+    assert 'bar' in [x.get('secondary') for x in device['tags']]
 
     r, _ = user.get(res=Device, query=[('search', 'foo'), ('filter', {'type': ['Computer']})])
     assert len(r['items']) == 1
