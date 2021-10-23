@@ -67,7 +67,7 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['rate']['type'] == RateComputer.t
     # TODO JN why haven't same order in actions on each execution?
     assert device['actions'][2]['type'] == BenchmarkProcessor.t or device['actions'][2]['type'] == BenchmarkRamSysbench.t
-    assert device['tags'][0]['id'] == 'tag1'
+    assert 'tag1' in [x['id'] for x in device['tags']]
 
 
 @pytest.mark.xfail(reason='Functionality not yet developed.')
