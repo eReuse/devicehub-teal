@@ -348,7 +348,6 @@ def test_sync_execute_register_tag_linked_same_device():
     db_pc = Sync().execute_register(pc)
     assert db_pc.id == orig_pc.id
     assert len(db_pc.tags) == 2
-    # import pdb; pdb.set_trace()
     for tag in db_pc.tags:
         assert tag.id in ['foo', db_pc.devicehub_id]
 

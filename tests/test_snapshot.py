@@ -37,7 +37,6 @@ from tests import conftest
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures('auth_app_context')
-    # import pdb; pdb.set_trace()
 def test_snapshot_model():
     """Tests creating a Snapshot with its relationships ensuring correct
     DB mapping.
