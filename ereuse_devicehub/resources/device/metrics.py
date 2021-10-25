@@ -137,10 +137,8 @@ class Metrics(MetricsMix):
         if the action is one trade action, is possible than have a list of confirmations.
         Get the doble confirm for to know if this trade is confirmed or not.
         """
-        if hasattr(self.act, 'acceptances'):
-            accept = self.act.acceptances[-1]
-            if accept.t == 'Confirm' and accept.user == self.act.user_to:
-                return True
+        if self.device.trading == 'TradeConfirmed':
+            return True
         return False
 
     def get_trade(self):

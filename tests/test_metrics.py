@@ -304,7 +304,6 @@ def test_visual_metrics_for_old_owners(user: UserClient, user2: UserClient):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_bug_trade_confirmed(user: UserClient, user2: UserClient):
     """When the receiber do a Trade, then the confirmation is wrong."""
-    # Insert computer
     lenovo = yaml2json('desktop-9644w8n-lenovo-0169622.snapshot')
     snap1, _ = user.post(json_encode(lenovo), res=ma.Snapshot)
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
