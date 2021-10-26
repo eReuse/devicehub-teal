@@ -1167,27 +1167,14 @@ class Manufacturer(db.Model):
 listener_reset_field_updated_in_actual_time(Device)
 
 
-# def create_code_tag(mapper, connection, device):
-#     """
-#     This function create a new tag every time than one device is create.
-#     this tag is the same of devicehub_id.
-#     """
-#     from ereuse_devicehub.resources.tag.model import Tag
-#     tag = Tag(device_id=device.id, id=device.devicehub_id)
-#     import pdb; pdb.set_trace()
-#     db.session.add(tag)
-
-
-# event.listen(Device, 'after_insert', create_code_tag, propagate=True)
-
-
-@event.listens_for(Device, 'after_insert')
 def create_code_tag(mapper, connection, device):
-    print(device.devicehub_id)
+    """
+    This function create a new tag every time than one device is create.
+    this tag is the same of devicehub_id.
+    """
+    from ereuse_devicehub.resources.tag.model import Tag
+    tag = Tag(device_id=device.id, id=device.devicehub_id)
+    db.session.add(tag)
 
-    @event.listens_for(Session, 'after_flush', one=True)
-    def create_code_tag_after_fush(session, context):
-        from ereuse_devicehub.resources.tag.model import Tag
-        tag = Tag(device_id=device.id, id=device.devicehub_id)
-        # import pdb; pdb.set_trace()
-        session.add(tag)
+
+event.listen(Device, 'after_insert', create_code_tag, propagate=True)
