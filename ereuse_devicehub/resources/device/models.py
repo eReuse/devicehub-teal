@@ -301,11 +301,66 @@ class Device(Thing):
 
         return history
 
-    @property
-    def trading(self):
+    def trading(self, lot):
         """The trading state, or None if no Trade action has
         ever been performed to this device. This extract the posibilities for to do"""
+        if not hasattr(lot, 'trade'):
+            return
 
+        Status = {0: 'Trade',
+                  1: 'Confirm',
+                  2: 'TradeConfirmed',
+                  3: 'Revoke',
+                  4: 'RevokeConfirmed'}
+
+        trade = lot.trade
+        user_from = trade.user_from
+        user_to = trade.user_to
+        user_from_confirm = False
+        user_to_confirm = False
+        user_from_revoke = False
+        user_to_revoke = False
+        status = 0
+        confirms = {}
+        revokes = {}
+        # acceptances = copy.copy(trade.acceptances)
+        # acceptances = sorted(acceptances, key=lambda x: x.created)
+
+        if not hasattr(ac, 'acceptances'):
+            return Status[status]
+
+        for ac in trade.acceptances:
+            if ac.user not in [user_from, user_to]:
+                continue
+
+            if ac.t == 'Confirm':
+                if ac.user == user_from:
+                    user_from_confirm = True
+                elif ac.user == user_to:
+                    user_to_confirm = True
+
+            if ac.t == 'Revoke':
+                if ac.user == user_from:
+                    user_from_revoke = True
+                elif ac.user == user_to:
+                    user_to_revoke= True
+
+        confirms = [user_from_confirm, user_to_confirm]
+        revokes = [user_from_revoke, user_to_revoke]
+
+        if any(confirms):
+            status = 1
+            if all(confirms):
+                status = 2
+
+        if any(revokes):
+            status = 3
+            if all(revokes):
+                status = 4
+
+    def trading2(self):
+        """The trading state, or None if no Trade action has
+        ever been performed to this device. This extract the posibilities for to do"""
         # trade = 'Trade'
         confirm = 'Confirm'
         need_confirm = 'NeedConfirmation'

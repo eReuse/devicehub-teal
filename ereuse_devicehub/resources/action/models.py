@@ -1583,11 +1583,11 @@ class Revoke(Confirm):
     """Users can revoke one confirmation of one action trade"""
 
 
-class ConfirmRevoke(Confirm):
-    """Users can confirm and accept one action revoke"""
+# class ConfirmRevoke(Confirm):
+#     """Users can confirm and accept one action revoke"""
 
-    def __repr__(self) -> str:
-        return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
+#     def __repr__(self) -> str:
+#         return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
 
 
 class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):

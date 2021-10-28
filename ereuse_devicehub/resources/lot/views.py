@@ -280,7 +280,7 @@ def delete_from_trade(lot: Lot, ids: Set[int]):
             # then can be revoked and deleted of the lot
             # Confirm of dev.trading mean that there are only one confirmation
             # and the first user than put this device in trade is the actual g.user
-            if dev.trading == 'Confirm': 
+            if dev.trading(lot) == 'Confirm': 
                 without_confirms.add(dev)
                 dev.reset_owner()
 
@@ -293,12 +293,16 @@ def delete_from_trade(lot: Lot, ids: Set[int]):
         without_confirms = devices
 
     if without_confirms:
-        confirm_revoke = ConfirmRevoke(
-            action=revoke,
-            user=g.user,
+        phantom = lot.trade.user_to
+        if lot.trade.user_to == g.user:
+            phantom = lot.trade.user_from
+
+        phantom_revoke = Revoke(
+            action=lot.trade,
+            user=phantom,
             devices=without_confirms
         )
-        db.session.add(confirm_revoke)
+        db.session.add(phantom_revoke)
 
         lot.devices.difference_update(without_confirms)
         lot.trade.devices = lot.devices

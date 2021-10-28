@@ -219,8 +219,9 @@ class RevokeView(ConfirmMixin):
         if not data['devices']:
             raise ValidationError('Devices not exist.')
 
+        lot = data['action'].lot
         for dev in data['devices']:
-            if not dev.trading == 'TradeConfirmed':
+            if not dev.trading(lot) == 'TradeConfirmed':
                 txt = 'Some of devices do not have enough to confirm for to do a revoke'
                 ValidationError(txt)
         ### End check ###
