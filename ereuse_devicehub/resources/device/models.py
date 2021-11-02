@@ -323,13 +323,14 @@ class Device(Thing):
         status = 0
         confirms = {}
         revokes = {}
-        # acceptances = copy.copy(trade.acceptances)
-        # acceptances = sorted(acceptances, key=lambda x: x.created)
 
-        if not hasattr(ac, 'acceptances'):
+        if not hasattr(trade, 'acceptances'):
             return Status[status]
 
-        for ac in trade.acceptances:
+        acceptances = copy.copy(trade.acceptances)
+        acceptances = sorted(acceptances, key=lambda x: x.created)
+
+        for ac in acceptances:
             if ac.user not in [user_from, user_to]:
                 continue
 
@@ -357,6 +358,8 @@ class Device(Thing):
             status = 3
             if all(revokes):
                 status = 4
+
+        return Status[status]
 
     def trading2(self):
         """The trading state, or None if no Trade action has

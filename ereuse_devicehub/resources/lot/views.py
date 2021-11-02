@@ -13,7 +13,7 @@ from teal.resource import View
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.device.models import Device, Computer
-from ereuse_devicehub.resources.action.models import Trade, Confirm, Revoke, ConfirmRevoke
+from ereuse_devicehub.resources.action.models import Trade, Confirm, Revoke
 from ereuse_devicehub.resources.lot.models import Lot, Path
 
 

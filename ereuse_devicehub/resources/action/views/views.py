@@ -15,7 +15,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import (Action, Snapshot, VisualTest,
                                                       InitTransfer, Live, Allocate, Deallocate,
-                                                      Trade, Confirm, ConfirmRevoke, Revoke)
+                                                      Trade, Confirm, Revoke)
 from ereuse_devicehub.resources.action.views import trade as trade_view
 from ereuse_devicehub.resources.action.views.snapshot import SnapshotView, save_json, move_json
 from ereuse_devicehub.resources.action.views.documents import ErasedView
@@ -234,10 +234,6 @@ class ActionView(View):
         if json['type'] == Revoke.t:
             revoke = trade_view.RevokeView(json, resource_def, self.schema)
             return revoke.post()
-
-        if json['type'] == ConfirmRevoke.t:
-            confirm_revoke = trade_view.ConfirmRevokeView(json, resource_def, self.schema)
-            return confirm_revoke.post()
 
         if json['type'] == 'RevokeDocument':
             revoke = trade_view.RevokeDocumentView(json, resource_def, self.schema)

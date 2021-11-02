@@ -280,11 +280,6 @@ class ConfirmDef(ActionDef):
     SCHEMA = schemas.Confirm
 
 
-class ConfirmRevokeDef(ActionDef):
-    VIEW = None
-    SCHEMA = schemas.ConfirmRevoke
-
-
 class RevokeDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Revoke

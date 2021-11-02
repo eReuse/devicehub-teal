@@ -3,7 +3,7 @@ from sqlalchemy.util import OrderedSet
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import (Trade, Confirm, ConfirmRevoke, 
+from ereuse_devicehub.resources.action.models import (Trade, Confirm,
                                                       Revoke, RevokeDocument, ConfirmDocument,
                                                       ConfirmRevokeDocument)
 from ereuse_devicehub.resources.user.models import User
@@ -231,42 +231,43 @@ class RevokeView(ConfirmMixin):
         self.model = delete_from_trade(lot, ids)
 
 
-class ConfirmRevokeView(ConfirmMixin):
-    """Handler for manager the Confirmation register from post
+# class ConfirmRevokeView(ConfirmMixin):
+#     """Handler for manager the Confirmation register from post
 
-       request_confirm_revoke = {
-           'type': 'ConfirmRevoke',
-           'action': action_revoke.id,
-           'devices': [device_id]
-       }
+#        request_confirm_revoke = {
+#            'type': 'ConfirmRevoke',
+#            'action': action_revoke.id,
+#            'devices': [device_id]
+#        }
 
-    """
+#     """
 
-    Model = ConfirmRevoke
+#     Model = ConfirmRevoke
 
-    def validate(self, data):
-        """All devices need to have the status of revoke."""
+#     def validate(self, data):
+#         """All devices need to have the status of revoke."""
 
-        if not data['action'].type == 'Revoke':
-            txt = 'Error: this action is not a revoke action'
-            ValidationError(txt)
+#         if not data['action'].type == 'Revoke':
+#             txt = 'Error: this action is not a revoke action'
+#             ValidationError(txt)
 
-        for dev in data['devices']:
-            if not dev.trading == 'Revoke':
-                txt = 'Some of devices do not have revoke to confirm'
-                ValidationError(txt)
+#         lot = data['action'].lot
+#         for dev in data['devices']:
+#             if not dev.trading(lot) == 'Revoke':
+#                 txt = 'Some of devices do not have revoke to confirm'
+#                 ValidationError(txt)
 
-        devices = OrderedSet(data['devices'])
-        data['devices'] = devices
+#         devices = OrderedSet(data['devices'])
+#         data['devices'] = devices
 
-        # Change the owner for every devices
-        # data['action'] == 'Revoke'
+#         # Change the owner for every devices
+#         # data['action'] == 'Revoke'
 
-        trade = data['action'].action
-        for dev in devices:
-            dev.reset_owner()
+#         trade = data['action'].action
+#         for dev in devices:
+#             dev.reset_owner()
 
-        trade.lot.devices.difference_update(devices)
+#         trade.lot.devices.difference_update(devices)
 
 
 class ConfirmDocumentMixin():
