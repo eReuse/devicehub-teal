@@ -65,25 +65,25 @@ class Metrics(MetricsMix):
         If exist one trade before this action, then modify the trade action
         else, create one row new.
         """
-        self.status_receiver = self.act.type
-        self.status_supplier = ''
-        if self.act.author != self.act.rol_user:
-            # It is neccesary exist one trade action before
+        if not self.last_trade:
+            # If not exist one trade, the status is of the Receive
+            self.action_create_by = 'Receiver'
+            self.status_receiver = self.act.type
+            self.status_supplier = ''
+            row = self.get_template_row()
+            row['status_receiver_created'] = self.act.created
+            self.rows.append(row)
+            return
+
+        if self.last_trade['trade_supplier'] == self.act.rol_user.email:
             self.last_trade['status_supplier'] = self.act.type
             self.last_trade['status_supplier_created'] = self.act.created
             return
 
-        self.action_create_by = 'Receiver'
-        if self.last_trade:
-            # if exist one trade action before
+        if self.last_trade['trade_receiver'] == self.act.rol_user.email:
             self.last_trade['status_receiver'] = self.act.type
             self.last_trade['status_receiver_created'] = self.act.created
             return
-
-        # If not exist any trade action for this device
-        row = self.get_template_row()
-        row['status_receiver_created'] = self.act.created
-        self.rows.append(row)
 
     def get_snapshot(self):
         """

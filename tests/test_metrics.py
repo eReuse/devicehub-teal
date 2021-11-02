@@ -156,6 +156,10 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
                        res=Lot,
                        item='{}/devices'.format(lot['id']),
                        query=devices)
+
+    action = {'type': ma.Refurbish.t, 'devices': [snap1['device']['id']]}
+    user.post(action, res=ma.Action)
+
     request_post = {
         'type': 'Trade',
         'devices': [snap1['device']['id'], snap2['device']['id']],
@@ -169,19 +173,22 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
 
     user.post(res=ma.Action, data=request_post)
 
-    action = {'type': ma.Refurbish.t, 'devices': [snap1['device']['id']]}
+    action = {'type': ma.Use.t, 'devices': [snap1['device']['id']]}
     action_use, _ = user.post(action, res=ma.Action)
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='actions/',
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
 
-    body1_lenovo = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Trade;foo@foo.com;foo2@foo.com;Supplier;False;Refurbish;Use;'
+    body1_lenovo = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Trade;foo@foo.com;'
+    body1_lenovo += 'foo2@foo.com;Supplier;False;Refurbish;Use;'
     body2_lenovo = ';;0;0;Trade;0;0\n'
 
-    body1_acer = 'J2MA2;laptop-acer-aohappy-lusea0d010038879a01601-00:26:c7:8e:cb:8c;;Trade;foo@foo.com;foo2@foo.com;Supplier;False;;Use;;;0;'
+    body1_acer = 'J2MA2;laptop-acer-aohappy-lusea0d010038879a01601-00:26:c7:8e:cb:8c;;Trade;'
+    body1_acer += 'foo@foo.com;foo2@foo.com;Supplier;False;;Use;;;0;'
     body2_acer = ';;0;0;Trade;0;4692.0\n'
 
+    # import pdb; pdb.set_trace()
     assert body1_lenovo in csv_str
     assert body2_lenovo in csv_str
     assert body1_acer in csv_str
