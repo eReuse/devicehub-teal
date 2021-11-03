@@ -181,11 +181,11 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
                           query=[('filter', {'type': ['Computer']})])
 
     body1_lenovo = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Trade;foo@foo.com;'
-    body1_lenovo += 'foo2@foo.com;Supplier;False;Refurbish;Use;'
+    body1_lenovo += 'foo2@foo.com;Supplier;False;Use;;'
     body2_lenovo = ';;0;0;Trade;0;0\n'
 
     body1_acer = 'J2MA2;laptop-acer-aohappy-lusea0d010038879a01601-00:26:c7:8e:cb:8c;;Trade;'
-    body1_acer += 'foo@foo.com;foo2@foo.com;Supplier;False;;Use;;;0;'
+    body1_acer += 'foo@foo.com;foo2@foo.com;Supplier;False;;;;;0;'
     body2_acer = ';;0;0;Trade;0;4692.0\n'
 
     # import pdb; pdb.set_trace()
@@ -195,15 +195,22 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
     assert body2_acer in csv_str
 
     # User2 mark this device as Refurbish
-    action = {'type': ma.Refurbish.t, 'devices': [snap1['device']['id']]}
+    action = {'type': ma.Use.t, 'devices': [snap1['device']['id']]}
     action_use2, _ = user2.post(action, res=ma.Action)
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='actions/',
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
 
-    body2_lenovo = ';Refurbish;0;0;Trade;0;0\n'
-    body2_acer = ';Refurbish;0;0;Trade;0;4692.0\n'
+    body1_lenovo = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Trade;foo@foo.com;'
+    body1_lenovo += 'foo2@foo.com;Supplier;False;Use;Use;'
+    body2_lenovo = ';;0;0;Trade;0;0\n'
+    body2_acer = ';;0;0;Trade;0;4692.0\n'
+
+    assert body1_lenovo in csv_str
+    assert body2_lenovo in csv_str
+    assert body2_acer in csv_str
+
 
 
 @pytest.mark.mvp

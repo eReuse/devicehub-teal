@@ -10,7 +10,7 @@ class MetricsMix:
         self.lifetime = 0
         self.last_trade = None
         self.action_create_by = 'Receiver'
-        self.status_receiver = 'Use'
+        self.status_receiver = ''
         self.status_supplier = ''
         self.act = None
         self.end_users = 0
@@ -63,7 +63,7 @@ class Metrics(MetricsMix):
         """
         Mark the status of one device.
         If exist one trade before this action, then modify the trade action
-        else, create one row new.
+        else, create one new row.
         """
         if not self.last_trade:
             # If not exist one trade, the status is of the Receive
@@ -71,19 +71,31 @@ class Metrics(MetricsMix):
             self.status_receiver = self.act.type
             self.status_supplier = ''
             row = self.get_template_row()
+            row['status_supplier_created'] = ''
             row['status_receiver_created'] = self.act.created
             self.rows.append(row)
             return
 
-        if self.last_trade['trade_supplier'] == self.act.rol_user.email:
+        # if self.last_trade['trade_supplier'] == self.act.rol_user.email:
+        #     self.last_trade['status_supplier'] = self.act.type
+        #     self.last_trade['status_supplier_created'] = self.act.created
+        #     return
+
+        # if self.last_trade['trade_receiver'] == self.act.rol_user.email:
+        #     self.last_trade['status_receiver'] = self.act.type
+        #     self.last_trade['status_receiver_created'] = self.act.created
+        #     return
+
+        if self.last_trade['trade_supplier'] == self.act.author.email:
             self.last_trade['status_supplier'] = self.act.type
             self.last_trade['status_supplier_created'] = self.act.created
             return
 
-        if self.last_trade['trade_receiver'] == self.act.rol_user.email:
+        if self.last_trade['trade_receiver'] == self.act.author.email:
             self.last_trade['status_receiver'] = self.act.type
             self.last_trade['status_receiver_created'] = self.act.created
             return
+
 
     def get_snapshot(self):
         """
@@ -153,8 +165,8 @@ class Metrics(MetricsMix):
         row['action_type'] = 'Trade'
         row['trade_supplier'] = self.act.user_from.email
         row['trade_receiver'] = self.act.user_to.email
-        row['self.status_receiver'] = self.status_receiver
-        row['self.status_supplier'] = self.status_supplier
+        row['status_receiver'] = ''
+        row['status_supplier'] = ''
         row['trade_confirmed'] = self.get_confirms()
         self.rows.append(row)
 
