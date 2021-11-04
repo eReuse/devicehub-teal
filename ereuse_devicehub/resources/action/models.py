@@ -304,6 +304,23 @@ class ActionDevice(db.Model):
     device_id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleDevices.id),
                        primary_key=True)
+    device = relationship(Device,
+                          backref=backref('actions_device',
+                                          lazy=True),
+                          primaryjoin=Device.id == device_id)
+    action = relationship(Action,
+                          backref=backref('actions_device',
+                                          lazy=True),
+                          primaryjoin=Action.id == action_id)
+    created = db.Column(db.TIMESTAMP(timezone=True),
+                        nullable=False,
+                        index=True,
+                        server_default=db.text('CURRENT_TIMESTAMP'))
+    created.comment = """When Devicehub created this."""
+
+    def __init__(self, **kwargs) -> None:
+        self.created = kwargs.get('created', datetime.now(timezone.utc))
+        super().__init__(**kwargs)
 
 
 class ActionWithMultipleTradeDocuments(ActionWithMultipleDevices):

@@ -5,7 +5,7 @@ class MetricsMix:
     """we want get the data metrics of one device"""
 
     def __init__(self, *args, **kwargs):
-        self.actions.sort(key=lambda x: x.created)
+        # self.actions.sort(key=lambda x: x.created)
         self.rows = []
         self.lifetime = 0
         self.last_trade = None
@@ -15,6 +15,7 @@ class MetricsMix:
         self.act = None
         self.end_users = 0
         self.final_user_code = ''
+        self.trades = {}
 
     def get_template_row(self):
         """
@@ -76,16 +77,7 @@ class Metrics(MetricsMix):
             self.rows.append(row)
             return
 
-        # if self.last_trade['trade_supplier'] == self.act.rol_user.email:
-        #     self.last_trade['status_supplier'] = self.act.type
-        #     self.last_trade['status_supplier_created'] = self.act.created
-        #     return
-
-        # if self.last_trade['trade_receiver'] == self.act.rol_user.email:
-        #     self.last_trade['status_receiver'] = self.act.type
-        #     self.last_trade['status_receiver_created'] = self.act.created
-        #     return
-
+        # import pdb; pdb.set_trace()
         if self.last_trade['trade_supplier'] == self.act.author.email:
             self.last_trade['status_supplier'] = self.act.type
             self.last_trade['status_supplier_created'] = self.act.created
@@ -95,7 +87,6 @@ class Metrics(MetricsMix):
             self.last_trade['status_receiver'] = self.act.type
             self.last_trade['status_receiver_created'] = self.act.created
             return
-
 
     def get_snapshot(self):
         """
@@ -109,6 +100,7 @@ class Metrics(MetricsMix):
         """
         If the action is one Allocate, need modify the row base.
         """
+        self.action_create_by = 'Receiver'
         self.end_users = self.act.end_users
         self.final_user_code = self.act.final_user_code
         row = self.get_template_row()
@@ -124,6 +116,7 @@ class Metrics(MetricsMix):
         """
         If the action is one Live, need modify the row base.
         """
+        self.action_create_by = 'Receiver'
         row = self.get_template_row()
         row['type'] = 'Live'
         row['finalUserCode'] = self.final_user_code
@@ -139,6 +132,7 @@ class Metrics(MetricsMix):
         """
         If the action is one Dellocate, need modify the row base.
         """
+        self.action_create_by = 'Receiver'
         row = self.get_template_row()
         row['type'] = 'Deallocate'
         row['start'] = self.act.start_time
@@ -159,15 +153,18 @@ class Metrics(MetricsMix):
         """
         if self.act.author == self.act.user_from:
             self.action_create_by = 'Supplier'
+            self.status_receiver = ''
+
         row = self.get_template_row()
         self.last_trade = row
         row['type'] = 'Trade'
         row['action_type'] = 'Trade'
         row['trade_supplier'] = self.act.user_from.email
         row['trade_receiver'] = self.act.user_to.email
-        row['status_receiver'] = ''
+        row['status_receiver'] = self.status_receiver
         row['status_supplier'] = ''
         row['trade_confirmed'] = self.get_confirms()
+        self.trades[self.act.created] = row
         self.rows.append(row)
 
     def get_metrics(self):

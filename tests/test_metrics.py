@@ -134,7 +134,7 @@ def test_metrics_action_status(user: UserClient, user2: UserClient):
                           item='actions/',
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
-    head = 'DHID;Hid;Document-Name;Action-Type;Action-User-LastOwner-Supplier;Action-User-LastOwner-Receiver;Action-Create-By;Trade-Confirmed;Status-Supplier;Status-Receiver;Status Supplier – Created Date;Status Receiver – Created Date;Trade-Weight;Action-Create;Allocate-Start;Allocate-User-Code;Allocate-NumUsers;UsageTimeAllocate;Type;LiveCreate;UsageTimeHdd\n'
+    head = 'DHID;Hid;Document-Name;Action-Type;Action-User-LastOwner-Supplier;Action-User-LastOwner-Receiver;Action-Create-By;Trade-Confirmed;Status-Created-By-Supplier-About-Reciber;Status-Receiver;Status Supplier – Created Date;Status Receiver – Created Date;Trade-Weight;Action-Create;Allocate-Start;Allocate-User-Code;Allocate-NumUsers;UsageTimeAllocate;Type;LiveCreate;UsageTimeHdd\n'
     body = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Status;;foo@foo.com;Receiver;;;Use;;'
     assert head in csv_str
     assert body in csv_str
