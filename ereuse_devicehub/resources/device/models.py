@@ -644,7 +644,13 @@ class Computer(Device):
 
     @property
     def actions(self) -> list:
-        return sorted(chain(super().actions, self.actions_parent))
+        actions = copy.copy(super().actions)
+        actions_parent = copy.copy(self.actions_parent)
+        for ac in actions_parent:
+            ac.real_created = ac.created
+
+        return sorted(chain(actions, actions_parent), key=lambda x: x.real_created)
+        # return sorted(chain(super().actions, self.actions_parent))
 
     @property
     def ram_size(self) -> int:
