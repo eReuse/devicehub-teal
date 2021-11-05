@@ -66,7 +66,7 @@ class Metrics(MetricsMix):
         If exist one trade before this action, then modify the trade action
         else, create one new row.
         """
-        if not self.last_trade:
+        if self.act.trade not in self.trades:
             # If not exist one trade, the status is of the Receive
             self.action_create_by = 'Receiver'
             self.status_receiver = self.act.type
@@ -77,14 +77,16 @@ class Metrics(MetricsMix):
             self.rows.append(row)
             return
 
-        if self.last_trade['trade_supplier'] == self.act.author.email:
-            self.last_trade['status_supplier'] = self.act.type
-            self.last_trade['status_supplier_created'] = self.act.created
+        trade = self.trades[self.act.trade]
+
+        if trade['trade_supplier'] == self.act.author.email:
+            trade['status_supplier'] = self.act.type
+            trade['status_supplier_created'] = self.act.created
             return
 
-        if self.last_trade['trade_receiver'] == self.act.author.email:
-            self.last_trade['status_receiver'] = self.act.type
-            self.last_trade['status_receiver_created'] = self.act.created
+        if trade['trade_receiver'] == self.act.author.email:
+            trade['status_receiver'] = self.act.type
+            trade['status_receiver_created'] = self.act.created
             return
 
         # import pdb; pdb.set_trace()
@@ -167,9 +169,7 @@ class Metrics(MetricsMix):
         row['status_receiver'] = self.status_receiver
         row['status_supplier'] = ''
         row['trade_confirmed'] = self.get_confirms()
-        # import pdb; pdb.set_trace()
-        created = self.act.actions_device[0].created
-        self.trades[created] = row
+        self.trades[self.act] = row
         self.rows.append(row)
 
     def get_metrics(self):
