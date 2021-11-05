@@ -77,7 +77,6 @@ class Metrics(MetricsMix):
             self.rows.append(row)
             return
 
-        # import pdb; pdb.set_trace()
         if self.last_trade['trade_supplier'] == self.act.author.email:
             self.last_trade['status_supplier'] = self.act.type
             self.last_trade['status_supplier_created'] = self.act.created
@@ -87,6 +86,10 @@ class Metrics(MetricsMix):
             self.last_trade['status_receiver'] = self.act.type
             self.last_trade['status_receiver_created'] = self.act.created
             return
+
+        # import pdb; pdb.set_trace()
+        # necesitamos poder poner un cambio de estado de un trade mas antiguo que last_trade
+        # lo mismo con confirm
 
     def get_snapshot(self):
         """
@@ -164,7 +167,9 @@ class Metrics(MetricsMix):
         row['status_receiver'] = self.status_receiver
         row['status_supplier'] = ''
         row['trade_confirmed'] = self.get_confirms()
-        self.trades[self.act.created] = row
+        # import pdb; pdb.set_trace()
+        created = self.act.actions_device[0].created
+        self.trades[created] = row
         self.rows.append(row)
 
     def get_metrics(self):

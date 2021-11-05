@@ -450,6 +450,7 @@ class ActionStatus(Action):
             trade = [ac for ac in dev.actions if ac.t == 'Trade'][-1]
             if trade.user_to != g.user:
                 data['rol_user'] = trade.user_to
+                data['trade'] = trade
 
 
 class Recycling(ActionStatus):

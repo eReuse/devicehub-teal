@@ -49,8 +49,21 @@ def upgrade():
                             nullable=False, comment='When Devicehub created this.'),
                   schema=f'{get_inv()}')
 
+    op.add_column('action_status',
+                  sa.Column('trade_id', postgresql.UUID(as_uuid=True), nullable=True),
+                  schema=f'{get_inv()}')
+
+    op.create_foreign_key("fk_action_status_trade",
+                          "action_status", "trade",
+                          ["trade_id"], ["id"],
+                          ondelete="SET NULL",
+                          source_schema=f'{get_inv()}',
+                          referent_schema=f'{get_inv()}')
+
     upgrade_data()
 
 
 def downgrade():
+    op.drop_constraint("fk_action_status_trade", "action_status", type_="foreignkey", schema=f'{get_inv()}')
     op.drop_column('action_device', 'created', schema=f'{get_inv()}')
+    op.drop_column('action_status', 'trade_id', schema=f'{get_inv()}')

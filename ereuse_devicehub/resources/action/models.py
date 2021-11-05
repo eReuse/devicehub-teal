@@ -1377,6 +1377,16 @@ class ActionStatus(JoinedTableMixin, ActionWithMultipleTradeDocuments):
                         default=lambda: g.user.id)
     rol_user = db.relationship(User, primaryjoin=rol_user_id == User.id)
     rol_user_comment = """The user that ."""
+    trade_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey('trade.id'),
+                         nullable=True)
+    trade = db.relationship('Trade',
+                            backref=backref('status_changes',
+                                            uselist=True,
+                                            lazy=True,
+                                            order_by=lambda: Action.end_time,
+                                            collection_class=list),
+                            primaryjoin='ActionStatus.trade_id == Trade.id')
 
 
 class Recycling(ActionStatus):
