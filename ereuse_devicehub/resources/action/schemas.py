@@ -439,7 +439,7 @@ class ActionStatus(Action):
 
     @pre_load
     def put_devices(self, data: dict):
-        if not 'devices' in data.keys():
+        if 'devices' not in data.keys():
             data['devices'] = []
 
     @post_load
@@ -447,10 +447,16 @@ class ActionStatus(Action):
         for dev in data['devices']:
             if dev.trading in [None, 'Revoke', 'ConfirmRevoke']:
                 return data
-            trade = [ac for ac in dev.actions if ac.t == 'Trade'][-1]
+
+            trades = [ac for ac in dev.actions if ac.t == 'Trade']
+            if not trades:
+                return data
+
+            trade = trades[-1]
+
             if trade.user_to != g.user:
                 data['rol_user'] = trade.user_to
-                data['trade'] = trade
+            data['trade'] = trade
 
 
 class Recycling(ActionStatus):
