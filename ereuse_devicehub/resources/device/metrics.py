@@ -233,9 +233,9 @@ class TradeMetrics(MetricsMix):
         row['status_receiver'] = ''
         row['status_supplier'] = ''
         row['trade_weight'] = self.document.weight
-        if self.last_trade.author  == self.last_trade.user_from:
+        if self.document.owner == self.last_trade.user_from:
             row['action_create_by'] = 'Supplier'
-        elif self.last_trade.author == self.last_trade.user_to:
+        elif self.document.owner == self.last_trade.user_to:
             row['action_create_by'] = 'Receiver'
 
         self.rows.append(row)
@@ -247,8 +247,20 @@ class TradeMetrics(MetricsMix):
         if the action is one trade action, is possible than have a list of confirmations.
         Get the doble confirm for to know if this trade is confirmed or not.
         """
-        if hasattr(self.last_trade, 'acceptances_document'):
-            accept = self.last_trade.acceptances_document[-1]
-            if accept.t == 'Confirm' and accept.user == self.last_trade.user_to:
+        trade = None
+        confirmations = []
+        confirms = []
+        for ac in self.document.actions:
+            if ac.t == 'Trade':
+                trade = ac
+            elif ac.t == 'ConfirmDocument':
+                confirms.append(ac.author)
+                confirmations.append(ac)
+            elif ac.t in ['RevokeDocument', 'ConfirmDocumentRevoke']:
+                confirmations.append(ac)
+
+        if confirmations and confirmations[-1].t == 'ConfirmDocument':
+            if trade.user_from in confirms and trade.user_to in confirms:
                 return True
+
         return False
