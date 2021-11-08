@@ -171,7 +171,16 @@ class Device(Thing):
 
         Actions are returned by descending ``created`` time.
         """
-        return sorted(chain(self.actions_multiple, self.actions_one), key=lambda x: x.created)
+        actions_multiple = copy.copy(self.actions_multiple)
+        actions_one = copy.copy(self.actions_one)
+
+        for ac in actions_multiple:
+            ac.real_created = ac.actions_device[0].created
+
+        for ac in actions_one:
+            ac.real_created = ac.created
+
+        return sorted(chain(actions_multiple, actions_one), key=lambda x: x.real_created)
 
     @property
     def problems(self):
@@ -635,7 +644,13 @@ class Computer(Device):
 
     @property
     def actions(self) -> list:
-        return sorted(chain(super().actions, self.actions_parent))
+        actions = copy.copy(super().actions)
+        actions_parent = copy.copy(self.actions_parent)
+        for ac in actions_parent:
+            ac.real_created = ac.created
+
+        return sorted(chain(actions, actions_parent), key=lambda x: x.real_created)
+        # return sorted(chain(super().actions, self.actions_parent))
 
     @property
     def ram_size(self) -> int:

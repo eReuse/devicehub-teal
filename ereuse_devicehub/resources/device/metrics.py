@@ -5,16 +5,17 @@ class MetricsMix:
     """we want get the data metrics of one device"""
 
     def __init__(self, *args, **kwargs):
-        self.actions.sort(key=lambda x: x.created)
+        # self.actions.sort(key=lambda x: x.created)
         self.rows = []
         self.lifetime = 0
         self.last_trade = None
         self.action_create_by = 'Receiver'
-        self.status_receiver = 'Use'
+        self.status_receiver = ''
         self.status_supplier = ''
         self.act = None
         self.end_users = 0
         self.final_user_code = ''
+        self.trades = {}
 
     def get_template_row(self):
         """
@@ -63,27 +64,34 @@ class Metrics(MetricsMix):
         """
         Mark the status of one device.
         If exist one trade before this action, then modify the trade action
-        else, create one row new.
+        else, create one new row.
         """
-        self.status_receiver = self.act.type
-        self.status_supplier = ''
-        if self.act.author != self.act.rol_user:
-            # It is neccesary exist one trade action before
-            self.last_trade['status_supplier'] = self.act.type
-            self.last_trade['status_supplier_created'] = self.act.created
+        if self.act.trade not in self.trades:
+            # If not exist one trade, the status is of the Receive
+            self.action_create_by = 'Receiver'
+            self.status_receiver = self.act.type
+            self.status_supplier = ''
+            row = self.get_template_row()
+            row['status_supplier_created'] = ''
+            row['status_receiver_created'] = self.act.created
+            self.rows.append(row)
             return
 
-        self.action_create_by = 'Receiver'
-        if self.last_trade:
-            # if exist one trade action before
-            self.last_trade['status_receiver'] = self.act.type
-            self.last_trade['status_receiver_created'] = self.act.created
+        trade = self.trades[self.act.trade]
+
+        if trade['trade_supplier'] == self.act.author.email:
+            trade['status_supplier'] = self.act.type
+            trade['status_supplier_created'] = self.act.created
             return
 
-        # If not exist any trade action for this device
-        row = self.get_template_row()
-        row['status_receiver_created'] = self.act.created
-        self.rows.append(row)
+        if trade['trade_receiver'] == self.act.author.email:
+            trade['status_receiver'] = self.act.type
+            trade['status_receiver_created'] = self.act.created
+            return
+
+        # import pdb; pdb.set_trace()
+        # necesitamos poder poner un cambio de estado de un trade mas antiguo que last_trade
+        # lo mismo con confirm
 
     def get_snapshot(self):
         """
@@ -97,6 +105,7 @@ class Metrics(MetricsMix):
         """
         If the action is one Allocate, need modify the row base.
         """
+        self.action_create_by = 'Receiver'
         self.end_users = self.act.end_users
         self.final_user_code = self.act.final_user_code
         row = self.get_template_row()
@@ -112,6 +121,7 @@ class Metrics(MetricsMix):
         """
         If the action is one Live, need modify the row base.
         """
+        self.action_create_by = 'Receiver'
         row = self.get_template_row()
         row['type'] = 'Live'
         row['finalUserCode'] = self.final_user_code
@@ -127,6 +137,7 @@ class Metrics(MetricsMix):
         """
         If the action is one Dellocate, need modify the row base.
         """
+        self.action_create_by = 'Receiver'
         row = self.get_template_row()
         row['type'] = 'Deallocate'
         row['start'] = self.act.start_time
@@ -147,15 +158,18 @@ class Metrics(MetricsMix):
         """
         if self.act.author == self.act.user_from:
             self.action_create_by = 'Supplier'
+            self.status_receiver = ''
+
         row = self.get_template_row()
         self.last_trade = row
         row['type'] = 'Trade'
         row['action_type'] = 'Trade'
         row['trade_supplier'] = self.act.user_from.email
         row['trade_receiver'] = self.act.user_to.email
-        row['self.status_receiver'] = self.status_receiver
-        row['self.status_supplier'] = self.status_supplier
+        row['status_receiver'] = self.status_receiver
+        row['status_supplier'] = ''
         row['trade_confirmed'] = self.get_confirms()
+        self.trades[self.act] = row
         self.rows.append(row)
 
     def get_metrics(self):
@@ -219,9 +233,9 @@ class TradeMetrics(MetricsMix):
         row['status_receiver'] = ''
         row['status_supplier'] = ''
         row['trade_weight'] = self.document.weight
-        if self.last_trade.author  == self.last_trade.user_from:
+        if self.document.owner == self.last_trade.user_from:
             row['action_create_by'] = 'Supplier'
-        elif self.last_trade.author == self.last_trade.user_to:
+        elif self.document.owner == self.last_trade.user_to:
             row['action_create_by'] = 'Receiver'
 
         self.rows.append(row)
@@ -233,8 +247,20 @@ class TradeMetrics(MetricsMix):
         if the action is one trade action, is possible than have a list of confirmations.
         Get the doble confirm for to know if this trade is confirmed or not.
         """
-        if hasattr(self.last_trade, 'acceptances_document'):
-            accept = self.last_trade.acceptances_document[-1]
-            if accept.t == 'Confirm' and accept.user == self.last_trade.user_to:
+        trade = None
+        confirmations = []
+        confirms = []
+        for ac in self.document.actions:
+            if ac.t == 'Trade':
+                trade = ac
+            elif ac.t == 'ConfirmDocument':
+                confirms.append(ac.author)
+                confirmations.append(ac)
+            elif ac.t in ['RevokeDocument', 'ConfirmDocumentRevoke']:
+                confirmations.append(ac)
+
+        if confirmations and confirmations[-1].t == 'ConfirmDocument':
+            if trade.user_from in confirms and trade.user_to in confirms:
                 return True
+
         return False

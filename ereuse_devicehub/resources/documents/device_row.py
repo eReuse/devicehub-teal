@@ -435,7 +435,7 @@ class ActionRow(OrderedDict):
         self['Action-User-LastOwner-Receiver'] = allocate['trade_receiver']
         self['Action-Create-By'] = allocate['action_create_by']
         self['Trade-Confirmed'] = allocate['trade_confirmed']
-        self['Status-Supplier'] = allocate['status_supplier']
+        self['Status-Created-By-Supplier-About-Reciber'] = allocate['status_supplier']
         self['Status-Receiver'] = allocate['status_receiver']
         self['Status Supplier – Created Date'] = allocate['status_supplier_created']
         self['Status Receiver – Created Date'] = allocate['status_receiver_created']
