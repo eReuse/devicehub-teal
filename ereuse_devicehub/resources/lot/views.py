@@ -305,6 +305,7 @@ def delete_from_trade(lot: Lot, ids: Set[int]):
         db.session.add(phantom_revoke)
 
         lot.devices.difference_update(without_confirms)
+        # TODO @cayop ?? we dont need  this line
         lot.trade.devices = lot.devices
 
     return revoke

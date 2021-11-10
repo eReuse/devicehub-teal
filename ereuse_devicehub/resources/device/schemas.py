@@ -1,7 +1,7 @@
 import datetime
 
 from marshmallow import post_load, pre_load, fields as f
-from marshmallow.fields import Boolean, Date, DateTime, Float, Integer, List, Str, String, UUID
+from marshmallow.fields import Boolean, Date, DateTime, Float, Integer, List, Str, String, UUID, Dict
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
@@ -50,12 +50,11 @@ class Device(Thing):
                     description='The lots where this device is directly under.')
     rate = NestedOn('Rate', dump_only=True, description=m.Device.rate.__doc__)
     price = NestedOn('Price', dump_only=True, description=m.Device.price.__doc__)
-    # trading = EnumField(states.Trading, dump_only=True, description=m.Device.trading.__doc__)
-    trading = SanitizedStr(dump_only=True, description='')
+    tradings = Dict(dump_only=True, description='')
     physical = EnumField(states.Physical, dump_only=True, description=m.Device.physical.__doc__)
-    traking= EnumField(states.Traking, dump_only=True, description=m.Device.physical.__doc__)
+    traking = EnumField(states.Traking, dump_only=True, description=m.Device.physical.__doc__)
     usage = EnumField(states.Usage, dump_only=True, description=m.Device.physical.__doc__)
-    revoke =  UUID(dump_only=True)
+    revoke = UUID(dump_only=True)
     physical_possessor = NestedOn('Agent', dump_only=True, data_key='physicalPossessor')
     production_date = DateTime('iso',
                                description=m.Device.updated.comment,

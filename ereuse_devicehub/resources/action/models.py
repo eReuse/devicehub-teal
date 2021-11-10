@@ -317,6 +317,14 @@ class ActionDevice(db.Model):
                         index=True,
                         server_default=db.text('CURRENT_TIMESTAMP'))
     created.comment = """When Devicehub created this."""
+    author_id = Column(UUID(as_uuid=True),
+                       ForeignKey(User.id),
+                       nullable=False,
+                       default=lambda: g.user.id)
+    # todo compute the org
+    author = relationship(User,
+                          backref=backref('authored_actions_device', lazy=True, collection_class=set),
+                          primaryjoin=author_id == User.id)
 
     def __init__(self, **kwargs) -> None:
         self.created = kwargs.get('created', datetime.now(timezone.utc))

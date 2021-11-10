@@ -220,15 +220,29 @@ class RevokeView(ConfirmMixin):
             raise ValidationError('Devices not exist.')
 
         lot = data['action'].lot
+
+        revokeConfirmed = []
         for dev in data['devices']:
-            if not dev.trading(lot) == 'TradeConfirmed':
-                txt = 'Some of devices do not have enough to confirm for to do a revoke'
-                ValidationError(txt)
+            if dev.trading(lot) == 'RevokeConfirmed':
+                # this device is revoked before
+                revokeConfirmed.append(dev)
         ### End check ###
 
-        ids = {d.id for d in data['devices']}
-        lot = data['action'].lot
-        self.model = delete_from_trade(lot, ids)
+        devices = {d for d in data['devices'] if d not in revokeConfirmed}
+        # self.model = delete_from_trade(lot, devices)
+        # TODO @cayop we dont need delete_from_trade
+
+        drop_of_lot = []
+        # import pdb; pdb.set_trace()
+        for dev in devices:
+            # import pdb; pdb.set_trace()
+            if dev.trading_for_web(lot) in ['NeedConfirmation', 'Confirm', 'NeedConfirmRevoke']:
+                drop_of_lot.append(dev)
+                dev.reset_owner()
+
+        self.model = Revoke(action=lot.trade, user=g.user, devices=devices)
+        db.session.add(self.model)
+        lot.devices.difference_update(OrderedSet(drop_of_lot))
 
 
 # class ConfirmRevokeView(ConfirmMixin):

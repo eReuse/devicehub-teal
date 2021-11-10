@@ -445,16 +445,13 @@ class ActionStatus(Action):
     @post_load
     def put_rol_user(self, data: dict):
         for dev in data['devices']:
-            if dev.trading in [None, 'Revoke']:
-                return data
-
             trades = [ac for ac in dev.actions if ac.t == 'Trade']
             if not trades:
                 return data
 
             trade = trades[-1]
 
-            if trade.user_to != g.user:
+            if trade.user_from == g.user:
                 data['rol_user'] = trade.user_to
             data['trade'] = trade
 
@@ -586,6 +583,10 @@ class Revoke(ActionWithMultipleDevices):
         if not documents:
             txt = 'No there are documents to revoke'
             raise ValidationError(txt)
+
+
+class ConfirmRevoke(Revoke):
+    pass
 
 
 class ConfirmDocument(ActionWithMultipleDocuments):

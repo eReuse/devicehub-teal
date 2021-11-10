@@ -285,6 +285,11 @@ class RevokeDef(ActionDef):
     SCHEMA = schemas.Revoke
 
 
+class ConfirmRevokeDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.ConfirmRevoke
+
+
 class TradeDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Trade

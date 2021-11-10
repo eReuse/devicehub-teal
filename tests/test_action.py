@@ -1516,8 +1516,8 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
         'type': 'Confirm',
         'action': trade.id,
         'devices': [
-            snap1['device']['id'], 
-            snap2['device']['id'], 
+            snap1['device']['id'],
+            snap2['device']['id'],
             snap3['device']['id'],
             snap4['device']['id'],
             snap5['device']['id'],
@@ -1535,7 +1535,7 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     assert trade.devices[-1].actions[-1].user == trade.user_from
     assert len(trade.devices[0].actions) == n_actions
 
-    # The manager remove one device of the lot and automaticaly 
+    # The manager remove one device of the lot and automaticaly
     # is create one revoke action
     device_10 = trade.devices[-1]
     lot, _ = user.delete({},
@@ -1554,30 +1554,27 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
 
     # the SCRAP confirms the revoke action
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device_10.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [
             snap10['device']['id']
         ]
     }
 
     user2.post(res=models.Action, data=request_confirm_revoke)
-    assert device_10.actions[-1].t == 'ConfirmRevoke'
+    assert device_10.actions[-1].t == 'Revoke'
     assert device_10.actions[-2].t == 'Revoke'
     # assert len(trade.lot.devices) == len(trade.devices) == 9
     # assert not device_10 in trade.devices
 
     # check validation error
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device_10.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [
             snap9['device']['id']
         ]
     }
-
-    user2.post(res=models.Action, data=request_confirm_revoke, status=422)
-
 
     # The manager add again device_10
     # assert len(trade.devices) == 9
@@ -1604,7 +1601,7 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     assert device_10.actions[-1].user == trade.user_from
     assert device_10.actions[-2].t == 'Confirm'
     assert device_10.actions[-2].user == trade.user_to
-    assert device_10.actions[-3].t == 'ConfirmRevoke'
+    assert device_10.actions[-3].t == 'Revoke'
     # assert len(device_10.actions) == 13
 
 
@@ -1712,6 +1709,7 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
     assert len(trade.devices) == 10
 
     # the SCRAP confirms the revoke action
+    import pdb; pdb.set_trace()
     request_confirm_revoke = {
         'type': 'ConfirmRevoke',
         'action': device_10.actions[-2].id,

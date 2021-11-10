@@ -235,6 +235,10 @@ class ActionView(View):
             revoke = trade_view.RevokeView(json, resource_def, self.schema)
             return revoke.post()
 
+        if json['type'] == 'ConfirmRevoke':
+            revoke = trade_view.RevokeView(json, resource_def, self.schema)
+            return revoke.post()
+
         if json['type'] == 'RevokeDocument':
             revoke = trade_view.RevokeDocumentView(json, resource_def, self.schema)
             return revoke.post()

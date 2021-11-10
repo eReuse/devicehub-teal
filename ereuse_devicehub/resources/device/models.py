@@ -310,6 +310,80 @@ class Device(Thing):
 
         return history
 
+    @property
+    def tradings(self):
+        return {str(x.id): self.trading_for_web(x.lot) for x in self.actions if x.t == 'Trade'}
+
+    def trading_for_web(self, lot):
+        """The trading state, or None if no Trade action has
+        ever been performed to this device. This extract the posibilities for to do.
+        This method is performed for show in the web."""
+        if not hasattr(lot, 'trade'):
+            return
+
+        Status = {0: 'Trade',
+                  1: 'Confirm',
+                  2: 'NeedConfirmation',
+                  3: 'TradeConfirmed',
+                  4: 'Revoke',
+                  5: 'NeedConfirmRevoke',
+                  6: 'RevokeConfirmed'}
+
+        trade = lot.trade
+        user_from = trade.user_from
+        user_to = trade.user_to
+        user_from_confirm = False
+        user_to_confirm = False
+        user_from_revoke = False
+        user_to_revoke = False
+        status = 0
+
+        if not hasattr(trade, 'acceptances'):
+            return Status[status]
+
+        for ac in self.actions:
+            if ac.t not in ['Confirm', 'Revoke']:
+                continue
+
+            if ac.user not in [user_from, user_to]:
+                continue
+
+            if ac.t == 'Confirm' and ac.action == trade:
+                if ac.user == user_from:
+                    user_from_confirm = True
+                elif ac.user == user_to:
+                    user_to_confirm = True
+
+            if ac.t == 'Revoke' and ac.action == trade:
+                if ac.user == user_from:
+                    user_from_revoke = True
+                elif ac.user == user_to:
+                    user_to_revoke = True
+
+        confirms = [user_from_confirm, user_to_confirm]
+        revokes = [user_from_revoke, user_to_revoke]
+
+        if any(confirms):
+            status = 1
+            if user_to_confirm and user_from == g.user:
+                status = 2
+            if user_from_confirm and user_to == g.user:
+                status = 2
+
+            if all(confirms):
+                status = 3
+
+        if any(revokes):
+            status = 4
+            if user_to_revoke and user_from == g.user:
+                status = 5
+            if user_from_revoke and user_to == g.user:
+                status = 5
+            if all(revokes):
+                status = 6
+
+        return Status[status]
+
     def trading(self, lot):
         """The trading state, or None if no Trade action has
         ever been performed to this device. This extract the posibilities for to do"""
@@ -330,30 +404,28 @@ class Device(Thing):
         user_from_revoke = False
         user_to_revoke = False
         status = 0
-        confirms = {}
-        revokes = {}
 
         if not hasattr(trade, 'acceptances'):
             return Status[status]
 
-        acceptances = copy.copy(trade.acceptances)
-        acceptances = sorted(acceptances, key=lambda x: x.created)
+        for ac in self.actions:
+            if ac.t not in ['Confirm', 'Revoke']:
+                continue
 
-        for ac in acceptances:
             if ac.user not in [user_from, user_to]:
                 continue
 
-            if ac.t == 'Confirm':
+            if ac.t == 'Confirm' and ac.action == trade:
                 if ac.user == user_from:
                     user_from_confirm = True
                 elif ac.user == user_to:
                     user_to_confirm = True
 
-            if ac.t == 'Revoke':
+            if ac.t == 'Revoke' and ac.action == trade:
                 if ac.user == user_from:
                     user_from_revoke = True
                 elif ac.user == user_to:
-                    user_to_revoke= True
+                    user_to_revoke = True
 
         confirms = [user_from_confirm, user_to_confirm]
         revokes = [user_from_revoke, user_to_revoke]
@@ -369,75 +441,6 @@ class Device(Thing):
                 status = 4
 
         return Status[status]
-
-    def trading2(self):
-        """The trading state, or None if no Trade action has
-        ever been performed to this device. This extract the posibilities for to do"""
-        # trade = 'Trade'
-        confirm = 'Confirm'
-        need_confirm = 'NeedConfirmation'
-        double_confirm = 'TradeConfirmed'
-        revoke = 'Revoke'
-        revoke_pending = 'RevokePending'
-        confirm_revoke = 'ConfirmRevoke'
-        # revoke_confirmed = 'RevokeConfirmed'
-
-        # return the correct status of trade depending of the user
-
-        # #### CASES #####
-        # User1 == owner of trade (This user have automatic Confirmation)
-        # =======================
-        # if the last action is  => only allow to do
-        # ==========================================
-        # Confirmation not User1 => Revoke
-        # Confirmation User1     => Revoke
-        # Revoke not User1       => ConfirmRevoke
-        # Revoke User1           => RevokePending
-        # RevokeConfirmation     => RevokeConfirmed
-        #
-        #
-        # User2 == Not owner of trade
-        # =======================
-        # if the last action is  => only allow to do
-        # ==========================================
-        # Confirmation not User2 => Confirm
-        # Confirmation User2     => Revoke
-        # Revoke not User2       => ConfirmRevoke
-        # Revoke User2           => RevokePending
-        # RevokeConfirmation     => RevokeConfirmed
-
-        ac = self.last_action_trading
-        if not ac:
-            return
-
-        first_owner = self.which_user_put_this_device_in_trace()
-
-        if ac.type == confirm_revoke:
-            # can to do revoke_confirmed
-            return confirm_revoke
-
-        if ac.type == revoke:
-            if ac.user == g.user:
-                # can todo revoke_pending
-                return revoke_pending
-            else:
-                # can to do confirm_revoke
-                return revoke
-
-        if ac.type == confirm:
-            if not first_owner:
-                return
-
-            if ac.user == first_owner:
-                if first_owner == g.user:
-                    # can to do revoke
-                    return confirm
-                else:
-                    # can to do confirm
-                    return need_confirm
-            else:
-                # can to do revoke
-                return double_confirm
 
     @property
     def revoke(self):
@@ -543,15 +546,16 @@ class Device(Thing):
     def which_user_put_this_device_in_trace(self):
         """which is the user than put this device in this trade"""
         actions = copy.copy(self.actions)
-        actions.sort(key=lambda x: x.created)
         actions.reverse()
-        last_ac = None
         # search the automatic Confirm
         for ac in actions:
             if ac.type == 'Trade':
-                return last_ac.user
-            if ac.type == 'Confirm':
-                last_ac = ac
+                # import pdb; pdb.set_trace()
+                action_device = [x.device for x in ac.actions_device if x.device == self][0]
+                if action_device.author:
+                    return action_device.author
+
+                return ac.author
 
     def change_owner(self, new_user):
         """util for change the owner one device"""
