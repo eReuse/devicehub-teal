@@ -267,6 +267,12 @@ def delete_from_trade(lot: Lot, devices: List):
         txt = 'This is not your trade'
         raise ma.ValidationError(txt)
 
+    # we need lock the action revoke for devices than travel for futures trades
+    for dev in devices:
+        if dev.owner not in users:
+            txt = 'This is not your device'
+            raise ma.ValidationError(txt)
+
     drop_of_lot = []
     without_confirms = []
     for dev in devices:
