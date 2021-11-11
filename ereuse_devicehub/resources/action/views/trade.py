@@ -215,73 +215,12 @@ class RevokeView(ConfirmMixin):
     def validate(self, data):
         """All devices need to have the status of DoubleConfirmation."""
 
-        ### check ###
-        if not data['devices']:
+        devices = data['devices']
+        if not devices:
             raise ValidationError('Devices not exist.')
 
         lot = data['action'].lot
-
-        revokeConfirmed = []
-        for dev in data['devices']:
-            if dev.trading(lot) == 'RevokeConfirmed':
-                # this device is revoked before
-                revokeConfirmed.append(dev)
-        ### End check ###
-
-        devices = {d for d in data['devices'] if d not in revokeConfirmed}
-        # self.model = delete_from_trade(lot, devices)
-        # TODO @cayop we dont need delete_from_trade
-
-        drop_of_lot = []
-        # import pdb; pdb.set_trace()
-        for dev in devices:
-            # import pdb; pdb.set_trace()
-            if dev.trading_for_web(lot) in ['NeedConfirmation', 'Confirm', 'NeedConfirmRevoke']:
-                drop_of_lot.append(dev)
-                dev.reset_owner()
-
-        self.model = Revoke(action=lot.trade, user=g.user, devices=devices)
-        db.session.add(self.model)
-        lot.devices.difference_update(OrderedSet(drop_of_lot))
-
-
-# class ConfirmRevokeView(ConfirmMixin):
-#     """Handler for manager the Confirmation register from post
-
-#        request_confirm_revoke = {
-#            'type': 'ConfirmRevoke',
-#            'action': action_revoke.id,
-#            'devices': [device_id]
-#        }
-
-#     """
-
-#     Model = ConfirmRevoke
-
-#     def validate(self, data):
-#         """All devices need to have the status of revoke."""
-
-#         if not data['action'].type == 'Revoke':
-#             txt = 'Error: this action is not a revoke action'
-#             ValidationError(txt)
-
-#         lot = data['action'].lot
-#         for dev in data['devices']:
-#             if not dev.trading(lot) == 'Revoke':
-#                 txt = 'Some of devices do not have revoke to confirm'
-#                 ValidationError(txt)
-
-#         devices = OrderedSet(data['devices'])
-#         data['devices'] = devices
-
-#         # Change the owner for every devices
-#         # data['action'] == 'Revoke'
-
-#         trade = data['action'].action
-#         for dev in devices:
-#             dev.reset_owner()
-
-#         trade.lot.devices.difference_update(devices)
+        self.model = delete_from_trade(lot, devices)
 
 
 class ConfirmDocumentMixin():

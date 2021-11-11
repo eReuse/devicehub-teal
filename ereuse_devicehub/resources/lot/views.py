@@ -1,4 +1,5 @@
 import uuid
+from sqlalchemy.util import OrderedSet
 from collections import deque
 from enum import Enum
 from typing import Dict, List, Set, Union
@@ -246,7 +247,8 @@ class LotDeviceView(LotBaseChildrenView):
             return
 
         if lot.trade:
-            return delete_from_trade(lot, ids)
+            devices = Device.query.filter(Device.id.in_(ids)).all()
+            return delete_from_trade(lot, devices)
 
         if not g.user == lot.owner:
             txt = 'This is not your lot'
@@ -258,7 +260,46 @@ class LotDeviceView(LotBaseChildrenView):
         lot.devices.difference_update(devices)
 
 
-def delete_from_trade(lot: Lot, ids: Set[int]):
+def delete_from_trade(lot: Lot, devices: List):
+    users = [lot.trade.user_from.id, lot.trade.user_to.id]
+    if g.user.id not in users:
+        # theoretically this case is impossible
+        txt = 'This is not your trade'
+        raise ma.ValidationError(txt)
+
+    drop_of_lot = []
+    without_confirms = []
+    for dev in devices:
+        if dev.trading_for_web(lot) in ['NeedConfirmation', 'Confirm', 'NeedConfirmRevoke']:
+            drop_of_lot.append(dev)
+            dev.reset_owner()
+
+        if lot.trade.confirm:
+            drop_of_lot.append(dev)
+            without_confirms.append(dev)
+            dev.reset_owner()
+
+
+    revoke = Revoke(action=lot.trade, user=g.user, devices=set(devices))
+    db.session.add(revoke)
+
+    if without_confirms:
+        phantom = lot.trade.user_to
+        if lot.trade.user_to == g.user:
+            phantom = lot.trade.user_from
+
+        phantom_revoke = Revoke(
+            action=lot.trade,
+            user=phantom,
+            devices=set(without_confirms)
+        )
+        db.session.add(phantom_revoke)
+
+    lot.devices.difference_update(OrderedSet(drop_of_lot))
+    return revoke
+
+
+def delete_from_trade2(lot: Lot, ids: Set[int]):
     users = [lot.trade.user_from.id, lot.trade.user_to.id]
     if not g.user.id in users:
         # theoretically this case is impossible
@@ -280,7 +321,7 @@ def delete_from_trade(lot: Lot, ids: Set[int]):
             # then can be revoked and deleted of the lot
             # Confirm of dev.trading mean that there are only one confirmation
             # and the first user than put this device in trade is the actual g.user
-            if dev.trading(lot) == 'Confirm': 
+            if dev.trading(lot) == 'Confirm':
                 without_confirms.add(dev)
                 dev.reset_owner()
 

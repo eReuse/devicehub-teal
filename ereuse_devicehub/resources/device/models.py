@@ -1,5 +1,6 @@
 import pathlib
 import copy
+import time
 from flask import g
 from contextlib import suppress
 from fractions import Fraction
@@ -337,6 +338,7 @@ class Device(Thing):
         user_from_revoke = False
         user_to_revoke = False
         status = 0
+        last_action = {'confirm': 0, 'revoke': 0}
 
         if not hasattr(trade, 'acceptances'):
             return Status[status]
@@ -351,19 +353,29 @@ class Device(Thing):
             if ac.t == 'Confirm' and ac.action == trade:
                 if ac.user == user_from:
                     user_from_confirm = True
+                    # import pdb; pdb.set_trace()
+                    last_action['confirm'] = time.mktime(ac.created.timetuple())
+                    user_from_revoke, user_to_revoke = False, False
                 elif ac.user == user_to:
                     user_to_confirm = True
+                    last_action['confirm'] = time.mktime(ac.created.timetuple())
+                    user_from_revoke, user_to_revoke = False, False
 
             if ac.t == 'Revoke' and ac.action == trade:
                 if ac.user == user_from:
                     user_from_revoke = True
+                    last_action['revoke'] = time.mktime(ac.created.timetuple())
+                    user_from_confirm, user_to_confirm = False, False
                 elif ac.user == user_to:
                     user_to_revoke = True
+                    last_action['revoke'] = time.mktime(ac.created.timetuple())
+                    user_from_confirm, user_to_confirm = False, False
 
         confirms = [user_from_confirm, user_to_confirm]
         revokes = [user_from_revoke, user_to_revoke]
 
-        if any(confirms):
+        confirm_vs_revoke = 'confirm' if last_action['confirm'] > last_action['revoke'] else 'revoke'
+        if any(confirms) and confirm_vs_revoke == 'confirm':
             status = 1
             if user_to_confirm and user_from == g.user:
                 status = 2
@@ -373,7 +385,7 @@ class Device(Thing):
             if all(confirms):
                 status = 3
 
-        if any(revokes):
+        if any(revokes) and confirm_vs_revoke == 'revoke':
             status = 4
             if user_to_revoke and user_from == g.user:
                 status = 5
@@ -550,8 +562,7 @@ class Device(Thing):
         # search the automatic Confirm
         for ac in actions:
             if ac.type == 'Trade':
-                # import pdb; pdb.set_trace()
-                action_device = [x.device for x in ac.actions_device if x.device == self][0]
+                action_device = [x for x in ac.actions_device if x.device == self][0]
                 if action_device.author:
                     return action_device.author
 
