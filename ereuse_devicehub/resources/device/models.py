@@ -333,6 +333,81 @@ class Device(Thing):
         trade = lot.trade
         user_from = trade.user_from
         user_to = trade.user_to
+        status = 0
+        last_user = None
+
+        if not hasattr(trade, 'acceptances'):
+            return Status[status]
+
+        for ac in self.actions:
+            if ac.t not in ['Confirm', 'Revoke']:
+                continue
+
+            if ac.user not in [user_from, user_to]:
+                continue
+
+            if ac.t == 'Confirm' and ac.action == trade:
+                if status in [0, 6]:
+                    status = 1
+                    last_user = ac.user
+                    if ac.user == user_from and user_to == g.user:
+                        status = 2
+                    if ac.user == user_to and user_from == g.user:
+                        status = 2
+                    continue
+
+                if status in [1, 2]:
+                    if last_user != ac.user:
+                        status = 3
+                        last_user = ac.user
+                    continue
+
+                if status in [4, 5]:
+                    status = 3
+                    last_user = ac.user
+                    continue
+
+            if ac.t == 'Revoke' and ac.action == trade:
+                if status == 3:
+                    status = 4
+                    last_user = ac.user
+                    if ac.user == user_from and user_to == g.user:
+                        status = 5
+                    if ac.user == user_to and user_from == g.user:
+                        status = 5
+                    continue
+
+                if status in [4, 5]:
+                    if last_user != ac.user:
+                        status = 6
+                        last_user = ac.user
+                    continue
+
+                if status in [1, 2]:
+                    status = 6
+                    last_user = ac.user
+                    continue
+
+        return Status[status]
+
+    def trading_for_web2(self, lot):
+        """The trading state, or None if no Trade action has
+        ever been performed to this device. This extract the posibilities for to do.
+        This method is performed for show in the web."""
+        if not hasattr(lot, 'trade'):
+            return
+
+        Status = {0: 'Trade',
+                  1: 'Confirm',
+                  2: 'NeedConfirmation',
+                  3: 'TradeConfirmed',
+                  4: 'Revoke',
+                  5: 'NeedConfirmRevoke',
+                  6: 'RevokeConfirmed'}
+
+        trade = lot.trade
+        user_from = trade.user_from
+        user_to = trade.user_to
         user_from_confirm = False
         user_to_confirm = False
         user_from_revoke = False
@@ -353,7 +428,6 @@ class Device(Thing):
             if ac.t == 'Confirm' and ac.action == trade:
                 if ac.user == user_from:
                     user_from_confirm = True
-                    # import pdb; pdb.set_trace()
                     last_action['confirm'] = time.mktime(ac.created.timetuple())
                     user_from_revoke, user_to_revoke = False, False
                 elif ac.user == user_to:
@@ -398,24 +472,22 @@ class Device(Thing):
 
     def trading(self, lot):
         """The trading state, or None if no Trade action has
-        ever been performed to this device. This extract the posibilities for to do"""
+        ever been performed to this device. This extract the posibilities for to do.
+        This method is performed for show in the web."""
         if not hasattr(lot, 'trade'):
             return
 
         Status = {0: 'Trade',
-                  1: 'Confirm',
-                  2: 'TradeConfirmed',
-                  3: 'Revoke',
-                  4: 'RevokeConfirmed'}
+                  2: 'NeedConfirmation',
+                  3: 'TradeConfirmed',
+                  5: 'NeedConfirmRevoke',
+                  6: 'RevokeConfirmed'}
 
         trade = lot.trade
         user_from = trade.user_from
         user_to = trade.user_to
-        user_from_confirm = False
-        user_to_confirm = False
-        user_from_revoke = False
-        user_to_revoke = False
         status = 0
+        last_user = None
 
         if not hasattr(trade, 'acceptances'):
             return Status[status]
@@ -428,29 +500,38 @@ class Device(Thing):
                 continue
 
             if ac.t == 'Confirm' and ac.action == trade:
-                if ac.user == user_from:
-                    user_from_confirm = True
-                elif ac.user == user_to:
-                    user_to_confirm = True
+                if status in [0, 6]:
+                    status = 2
+                    last_user = ac.user
+                    continue
+
+                if status == 2:
+                    if last_user != ac.user:
+                        status = 3
+                        last_user = ac.user
+                    continue
+
+                if status == 5:
+                    status = 3
+                    last_user = ac.user
+                    continue
 
             if ac.t == 'Revoke' and ac.action == trade:
-                if ac.user == user_from:
-                    user_from_revoke = True
-                elif ac.user == user_to:
-                    user_to_revoke = True
+                if status == 3:
+                    status = 5
+                    last_user = ac.user
+                    continue
 
-        confirms = [user_from_confirm, user_to_confirm]
-        revokes = [user_from_revoke, user_to_revoke]
+                if status == 5:
+                    if last_user != ac.user:
+                        status = 6
+                        last_user = ac.user
+                    continue
 
-        if any(confirms):
-            status = 1
-            if all(confirms):
-                status = 2
-
-        if any(revokes):
-            status = 3
-            if all(revokes):
-                status = 4
+                if status == 2:
+                    status = 6
+                    last_user = ac.user
+                    continue
 
         return Status[status]
 

@@ -269,7 +269,6 @@ def delete_from_trade(lot: Lot, devices: List):
 
     drop_of_lot = []
     without_confirms = []
-    # import pdb; pdb.set_trace()
     for dev in devices:
         if dev.trading_for_web(lot) in ['NeedConfirmation', 'Confirm', 'NeedConfirmRevoke']:
             drop_of_lot.append(dev)
