@@ -181,17 +181,17 @@ class ConfirmView(ConfirmMixin):
            then remove the list this device of the list of devices of this action
         """
         real_devices = []
+        trade = data['action']
+        lot = trade.lot
         for dev in data['devices']:
-            ac = dev.last_action_trading
-            if ac.type == Confirm.t and not ac.user == g.user:
-                real_devices.append(dev)
-
-        data['devices'] = OrderedSet(real_devices)
+            if dev.trading(lot) not in ['NeedConfirmation', 'NeedConfirmRevoke']:
+                raise ValidationError('Some devices not possible confirm.')
 
         # Change the owner for every devices
         for dev in data['devices']:
-            user_to = data['action'].user_to
-            dev.change_owner(user_to)
+            if dev.trading_for_web(lot) == 'NeedConfirmation':
+                user_to = data['action'].user_to
+                dev.change_owner(user_to)
 
 
 class RevokeView(ConfirmMixin):

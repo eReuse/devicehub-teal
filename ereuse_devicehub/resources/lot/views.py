@@ -261,8 +261,8 @@ class LotDeviceView(LotBaseChildrenView):
 
 
 def delete_from_trade(lot: Lot, devices: List):
-    users = [lot.trade.user_from.id, lot.trade.user_to.id]
-    if g.user.id not in users:
+    users = [lot.trade.user_from, lot.trade.user_to]
+    if g.user not in users:
         # theoretically this case is impossible
         txt = 'This is not your trade'
         raise ma.ValidationError(txt)
@@ -302,57 +302,4 @@ def delete_from_trade(lot: Lot, devices: List):
         db.session.add(phantom_revoke)
 
     lot.devices.difference_update(OrderedSet(drop_of_lot))
-    return revoke
-
-
-def delete_from_trade2(lot: Lot, ids: Set[int]):
-    users = [lot.trade.user_from.id, lot.trade.user_to.id]
-    if not g.user.id in users:
-        # theoretically this case is impossible
-        txt = 'This is not your trade'
-        raise ma.ValidationError(txt)
-
-    devices = set(Device.query.filter(Device.id.in_(ids)).filter(
-        Device.owner_id.in_(users)))
-
-    # Now we need to know which devices we need extract of the lot
-    without_confirms = set() # set of devs without confirms of user2
-
-    # if the trade need confirmation, then extract all devs than
-    # have only one confirmation and is from the same user than try to do
-    # now the revoke action
-    if lot.trade.confirm:
-        for dev in devices:
-            # if have only one confirmation
-            # then can be revoked and deleted of the lot
-            # Confirm of dev.trading mean that there are only one confirmation
-            # and the first user than put this device in trade is the actual g.user
-            if dev.trading(lot) == 'Confirm':
-                without_confirms.add(dev)
-                dev.reset_owner()
-
-    # we need to mark one revoke for every devs
-    revoke = Revoke(action=lot.trade, user=g.user, devices=devices)
-    db.session.add(revoke)
-
-    if not lot.trade.confirm:
-        # if the trade is with phantom account
-        without_confirms = devices
-
-    if without_confirms:
-        phantom = lot.trade.user_to
-        if lot.trade.user_to == g.user:
-            phantom = lot.trade.user_from
-
-        phantom_revoke = Revoke(
-            action=lot.trade,
-            user=phantom,
-            devices=without_confirms
-        )
-        db.session.add(phantom_revoke)
-
-        lot.devices.difference_update(without_confirms)
-        # TODO @cayop ?? we dont need  this line
-        lot.trade.devices = lot.devices
-
     return revoke
