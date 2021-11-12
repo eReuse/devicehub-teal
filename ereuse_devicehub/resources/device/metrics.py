@@ -89,7 +89,6 @@ class Metrics(MetricsMix):
             trade['status_receiver_created'] = self.act.created
             return
 
-        # import pdb; pdb.set_trace()
         # necesitamos poder poner un cambio de estado de un trade mas antiguo que last_trade
         # lo mismo con confirm
 
@@ -148,9 +147,7 @@ class Metrics(MetricsMix):
         if the action is one trade action, is possible than have a list of confirmations.
         Get the doble confirm for to know if this trade is confirmed or not.
         """
-        if self.device.trading == 'TradeConfirmed':
-            return True
-        return False
+        return self.device.trading(self.act.lot, simple=True)
 
     def get_trade(self):
         """

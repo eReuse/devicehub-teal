@@ -317,6 +317,14 @@ class ActionDevice(db.Model):
                         index=True,
                         server_default=db.text('CURRENT_TIMESTAMP'))
     created.comment = """When Devicehub created this."""
+    author_id = Column(UUID(as_uuid=True),
+                       ForeignKey(User.id),
+                       nullable=False,
+                       default=lambda: g.user.id)
+    # todo compute the org
+    author = relationship(User,
+                          backref=backref('authored_actions_device', lazy=True, collection_class=set),
+                          primaryjoin=author_id == User.id)
 
     def __init__(self, **kwargs) -> None:
         self.created = kwargs.get('created', datetime.now(timezone.utc))
@@ -1610,11 +1618,11 @@ class Revoke(Confirm):
     """Users can revoke one confirmation of one action trade"""
 
 
-class ConfirmRevoke(Confirm):
-    """Users can confirm and accept one action revoke"""
+# class ConfirmRevoke(Confirm):
+#     """Users can confirm and accept one action revoke"""
 
-    def __repr__(self) -> str:
-        return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
+#     def __repr__(self) -> str:
+#         return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
 
 
 class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):

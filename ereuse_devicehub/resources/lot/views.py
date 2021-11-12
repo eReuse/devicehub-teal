@@ -1,4 +1,5 @@
 import uuid
+from sqlalchemy.util import OrderedSet
 from collections import deque
 from enum import Enum
 from typing import Dict, List, Set, Union
@@ -13,7 +14,7 @@ from teal.resource import View
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.device.models import Device, Computer
-from ereuse_devicehub.resources.action.models import Trade, Confirm, Revoke, ConfirmRevoke
+from ereuse_devicehub.resources.action.models import Trade, Confirm, Revoke
 from ereuse_devicehub.resources.lot.models import Lot, Path
 
 
@@ -230,7 +231,7 @@ class LotDeviceView(LotBaseChildrenView):
             return
 
         devices = set(Device.query.filter(Device.id.in_(ids)).filter(
-            Device.owner==g.user))
+                        Device.owner == g.user))
 
         lot.devices.update(devices)
 
@@ -246,7 +247,8 @@ class LotDeviceView(LotBaseChildrenView):
             return
 
         if lot.trade:
-            return delete_from_trade(lot, ids)
+            devices = Device.query.filter(Device.id.in_(ids)).all()
+            return delete_from_trade(lot, devices)
 
         if not g.user == lot.owner:
             txt = 'This is not your lot'
@@ -258,49 +260,45 @@ class LotDeviceView(LotBaseChildrenView):
         lot.devices.difference_update(devices)
 
 
-def delete_from_trade(lot: Lot, ids: Set[int]):
-    users = [lot.trade.user_from.id, lot.trade.user_to.id]
-    if not g.user.id in users:
+def delete_from_trade(lot: Lot, devices: List):
+    users = [lot.trade.user_from, lot.trade.user_to]
+    if g.user not in users:
         # theoretically this case is impossible
         txt = 'This is not your trade'
         raise ma.ValidationError(txt)
 
-    devices = set(Device.query.filter(Device.id.in_(ids)).filter(
-        Device.owner_id.in_(users)))
+    # we need lock the action revoke for devices than travel for futures trades
+    for dev in devices:
+        if dev.owner not in users:
+            txt = 'This is not your device'
+            raise ma.ValidationError(txt)
 
-    # Now we need to know which devices we need extract of the lot
-    without_confirms = set() # set of devs without confirms of user2
+    drop_of_lot = []
+    without_confirms = []
+    for dev in devices:
+        if dev.trading(lot) in ['NeedConfirmation', 'Confirm', 'NeedConfirmRevoke']:
+            drop_of_lot.append(dev)
+            dev.reset_owner()
 
-    # if the trade need confirmation, then extract all devs than
-    # have only one confirmation and is from the same user than try to do
-    # now the revoke action
-    if lot.trade.confirm:
-        for dev in devices:
-            # if have only one confirmation
-            # then can be revoked and deleted of the lot
-            # Confirm of dev.trading mean that there are only one confirmation
-            # and the first user than put this device in trade is the actual g.user
-            if dev.trading == 'Confirm': 
-                without_confirms.add(dev)
-                dev.reset_owner()
+        if not lot.trade.confirm:
+            drop_of_lot.append(dev)
+            without_confirms.append(dev)
+            dev.reset_owner()
 
-    # we need to mark one revoke for every devs
-    revoke = Revoke(action=lot.trade, user=g.user, devices=devices)
+    revoke = Revoke(action=lot.trade, user=g.user, devices=set(devices))
     db.session.add(revoke)
 
-    if not lot.trade.confirm:
-        # if the trade is with phantom account
-        without_confirms = devices
-
     if without_confirms:
-        confirm_revoke = ConfirmRevoke(
-            action=revoke,
-            user=g.user,
-            devices=without_confirms
+        phantom = lot.trade.user_to
+        if lot.trade.user_to == g.user:
+            phantom = lot.trade.user_from
+
+        phantom_revoke = Revoke(
+            action=lot.trade,
+            user=phantom,
+            devices=set(without_confirms)
         )
-        db.session.add(confirm_revoke)
+        db.session.add(phantom_revoke)
 
-        lot.devices.difference_update(without_confirms)
-        lot.trade.devices = lot.devices
-
+    lot.devices.difference_update(OrderedSet(drop_of_lot))
     return revoke

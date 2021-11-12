@@ -1,5 +1,6 @@
 import pathlib
 import copy
+import time
 from flask import g
 from contextlib import suppress
 from fractions import Fraction
@@ -311,75 +312,90 @@ class Device(Thing):
         return history
 
     @property
-    def trading(self):
+    def tradings(self):
+        return {str(x.id): self.trading(x.lot) for x in self.actions if x.t == 'Trade'}
+
+    def trading(self, lot, simple=None):
         """The trading state, or None if no Trade action has
-        ever been performed to this device. This extract the posibilities for to do"""
-
-        # trade = 'Trade'
-        confirm = 'Confirm'
-        need_confirm = 'NeedConfirmation'
-        double_confirm = 'TradeConfirmed'
-        revoke = 'Revoke'
-        revoke_pending = 'RevokePending'
-        confirm_revoke = 'ConfirmRevoke'
-        # revoke_confirmed = 'RevokeConfirmed'
-
-        # return the correct status of trade depending of the user
-
-        # #### CASES #####
-        # User1 == owner of trade (This user have automatic Confirmation)
-        # =======================
-        # if the last action is  => only allow to do
-        # ==========================================
-        # Confirmation not User1 => Revoke
-        # Confirmation User1     => Revoke
-        # Revoke not User1       => ConfirmRevoke
-        # Revoke User1           => RevokePending
-        # RevokeConfirmation     => RevokeConfirmed
-        #
-        #
-        # User2 == Not owner of trade
-        # =======================
-        # if the last action is  => only allow to do
-        # ==========================================
-        # Confirmation not User2 => Confirm
-        # Confirmation User2     => Revoke
-        # Revoke not User2       => ConfirmRevoke
-        # Revoke User2           => RevokePending
-        # RevokeConfirmation     => RevokeConfirmed
-
-        ac = self.last_action_trading
-        if not ac:
+        ever been performed to this device. This extract the posibilities for to do.
+        This method is performed for show in the web.
+        If you need to do one simple and generic response you can put simple=True for that."""
+        if not hasattr(lot, 'trade'):
             return
 
-        first_owner = self.which_user_put_this_device_in_trace()
+        Status = {0: 'Trade',
+                  1: 'Confirm',
+                  2: 'NeedConfirmation',
+                  3: 'TradeConfirmed',
+                  4: 'Revoke',
+                  5: 'NeedConfirmRevoke',
+                  6: 'RevokeConfirmed'}
 
-        if ac.type == confirm_revoke:
-            # can to do revoke_confirmed
-            return confirm_revoke
+        trade = lot.trade
+        user_from = trade.user_from
+        user_to = trade.user_to
+        status = 0
+        last_user = None
 
-        if ac.type == revoke:
-            if ac.user == g.user:
-                # can todo revoke_pending
-                return revoke_pending
-            else:
-                # can to do confirm_revoke
-                return revoke
+        if not hasattr(trade, 'acceptances'):
+            return Status[status]
 
-        if ac.type == confirm:
-            if not first_owner:
-                return
+        for ac in self.actions:
+            if ac.t not in ['Confirm', 'Revoke']:
+                continue
 
-            if ac.user == first_owner:
-                if first_owner == g.user:
-                    # can to do revoke
-                    return confirm
-                else:
-                    # can to do confirm
-                    return need_confirm
-            else:
-                # can to do revoke
-                return double_confirm
+            if ac.user not in [user_from, user_to]:
+                continue
+
+            if ac.t == 'Confirm' and ac.action == trade:
+                if status in [0, 6]:
+                    if simple:
+                        status = 2
+                        continue
+                    status = 1
+                    last_user = ac.user
+                    if ac.user == user_from and user_to == g.user:
+                        status = 2
+                    if ac.user == user_to and user_from == g.user:
+                        status = 2
+                    continue
+
+                if status in [1, 2]:
+                    if last_user != ac.user:
+                        status = 3
+                        last_user = ac.user
+                    continue
+
+                if status in [4, 5]:
+                    status = 3
+                    last_user = ac.user
+                    continue
+
+            if ac.t == 'Revoke' and ac.action == trade:
+                if status == 3:
+                    if simple:
+                        status = 5
+                        continue
+                    status = 4
+                    last_user = ac.user
+                    if ac.user == user_from and user_to == g.user:
+                        status = 5
+                    if ac.user == user_to and user_from == g.user:
+                        status = 5
+                    continue
+
+                if status in [4, 5]:
+                    if last_user != ac.user:
+                        status = 6
+                        last_user = ac.user
+                    continue
+
+                if status in [1, 2]:
+                    status = 6
+                    last_user = ac.user
+                    continue
+
+        return Status[status]
 
     @property
     def revoke(self):
@@ -485,15 +501,15 @@ class Device(Thing):
     def which_user_put_this_device_in_trace(self):
         """which is the user than put this device in this trade"""
         actions = copy.copy(self.actions)
-        actions.sort(key=lambda x: x.created)
         actions.reverse()
-        last_ac = None
         # search the automatic Confirm
         for ac in actions:
             if ac.type == 'Trade':
-                return last_ac.user
-            if ac.type == 'Confirm':
-                last_ac = ac
+                action_device = [x for x in ac.actions_device if x.device == self][0]
+                if action_device.author:
+                    return action_device.author
+
+                return ac.author
 
     def change_owner(self, new_user):
         """util for change the owner one device"""

@@ -3,7 +3,7 @@ from sqlalchemy.util import OrderedSet
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import (Trade, Confirm, ConfirmRevoke, 
+from ereuse_devicehub.resources.action.models import (Trade, Confirm,
                                                       Revoke, RevokeDocument, ConfirmDocument,
                                                       ConfirmRevokeDocument)
 from ereuse_devicehub.resources.user.models import User
@@ -181,17 +181,17 @@ class ConfirmView(ConfirmMixin):
            then remove the list this device of the list of devices of this action
         """
         real_devices = []
+        trade = data['action']
+        lot = trade.lot
         for dev in data['devices']:
-            ac = dev.last_action_trading
-            if ac.type == Confirm.t and not ac.user == g.user:
-                real_devices.append(dev)
-
-        data['devices'] = OrderedSet(real_devices)
+            if dev.trading(lot, simple=True) not in ['NeedConfirmation', 'NeedConfirmRevoke']:
+                raise ValidationError('Some devices not possible confirm.')
 
         # Change the owner for every devices
         for dev in data['devices']:
-            user_to = data['action'].user_to
-            dev.change_owner(user_to)
+            if dev.trading(lot) == 'NeedConfirmation':
+                user_to = data['action'].user_to
+                dev.change_owner(user_to)
 
 
 class RevokeView(ConfirmMixin):
@@ -215,57 +215,12 @@ class RevokeView(ConfirmMixin):
     def validate(self, data):
         """All devices need to have the status of DoubleConfirmation."""
 
-        ### check ###
-        if not data['devices']:
+        devices = data['devices']
+        if not devices:
             raise ValidationError('Devices not exist.')
 
-        for dev in data['devices']:
-            if not dev.trading == 'TradeConfirmed':
-                txt = 'Some of devices do not have enough to confirm for to do a revoke'
-                ValidationError(txt)
-        ### End check ###
-
-        ids = {d.id for d in data['devices']}
         lot = data['action'].lot
-        self.model = delete_from_trade(lot, ids)
-
-
-class ConfirmRevokeView(ConfirmMixin):
-    """Handler for manager the Confirmation register from post
-
-       request_confirm_revoke = {
-           'type': 'ConfirmRevoke',
-           'action': action_revoke.id,
-           'devices': [device_id]
-       }
-
-    """
-
-    Model = ConfirmRevoke
-
-    def validate(self, data):
-        """All devices need to have the status of revoke."""
-
-        if not data['action'].type == 'Revoke':
-            txt = 'Error: this action is not a revoke action'
-            ValidationError(txt)
-
-        for dev in data['devices']:
-            if not dev.trading == 'Revoke':
-                txt = 'Some of devices do not have revoke to confirm'
-                ValidationError(txt)
-
-        devices = OrderedSet(data['devices'])
-        data['devices'] = devices
-
-        # Change the owner for every devices
-        # data['action'] == 'Revoke'
-
-        trade = data['action'].action
-        for dev in devices:
-            dev.reset_owner()
-
-        trade.lot.devices.difference_update(devices)
+        self.model = delete_from_trade(lot, devices)
 
 
 class ConfirmDocumentMixin():

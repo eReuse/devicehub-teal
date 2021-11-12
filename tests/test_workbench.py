@@ -66,7 +66,7 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['rate']['rating'] == 1
     assert device['rate']['type'] == RateComputer.t
     # TODO JN why haven't same order in actions on each execution?
-    assert device['actions'][2]['type'] == BenchmarkProcessor.t or device['actions'][2]['type'] == BenchmarkRamSysbench.t
+    assert any([ac['type'] in [BenchmarkProcessor.t, BenchmarkRamSysbench.t] for ac in device['actions']])
     assert 'tag1' in [x['id'] for x in device['tags']]
 
 

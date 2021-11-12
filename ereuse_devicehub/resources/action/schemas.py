@@ -445,16 +445,13 @@ class ActionStatus(Action):
     @post_load
     def put_rol_user(self, data: dict):
         for dev in data['devices']:
-            if dev.trading in [None, 'Revoke', 'ConfirmRevoke']:
-                return data
-
             trades = [ac for ac in dev.actions if ac.t == 'Trade']
             if not trades:
                 return data
 
             trade = trades[-1]
 
-            if trade.user_to != g.user:
+            if trade.user_from == g.user:
                 data['rol_user'] = trade.user_to
             data['trade'] = trade
 
@@ -588,6 +585,10 @@ class Revoke(ActionWithMultipleDevices):
             raise ValidationError(txt)
 
 
+class ConfirmRevoke(Revoke):
+    pass
+
+
 class ConfirmDocument(ActionWithMultipleDocuments):
     __doc__ = m.Confirm.__doc__
     action = NestedOn('Action', only_query='id')
@@ -642,7 +643,7 @@ class RevokeDocument(ActionWithMultipleDocuments):
 
 
 class ConfirmRevokeDocument(ActionWithMultipleDocuments):
-    __doc__ = m.ConfirmRevoke.__doc__
+    __doc__ = m.ConfirmRevokeDocument.__doc__
     action = NestedOn('Action', only_query='id')
 
     @validates_schema
@@ -667,66 +668,6 @@ class ConfirmRevokeDocument(ActionWithMultipleDocuments):
                 raise ValidationError(txt)
 
             data['action'] = doc.actions[-1]
-
-
-class ConfirmRevoke(ActionWithMultipleDevices):
-    __doc__ = m.ConfirmRevoke.__doc__
-    action = NestedOn('Action', only_query='id')
-
-    @validates_schema
-    def validate_revoke(self, data: dict):
-        for dev in data['devices']:
-            # if device not exist in the Trade, then this query is wrong
-            if not dev in data['action'].devices:
-                txt = "Device {} not exist in the trade".format(dev.devicehub_id)
-                raise ValidationError(txt)
-
-        for doc in data.get('documents', []):
-            # if document not exist in the Trade, then this query is wrong
-            if not doc in data['action'].documents:
-                txt = "Document {} not exist in the trade".format(doc.file_name)
-                raise ValidationError(txt)
-
-    @validates_schema
-    def validate_docs(self, data):
-        """Check if there are or no one before confirmation,
-           This is not checked in the view becouse the list of documents is inmutable
-
-        """
-        if not data['devices'] == OrderedSet():
-            return
-
-        documents = []
-        for doc in data['documents']:
-            actions = copy.copy(doc.actions)
-            actions.reverse()
-            for ac in actions:
-                if ac == data['action']:
-                    # If document have the last action the action for confirm
-                    documents.append(doc)
-                    break
-
-                if ac.t == 'Revoke' and not ac.user == g.user:
-                    # If document is revoke before you can Confirm now
-                    # and revoke is an action of one other user
-                    documents.append(doc)
-                    break
-
-                if ac.t == ConfirmRevoke.t and ac.user == g.user:
-                    # If document is confirmed we don't need confirmed again
-                    break
-
-                if ac.t == Confirm.t:
-                    # if onwer of trade confirm again before than this user Confirm the
-                    # revoke, then is not possible confirm the revoke
-                    #
-                    # If g.user confirm the trade before do a ConfirmRevoke
-                    # then g.user can not to do the ConfirmRevoke more
-                    break
-
-        if not documents:
-            txt = 'No there are documents with revoke for confirm'
-            raise ValidationError(txt)
 
 
 class Trade(ActionWithMultipleDevices):

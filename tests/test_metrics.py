@@ -181,14 +181,13 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
                           query=[('filter', {'type': ['Computer']})])
 
     body1_lenovo = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Trade;foo@foo.com;'
-    body1_lenovo += 'foo2@foo.com;Supplier;False;Use;;'
+    body1_lenovo += 'foo2@foo.com;Supplier;NeedConfirmation;Use;;'
     body2_lenovo = ';;0;0;Trade;0;0\n'
 
     body1_acer = 'J2MA2;laptop-acer-aohappy-lusea0d010038879a01601-00:26:c7:8e:cb:8c;;Trade;'
-    body1_acer += 'foo@foo.com;foo2@foo.com;Supplier;False;;;;;0;'
+    body1_acer += 'foo@foo.com;foo2@foo.com;Supplier;NeedConfirmation;;;;;0;'
     body2_acer = ';;0;0;Trade;0;4692.0\n'
 
-    # import pdb; pdb.set_trace()
     assert body1_lenovo in csv_str
     assert body2_lenovo in csv_str
     assert body1_acer in csv_str
@@ -203,7 +202,7 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
                           query=[('filter', {'type': ['Computer']})])
 
     body1_lenovo = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Trade;foo@foo.com;'
-    body1_lenovo += 'foo2@foo.com;Supplier;False;Use;Use;'
+    body1_lenovo += 'foo2@foo.com;Supplier;NeedConfirmation;Use;Use;'
     body2_lenovo = ';;0;0;Trade;0;0\n'
     body2_acer = ';;0;0;Trade;0;4692.0\n'
 
@@ -353,8 +352,8 @@ def test_bug_trade_confirmed(user: UserClient, user2: UserClient):
                                  accept='text/csv',
                                  query=[('filter', {'type': ['Computer']})])
 
-    body_not_confirmed = "Trade;foo2@foo.com;foo@foo.com;Receiver;False;"
-    body_confirmed = "Trade;foo2@foo.com;foo@foo.com;Receiver;True;"
+    body_not_confirmed = "Trade;foo2@foo.com;foo@foo.com;Receiver;NeedConfirmation;"
+    body_confirmed = "Trade;foo2@foo.com;foo@foo.com;Receiver;TradeConfirmed;"
 
     assert body_not_confirmed in csv_not_confirmed
     assert body_confirmed in csv_confirmed
