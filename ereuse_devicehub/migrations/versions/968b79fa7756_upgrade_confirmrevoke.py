@@ -39,7 +39,7 @@ def upgrade():
         ac_id = ac.id
         revoke_id = ac.action_id
         trade_id = revokes[revoke_id]
-        sql_action = f"update {get_inv()}.action set type='Revoke' where type='ConfirmRevoke' and id='{ac_id}'"
+        sql_action = f"update {get_inv()}.action set type='Revoke' where id='{ac_id}'"
         sql_confirm = f"update {get_inv()}.confirm set action_id='{trade_id}' where id='{ac_id}'"
         con.execute(sql_action)
         con.execute(sql_confirm)
