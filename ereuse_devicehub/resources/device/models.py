@@ -313,12 +313,13 @@ class Device(Thing):
 
     @property
     def tradings(self):
-        return {str(x.id): self.trading_for_web(x.lot) for x in self.actions if x.t == 'Trade'}
+        return {str(x.id): self.trading(x.lot) for x in self.actions if x.t == 'Trade'}
 
-    def trading_for_web(self, lot):
+    def trading(self, lot, simple=None):
         """The trading state, or None if no Trade action has
         ever been performed to this device. This extract the posibilities for to do.
-        This method is performed for show in the web."""
+        This method is performed for show in the web.
+        If you need to do one simple and generic response you can put simple=True for that."""
         if not hasattr(lot, 'trade'):
             return
 
@@ -348,6 +349,9 @@ class Device(Thing):
 
             if ac.t == 'Confirm' and ac.action == trade:
                 if status in [0, 6]:
+                    if simple:
+                        status = 2
+                        continue
                     status = 1
                     last_user = ac.user
                     if ac.user == user_from and user_to == g.user:
@@ -369,6 +373,9 @@ class Device(Thing):
 
             if ac.t == 'Revoke' and ac.action == trade:
                 if status == 3:
+                    if simple:
+                        status = 5
+                        continue
                     status = 4
                     last_user = ac.user
                     if ac.user == user_from and user_to == g.user:
@@ -384,151 +391,6 @@ class Device(Thing):
                     continue
 
                 if status in [1, 2]:
-                    status = 6
-                    last_user = ac.user
-                    continue
-
-        return Status[status]
-
-    def trading_for_web2(self, lot):
-        """The trading state, or None if no Trade action has
-        ever been performed to this device. This extract the posibilities for to do.
-        This method is performed for show in the web."""
-        if not hasattr(lot, 'trade'):
-            return
-
-        Status = {0: 'Trade',
-                  1: 'Confirm',
-                  2: 'NeedConfirmation',
-                  3: 'TradeConfirmed',
-                  4: 'Revoke',
-                  5: 'NeedConfirmRevoke',
-                  6: 'RevokeConfirmed'}
-
-        trade = lot.trade
-        user_from = trade.user_from
-        user_to = trade.user_to
-        user_from_confirm = False
-        user_to_confirm = False
-        user_from_revoke = False
-        user_to_revoke = False
-        status = 0
-        last_action = {'confirm': 0, 'revoke': 0}
-
-        if not hasattr(trade, 'acceptances'):
-            return Status[status]
-
-        for ac in self.actions:
-            if ac.t not in ['Confirm', 'Revoke']:
-                continue
-
-            if ac.user not in [user_from, user_to]:
-                continue
-
-            if ac.t == 'Confirm' and ac.action == trade:
-                if ac.user == user_from:
-                    user_from_confirm = True
-                    last_action['confirm'] = time.mktime(ac.created.timetuple())
-                    user_from_revoke, user_to_revoke = False, False
-                elif ac.user == user_to:
-                    user_to_confirm = True
-                    last_action['confirm'] = time.mktime(ac.created.timetuple())
-                    user_from_revoke, user_to_revoke = False, False
-
-            if ac.t == 'Revoke' and ac.action == trade:
-                if ac.user == user_from:
-                    user_from_revoke = True
-                    last_action['revoke'] = time.mktime(ac.created.timetuple())
-                    user_from_confirm, user_to_confirm = False, False
-                elif ac.user == user_to:
-                    user_to_revoke = True
-                    last_action['revoke'] = time.mktime(ac.created.timetuple())
-                    user_from_confirm, user_to_confirm = False, False
-
-        confirms = [user_from_confirm, user_to_confirm]
-        revokes = [user_from_revoke, user_to_revoke]
-
-        confirm_vs_revoke = 'confirm' if last_action['confirm'] > last_action['revoke'] else 'revoke'
-        if any(confirms) and confirm_vs_revoke == 'confirm':
-            status = 1
-            if user_to_confirm and user_from == g.user:
-                status = 2
-            if user_from_confirm and user_to == g.user:
-                status = 2
-
-            if all(confirms):
-                status = 3
-
-        if any(revokes) and confirm_vs_revoke == 'revoke':
-            status = 4
-            if user_to_revoke and user_from == g.user:
-                status = 5
-            if user_from_revoke and user_to == g.user:
-                status = 5
-            if all(revokes):
-                status = 6
-
-        return Status[status]
-
-    def trading(self, lot):
-        """The trading state, or None if no Trade action has
-        ever been performed to this device. This extract the posibilities for to do.
-        This method is performed for show in the web."""
-        if not hasattr(lot, 'trade'):
-            return
-
-        Status = {0: 'Trade',
-                  2: 'NeedConfirmation',
-                  3: 'TradeConfirmed',
-                  5: 'NeedConfirmRevoke',
-                  6: 'RevokeConfirmed'}
-
-        trade = lot.trade
-        user_from = trade.user_from
-        user_to = trade.user_to
-        status = 0
-        last_user = None
-
-        if not hasattr(trade, 'acceptances'):
-            return Status[status]
-
-        for ac in self.actions:
-            if ac.t not in ['Confirm', 'Revoke']:
-                continue
-
-            if ac.user not in [user_from, user_to]:
-                continue
-
-            if ac.t == 'Confirm' and ac.action == trade:
-                if status in [0, 6]:
-                    status = 2
-                    last_user = ac.user
-                    continue
-
-                if status == 2:
-                    if last_user != ac.user:
-                        status = 3
-                        last_user = ac.user
-                    continue
-
-                if status == 5:
-                    status = 3
-                    last_user = ac.user
-                    continue
-
-            if ac.t == 'Revoke' and ac.action == trade:
-                if status == 3:
-                    status = 5
-                    last_user = ac.user
-                    continue
-
-                if status == 5:
-                    if last_user != ac.user:
-                        status = 6
-                        last_user = ac.user
-                    continue
-
-                if status == 2:
                     status = 6
                     last_user = ac.user
                     continue

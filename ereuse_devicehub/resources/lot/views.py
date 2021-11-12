@@ -231,7 +231,7 @@ class LotDeviceView(LotBaseChildrenView):
             return
 
         devices = set(Device.query.filter(Device.id.in_(ids)).filter(
-            Device.owner==g.user))
+                        Device.owner == g.user))
 
         lot.devices.update(devices)
 
@@ -276,7 +276,7 @@ def delete_from_trade(lot: Lot, devices: List):
     drop_of_lot = []
     without_confirms = []
     for dev in devices:
-        if dev.trading_for_web(lot) in ['NeedConfirmation', 'Confirm', 'NeedConfirmRevoke']:
+        if dev.trading(lot) in ['NeedConfirmation', 'Confirm', 'NeedConfirmRevoke']:
             drop_of_lot.append(dev)
             dev.reset_owner()
 
@@ -284,7 +284,6 @@ def delete_from_trade(lot: Lot, devices: List):
             drop_of_lot.append(dev)
             without_confirms.append(dev)
             dev.reset_owner()
-
 
     revoke = Revoke(action=lot.trade, user=g.user, devices=set(devices))
     db.session.add(revoke)

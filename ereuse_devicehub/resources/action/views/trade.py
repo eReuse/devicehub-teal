@@ -184,12 +184,12 @@ class ConfirmView(ConfirmMixin):
         trade = data['action']
         lot = trade.lot
         for dev in data['devices']:
-            if dev.trading(lot) not in ['NeedConfirmation', 'NeedConfirmRevoke']:
+            if dev.trading(lot, simple=True) not in ['NeedConfirmation', 'NeedConfirmRevoke']:
                 raise ValidationError('Some devices not possible confirm.')
 
         # Change the owner for every devices
         for dev in data['devices']:
-            if dev.trading_for_web(lot) == 'NeedConfirmation':
+            if dev.trading(lot) == 'NeedConfirmation':
                 user_to = data['action'].user_to
                 dev.change_owner(user_to)
 

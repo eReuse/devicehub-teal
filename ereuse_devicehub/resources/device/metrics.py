@@ -147,7 +147,7 @@ class Metrics(MetricsMix):
         if the action is one trade action, is possible than have a list of confirmations.
         Get the doble confirm for to know if this trade is confirmed or not.
         """
-        return self.device.trading(self.act.lot)
+        return self.device.trading(self.act.lot, simple=True)
 
     def get_trade(self):
         """

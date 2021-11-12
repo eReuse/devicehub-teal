@@ -1828,7 +1828,6 @@ def test_trade_case2(user: UserClient, user2: UserClient):
 
     device1, device2 = trade.devices
 
-    # import pdb; pdb.set_trace()
     assert device1.actions[-2].t == 'Trade'
     assert device1.actions[-1].t == 'Confirm'
     assert device1.actions[-1].user == trade.user_to
