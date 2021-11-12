@@ -44,7 +44,6 @@ def upgrade():
         con.execute(sql_action)
         con.execute(sql_confirm)
 
-    assert 1 == 2
 
 
 
