@@ -5,14 +5,32 @@ from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.deliverynote import schemas as s_deliverynote
 from ereuse_devicehub.resources.device import schemas as s_device
 from ereuse_devicehub.resources.action import schemas as s_action
-from ereuse_devicehub.resources.tradedocument import schemas as s_document
 from ereuse_devicehub.resources.enums import TransferState
 from ereuse_devicehub.resources.lot import models as m
 from ereuse_devicehub.resources.models import STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing
 
 
-class Lot(Thing):
+TRADE_VALUES = (
+    'id',
+    'user_from.email',
+    'user_to.email',
+    'user_from.id',
+    'user_to.id',
+    'user_to.code',
+    'user_from.code'
+)
+
+
+DOCUMENTS_VALUES = (
+    'id',
+    'file_name',
+    'total_weight',
+    'trading'
+)
+
+
+class Old_Lot(Thing):
     id = f.UUID(dump_only=True)
     name = SanitizedStr(validate=f.validate.Length(max=STR_SIZE), required=True)
     description = SanitizedStr(description=m.Lot.description.comment)
@@ -29,4 +47,11 @@ class Lot(Thing):
     receiver_address = SanitizedStr(validate=f.validate.Length(max=42))
     deliverynote = NestedOn(s_deliverynote.Deliverynote, dump_only=True)
     documents = NestedOn('TradeDocument', many=True, dump_only=True)
-    trade = NestedOn(s_action.Trade, dump_only=True)
+
+
+class Lot(Thing):
+    id = f.UUID(dump_only=True)
+    name = SanitizedStr(validate=f.validate.Length(max=STR_SIZE), required=True)
+    description = SanitizedStr(description=m.Lot.description.comment)
+    trade = f.Nested(s_action.Trade, dump_only=True, only=TRADE_VALUES)
+    documents = f.Nested('TradeDocument', many=True, dump_only=True, only=DOCUMENTS_VALUES)

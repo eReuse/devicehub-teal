@@ -313,7 +313,6 @@ def test_post_get_lot(user: UserClient):
     assert l['name'] == 'Foo'
     l, _ = user.get(res=Lot, item=l['id'])
     assert l['name'] == 'Foo'
-    assert not l['children']
 
 
 def test_lot_post_add_children_view_ui_tree_normal(user: UserClient):
@@ -355,38 +354,40 @@ def test_lot_post_add_children_view_ui_tree_normal(user: UserClient):
 
 
 @pytest.mark.mvp
-def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_lot_post_add_remove_device_view(user: UserClient):
     """Tests adding a device to a lot using POST and
     removing it with DELETE.
     """
     # todo check with components
-    with app.app_context():
-        g.user = User.query.one()
-        device = Desktop(serial_number='foo',
-                         model='bar',
-                         manufacturer='foobar',
-                         chassis=ComputerChassis.Lunchbox,
-                         owner_id=user.user['id'])
-        db.session.add(device)
-        db.session.commit()
-        device_id = device.id
-        devicehub_id = device.devicehub_id
+    g.user = User.query.one()
+    device = Desktop(serial_number='foo',
+                     model='bar',
+                     manufacturer='foobar',
+                     chassis=ComputerChassis.Lunchbox,
+                     owner_id=user.user['id'])
+    db.session.add(device)
+    db.session.commit()
+    device_id = device.id
+    devicehub_id = device.devicehub_id
     parent, _ = user.post(({'name': 'lot'}), res=Lot)
     lot, _ = user.post({},
                        res=Lot,
                        item='{}/devices'.format(parent['id']),
                        query=[('id', device_id)])
-    assert lot['devices'][0]['id'] == device_id, 'Lot contains device'
-    device, _ = user.get(res=Device, item=devicehub_id)
-    assert len(device['lots']) == 1
-    assert device['lots'][0]['id'] == lot['id'], 'Device is inside lot'
+    lot = Lot.query.filter_by(id=lot['id']).one()
+    assert list(lot.devices)[0].id == device_id, 'Lot contains device'
+    device = Device.query.filter_by(devicehub_id=devicehub_id).one()
+    assert len(device.lots) == 1
+    # assert device['lots'][0]['id'] == lot['id'], 'Device is inside lot'
+    assert list(device.lots)[0].id == lot.id, 'Device is inside lot'
 
     # Remove the device
-    lot, _ = user.delete(res=Lot,
-                         item='{}/devices'.format(parent['id']),
-                         query=[('id', device_id)],
-                         status=200)
-    assert not len(lot['devices'])
+    user.delete(res=Lot,
+                item='{}/devices'.format(parent['id']),
+                query=[('id', device_id)],
+                status=200)
+    assert not len(lot.devices)
 
 
 @pytest.mark.mvp
@@ -416,8 +417,9 @@ def test_lot_error_add_device_from_other_user(user: UserClient):
                        res=Lot,
                        item='{}/devices'.format(parent['id']),
                        query=[('id', device_id)])
-    assert lot['devices'] == [], 'Lot contains device'
-    assert len(lot['devices']) == 0
+    lot = Lot.query.filter_by(id=lot['id']).one()
+    assert list(lot.devices) == [], 'Lot contains device'
+    assert len(lot.devices) == 0
 
 
 @pytest.mark.mvp
