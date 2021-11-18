@@ -14,6 +14,7 @@ from ereuse_devicehub.resources import enums
 from ereuse_devicehub.resources.device import models as m, states
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing, UnitCodes
+# from ereuse_devicehub.resources.action.schemas import Action as s_action
 
 
 class Device(Thing):
@@ -96,6 +97,77 @@ class Device(Thing):
                                       field_names=['actions'])
 
 
+ACTIONS_VALUE = (
+    'id',
+    'type',
+    'created'
+)
+
+
+TAGS_VALUE = (
+    'id',
+    'printable',
+    'code',
+    'device',
+    'type',
+    'url'
+)
+
+
+class Device2(Thing):
+    __doc__ = m.Device.__doc__
+    id = Integer(description=m.Device.id.comment, dump_only=True)
+    hid = SanitizedStr(lower=True, description=m.Device.hid.comment)
+    tags = f.Nested('Tag',
+                    many=True,
+                    collection_class=OrderedSet,
+                    description='A set of tags that identify the device.',
+                    only=TAGS_VALUE)
+    model = SanitizedStr(lower=True,
+                         validate=Length(max=STR_BIG_SIZE),
+                         description=m.Device.model.comment)
+    manufacturer = SanitizedStr(lower=True,
+                                validate=Length(max=STR_SIZE),
+                                description=m.Device.manufacturer.comment)
+    serial_number = SanitizedStr(lower=True,
+                                 validate=Length(max=STR_BIG_SIZE),
+                                 data_key='serialNumber')
+    # actions = NestedOn('Action', many=True, dump_only=True, description=m.Device.actions.__doc__)
+    actions = f.Nested('Action', only=ACTIONS_VALUE, many=True)
+    # actions = f.Nested(s_actions.Action(only=ACTIONS_VALUE),
+    #                    many=True,
+    #                    dump_only=True,
+    #                    description=m.Device.actions.__doc__)
+    # actions_one = NestedOn('Action', many=True, load_only=True, collection_class=OrderedSet)
+    url = URL(dump_only=True, description=m.Device.url.__doc__)
+    # lots = NestedOn('Lot',
+    #                 many=True,
+    #                 dump_only=True,
+    #                 description='The lots where this device is directly under.')
+    tradings = Dict(dump_only=True, description='')
+    traking = EnumField(states.Traking, dump_only=True, description=m.Device.physical.__doc__)
+    revoke = UUID(dump_only=True)
+    allocated = Boolean(description=m.Device.allocated.comment)
+    devicehub_id = SanitizedStr(data_key='devicehubID',
+                                description=m.Device.devicehub_id.comment)
+
+
+COMPONENTS_VALUES = (
+    'type',
+    'manufacturer',
+    'model'
+)
+
+
+class Computer2(Device):
+    __doc__ = m.Computer.__doc__
+    # components = f.Nested(Component(only=COMPONENTS_VALUES),
+    #                       many=True,
+    #                       dump_only=True,
+    #                       collection_class=OrderedSet,
+    #                       description='The components that are inside this computer.')
+
+
 class Computer(Device):
     __doc__ = m.Computer.__doc__
     components = NestedOn('Component',
@@ -128,7 +200,7 @@ class Computer(Device):
                        description=m.Computer.privacy.__doc__)
     amount = Integer(validate=f.validate.Range(min=0, max=100),
                       description=m.Computer.amount.__doc__)
-    # author_id = NestedOn(s_user.User,only_query='author_id')
+    # author_id = NestedOn(s_user.User, only_query='author_id')
     owner_id = UUID(data_key='ownerID')
     transfer_state = EnumField(enums.TransferState, description=m.Computer.transfer_state.comment)
     receiver_id = UUID(data_key='receiverID')
