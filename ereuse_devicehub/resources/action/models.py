@@ -1774,6 +1774,8 @@ class MoveOnDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
 
 
 class Delete(ActionWithMultipleDevices):
+    # TODO in a new architecture we need rename this class to Deactivate
+
     """The act save in device who and why this devices was delete.
     We never delete one device, but we can deactivate."""
     pass

@@ -2827,7 +2827,7 @@ def test_delete_devices(user: UserClient):
 
     snap, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
     request = {'type': 'Delete', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z'}
-   
+
     action, _ = user.post(res=models.Action, data=request)
 
     # Check get one device
@@ -2841,11 +2841,38 @@ def test_delete_devices(user: UserClient):
     assert db_device.active == False
 
 
+
     # Check use of filter from frontend
     url = '/devices/?filter={"type":["Computer"]}'
 
     devices, res = user.get(url, None)
     assert len(devices['items']) == 0
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_delete_devices_check_sync(user: UserClient):
+    """This action deactive one device and simulate than one devices is delete."""
+
+    file_snap1 = file('1-device-with-components.snapshot')
+    file_snap2 = file('2-device-with-components.snapshot')
+    snap, _ = user.post(file_snap, res=models.Snapshot)
+    request = {'type': 'Delete', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z'}
+
+    action, _ = user.post(res=models.Action, data=request)
+
+    device1 = Device.query.filter_by(id=snap['device']['id']).one()
+
+    snap2, _ = user.post(file_snap, res=models.Snapshot)
+    request2 = {'type': 'Delete', 'devices': [snap2['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z'}
+
+    action2, _ = user.post(res=models.Action, data=request2)
+
+    device2 = Device.query.filter_by(id=snap2['device']['id']).one()
+    # TODO problems with alembic and migrations
+    # TODO check than device2 is an other device than device1
+    # TODO check than device2 have the components of device1
+    import pdb; pdb.set_trace()
 
 
 @pytest.mark.mvp
