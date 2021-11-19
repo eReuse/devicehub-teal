@@ -1,7 +1,7 @@
 import datetime
 
 from marshmallow import post_load, pre_load, fields as f
-from marshmallow.fields import Boolean, Date, DateTime, Float, Integer, List, Str, String, UUID
+from marshmallow.fields import Boolean, Date, DateTime, Float, Integer, List, Str, String, UUID, Dict
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
@@ -40,22 +40,24 @@ class Device(Thing):
     width = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.width.comment)
     height = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.height.comment)
     depth = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.depth.comment)
+    # TODO TimeOut 2. Comment actions and lots if there are time out.
     actions = NestedOn('Action', many=True, dump_only=True, description=m.Device.actions.__doc__)
+    # TODO TimeOut 2. Comment actions_one and lots if there are time out.
     actions_one = NestedOn('Action', many=True, load_only=True, collection_class=OrderedSet)
     problems = NestedOn('Action', many=True, dump_only=True, description=m.Device.problems.__doc__)
     url = URL(dump_only=True, description=m.Device.url.__doc__)
+    # TODO TimeOut 2. Comment actions and lots if there are time out.
     lots = NestedOn('Lot',
                     many=True,
                     dump_only=True,
                     description='The lots where this device is directly under.')
     rate = NestedOn('Rate', dump_only=True, description=m.Device.rate.__doc__)
     price = NestedOn('Price', dump_only=True, description=m.Device.price.__doc__)
-    # trading = EnumField(states.Trading, dump_only=True, description=m.Device.trading.__doc__)
-    trading = SanitizedStr(dump_only=True, description='')
+    tradings = Dict(dump_only=True, description='')
     physical = EnumField(states.Physical, dump_only=True, description=m.Device.physical.__doc__)
-    traking= EnumField(states.Traking, dump_only=True, description=m.Device.physical.__doc__)
+    traking = EnumField(states.Traking, dump_only=True, description=m.Device.physical.__doc__)
     usage = EnumField(states.Usage, dump_only=True, description=m.Device.physical.__doc__)
-    revoke =  UUID(dump_only=True)
+    revoke = UUID(dump_only=True)
     physical_possessor = NestedOn('Agent', dump_only=True, data_key='physicalPossessor')
     production_date = DateTime('iso',
                                description=m.Device.updated.comment,
@@ -99,6 +101,7 @@ class Device(Thing):
 
 class Computer(Device):
     __doc__ = m.Computer.__doc__
+    # TODO TimeOut 1. Comment components if there are time out.
     components = NestedOn('Component',
                           many=True,
                           dump_only=True,
@@ -129,7 +132,7 @@ class Computer(Device):
                        description=m.Computer.privacy.__doc__)
     amount = Integer(validate=f.validate.Range(min=0, max=100),
                       description=m.Computer.amount.__doc__)
-    # author_id = NestedOn(s_user.User,only_query='author_id')
+    # author_id = NestedOn(s_user.User, only_query='author_id')
     owner_id = UUID(data_key='ownerID')
     transfer_state = EnumField(enums.TransferState, description=m.Computer.transfer_state.comment)
     receiver_id = UUID(data_key='receiverID')

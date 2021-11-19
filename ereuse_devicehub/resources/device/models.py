@@ -1,17 +1,17 @@
 import pathlib
 import copy
+import time
 from flask import g
 from contextlib import suppress
 from fractions import Fraction
 from itertools import chain
 from operator import attrgetter
 from typing import Dict, List, Set
+from flask_sqlalchemy import event
 
 from boltons import urlutils
 from citext import CIText
-from flask_sqlalchemy import event
 from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
-from flask import g
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
     Sequence, SmallInteger, Unicode, inspect, text
@@ -34,11 +34,12 @@ from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, Co
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity, TransferState
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing, listener_reset_field_updated_in_actual_time
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.device.metrics import Metrics
 
 
 def create_code(context):
-    _id = Device.query.order_by(Device.id.desc()).first() or 1
-    if not _id == 1:
+    _id = Device.query.order_by(Device.id.desc()).first() or 3
+    if not _id == 3:
         _id = _id.id + 1
     return hashcode.encode(_id)
 
@@ -173,7 +174,16 @@ class Device(Thing):
 
         Actions are returned by descending ``created`` time.
         """
-        return sorted(chain(self.actions_multiple, self.actions_one), key=lambda x: x.created)
+        actions_multiple = copy.copy(self.actions_multiple)
+        actions_one = copy.copy(self.actions_one)
+
+        for ac in actions_multiple:
+            ac.real_created = ac.actions_device[0].created
+
+        for ac in actions_one:
+            ac.real_created = ac.created
+
+        return sorted(chain(actions_multiple, actions_one), key=lambda x: x.real_created)
 
     @property
     def problems(self):
@@ -208,10 +218,10 @@ class Device(Thing):
                 if isinstance(c, ColumnProperty)
                 and not getattr(c, 'foreign_keys', None)
                 and c.key not in self._NON_PHYSICAL_PROPS}
-        
+
     @property
     def public_properties(self) -> Dict[str, object or None]:
-        """Fields that describe the properties of a device than next show 
+        """Fields that describe the properties of a device than next show
            in the public page.
 
         :return A dictionary:
@@ -232,7 +242,7 @@ class Device(Thing):
         :return a list of actions:
         """
         hide_actions = ['Price', 'EreusePrice']
-        actions = [ac for ac in self.actions if not ac.t in hide_actions]
+        actions = [ac for ac in self.actions if ac.t not in hide_actions]
         actions.reverse()
         return actions
 
@@ -289,7 +299,7 @@ class Device(Thing):
         status_actions = [ac.t for ac in states.Status.actions()]
         history = []
         for ac in self.actions:
-            if not ac.t in status_actions:
+            if ac.t not in status_actions:
                 continue
             if not history:
                 history.append(ac)
@@ -304,75 +314,90 @@ class Device(Thing):
         return history
 
     @property
-    def trading(self):
+    def tradings(self):
+        return {str(x.id): self.trading(x.lot) for x in self.actions if x.t == 'Trade'}
+
+    def trading(self, lot, simple=None):
         """The trading state, or None if no Trade action has
-        ever been performed to this device. This extract the posibilities for to do"""
+        ever been performed to this device. This extract the posibilities for to do.
+        This method is performed for show in the web.
+        If you need to do one simple and generic response you can put simple=True for that."""
+        if not hasattr(lot, 'trade'):
+            return
 
-        # trade = 'Trade'
-        confirm = 'Confirm'
-        need_confirm = 'NeedConfirmation'
-        double_confirm = 'TradeConfirmed'
-        revoke = 'Revoke'
-        revoke_pending = 'RevokePending'
-        confirm_revoke = 'ConfirmRevoke'
-        # revoke_confirmed = 'RevokeConfirmed'
+        Status = {0: 'Trade',
+                  1: 'Confirm',
+                  2: 'NeedConfirmation',
+                  3: 'TradeConfirmed',
+                  4: 'Revoke',
+                  5: 'NeedConfirmRevoke',
+                  6: 'RevokeConfirmed'}
 
-        # return the correct status of trade depending of the user
+        trade = lot.trade
+        user_from = trade.user_from
+        user_to = trade.user_to
+        status = 0
+        last_user = None
 
-        ##### CASES #####
-        ## User1 == owner of trade (This user have automatic Confirmation)
-        ## =======================
-        ## if the last action is  => only allow to do
-        ## ==========================================
-        ## Confirmation not User1 => Revoke
-        ## Confirmation User1     => Revoke
-        ## Revoke not User1       => ConfirmRevoke
-        ## Revoke User1           => RevokePending
-        ## RevokeConfirmation     => RevokeConfirmed
-        ##
-        ##
-        ## User2 == Not owner of trade
-        ## =======================
-        ## if the last action is  => only allow to do
-        ## ==========================================
-        ## Confirmation not User2 => Confirm
-        ## Confirmation User2     => Revoke
-        ## Revoke not User2       => ConfirmRevoke
-        ## Revoke User2           => RevokePending
-        ## RevokeConfirmation     => RevokeConfirmed
+        if not hasattr(trade, 'acceptances'):
+            return Status[status]
 
-        ac = self.last_action_trading
-        if not ac:
-            return 
+        for ac in self.actions:
+            if ac.t not in ['Confirm', 'Revoke']:
+                continue
 
-        first_owner = self.which_user_put_this_device_in_trace()
+            if ac.user not in [user_from, user_to]:
+                continue
 
-        if ac.type == confirm_revoke:
-            # can to do revoke_confirmed
-            return confirm_revoke
+            if ac.t == 'Confirm' and ac.action == trade:
+                if status in [0, 6]:
+                    if simple:
+                        status = 2
+                        continue
+                    status = 1
+                    last_user = ac.user
+                    if ac.user == user_from and user_to == g.user:
+                        status = 2
+                    if ac.user == user_to and user_from == g.user:
+                        status = 2
+                    continue
 
-        if ac.type == revoke: 
-            if ac.user == g.user:
-                # can todo revoke_pending
-                return revoke_pending
-            else:
-                # can to do confirm_revoke
-                return revoke
+                if status in [1, 2]:
+                    if last_user != ac.user:
+                        status = 3
+                        last_user = ac.user
+                    continue
 
-        if ac.type == confirm:
-            if not first_owner:
-                return
+                if status in [4, 5]:
+                    status = 3
+                    last_user = ac.user
+                    continue
 
-            if ac.user == first_owner:
-                if first_owner == g.user:
-                    # can to do revoke
-                    return confirm
-                else:
-                    # can to do confirm
-                    return need_confirm
-            else:
-                # can to do revoke
-                return double_confirm
+            if ac.t == 'Revoke' and ac.action == trade:
+                if status == 3:
+                    if simple:
+                        status = 5
+                        continue
+                    status = 4
+                    last_user = ac.user
+                    if ac.user == user_from and user_to == g.user:
+                        status = 5
+                    if ac.user == user_to and user_from == g.user:
+                        status = 5
+                    continue
+
+                if status in [4, 5]:
+                    if last_user != ac.user:
+                        status = 6
+                        last_user = ac.user
+                    continue
+
+                if status in [1, 2]:
+                    status = 6
+                    last_user = ac.user
+                    continue
+
+        return Status[status]
 
     @property
     def revoke(self):
@@ -428,8 +453,8 @@ class Device(Thing):
         # TODO @cayop uncomment this lines for link the possessor with the device
         # from ereuse_devicehub.resources.action.models import Receive
         # with suppress(LookupError):
-            # action = self.last_action_of(Receive)
-            # return action.agent_to
+        #     action = self.last_action_of(Receive)
+        #     return action.agent_to
 
     @property
     def working(self):
@@ -478,15 +503,15 @@ class Device(Thing):
     def which_user_put_this_device_in_trace(self):
         """which is the user than put this device in this trade"""
         actions = copy.copy(self.actions)
-        actions.sort(key=lambda x: x.created)
         actions.reverse()
-        last_ac = None
         # search the automatic Confirm
         for ac in actions:
             if ac.type == 'Trade':
-                return last_ac.user
-            if ac.type == 'Confirm':
-                last_ac = ac
+                action_device = [x for x in ac.actions_device if x.device == self][0]
+                if action_device.author:
+                    return action_device.author
+
+                return ac.author
 
     def change_owner(self, new_user):
         """util for change the owner one device"""
@@ -507,52 +532,8 @@ class Device(Thing):
         """
         This method get a list of values for calculate a metrics from a spreadsheet
         """
-        actions = copy.copy(self.actions)
-        actions.sort(key=lambda x: x.created)
-        allocates =  []
-        lifetime = 0
-        for act in actions:
-            if act.type == 'Snapshot':
-                snapshot = act
-                lifestimes = snapshot.get_last_lifetimes()
-                lifetime = 0
-                if lifestimes:
-                    lifetime = lifestimes[0]['lifetime']
-
-            if act.type == 'Allocate':
-                allo = {'type': 'Allocate',
-                        'devicehubID': self.devicehub_id,
-                        'finalUserCode': act.final_user_code,
-                        'numEndUsers': act.end_users,
-                        'hid': self.hid,
-                        'liveCreate': 0,
-                        'usageTimeHdd': 0,
-                        'start': act.start_time,
-                        'usageTimeAllocate': lifetime}
-                allocates.append(allo)
-
-            if act.type == 'Live':
-                allocate = copy.copy(allo)
-                allocate['type'] = 'Live'
-                allocate['liveCreate'] = act.created
-                allocate['usageTimeHdd'] = 0
-                if act.usage_time_hdd:
-                    allocate['usageTimeHdd'] = act.usage_time_hdd.total_seconds()/3600
-                allocates.append(allocate)
-
-            if act.type == 'Deallocate':
-                deallo = {'type': 'Deallocate',
-                          'devicehubID': self.devicehub_id,
-                          'finalUserCode': '',
-                          'numEndUsers': '',
-                          'hid': self.hid,
-                          'liveCreate': 0,
-                          'usageTimeHdd': lifetime,
-                          'start': act.start_time,
-                          'usageTimeAllocate': 0}
-                allocates.append(deallo)
-
-        return allocates
+        metrics = Metrics(device=self)
+        return metrics.get_metrics()
 
     def __lt__(self, other):
         return self.id < other.id
@@ -681,7 +662,13 @@ class Computer(Device):
 
     @property
     def actions(self) -> list:
-        return sorted(chain(super().actions, self.actions_parent))
+        actions = copy.copy(super().actions)
+        actions_parent = copy.copy(self.actions_parent)
+        for ac in actions_parent:
+            ac.real_created = ac.created
+
+        return sorted(chain(actions, actions_parent), key=lambda x: x.real_created)
+        # return sorted(chain(super().actions, self.actions_parent))
 
     @property
     def ram_size(self) -> int:
@@ -751,7 +738,7 @@ class Computer(Device):
         return urls
 
     def add_mac_to_hid(self, components_snap=None):
-        """Returns the Naming.hid with the first mac of network adapter, 
+        """Returns the Naming.hid with the first mac of network adapter,
         following an alphabetical order.
         """
         self.set_hid()
@@ -884,7 +871,7 @@ class Component(Device):
         """
         assert self.hid is None, 'Don\'t use this method with a component that has HID'
         component = self.__class__.query \
-            .filter_by(parent=parent, hid=None, owner_id=self.owner_id, 
+            .filter_by(parent=parent, hid=None, owner_id=self.owner_id,
                        **self.physical_properties) \
             .filter(~Component.id.in_(blacklist)) \
             .first()
@@ -1212,3 +1199,15 @@ class Manufacturer(db.Model):
 
 listener_reset_field_updated_in_actual_time(Device)
 
+
+def create_code_tag(mapper, connection, device):
+    """
+    This function create a new tag every time than one device is create.
+    this tag is the same of devicehub_id.
+    """
+    from ereuse_devicehub.resources.tag.model import Tag
+    tag = Tag(device_id=device.id, id=device.devicehub_id)
+    db.session.add(tag)
+
+
+event.listen(Device, 'after_insert', create_code_tag, propagate=True)

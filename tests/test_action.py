@@ -260,10 +260,10 @@ def test_generic_action(action_model_state: Tuple[models.Action, states.Trading]
 @pytest.mark.parametrize('action_model',
                          (pytest.param(ams, id=ams.__class__.__name__)
                           for ams in [
-                              models.Recycling, 
-                              models.Use, 
-                              models.Refurbish, 
-                              models.Management 
+                              models.Recycling,
+                              models.Use,
+                              models.Refurbish,
+                              models.Management
                           ]))
 def test_simple_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
     """Simple test of status action."""
@@ -281,10 +281,10 @@ def test_simple_status_actions(action_model: models.Action, user: UserClient, us
 @pytest.mark.parametrize('action_model',
                          (pytest.param(ams, id=ams.__class__.__name__)
                           for ams in [
-                              models.Recycling, 
-                              models.Use, 
-                              models.Refurbish, 
-                              models.Management 
+                              models.Recycling,
+                              models.Use,
+                              models.Refurbish,
+                              models.Management
                           ]))
 def test_outgoinlot_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
     """Test of status actions in outgoinlot."""
@@ -328,7 +328,7 @@ def test_outgoinlot_status_actions(action_model: models.Action, user: UserClient
 
     assert device['actions'][-1]['id'] == action['id']
     assert action['author']['id'] == user.user['id']
-    assert action['rol_user']['id'] == user.user['id']
+    assert action['rol_user']['id'] == user2.user['id']
 
 
 @pytest.mark.mvp
@@ -386,14 +386,14 @@ def test_history_status_actions(user: UserClient, user2: UserClient):
     assert action['id'] == str(device.status.id)
     assert device.status.t == models.Recycling.t
     assert [action['id']] == [str(ac.id) for ac in device.history_status]
-    
+
     # Case 2
     action2 = {'type': models.Refurbish.t, 'devices': [device.id]}
     action2, _ = user.post(action2, res=models.Action)
     assert action2['id'] == str(device.status.id)
     assert device.status.t == models.Refurbish.t
     assert [action2['id']] == [str(ac.id) for ac in device.history_status]
-    
+
     # Case 3
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
     user.post({},
@@ -1396,6 +1396,7 @@ def test_confirm_revoke(user: UserClient, user2: UserClient):
 
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
+    device = trade.devices[0]
 
     request_confirm = {
         'type': 'Confirm',
@@ -1416,9 +1417,10 @@ def test_confirm_revoke(user: UserClient, user2: UserClient):
     # Normal revoke
     user2.post(res=models.Action, data=request_revoke)
 
-    # You can not to do one confirmation next of one revoke
-    user2.post(res=models.Action, data=request_confirm, status=422)
-    assert len(trade.acceptances) == 3
+    # You can to do one confirmation next of one revoke
+    user2.post(res=models.Action, data=request_confirm)
+    assert len(trade.acceptances) == 4
+    assert device.trading(trade.lot) == "TradeConfirmed"
 
 
 @pytest.mark.mvp
@@ -1455,7 +1457,7 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices[:7])
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the SCRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -1516,9 +1518,6 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
         'type': 'Confirm',
         'action': trade.id,
         'devices': [
-            snap1['device']['id'], 
-            snap2['device']['id'], 
-            snap3['device']['id'],
             snap4['device']['id'],
             snap5['device']['id'],
             snap6['device']['id'],
@@ -1535,7 +1534,7 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     assert trade.devices[-1].actions[-1].user == trade.user_from
     assert len(trade.devices[0].actions) == n_actions
 
-    # The manager remove one device of the lot and automaticaly 
+    # The manager remove one device of the lot and automaticaly
     # is create one revoke action
     device_10 = trade.devices[-1]
     lot, _ = user.delete({},
@@ -1554,30 +1553,27 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
 
     # the SCRAP confirms the revoke action
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device_10.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [
             snap10['device']['id']
         ]
     }
 
     user2.post(res=models.Action, data=request_confirm_revoke)
-    assert device_10.actions[-1].t == 'ConfirmRevoke'
+    assert device_10.actions[-1].t == 'Revoke'
     assert device_10.actions[-2].t == 'Revoke'
     # assert len(trade.lot.devices) == len(trade.devices) == 9
     # assert not device_10 in trade.devices
 
     # check validation error
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device_10.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [
             snap9['device']['id']
         ]
     }
-
-    user2.post(res=models.Action, data=request_confirm_revoke, status=422)
-
 
     # The manager add again device_10
     # assert len(trade.devices) == 9
@@ -1604,7 +1600,7 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     assert device_10.actions[-1].user == trade.user_from
     assert device_10.actions[-2].t == 'Confirm'
     assert device_10.actions[-2].user == trade.user_to
-    assert device_10.actions[-3].t == 'ConfirmRevoke'
+    assert device_10.actions[-3].t == 'Revoke'
     # assert len(device_10.actions) == 13
 
 
@@ -1756,7 +1752,7 @@ def test_trade_case1(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices[:-1])
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -1772,31 +1768,23 @@ def test_trade_case1(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
 
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
+    lot = trade.lot
+    device = trade.devices[0]
 
-    device1, device2 = trade.devices
+    assert device.actions[-2].t == 'Trade'
+    assert device.actions[-1].t == 'Confirm'
+    assert device.actions[-1].user == trade.user_to
 
-    assert device1.actions[-2].t == 'Trade'
-    assert device1.actions[-1].t == 'Confirm'
-    assert device1.actions[-1].user == trade.user_to
-    assert device2.actions[-2].t == 'Trade'
-    assert device2.actions[-1].t == 'Confirm'
-    assert device2.actions[-1].user == trade.user_to
+    user.delete({},
+                res=Lot,
+                item='{}/devices'.format(lot.id),
+                query=devices[:-1], status=200)
 
-    lot, _ = user.delete({},
-                         res=Lot,
-                         item='{}/devices'.format(lot['id']),
-                         query=devices, status=200)
-
-    assert device1.actions[-2].t == 'Revoke'
-    assert device1.actions[-1].t == 'ConfirmRevoke'
-    assert device1.actions[-1].user == trade.user_to
-    assert device2.actions[-2].t == 'Revoke'
-    assert device2.actions[-1].t == 'ConfirmRevoke'
-    assert device2.actions[-1].user == trade.user_to
+    assert device not in trade.lot.devices
+    assert device.trading(trade.lot) == 'RevokeConfirmed'
+    assert device.actions[-2].t == 'Confirm'
+    assert device.actions[-1].t == 'Revoke'
+    assert device.actions[-1].user == trade.user_to
 
 
 @pytest.mark.mvp
@@ -1855,12 +1843,13 @@ def test_trade_case2(user: UserClient, user2: UserClient):
     # Normal revoke
     user.post(res=models.Action, data=request_revoke)
 
-    assert device1.actions[-2].t == 'Revoke'
-    assert device1.actions[-1].t == 'ConfirmRevoke'
+    assert device1.actions[-2].t == 'Confirm'
+    assert device1.actions[-1].t == 'Revoke'
     assert device1.actions[-1].user == trade.user_to
-    assert device2.actions[-2].t == 'Revoke'
-    assert device2.actions[-1].t == 'ConfirmRevoke'
+    assert device2.actions[-2].t == 'Confirm'
+    assert device2.actions[-1].t == 'Revoke'
     assert device2.actions[-1].user == trade.user_to
+    assert device1.trading(trade.lot) == 'RevokeConfirmed'
 
 
 @pytest.mark.mvp
@@ -1868,7 +1857,6 @@ def test_trade_case2(user: UserClient, user2: UserClient):
 def test_trade_case3(user: UserClient, user2: UserClient):
     # the pRp (manatest_usecase_confirmationger) creates a temporary lot
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    # The manager add 7 device into the lot
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
@@ -1880,7 +1868,7 @@ def test_trade_case3(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices[:-1])
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -1915,9 +1903,10 @@ def test_trade_case3(user: UserClient, user2: UserClient):
                          item='{}/devices'.format(lot['id']),
                          query=devices[-1:], status=200)
 
-    assert device2.actions[-2].t == 'Revoke'
-    assert device2.actions[-1].t == 'ConfirmRevoke'
+    assert device2.actions[-2].t == 'Confirm'
+    assert device2.actions[-1].t == 'Revoke'
     assert device2.actions[-1].user == trade.user_from
+    assert device2.trading(trade.lot) == 'RevokeConfirmed'
 
 
 @pytest.mark.mvp
@@ -1979,9 +1968,10 @@ def test_trade_case4(user: UserClient, user2: UserClient):
     assert device1.actions[-2].t == 'Trade'
     assert device1.actions[-1].t == 'Confirm'
     assert device1.actions[-1].user == trade.user_to
-    assert device2.actions[-2].t == 'Revoke'
-    assert device2.actions[-1].t == 'ConfirmRevoke'
+    assert device2.actions[-2].t == 'Confirm'
+    assert device2.actions[-1].t == 'Revoke'
     assert device2.actions[-1].user == trade.user_from
+    assert device2.trading(trade.lot) == 'RevokeConfirmed'
 
 
 @pytest.mark.mvp
@@ -2036,8 +2026,8 @@ def test_trade_case5(user: UserClient, user2: UserClient):
     assert device2.actions[-1].user == trade.user_from
 
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device2.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [device2.id],
     }
 
@@ -2045,8 +2035,9 @@ def test_trade_case5(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_confirm_revoke)
 
     assert device2.actions[-2].t == 'Revoke'
-    assert device2.actions[-1].t == 'ConfirmRevoke'
+    assert device2.actions[-1].t == 'Revoke'
     assert device2.actions[-1].user == trade.user_to
+    assert device2.trading(trade.lot) == 'RevokeConfirmed'
 
 
 @pytest.mark.mvp
@@ -2106,8 +2097,8 @@ def test_trade_case6(user: UserClient, user2: UserClient):
     assert device2.actions[-1].user == trade.user_to
 
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device2.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [device2.id],
     }
 
@@ -2115,8 +2106,9 @@ def test_trade_case6(user: UserClient, user2: UserClient):
     user2.post(res=models.Action, data=request_confirm_revoke)
 
     assert device2.actions[-2].t == 'Revoke'
-    assert device2.actions[-1].t == 'ConfirmRevoke'
+    assert device2.actions[-1].t == 'Revoke'
     assert device2.actions[-1].user == trade.user_from
+    assert device2.trading(trade.lot) == 'RevokeConfirmed'
 
 
 @pytest.mark.mvp
@@ -2158,6 +2150,7 @@ def test_trade_case7(user: UserClient, user2: UserClient):
 
     # Normal revoke
     user2.post(res=models.Action, data=request_confirm)
+    assert device.trading(trade.lot) == 'TradeConfirmed'
 
     lot, _ = user.delete({},
                          res=Lot,
@@ -2165,14 +2158,14 @@ def test_trade_case7(user: UserClient, user2: UserClient):
                          query=devices, status=200)
 
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [device.id],
     }
 
     user2.post(res=models.Action, data=request_confirm_revoke)
 
-    assert device.actions[-1].t == 'ConfirmRevoke'
+    assert device.actions[-1].t == 'Revoke'
     assert device.actions[-1].user == trade.user_from
     assert device.actions[-2].t == 'Revoke'
     assert device.actions[-2].user == trade.user_to
@@ -2182,6 +2175,7 @@ def test_trade_case7(user: UserClient, user2: UserClient):
     assert device.actions[-4].user == trade.user_to
     assert device.actions[-5].t == 'Trade'
     assert device.actions[-5].author == trade.user_to
+    assert device.trading(trade.lot) == 'RevokeConfirmed'
 
 
 @pytest.mark.mvp
@@ -2223,6 +2217,7 @@ def test_trade_case8(user: UserClient, user2: UserClient):
 
     # Normal revoke
     user2.post(res=models.Action, data=request_confirm)
+    assert device.trading(trade.lot) == 'TradeConfirmed'
 
     request_revoke = {
         'type': 'Revoke',
@@ -2234,14 +2229,14 @@ def test_trade_case8(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_revoke)
 
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [device.id],
     }
 
     user2.post(res=models.Action, data=request_confirm_revoke)
 
-    assert device.actions[-1].t == 'ConfirmRevoke'
+    assert device.actions[-1].t == 'Revoke'
     assert device.actions[-1].user == trade.user_from
     assert device.actions[-2].t == 'Revoke'
     assert device.actions[-2].user == trade.user_to
@@ -2251,6 +2246,7 @@ def test_trade_case8(user: UserClient, user2: UserClient):
     assert device.actions[-4].user == trade.user_to
     assert device.actions[-5].t == 'Trade'
     assert device.actions[-5].author == trade.user_to
+    assert device.trading(trade.lot) == 'RevokeConfirmed'
 
 
 @pytest.mark.mvp
@@ -2303,6 +2299,7 @@ def test_trade_case9(user: UserClient, user2: UserClient):
 
     # Normal revoke
     user.post(res=models.Action, data=request_confirm)
+    assert device.trading(trade.lot) == 'TradeConfirmed'
 
     assert device.owner == trade.user_to
 
@@ -2312,8 +2309,8 @@ def test_trade_case9(user: UserClient, user2: UserClient):
                          query=devices[-1:], status=200)
 
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [device.id],
     }
 
@@ -2321,7 +2318,7 @@ def test_trade_case9(user: UserClient, user2: UserClient):
 
     assert device.owner == trade.user_from
 
-    assert device.actions[-1].t == 'ConfirmRevoke'
+    assert device.actions[-1].t == 'Revoke'
     assert device.actions[-1].user == trade.user_to
     assert device.actions[-2].t == 'Revoke'
     assert device.actions[-2].user == trade.user_from
@@ -2331,6 +2328,7 @@ def test_trade_case9(user: UserClient, user2: UserClient):
     assert device.actions[-4].user == trade.user_from
     assert device.actions[-5].t == 'Trade'
     assert device.actions[-5].author == trade.user_to
+    assert device.trading(trade.lot) == 'RevokeConfirmed'
 
 
 @pytest.mark.mvp
@@ -2374,6 +2372,7 @@ def test_trade_case10(user: UserClient, user2: UserClient):
     device1, device = trade.devices
 
     assert device.owner == trade.user_from
+    # assert device.trading(trade.lot) == 'Confirm'
 
     request_confirm = {
         'type': 'Confirm',
@@ -2383,6 +2382,7 @@ def test_trade_case10(user: UserClient, user2: UserClient):
 
     # Normal confirm
     user.post(res=models.Action, data=request_confirm)
+    # assert device.trading(trade.lot) == 'TradeConfirmed'
 
     assert device.owner == trade.user_to
 
@@ -2394,18 +2394,18 @@ def test_trade_case10(user: UserClient, user2: UserClient):
 
     # Normal revoke
     user2.post(res=models.Action, data=request_revoke)
+    assert device.trading(trade.lot) == 'Revoke'
 
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [device.id],
     }
 
     user.post(res=models.Action, data=request_confirm_revoke)
 
     assert device.owner == trade.user_from
-
-    assert device.actions[-1].t == 'ConfirmRevoke'
+    assert device.actions[-1].t == 'Revoke'
     assert device.actions[-1].user == trade.user_to
     assert device.actions[-2].t == 'Revoke'
     assert device.actions[-2].user == trade.user_from
@@ -2415,6 +2415,7 @@ def test_trade_case10(user: UserClient, user2: UserClient):
     assert device.actions[-4].user == trade.user_from
     assert device.actions[-5].t == 'Trade'
     assert device.actions[-5].author == trade.user_to
+    assert device.trading(trade.lot) == 'RevokeConfirmed'
 
 
 @pytest.mark.mvp
@@ -2451,6 +2452,7 @@ def test_trade_case11(user: UserClient, user2: UserClient):
     trade = models.Trade.query.one()
 
     device1, device = trade.devices
+    assert device.trading(trade.lot) == 'Confirm'
 
     request_confirm = {
         'type': 'Confirm',
@@ -2459,21 +2461,24 @@ def test_trade_case11(user: UserClient, user2: UserClient):
     }
 
     user2.post(res=models.Action, data=request_confirm)
+    assert device.trading(trade.lot) == 'TradeConfirmed'
 
     lot, _ = user2.delete({},
                          res=Lot,
                          item='{}/devices'.format(lot['id']),
                          query=devices[-1:], status=200)
+    assert device.trading(trade.lot) == 'Revoke'
 
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [device.id],
     }
 
     user.post(res=models.Action, data=request_confirm_revoke)
+    assert device.trading(trade.lot) == 'RevokeConfirmed'
 
-    assert device.actions[-1].t == 'ConfirmRevoke'
+    assert device.actions[-1].t == 'Revoke'
     assert device.actions[-1].user == trade.user_to
     assert device.actions[-2].t == 'Revoke'
     assert device.actions[-2].user == trade.user_from
@@ -2519,6 +2524,7 @@ def test_trade_case12(user: UserClient, user2: UserClient):
     trade = models.Trade.query.one()
 
     device1, device = trade.devices
+    assert device.trading(trade.lot) == 'Confirm'
 
     # Normal confirm
     request_confirm = {
@@ -2528,6 +2534,7 @@ def test_trade_case12(user: UserClient, user2: UserClient):
     }
 
     user2.post(res=models.Action, data=request_confirm)
+    assert device.trading(trade.lot) == 'TradeConfirmed'
 
     request_revoke = {
         'type': 'Revoke',
@@ -2537,16 +2544,18 @@ def test_trade_case12(user: UserClient, user2: UserClient):
 
     # Normal revoke
     user2.post(res=models.Action, data=request_revoke)
+    assert device.trading(trade.lot) == 'Revoke'
 
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [device.id],
     }
 
     user.post(res=models.Action, data=request_confirm_revoke)
+    assert device.trading(trade.lot) == 'RevokeConfirmed'
 
-    assert device.actions[-1].t == 'ConfirmRevoke'
+    assert device.actions[-1].t == 'Revoke'
     assert device.actions[-1].user == trade.user_to
     assert device.actions[-2].t == 'Revoke'
     assert device.actions[-2].user == trade.user_from
@@ -2597,6 +2606,8 @@ def test_trade_case13(user: UserClient, user2: UserClient):
                        query=devices[-1:])
 
     device1, device = trade.devices
+    assert device1.trading(trade.lot) == 'NeedConfirmation'
+    assert device.trading(trade.lot) == 'Confirm'
 
     request_confirm = {
         'type': 'Confirm',
@@ -2605,21 +2616,26 @@ def test_trade_case13(user: UserClient, user2: UserClient):
     }
 
     user.post(res=models.Action, data=request_confirm)
+    assert device1.trading(trade.lot) == 'Confirm'
+    assert device.trading(trade.lot) == 'TradeConfirmed'
 
     lot, _ = user.delete({},
                          res=Lot,
                          item='{}/devices'.format(lot['id']),
                          query=devices[-1:], status=200)
+    assert device1.trading(trade.lot) == 'Confirm'
+    assert device.trading(trade.lot) == 'Revoke'
 
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [device.id],
     }
 
     user2.post(res=models.Action, data=request_confirm_revoke)
+    assert device.trading(trade.lot) == 'RevokeConfirmed'
 
-    assert device.actions[-1].t == 'ConfirmRevoke'
+    assert device.actions[-1].t == 'Revoke'
     assert device.actions[-1].user == trade.user_from
     assert device.actions[-2].t == 'Revoke'
     assert device.actions[-2].user == trade.user_to
@@ -2670,6 +2686,8 @@ def test_trade_case14(user: UserClient, user2: UserClient):
                        query=devices[-1:])
 
     device1, device = trade.devices
+    assert device1.trading(trade.lot) == 'NeedConfirmation'
+    assert device.trading(trade.lot) == 'Confirm'
 
     # Normal confirm
     request_confirm = {
@@ -2679,6 +2697,7 @@ def test_trade_case14(user: UserClient, user2: UserClient):
     }
 
     user.post(res=models.Action, data=request_confirm)
+    assert device.trading(trade.lot) == 'TradeConfirmed'
 
     request_revoke = {
         'type': 'Revoke',
@@ -2688,16 +2707,18 @@ def test_trade_case14(user: UserClient, user2: UserClient):
 
     # Normal revoke
     user.post(res=models.Action, data=request_revoke)
+    assert device.trading(trade.lot) == 'Revoke'
 
     request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device.actions[-1].id,
+        'type': 'Revoke',
+        'action': trade.id,
         'devices': [device.id],
     }
 
     user2.post(res=models.Action, data=request_confirm_revoke)
+    assert device.trading(trade.lot) == 'RevokeConfirmed'
 
-    assert device.actions[-1].t == 'ConfirmRevoke'
+    assert device.actions[-1].t == 'Revoke'
     assert device.actions[-1].user == trade.user_from
     assert device.actions[-2].t == 'Revoke'
     assert device.actions[-2].user == trade.user_to
@@ -2718,7 +2739,7 @@ def test_action_web_erase(user: UserClient, client: Client):
     hash3 = hashlib.sha3_256(bfile.read()).hexdigest()
     snap, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
     request = {'type': 'DataWipe', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'nada que describir', 'url': 'http://www.google.com/', 'documentId': '33', 'endTime': '2021-07-07T22:00:00.000Z', 'filename': 'Certificado de borrado1.pdf', 'hash': hash3, 'success': 1, 'software': "Blanco"}
-   
+
     user.post(res=models.Action, data=request)
     action = models.DataWipe.query.one()
     for dev in action.devices:

@@ -309,9 +309,10 @@ def test_sync_execute_register_no_hid_tag_not_linked(tag_id: str):
     # they are not the same tags though
     # tag is a transient obj and db_tag the one from the db
     # they have the same pk though
-    assert tag != db_tag, 'They are not the same tags though'
-    assert db_tag.id == tag.id
     assert d.Desktop.query.one() == pc, 'd.Desktop had to be set to db'
+    assert tag != db_tag, 'They are not the same tags though'
+    for tag in pc.tags:
+        assert tag.id in ['foo', pc.devicehub_id]
 
 
 @pytest.mark.mvp
@@ -346,8 +347,9 @@ def test_sync_execute_register_tag_linked_same_device():
     pc.tags.add(Tag(id='foo'))
     db_pc = Sync().execute_register(pc)
     assert db_pc.id == orig_pc.id
-    assert len(db_pc.tags) == 1
-    assert next(iter(db_pc.tags)).id == 'foo'
+    assert len(db_pc.tags) == 2
+    for tag in db_pc.tags:
+        assert tag.id in ['foo', db_pc.devicehub_id]
 
 
 @pytest.mark.mvp
@@ -399,13 +401,14 @@ def test_sync_execute_register_mismatch_between_tags_and_hid():
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_get_device(user: UserClient):
     """Checks GETting a d.Desktop with its components."""
+    g.user = User.query.one()
     pc = d.Desktop(model='p1mo',
                    manufacturer='p1ma',
                    serial_number='p1s',
                    chassis=ComputerChassis.Tower,
                    owner_id=user.user['id'])
     pc.components = OrderedSet([
-        d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s', 
+        d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s',
             owner_id=user.user['id']),
         d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500, owner_id=user.user['id'])
     ])
@@ -437,6 +440,7 @@ def test_get_device(user: UserClient):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_get_devices(app: Devicehub, user: UserClient):
     """Checks GETting multiple devices."""
+    g.user = User.query.one()
     pc = d.Desktop(model='p1mo',
                    manufacturer='p1ma',
                    serial_number='p1s',
@@ -502,7 +506,8 @@ def test_get_devices_permissions(app: Devicehub, user: UserClient, user2: UserCl
 
 
 @pytest.mark.mvp
-def test_get_devices_unassigned(app: Devicehub, user: UserClient):
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_get_devices_unassigned(user: UserClient):
     """Checks GETting multiple devices."""
 
     user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
@@ -525,7 +530,8 @@ def test_get_devices_unassigned(app: Devicehub, user: UserClient):
                        res=Lot,
                        item='{}/devices'.format(my_lot['id']),
                        query=[('id', device_id)])
-    assert lot['devices'][0]['id'] == device_id, 'Lot contains device'
+    lot = Lot.query.filter_by(id=lot['id']).one()
+    assert next(iter(lot.devices)).id == device_id
 
     url = '/devices/?filter={"type":["Computer"]}&unassign=0'
 
@@ -604,6 +610,7 @@ def test_device_public(user: UserClient, client: Client):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_computer_accessory_model(user: UserClient):
+    g.user = User.query.one()
     sai = d.SAI(owner_id=user.user['id'])
     db.session.add(sai)
     keyboard = d.Keyboard(layout=Layouts.ES, owner_id=user.user['id'])
@@ -616,6 +623,7 @@ def test_computer_accessory_model(user: UserClient):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_networking_model(user: UserClient):
+    g.user = User.query.one()
     router = d.Router(speed=1000, wireless=True, owner_id=user.user['id'])
     db.session.add(router)
     switch = d.Switch(speed=1000, wireless=False, owner_id=user.user['id'])

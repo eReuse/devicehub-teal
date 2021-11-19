@@ -49,6 +49,7 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, Bio
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
+from ereuse_devicehub.resources.device.metrics import TradeMetrics
 
 
 class JoinedTableMixin:
@@ -303,6 +304,31 @@ class ActionDevice(db.Model):
     device_id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleDevices.id),
                        primary_key=True)
+    device = relationship(Device,
+                          backref=backref('actions_device',
+                                          lazy=True),
+                          primaryjoin=Device.id == device_id)
+    action = relationship(Action,
+                          backref=backref('actions_device',
+                                          lazy=True),
+                          primaryjoin=Action.id == action_id)
+    created = db.Column(db.TIMESTAMP(timezone=True),
+                        nullable=False,
+                        index=True,
+                        server_default=db.text('CURRENT_TIMESTAMP'))
+    created.comment = """When Devicehub created this."""
+    author_id = Column(UUID(as_uuid=True),
+                       ForeignKey(User.id),
+                       nullable=False,
+                       default=lambda: g.user.id)
+    # todo compute the org
+    author = relationship(User,
+                          backref=backref('authored_actions_device', lazy=True, collection_class=set),
+                          primaryjoin=author_id == User.id)
+
+    def __init__(self, **kwargs) -> None:
+        self.created = kwargs.get('created', datetime.now(timezone.utc))
+        super().__init__(**kwargs)
 
 
 class ActionWithMultipleTradeDocuments(ActionWithMultipleDevices):
@@ -1359,6 +1385,16 @@ class ActionStatus(JoinedTableMixin, ActionWithMultipleTradeDocuments):
                         default=lambda: g.user.id)
     rol_user = db.relationship(User, primaryjoin=rol_user_id == User.id)
     rol_user_comment = """The user that ."""
+    trade_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey('trade.id'),
+                         nullable=True)
+    trade = db.relationship('Trade',
+                            backref=backref('status_changes',
+                                            uselist=True,
+                                            lazy=True,
+                                            order_by=lambda: Action.end_time,
+                                            collection_class=list),
+                            primaryjoin='ActionStatus.trade_id == Trade.id')
 
 
 class Recycling(ActionStatus):
@@ -1582,11 +1618,11 @@ class Revoke(Confirm):
     """Users can revoke one confirmation of one action trade"""
 
 
-class ConfirmRevoke(Confirm):
-    """Users can confirm and accept one action revoke"""
+# class ConfirmRevoke(Confirm):
+#     """Users can confirm and accept one action revoke"""
 
-    def __repr__(self) -> str:
-        return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
+#     def __repr__(self) -> str:
+#         return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
 
 
 class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):
@@ -1631,6 +1667,16 @@ class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):
                                        uselist=False,
                                        cascade=CASCADE_OWN),
                        primaryjoin='Trade.lot_id == Lot.id')
+
+    def get_metrics(self):
+        """
+        This method get a list of values for calculate a metrics from a spreadsheet
+        """
+        metrics = []
+        for doc in self.documents:
+            m = TradeMetrics(document=doc, Trade=self)
+            metrics.extend(m.get_metrics())
+        return metrics
 
     def __repr__(self) -> str:
         return '<{0.t} {0.id} executed by {0.author}>'.format(self)

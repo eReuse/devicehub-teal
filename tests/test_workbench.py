@@ -66,8 +66,8 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['rate']['rating'] == 1
     assert device['rate']['type'] == RateComputer.t
     # TODO JN why haven't same order in actions on each execution?
-    assert device['actions'][2]['type'] == BenchmarkProcessor.t or device['actions'][2]['type'] == BenchmarkRamSysbench.t
-    assert device['tags'][0]['id'] == 'tag1'
+    assert any([ac['type'] in [BenchmarkProcessor.t, BenchmarkRamSysbench.t] for ac in device['actions']])
+    assert 'tag1' in [x['id'] for x in device['tags']]
 
 
 @pytest.mark.xfail(reason='Functionality not yet developed.')
@@ -184,7 +184,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert pc['serialNumber'] == 'b8oaas048286'
     assert pc['manufacturer'] == 'asustek computer inc.'
     assert pc['hid'] == 'laptop-asustek_computer_inc-1001pxd-b8oaas048286-14:da:e9:42:f6:7c'
-    assert pc['tags'] == []
+    assert len(pc['tags']) == 1
     assert pc['networkSpeeds'] == [100, 0], 'Although it has WiFi we do not know the speed'
     assert pc['rate']
     rate = pc['rate']

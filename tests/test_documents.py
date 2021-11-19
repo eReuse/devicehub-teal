@@ -219,7 +219,7 @@ def test_export_basic_snapshot(user: UserClient):
                           item='devices/',
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
-    
+
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f, delimiter=';', quotechar='"')
     export_csv = list(obj_csv)
@@ -251,13 +251,13 @@ def test_check_insert_hash(app: Devicehub, user: UserClient, client: Client):
     assert ReportHash.query.filter_by(hash3=hash3).count() == 1
     result, status = client.get(res=documents.DocumentDef.t, item='check/', query=[('hash', hash3)])
     assert status.status_code == 200
-    assert result == True
+    assert result
 
     ff = open('/tmp/test.csv', 'w')
     ff.write(csv_str)
     ff.close()
 
-    a= open('/tmp/test.csv').read()
+    a = open('/tmp/test.csv').read()
     assert hash3 == hashlib.sha3_256(a.encode('utf-8')).hexdigest()
 
 
@@ -268,10 +268,7 @@ def test_export_extended(app: Devicehub, user: UserClient):
     snapshot2, _ = user.post(file('complete.export.snapshot'), res=Snapshot, status=201)
     with app.app_context():
         # Create a pc with a tag
-        tag = Tag(id='foo', owner_id=user.user['id'])
-        # pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
         pc = d.Device.query.filter_by(id=snapshot1['device']['id']).first()
-        pc.tags.add(tag)
         db.session.add(pc)
         db.session.commit()
 
