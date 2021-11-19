@@ -40,10 +40,13 @@ class Device(Thing):
     width = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.width.comment)
     height = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.height.comment)
     depth = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.depth.comment)
+    # TODO TimeOut 2. Comment actions and lots if there are time out.
     actions = NestedOn('Action', many=True, dump_only=True, description=m.Device.actions.__doc__)
+    # TODO TimeOut 2. Comment actions_one and lots if there are time out.
     actions_one = NestedOn('Action', many=True, load_only=True, collection_class=OrderedSet)
     problems = NestedOn('Action', many=True, dump_only=True, description=m.Device.problems.__doc__)
     url = URL(dump_only=True, description=m.Device.url.__doc__)
+    # TODO TimeOut 2. Comment actions and lots if there are time out.
     lots = NestedOn('Lot',
                     many=True,
                     dump_only=True,
@@ -98,6 +101,7 @@ class Device(Thing):
 
 class Computer(Device):
     __doc__ = m.Computer.__doc__
+    # TODO TimeOut 1. Comment components if there are time out.
     components = NestedOn('Component',
                           many=True,
                           dump_only=True,
@@ -128,7 +132,7 @@ class Computer(Device):
                        description=m.Computer.privacy.__doc__)
     amount = Integer(validate=f.validate.Range(min=0, max=100),
                       description=m.Computer.amount.__doc__)
-    # author_id = NestedOn(s_user.User,only_query='author_id')
+    # author_id = NestedOn(s_user.User, only_query='author_id')
     owner_id = UUID(data_key='ownerID')
     transfer_state = EnumField(enums.TransferState, description=m.Computer.transfer_state.comment)
     receiver_id = UUID(data_key='receiverID')

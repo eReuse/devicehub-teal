@@ -506,7 +506,8 @@ def test_get_devices_permissions(app: Devicehub, user: UserClient, user2: UserCl
 
 
 @pytest.mark.mvp
-def test_get_devices_unassigned(app: Devicehub, user: UserClient):
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_get_devices_unassigned(user: UserClient):
     """Checks GETting multiple devices."""
 
     user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
@@ -529,7 +530,8 @@ def test_get_devices_unassigned(app: Devicehub, user: UserClient):
                        res=Lot,
                        item='{}/devices'.format(my_lot['id']),
                        query=[('id', device_id)])
-    assert lot['devices'][0]['id'] == device_id, 'Lot contains device'
+    lot = Lot.query.filter_by(id=lot['id']).one()
+    assert next(iter(lot.devices)).id == device_id
 
     url = '/devices/?filter={"type":["Computer"]}&unassign=0'
 
