@@ -2856,23 +2856,24 @@ def test_delete_devices_check_sync(user: UserClient):
 
     file_snap1 = file('1-device-with-components.snapshot')
     file_snap2 = file('2-device-with-components.snapshot')
-    snap, _ = user.post(file_snap, res=models.Snapshot)
+    snap, _ = user.post(file_snap1, res=models.Snapshot)
     request = {'type': 'Delete', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z'}
 
     action, _ = user.post(res=models.Action, data=request)
 
     device1 = Device.query.filter_by(id=snap['device']['id']).one()
 
-    snap2, _ = user.post(file_snap, res=models.Snapshot)
+    snap2, _ = user.post(file_snap2, res=models.Snapshot)
     request2 = {'type': 'Delete', 'devices': [snap2['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z'}
 
     action2, _ = user.post(res=models.Action, data=request2)
 
     device2 = Device.query.filter_by(id=snap2['device']['id']).one()
-    # TODO problems with alembic and migrations
-    # TODO check than device2 is an other device than device1
-    # TODO check than device2 have the components of device1
-    import pdb; pdb.set_trace()
+    # check than device2 is an other device than device1
+    assert device2.id != device1.id
+    # check than device2 have the components of device1
+    assert len([x for x in device2.components
+        if device1.id in [y.device.id for y in x.actions if hasattr(y, 'device')]]) == 1
 
 
 @pytest.mark.mvp
