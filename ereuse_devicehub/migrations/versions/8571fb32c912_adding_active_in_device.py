@@ -1,7 +1,7 @@
 """adding active in device
 
 Revision ID: 8571fb32c912
-Revises: 3ac2bc1897ce
+Revises: 968b79fa7756
 Create Date: 2021-10-05 12:27:09.685227
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '8571fb32c912'
-down_revision = '3ac2bc1897ce'
+down_revision = '968b79fa7756'
 branch_labels = None
 depends_on = None
 
