@@ -104,7 +104,7 @@ class DeviceView(View):
         return super().get(id)
 
     def patch(self, id):
-        dev = Device.query.filter_by(id=id, owner_id=g.user.id).one()
+        dev = Device.query.filter_by(id=id, owner_id=g.user.id, active=True).one()
         if isinstance(dev, Computer):
             resource_def = app.resources['Computer']
             # TODO check how to handle the 'actions_one'
@@ -129,12 +129,12 @@ class DeviceView(View):
             return self.one_private(id)
 
     def one_public(self, id: int):
-        device = Device.query.filter_by(devicehub_id=id).one()
+        device = Device.query.filter_by(devicehub_id=id, active=True).one()
         return render_template('devices/layout.html', device=device, states=states)
 
     @auth.Auth.requires_auth
     def one_private(self, id: str):
-        device = Device.query.filter_by(devicehub_id=id, owner_id=g.user.id).first()
+        device = Device.query.filter_by(devicehub_id=id, owner_id=g.user.id, active=True).first()
         if not device:
             return self.one_public(id)
         return self.schema.jsonify(device)
@@ -158,7 +158,7 @@ class DeviceView(View):
 
         trades_dev_ids = {d.id for t in trades for d in t.devices}
 
-        query = Device.query.filter(
+        query = Device.query.filter(Device.active == True).filter(
             (Device.owner_id == g.user.id) | (Device.id.in_(trades_dev_ids))
         ).distinct()
 

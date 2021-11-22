@@ -154,7 +154,7 @@ class Sync:
         db_device = None
         if device.hid:
             with suppress(ResourceNotFound):
-                db_device = Device.query.filter_by(hid=device.hid, owner_id=g.user.id).one()
+                db_device = Device.query.filter_by(hid=device.hid, owner_id=g.user.id, active=True).one()
         if db_device and db_device.allocated:
             raise ResourceNotFound('device is actually allocated {}'.format(device))
         try:

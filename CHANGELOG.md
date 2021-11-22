@@ -12,6 +12,7 @@ ml).
   [1.0.10-beta]
 
 ## [1.0.10-beta]
+- [addend] #170 can delete/deactivate devices.
 - [bugfix] #168 can to do a trade without devices.
 - [added] #167 new actions of status devices: use, recycling, refurbish and management.
 - [changes] #177 new structure of trade.
