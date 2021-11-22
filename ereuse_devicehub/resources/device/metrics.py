@@ -219,7 +219,7 @@ class TradeMetrics(MetricsMix):
 
         row['type'] = 'Trade-Document'
         row['action_type'] = 'Trade-Document'
-        if self.document.weight:
+        if self.document.total_weight:
             row['type'] = 'Trade-Container'
             row['action_type'] = 'Trade-Container'
 
