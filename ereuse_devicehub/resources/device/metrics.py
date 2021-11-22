@@ -229,7 +229,7 @@ class TradeMetrics(MetricsMix):
         row['trade_confirmed'] = self.get_confirms()
         row['status_receiver'] = ''
         row['status_supplier'] = ''
-        row['trade_weight'] = self.document.weight
+        row['trade_weight'] = self.document.total_weight
         if self.document.owner == self.last_trade.user_from:
             row['action_create_by'] = 'Supplier'
         elif self.document.owner == self.last_trade.user_to:
