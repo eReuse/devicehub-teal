@@ -2878,6 +2878,19 @@ def test_delete_devices_check_sync(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_delete_devices_permitions(user: UserClient, user2: UserClient):
+    """This action deactive one device and simulate than one devices is delete."""
+
+    file_snap = file('1-device-with-components.snapshot')
+    snap, _ = user.post(file_snap, res=models.Snapshot)
+    device = Device.query.filter_by(id=snap['device']['id']).one()
+
+    request = {'type': 'Delete', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z'}
+    action, _ = user2.post(res=models.Action, data=request, status=422)
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_moveOnDocument_bug168(user: UserClient, user2: UserClient):
     """If you use one moveOnDocument in a trade Document. Next you can not drop this document."""
     lotIn, _ = user.post({'name': 'MyLotIn'}, res=Lot)

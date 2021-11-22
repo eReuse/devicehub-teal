@@ -79,6 +79,15 @@ class ActionWithMultipleDevices(Action):
                        collection_class=OrderedSet)
 
 
+class ActionWithMultipleDevicesCheckingOwner(ActionWithMultipleDevices):
+
+    @post_load
+    def check_owner_of_device(self, data):
+        for dev in data['devices']:
+            if dev.owner != g.user:
+                raise ValidationError("Some Devices not exist")
+
+
 class Add(ActionWithOneDevice):
     __doc__ = m.Add.__doc__
 
@@ -87,7 +96,7 @@ class Remove(ActionWithOneDevice):
     __doc__ = m.Remove.__doc__
 
 
-class Allocate(ActionWithMultipleDevices):
+class Allocate(ActionWithMultipleDevicesCheckingOwner):
     __doc__ = m.Allocate.__doc__
     start_time = DateTime(data_key='startTime', required=True,
                           description=m.Action.start_time.comment)
@@ -121,7 +130,7 @@ class Allocate(ActionWithMultipleDevices):
             device.allocated = True
 
 
-class Deallocate(ActionWithMultipleDevices):
+class Deallocate(ActionWithMultipleDevicesCheckingOwner):
     __doc__ = m.Deallocate.__doc__
     start_time = DateTime(data_key='startTime', required=True,
                           description=m.Action.start_time.comment)
@@ -412,15 +421,15 @@ class Snapshot(ActionWithOneDevice):
                                       field_names=['elapsed'])
 
 
-class ToRepair(ActionWithMultipleDevices):
+class ToRepair(ActionWithMultipleDevicesCheckingOwner):
     __doc__ = m.ToRepair.__doc__
 
 
-class Repair(ActionWithMultipleDevices):
+class Repair(ActionWithMultipleDevicesCheckingOwner):
     __doc__ = m.Repair.__doc__
 
 
-class Ready(ActionWithMultipleDevices):
+class Ready(ActionWithMultipleDevicesCheckingOwner):
     __doc__ = m.Ready.__doc__
 
 
@@ -472,15 +481,15 @@ class Management(ActionStatus):
     __doc__ = m.Management.__doc__
 
 
-class ToPrepare(ActionWithMultipleDevices):
+class ToPrepare(ActionWithMultipleDevicesCheckingOwner):
     __doc__ = m.ToPrepare.__doc__
 
 
-class Prepare(ActionWithMultipleDevices):
+class Prepare(ActionWithMultipleDevicesCheckingOwner):
     __doc__ = m.Prepare.__doc__
 
 
-class DataWipe(ActionWithMultipleDevices):
+class DataWipe(ActionWithMultipleDevicesCheckingOwner):
     __doc__ = m.DataWipe.__doc__
     document = NestedOn(s_generic_document.DataWipeDocument, only_query='id')
 
@@ -530,7 +539,7 @@ class Confirm(ActionWithMultipleDevices):
     def validate_revoke(self, data: dict):
         for dev in data['devices']:
             # if device not exist in the Trade, then this query is wrong
-            if not dev in data['action'].devices:
+            if dev not in data['action'].devices:
                 txt = "Device {} not exist in the trade".format(dev.devicehub_id)
                 raise ValidationError(txt)
 
@@ -543,13 +552,13 @@ class Revoke(ActionWithMultipleDevices):
     def validate_revoke(self, data: dict):
         for dev in data['devices']:
             # if device not exist in the Trade, then this query is wrong
-            if not dev in data['action'].devices:
+            if dev not in data['action'].devices:
                 txt = "Device {} not exist in the trade".format(dev.devicehub_id)
                 raise ValidationError(txt)
 
         for doc in data.get('documents', []):
             # if document not exist in the Trade, then this query is wrong
-            if not doc in data['action'].documents:
+            if doc not in data['action'].documents:
                 txt = "Document {} not exist in the trade".format(doc.file_name)
                 raise ValidationError(txt)
 
@@ -610,7 +619,7 @@ class ConfirmDocument(ActionWithMultipleDocuments):
             if not doc.actions:
                 continue
 
-            if not doc.trading == 'Need Confirmation': 
+            if not doc.trading == 'Need Confirmation':
                 txt = 'No there are documents to confirm'
                 raise ValidationError(txt)
 
@@ -637,7 +646,7 @@ class RevokeDocument(ActionWithMultipleDocuments):
             if not doc.actions:
                 continue
 
-            if not doc.trading in ['Document Confirmed', 'Confirm']:
+            if doc.trading not in ['Document Confirmed', 'Confirm']:
                 txt = 'No there are documents to revoke'
                 raise ValidationError(txt)
 
@@ -661,7 +670,6 @@ class ConfirmRevokeDocument(ActionWithMultipleDocuments):
 
             if not doc.actions:
                 continue
-
 
             if not doc.trading == 'Revoke':
                 txt = 'No there are documents with revoke for confirm'
@@ -827,7 +835,7 @@ class TransferOwnershipBlockchain(Trade):
     __doc__ = m.TransferOwnershipBlockchain.__doc__
 
 
-class Delete(ActionWithMultipleDevices):
+class Delete(ActionWithMultipleDevicesCheckingOwner):
     __doc__ = m.Delete.__doc__
 
     @post_load
