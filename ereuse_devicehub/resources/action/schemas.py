@@ -238,6 +238,7 @@ class TestDataStorage(Test):
     length = EnumField(TestDataStorageLength, required=True)
     status = SanitizedStr(lower=True, validate=Length(max=STR_SIZE), required=True)
     lifetime = TimeDelta(precision=TimeDelta.HOURS)
+    power_on_hours = Integer(data_key='powerOnHours', dump_only=True)
     assessment = Boolean()
     reallocated_sector_count = Integer(data_key='reallocatedSectorCount')
     power_cycle_count = Integer(data_key='powerCycleCount')
