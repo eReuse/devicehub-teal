@@ -257,11 +257,13 @@ def test_metrics_action_status_for_containers(user: UserClient, user2: UserClien
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
 
-    body1 = ';bbbbbbbb;test.pdf;Trade-Container;foo@foo.com;foo2@foo.com;Supplier;False;;;;;150.0;'
-    body2 = ';;0;0;Trade-Container;0;0'
+    body1 = ';bbbbbbbb;test.pdf;Trade-Container;foo@foo.com;foo2@foo.com;Supplier;False;Recycling;;'
+    body2 = ';;150.0;'
+    body3 = ';;0;0;Trade-Container;0;0'
     assert len(csv_str.split('\n')) == 4
     assert body1 in csv_str.split('\n')[-2]
     assert body2 in csv_str.split('\n')[-2]
+    assert body3 in csv_str.split('\n')[-2]
 
 
 @pytest.mark.mvp
