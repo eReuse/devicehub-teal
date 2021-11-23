@@ -208,9 +208,11 @@ class TradeMetrics(MetricsMix):
     def __init__(self, *args, **kwargs):
         self.document = kwargs.pop('document')
         self.actions = copy.copy(self.document.actions)
+        self.reversed_actions = copy.copy(self.document.actions)
         self.hid = self.document.file_hash
         self.devicehub_id = ''
         super().__init__(*args, **kwargs)
+        self.reversed_actions.reverse()
 
     def get_metrics(self):
         self.last_trade = next(x for x in self.actions if x.t == 'Trade')
@@ -219,7 +221,7 @@ class TradeMetrics(MetricsMix):
 
         row['type'] = 'Trade-Document'
         row['action_type'] = 'Trade-Document'
-        if self.document.total_weight:
+        if self.document.total_weight or self.document.weight:
             row['type'] = 'Trade-Container'
             row['action_type'] = 'Trade-Container'
 
@@ -235,9 +237,30 @@ class TradeMetrics(MetricsMix):
         elif self.document.owner == self.last_trade.user_to:
             row['action_create_by'] = 'Receiver'
 
+        self.get_status(row)
+
         self.rows.append(row)
 
         return self.rows
+
+    def get_status(self, row):
+        """
+        We want to know if receiver or supplier do some action that change the status
+        of the container.
+        """
+        if not (self.document.total_weight and self.document.weight):
+            return ''
+        for ac in self.reversed_actions:
+            if ac.type not in ['Use', 'Refurbish', 'Recycling', 'Management']:
+                continue
+            if ac.author == self.last_trade.user_from:
+                row['status_supplier'] = ac.type
+                row['status_supplier_created'] = ac.created
+            if ac.author == self.last_trade.user_to:
+                row['status_receiver'] = ac.type
+                row['status_receiver_created'] = ac.created
+
+        return ''
 
     def get_confirms(self):
         """
