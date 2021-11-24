@@ -9,7 +9,9 @@ ml).
   [1.0.10-beta]
 
 ## testing
-  [1.0.10-beta]
+  [1.0.11-beta]
+
+## [1.0.11-beta]
 
 ## [1.0.10-beta]
 - [addend] #170 can delete/deactivate devices.
