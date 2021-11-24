@@ -232,9 +232,8 @@ class DeviceRow(OrderedDict):
             self['Test {} {} Software'.format(ctype, i)] = ''
             self['Test {} {} Type'.format(ctype, i)] = ''
             self['Test {} {} Result'.format(ctype, i)] = ''
-            self['Test {} {} Power on (hours used)'.format(ctype, i)] = ''
-            self['Test {} {} Lifetime remaining (percentage)'.format(
-                ctype, i)] = ''
+            self['Test {} {} Power cycle count'.format(ctype, i)] = ''
+            self['Test {} {} Lifetime (days)'.format(ctype, i)] = ''
             self['Test {} {} Power on hours'.format(ctype, i)] = ''
             return
 
@@ -330,9 +329,8 @@ class DeviceRow(OrderedDict):
             self['Test {} {} Software'.format(ctype, i)] = ''
             self['Test {} {} Type'.format(ctype, i)] = ''
             self['Test {} {} Result'.format(ctype, i)] = ''
-            self['Test {} {} Power on (hours used)'.format(ctype, i)] = ''
-            self['Test {} {} Lifetime remaining (percentage)'.format(
-                ctype, i)] = ''
+            self['Test {} {} Power cycle count'.format(ctype, i)] = ''
+            self['Test {} {} Lifetime (days)'.format(ctype, i)] = ''
             self['Test {} {} Power on hours'.format(ctype, i)] = ''
             return
 
@@ -340,9 +338,9 @@ class DeviceRow(OrderedDict):
         self['Test {} {} Type'.format(ctype, i)] = test_storage.length.value
         self['Test {} {} Result'.format(ctype, i)] = get_result(
             test_storage)
-        self['Test {} {} Power on (hours used)'.format(ctype, i)] = none2str(
+        self['Test {} {} Power cycle count'.format(ctype, i)] = none2str(
             test_storage.power_cycle_count)
-        self['Test {} {} Lifetime remaining (percentage)'.format(ctype, i)] = none2str(
+        self['Test {} {} Lifetime (days)'.format(ctype, i)] = none2str(
             test_storage.lifetime)
         self['Test {} {} Power on hours'.format(ctype, i)] = none2str(
             test_storage.power_on_hours)
