@@ -301,10 +301,10 @@ def test_export_extended(app: Devicehub, user: UserClient):
     assert fixture_csv[2][22:82] == export_csv[2][22:82], 'Computer information are not equal'
     assert fixture_csv[2][83] == export_csv[2][83], 'Computer information are not equal'
     assert fixture_csv[2][86:106] == export_csv[2][86:106], 'Computer information are not equal'
-    assert fixture_csv[2][108] == export_csv[2][108], 'Computer information are not equal'
-    assert fixture_csv[2][111:131] == export_csv[2][111:131], 'Computer information are not equal'
-    assert fixture_csv[2][131] == export_csv[2][131], 'Computer information are not equal'
-    assert fixture_csv[2][136:] == export_csv[2][136:], 'Computer information are not equal'
+    assert fixture_csv[2][109] == export_csv[2][109], 'Computer information are not equal'
+    assert fixture_csv[2][112:133] == export_csv[2][112:133], 'Computer information are not equal'
+    assert fixture_csv[2][135] == export_csv[2][135], 'Computer information are not equal'
+    assert fixture_csv[2][138:] == export_csv[2][138:], 'Computer information are not equal'
 
 
 @pytest.mark.mvp

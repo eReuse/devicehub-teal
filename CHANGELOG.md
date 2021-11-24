@@ -6,10 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## master
-  [1.0.9-beta]
+  [1.0.10-beta]
 
 ## testing
-  [1.0.10-beta]
+  [1.0.11-beta]
+
+## [1.0.11-beta]
 
 ## [1.0.10-beta]
 - [addend] #170 can delete/deactivate devices.
@@ -17,6 +19,7 @@ ml).
 - [added] #167 new actions of status devices: use, recycling, refurbish and management.
 - [changes] #177 new structure of trade.
 - [bugfix] #184 clean nested of schemas of lot
+- [added] #182 adding power on hours
 
 ## [1.0.9-beta]
 - [added] #159 external document as proof of erase of disk
