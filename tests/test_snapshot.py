@@ -147,6 +147,28 @@ def test_snapshot_update_timefield_updated(user: UserClient):
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_power_on_hours(user: UserClient):
+    """
+    Tests for check if one computer have the time mark updated when one component of it is updated
+    """
+    snap, _ = user.post(file('asus-eee-1000h.snapshot.bug1857'), res=Snapshot)
+    device = m.Device.query.filter_by(id=snap['device']['id']).one()
+
+    for c in device.components:
+        if c.type == 'HardDrive':
+            hdd = c
+            break
+
+    for ac in hdd.actions:
+        if ac.type == 'TestDataStorage':
+            test_data_storage = ac
+            break
+
+    assert test_data_storage.lifetime.total_seconds()/3600 == test_data_storage.power_on_hours
+
+
+@pytest.mark.mvp
 def test_snapshot_component_add_remove(user: UserClient):
     """Tests adding and removing components and some don't generate HID.
     All computers generate HID.

@@ -824,6 +824,12 @@ class TestDataStorage(TestMixin, Test):
     def reported_uncorrectable_errors(self):
         return self._reported_uncorrectable_errors
 
+    @property
+    def power_on_hours(self):
+        if not self.lifetime:
+            return 0
+        return int(self.lifetime.total_seconds()/3600)
+
     @reported_uncorrectable_errors.setter
     def reported_uncorrectable_errors(self, value):
         # We assume that a huge number is not meaningful
