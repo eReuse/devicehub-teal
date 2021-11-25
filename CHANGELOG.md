@@ -9,7 +9,7 @@ ml).
   [1.0.11-beta]
 
 ## testing
-  [1.0.11-beta]
+  [1.0.12-beta]
 
 ## [1.0.11-beta]
 - [addend] #186 adding property power_on_hours.
