@@ -187,11 +187,12 @@ def test_snapshot_component_add_remove(user: UserClient):
     # (represented with their S/N) should be:
     # PC 1: p1c1s, p1c2s, p1c3s. PC 2: ø
     s1 = yaml2json('1-device-with-components.snapshot')
-    snapshot1 = snapshot_and_check(user,
-                                   s1,
-                                   action_types=(BenchmarkProcessor.t,
-                                                 RateComputer.t),
-                                   perform_second_snapshot=False)
+    snapshot1, _ = user.post(json_encode(s1), res=Snapshot)
+    # snapshot1 = snapshot_and_check(user,
+    #                                s1,
+    #                                action_types=(BenchmarkProcessor.t,
+    #                                              RateComputer.t),
+    #                                perform_second_snapshot=False)
     pc1_id = snapshot1['device']['id']
     pc1_devicehub_id = snapshot1['device']['devicehubID']
     pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
@@ -213,8 +214,9 @@ def test_snapshot_component_add_remove(user: UserClient):
     # Actions PC1: Snapshot, Remove. PC2: Snapshot
     s2 = yaml2json('2-second-device-with-components-of-first.snapshot')
     # num_actions = 2 = Remove, Add
-    snapshot2 = snapshot_and_check(user, s2, action_types=('Remove', 'RateComputer'),
-                                   perform_second_snapshot=False)
+    snapshot2, _ = user.post(json_encode(s2), res=Snapshot)
+    # snapshot2 = snapshot_and_check(user, s2, action_types=('Remove', 'RateComputer'),
+    #                                perform_second_snapshot=False)
     pc2_id = snapshot2['device']['id']
     pc2_devicehub_id = snapshot2['device']['devicehubID']
     pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
@@ -397,6 +399,29 @@ def test_snapshot_component_containing_components(user: UserClient):
         'model': 'baz'
     }
     user.post(json_encode(s), res=Snapshot, status=ValidationError)
+
+
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+def test_ram_remove(user: UserClient):
+    """Tests a Snapshot
+    We want check than all components is duplicate less hard disk, than this is removed.
+    """
+    s = yaml2json('erase-sectors.snapshot')
+    s['device']['type'] = 'Server'
+    snap1, _ = user.post(json_encode(s), res=Snapshot)
+
+    s['uuid'] = '74caa7eb-2bad-4333-94f6-6f1b031d0774'
+    s['device']['serialNumber'] = 'pc2s'
+    snap2, _ = user.post(json_encode(s), res=Snapshot)
+
+    dev1 = m.Device.query.filter_by(id=snap1['device']['id']).one()
+    dev2 = m.Device.query.filter_by(id=snap2['device']['id']).one()
+    assert len(dev1.components) == 1
+    assert len(dev2.components) == 3
+    ssd = [x for x in dev2.components if x.t == 'SolidStateDrive'][0]
+    remove = [x for x in ssd.actions if x.t == 'Remove'][0]
+    assert remove.t == 'Remove'
 
 
 @pytest.mark.mvp
