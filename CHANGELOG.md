@@ -11,6 +11,9 @@ ml).
 ## testing
   [1.0.12-beta]
 
+## [1.0.12-beta]
+- [changes] # now is possible duplicate slots of RAM.
+
 ## [1.0.11-beta]
 - [addend] #186 adding property power_on_hours.
 
