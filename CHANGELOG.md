@@ -13,6 +13,7 @@ ml).
 
 ## [1.0.12-beta]
 - [changes] #187 now is possible duplicate slots of RAM.
+- [changes] #188 Excel report devices allow to see device to old owners.
 
 ## [1.0.11-beta]
 - [addend] #186 adding property power_on_hours.
