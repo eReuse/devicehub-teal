@@ -118,7 +118,7 @@ class DocumentView(DeviceView):
 class DevicesDocumentView(DeviceView):
     @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
-        query = (x for x in self.query(args) if x.owner_id == g.user.id)
+        query = self.query(args)
         return self.generate_post_csv(query)
 
     def generate_post_csv(self, query):
