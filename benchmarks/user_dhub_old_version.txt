@@ -1,0 +1,257 @@
+ * Serving Flask app "ereuse_devicehub" (lazy loading)
+ * Environment: production
+   WARNING: Do not use the development server in a production environment.
+   Use a production WSGI server instead.
+ * Debug mode: on
+--------------------------------------------------------------------------------
+PATH: '/versions/'
+         6344 function calls (6063 primitive calls) in 1.183 seconds
+
+   Ordered by: internal time, call count
+   List reduced from 849 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        9    1.164    0.129    1.164    0.129 {method 'acquire' of '_thread.RLock' objects}
+        9    0.004    0.000    0.005    0.001 {method 'execute' of 'psycopg2.extensions.cursor' objects}
+        3    0.003    0.001    0.003    0.001 {method 'rollback' of 'psycopg2.extensions.connection' objects}
+        1    0.003    0.003    0.003    0.003 {built-in method psycopg2._psycopg._connect}
+     12/3    0.000    0.000    0.000    0.000 /usr/lib/python3.7/sre_parse.py:469(_parse)
+     65/2    0.000    0.000    0.000    0.000 {built-in method _abc._abc_subclasscheck}
+    72/60    0.000    0.000    0.001    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/util/langhelpers.py:836(__get__)
+      433    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+       77    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/session.py:1339(_add_bind)
+  195/193    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+     22/3    0.000    0.000    0.000    0.000 /usr/lib/python3.7/sre_compile.py:71(_compile)
+       11    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/base.py:37(_from_objects)
+        5    0.000 --------------------------------------------------------------------------------
+PATH: '/lots/'
+         821894 function calls (796177 primitive calls) in 1.204 seconds
+
+   Ordered by: internal time, call count
+   List reduced from 1187 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     6149    0.080    0.000    0.081    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/event/registry.py:165(_key)
+    66417    0.044    0.000    0.050    0.000 {built-in method builtins.isinstance}
+      467    0.043    0.000    0.537    0.001 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/strategies.py:39(_register_attribute)
+     6149    0.036    0.000    0.150    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/event/registry.py:67(_stored_in_collection)
+     4269    0.032    0.000    0.052    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/elements.py:3030(__init__)
+6150/6149    0.032    0.000    0.285    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/event/registry.py:193(listen)
+15744/7854    0.031    0.000    0.065    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/util/langhelpers.py:909(__getattr__)
+     2797    0.028    0.000    0.054    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/visitors.py:221(iterate)
+18395/10521    0.026    0.000    0.048    0.000 {built-in method builtins.hasattr}
+     3990    0.025    0.000    0.135    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/attributes.py:1701(register_attribute_impl)
+     2032    0.022    0.000    0.174    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/mapper.py:2501(visit_binary)
+     3901    0.019    0.000    0.028    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/event/attr.py:330(__init__)
+    16706    0.019    0.000    0.019    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/annotation.py:99(__hash__)
+     3990    0.019    0.000    0.043    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/attributes.py:436(__init__)
+       89    0.019    0.000    0.023    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/relationships.py:2405(visit_binary)
+     4236    0.017    0.000    0.151    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/annotation.py:102(__eq__)
+     6149    0.015    0.000    0.033    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/event/api.py:22(_event_key)
+     3308    0.014    0.000    0.051    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/attributes.py:761(__init__)
+    27512    0.014    0.000    0.019    0.000 {built-in method builtins.getattr}
+     4206    0.014    0.000    0.024    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/elements.py:3050(__bool__)
+     4269    0.014    0.000    0.092    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/default_comparator.py:40(_boolean_compare)
+    78080    0.013    0.000    0.013    0.000 {method 'pop' of 'dict' objects}
+     4269    0.012    0.000    0.104    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/type_api.py:63(operate)
+    11500    0.012    0.000    0.012    0.000 {method 'popleft' of 'collections.deque' objects}
+     3424    0.012    0.000    0.020    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/util/langhelpers.py:881(expire_instance)
+     6149    0.011    0.000    0.215    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/event/registry.py:237(base_listen)
+8572/4269    0.011    0.000    0.135    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/operators.py:358(__eq__)
+     6149    0.011    0.000    0.329    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/event/api.py:33(listen)
+    10298    0.010    0.000    0.017    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/base.py:220(manager_of_class)
+     7582    0.010    0.000    0.010    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/instrumentation.py:193(_attr_has_impl)
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+PATH: '/devices/'
+         2869 function calls (2841 primitive calls) in 1.116 seconds
+
+   Ordered by: internal time, call count
+   List reduced from 664 to 30 due to restriction <30>
+
+   0.000    0.004    0.001 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/base.py:1155(_execute_context)
+        2    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/werkzeug/routing.py:1443(match)
+      103    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/werkzeug/routing.py:753(match)
+        1    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/flask_sqlalchemy/__init__.py:917(get_tables_for_bind)
+    37/28    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/util/langhelpers.py:909(__getattr__)
+       92    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/inspection.py:37(inspect)
+       73    0.000    0.000    0.000    0.000 {built-in method builtins.hasattr}
+      184    0.000    0.000    0.000    0.000 /usr/lib/python3.7/sre_parse.py:164(__getitem__)
+       27    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/werkzeug/local.py:160(top)
+      106    0.000    0.000    0.000    0.000 /usr/lib/python3.7/weakref.py:435(__contains__)
+        9    0.000    0.000    0.001    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/compiler.py:1716(_label_select_column)
+       10    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/compiler.py:826(visit_column)
+     32/4    0.000    0.000    0.001    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/visitors.py:84(_compiler_dispatch)
+        9    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/compiler.py:772(visit_label)
+        5    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/selectable.py:2899(_froms)
+       64    0.000    0.000    0.000    0.000 /usr/lib/python3.7/weakref.py:395(__getitem__)
+     21/8    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/util/langhelpers.py:245(get_cls_kwargs)
+        9    0.000    0.000    0.000    0.000 {method 'cursor' of 'psycopg2.extensions.connection' objects}
+
+
+--------------------------------------------------------------------------------
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        3    1.073    0.358    1.073    0.358 {method 'acquire' of '_thread.RLock' objects}
+        1    0.025    0.025    0.025    0.025 {method 'rollback' of 'psycopg2.extensions.connection' objects}
+        2    0.007    0.003    0.007    0.003 {method 'execute' of 'psycopg2.extensions.cursor' objects}
+        1    0.004    0.004    0.004    0.004 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/event/attr.py:279(exec_once)
+        1    0.003    0.003    0.003    0.003 {built-in method psycopg2._psycopg._connect}
+        1    0.001    0.001    0.026    0.026 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/pool.py:716(_finalize_fairy)
+        1    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/elements.py:1663(get_children)
+        1    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/flask/app.py:2117(do_teardown_request)
+        1    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/result.py:316(<listcomp>)
+        1    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/flask_sqlalchemy/__init__.py:917(get_tables_for_bind)
+       77    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/session.py:1339(_add_bind)
+        1    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/flask_sqlalchemy/__init__.py:925(get_binds)
+        2    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/werkzeug/routing.py:1443(match)
+       27    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/werkzeug/local.py:160(top)
+        8    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/compiler.py:826(visit_column)
+       72    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/werkzeug/routing.py:753(match)
+       31    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/werkzeug/local.py:68(__getattr__)
+       11    0.000    0.000    0.000    0.000 {method 'sub' of 're.Pattern' objects}
+      154    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+       83    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/inspection.py:37(inspect)
+        2    0.000    0.000    0.007    0.004 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/base.py:1155(_execute_context)
+      158    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}
+        3    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/selectable.py:2899(_froms)
+       86    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+        1    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/session.py:639(__init__)
+        7    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/compiler.py:1716(_label_select_column)
+        2    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/default.py:622(_init_compiled)
+       80    0.000    0.000    0.000    0.000 {method 'search' of 're.Pattern' objects}
+        2    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/visitors.py:221(iterate)
+        2    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/flask_sqlalchemy/__init__.py:109(_calling_context)
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+PATH: '/versions/'
+         9122 function calls (9001 primitive calls) in 0.204 seconds
+
+   Ordered by: internal time, call count
+   List reduced from 999 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        8    0.090    0.011    0.090    0.011 {built-in method posix.stat}
+        3    0.048    0.016    0.048    0.016 {method 'execute' of 'psycopg2.extensions.cursor' objects}
+        1    0.017    0.017    0.017    0.017 {built-in method _socket.getaddrinfo}
+        1    0.013    0.013    0.019    0.019 <frozen importlib._bootstrap_external>:914(get_data)
+        2    0.008    0.004    0.008    0.004 {function socket.close at 0x7fd08d1efd40}
+        1    0.006    0.006    0.006    0.006 {method 'read' of '_io.FileIO' objects}
+        2    0.005    0.002    0.005    0.002 /usr/lib/python3.7/socket.py:139(__init__)
+        1    0.004    0.004    0.004    0.004 {method 'rollback' of 'psycopg2.extensions.connection' objects}
+        2    0.001    0.000    0.001    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/query.py:3898(row_processor)
+      318    0.000    0.000    0.001    0.000 /usr/lib/python-exec/python3.7/../../../lib/python3.7/os.py:676(__getitem__)
+      332    0.000    0.000    0.002    0.000 /usr/lib/python-exec/python3.7/../../../lib/python3.7/_collections_abc.py:742(__iter__)
+  630/629    0.000    0.000    0.000    0.000 {method 'decode' of 'bytes' objects}
+      312    0.000    0.000    0.000    0.000 /usr/lib/python-exec/python3.7/../../../lib/python3.7/os.py:699(__iter__)
+     32/4    0.000    0.000    0.000    0.000 {built-in method _abc._abc_subclasscheck}
+      727    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+        2    0.000    0.000    0.002    0.001 /usr/lib/python3.7/urllib/request.py:2489(getproxies_environment)
+        2    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/loading.py:337(_instance_processor)
+       16    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/compiler.py:826(visit_column)
+      620    0.000    0.000    0.000    0.000 /usr/lib/python-exec/python3.7/../../../lib/python3.7/os.py:758(decode)
+      318    0.000    0.000    0.000    0.000 /usr/lib/python-exec/python3.7/../../../lib/python3.7/os.py:754(encode)
+        6    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/selectable.py:2899(_froms)
+       14    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/compiler.py:772(visit_label)
+       14    0.000    0.000    0.001    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/compiler.py:1716(_label_select_column)
+      342    0.000    0.000    0.000    0.000 {method 'encode' of 'str' objects}
+        3    0.000    0.000    0.050    0.017 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/base.py:1155(_execute_context)
+       51    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/werkzeug/local.py:160(top)
+     39/3    0.000    0.000    0.001    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/visitors.py:84(_compiler_dispatch)
+       77    0.000    0.000    0.000    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/session.py:1339(_add_bind)
+        1    0.000    0.000    0.000    0.000 {built-in method marshal.loads}
+      172    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+PATH: '/devices/'
+         3749097 function calls (3426518 primitive calls) in 8.391 seconds
+
+   Ordered by: internal time, call count
+   List reduced from 1528 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     1829    4.330    0.002    4.362    0.002 {method 'execute' of 'psycopg2.extensions.cursor' objects}
+    44950    0.147    0.000    0.164    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/interfaces.py:512(_get_context_loader)
+     3871    0.143    0.000    0.568    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/loading.py:337(_instance_processor)
+     4047    0.090    0.000    0.318    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/visitors.py:221(iterate)
+      719    0.081    0.000    0.088    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/elements.py:890(__init__)
+   228904    0.077    0.000    0.080    0.000 {built-in method builtins.isinstance}
+     4285    0.069    0.000    0.172    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/selectable.py:2899(_froms)
+189751/61029    0.067    0.000    0.120    0.000 /usr/lib/python3.7/json/encoder.py:333(_iterencode_dict)
+137316/99651    0.063    0.000    7.521    0.000 {built-in method builtins.getattr}
+64723/61729    0.060    0.000    6.845    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/attributes.py:267(__get__)
+  1298/30    0.058    0.000    7.993    0.266 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/marshmallow/marshalling.py:90(serialize)
+    44052    0.047    0.000    0.327    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/interfaces.py:550(create_row_processor)
+    66094    0.046    0.000    0.108    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/result.py:643(_getter)
+     5416    0.044    0.000    0.128    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sortedcontainers/sortedset.py:108(__init__)
+     1829    0.040    0.000    0.056    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/flask_sqlalchemy/__init__.py:109(_calling_context)
+     1829    0.039    0.000    4.747    0.003 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/base.py:1155(_execute_context)
+     1829    0.038    0.000    0.126    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/default.py:622(_init_compiled)
+    14593    0.038    0.000    0.061    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/result.py:588(_key_fallback)
+    22870    0.034    0.000    0.056    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/werkzeug/local.py:160(top)
+     4047    0.032    0.000    0.043    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/visitors.py:263(traverse_using)
+    19422    0.031    0.000    7.233    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/marshmallow/utils.py:338(_get_value_for_key)
+     9227    0.031    0.000    0.073    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/base.py:38(<listcomp>)
+19422/1469    0.030    0.000    7.972    0.005 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/marshmallow/fields.py:229(serialize)
+     1829    0.030    0.000    0.032    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/compiler.py:632(construct_params)
+    12540    0.030    0.000    0.091    0.000 {built-in method builtins.sorted}
+4715/4595    0.028    0.000    1.076    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/loading.py:35(instances)
+    13738    0.028    0.000    0.048    0.000 /home/cayo/ribaguifi/ereuse/dhub/ereuse_devicehub/resources/action/models.py:240(__lt__)
+     3715    0.027    0.000    0.035    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/compiler.py:1497(_truncated_identifier)
+    66094    0.027    0.000    0.134    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/result.py:724(_getter)
+     1829    0.027    0.000    5.041    0.003 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/base.py:1048(_execute_clauseelement)
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+PATH: '/lots/'
+         22194313 function calls (19571472 primitive calls) in 28.238 seconds
+
+   Ordered by: internal time, call count
+   List reduced from 1554 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    10276    7.129    0.001    7.271    0.001 {method 'execute' of 'psycopg2.extensions.cursor' objects}
+    22077    0.874    0.000    2.719    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/loading.py:337(_instance_processor)
+    23003    0.512    0.000    1.742    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/visitors.py:221(iterate)
+  1317963    0.435    0.000    0.447    0.000 {built-in method builtins.isinstance}
+    24077    0.390    0.000    0.949    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/selectable.py:2899(_froms)
+   256711    0.358    0.000    0.408    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/interfaces.py:512(_get_context_loader)
+414404/395611    0.352    0.000   20.872    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/attributes.py:267(__get__)
+792239/576826    0.348    0.000   24.675    0.000 {built-in method builtins.getattr}
+  7583/25    0.336    0.000   27.409    1.096 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/marshmallow/marshalling.py:90(serialize)
+1478163/360759    0.278    0.000    0.600    0.000 /usr/lib/python3.7/json/encoder.py:333(_iterencode_dict)
+   252403    0.260    0.000    1.325    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/interfaces.py:550(create_row_processor)
+   376026    0.244    0.000    0.592    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/result.py:643(_getter)
+    30982    0.241    0.000    0.749    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sortedcontainers/sortedset.py:108(__init__)
+    10276    0.210    0.000    0.644    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/default.py:622(_init_compiled)
+    83633    0.209    0.000    0.348    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/result.py:588(_key_fallback)
+    10276    0.209    0.000    0.295    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/flask_sqlalchemy/__init__.py:109(_calling_context)
+    10273    0.197    0.000    1.212    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/orm/query.py:3898(row_processor)
+    10276    0.194    0.000    9.188    0.001 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/base.py:1155(_execute_context)
+   133552    0.186    0.000    0.309    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/werkzeug/local.py:160(top)
+113482/475    0.181    0.000   27.400    0.058 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/marshmallow/fields.py:229(serialize)
+    23003    0.178    0.000    0.236    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/visitors.py:263(traverse_using)
+   113482    0.177    0.000   23.755    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/marshmallow/utils.py:338(_get_value_for_key)
+    71690    0.176    0.000    0.501    0.000 {built-in method builtins.sorted}
+    51856    0.167    0.000    0.392    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/sql/base.py:38(<listcomp>)
+    91604    0.151    0.000    0.286    0.000 /home/cayo/ribaguifi/ereuse/dhub/ereuse_devicehub/resources/action/models.py:240(__lt__)
+1007699/360723    0.151    0.000    0.546    0.000 /usr/lib/python3.7/json/encoder.py:277(_iterencode_list)
+   376026    0.148    0.000    0.740    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sqlalchemy/engine/result.py:724(_getter)
+33713/150    0.147    0.000   27.395    0.183 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/teal/marshmallow.py:212(serialize)
+    30982    0.146    0.000    0.391    0.000 /home/cayo/ribaguifi/ereuse/dhub/env/lib/python3.7/site-packages/sortedcontainers/sortedlist.py:320(update)
+   850451    0.143    0.000    0.143    0.000 {method 'get' of 'dict' objects}
+
+
+--------------------------------------------------------------------------------
+
