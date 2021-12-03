@@ -155,6 +155,7 @@ class ActionsDocumentView(DeviceView):
 
     def generate_post_csv(self, query):
         """Get device query and put information in csv format."""
+        # import pdb; pdb.set_trace()
         data = StringIO()
         cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
         first = True
