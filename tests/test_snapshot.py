@@ -424,6 +424,37 @@ def test_ram_remove(user: UserClient):
     assert remove.t == 'Remove'
 
 
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+def test_not_remove_ram_in_same_computer(user: UserClient):
+    """Tests a Snapshot
+    We want check than all components is not duplicate in a second snapshot of the same device.
+    """
+    s = yaml2json('erase-sectors.snapshot')
+    s['device']['type'] = 'Server'
+    snap1, _ = user.post(json_encode(s), res=Snapshot)
+
+    s['uuid'] = '74caa7eb-2bad-4333-94f6-6f1b031d0774'
+    s['components'].append({
+        "actions": [],
+        "manufacturer": "Intel Corporation",
+        "model": "NM10/ICH7 Family High Definition Audio Controller",
+        "serialNumber": "mp2pc",
+        "type": "SoundCard"
+    })
+    dev1 = m.Device.query.filter_by(id=snap1['device']['id']).one()
+    ram1 = [x.id for x in dev1.components if x.type == 'RamModule'][0]
+    snap2, _ = user.post(json_encode(s), res=Snapshot)
+
+    dev2 = m.Device.query.filter_by(id=snap2['device']['id']).one()
+    ram2 = [x.id for x in dev2.components if x.type == 'RamModule'][0]
+    assert ram1 != ram2
+    assert len(dev1.components) == 4
+    assert len(dev2.components) == 4
+    assert dev1.id == dev2.id
+    assert dev1.components == dev2.components
+
+
 @pytest.mark.mvp
 def test_ereuse_price(user: UserClient):
     """Tests a Snapshot with EraseSectors and the resulting privacy
