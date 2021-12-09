@@ -142,7 +142,7 @@ def test_export_csv_actions(user: UserClient, user2: UserClient, client: Client)
     csv_user, _ = user.get(res=documents.DocumentDef.t,
                            item='actions/',
                            accept='text/csv',
-                           query=[('filter', {'type': ['Computer']})])
+                           query=[('filter', {'type': ['Computer'], 'ids': [device_id]})])
 
     csv_user2, _ = user2.get(res=documents.DocumentDef.t,
                              item='actions/',
@@ -180,7 +180,7 @@ def test_live_export_csv2(user: UserClient, client: Client, app: Devicehub):
     csv_user, _ = user.get(res=documents.DocumentDef.t,
                            item='actions/',
                            accept='text/csv',
-                           query=[('filter', {'type': ['Computer']})])
+                           query=[('filter', {'type': ['Computer'], 'ids': [device_id]})])
 
     assert "4692" in csv_user
     assert "8692" in csv_user

@@ -128,12 +128,13 @@ def test_metrics_action_status(user: UserClient, user2: UserClient):
     # Insert computer
     lenovo = yaml2json('desktop-9644w8n-lenovo-0169622.snapshot')
     snap, _ = user.post(json_encode(lenovo), res=ma.Snapshot)
-    action = {'type': ma.Use.t, 'devices': [snap['device']['id']]}
+    device_id = snap['device']['id']
+    action = {'type': ma.Use.t, 'devices': [device_id]}
     action_use, _ = user.post(action, res=ma.Action)
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='actions/',
                           accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                          query=[('filter', {'type': ['Computer'], 'ids': [device_id]})])
     head = 'DHID;Hid;Document-Name;Action-Type;Action-User-LastOwner-Supplier;Action-User-LastOwner-Receiver;Action-Create-By;Trade-Confirmed;Status-Created-By-Supplier-About-Reciber;Status-Receiver;Status Supplier – Created Date;Status Receiver – Created Date;Trade-Weight;Action-Create;Allocate-Start;Allocate-User-Code;Allocate-NumUsers;UsageTimeAllocate;Type;LiveCreate;UsageTimeHdd\n'
     body = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Status;;foo@foo.com;Receiver;;;Use;;'
     assert head in csv_str
@@ -150,19 +151,22 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
     snap1, _ = user.post(json_encode(lenovo), res=ma.Snapshot)
     snap2, _ = user.post(json_encode(acer), res=ma.Snapshot)
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    devices = [('id', snap1['device']['id']),
+    device1_id = snap1['device']['id']
+    device2_id = snap2['device']['id']
+    devices_id = [device1_id, device2_id]
+    devices = [('id', device1_id),
                ('id', snap2['device']['id'])]
     lot, _ = user.post({},
                        res=Lot,
                        item='{}/devices'.format(lot['id']),
                        query=devices)
 
-    action = {'type': ma.Refurbish.t, 'devices': [snap1['device']['id']]}
+    action = {'type': ma.Refurbish.t, 'devices': [device1_id]}
     user.post(action, res=ma.Action)
 
     request_post = {
         'type': 'Trade',
-        'devices': [snap1['device']['id'], snap2['device']['id']],
+        'devices': devices_id,
         'userFromEmail': user.email,
         'userToEmail': user2.email,
         'price': 10,
@@ -173,12 +177,12 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
 
     user.post(res=ma.Action, data=request_post)
 
-    action = {'type': ma.Use.t, 'devices': [snap1['device']['id']]}
+    action = {'type': ma.Use.t, 'devices': [device1_id]}
     action_use, _ = user.post(action, res=ma.Action)
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='actions/',
                           accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                          query=[('filter', {'type': ['Computer'], 'ids': devices_id})])
 
     body1_lenovo = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Trade;foo@foo.com;'
     body1_lenovo += 'foo2@foo.com;Supplier;NeedConfirmation;Use;;'
@@ -194,12 +198,12 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
     assert body2_acer in csv_str
 
     # User2 mark this device as Refurbish
-    action = {'type': ma.Use.t, 'devices': [snap1['device']['id']]}
+    action = {'type': ma.Use.t, 'devices': [device1_id]}
     action_use2, _ = user2.post(action, res=ma.Action)
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='actions/',
                           accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                          query=[('filter', {'type': ['Computer'], 'ids': devices_id})])
 
     body1_lenovo = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Trade;foo@foo.com;'
     body1_lenovo += 'foo2@foo.com;Supplier;NeedConfirmation;Use;Use;'
@@ -252,18 +256,30 @@ def test_metrics_action_status_for_containers(user: UserClient, user2: UserClien
 
     assert str(trade.actions[-1].id) == action['id']
 
+    # get metrics from botom in lot menu
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='actions/',
                           accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                          query=[('filter', {'type': ['Computer']}), ('lot', lot['id'])])
 
     body1 = ';bbbbbbbb;test.pdf;Trade-Container;foo@foo.com;foo2@foo.com;Supplier;False;Recycling;;'
     body2 = ';;150.0;'
     body3 = ';;0;0;Trade-Container;0;0'
-    assert len(csv_str.split('\n')) == 4
+    assert len(csv_str.split('\n')) == 3
     assert body1 in csv_str.split('\n')[-2]
     assert body2 in csv_str.split('\n')[-2]
     assert body3 in csv_str.split('\n')[-2]
+
+    # get metrics from botom in devices menu
+    csv_str2, _ = user.get(res=documents.DocumentDef.t,
+                          item='actions/',
+                          accept='text/csv',
+                          query=[('filter', {'type': ['Computer'], 'ids': [snap['device']['id']]})])
+
+    assert len(csv_str2.split('\n')) == 4
+    assert body1 in csv_str2.split('\n')[-2]
+    assert body2 in csv_str2.split('\n')[-2]
+    assert body3 in csv_str2.split('\n')[-2]
 
 
 @pytest.mark.mvp
@@ -274,14 +290,15 @@ def test_visual_metrics_for_old_owners(user: UserClient, user2: UserClient):
     lenovo = yaml2json('desktop-9644w8n-lenovo-0169622.snapshot')
     snap1, _ = user.post(json_encode(lenovo), res=ma.Snapshot)
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    devices = [('id', snap1['device']['id'])]
+    device_id = snap1['device']['id']
+    devices = [('id', device_id)]
     lot, _ = user.post({},
                        res=Lot,
                        item='{}/devices'.format(lot['id']),
                        query=devices)
     request_post = {
         'type': 'Trade',
-        'devices': [snap1['device']['id']],
+        'devices': [device_id],
         'userFromEmail': user.email,
         'userToEmail': user2.email,
         'price': 10,
@@ -294,20 +311,21 @@ def test_visual_metrics_for_old_owners(user: UserClient, user2: UserClient):
     request_confirm = {
         'type': 'Confirm',
         'action': trade['id'],
-        'devices': [snap1['device']['id']]
+        'devices': [device_id]
     }
     user2.post(res=ma.Action, data=request_confirm)
 
-    action = {'type': ma.Refurbish.t, 'devices': [snap1['device']['id']]}
+
+    action = {'type': ma.Refurbish.t, 'devices': [device_id]}
     action_use, _ = user.post(action, res=ma.Action)
     csv_supplier, _ = user.get(res=documents.DocumentDef.t,
                                item='actions/',
                                accept='text/csv',
-                               query=[('filter', {'type': ['Computer']})])
+                               query=[('filter', {'type': ['Computer'], 'ids': [device_id]})])
     csv_receiver, _ = user2.get(res=documents.DocumentDef.t,
                                item='actions/',
                                accept='text/csv',
-                               query=[('filter', {'type': ['Computer']})])
+                               query=[('filter', {'type': ['Computer'], 'ids': [device_id]})])
     body = ';;0;0;Trade;0;0\n'
 
     assert body in csv_receiver
@@ -322,14 +340,15 @@ def test_bug_trade_confirmed(user: UserClient, user2: UserClient):
     lenovo = yaml2json('desktop-9644w8n-lenovo-0169622.snapshot')
     snap1, _ = user.post(json_encode(lenovo), res=ma.Snapshot)
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    devices = [('id', snap1['device']['id'])]
+    device_id = snap1['device']['id']
+    devices = [('id', device_id)]
     lot, _ = user.post({},
                        res=Lot,
                        item='{}/devices'.format(lot['id']),
                        query=devices)
     request_post = {
         'type': 'Trade',
-        'devices': [snap1['device']['id']],
+        'devices': [device_id],
         'userFromEmail': user2.email,
         'userToEmail': user.email,
         'price': 10,
@@ -342,17 +361,17 @@ def test_bug_trade_confirmed(user: UserClient, user2: UserClient):
     csv_not_confirmed, _ = user.get(res=documents.DocumentDef.t,
                                      item='actions/',
                                      accept='text/csv',
-                                     query=[('filter', {'type': ['Computer']})])
+                                     query=[('filter', {'type': ['Computer'], 'ids': [device_id]})])
     request_confirm = {
         'type': 'Confirm',
         'action': trade['id'],
-        'devices': [snap1['device']['id']]
+        'devices': [device_id]
     }
     user2.post(res=ma.Action, data=request_confirm)
     csv_confirmed, _ = user2.get(res=documents.DocumentDef.t,
                                  item='actions/',
                                  accept='text/csv',
-                                 query=[('filter', {'type': ['Computer']})])
+                                 query=[('filter', {'type': ['Computer'], 'ids': [device_id]})])
 
     body_not_confirmed = "Trade;foo2@foo.com;foo@foo.com;Receiver;NeedConfirmation;"
     body_confirmed = "Trade;foo2@foo.com;foo@foo.com;Receiver;TradeConfirmed;"
