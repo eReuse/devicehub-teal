@@ -1,4 +1,5 @@
 import csv
+import json
 import enum
 import uuid
 import time
@@ -150,7 +151,9 @@ class DevicesDocumentView(DeviceView):
 class ActionsDocumentView(DeviceView):
     @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
-        query = (x for x in self.query(args))
+        filters = json.loads(request.args.get('filter', {}))
+        ids = filters.get('ids', [])
+        query = self.query(args).filter(Device.id.in_(ids))
         return self.generate_post_csv(query)
 
     def generate_post_csv(self, query):
@@ -168,6 +171,13 @@ class ActionsDocumentView(DeviceView):
                     first = False
                 cw.writerow(d.values())
         query_trade = Trade.query.filter(Trade.devices.any(Device.id.in_(devs_id))).all()
+
+        lot_id = request.args.get('lot')
+        if lot_id and not query_trade:
+            lot = Lot.query.filter_by(id=lot_id).one()
+            if hasattr(lot, "trade") and lot.trade:
+                if g.user in [lot.trade.user_from, lot.trade.user_to]:
+                    query_trade = [lot.trade]
 
         for trade in query_trade:
             data_rows = trade.get_metrics()
