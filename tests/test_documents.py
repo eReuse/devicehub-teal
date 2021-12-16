@@ -97,20 +97,21 @@ def test_erasure_certificate_wrong_id(client: Client):
 def test_export_csv_permitions(user: UserClient, user2: UserClient, client: Client):
     """test export device information in a csv file with others users."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+    dev_id = snapshot['device']['id']
     csv_user, _ = user.get(res=documents.DocumentDef.t,
                            item='devices/',
                            accept='text/csv',
-                           query=[('filter', {'type': ['Computer']})])
+                           query=[('filter', {'type': ['Computer'], 'ids': [dev_id]})])
 
     csv_user2, _ = user2.get(res=documents.DocumentDef.t,
                              item='devices/',
                              accept='text/csv',
-                             query=[('filter', {'type': ['Computer']})])
+                             query=[('filter', {'type': ['Computer'], 'ids': [dev_id]})])
 
     _, res = client.get(res=documents.DocumentDef.t,
                         item='devices/',
                         accept='text/csv',
-                        query=[('filter', {'type': ['Computer']})], status=401)
+                        query=[('filter', {'type': ['Computer'], 'ids': [dev_id]})], status=401)
     assert res.status_code == 401
 
     assert len(csv_user) > 0
@@ -215,10 +216,11 @@ def test_live_example2(user: UserClient, client: Client, app: Devicehub):
 def test_export_basic_snapshot(user: UserClient):
     """Test export device information in a csv file."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+    dev_id = snapshot['device']['id']
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='devices/',
                           accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                          query=[('filter', {'type': ['Computer'], 'ids': [dev_id]})])
 
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f, delimiter=';', quotechar='"')
@@ -266,16 +268,18 @@ def test_export_extended(app: Devicehub, user: UserClient):
     """Test a export device with all information and a lot of components."""
     snapshot1, _ = user.post(file('real-eee-1001pxd.snapshot.12'), res=Snapshot, status=201)
     snapshot2, _ = user.post(file('complete.export.snapshot'), res=Snapshot, status=201)
+    dev1_id = snapshot1['device']['id']
+    dev2_id = snapshot2['device']['id']
     with app.app_context():
         # Create a pc with a tag
-        pc = d.Device.query.filter_by(id=snapshot1['device']['id']).first()
+        pc = d.Device.query.filter_by(id=dev1_id).first()
         db.session.add(pc)
         db.session.commit()
 
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='devices/',
                           accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                          query=[('filter', {'type': ['Computer'], 'ids': [dev1_id, dev2_id]})])
 
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f, delimiter=';', quotechar='"')
