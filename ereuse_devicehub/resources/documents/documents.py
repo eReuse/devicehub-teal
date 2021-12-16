@@ -120,6 +120,9 @@ class DevicesDocumentView(DeviceView):
     @cache(datetime.timedelta(minutes=1))
     def find(self, args: dict):
         query = self.query(args)
+        filters = json.loads(request.args.get('filter', {}))
+        ids = filters.get('ids', [])
+        query = self.query(args).filter(Device.id.in_(ids))
         return self.generate_post_csv(query)
 
     def generate_post_csv(self, query):
