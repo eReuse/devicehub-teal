@@ -6,10 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## master
-  [1.0.11-beta]
+  [1.0.12-beta]
 
 ## testing
-  [1.0.12-beta]
+  [1.0.13-beta]
+
+## [1.0.13-beta]
 
 ## [1.0.12-beta]
 - [changes] #187 now is possible duplicate slots of RAM.
