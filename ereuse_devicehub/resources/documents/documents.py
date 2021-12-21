@@ -61,23 +61,29 @@ class DocumentView(DeviceView):
         args = self.QUERY_PARSER.parse(self.find_args,
                                        flask.request,
                                        locations=('querystring',))
-        if id:
-            # todo we assume we can pass both device id and action id
-            # for certificates... how is it going to end up being?
-            try:
-                id = uuid.UUID(id)
-            except ValueError:
-                try:
-                    id = int(id)
-                except ValueError:
-                    raise teal.marshmallow.ValidationError('Document must be an ID or UUID.')
-                else:
-                    query = devs.Device.query.filter_by(id=id)
-            else:
-                query = evs.Action.query.filter_by(id=id)
-        else:
-            flask.current_app.auth.requires_auth(lambda: None)()  # todo not nice
-            query = self.query(args)
+        ids = []
+        if 'filter' in request.args:
+            filters = json.loads(request.args.get('filter', {}))
+            ids = filters.get('ids', [])
+        query = devs.Device.query.filter(Device.id.in_(ids))
+
+        # if id:
+        #     # todo we assume we can pass both device id and action id
+        #     # for certificates... how is it going to end up being?
+        #     try:
+        #         id = uuid.UUID(id)
+        #     except ValueError:
+        #         try:
+        #             id = int(id)
+        #         except ValueError:
+        #             raise teal.marshmallow.ValidationError('Document must be an ID or UUID.')
+        #         else:
+        #             query = devs.Device.query.filter_by(id=id)
+        #     else:
+        #         query = evs.Action.query.filter_by(id=id)
+        # else:
+        #     flask.current_app.auth.requires_auth(lambda: None)()  # todo not nice
+        #     query = self.query(args)
 
         type = urlutils.URL(flask.request.url).path_parts[-2]
         if type == 'erasures':
@@ -93,6 +99,7 @@ class DocumentView(DeviceView):
 
     @staticmethod
     def erasure(query: db.Query):
+        # import pdb; pdb.set_trace()
         def erasures():
             for model in query:
                 if isinstance(model, devs.Computer):
