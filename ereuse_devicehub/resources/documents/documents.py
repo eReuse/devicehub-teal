@@ -65,7 +65,26 @@ class DocumentView(DeviceView):
         if 'filter' in request.args:
             filters = json.loads(request.args.get('filter', {}))
             ids = filters.get('ids', [])
-        query = devs.Device.query.filter(Device.id.in_(ids))
+
+        if not ids and not id:
+            msg = 'Document must be an ID or UUID.'
+            raise teal.marshmallow.ValidationError(msg)
+
+        if id:
+            try:
+                id = uuid.UUID(id)
+            except ValueError:
+                try:
+                    ids.append(int(id))
+                except ValueError:
+                    msg = 'Document must be an ID or UUID.'
+                    raise teal.marshmallow.ValidationError(msg)
+                else:
+                    query = devs.Device.query.filter(Device.id.in_(ids))
+            else:
+                query = evs.Action.query.filter_by(id=id)
+        else:
+            query = devs.Device.query.filter(Device.id.in_(ids))
 
         # if id:
         #     # todo we assume we can pass both device id and action id
@@ -99,7 +118,6 @@ class DocumentView(DeviceView):
 
     @staticmethod
     def erasure(query: db.Query):
-        # import pdb; pdb.set_trace()
         def erasures():
             for model in query:
                 if isinstance(model, devs.Computer):

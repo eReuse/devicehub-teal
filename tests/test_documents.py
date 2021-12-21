@@ -70,7 +70,7 @@ def test_erasure_certificate_private_query(user: UserClient):
     doc, response = user.get(res=documents.DocumentDef.t,
                              item='erasures/',
                              query=[
-                                 ('filter', {'id': [snapshot['device']['id']]})],
+                                 ('filter', {'ids': [snapshot['device']['id']]})],
                              accept=ANY)
     assert 'html' in response.content_type
     assert '<html' in doc
@@ -80,7 +80,7 @@ def test_erasure_certificate_private_query(user: UserClient):
                              item='erasures/',
                              query=[
                                  ('filter', {
-                                  'id': [snapshot['device']['id']]}),
+                                  'ids': [snapshot['device']['id']]}),
                                  ('format', 'PDF')
                              ],
                              accept='application/pdf')
@@ -601,7 +601,7 @@ def test_verify_stamp_erasure_certificate(user: UserClient, client: Client):
 
     doc, _ = user.get(res=documents.DocumentDef.t,
                              item='erasures/',
-                             query=[('filter', {'id': [snapshot['device']['id']]})],
+                             query=[('filter', {'ids': [snapshot['device']['id']]})],
                              accept=ANY)
 
     response, _ = client.post(res=documents.DocumentDef.t,
@@ -616,7 +616,7 @@ def test_verify_stamp_erasure_certificate(user: UserClient, client: Client):
     doc, _ = user.get(res=documents.DocumentDef.t,
                              item='erasures/',
                              query=[
-                                 ('filter', {'id': [snapshot['device']['id']]}),
+                                 ('filter', {'ids': [snapshot['device']['id']]}),
                                  ('format', 'PDF')
                              ],
                              accept='application/pdf')
