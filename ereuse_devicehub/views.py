@@ -1,8 +1,15 @@
 from flask import Blueprint, render_template
+from flask.views import View
+
 
 core = Blueprint('core', __name__)
 
 
-@core.route('/profile/')
-def user_profile():
-    return render_template('ereuse_devicehub/user_profile.html')
+class UserProfileView(View):
+    template_name = 'ereuse_devicehub/user_profile.html'
+
+    def dispatch_request(self):
+        return render_template(self.template_name)
+
+
+core.add_url_rule('/profile/', view_func=UserProfileView.as_view('user-profile'))
