@@ -1,7 +1,7 @@
 from uuid import uuid4
 
-from citext import CIText
 from flask import current_app as app
+from flask_login import UserMixin
 from sqlalchemy import Column, Boolean, BigInteger, Sequence
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import EmailType, PasswordType
@@ -13,7 +13,7 @@ from ereuse_devicehub.resources.models import STR_SIZE, Thing
 from ereuse_devicehub.resources.enums import SessionType
 
 
-class User(Thing):
+class User(UserMixin, Thing):
     __table_args__ = {'schema': 'common'}
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
     email = Column(EmailType, nullable=False, unique=True)
@@ -65,6 +65,15 @@ class User(Thing):
         if not self.phantom:
             return
         return self.email.split('@')[0].split('_')[1]
+
+    @property
+    def is_active(self):
+        """Alias because flask-login expects `is_active` attribute"""
+        return self.active
+
+    def check_password(self, password):
+        # take advantage of SQL Alchemy PasswordType to verify password
+        return self.password == password
 
 
 class UserInventory(db.Model):
