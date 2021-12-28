@@ -46,39 +46,27 @@
               <h5 class="card-title">Computers</h5>
 
               <div class="row">
-                <div class="col-lg-3 col-md-4 label ">Full Name</div>
-                <div class="col-lg-9 col-md-8">Kevin Anderson</div>
+                <div class="col">Title</div>
+                <div class="col-1">DHID</div>
+                <div class="col">Tags</div>
+                <div class="col-1">Status</div>
+                <div class="col">Update</div>
               </div>
+              {% for dev in devices %}
 
               <div class="row">
-                <div class="col-lg-3 col-md-4 label">Company</div>
-                <div class="col-lg-9 col-md-8">Lueilwitz, Wisoky and Leuschke</div>
+                <div class="col">{{ dev.type }} {{ dev.manufacturer }} {{ dev.model }}</div>
+                <div class="col-1">{{ dev.devicehub_id }}</div>
+                <div class="col">
+                    {% for t in dev.tags %}
+                        {{ t.code }}
+                    {% endfor %}
+                 </div>
+                <div class="col-1">{% if dev.status %}{{ dev.status }}{% endif %}</div>
+                <div class="col">{{ dev.updated.strftime('%H:%M %d-%m-%Y') }}</div>
               </div>
 
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Job</div>
-                <div class="col-lg-9 col-md-8">Web Designer</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Country</div>
-                <div class="col-lg-9 col-md-8">USA</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Address</div>
-                <div class="col-lg-9 col-md-8">A108 Adam Street, New York, NY 535022</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Phone</div>
-                <div class="col-lg-9 col-md-8">(436) 486-3538 x29071</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Email</div>
-                <div class="col-lg-9 col-md-8">k.anderson@example.com</div>
-              </div>
+              {% endfor %}
 
             </div>
 
