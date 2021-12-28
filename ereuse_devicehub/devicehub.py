@@ -22,6 +22,11 @@ from ereuse_devicehub.resources.inventory import Inventory, InventoryDef
 from ereuse_devicehub.templating import Environment
 
 
+from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
+from ereuse_devicehub.resources.user.models import User
+
+
 class Devicehub(Teal):
     test_client_class = Client
     Dummy = Dummy
@@ -60,6 +65,20 @@ class Devicehub(Teal):
         inv.command('del')(self.delete_inventory)
         inv.command('search')(self.regenerate_search)
         self.before_request(self._prepare_request)
+
+        self.configure_extensions()
+
+    def configure_extensions(self):
+        # configure & enable CSRF of Flask-WTF
+        CSRFProtect(self)
+
+        # configure Flask-Login
+        login_manager = LoginManager()
+        login_manager.init_app(self)
+
+        @login_manager.user_loader
+        def load_user(user_id):
+            return User.query.get(user_id)
 
     # noinspection PyMethodOverriding
     @click.option('--name', '-n',
