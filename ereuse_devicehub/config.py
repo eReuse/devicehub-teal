@@ -36,6 +36,7 @@ class DevicehubConfig(Config):
                                      import_resource(metric_def),
                                ),)
     PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
+    SECRET_KEY = config('SECRET_KEY')
     DB_USER = config('DB_USER', 'dhub')
     DB_PASSWORD = config('DB_PASSWORD', 'ereuse')
     DB_HOST = config('DB_HOST', 'localhost')
