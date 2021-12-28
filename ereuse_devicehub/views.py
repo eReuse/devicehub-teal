@@ -1,7 +1,7 @@
 import flask
 from flask import Blueprint
 from flask.views import View
-from flask_login import login_required, login_user
+from flask_login import login_required, login_user, logout_user
 
 from ereuse_devicehub.forms import LoginForm
 from ereuse_devicehub.resources.user.models import User
@@ -32,6 +32,12 @@ class LoginView(View):
         return flask.render_template('ereuse_devicehub/user_login.html', form=form)
 
 
+class LogoutView(View):
+    def dispatch_request(self):
+        logout_user()
+        return flask.redirect(flask.url_for('core.login'))
+
+
 class UserProfileView(View):
     decorators = [login_required]
     template_name = 'ereuse_devicehub/user_profile.html'
@@ -42,4 +48,5 @@ class UserProfileView(View):
 
 
 core.add_url_rule('/login/', view_func=LoginView.as_view('login'))
+core.add_url_rule('/logout/', view_func=LogoutView.as_view('logout'))
 core.add_url_rule('/profile/', view_func=UserProfileView.as_view('user-profile'))
