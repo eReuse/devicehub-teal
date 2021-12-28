@@ -32,8 +32,10 @@ class LoginView(View):
         return flask.render_template('ereuse_devicehub/user_login.html', form=form)
 
 
+from flask import g, current_app as app
+
 class UserProfileView(View):
-    decorators = [login_required]
+    # decorators = [login_required]
     template_name = 'ereuse_devicehub/user_profile.html'
 
     def dispatch_request(self):
