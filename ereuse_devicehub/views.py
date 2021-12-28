@@ -1,7 +1,7 @@
 import flask
 from flask import Blueprint
 from flask.views import View
-from flask_login import login_user
+from flask_login import login_required, login_user
 
 from ereuse_devicehub.forms import LoginForm
 from ereuse_devicehub.resources.user.models import User
@@ -33,6 +33,7 @@ class LoginView(View):
 
 
 class UserProfileView(View):
+    decorators = [login_required]
     template_name = 'ereuse_devicehub/user_profile.html'
 
     def dispatch_request(self):
