@@ -1,4 +1,3 @@
-import os
 from distutils.version import StrictVersion
 from itertools import chain
 from typing import Set
@@ -79,4 +78,3 @@ class DevicehubConfig(Config):
     """Definition of path where save the documents of customers"""
     PATH_DOCUMENTS_STORAGE = config('PATH_DOCUMENTS_STORAGE', '/tmp/')
     JWT_PASS = config('JWT_PASS', '')
-    SECRET_KEY = os.urandom(32)

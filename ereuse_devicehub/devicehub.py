@@ -6,7 +6,6 @@ import boltons.urlutils
 import click
 import click_spinner
 import ereuse_utils.cli
-from flask_login import LoginManager
 from ereuse_utils.session import DevicehubClient
 from flask.globals import _app_ctx_stack, g
 from flask_sqlalchemy import SQLAlchemy
@@ -32,7 +31,6 @@ class Devicehub(Teal):
     test_client_class = Client
     Dummy = Dummy
     jinja_environment = Environment
-    login_manager = LoginManager()
 
     def __init__(self,
                  inventory: str,
