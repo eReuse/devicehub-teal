@@ -30,13 +30,13 @@
               </button>
               <ul class="dropdown-menu" aria-labelledby="btnLots"">
                 <li>
-                  <a href="javascript:openAdd()" class="dropdown-item">
+                  <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingLotModal">
                     <i class="bi bi-plus"></i>
                     Adding to a lot
                   </a>
                 </li>
                 <li>
-                  <a href="javascript:openRemove()" class="dropdown-item">
+                  <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#removeLotModal">
                     <i class="bi bi-x"></i>
                     Removing from a lot
                   </a>
@@ -149,6 +149,9 @@
     </div>
   </div>
 </section>
+{% include "inventory/addinglot.html" %}
+{% include "inventory/removinglot.html" %}
+
 <!-- CDN -->
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
 <!-- Custom Code -->
