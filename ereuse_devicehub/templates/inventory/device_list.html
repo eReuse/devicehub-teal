@@ -47,17 +47,18 @@
               <table class="table">
                   <thead>
                     <tr>
+                      <th scope="col">Select all</th>
                       <th scope="col">Title</th>
                       <th scope="col">DHID</th>
                       <th scope="col">Tags</th>
                       <th scope="col">Status</th>
                       <th scope="col">Update</th>
-                      <th scope="col">Select all</th>
                     </tr>
                   </thead>
                   <tbody>
                     {% for dev in devices %}
                     <tr>
+                      <td><input type="checkbox" /></td>
                       <td>{{ dev.type }} {{ dev.manufacturer }} {{ dev.model }}</td>
                       <td>{{ dev.devicehub_id }}</td>
                       <td>
@@ -67,7 +68,6 @@
                       </td>
                       <td>{% if dev.status %}{{ dev.status }}{% endif %}</td>
                       <td>{{ dev.updated.strftime('%H:%M %d-%m-%Y') }}</td>
-                      <td><input type="checkbox" /></td>
                     </tr>
                     {% endfor %}
                   </tbody>
