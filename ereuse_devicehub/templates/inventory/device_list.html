@@ -21,25 +21,92 @@
       <div class="card">
         <div class="card-body pt-3">
           <!-- Bordered Tabs -->
-          <ul class="nav nav-tabs nav-tabs-bordered">
 
-            <li class="nav-item">
-              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Lots</button>
-            </li>
+            <div class="btn-group dropdown ml-1">
+              <button id="btnLots" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-folder2"></i>
+                Lots
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="btnLots"">
+                <li>
+                  <a href="javascript:openAdd()" class="dropdown-item">
+                    <i class="bi bi-plus"></i>
+                    Adding to a lot
+                  </a>
+                </li>
+                <li>
+                  <a href="javascript:openRemove()" class="dropdown-item">
+                    <i class="bi bi-x"></i>
+                    Removing from a lot
+                  </a>
+                </li>
+              </ul>
+            </div>
 
-            <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">New Actions</button>
-            </li>
+            <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <button id="btnActions" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-plus"></i>
+                  New Actions
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="btnLots"">
+                <li>
+                  <a href="javascript:openAdd()" class="dropdown-item">
+                    <i class="bi bi-plus"></i>
+                    Añadir dispositivos a lotes
+                  </a>
+                </li>
+                <li>
+                  <a href="javascript:openRemove()" class="dropdown-item">
+                    <i class="fa fa-fw fa-minus"></i>
+                    Eliminar dispisitvos de lotes
+                  </a>
+                </li>
+              </ul>
+            </div>
 
-            <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-settings">Exports</button>
-            </li>
+            <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <button id="btnExport" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-reply"></i>
+                  Exports
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="btnLots"">
+                <li>
+                  <a href="javascript:openAdd()" class="dropdown-item">
+                    <i class="bi bi-plus"></i>
+                    Añadir dispositivos a lotes
+                  </a>
+                </li>
+                <li>
+                  <a href="javascript:openRemove()" class="dropdown-item">
+                    <i class="fa fa-fw fa-minus"></i>
+                    Eliminar dispisitvos de lotes
+                  </a>
+                </li>
+              </ul>
+            </div>
 
-            <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-change-password">Tags</button>
-            </li>
+            <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <button id="btnTags" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-tag"></i>
+                  Tags
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="btnLots"">
+                <li>
+                  <a href="javascript:openAdd()" class="dropdown-item">
+                    <i class="bi bi-plus"></i>
+                    Adding Tag
+                  </a>
+                </li>
+                <li>
+                  <a href="javascript:openRemove()" class="dropdown-item">
+                    <i class="bi bi-x"></i>
+                    Remove Tag
+                  </a>
+                </li>
+              </ul>
+            </div>
 
-          </ul>
           <div class="tab-content pt-2">
 
             <div class="tab-pane fade show active profile-overview" id="profile-overview">
