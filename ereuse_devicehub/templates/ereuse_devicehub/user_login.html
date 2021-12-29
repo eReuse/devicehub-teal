@@ -34,12 +34,9 @@
                   {{ form.csrf_token }}
 
                   <div class="col-12">
-                    <label for="yourUsername" class="form-label">Email</label>
-                    <div class="input-group has-validation">
-                      <span class="input-group-text" id="inputGroupPrepend">@</span>
-                      <input type="text" name="email" class="form-control" id="yourUsername" required value="{{ form.email.data|default('', true) }}">
-                      <div class="invalid-feedback">Please enter your username.</div>
-                    </div>
+                    <label for="yourEmail" class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" id="yourEmail" required value="{{ form.email.data|default('', true) }}">
+                    <div class="invalid-feedback">Please enter your email.</div>
                   </div>
 
                   <div class="col-12">
@@ -50,7 +47,7 @@
 
                   <div class="col-12">
                     <div class="form-check">
-                      <input class="form-check-input" type="checkbox" name="remember" value="true" id="rememberMe">
+                      <input class="form-check-input" type="checkbox" name="remember" {% if form.remember.data %}checked{% endif %} id="rememberMe">
                       <label class="form-check-label" for="rememberMe">Remember me</label>
                     </div>
                   </div>

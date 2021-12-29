@@ -20,7 +20,7 @@ class LoginView(View):
             # Login and validate the user.
             # user should be an instance of your `User` class
             user = User.query.filter_by(email=form.email.data).first()
-            login_user(user)
+            login_user(user, remember=form.remember.data)
 
             next_url = flask.request.args.get('next')
             # is_safe_url should check if the url is safe for redirects.
