@@ -6,7 +6,12 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-          Please write a name of a lot
+        Please write a name of a lot
+        <select class="form-control selectpicker" id="selectLot" data-live-search="true">
+          {% for lot in lots %}
+          <option value="{{ lot.id }}">{{ lot.name }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -15,3 +20,9 @@
     </div>
   </div>
 </div>
+
+<script>
+$(function() {
+  $('#selectLot').selectpicker();
+});
+</script>

@@ -4,6 +4,7 @@ from flask.views import View
 from flask_login import login_required, current_user
 
 from ereuse_devicehub.resources.device.models import Device
+from ereuse_devicehub.resources.lot.models import Lot
 
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
 
@@ -19,7 +20,9 @@ class DeviceListView(View):
             Device.owner_id == current_user.id).filter(
             Device.type.in_(filter_types))
 
-        context = {'devices': devices}
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+
+        context = {'devices': devices, 'lots': lots}
         return flask.render_template(self.template_name, **context)
 
 
