@@ -5,6 +5,7 @@ from typing import Union
 from boltons import urlutils
 from citext import CIText
 from flask import g
+from flask_login import current_user
 from sqlalchemy import TEXT
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import LtreeType
@@ -102,6 +103,18 @@ class Lot(Thing):
     @property
     def is_temporary(self):
         return False if self.trade else True
+
+    @property
+    def is_incominig(self):
+        if self.trade and self.trade.user_to == current_user:
+            return True
+        return False
+
+    @property
+    def is_outgoing(self):
+        if self.trade and self.trade.user_from == current_user:
+            return True
+        return False
 
     @classmethod
     def descendantsq(cls, id):
