@@ -28,6 +28,25 @@ class DeviceListView(View):
         return flask.render_template(self.template_name, **context)
 
 
+class LotDeviceListView(View):
+    decorators = [login_required]
+    template_name = 'inventory/device_list.html'
+
+    def dispatch_request(self, id):
+        # TODO @cayop adding filter
+        # import pdb; pdb.set_trace()
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        lot = lots.filter(Lot.id == id).one()
+        filter_types = ['Desktop', 'Laptop', 'Server']
+        devices = [dev for dev in lot.devices if dev.type in filter_types]
+
+        context = {'devices': devices,
+                   'lots': lots,
+                   'form_lot_device': LotDeviceAddForm(),
+                   'lot': lot}
+        return flask.render_template(self.template_name, **context)
+
+
 class LotDeviceAddView(View):
     methods = ['POST']
     decorators = [login_required]
@@ -49,4 +68,5 @@ class LotDeviceAddView(View):
 
 
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
+devices.add_url_rule('/lot/<string:id>/device/', view_func=LotDeviceListView.as_view('lotdevicelist'))
 devices.add_url_rule('/lot/devices/add', view_func=LotDeviceAddView.as_view('lot_devices_add'))
