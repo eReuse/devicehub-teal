@@ -7,8 +7,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form action="/inventory/lot/devices/add" method="post">
-      {# form.csrf_token #}
+      <form action="{{ url_for('inventory.devices.lot_devices_add') }}" method="post">
+      {{ form_lot_device.csrf_token }}
         <div class="modal-body">
           Please write a name of a lot
           <select class="form-control selectpicker" id="selectLot" name="lot" data-live-search="true">
@@ -31,9 +31,3 @@
     </div>
   </div>
 </div>
-
-<script>
-//$(function() {
-//  $('#selectLot').selectpicker();
-//});
-</script>
