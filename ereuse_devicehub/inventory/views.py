@@ -14,29 +14,18 @@ class DeviceListView(View):
     decorators = [login_required]
     template_name = 'inventory/device_list.html'
 
-    def dispatch_request(self):
+    def dispatch_request(self, id=None):
         # TODO @cayop adding filter
         filter_types = ['Desktop', 'Laptop', 'Server']
-        devices = Device.query.filter(
-            Device.owner_id == current_user.id).filter(
-            Device.type.in_(filter_types))
-
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-
-        context = {'devices': devices, 'lots': lots, 'form_lot_device': LotDeviceAddForm()}
-        return flask.render_template(self.template_name, **context)
-
-
-class LotDeviceListView(View):
-    decorators = [login_required]
-    template_name = 'inventory/device_list.html'
-
-    def dispatch_request(self, id):
-        # TODO @cayop adding filter
-        lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        lot = lots.filter(Lot.id == id).one()
-        filter_types = ['Desktop', 'Laptop', 'Server']
-        devices = [dev for dev in lot.devices if dev.type in filter_types]
+        lot = None
+        if id:
+            lot = lots.filter(Lot.id == id).one()
+            devices = [dev for dev in lot.devices if dev.type in filter_types]
+        else:
+            devices = Device.query.filter(
+                Device.owner_id == current_user.id).filter(
+                Device.type.in_(filter_types))
 
         context = {'devices': devices,
                    'lots': lots,
@@ -78,7 +67,7 @@ class LotView(View):
 
 
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
-devices.add_url_rule('/lot/<string:id>/device/', view_func=LotDeviceListView.as_view('lotdevicelist'))
+devices.add_url_rule('/lot/<string:id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
 devices.add_url_rule('/lot/devices/add/', view_func=LotDeviceAddView.as_view('lot_devices_add'))
 devices.add_url_rule('/lot/add', view_func=LotView.as_view('lot_add'))
 devices.add_url_rule('/lot/<string:id>/', view_func=LotView.as_view('lot_edit'))
