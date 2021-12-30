@@ -126,7 +126,7 @@
                   <tbody>
                     {% for dev in devices %}
                     <tr>
-                      <td><input type="checkbox" /></td>
+                      <td><input type="checkbox" class="deviceSelect" data="{{ dev.id }}"/></td>
                       <td>{{ dev.type }} {{ dev.manufacturer }} {{ dev.model }}</td>
                       <td>{{ dev.devicehub_id }}</td>
                       <td>
@@ -158,4 +158,9 @@
 <script>
   const table = new simpleDatatables.DataTable("table")
 </script>
+<script>
+
+</script>
+<script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main_inventory.js') }}"></script>
 {% endblock main %}
