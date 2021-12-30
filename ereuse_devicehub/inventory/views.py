@@ -62,8 +62,7 @@ class LotDeviceAddView(View):
             db.session.add(lot)
             db.session().final_flush()
 
-            next_url = url_for('inventory.devices.devicelist')
-            # next_url = url_for('inventory.devices.lot')
+            next_url = url_for('inventory.devices.lotdevicelist', id=lot.id)
             return flask.redirect(next_url)
 
 
