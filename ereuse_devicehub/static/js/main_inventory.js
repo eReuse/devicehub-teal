@@ -9,10 +9,15 @@ function deviceSelect() {
     if (devices_id == "") {
         $("#addingLotModal .text-danger").show();
         $("#addingLotModal .btn-primary").hide();
+        $("#removeLotModal .text-danger").show();
+        $("#removeLotModal .btn-primary").hide();
     } else {
         $("#addingLotModal .text-danger").hide();
         $("#addingLotModal .btn-primary").removeClass('d-none');
         $("#addingLotModal .btn-primary").show();
+        $("#removeLotModal .text-danger").hide();
+        $("#removeLotModal .btn-primary").removeClass('d-none');
+        $("#removeLotModal .btn-primary").show();
     }
     $.map($(".devicesList"), function(x) {
         $(x).val(devices_id);

@@ -1,6 +1,5 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, validators
-from flask_login import current_user
 from flask import g
 
 from ereuse_devicehub.db import db
@@ -8,7 +7,7 @@ from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
 
 
-class LotDeviceAddForm(FlaskForm):
+class LotDeviceForm(FlaskForm):
     lot = StringField(u'Lot', [validators.UUID()])
     devices = StringField(u'Devices', [validators.length(min=1)])
 
@@ -18,22 +17,26 @@ class LotDeviceAddForm(FlaskForm):
         if not is_valid:
             return False
 
-        self.lot = Lot.query.filter(Lot.id == self.lot.data).filter(
-            Lot.owner_id == current_user.id).one()
+        self._lot = Lot.query.filter(Lot.id == self.lot.data).filter(
+            Lot.owner_id == g.user.id).one()
 
         devices = set(self.devices.data.split(","))
-        self.devices = set(Device.query.filter(Device.id.in_(devices)).filter(
-            Device.owner_id == current_user.id).all())
+        self._devices = set(Device.query.filter(Device.id.in_(devices)).filter(
+            Device.owner_id == g.user.id).all())
 
-        if not self.devices:
+        if not self._devices:
             return False
 
         return True
 
     def save(self):
-        self.lot.devices.update(self.devices)
-        g.user = current_user
-        db.session.add(self.lot)
+        self._lot.devices.update(self._devices)
+        db.session.add(self._lot)
+        db.session.commit()
+
+    def remove(self):
+        self._lot.devices.difference_update(self._devices)
+        db.session.add(self._lot)
         db.session.commit()
 
 
@@ -45,7 +48,7 @@ class LotForm(FlaskForm):
         self.lot = None
         if id:
             self.lot = Lot.query.filter(Lot.id == id).filter(
-                Lot.owner_id == current_user.id).one()
+                Lot.owner_id == g.user.id).one()
         super().__init__(*args, **kwargs)
         if self.lot and not self.name.data:
             self.name.data = self.lot.name
@@ -59,6 +62,5 @@ class LotForm(FlaskForm):
         else:
             self.lot = Lot(name=name)
 
-        g.user = current_user
         db.session.add(self.lot)
         db.session.commit()

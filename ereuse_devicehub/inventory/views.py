@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.inventory.forms import LotDeviceAddForm, LotForm
+from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm
 
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
 
@@ -29,7 +29,7 @@ class DeviceListView(View):
 
         context = {'devices': devices,
                    'lots': lots,
-                   'form_lot_device': LotDeviceAddForm(),
+                   'form_lot_device': LotDeviceForm(),
                    'lot': lot}
         return flask.render_template(self.template_name, **context)
 
@@ -40,11 +40,25 @@ class LotDeviceAddView(View):
     template_name = 'inventory/device_list.html'
 
     def dispatch_request(self):
-        form = LotDeviceAddForm()
+        form = LotDeviceForm()
         if form.validate_on_submit():
             form.save()
 
-            next_url = url_for('inventory.devices.lotdevicelist', id=form.lot.id)
+            next_url = url_for('inventory.devices.lotdevicelist', id=form.lot.data)
+            return flask.redirect(next_url)
+
+
+class LotDeviceDeleteView(View):
+    methods = ['POST']
+    decorators = [login_required]
+    template_name = 'inventory/device_list.html'
+
+    def dispatch_request(self):
+        form = LotDeviceForm()
+        if form.validate_on_submit():
+            form.remove()
+
+            next_url = url_for('inventory.devices.lotdevicelist', id=form.lot.data)
             return flask.redirect(next_url)
 
 
@@ -69,5 +83,6 @@ class LotView(View):
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/lot/<string:id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
 devices.add_url_rule('/lot/devices/add/', view_func=LotDeviceAddView.as_view('lot_devices_add'))
+devices.add_url_rule('/lot/devices/del/', view_func=LotDeviceDeleteView.as_view('lot_devices_del'))
 devices.add_url_rule('/lot/add', view_func=LotView.as_view('lot_add'))
 devices.add_url_rule('/lot/<string:id>/', view_func=LotView.as_view('lot_edit'))
