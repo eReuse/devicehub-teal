@@ -80,9 +80,23 @@ class LotView(View):
         return flask.render_template(self.template_name, form=form, title=self.title)
 
 
+class LotDeleteView(View):
+    methods = ['GET']
+    decorators = [login_required]
+    template_name = 'inventory/device_list.html'
+
+    def dispatch_request(self, id):
+        form = LotForm(id=id)
+        form.remove()
+        next_url = url_for('inventory.devices.devicelist')
+        return flask.redirect(next_url)
+
+
+
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/lot/<string:id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
 devices.add_url_rule('/lot/devices/add/', view_func=LotDeviceAddView.as_view('lot_devices_add'))
 devices.add_url_rule('/lot/devices/del/', view_func=LotDeviceDeleteView.as_view('lot_devices_del'))
-devices.add_url_rule('/lot/add', view_func=LotView.as_view('lot_add'))
+devices.add_url_rule('/lot/add/', view_func=LotView.as_view('lot_add'))
+devices.add_url_rule('/lot/<string:id>/del/', view_func=LotDeleteView.as_view('lot_del'))
 devices.add_url_rule('/lot/<string:id>/', view_func=LotView.as_view('lot_edit'))

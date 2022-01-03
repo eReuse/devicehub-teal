@@ -64,3 +64,8 @@ class LotForm(FlaskForm):
 
         db.session.add(self.lot)
         db.session.commit()
+
+    def remove(self):
+        if self.lot and not self.lot.devices:
+            self.lot.delete()
+            db.session.commit()
