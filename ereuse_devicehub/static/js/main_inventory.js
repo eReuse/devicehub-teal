@@ -23,3 +23,7 @@ function deviceSelect() {
         $(x).val(devices_id);
     });
 }
+
+function newAction(action) {
+    return action;
+}
