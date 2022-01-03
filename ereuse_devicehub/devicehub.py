@@ -8,6 +8,8 @@ import click_spinner
 import ereuse_utils.cli
 from ereuse_utils.session import DevicehubClient
 from flask.globals import _app_ctx_stack, g
+from flask_login import current_user
+from flask import g as gg
 from flask_sqlalchemy import SQLAlchemy
 from teal.db import SchemaSQLAlchemy
 from teal.teal import Teal
@@ -78,6 +80,7 @@ class Devicehub(Teal):
 
         @login_manager.user_loader
         def load_user(user_id):
+            gg.user = current_user
             return User.query.get(user_id)
 
     # noinspection PyMethodOverriding
