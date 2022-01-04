@@ -1,4 +1,4 @@
-$(document) .ready(function() {
+    $(document) .ready(function() {
     $(".deviceSelect").on("change", deviceSelect);
 //  $('#selectLot').selectpicker();
 })
@@ -25,5 +25,5 @@ function deviceSelect() {
 }
 
 function newAction(action) {
-    return action;
+    console.log(action);
 }

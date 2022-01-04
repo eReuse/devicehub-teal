@@ -73,3 +73,11 @@ class LotForm(FlaskForm):
         return self.instance
 
 
+class NewActionForm(FlaskForm):
+    name = StringField(u'Name')
+    date = StringField(u'Date')
+    severity = StringField(u'Severity')
+    description = StringField(u'Description')
+
+    def save(self):
+        pass
