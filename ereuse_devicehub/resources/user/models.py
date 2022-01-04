@@ -71,6 +71,12 @@ class User(UserMixin, Thing):
         """Alias because flask-login expects `is_active` attribute"""
         return self.active
 
+    @property
+    def get_full_name(self):
+        # TODO(@slamora) create first_name & last_name fields and use
+        # them to generate user full name
+        return self.email
+
     def check_password(self, password):
         # take advantage of SQL Alchemy PasswordType to verify password
         return self.password == password
