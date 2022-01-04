@@ -73,8 +73,8 @@ class LotView(View):
             self.title = "Edit lot"
         form = LotForm(id=id)
         if form.validate_on_submit():
-            form.save()
-            next_url = url_for('inventory.devices.lotdevicelist', id=form.lot.id)
+            lot = form.save()
+            next_url = url_for('inventory.devices.lotdevicelist', id=lot.id)
             return flask.redirect(next_url)
 
         return flask.render_template(self.template_name, form=form, title=self.title)

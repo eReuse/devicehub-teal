@@ -45,27 +45,31 @@ class LotForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         id = kwargs.pop('id', None)
-        self.lot = None
+        self.instance = None
         if id:
-            self.lot = Lot.query.filter(Lot.id == id).filter(
+            self.instance = Lot.query.filter(Lot.id == id).filter(
                 Lot.owner_id == g.user.id).one()
         super().__init__(*args, **kwargs)
-        if self.lot and not self.name.data:
-            self.name.data = self.lot.name
+        if self.instance and not self.name.data:
+            self.name.data = self.instance.name
 
     def save(self):
         name = self.name.data.strip()
-        if self.lot:
-            if self.lot.name == name:
-                return
-            self.lot.name = name
+        if self.instance:
+            if self.instance.name == name:
+                return self.instance
+            self.instance.name = name
         else:
-            self.lot = Lot(name=name)
+            self.instance = Lot(name=name)
 
-        db.session.add(self.lot)
+        db.session.add(self.instance)
         db.session.commit()
+        return self.instance
 
     def remove(self):
-        if self.lot and not self.lot.devices:
-            self.lot.delete()
+        if self.instance and not self.instance.devices:
+            self.instance.delete()
             db.session.commit()
+        return self.instance
+
+
