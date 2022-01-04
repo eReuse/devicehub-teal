@@ -1,15 +1,14 @@
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import EmailField, PasswordField, validators
+from wtforms import BooleanField, EmailField, PasswordField, validators
 
 from ereuse_devicehub.resources.user.models import User
 
 
 class LoginForm(FlaskForm):
     email = EmailField('Email Address', [validators.Length(min=6, max=35)])
-    password = PasswordField('Password', [
-        validators.DataRequired(),
-    ])
+    password = PasswordField('Password', [validators.DataRequired()])
+    remember = BooleanField('Remember me')
 
     error_messages = {
         'invalid_login': (

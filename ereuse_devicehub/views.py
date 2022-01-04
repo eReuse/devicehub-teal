@@ -1,7 +1,7 @@
 import flask
 from flask import Blueprint
 from flask.views import View
-from flask_login import login_required, login_user
+from flask_login import current_user, login_required, login_user, logout_user
 
 from ereuse_devicehub.forms import LoginForm
 from ereuse_devicehub.resources.user.models import User
@@ -20,7 +20,7 @@ class LoginView(View):
             # Login and validate the user.
             # user should be an instance of your `User` class
             user = User.query.filter_by(email=form.email.data).first()
-            login_user(user)
+            login_user(user, remember=form.remember.data)
 
             next_url = flask.request.args.get('next')
             # is_safe_url should check if the url is safe for redirects.
@@ -32,14 +32,23 @@ class LoginView(View):
         return flask.render_template('ereuse_devicehub/user_login.html', form=form)
 
 
+class LogoutView(View):
+    def dispatch_request(self):
+        logout_user()
+        return flask.redirect(flask.url_for('core.login'))
+
+
 class UserProfileView(View):
     decorators = [login_required]
     template_name = 'ereuse_devicehub/user_profile.html'
 
     def dispatch_request(self):
-        context = {}
+        context = {
+            'current_user': current_user,
+        }
         return flask.render_template(self.template_name, **context)
 
 
 core.add_url_rule('/login/', view_func=LoginView.as_view('login'))
+core.add_url_rule('/logout/', view_func=LogoutView.as_view('logout'))
 core.add_url_rule('/profile/', view_func=UserProfileView.as_view('user-profile'))
