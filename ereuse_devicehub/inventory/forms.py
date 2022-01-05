@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, validators
+from wtforms import StringField, HiddenField, DateField, TextAreaField, SelectField, validators
 from flask import g
 
 from ereuse_devicehub.db import db
@@ -78,10 +78,14 @@ class LotForm(FlaskForm):
 
 
 class NewActionForm(FlaskForm):
-    name = StringField(u'Name')
-    date = StringField(u'Date')
-    severity = StringField(u'Severity')
-    description = StringField(u'Description')
+    name = StringField(u'Name', [validators.length(max=50)])
+    devices = HiddenField()
+    date = DateField(u'Date')
+    severity = SelectField(u'Severity', choices=[('Info', 'Ok'),
+                                                 ('Notice', 'Notice'),
+                                                 ('Warning', 'Warning'),
+                                                 ('Error', 'Error')])
+    description = TextAreaField(u'Description')
 
     def save(self):
         pass

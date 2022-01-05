@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm
+from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm, NewActionForm
 
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
 
@@ -30,6 +30,7 @@ class DeviceListView(View):
         context = {'devices': devices,
                    'lots': lots,
                    'form_lot_device': LotDeviceForm(),
+                   'form_new_action': NewActionForm(),
                    'lot': lot}
         return flask.render_template(self.template_name, **context)
 

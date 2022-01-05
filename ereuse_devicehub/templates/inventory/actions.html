@@ -8,14 +8,32 @@
       </div>
 
       <form action="{{ url_for('inventory.devices.lot_devices_add') }}" method="post">
-      {{ form_lot_device.csrf_token }}
+      {{ form_new_action.csrf_token }}
         <div class="modal-body">
-          Please write a name of a lot
-          <input class="devicesList" type="hidden" name="devices" />
           <p class="text-danger">
               You need select first some device before to do one action
           </p>
+          {% for field in form_new_action %}
+          {% if field != form_new_action.csrf_token %}
+          {% if field == form_new_action.devices %}
+          {{ field(class_="devicesList") }}
+          {% else %}
+          <div class="col-12">
+              {{ field.label(class_="form-label") }}
+              {{ field(class_="form-control") }}
+              {% if field.errors %}
+              <p class="text-danger">
+                {% for error in field.errors %}
+                  {{ error }}<br/>
+                {% endfor %}
+              </p>
+              {% endif %}
+          </div>
+          {% endif %}
+          {% endif %}
+          {% endfor %}
         </div>
+
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
