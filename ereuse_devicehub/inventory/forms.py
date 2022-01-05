@@ -44,10 +44,10 @@ class LotForm(FlaskForm):
     name = StringField(u'Name', [validators.length(min=1)])
 
     def __init__(self, *args, **kwargs):
-        id = kwargs.pop('id', None)
+        self.id = kwargs.pop('id', None)
         self.instance = None
-        if id:
-            self.instance = Lot.query.filter(Lot.id == id).filter(
+        if self.id:
+            self.instance = Lot.query.filter(Lot.id == self.id).filter(
                 Lot.owner_id == g.user.id).one()
         super().__init__(*args, **kwargs)
         if self.instance and not self.name.data:
@@ -62,9 +62,13 @@ class LotForm(FlaskForm):
         else:
             self.instance = Lot(name=name)
 
-        db.session.add(self.instance)
+        if not self.id:
+            db.session.add(self.instance)
+            db.session.commit()
+            return self.instance
+
         db.session.commit()
-        return self.instance
+        return self.id
 
     def remove(self):
         if self.instance and not self.instance.devices:
