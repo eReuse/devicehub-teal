@@ -30,7 +30,7 @@ class DeviceListView(View):
         context = {'devices': devices,
                    'lots': lots,
                    'form_lot_device': LotDeviceForm(),
-                   'form_new_action': NewActionForm(),
+                   'form_new_action': NewActionForm(lot=lot),
                    'lot': lot}
         return flask.render_template(self.template_name, **context)
 
@@ -96,7 +96,22 @@ class LotDeleteView(View):
         return flask.redirect(next_url)
 
 
+class NewActionView(View):
+    methods = ['POST']
+    decorators = [login_required]
 
+    def dispatch_request(self):
+        form = NewActionForm()
+        # import pdb; pdb.set_trace()
+        # from flask import request
+        if form.validate_on_submit():
+            form.save()
+
+            next_url = url_for('inventory.devices.devicelist')
+            return flask.redirect(next_url)
+
+
+devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/lot/<string:id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
 devices.add_url_rule('/lot/devices/add/', view_func=LotDeviceAddView.as_view('lot_devices_add'))

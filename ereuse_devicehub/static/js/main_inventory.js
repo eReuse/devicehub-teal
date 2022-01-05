@@ -35,4 +35,6 @@ function deviceSelect() {
 
 function newAction(action) {
     console.log(action);
+    $("#actionModal #type").val(action);
+    $("#activeActionModal").click();
 }

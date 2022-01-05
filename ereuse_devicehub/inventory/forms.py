@@ -86,6 +86,14 @@ class NewActionForm(FlaskForm):
                                                  ('Warning', 'Warning'),
                                                  ('Error', 'Error')])
     description = TextAreaField(u'Description')
+    lot = HiddenField()
+    type = HiddenField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.instance = None
+        if self.lot.data:
+            self.lot.data = self.lot.data.id
 
     def save(self):
         pass
