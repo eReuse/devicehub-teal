@@ -79,6 +79,7 @@
                   New Actions
               </button>
               <span class="d-none" id="activeActionModal" data-bs-toggle="modal" data-bs-target="#actionModal"></span>
+              <span class="d-none" id="activeAllocateModal" data-bs-toggle="modal" data-bs-target="#allocateModal"></span>
               <ul class="dropdown-menu" aria-labelledby="btnActions"">
                 <li>
                     Status actions
@@ -111,13 +112,13 @@
                     Allocation
                 </li>
                 <li>
-                  <a href="javascript:newAction('Allocate')" class="dropdown-item">
+                  <a href="javascript:newAllocate('Allocate')" class="dropdown-item">
                     <i class="bi bi-house-fill"></i>
                     Allocate
                   </a>
                 </li>
                 <li>
-                  <a href="javascript:newAction('Deallocate')" class="dropdown-item">
+                  <a href="javascript:newAllocate('Deallocate')" class="dropdown-item">
                     <i class="bi bi-house"></i>
                     Deallocate
                   </a>
@@ -245,6 +246,7 @@
 {% include "inventory/addinglot.html" %}
 {% include "inventory/removinglot.html" %}
 {% include "inventory/actions.html" %}
+{% include "inventory/allocate.html" %}
 
 <!-- CDN -->
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>

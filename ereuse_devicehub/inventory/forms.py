@@ -122,6 +122,10 @@ class NewActionForm(FlaskForm):
 
 
 class AllocateForm(NewActionForm):
+    def __init__(self, *args, **kwargs):
+        # import pdb; pdb.set_trace()
+        super().__init__(*args, **kwargs)
+
     start_time = DateField(u'Start time', validators=(validators.Optional(),))
     end_time = DateField(u'End time', validators=(validators.Optional(),))
     final_user_code = StringField(u'Final user code', [validators.length(max=50)])

@@ -27,6 +27,10 @@ function deviceSelect() {
         $("#actionModal .text-danger").hide();
         $("#actionModal .btn-primary").removeClass('d-none');
         $("#actionModal .btn-primary").show();
+
+        $("#allocateModal .text-danger").hide();
+        $("#allocateModal .btn-primary").removeClass('d-none');
+        $("#allocateModal .btn-primary").show();
     }
     $.map($(".devicesList"), function(x) {
         $(x).val(devices_id);
@@ -36,4 +40,9 @@ function deviceSelect() {
 function newAction(action) {
     $("#actionModal #type").val(action);
     $("#activeActionModal").click();
+}
+
+function newAllocate(action) {
+    $("#allocateModal #type").val(action);
+    $("#activeAllocateModal").click();
 }

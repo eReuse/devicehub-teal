@@ -1,11 +1,13 @@
 import flask
+import datetime
 from flask.views import View
 from flask import Blueprint, url_for
 from flask_login import login_required, current_user
 
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm, NewActionForm
+from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm, NewActionForm, \
+                                             AllocateForm
 
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
 
@@ -29,10 +31,14 @@ class DeviceListView(View):
                 Device.type.in_(filter_types))
             form_new_action = NewActionForm()
 
+        allocate = AllocateForm(start_time=datetime.datetime.now(),
+                                end_time=datetime.datetime.now())
+
         context = {'devices': devices,
                    'lots': lots,
                    'form_lot_device': LotDeviceForm(),
                    'form_new_action': form_new_action,
+                   'form_allocate': allocate,
                    'lot': lot}
         return flask.render_template(self.template_name, **context)
 
@@ -104,9 +110,10 @@ class NewActionView(View):
 
     def dispatch_request(self):
         form = NewActionForm()
+        # import pdb; pdb.set_trace()
         next_url = url_for('inventory.devices.devicelist')
         if form.validate_on_submit():
-            form.save()
+            # form.save()
             if form.lot.data:
                 next_url = url_for('inventory.devices.lotdevicelist', id=form.lot.data)
 
