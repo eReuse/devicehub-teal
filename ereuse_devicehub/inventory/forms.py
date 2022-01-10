@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, HiddenField, DateField, TextAreaField, SelectField, validators
+from wtforms import StringField, HiddenField, DateField, TextAreaField, SelectField, \
+                    IntegerField, validators
 from flask import g
 
 from ereuse_devicehub.db import db
@@ -118,3 +119,11 @@ class NewActionForm(FlaskForm):
         db.session.add(self.instance)
         db.session.commit()
         return self.instance
+
+
+class AllocateForm(NewActionForm):
+    start_time = DateField(u'Start time', validators=(validators.Optional(),))
+    end_time = DateField(u'End time', validators=(validators.Optional(),))
+    final_user_code = StringField(u'Final user code', [validators.length(max=50)])
+    transaction = StringField(u'Transaction', [validators.length(max=50)])
+    end_users = IntegerField(u'End users')
