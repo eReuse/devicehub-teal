@@ -4,7 +4,9 @@ from flask import g
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
+from ereuse_devicehub.resources.action.models import Action
 from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.enums import Severity
 
 
 class LotDeviceForm(FlaskForm):
@@ -80,20 +82,39 @@ class LotForm(FlaskForm):
 class NewActionForm(FlaskForm):
     name = StringField(u'Name', [validators.length(max=50)])
     devices = HiddenField()
-    date = DateField(u'Date')
-    severity = SelectField(u'Severity', choices=[('Info', 'Ok'),
-                                                 ('Notice', 'Notice'),
-                                                 ('Warning', 'Warning'),
-                                                 ('Error', 'Error')])
+    date = DateField(u'Date', validators=(validators.Optional(),))
+    severity = SelectField(u'Severity', choices=[(v.name, v.name) for v in Severity])
     description = TextAreaField(u'Description')
     lot = HiddenField()
     type = HiddenField()
 
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+        if self.lot.data:
+            self._lot = Lot.query.filter(Lot.id == self.lot.data).filter(
+                Lot.owner_id == g.user.id).one()
+
+        devices = set(self.devices.data.split(","))
+        self._devices = set(Device.query.filter(Device.id.in_(devices)).filter(
+            Device.owner_id == g.user.id).all())
+
+        if not self._devices:
+            return False
+
+        return True
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.instance = None
-        if self.lot.data:
-            self.lot.data = self.lot.data.id
+        self.instance = Action()
+        self.populate_obj(self.instance)
 
     def save(self):
-        pass
+        self.instance.devices = self._devices
+        self.instance.severity = Severity[self.severity.data]
+        db.session.add(self.instance)
+        db.session.commit()
+        return self.instance

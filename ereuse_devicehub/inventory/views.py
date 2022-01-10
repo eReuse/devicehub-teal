@@ -22,15 +22,17 @@ class DeviceListView(View):
         if id:
             lot = lots.filter(Lot.id == id).one()
             devices = [dev for dev in lot.devices if dev.type in filter_types]
+            form_new_action = NewActionForm(lot=lot.id)
         else:
             devices = Device.query.filter(
                 Device.owner_id == current_user.id).filter(
                 Device.type.in_(filter_types))
+            form_new_action = NewActionForm()
 
         context = {'devices': devices,
                    'lots': lots,
                    'form_lot_device': LotDeviceForm(),
-                   'form_new_action': NewActionForm(lot=lot),
+                   'form_new_action': form_new_action,
                    'lot': lot}
         return flask.render_template(self.template_name, **context)
 
@@ -102,12 +104,12 @@ class NewActionView(View):
 
     def dispatch_request(self):
         form = NewActionForm()
-        # import pdb; pdb.set_trace()
-        # from flask import request
+        next_url = url_for('inventory.devices.devicelist')
         if form.validate_on_submit():
             form.save()
+            if form.lot.data:
+                next_url = url_for('inventory.devices.lotdevicelist', id=form.lot.data)
 
-            next_url = url_for('inventory.devices.devicelist')
             return flask.redirect(next_url)
 
 
