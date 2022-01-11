@@ -32,7 +32,7 @@ class DeviceListView(View):
             form_new_action = NewActionForm()
 
         allocate = AllocateForm(start_time=datetime.datetime.now(),
-                                end_time=datetime.datetime.now())
+                                end_time=datetime.datetime.now()+datetime.timedelta(1))
 
         context = {'devices': devices,
                    'lots': lots,
@@ -110,7 +110,7 @@ class NewActionView(View):
 
     def dispatch_request(self):
         form = NewActionForm()
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         next_url = url_for('inventory.devices.devicelist')
         if form.validate_on_submit():
             # form.save()
