@@ -25,7 +25,7 @@ class DeviceListView(View):
         else:
             devices = Device.query.filter(
                 Device.owner_id == current_user.id).filter(
-                Device.type.in_(filter_types))
+                Device.type.in_(filter_types)).filter(Device.lots == None)
 
         context = {'devices': devices,
                    'lots': lots,
