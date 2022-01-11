@@ -1,6 +1,6 @@
-    $(document) .ready(function() {
-    $(".deviceSelect").on("change", deviceSelect);
-//  $('#selectLot').selectpicker();
+$(document).ready(function() {
+   $(".deviceSelect").on("change", deviceSelect);
+  // $('#selectLot').selectpicker();
 })
 
 function deviceSelect() {
