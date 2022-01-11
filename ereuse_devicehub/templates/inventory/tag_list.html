@@ -22,7 +22,7 @@
           <!-- Bordered Tabs -->
 
             <div class="btn-group dropdown ml-1">
-              <a href="{{ url_for('inventory.devices.devicelist')}}" type="button" class="btn btn-primary">
+              <a href="{{ url_for('inventory.devices.tag_add')}}" type="button" class="btn btn-primary">
                 <i class="bi bi-plus"></i>
                 Create Named Tag
                 <span class="caret"></span>
@@ -45,7 +45,6 @@
                 <table class="table">
                   <thead>
                     <tr>
-                      <th scope="col">Select all</th>
                       <th scope="col">Code</th>
                       <th scope="col">Type</th>
                       <th scope="col">Provider</th>
@@ -55,8 +54,7 @@
                   <tbody>
                     {% for tag in tags %}
                     <tr>
-                      <td><input type="checkbox" class="deviceSelect" data="{{ tag.id }}"/></td>
-                      <td>{{ tag.code }}</td>
+                      <td>{{ tag.id }}</td>
                       <td>{% if tag.provider %}Unnamed tag {% else %}Named tag{% endif %}</td>
                       <td>{{ tag.get_provider }}</td>
                       <td>{% if tag.device %}{{ tag.device.type }} {{ tag.device.manufacturer }} {{ tag.device.model }}{% endif %}</td>

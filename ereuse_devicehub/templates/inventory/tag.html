@@ -1,0 +1,60 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>{{ title }}</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="index.html">Inventory</a></li>
+      <li class="breadcrumb-item">Tag</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+    <div class="col-xl-4">
+
+      <div class="card">
+              <div class="card-body">
+
+                <div class="pt-4 pb-2">
+                  <h5 class="card-title text-center pb-0 fs-4">Add a new Tag</h5>
+                  <p class="text-center small">Please enter a code for the tag.</p>
+                  {% if form.form_errors %}
+                  <p class="text-danger">
+                    {% for error in form.form_errors %}
+                      {{ error }}<br/>
+                    {% endfor %}
+                  </p>
+                  {% endif %}
+                </div>
+
+                <form method="post" class="row g-3 needs-validation" novalidate>
+                  {{ form.csrf_token }}
+
+                  <div class="col-12">
+                    <label for="code" class="form-label">code</label>
+                    <div class="input-group has-validation">
+                      <input type="text" name="code" class="form-control" required value="{{ form.code.data|default('', true) }}">
+                      <div class="invalid-feedback">Please enter a code of the tag.</div>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <a href="{{ url_for('inventory.devices.taglist') }}" class="btn btn-danger">Cancel</a>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                  </div>
+                </form>
+
+              </div>
+
+      </div>
+
+    </div>
+
+    <div class="col-xl-8">
+    </div>
+  </div>
+</section>
+{% endblock main %}

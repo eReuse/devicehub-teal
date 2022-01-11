@@ -5,6 +5,7 @@ from flask import g
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.tag.model import Tag
 
 
 class LotDeviceForm(FlaskForm):
@@ -72,6 +73,22 @@ class LotForm(FlaskForm):
 
     def remove(self):
         if self.instance and not self.instance.devices:
+            self.instance.delete()
+            db.session.commit()
+        return self.instance
+
+
+class TagForm(FlaskForm):
+    code = StringField(u'Code', [validators.length(min=1)])
+
+    def save(self):
+        self.instance = Tag(id=self.code.data)
+        db.session.add(self.instance)
+        db.session.commit()
+        return self.instance
+
+    def remove(self):
+        if not self.instance.device and not self.instance.provider:
             self.instance.delete()
             db.session.commit()
         return self.instance
