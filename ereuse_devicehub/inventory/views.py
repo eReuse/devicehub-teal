@@ -4,6 +4,7 @@ from flask import Blueprint, url_for
 from flask_login import login_required, current_user
 
 from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm
 
@@ -95,6 +96,18 @@ class LotDeleteView(View):
         return flask.redirect(next_url)
 
 
+class TagListView(View):
+    methods = ['GET']
+    decorators = [login_required]
+    template_name = 'inventory/tag_list.html'
+
+    def dispatch_request(self):
+        tags = Tag.query.filter(
+            Tag.owner_id == current_user.id)
+        context = {'tags': tags,
+                   'lots': []}
+        return flask.render_template(self.template_name, **context)
+
 
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/lot/<string:id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
@@ -103,3 +116,4 @@ devices.add_url_rule('/lot/devices/del/', view_func=LotDeviceDeleteView.as_view(
 devices.add_url_rule('/lot/add/', view_func=LotView.as_view('lot_add'))
 devices.add_url_rule('/lot/<string:id>/del/', view_func=LotDeleteView.as_view('lot_del'))
 devices.add_url_rule('/lot/<string:id>/', view_func=LotView.as_view('lot_edit'))
+devices.add_url_rule('/tag/', view_func=TagListView.as_view('taglist'))
