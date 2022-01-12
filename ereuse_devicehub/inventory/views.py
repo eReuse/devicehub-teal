@@ -21,11 +21,13 @@ class DeviceListView(View):
         lot = None
         if id:
             lot = lots.filter(Lot.id == id).one()
+            # import pdb; pdb.set_trace()
             devices = [dev for dev in lot.devices if dev.type in filter_types]
+            devices = sorted(devices, key=lambda x: x.updated, reverse=True)
         else:
             devices = Device.query.filter(
                 Device.owner_id == current_user.id).filter(
-                Device.type.in_(filter_types)).filter(Device.lots == None)
+                Device.type.in_(filter_types)).filter(Device.lots == None).order_by('id', 'updated')
 
         context = {'devices': devices,
                    'lots': lots,
