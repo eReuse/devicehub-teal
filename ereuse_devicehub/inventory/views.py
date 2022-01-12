@@ -1,6 +1,6 @@
 import flask
 from flask.views import View
-from flask import Blueprint, url_for
+from flask import Blueprint, url_for, request
 from flask_login import login_required, current_user
 
 from ereuse_devicehub.resources.lot.models import Lot
@@ -46,8 +46,7 @@ class LotDeviceAddView(View):
         if form.validate_on_submit():
             form.save()
 
-            next_url = url_for('inventory.devices.lotdevicelist', id=form.lot.data)
-            return flask.redirect(next_url)
+            return flask.redirect(request.referrer)
 
 
 class LotDeviceDeleteView(View):
@@ -60,8 +59,8 @@ class LotDeviceDeleteView(View):
         if form.validate_on_submit():
             form.remove()
 
-            next_url = url_for('inventory.devices.lotdevicelist', id=form.lot.data)
-            return flask.redirect(next_url)
+            # TODO @cayop It's possible this redirect not work in production
+            return flask.redirect(request.referrer)
 
 
 class LotCreateView(View):
