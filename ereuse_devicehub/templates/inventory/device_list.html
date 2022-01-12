@@ -45,11 +45,11 @@
 
             <div class="btn-group dropdown ml-1">
               {% if lot and lot.is_temporary and not lot.devices %}
-              <a href="{{ url_for('inventory.devices.lot_del', id=lot.id)}}" type="button" class="btn btn-primary">
+              <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
                 <i class="bi bi-trash"></i>
                 Remove Lot
                 <span class="caret"></span>
-              </a>
+              </button>
               {% else %}
               <button id="btnLots" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-folder2"></i>
@@ -241,8 +241,9 @@
     </div>
   </div>
 </section>
-{% include "inventory/addinglot.html" %}
-{% include "inventory/removinglot.html" %}
+{% include "inventory/addDeviceslot.html" %}
+{% include "inventory/removeDeviceslot.html" %}
+{% include "inventory/removelot.html" %}
 {% include "inventory/actions.html" %}
 
 <!-- CDN -->
