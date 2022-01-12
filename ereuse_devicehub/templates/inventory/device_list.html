@@ -222,8 +222,8 @@
                       <td>{{ dev.type }} {{ dev.manufacturer }} {{ dev.model }}</td>
                       <td>{{ dev.devicehub_id }}</td>
                       <td>
-                        {% for t in dev.tags %}
-                            {{ t.code }}{% if not loop.last %},{% endif %}
+                        {% for t in dev.tags | sort(attribute="id") %}
+                            {{ t.id }}{% if not loop.last %},{% endif %}
                         {% endfor %}
                       </td>
                       <td>{% if dev.status %}{{ dev.status }}{% endif %}</td>
