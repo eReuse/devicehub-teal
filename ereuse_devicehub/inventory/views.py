@@ -62,22 +62,35 @@ class LotDeviceDeleteView(View):
             return flask.redirect(next_url)
 
 
-class LotView(View):
+class LotCreateView(View):
     methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'inventory/lot.html'
     title = "Add a new lot"
 
-    def dispatch_request(self, id=None):
+    def dispatch_request(self):
         if id:
             self.title = "Edit lot"
+        form = LotForm()
+        if form.validate_on_submit():
+            form.save()
+            next_url = url_for('inventory.devices.lotdevicelist', id=form.instance.id)
+            return flask.redirect(next_url)
+
+        return flask.render_template(self.template_name, form=form, title=self.title)
+
+
+class LotUpdateView(View):
+    methods = ['GET', 'POST']
+    decorators = [login_required]
+    template_name = 'inventory/lot.html'
+    title = "Edit a new lot"
+
+    def dispatch_request(self, id):
         form = LotForm(id=id)
         if form.validate_on_submit():
             form.save()
-            lot_id = id
-            if not id:
-                lot_id = form.instance.id
-            next_url = url_for('inventory.devices.lotdevicelist', id=lot_id)
+            next_url = url_for('inventory.devices.lotdevicelist', id=id)
             return flask.redirect(next_url)
 
         return flask.render_template(self.template_name, form=form, title=self.title)
@@ -100,6 +113,6 @@ devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/lot/<string:id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
 devices.add_url_rule('/lot/devices/add/', view_func=LotDeviceAddView.as_view('lot_devices_add'))
 devices.add_url_rule('/lot/devices/del/', view_func=LotDeviceDeleteView.as_view('lot_devices_del'))
-devices.add_url_rule('/lot/add/', view_func=LotView.as_view('lot_add'))
+devices.add_url_rule('/lot/add/', view_func=LotCreateView.as_view('lot_add'))
 devices.add_url_rule('/lot/<string:id>/del/', view_func=LotDeleteView.as_view('lot_del'))
-devices.add_url_rule('/lot/<string:id>/', view_func=LotView.as_view('lot_edit'))
+devices.add_url_rule('/lot/<string:id>/', view_func=LotUpdateView.as_view('lot_edit'))
