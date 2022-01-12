@@ -77,7 +77,8 @@ class LotCreateView(View):
             next_url = url_for('inventory.devices.lotdevicelist', id=form.instance.id)
             return flask.redirect(next_url)
 
-        return flask.render_template(self.template_name, form=form, title=self.title)
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        return flask.render_template(self.template_name, form=form, title=self.title, lots=lots)
 
 
 class LotUpdateView(View):
@@ -93,7 +94,8 @@ class LotUpdateView(View):
             next_url = url_for('inventory.devices.lotdevicelist', id=id)
             return flask.redirect(next_url)
 
-        return flask.render_template(self.template_name, form=form, title=self.title)
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        return flask.render_template(self.template_name, form=form, title=self.title, lots=lots)
 
 
 class LotDeleteView(View):
