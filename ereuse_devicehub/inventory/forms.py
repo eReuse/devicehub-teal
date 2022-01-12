@@ -54,18 +54,16 @@ class LotForm(FlaskForm):
             self.name.data = self.instance.name
 
     def save(self):
-        name = self.name.data.strip()
-        if self.instance:
-            if self.instance.name == name:
-                return self.instance
-            self.instance.name = name
-        else:
-            self.instance = Lot(name=name)
+        if not self.id:
+            self.instance = Lot(name=self.name.data)
+
+        self.populate_obj(self.instance)
 
         if not self.id:
+            self.id = self.instance.id
             db.session.add(self.instance)
             db.session.commit()
-            return self.instance
+            return self.id
 
         db.session.commit()
         return self.id

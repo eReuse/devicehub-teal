@@ -69,12 +69,10 @@ class LotCreateView(View):
     title = "Add a new lot"
 
     def dispatch_request(self):
-        if id:
-            self.title = "Edit lot"
         form = LotForm()
         if form.validate_on_submit():
             form.save()
-            next_url = url_for('inventory.devices.lotdevicelist', id=form.instance.id)
+            next_url = url_for('inventory.devices.lotdevicelist', id=form.id)
             return flask.redirect(next_url)
 
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
