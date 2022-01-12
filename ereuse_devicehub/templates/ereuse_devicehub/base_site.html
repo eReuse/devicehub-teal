@@ -133,12 +133,12 @@
 
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#temporal-lots-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-layout-text-window-reverse"></i><span>Temporal Lots</span><i class="bi bi-chevron-down ms-auto"></i>
+        <i class="bi bi-layout-text-window-reverse"></i><span>Temporary Lots</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
       <ul id="temporal-lots-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
         <li>
           <a href="{{ url_for('inventory.devices.lot_add')}}">
-            <i class="bi bi-plus" style="font-size: larger;"></i><span>New temporal lot</span>
+            <i class="bi bi-plus" style="font-size: larger;"></i><span>New temporary lot</span>
           </a>
         </li>
         {% for lot in lots %}

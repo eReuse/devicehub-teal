@@ -10,7 +10,7 @@
       {% if not lot %}
       <li class="breadcrumb-item active">Unassgined</li>
       {% elif lot.is_temporary %}
-      <li class="breadcrumb-item active">Temporal Lot</li>
+      <li class="breadcrumb-item active">Temporary Lot</li>
       <li class="breadcrumb-item active">{{ lot.name }}</li>
       {% elif lot.is_incominig %}
       <li class="breadcrumb-item active">Incoming Lot</li>
