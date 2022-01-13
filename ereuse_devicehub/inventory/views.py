@@ -21,7 +21,6 @@ class DeviceListView(View):
         lot = None
         if id:
             lot = lots.filter(Lot.id == id).one()
-            # import pdb; pdb.set_trace()
             devices = [dev for dev in lot.devices if dev.type in filter_types]
             devices = sorted(devices, key=lambda x: x.updated, reverse=True)
         else:
@@ -33,6 +32,20 @@ class DeviceListView(View):
                    'lots': lots,
                    'form_lot_device': LotDeviceForm(),
                    'lot': lot}
+        return flask.render_template(self.template_name, **context)
+
+
+class DeviceDetailsView(View):
+    decorators = [login_required]
+    template_name = 'inventory/device_details.html'
+
+    def dispatch_request(self, id):
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        device = Device.query.filter(
+                     Device.owner_id == current_user.id).filter(Device.devicehub_id == id).one()
+
+        context = {'device': device,
+                   'lots': lots}
         return flask.render_template(self.template_name, **context)
 
 
@@ -109,8 +122,8 @@ class LotDeleteView(View):
         return flask.redirect(next_url)
 
 
-
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
+devices.add_url_rule('/device/<string:id>/', view_func=DeviceDetailsView.as_view('device_details'))
 devices.add_url_rule('/lot/<string:id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
 devices.add_url_rule('/lot/devices/add/', view_func=LotDeviceAddView.as_view('lot_devices_add'))
 devices.add_url_rule('/lot/devices/del/', view_func=LotDeviceDeleteView.as_view('lot_devices_del'))
