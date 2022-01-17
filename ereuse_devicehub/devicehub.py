@@ -23,7 +23,6 @@ from ereuse_devicehub.templating import Environment
 
 
 from flask_login import LoginManager
-from flask_wtf.csrf import CSRFProtect
 from ereuse_devicehub.resources.user.models import User
 
 
@@ -69,9 +68,6 @@ class Devicehub(Teal):
         self.configure_extensions()
 
     def configure_extensions(self):
-        # configure & enable CSRF of Flask-WTF
-        CSRFProtect(self)
-
         # configure Flask-Login
         login_manager = LoginManager()
         login_manager.init_app(self)
