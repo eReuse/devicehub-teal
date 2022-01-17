@@ -5,7 +5,9 @@ from flask_login import login_required, current_user
 
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm
+from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm, UploadSnapshotForm
+from ereuse_devicehub.resources.action import SnapshotDef
+from ereuse_devicehub.resources.action.views.snapshot import SnapshotView as TealSnapshotView
 
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
 
@@ -122,6 +124,24 @@ class LotDeleteView(View):
         return flask.redirect(next_url)
 
 
+class UploadSnapshotView(View):
+    methods = ['GET', 'POST']
+    decorators = [login_required]
+    template_name = 'inventory/upload_snapshot.html'
+
+    def dispatch_request(self):
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        form = UploadSnapshotForm()
+        if form.validate_on_submit():
+            form.save()
+            if any([x == 'Error' for x in form.result.values()]):
+                return flask.render_template(self.template_name, form=form, lots=lots)
+            next_url = url_for('inventory.devices.devicelist')
+            return flask.redirect(next_url)
+
+        return flask.render_template(self.template_name, form=form, lots=lots)
+
+
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/device/<string:id>/', view_func=DeviceDetailsView.as_view('device_details'))
 devices.add_url_rule('/lot/<string:id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
@@ -130,3 +150,4 @@ devices.add_url_rule('/lot/devices/del/', view_func=LotDeviceDeleteView.as_view(
 devices.add_url_rule('/lot/add/', view_func=LotCreateView.as_view('lot_add'))
 devices.add_url_rule('/lot/<string:id>/del/', view_func=LotDeleteView.as_view('lot_del'))
 devices.add_url_rule('/lot/<string:id>/', view_func=LotUpdateView.as_view('lot_edit'))
+devices.add_url_rule('/upload-snapshot/', view_func=UploadSnapshotView.as_view('upload_snapshot'))
