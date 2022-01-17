@@ -30,15 +30,28 @@
                   {% endif %}
                 </div>
 
-                <form method="post" class="row g-3 needs-validation" novalidate>
+                <form method="post" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
                   {{ form.csrf_token }}
 
                   <div class="col-12">
-                    <label for="name" class="form-label">Name</label>
+                    <label for="name" class="form-label">Select a Snapshot file</label>
                     <div class="input-group has-validation">
-                      <input type="text" name="name" class="form-control" required value="{{ form.name.data|default('', true) }}">
+                      {{ form.snapshot }}
                       <div class="invalid-feedback">You can select multiple files Snapshots JSON.</div>
                     </div>
+                    {% if form.result %}
+                      {% for filename, result in form.result.items() %}
+                        {% if result == 'Ok' %}
+                        <p class="text-success">
+                        {{ filename }}: {{ result }}<br/>
+                        </p>
+                        {% else %}
+                        <p class="text-danger">
+                        {{ filename }}: {{ result }}<br/>
+                        </p>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
                   </div>
 
                   <div class="col-12">
