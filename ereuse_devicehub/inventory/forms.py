@@ -200,6 +200,19 @@ class UploadSnapshotForm(FlaskForm):
         return snapshot
 
 
+class DeviceForm(FlaskForm):
+    type = StringField(u'Name', [validators.length(min=1)])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def save(self):
+        pass
+
+    def remove(self):
+        pass
+
+
 class NewActionForm(FlaskForm):
     name = StringField(u'Name')
     date = StringField(u'Date')
