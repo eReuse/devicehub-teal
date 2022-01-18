@@ -28,7 +28,8 @@ class DeviceListView(View):
         else:
             devices = Device.query.filter(
                 Device.owner_id == current_user.id).filter(
-                Device.type.in_(filter_types)).filter(Device.lots == None).order_by('id', 'updated')
+                Device.type.in_(filter_types)).filter(Device.lots == None).order_by(
+                    Device.updated.desc())
 
         context = {'devices': devices,
                    'lots': lots,
@@ -130,14 +131,10 @@ class UploadSnapshotView(View):
     template_name = 'inventory/upload_snapshot.html'
 
     def dispatch_request(self):
-        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        lots = Lot.query.filter(Lot.owner_id == current_user.id).all()
         form = UploadSnapshotForm()
         if form.validate_on_submit():
             form.save()
-            if any([x == 'Error' for x in form.result.values()]):
-                return flask.render_template(self.template_name, form=form, lots=lots)
-            next_url = url_for('inventory.devices.devicelist')
-            return flask.redirect(next_url)
 
         return flask.render_template(self.template_name, form=form, lots=lots)
 
