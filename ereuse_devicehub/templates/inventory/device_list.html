@@ -162,7 +162,7 @@
                   <i class="bi bi-reply"></i>
                   Exports
               </button>
-              <ul class="dropdown-menu" aria-labelledby="btnLots"">
+              <ul class="dropdown-menu" aria-labelledby="btnExport">
                 <li>
                   <a href="javascript:openAdd()" class="dropdown-item">
                     <i class="bi bi-plus"></i>
@@ -183,7 +183,7 @@
                   <i class="bi bi-tag"></i>
                   Tags
               </button>
-              <ul class="dropdown-menu" aria-labelledby="btnLots"">
+              <ul class="dropdown-menu" aria-labelledby="btnTags">
                 <li>
                   <a href="javascript:openAdd()" class="dropdown-item">
                     <i class="bi bi-plus"></i>
@@ -194,6 +194,27 @@
                   <a href="javascript:openRemove()" class="dropdown-item">
                     <i class="bi bi-x"></i>
                     Remove Tag
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-tag"></i>
+                  New Device
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
+                <li>
+                  <a href="{{ url_for('inventory.devices.upload_snapshot') }}" class="dropdown-item">
+                    <i class="bi bi-plus"></i>
+                    Upload a new Snapshot
+                  </a>
+                </li>
+                <li>
+                  <a href="javascript:void()" class="dropdown-item">
+                    <i class="bi bi-plus"></i>
+                    Create a new Device
                   </a>
                 </li>
               </ul>
