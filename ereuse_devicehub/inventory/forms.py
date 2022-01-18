@@ -1,8 +1,10 @@
 import json
+import teal
 from flask_wtf import FlaskForm
 from wtforms import StringField, validators, MultipleFileField
 from flask import g, request, app
 from sqlalchemy.util import OrderedSet
+from psycopg2.errors import UniqueViolation
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device, Computer
@@ -100,7 +102,7 @@ class UploadSnapshotForm(FlaskForm):
         self.result = {}
         for d in data:
             filename = d.filename
-            self.result[filename] = 'Ok'
+            self.result[filename] = 'Not processed'
             d = d.stream.read()
             if not d:
                 self.result[filename] = 'Error'
@@ -121,11 +123,21 @@ class UploadSnapshotForm(FlaskForm):
         # self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         # TODO @cayop get correct var config
         self.tmp_snapshots = '/tmp/'
-        for k, snapshot_json in self.snapshots:
+        for filename, snapshot_json in self.snapshots:
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
             snapshot_json.pop('debug', None)
             snapshot_json = schema.load(snapshot_json)
-            response = self.build(snapshot_json)
+            try:
+                response = self.build(snapshot_json)
+            except teal.db.DBError as error:
+                self.result[filename] = 'Error: {0}'.format(error.code)
+                break
+
+            if hasattr(response, 'type'):
+                self.result[filename] = 'Ok'
+            else:
+                self.result[filename] = 'Error'
+
             move_json(self.tmp_snapshots, path_snapshot, g.user.email)
 
     def build(self, snapshot_json):
@@ -184,7 +196,8 @@ class UploadSnapshotForm(FlaskForm):
             snapshot.severity = Severity.Warning
 
         db.session.add(snapshot)
-        db.session().final_flush()
+        db.session.commit()
+        return snapshot
 
 
 class NewActionForm(FlaskForm):
