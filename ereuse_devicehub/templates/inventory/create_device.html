@@ -1,0 +1,236 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>{{ title }}</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="index.html">Inventory</a></li>
+      <li class="breadcrumb-item">New Device</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+    <div class="col-xl-8">
+
+      <div class="card">
+              <div class="card-body">
+
+                <div class="pt-4 pb-2">
+                  <h5 class="card-title text-center pb-0 fs-4">New Device</h5>
+                  {% if form.form_errors %}
+                  <p class="text-danger">
+                    {% for error in form.form_errors %}
+                      {{ error }}<br/>
+                    {% endfor %}
+                  </p>
+                  {% endif %}
+                </div>
+
+                <form method="post" class="row g-3 needs-validation" novalidate>
+                  {{ form.csrf_token }}
+
+                  <div class="col-12">
+                    <div class="form-group has-validation mb-2">
+                      <label for="name" class="form-label">Type *</label>
+                      <select id="type" class="form-control" name="type" required="">
+                        <option value="">Select one Type</option>
+                        <optgroup label="Computer Monitor">
+                          <option value="Monitor">Monitor</option>
+                        </optgroup>
+                        <optgroup label="Mobile">
+                          <option value="Smartphone">Smartphone</option>
+                          <option value="Tablet">Tablet</option>
+                          <option value="Cellphone">Cellphone</option>
+                        </optgroup>
+                        <optgroup label="Computer Accessory">
+                          <option value="Mouse">Mouse</option>
+                          <option value="MemoryCardReader">Memory card reader</option>
+                          <option value="SAI">SAI</option>
+                          <option value="Keyboard">Keyboard</option>
+                        </optgroup>
+                      </select>
+                      <small class="text-muted form-text">Type of devices</small>
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <label for="label" class="form-label">Label</label>
+                      {{ form.label(class_="form-control") }}
+                      <small class="text-muted form-text">Label that you want link to this device</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="serialNumber" class="form-label">{{ form.serial_number.label }} *</label>
+                      {{ form.serial_number(class_="form-control") }}
+                      <small class="text-muted form-text">Serial number of this device</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.model.label }} *</label>
+                      {{ form.model(class_="form-control") }}
+                      <small class="text-muted form-text">Name of model</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.manufacturer.label }} *</label>
+                      {{ form.manufacturer(class_="form-control") }}
+                      <small class="text-muted form-text">Name of manufacturer</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.appearance.label }}</label>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="appearance" value="Z">
+                        <label class="form-check-label">0. The device is new.</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="appearance" value="A">
+                        <label class="form-check-label">A. Like new (no visual damage))</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="appearance" value="B">
+                        <label class="form-check-label">B. In very good condition (small visual damage to hard-to-detect parts)</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="appearance" value="C">
+                        <label class="form-check-label">C. In good condition (small visual damage to easy-to-detect parts, not the screen))</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="appearance" value="D">
+                        <label class="form-check-label">D. It is acceptable (visual damage to visible parts, not on the screen)</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="appearance" value="E">
+                        <label class="form-check-label">E. It is unacceptable (substantial visual damage that may affect use)</label>
+                      </div>
+                      <small class="text-muted form-text">Rate the imperfections that affect the device aesthetically, but not its use.</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.functionality.label }}</label>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="functionality" value="A">
+                        <label class="form-check-label">A. Everything works perfectly (buttons, and no scratches on the screen)</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="functionality" value="B">
+                        <label class="form-check-label">B. There is a hard to press button or small scratches on the corners of the screen</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="functionality" value="C">
+                        <label class="form-check-label">C. A non-essential button does not work; the screen has multiple scratches on the corners</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="functionality" value="D">
+                        <label class="form-check-label">D. Multiple buttons do not work properly; the screen has severe damage that may affect use</label>
+                      </div>
+                      <small class="text-muted form-text">It qualifies the defects of a device that affect its use.</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.brand.label }}</label>
+                      {{ form.brand(class_="form-control") }}
+                      <small class="text-muted form-text">A naming for consumers. This field can represent several models, so it can be ambiguous, and it is not used to identify the product.</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.generation.label }}</label>
+                      {{ form.generation(class_="form-control") }}
+                      <small class="text-muted form-text">The generation of the device.</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.version.label }}</label>
+                      {{ form.version(class_="form-control") }}
+                      <small class="text-muted form-text">The version code o fthis device, like 'v1' or 'A001'.</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.weight.label }}</label>
+                      {{ form.weight(class_="form-control") }}
+                      <small class="text-muted form-text">The weight of the device in Kg.</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.width.label }}</label>
+                      {{ form.width(class_="form-control") }}
+                      <small class="text-muted form-text">The width of the device in meters.</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.height.label }}</label>
+                      {{ form.height(class_="form-control") }}
+                      <small class="text-muted form-text">The height of the device in meters.</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.depth.label }}</label>
+                      {{ form.depth(class_="form-control") }}
+                      <small class="text-muted form-text">The depth of the device in meters.</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.variant.label }}</label>
+                      {{ form.variant(class_="form-control") }}
+                      <small class="text-muted form-text">A variant or sub-model of the device.</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="model" class="form-label">{{ form.sku.label }}</label>
+                      {{ form.sku(class_="form-control") }}
+                      <small class="text-muted form-text">The Stock Keeping Unit (SKU), i.e. a merchant-specific identifier for a product or service.</small>
+                    </div>
+
+                    <div class="from-group has-validation mb-2">
+                      <label for="image" class="form-label">{{ form.image.label }}</label>
+                      {{ form.image(class_="form-control") }}
+                      <small class="text-muted form-text">An URL containing an image of the device.</small>
+                    </div>
+
+                    <div id="imei" class="from-group has-validation mb-2">
+                      <label for="imei" class="form-label">{{ form.imei.label }}</label>
+                      {{ form.imei(class_="form-control") }}
+                      <small class="text-muted form-text">A number from 14 to 16 digits.</small>
+                    </div>
+
+                    <div id="meid" class="from-group has-validation mb-2">
+                      <label for="meid" class="form-label">{{ form.meid.label }}</label>
+                      {{ form.meid(class_="form-control") }}
+                      <small class="text-muted form-text">14 hexadecimal digits.</small>
+                    </div>
+
+                    <div id="resolution" class="from-group has-validation mb-2">
+                      <label for="resolution" class="form-label">{{ form.resolution.label }}</label>
+                      {{ form.resolution(class_="form-control") }}
+                      <small class="text-muted form-text">The resolution width of the screen.</small>
+                    </div>
+
+                    <div id="screen" class="from-group has-validation mb-2">
+                      <label for="screen" class="form-label">{{ form.screen.label }}</label>
+                      {{ form.screen(class_="form-control") }}
+                      <small class="text-muted form-text">The size of the screen.</small>
+                    </div>
+
+                  </div>
+
+                  <div class="col-12">
+                    <a href="{{ url_for('inventory.devices.devicelist') }}" class="btn btn-danger">Cancel</a>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                  </div>
+                </form>
+
+              </div>
+
+      </div>
+
+    </div>
+
+    <div class="col-xl-8">
+    </div>
+  </div>
+</section>
+<script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/create_device.js') }}"></script>
+{% endblock main %}

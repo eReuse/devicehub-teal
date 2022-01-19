@@ -7,7 +7,9 @@ from sqlalchemy.util import OrderedSet
 from psycopg2.errors import UniqueViolation
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Device, Computer
+from ereuse_devicehub.resources.device.models import Device, Computer, Smartphone, Cellphone, \
+                                                     Tablet, Monitor, Mouse, Keyboard, \
+                                                     MemoryCardReader, SAI
 from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
 from ereuse_devicehub.resources.lot.models import Lot
@@ -200,17 +202,48 @@ class UploadSnapshotForm(FlaskForm):
         return snapshot
 
 
-class DeviceForm(FlaskForm):
-    type = StringField(u'Name', [validators.length(min=1)])
+class NewDeviceForm(FlaskForm):
+    type = StringField(u'Type', [validators.DataRequired()])
+    label = StringField(u'Label')
+    serial_number = StringField(u'Seria Number', [validators.DataRequired()])
+    model = StringField(u'Model', [validators.DataRequired()])
+    manufacturer = StringField(u'Manufacturer', [validators.DataRequired()])
+    appearance = StringField(u'Appearance')
+    functionality = StringField(u'Functionality')
+    brand = StringField(u'Brand')
+    generation = StringField(u'Generation')
+    version = StringField(u'Version')
+    weight = StringField(u'Weight')
+    width = StringField(u'Width')
+    height = StringField(u'Height')
+    depth = StringField(u'Depth')
+    variant = StringField(u'Variant')
+    sku = StringField(u'SKU')
+    image = StringField(u'Image')
+    imei = StringField(u'IMEI')
+    meid = StringField(u'MEID')
+    resolution = StringField(u'Resolution width')
+    screen = StringField(u'Screen size')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.devices = {"Smartphone": Smartphone,
+                        "Tablet": Tablet,
+                        "Cellphone": Cellphone,
+                        "Monitor": Monitor,
+                        "Mouse": Mouse,
+                        "Keyboard": Keyboard,
+                        "SAI": SAI,
+                        "MemoryCardReader": MemoryCardReader,
+        }
+        if self.type.data:
+            self.instance = self.devices[self.type.data]()
+            self.populate_obj(self.instance)
 
     def save(self):
-        pass
-
-    def remove(self):
-        pass
+        db.session.add(self.instance)
+        db.session.commit()
+        return self.instance
 
 
 class NewActionForm(FlaskForm):
