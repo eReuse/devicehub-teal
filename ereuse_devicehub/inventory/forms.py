@@ -1,10 +1,8 @@
 import json
-import teal
 from flask_wtf import FlaskForm
-from wtforms import StringField, validators, MultipleFileField
-from flask import g, request, app
+from wtforms import StringField, validators, MultipleFileField, FloatField, IntegerField
+from flask import g, request
 from sqlalchemy.util import OrderedSet
-from psycopg2.errors import UniqueViolation
 from json.decoder import JSONDecodeError
 
 from ereuse_devicehub.db import db
@@ -142,11 +140,7 @@ class UploadSnapshotForm(FlaskForm):
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
             snapshot_json.pop('debug', None)
             snapshot_json = schema.load(snapshot_json)
-            try:
-                response = self.build(snapshot_json)
-            except teal.db.DBError as error:
-                self.result[filename] = 'Error: {0}'.format(error.code)
-                break
+            response = self.build(snapshot_json)
 
             if hasattr(response, 'type'):
                 self.result[filename] = 'Ok'
@@ -225,15 +219,15 @@ class NewDeviceForm(FlaskForm):
     appearance = StringField(u'Appearance')
     functionality = StringField(u'Functionality')
     brand = StringField(u'Brand')
-    generation = StringField(u'Generation')
+    generation = IntegerField(u'Generation')
     version = StringField(u'Version')
-    weight = StringField(u'Weight')
-    width = StringField(u'Width')
-    height = StringField(u'Height')
-    depth = StringField(u'Depth')
+    weight = FloatField(u'Weight', [validators.DataRequired()])
+    width = FloatField(u'Width', [validators.DataRequired()])
+    height = FloatField(u'Height', [validators.DataRequired()])
+    depth = FloatField(u'Depth', [validators.DataRequired()])
     variant = StringField(u'Variant')
     sku = StringField(u'SKU')
-    image = StringField(u'Image')
+    image = StringField(u'Image', [validators.Optional(), validators.URL()])
     imei = StringField(u'IMEI')
     meid = StringField(u'MEID')
     resolution = StringField(u'Resolution width')
@@ -248,14 +242,53 @@ class NewDeviceForm(FlaskForm):
                         "Mouse": Mouse,
                         "Keyboard": Keyboard,
                         "SAI": SAI,
-                        "MemoryCardReader": MemoryCardReader,
-        }
+                        "MemoryCardReader": MemoryCardReader}
+
+        if not self.generation.data:
+            self.generation.data = 0
+
+        if not self.weight.data:
+            self.weight.data = 0.1
+
+        if not self.height.data:
+            self.height.data = 0.1
+
+        if not self.width.data:
+            self.width.data = 0.1
+
+        if not self.depth.data:
+            self.depth.data = 0.1
+
         if self.type.data:
             self.instance = self.devices[self.type.data]()
             self.populate_obj(self.instance)
 
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+        if self.generation.data < 0:
+            return False
+
+        if self.weight.data < 0.1:
+            return False
+
+        if self.height.data < 0.1:
+            return False
+
+        if self.width.data < 0.1:
+            return False
+
+        if self.depth.data < 0.1:
+            return False
+
+        return True
+
     def save(self):
         db.session.add(self.instance)
+        import pdb; pdb.set_trace()
         db.session.commit()
         return self.instance
 
@@ -265,6 +298,3 @@ class NewActionForm(FlaskForm):
     date = StringField(u'Date')
     severity = StringField(u'Severity')
     description = StringField(u'Description')
-
-    def save(self):
-        pass

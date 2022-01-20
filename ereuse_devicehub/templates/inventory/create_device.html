@@ -53,30 +53,65 @@
                         </optgroup>
                       </select>
                       <small class="text-muted form-text">Type of devices</small>
+                      {% if form.type.errors %}
+                      <p class="text-danger">
+                        {% for error in form.type.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="form-group mb-2">
                       <label for="label" class="form-label">Label</label>
                       {{ form.label(class_="form-control") }}
                       <small class="text-muted form-text">Label that you want link to this device</small>
+                      {% if form.label.errors %}
+                      <p class="text-danger">
+                        {% for error in form.label.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
                       <label for="serialNumber" class="form-label">{{ form.serial_number.label }} *</label>
                       {{ form.serial_number(class_="form-control") }}
                       <small class="text-muted form-text">Serial number of this device</small>
+                      {% if form.serial_number.errors %}
+                      <p class="text-danger">
+                        {% for error in form.serial_number.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
                       <label for="model" class="form-label">{{ form.model.label }} *</label>
                       {{ form.model(class_="form-control") }}
                       <small class="text-muted form-text">Name of model</small>
+                      {% if form.model.errors %}
+                      <p class="text-danger">
+                        {% for error in form.model.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
                       <label for="model" class="form-label">{{ form.manufacturer.label }} *</label>
                       {{ form.manufacturer(class_="form-control") }}
                       <small class="text-muted form-text">Name of manufacturer</small>
+                      {% if form.manufacturer.errors %}
+                      <p class="text-danger">
+                        {% for error in form.manufacturer.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
@@ -106,6 +141,13 @@
                         <label class="form-check-label">E. It is unacceptable (substantial visual damage that may affect use)</label>
                       </div>
                       <small class="text-muted form-text">Rate the imperfections that affect the device aesthetically, but not its use.</small>
+                      {% if form.appearance.errors %}
+                      <p class="text-danger">
+                        {% for error in form.appearance.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
@@ -127,90 +169,195 @@
                         <label class="form-check-label">D. Multiple buttons do not work properly; the screen has severe damage that may affect use</label>
                       </div>
                       <small class="text-muted form-text">It qualifies the defects of a device that affect its use.</small>
+                      {% if form.functionality.errors %}
+                      <p class="text-danger">
+                        {% for error in form.functionality.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
                       <label for="model" class="form-label">{{ form.brand.label }}</label>
                       {{ form.brand(class_="form-control") }}
                       <small class="text-muted form-text">A naming for consumers. This field can represent several models, so it can be ambiguous, and it is not used to identify the product.</small>
+                      {% if form.brand.errors %}
+                      <p class="text-danger">
+                        {% for error in form.brand.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.generation.label }}</label>
+                      <label for="model" class="form-label">{{ form.generation.label }} *</label>
                       {{ form.generation(class_="form-control") }}
                       <small class="text-muted form-text">The generation of the device.</small>
+                      {% if form.generation.errors %}
+                      <p class="text-danger">
+                        {% for error in form.generation.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
                       <label for="model" class="form-label">{{ form.version.label }}</label>
                       {{ form.version(class_="form-control") }}
                       <small class="text-muted form-text">The version code o fthis device, like 'v1' or 'A001'.</small>
+                      {% if form.version.errors %}
+                      <p class="text-danger">
+                        {% for error in form.version.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.weight.label }}</label>
+                      <label for="model" class="form-label">{{ form.weight.label }} *</label>
                       {{ form.weight(class_="form-control") }}
                       <small class="text-muted form-text">The weight of the device in Kg.</small>
+                      {% if form.weight.errors %}
+                      <p class="text-danger">
+                        {% for error in form.weight.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.width.label }}</label>
+                      <label for="model" class="form-label">{{ form.width.label }} *</label>
                       {{ form.width(class_="form-control") }}
                       <small class="text-muted form-text">The width of the device in meters.</small>
+                      {% if form.width.errors %}
+                      <p class="text-danger">
+                        {% for error in form.width.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.height.label }}</label>
+                      <label for="model" class="form-label">{{ form.height.label }} *</label>
                       {{ form.height(class_="form-control") }}
                       <small class="text-muted form-text">The height of the device in meters.</small>
+                      {% if form.height.errors %}
+                      <p class="text-danger">
+                        {% for error in form.height.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.depth.label }}</label>
+                      <label for="model" class="form-label">{{ form.depth.label }} *</label>
                       {{ form.depth(class_="form-control") }}
                       <small class="text-muted form-text">The depth of the device in meters.</small>
+                      {% if form.depth.errors %}
+                      <p class="text-danger">
+                        {% for error in form.depth.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
                       <label for="model" class="form-label">{{ form.variant.label }}</label>
                       {{ form.variant(class_="form-control") }}
                       <small class="text-muted form-text">A variant or sub-model of the device.</small>
+                      {% if form.variant.errors %}
+                      <p class="text-danger">
+                        {% for error in form.variant.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
                       <label for="model" class="form-label">{{ form.sku.label }}</label>
                       {{ form.sku(class_="form-control") }}
                       <small class="text-muted form-text">The Stock Keeping Unit (SKU), i.e. a merchant-specific identifier for a product or service.</small>
+                      {% if form.sku.errors %}
+                      <p class="text-danger">
+                        {% for error in form.sku.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div class="from-group has-validation mb-2">
                       <label for="image" class="form-label">{{ form.image.label }}</label>
                       {{ form.image(class_="form-control") }}
                       <small class="text-muted form-text">An URL containing an image of the device.</small>
+                      {% if form.image.errors %}
+                      <p class="text-danger">
+                        {% for error in form.image.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div id="imei" class="from-group has-validation mb-2">
                       <label for="imei" class="form-label">{{ form.imei.label }}</label>
                       {{ form.imei(class_="form-control") }}
                       <small class="text-muted form-text">A number from 14 to 16 digits.</small>
+                      {% if form.imei.errors %}
+                      <p class="text-danger">
+                        {% for error in form.imei.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div id="meid" class="from-group has-validation mb-2">
                       <label for="meid" class="form-label">{{ form.meid.label }}</label>
                       {{ form.meid(class_="form-control") }}
                       <small class="text-muted form-text">14 hexadecimal digits.</small>
+                      {% if form.meid.errors %}
+                      <p class="text-danger">
+                        {% for error in form.meid.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div id="resolution" class="from-group has-validation mb-2">
                       <label for="resolution" class="form-label">{{ form.resolution.label }}</label>
                       {{ form.resolution(class_="form-control") }}
                       <small class="text-muted form-text">The resolution width of the screen.</small>
+                      {% if form.resolution.errors %}
+                      <p class="text-danger">
+                        {% for error in form.resolution.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                     <div id="screen" class="from-group has-validation mb-2">
                       <label for="screen" class="form-label">{{ form.screen.label }}</label>
                       {{ form.screen(class_="form-control") }}
                       <small class="text-muted form-text">The size of the screen.</small>
+                      {% if form.screen.errors %}
+                      <p class="text-danger">
+                        {% for error in form.screen.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
                     </div>
 
                   </div>
