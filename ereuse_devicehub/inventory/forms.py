@@ -5,6 +5,7 @@ from wtforms import StringField, validators, MultipleFileField
 from flask import g, request, app
 from sqlalchemy.util import OrderedSet
 from psycopg2.errors import UniqueViolation
+from json.decoder import JSONDecodeError
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device, Computer, Smartphone, Cellphone, \
@@ -107,9 +108,21 @@ class UploadSnapshotForm(FlaskForm):
             self.result[filename] = 'Not processed'
             d = d.stream.read()
             if not d:
-                self.result[filename] = 'Error'
+                self.result[filename] = 'Error this snapshot is empty'
                 continue
-            self.snapshots.append((filename, json.loads(d)))
+
+            try:
+                d_json = json.loads(d)
+            except JSONDecodeError:
+                self.result[filename] = 'Error this snapshot is not a json'
+                continue
+
+            uuid_snapshot = d_json.get('uuid')
+            if Snapshot.query.filter(Snapshot.uuid == uuid_snapshot).all():
+                self.result[filename] = 'Error this snapshot exist'
+                continue
+
+            self.snapshots.append((filename, d_json))
 
         if not self.snapshots:
             return False
@@ -141,6 +154,8 @@ class UploadSnapshotForm(FlaskForm):
                 self.result[filename] = 'Error'
 
             move_json(self.tmp_snapshots, path_snapshot, g.user.email)
+
+        db.session.commit()
 
     def build(self, snapshot_json):
         # this is a copy adaptated from ereuse_devicehub.resources.action.views.snapshot
@@ -198,7 +213,6 @@ class UploadSnapshotForm(FlaskForm):
             snapshot.severity = Severity.Warning
 
         db.session.add(snapshot)
-        db.session.commit()
         return snapshot
 
 
