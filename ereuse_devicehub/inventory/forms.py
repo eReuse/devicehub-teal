@@ -295,7 +295,7 @@ class NewDeviceForm(FlaskForm):
         self.instance = self.devices[self.type.data]()
         self.populate_obj(self.instance)
         db.session.add(self.instance)
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         db.session.commit()
         return self.instance
 
