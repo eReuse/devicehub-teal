@@ -259,10 +259,6 @@ class NewDeviceForm(FlaskForm):
         if not self.depth.data:
             self.depth.data = 0.1
 
-        if self.type.data:
-            self.instance = self.devices[self.type.data]()
-            self.populate_obj(self.instance)
-
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
 
@@ -284,9 +280,20 @@ class NewDeviceForm(FlaskForm):
         if self.depth.data < 0.1:
             return False
 
+        if self.image.data == '':
+            self.image.data = None
+        if self.manufacturer.data:
+            self.manufacturer.data = self.manufacturer.data.lower()
+        if self.model.data:
+            self.model.data = self.model.data.lower()
+        if self.serial_number.data:
+            self.serial_number.data = self.serial_number.data.lower()
+
         return True
 
     def save(self):
+        self.instance = self.devices[self.type.data]()
+        self.populate_obj(self.instance)
         db.session.add(self.instance)
         import pdb; pdb.set_trace()
         db.session.commit()
