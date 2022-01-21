@@ -9,7 +9,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device, Computer, Smartphone, Cellphone, \
                                                      Tablet, Monitor, Mouse, Keyboard, \
                                                      MemoryCardReader, SAI
-from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
+from ereuse_devicehub.resources.action.models import RateComputer, Snapshot, VisualTest
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
@@ -245,7 +245,7 @@ class NewDeviceForm(FlaskForm):
                         "MemoryCardReader": MemoryCardReader}
 
         if not self.generation.data:
-            self.generation.data = 0
+            self.generation.data = 1
 
         if not self.weight.data:
             self.weight.data = 0.1
@@ -265,7 +265,7 @@ class NewDeviceForm(FlaskForm):
         if not is_valid:
             return False
 
-        if self.generation.data < 0:
+        if self.generation.data < 1:
             return False
 
         if self.weight.data < 0.1:
@@ -292,12 +292,48 @@ class NewDeviceForm(FlaskForm):
         return True
 
     def save(self):
-        self.instance = self.devices[self.type.data]()
-        self.populate_obj(self.instance)
-        db.session.add(self.instance)
-        # import pdb; pdb.set_trace()
-        db.session.commit()
-        return self.instance
+
+        json_snapshot = {
+            'type': 'Snapshot',
+            'software': 'Web',
+            'version': '11.0',
+            'device': {
+                 'type': self.type.data,
+                 'model': self.model.data,
+                 'manufacturer': self.manufacturer.data,
+                 'serialNumber': self.serial_number.data,
+                 'brand': self.brand.data,
+                 'version': self.version.data,
+                 'generation': self.generation.data,
+                 'sku': self.sku.data,
+                 'weight': self.weight.data,
+                 'width': self.width.data,
+                 'height': self.height.data,
+                 'depth': self.depth.data,
+                 'variant': self.variant.data,
+                 'image': self.image.data
+            }
+        }
+
+        if self.imei.data or self.meid.data:
+            json_snapshot['device']['imei'] = self.imei.data
+            json_snapshot['device']['meid'] = self.meid.data
+
+        if self.resolution.data or self.screen.data:
+            json_snapshot['device']['resolution'] = self.resolution.data
+            json_snapshot['device']['screen'] = self.screen.data
+
+        if self.appearance.data or self.functionality.data:
+            json_snapshot['device']['actions'] = [{
+                'type': 'VisualTest',
+                'appearanceRange': self.appearance.data,
+                'functionalityRange': self.functionality.data
+            }]
+
+        upload_form = UploadSnapshotForm()
+        upload_form.snapshots = [("Web", json_snapshot)]
+        upload_form.result = {}
+        upload_form.save()
 
 
 class NewActionForm(FlaskForm):
