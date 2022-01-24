@@ -150,6 +150,7 @@ class UploadSnapshotForm(FlaskForm):
             move_json(self.tmp_snapshots, path_snapshot, g.user.email)
 
         db.session.commit()
+        return response
 
     def build(self, snapshot_json):
         # this is a copy adaptated from ereuse_devicehub.resources.action.views.snapshot
@@ -216,8 +217,8 @@ class NewDeviceForm(FlaskForm):
     serial_number = StringField(u'Seria Number', [validators.DataRequired()])
     model = StringField(u'Model', [validators.DataRequired()])
     manufacturer = StringField(u'Manufacturer', [validators.DataRequired()])
-    appearance = StringField(u'Appearance')
-    functionality = StringField(u'Functionality')
+    appearance = StringField(u'Appearance', [validators.Optional()])
+    functionality = StringField(u'Functionality', [validators.Optional()])
     brand = StringField(u'Brand')
     generation = IntegerField(u'Generation')
     version = StringField(u'Version')
@@ -225,13 +226,13 @@ class NewDeviceForm(FlaskForm):
     width = FloatField(u'Width', [validators.DataRequired()])
     height = FloatField(u'Height', [validators.DataRequired()])
     depth = FloatField(u'Depth', [validators.DataRequired()])
-    variant = StringField(u'Variant')
-    sku = StringField(u'SKU')
+    variant = StringField(u'Variant', [validators.Optional()])
+    sku = StringField(u'SKU', [validators.Optional()])
     image = StringField(u'Image', [validators.Optional(), validators.URL()])
-    imei = StringField(u'IMEI')
-    meid = StringField(u'MEID')
-    resolution = StringField(u'Resolution width')
-    screen = StringField(u'Screen size')
+    imei = IntegerField(u'IMEI', [validators.Optional()])
+    meid = StringField(u'MEID', [validators.Optional()])
+    resolution = IntegerField(u'Resolution width', [validators.Optional()])
+    screen = FloatField(u'Screen size', [validators.Optional()])
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -260,24 +261,45 @@ class NewDeviceForm(FlaskForm):
             self.depth.data = 0.1
 
     def validate(self, extra_validators=None):
+        error = ["Not a correct value"]
         is_valid = super().validate(extra_validators)
 
-        if not is_valid:
-            return False
-
         if self.generation.data < 1:
-            return False
+            self.generation.errors = error
+            is_valid = False
 
         if self.weight.data < 0.1:
-            return False
+            self.weight.errors = error
+            is_valid = False
 
         if self.height.data < 0.1:
-            return False
+            self.height.errors = error
+            is_valid = False
 
         if self.width.data < 0.1:
-            return False
+            self.width.errors = error
+            is_valid = False
 
         if self.depth.data < 0.1:
+            self.depth.errors = error
+            is_valid = False
+
+        if self.imei.data:
+            if not 13 < len(str(self.imei.data)) < 17:
+                self.imei.errors = error
+                is_valid = False
+
+        if self.meid.data:
+            meid = self.meid.data
+            if not 13 < len(meid) < 17:
+                is_valid = False
+            try:
+                int(meid, 16)
+            except ValueError:
+                self.meid.errors = error
+                is_valid = False
+
+        if not is_valid:
             return False
 
         if self.image.data == '':
@@ -315,14 +337,6 @@ class NewDeviceForm(FlaskForm):
             }
         }
 
-        if self.imei.data or self.meid.data:
-            json_snapshot['device']['imei'] = self.imei.data
-            json_snapshot['device']['meid'] = self.meid.data
-
-        if self.resolution.data or self.screen.data:
-            json_snapshot['device']['resolution'] = self.resolution.data
-            json_snapshot['device']['screen'] = self.screen.data
-
         if self.appearance.data or self.functionality.data:
             json_snapshot['device']['actions'] = [{
                 'type': 'VisualTest',
@@ -331,9 +345,30 @@ class NewDeviceForm(FlaskForm):
             }]
 
         upload_form = UploadSnapshotForm()
-        upload_form.snapshots = [("Web", json_snapshot)]
-        upload_form.result = {}
-        upload_form.save()
+        upload_form.sync = Sync()
+
+        schema = SnapshotSchema()
+        self.tmp_snapshots = '/tmp/'
+        path_snapshot = save_json(json_snapshot, self.tmp_snapshots, g.user.email)
+        snapshot_json = schema.load(json_snapshot)
+
+        if self.type.data == 'Monitor':
+            snapshot_json['device'].resolution_width = self.resolution.data
+            snapshot_json['device'].size = self.screen.data
+
+        if self.type.data in ['Smartphone', 'Tablet', 'Cellphone']:
+            snapshot_json['device'].imei = self.imei.data
+            snapshot_json['device'].meid = self.meid.data
+
+        snapshot = upload_form.build(snapshot_json)
+
+        move_json(self.tmp_snapshots, path_snapshot, g.user.email)
+        if self.type.data == 'Monitor':
+            snapshot.device.resolution = self.resolution.data
+            snapshot.device.screen = self.screen.data
+
+        db.session.commit()
+        return snapshot
 
 
 class NewActionForm(FlaskForm):

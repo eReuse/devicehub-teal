@@ -1,9 +1,6 @@
 $(document).ready(function() {
    $("#type").on("change", deviceInputs);
-   $("#screen").hide();
-   $("#resolution").hide();
-   $("#imei").hide();
-   $("#meid").hide();
+   deviceInputs();
 })
 
 function deviceInputs() {
