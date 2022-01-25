@@ -11,6 +11,8 @@ function deviceSelect() {
         $("#addingLotModal .btn-primary").hide();
         $("#removeLotModal .text-danger").show();
         $("#removeLotModal .btn-primary").hide();
+        $("#addingTagModal .text-danger").show();
+        $("#addingTagModal .btn-primary").hide();
     } else {
         $("#addingLotModal .text-danger").hide();
         $("#addingLotModal .btn-primary").removeClass('d-none');
@@ -18,6 +20,8 @@ function deviceSelect() {
         $("#removeLotModal .text-danger").hide();
         $("#removeLotModal .btn-primary").removeClass('d-none');
         $("#removeLotModal .btn-primary").show();
+        $("#addingTagModal .text-danger").hide();
+        $("#addingTagModal .btn-primary").removeClass('d-none');
     }
     $.map($(".devicesList"), function(x) {
         $(x).val(devices_id);

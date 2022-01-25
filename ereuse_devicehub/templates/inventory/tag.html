@@ -39,6 +39,13 @@
                       <input type="text" name="code" class="form-control" required value="{{ form.code.data|default('', true) }}">
                       <div class="invalid-feedback">Please enter a code of the tag.</div>
                     </div>
+                    {% if form.code.errors %}
+                    <p class="text-danger">
+                      {% for error in form.code.errors %}
+                        {{ error }}<br/>
+                      {% endfor %}
+                    </p>
+                    {% endif %}
                   </div>
 
                   <div class="col-12">

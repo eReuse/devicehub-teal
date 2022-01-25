@@ -185,7 +185,7 @@
               </button>
               <ul class="dropdown-menu" aria-labelledby="btnTags">
                 <li>
-                  <a href="javascript:openAdd()" class="dropdown-item">
+                  <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingTagModal">
                     <i class="bi bi-plus"></i>
                     Adding Tag
                   </a>
@@ -263,6 +263,7 @@
   </div>
 </section>
 {% include "inventory/addDeviceslot.html" %}
+{% include "inventory/addDevicestag.html" %}
 {% include "inventory/removeDeviceslot.html" %}
 {% include "inventory/removelot.html" %}
 {% include "inventory/actions.html" %}

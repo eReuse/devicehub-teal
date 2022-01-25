@@ -375,6 +375,18 @@ class NewDeviceForm(FlaskForm):
 class TagForm(FlaskForm):
     code = StringField(u'Code', [validators.length(min=1)])
 
+    def validate(self, extra_validators=None):
+        error = ["This value is being used"]
+        is_valid = super().validate(extra_validators)
+        if not is_valid:
+            return False
+        tag = Tag.query.filter(Tag.id==self.code.data).all()
+        if tag:
+            self.code.errors = error
+            return False
+
+        return True
+
     def save(self):
         self.instance = Tag(id=self.code.data)
         db.session.add(self.instance)
@@ -386,6 +398,43 @@ class TagForm(FlaskForm):
             self.instance.delete()
             db.session.commit()
         return self.instance
+
+class TagDeviceForm(FlaskForm):
+    tag = StringField(u'Tag')
+    device = IntegerField(u'Devices')
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+
+        self._tag = Tag.query.filter(Tag.id == self.tag.data).filter(
+            Tag.owner_id == g.user.id).one()
+
+        device_id = self.device.data
+        self._device = Device.query.filter(Device.id == device_id).filter(
+            Device.owner_id == g.user.id).all()
+
+        if not self._device:
+            error = ["You need select one device"]
+            self.tag.errors = error
+            return False
+
+        self._device = self._device[0]
+
+        return True
+
+    def save(self):
+        self._tag.device_id = self._device.id
+        db.session.add(self._tag)
+        db.session.commit()
+
+    def remove(self):
+        self._tag.device = None
+        db.session.add(self._tag)
+        db.session.commit()
 
 
 class NewActionForm(FlaskForm):

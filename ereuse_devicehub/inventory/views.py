@@ -7,7 +7,7 @@ from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm, UploadSnapshotForm, \
-                                             NewDeviceForm, TagForm
+                                             NewDeviceForm, TagForm, TagDeviceForm
 
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
 
@@ -22,6 +22,9 @@ class DeviceListView(View):
         filter_types = ['Desktop', 'Laptop', 'Server']
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
         lot = None
+        tags = Tag.query.filter(Tag.owner_id == current_user.id).filter(
+            Tag.device_id == None).order_by(Tag.created.desc())
+
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
             devices = [dev for dev in lot.devices if dev.type in filter_types]
@@ -35,7 +38,9 @@ class DeviceListView(View):
         context = {'devices': devices,
                    'lots': lots,
                    'form_lot_device': LotDeviceForm(),
-                   'lot': lot}
+                   'form_tag_device': TagDeviceForm(),
+                   'lot': lot,
+                   'tags': tags}
         return flask.render_template(self.template_name, **context)
 
 
@@ -184,6 +189,32 @@ class TagAddView(View):
         return flask.render_template(self.template_name, form=form)
 
 
+class TagDeviceAddView(View):
+    methods = ['POST']
+    decorators = [login_required]
+    template_name = 'inventory/device_list.html'
+
+    def dispatch_request(self):
+        form = TagDeviceForm()
+        if form.validate_on_submit():
+            form.save()
+
+            return flask.redirect(request.referrer)
+
+
+class TagDeviceDeleteView(View):
+    methods = ['POST']
+    decorators = [login_required]
+    template_name = 'inventory/device_list.html'
+
+    def dispatch_request(self):
+        form = TagDeviceForm()
+        if form.validate_on_submit():
+            form.remove()
+
+            return flask.redirect(request.referrer)
+
+
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/device/<string:id>/', view_func=DeviceDetailsView.as_view('device_details'))
 devices.add_url_rule('/lot/<string:lot_id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
@@ -196,3 +227,4 @@ devices.add_url_rule('/upload-snapshot/', view_func=UploadSnapshotView.as_view('
 devices.add_url_rule('/device/add/', view_func=CreateDeviceView.as_view('device_add'))
 devices.add_url_rule('/tag/', view_func=TagListView.as_view('taglist'))
 devices.add_url_rule('/tag/add/', view_func=TagAddView.as_view('tag_add'))
+devices.add_url_rule('/tag/devices/add/', view_func=TagDeviceAddView.as_view('tag_devices_add'))
