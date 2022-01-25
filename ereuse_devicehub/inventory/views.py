@@ -14,13 +14,14 @@ class DeviceListView(View):
     decorators = [login_required]
     template_name = 'inventory/device_list.html'
 
-    def dispatch_request(self, id=None):
+    def dispatch_request(self, lot_id=None):
         # TODO @cayop adding filter
+        # https://github.com/eReuse/devicehub-teal/blob/testing/ereuse_devicehub/resources/device/views.py#L56
         filter_types = ['Desktop', 'Laptop', 'Server']
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
         lot = None
-        if id:
-            lot = lots.filter(Lot.id == id).one()
+        if lot_id:
+            lot = lots.filter(Lot.id == lot_id).one()
             devices = [dev for dev in lot.devices if dev.type in filter_types]
             devices = sorted(devices, key=lambda x: x.updated, reverse=True)
         else:
@@ -87,7 +88,7 @@ class LotCreateView(View):
         form = LotForm()
         if form.validate_on_submit():
             form.save()
-            next_url = url_for('inventory.devices.lotdevicelist', id=form.id)
+            next_url = url_for('inventory.devices.lotdevicelist', lot_id=form.id)
             return flask.redirect(next_url)
 
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
@@ -104,7 +105,7 @@ class LotUpdateView(View):
         form = LotForm(id=id)
         if form.validate_on_submit():
             form.save()
-            next_url = url_for('inventory.devices.lotdevicelist', id=id)
+            next_url = url_for('inventory.devices.lotdevicelist', lot_id=id)
             return flask.redirect(next_url)
 
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
@@ -155,7 +156,7 @@ class CreateDeviceView(View):
 
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/device/<string:id>/', view_func=DeviceDetailsView.as_view('device_details'))
-devices.add_url_rule('/lot/<string:id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
+devices.add_url_rule('/lot/<string:lot_id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
 devices.add_url_rule('/lot/devices/add/', view_func=LotDeviceAddView.as_view('lot_devices_add'))
 devices.add_url_rule('/lot/devices/del/', view_func=LotDeviceDeleteView.as_view('lot_devices_del'))
 devices.add_url_rule('/lot/add/', view_func=LotCreateView.as_view('lot_add'))

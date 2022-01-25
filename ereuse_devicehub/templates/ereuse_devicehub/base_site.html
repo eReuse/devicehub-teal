@@ -105,7 +105,7 @@
         {% for lot in lots %}
         {% if lot.is_incominig %}
         <li>
-          <a href="{{ url_for('inventory.devices.lotdevicelist', id=lot.id) }}">
+          <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
             <i class="bi bi-circle"></i><span>{{ lot.name }}</span>
           </a>
         </li>
@@ -122,7 +122,7 @@
         {% for lot in lots %}
         {% if lot.is_outgoing %}
         <li>
-          <a href="{{ url_for('inventory.devices.lotdevicelist', id=lot.id) }}">
+          <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
             <i class="bi bi-circle"></i><span>{{ lot.name }}</span>
           </a>
         </li>
@@ -144,7 +144,7 @@
         {% for lot in lots %}
         {% if lot.is_temporary %}
         <li>
-          <a href="{{ url_for('inventory.devices.lotdevicelist', id=lot.id) }}">
+          <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
             <i class="bi bi-circle"></i><span>{{ lot.name }}</span>
           </a>
         </li>
