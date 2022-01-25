@@ -57,7 +57,13 @@
                       <td>{{ tag.id }}</td>
                       <td>{% if tag.provider %}Unnamed tag {% else %}Named tag{% endif %}</td>
                       <td>{{ tag.get_provider }}</td>
-                      <td>{% if tag.device %}{{ tag.device.type }} {{ tag.device.manufacturer }} {{ tag.device.model }}{% endif %}</td>
+                      <td>
+                        {% if tag.device %}
+                        <a href={{ url_for('inventory.devices.device_details', id=tag.device.devicehub_id)}}>
+                          {{ tag.device.type }} {{ tag.device.manufacturer }} {{ tag.device.model }}
+                        </a>
+                        {% endif %}
+                      </td>
                     </tr>
                     {% endfor %}
                   </tbody>
