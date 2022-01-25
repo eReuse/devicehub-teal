@@ -28,6 +28,16 @@ function deviceSelect() {
     });
 }
 
+function removeTag() {
+    var devices = $(".deviceSelect").filter(':checked');
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
+    console.log(devices_id);
+    if (devices_id.length > 0) {
+        var url = "/inventory/tag/devices/"+devices_id[0]+"/del/";
+        window.location.href = url;
+    }
+}
+
 function newAction(action) {
     console.log(action);
 }

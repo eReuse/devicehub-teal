@@ -203,16 +203,18 @@ class TagDeviceAddView(View):
 
 
 class TagDeviceDeleteView(View):
-    methods = ['POST']
+    methods = ['POST', 'GET']
     decorators = [login_required]
-    template_name = 'inventory/device_list.html'
+    template_name = 'inventory/removeDevicestag.html'
 
-    def dispatch_request(self):
-        form = TagDeviceForm()
+    def dispatch_request(self, id):
+        form = TagDeviceForm(delete=True, device=id)
         if form.validate_on_submit():
             form.remove()
 
             return flask.redirect(request.referrer)
+
+        return flask.render_template(self.template_name, form=form, referrer=request.referrer)
 
 
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
@@ -228,3 +230,4 @@ devices.add_url_rule('/device/add/', view_func=CreateDeviceView.as_view('device_
 devices.add_url_rule('/tag/', view_func=TagListView.as_view('taglist'))
 devices.add_url_rule('/tag/add/', view_func=TagAddView.as_view('tag_add'))
 devices.add_url_rule('/tag/devices/add/', view_func=TagDeviceAddView.as_view('tag_devices_add'))
+devices.add_url_rule('/tag/devices/<int:id>/del/', view_func=TagDeviceDeleteView.as_view('tag_devices_del'))

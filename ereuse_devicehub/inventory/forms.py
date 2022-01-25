@@ -1,6 +1,7 @@
 import json
 from flask_wtf import FlaskForm
-from wtforms import StringField, validators, MultipleFileField, FloatField, IntegerField
+from wtforms import StringField, validators, MultipleFileField, FloatField, IntegerField, \
+                    SelectField
 from flask import g, request
 from sqlalchemy.util import OrderedSet
 from json.decoder import JSONDecodeError
@@ -400,8 +401,22 @@ class TagForm(FlaskForm):
         return self.instance
 
 class TagDeviceForm(FlaskForm):
-    tag = StringField(u'Tag')
-    device = IntegerField(u'Devices')
+    tag = SelectField(u'Tag', choices=[])
+
+    def __init__(self, *args, **kwargs):
+        delete = kwargs.pop('delete', None)
+        device_id = kwargs.pop('device', None)
+
+        self._device = Device.query.filter(Device.id == device_id).filter(
+            Device.owner_id == g.user.id).one()
+        super().__init__(*args, **kwargs)
+
+        if delete:
+            tags = Tag.query.filter(Tag.owner_id==g.user.id).filter(Tag.device_id==device_id)
+        else:
+            tags = Tag.query.filter(Tag.owner_id==g.user.id).filter(Tag.device_id==None)
+
+        self.tag.choices = [(tag.id, tag.id) for tag in tags]
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
@@ -409,20 +424,8 @@ class TagDeviceForm(FlaskForm):
         if not is_valid:
             return False
 
-
         self._tag = Tag.query.filter(Tag.id == self.tag.data).filter(
             Tag.owner_id == g.user.id).one()
-
-        device_id = self.device.data
-        self._device = Device.query.filter(Device.id == device_id).filter(
-            Device.owner_id == g.user.id).all()
-
-        if not self._device:
-            error = ["You need select one device"]
-            self.tag.errors = error
-            return False
-
-        self._device = self._device[0]
 
         return True
 
