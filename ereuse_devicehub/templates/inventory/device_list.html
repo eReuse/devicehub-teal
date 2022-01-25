@@ -6,11 +6,11 @@
   <h1>Inventory</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.html">Inventory</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devices.devicelist')}}">Inventory</a></li>
       {% if not lot %}
       <li class="breadcrumb-item active">Unassgined</li>
       {% elif lot.is_temporary %}
-      <li class="breadcrumb-item active">Temporal Lot</li>
+      <li class="breadcrumb-item active">Temporary Lot</li>
       <li class="breadcrumb-item active">{{ lot.name }}</li>
       {% elif lot.is_incominig %}
       <li class="breadcrumb-item active">Incoming Lot</li>
@@ -45,11 +45,11 @@
 
             <div class="btn-group dropdown ml-1">
               {% if lot and lot.is_temporary and not lot.devices %}
-              <a href="{{ url_for('inventory.devices.lot_del', id=lot.id)}}" type="button" class="btn btn-primary">
+              <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
                 <i class="bi bi-trash"></i>
                 Remove Lot
                 <span class="caret"></span>
-              </a>
+              </button>
               {% else %}
               <button id="btnLots" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-folder2"></i>
@@ -162,7 +162,7 @@
                   <i class="bi bi-reply"></i>
                   Exports
               </button>
-              <ul class="dropdown-menu" aria-labelledby="btnLots"">
+              <ul class="dropdown-menu" aria-labelledby="btnExport">
                 <li>
                   <a href="javascript:openAdd()" class="dropdown-item">
                     <i class="bi bi-plus"></i>
@@ -183,7 +183,7 @@
                   <i class="bi bi-tag"></i>
                   Tags
               </button>
-              <ul class="dropdown-menu" aria-labelledby="btnLots"">
+              <ul class="dropdown-menu" aria-labelledby="btnTags">
                 <li>
                   <a href="javascript:openAdd()" class="dropdown-item">
                     <i class="bi bi-plus"></i>
@@ -194,6 +194,27 @@
                   <a href="javascript:openRemove()" class="dropdown-item">
                     <i class="bi bi-x"></i>
                     Remove Tag
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-tag"></i>
+                  New Device
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
+                <li>
+                  <a href="{{ url_for('inventory.devices.upload_snapshot') }}" class="dropdown-item">
+                    <i class="bi bi-plus"></i>
+                    Upload a new Snapshot
+                  </a>
+                </li>
+                <li>
+                  <a href="{{ url_for('inventory.devices.device_add') }}" class="dropdown-item">
+                    <i class="bi bi-plus"></i>
+                    Create a new Device
                   </a>
                 </li>
               </ul>
@@ -219,11 +240,11 @@
                     {% for dev in devices %}
                     <tr>
                       <td><input type="checkbox" class="deviceSelect" data="{{ dev.id }}"/></td>
-                      <td>{{ dev.type }} {{ dev.manufacturer }} {{ dev.model }}</td>
-                      <td>{{ dev.devicehub_id }}</td>
+                      <td><a href={{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}>{{ dev.type }} {{ dev.manufacturer }} {{ dev.model }}</a></td>
+                      <td><a href={{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}>{{ dev.devicehub_id }}</a></td>
                       <td>
-                        {% for t in dev.tags %}
-                            {{ t.code }}{% if not loop.last %},{% endif %}
+                        {% for t in dev.tags | sort(attribute="id") %}
+                            {{ t.id }}{% if not loop.last %},{% endif %}
                         {% endfor %}
                       </td>
                       <td>{% if dev.status %}{{ dev.status }}{% endif %}</td>
@@ -241,8 +262,9 @@
     </div>
   </div>
 </section>
-{% include "inventory/addinglot.html" %}
-{% include "inventory/removinglot.html" %}
+{% include "inventory/addDeviceslot.html" %}
+{% include "inventory/removeDeviceslot.html" %}
+{% include "inventory/removelot.html" %}
 {% include "inventory/actions.html" %}
 
 <!-- CDN -->
