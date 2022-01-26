@@ -437,6 +437,10 @@ class TagDeviceForm(FlaskForm):
         self._tag = Tag.query.filter(Tag.id == self.tag.data).filter(
             Tag.owner_id == g.user.id).one()
 
+        if not self.delete and self._tag.device_id:
+            self.tag.errors = [("This tag is actualy in use.")]
+            return False
+
         if self.device.data:
             try:
                 self.device.data = int(self.device.data.split(',')[-1])
