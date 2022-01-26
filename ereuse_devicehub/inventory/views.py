@@ -212,7 +212,8 @@ class TagDeviceDeleteView(View):
         if form.validate_on_submit():
             form.remove()
 
-            return flask.redirect(request.referrer)
+            next_url = url_for('inventory.devices.devicelist')
+            return flask.redirect(next_url)
 
         return flask.render_template(self.template_name, form=form, referrer=request.referrer)
 
