@@ -400,19 +400,20 @@ class TagForm(FlaskForm):
             db.session.commit()
         return self.instance
 
+
 class TagDeviceForm(FlaskForm):
     tag = SelectField(u'Tag', choices=[])
+    device = StringField(u'Device', [validators.Optional()])
 
     def __init__(self, *args, **kwargs):
-        delete = kwargs.pop('delete', None)
-        device_id = kwargs.pop('device', None)
+        self.delete = kwargs.pop('delete', None)
+        self.device_id = kwargs.pop('device', None)
 
-        self._device = Device.query.filter(Device.id == device_id).filter(
-            Device.owner_id == g.user.id).one()
+        # import pdb; pdb.set_trace()
         super().__init__(*args, **kwargs)
 
-        if delete:
-            tags = Tag.query.filter(Tag.owner_id==g.user.id).filter(Tag.device_id==device_id)
+        if self.delete:
+            tags = Tag.query.filter(Tag.owner_id==g.user.id).filter(Tag.device_id==self.device_id)
         else:
             tags = Tag.query.filter(Tag.owner_id==g.user.id).filter(Tag.device_id==None)
 
@@ -426,6 +427,17 @@ class TagDeviceForm(FlaskForm):
 
         self._tag = Tag.query.filter(Tag.id == self.tag.data).filter(
             Tag.owner_id == g.user.id).one()
+
+        if self.device.data:
+            try:
+                self.device.data = int(self.device.data.split(',')[-1])
+            except:
+                self.device.data = None
+
+        if self.device_id or self.device.data:
+            self.device_id = self.device_id or self.device.data
+            self._device = Device.query.filter(Device.id == self.device_id).filter(
+                Device.owner_id == g.user.id).one()
 
         return True
 
