@@ -205,6 +205,20 @@ class TagAddUnnamedView(View):
         return flask.render_template(self.template_name, form=form)
 
 
+class TagDetailsView(View):
+    decorators = [login_required]
+    template_name = 'inventory/tag_details.html'
+
+    def dispatch_request(self, id):
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        tag = Tag.query.filter(
+                     Tag.owner_id == current_user.id).filter(Tag.id == id).one()
+
+        context = {'tag': tag,
+                   'lots': lots}
+        return flask.render_template(self.template_name, **context)
+
+
 class TagDeviceAddView(View):
     methods = ['POST']
     decorators = [login_required]
@@ -246,6 +260,7 @@ devices.add_url_rule('/upload-snapshot/', view_func=UploadSnapshotView.as_view('
 devices.add_url_rule('/device/add/', view_func=CreateDeviceView.as_view('device_add'))
 devices.add_url_rule('/tag/', view_func=TagListView.as_view('taglist'))
 devices.add_url_rule('/tag/add/', view_func=TagAddView.as_view('tag_add'))
-devices.add_url_rule('/tag//unnamed/add/', view_func=TagAddUnnamedView.as_view('tag_unnamed_add'))
+devices.add_url_rule('/tag/unnamed/add/', view_func=TagAddUnnamedView.as_view('tag_unnamed_add'))
+devices.add_url_rule('/tag/<string:id>/', view_func=TagDetailsView.as_view('tag_details'))
 devices.add_url_rule('/tag/devices/add/', view_func=TagDeviceAddView.as_view('tag_devices_add'))
 devices.add_url_rule('/tag/devices/<int:id>/del/', view_func=TagDeviceDeleteView.as_view('tag_devices_del'))
