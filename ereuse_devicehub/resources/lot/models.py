@@ -105,10 +105,8 @@ class Lot(Thing):
         return False if self.trade else True
 
     @property
-    def is_incominig(self):
-        if self.trade and self.trade.user_to == current_user:
-            return True
-        return False
+    def is_incoming(self):
+        return bool(self.trade and self.trade.user_to == current_user)
 
     @property
     def is_outgoing(self):
