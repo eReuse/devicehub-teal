@@ -61,7 +61,8 @@ class LotDeviceAddView(View):
         if form.validate_on_submit():
             form.save()
 
-            return flask.redirect(request.referrer)
+            next_url = request.referrer or url_for('inventory.devices.devicelist')
+            return flask.redirect(next_url)
 
 
 class LotDeviceDeleteView(View):
@@ -74,8 +75,8 @@ class LotDeviceDeleteView(View):
         if form.validate_on_submit():
             form.remove()
 
-            # TODO @cayop It's possible this redirect not work in production
-            return flask.redirect(request.referrer)
+            next_url = request.referrer or url_for('inventory.devices.devicelist')
+            return flask.redirect(next_url)
 
 
 class LotCreateView(View):
