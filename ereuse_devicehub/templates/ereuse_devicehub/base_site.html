@@ -89,7 +89,7 @@
     </li><!-- End Dashboard Nav -->
 
     <li class="nav-item">
-      <a class="nav-link collapsed" href="#">
+      <a class="nav-link collapsed" href="{{ url_for('inventory.devices.devicelist') }}">
         <i class="bi-menu-button-wide"></i>
         <span>Unassigned devices</span>
       </a>
@@ -102,16 +102,15 @@
         <i class="bi bi-arrow-down-right"></i><span>Incoming Lots</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
       <ul id="incoming-lots-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        {% for lot in lots %}
+        {% if lot.is_incoming %}
         <li>
-          <a href="#TODO incoming lot #1 details">
-            <i class="bi bi-circle"></i><span>Incoming lot #1</span>
+          <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
+            <i class="bi bi-circle"></i><span>{{ lot.name }}</span>
           </a>
         </li>
-        <li>
-          <a href="#TODO incoming lot #2 details">
-            <i class="bi bi-circle"></i><span>Incoming lot #2</span>
-          </a>
-        </li>
+        {% endif %}
+        {% endfor %}
       </ul>
     </li><!-- End Incoming Lots Nav -->
 
@@ -120,39 +119,37 @@
         <i class="bi bi-arrow-up-right"></i><span>Outgoing Lots</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
       <ul id="outgoing-lots-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        {% for lot in lots %}
+        {% if lot.is_outgoing %}
         <li>
-          <a href="#TODO">
-            <i class="bi bi-circle"></i><span>Outgoing lot #1</span>
+          <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
+            <i class="bi bi-circle"></i><span>{{ lot.name }}</span>
           </a>
         </li>
-        <li>
-          <a href="#TODO">
-            <i class="bi bi-circle"></i><span>Outgoing lot #2</span>
-          </a>
-        </li>
+        {% endif %}
+        {% endfor %}
       </ul>
     </li><!-- End Outgoing Lots Nav -->
 
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#temporal-lots-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-layout-text-window-reverse"></i><span>Temporal Lots</span><i class="bi bi-chevron-down ms-auto"></i>
+        <i class="bi bi-layout-text-window-reverse"></i><span>Temporary Lots</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
       <ul id="temporal-lots-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
         <li>
-          <a href="#TODO">
-            <i class="bi bi-plus" style="font-size: larger;"></i><span>New temporal lot</span>
+          <a href="{{ url_for('inventory.devices.lot_add')}}">
+            <i class="bi bi-plus" style="font-size: larger;"></i><span>New temporary lot</span>
           </a>
         </li>
+        {% for lot in lots %}
+        {% if lot.is_temporary %}
         <li>
-          <a href="#TODO">
-            <i class="bi bi-circle"></i><span>Temporal lot #1</span>
+          <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
+            <i class="bi bi-circle"></i><span>{{ lot.name }}</span>
           </a>
         </li>
-        <li>
-          <a href="#TODO">
-            <i class="bi bi-circle"></i><span>Temporal lot #2</span>
-          </a>
-        </li>
+        {% endif %}
+        {% endfor %}
       </ul>
     </li><!-- End Temporal Lots Nav -->
 

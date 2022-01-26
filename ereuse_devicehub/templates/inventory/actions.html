@@ -1,0 +1,28 @@
+<div class="modal fade" id="actionModal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">New Action</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form action="{{ url_for('inventory.devices.lot_devices_add') }}" method="post">
+      {{ form_lot_device.csrf_token }}
+        <div class="modal-body">
+          Please write a name of a lot
+          <input class="devicesList" type="hidden" name="devices" />
+          <p class="text-danger">
+              You need select first some device before to do one action
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <input type="submit" class="btn btn-primary d-none" value="Create" />
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
