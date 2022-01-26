@@ -103,7 +103,7 @@
       </a>
       <ul id="incoming-lots-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
         {% for lot in lots %}
-        {% if lot.is_incominig %}
+        {% if lot.is_incoming %}
         <li>
           <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
             <i class="bi bi-circle"></i><span>{{ lot.name }}</span>

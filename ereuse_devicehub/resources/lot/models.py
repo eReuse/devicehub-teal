@@ -102,19 +102,15 @@ class Lot(Thing):
 
     @property
     def is_temporary(self):
-        return False if self.trade else True
+        return not bool(self.trade)
 
     @property
-    def is_incominig(self):
-        if self.trade and self.trade.user_to == current_user:
-            return True
-        return False
+    def is_incoming(self):
+        return bool(self.trade and self.trade.user_to == current_user)
 
     @property
     def is_outgoing(self):
-        if self.trade and self.trade.user_from == current_user:
-            return True
-        return False
+        return bool(self.trade and self.trade.user_from == current_user)
 
     @classmethod
     def descendantsq(cls, id):

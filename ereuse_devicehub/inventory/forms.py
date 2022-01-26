@@ -35,13 +35,10 @@ class LotDeviceForm(FlaskForm):
             Lot.owner_id == g.user.id).one()
 
         devices = set(self.devices.data.split(","))
-        self._devices = set(Device.query.filter(Device.id.in_(devices)).filter(
-            Device.owner_id == g.user.id).all())
+        self._devices = Device.query.filter(Device.id.in_(devices)).filter(
+            Device.owner_id == g.user.id).distinct().all()
 
-        if not self._devices:
-            return False
-
-        return True
+        return bool(self._devices)
 
     def save(self):
         self._lot.devices.update(self._devices)

@@ -67,9 +67,6 @@ class Devicehub(Teal):
         self.configure_extensions()
 
     def configure_extensions(self):
-        # configure & enable CSRF of Flask-WTF
-        CSRFProtect(self)
-
         # configure Flask-Login
         login_manager = LoginManager()
         login_manager.init_app(self)
