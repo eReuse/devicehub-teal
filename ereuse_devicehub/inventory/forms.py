@@ -401,6 +401,18 @@ class TagForm(FlaskForm):
         return self.instance
 
 
+class TagUnnamedForm(FlaskForm):
+    amount = IntegerField(u'amount')
+
+    def save(self):
+        num = self.amount.data
+        tags_id, _ = g.tag_provider.post('/', {}, query=[('num', num)])
+        tags = [Tag(id=tag_id, provider=g.inventory.tag_provider) for tag_id in tags_id]
+        db.session.add_all(tags)
+        db.session.commit()
+        return tags
+
+
 class TagDeviceForm(FlaskForm):
     tag = SelectField(u'Tag', choices=[])
     device = StringField(u'Device', [validators.Optional()])

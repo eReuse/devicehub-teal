@@ -7,7 +7,7 @@ from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm, UploadSnapshotForm, \
-                                             NewDeviceForm, TagForm, TagDeviceForm
+                                             NewDeviceForm, TagForm, TagUnnamedForm, TagDeviceForm
 
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
 
@@ -189,6 +189,21 @@ class TagAddView(View):
         return flask.render_template(self.template_name, form=form)
 
 
+class TagAddUnnamedView(View):
+    methods = ['GET', 'POST']
+    decorators = [login_required]
+    template_name = 'inventory/tagUnnamed.html'
+
+    def dispatch_request(self):
+        form = TagUnnamedForm()
+        if form.validate_on_submit():
+            form.save()
+            next_url = url_for('inventory.devices.taglist')
+            return flask.redirect(next_url)
+
+        return flask.render_template(self.template_name, form=form)
+
+
 class TagDeviceAddView(View):
     methods = ['POST']
     decorators = [login_required]
@@ -230,5 +245,6 @@ devices.add_url_rule('/upload-snapshot/', view_func=UploadSnapshotView.as_view('
 devices.add_url_rule('/device/add/', view_func=CreateDeviceView.as_view('device_add'))
 devices.add_url_rule('/tag/', view_func=TagListView.as_view('taglist'))
 devices.add_url_rule('/tag/add/', view_func=TagAddView.as_view('tag_add'))
+devices.add_url_rule('/tag//unnamed/add/', view_func=TagAddUnnamedView.as_view('tag_unnamed_add'))
 devices.add_url_rule('/tag/devices/add/', view_func=TagDeviceAddView.as_view('tag_devices_add'))
 devices.add_url_rule('/tag/devices/<int:id>/del/', view_func=TagDeviceDeleteView.as_view('tag_devices_del'))
