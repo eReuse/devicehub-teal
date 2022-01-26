@@ -54,7 +54,7 @@
                   <tbody>
                     {% for tag in tags %}
                     <tr>
-                      <td>{{ tag.id }}</td>
+                      <td><a href="{{ url_for('inventory.devices.tag_details', id=tag.id) }}">{{ tag.id }}</a></td>
                       <td>{% if tag.provider %}Unnamed tag {% else %}Named tag{% endif %}</td>
                       <td>{{ tag.get_provider }}</td>
                       <td>
