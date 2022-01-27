@@ -1,0 +1,111 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+
+<div class="pagetitle">
+  <h1>Inventory</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devices.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item active">Details tag</li>
+      <li class="breadcrumb-item active">{{ tag.id }}</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+
+    <div class="col-xl-12">
+
+      <div class="card">
+        <div class="card-body pt-3">
+          <h3>{{ tag.id }}</h3>
+          <div class="tab-content pt-2">
+
+            <div class="tab-pane fade show active" id="type">
+              <h5 class="card-title">Type Details</h5>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label ">Type</div>
+                <div class="col-lg-9 col-md-8">{% if tag.provider %}UnNamed Tag{% else %}Named{% endif %}</div>
+              </div>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Device</div>
+                <div class="col-lg-9 col-md-8">
+                    {% if tag.device %}
+                      <a href="{{url_for('inventory.devices.device_details', id=tag.device.devicehub_id)}}">
+                          {{ tag.device.manufacturer }} {{ tag.device.model }}
+                      </a>
+                    {% endif %}
+                </div>
+              </div>
+
+              <h5 class="card-title">Print details</h5>
+              <div class="row">
+                <div class="col-lg-3 col-md-4">
+                  <div style="width:256px; height:148px; border: solid 1px; padding: 10px;">
+                    <div id="print">
+                      <div class="row">
+                        <div class="col">
+                          <div id="qrcode"></div>
+                        </div>
+                        <div class="col">
+                          <div style="padding-top: 55px"><b>{{ tag.id }}</b></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-5 col-md-6 label">
+                  <label class="col-form-label col-sm-2">Size</label>
+                  <div class="col-sm-10">
+                    <div class="input-group mb-3">
+                      <select class="form-control" id="printerType">
+                        <option label="Brother small size (62 x 29)" value="brotherSmall" selected="selected">
+                          Brother small size (62 x 29)
+                        </option>
+                        <option label="Printer tag small (97 x 59)" value="smallTagPrinter">
+                          Printer tag small (97 x 59)
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <label class="col-form-label col-sm-2">Width</label>
+                  <div class="col-sm-10">
+                    <div class="input-group mb-3">
+                      <input class="form-control" name='width-tag' type="number" value="62" min="52" max="300" />
+                      <span class="input-group-text">mm</span>
+                    </div>
+                  </div>
+                  <label class="col-form-label col-sm-2">Height</label>
+                  <div class="col-sm-10">
+                    <div class="input-group mb-3">
+                      <input class="form-control" name='height-tag' type="number" value="29" min="28" max="200" />
+                      <span class="input-group-text">mm</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script src="{{ url_for('static', filename='js/qrcode.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pdf.min.js') }}"></script>
+<script type="text/javascript">
+    var qrcode = new QRCode(document.getElementById("qrcode"), {
+            text: "{{url_for('inventory.devices.device_details', id=tag.device.devicehub_id, _external=True)}}",
+            width: 128,
+            height: 128,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+     });
+</script>
+{% endblock main %}

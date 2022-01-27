@@ -240,11 +240,20 @@
                     {% for dev in devices %}
                     <tr>
                       <td><input type="checkbox" class="deviceSelect" data="{{ dev.id }}"/></td>
-                      <td><a href={{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}>{{ dev.type }} {{ dev.manufacturer }} {{ dev.model }}</a></td>
-                      <td><a href={{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}>{{ dev.devicehub_id }}</a></td>
+                      <td>
+                        <a href="{{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}">
+                          {{ dev.type }} {{ dev.manufacturer }} {{ dev.model }}
+                        </a>
+                      </td>
+                      <td>
+                        <a href="{{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}">
+                          {{ dev.devicehub_id }}
+                        </a>
+                      </td>
                       <td>
                         {% for t in dev.tags | sort(attribute="id") %}
-                            {{ t.id }}{% if not loop.last %},{% endif %}
+                         <a href="{{ url_for('inventory.devices.tag_details', id=t.id)}}">{{ t.id }}</a>
+                         {% if not loop.last %},{% endif %}
                         {% endfor %}
                       </td>
                       <td>{% if dev.status %}{{ dev.status }}{% endif %}</td>
