@@ -112,6 +112,6 @@
 <script src="{{ url_for('static', filename='js/pdf.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/print.pdf.js') }}"></script>
 <script type="text/javascript">
-    qr_draw("{{url_for('inventory.devices.device_details', id=tag.device.devicehub_id, _external=True)}}")
+    qr_draw("{{url_for('inventory.devices.device_details', id=tag.device.devicehub_id, _external=True)}}");
 </script>
 {% endblock main %}

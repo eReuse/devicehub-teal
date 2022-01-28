@@ -3,11 +3,10 @@ $(document).ready(function() {
     $("#printerType").on("change", change_size);
     change_size();
     load_size();
-    // printpdf();
 })
 
 function qr_draw(url) {
-    var qrcode = new QRCode(document.getElementById("qrcode"), {
+    var qrcode = new QRCode($("#qrcode")[0], {
         text: url,
         width: 128,
         height: 128,
@@ -52,7 +51,10 @@ function change_size() {
 }
 
 function printpdf() {
-    var height = $("#height-tag").val();
-    var width = $("#width-tag").val();
-    console.log(height);
+    var height = parseInt($("#height-tag").val());
+    var width = parseInt($("#width-tag").val());
+    var doc = new jsPDF('l', 'mm', [width, height]);
+    //var doc = new jsPDF('l', 'mm', [62, 29]);
+    doc.addHTML($("#print"), 2, 2);
+    doc.save('Tags.pdf');
 }
