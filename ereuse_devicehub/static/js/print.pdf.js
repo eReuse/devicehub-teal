@@ -12,7 +12,7 @@ function qr_draw(url) {
         height: 128,
         colorDark : "#000000",
         colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.H
+        correctLevel : QRCode.CorrectLevel.Q
     });
 }
 
@@ -51,10 +51,19 @@ function change_size() {
 }
 
 function printpdf() {
+    var border = 2;
     var height = parseInt($("#height-tag").val());
     var width = parseInt($("#width-tag").val());
-    var doc = new jsPDF('l', 'mm', [width, height]);
-    //var doc = new jsPDF('l', 'mm', [62, 29]);
-    doc.addHTML($("#print"), 2, 2);
-    doc.save('Tags.pdf');
+    var tag = $("#tag").text();
+    var pdf = new jsPDF('l', 'mm', [width, height]);
+    var imgData = $('#qrcode img').attr("src");
+    img_side = Math.min(height, width) - 2*border;
+    max_tag_side = (Math.max(height, width)/2) + border;
+    if (max_tag_side < img_side) {
+        max_tag_side = img_side+ 2*border;
+    };
+    min_tag_side = (Math.min(height, width)/2) + border;
+    pdf.addImage(imgData, 'PNG', border, border, img_side, img_side);
+    pdf.text(tag, max_tag_side, min_tag_side);
+    pdf.save('Tags.pdf');
 }

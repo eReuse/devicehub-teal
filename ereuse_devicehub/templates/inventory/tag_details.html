@@ -52,7 +52,7 @@
                           <div id="qrcode"></div>
                         </div>
                         <div class="col">
-                          <div style="padding-top: 55px"><b>{{ tag.id }}</b></div>
+                          <div style="padding-top: 55px"><b id="tag">{{ tag.id }}</b></div>
                         </div>
                       </div>
                     </div>
@@ -109,7 +109,7 @@
 </section>
 <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/qrcode.js') }}"></script>
-<script src="{{ url_for('static', filename='js/pdf.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jspdf.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/print.pdf.js') }}"></script>
 <script type="text/javascript">
     qr_draw("{{url_for('inventory.devices.device_details', id=tag.device.devicehub_id, _external=True)}}");
