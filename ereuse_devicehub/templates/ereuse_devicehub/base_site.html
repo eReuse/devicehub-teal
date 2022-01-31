@@ -103,9 +103,9 @@
       </a>
       <ul id="incoming-lots-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
         {% for lot in lots %}
-        {% if lot.is_incominig %}
+        {% if lot.is_incoming %}
         <li>
-          <a href="{{ url_for('inventory.devices.lotdevicelist', id=lot.id) }}">
+          <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
             <i class="bi bi-circle"></i><span>{{ lot.name }}</span>
           </a>
         </li>
@@ -122,7 +122,7 @@
         {% for lot in lots %}
         {% if lot.is_outgoing %}
         <li>
-          <a href="{{ url_for('inventory.devices.lotdevicelist', id=lot.id) }}">
+          <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
             <i class="bi bi-circle"></i><span>{{ lot.name }}</span>
           </a>
         </li>
@@ -133,18 +133,18 @@
 
     <li class="nav-item">
       <a class="nav-link collapsed" data-bs-target="#temporal-lots-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-layout-text-window-reverse"></i><span>Temporal Lots</span><i class="bi bi-chevron-down ms-auto"></i>
+        <i class="bi bi-layout-text-window-reverse"></i><span>Temporary Lots</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
       <ul id="temporal-lots-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
         <li>
           <a href="{{ url_for('inventory.devices.lot_add')}}">
-            <i class="bi bi-plus" style="font-size: larger;"></i><span>New temporal lot</span>
+            <i class="bi bi-plus" style="font-size: larger;"></i><span>New temporary lot</span>
           </a>
         </li>
         {% for lot in lots %}
         {% if lot.is_temporary %}
         <li>
-          <a href="{{ url_for('inventory.devices.lotdevicelist', id=lot.id) }}">
+          <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
             <i class="bi bi-circle"></i><span>{{ lot.name }}</span>
           </a>
         </li>

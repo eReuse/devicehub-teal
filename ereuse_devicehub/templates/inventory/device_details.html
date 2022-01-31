@@ -1,0 +1,150 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+
+<div class="pagetitle">
+  <h1>Inventory</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devices.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item active">Details device</li>
+      <li class="breadcrumb-item active">{{ device.devicehub_id }}</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+
+    <div class="col-xl-12">
+
+      <div class="card">
+        <div class="card-body pt-3">
+          <h3>{{ device.devicehub_id }}</h3>
+          <!-- Bordered Tabs -->
+          <ul class="nav nav-tabs nav-tabs-bordered">
+
+            <li class="nav-item">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#type">Type</button>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#status">Status</button>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#rate">Rate</button>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#traceability">Traceability log</button>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#components">Components</button>
+            </li>
+
+          </ul>
+          <div class="tab-content pt-2">
+
+            <div class="tab-pane fade show active" id="type">
+              <h5 class="card-title">Type Details</h5>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label ">Type</div>
+                <div class="col-lg-9 col-md-8">{{ device.type }}</div>
+              </div>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Manufacturer</div>
+                <div class="col-lg-9 col-md-8">{{ device.manufacturer }}</div>
+              </div>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Model</div>
+                <div class="col-lg-9 col-md-8">{{ device.model }}</div>
+              </div>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Serial Number</div>
+                <div class="col-lg-9 col-md-8">{{ device.serial_number }}</div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade profile-overview" id="status">
+              <h5 class="card-title">Status Details</h5>
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Physical States</div>
+                <div class="col-lg-9 col-md-8">{{ device.physical or '' }}</div>
+              </div>
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Trading States</div>
+                <div class="col-lg-9 col-md-8">{{ device.last_action_trading  or ''}}</div>
+              </div>
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Usage States</div>
+                <div class="col-lg-9 col-md-8">{{ device.usage or '' }}</div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade profile-overview" id="rate">
+              <h5 class="card-title">Rate Details</h5>
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Rating</div>
+                <div class="col-lg-9 col-md-8">{{ device.rate or '' }}</div>
+              </div>
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Processor</div>
+                <div class="col-lg-9 col-md-8">{{ device.rate.processor or '' }}</div>
+              </div>
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">RAM</div>
+                <div class="col-lg-9 col-md-8">{{ device.rate.ram or '' }}</div>
+              </div>
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Data storage</div>
+                <div class="col-lg-9 col-md-8">{{ device.rate.data_storage or '' }}</div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade profile-overview" id="traceability">
+              <h5 class="card-title">Traceability log Details</h5>
+              <div class="list-group col-6">
+                {% for action in device.actions %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  {{ action.type }} {{ action.severity }}
+                  <small class="text-muted">{{ action.created.strftime('%H:%M %d-%m-%Y') }}</small>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="tab-pane fade profile-overview" id="components">
+              <h5 class="card-title">Components Details</h5>
+              <div class="list-group col-6">
+                {% for component in device.components|sort(attribute='type') %}
+                <div class="list-group-item">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ component.type }}</h5>
+                    <small class="text-muted">{{ component.created.strftime('%H:%M %d-%m-%Y') }}</small>
+                  </div>
+                  <p class="mb-1">
+                    {{ component.manufacturer }}<br />
+                    {{ component.model }}<br />
+                  </p>
+                  <small class="text-muted">
+                    {% if component.type in ['RamModule', 'HardDrive', 'SolidStateDrive'] %}
+                      {{ component.size }}MB
+                    {% endif %}
+                  </small>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock main %}
