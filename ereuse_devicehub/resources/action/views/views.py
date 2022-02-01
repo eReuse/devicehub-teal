@@ -256,6 +256,7 @@ class ActionView(View):
             return erased.post()
 
         a = resource_def.schema.load(json)
+        import pdb; pdb.set_trace()
         Model = db.Model._decl_class_registry.data[json['type']]()
         action = Model(**a)
         db.session.add(action)

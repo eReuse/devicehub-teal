@@ -1,6 +1,12 @@
 $(document).ready(function() {
-   $(".deviceSelect").on("change", deviceSelect);
-  // $('#selectLot').selectpicker();
+    var show_action_form = $("#allocateModal").data('show-action-form');
+    if (show_action_form != "None") {
+        $("#allocateModal .btn-primary").show();
+        newAllocate(show_action_form);
+    } else {
+        $(".deviceSelect").on("change", deviceSelect);
+    }
+    // $('#selectLot').selectpicker();
 })
 
 function deviceSelect() {
@@ -17,19 +23,15 @@ function deviceSelect() {
         $("#actionModal .btn-primary").hide();
     } else {
         $("#addingLotModal .text-danger").hide();
-        $("#addingLotModal .btn-primary").removeClass('d-none');
         $("#addingLotModal .btn-primary").show();
 
         $("#removeLotModal .text-danger").hide();
-        $("#removeLotModal .btn-primary").removeClass('d-none');
         $("#removeLotModal .btn-primary").show();
 
         $("#actionModal .text-danger").hide();
-        $("#actionModal .btn-primary").removeClass('d-none');
         $("#actionModal .btn-primary").show();
 
         $("#allocateModal .text-danger").hide();
-        $("#allocateModal .btn-primary").removeClass('d-none');
         $("#allocateModal .btn-primary").show();
     }
     $.map($(".devicesList"), function(x) {

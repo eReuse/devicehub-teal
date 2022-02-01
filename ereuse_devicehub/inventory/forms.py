@@ -389,7 +389,7 @@ class NewActionForm(FlaskForm):
                 Lot.owner_id == g.user.id).one()
 
         devices = set(self.devices.data.split(","))
-        self._devices = set(Device.query.filter(Device.id.in_(devices)).filter(
+        self._devices = OrderedSet(Device.query.filter(Device.id.in_(devices)).filter(
             Device.owner_id == g.user.id).all())
 
         if not self._devices:
@@ -397,26 +397,34 @@ class NewActionForm(FlaskForm):
 
         return True
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.instance = Action()
-        self.populate_obj(self.instance)
-
     def save(self):
-        self.instance.devices = self._devices
-        self.instance.severity = Severity[self.severity.data]
+        Model = db.Model._decl_class_registry.data[self.type.data]()
+        self.instance = Model()
+        self.devices.data = self._devices
+        self.severity.data = Severity[self.severity.data]
+
+        self.populate_obj(self.instance)
         db.session.add(self.instance)
         db.session.commit()
         return self.instance
 
 
 class AllocateForm(NewActionForm):
-    def __init__(self, *args, **kwargs):
-        # import pdb; pdb.set_trace()
-        super().__init__(*args, **kwargs)
-
-    start_time = DateField(u'Start time', validators=(validators.Optional(),))
-    end_time = DateField(u'End time', validators=(validators.Optional(),))
+    start_time = DateField(u'Start time')
+    end_time = DateField(u'End time')
     final_user_code = StringField(u'Final user code', [validators.length(max=50)])
     transaction = StringField(u'Transaction', [validators.length(max=50)])
     end_users = IntegerField(u'End users')
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        start_time = self.start_time.data
+        end_time = self.end_time.data
+        if start_time and end_time and end_time < start_time:
+            error = ['The action cannot finish before it starts.']
+            self.start_time.errors = error
+            self.end_time.errors = error
+            is_valid = False
+
+        return is_valid

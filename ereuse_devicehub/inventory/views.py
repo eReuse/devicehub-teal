@@ -12,11 +12,11 @@ from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm, UploadSnaps
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
 
 
-class DeviceListView(View):
+class DeviceListMix(View):
     decorators = [login_required]
     template_name = 'inventory/device_list.html'
 
-    def dispatch_request(self, lot_id=None):
+    def get_context(self, lot_id):
         # TODO @cayop adding filter
         # https://github.com/eReuse/devicehub-teal/blob/testing/ereuse_devicehub/resources/device/views.py#L56
         filter_types = ['Desktop', 'Laptop', 'Server']
@@ -34,16 +34,22 @@ class DeviceListView(View):
                     Device.updated.desc())
             form_new_action = NewActionForm()
 
-        allocate = AllocateForm(start_time=datetime.datetime.now(),
-                                end_time=datetime.datetime.now()+datetime.timedelta(1))
+        form_new_allocate = AllocateForm()
 
-        context = {'devices': devices,
+        self.context = {'devices': devices,
                    'lots': lots,
                    'form_lot_device': LotDeviceForm(),
                    'form_new_action': form_new_action,
-                   'form_allocate': allocate,
+                   'form_new_allocate': form_new_allocate,
                    'lot': lot}
-        return flask.render_template(self.template_name, **context)
+        return self.context
+
+
+class DeviceListView(DeviceListMix):
+
+    def dispatch_request(self, lot_id=None):
+        self.get_context(lot_id)
+        return flask.render_template(self.template_name, **self.context)
 
 
 class DeviceDetailsView(View):
@@ -167,20 +173,38 @@ class CreateDeviceView(View):
 class NewActionView(View):
     methods = ['POST']
     decorators = [login_required]
+    _form = NewActionForm
 
     def dispatch_request(self):
-        form = NewActionForm()
-        # import pdb; pdb.set_trace()
-        next_url = url_for('inventory.devices.devicelist')
-        if form.validate_on_submit():
-            # form.save()
-            if form.lot.data:
-                next_url = url_for('inventory.devices.lotdevicelist', id=form.lot.data)
+        self.form = self._form()
+        if self.form.validate_on_submit():
+            self.form.save()
+            if self.form.lot.data:
+                next_url = url_for('inventory.devices.lotdevicelist', id=self.form.lot.data)
 
+            next_url = url_for('inventory.devices.devicelist')
             return flask.redirect(next_url)
 
 
+class NewAllocateView(NewActionView, DeviceListMix):
+    methods = ['POST']
+    decorators = [login_required]
+    template_name = 'inventory/device_list.html'
+    _form = AllocateForm
+
+    def dispatch_request(self):
+        dispatch = super().dispatch_request()
+        if self.form.validate_on_submit():
+            return dispatch
+
+        lot_id = self.form.lot.data
+        self.get_context(lot_id)
+        self.context['form_new_allocate'] = self.form
+        return flask.render_template(self.template_name, **self.context)
+
+
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
+devices.add_url_rule('/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add'))
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/device/<string:id>/', view_func=DeviceDetailsView.as_view('device_details'))
 devices.add_url_rule('/lot/<string:lot_id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))

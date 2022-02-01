@@ -215,13 +215,13 @@ class Action(Thing):
 
     @validates('end_time')
     def validate_end_time(self, _, end_time: datetime):
-        if self.start_time and end_time <= self.start_time:
+        if self.start_time and end_time < self.start_time:
             raise ValidationError('The action cannot finish before it starts.')
         return end_time
 
     @validates('start_time')
     def validate_start_time(self, _, start_time: datetime):
-        if self.end_time and start_time >= self.end_time:
+        if self.end_time and start_time > self.end_time:
             raise ValidationError('The action cannot start after it finished.')
         return start_time
 

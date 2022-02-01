@@ -1,4 +1,5 @@
-<div class="modal fade" id="allocateModal" tabindex="-1" style="display: none;" aria-hidden="true">
+<div class="modal fade" id="allocateModal" tabindex="-1" style="display: none;" aria-hidden="true"
+    data-show-action-form="{{ form_new_allocate.type.data }}">
   <div class="modal-dialog modal-fullscreen">
     <div class="modal-content">
 
@@ -7,26 +8,26 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form action="{{ url_for('inventory.devices.action_add') }}" method="post">
+      <form action="{{ url_for('inventory.devices.allocate_add') }}" method="post">
       {{ form_new_allocate.csrf_token }}
         <div class="modal-body">
-          <p class="text-danger">
+          <p class="text-danger" id="pol" style="display: none;">
               You need select first some device before to do one action
           </p>
-          {% for field in form_new_action %}
-          {% if field != form_new_action.csrf_token %}
-          {% if field == form_new_action.devices  %}
+          {% for field in form_new_allocate %}
+          {% if field != form_new_allocate.csrf_token %}
+          {% if field == form_new_allocate.devices  %}
           {{ field(class_="devicesList") }}
-          {% elif field == form_new_action.lot %}
+          {% elif field == form_new_allocate.lot %}
             {{ field(class_="form-control") }}
-          {% elif field == form_new_action.type %}
+          {% elif field == form_new_allocate.type %}
             {{ field(class_="form-control") }}
           {% else %}
           <div class="col-12">
               {{ field.label(class_="form-label") }}
               {{ field(class_="form-control") }}
               {% if field.errors %}
-              <p class="text-danger">
+              <p class="text-danger {% if field.errors %}field-error{% endif %}">
                 {% for error in field.errors %}
                   {{ error }}<br/>
                 {% endfor %}
@@ -41,7 +42,7 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <input type="submit" class="btn btn-primary d-none" value="Create" />
+          <input type="submit" class="btn btn-primary" style="display: none;" value="Create" />
         </div>
       </form>
 
