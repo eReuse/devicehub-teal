@@ -6,9 +6,8 @@
   <h1>Inventory</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devices.devicelist')}}">Inventory</a></li>
-      <li class="breadcrumb-item active">Details tag</li>
-      <li class="breadcrumb-item active">{{ tag.id }}</li>
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devices.taglist')}}">Tag management</a></li>
+      <li class="breadcrumb-item active">Tag details {{ tag.id }}</li>
     </ol>
   </nav>
 </div><!-- End Page Title -->
