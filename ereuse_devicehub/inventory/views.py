@@ -27,14 +27,15 @@ class DeviceListMix(View):
             devices = [dev for dev in lot.devices if dev.type in filter_types]
             devices = sorted(devices, key=lambda x: x.updated, reverse=True)
             form_new_action = NewActionForm(lot=lot.id)
+            form_new_allocate = AllocateForm(lot=lot.id)
         else:
             devices = Device.query.filter(
                 Device.owner_id == current_user.id).filter(
                 Device.type.in_(filter_types)).filter(Device.lots == None).order_by(
                     Device.updated.desc())
             form_new_action = NewActionForm()
+            form_new_allocate = AllocateForm()
 
-        form_new_allocate = AllocateForm()
 
         self.context = {'devices': devices,
                    'lots': lots,
@@ -179,10 +180,7 @@ class NewActionView(View):
         self.form = self._form()
         if self.form.validate_on_submit():
             self.form.save()
-            if self.form.lot.data:
-                next_url = url_for('inventory.devices.lotdevicelist', id=self.form.lot.data)
-
-            next_url = url_for('inventory.devices.devicelist')
+            next_url = request.referrer or url_for('inventory.devices.devicelist')
             return flask.redirect(next_url)
 
 
@@ -197,9 +195,9 @@ class NewAllocateView(NewActionView, DeviceListMix):
         if self.form.validate_on_submit():
             return dispatch
 
-        lot_id = self.form.lot.data
-        self.get_context(lot_id)
-        self.context['form_new_allocate'] = self.form
+        # lot_id = self.form.lot.data
+        # FIXME
+        self.get_context(None)
         return flask.render_template(self.template_name, **self.context)
 
 

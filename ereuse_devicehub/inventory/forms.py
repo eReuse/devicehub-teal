@@ -375,7 +375,6 @@ class NewActionForm(FlaskForm):
     date = DateField(u'Date', validators=(validators.Optional(),))
     severity = SelectField(u'Severity', choices=[(v.name, v.name) for v in Severity])
     description = TextAreaField(u'Description')
-    lot = HiddenField()
     type = HiddenField()
 
     def validate(self, extra_validators=None):
@@ -383,10 +382,6 @@ class NewActionForm(FlaskForm):
 
         if not is_valid:
             return False
-
-        if self.lot.data:
-            self._lot = Lot.query.filter(Lot.id == self.lot.data).filter(
-                Lot.owner_id == g.user.id).one()
 
         devices = set(self.devices.data.split(","))
         self._devices = OrderedSet(Device.query.filter(Device.id.in_(devices)).filter(
@@ -400,10 +395,16 @@ class NewActionForm(FlaskForm):
     def save(self):
         Model = db.Model._decl_class_registry.data[self.type.data]()
         self.instance = Model()
+        devices = self.devices.data
+        severity = self.severity.data
         self.devices.data = self._devices
         self.severity.data = Severity[self.severity.data]
 
         self.populate_obj(self.instance)
+
+        self.devices.data = devices
+        self.severity.data = severity
+
         db.session.add(self.instance)
         db.session.commit()
         return self.instance
@@ -425,6 +426,10 @@ class AllocateForm(NewActionForm):
             error = ['The action cannot finish before it starts.']
             self.start_time.errors = error
             self.end_time.errors = error
+            is_valid = False
+
+        if not self.end_users.data:
+            self.end_users.errors = ["You need to specify a number of users"]
             is_valid = False
 
         return is_valid
