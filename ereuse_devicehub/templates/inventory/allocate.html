@@ -18,8 +18,6 @@
           {% if field != form_new_allocate.csrf_token %}
           {% if field == form_new_allocate.devices  %}
           {{ field(class_="devicesList") }}
-          {% elif field == form_new_allocate.lot %}
-            {{ field(class_="form-control") }}
           {% elif field == form_new_allocate.type %}
             {{ field(class_="form-control") }}
           {% else %}

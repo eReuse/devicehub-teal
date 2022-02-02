@@ -17,8 +17,6 @@
           {% if field != form_new_action.csrf_token %}
           {% if field == form_new_action.devices  %}
           {{ field(class_="devicesList") }}
-          {% elif field == form_new_action.lot %}
-            {{ field(class_="form-control") }}
           {% elif field == form_new_action.type %}
             {{ field(class_="form-control") }}
           {% else %}
