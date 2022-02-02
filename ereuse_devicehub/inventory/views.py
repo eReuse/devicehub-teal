@@ -41,15 +41,17 @@ class DeviceListMix(View):
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
 
+        self.context = {
+            'devices': devices,
+            'lots': lots,
+            'form_lot_device': LotDeviceForm(),
+            'form_tag_device': TagDeviceForm(),
+            'form_new_action': form_new_action,
+            'form_new_allocate': form_new_allocate,
+            'lot': lot,
+            'tags': tags
+        }
 
-        self.context = {'devices': devices,
-                   'lots': lots,
-                   'form_lot_device': LotDeviceForm(),
-                   'form_tag_device': TagDeviceForm(),
-                   'form_new_action': form_new_action,
-                   'form_new_allocate': form_new_allocate,
-                   'lot': lot,
-                   'tags': tags}
         return self.context
 
 
@@ -291,8 +293,6 @@ class NewActionView(View):
 
 class NewAllocateView(NewActionView, DeviceListMix):
     methods = ['POST']
-    decorators = [login_required]
-    template_name = 'inventory/device_list.html'
     _form = AllocateForm
 
     def dispatch_request(self):
