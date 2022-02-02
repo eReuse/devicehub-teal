@@ -297,11 +297,12 @@ class NewAllocateView(NewActionView, DeviceListMix):
 
     def dispatch_request(self):
         dispatch = super().dispatch_request()
-        if self.form.validate_on_submit():
+        if dispatch.status_code == 302:
             return dispatch
 
         # lot_id = self.form.lot.data
         # FIXME
+        # import pdb; pdb.set_trace()
         self.get_context(None)
         return flask.render_template(self.template_name, **self.context)
 

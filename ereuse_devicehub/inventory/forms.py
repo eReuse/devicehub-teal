@@ -418,7 +418,6 @@ class TagDeviceForm(FlaskForm):
         self.delete = kwargs.pop('delete', None)
         self.device_id = kwargs.pop('device', None)
 
-        # import pdb; pdb.set_trace()
         super().__init__(*args, **kwargs)
 
         if self.delete:
@@ -479,12 +478,13 @@ class NewActionForm(FlaskForm):
         if not is_valid:
             return False
 
-        devices = set(self.devices.data.split(","))
-        self._devices = OrderedSet(Device.query.filter(Device.id.in_(devices)).filter(
-            Device.owner_id == g.user.id).all())
+        if self.devices.data:
+            devices = set(self.devices.data.split(","))
+            self._devices = OrderedSet(Device.query.filter(Device.id.in_(devices)).filter(
+                Device.owner_id == g.user.id).all())
 
-        if not self._devices:
-            return False
+            if not self._devices:
+                return False
 
         return True
 
@@ -497,12 +497,12 @@ class NewActionForm(FlaskForm):
         self.severity.data = Severity[self.severity.data]
 
         self.populate_obj(self.instance)
+        db.session.add(self.instance)
+        db.session.commit()
 
         self.devices.data = devices
         self.severity.data = severity
 
-        db.session.add(self.instance)
-        db.session.commit()
         return self.instance
 
 
