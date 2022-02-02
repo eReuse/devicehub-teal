@@ -165,6 +165,10 @@ class Device(Thing):
         self.set_hid()
 
     @property
+    def reverse_actions(self) -> list:
+        return reversed(self.actions)
+
+    @property
     def actions(self) -> list:
         """All the actions where the device participated, including:
 
