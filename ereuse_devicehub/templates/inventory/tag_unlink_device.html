@@ -2,13 +2,10 @@
 {% block main %}
 
 <div class="pagetitle">
-  <h1>{{ title }}</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.html">Inventory</a></li>
-      <li class="breadcrumb-item">Tag</li>
-      <li class="breadcrumb-item">Device</li>
-      <li class="breadcrumb-item">Remove</li>
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devices.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item">Unlink Tag from Device</li>
     </ol>
   </nav>
 </div><!-- End Page Title -->
@@ -21,7 +18,7 @@
               <div class="card-body">
 
                 <div class="pt-4 pb-2">
-                  <h5 class="card-title text-center pb-0 fs-4">Unlink tag of device</h5>
+                  <h1 class="card-title text-center pb-0 fs-4">Unlink Tag from Device</h1>
                   <p class="text-center small">Please enter a code for the tag.</p>
                   {% if form.form_errors %}
                   <p class="text-danger">

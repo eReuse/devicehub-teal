@@ -47,15 +47,18 @@ class DeviceListView(View):
 
 class DeviceDetailView(View):
     decorators = [login_required]
-    template_name = 'inventory/device_details.html'
+    template_name = 'inventory/device_detail.html'
 
     def dispatch_request(self, id):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
         device = Device.query.filter(
             Device.owner_id == current_user.id).filter(Device.devicehub_id == id).one()
 
-        context = {'device': device,
-                   'lots': lots}
+        context = {
+            'device': device,
+            'lots': lots,
+            'page_title': 'Device {}'.format(device.devicehub_id),
+        }
         return flask.render_template(self.template_name, **context)
 
 
@@ -139,20 +142,22 @@ class UploadSnapshotView(View):
     template_name = 'inventory/upload_snapshot.html'
 
     def dispatch_request(self):
+        context = {'page_title': 'Upload Snapshot'}
         lots = Lot.query.filter(Lot.owner_id == current_user.id).all()
         form = UploadSnapshotForm()
         if form.validate_on_submit():
             form.save()
 
-        return flask.render_template(self.template_name, form=form, lots=lots)
+        return flask.render_template(self.template_name, form=form, lots=lots, **context)
 
 
-class CreateDeviceView(View):
+class DeviceCreateView(View):
     methods = ['GET', 'POST']
     decorators = [login_required]
-    template_name = 'inventory/create_device.html'
+    template_name = 'inventory/device_create.html'
 
     def dispatch_request(self):
+        context = {'page_title': 'New Device'}
         lots = Lot.query.filter(Lot.owner_id == current_user.id).all()
         form = NewDeviceForm()
         if form.validate_on_submit():
@@ -160,7 +165,7 @@ class CreateDeviceView(View):
             next_url = url_for('inventory.devices.devicelist')
             return flask.redirect(next_url)
 
-        return flask.render_template(self.template_name, form=form, lots=lots)
+        return flask.render_template(self.template_name, form=form, lots=lots, **context)
 
 
 class TagListView(View):
@@ -227,10 +232,10 @@ class TagDetailView(View):
         return flask.render_template(self.template_name, **context)
 
 
-class TagDeviceAddView(View):
+class TagLinkDeviceView(View):
     methods = ['POST']
     decorators = [login_required]
-    template_name = 'inventory/device_list.html'
+    # template_name = 'inventory/device_list.html'
 
     def dispatch_request(self):
         form = TagDeviceForm()
@@ -240,10 +245,10 @@ class TagDeviceAddView(View):
             return flask.redirect(request.referrer)
 
 
-class TagDeviceDeleteView(View):
+class TagUnlinkDeviceView(View):
     methods = ['POST', 'GET']
     decorators = [login_required]
-    template_name = 'inventory/removeDevicestag.html'
+    template_name = 'inventory/tag_unlink_device.html'
 
     def dispatch_request(self, id):
         form = TagDeviceForm(delete=True, device=id)
@@ -265,10 +270,10 @@ devices.add_url_rule('/lot/add/', view_func=LotCreateView.as_view('lot_add'))
 devices.add_url_rule('/lot/<string:id>/del/', view_func=LotDeleteView.as_view('lot_del'))
 devices.add_url_rule('/lot/<string:id>/', view_func=LotUpdateView.as_view('lot_edit'))
 devices.add_url_rule('/upload-snapshot/', view_func=UploadSnapshotView.as_view('upload_snapshot'))
-devices.add_url_rule('/device/add/', view_func=CreateDeviceView.as_view('device_add'))
+devices.add_url_rule('/device/add/', view_func=DeviceCreateView.as_view('device_add'))
 devices.add_url_rule('/tag/', view_func=TagListView.as_view('taglist'))
 devices.add_url_rule('/tag/add/', view_func=TagAddView.as_view('tag_add'))
 devices.add_url_rule('/tag/unnamed/add/', view_func=TagAddUnnamedView.as_view('tag_unnamed_add'))
 devices.add_url_rule('/tag/<string:id>/', view_func=TagDetailView.as_view('tag_details'))
-devices.add_url_rule('/tag/devices/add/', view_func=TagDeviceAddView.as_view('tag_devices_add'))
-devices.add_url_rule('/tag/devices/<int:id>/del/', view_func=TagDeviceDeleteView.as_view('tag_devices_del'))
+devices.add_url_rule('/tag/devices/add/', view_func=TagLinkDeviceView.as_view('tag_devices_add'))
+devices.add_url_rule('/tag/devices/<int:id>/del/', view_func=TagUnlinkDeviceView.as_view('tag_devices_del'))
