@@ -213,18 +213,6 @@ class Action(Thing):
             args[INHERIT_COND] = cls.id == Action.id
         return args
 
-    @validates('end_time')
-    def validate_end_time(self, _, end_time: datetime):
-        if self.start_time and end_time < self.start_time:
-            raise ValidationError('The action cannot finish before it starts.')
-        return end_time
-
-    @validates('start_time')
-    def validate_start_time(self, _, start_time: datetime):
-        if self.end_time and start_time > self.end_time:
-            raise ValidationError('The action cannot start after it finished.')
-        return start_time
-
     @property
     def date_str(self):
         return '{:%c}'.format(self.end_time)
