@@ -25,7 +25,7 @@
               {{ field.label(class_="form-label") }}
               {{ field(class_="form-control") }}
               {% if field.errors %}
-              <p class="text-danger {% if field.errors %}field-error{% endif %}">
+              <p class="text-danger">
                 {% for error in field.errors %}
                   {{ error }}<br/>
                 {% endfor %}
