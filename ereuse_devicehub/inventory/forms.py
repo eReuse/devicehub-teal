@@ -13,6 +13,7 @@ from ereuse_devicehub.resources.device.models import Device, Computer, Smartphon
 from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
 from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
@@ -367,6 +368,101 @@ class NewDeviceForm(FlaskForm):
 
         db.session.commit()
         return snapshot
+
+
+class TagForm(FlaskForm):
+    code = StringField(u'Code', [validators.length(min=1)])
+
+    def validate(self, extra_validators=None):
+        error = ["This value is being used"]
+        is_valid = super().validate(extra_validators)
+        if not is_valid:
+            return False
+        tag = Tag.query.filter(Tag.id==self.code.data).all()
+        if tag:
+            self.code.errors = error
+            return False
+
+        return True
+
+    def save(self):
+        self.instance = Tag(id=self.code.data)
+        db.session.add(self.instance)
+        db.session.commit()
+        return self.instance
+
+    def remove(self):
+        if not self.instance.device and not self.instance.provider:
+            self.instance.delete()
+            db.session.commit()
+        return self.instance
+
+
+class TagUnnamedForm(FlaskForm):
+    amount = IntegerField(u'amount')
+
+    def save(self):
+        num = self.amount.data
+        tags_id, _ = g.tag_provider.post('/', {}, query=[('num', num)])
+        tags = [Tag(id=tag_id, provider=g.inventory.tag_provider) for tag_id in tags_id]
+        db.session.add_all(tags)
+        db.session.commit()
+        return tags
+
+
+class TagDeviceForm(FlaskForm):
+    tag = SelectField(u'Tag', choices=[])
+    device = StringField(u'Device', [validators.Optional()])
+
+    def __init__(self, *args, **kwargs):
+        self.delete = kwargs.pop('delete', None)
+        self.device_id = kwargs.pop('device', None)
+
+        # import pdb; pdb.set_trace()
+        super().__init__(*args, **kwargs)
+
+        if self.delete:
+            tags = Tag.query.filter(Tag.owner_id==g.user.id).filter(Tag.device_id==self.device_id)
+        else:
+            tags = Tag.query.filter(Tag.owner_id==g.user.id).filter(Tag.device_id==None)
+
+        self.tag.choices = [(tag.id, tag.id) for tag in tags]
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+        self._tag = Tag.query.filter(Tag.id == self.tag.data).filter(
+            Tag.owner_id == g.user.id).one()
+
+        if not self.delete and self._tag.device_id:
+            self.tag.errors = [("This tag is actualy in use.")]
+            return False
+
+        if self.device.data:
+            try:
+                self.device.data = int(self.device.data.split(',')[-1])
+            except:
+                self.device.data = None
+
+        if self.device_id or self.device.data:
+            self.device_id = self.device_id or self.device.data
+            self._device = Device.query.filter(Device.id == self.device_id).filter(
+                Device.owner_id == g.user.id).one()
+
+        return True
+
+    def save(self):
+        self._tag.device_id = self._device.id
+        db.session.add(self._tag)
+        db.session.commit()
+
+    def remove(self):
+        self._tag.device = None
+        db.session.add(self._tag)
+        db.session.commit()
 
 
 class NewActionForm(FlaskForm):

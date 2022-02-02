@@ -18,9 +18,8 @@ function deviceSelect() {
 
         $("#removeLotModal .text-danger").show();
         $("#removeLotModal .btn-primary").hide();
-
-        $("#actionModal .text-danger").show();
-        $("#actionModal .btn-primary").hide();
+        $("#addingTagModal .text-danger").show();
+        $("#addingTagModal .btn-primary").hide();
     } else {
         $("#addingLotModal .text-danger").hide();
         $("#addingLotModal .btn-primary").show();
@@ -33,10 +32,22 @@ function deviceSelect() {
 
         $("#allocateModal .text-danger").hide();
         $("#allocateModal .btn-primary").show();
+
+        $("#addingTagModal .text-danger").hide();
     }
     $.map($(".devicesList"), function(x) {
         $(x).val(devices_id);
     });
+}
+
+function removeTag() {
+    var devices = $(".deviceSelect").filter(':checked');
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
+    console.log(devices_id);
+    if (devices_id.length > 0) {
+        var url = "/inventory/tag/devices/"+devices_id[0]+"/del/";
+        window.location.href = url;
+    }
 }
 
 function newAction(action) {

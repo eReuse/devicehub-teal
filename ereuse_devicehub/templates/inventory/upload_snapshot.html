@@ -2,11 +2,11 @@
 {% block main %}
 
 <div class="pagetitle">
-  <h1>{{ title }}</h1>
+  <h1>Inventory</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.html">Inventory</a></li>
-      <li class="breadcrumb-item">Upload Snapshot</li>
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devices.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item active">{{ page_title }}</li>
     </ol>
   </nav>
 </div><!-- End Page Title -->
