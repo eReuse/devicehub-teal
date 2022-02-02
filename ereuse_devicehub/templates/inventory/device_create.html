@@ -2,11 +2,11 @@
 {% block main %}
 
 <div class="pagetitle">
-  <h1>{{ title }}</h1>
+  <h1>{{ page_title }}</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.html">Inventory</a></li>
-      <li class="breadcrumb-item">New Device</li>
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devices.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item">{{ page_title }}</li>
     </ol>
   </nav>
 </div><!-- End Page Title -->
@@ -19,7 +19,6 @@
               <div class="card-body">
 
                 <div class="pt-4 pb-2">
-                  <h5 class="card-title text-center pb-0 fs-4">New Device</h5>
                   {% if form.form_errors %}
                   <p class="text-danger">
                     {% for error in form.form_errors %}

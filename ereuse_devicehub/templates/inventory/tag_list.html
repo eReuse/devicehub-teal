@@ -1,0 +1,90 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+
+<div class="pagetitle">
+  <h1>Inventory</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item active">{{ page_title }}</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+
+    <div class="col-xl-12">
+
+      <div class="card">
+        <div class="card-body pt-3">
+          <!-- Bordered Tabs -->
+
+            <div class="btn-group dropdown ml-1">
+              <a href="{{ url_for('inventory.devices.tag_add')}}" type="button" class="btn btn-primary">
+                <i class="bi bi-plus"></i>
+                Create Named Tag
+                <span class="caret"></span>
+              </a>
+            </div>
+
+            <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <a href="{{ url_for('inventory.devices.tag_unnamed_add')}}" type="button" class="btn btn-primary">
+                <i class="bi bi-plus"></i>
+                Create UnNamed Tag
+                <span class="caret"></span>
+              </a>
+            </div>
+
+          <div class="tab-content pt-2">
+
+            <div class="tab-pane fade show active profile-overview" id="profile-overview">
+
+              <h5 class="card-title">Computers</h5>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Code</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Provider</th>
+                      <th scope="col">Device</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for tag in tags %}
+                    <tr>
+                      <td><a href="{{ url_for('inventory.devices.tag_details', id=tag.id) }}">{{ tag.id }}</a></td>
+                      <td>{% if tag.provider %}Unnamed tag {% else %}Named tag{% endif %}</td>
+                      <td>{{ tag.get_provider }}</td>
+                      <td>
+                        {% if tag.device %}
+                        <a href={{ url_for('inventory.devices.device_details', id=tag.device.devicehub_id)}}>
+                          {{ tag.device.type }} {{ tag.device.manufacturer }} {{ tag.device.model }}
+                        </a>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+
+          </div><!-- End Bordered Tabs -->
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CDN -->
+<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
+<!-- Custom Code -->
+<script>
+  const table = new simpleDatatables.DataTable("table")
+</script>
+<script>
+
+</script>
+<script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+{% endblock main %}

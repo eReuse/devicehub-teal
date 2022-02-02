@@ -5,9 +5,8 @@
   <h1>{{ title }}</h1>
   <nav>
     <ol class="breadcrumb">
-      <!-- TODO@slamora replace with lot list URL when exists -->
-      <li class="breadcrumb-item"><a href="#TODO-lot-list">Lots</a></li>
-      <li class="breadcrumb-item">Lot</li>
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devices.taglist')}}">Tag management</a></li>
+      <li class="breadcrumb-item">{{ page_title }}</li>
     </ol>
   </nav>
 </div><!-- End Page Title -->
@@ -20,8 +19,8 @@
               <div class="card-body">
 
                 <div class="pt-4 pb-2">
-                  <h5 class="card-title text-center pb-0 fs-4">{{ title }}</h5>
-                  <p class="text-center small">Please enter a name of the lot.</p>
+                  <h5 class="card-title text-center pb-0 fs-4">Add a new Tag</h5>
+                  <p class="text-center small">Please enter a code for the tag.</p>
                   {% if form.form_errors %}
                   <p class="text-danger">
                     {% for error in form.form_errors %}
@@ -35,15 +34,22 @@
                   {{ form.csrf_token }}
 
                   <div class="col-12">
-                    <label for="name" class="form-label">Name</label>
+                    <label for="code" class="form-label">code</label>
                     <div class="input-group has-validation">
-                      <input type="text" name="name" class="form-control" required value="{{ form.name.data|default('', true) }}">
-                      <div class="invalid-feedback">Please enter a name of the lot.</div>
+                      <input type="text" name="code" class="form-control" required value="{{ form.code.data|default('', true) }}">
+                      <div class="invalid-feedback">Please enter a code of the tag.</div>
                     </div>
+                    {% if form.code.errors %}
+                    <p class="text-danger">
+                      {% for error in form.code.errors %}
+                        {{ error }}<br/>
+                      {% endfor %}
+                    </p>
+                    {% endif %}
                   </div>
 
                   <div class="col-12">
-                    <a href="{{ url_for('inventory.devices.devicelist') }}" class="btn btn-danger">Cancel</a>
+                    <a href="{{ url_for('inventory.devices.taglist') }}" class="btn btn-danger">Cancel</a>
                     <button class="btn btn-primary" type="submit">Save</button>
                   </div>
                 </form>
