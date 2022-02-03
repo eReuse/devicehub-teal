@@ -10,12 +10,17 @@
       <form action="{{ url_for('inventory.devices.action_add') }}" method="post">
       {{ form_new_action.csrf_token }}
         <div class="modal-body">
-          <p class="text-danger">
-              You need select first some device before to do one action
-          </p>
           {% for field in form_new_action %}
           {% if field != form_new_action.csrf_token %}
           {% if field == form_new_action.devices  %}
+          <div class="col-12">
+              {{ field.label(class_="form-label") }}: <span class="devices-count"></span>
+              {{ field(class_="form-control") }}
+              <p class="text-danger">
+                  You need select first some device before to do one action
+              </p>
+              <p class="enumeration-devices"></p>
+          </div>
           {{ field(class_="devicesList") }}
           {% elif field == form_new_action.type %}
             {{ field(class_="form-control") }}

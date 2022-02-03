@@ -11,15 +11,23 @@ $(document).ready(function() {
 
 function deviceSelect() {
     var devices = $(".deviceSelect").filter(':checked');
+    var devices_count = devices.length;
     var devices_id = $.map(devices, function(x) { return $(x).attr('data')}).join(",");
-    if (devices_id == "") {
+    if (devices_count == 0) {
         $("#addingLotModal .text-danger").show();
         $("#addingLotModal .btn-primary").hide();
 
         $("#removeLotModal .text-danger").show();
         $("#removeLotModal .btn-primary").hide();
+
         $("#addingTagModal .text-danger").show();
         $("#addingTagModal .btn-primary").hide();
+
+        $("#actionModal .text-danger").show();
+        $("#actionModal .btn-primary").hide();
+
+        $("#allocateModal .text-danger").show();
+        $("#allocateModal .btn-primary").hide();
     } else {
         $("#addingLotModal .text-danger").hide();
         $("#addingLotModal .btn-primary").show();
@@ -53,11 +61,15 @@ function removeTag() {
 function newAction(action) {
     $("#actionModal #type").val(action);
     $("#actionModal #title-action").html(action);
+    devices_count = $(".deviceSelect").filter(':checked').length;
+    $("#actionModal .devices-count").html(devices_count);
     $("#activeActionModal").click();
 }
 
 function newAllocate(action) {
     $("#allocateModal #type").val(action);
     $("#allocateModal #title-action").html(action);
+    devices_count = $(".deviceSelect").filter(':checked').length;
+    $("#actionModal .devices-count").html(devices_count);
     $("#activeAllocateModal").click();
 }
