@@ -15,13 +15,12 @@
           {% if field == form_new_action.devices  %}
           <div class="col-12">
               {{ field.label(class_="form-label") }}: <span class="devices-count"></span>
-              {{ field(class_="form-control") }}
+              {{ field(class_="devicesList") }}
               <p class="text-danger">
                   You need select first some device before to do one action
               </p>
               <p class="enumeration-devices"></p>
           </div>
-          {{ field(class_="devicesList") }}
           {% elif field == form_new_action.type %}
             {{ field(class_="form-control") }}
           {% else %}

@@ -61,7 +61,7 @@ function removeTag() {
 function newAction(action) {
     $("#actionModal #type").val(action);
     $("#actionModal #title-action").html(action);
-    devices_count = $(".deviceSelect").filter(':checked').length;
+    var devices_count = $(".deviceSelect").filter(':checked').length;
     $("#actionModal .devices-count").html(devices_count);
     $("#activeActionModal").click();
 }
@@ -69,7 +69,7 @@ function newAction(action) {
 function newAllocate(action) {
     $("#allocateModal #type").val(action);
     $("#allocateModal #title-action").html(action);
-    devices_count = $(".deviceSelect").filter(':checked').length;
-    $("#actionModal .devices-count").html(devices_count);
+    var devices_count = $(".deviceSelect").filter(':checked').length;
+    $("#allocateModal .devices-count").html(devices_count);
     $("#activeAllocateModal").click();
 }

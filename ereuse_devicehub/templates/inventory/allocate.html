@@ -22,7 +22,14 @@
           {% for field in form_new_allocate %}
           {% if field != form_new_allocate.csrf_token %}
           {% if field == form_new_allocate.devices  %}
-          {{ field(class_="devicesList") }}
+          <div class="col-12">
+              {{ field.label(class_="form-label") }}: <span class="devices-count"></span>
+              {{ field(class_="devicesList") }}
+              <p class="text-danger">
+                  You need select first some device before to do one action
+              </p>
+              <p class="enumeration-devices"></p>
+          </div>
           {% elif field == form_new_allocate.type %}
             {{ field(class_="form-control") }}
           {% else %}
