@@ -295,21 +295,25 @@ class NewAllocateView(NewActionView, DeviceListMix):
     methods = ['POST']
     _form = AllocateForm
 
-    def dispatch_request(self):
-        dispatch = super().dispatch_request()
-        if dispatch:
-            return dispatch
+    def dispatch_request(self, lot_id=None):
+        next_url = url_for('inventory.devices.devicelist')
+        if lot_id:
+            next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
 
-        # lot_id = self.form.lot.data
-        # FIXME
-        # import pdb; pdb.set_trace()
-        self.get_context(None)
+        self.form = self._form()
+        if self.form.validate_on_submit():
+            self.form.save()
+            return flask.redirect(next_url)
+
+        self.get_context(lot_id)
         self.context['form_new_allocate'] = self.form
         return flask.render_template(self.template_name, **self.context)
 
 
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add'))
+devices.add_url_rule('/lot/<string:lot_id>/action/allocate/add/',
+                          view_func=NewAllocateView.as_view('lot_allocate_add'))
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/device/<string:id>/', view_func=DeviceDetailView.as_view('device_details'))
 devices.add_url_rule('/lot/<string:lot_id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
