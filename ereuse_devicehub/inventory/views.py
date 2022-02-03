@@ -1,14 +1,18 @@
-import flask
 import datetime
-from flask.views import View
-from flask import Blueprint, url_for, request
-from flask_login import login_required, current_user
 
+import flask
+from flask import Blueprint, request, url_for
+from flask.views import View
+from flask_login import current_user, login_required
+
+from ereuse_devicehub.inventory.forms import (AllocateForm, LotDeviceForm,
+                                              LotForm, NewActionForm,
+                                              NewDeviceForm, TagDeviceForm,
+                                              TagForm, TagUnnamedForm,
+                                              UploadSnapshotForm)
+from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
-from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm, UploadSnapshotForm, \
-    NewDeviceForm, TagForm, TagUnnamedForm, TagDeviceForm, NewActionForm, AllocateForm
 
 # TODO(@slamora): rename base 'inventory.devices' --> 'inventory'
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
