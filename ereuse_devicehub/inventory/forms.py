@@ -529,3 +529,22 @@ class AllocateForm(NewActionForm):
             is_valid = False
 
         return is_valid
+
+
+class DataWipeForm(NewActionForm):
+    url = URL(required= False, )
+    success = Boolean(required=False, default=False)
+    software = StringField()
+    date = DateField(u'endTime', 
+                    required=False, 
+    id_document = StringField(u'documentId', 
+    file_name = StringField(u'filename',
+                             validate=validate.Length(max=100))
+    file_hash = StringField(u'hash',
+                             default='',
+                                                          validate=validate.Length(max=64))
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        return is_valid
