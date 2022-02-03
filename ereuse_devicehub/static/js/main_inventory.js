@@ -52,10 +52,12 @@ function removeTag() {
 
 function newAction(action) {
     $("#actionModal #type").val(action);
+    $("#actionModal #title-action").html(action);
     $("#activeActionModal").click();
 }
 
 function newAllocate(action) {
     $("#allocateModal #type").val(action);
+    $("#allocateModal #title-action").html(action);
     $("#activeAllocateModal").click();
 }
