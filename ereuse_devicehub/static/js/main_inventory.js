@@ -10,9 +10,7 @@ $(document).ready(function() {
 })
 
 function deviceSelect() {
-    var devices = $(".deviceSelect").filter(':checked');
-    var devices_count = devices.length;
-    var devices_id = $.map(devices, function(x) { return $(x).attr('data')}).join(",");
+    var devices_count = $(".deviceSelect").filter(':checked').length;
     if (devices_count == 0) {
         $("#addingLotModal .text-danger").show();
         $("#addingLotModal .btn-primary").hide();
@@ -43,9 +41,6 @@ function deviceSelect() {
 
         $("#addingTagModal .text-danger").hide();
     }
-    $.map($(".devicesList"), function(x) {
-        $(x).val(devices_id);
-    });
 }
 
 function removeTag() {
@@ -61,15 +56,46 @@ function removeTag() {
 function newAction(action) {
     $("#actionModal #type").val(action);
     $("#actionModal #title-action").html(action);
-    var devices_count = $(".deviceSelect").filter(':checked').length;
-    $("#actionModal .devices-count").html(devices_count);
+    get_device_list();
     $("#activeActionModal").click();
 }
 
 function newAllocate(action) {
     $("#allocateModal #type").val(action);
     $("#allocateModal #title-action").html(action);
-    var devices_count = $(".deviceSelect").filter(':checked').length;
-    $("#allocateModal .devices-count").html(devices_count);
+    get_device_list();
     $("#activeAllocateModal").click();
+}
+
+function get_device_list() {
+    var devices = $(".deviceSelect").filter(':checked');
+
+    /* Insert the correct count of devices in actions form */
+    var devices_count = devices.length;
+    $("#allocateModal .devices-count").html(devices_count);
+    $("#actionModal .devices-count").html(devices_count);
+
+    /* Insert the correct value in the input devicesList */
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data')}).join(",");
+    $.map($(".devicesList"), function(x) {
+        $(x).val(devices_id);
+    });
+
+    /* Create a list of devices for human representation */
+    var computer = {
+        "Desktop": "<i class='bi bi-building'></i>",
+        "Laptop": "<i class='bi bi-laptop'></i>",
+    };
+    list_devices = devices.map(function (x) {
+        var typ = $(devices[x]).data("device-type");
+        var manuf = $(devices[x]).data("device-manufacturer");
+        var dhid = $(devices[x]).data("device-dhid");
+        if (computer[typ]) {
+            typ = computer[typ];
+        };
+        return typ + " " + manuf + " " + dhid;
+    });
+
+    description = $.map(list_devices, function(x) { return x }).join(", ");
+    $(".enumeration-devices").html(description);
 }

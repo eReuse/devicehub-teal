@@ -234,7 +234,11 @@
                   <tbody>
                     {% for dev in devices %}
                     <tr>
-                      <td><input type="checkbox" class="deviceSelect" data="{{ dev.id }}"/></td>
+                      <td>
+                          <input type="checkbox" class="deviceSelect" data="{{ dev.id }}"
+                               data-device-type="{{ dev.type }}" data-device-manufacturer="{{ dev.manufacturer }}"
+                               data-device-dhid="{{ dev.devicehub_id }}" />
+                      </td>
                       <td>
                         <a href="{{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}">
                           {{ dev.type }} {{ dev.manufacturer }} {{ dev.model }}
