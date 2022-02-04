@@ -1,14 +1,18 @@
-import flask
 import datetime
-from flask.views import View
-from flask import Blueprint, url_for, request
-from flask_login import login_required, current_user
 
+import flask
+from flask import Blueprint, request, url_for
+from flask.views import View
+from flask_login import current_user, login_required
+
+from ereuse_devicehub.inventory.forms import (AllocateForm, LotDeviceForm,
+                                              LotForm, NewActionForm,
+                                              NewDeviceForm, TagDeviceForm,
+                                              TagForm, TagUnnamedForm,
+                                              UploadSnapshotForm)
+from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
-from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.inventory.forms import LotDeviceForm, LotForm, UploadSnapshotForm, \
-    NewDeviceForm, TagForm, TagUnnamedForm, TagDeviceForm, NewActionForm, AllocateForm
 
 # TODO(@slamora): rename base 'inventory.devices' --> 'inventory'
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
@@ -41,6 +45,11 @@ class DeviceListMix(View):
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
 
+        action_devices = form_new_action.devices.data
+        list_devices = []
+        if action_devices:
+            list_devices.extend([int(x) for x in action_devices.split(",")])
+
         self.context = {
             'devices': devices,
             'lots': lots,
@@ -49,7 +58,8 @@ class DeviceListMix(View):
             'form_new_action': form_new_action,
             'form_new_allocate': form_new_allocate,
             'lot': lot,
-            'tags': tags
+            'tags': tags,
+            'list_devices': list_devices
         }
 
         return self.context
@@ -285,9 +295,14 @@ class NewActionView(View):
 
     def dispatch_request(self):
         self.form = self._form()
+
+        next_url = url_for('inventory.devices.devicelist')
+        lot_id = self.form.lot.data
+        if lot_id:
+            next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
+
         if self.form.validate_on_submit():
             self.form.save()
-            next_url = request.referrer or url_for('inventory.devices.devicelist')
             return flask.redirect(next_url)
 
 
@@ -296,11 +311,13 @@ class NewAllocateView(NewActionView, DeviceListMix):
     _form = AllocateForm
 
     def dispatch_request(self, lot_id=None):
+        self.form = self._form()
+
         next_url = url_for('inventory.devices.devicelist')
+        lot_id = self.form.lot.data
         if lot_id:
             next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
 
-        self.form = self._form()
         if self.form.validate_on_submit():
             self.form.save()
             return flask.redirect(next_url)
@@ -312,8 +329,6 @@ class NewAllocateView(NewActionView, DeviceListMix):
 
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add'))
-devices.add_url_rule('/lot/<string:lot_id>/action/allocate/add/',
-                          view_func=NewAllocateView.as_view('lot_allocate_add'))
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/device/<string:id>/', view_func=DeviceDetailView.as_view('device_details'))
 devices.add_url_rule('/lot/<string:lot_id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))

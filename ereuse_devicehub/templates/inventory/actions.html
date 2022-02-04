@@ -1,24 +1,30 @@
 <div class="modal fade" id="actionModal" tabindex="-1" style="display: none;" aria-hidden="true">
-  <div class="modal-dialog modal-fullscreen">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5 class="modal-title">New Action</h5>
+        <h5 class="modal-title">New Action <span id="title-action"></span></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
       <form action="{{ url_for('inventory.devices.action_add') }}" method="post">
       {{ form_new_action.csrf_token }}
         <div class="modal-body">
-          <p class="text-danger">
-              You need select first some device before to do one action
-          </p>
           {% for field in form_new_action %}
           {% if field != form_new_action.csrf_token %}
           {% if field == form_new_action.devices  %}
-          {{ field(class_="devicesList") }}
+          <div class="col-12">
+              {{ field.label(class_="form-label") }}: <span class="devices-count"></span>
+              {{ field(class_="devicesList") }}
+              <p class="text-danger pol">
+                  You need select first some device before to do one action
+              </p>
+              <p class="enumeration-devices"></p>
+          </div>
+          {% elif field == form_new_action.lot %}
+            {{ field }}
           {% elif field == form_new_action.type %}
-            {{ field(class_="form-control") }}
+            {{ field }}
           {% else %}
           <div class="col-12">
               {{ field.label(class_="form-label") }}

@@ -1,24 +1,31 @@
 import json
-from flask_wtf import FlaskForm
-from wtforms import StringField, validators, MultipleFileField, FloatField, IntegerField, \
-                    HiddenField, DateField, TextAreaField, SelectField
-from flask import g, request
-from sqlalchemy.util import OrderedSet
 from json.decoder import JSONDecodeError
 
+from flask import g, request
+from flask_wtf import FlaskForm
+from sqlalchemy.util import OrderedSet
+from wtforms import (DateField, FloatField, HiddenField, IntegerField,
+                     MultipleFileField, SelectField, StringField,
+                     TextAreaField, validators)
+
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Device, Computer, Smartphone, Cellphone, \
-                                                     Tablet, Monitor, Mouse, Keyboard, \
-                                                     MemoryCardReader, SAI
-from ereuse_devicehub.resources.action.models import Action, RateComputer, Snapshot, VisualTest
-from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
+from ereuse_devicehub.resources.action.models import (Action, RateComputer,
+                                                      Snapshot, VisualTest)
+from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
+from ereuse_devicehub.resources.action.schemas import \
+    Snapshot as SnapshotSchema
+from ereuse_devicehub.resources.action.views.snapshot import (move_json,
+                                                              save_json)
+from ereuse_devicehub.resources.device.models import (SAI, Cellphone, Computer,
+                                                      Device, Keyboard,
+                                                      MemoryCardReader,
+                                                      Monitor, Mouse,
+                                                      Smartphone, Tablet)
+from ereuse_devicehub.resources.device.sync import Sync
+from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
-from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
-from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
-from ereuse_devicehub.resources.device.sync import Sync
-from ereuse_devicehub.resources.action.views.snapshot import save_json, move_json
 
 
 class LotDeviceForm(FlaskForm):
@@ -470,6 +477,7 @@ class NewActionForm(FlaskForm):
     date = DateField(u'Date', validators=(validators.Optional(),))
     severity = SelectField(u'Severity', choices=[(v.name, v.name) for v in Severity])
     description = TextAreaField(u'Description')
+    lot = HiddenField()
     type = HiddenField()
 
     def validate(self, extra_validators=None):
