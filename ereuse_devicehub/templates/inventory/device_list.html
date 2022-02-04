@@ -237,7 +237,11 @@
                       <td>
                           <input type="checkbox" class="deviceSelect" data="{{ dev.id }}"
                                data-device-type="{{ dev.type }}" data-device-manufacturer="{{ dev.manufacturer }}"
-                               data-device-dhid="{{ dev.devicehub_id }}" />
+                               data-device-dhid="{{ dev.devicehub_id }}"
+                               {% if form_new_allocate.type.data and dev.id in list_devices %}
+                                 checked="checked"
+                               {% endif %}
+                               />
                       </td>
                       <td>
                         <a href="{{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}">
