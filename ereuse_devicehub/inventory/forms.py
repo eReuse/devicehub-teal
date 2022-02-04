@@ -477,6 +477,7 @@ class NewActionForm(FlaskForm):
     date = DateField(u'Date', validators=(validators.Optional(),))
     severity = SelectField(u'Severity', choices=[(v.name, v.name) for v in Severity])
     description = TextAreaField(u'Description')
+    lot = HiddenField()
     type = HiddenField()
 
     def validate(self, extra_validators=None):

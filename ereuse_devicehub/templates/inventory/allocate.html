@@ -8,12 +8,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form action="
-      {% if lot %}
-          {{ url_for('inventory.devices.lot_allocate_add', lot_id=lot.id) }}
-      {% else %}
-          {{ url_for('inventory.devices.allocate_add') }}
-      {% endif %}" method="post">
+      <form action="{{ url_for('inventory.devices.allocate_add') }}" method="post">
       {{ form_new_allocate.csrf_token }}
         <div class="modal-body">
           <p class="text-danger" id="pol" style="display: none;">
@@ -30,8 +25,10 @@
               </p>
               <p class="enumeration-devices"></p>
           </div>
+          {% elif field == form_new_allocate.lot %}
+            {{ field }}
           {% elif field == form_new_allocate.type %}
-            {{ field(class_="form-control") }}
+            {{ field }}
           {% else %}
           <div class="col-12">
               {{ field.label(class_="form-label") }}

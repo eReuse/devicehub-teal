@@ -289,9 +289,14 @@ class NewActionView(View):
 
     def dispatch_request(self):
         self.form = self._form()
+
+        next_url = url_for('inventory.devices.devicelist')
+        lot_id = self.form.lot.data
+        if lot_id:
+            next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
+
         if self.form.validate_on_submit():
             self.form.save()
-            next_url = request.referrer or url_for('inventory.devices.devicelist')
             return flask.redirect(next_url)
 
 
@@ -300,11 +305,13 @@ class NewAllocateView(NewActionView, DeviceListMix):
     _form = AllocateForm
 
     def dispatch_request(self, lot_id=None):
+        self.form = self._form()
+
         next_url = url_for('inventory.devices.devicelist')
+        lot_id = self.form.lot.data
         if lot_id:
             next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
 
-        self.form = self._form()
         if self.form.validate_on_submit():
             self.form.save()
             return flask.redirect(next_url)
@@ -316,8 +323,6 @@ class NewAllocateView(NewActionView, DeviceListMix):
 
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add'))
-devices.add_url_rule('/lot/<string:lot_id>/action/allocate/add/',
-                          view_func=NewAllocateView.as_view('lot_allocate_add'))
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/device/<string:id>/', view_func=DeviceDetailView.as_view('device_details'))
 devices.add_url_rule('/lot/<string:lot_id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
