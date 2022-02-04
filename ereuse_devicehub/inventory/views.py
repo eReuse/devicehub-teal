@@ -45,6 +45,11 @@ class DeviceListMix(View):
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
 
+        action_devices = form_new_action.devices.data
+        list_devices = []
+        if action_devices:
+            list_devices.extend([int(x) for x in action_devices.split(",")])
+
         self.context = {
             'devices': devices,
             'lots': lots,
@@ -53,7 +58,8 @@ class DeviceListMix(View):
             'form_new_action': form_new_action,
             'form_new_allocate': form_new_allocate,
             'lot': lot,
-            'tags': tags
+            'tags': tags,
+            'list_devices': list_devices
         }
 
         return self.context

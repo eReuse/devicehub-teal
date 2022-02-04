@@ -12,34 +12,34 @@ $(document).ready(function() {
 function deviceSelect() {
     var devices_count = $(".deviceSelect").filter(':checked').length;
     if (devices_count == 0) {
-        $("#addingLotModal .text-danger").show();
+        $("#addingLotModal .pol").show();
         $("#addingLotModal .btn-primary").hide();
 
-        $("#removeLotModal .text-danger").show();
+        $("#removeLotModal .pol").show();
         $("#removeLotModal .btn-primary").hide();
 
-        $("#addingTagModal .text-danger").show();
+        $("#addingTagModal .pol").show();
         $("#addingTagModal .btn-primary").hide();
 
-        $("#actionModal .text-danger").show();
+        $("#actionModal .pol").show();
         $("#actionModal .btn-primary").hide();
 
-        $("#allocateModal .text-danger").show();
+        $("#allocateModal .pol").show();
         $("#allocateModal .btn-primary").hide();
     } else {
-        $("#addingLotModal .text-danger").hide();
+        $("#addingLotModal .pol").hide();
         $("#addingLotModal .btn-primary").show();
 
-        $("#removeLotModal .text-danger").hide();
+        $("#removeLotModal .pol").hide();
         $("#removeLotModal .btn-primary").show();
 
-        $("#actionModal .text-danger").hide();
+        $("#actionModal .pol").hide();
         $("#actionModal .btn-primary").show();
 
-        $("#allocateModal .text-danger").hide();
+        $("#allocateModal .pol").hide();
         $("#allocateModal .btn-primary").show();
 
-        $("#addingTagModal .text-danger").hide();
+        $("#addingTagModal .pol").hide();
     }
 }
 
@@ -57,6 +57,7 @@ function newAction(action) {
     $("#actionModal #type").val(action);
     $("#actionModal #title-action").html(action);
     get_device_list();
+    deviceSelect();
     $("#activeActionModal").click();
 }
 
@@ -64,6 +65,7 @@ function newAllocate(action) {
     $("#allocateModal #type").val(action);
     $("#allocateModal #title-action").html(action);
     get_device_list();
+    deviceSelect();
     $("#activeAllocateModal").click();
 }
 
