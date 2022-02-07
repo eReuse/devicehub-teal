@@ -5,12 +5,15 @@ from flask import g, request
 from flask_wtf import FlaskForm
 from sqlalchemy.util import OrderedSet
 from wtforms import (DateField, FloatField, HiddenField, IntegerField,
-                     MultipleFileField, SelectField, StringField,
-                     TextAreaField, validators)
+                     MultipleFileField, FileField, SelectField, StringField,
+                     TextAreaField, BooleanField, URLField, validators)
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.hash_reports import insert_hash
+from ereuse_devicehub.resources.documents.models import DataWipeDocument
 from ereuse_devicehub.resources.action.models import (Action, RateComputer,
-                                                      Snapshot, VisualTest)
+                                                      Snapshot, VisualTest,
+                                                      DataWipe)
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.action.schemas import \
     Snapshot as SnapshotSchema
@@ -472,10 +475,18 @@ class TagDeviceForm(FlaskForm):
 
 
 class NewActionForm(FlaskForm):
-    name = StringField(u'Name', [validators.length(max=50)])
+    name = StringField(u'Name', [validators.length(max=50)],
+                       description="A name or title of the event. Something to look for.")
     devices = HiddenField()
-    date = DateField(u'Date', validators=(validators.Optional(),))
-    severity = SelectField(u'Severity', choices=[(v.name, v.name) for v in Severity])
+    date = DateField(u'Date', [validators.Optional()],
+                     description="""When the action ends. For some actions like booking
+                                    the time when it expires, for others like renting the
+                                    time that the end rents. For specific actions, it is the
+                                    time in which they are carried out; differs from created
+                                    in that created is where the system receives the action.""")
+    severity = SelectField(u'Severity', choices=[(v.name, v.name) for v in Severity],
+                           description="""An indicator that evaluates the execution of the event.
+                                          For example, failed events are set to Error""")
     description = TextAreaField(u'Description')
     lot = HiddenField()
     type = HiddenField()
@@ -540,19 +551,58 @@ class AllocateForm(NewActionForm):
 
 
 class DataWipeForm(NewActionForm):
-    url = URL(required= False, )
-    success = Boolean(required=False, default=False)
-    software = StringField()
-    date = DateField(u'endTime', 
-                    required=False, 
-    id_document = StringField(u'documentId', 
-    file_name = StringField(u'filename',
-                             validate=validate.Length(max=100))
-    file_hash = StringField(u'hash',
-                             default='',
-                                                          validate=validate.Length(max=64))
+    url = URLField(u'Url', [validators.Optional()],
+                   description="Url where the document resides")
+    success = BooleanField(u'Success', [validators.Optional()],
+                   description="The erase was success or not?")
+    software = StringField(u'Software', [validators.Optional()],
+                   description="Which software has you use for erase the disks")
+    id_document = StringField(u'Document Id', [validators.Optional()],
+                   description="Identification number of document")
+    file_name = FileField(u'File', [validators.DataRequired()],
+                   description="""This file is not stored on our servers, it is only used to
+                                  generate a digital signature and obtain the name of the file.""")
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
 
         return is_valid
+
+    def save(self):
+        file_name = ''
+        file_hash = ''
+        if self.file_name.data:
+            file_name = self.file_name.data.filename
+            file_hash = insert_hash(self.file_name.data.read(), commit=False)
+
+        document = DataWipeDocument(
+            date=self.date.data,
+            id_document=self.id_document.data,
+            file_name=file_name,
+            file_hash=file_hash,
+            url=self.url.data,
+            software=self.software.data,
+            success=self.success.data
+        )
+
+        db.session.add(document)
+
+        Model = db.Model._decl_class_registry.data[self.type.data]()
+        self.instance = Model()
+        devices = self.devices.data
+        severity = self.severity.data
+        self.devices.data = self._devices
+        self.severity.data = Severity[self.severity.data]
+        self.instance.document = document
+        self.instance.file_name = file_name
+
+        # import pdb; pdb.set_trace()
+        #TODO AttributeError: can't set attribute
+        self.populate_obj(self.instance)
+        db.session.add(self.instance)
+        db.session.commit()
+
+        self.devices.data = devices
+        self.severity.data = severity
+
+        return self.instance
