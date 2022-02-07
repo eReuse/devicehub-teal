@@ -1,0 +1,30 @@
+type: Snapshot
+uuid: 9a3e7485-fdd0-47ce-bcc7-65c55226b598
+version: '11.0b9'
+software: Workbench
+elapsed: 4
+device:
+  type: Desktop
+  chassis: Microtower
+  serialNumber: null
+  model: null
+  manufacturer: null
+  actions:
+    - type: VisualTest
+      appearanceRange: A
+      functionalityRange: B
+components:
+  - type: RamModule
+    serialNumber: rm1s
+    model: rm1ml
+    manufacturer: rm1mr
+    speed: 1333
+  - type: Processor
+    serialNumber: p1s
+    model: p1ml
+    manufacturer: p1mr
+    speed: 1.6
+    actions:
+      - type: BenchmarkProcessor
+        rate: 2410
+        elapsed: 11

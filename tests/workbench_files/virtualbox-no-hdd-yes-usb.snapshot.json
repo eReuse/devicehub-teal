@@ -3,46 +3,52 @@
   "uuid": "00000000-0000-0000-0000-000000000000",
   "software": "Workbench",
   "version": "11.0a1",
-  "expectedEvents": [],
-  "closed": false,
-  "endTime": "2000-01-01 00:00:00",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
   "device": {
+    "actions": [],
+    "type": "Computer",
     "manufacturer": "innotek GmbH",
     "model": "VirtualBox",
     "serialNumber": "0",
-    "events": [],
-    "type": "Computer",
-    "chassis": "Virtual"
+    "chassis": "Virtual",
+    "sku": null,
+    "version": "1.2"
   },
   "components": [
     {
+      "actions": [],
+      "type": "NetworkAdapter",
       "manufacturer": "Intel Corporation",
       "model": "82540EM Gigabit Ethernet Controller",
       "serialNumber": "08:00:27:53:cb:af",
-      "events": [],
-      "type": "NetworkAdapter",
-      "speed": 1000,
+      "speed": 1000.0,
+      "variant": "02",
       "wireless": false
     },
     {
+      "actions": [],
+      "type": "SoundCard",
       "manufacturer": "Intel Corporation",
-      "model": "82801AA AC'97 Audio Controller",
-      "serialNumber": null,
-      "events": [],
-      "type": "SoundCard"
+      "model": "82801AA AC97 Audio Controller",
+      "serialNumber": null
     },
     {
+      "actions": [],
+      "type": "Motherboard",
       "manufacturer": "Oracle Corporation",
       "model": "VirtualBox",
       "serialNumber": "0",
-      "events": [],
-      "type": "Motherboard",
       "usb": 2,
       "firewire": 0,
       "serial": 0,
       "pcmcia": 0,
-      "slots": 1
+      "slots": 0,
+      "biosDate": "2006-12-01T00:00:00",
+      "version": "VirtualBox",
+      "ramSlots": null,
+      "ramMaxSize": null
     }
-  ],
-  "elapsed": 0
+  ]
 }

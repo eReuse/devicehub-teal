@@ -1,10 +1,5 @@
 {
   "type": "Snapshot",
-  "expectedEvents": [
-    "Benchmark",
-    "TestDataStorage",
-    "StressTest"
-  ],
   "software": "Workbench",
   "closed": false,
   "device": {
@@ -12,7 +7,7 @@
     "serialNumber": "94OAAQ021116",
     "type": "Laptop",
     "model": "1000H",
-    "events": [
+    "actions": [
     {
       "elapsed": 19,
       "rate": 19.3106,
@@ -20,9 +15,8 @@
     },
     {
       "appearanceRange": "A",
-      "biosRange": "A",
       "functionalityRange": "A",
-      "type": "WorkbenchRate"
+      "type": "VisualTest"
     }
     ],
     "manufacturer": "ASUSTeK Computer INC."
@@ -35,21 +29,21 @@
     "type": "NetworkAdapter",
     "wireless": false,
     "model": "AR8121/AR8113/AR8114 Gigabit or Fast Ethernet",
-    "events": [],
+    "actions": [],
     "manufacturer": "Qualcomm Atheros"
   },
   {
     "serialNumber": null,
     "type": "SoundCard",
     "model": "NM10/ICH7 Family High Definition Audio Controller",
-    "events": [],
+    "actions": [],
     "manufacturer": "Intel Corporation"
   },
   {
     "serialNumber": "SN0001",
     "type": "SoundCard",
     "model": "CNF7129",
-    "events": [],
+    "actions": [],
     "manufacturer": "Chicony Electronics Co., Ltd."
   },
   {
@@ -59,7 +53,7 @@
     "type": "RamModule",
     "interface": "SDRAM",
     "model": null,
-    "events": [],
+    "actions": [],
     "manufacturer": null
   },
   {
@@ -69,7 +63,7 @@
     "type": "Processor",
     "address": 32,
     "model": "Intel Atom CPU N270 @ 1.60GHz",
-    "events": [
+    "actions": [
     {
       "elapsed": 172,
       "rate": 171.6818,
@@ -89,7 +83,7 @@
     "type": "HardDrive",
     "interface": "ATA",
     "model": "ST9160310AS",
-    "events": [
+    "actions": [
     {
       "readSpeed": 63.3,
       "type": "BenchmarkDataStorage",
@@ -104,7 +98,7 @@
     "type": "GraphicCard",
     "memory": 256.0,
     "model": "Mobile 945GSE Express Integrated Graphics Controller",
-    "events": [],
+    "actions": [],
     "manufacturer": "Intel Corporation"
   },
   {
@@ -116,11 +110,16 @@
     "serial": 0,
     "slots": 1,
     "model": "1000H",
-    "events": [],
+    "actions": [
+    {
+      "accessRange": "A",
+      "type": "TestBios"
+    }
+    ],
     "manufacturer": "ASUSTeK Computer INC."
   }
   ],
   "version": "11.0a4",
   "elapsed": 6,
-  "endTime": "2016-11-03T17:17:17.266543"
+  "endTime": "2016-11-03T17:17:17.266543+00:00"
 }

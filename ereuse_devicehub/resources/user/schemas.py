@@ -9,6 +9,10 @@ from ereuse_devicehub.resources.inventory.schema import Inventory
 from ereuse_devicehub.resources.schemas import Thing
 
 
+class Session(Thing):
+    token = String(dump_only=True)
+
+
 class User(Thing):
     id = UUID(dump_only=True)
     email = Email(required=True)
@@ -19,6 +23,7 @@ class User(Thing):
                    description='Use this token in an Authorization header to access the app.'
                                'The token can change overtime.')
     inventories = NestedOn(Inventory, many=True, dump_only=True)
+    code = String(dump_only=True, description='Code of inactive accounts')
 
     def __init__(self,
                  only=None,
@@ -29,8 +34,7 @@ class User(Thing):
                  load_only=(),
                  dump_only=(),
                  partial=False):
-        """
-        Instantiates the User.
+        """Instantiates the User.
 
         By default we exclude token from both load/dump
         so they are not taken / set in normal usage by mistake.

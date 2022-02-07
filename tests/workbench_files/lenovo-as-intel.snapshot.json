@@ -1,0 +1,120 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
+  "device": {
+    "actions": [],
+    "type": "Desktop",
+    "manufacturer": "LENOVO",
+    "model": "7220W3T",
+    "serialNumber": "S4R6460",
+    "chassis": "Tower",
+    "sku": null,
+    "version": "ThinkCentre M58p"
+  },
+  "components": [
+    {
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 11969.98,
+          "elapsed": 0
+        }
+      ],
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core2 Duo CPU E8400 @ 3.00GHz",
+      "serialNumber": null,
+      "speed": 3.0,
+      "address": 64,
+      "cores": 2,
+      "threads": 2,
+      "brand": "Core2 Duo",
+      "generation": null
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 2048.0,
+      "interface": "DDR2",
+      "speed": 1067.0
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 2048.0,
+      "interface": "DDR2",
+      "speed": 1067.0
+    },
+    {
+      "actions": [
+        {
+          "elapsed": 13,
+          "readSpeed": 106.0,
+          "writeSpeed": 26.6,
+          "type": "BenchmarkDataStorage"
+        }
+      ],
+      "type": "HardDrive",
+      "manufacturer": null,
+      "model": "SAMSUNG HD251HJ",
+      "serialNumber": "S1L6J9BZ103714",
+      "size": 250059.0,
+      "interface": null,
+      "variant": "1116"
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "model": "4 Series Chipset Integrated Graphics Controller",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Intel Corporation",
+      "model": "82567LM-3 Gigabit Network Connection",
+      "serialNumber": "00:24:7e:02:15:1a",
+      "speed": 1000.0,
+      "variant": "02",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "82801JD/DO HD Audio Controller",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "Motherboard",
+      "manufacturer": "LENOVO",
+      "model": "LENOVO",
+      "serialNumber": null,
+      "usb": 8,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 0,
+      "biosDate": "2010-02-01T00:00:00",
+      "version": "5CKT61AUS",
+      "ramSlots": null,
+      "ramMaxSize": null
+    }
+  ]
+}

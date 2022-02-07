@@ -1,20 +1,14 @@
 {
   "software": "Workbench",
-  "expectedEvents": [
-    "Benchmark",
-    "SmartTest",
-    "StressTest",
-    "EraseBasic"
-  ],
   "closed": false,
   "elapsed": -3058,
   "uuid": "106930cd-e948-4cca-a8c8-1e39d6192ad6",
-  "endTime": "2018-07-11T10:47:50.822380",
+  "endTime": "2018-07-11T10:47:50.822380+00:00",
   "components": [
   {
     "type": "Processor",
     "speed": 1.199,
-    "events": [
+    "actions": [
     {
       "type": "BenchmarkProcessor",
       "rate": 23409.32,
@@ -35,7 +29,7 @@
   {
     "memory": 256.0,
     "type": "GraphicCard",
-    "events": [],
+    "actions": [],
     "serialNumber": null,
     "model": "Core Processor Integrated Graphics Controller",
     "manufacturer": "Intel Corporation"
@@ -43,7 +37,7 @@
   {
     "type": "NetworkAdapter",
     "speed": 1000,
-    "events": [],
+    "actions": [],
     "serialNumber": "6c:62:6d:81:22:65",
     "model": "82578DM Gigabit Network Connection",
     "manufacturer": "Intel Corporation",
@@ -51,7 +45,7 @@
   },
   {
     "type": "SoundCard",
-    "events": [],
+    "actions": [],
     "serialNumber": null,
     "model": "5 Series/3400 Series Chipset High Definition Audio",
     "manufacturer": "Intel Corporation"
@@ -60,7 +54,7 @@
     "speed": 1333.0,
     "type": "RamModule",
     "format": "DIMM",
-    "events": [],
+    "actions": [],
     "size": 2048,
     "serialNumber": "E6002F30",
     "interface": "DDR3",
@@ -69,19 +63,19 @@
   },
   {
     "type": "HardDrive",
-    "events": [
+    "actions": [
     {
       "type": "EraseBasic",
 
-      "endTime": "2018-07-11T11:56:52.390306",
+      "endTime": "2018-07-11T11:56:52.390306+00:00",
       "severity": "Info",
-      "startTime": "2018-07-11T10:49:31.998217",
+      "startTime": "2018-07-11T10:49:31.998217+00:00",
       "steps": [
       {
         "type": "StepRandom",
-        "endTime": "2018-07-11T11:56:52.386505",
+        "endTime": "2018-07-11T11:56:52.386505+00:00",
         "severity": "Info",
-        "startTime": "2018-07-11T10:49:31.998609"
+        "startTime": "2018-07-11T10:49:31.998609+00:00"
       }
       ]
     },
@@ -110,7 +104,7 @@
     "serial": 0,
     "type": "Motherboard",
     "slots": 0,
-    "events": [],
+    "actions": [],
     "serialNumber": "CZC0408YNC",
     "usb": 2,
     "firewire": 0,
@@ -122,7 +116,7 @@
   "device": {
     "type": "Desktop",
     "chassis": "Tower",
-    "events": [
+    "actions": [
     {
       "type": "BenchmarkRamSysbench",
       "rate": 0.9767,

@@ -1,10 +1,13 @@
-import csv
 import pathlib
+import copy
+import time
+from flask import g
 from contextlib import suppress
 from fractions import Fraction
 from itertools import chain
 from operator import attrgetter
 from typing import Dict, List, Set
+from flask_sqlalchemy import event
 
 from boltons import urlutils
 from citext import CIText
@@ -12,6 +15,7 @@ from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
     Sequence, SmallInteger, Unicode, inspect, text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
@@ -19,15 +23,25 @@ from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
 from teal.db import CASCADE_DEL, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, URL, \
-    check_lower, check_range
+    check_lower, check_range, IntEnum
 from teal.enums import Layouts
 from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.enums import BatteryTechnology, ComputerChassis, \
-    DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity
-from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
+from ereuse_devicehub.resources.utils import hashcode
+from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
+    DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity, TransferState
+from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing, listener_reset_field_updated_in_actual_time
+from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.device.metrics import Metrics
+
+
+def create_code(context):
+    _id = Device.query.order_by(Device.id.desc()).first() or 3
+    if not _id == 3:
+        _id = _id.id + 1
+    return hashcode.encode(_id)
 
 
 class Device(Thing):
@@ -44,33 +58,28 @@ class Device(Thing):
     Devices can contain ``Components``, which are just a type of device
     (it is a recursive relationship).
     """
-    EVENT_SORT_KEY = attrgetter('created')
-
     id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
-    id.comment = """
-        The identifier of the device for this database. Used only
-        internally for software; users should not use this.
+    id.comment = """The identifier of the device for this database. Used only
+    internally for software; users should not use this.
     """
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
-    hid = Column(Unicode(), check_lower('hid'), unique=True)
-    hid.comment = """
-        The Hardware ID (HID) is the unique ID traceability systems 
-        use to ID a device globally. This field is auto-generated
-        from Devicehub using literal identifiers from the device,
-        so it can re-generated *offline*.
-        
+    hid = Column(Unicode(), check_lower('hid'), unique=False)
+    hid.comment = """The Hardware ID (HID) is the ID traceability
+    systems use to ID a device globally. This field is auto-generated
+    from Devicehub using literal identifiers from the device,
+    so it can re-generated *offline*.
     """ + HID_CONVERSION_DOC
-    model = Column(Unicode, check_lower('model'))
+    model = Column(Unicode(), check_lower('model'))
     model.comment = """The model of the device in lower case.
-    
+
     The model is the unambiguous, as technical as possible, denomination
-    for the product. This field, among others, is used to identify 
+    for the product. This field, among others, is used to identify
     the product.
     """
     manufacturer = Column(Unicode(), check_lower('manufacturer'))
     manufacturer.comment = """The normalized name of the manufacturer,
     in lower case.
-    
+
     Although as of now Devicehub does not enforce normalization,
     users can choose a list of normalized manufacturer names
     from the own ``/manufacturers`` REST endpoint.
@@ -79,36 +88,46 @@ class Device(Thing):
     serial_number.comment = """The serial number of the device in lower case."""
     brand = db.Column(CIText())
     brand.comment = """A naming for consumers. This field can represent
-    several models, so it can be ambiguous, and it is not used to 
+    several models, so it can be ambiguous, and it is not used to
     identify the product.
     """
     generation = db.Column(db.SmallInteger, check_range('generation', 0))
     generation.comment = """The generation of the device."""
-    weight = Column(Float(decimal_return_scale=3), check_range('weight', 0.1, 5))
-    weight.comment = """
-        The weight of the device.
-    """
-    width = Column(Float(decimal_return_scale=3), check_range('width', 0.1, 5))
-    width.comment = """
-        The width of the device in meters.
-    """
-    height = Column(Float(decimal_return_scale=3), check_range('height', 0.1, 5))
-    height.comment = """
-        The height of the device in meters.
-    """
-    depth = Column(Float(decimal_return_scale=3), check_range('depth', 0.1, 5))
-    depth.comment = """
-        The depth of the device in meters.
-    """
+    version = db.Column(db.CIText())
+    version.comment = """The version code of this device, like v1 or A001."""
+    weight = Column(Float(decimal_return_scale=4), check_range('weight', 0.1, 5))
+    weight.comment = """The weight of the device in Kg."""
+    width = Column(Float(decimal_return_scale=4), check_range('width', 0.1, 5))
+    width.comment = """The width of the device in meters."""
+    height = Column(Float(decimal_return_scale=4), check_range('height', 0.1, 5))
+    height.comment = """The height of the device in meters."""
+    depth = Column(Float(decimal_return_scale=4), check_range('depth', 0.1, 5))
+    depth.comment = """The depth of the device in meters."""
     color = Column(ColorType)
     color.comment = """The predominant color of the device."""
     production_date = Column(db.DateTime)
-    production_date.comment = """The date of production of the device. 
-    This is timezone naive, as Workbench cannot report this data
-    with timezone information.
+    production_date.comment = """The date of production of the device.
+    This is timezone naive, as Workbench cannot report this data with timezone information.
     """
-    variant = Column(Unicode)
+    variant = Column(db.CIText())
     variant.comment = """A variant or sub-model of the device."""
+    sku = db.Column(db.CIText())
+    sku.comment = """The Stock Keeping Unit (SKU), i.e. a
+    merchant-specific identifier for a product or service.
+    """
+    image = db.Column(db.URL)
+    image.comment = "An image of the device."
+
+    owner_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey(User.id),
+                         nullable=False,
+                         default=lambda: g.user.id)
+    owner = db.relationship(User, primaryjoin=owner_id == User.id)
+    allocated = db.Column(Boolean, default=False)
+    allocated.comment = "device is allocated or not."
+    devicehub_id = db.Column(db.CIText(), nullable=True, unique=True, default=create_code)
+    devicehub_id.comment = "device have a unique code."
+    active = db.Column(Boolean, default=True)
 
     _NON_PHYSICAL_PROPS = {
         'id',
@@ -116,6 +135,7 @@ class Device(Thing):
         'created',
         'updated',
         'parent_id',
+        'owner_id',
         'hid',
         'production_date',
         'color',  # these are only user-input thus volatile
@@ -126,7 +146,13 @@ class Device(Thing):
         'brand',
         'generation',
         'production_date',
-        'variant'
+        'variant',
+        'version',
+        'sku',
+        'image',
+        'allocated',
+        'devicehub_id',
+        'active'
     }
 
     __table_args__ = (
@@ -136,46 +162,52 @@ class Device(Thing):
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
-        with suppress(TypeError):
-            self.hid = Naming.hid(self.type, self.manufacturer, self.model, self.serial_number)
+        self.set_hid()
 
     @property
-    def events(self) -> list:
-        """
-        All the events where the device participated, including:
+    def actions(self) -> list:
+        """All the actions where the device participated, including:
 
-        1. Events performed directly to the device.
-        2. Events performed to a component.
-        3. Events performed to a parent device.
+        1. Actions performed directly to the device.
+        2. Actions performed to a component.
+        3. Actions performed to a parent device.
 
-        Events are returned by descending ``created`` time.
+        Actions are returned by descending ``created`` time.
         """
-        return sorted(chain(self.events_multiple, self.events_one), key=self.EVENT_SORT_KEY)
+        actions_multiple = copy.copy(self.actions_multiple)
+        actions_one = copy.copy(self.actions_one)
+
+        for ac in actions_multiple:
+            ac.real_created = ac.actions_device[0].created
+
+        for ac in actions_one:
+            ac.real_created = ac.created
+
+        return sorted(chain(actions_multiple, actions_one), key=lambda x: x.real_created)
 
     @property
     def problems(self):
-        """Current events with severity.Warning or higher.
+        """Current actions with severity.Warning or higher.
 
-        There can be up to 3 events: current Snapshot,
-        current Physical event, current Trading event.
+        There can be up to 3 actions: current Snapshot,
+        current Physical action, current Trading action.
         """
         from ereuse_devicehub.resources.device import states
-        from ereuse_devicehub.resources.event.models import Snapshot
-        events = set()
+        from ereuse_devicehub.resources.action.models import Snapshot
+        actions = set()
         with suppress(LookupError, ValueError):
-            events.add(self.last_event_of(Snapshot))
+            actions.add(self.last_action_of(Snapshot))
         with suppress(LookupError, ValueError):
-            events.add(self.last_event_of(*states.Physical.events()))
+            actions.add(self.last_action_of(*states.Physical.actions()))
         with suppress(LookupError, ValueError):
-            events.add(self.last_event_of(*states.Trading.events()))
-        return self._warning_events(events)
+            actions.add(self.last_action_of(*states.Trading.actions()))
+        return self._warning_actions(actions)
 
     @property
     def physical_properties(self) -> Dict[str, object or None]:
-        """
-        Fields that describe the physical properties of a device.
+        """Fields that describe the physical properties of a device.
 
-        :return A generator where each value is a tuple with tho fields:
+        :return A dictionary:
                 - Column.
                 - Actual value of the column or None.
         """
@@ -188,41 +220,218 @@ class Device(Thing):
                 and c.key not in self._NON_PHYSICAL_PROPS}
 
     @property
+    def public_properties(self) -> Dict[str, object or None]:
+        """Fields that describe the properties of a device than next show
+           in the public page.
+
+        :return A dictionary:
+                - Column.
+                - Actual value of the column or None.
+        """
+        non_public = ['amount', 'transfer_state', 'receiver_id']
+        hide_properties = list(self._NON_PHYSICAL_PROPS) + non_public
+        return {c.key: getattr(self, c.key, None)
+                for c in inspect(self.__class__).attrs
+                if isinstance(c, ColumnProperty)
+                and not getattr(c, 'foreign_keys', None)
+                and c.key not in hide_properties}
+
+    @property
+    def public_actions(self) -> List[object]:
+        """Actions than we want show in public page as traceability log section
+        :return a list of actions:
+        """
+        hide_actions = ['Price', 'EreusePrice']
+        actions = [ac for ac in self.actions if ac.t not in hide_actions]
+        actions.reverse()
+        return actions
+
+    @property
     def url(self) -> urlutils.URL:
         """The URL where to GET this device."""
-        return urlutils.URL(url_for_resource(Device, item_id=self.id))
+        return urlutils.URL(url_for_resource(Device, item_id=self.devicehub_id))
 
     @property
     def rate(self):
-        """The last AggregateRate of the device."""
+        """The last Rate of the device."""
         with suppress(LookupError, ValueError):
-            from ereuse_devicehub.resources.event.models import AggregateRate
-            return self.last_event_of(AggregateRate)
+            from ereuse_devicehub.resources.action.models import Rate
+            return self.last_action_of(Rate)
 
     @property
     def price(self):
         """The actual Price of the device, or None if no price has
         ever been set."""
         with suppress(LookupError, ValueError):
-            from ereuse_devicehub.resources.event.models import Price
-            return self.last_event_of(Price)
+            from ereuse_devicehub.resources.action.models import Price
+            return self.last_action_of(Price)
 
     @property
-    def trading(self):
-        """The actual trading state, or None if no Trade event has
-        ever been performed to this device."""
+    def last_action_trading(self):
+        """which is the last action trading"""
         from ereuse_devicehub.resources.device import states
         with suppress(LookupError, ValueError):
-            event = self.last_event_of(*states.Trading.events())
-            return states.Trading(event.__class__)
+            return self.last_action_of(*states.Trading.actions())
+
+    @property
+    def status(self):
+        """Show the actual status of device for this owner.
+        The status depend of one of this 4 actions:
+            - Use
+            - Refurbish
+            - Recycling
+            - Management
+        """
+        from ereuse_devicehub.resources.device import states
+        with suppress(LookupError, ValueError):
+            return self.last_action_of(*states.Status.actions())
+
+    @property
+    def history_status(self):
+        """Show the history of the status actions of the device.
+        The status depend of one of this 4 actions:
+            - Use
+            - Refurbish
+            - Recycling
+            - Management
+        """
+        from ereuse_devicehub.resources.device import states
+        status_actions = [ac.t for ac in states.Status.actions()]
+        history = []
+        for ac in self.actions:
+            if ac.t not in status_actions:
+                continue
+            if not history:
+                history.append(ac)
+                continue
+            if ac.rol_user == history[-1].rol_user:
+                # get only the last action consecutive for the same user
+                history = history[:-1] + [ac]
+                continue
+
+            history.append(ac)
+
+        return history
+
+    @property
+    def tradings(self):
+        return {str(x.id): self.trading(x.lot) for x in self.actions if x.t == 'Trade'}
+
+    def trading(self, lot, simple=None):
+        """The trading state, or None if no Trade action has
+        ever been performed to this device. This extract the posibilities for to do.
+        This method is performed for show in the web.
+        If you need to do one simple and generic response you can put simple=True for that."""
+        if not hasattr(lot, 'trade'):
+            return
+
+        Status = {0: 'Trade',
+                  1: 'Confirm',
+                  2: 'NeedConfirmation',
+                  3: 'TradeConfirmed',
+                  4: 'Revoke',
+                  5: 'NeedConfirmRevoke',
+                  6: 'RevokeConfirmed'}
+
+        trade = lot.trade
+        user_from = trade.user_from
+        user_to = trade.user_to
+        status = 0
+        last_user = None
+
+        if not hasattr(trade, 'acceptances'):
+            return Status[status]
+
+        for ac in self.actions:
+            if ac.t not in ['Confirm', 'Revoke']:
+                continue
+
+            if ac.user not in [user_from, user_to]:
+                continue
+
+            if ac.t == 'Confirm' and ac.action == trade:
+                if status in [0, 6]:
+                    if simple:
+                        status = 2
+                        continue
+                    status = 1
+                    last_user = ac.user
+                    if ac.user == user_from and user_to == g.user:
+                        status = 2
+                    if ac.user == user_to and user_from == g.user:
+                        status = 2
+                    continue
+
+                if status in [1, 2]:
+                    if last_user != ac.user:
+                        status = 3
+                        last_user = ac.user
+                    continue
+
+                if status in [4, 5]:
+                    status = 3
+                    last_user = ac.user
+                    continue
+
+            if ac.t == 'Revoke' and ac.action == trade:
+                if status == 3:
+                    if simple:
+                        status = 5
+                        continue
+                    status = 4
+                    last_user = ac.user
+                    if ac.user == user_from and user_to == g.user:
+                        status = 5
+                    if ac.user == user_to and user_from == g.user:
+                        status = 5
+                    continue
+
+                if status in [4, 5]:
+                    if last_user != ac.user:
+                        status = 6
+                        last_user = ac.user
+                    continue
+
+                if status in [1, 2]:
+                    status = 6
+                    last_user = ac.user
+                    continue
+
+        return Status[status]
+
+    @property
+    def revoke(self):
+        """If the actual trading state is an revoke action, this property show
+        the id of that revoke"""
+        from ereuse_devicehub.resources.device import states
+        with suppress(LookupError, ValueError):
+            action = self.last_action_of(*states.Trading.actions())
+            if action.type == 'Revoke':
+                return action.id
 
     @property
     def physical(self):
         """The actual physical state, None otherwise."""
         from ereuse_devicehub.resources.device import states
         with suppress(LookupError, ValueError):
-            event = self.last_event_of(*states.Physical.events())
-            return states.Physical(event.__class__)
+            action = self.last_action_of(*states.Physical.actions())
+            return states.Physical(action.__class__)
+
+    @property
+    def traking(self):
+        """The actual traking state, None otherwise."""
+        from ereuse_devicehub.resources.device import states
+        with suppress(LookupError, ValueError):
+            action = self.last_action_of(*states.Traking.actions())
+            return states.Traking(action.__class__)
+
+    @property
+    def usage(self):
+        """The actual usage state, None otherwise."""
+        from ereuse_devicehub.resources.device import states
+        with suppress(LookupError, ValueError):
+            action = self.last_action_of(*states.Usage.actions())
+            return states.Usage(action.__class__)
 
     @property
     def physical_possessor(self):
@@ -237,13 +446,15 @@ class Device(Thing):
         own it legally.
 
         Note that there can only be one physical possessor per device,
-        and :class:`ereuse_devicehub.resources.event.models.Receive`
+        and :class:`ereuse_devicehub.resources.action.models.Receive`
         changes it.
         """
-        from ereuse_devicehub.resources.event.models import Receive
-        with suppress(LookupError):
-            event = self.last_event_of(Receive)
-            return event.agent
+        pass
+        # TODO @cayop uncomment this lines for link the possessor with the device
+        # from ereuse_devicehub.resources.action.models import Receive
+        # with suppress(LookupError):
+        #     action = self.last_action_of(Receive)
+        #     return action.agent_to
 
     @property
     def working(self):
@@ -254,15 +465,14 @@ class Device(Thing):
         the one with the worst ``severity`` of them, or ``None`` if no
         test has been executed.
         """
-        from ereuse_devicehub.resources.event.models import Test
-        current_tests = unique_everseen((e for e in reversed(self.events) if isinstance(e, Test)),
+        from ereuse_devicehub.resources.action.models import Test
+        current_tests = unique_everseen((e for e in reversed(self.actions) if isinstance(e, Test)),
                                         key=attrgetter('type'))  # last test of each type
-        return self._warning_events(current_tests)
+        return self._warning_actions(current_tests)
 
     @declared_attr
     def __mapper_args__(cls):
-        """
-        Defines inheritance.
+        """Defines inheritance.
 
         From `the guide <http://docs.sqlalchemy.org/en/latest/orm/
         extensions/declarative/api.html
@@ -273,20 +483,57 @@ class Device(Thing):
             args[POLYMORPHIC_ON] = cls.type
         return args
 
-    def last_event_of(self, *types):
-        """Gets the last event of the given types.
+    def set_hid(self):
+        with suppress(TypeError):
+            self.hid = Naming.hid(self.type, self.manufacturer, self.model, self.serial_number)
 
-        :raise LookupError: Device has not an event of the given type.
+    def last_action_of(self, *types):
+        """Gets the last action of the given types.
+
+        :raise LookupError: Device has not an action of the given type.
         """
         try:
             # noinspection PyTypeHints
-            return next(e for e in reversed(self.events) if isinstance(e, types))
+            actions = copy.copy(self.actions)
+            actions.sort(key=lambda x: x.created)
+            return next(e for e in reversed(actions) if isinstance(e, types))
         except StopIteration:
-            raise LookupError('{!r} does not contain events of types {}.'.format(self, types))
+            raise LookupError('{!r} does not contain actions of types {}.'.format(self, types))
 
-    def _warning_events(self, events):
-        return sorted((ev for ev in events if ev.severity >= Severity.Warning),
-                      key=self.EVENT_SORT_KEY)
+    def which_user_put_this_device_in_trace(self):
+        """which is the user than put this device in this trade"""
+        actions = copy.copy(self.actions)
+        actions.reverse()
+        # search the automatic Confirm
+        for ac in actions:
+            if ac.type == 'Trade':
+                action_device = [x for x in ac.actions_device if x.device == self][0]
+                if action_device.author:
+                    return action_device.author
+
+                return ac.author
+
+    def change_owner(self, new_user):
+        """util for change the owner one device"""
+        self.owner = new_user
+        if hasattr(self, 'components'):
+            for c in self.components:
+                c.owner = new_user
+
+    def reset_owner(self):
+        """Change the owner with the user put the device into the trade"""
+        user = self.which_user_put_this_device_in_trace()
+        self.change_owner(user)
+
+    def _warning_actions(self, actions):
+        return sorted(ev for ev in actions if ev.severity >= Severity.Warning)
+
+    def get_metrics(self):
+        """
+        This method get a list of values for calculate a metrics from a spreadsheet
+        """
+        metrics = Metrics(device=self)
+        return metrics.get_metrics()
 
     def __lt__(self, other):
         return self.id < other.id
@@ -301,33 +548,33 @@ class Device(Thing):
         if 't' in format_spec:
             v += '{0.t} {0.model}'.format(self)
         if 's' in format_spec:
-            v += '({0.manufacturer})'.format(self)
+            superclass = self.__class__.mro()[1]
+            if not isinstance(self, Device) and superclass != Device:
+                assert issubclass(superclass, Thing)
+                v += superclass.__name__ + ' '
+            v += '{0.manufacturer}'.format(self)
             if self.serial_number:
-                v += ' S/N ' + self.serial_number.upper()
+                v += ' ' + self.serial_number.upper()
         return v
 
 
 class DisplayMixin:
     """Base class for the Display Component and the Monitor Device."""
-    size = Column(Float(decimal_return_scale=1), check_range('size', 2, 150), nullable=False)
-    size.comment = """
-        The size of the monitor in inches.
-    """
+    size = Column(Float(decimal_return_scale=1), check_range('size', 2, 150), nullable=True)
+    size.comment = """The size of the monitor in inches."""
     technology = Column(DBEnum(DisplayTech))
-    technology.comment = """
-        The technology the monitor uses to display the image.
+    technology.comment = """The technology the monitor uses to display
+    the image.
     """
     resolution_width = Column(SmallInteger, check_range('resolution_width', 10, 20000),
-                              nullable=False)
-    resolution_width.comment = """
-        The maximum horizontal resolution the monitor can natively support
-        in pixels.
+                              nullable=True)
+    resolution_width.comment = """The maximum horizontal resolution the
+    monitor can natively support in pixels.
     """
     resolution_height = Column(SmallInteger, check_range('resolution_height', 10, 20000),
-                               nullable=False)
-    resolution_height.comment = """
-        The maximum vertical resolution the monitor can natively support
-        in pixels.
+                               nullable=True)
+    resolution_height.comment = """The maximum vertical resolution the
+    monitor can natively support in pixels.
     """
     refresh_rate = Column(SmallInteger, check_range('refresh_rate', 10, 1000))
     contrast_ratio = Column(SmallInteger, check_range('contrast_ratio', 100, 100000))
@@ -341,7 +588,9 @@ class DisplayMixin:
         Regular values are ``4/3``, ``5/4``, ``16/9``, ``21/9``,
         ``14/10``, ``19/10``, ``16/10``.
         """
-        return Fraction(self.resolution_width, self.resolution_height)
+        if self.resolution_height and self.resolution_width:
+            return Fraction(self.resolution_width, self.resolution_height)
+        return 0
 
     # noinspection PyUnresolvedReferences
     @aspect_ratio.expression
@@ -361,7 +610,9 @@ class DisplayMixin:
         return self.aspect_ratio > 4.001 / 3
 
     def __str__(self) -> str:
-        return '{0.t} {0.serial_number} {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
+        if self.size:
+            return '{0.t} {0.serial_number} {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
+        return '{0.t} {0.serial_number} 0in ({0.aspect_ratio}) {0.technology}'.format(self)
 
     def __format__(self, format_spec: str) -> str:
         v = ''
@@ -369,7 +620,10 @@ class DisplayMixin:
             v += '{0.t} {0.model}'.format(self)
         if 's' in format_spec:
             v += '({0.manufacturer}) S/N {0.serial_number}'.format(self)
-            v += '– {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
+            if self.size:
+                v += '– {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
+            else:
+                v += '– 0in ({0.aspect_ratio}) {0.technology}'.format(self)
         return v
 
 
@@ -381,19 +635,40 @@ class Computer(Device):
     ``Server``. The property ``chassis`` defines it more granularly.
     """
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
-    chassis = Column(DBEnum(ComputerChassis), nullable=False)
+    chassis = Column(DBEnum(ComputerChassis), nullable=True)
     chassis.comment = """The physical form of the computer.
-    
+
     It is a subset of the Linux definition of DMI / DMI decode.
     """
+    amount = Column(Integer, check_range('amount', min=0, max=100), default=0)
+    owner_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey(User.id),
+                         nullable=False,
+                         default=lambda: g.user.id)
+    # author = db.relationship(User, primaryjoin=owner_id == User.id)
+    transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
+    transfer_state.comment = TransferState.__doc__
+    receiver_id = db.Column(UUID(as_uuid=True),
+                            db.ForeignKey(User.id),
+                            nullable=True)
+    receiver = db.relationship(User, primaryjoin=receiver_id == User.id)
 
-    def __init__(self, chassis, **kwargs) -> None:
-        chassis = ComputerChassis(chassis)
-        super().__init__(chassis=chassis, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        if args:
+            chassis = ComputerChassis(args[0])
+            super().__init__(chassis=chassis, **kwargs)
+        else:
+            super().__init__(*args, **kwargs)
 
     @property
-    def events(self) -> list:
-        return sorted(chain(super().events, self.events_parent), key=self.EVENT_SORT_KEY)
+    def actions(self) -> list:
+        actions = copy.copy(super().actions)
+        actions_parent = copy.copy(self.actions_parent)
+        for ac in actions_parent:
+            ac.real_created = ac.created
+
+        return sorted(chain(actions, actions_parent), key=lambda x: x.real_created)
+        # return sorted(chain(super().actions, self.actions_parent))
 
     @property
     def ram_size(self) -> int:
@@ -443,6 +718,42 @@ class Computer(Device):
             if privacy
         )
 
+    @property
+    def external_document_erasure(self):
+        """Returns the external ``DataStorage`` proof of erasure.
+        """
+        from ereuse_devicehub.resources.action.models import DataWipe
+        urls = set()
+        try:
+            ev = self.last_action_of(DataWipe)
+            urls.add(ev.document.url.to_text())
+        except LookupError:
+            pass
+
+        for comp in self.components:
+            if isinstance(comp, DataStorage):
+                doc = comp.external_document_erasure
+                if doc:
+                    urls.add(doc)
+        return urls
+
+    def add_mac_to_hid(self, components_snap=None):
+        """Returns the Naming.hid with the first mac of network adapter,
+        following an alphabetical order.
+        """
+        self.set_hid()
+        if not self.hid:
+            return
+        components = self.components if components_snap is None else components_snap
+        macs_network = [c.serial_number for c in components
+                        if c.type == 'NetworkAdapter' and c.serial_number is not None]
+        macs_network.sort()
+        mac = macs_network[0] if macs_network else ''
+        if not mac or mac in self.hid:
+            return
+        mac = f"-{mac}"
+        self.hid += mac
+
     def __format__(self, format_spec):
         if not format_spec:
             return super().__format__(format_spec)
@@ -463,7 +774,8 @@ class Desktop(Computer):
 class Laptop(Computer):
     layout = Column(DBEnum(Layouts))
     layout.comment = """Layout of a built-in keyboard of the computer,
-     if any."""
+     if any.
+     """
 
 
 class Server(Computer):
@@ -491,16 +803,19 @@ class Mobile(Device):
 
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     imei = Column(BigInteger)
-    imei.comment = """The International Mobile Equipment Identity of 
+    imei.comment = """The International Mobile Equipment Identity of
     the smartphone as an integer.
     """
     meid = Column(Unicode)
-    meid.comment = """The Mobile Equipment Identifier as a hexadecimal 
+    meid.comment = """The Mobile Equipment Identifier as a hexadecimal
     string.
     """
-    ram_size = db.Column(db.Integer, check_range(1, ))
+    ram_size = db.Column(db.Integer, check_range('ram_size', min=128, max=36000))
     ram_size.comment = """The total of RAM of the device in MB."""
-    data_storage_size = db.Column(db.Integer)
+    data_storage_size = db.Column(db.Integer, check_range('data_storage_size', 0, 10 ** 8))
+    data_storage_size.comment = """The total of data storage of the device in MB"""
+    display_size = db.Column(db.Float(decimal_return_scale=1), check_range('display_size', min=0.1, max=30.0))
+    display_size.comment = """The total size of the device screen"""
 
     @validates('imei')
     def validate_imei(self, _, value: int):
@@ -545,18 +860,19 @@ class Component(Device):
     )
 
     def similar_one(self, parent: Computer, blacklist: Set[int]) -> 'Component':
-        """
-        Gets a component that:
-        - has the same parent.
-        - Doesn't generate HID.
-        - Has same physical properties.
+        """Gets a component that:
+
+        * has the same parent.
+        * Doesn't generate HID.
+        * Has same physical properties.
         :param parent:
         :param blacklist: A set of components to not to consider
                           when looking for similar ones.
         """
         assert self.hid is None, 'Don\'t use this method with a component that has HID'
         component = self.__class__.query \
-            .filter_by(parent=parent, hid=None, **self.physical_properties) \
+            .filter_by(parent=parent, hid=None, owner_id=self.owner_id,
+                       **self.physical_properties) \
             .filter(~Component.id.in_(blacklist)) \
             .first()
         if not component:
@@ -564,8 +880,8 @@ class Component(Device):
         return component
 
     @property
-    def events(self) -> list:
-        return sorted(chain(super().events, self.events_components), key=self.EVENT_SORT_KEY)
+    def actions(self) -> list:
+        return sorted(chain(super().actions, self.actions_components))
 
 
 class JoinedComponentTableMixin:
@@ -576,17 +892,13 @@ class JoinedComponentTableMixin:
 
 class GraphicCard(JoinedComponentTableMixin, Component):
     memory = Column(SmallInteger, check_range('memory', min=1, max=10000))
-    memory.comment = """
-        The amount of memory of the Graphic Card in MB.
-    """
+    memory.comment = """The amount of memory of the Graphic Card in MB."""
 
 
 class DataStorage(JoinedComponentTableMixin, Component):
     """A device that stores information."""
     size = Column(Integer, check_range('size', min=1, max=10 ** 8))
-    size.comment = """
-        The size of the data-storage in MB.
-    """
+    size.comment = """The size of the data-storage in MB."""
     interface = Column(DBEnum(DataStorageInterface))
 
     @property
@@ -595,9 +907,9 @@ class DataStorage(JoinedComponentTableMixin, Component):
 
         This is, the last erasure performed to the data storage.
         """
-        from ereuse_devicehub.resources.event.models import EraseBasic
+        from ereuse_devicehub.resources.action.models import EraseBasic
         try:
-            ev = self.last_event_of(EraseBasic)
+            ev = self.last_action_of(EraseBasic)
         except LookupError:
             ev = None
         return ev
@@ -607,6 +919,17 @@ class DataStorage(JoinedComponentTableMixin, Component):
         if 's' in format_spec:
             v += ' – {} GB'.format(self.size // 1000 if self.size else '?')
         return v
+
+    @property
+    def external_document_erasure(self):
+        """Returns the external ``DataStorage`` proof of erasure.
+        """
+        from ereuse_devicehub.resources.action.models import DataWipe
+        try:
+            ev = self.last_action_of(DataWipe)
+            return ev.document.url.to_text()
+        except LookupError:
+            return None
 
 
 class HardDrive(DataStorage):
@@ -619,26 +942,24 @@ class SolidStateDrive(DataStorage):
 
 class Motherboard(JoinedComponentTableMixin, Component):
     slots = Column(SmallInteger, check_range('slots', min=0))
-    slots.comment = """
-        PCI slots the motherboard has.
-    """
+    slots.comment = """PCI slots the motherboard has."""
     usb = Column(SmallInteger, check_range('usb', min=0))
     firewire = Column(SmallInteger, check_range('firewire', min=0))
     serial = Column(SmallInteger, check_range('serial', min=0))
     pcmcia = Column(SmallInteger, check_range('pcmcia', min=0))
     bios_date = Column(db.Date)
     bios_date.comment = """The date of the BIOS version."""
+    ram_slots = Column(db.SmallInteger, check_range('ram_slots'))
+    ram_max_size = Column(db.Integer, check_range('ram_max_size'))
 
 
 class NetworkMixin:
     speed = Column(SmallInteger, check_range('speed', min=10, max=10000))
-    speed.comment = """
-        The maximum speed this network adapter can handle, in mbps.
+    speed.comment = """The maximum speed this network adapter can handle,
+    in mbps.
     """
     wireless = Column(Boolean, nullable=False, default=False)
-    wireless.comment = """
-        Whether it is a wireless interface.
-    """
+    wireless.comment = """Whether it is a wireless interface."""
 
     def __format__(self, format_spec):
         v = super().__format__(format_spec)
@@ -679,8 +1000,7 @@ class SoundCard(JoinedComponentTableMixin, Component):
 
 
 class Display(JoinedComponentTableMixin, DisplayMixin, Component):
-    """
-    The display of a device. This is used in all devices that have
+    """The display of a device. This is used in all devices that have
     displays but that it is not their main part, like laptops,
     mobiles, smart-watches, and so on; excluding ``ComputerMonitor``
     and ``TelevisionSet``.
@@ -694,16 +1014,28 @@ class Battery(JoinedComponentTableMixin, Component):
     technology = db.Column(db.Enum(BatteryTechnology))
     size = db.Column(db.Integer, nullable=False)
     size.comment = """Maximum battery capacity by design, in mAh.
-    
+
     Use BatteryTest's "size" to get the actual size of the battery.
     """
 
     @property
     def capacity(self) -> float:
         """The quantity of """
-        from ereuse_devicehub.resources.event.models import MeasureBattery
-        real_size = self.last_event_of(MeasureBattery).size
+        from ereuse_devicehub.resources.action.models import MeasureBattery
+        real_size = self.last_action_of(MeasureBattery).size
         return real_size / self.size if real_size and self.size else None
+
+
+class Camera(Component):
+    """The camera of a device."""
+    focal_length = db.Column(db.SmallInteger)
+    video_height = db.Column(db.SmallInteger)
+    video_width = db.Column(db.Integer)
+    horizontal_view_angle = db.Column(db.Integer)
+    facing = db.Column(db.Enum(CameraFacing))
+    vertical_view_angle = db.Column(db.SmallInteger)
+    video_stabilization = db.Column(db.Boolean)
+    flash = db.Column(db.Boolean)
 
 
 class ComputerAccessory(Device):
@@ -795,14 +1127,50 @@ class Mixer(Cooking):
     pass
 
 
+class DIYAndGardening(Device):
+    pass
+
+
+class Drill(DIYAndGardening):
+    max_drill_bit_size = db.Column(db.SmallInteger)
+
+
+class PackOfScrewdrivers(Device):
+    pass
+
+
+class Home(Device):
+    pass
+
+
+class Dehumidifier(Home):
+    size = db.Column(db.SmallInteger)
+    size.comment = """The capacity in Liters."""
+
+
+class Stairs(Home):
+    max_allowed_weight = db.Column(db.Integer)
+
+
+class Recreation(Device):
+    pass
+
+
+class Bike(Recreation):
+    wheel_size = db.Column(db.SmallInteger)
+    gears = db.Column(db.SmallInteger)
+
+
+class Racket(Recreation):
+    pass
+
+
 class Manufacturer(db.Model):
     """The normalized information about a manufacturer.
 
     Ideally users should use the names from this list when submitting
     devices.
     """
-    CSV_DELIMITER = csv.get_dialect('excel').delimiter
-
     name = db.Column(CIText(), primary_key=True)
     name.comment = """The normalized name of the manufacturer."""
     url = db.Column(URL(), unique=True)
@@ -827,3 +1195,19 @@ class Manufacturer(db.Model):
                 'COPY common.manufacturer FROM STDIN (FORMAT csv)',
                 f
             )
+
+
+listener_reset_field_updated_in_actual_time(Device)
+
+
+def create_code_tag(mapper, connection, device):
+    """
+    This function create a new tag every time than one device is create.
+    this tag is the same of devicehub_id.
+    """
+    from ereuse_devicehub.resources.tag.model import Tag
+    tag = Tag(device_id=device.id, id=device.devicehub_id)
+    db.session.add(tag)
+
+
+event.listen(Device, 'after_insert', create_code_tag, propagate=True)

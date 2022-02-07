@@ -16,10 +16,10 @@ from ereuse_devicehub.resources.user.models import User
 from tests.conftest import app_context, create_user
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(app_context.__name__)
 def test_create_user_method_with_agent(app: Devicehub):
-    """
-    Tests creating an user through the main method.
+    """Tests creating an user through the main method.
 
     This method checks that the token is correct, too.
     """
@@ -42,6 +42,7 @@ def test_create_user_method_with_agent(app: Devicehub):
     assert individual.email == user.email
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(app_context.__name__)
 def test_create_user_email_insensitive():
     """Ensures email is case insensitive."""
@@ -54,6 +55,7 @@ def test_create_user_email_insensitive():
     assert u1.email == 'foo@foo.com'
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(app_context.__name__)
 def test_hash_password():
     """Tests correct password hashing and equaling."""
@@ -62,9 +64,9 @@ def test_hash_password():
     assert user.password == 'foo'
 
 
+@pytest.mark.mvp
 def test_login_success(client: Client, app: Devicehub):
-    """
-    Tests successfully performing login.
+    """Tests successfully performing login.
     This checks that:
 
     - User is returned.
@@ -85,6 +87,40 @@ def test_login_success(client: Client, app: Devicehub):
     assert user['inventories'][0]['id'] == 'test'
 
 
+@pytest.mark.mvp
+@pytest.mark.usefixtures(app_context.__name__)
+def test_login_active_phantom(client: Client):
+    """Tests successfully performing login.
+    This checks that:
+
+    - User is returned if is active and is not phantom.
+
+    """
+    dbuser = User(email='foo@foo.com', password='foo')
+    dbuser1 = User(email='foo1@foo.com', password='foo', active=True, phantom=False)
+    dbuser2 = User(email='foo2@foo.com', password='foo', active=False, phantom=False)
+    dbuser3 = User(email='foo3@foo.com', password='foo', active=True, phantom=True)
+    dbuser4 = User(email='foo4@foo.com', password='foo', active=False, phantom=True)
+    db.session.add(dbuser)
+    db.session.add(dbuser1)
+    db.session.add(dbuser2)
+    db.session.add(dbuser3)
+    db.session.add(dbuser4)
+    db.session.commit()
+    db.session.flush()
+
+    assert dbuser.active
+    assert not dbuser.phantom
+
+    uri = '/users/login/'
+    client.post({'email': 'foo@foo.com', 'password': 'foo'}, uri=uri, status=200)
+    client.post({'email': 'foo1@foo.com', 'password': 'foo'}, uri=uri, status=200)
+    client.post({'email': 'foo2@foo.com', 'password': 'foo'}, uri=uri, status=401)
+    client.post({'email': 'foo3@foo.com', 'password': 'foo'}, uri=uri, status=401)
+    client.post({'email': 'foo4@foo.com', 'password': 'foo'}, uri=uri, status=401)
+
+
+@pytest.mark.mvp
 def test_login_failure(client: Client, app: Devicehub):
     """Tests performing wrong login."""
     # Wrong password

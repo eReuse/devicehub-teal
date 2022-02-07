@@ -5,7 +5,7 @@
     "manufacturer": 'bar',
     "model": 'baz',
     "type": "Desktop",
-    "events": [],
+    "actions": [],
     "chassis": "Tower"
   },
   "elapsed": 7631,
@@ -13,10 +13,6 @@
   "type": "Snapshot",
   "closed": false,
   "uuid": "5387668a-8d21-4053-a1ac-36efb97fc3ea",
-  "expectedEvents": [
-    "TestDataStorage",
-    "EraseBasic"
-  ],
   "components": [
   {
     "serialNumber": null,
@@ -25,7 +21,13 @@
     "address": 64,
     "model": "Intel Core i3-2100 CPU @ 3.10GHz",
     "type": "Processor",
-    "events": [],
+    "actions": [
+    {
+      "elapsed": 0,
+      "rate": 6665.7,
+      "type": "BenchmarkProcessor"
+    }
+    ],
     "cores": 2,
     "speed": 1.6071410000000002
   },
@@ -33,7 +35,7 @@
     "manufacturer": "Intel Corporation",
     "model": "6 Series/C200 Series Chipset Family High Definition Audio Controller",
     "type": "SoundCard",
-    "events": [],
+    "actions": [],
     "serialNumber": null
   },
   {
@@ -43,7 +45,7 @@
     "format": "DIMM",
     "model": "9905403-038.A00LF",
     "type": "RamModule",
-    "events": [],
+    "actions": [],
     "interface": "DDR3",
     "speed": 1333.0
   },
@@ -51,7 +53,7 @@
     "manufacturer": "Realtek Semiconductor Co., Ltd.",
     "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
     "type": "NetworkAdapter",
-    "events": [],
+    "actions": [],
     "serialNumber": "f4:6d:04:12:9b:85",
     "speed": 1000,
     "wireless": false
@@ -62,21 +64,21 @@
     "manufacturer": "Western Digital",
     "model": "WDC WD3200AAJS-2",
     "type": "HardDrive",
-    "events": [
+    "actions": [
     {
-      "endTime": "2018-07-13T11:54:55.100581",
+      "endTime": "2018-07-13T11:54:55.100581+00:00",
       "steps": [
       {
-        "endTime": "2018-07-13T11:54:55.096491",
+        "endTime": "2018-07-13T11:54:55.096491+00:00",
         "type": "StepRandom",
         "severity": "Info",
-        "startTime": "2018-07-13T10:52:45.092981"
+        "startTime": "2018-07-13T10:52:45.092981+00:00"
       }
       ],
       "type": "EraseBasic",
       "severity": "Info",
 
-      "startTime": "2018-07-13T10:52:45.092612"
+      "startTime": "2018-07-13T10:52:45.092612+00:00"
     },
     {
       "lifetime": 24658,
@@ -90,6 +92,12 @@
       "reallocatedSectorCount": 15,
       "type": "TestDataStorage",
       "status": "Completed: read failure"
+    },
+    {
+      "readSpeed": 63.3,
+      "type": "BenchmarkDataStorage",
+      "elapsed": 18,
+      "writeSpeed": 20.1
     }
     ],
     "interface": "ATA"
@@ -100,20 +108,20 @@
     "manufacturer": "Western Digital",
     "model": "WDC WD3200AAJS-0",
     "type": "HardDrive",
-    "events": [
+    "actions": [
     {
-      "endTime": "2018-07-13T12:55:47.331586",
+      "endTime": "2018-07-13T12:55:47.331586+00:00",
       "steps": [
       {
-        "endTime": "2018-07-13T12:55:47.326835",
+        "endTime": "2018-07-13T12:55:47.326835+00:00",
         "type": "StepRandom",
         "severity": "Info",
-        "startTime": "2018-07-13T11:54:55.100925"
+        "startTime": "2018-07-13T11:54:55.100925+00:00"
       }
       ],
       "type": "EraseBasic",
       "severity": "Info",
-      "startTime": "2018-07-13T11:54:55.100667"
+      "startTime": "2018-07-13T11:54:55.100667+00:00"
     },
     {
       "lifetime": 21979,
@@ -127,6 +135,12 @@
       "reallocatedSectorCount": 0,
       "type": "TestDataStorage",
       "status": "Completed without error"
+    },
+    {
+      "readSpeed": 63.3,
+      "type": "BenchmarkDataStorage",
+      "elapsed": 18,
+      "writeSpeed": 20.1
     }
     ],
     "interface": "ATA"
@@ -136,7 +150,7 @@
     "manufacturer": "Intel Corporation",
     "model": "2nd Generation Core Processor Family Integrated Graphics Controller",
     "type": "GraphicCard",
-    "events": [],
+    "actions": [],
     "memory": 256.0
   },
   {
@@ -145,12 +159,12 @@
     "manufacturer": "ASUSTeK Computer INC.",
     "model": "P8H61-M LE",
     "type": "Motherboard",
-    "events": [],
+    "actions": [],
     "slots": 2,
     "usb": 2,
     "firewire": 0,
     "serialNumber": "109192430003459"
   }
   ],
-  "endTime": "2018-07-13T10:48:36.738398"
+  "endTime": "2018-07-13T10:48:36.738398+00:00"
 }

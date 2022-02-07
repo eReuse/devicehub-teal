@@ -2,21 +2,21 @@
   "closed": true,
   "components": [
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Intel Corporation",
     "model": "NM10/ICH7 Family High Definition Audio Controller",
     "serialNumber": null,
     "type": "SoundCard"
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Azurewave",
     "model": "USB 2.0 UVC VGA WebCam",
     "serialNumber": "0x0001",
     "type": "SoundCard"
   },
   {
-    "events": [],
+    "actions": [],
     "format": "DIMM",
     "interface": "DDR2",
     "manufacturer": null,
@@ -29,7 +29,7 @@
   {
     "address": 64,
     "cores": 1,
-    "events": [
+    "actions": [
     {
       "elapsed": 165,
       "rate": 164.8342,
@@ -49,7 +49,7 @@
     "type": "Processor"
   },
   {
-    "events": [
+    "actions": [
     {
       "elapsed": 16,
       "readSpeed": 66.2,
@@ -65,7 +65,7 @@
     "type": "HardDrive"
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Qualcomm Atheros",
     "model": "AR9285 Wireless Network Adapter",
     "serialNumber": "74:2f:68:8b:fd:c8",
@@ -73,7 +73,7 @@
     "wireless": true
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Qualcomm Atheros",
     "model": "AR8152 v2.0 Fast Ethernet",
     "serialNumber": "14:da:e9:42:f6:7c",
@@ -82,7 +82,7 @@
     "wireless": false
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Intel Corporation",
     "memory": 256.0,
     "model": "Atom Processor D4xx/D5xx/N4xx/N5xx Integrated Graphics Controller",
@@ -90,7 +90,12 @@
     "type": "GraphicCard"
   },
   {
-    "events": [],
+    "actions": [
+    {
+      "type": "TestBios",
+      "accessRange": "A",
+    }
+    ],
     "firewire": 0,
     "manufacturer": "ASUSTeK Computer INC.",
     "model": "1001PXD",
@@ -104,7 +109,7 @@
   ],
   "device": {
     "chassis": "Netbook",
-    "events": [
+    "actions": [
     {
       "elapsed": 16,
       "rate": 15.8978,
@@ -112,9 +117,8 @@
     },
     {
       "appearanceRange": "A",
-      "biosRange": "A",
       "functionalityRange": "A",
-      "type": "WorkbenchRate"
+      "type": "VisualTest"
     }
     ],
     "manufacturer": "ASUSTeK Computer INC.",
@@ -124,9 +128,6 @@
   },
   "elapsed": 6,
   "endTime": "2018-10-14T21:22:14.777235+00:00",
-  "expectedEvents": [
-    "Benchmark"
-  ],
   "software": "Workbench",
   "type": "Snapshot",
   "uuid": "7dc4d19c-914e-4652-a381-d641325fb9c2",

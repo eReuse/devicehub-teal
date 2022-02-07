@@ -1,0 +1,36 @@
+type: Snapshot
+uuid: 81e1f340-5aac-4619-931b-d312e4866cb7
+version: 11.0
+software: Workbench
+elapsed: 4
+device: 
+  type: Laptop
+  chassis: null
+  serialNumber: d5s
+  model: d5ml
+  manufacturer: d5mr
+components: 
+  - type: RamModule
+    serialNumber: rm5s
+    model: rm5ml
+    manufacturer: rm5mr
+    speed: 1333
+    type: Processor
+    serialNumber: p5s
+    model: p5ml
+    manufacturer: p5mr
+    speed: 1.6
+    actions: 
+      - type: BenchmarkProcessor
+        rate: 2410
+        elapsed: 11
+    size: 160041.88569599998
+    model: hdd5m
+    type: HardDrive
+    manufacturer: hdd5mr
+    serialNumber: hdd5s
+    actions: 
+      - type: BenchmarkDataStorage
+        elapsed: 22
+        writeSpeed: 17.3
+        readSpeed: 41.6

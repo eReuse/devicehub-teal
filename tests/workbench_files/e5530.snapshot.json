@@ -1,0 +1,167 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
+  "device": {
+    "actions": [],
+    "type": "Laptop",
+    "manufacturer": "Dell Inc.",
+    "model": "Latitude E5530 non-vPro",
+    "serialNumber": "D8FTRY1",
+    "chassis": "Laptop",
+    "sku": "Latitude E5530 non-vPro",
+    "version": "01"
+  },
+  "components": [
+    {
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 11969.98,
+          "elapsed": 0
+        }
+      ],
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core i5-3340M CPU @ 2.70GHz",
+      "serialNumber": null,
+      "speed": 1.204321,
+      "address": 64,
+      "cores": 2,
+      "threads": 4,
+      "brand": "Core i5",
+      "generation": 3
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": "Micron",
+      "model": "8KTF51264HZ-1G6E1",
+      "serialNumber": "E88F671D",
+      "format": "SODIMM",
+      "size": 4096.0,
+      "interface": "DDR3",
+      "speed": 1600.0
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": "Micron",
+      "model": "8KTF51264HZ-1G6E1",
+      "serialNumber": "E88F671E",
+      "format": "SODIMM",
+      "size": 4096.0,
+      "interface": "DDR3",
+      "speed": 1600.0
+    },
+    {
+      "actions": [
+        {
+          "elapsed": 13,
+          "readSpeed": 106.0,
+          "writeSpeed": 26.6,
+          "type": "BenchmarkDataStorage"
+        }
+      ],
+      "type": "HardDrive",
+      "manufacturer": null,
+      "model": "HGST HTS725050A7",
+      "serialNumber": "TF755AWHKL0LHM",
+      "size": 500108.0,
+      "interface": null,
+      "variant": "A560"
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "model": "3rd Gen Core processor Graphics Controller",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Broadcom Limited",
+      "model": "BCM43228 802.11a/b/g/n",
+      "serialNumber": null,
+      "speed": null,
+      "variant": "00",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Broadcom Limited",
+      "model": "NetXtreme BCM5761 Gigabit Ethernet PCIe",
+      "serialNumber": "f0:1f:af:41:3f:18",
+      "speed": 1000.0,
+      "variant": "10",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "CN0Y4TWT7248737FA56RA01",
+      "model": "Laptop_Integrated_Webcam_E4HD",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "7 Series/C216 Chipset Family High Definition Audio Controller",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "Display",
+      "model": "DC9YJ 156WFC LCD Monitor",
+      "manufacturer": "LGD DC9YJ 156WFC",
+      "serialNumber": null,
+      "resolutionWidth": 1920,
+      "resolutionHeight": 1080,
+      "refreshRate": 60,
+      "size": 16.0,
+      "technology": "LCD",
+      "productionDate": "2011-01-02T00:00:00"
+    },
+    {
+      "actions": [
+        {
+          "type": "MeasureBattery",
+          "severity": "Info",
+          "size": 1997.0,
+          "voltage": 10914.0,
+          "cycleCount": null
+        }
+      ],
+      "type": "Battery",
+      "serialNumber": "19075",
+      "manufacturer": "LGC-LGC2.8",
+      "model": "DELL HMYXT37",
+      "size": 5600,
+      "technology": "LiIon"
+    },
+    {
+      "actions": [],
+      "type": "Motherboard",
+      "manufacturer": "Dell Inc.",
+      "model": "0VP63H",
+      "serialNumber": "/D8FTRY1/CN1296139I001F/",
+      "usb": 3,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 0,
+      "biosDate": "2013-08-07T00:00:00",
+      "version": "A12",
+      "ramSlots": 2,
+      "ramMaxSize": 16
+    }
+  ]
+}

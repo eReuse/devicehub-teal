@@ -1,12 +1,8 @@
 {
-  "expectedEvents": [
-    "Benchmark",
-    "TestDataStorage",
-    "StressTest"
-  ],
+
   "device": {
     "model": "HP Compaq 8100 Elite SFF",
-    "events": [
+    "actions": [
     {
       "type": "BenchmarkRamSysbench",
       "elapsed": 1,
@@ -27,7 +23,7 @@
   {
     "model": "Intel Core i3 CPU 530 @ 2.93GHz",
     "address": 64,
-    "events": [
+    "actions": [
     {
       "type": "BenchmarkProcessor",
       "elapsed": 0,
@@ -48,7 +44,7 @@
   },
   {
     "model": "Core Processor Integrated Graphics Controller",
-    "events": [],
+    "actions": [],
     "serialNumber": null,
     "type": "GraphicCard",
     "manufacturer": "Intel Corporation",
@@ -56,7 +52,7 @@
   },
   {
     "model": "5 Series/3400 Series Chipset High Definition Audio",
-    "events": [],
+    "actions": [],
     "serialNumber": null,
     "type": "SoundCard",
     "manufacturer": "Intel Corporation"
@@ -64,7 +60,7 @@
   {
     "model": "16JTF25664AZ-1G4F",
     "interface": "DDR3",
-    "events": [],
+    "actions": [],
     "serialNumber": "B4012F30",
     "type": "RamModule",
     "manufacturer": "JEDEC ID:80 2C",
@@ -75,7 +71,7 @@
   {
     "model": "16JTF25664AZ-1G4F",
     "interface": "DDR3",
-    "events": [],
+    "actions": [],
     "serialNumber": "8E9F2E29",
     "type": "RamModule",
     "manufacturer": "JEDEC ID:80 2C",
@@ -86,7 +82,7 @@
   {
     "model": "16JTF25664AZ-1G4F",
     "interface": "DDR3",
-    "events": [],
+    "actions": [],
     "serialNumber": "9A012F30",
     "type": "RamModule",
     "manufacturer": "JEDEC ID:80 2C",
@@ -97,7 +93,7 @@
   {
     "model": "16JTF25664AZ-1G4F",
     "interface": "DDR3",
-    "events": [],
+    "actions": [],
     "serialNumber": "8F9F2E29",
     "type": "RamModule",
     "manufacturer": "JEDEC ID:80 2C",
@@ -107,7 +103,7 @@
   },
   {
     "model": "82578DM Gigabit Network Connection",
-    "events": [],
+    "actions": [],
     "serialNumber": "6c:62:6d:81:22:9f",
     "type": "NetworkAdapter",
     "wireless": false,
@@ -117,7 +113,7 @@
   {
     "model": "WDC WD3200AAJS-6",
     "interface": "ATA",
-    "events": [
+    "actions": [
     {
       "currentPendingSectorCount": 0,
       "commandTimeout": 0,
@@ -148,7 +144,7 @@
   {
     "model": "304Ah",
     "pcmcia": 0,
-    "events": [],
+    "actions": [],
     "usb": 2,
     "firewire": 0,
     "type": "Motherboard",
@@ -158,7 +154,7 @@
     "serialNumber": "CZC0408YJG"
   }
   ],
-  "endTime": "2018-07-11T16:11:43.467824",
+  "endTime": "2018-07-11T16:11:43.467824+00:00",
   "version": "11.0a3",
   "software": "Workbench",
   "type": "Snapshot",

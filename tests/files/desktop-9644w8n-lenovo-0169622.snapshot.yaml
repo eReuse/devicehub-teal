@@ -2,14 +2,14 @@
   "closed": true,
   "components": [
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Intel Corporation",
     "model": "NM10/ICH7 Family High Definition Audio Controller",
     "serialNumber": null,
     "type": "SoundCard"
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Broadcom Inc. and subsidiaries",
     "model": "NetLink BCM5786 Gigabit Ethernet PCI Express",
     "serialNumber": "00:1a:6b:5e:7f:10",
@@ -18,7 +18,7 @@
     "wireless": false
   },
   {
-    "events": [],
+    "actions": [],
     "format": "DIMM",
     "interface": "DDR",
     "manufacturer": null,
@@ -29,7 +29,7 @@
     "type": "RamModule"
   },
   {
-    "events": [],
+    "actions": [],
     "format": "DIMM",
     "interface": "DDR",
     "manufacturer": null,
@@ -41,7 +41,7 @@
   },
   {
     "address": 64,
-    "events": [
+    "actions": [
     {
       "elapsed": 33,
       "rate": 32.9274,
@@ -61,7 +61,7 @@
     "type": "Processor"
   },
   {
-    "events": [],
+    "actions": [],
     "manufacturer": "Intel Corporation",
     "memory": 256.0,
     "model": "82946GZ/GL Integrated Graphics Controller",
@@ -69,7 +69,12 @@
     "type": "GraphicCard"
   },
   {
-    "events": [],
+    "actions": [
+    {
+      "type": "TestBios",
+      "accessRange": "E"
+    }
+    ],
     "firewire": 0,
     "manufacturer": "LENOVO",
     "model": "LENOVO",
@@ -83,12 +88,11 @@
   ],
   "device": {
     "chassis": "Microtower",
-    "events": [
+    "actions": [
     {
       "appearanceRange": "D",
-      "biosRange": "E",
       "functionalityRange": "D",
-      "type": "WorkbenchRate"
+      "type": "VisualTest"
     },
     {
       "elapsed": 300,
@@ -108,12 +112,6 @@
   },
   "elapsed": 338,
   "endTime": "2019-02-13T11:57:31.378330+00:00",
-  "expectedEvents": [
-    "Benchmark",
-    "TestDataStorage",
-    "StressTest",
-    "Install"
-  ],
   "software": "Workbench",
   "type": "Snapshot",
   "uuid": "d7904bd3-7d0f-4918-86b1-e21bfab738f9",

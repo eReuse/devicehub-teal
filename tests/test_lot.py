@@ -1,20 +1,23 @@
 import pytest
 from flask import g
+from pytest import raises
+from json.decoder import JSONDecodeError
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.lot.models import Lot, LotDevice
 from tests import conftest
 
-"""
-In case of error, debug with:
+"""In case of error, debug with:
 
     try:
         with db.session.begin_nested():
-            
+
     except Exception as e:
         db.session.commit()
         print(e)
@@ -23,6 +26,7 @@ In case of error, debug with:
 """
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_model_children():
     """Tests the property Lot.children
@@ -66,8 +70,9 @@ def test_lot_model_children():
     assert not l3.parents
 
 
+@pytest.mark.mvp
 def test_lot_modify_patch_endpoint_and_delete(user: UserClient):
-    """Creates and modifies lot properties through the endpoint"""
+    """Creates and modifies lot properties through the endpoint."""
     l, _ = user.post({'name': 'foo', 'description': 'baz'}, res=Lot)
     assert l['name'] == 'foo'
     assert l['description'] == 'baz'
@@ -80,6 +85,7 @@ def test_lot_modify_patch_endpoint_and_delete(user: UserClient):
     user.get(res=Lot, item=l['id'], status=404)
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_device_relationship():
     device = Desktop(serial_number='foo',
@@ -286,6 +292,7 @@ def test_lot_unite_graphs_and_find():
     assert l4 not in l3 and l5 not in l3 and l6 not in l3 and l7 not in l3 and l8 not in l3
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_lot_roots():
     """Tests getting the method Lot.roots."""
@@ -299,18 +306,19 @@ def test_lot_roots():
     assert set(Lot.roots()) == {l1, l3}
 
 
+@pytest.mark.mvp
 def test_post_get_lot(user: UserClient):
     """Tests submitting and retreiving a basic lot."""
     l, _ = user.post({'name': 'Foo'}, res=Lot)
     assert l['name'] == 'Foo'
     l, _ = user.get(res=Lot, item=l['id'])
     assert l['name'] == 'Foo'
-    assert not l['children']
 
 
 def test_lot_post_add_children_view_ui_tree_normal(user: UserClient):
     """Tests adding children lots to a lot through the view and
-    GETting the results."""
+    GETting the results.
+    """
     parent, _ = user.post(({'name': 'Parent'}), res=Lot)
     child, _ = user.post(({'name': 'Child'}), res=Lot)
     parent, _ = user.post({},
@@ -345,31 +353,81 @@ def test_lot_post_add_children_view_ui_tree_normal(user: UserClient):
     assert lots[0]['name'] == 'Parent'
 
 
-def test_lot_post_add_remove_device_view(app: Devicehub, user: UserClient):
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_lot_post_add_remove_device_view(user: UserClient):
     """Tests adding a device to a lot using POST and
-    removing it with DELETE."""
+    removing it with DELETE.
+    """
     # todo check with components
-    with app.app_context():
-        device = Desktop(serial_number='foo',
-                         model='bar',
-                         manufacturer='foobar',
-                         chassis=ComputerChassis.Lunchbox)
-        db.session.add(device)
-        db.session.commit()
-        device_id = device.id
+    g.user = User.query.one()
+    device = Desktop(serial_number='foo',
+                     model='bar',
+                     manufacturer='foobar',
+                     chassis=ComputerChassis.Lunchbox,
+                     owner_id=user.user['id'])
+    db.session.add(device)
+    db.session.commit()
+    device_id = device.id
+    devicehub_id = device.devicehub_id
     parent, _ = user.post(({'name': 'lot'}), res=Lot)
     lot, _ = user.post({},
                        res=Lot,
                        item='{}/devices'.format(parent['id']),
                        query=[('id', device_id)])
-    assert lot['devices'][0]['id'] == device_id, 'Lot contains device'
-    device, _ = user.get(res=Device, item=device_id)
-    assert len(device['lots']) == 1
-    assert device['lots'][0]['id'] == lot['id'], 'Device is inside lot'
+    lot = Lot.query.filter_by(id=lot['id']).one()
+    assert list(lot.devices)[0].id == device_id, 'Lot contains device'
+    device = Device.query.filter_by(devicehub_id=devicehub_id).one()
+    assert len(device.lots) == 1
+    # assert device['lots'][0]['id'] == lot['id'], 'Device is inside lot'
+    assert list(device.lots)[0].id == lot.id, 'Device is inside lot'
 
     # Remove the device
-    lot, _ = user.delete(res=Lot,
-                         item='{}/devices'.format(parent['id']),
-                         query=[('id', device_id)],
-                         status=200)
-    assert not len(lot['devices'])
+    user.delete(res=Lot,
+                item='{}/devices'.format(parent['id']),
+                query=[('id', device_id)],
+                status=200)
+    assert not len(lot.devices)
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_lot_error_add_device_from_other_user(user: UserClient):
+    # TODO
+    """Tests adding a device to a lot using POST and
+    removing it with DELETE.
+    """
+    g.user = User.query.one()
+    user2 = User(email='baz@baz.cxm', password='baz')
+    user2.individuals.add(Person(name='Tommy'))
+    db.session.add(user2)
+    db.session.commit()
+
+    device = Desktop(serial_number='foo',
+                     model='bar',
+                     manufacturer='foobar',
+                     chassis=ComputerChassis.Lunchbox,
+                     owner_id=user2.id)
+    db.session.add(device)
+    db.session.commit()
+
+    device_id = device.id
+    parent, _ = user.post(({'name': 'lot'}), res=Lot)
+    lot, _ = user.post({},
+                       res=Lot,
+                       item='{}/devices'.format(parent['id']),
+                       query=[('id', device_id)])
+    lot = Lot.query.filter_by(id=lot['id']).one()
+    assert list(lot.devices) == [], 'Lot contains device'
+    assert len(lot.devices) == 0
+
+
+@pytest.mark.mvp
+def test_get_multiple_lots(user: UserClient):
+    """Tests submitting and retreiving multiple lots."""
+    l, _ = user.post({'name': 'Lot1', 'description': 'comments1,lot1,testcomment,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot2', 'description': 'comments2,lot2,testcomment,'}, res=Lot)
+    l, _ = user.post({'name': 'Lot3', 'description': 'comments3,lot3,testcomment,'}, res=Lot)
+
+    l, _ = user.get(res=Lot)
+    assert len(l) == 3

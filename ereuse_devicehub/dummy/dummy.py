@@ -1,5 +1,6 @@
 import itertools
 import json
+import jwt
 from pathlib import Path
 from typing import Set
 
@@ -11,12 +12,14 @@ from ereuse_utils.test import ANY
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.action import models as m
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.resources.event import models as m
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
+from ereuse_devicehub.resources.user.models import Session
+from ereuse_devicehub.resources.enums import SessionType
 
 
 class Dummy:
@@ -65,18 +68,24 @@ class Dummy:
         with click_spinner.spinner():
             out = runner.invoke('org', 'add', *self.ORG).output
             org_id = json.loads(out)['id']
-            user = self.user_client('user@dhub.com', '1234')
+            user1 = self.user_client('user@dhub.com', '1234', 'user1')
+            user2 = self.user_client('user2@dhub.com', '1234', 'user2')
+            user3 = self.user_client('user3@dhub.com', '1234', 'user3')
+            user4 = self.user_client('user4@dhub.com', '1234', 'user4')
+
             # todo put user's agent into Org
             for id in self.TAGS:
-                user.post({'id': id}, res=Tag)
+                user1.post({'id': id}, res=Tag)
             for id, sec in self.ET:
                 runner.invoke('tag', 'add', id,
                               '-p', 'https://t.devicetag.io',
                               '-s', sec,
+                              '-u', user1.user["id"],
                               '-o', org_id)
             # create tag for pc-laudem
             runner.invoke('tag', 'add', 'tagA',
                           '-p', 'https://t.devicetag.io',
+                          '-u', user1.user["id"],
                           '-s', 'tagA-secondary')
         files = tuple(Path(__file__).parent.joinpath('files').iterdir())
         print('done.')
@@ -86,91 +95,127 @@ class Dummy:
             for path in bar:
                 with path.open() as f:
                     snapshot = yaml.load(f)
-                s, _ = user.post(res=m.Snapshot, data=snapshot)
+                s, _ = user1.post(res=m.Snapshot, data=self.json_encode(snapshot))
                 if s.get('uuid', None) == 'ec23c11b-80b6-42cd-ac5c-73ba7acddbc4':
                     sample_pc = s['device']['id']
+                    sample_pc_devicehub_id = s['device']['devicehubID']
                 else:
                     pcs.add(s['device']['id'])
                 if s.get('uuid', None) == 'de4f495e-c58b-40e1-a33e-46ab5e84767e':  # oreo
                     # Make one hdd ErasePhysical
                     hdd = next(hdd for hdd in s['components'] if hdd['type'] == 'HardDrive')
-                    user.post({'type': 'ErasePhysical', 'method': 'Shred', 'device': hdd['id']},
-                              res=m.Event)
+                    user1.post({'type': 'ErasePhysical', 'method': 'Shred', 'device': hdd['id']},
+                               res=m.Action)
         assert sample_pc
         print('PC sample is', sample_pc)
         # Link tags and eTags
         for tag, pc in zip((self.TAGS[1], self.TAGS[2], self.ET[0][0], self.ET[1][1]), pcs):
-            user.put({}, res=Tag, item='{}/device/{}'.format(tag, pc), status=204)
+            user1.put({}, res=Tag, item='{}/device/{}'.format(tag, pc), status=204)
 
-        # Perform generic events
+        # Perform generic actions
         for pc, model in zip(pcs,
-                             {m.ToRepair, m.Repair, m.ToPrepare, m.ReadyToUse, m.ToPrepare,
+                             {m.ToRepair, m.Repair, m.ToPrepare, m.Ready, m.ToPrepare,
                               m.Prepare}):
-            user.post({'type': model.t, 'devices': [pc]}, res=m.Event)
+            user1.post({'type': model.t, 'devices': [pc]}, res=m.Action)
 
         # Perform a Sell to several devices
-        user.post(
-            {
-                'type': m.Sell.t,
-                'to': user.user['individuals'][0]['id'],
-                'devices': list(itertools.islice(pcs, len(pcs) // 2))
-            },
-            res=m.Event)
+        # user1.post(
+            # {
+                # 'type': m.Sell.t,
+                # 'to': user1.user['individuals'][0]['id'],
+                # 'devices': list(itertools.islice(pcs, len(pcs) // 2))
+            # },
+            # res=m.Action)
 
-        parent, _ = user.post(({'name': 'Parent'}), res=Lot)
-        child, _ = user.post(({'name': 'Child'}), res=Lot)
-        parent, _ = user.post({},
-                              res=Lot,
-                              item='{}/children'.format(parent['id']),
-                              query=[('id', child['id'])])
+        lot_user, _ = user1.post({'name': 'LoteStephan'}, res=Lot)
 
-        lot, _ = user.post({},
-                           res=Lot,
-                           item='{}/devices'.format(child['id']),
-                           query=[('id', pc) for pc in itertools.islice(pcs, len(pcs) // 3)])
-        assert len(lot['devices'])
+        lot_user2, _ = user2.post({'name': 'LoteSergio'}, res=Lot)
+
+        lot_user3, _ = user3.post({'name': 'LoteManos'}, res=Lot)
+
+        lot_user4, _ = user4.post({'name': 'LoteJordi'}, res=Lot)
+
+        lot, _ = user1.post({},
+                            res=Lot,
+                            item='{}/devices'.format(lot_user['id']),
+                            query=[('id', pc) for pc in itertools.islice(pcs, 1, 4)])
+        # assert len(lot['devices'])
+
+        lot2, _ = user2.post({},
+                             res=Lot,
+                             item='{}/devices'.format(lot_user2['id']),
+                             query=[('id', pc) for pc in itertools.islice(pcs, 4, 6)])
+
+        lot3, _ = user3.post({},
+                             res=Lot,
+                             item='{}/devices'.format(lot_user3['id']),
+                             query=[('id', pc) for pc in itertools.islice(pcs, 11, 14)])
+
+        lot4, _ = user4.post({},
+                             res=Lot,
+                             item='{}/devices'.format(lot_user4['id']),
+                             query=[('id', pc) for pc in itertools.islice(pcs, 14, 16)])
 
         # Keep this at the bottom
-        inventory, _ = user.get(res=Device)
+        inventory, _ = user1.get(res=Device)
         assert len(inventory['items'])
 
-        i, _ = user.get(res=Device, query=[('search', 'intel')])
+        i, _ = user1.get(res=Device, query=[('search', 'intel')])
         assert 12 == len(i['items'])
-        i, _ = user.get(res=Device, query=[('search', 'pc')])
+        i, _ = user1.get(res=Device, query=[('search', 'pc')])
         assert 14 == len(i['items'])
 
-        # Let's create a set of events for the pc device
+        # Let's create a set of actions for the pc device
         # Make device Ready
 
-        user.post({'type': m.ToPrepare.t, 'devices': [sample_pc]}, res=m.Event)
-        user.post({'type': m.Prepare.t, 'devices': [sample_pc]}, res=m.Event)
-        user.post({'type': m.ReadyToUse.t, 'devices': [sample_pc]}, res=m.Event)
-        user.post({'type': m.Price.t, 'device': sample_pc, 'currency': 'EUR', 'price': 85},
-                  res=m.Event)
+        user1.post({'type': m.ToPrepare.t, 'devices': [sample_pc]}, res=m.Action)
+        user1.post({'type': m.Prepare.t, 'devices': [sample_pc]}, res=m.Action)
+        user1.post({'type': m.Ready.t, 'devices': [sample_pc]}, res=m.Action)
+        user1.post({'type': m.Price.t, 'device': sample_pc, 'currency': 'EUR', 'price': 85},
+                   res=m.Action)
+
         # todo test reserve
-        user.post(  # Sell device
-            {
-                'type': m.Sell.t,
-                'to': user.user['individuals'][0]['id'],
-                'devices': [sample_pc]
-            },
-            res=m.Event)
+        # user1.post(  # Sell device
+            # {
+                # 'type': m.Sell.t,
+                # 'to': user1.user['individuals'][0]['id'],
+                # 'devices': [sample_pc]
+            # },
+            # res=m.Action)
         # todo Receive
 
-        user.get(res=Device, item=sample_pc)  # Test
+        user1.get(res=Device, item=sample_pc_devicehub_id)  # Test
         anonymous = self.app.test_client()
-        html, _ = anonymous.get(res=Device, item=sample_pc, accept=ANY)
+        html, _ = anonymous.get(res=Device, item=sample_pc_devicehub_id, accept=ANY)
         assert 'intel core2 duo cpu' in html
 
         # For netbook: to preapre -> torepair -> to dispose -> disposed
         print('⭐ Done.')
 
-    def user_client(self, email: str, password: str):
+    def user_client(self, email: str, password: str, name: str):
         user = User(email=email, password=password)
-        user.individuals.add(Person(name='Timmy'))
+
+        user.individuals.add(Person(name=name))
         db.session.add(user)
+        session_external = Session(user=user, type=SessionType.External)
+        session_internal = Session(user=user, type=SessionType.Internal)
+        db.session.add(session_internal)
+        db.session.add(session_external)
+
         db.session.commit()
         client = UserClient(self.app, user.email, password,
                             response_wrapper=self.app.response_class)
         client.login()
         return client
+
+    def json_encode(self, dev: str) -> dict:
+        """Encode json."""
+        data = {"type": "Snapshot"}
+        data['data'] = jwt.encode(dev,
+                          self.app.config['JWT_PASS'],
+                          algorithm="HS256",
+                          json_encoder=ereuse_utils.JSONEncoder
+        )
+
+        return data
+

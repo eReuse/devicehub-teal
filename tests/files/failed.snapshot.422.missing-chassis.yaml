@@ -1,0 +1,36 @@
+type: Snapshot
+uuid: 62b3e393-0c25-42cf-a5fa-ab796fac76dd
+version: 11.0
+software: Workbench
+elapsed: 4
+device: 
+  type: Laptop
+  chassis: Notebook
+  serialNumber: d6s
+  model: d6ml
+  manufacturer: d6mr
+components: 
+  - type: RamModule
+    serialNumber: rm6s
+    model: rm6ml
+    manufacturer: rm6mr
+    speed: 1333
+  - type: Processor
+    serialNumber: p6s
+    model: p6ml
+    manufacturer: p6mr
+    speed: 1.6
+    actions: 
+      - type: BenchmarkProcessor
+        rate: 2410
+        elapsed: 11
+  - type: HardDrive
+    size: 160041.88569599998
+    model: hdd4m
+    manufacturer: hdd4mr
+    serialNumber: hdd4s
+    actions: 
+      - type: BenchmarkDataStorage
+        elapsed: 22
+        writeSpeed: 17.3
+        readSpeed: 41.6

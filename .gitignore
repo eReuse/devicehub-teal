@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Vim swap files
+*.swp
+*.swo
+
 # C extensions
 *.so
 
@@ -106,6 +110,12 @@ ENV/
 
 # Other
 .idea/
+.vscode/
 .DS_Store
 /app.py
 
+# Environment
+.env
+
+# Temporal dir
+tmp/

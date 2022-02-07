@@ -7,7 +7,7 @@ from teal.resource import Converters, Resource
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.user import schemas
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.user.views import UserView, login
+from ereuse_devicehub.resources.user.views import UserView, login, logout
 
 
 class UserDef(Resource):
@@ -23,6 +23,8 @@ class UserDef(Resource):
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
         self.add_url_rule('/login/', view_func=login, methods={'POST'})
+        logout_view = app.auth.requires_auth(logout)
+        self.add_url_rule('/logout/', view_func=logout_view, methods={'GET'})
 
     @argument('email')
     @option('-i', '--inventory',

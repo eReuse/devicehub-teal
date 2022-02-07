@@ -1,0 +1,109 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
+  "device": {
+    "actions": [],
+    "type": "Desktop",
+    "manufacturer": "ASUS",
+    "model": "All Series",
+    "serialNumber": null,
+    "chassis": "Tower",
+    "sku": "All",
+    "version": "System Version"
+  },
+  "components": [
+    {
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 11969.98,
+          "elapsed": 0
+        }
+      ],
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core i5-4440 CPU @ 3.10GHz",
+      "serialNumber": null,
+      "speed": 1.4710990000000002,
+      "address": 64,
+      "cores": 4,
+      "threads": 4,
+      "brand": "Core i5",
+      "generation": 4
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": "Kingston",
+      "model": "9905584-017.A00LF",
+      "serialNumber": "9D341297",
+      "format": "DIMM",
+      "size": 4096.0,
+      "interface": "DDR3",
+      "speed": 1600.0
+    },
+    {
+      "actions": [
+        {
+          "elapsed": 13,
+          "readSpeed": 106.0,
+          "writeSpeed": 26.6,
+          "type": "BenchmarkDataStorage"
+        }
+      ],
+      "type": "HardDrive",
+      "manufacturer": "Western Digital",
+      "model": "WDC WD5000AAKX-0",
+      "serialNumber": "WD-WCC2EVE36697",
+      "size": 500108.0,
+      "interface": null,
+      "variant": "1H19"
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "model": "Xeon E3-1200 v3/4th Gen Core Processor Integrated Graphics Controller",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
+      "serialNumber": "e0:3f:49:1a:cf:8d",
+      "speed": 1000.0,
+      "variant": "0c",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "8 Series/C220 Series Chipset High Definition Audio Controller",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "Motherboard",
+      "manufacturer": "ASUSTeK COMPUTER INC.",
+      "model": "H81M-K",
+      "serialNumber": "131219772601126",
+      "usb": 3,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 0,
+      "biosDate": "2014-01-02T00:00:00",
+      "version": "0703",
+      "ramSlots": null,
+      "ramMaxSize": null
+    }
+  ]
+}
