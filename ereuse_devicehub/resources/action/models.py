@@ -32,7 +32,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
-from teal.db import (CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID, 
+from teal.db import (CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID,
     POLYMORPHIC_ON, StrictVersionType, URL, check_lower, check_range, ResourceNotFound)
 from teal.enums import Country, Currency, Subdivision
 from teal.marshmallow import ValidationError
@@ -48,6 +48,8 @@ from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, Bio
     TestDataStorageLength
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.tradedocument.models import TradeDocument
+from ereuse_devicehub.resources.device.metrics import TradeMetrics
 
 
 class JoinedTableMixin:
@@ -61,6 +63,15 @@ _sorted_actions = {
     'order_by': lambda: Action.end_time,
     'collection_class': SortedSet
 }
+
+
+def sorted_actions_by(data):
+    return {
+        'order_by': lambda: data,
+        'collection_class': SortedSet
+    }
+
+
 """For db.backref, return the actions sorted by end_time."""
 
 
@@ -142,7 +153,7 @@ class Action(Thing):
                               order_by=lambda: Component.id,
                               collection_class=OrderedSet)
     components.comment = """The components that are affected by the action.
-  
+
     When performing actions to parent devices their components are
     affected too.
 
@@ -159,7 +170,7 @@ class Action(Thing):
                           primaryjoin=parent_id == Computer.id)
     parent_id.comment = """For actions that are performed to components,
     the device parent at that time.
-   
+
     For example: for a ``EraseBasic`` performed on a data storage, this
     would point to the computer that contained this data storage, if any.
     """
@@ -292,6 +303,45 @@ class ActionWithMultipleDevices(Action):
 class ActionDevice(db.Model):
     device_id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleDevices.id),
+                       primary_key=True)
+    device = relationship(Device,
+                          backref=backref('actions_device',
+                                          lazy=True),
+                          primaryjoin=Device.id == device_id)
+    action = relationship(Action,
+                          backref=backref('actions_device',
+                                          lazy=True),
+                          primaryjoin=Action.id == action_id)
+    created = db.Column(db.TIMESTAMP(timezone=True),
+                        nullable=False,
+                        index=True,
+                        server_default=db.text('CURRENT_TIMESTAMP'))
+    created.comment = """When Devicehub created this."""
+    author_id = Column(UUID(as_uuid=True),
+                       ForeignKey(User.id),
+                       nullable=False,
+                       default=lambda: g.user.id)
+    # todo compute the org
+    author = relationship(User,
+                          backref=backref('authored_actions_device', lazy=True, collection_class=set),
+                          primaryjoin=author_id == User.id)
+
+    def __init__(self, **kwargs) -> None:
+        self.created = kwargs.get('created', datetime.now(timezone.utc))
+        super().__init__(**kwargs)
+
+
+class ActionWithMultipleTradeDocuments(ActionWithMultipleDevices):
+    documents = relationship(TradeDocument,
+                           backref=backref('actions_docs', lazy=True, **_sorted_actions),
+                           secondary=lambda: ActionTradeDocument.__table__,
+                           order_by=lambda: TradeDocument.id,
+                           collection_class=OrderedSet)
+
+
+class ActionTradeDocument(db.Model):
+    document_id = Column(BigInteger, ForeignKey(TradeDocument.id), primary_key=True)
+    action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleTradeDocuments.id),
                        primary_key=True)
 
 
@@ -739,12 +789,12 @@ class TestDataStorage(TestMixin, Test):
     status = Column(Unicode(), check_lower('status'), nullable=False)
     lifetime = Column(Interval)
     assessment = Column(Boolean)
-    reallocated_sector_count = Column(SmallInteger)
-    power_cycle_count = Column(SmallInteger)
-    _reported_uncorrectable_errors = Column('reported_uncorrectable_errors', Integer)
-    command_timeout = Column(Integer)
-    current_pending_sector_count = Column(Integer)
-    offline_uncorrectable = Column(Integer)
+    reallocated_sector_count = Column(BigInteger)
+    power_cycle_count = Column(Integer)
+    _reported_uncorrectable_errors = Column('reported_uncorrectable_errors', BigInteger)
+    command_timeout = Column(BigInteger)
+    current_pending_sector_count = Column(BigInteger)
+    offline_uncorrectable = Column(BigInteger)
     remaining_lifetime_percentage = Column(SmallInteger)
     elapsed = Column(Interval, nullable=False)
 
@@ -773,6 +823,12 @@ class TestDataStorage(TestMixin, Test):
     @property
     def reported_uncorrectable_errors(self):
         return self._reported_uncorrectable_errors
+
+    @property
+    def power_on_hours(self):
+        if not self.lifetime:
+            return 0
+        return int(self.lifetime.total_seconds()/3600)
 
     @reported_uncorrectable_errors.setter
     def reported_uncorrectable_errors(self, value):
@@ -1312,6 +1368,57 @@ class ToPrepare(ActionWithMultipleDevices):
     pass
 
 
+class DataWipe(JoinedTableMixin, ActionWithMultipleDevices):
+    """The device has been selected for insert one proof of erease disk.
+    """
+    document_comment = """The user that gets the device due this deal."""
+    document_id = db.Column(BigInteger,
+                            db.ForeignKey('data_wipe_document.id'),
+                            nullable=False)
+    document = db.relationship('DataWipeDocument',
+                          backref=backref('actions',
+                                          lazy=True,
+                                          cascade=CASCADE_OWN),
+                          primaryjoin='DataWipe.document_id == DataWipeDocument.id')
+
+
+class ActionStatus(JoinedTableMixin, ActionWithMultipleTradeDocuments):
+    """This is a meta-action than mark the status of the devices"""
+
+    rol_user_id = db.Column(UUID(as_uuid=True),
+                        db.ForeignKey(User.id),
+                        nullable=False,
+                        default=lambda: g.user.id)
+    rol_user = db.relationship(User, primaryjoin=rol_user_id == User.id)
+    rol_user_comment = """The user that ."""
+    trade_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey('trade.id'),
+                         nullable=True)
+    trade = db.relationship('Trade',
+                            backref=backref('status_changes',
+                                            uselist=True,
+                                            lazy=True,
+                                            order_by=lambda: Action.end_time,
+                                            collection_class=list),
+                            primaryjoin='ActionStatus.trade_id == Trade.id')
+
+
+class Recycling(ActionStatus):
+    """This action mark devices as recycling"""
+
+
+class Use(ActionStatus):
+    """This action mark one devices or container as use"""
+
+
+class Refurbish(ActionStatus):
+    """This action mark one devices or container as refurbish"""
+
+
+class Management(ActionStatus):
+    """This action mark one devices or container as management"""
+
+
 class Prepare(ActionWithMultipleDevices):
     """Work has been performed to the device to a defined point of
     acceptance.
@@ -1367,7 +1474,7 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         self.actions.reverse()
 
     def last_usage_time_allocate(self):
-        """If we don't have self.usage_time_hdd then we need search the last 
+        """If we don't have self.usage_time_hdd then we need search the last
            action Live with usage_time_allocate valid"""
         for e in self.actions:
             if isinstance(e, Live) and e.created < self.created:
@@ -1433,7 +1540,98 @@ class CancelReservation(Organize):
     """The act of cancelling a reservation."""
 
 
-class Trade(JoinedTableMixin, ActionWithMultipleDevices):
+class ActionStatusDocuments(JoinedTableMixin, ActionWithMultipleTradeDocuments):
+    """This is a meta-action that marks the state of the devices."""
+    rol_user_id = db.Column(UUID(as_uuid=True),
+                        db.ForeignKey(User.id),
+                        nullable=False,
+                        default=lambda: g.user.id)
+    rol_user = db.relationship(User, primaryjoin=rol_user_id == User.id)
+    rol_user_comment = """The user that ."""
+
+
+class RecyclingDocument(ActionStatusDocuments):
+    """This action mark one document or container as recycling"""
+
+
+class ConfirmDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
+    """Users confirm the one action trade this confirmation it's link to trade
+       and the document that confirm
+    """
+    user_id = db.Column(UUID(as_uuid=True),
+                        db.ForeignKey(User.id),
+                        nullable=False,
+                        default=lambda: g.user.id)
+    user = db.relationship(User, primaryjoin=user_id == User.id)
+    user_comment = """The user that accept the offer."""
+    action_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey('action.id'),
+                         nullable=False)
+    action = db.relationship('Action',
+                            backref=backref('acceptances_document',
+                                            uselist=True,
+                                            lazy=True,
+                                            order_by=lambda: Action.end_time,
+                                            collection_class=list),
+                            primaryjoin='ConfirmDocument.action_id == Action.id')
+
+    def __repr__(self) -> str:
+        if self.action.t in ['Trade']:
+            origin = 'To'
+            if self.user == self.action.user_from:
+                origin = 'From'
+            return '<{0.t}app/views/inventory/ {0.id} accepted by {1}>'.format(self, origin)
+
+
+class RevokeDocument(ConfirmDocument):
+    pass
+
+
+class ConfirmRevokeDocument(ConfirmDocument):
+    pass
+
+
+class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
+    """Users confirm the one action trade this confirmation it's link to trade
+       and the devices that confirm
+    """
+    user_id = db.Column(UUID(as_uuid=True),
+                        db.ForeignKey(User.id),
+                        nullable=False,
+                        default=lambda: g.user.id)
+    user = db.relationship(User, primaryjoin=user_id == User.id)
+    user_comment = """The user that accept the offer."""
+    action_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey('action.id'),
+                         nullable=False)
+    action = db.relationship('Action',
+                            backref=backref('acceptances',
+                                            uselist=True,
+                                            lazy=True,
+                                            order_by=lambda: Action.end_time,
+                                            collection_class=list),
+                            primaryjoin='Confirm.action_id == Action.id')
+
+    def __repr__(self) -> str:
+        if self.action.t in ['Trade']:
+            origin = 'To'
+            if self.user == self.action.user_from:
+                origin = 'From'
+            return '<{0.t} {0.id} accepted by {1}>'.format(self, origin)
+
+
+class Revoke(Confirm):
+    """Users can revoke one confirmation of one action trade"""
+
+
+# class ConfirmRevoke(Confirm):
+#     """Users can confirm and accept one action revoke"""
+
+#     def __repr__(self) -> str:
+#         return '<{0.t} {0.id} accepted by {0.user}>'.format(self)
+
+
+class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     """Trade actions log the political exchange of devices between users.
     Every time a trade action is performed, the old user looses its
     political possession, for example ownership, in favor of another
@@ -1445,35 +1643,49 @@ class Trade(JoinedTableMixin, ActionWithMultipleDevices):
 
     This class and its inheritors
     extend `Schema's Trade <http://schema.org/TradeAction>`_.
-    """
-    shipping_date = Column(db.TIMESTAMP(timezone=True))
-    shipping_date.comment = """When are the devices going to be ready
-    for shipping?
-    """
-    invoice_number = Column(CIText())
-    invoice_number.comment = """The id of the invoice so they can be linked."""
-    price_id = Column(UUID(as_uuid=True), ForeignKey(Price.id))
-    price = relationship(Price,
-                         backref=backref('trade', lazy=True, uselist=False),
-                         primaryjoin=price_id == Price.id)
-    price_id.comment = """The price set for this trade.
-    If no price is set it is supposed that the trade was
-    not payed, usual in donations.
         """
-    to_id = Column(UUID(as_uuid=True), ForeignKey(Agent.id), nullable=False)
-    # todo compute the org
-    to = relationship(Agent,
-                      backref=backref('actions_to', lazy=True, **_sorted_actions),
-                      primaryjoin=to_id == Agent.id)
-    to_comment = """The agent that gets the device due this deal."""
-    confirms_id = Column(UUID(as_uuid=True), ForeignKey(Organize.id))
-    confirms = relationship(Organize,
-                            backref=backref('confirmation', lazy=True, uselist=False),
-                            primaryjoin=confirms_id == Organize.id)
-    confirms_id.comment = """An organize action that this association confirms.
-    For example, a ``Sell`` or ``Rent``
-    can confirm a ``Reserve`` action.
-    """
+    user_from_id = db.Column(UUID(as_uuid=True),
+                             db.ForeignKey(User.id),
+                             nullable=False)
+    user_from = db.relationship(User, primaryjoin=user_from_id == User.id)
+    user_from_comment = """The user that offers the device due this deal."""
+    user_to_id = db.Column(UUID(as_uuid=True),
+                           db.ForeignKey(User.id),
+                           nullable=False)
+    user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
+    user_to_comment = """The user that gets the device due this deal."""
+    price = Column(Float(decimal_return_scale=2), nullable=True)
+    currency = Column(DBEnum(Currency), nullable=False, default=Currency.EUR.name)
+    currency.comment = """The currency of this price as for ISO 4217."""
+    date = Column(db.TIMESTAMP(timezone=True))
+    confirm = Column(Boolean, default=False, nullable=False)
+    confirm.comment = """If you need confirmation of the user, you need actevate this field"""
+    code = Column(CIText(), nullable=True)
+    code.comment = """If the user not exist, you need a code to be able to do the traceability"""
+    lot_id = db.Column(UUID(as_uuid=True),
+                       db.ForeignKey('lot.id',
+                                     use_alter=True,
+                                     name='lot_trade'),
+                       nullable=True)
+    lot = relationship('Lot',
+                       backref=backref('trade',
+                                       lazy=True,
+                                       uselist=False,
+                                       cascade=CASCADE_OWN),
+                       primaryjoin='Trade.lot_id == Lot.id')
+
+    def get_metrics(self):
+        """
+        This method get a list of values for calculate a metrics from a spreadsheet
+        """
+        metrics = []
+        for doc in self.documents:
+            m = TradeMetrics(document=doc, Trade=self)
+            metrics.extend(m.get_metrics())
+        return metrics
+
+    def __repr__(self) -> str:
+        return '<{0.t} {0.id} executed by {0.author}>'.format(self)
 
 
 class InitTransfer(Trade):
@@ -1529,6 +1741,49 @@ class TransferOwnershipBlockchain(Trade):
 
 class MakeAvailable(ActionWithMultipleDevices):
     """The act of setting willingness for trading."""
+    pass
+
+
+class MoveOnDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
+    """Action than certify one movement of some indescriptible material of
+    one container to an other."""
+
+    weight = db.Column(db.Float(nullable=True))
+    weight.comment = """Weight than go to recycling"""
+    container_from_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey('trade_document.id'),
+        nullable=False
+    )
+    container_from = db.relationship(
+        'TradeDocument',
+        backref=backref('containers_from',
+                        lazy=True,
+                        cascade=CASCADE_OWN),
+        primaryjoin='MoveOnDocument.container_from_id == TradeDocument.id'
+    )
+    container_from_id.comment = """This is the trade document used as container in a incoming lot"""
+
+    container_to_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey('trade_document.id'),
+        nullable=False
+    )
+    container_to = db.relationship(
+        'TradeDocument',
+        backref=backref('containers_to',
+                        lazy=True,
+                        cascade=CASCADE_OWN),
+        primaryjoin='MoveOnDocument.container_to_id == TradeDocument.id',
+    )
+    container_to_id.comment = """This is the trade document used as container in a outgoing lot"""
+
+
+class Delete(ActionWithMultipleDevices):
+    # TODO in a new architecture we need rename this class to Deactivate
+
+    """The act save in device who and why this devices was delete.
+    We never delete one device, but we can deactivate."""
     pass
 
 

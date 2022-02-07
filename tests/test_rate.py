@@ -12,7 +12,7 @@ from ereuse_devicehub.resources.device.models import Computer, Desktop, Device, 
 from ereuse_devicehub.resources.enums import AppearanceRange, ComputerChassis, \
     FunctionalityRange
 from tests import conftest
-from tests.conftest import file
+from tests.conftest import file, yaml2json, json_encode
 
 
 @pytest.mark.mvp
@@ -104,16 +104,16 @@ def test_when_rate_must_not_compute(user: UserClient):
         ...
     """
     # Checking case 1
-    s = file('basic.snapshot')
+    s = yaml2json('basic.snapshot')
     # Delete snapshot device actions to delete VisualTest
     del s['device']['actions']
 
     # Post to compute rate and check to didn't do it
-    snapshot, _ = user.post(s, res=Snapshot)
+    snapshot, _ = user.post(json_encode(s), res=Snapshot)
     assert 'rate' not in snapshot['device']
 
     # Checking case 2
-    s = file('basic.snapshot')
+    s = yaml2json('basic.snapshot')
     # Change snapshot software source
     s['software'] = 'Web'
     del s['uuid']
@@ -121,14 +121,14 @@ def test_when_rate_must_not_compute(user: UserClient):
     del s['components']
 
     # Post to compute rate and check to didn't do it
-    snapshot, _ = user.post(s, res=Snapshot)
+    snapshot, _ = user.post(json_encode(s), res=Snapshot)
     assert 'rate' not in snapshot['device']
 
     # Checking case 3
-    s = file('keyboard.snapshot')
+    s = yaml2json('keyboard.snapshot')
 
     # Post to compute rate and check to didn't do it
-    snapshot, _ = user.post(s, res=Snapshot)
+    snapshot, _ = user.post(json_encode(s), res=Snapshot)
     assert 'rate' not in snapshot['device']
 
 

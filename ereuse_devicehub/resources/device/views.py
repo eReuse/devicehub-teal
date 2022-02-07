@@ -24,6 +24,7 @@ from ereuse_devicehub.resources.device.models import Device, Manufacturer, Compu
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.enums import SnapshotSoftware
 from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
+from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.tag.model import Tag
 
 
@@ -85,6 +86,7 @@ class DeviceView(View):
         filter = f.Nested(Filters, missing=[])
         sort = f.Nested(Sorting, missing=[Device.id.asc()])
         page = f.Integer(validate=v.Range(min=1), missing=1)
+        unassign = f.Integer(validate=v.Range(min=0, max=1), missing=0)
 
     def get(self, id):
         """Devices view
@@ -102,7 +104,7 @@ class DeviceView(View):
         return super().get(id)
 
     def patch(self, id):
-        dev = Device.query.filter_by(id=id, owner_id=g.user.id).one()
+        dev = Device.query.filter_by(id=id, owner_id=g.user.id, active=True).one()
         if isinstance(dev, Computer):
             resource_def = app.resources['Computer']
             # TODO check how to handle the 'actions_one'
@@ -127,12 +129,12 @@ class DeviceView(View):
             return self.one_private(id)
 
     def one_public(self, id: int):
-        device = Device.query.filter_by(devicehub_id=id).one()
+        device = Device.query.filter_by(devicehub_id=id, active=True).one()
         return render_template('devices/layout.html', device=device, states=states)
 
     @auth.Auth.requires_auth
     def one_private(self, id: str):
-        device = Device.query.filter_by(devicehub_id=id, owner_id=g.user.id).first()
+        device = Device.query.filter_by(devicehub_id=id, owner_id=g.user.id, active=True).first()
         if not device:
             return self.one_public(id)
         return self.schema.jsonify(device)
@@ -150,7 +152,17 @@ class DeviceView(View):
         )
 
     def query(self, args):
-        query = Device.query.filter((Device.owner_id == g.user.id)).distinct()
+        trades = Trade.query.filter(
+            (Trade.user_from == g.user) | (Trade.user_to == g.user)
+        ).distinct()
+
+        trades_dev_ids = {d.id for t in trades for d in t.devices}
+
+        query = Device.query.filter(Device.active == True).filter(
+            (Device.owner_id == g.user.id) | (Device.id.in_(trades_dev_ids))
+        ).distinct()
+
+        unassign = args.get('unassign', None)
         search_p = args.get('search', None)
         if search_p:
             properties = DeviceSearch.properties
@@ -165,6 +177,11 @@ class DeviceView(View):
                 search.Search.rank(tags, search_p) +
                 search.Search.rank(devicehub_ids, search_p)
             )
+        if unassign:
+            subquery = LotDeviceDescendants.query.with_entities(
+                           LotDeviceDescendants.device_id
+            )
+            query = query.filter(Device.id.notin_(subquery))
         return query.filter(*args['filter']).order_by(*args['sort'])
 
 

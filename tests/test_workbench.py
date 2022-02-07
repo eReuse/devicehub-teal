@@ -11,7 +11,7 @@ from ereuse_devicehub.resources.action.models import RateComputer, BenchmarkProc
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag.model import Tag
-from tests.conftest import file, file_workbench
+from tests.conftest import file, file_workbench, yaml2json, json_encode
 
 
 @pytest.mark.mvp
@@ -20,32 +20,36 @@ def test_workbench_server_condensed(user: UserClient):
     condensed in only one big ``Snapshot`` file, as described
     in the docs.
     """
-    s = file('workbench-server-1.snapshot')
-    s['device']['actions'].append(file('workbench-server-2.stress-test'))
+    s = yaml2json('workbench-server-1.snapshot')
+    s['device']['actions'].append(yaml2json('workbench-server-2.stress-test'))
     s['components'][4]['actions'].extend((
-        file('workbench-server-3.erase'),
-        file('workbench-server-4.install')
+        yaml2json('workbench-server-3.erase'),
+        yaml2json('workbench-server-4.install')
     ))
-    s['components'][5]['actions'].append(file('workbench-server-3.erase'))
+    s['components'][5]['actions'].append(yaml2json('workbench-server-3.erase'))
     # Create tags
     for t in s['device']['tags']:
         user.post({'id': t['id']}, res=Tag)
 
-    snapshot, _ = user.post(res=em.Snapshot, data=s)
+    snapshot, _ = user.post(res=em.Snapshot, data=json_encode(s))
+    pc_id = snapshot['device']['id']
+    cpu_id = snapshot['components'][3]['id']
+    ssd_id= snapshot['components'][4]['id']
+    hdd_id = snapshot['components'][5]['id']
     actions = snapshot['actions']
     assert {(action['type'], action['device']) for action in actions} == {
-        ('BenchmarkProcessorSysbench', 5),
-        ('StressTest', 1),
-        ('EraseSectors', 6),
-        ('EreusePrice', 1),
-        ('BenchmarkRamSysbench', 1),
-        ('BenchmarkProcessor', 5),
-        ('Install', 6),
-        ('EraseSectors', 7),
-        ('BenchmarkDataStorage', 6),
-        ('BenchmarkDataStorage', 7),
-        ('TestDataStorage', 6),
-        ('RateComputer', 1)
+        ('BenchmarkProcessorSysbench', cpu_id),
+        ('StressTest', pc_id),
+        ('EraseSectors', ssd_id),
+        ('EreusePrice', pc_id),
+        ('BenchmarkRamSysbench', pc_id),
+        ('BenchmarkProcessor', cpu_id),
+        ('Install', ssd_id),
+        ('EraseSectors', hdd_id),
+        ('BenchmarkDataStorage', ssd_id),
+        ('BenchmarkDataStorage', hdd_id),
+        ('TestDataStorage', ssd_id),
+        ('RateComputer', pc_id)
     }
     assert snapshot['closed']
     assert snapshot['severity'] == 'Info'
@@ -62,8 +66,8 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['rate']['rating'] == 1
     assert device['rate']['type'] == RateComputer.t
     # TODO JN why haven't same order in actions on each execution?
-    assert device['actions'][2]['type'] == BenchmarkProcessor.t or device['actions'][2]['type'] == BenchmarkRamSysbench.t
-    assert device['tags'][0]['id'] == 'tag1'
+    assert any([ac['type'] in [BenchmarkProcessor.t, BenchmarkRamSysbench.t] for ac in device['actions']])
+    assert 'tag1' in [x['id'] for x in device['tags']]
 
 
 @pytest.mark.xfail(reason='Functionality not yet developed.')
@@ -73,28 +77,28 @@ def test_workbench_server_phases(user: UserClient):
     actions.html#snapshots-from-workbench>`_.
     """
     # 1. Snapshot with sync / rate / benchmarks / test data storage
-    s = file('workbench-server-1.snapshot')
-    snapshot, _ = user.post(res=em.Snapshot, data=s)
+    s = yaml2json('workbench-server-1.snapshot')
+    snapshot, _ = user.post(res=em.Snapshot, data=json_encode(s))
     assert not snapshot['closed'], 'Snapshot must be waiting for the new actions'
 
     # 2. stress test
-    st = file('workbench-server-2.stress-test')
+    st = yaml2json('workbench-server-2.stress-test')
     st['snapshot'] = snapshot['id']
     stress_test, _ = user.post(res=em.StressTest, data=st)
 
     # 3. erase
     ssd_id, hdd_id = snapshot['components'][4]['id'], snapshot['components'][5]['id']
-    e = file('workbench-server-3.erase')
+    e = yaml2json('workbench-server-3.erase')
     e['snapshot'], e['device'] = snapshot['id'], ssd_id
     erase1, _ = user.post(res=em.EraseSectors, data=e)
 
     # 3 bis. a second erase
-    e = file('workbench-server-3.erase')
+    e = yaml2json('workbench-server-3.erase')
     e['snapshot'], e['device'] = snapshot['id'], hdd_id
     erase2, _ = user.post(res=em.EraseSectors, data=e)
 
     # 4. Install
-    i = file('workbench-server-4.install')
+    i = yaml2json('workbench-server-4.install')
     i['snapshot'], i['device'] = snapshot['id'], ssd_id
     install, _ = user.post(res=em.Install, data=i)
 
@@ -180,7 +184,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert pc['serialNumber'] == 'b8oaas048286'
     assert pc['manufacturer'] == 'asustek computer inc.'
     assert pc['hid'] == 'laptop-asustek_computer_inc-1001pxd-b8oaas048286-14:da:e9:42:f6:7c'
-    assert pc['tags'] == []
+    assert len(pc['tags']) == 1
     assert pc['networkSpeeds'] == [100, 0], 'Although it has WiFi we do not know the speed'
     assert pc['rate']
     rate = pc['rate']
@@ -313,7 +317,7 @@ def test_workbench_fixtures(file: pathlib.Path, user: UserClient):
     """
     s = json.load(file.open())
     user.post(res=em.Snapshot,
-              data=s,
+              data=json_encode(s),
               status=201)
 
 
@@ -332,4 +336,9 @@ def test_david(user: UserClient):
 
 def test_eresueprice_computer_type(user: UserClient):
     s = file_workbench('computer-type.snapshot')
+    snapshot, _ = user.post(res=em.Snapshot, data=s)
+
+
+def test_workbench_encoded_snapshot(user: UserClient):
+    s = file_workbench('encoded.snapshot')
     snapshot, _ = user.post(res=em.Snapshot, data=s)

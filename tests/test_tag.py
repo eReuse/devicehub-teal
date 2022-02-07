@@ -2,6 +2,7 @@ import pathlib
 
 import pytest
 import requests_mock
+from flask import g
 from boltons.urlutils import URL
 from ereuse_utils.session import DevicehubClient
 from pytest import raises
@@ -11,6 +12,7 @@ from teal.marshmallow import ValidationError
 from ereuse_devicehub.client import UserClient, Client
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Desktop, Device
@@ -19,7 +21,7 @@ from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.tag.view import CannotCreateETag, LinkedToAnotherDevice, \
     TagNotLinked
 from tests import conftest
-from tests.conftest import file
+from tests.conftest import yaml2json, json_encode
 
 
 @pytest.mark.mvp
@@ -41,6 +43,7 @@ def test_create_tag(user: UserClient):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_create_tag_with_device(user: UserClient):
     """Creates a tag specifying linked with one device."""
+    g.user = User.query.one()
     pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
     db.session.add(pc)
     db.session.commit()
@@ -60,13 +63,14 @@ def test_create_tag_with_device(user: UserClient):
 def test_delete_tags(user: UserClient, client: Client):
     """Delete a named tag."""
     # Delete Tag Named
+    g.user = User.query.one()
     pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
     db.session.add(pc)
     db.session.commit()
     tag = Tag(id='bar', owner_id=user.user['id'], device_id=pc.id)
     db.session.add(tag)
     db.session.commit()
-    tag = Tag.query.one()
+    tag = Tag.query.all()[-1]
     assert tag.id == 'bar'
     # Is not possible delete one tag linked to one device
     res, _ = user.delete(res=Tag, item=tag.id, status=422)
@@ -88,12 +92,12 @@ def test_delete_tags(user: UserClient, client: Client):
     tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id'])
     db.session.add(tag)
     db.session.commit()
-    tag = Tag.query.one()
+    tag = Tag.query.all()[-1]
     assert tag.id == 'bar-1'
     res, _ = user.delete(res=Tag, item=tag.id, status=422)
     msg = 'This tag {} is unnamed tag. It is imposible delete.'.format(tag.id)
     assert msg in res['message']
-    tag = Tag.query.one()
+    tag = Tag.query.all()[-1]
     assert tag.id == 'bar-1'
 
 
@@ -182,6 +186,7 @@ def test_tag_get_device_from_tag_endpoint(app: Devicehub, user: UserClient):
     """Checks getting a linked device from a tag endpoint"""
     with app.app_context():
         # Create a pc with a tag
+        g.user = User.query.one()
         tag = Tag(id='foo-bar', owner_id=user.user['id'])
         pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
         pc.tags.add(tag)
@@ -213,6 +218,7 @@ def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: Us
     system should not return any of both (to be deterministic) so
     it should raise an exception.
     """
+    g.user = User.query.all()[0]
     db.session.add(Tag(id='foo', secondary='bar', owner_id=user.user['id']))
     db.session.commit()
 
@@ -276,6 +282,7 @@ def test_tag_manual_link_search(app: Devicehub, user: UserClient):
     Checks search has the term.
     """
     with app.app_context():
+        g.user = User.query.one()
         db.session.add(Tag('foo-bar', secondary='foo-sec', owner_id=user.user['id']))
         desktop = Desktop(serial_number='foo', chassis=ComputerChassis.AllInOne, owner_id=user.user['id'])
         db.session.add(desktop)
@@ -284,7 +291,7 @@ def test_tag_manual_link_search(app: Devicehub, user: UserClient):
         devicehub_id = desktop.devicehub_id
     user.put({}, res=Tag, item='foo-bar/device/{}'.format(desktop_id), status=204)
     device, _ = user.get(res=Device, item=devicehub_id)
-    assert device['tags'][0]['id'] == 'foo-bar'
+    assert 'foo-bar' in [x['id'] for x in device['tags']]
 
     # Device already linked
     # Just returns an OK to conform to PUT as anything changes
@@ -319,12 +326,12 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
     with pytest.raises(ResourceNotFound):
         Tag.from_an_id('nope').one()
 
-    s = file('basic.snapshot')
+    s = yaml2json('basic.snapshot')
     s['device']['tags'] = [{'id': 'foo', 'secondary': 'bar', 'type': 'Tag'}]
-    snapshot, _ = user.post(s, res=Snapshot)
+    snapshot, _ = user.post(json_encode(s), res=Snapshot)
     device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
-    assert device['tags'][0]['id'] == 'foo'
-    assert device['tags'][0]['secondary'] == 'bar'
+    assert 'foo' in [x['id'] for x in device['tags']]
+    assert 'bar' in [x.get('secondary') for x in device['tags']]
 
     r, _ = user.get(res=Device, query=[('search', 'foo'), ('filter', {'type': ['Computer']})])
     assert len(r['items']) == 1
@@ -412,6 +419,7 @@ def test_get_tag_permissions(app: Devicehub, user: UserClient, user2: UserClient
     """Creates a tag specifying a custom organization."""
     with app.app_context():
         # Create a pc with a tag
+        g.user = User.query.all()[0]
         tag = Tag(id='foo-bar', owner_id=user.user['id'])
         pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
         pc.tags.add(tag)
@@ -424,5 +432,5 @@ def test_get_tag_permissions(app: Devicehub, user: UserClient, user2: UserClient
     computer2, res2 = user2.get(url, None)
     assert res.status_code == 200
     assert res2.status_code == 200
-    assert len(computer['items']) == 1
+    assert len(computer['items']) == 2
     assert len(computer2['items']) == 0

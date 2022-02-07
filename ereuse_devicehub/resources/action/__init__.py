@@ -3,7 +3,7 @@ from typing import Callable, Iterable, Tuple
 from teal.resource import Converters, Resource
 
 from ereuse_devicehub.resources.action import schemas
-from ereuse_devicehub.resources.action.views import (ActionView, AllocateView, DeallocateView,
+from ereuse_devicehub.resources.action.views.views import (ActionView, AllocateView, DeallocateView,
                                                      LiveView)
 from ereuse_devicehub.resources.device.sync import Sync
 
@@ -194,9 +194,34 @@ class ReadyDef(ActionDef):
     SCHEMA = schemas.Ready
 
 
+class RecyclingDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Recycling
+
+
+class UseDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Use
+
+
+class RefurbishDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Refurbish
+
+
+class ManagementDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Management
+
+
 class ToPrepareDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.ToPrepare
+
+
+class DataWipeDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.DataWipe
 
 
 class AllocateDef(ActionDef):
@@ -250,9 +275,44 @@ class MakeAvailable(ActionDef):
     SCHEMA = schemas.MakeAvailable
 
 
+class Delete(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Delete
+
+
+class ConfirmDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Confirm
+
+
+class RevokeDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Revoke
+
+
+class ConfirmRevokeDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.ConfirmRevoke
+
+
 class TradeDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Trade
+
+
+class ConfirmDocumentDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.ConfirmDocument
+
+
+class RevokeDocumentDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.RevokeDocument
+
+
+class ConfirmRevokeDocumentDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.ConfirmRevokeDocument
 
 
 class CancelTradeDef(ActionDef):
@@ -278,3 +338,8 @@ class MigrateToDef(ActionDef):
 class MigrateFromDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.MigrateFrom
+
+
+class MoveOnDocumentDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.MoveOnDocument

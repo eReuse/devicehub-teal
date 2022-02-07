@@ -13,7 +13,7 @@ from ereuse_devicehub.resources.device.views import Filters, Sorting
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.lot.models import Lot
 from tests import conftest
-from tests.conftest import file
+from tests.conftest import file, yaml2json, json_encode
 
 
 @pytest.mark.mvp
@@ -176,14 +176,14 @@ def test_device_query_filter_lots(user: UserClient):
 @pytest.mark.mvp
 def test_device_query(user: UserClient):
     """Checks result of inventory."""
-    snap, _ = user.post(conftest.file('basic.snapshot'), res=Snapshot)
+    snapshot, _ = user.post(conftest.file('basic.snapshot'), res=Snapshot)
     i, _ = user.get(res=Device)
     assert i['url'] == '/devices/'
-    assert i['items'][0]['url'] == '/devices/%s' % snap['device']['devicehubID']
+    assert i['items'][0]['url'] == '/devices/%s' % snapshot['device']['devicehubID']
     pc = next(d for d in i['items'] if d['type'] == 'Desktop')
     assert len(pc['actions']) == 4
     assert len(pc['components']) == 3
-    assert not pc['tags']
+    assert pc['tags'][0]['id'] == pc['devicehubID']
 
 
 @pytest.mark.mvp
@@ -196,15 +196,15 @@ def test_device_query_permitions(user: UserClient, user2: UserClient):
     i2, _ = user2.get(res=Device)
     assert i2['items'] == []
 
-    basic_snapshot = file('basic.snapshot')
+    basic_snapshot = yaml2json('basic.snapshot')
     basic_snapshot['uuid'] = f"{uuid.uuid4()}"
-    user2.post(basic_snapshot, res=Snapshot)
+    user2.post(json_encode(basic_snapshot), res=Snapshot)
     i2, _ = user2.get(res=Device)
     pc2 = next(d for d in i2['items'] if d['type'] == 'Desktop')
-    
+
     assert pc1['id'] != pc2['id']
     assert pc1['hid'] == pc2['hid']
-    
+
 
 @pytest.mark.mvp
 def test_device_search_all_devices_token_if_empty(app: Devicehub, user: UserClient):
@@ -241,16 +241,16 @@ def test_device_search_regenerate_table(app: DeviceSearch, user: UserClient):
 @pytest.mark.mvp
 def test_device_query_search(user: UserClient):
     # todo improve
-    user.post(file('basic.snapshot'), res=Snapshot)
+    snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
     user.post(file('computer-monitor.snapshot'), res=Snapshot)
     user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
     i, _ = user.get(res=Device, query=[('search', 'desktop')])
-    assert i['items'][0]['id'] == 1
+    assert i['items'][0]['id'] == snapshot['device']['id']
     i, _ = user.get(res=Device, query=[('search', 'intel')])
     assert len(i['items']) == 1
     i, _ = user.get(res=Device, query=[('search', i['items'][0]['devicehubID'])])
     assert len(i['items']) == 1
-    i, _ = user.get(res=Device, query=[('search', '1')])
+    i, _ = user.get(res=Device, query=[('search', snapshot['device']['id'])])
     assert len(i['items']) == 1
 
 
@@ -265,9 +265,9 @@ def test_device_query_search_synonyms_asus(user: UserClient):
 
 @pytest.mark.mvp
 def test_device_query_search_synonyms_intel(user: UserClient):
-    s = file('real-hp.snapshot.11')
+    s = yaml2json('real-hp.snapshot.11')
     s['device']['model'] = 'foo'  # The model had the word 'HP' in it
-    user.post(s, res=Snapshot)
+    user.post(json_encode(s), res=Snapshot)
     i, _ = user.get(res=Device, query=[('search', 'hewlett packard')])
     assert 1 == len(i['items'])
     i, _ = user.get(res=Device, query=[('search', 'hewlett')])

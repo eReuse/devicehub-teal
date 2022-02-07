@@ -1,5 +1,6 @@
 import itertools
 import json
+import jwt
 from pathlib import Path
 from typing import Set
 
@@ -17,6 +18,8 @@ from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
+from ereuse_devicehub.resources.user.models import Session
+from ereuse_devicehub.resources.enums import SessionType
 
 
 class Dummy:
@@ -92,7 +95,7 @@ class Dummy:
             for path in bar:
                 with path.open() as f:
                     snapshot = yaml.load(f)
-                s, _ = user1.post(res=m.Snapshot, data=snapshot)
+                s, _ = user1.post(res=m.Snapshot, data=self.json_encode(snapshot))
                 if s.get('uuid', None) == 'ec23c11b-80b6-42cd-ac5c-73ba7acddbc4':
                     sample_pc = s['device']['id']
                     sample_pc_devicehub_id = s['device']['devicehubID']
@@ -136,7 +139,7 @@ class Dummy:
                             res=Lot,
                             item='{}/devices'.format(lot_user['id']),
                             query=[('id', pc) for pc in itertools.islice(pcs, 1, 4)])
-        assert len(lot['devices'])
+        # assert len(lot['devices'])
 
         lot2, _ = user2.post({},
                              res=Lot,
@@ -194,9 +197,25 @@ class Dummy:
 
         user.individuals.add(Person(name=name))
         db.session.add(user)
+        session_external = Session(user=user, type=SessionType.External)
+        session_internal = Session(user=user, type=SessionType.Internal)
+        db.session.add(session_internal)
+        db.session.add(session_external)
 
         db.session.commit()
         client = UserClient(self.app, user.email, password,
                             response_wrapper=self.app.response_class)
         client.login()
         return client
+
+    def json_encode(self, dev: str) -> dict:
+        """Encode json."""
+        data = {"type": "Snapshot"}
+        data['data'] = jwt.encode(dev,
+                          self.app.config['JWT_PASS'],
+                          algorithm="HS256",
+                          json_encoder=ereuse_utils.JSONEncoder
+        )
+
+        return data
+

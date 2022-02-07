@@ -13,9 +13,18 @@ from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import Remove
-from ereuse_devicehub.resources.device.models import Component, Computer, Device
+from ereuse_devicehub.resources.device.models import Component, Computer, Device, DataStorage
 from ereuse_devicehub.resources.tag.model import Tag
 
+
+DEVICES_ALLOW_DUPLICITY = [
+    'RamModule',
+    'Display',
+    'SoundCard',
+    'Battery',
+    'Camera',
+    'GraphicCard',
+]
 
 class Sync:
     """Synchronizes the device and components with the database."""
@@ -100,6 +109,13 @@ class Sync:
                    existed in the DB.
         """
         assert inspect(component).transient, 'Component should not be synced from DB'
+        # if not is a DataStorage, then need build a new one
+        if component.t in DEVICES_ALLOW_DUPLICITY:
+            db.session.add(component)
+            is_new = True
+            return component, is_new
+
+        # if not, then continue with the traditional behaviour
         try:
             if component.hid:
                 db_component = Device.query.filter_by(hid=component.hid, owner_id=g.user.id).one()
@@ -154,7 +170,7 @@ class Sync:
         db_device = None
         if device.hid:
             with suppress(ResourceNotFound):
-                db_device = Device.query.filter_by(hid=device.hid, owner_id=g.user.id).one()
+                db_device = Device.query.filter_by(hid=device.hid, owner_id=g.user.id, active=True).one()
         if db_device and db_device.allocated:
             raise ResourceNotFound('device is actually allocated {}'.format(device))
         try:

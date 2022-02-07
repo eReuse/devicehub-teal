@@ -1,4 +1,5 @@
 import uuid
+from sqlalchemy.util import OrderedSet
 from collections import deque
 from enum import Enum
 from typing import Dict, List, Set, Union
@@ -12,8 +13,8 @@ from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
-from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 from ereuse_devicehub.resources.device.models import Device, Computer
+from ereuse_devicehub.resources.action.models import Trade, Confirm, Revoke
 from ereuse_devicehub.resources.lot.models import Lot, Path
 
 
@@ -89,7 +90,7 @@ class LotView(View):
             query = self.visibility_filter(query)
             if args['search']:
                 query = query.filter(Lot.name.ilike(args['search'] + '%'))
-            lots = query.paginate(per_page=6 if args['search'] else 30)
+            lots = query.paginate(per_page=6 if args['search'] else query.count())
             return things_response(
                 self.schema.dump(lots.items, many=True, nested=2),
                 lots.page, lots.per_page, lots.total, lots.prev_num, lots.next_num
@@ -97,9 +98,9 @@ class LotView(View):
         return jsonify(ret)
 
     def visibility_filter(self, query):
-        query = query.outerjoin(Deliverynote) \
-            .filter(or_(Deliverynote.receiver_address == g.user.email,
-                        Deliverynote.supplier_email == g.user.email,
+        query = query.outerjoin(Trade) \
+            .filter(or_(Trade.user_from == g.user,
+                        Trade.user_to == g.user,
                         Lot.owner_id == g.user.id))
         return query
 
@@ -108,7 +109,7 @@ class LotView(View):
         return query
 
     def delete(self, id):
-        lot = Lot.query.filter_by(id=id).one()
+        lot = Lot.query.filter_by(id=id, owner=g.user).one()
         lot.delete()
         db.session.commit()
         return Response(status=204)
@@ -224,7 +225,80 @@ class LotDeviceView(LotBaseChildrenView):
         id = ma.fields.List(ma.fields.Integer())
 
     def _post(self, lot: Lot, ids: Set[int]):
-        lot.devices.update(Device.query.filter(Device.id.in_(ids)))
+        # get only new devices
+        ids -= {x.id for x in lot.devices}
+        if not ids:
+            return
+
+        devices = set(Device.query.filter(Device.id.in_(ids)).filter(
+                        Device.owner == g.user))
+
+        lot.devices.update(devices)
+
+        if lot.trade:
+            lot.trade.devices = lot.devices
+            if g.user in [lot.trade.user_from, lot.trade.user_to]:
+                confirm = Confirm(action=lot.trade, user=g.user, devices=devices)
+                db.session.add(confirm)
 
     def _delete(self, lot: Lot, ids: Set[int]):
-        lot.devices.difference_update(Device.query.filter(Device.id.in_(ids)))
+        # if there are some devices in ids than not exist now in the lot, then exit
+        if not ids.issubset({x.id for x in lot.devices}):
+            return
+
+        if lot.trade:
+            devices = Device.query.filter(Device.id.in_(ids)).all()
+            return delete_from_trade(lot, devices)
+
+        if not g.user == lot.owner:
+            txt = 'This is not your lot'
+            raise ma.ValidationError(txt)
+
+        devices = set(Device.query.filter(Device.id.in_(ids)).filter(
+            Device.owner_id == g.user.id))
+
+        lot.devices.difference_update(devices)
+
+
+def delete_from_trade(lot: Lot, devices: List):
+    users = [lot.trade.user_from, lot.trade.user_to]
+    if g.user not in users:
+        # theoretically this case is impossible
+        txt = 'This is not your trade'
+        raise ma.ValidationError(txt)
+
+    # we need lock the action revoke for devices than travel for futures trades
+    for dev in devices:
+        if dev.owner not in users:
+            txt = 'This is not your device'
+            raise ma.ValidationError(txt)
+
+    drop_of_lot = []
+    without_confirms = []
+    for dev in devices:
+        if dev.trading(lot) in ['NeedConfirmation', 'Confirm', 'NeedConfirmRevoke']:
+            drop_of_lot.append(dev)
+            dev.reset_owner()
+
+        if not lot.trade.confirm:
+            drop_of_lot.append(dev)
+            without_confirms.append(dev)
+            dev.reset_owner()
+
+    revoke = Revoke(action=lot.trade, user=g.user, devices=set(devices))
+    db.session.add(revoke)
+
+    if without_confirms:
+        phantom = lot.trade.user_to
+        if lot.trade.user_to == g.user:
+            phantom = lot.trade.user_from
+
+        phantom_revoke = Revoke(
+            action=lot.trade,
+            user=phantom,
+            devices=set(without_confirms)
+        )
+        db.session.add(phantom_revoke)
+
+    lot.devices.difference_update(OrderedSet(drop_of_lot))
+    return revoke

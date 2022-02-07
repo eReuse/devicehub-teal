@@ -12,6 +12,7 @@ from ereuse_devicehub.resources import action, agent, deliverynote, inventory, \
     lot, tag, user
 from ereuse_devicehub.resources.device import definitions
 from ereuse_devicehub.resources.documents import documents
+from ereuse_devicehub.resources.tradedocument import definitions as tradedocument
 from ereuse_devicehub.resources.enums import PriceSoftware
 from ereuse_devicehub.resources.versions import versions
 from ereuse_devicehub.resources.licences import licences
@@ -27,6 +28,7 @@ class DevicehubConfig(Config):
                                      import_resource(lot),
                                      import_resource(deliverynote),
                                      import_resource(documents),
+                                     import_resource(tradedocument),
                                      import_resource(inventory),
                                      import_resource(versions),
                                      import_resource(licences),
@@ -37,12 +39,15 @@ class DevicehubConfig(Config):
     DB_PASSWORD = config('DB_PASSWORD', 'ereuse')
     DB_HOST = config('DB_HOST', 'localhost')
     DB_DATABASE = config('DB_DATABASE', 'devicehub')
+    DB_SCHEMA = config('DB_SCHEMA', 'dbtest')
     SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{pw}@{host}/{db}'.format(
         user=DB_USER,
         pw=DB_PASSWORD,
         host=DB_HOST,
         db=DB_DATABASE,
     )  # type: str
+    SCHEMA = config('SCHEMA', 'dbtest')
+    HOST  = config('HOST', 'localhost')
     MIN_WORKBENCH = StrictVersion('11.0a1')  # type: StrictVersion
     """The minimum version of ereuse.org workbench that this devicehub
     accepts. we recommend not changing this value.
@@ -68,3 +73,7 @@ class DevicehubConfig(Config):
 
     """Admin email"""
     EMAIL_ADMIN = config('EMAIL_ADMIN', '')
+
+    """Definition of path where save the documents of customers"""
+    PATH_DOCUMENTS_STORAGE = config('PATH_DOCUMENTS_STORAGE', '/tmp/')
+    JWT_PASS = config('JWT_PASS', '')

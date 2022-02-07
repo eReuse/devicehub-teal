@@ -10,17 +10,21 @@ from werkzeug.exceptions import Unauthorized
 import teal.marshmallow
 from ereuse_utils.test import ANY
 
+from ereuse_devicehub import auth
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.user.models import Session
 from ereuse_devicehub.resources.action.models import Snapshot, Allocate, Live
 from ereuse_devicehub.resources.documents import documents
+from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.device import models as d
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.hash_reports import ReportHash
+from ereuse_devicehub.resources.enums import SessionType
 from ereuse_devicehub.db import db
 from tests import conftest
-from tests.conftest import file
+from tests.conftest import file, yaml2json, json_encode
 
 
 @pytest.mark.mvp
@@ -30,19 +34,22 @@ def test_erasure_certificate_public_one(user: UserClient, client: Client):
     snapshot, _ = user.post(s, res=Snapshot)
 
     doc, response = user.get(res=documents.DocumentDef.t,
-                               item='erasures/{}'.format(snapshot['device']['id']),
-                               accept=ANY)
+                             item='erasures/{}'.format(
+                                 snapshot['device']['id']),
+                             accept=ANY)
     assert 'html' in response.content_type
     assert '<html' in doc
     assert '2018' in doc
 
     doc, response = client.get(res=documents.DocumentDef.t,
-                               item='erasures/{}'.format(snapshot['device']['id']),
+                               item='erasures/{}'.format(
+                                   snapshot['device']['id']),
                                query=[('format', 'PDF')],
                                accept='application/pdf')
     assert 'application/pdf' == response.content_type
 
-    erasure = next(e for e in snapshot['actions'] if e['type'] == 'EraseSectors')
+    erasure = next(e for e in snapshot['actions']
+                   if e['type'] == 'EraseSectors')
 
     doc, response = client.get(res=documents.DocumentDef.t,
                                item='erasures/{}'.format(erasure['id']),
@@ -62,7 +69,8 @@ def test_erasure_certificate_private_query(user: UserClient):
 
     doc, response = user.get(res=documents.DocumentDef.t,
                              item='erasures/',
-                             query=[('filter', {'id': [snapshot['device']['id']]})],
+                             query=[
+                                 ('filter', {'ids': [snapshot['device']['id']]})],
                              accept=ANY)
     assert 'html' in response.content_type
     assert '<html' in doc
@@ -71,7 +79,8 @@ def test_erasure_certificate_private_query(user: UserClient):
     doc, response = user.get(res=documents.DocumentDef.t,
                              item='erasures/',
                              query=[
-                                 ('filter', {'id': [snapshot['device']['id']]}),
+                                 ('filter', {
+                                  'ids': [snapshot['device']['id']]}),
                                  ('format', 'PDF')
                              ],
                              accept='application/pdf')
@@ -88,20 +97,21 @@ def test_erasure_certificate_wrong_id(client: Client):
 def test_export_csv_permitions(user: UserClient, user2: UserClient, client: Client):
     """test export device information in a csv file with others users."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+    dev_id = snapshot['device']['id']
     csv_user, _ = user.get(res=documents.DocumentDef.t,
-                          item='devices/',
-                          accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                           item='devices/',
+                           accept='text/csv',
+                           query=[('filter', {'type': ['Computer'], 'ids': [dev_id]})])
 
     csv_user2, _ = user2.get(res=documents.DocumentDef.t,
-                          item='devices/',
-                          accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                             item='devices/',
+                             accept='text/csv',
+                             query=[('filter', {'type': ['Computer'], 'ids': [dev_id]})])
 
     _, res = client.get(res=documents.DocumentDef.t,
-                          item='devices/',
-                          accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})], status=401)
+                        item='devices/',
+                        accept='text/csv',
+                        query=[('filter', {'type': ['Computer'], 'ids': [dev_id]})], status=401)
     assert res.status_code == 401
 
     assert len(csv_user) > 0
@@ -111,38 +121,39 @@ def test_export_csv_permitions(user: UserClient, user2: UserClient, client: Clie
 @pytest.mark.mvp
 def test_export_csv_actions(user: UserClient, user2: UserClient, client: Client):
     """Test export device information in a csv file with others users."""
-    acer = file('acer.happy.battery.snapshot')
-    snapshot, _ = user.post(acer, res=Snapshot)
+    acer = yaml2json('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(json_encode(acer), res=Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
                     "finalUserCode": "abcdefjhi",
                     "startTime": "2020-11-01T02:00:00+00:00",
                     "endTime": "2020-12-01T02:00:00+00:00"
-    }
+                    }
 
     user.post(res=Allocate, data=post_request)
     hdd = [c for c in acer['components'] if c['type'] == 'HardDrive'][0]
-    hdd_action = [a for a in hdd['actions'] if a['type'] == 'TestDataStorage'][0]
+    hdd_action = [a for a in hdd['actions']
+                  if a['type'] == 'TestDataStorage'][0]
     hdd_action['lifetime'] += 1000
     acer.pop('elapsed')
     acer['licence_version'] = '1.0.0'
     snapshot, _ = client.post(acer, res=Live)
 
     csv_user, _ = user.get(res=documents.DocumentDef.t,
-                          item='actions/',
-                          accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                           item='actions/',
+                           accept='text/csv',
+                           query=[('filter', {'type': ['Computer'], 'ids': [device_id]})])
 
     csv_user2, _ = user2.get(res=documents.DocumentDef.t,
-                          item='actions/',
-                          accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                             item='actions/',
+                             accept='text/csv',
+                             query=[('filter', {'type': ['Computer']})])
 
     _, res = client.get(res=documents.DocumentDef.t,
-                          item='actions/',
-                          accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})], status=401)
+                        item='actions/',
+                        accept='text/csv',
+                        query=[('filter', {'type': ['Computer']})], status=401)
     assert res.status_code == 401
 
     assert len(csv_user) > 0
@@ -153,35 +164,36 @@ def test_export_csv_actions(user: UserClient, user2: UserClient, client: Client)
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_export_csv2(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
-    acer = file('acer-happy.snapshot-test1')
-    snapshot, _ = user.post(acer, res=Snapshot)
+    acer = yaml2json('acer-happy.snapshot-test1')
+    snapshot, _ = user.post(json_encode(acer), res=Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
                     "finalUserCode": "abcdefjhi",
                     "startTime": "2020-11-01T02:00:00+00:00",
                     "endTime": "2020-12-01T02:00:00+00:00"
-    }
+                    }
 
     user.post(res=Allocate, data=post_request)
 
-    acer = file('acer-happy.live-test1')
+    acer = yaml2json('acer-happy.live-test1')
     live, _ = client.post(acer, res=Live)
     csv_user, _ = user.get(res=documents.DocumentDef.t,
-                          item='actions/',
-                          accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                           item='actions/',
+                           accept='text/csv',
+                           query=[('filter', {'type': ['Computer'], 'ids': [device_id]})])
 
     assert "4692" in csv_user
     assert "8692" in csv_user
-    assert "DevicehubID" in csv_user
+    assert "DHID" in csv_user
+
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_example2(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it."""
-    acer = file('acer-happy.snapshot-test1')
-    snapshot, _ = user.post(acer, res=Snapshot)
+    acer = yaml2json('acer-happy.snapshot-test1')
+    snapshot, _ = user.post(json_encode(acer), res=Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
@@ -192,7 +204,7 @@ def test_live_example2(user: UserClient, client: Client, app: Devicehub):
 
     user.post(res=Allocate, data=post_request)
 
-    acer = file('acer-happy.live-test1')
+    acer = yaml2json('acer-happy.live-test1')
     live, _ = client.post(acer, res=Live)
     db_device = d.Device.query.filter_by(id=device_id).one()
     action_live = [a for a in db_device.actions if a.type == 'Live']
@@ -204,10 +216,12 @@ def test_live_example2(user: UserClient, client: Client, app: Devicehub):
 def test_export_basic_snapshot(user: UserClient):
     """Test export device information in a csv file."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+    dev_id = snapshot['device']['id']
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='devices/',
                           accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                          query=[('filter', {'type': ['Computer'], 'ids': [dev_id]})])
+
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f, delimiter=';', quotechar='"')
     export_csv = list(obj_csv)
@@ -217,13 +231,13 @@ def test_export_basic_snapshot(user: UserClient):
         obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
         fixture_csv = list(obj_csv)
 
-    assert isinstance(datetime.strptime(export_csv[1][18], '%c'), datetime), \
+    assert isinstance(datetime.strptime(export_csv[1][19], '%c'), datetime), \
         'Register in field is not a datetime'
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
-    assert fixture_csv[1][:18] == export_csv[1][:18], 'Computer information are not equal'
-    assert fixture_csv[1][19] == export_csv[1][19], 'Computer information are not equal'
-    assert fixture_csv[1][21:] == export_csv[1][21:], 'Computer information are not equal'
+    assert fixture_csv[1][:19] == export_csv[1][:19], 'Computer information are not equal'
+    assert fixture_csv[1][20] == export_csv[1][20], 'Computer information are not equal'
+    assert fixture_csv[1][22:] == export_csv[1][22:], 'Computer information are not equal'
 
 
 @pytest.mark.mvp
@@ -239,13 +253,13 @@ def test_check_insert_hash(app: Devicehub, user: UserClient, client: Client):
     assert ReportHash.query.filter_by(hash3=hash3).count() == 1
     result, status = client.get(res=documents.DocumentDef.t, item='check/', query=[('hash', hash3)])
     assert status.status_code == 200
-    assert result == True
+    assert result
 
     ff = open('/tmp/test.csv', 'w')
     ff.write(csv_str)
     ff.close()
 
-    a= open('/tmp/test.csv').read()
+    a = open('/tmp/test.csv').read()
     assert hash3 == hashlib.sha3_256(a.encode('utf-8')).hexdigest()
 
 
@@ -254,18 +268,18 @@ def test_export_extended(app: Devicehub, user: UserClient):
     """Test a export device with all information and a lot of components."""
     snapshot1, _ = user.post(file('real-eee-1001pxd.snapshot.12'), res=Snapshot, status=201)
     snapshot2, _ = user.post(file('complete.export.snapshot'), res=Snapshot, status=201)
+    dev1_id = snapshot1['device']['id']
+    dev2_id = snapshot2['device']['id']
     with app.app_context():
         # Create a pc with a tag
-        tag = Tag(id='foo', owner_id=user.user['id'])
-        # pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
-        pc = d.Device.query.filter_by(id=snapshot1['device']['id']).first()
-        pc.tags.add(tag)
+        pc = d.Device.query.filter_by(id=dev1_id).first()
         db.session.add(pc)
         db.session.commit()
+
     csv_str, _ = user.get(res=documents.DocumentDef.t,
                           item='devices/',
                           accept='text/csv',
-                          query=[('filter', {'type': ['Computer']})])
+                          query=[('filter', {'type': ['Computer'], 'ids': [dev1_id, dev2_id]})])
 
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f, delimiter=';', quotechar='"')
@@ -277,24 +291,24 @@ def test_export_extended(app: Devicehub, user: UserClient):
         obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
         fixture_csv = list(obj_csv)
 
-    assert isinstance(datetime.strptime(export_csv[1][18], '%c'), datetime), \
+    assert isinstance(datetime.strptime(export_csv[1][19], '%c'), datetime), \
         'Register in field is not a datetime'
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
-    assert fixture_csv[1][:18] == export_csv[1][:18], 'Computer information are not equal'
-    assert fixture_csv[1][19] == export_csv[1][19], 'Computer information are not equal'
-    assert fixture_csv[1][21:80] == export_csv[1][21:80], 'Computer information are not equal'
-    assert fixture_csv[1][81] == export_csv[1][81], 'Computer information are not equal'
-    assert fixture_csv[1][84:] == export_csv[1][84:], 'Computer information are not equal'
-    assert fixture_csv[2][:18] == export_csv[2][:18], 'Computer information are not equal'
-    assert fixture_csv[2][19] == export_csv[2][19], 'Computer information are not equal'
-    assert fixture_csv[2][21:80] == export_csv[2][21:80], 'Computer information are not equal'
-    assert fixture_csv[2][81] == export_csv[2][81], 'Computer information are not equal'
-    assert fixture_csv[2][84:104] == export_csv[2][84:104], 'Computer information are not equal'
-    assert fixture_csv[2][105] == export_csv[2][105], 'Computer information are not equal'
-    assert fixture_csv[2][108:128] == export_csv[2][108:128], 'Computer information are not equal'
-    assert fixture_csv[2][129] == export_csv[2][129], 'Computer information are not equal'
-    assert fixture_csv[2][132:] == export_csv[2][132:], 'Computer information are not equal'
+    assert fixture_csv[1][:19] == export_csv[1][:19], 'Computer information are not equal'
+    assert fixture_csv[1][20] == export_csv[1][20], 'Computer information are not equal'
+    assert fixture_csv[1][22:82] == export_csv[1][22:82], 'Computer information are not equal'
+    assert fixture_csv[1][83] == export_csv[1][83], 'Computer information are not equal'
+    assert fixture_csv[1][86:] == export_csv[1][86:], 'Computer information are not equal'
+    assert fixture_csv[2][:19] == export_csv[2][:19], 'Computer information are not equal'
+    assert fixture_csv[2][20] == export_csv[2][20], 'Computer information are not equal'
+    assert fixture_csv[2][22:82] == export_csv[2][22:82], 'Computer information are not equal'
+    assert fixture_csv[2][83] == export_csv[2][83], 'Computer information are not equal'
+    assert fixture_csv[2][86:106] == export_csv[2][86:106], 'Computer information are not equal'
+    assert fixture_csv[2][109] == export_csv[2][109], 'Computer information are not equal'
+    assert fixture_csv[2][112:133] == export_csv[2][112:133], 'Computer information are not equal'
+    assert fixture_csv[2][135] == export_csv[2][135], 'Computer information are not equal'
+    assert fixture_csv[2][138:] == export_csv[2][138:], 'Computer information are not equal'
 
 
 @pytest.mark.mvp
@@ -464,7 +478,7 @@ def test_get_document_lots(user: UserClient, user2: UserClient):
     assert export2_csv[1][3] == 'comments,lot3,testcomment-lot3,'
 
 
-@pytest.mark.mvp 
+@pytest.mark.mvp
 def test_verify_stamp(user: UserClient, client: Client):
     """Test verify stamp of one export device information in a csv file."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
@@ -472,12 +486,12 @@ def test_verify_stamp(user: UserClient, client: Client):
                           item='devices/',
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']})])
-    
+
     response, _ = client.post(res=documents.DocumentDef.t,
             item='stamps/',
             content_type='multipart/form-data',
             accept='text/html',
-            data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')), 'example.csv')]}, 
+            data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')), 'example.csv')]},
             status=200)
     assert "alert alert-info" in response
     assert not "alert alert-danger" in response
@@ -501,10 +515,10 @@ def test_verify_stamp(user: UserClient, client: Client):
     assert not "alert alert-danger" in response
 
 
-@pytest.mark.mvp 
+@pytest.mark.mvp
 def test_verify_stamp_log_info(user: UserClient, client: Client):
     """Test verify stamp of one export lots-info in a csv file."""
-    
+
     l, _ = user.post({'name': 'Lot1', 'description': 'comments,lot1,testcomment-lot1,'}, res=Lot)
     l, _ = user.post({'name': 'Lot2', 'description': 'comments,lot2,testcomment-lot2,'}, res=Lot)
 
@@ -516,8 +530,8 @@ def test_verify_stamp_log_info(user: UserClient, client: Client):
                               item='stamps/',
                               content_type='multipart/form-data',
                               accept='text/html',
-                              data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')), 
-                                    'example.csv')]}, 
+                              data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')),
+                                    'example.csv')]},
                               status=200)
     assert "alert alert-info" in response
 
@@ -538,7 +552,7 @@ def test_verify_stamp_devices_stock(user: UserClient, client: Client):
                               content_type='multipart/form-data',
                               accept='text/html',
                               data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')),
-                                    'example.csv')]}, 
+                                    'example.csv')]},
                               status=200)
     assert "alert alert-info" in response
 
@@ -546,8 +560,8 @@ def test_verify_stamp_devices_stock(user: UserClient, client: Client):
 @pytest.mark.mvp
 def test_verify_stamp_csv_actions(user: UserClient, client: Client):
     """Test verify stamp of one export device information in a csv file with others users."""
-    acer = file('acer.happy.battery.snapshot')
-    snapshot, _ = user.post(acer, res=Snapshot)
+    acer = yaml2json('acer.happy.battery.snapshot')
+    snapshot, _ = user.post(json_encode(acer), res=Snapshot)
     device_id = snapshot['device']['id']
     post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
                     "devices": [device_id], "description": "aaa",
@@ -573,8 +587,8 @@ def test_verify_stamp_csv_actions(user: UserClient, client: Client):
                               item='stamps/',
                               content_type='multipart/form-data',
                               accept='text/html',
-                              data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')), 
-                                    'example.csv')]}, 
+                              data={'docUpload': [(BytesIO(bytes(csv_str, 'utf-8')),
+                                    'example.csv')]},
                               status=200)
     assert "alert alert-info" in response
 
@@ -587,22 +601,22 @@ def test_verify_stamp_erasure_certificate(user: UserClient, client: Client):
 
     doc, _ = user.get(res=documents.DocumentDef.t,
                              item='erasures/',
-                             query=[('filter', {'id': [snapshot['device']['id']]})],
+                             query=[('filter', {'ids': [snapshot['device']['id']]})],
                              accept=ANY)
 
     response, _ = client.post(res=documents.DocumentDef.t,
                               item='stamps/',
                               content_type='multipart/form-data',
                               accept='text/html',
-                              data={'docUpload': [(BytesIO(bytes(doc, 'utf-8')), 
-                                    'example.csv')]}, 
+                              data={'docUpload': [(BytesIO(bytes(doc, 'utf-8')),
+                                    'example.csv')]},
                               status=200)
     assert "alert alert-danger" in response
 
     doc, _ = user.get(res=documents.DocumentDef.t,
                              item='erasures/',
                              query=[
-                                 ('filter', {'id': [snapshot['device']['id']]}),
+                                 ('filter', {'ids': [snapshot['device']['id']]}),
                                  ('format', 'PDF')
                              ],
                              accept='application/pdf')
@@ -611,15 +625,15 @@ def test_verify_stamp_erasure_certificate(user: UserClient, client: Client):
                               item='stamps/',
                               content_type='multipart/form-data',
                               accept='text/html',
-                              data={'docUpload': [(BytesIO(doc), 
-                                    'example.csv')]}, 
+                              data={'docUpload': [(BytesIO(doc),
+                                    'example.csv')]},
                               status=200)
     assert "alert alert-info" in response
 
 
 @pytest.mark.mvp
 def test_get_document_internal_stats(user: UserClient, user2: UserClient):
-    """Tests for get teh internal stats."""
+    """Tests for get the internal stats."""
 
     # csv_str, _ = user.get(res=documents.DocumentDef.t,
                             # item='internalstats/')
@@ -644,3 +658,62 @@ def test_get_document_internal_stats(user: UserClient, user2: UserClient):
     export_csv = list(obj_csv)
 
     assert csv_str.strip() == '""'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_get_wbconf(user: UserClient):
+    """Tests for get env file for usb wb."""
+
+    env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodyrate', accept=ANY)
+    assert 'WB_ERASE =' in env
+
+    env, _ = user.get(res=documents.DocumentDef.t, item='wbconf/usodywipe', accept=ANY)
+    assert 'WB_ERASE =' in env
+    # assert 'WB_ERASE = True' in env
+
+    session = Session.query.filter_by(user_id=user.user['id'],
+                                      type=SessionType.Internal).first()
+    token = session.token
+    token = auth.Auth.encode(session.token)
+    assert token in env
+    user.user['token'] = token
+    snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_trade_documents(user: UserClient):
+    """Tests upload one document"""
+
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    request_post = {
+        'filename': 'test.pdf',
+        'hash': 'bbbbbbbb',
+        'url': 'http://www.ereuse.org/',
+        'lot': lot['id']
+    }
+    doc, _ = user.post(res=TradeDocument, data=request_post)
+    assert doc['filename'] == request_post['filename']
+    assert doc['url'] == request_post['url']
+    assert doc['hash'] == request_post['hash']
+    assert doc['lot']['name'] == lot['name']
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_trade_documents_with_weight(user: UserClient):
+    """Tests upload one document"""
+
+    lot, _ = user.post({'name': 'MyLot'}, res=Lot)
+    # long url
+    url = 'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
+    request_post = {
+        'filename': 'test.pdf',
+        'hash': 'bbbbbbbb',
+        'url': url,
+        'weight': 15,
+        'lot': lot['id']
+    }
+    doc, _ = user.post(res=TradeDocument, data=request_post)
+    assert doc['weight'] == request_post['weight']

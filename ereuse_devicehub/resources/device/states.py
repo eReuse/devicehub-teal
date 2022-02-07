@@ -23,6 +23,7 @@ class Trading(State):
     """Trading states.
 
     :cvar Reserved: The device has been reserved.
+    :cvar Trade: The devices has been changed of owner.
     :cvar Cancelled: The device has been cancelled.
     :cvar Sold: The device has been sold.
     :cvar Donated: The device is donated.
@@ -33,6 +34,9 @@ class Trading(State):
           from the facility. It does not mean end-of-life.
     """
     Reserved = e.Reserve
+    Trade = e.Trade
+    Confirm = e.Confirm
+    Revoke = e.Revoke
     Cancelled = e.CancelTrade
     Sold = e.Sell
     Donated = e.Donate
@@ -78,3 +82,16 @@ class Usage(State):
     Allocate = e.Allocate
     Deallocate = e.Deallocate
     InUse = e.Live
+
+    
+class Status(State):
+    """Define status of device for one user.
+    :cvar Use: The device is in use for one final user.
+    :cvar Refurbish: The device is owned by one refurbisher.
+    :cvar Recycling: The device is sended to recycling.
+    :cvar Management: The device is owned by one Manager.
+    """
+    Use = e.Use
+    Refurbish = e.Refurbish
+    Recycling = e.Recycling
+    Management = e.Management
