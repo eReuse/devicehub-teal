@@ -4,6 +4,7 @@ from itertools import groupby
 from typing import Iterable, Set
 
 import yaml
+from flask import g
 from sqlalchemy import inspect
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.util import OrderedSet
@@ -11,11 +12,19 @@ from teal.db import ResourceNotFound
 from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.exceptions import NeedsId
-from ereuse_devicehub.resources.device.models import Component, Computer, Device
-from ereuse_devicehub.resources.event.models import Remove
+from ereuse_devicehub.resources.action.models import Remove
+from ereuse_devicehub.resources.device.models import Component, Computer, Device, DataStorage
 from ereuse_devicehub.resources.tag.model import Tag
 
+
+DEVICES_ALLOW_DUPLICITY = [
+    'RamModule',
+    'Display',
+    'SoundCard',
+    'Battery',
+    'Camera',
+    'GraphicCard',
+]
 
 class Sync:
     """Synchronizes the device and components with the database."""
@@ -23,8 +32,7 @@ class Sync:
     def run(self,
             device: Device,
             components: Iterable[Component] or None) -> (Device, OrderedSet):
-        """
-        Synchronizes the device and components with the database.
+        """Synchronizes the device and components with the database.
 
         Identifies if the device and components exist in the database
         and updates / inserts them as necessary.
@@ -39,7 +47,7 @@ class Sync:
 
         :param device: The device to add / update to the database.
         :param components: Components that are inside of the device.
-                           This method performs Add and Remove events
+                           This method performs Add and Remove actions
                            so the device ends up with these components.
                            Components are added / updated accordingly.
                            If this is empty, all components are removed.
@@ -55,7 +63,7 @@ class Sync:
                  2. A list of Add / Remove (not yet added to session).
         """
         db_device = self.execute_register(device)
-        db_components, events = OrderedSet(), OrderedSet()
+        db_components, actions = OrderedSet(), OrderedSet()
         if components is not None:  # We have component info (see above)
             if not isinstance(db_device, Computer):
                 # Until a good reason is given, we synthetically forbid
@@ -71,16 +79,15 @@ class Sync:
                 if not is_new:
                     not_new_components.add(db_component)
             # We only want to perform Add/Remove to not new components
-            events = self.add_remove(db_device, not_new_components)
+            actions = self.add_remove(db_device, not_new_components)
             db_device.components = db_components
-        return db_device, events
+        return db_device, actions
 
     def execute_register_component(self,
                                    component: Component,
                                    blacklist: Set[int],
                                    parent: Computer):
-        """
-        Synchronizes one component to the DB.
+        """Synchronizes one component to the DB.
 
         This method is a specialization of :meth:`.execute_register`
         but for components that are inside parents.
@@ -102,9 +109,16 @@ class Sync:
                    existed in the DB.
         """
         assert inspect(component).transient, 'Component should not be synced from DB'
+        # if not is a DataStorage, then need build a new one
+        if component.t in DEVICES_ALLOW_DUPLICITY:
+            db.session.add(component)
+            is_new = True
+            return component, is_new
+
+        # if not, then continue with the traditional behaviour
         try:
             if component.hid:
-                db_component = Device.query.filter_by(hid=component.hid).one()
+                db_component = Device.query.filter_by(hid=component.hid, owner_id=g.user.id).one()
                 assert isinstance(db_component, Device), \
                     '{} must be a component'.format(db_component)
             else:
@@ -125,8 +139,7 @@ class Sync:
         return db_component, is_new
 
     def execute_register(self, device: Device) -> Device:
-        """
-        Synchronizes one device to the DB.
+        """Synchronizes one device to the DB.
 
         This method tries to get an existing device using the HID
         or one of the tags, and...
@@ -154,13 +167,12 @@ class Sync:
         """
         assert inspect(device).transient, 'Device cannot be already synced from DB'
         assert all(inspect(tag).transient for tag in device.tags), 'Tags cannot be synced from DB'
-        if not device.tags and not device.hid:
-            # We cannot identify this device
-            raise NeedsId()
         db_device = None
         if device.hid:
             with suppress(ResourceNotFound):
-                db_device = Device.query.filter_by(hid=device.hid).one()
+                db_device = Device.query.filter_by(hid=device.hid, owner_id=g.user.id, active=True).one()
+        if db_device and db_device.allocated:
+            raise ResourceNotFound('device is actually allocated {}'.format(device))
         try:
             tags = {Tag.from_an_id(tag.id).one() for tag in device.tags}  # type: Set[Tag]
         except ResourceNotFound:
@@ -205,11 +217,13 @@ class Sync:
 
     @staticmethod
     def merge(device: Device, db_device: Device):
-        """
-        Copies the physical properties of the device to the db_device.
+        """Copies the physical properties of the device to the db_device.
 
         This method mutates db_device.
         """
+        if db_device.owner_id != g.user.id:
+            return 
+
         for field_name, value in device.physical_properties.items():
             if value is not None:
                 setattr(db_device, field_name, value)
@@ -217,8 +231,7 @@ class Sync:
     @staticmethod
     def add_remove(device: Computer,
                    components: Set[Component]) -> OrderedSet:
-        """
-        Generates the Add and Remove events (but doesn't add them to
+        """Generates the Add and Remove actions (but doesn't add them to
         session).
 
         :param device: A device which ``components`` attribute contains
@@ -228,10 +241,10 @@ class Sync:
                            be Added. Some of them can already exist
                            on the device, in which case they won't
                            be re-added.
-        :return: A list of Add / Remove events.
+        :return: A list of Add / Remove actions.
         """
-        # Note that we create the Remove events before the Add ones
-        events = OrderedSet()
+        # Note that we create the Remove actions before the Add ones
+        actions = OrderedSet()
         old_components = set(device.components)
 
         adding = components - old_components
@@ -241,9 +254,12 @@ class Sync:
                 return component.parent or Device(id=0)  # Computer with id 0 is our Identity
 
             for parent, _components in groupby(sorted(adding, key=g_parent), key=g_parent):
-                if parent.id != 0:  # Is not Computer Identity
-                    events.add(Remove(device=parent, components=OrderedSet(_components)))
-        return events
+                set_components = OrderedSet(_components)
+                check_owners = (x.owner_id == g.user.id for x in set_components)
+                # Is not Computer Identity and all components have the correct owner
+                if parent.id != 0 and all(check_owners):
+                    actions.add(Remove(device=parent, components=set_components))
+        return actions
 
 
 class MismatchBetweenTags(ValidationError):

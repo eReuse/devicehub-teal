@@ -1,0 +1,34 @@
+type: Snapshot
+uuid: 123e4567-e89b-12d3-a456-426655440000
+version: '11.0'
+software: Workbench
+elapsed: 4
+device:
+  type: Desktop
+  chassis: Microtower
+  serialNumber: d2s
+  model: d1ml
+  manufacturer: d1mr
+  actions:
+    - type: VisualTest
+      appearanceRange: A
+      functionalityRange: B
+components:
+  - type: GraphicCard
+    serialNumber: gc1s
+    model: gc1ml
+    manufacturer: gc1mr
+  - type: RamModule
+    serialNumber: rm1s
+    model: rm1ml
+    manufacturer: rm1mr
+    speed: 1333
+  - type: Processor
+    serialNumber: p1s
+    model: p1mla
+    manufacturer: p1mr
+    speed: 1.6
+    actions:
+      - type: BenchmarkProcessor
+        rate: 2410
+        elapsed: 11

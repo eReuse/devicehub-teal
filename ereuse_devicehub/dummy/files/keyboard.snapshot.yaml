@@ -7,8 +7,8 @@ device:
   serialNumber: BAR
   manufacturer: BAZ
   layout: ES
-  events:
-  - type: ManualRate
-    appearanceRange: A
-    functionalityRange: A
-    labelling: False
+  actions:
+    - type: VisualTest
+      appearanceRange: A
+      functionalityRange: A
+      labelling: False

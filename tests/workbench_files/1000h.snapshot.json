@@ -1,0 +1,137 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
+  "device": {
+    "actions": [],
+    "type": "Laptop",
+    "manufacturer": "ASUSTeK Computer INC.",
+    "model": "1000H",
+    "serialNumber": "8BOAAQ191999",
+    "chassis": "Netbook",
+    "sku": "90OAM0HB83311735E12DQ",
+    "version": null
+  },
+  "components": [
+    {
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 11969.98,
+          "elapsed": 0
+        }
+      ],
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Atom CPU N270 @ 1.60GHz",
+      "serialNumber": null,
+      "speed": 1.6,
+      "address": 32,
+      "threads": 8,
+      "brand": "Atom",
+      "generation": null
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 2048.0,
+      "interface": "SDRAM"
+    },
+    {
+      "actions": [
+        {
+          "elapsed": 13,
+          "readSpeed": 106.0,
+          "writeSpeed": 26.6,
+          "type": "BenchmarkDataStorage"
+        }
+      ],
+      "type": "HardDrive",
+      "manufacturer": null,
+      "model": "TS32GSSD370S",
+      "serialNumber": "C304332411",
+      "size": 32017.0,
+      "interface": null,
+      "variant": "4H"
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "model": "Mobile 945GSE Express Integrated Graphics Controller",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Qualcomm Atheros",
+      "model": "AR8121/AR8113/AR8114 Gigabit or Fast Ethernet",
+      "serialNumber": "00:23:54:8d:be:66",
+      "speed": 100.0,
+      "variant": "b0",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Ralink corp.",
+      "model": "RT2790 Wireless 802.11n 1T/2R PCIe",
+      "serialNumber": "00:15:af:dc:44:eb",
+      "speed": null,
+      "variant": "00",
+      "wireless": true
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "NM10/ICH7 Family High Definition Audio Controller",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Chicony Electronics Co., Ltd.",
+      "model": "CNF7129",
+      "serialNumber": "SN0001"
+    },
+    {
+      "actions": [],
+      "type": "Display",
+      "model": "SAMSUNG SyncMaster",
+      "manufacturer": "SAM SAMSUNG",
+      "serialNumber": "H1CRA03915",
+      "resolutionWidth": 1024,
+      "resolutionHeight": 768,
+      "refreshRate": 70,
+      "size": 15.0,
+      "technology": null,
+      "productionDate": "2001-10-28T00:00:00"
+    },
+    {
+      "actions": [],
+      "type": "Motherboard",
+      "manufacturer": "ASUSTeK Computer INC.",
+      "model": "1000H",
+      "serialNumber": "Eee0123456789",
+      "usb": 5,
+      "firewire": 0,
+      "serial": 0,
+      "pcmcia": 0,
+      "slots": 0,
+      "biosDate": "2009-10-21T00:00:00",
+      "version": "2204",
+      "ramSlots": null,
+      "ramMaxSize": null
+    }
+  ]
+}

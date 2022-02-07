@@ -9,28 +9,26 @@ device:
   serialNumber: d1s
   model: d1ml
   manufacturer: d1mr
-  events:
-  - type: WorkbenchRate
-    appearanceRange: A
-    functionalityRange: B
-    labelling: True
-    biosRange: B
+  actions:
+    - type: VisualTest
+      appearanceRange: A
+      functionalityRange: B
 components:
-- type: GraphicCard
-  serialNumber: gc1s
-  model: gc1ml
-  manufacturer: gc1mr
-- type: RamModule
-  serialNumber: rm1s
-  model: rm1ml
-  manufacturer: rm1mr
-  speed: 1333
-- type: Processor
-  serialNumber: p1s
-  model: p1ml
-  manufacturer: p1mr
-  speed: 1.6
-  events:
-  - type: BenchmarkProcessor
-    rate: 2410
-    elapsed: 11
+  - type: GraphicCard
+    serialNumber: gc1s
+    model: gc1ml
+    manufacturer: gc1mr
+  - type: RamModule
+    serialNumber: rm1s
+    model: rm1ml
+    manufacturer: rm1mr
+    speed: 1333
+  - type: Processor
+    serialNumber: p1s
+    model: p1ml
+    manufacturer: p1mr
+    speed: 1.6
+    actions:
+      - type: BenchmarkProcessor
+        rate: 2410
+        elapsed: 11

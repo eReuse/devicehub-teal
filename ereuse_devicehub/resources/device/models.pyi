@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from fractions import Fraction
 from operator import attrgetter
 from typing import Dict, Generator, Iterable, List, Optional, Set, Type, TypeVar
@@ -11,21 +11,21 @@ from sqlalchemy.orm import relationship
 from teal.db import Model
 from teal.enums import Layouts
 
+from ereuse_devicehub.resources.action import models as e
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device import states
-from ereuse_devicehub.resources.enums import BatteryTechnology, ComputerChassis, \
+from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
     DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface
-from ereuse_devicehub.resources.event import models as e
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.tag.model import Tags
 
-E = TypeVar('E', bound=e.Event)
+E = TypeVar('E', bound=e.Action)
 
 
 class Device(Thing):
-    EVENT_SORT_KEY = attrgetter('created')
+    ACTION_SORT_KEY = attrgetter('created')
 
     id = ...  # type: Column
     type = ...  # type: Column
@@ -42,7 +42,10 @@ class Device(Thing):
     production_date = ...  # type: Column
     brand = ...  # type: Column
     generation = ...  # type: Column
-    variant = ... # type: Column
+    version = ...  # type: Column
+    variant = ...  # type: Column
+    sku = ...  # type: Column
+    image = ...  #type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -58,21 +61,24 @@ class Device(Thing):
         self.depth = ...  # type: Optional[float]
         self.color = ...  # type: Optional[Color]
         self.physical_properties = ...  # type: Dict[str, object or None]
-        self.events_multiple = ...  # type: Set[e.EventWithMultipleDevices]
-        self.events_one = ...  # type: Set[e.EventWithOneDevice]
+        self.actions_multiple = ...  # type: Set[e.ActionWithMultipleDevices]
+        self.actions_one = ...  # type: Set[e.ActionWithOneDevice]
         self.tags = ...  # type: Tags[Tag]
         self.lots = ...  # type: Set[Lot]
         self.production_date = ...  # type: Optional[datetime]
         self.brand = ...  # type: Optional[str]
         self.generation = ...  # type: Optional[int]
-        self.variant = ... # type: Optional[str]
+        self.version = ...  # type: Optional[str]
+        self.variant = ...  # type: Optional[str]
+        self.sku = ...  # type: Optional[str]
+        self.image = ...  # type: Optional[urlutils.URL]
 
     @property
-    def events(self) -> List[e.Event]:
+    def actions(self) -> List[e.Action]:
         pass
 
     @property
-    def problems(self) -> List[e.Event]:
+    def problems(self) -> List[e.Action]:
         pass
 
     @property
@@ -80,7 +86,7 @@ class Device(Thing):
         pass
 
     @property
-    def rate(self) -> Optional[e.AggregateRate]:
+    def rate(self) -> Optional[e.Rate]:
         pass
 
     @property
@@ -103,10 +109,10 @@ class Device(Thing):
     def working(self) -> List[e.Test]:
         pass
 
-    def last_event_of(self, *types: Type[E]) -> E:
+    def last_action_of(self, *types: Type[E]) -> E:
         pass
 
-    def _warning_events(self, events: Iterable[e.Event]) -> Generator[e.Event]:
+    def _warning_actions(self, actions: Iterable[e.Action]) -> Generator[e.Action]:
         pass
 
 
@@ -135,15 +141,22 @@ class DisplayMixin:
 class Computer(DisplayMixin, Device):
     components = ...  # type: Column
     chassis = ...  # type: Column
+    amount = ...  # type: Column
+    owner_address = ...  # type: Column
+    transfer_state = ...  # type: Column
+    receiver_id = ...  # uuid: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.components = ...  # type: Set[Component]
-        self.events_parent = ...  # type: Set[e.Event]
+        self.actions_parent = ...  # type: Set[e.Action]
         self.chassis = ...  # type: ComputerChassis
+        self.owner_address = ...  # type: UUID
+        self.transfer_state = ...
+        self.receiver_address = ...  # type: str
 
     @property
-    def events(self) -> List:
+    def actions(self) -> List:
         pass
 
     @property
@@ -202,15 +215,17 @@ class TelevisionSet(Monitor):
 class Mobile(Device):
     imei = ...  # type: Column
     meid = ...  # type: Column
-    ram_size = ... # type: Column
-    data_storage_size = ... # type: Column
+    ram_size = ...  # type: Column
+    data_storage_size = ...  # type: Column
+    display_size = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.imei = ...  # type: Optional[int]
         self.meid = ...  # type: Optional[str]
-        self.ram_size = ... # type: Optional[int]
-        self.data_storage_size = ... # type: Optional[int]
+        self.ram_size = ...  # type: Optional[int]
+        self.data_storage_size = ...  # type: Optional[int]
+        self.display_size = ...  # type: Optional[float]
 
 
 class Smartphone(Mobile):
@@ -230,7 +245,7 @@ class Component(Device):
         super().__init__(**kwargs)
         self.parent_id = ...  # type: int
         self.parent = ...  # type: Computer
-        self.events_components = ...  # type: Set[e.Event]
+        self.actions_components = ...  # type: Set[e.Action]
 
     def similar_one(self, parent: Computer, blacklist: Set[int]) -> 'Component':
         pass
@@ -272,6 +287,9 @@ class Motherboard(Component):
     firewire = ...  # type: Column
     serial = ...  # type: Column
     pcmcia = ...  # type: Column
+    bios_date = ...  # type: Column
+    ram_slots = ...  # type: Column
+    ram_max_size = ...  # type: Column
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -280,6 +298,9 @@ class Motherboard(Component):
         self.firewire = ...  # type: int
         self.serial = ...  # type: int
         self.pcmcia = ...  # type: int
+        self.bios_date = ...  # type: Optional[date]
+        self.ram_slots = ...  # type: Optional[int]
+        self.ram_max_size = ...  # type: Optional[int]
 
 
 class NetworkMixin:
@@ -344,6 +365,28 @@ class Battery(Component):
         self.wireless = ...  # type: Optional[bool]
         self.technology = ...  # type: Optional[BatteryTechnology]
         self.size = ...  # type: bool
+
+
+class Camera(Component):
+    focal_length = ...  # type: Column
+    video_height = ...  # type: Column
+    video_width = ...  # type: Column
+    horizontal_view_angle = ...  # type: Column
+    facing = ...  # type: Column
+    vertical_view_angle = ...  # type: Column
+    video_stabilization = ...  # type: Column
+    flash = ...  # type: Column
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        focal_length = ...  # type: Optional[int]
+        video_height = ...  # type: Optional[int]
+        video_width = ...  # type: Optional[int]
+        horizontal_view_angle = ...  # type: Optional[int]
+        facing = ...  # type: Optional[CameraFacing]
+        vertical_view_angle = ...  # type: Optional[int]
+        video_stabilization = ...  # type: Optional[bool]
+        flash = ...  # type: Optional[bool]
 
 
 class ComputerAccessory(Device):

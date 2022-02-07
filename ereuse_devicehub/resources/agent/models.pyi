@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import PhoneNumber
 from teal import enums
 
-from ereuse_devicehub.resources.event.models import Event, Trade
+from ereuse_devicehub.resources.action.models import Action, Trade
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
@@ -28,11 +28,11 @@ class Agent(Thing):
         self.country = ...  # type: enums.Country
         self.telephone = ...  # type: PhoneNumber
         self.email = ...  # type: str
-        self.events_agent = ...  # type: Set[Event] # Ordered
-        self.events_to = ...  # type: Set[Trade] # Ordered
+        self.actions_agent = ...  # type: Set[Action] # Ordered
+        self.actions_to = ...  # type: Set[Trade] # Ordered
 
     @property
-    def events(self) -> List[Event]:
+    def actions(self) -> List[Action]:
         pass
 
 

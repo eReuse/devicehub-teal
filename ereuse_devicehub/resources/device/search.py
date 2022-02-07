@@ -7,10 +7,10 @@ from sqlalchemy.orm import aliased
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources import search
+from ereuse_devicehub.resources.action.models import Action, ActionWithMultipleDevices, \
+    ActionWithOneDevice
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Component, Computer, Device
-from ereuse_devicehub.resources.event.models import Event, EventWithMultipleDevices, \
-    EventWithOneDevice
 from ereuse_devicehub.resources.tag.model import Tag
 
 
@@ -26,12 +26,14 @@ class DeviceSearch(db.Model):
 
     properties = db.Column(TSVECTOR, nullable=False)
     tags = db.Column(TSVECTOR)
+    devicehub_ids = db.Column(TSVECTOR)
 
     __table_args__ = (
         # todo to add concurrency this should be commited separately
         #   see https://docs.sqlalchemy.org/en/latest/dialects/postgresql.html#indexes-with-concurrently
         db.Index('properties gist', properties, postgresql_using='gist'),
         db.Index('tags gist', tags, postgresql_using='gist'),
+        db.Index('devicehub_ids gist', devicehub_ids, postgresql_using='gist'),
         {
             'prefixes': ['UNLOGGED']
             # Only for temporal tables, can cause table to empty on turn on
@@ -42,17 +44,17 @@ class DeviceSearch(db.Model):
     @classmethod
     def update_modified_devices(cls, session: db.Session):
         """Updates the documents of the devices that are part of a
-        modified event, or tag in the passed-in session.
+        modified action, or tag in the passed-in session.
 
         This method is registered as a SQLAlchemy listener in the
         Devicehub class.
         """
         devices_to_update = set()
         for model in chain(session.new, session.dirty):
-            if isinstance(model, Event):
-                if isinstance(model, EventWithMultipleDevices):
+            if isinstance(model, Action):
+                if isinstance(model, ActionWithMultipleDevices):
                     devices_to_update |= model.devices
-                elif isinstance(model, EventWithOneDevice):
+                elif isinstance(model, ActionWithOneDevice):
                     devices_to_update.add(model.device)
                 if model.parent:
                     devices_to_update.add(model.parent)
@@ -120,7 +122,6 @@ class DeviceSearch(db.Model):
                 (db.func.string_agg(Comp.type, ' '), search.Weight.B),
                 ('Computer', search.Weight.C),
                 ('PC', search.Weight.C),
-                (inflection.humanize(device.chassis.name), search.Weight.B),
             ))
 
         properties = session \
@@ -141,10 +142,16 @@ class DeviceSearch(db.Model):
             )
         ).filter(Tag.device_id == device.id).join(Tag.org)
 
+        devicehub_ids = session.query(
+            search.Search.vectorize(
+                (db.func.string_agg(Device.devicehub_id, ' '), search.Weight.A),
+            )
+        ).filter(Device.devicehub_id == device.devicehub_id)
+
         # Note that commit flushes later
         # todo see how to get rid of the one_or_none() by embedding those as subqueries
         # I don't like this but I want the 'on_conflict_on_update' thingie
-        device_document = dict(properties=properties.one_or_none(), tags=tags.one_or_none())
+        device_document = dict(properties=properties.one_or_none(), tags=tags.one_or_none(), devicehub_ids=devicehub_ids.one_or_none())
         insert = postgresql.insert(DeviceSearch.__table__) \
             .values(device_id=device.id, **device_document) \
             .on_conflict_do_update(constraint='device_search_pkey', set_=device_document)

@@ -1,0 +1,140 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
+  "device": {
+    "actions": [],
+    "type": "Laptop",
+    "manufacturer": "Hewlett-Packard",
+    "model": "Pavilion dv4000",
+    "serialNumber": "2CE5270ZWC",
+    "chassis": "Netbook",
+    "sku": null,
+    "version": null
+  },
+  "components": [
+    {
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 11969.98,
+          "elapsed": 0
+        }
+      ],
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Pentium M processor 1.60GHz",
+      "serialNumber": null,
+      "speed": 1.6,
+      "address": 32,
+      "threads": 8,
+      "brand": "Pentium",
+      "generation": null
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 512.0,
+      "interface": "DDR"
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": null,
+      "model": null,
+      "serialNumber": null,
+      "format": "DIMM",
+      "size": 512.0,
+      "interface": "DDR"
+    },
+    {
+      "actions": [
+        {
+          "elapsed": 13,
+          "readSpeed": 106.0,
+          "writeSpeed": 26.6,
+          "type": "BenchmarkDataStorage"
+        }
+      ],
+      "type": "HardDrive",
+      "manufacturer": "Fujitsu",
+      "model": "MHT2080A",
+      "serialNumber": "NN4FT561BDC2",
+      "size": 80026.0,
+      "interface": null,
+      "variant": "0022"
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "model": "Mobile 915GM/GMS/910GML Express Graphics Controller",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Intel Corporation",
+      "model": "PRO/Wireless 2200BG Calexico2 Network Connection",
+      "serialNumber": "00:12:f0:c7:68:51",
+      "speed": null,
+      "variant": "05",
+      "wireless": true
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Realtek Semiconductor Co., Ltd.",
+      "model": "RTL-8100/8101L/8139 PCI Fast Ethernet Adapter",
+      "serialNumber": "00:0a:e4:d4:71:82",
+      "speed": 100.0,
+      "variant": "10",
+      "wireless": false
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "82801FB/FBM/FR/FW/FRW AC97 Audio Controller",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "Display",
+      "model": "SAMSUNG SyncMaster",
+      "manufacturer": "SAM SAMSUNG",
+      "serialNumber": "H1CRA03915",
+      "resolutionWidth": 1024,
+      "resolutionHeight": 768,
+      "refreshRate": 70,
+      "size": 15.0,
+      "technology": null,
+      "productionDate": "2001-10-28T00:00:00"
+    },
+    {
+      "actions": [],
+      "type": "Motherboard",
+      "manufacturer": "Hewlett-Packard",
+      "model": "09BC",
+      "serialNumber": null,
+      "usb": 5,
+      "firewire": 1,
+      "serial": 1,
+      "pcmcia": 1,
+      "slots": 0,
+      "biosDate": "2005-06-02T00:00:00",
+      "version": "F.13",
+      "ramSlots": null,
+      "ramMaxSize": null
+    }
+  ]
+}

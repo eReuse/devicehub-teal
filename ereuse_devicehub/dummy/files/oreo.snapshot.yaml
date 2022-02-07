@@ -9,7 +9,7 @@
     "model": "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller",
     "serialNumber": "00:26:18:96:dc:af",
     "type": "NetworkAdapter",
-    "events": []
+    "actions": []
   },
   {
     "speed": 1333.0,
@@ -20,7 +20,7 @@
     "type": "RamModule",
     "format": "DIMM",
     "size": 2048,
-    "events": []
+    "actions": []
   },
   {
     "speed": 1333.0,
@@ -31,7 +31,7 @@
     "type": "RamModule",
     "format": "DIMM",
     "size": 2048,
-    "events": []
+    "actions": []
   },
   {
     "speed": 1333.0,
@@ -42,7 +42,7 @@
     "type": "RamModule",
     "format": "DIMM",
     "size": 2048,
-    "events": []
+    "actions": []
   },
   {
     "speed": 1333.0,
@@ -53,14 +53,14 @@
     "type": "RamModule",
     "format": "DIMM",
     "size": 2048,
-    "events": []
+    "actions": []
   },
   {
     "manufacturer": "Intel Corporation",
     "model": "5 Series/3400 Series Chipset High Definition Audio",
     "serialNumber": null,
     "type": "SoundCard",
-    "events": []
+    "actions": []
   },
   {
     "speed": 2.5330000000000004,
@@ -71,7 +71,7 @@
     "serialNumber": null,
     "type": "Processor",
     "threads": 8,
-    "events": [
+    "actions": [
     {
       "elapsed": 9,
       "type": "BenchmarkProcessorSysbench",
@@ -91,7 +91,7 @@
     "serialNumber": "S246J90Z406422",
     "type": "HardDrive",
     "size": 953869,
-    "events": [
+    "actions": [
     {
       "elapsed": 120,
       "lifetime": 14298,
@@ -119,7 +119,7 @@
     "serialNumber": null,
     "type": "GraphicCard",
     "memory": 256.0,
-    "events": []
+    "actions": []
   },
   {
     "firewire": 1,
@@ -131,7 +131,7 @@
     "pcmcia": 0,
     "slots": 4,
     "serial": 1,
-    "events": []
+    "actions": []
   }
   ],
   "elapsed": 203,
@@ -141,7 +141,7 @@
     "chassis": "Tower",
     "type": "Desktop",
     "serialNumber": null,
-    "events": [
+    "actions": [
     {
       "elapsed": 60,
       "type": "StressTest",
@@ -158,11 +158,7 @@
     ]
   },
   "version": "11.0a6",
-  "expectedEvents": [
-    "Benchmark",
-    "TestDataStorage",
-    "StressTest"
-  ],
+
   "type": "Snapshot",
   "closed": true,
   "software": "Workbench"

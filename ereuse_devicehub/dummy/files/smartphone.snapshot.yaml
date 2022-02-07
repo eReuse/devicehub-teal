@@ -7,8 +7,8 @@ device:
   model: A1586
   serialNumber: ABCDEF
   imei: 35686800-004141-20
-  events:
-  - type: ManualRate
-    appearanceRange: A
-    functionalityRange: B
-    labelling: False
+  actions:
+    - type: VisualTest
+      appearanceRange: A
+      functionalityRange: B
+      labelling: False

@@ -1,8 +1,11 @@
 import io
 import uuid
+import jwt
+import ereuse_utils
 from contextlib import redirect_stdout
 from datetime import datetime
 from pathlib import Path
+from decouple import config
 
 import boltons.urlutils
 import pytest
@@ -17,6 +20,8 @@ from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.user.models import Session
+from ereuse_devicehub.resources.enums import SessionType
 
 STARTT = datetime(year=2000, month=1, day=1, hour=1)
 """A dummy starting time to use in tests."""
@@ -24,12 +29,18 @@ ENDT = datetime(year=2000, month=1, day=1, hour=2)
 """A dummy ending time to use in tests."""
 T = {'start_time': STARTT, 'end_time': ENDT}
 """A dummy start_time/end_time to use as function keywords."""
+P = config('JWT_PASS', '')
 
 
 class TestConfig(DevicehubConfig):
     SQLALCHEMY_DATABASE_URI = 'postgresql://dhub:ereuse@localhost/dh_test'
     TESTING = True
     SERVER_NAME = 'localhost'
+    TMP_SNAPSHOTS = '/tmp/snapshots'
+    TMP_LIVES = '/tmp/lives'
+    EMAIL_ADMIN = 'foo@foo.com'
+    PATH_DOCUMENTS_STORAGE = '/tmp/trade_documents'
+    JWT_PASS = config('JWT_PASS', '')
 
 
 @pytest.fixture(scope='session')
@@ -93,10 +104,26 @@ def user(app: Devicehub) -> UserClient:
         return client
 
 
+@pytest.fixture()
+def user2(app: Devicehub) -> UserClient:
+    """Gets a client with a logged-in dummy user."""
+    with app.app_context():
+        password = 'foo'
+        email = 'foo2@foo.com'
+        user = create_user(email=email, password=password)
+        client = UserClient(app, user.email, password, response_wrapper=app.response_class)
+        client.login()
+        return client
+
+
 def create_user(email='foo@foo.com', password='foo') -> User:
     user = User(email=email, password=password)
     user.individuals.add(Person(name='Timmy'))
+    session_external = Session(user=user, type=SessionType.External)
+    session_internal = Session(user=user, type=SessionType.Internal)
     db.session.add(user)
+    db.session.add(session_internal)
+    db.session.add(session_external)
     db.session.commit()
     return user
 
@@ -115,9 +142,33 @@ def auth_app_context(app: Devicehub):
         yield app
 
 
-def file(name: str) -> dict:
+def json_encode(dev: str) -> dict:
+    """Encode json."""
+    data = {"type": "Snapshot"}
+    data['data'] = jwt.encode(dev,
+                      P,
+                      algorithm="HS256",
+                      json_encoder=ereuse_utils.JSONEncoder
+    )
+
+    return data
+
+
+
+def yaml2json(name: str) -> dict:
     """Opens and parses a YAML file from the ``files`` subdir."""
     with Path(__file__).parent.joinpath('files').joinpath(name + '.yaml').open() as f:
+        return yaml.load(f)
+
+
+def file(name: str) -> dict:
+    """Opens and parses a YAML file from the ``files`` subdir. And decode"""
+    return json_encode(yaml2json(name))
+
+
+def file_workbench(name: str) -> dict:
+    """Opens and parses a YAML file from the ``files`` subdir."""
+    with Path(__file__).parent.joinpath('workbench_files').joinpath(name + '.json').open() as f:
         return yaml.load(f)
 
 
@@ -125,7 +176,11 @@ def file(name: str) -> dict:
 def tag_id(app: Devicehub) -> str:
     """Creates a tag and returns its id."""
     with app.app_context():
-        t = Tag(id='foo')
+        if User.query.count():
+            user = User.query.one()
+        else:
+            user = create_user()
+        t = Tag(id='foo', owner_id=user.id)
         db.session.add(t)
         db.session.commit()
         return t.id

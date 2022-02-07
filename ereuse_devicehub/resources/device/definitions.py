@@ -4,13 +4,13 @@ from teal.resource import Converters, Resource
 
 from ereuse_devicehub.resources.device import schemas
 from ereuse_devicehub.resources.device.models import Manufacturer
-from ereuse_devicehub.resources.device.views import DeviceView, ManufacturerView
+from ereuse_devicehub.resources.device.views import DeviceView, DeviceMergeView, ManufacturerView
 
 
 class DeviceDef(Resource):
     SCHEMA = schemas.Device
     VIEW = DeviceView
-    ID_CONVERTER = Converters.int
+    ID_CONVERTER = Converters.string
     AUTH = False  # We manage this at each view
 
     def __init__(self, app,
@@ -25,6 +25,15 @@ class DeviceDef(Resource):
                  cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
+        device_merge = DeviceMergeView.as_view('merge-devices', definition=self, auth=app.auth)
+
+        if self.AUTH:
+            device_merge = app.auth.requires_auth(device_merge)
+
+        path = '/<{value}:dev1_id>/merge/<{value}:dev2_id>'.format(value=self.ID_CONVERTER.value)
+
+        # self.add_url_rule(path, view_func=device_merge, methods={'POST'})
 
 
 class ComputerDef(DeviceDef):
@@ -161,6 +170,16 @@ class DisplayDef(ComponentDef):
     SCHEMA = schemas.Display
 
 
+class BatteryDef(ComponentDef):
+    VIEW = None
+    SCHEMA = schemas.Battery
+
+
+class CameraDef(ComponentDef):
+    VIEW = None
+    SCHEMA = schemas.Camera
+
+
 class ComputerAccessoryDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.ComputerAccessory
@@ -290,6 +309,75 @@ class CookingDef(DeviceDef):
 class Mixer(CookingDef):
     VIEW = None
     SCHEMA = schemas.Mixer
+
+
+class DIYAndGardeningDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.DIYAndGardening
+
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
+
+class DrillDef(DIYAndGardeningDef):
+    VIEW = None
+    SCHEMA = schemas.Drill
+
+
+class PackOfScrewdriversDef(DIYAndGardeningDef):
+    VIEW = None
+    SCHEMA = schemas.PackOfScrewdrivers
+
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
+
+class HomeDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Home
+
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
+
+class DehumidifierDef(HomeDef):
+    VIEW = None
+    SCHEMA = schemas.Dehumidifier
+
+
+class StairsDef(HomeDef):
+    VIEW = None
+    SCHEMA = schemas.Stairs
+
+
+class RecreationDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Recreation
+
+    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
+                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
+                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
+                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+
+
+class BikeDef(RecreationDef):
+    VIEW = None
+    SCHEMA = schemas.Bike
+
+
+class RacketDef(RecreationDef):
+    VIEW = None
+    SCHEMA = schemas.Racket
 
 
 class ManufacturerDef(Resource):

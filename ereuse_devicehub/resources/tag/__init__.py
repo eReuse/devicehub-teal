@@ -18,6 +18,7 @@ class TagDef(Resource):
     VIEW = TagView
     ID_CONVERTER = Converters.lower
 
+    OWNER_H = 'The id of the user who owns this tag. '
     ORG_H = 'The name of an existing organization in the DB. '
     'By default the organization operating this Devicehub.'
     PROV_H = 'The Base URL of the provider; scheme + domain. Ex: "https://foo.com". '
@@ -34,7 +35,6 @@ class TagDef(Resource):
         )
         super().__init__(app, import_name, static_folder, static_url_path, template_folder,
                          url_prefix, subdomain, url_defaults, root_path, cli_commands)
-        _get_device_from_tag = app.auth.requires_auth(get_device_from_tag)
 
         # DeviceTagView URLs
         device_view = TagDeviceView.as_view('tag-device-view', definition=self, auth=app.auth)
@@ -47,7 +47,12 @@ class TagDef(Resource):
                           'device/<{0.ID_CONVERTER.value}:device_id>'.format(DeviceDef),
                           view_func=device_view,
                           methods={'PUT'})
+        self.add_url_rule('/<{0.ID_CONVERTER.value}:tag_id>/'.format(self) +
+                          'device/<{0.ID_CONVERTER.value}:device_id>'.format(DeviceDef),
+                          view_func=device_view,
+                          methods={'DELETE'})
 
+    @option('-u', '--owner', help=OWNER_H)
     @option('-o', '--org', help=ORG_H)
     @option('-p', '--provider', help=PROV_H)
     @option('-s', '--sec', help=Tag.secondary.comment)
@@ -55,18 +60,20 @@ class TagDef(Resource):
     def create_tag(self,
                    id: str,
                    org: str = None,
+                   owner: str = None,
                    sec: str = None,
                    provider: str = None):
         """Create a tag with the given ID."""
         db.session.add(Tag(**self.schema.load(
-            dict(id=id, org=org, secondary=sec, provider=provider)
+            dict(id=id, owner=owner, org=org, secondary=sec, provider=provider)
         )))
         db.session.commit()
 
+    @option('-u', '--owner', help=OWNER_H)
     @option('--org', help=ORG_H)
     @option('--provider', help=PROV_H)
     @argument('path', type=cli.Path(writable=True))
-    def create_tags_csv(self, path: pathlib.Path, org: str, provider: str):
+    def create_tags_csv(self, path: pathlib.Path, owner: str, org: str, provider: str):
         """Creates tags by reading CSV from ereuse-tag.
 
         CSV must have the following columns:
@@ -77,6 +84,6 @@ class TagDef(Resource):
         with path.open() as f:
             for id, sec in csv.reader(f):
                 db.session.add(Tag(**self.schema.load(
-                    dict(id=id, org=org, secondary=sec, provider=provider)
+                    dict(id=id, owner=owner, org=org, secondary=sec, provider=provider)
                 )))
         db.session.commit()

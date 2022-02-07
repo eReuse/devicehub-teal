@@ -13,8 +13,7 @@ from ereuse_devicehub.resources.inventory import Inventory
 from ereuse_devicehub.resources.user import User
 from tests.conftest import TestConfig
 
-"""
-Tests the management of inventories in a multi-inventory environment
+"""Tests the management of inventories in a multi-inventory environment
 (several Devicehub instances that point at different schemas).
 """
 
@@ -62,6 +61,7 @@ def tdb2(config):
     return Devicehub(inventory='tdb2', config=config, db=db)
 
 
+@pytest.mark.mvp
 def test_inventory_create_delete_user(cli, tdb1, tdb2):
     """Tests creating two inventories with users, one user has
     access to the first inventory and the other to both. Finally, deletes
@@ -137,6 +137,7 @@ def test_inventory_create_delete_user(cli, tdb1, tdb2):
         assert db.has_schema('tdb2')
 
 
+@pytest.mark.mvp
 def test_create_existing_inventory(cli, tdb1):
     """Tries to create twice the same inventory."""
     cli.inv('tdb1')

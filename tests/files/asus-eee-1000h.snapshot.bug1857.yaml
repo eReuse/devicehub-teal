@@ -1,0 +1,139 @@
+{
+  "type": "Snapshot",
+  "software": "Workbench",
+  "closed": false,
+  "device": {
+    "chassis": "Netbook",
+    "serialNumber": "94OAAQ021116",
+    "type": "Laptop",
+    "model": "1000H",
+    "actions": [
+    {
+      "elapsed": 19,
+      "rate": 19.3106,
+      "type": "BenchmarkRamSysbench"
+    },
+    {
+      "appearanceRange": "A",
+      "functionalityRange": "A",
+      "type": "VisualTest"
+    }
+    ],
+    "manufacturer": "ASUSTeK Computer INC."
+  },
+  "uuid": "d1b70cb8-8929-4f36-99b7-fe052cec0ab1",
+  "components": [
+  {
+    "serialNumber": "00:24:8c:7f:cf:2d",
+    "speed": 100,
+    "type": "NetworkAdapter",
+    "wireless": false,
+    "model": "AR8121/AR8113/AR8114 Gigabit or Fast Ethernet",
+    "actions": [],
+    "manufacturer": "Qualcomm Atheros"
+  },
+  {
+    "serialNumber": null,
+    "type": "SoundCard",
+    "model": "NM10/ICH7 Family High Definition Audio Controller",
+    "actions": [],
+    "manufacturer": "Intel Corporation"
+  },
+  {
+    "serialNumber": "SN0001",
+    "type": "SoundCard",
+    "model": "CNF7129",
+    "actions": [],
+    "manufacturer": "Chicony Electronics Co., Ltd."
+  },
+  {
+    "size": 1024,
+    "serialNumber": null,
+    "format": "DIMM",
+    "type": "RamModule",
+    "interface": "SDRAM",
+    "model": null,
+    "actions": [],
+    "manufacturer": null
+  },
+  {
+    "serialNumber": null,
+    "threads": 2,
+    "speed": 1.0670000000000002,
+    "type": "Processor",
+    "address": 32,
+    "model": "Intel Atom CPU N270 @ 1.60GHz",
+    "actions": [
+    {
+      "elapsed": 172,
+      "rate": 171.6818,
+      "type": "BenchmarkProcessorSysbench"
+    },
+    {
+      "elapsed": 0,
+      "rate": 6383.8,
+      "type": "BenchmarkProcessor"
+    }
+    ],
+    "manufacturer": "Intel Corp."
+  },
+  {
+    "size": 80026.361856,
+    "interface": "ATA",
+    "model": "SAMSUNG HS082HB",
+    "manufacturer": null,
+    "actions": [
+      {
+        "elapsed": 25,
+        "writeSpeed": 14.9,
+        "readSpeed": 36.2,
+        "type": "BenchmarkDataStorage"
+      },
+      {
+        "severity": "Info",
+        "length": "Short",
+        "reallocatedSectorCount": 0,
+        "assessment": true,
+        "powerCycleCount": 2169,
+        "elapsed": 6,
+        "status": "Completed: read failure",
+        "offlineUncorrectable": 182042944,
+        "lifetime": 4634,
+        "currentPendingSectorCount": 473302660,
+        "type": "TestDataStorage"
+      }
+    ],
+    "variant": "0-05",
+    "serialNumber": "S17QJ16QA13332",
+    "type": "HardDrive"
+  },
+  {
+    "serialNumber": null,
+    "type": "GraphicCard",
+    "memory": 256.0,
+    "model": "Mobile 945GSE Express Integrated Graphics Controller",
+    "actions": [],
+    "manufacturer": "Intel Corporation"
+  },
+  {
+    "firewire": 0,
+    "usb": 5,
+    "pcmcia": 0,
+    "type": "Motherboard",
+    "serialNumber": "Eee0123456789",
+    "serial": 0,
+    "slots": 1,
+    "model": "1000H",
+    "actions": [
+    {
+      "accessRange": "A",
+      "type": "TestBios"
+    }
+    ],
+    "manufacturer": "ASUSTeK Computer INC."
+  }
+  ],
+  "version": "11.0a4",
+  "elapsed": 6,
+  "endTime": "2016-11-03T17:17:17.266543+00:00"
+}

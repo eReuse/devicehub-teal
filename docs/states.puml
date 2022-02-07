@@ -23,8 +23,8 @@ state Physical {
 	ToBeRepaired --> Repaired : Repair
 	Repaired -> Preparing : ToPrepare
 	Preparing --> Prepared : Prepare
-	Prepared --> ReadyToBeUsed : ReadyToUse
-	ReadyToBeUsed --> InUse : Live
+	Prepared --> Ready : ReadyToUse
+	Ready --> InUse : Live
 	InUse -> InUse : Live
 	state DisposeWaste
 	state Recover

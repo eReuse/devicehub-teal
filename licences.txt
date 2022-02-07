@@ -1,0 +1,11 @@
+[
+  {"WorkbenchDesktopVersion": "1.0.0", "USOdyPrivacyPolicyVersion": "1.0.0", "Language": "CAT", "Description": "Recollim informació bàsica bla bla bla"},
+  {"WorkbenchDesktopVersion": "1.0.0", "USOdyPrivacyPolicyVersion": "2.0.0", "Language": "CAT", "Description": "Recollim informació bàsica bla bla bla i a partir de tal data les dades d'hores d'ús les usem també per estimar la durabilitat"},
+  {"WorkbenchDesktopVersion": "1.1.0", "USOdyPrivacyPolicyVersion": "3.0.0", "Language": "CAT", "Description": "Recollim informació bàsica bla bla bla pero ara també recollim la versió del sistema operatiu"},
+  {"WorkbenchDesktopVersion": "1.0.0", "USOdyPrivacyPolicyVersion": "1.0.0", "Language": "ESP", "Description": "Recogemos información básica bla bla bla"},
+  {"WorkbenchDesktopVersion": "1.0.0", "USOdyPrivacyPolicyVersion": "2.0.0", "Language": "ESP", "Description": "Recogemos información básica bla bla bla y a partir de cierta fecha los datos de horas de uso los usamos para estimar la durabilidad "},
+  {"WorkbenchDesktopVersion": "1.1.0", "USOdyPrivacyPolicyVersion": "3.0.0", "Language": "ESP", "Description": "Recogemos información básica bla bla bla pero ahora también recogemos la versión del sistema operativo"},
+  {"WorkbenchDesktopVersion": "1.0.0", "USOdyPrivacyPolicyVersion": "1.0.0", "Language": "ENG", "Description": "We collect basic information blah blah blah"},
+  {"WorkbenchDesktopVersion": "1.0.0", "USOdyPrivacyPolicyVersion": "2.0.0", "Language": "ENG", "Description": "We collect basic information blah blah blah and from that date we also use the usage time data to estimate durability"},
+  {"WorkbenchDesktopVersion": "1.1.0", "USOdyPrivacyPolicyVersion": "3.0.0", "Language": "ENG", "Description": "We collect basic information blah blah blah but now we also collect the operating system version"}
+]

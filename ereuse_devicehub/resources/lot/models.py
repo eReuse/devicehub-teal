@@ -9,11 +9,12 @@ from sqlalchemy import TEXT
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
-from teal.db import CASCADE_OWN, UUIDLtree
+from teal.db import CASCADE_OWN, UUIDLtree, check_range, IntEnum
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import create_view, db, exp, f
 from ereuse_devicehub.resources.device.models import Component, Device
+from ereuse_devicehub.resources.enums import TransferState
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 
@@ -24,18 +25,16 @@ class Lot(Thing):
     description = db.Column(CIText())
     description.comment = """A comment about the lot."""
     closed = db.Column(db.Boolean, default=False, nullable=False)
-    closed.comment = """
-            A closed lot cannot be modified anymore.
-        """
+    closed.comment = """A closed lot cannot be modified anymore."""
+
     devices = db.relationship(Device,
                               backref=db.backref('lots', lazy=True, collection_class=set),
                               secondary=lambda: LotDevice.__table__,
                               lazy=True,
                               collection_class=set)
-    """
-    The **children** devices that the lot has.
-    
-    Note that the lot can have more devices, if they are inside 
+    """The **children** devices that the lot has.
+
+    Note that the lot can have more devices, if they are inside
     descendant lots.
     """
     parents = db.relationship(lambda: Lot,
@@ -64,11 +63,23 @@ class Lot(Thing):
     """All devices, including components, inside this lot and its
     descendants.
     """
+    amount = db.Column(db.Integer, check_range('amount', min=0, max=100), default=0)
+    owner_id = db.Column(UUID(as_uuid=True),
+                         db.ForeignKey(User.id),
+                         nullable=False,
+                         default=lambda: g.user.id)
+    owner = db.relationship(User, primaryjoin=owner_id == User.id)
+    transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
+    transfer_state.comment = TransferState.__doc__
+    receiver_address = db.Column(CIText(),
+                                 db.ForeignKey(User.email),
+                                 nullable=False,
+                                 default=lambda: g.user.email)
+    receiver = db.relationship(User, primaryjoin=receiver_address == User.email)
 
     def __init__(self, name: str, closed: bool = closed.default.arg,
                  description: str = None) -> None:
-        """
-        Initializes a lot
+        """Initializes a lot
         :param name:
         :param closed:
         """
@@ -81,12 +92,16 @@ class Lot(Thing):
 
     @property
     def url(self) -> urlutils.URL:
-        """The URL where to GET this event."""
+        """The URL where to GET this action."""
         return urlutils.URL(url_for_resource(Lot, item_id=self.id))
 
     @property
     def descendants(self):
         return self.descendantsq(self.id)
+
+    @property
+    def is_temporary(self):
+        return False if self.trade else True
 
     @classmethod
     def descendantsq(cls, id):
@@ -173,9 +188,7 @@ class LotDevice(db.Model):
                           nullable=False,
                           default=lambda: g.user.id)
     author = db.relationship(User, primaryjoin=author_id == User.id)
-    author_id.comment = """
-        The user that put the device in the lot.
-    """
+    author_id.comment = """The user that put the device in the lot."""
 
 
 class Path(db.Model):
@@ -191,9 +204,7 @@ class Path(db.Model):
                           primaryjoin=Lot.id == lot_id)
     path = db.Column(LtreeType, nullable=False)
     created = db.Column(db.TIMESTAMP(timezone=True), server_default=db.text('CURRENT_TIMESTAMP'))
-    created.comment = """
-            When Devicehub created this.
-        """
+    created.comment = """When Devicehub created this."""
 
     __table_args__ = (
         # dag.delete_edge needs to disable internally/temporarily the unique constraint

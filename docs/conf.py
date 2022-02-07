@@ -33,7 +33,7 @@ from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources.schemas import Thing
 
 project = 'Devicehub'
-copyright = '2018, eReuse.org team'
+copyright = '2020, eReuse.org team'
 author = 'eReuse.org team'
 
 # The short X.Y version
@@ -211,7 +211,6 @@ class DhlistDirective(Directive):
                     yield obj
 
     def run(self):
-        env = self.state.document.settings.env
         module = importlib.import_module(self.options['module'])
         things = tuple(self._import(module))
 

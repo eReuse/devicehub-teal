@@ -1,5 +1,7 @@
-from marshmallow import post_load, pre_load
-from marshmallow.fields import Boolean, DateTime, Float, Integer, List, Str, String
+import datetime
+
+from marshmallow import post_load, pre_load, fields as f
+from marshmallow.fields import Boolean, Date, DateTime, Float, Integer, List, Str, String, UUID, Dict
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
@@ -17,7 +19,7 @@ from ereuse_devicehub.resources.schemas import Thing, UnitCodes
 class Device(Thing):
     __doc__ = m.Device.__doc__
     id = Integer(description=m.Device.id.comment, dump_only=True)
-    hid = SanitizedStr(lower=True, dump_only=True, description=m.Device.hid.comment)
+    hid = SanitizedStr(lower=True, description=m.Device.hid.comment)
     tags = NestedOn('Tag',
                     many=True,
                     collection_class=OrderedSet,
@@ -33,65 +35,79 @@ class Device(Thing):
                                  data_key='serialNumber')
     brand = SanitizedStr(validate=Length(max=STR_BIG_SIZE), description=m.Device.brand.comment)
     generation = Integer(validate=Range(1, 100), description=m.Device.generation.comment)
+    version = SanitizedStr(description=m.Device.version)
     weight = Float(validate=Range(0.1, 5), unit=UnitCodes.kgm, description=m.Device.weight.comment)
     width = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.width.comment)
     height = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.height.comment)
     depth = Float(validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.depth.comment)
-    events = NestedOn('Event', many=True, dump_only=True, description=m.Device.events.__doc__)
-    events_one = NestedOn('Event', many=True, load_only=True, collection_class=OrderedSet)
-    problems = NestedOn('Event', many=True, dump_only=True, description=m.Device.problems.__doc__)
+    # TODO TimeOut 2. Comment actions and lots if there are time out.
+    actions = NestedOn('Action', many=True, dump_only=True, description=m.Device.actions.__doc__)
+    # TODO TimeOut 2. Comment actions_one and lots if there are time out.
+    actions_one = NestedOn('Action', many=True, load_only=True, collection_class=OrderedSet)
+    problems = NestedOn('Action', many=True, dump_only=True, description=m.Device.problems.__doc__)
     url = URL(dump_only=True, description=m.Device.url.__doc__)
+    # TODO TimeOut 2. Comment actions and lots if there are time out.
     lots = NestedOn('Lot',
                     many=True,
                     dump_only=True,
                     description='The lots where this device is directly under.')
-    rate = NestedOn('AggregateRate', dump_only=True, description=m.Device.rate.__doc__)
+    rate = NestedOn('Rate', dump_only=True, description=m.Device.rate.__doc__)
     price = NestedOn('Price', dump_only=True, description=m.Device.price.__doc__)
-    trading = EnumField(states.Trading, dump_only=True, description=m.Device.trading.__doc__)
+    tradings = Dict(dump_only=True, description='')
     physical = EnumField(states.Physical, dump_only=True, description=m.Device.physical.__doc__)
+    traking = EnumField(states.Traking, dump_only=True, description=m.Device.physical.__doc__)
+    usage = EnumField(states.Usage, dump_only=True, description=m.Device.physical.__doc__)
+    revoke = UUID(dump_only=True)
     physical_possessor = NestedOn('Agent', dump_only=True, data_key='physicalPossessor')
     production_date = DateTime('iso',
                                description=m.Device.updated.comment,
                                data_key='productionDate')
-    working = NestedOn('Event',
+    working = NestedOn('Action',
                        many=True,
                        dump_only=True,
                        description=m.Device.working.__doc__)
+    variant = SanitizedStr(description=m.Device.variant.comment)
+    sku = SanitizedStr(description=m.Device.sku.comment)
+    image = URL(description=m.Device.image.comment)
+    allocated = Boolean(description=m.Device.allocated.comment)
+    devicehub_id = SanitizedStr(data_key='devicehubID',
+                                description=m.Device.devicehub_id.comment)
 
     @pre_load
-    def from_events_to_events_one(self, data: dict):
+    def from_actions_to_actions_one(self, data: dict):
         """
-        Not an elegant way of allowing submitting events to a device
-        (in the context of Snapshots) without creating an ``events``
+        Not an elegant way of allowing submitting actions to a device
+        (in the context of Snapshots) without creating an ``actions``
         field at the model (which is not possible).
         :param data:
         :return:
         """
-        # Note that it is secure to allow uploading events_one
+        # Note that it is secure to allow uploading actions_one
         # as the only time an user can send a device object is
         # in snapshots.
-        data['events_one'] = data.pop('events', [])
+        data['actions_one'] = data.pop('actions', [])
         return data
 
     @post_load
-    def validate_snapshot_events(self, data):
-        """Validates that only snapshot-related events can be uploaded."""
-        from ereuse_devicehub.resources.event.models import EraseBasic, Test, Rate, Install, \
+    def validate_snapshot_actions(self, data):
+        """Validates that only snapshot-related actions can be uploaded."""
+        from ereuse_devicehub.resources.action.models import EraseBasic, Test, Rate, Install, \
             Benchmark
-        for event in data['events_one']:
-            if not isinstance(event, (Install, EraseBasic, Rate, Test, Benchmark)):
-                raise ValidationError('You cannot upload {}'.format(event), field_names=['events'])
+        for action in data['actions_one']:
+            if not isinstance(action, (Install, EraseBasic, Rate, Test, Benchmark)):
+                raise ValidationError('You cannot upload {}'.format(action),
+                                      field_names=['actions'])
 
 
 class Computer(Device):
     __doc__ = m.Computer.__doc__
+    # TODO TimeOut 1. Comment components if there are time out.
     components = NestedOn('Component',
                           many=True,
                           dump_only=True,
                           collection_class=OrderedSet,
                           description='The components that are inside this computer.')
     chassis = EnumField(enums.ComputerChassis,
-                        required=True,
                         description=m.Computer.chassis.comment)
     ram_size = Integer(dump_only=True,
                        data_key='ramSize',
@@ -109,11 +125,17 @@ class Computer(Device):
                           dump_only=True,
                           data_key='networkSpeeds',
                           description=m.Computer.network_speeds.__doc__)
-    privacy = NestedOn('Event',
+    privacy = NestedOn('Action',
                        many=True,
                        dump_only=True,
                        collection_class=set,
                        description=m.Computer.privacy.__doc__)
+    amount = Integer(validate=f.validate.Range(min=0, max=100),
+                      description=m.Computer.amount.__doc__)
+    # author_id = NestedOn(s_user.User, only_query='author_id')
+    owner_id = UUID(data_key='ownerID')
+    transfer_state = EnumField(enums.TransferState, description=m.Computer.transfer_state.comment)
+    receiver_id = UUID(data_key='receiverID')
 
 
 class Desktop(Computer):
@@ -131,17 +153,17 @@ class Server(Computer):
 
 class DisplayMixin:
     __doc__ = m.DisplayMixin.__doc__
-    size = Float(description=m.DisplayMixin.size.comment, validate=Range(2, 150), required=True)
+    size = Float(description=m.DisplayMixin.size.comment, validate=Range(2, 150))
     technology = EnumField(enums.DisplayTech,
                            description=m.DisplayMixin.technology.comment)
     resolution_width = Integer(data_key='resolutionWidth',
                                validate=Range(10, 20000),
                                description=m.DisplayMixin.resolution_width.comment,
-                               required=True)
+                               )
     resolution_height = Integer(data_key='resolutionHeight',
                                 validate=Range(10, 20000),
                                 description=m.DisplayMixin.resolution_height.comment,
-                                required=True)
+                                )
     refresh_rate = Integer(data_key='refreshRate', validate=Range(10, 1000))
     contrast_ratio = Integer(data_key='contrastRatio', validate=Range(100, 100000))
     touchable = Boolean(description=m.DisplayMixin.touchable.comment)
@@ -182,7 +204,9 @@ class Mobile(Device):
     data_storage_size = Integer(validate=Range(0, 10 ** 8),
                                 data_key='dataStorageSize',
                                 description=m.Mobile.data_storage_size)
-
+    display_size = Float(validate=Range(min=0.1, max=30.0),
+                         data_key='displaySize',
+                         description=m.Mobile.display_size.comment)
 
     @pre_load
     def convert_check_imei(self, data):
@@ -230,7 +254,7 @@ class DataStorage(Component):
                    unit=UnitCodes.mbyte,
                    description=m.DataStorage.size.comment)
     interface = EnumField(enums.DataStorageInterface)
-    privacy = NestedOn('Event', dump_only=True)
+    privacy = NestedOn('Action', dump_only=True)
 
 
 class HardDrive(DataStorage):
@@ -250,6 +274,12 @@ class Motherboard(Component):
     firewire = Integer(validate=Range(0, 20), description=m.Motherboard.firewire.comment)
     serial = Integer(validate=Range(0, 20), description=m.Motherboard.serial.comment)
     pcmcia = Integer(validate=Range(0, 20), description=m.Motherboard.pcmcia.comment)
+    bios_date = Date(validate=Range(datetime.date(year=1980, month=1, day=1),
+                                    datetime.date(year=2030, month=1, day=1)),
+                     data_key='biosDate',
+                     description=m.Motherboard.bios_date)
+    ram_slots = Integer(validate=Range(1), data_key='ramSlots')
+    ram_max_size = Integer(validate=Range(1), data_key='ramMaxSize')
 
 
 class NetworkAdapter(NetworkMixin, Component):
@@ -289,11 +319,24 @@ class Display(DisplayMixin, Component):
 
 
 class Battery(Component):
-    __doc__ = m.Battery
+    __doc__ = m.Battery.__doc__
 
     wireless = Boolean(description=m.Battery.wireless.comment)
     technology = EnumField(enums.BatteryTechnology, description=m.Battery.technology.comment)
     size = Integer(required=True, description=m.Battery.size.comment)
+
+
+class Camera(Component):
+    __doc__ = m.Camera.__doc__
+
+    focal_length = Integer(data_key='focalLength')
+    video_height = Integer(data_key='videoHeight')
+    video_width = Integer(data_key='videoWidth')
+    horizontal_view_angle = Integer(data_key='horizontalViewAngle')
+    facing = Integer()
+    vertical_view_angle = Integer(data_key='verticalViewAngle')
+    video_stabilization = Integer(data_key='videoStabilization')
+    flash = Integer()
 
 
 class Manufacturer(Schema):
@@ -387,3 +430,40 @@ class Cooking(Device):
 
 class Mixer(Cooking):
     __doc__ = m.Mixer.__doc__
+
+
+class DIYAndGardening(Device):
+    pass
+
+
+class Drill(DIYAndGardening):
+    max_drill_bit_size = Integer(data_key='maxDrillBitSize')
+
+
+class PackOfScrewdrivers(DIYAndGardening):
+    size = Integer()
+
+
+class Home(Device):
+    pass
+
+
+class Dehumidifier(Home):
+    size = Integer()
+
+
+class Stairs(Home):
+    max_allowed_weight = Integer(data_key='maxAllowedWeight')
+
+
+class Recreation(Device):
+    pass
+
+
+class Bike(Recreation):
+    wheel_size = Integer(data_key='wheelSize')
+    gears = Integer()
+
+
+class Racket(Recreation):
+    pass

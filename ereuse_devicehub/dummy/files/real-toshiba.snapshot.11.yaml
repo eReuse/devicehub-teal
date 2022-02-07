@@ -1,10 +1,5 @@
 {
-  "expectedEvents": [
-    "SmartTest",
-    "Benchmark",
-    "StressTest"
-  ],
-  "endTime": "2018-06-29T15:29:29.322424",
+  "endTime": "2018-06-29T15:29:29.322424+00:00",
   "elapsed": 391,
   "software": "Workbench",
   "components": [
@@ -14,7 +9,7 @@
     "size": 1024,
     "manufacturer": null,
     "format": "SODIMM",
-    "events": [
+    "actions": [
     ],
     "speed": 533.0,
     "type": "RamModule",
@@ -23,21 +18,21 @@
   {
     "serialNumber": null,
     "manufacturer": "Intel Corporation",
-    "events": [],
+    "actions": [],
     "type": "SoundCard",
     "model": "NM10/ICH7 Family High Definition Audio Controller"
   },
   {
     "serialNumber": null,
     "manufacturer": "Chicony Electronics Co., Ltd.",
-    "events": [],
+    "actions": [],
     "type": "SoundCard",
     "model": "USB2.0 UVC WebCam"
   },
   {
     "serialNumber": "00:23:08:a5:07:6d",
     "manufacturer": "Qualcomm Atheros",
-    "events": [],
+    "actions": [],
     "type": "NetworkAdapter",
     "wireless": true,
     "model": "AR9285 Wireless Network Adapter"
@@ -45,7 +40,7 @@
   {
     "serialNumber": "00:23:5a:fe:d7:14",
     "manufacturer": "Realtek Semiconductor Co., Ltd.",
-    "events": [],
+    "actions": [],
     "speed": 100,
     "type": "NetworkAdapter",
     "wireless": false,
@@ -55,7 +50,7 @@
     "serialNumber": null,
     "address": 32,
     "manufacturer": "Intel Corp.",
-    "events": [
+    "actions": [
     {
       "rate": 171.3049,
       "type": "BenchmarkProcessorSysbench",
@@ -75,7 +70,7 @@
     "memory": 256.0,
     "serialNumber": null,
     "manufacturer": "Intel Corporation",
-    "events": [],
+    "actions": [],
     "type": "GraphicCard",
     "model": "Mobile 945GSE Express Integrated Graphics Controller"
   },
@@ -84,7 +79,7 @@
     "interface": "ATA",
     "size": 152627,
     "manufacturer": "Hitachi",
-    "events": [
+    "actions": [
     {
       "elapsed": 71,
       "readSpeed": 19.1,
@@ -107,7 +102,7 @@
     "serialNumber": "0123456789AB",
     "manufacturer": "TOSHIBA",
     "firewire": 0,
-    "events": [],
+    "actions": [],
     "pcmcia": 0,
     "usb": 5,
     "serial": 1,
@@ -119,7 +114,7 @@
   "device": {
     "serialNumber": "79545417K",
     "manufacturer": "TOSHIBA",
-    "events": [
+    "actions": [
     {
       "type": "StressTest",
       "severity": "Info",

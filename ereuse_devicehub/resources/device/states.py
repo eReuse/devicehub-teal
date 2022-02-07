@@ -2,7 +2,7 @@ from enum import Enum
 
 import inflection
 
-from ereuse_devicehub.resources.event import models as e
+from ereuse_devicehub.resources.action import models as e
 
 
 class State(Enum):
@@ -11,8 +11,8 @@ class State(Enum):
     """
 
     @classmethod
-    def events(cls):
-        """Events participating in this state."""
+    def actions(cls):
+        """Actions participating in this state."""
         return (s.value for s in cls)
 
     def __str__(self):
@@ -20,10 +20,10 @@ class State(Enum):
 
 
 class Trading(State):
-    """
-    Trading states.
+    """Trading states.
 
     :cvar Reserved: The device has been reserved.
+    :cvar Trade: The devices has been changed of owner.
     :cvar Cancelled: The device has been cancelled.
     :cvar Sold: The device has been sold.
     :cvar Donated: The device is donated.
@@ -34,6 +34,9 @@ class Trading(State):
           from the facility. It does not mean end-of-life.
     """
     Reserved = e.Reserve
+    Trade = e.Trade
+    Confirm = e.Confirm
+    Revoke = e.Revoke
     Cancelled = e.CancelTrade
     Sold = e.Sell
     Donated = e.Donate
@@ -41,22 +44,54 @@ class Trading(State):
     # todo add Pay = e.Pay
     ToBeDisposed = e.ToDisposeProduct
     ProductDisposed = e.DisposeProduct
+    Available = e.MakeAvailable
 
 
 class Physical(State):
-    """
-    Physical states.
+    """Physical states.
 
     :cvar ToBeRepaired: The device has been selected for reparation.
     :cvar Repaired: The device has been repaired.
     :cvar Preparing: The device is going to be or being prepared.
     :cvar Prepared: The device has been prepared.
-    :cvar ReadyToBeUsed: The device is in working conditions.
-    :cvar InUse: The device is being reported to be in active use.
+    :cvar Ready: The device is in working conditions.
     """
     ToBeRepaired = e.ToRepair
     Repaired = e.Repair
     Preparing = e.ToPrepare
     Prepared = e.Prepare
-    ReadyToBeUsed = e.ReadyToUse
+    Ready = e.Ready
+
+
+class Traking(State):
+    """Traking states.
+
+    :cvar Receive: The device changes hands
+    """
+    # Receive = e.Receive
+    pass
+
+    
+class Usage(State):
+    """Usage states.
+
+    :cvar Allocate: The device is allocate in other Agent (organization, person ...)
+    :cvar Deallocate: The device is deallocate and return to the owner
+    :cvar InUse: The device is being reported to be in active use. 
+    """
+    Allocate = e.Allocate
+    Deallocate = e.Deallocate
     InUse = e.Live
+
+    
+class Status(State):
+    """Define status of device for one user.
+    :cvar Use: The device is in use for one final user.
+    :cvar Refurbish: The device is owned by one refurbisher.
+    :cvar Recycling: The device is sended to recycling.
+    :cvar Management: The device is owned by one Manager.
+    """
+    Use = e.Use
+    Refurbish = e.Refurbish
+    Recycling = e.Recycling
+    Management = e.Management

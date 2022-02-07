@@ -1,32 +1,44 @@
+import os
+import json
+import shutil
+import pytest
+import uuid
+
 from datetime import datetime, timedelta, timezone
+from requests.exceptions import HTTPError
 from operator import itemgetter
 from typing import List, Tuple
 from uuid import uuid4
 
-import pytest
 from boltons import urlutils
-from teal.db import UniqueViolation
+from teal.db import UniqueViolation, DBError
 from teal.marshmallow import ValidationError
+from ereuse_utils.test import ANY
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.resources.action.models import Action, BenchmarkDataStorage, \
+    BenchmarkProcessor, EraseSectors, RateComputer, Snapshot, SnapshotRequest, VisualTest, \
+    EreusePrice, Ready
 from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device.exceptions import NeedsId
+from ereuse_devicehub.resources.device.models import SolidStateDrive
 from ereuse_devicehub.resources.device.sync import MismatchBetweenProperties, \
     MismatchBetweenTagsAndHid
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
-from ereuse_devicehub.resources.event.models import AggregateRate, BenchmarkProcessor, \
-    EraseSectors, Event, Snapshot, SnapshotRequest, WorkbenchRate
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
-from tests.conftest import file
+from ereuse_devicehub.resources.action.views.snapshot import save_json
+from ereuse_devicehub.resources.documents import documents
+from tests.conftest import file, yaml2json, json_encode
+from tests import conftest
 
 
+@pytest.mark.mvp
 @pytest.mark.usefixtures('auth_app_context')
 def test_snapshot_model():
-    """
-    Tests creating a Snapshot with its relationships ensuring correct
+    """Tests creating a Snapshot with its relationships ensuring correct
     DB mapping.
     """
     device = m.Desktop(serial_number='a1', chassis=ComputerChassis.Tower)
@@ -41,7 +53,7 @@ def test_snapshot_model():
     db.session.add(snapshot)
     db.session.commit()
     device = m.Desktop.query.one()  # type: m.Desktop
-    e1 = device.events[0]
+    e1 = device.actions[0]
     assert isinstance(e1, Snapshot), 'Creation order must be preserved: 1. snapshot, 2. WR'
     db.session.delete(device)
     db.session.commit()
@@ -51,25 +63,26 @@ def test_snapshot_model():
     assert m.Desktop.query.one_or_none() is None
     assert m.Device.query.one_or_none() is None
     # Check properties
-    assert device.url == urlutils.URL('http://localhost/devices/1')
+    assert device.url == urlutils.URL('http://localhost/devices/%s' % device.devicehub_id)
 
 
+@pytest.mark.mvp
 def test_snapshot_schema(app: Devicehub):
     with app.app_context():
-        s = file('basic.snapshot')
+        s = yaml2json('basic.snapshot')
         app.resources['Snapshot'].schema.load(s)
 
 
+@pytest.mark.mvp
 def test_snapshot_post(user: UserClient):
-    """
-    Tests the post snapshot endpoint (validation, etc), data correctness,
+    """Tests the post snapshot endpoint (validation, etc), data correctness,
     and relationship correctness.
     """
-    snapshot = snapshot_and_check(user, file('basic.snapshot'),
-                                  event_types=(
-                                      WorkbenchRate.t,
-                                      AggregateRate.t,
-                                      BenchmarkProcessor.t
+    snapshot = snapshot_and_check(user, yaml2json('basic.snapshot'),
+                                  action_types=(
+                                      BenchmarkProcessor.t,
+                                      VisualTest.t,
+                                      RateComputer.t
                                   ),
                                   perform_second_snapshot=False)
     assert snapshot['software'] == 'Workbench'
@@ -77,9 +90,9 @@ def test_snapshot_post(user: UserClient):
     assert snapshot['uuid'] == 'f5efd26e-8754-46bc-87bf-fbccc39d60d9'
     assert snapshot['elapsed'] == 4
     assert snapshot['author']['id'] == user.user['id']
-    assert 'events' not in snapshot['device']
+    assert 'actions' not in snapshot['device']
     assert 'author' not in snapshot['device']
-    device, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    device, _ = user.get(res=m.Device, item=snapshot['device']['devicehubID'])
     key = itemgetter('serialNumber')
     snapshot['components'].sort(key=key)
     device['components'].sort(key=key)
@@ -87,142 +100,231 @@ def test_snapshot_post(user: UserClient):
 
     assert {c['type'] for c in snapshot['components']} == {m.GraphicCard.t, m.RamModule.t,
                                                            m.Processor.t}
-    rate = next(e for e in snapshot['events'] if e['type'] == WorkbenchRate.t)
-    rate, _ = user.get(res=Event, item=rate['id'])
+    rate = next(e for e in snapshot['actions'] if e['type'] == RateComputer.t)
+    rate, _ = user.get(res=Action, item=rate['id'])
     assert rate['device']['id'] == snapshot['device']['id']
     rate['components'].sort(key=key)
     assert rate['components'] == snapshot['components']
     assert rate['snapshot']['id'] == snapshot['id']
 
 
-def test_snapshot_component_add_remove(user: UserClient):
+@pytest.mark.mvp
+def test_same_device_tow_users(user: UserClient, user2: UserClient):
+    """Two users can up the same snapshot and the system save 2 computers"""
+    user.post(file('basic.snapshot'), res=Snapshot)
+    i, _ = user.get(res=m.Device)
+    pc = next(d for d in i['items'] if d['type'] == 'Desktop')
+    pc_id = pc['id']
+    devicehub_id = pc['devicehubID']
+    assert i['items'][0]['url'] == f'/devices/{devicehub_id}'
+
+    basic_snapshot = yaml2json('basic.snapshot')
+    basic_snapshot['uuid'] = f"{uuid.uuid4()}"
+    user2.post(json_encode(basic_snapshot), res=Snapshot)
+    i2, _ = user2.get(res=m.Device)
+    pc2 = next(d for d in i2['items'] if d['type'] == 'Desktop')
+    assert pc['id'] != pc2['id']
+    assert pc['ownerID'] != pc2['ownerID']
+    assert pc['hid'] == pc2['hid']
+
+@pytest.mark.mvp
+def test_snapshot_update_timefield_updated(user: UserClient):
     """
-    Tests adding and removing components and some don't generate HID.
+    Tests for check if one computer have the time mark updated when one component of it is updated
+    """
+    computer1 = yaml2json('1-device-with-components.snapshot')
+    snapshot = snapshot_and_check(user,
+                                  computer1,
+                                  action_types=(BenchmarkProcessor.t,
+                                                RateComputer.t),
+                                  perform_second_snapshot=False)
+    computer2 = yaml2json('2-second-device-with-components-of-first.snapshot')
+    snapshot_and_check(user, computer2, action_types=('Remove', 'RateComputer'),
+                       perform_second_snapshot=False)
+    pc1_devicehub_id = snapshot['device']['devicehubID']
+    pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
+    assert pc1['updated'] != snapshot['device']['updated']
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_power_on_hours(user: UserClient):
+    """
+    Tests for check if one computer have the time mark updated when one component of it is updated
+    """
+    snap, _ = user.post(file('asus-eee-1000h.snapshot.bug1857'), res=Snapshot)
+    device = m.Device.query.filter_by(id=snap['device']['id']).one()
+
+    for c in device.components:
+        if c.type == 'HardDrive':
+            hdd = c
+            break
+
+    for ac in hdd.actions:
+        if ac.type == 'TestDataStorage':
+            test_data_storage = ac
+            break
+
+    assert test_data_storage.lifetime.total_seconds()/3600 == test_data_storage.power_on_hours
+
+
+@pytest.mark.mvp
+def test_snapshot_component_add_remove(user: UserClient):
+    """Tests adding and removing components and some don't generate HID.
     All computers generate HID.
     """
 
-    def get_events_info(events: List[dict]) -> tuple:
+    def get_actions_info(actions: List[dict]) -> tuple:
         return tuple(
             (
                 e['type'],
                 [c['serialNumber'] for c in e['components']]
             )
-            for e in user.get_many(res=Event, resources=events, key='id')
+            for e in user.get_many(res=Action, resources=actions, key='id')
         )
 
     # We add the first device (2 times). The distribution of components
     # (represented with their S/N) should be:
     # PC 1: p1c1s, p1c2s, p1c3s. PC 2: ø
-    s1 = file('1-device-with-components.snapshot')
-    snapshot1 = snapshot_and_check(user, s1, perform_second_snapshot=False)
+    s1 = yaml2json('1-device-with-components.snapshot')
+    snapshot1, _ = user.post(json_encode(s1), res=Snapshot)
+    # snapshot1 = snapshot_and_check(user,
+    #                                s1,
+    #                                action_types=(BenchmarkProcessor.t,
+    #                                              RateComputer.t),
+    #                                perform_second_snapshot=False)
     pc1_id = snapshot1['device']['id']
-    pc1, _ = user.get(res=m.Device, item=pc1_id)
+    pc1_devicehub_id = snapshot1['device']['devicehubID']
+    pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
+    update1_pc1 = pc1['updated']
     # Parent contains components
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c2s', 'p1c3s')
     # Components contain parent
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    # pc has Snapshot as event
-    assert len(pc1['events']) == 1
-    assert pc1['events'][0]['type'] == Snapshot.t
+    # pc has three actions: Snapshot, BenchmarkProcessor and RateComputer
+    assert len(pc1['actions']) == 3
+    assert pc1['actions'][1]['type'] == Snapshot.t
     # p1c1s has Snapshot
-    p1c1s, _ = user.get(res=m.Device, item=pc1['components'][0]['id'])
-    assert tuple(e['type'] for e in p1c1s['events']) == ('Snapshot',)
+    p1c1s, _ = user.get(res=m.Device, item=pc1['components'][0]['devicehubID'])
+    assert tuple(e['type'] for e in p1c1s['actions']) == ('Snapshot', 'RateComputer')
 
     # We register a new device
     # It has the processor of the first one (p1c2s)
     # PC 1: p1c1s, p1c3s. PC 2: p2c1s, p1c2s
-    # Events PC1: Snapshot, Remove. PC2: Snapshot
-    s2 = file('2-second-device-with-components-of-first.snapshot')
-    # num_events = 2 = Remove, Add
-    snapshot2 = snapshot_and_check(user, s2, event_types=('Remove',),
-                                   perform_second_snapshot=False)
+    # Actions PC1: Snapshot, Remove. PC2: Snapshot
+    s2 = yaml2json('2-second-device-with-components-of-first.snapshot')
+    # num_actions = 2 = Remove, Add
+    snapshot2, _ = user.post(json_encode(s2), res=Snapshot)
+    # snapshot2 = snapshot_and_check(user, s2, action_types=('Remove', 'RateComputer'),
+    #                                perform_second_snapshot=False)
     pc2_id = snapshot2['device']['id']
-    pc1, _ = user.get(res=m.Device, item=pc1_id)
-    pc2, _ = user.get(res=m.Device, item=pc2_id)
+    pc2_devicehub_id = snapshot2['device']['devicehubID']
+    pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
+    pc2, _ = user.get(res=m.Device, item=pc2_devicehub_id)
+    # Check if the update_timestamp is updated
+    update1_pc2 = pc2['updated']
+    update2_pc1 = pc1['updated']
+    assert update1_pc1 != update2_pc1
     # PC1
     assert tuple(c['serialNumber'] for c in pc1['components']) == ('p1c1s', 'p1c3s')
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    assert tuple(e['type'] for e in pc1['events']) == ('Snapshot', 'Remove')
+    assert tuple(e['type'] for e in pc1['actions']) == ('BenchmarkProcessor', 'Snapshot', 'RateComputer', 'Remove')
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p1c2s', 'p2c1s')
     assert all(c['parent'] == pc2_id for c in pc2['components'])
-    assert tuple(e['type'] for e in pc2['events']) == ('Snapshot',)
+    assert tuple(e['type'] for e in pc2['actions']) == ('Snapshot', 'RateComputer')
     # p1c2s has two Snapshots, a Remove and an Add
-    p1c2s, _ = user.get(res=m.Device, item=pc2['components'][0]['id'])
-    assert tuple(e['type'] for e in p1c2s['events']) == ('Snapshot', 'Snapshot', 'Remove')
+    p1c2s, _ = user.get(res=m.Device, item=pc2['components'][0]['devicehubID'])
+    assert tuple(e['type'] for e in p1c2s['actions']) == (
+        'BenchmarkProcessor', 'Snapshot', 'RateComputer', 'Snapshot', 'Remove', 'RateComputer'
+    )
 
     # We register the first device again, but removing motherboard
     # and moving processor from the second device to the first.
     # We have created 1 Remove (from PC2's processor back to PC1)
     # PC 0: p1c2s, p1c3s. PC 1: p2c1s
-    s3 = file('3-first-device-but-removing-motherboard-and-adding-processor-from-2.snapshot')
-    snapshot_and_check(user, s3, ('Remove',), perform_second_snapshot=False)
-    pc1, _ = user.get(res=m.Device, item=pc1_id)
-    pc2, _ = user.get(res=m.Device, item=pc2_id)
+    s3 = yaml2json('3-first-device-but-removing-motherboard-and-adding-processor-from-2.snapshot')
+    snapshot_and_check(user, s3, ('Remove', 'RateComputer'), perform_second_snapshot=False)
+    pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
+    pc2, _ = user.get(res=m.Device, item=pc2_devicehub_id)
+    # Check if the update_timestamp is updated
+    update2_pc2 = pc2['updated']
+    update3_pc1 = pc1['updated']
+    assert not update3_pc1 in [update1_pc1, update2_pc1]
+    assert update1_pc2 != update2_pc2
+
     # PC1
     assert {c['serialNumber'] for c in pc1['components']} == {'p1c2s', 'p1c3s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    assert tuple(get_events_info(pc1['events'])) == (
+    assert tuple(get_actions_info(pc1['actions'])) == (
         # id, type, components, snapshot
+        ('BenchmarkProcessor', []),  # first BenchmarkProcessor
         ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # first Snapshot1
+        ('RateComputer', ['p1c1s', 'p1c2s', 'p1c3s']),
         ('Remove', ['p1c2s']),  # Remove Processor in Snapshot2
-        ('Snapshot', ['p1c2s', 'p1c3s'])  # This Snapshot3
+        ('Snapshot', ['p1c2s', 'p1c3s']),  # This Snapshot3
+        ('RateComputer', ['p1c2s', 'p1c3s'])
     )
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
     assert all(c['parent'] == pc2_id for c in pc2['components'])
-    assert tuple(e['type'] for e in pc2['events']) == (
+    assert tuple(e['type'] for e in pc2['actions']) == (
         'Snapshot',  # Second Snapshot
+        'RateComputer',
         'Remove'  # the processor we added in 2.
     )
     # p1c2s has Snapshot, Remove and Add
-    p1c2s, _ = user.get(res=m.Device, item=pc1['components'][0]['id'])
-    assert tuple(get_events_info(p1c2s['events'])) == (
+    p1c2s, _ = user.get(res=m.Device, item=pc1['components'][0]['devicehubID'])
+    assert tuple(get_actions_info(p1c2s['actions'])) == (
+        ('BenchmarkProcessor', []),  # first BenchmarkProcessor
         ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # First Snapshot to PC1
+        ('RateComputer', ['p1c1s', 'p1c2s', 'p1c3s']),
         ('Snapshot', ['p1c2s', 'p2c1s']),  # Second Snapshot to PC2
         ('Remove', ['p1c2s']),  # ...which caused p1c2s to be removed form PC1
+        ('RateComputer', ['p1c2s', 'p2c1s']),
         ('Snapshot', ['p1c2s', 'p1c3s']),  # The third Snapshot to PC1
-        ('Remove', ['p1c2s'])  # ...which caused p1c2 to be removed from PC2
+        ('Remove', ['p1c2s']),  # ...which caused p1c2 to be removed from PC2
+        ('RateComputer', ['p1c2s', 'p1c3s'])
     )
 
     # We register the first device but without the processor,
     # adding a graphic card and adding a new component
-    s4 = file('4-first-device-but-removing-processor.snapshot-and-adding-graphic-card')
-    snapshot_and_check(user, s4, perform_second_snapshot=False)
-    pc1, _ = user.get(res=m.Device, item=pc1_id)
-    pc2, _ = user.get(res=m.Device, item=pc2_id)
+    s4 = yaml2json('4-first-device-but-removing-processor.snapshot-and-adding-graphic-card')
+    snapshot4 = snapshot_and_check(user, s4, ('RateComputer',), perform_second_snapshot=False)
+    pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
+    pc2, _ = user.get(res=m.Device, item=pc2_devicehub_id)
+    # Check if the update_timestamp is updated
+    update3_pc2 = pc2['updated']
+    update4_pc1 = pc1['updated']
+    assert not update4_pc1 in [update1_pc1, update2_pc1, update3_pc1]
+    assert update3_pc2 == update2_pc2
     # PC 0: p1c3s, p1c4s. PC1: p2c1s
-    assert {c['serialNumber'] for c in pc1['components']} == {'p1c3s', 'p1c4s'}
+    assert {c['serialNumber'] for c in pc1['components']} == {'p1c3s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
-    # This last Snapshot only
-    assert get_events_info(pc1['events'])[-1] == ('Snapshot', ['p1c3s', 'p1c4s'])
+    # This last Action only
+    assert get_actions_info(pc1['actions'])[-1] == ('RateComputer', ['p1c3s'])
     # PC2
     # We haven't changed PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
     assert all(c['parent'] == pc2_id for c in pc2['components'])
 
-
-def _test_snapshot_computer_no_hid(user: UserClient):
+@pytest.mark.mvp
+def test_snapshot_post_without_hid(user: UserClient):
+    """Tests the post snapshot endpoint (validation, etc), data correctness,
+    and relationship correctness with HID field generated with type - model - manufacturer - S/N.
     """
-    Tests inserting a computer that doesn't generate a HID, neither
-    some of its components.
-    """
-    # PC with 2 components. PC doesn't have HID and neither 1st component
-    s = file('basic.snapshot')
-    del s['device']['model']
-    del s['components'][0]['model']
-    user.post(s, res=Snapshot, status=NeedsId)
-    # The system tells us that it could not register the device because
-    # the device (computer) cannot generate a HID.
-    # In such case we need to specify an ``id`` so the system can
-    # recognize the device. The ``id`` can reference to the same
-    # device, it already existed in the DB, or to a placeholder,
-    # if the device is new in the DB.
-    user.post(s, res=m.Device)
-    s['device']['id'] = 1  # Assign the ID of the placeholder
-    user.post(s, res=Snapshot)
+    snapshot_no_hid = file('basic.snapshot.nohid')
+    response_snapshot, response_status = user.post(res=Snapshot, data=snapshot_no_hid)
+    assert response_snapshot['software'] == 'Workbench'
+    assert response_snapshot['version'] == '11.0b9'
+    assert response_snapshot['uuid'] == '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
+    assert response_snapshot['elapsed'] == 4
+    assert response_snapshot['author']['id'] == user.user['id']
+    assert response_snapshot['severity'] == 'Warning'
+    assert response_status.status_code == 201
 
 
+@pytest.mark.mvp
 def test_snapshot_mismatch_id():
     """Tests uploading a device with an ID from another device."""
     # Note that this won't happen as in this new version
@@ -230,88 +332,195 @@ def test_snapshot_mismatch_id():
     pass
 
 
-def test_snapshot_tag_inner_tag(tag_id: str, user: UserClient, app: Devicehub):
+@pytest.mark.mvp
+def test_snapshot_tag_inner_tag(user: UserClient, tag_id: str, app: Devicehub):
     """Tests a posting Snapshot with a local tag."""
-    b = file('basic.snapshot')
+    b = yaml2json('basic.snapshot')
     b['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
+
     snapshot_and_check(user, b,
-                       event_types=(WorkbenchRate.t, AggregateRate.t, BenchmarkProcessor.t))
+                       action_types=(RateComputer.t, BenchmarkProcessor.t, VisualTest.t))
     with app.app_context():
-        tag = Tag.query.one()  # type: Tag
-        assert tag.device_id == 1, 'Tag should be linked to the first device'
+        tag = Tag.query.all()[0]  # type: Tag
+        assert tag.device_id == 3, 'Tag should be linked to the first device'
 
 
+@pytest.mark.mvp
 def test_snapshot_tag_inner_tag_mismatch_between_tags_and_hid(user: UserClient, tag_id: str):
     """Ensures one device cannot 'steal' the tag from another one."""
-    pc1 = file('basic.snapshot')
+    pc1 = yaml2json('basic.snapshot')
     pc1['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
-    user.post(pc1, res=Snapshot)
-    pc2 = file('1-device-with-components.snapshot')
-    user.post(pc2, res=Snapshot)  # PC2 uploads well
+    user.post(json_encode(pc1), res=Snapshot)
+    pc2 = yaml2json('1-device-with-components.snapshot')
+    user.post(json_encode(pc2), res=Snapshot)  # PC2 uploads well
     pc2['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]  # Set tag from pc1 to pc2
-    user.post(pc2, res=Snapshot, status=MismatchBetweenTagsAndHid)
+    user.post(json_encode(pc2), res=Snapshot, status=MismatchBetweenTagsAndHid)
 
 
+@pytest.mark.mvp
 def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
     """Tests a snapshot performed to device 1 with tag A and then to
     device 2 with tag B. Both don't have HID but are different type.
     Devicehub must fail the Snapshot.
     """
     # 1. Upload PC1 without hid but with tag
-    pc1 = file('basic.snapshot')
+    pc1 = yaml2json('basic.snapshot')
     pc1['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
     del pc1['device']['serialNumber']
-    user.post(pc1, res=Snapshot)
+    user.post(json_encode(pc1), res=Snapshot)
     # 2. Upload PC2 without hid, a different characteristic than PC1, but with same tag
-    pc2 = file('basic.snapshot')
+    pc2 = yaml2json('basic.snapshot')
     pc2['uuid'] = uuid4()
     pc2['device']['tags'] = pc1['device']['tags']
     # pc2 model is unknown but pc1 model is set = different property
     del pc2['device']['model']
-    user.post(pc2, res=Snapshot, status=MismatchBetweenProperties)
+    user.post(json_encode(pc2), res=Snapshot, status=MismatchBetweenProperties)
 
 
+@pytest.mark.mvp
 def test_snapshot_upload_twice_uuid_error(user: UserClient):
     pc1 = file('basic.snapshot')
     user.post(pc1, res=Snapshot)
-    user.post(pc1, res=Snapshot, status=UniqueViolation)
+    user.post(pc1, res=Snapshot, status=400)
 
 
+@pytest.mark.mvp
 def test_snapshot_component_containing_components(user: UserClient):
     """There is no reason for components to have components and when
     this happens it is always an error.
 
     This test avoids this until an appropriate use-case is presented.
     """
-    s = file('basic.snapshot')
+    s = yaml2json('basic.snapshot')
     s['device'] = {
         'type': 'Processor',
         'serialNumber': 'foo',
         'manufacturer': 'bar',
         'model': 'baz'
     }
-    user.post(s, res=Snapshot, status=ValidationError)
+    user.post(json_encode(s), res=Snapshot, status=ValidationError)
 
 
-def test_erase_privacy_standards(user: UserClient):
-    """Tests a Snapshot with EraseSectors and the resulting
-    privacy properties.
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+def test_ram_remove(user: UserClient):
+    """Tests a Snapshot
+    We want check than all components is duplicate less hard disk, than this is removed.
     """
-    s = file('erase-sectors.snapshot')
-    assert '2018-06-01T09:12:06+02:00' == s['components'][0]['events'][0]['endTime']
-    snapshot = snapshot_and_check(user, s, (EraseSectors.t,), perform_second_snapshot=True)
-    assert '2018-06-01T07:12:06+00:00' == snapshot['events'][0]['endTime']
-    storage, *_ = snapshot['components']
-    assert storage['type'] == 'SolidStateDrive', 'Components must be ordered by input order'
-    storage, _ = user.get(res=m.Device, item=storage['id'])  # Let's get storage events too
-    # order: creation time descending
-    erasure1, _snapshot1, erasure2, _snapshot2 = storage['events']
+    s = yaml2json('erase-sectors.snapshot')
+    s['device']['type'] = 'Server'
+    snap1, _ = user.post(json_encode(s), res=Snapshot)
+
+    s['uuid'] = '74caa7eb-2bad-4333-94f6-6f1b031d0774'
+    s['device']['serialNumber'] = 'pc2s'
+    snap2, _ = user.post(json_encode(s), res=Snapshot)
+
+    dev1 = m.Device.query.filter_by(id=snap1['device']['id']).one()
+    dev2 = m.Device.query.filter_by(id=snap2['device']['id']).one()
+    assert len(dev1.components) == 1
+    assert len(dev2.components) == 3
+    ssd = [x for x in dev2.components if x.t == 'SolidStateDrive'][0]
+    remove = [x for x in ssd.actions if x.t == 'Remove'][0]
+    assert remove.t == 'Remove'
+
+
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+@pytest.mark.mvp
+def test_not_remove_ram_in_same_computer(user: UserClient):
+    """Tests a Snapshot
+    We want check than all components is not duplicate in a second snapshot of the same device.
+    """
+    s = yaml2json('erase-sectors.snapshot')
+    s['device']['type'] = 'Server'
+    snap1, _ = user.post(json_encode(s), res=Snapshot)
+
+    s['uuid'] = '74caa7eb-2bad-4333-94f6-6f1b031d0774'
+    s['components'].append({
+        "actions": [],
+        "manufacturer": "Intel Corporation",
+        "model": "NM10/ICH7 Family High Definition Audio Controller",
+        "serialNumber": "mp2pc",
+        "type": "SoundCard"
+    })
+    dev1 = m.Device.query.filter_by(id=snap1['device']['id']).one()
+    ram1 = [x.id for x in dev1.components if x.type == 'RamModule'][0]
+    snap2, _ = user.post(json_encode(s), res=Snapshot)
+
+    dev2 = m.Device.query.filter_by(id=snap2['device']['id']).one()
+    ram2 = [x.id for x in dev2.components if x.type == 'RamModule'][0]
+    assert ram1 != ram2
+    assert len(dev1.components) == 4
+    assert len(dev2.components) == 4
+    assert dev1.id == dev2.id
+    assert dev1.components == dev2.components
+
+
+@pytest.mark.mvp
+def test_ereuse_price(user: UserClient):
+    """Tests a Snapshot with EraseSectors and the resulting privacy
+    properties.
+
+    This tests ensures that only the last erasure is picked up, as
+    erasures have always custom endTime value set.
+    """
+    s = yaml2json('erase-sectors.snapshot')
+    assert s['components'][0]['actions'][0]['endTime'] == '2018-06-01T09:12:06+02:00'
+    s['device']['type'] = 'Server'
+    snapshot = snapshot_and_check(user, s, action_types=(
+        EraseSectors.t,
+        BenchmarkDataStorage.t,
+        BenchmarkProcessor.t,
+        RateComputer.t,
+        EreusePrice.t
+    ), perform_second_snapshot=False)
+    ereuse_price = snapshot['actions'][-1]
+    assert len(ereuse_price) > 0
+
+
+@pytest.mark.mvp
+def test_erase_privacy_standards_endtime_sort(user: UserClient):
+    """Tests a Snapshot with EraseSectors and the resulting privacy
+    properties.
+
+    This tests ensures that only the last erasure is picked up, as
+    erasures have always custom endTime value set.
+    """
+    s = yaml2json('erase-sectors.snapshot')
+    assert s['components'][0]['actions'][0]['endTime'] == '2018-06-01T09:12:06+02:00'
+    snapshot = snapshot_and_check(user, s, action_types=(
+        EraseSectors.t,
+        BenchmarkDataStorage.t,
+        BenchmarkProcessor.t,
+        RateComputer.t,
+        EreusePrice.t
+    ), perform_second_snapshot=False)
+    # Perform a new snapshot changing the erasure time, as if
+    # it is a new erasure performed after.
+    erase = next(e for e in snapshot['actions'] if e['type'] == EraseSectors.t)
+    assert erase['endTime'] == '2018-06-01T07:12:06+00:00'
+    s['uuid'] = uuid4()
+    s['components'][0]['actions'][0]['endTime'] = '2018-06-01T07:14:00+00:00'
+    snapshot = snapshot_and_check(user, s, action_types=(
+        EraseSectors.t,
+        BenchmarkDataStorage.t,
+        BenchmarkProcessor.t,
+        RateComputer.t,
+        EreusePrice.t
+    ), perform_second_snapshot=False)
+
+    # The actual test
+    storage = next(e for e in snapshot['components'] if e['type'] == SolidStateDrive.t)
+    storage, _ = user.get(res=m.Device, item=storage['devicehubID'])  # Let's get storage actions too
+    # order: endTime ascending
+    #        erasure1/2 have an user defined time and others actions endTime = created
+    erasure1, erasure2, benchmark_hdd1, _snapshot1, _, _, benchmark_hdd2, _snapshot2 = storage['actions'][:8]
     assert erasure1['type'] == erasure2['type'] == 'EraseSectors'
+    assert benchmark_hdd1['type'] == benchmark_hdd2['type'] == 'BenchmarkDataStorage'
     assert _snapshot1['type'] == _snapshot2['type'] == 'Snapshot'
-    get_snapshot, _ = user.get(res=Event, item=_snapshot2['id'])
-    assert get_snapshot['events'][0]['endTime'] == '2018-06-01T07:12:06+00:00'
+    get_snapshot, _ = user.get(res=Action, item=_snapshot2['id'])
+    assert get_snapshot['actions'][0]['endTime'] == '2018-06-01T07:14:00+00:00'
     assert snapshot == get_snapshot
-    erasure, _ = user.get(res=Event, item=erasure1['id'])
+    erasure, _ = user.get(res=Action, item=erasure1['id'])
     assert len(erasure['steps']) == 2
     assert erasure['steps'][0]['startTime'] == '2018-06-01T06:15:00+00:00'
     assert erasure['steps'][0]['endTime'] == '2018-06-01T07:16:00+00:00'
@@ -327,17 +536,17 @@ def test_erase_privacy_standards(user: UserClient):
     assert 'num' not in step2
     assert ['HMG_IS5'] == erasure['standards']
     assert storage['privacy']['type'] == 'EraseSectors'
-    pc, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    pc, _ = user.get(res=m.Device, item=snapshot['device']['devicehubID'])
     assert pc['privacy'] == [storage['privacy']]
 
     # Let's try a second erasure with an error
     s['uuid'] = uuid4()
-    s['components'][0]['events'][0]['severity'] = 'Error'
-    snapshot, _ = user.post(s, res=Snapshot)
-    storage, _ = user.get(res=m.Device, item=storage['id'])
+    s['components'][0]['actions'][0]['severity'] = 'Error'
+    snapshot, _ = user.post(json_encode(s), res=Snapshot)
+    storage, _ = user.get(res=m.Device, item=storage['devicehubID'])
     assert storage['hid'] == 'solidstatedrive-c1mr-c1ml-c1s'
     assert storage['privacy']['type'] == 'EraseSectors'
-    pc, _ = user.get(res=m.Device, item=snapshot['device']['id'])
+    pc, _ = user.get(res=m.Device, item=snapshot['device']['devicehubID'])
     assert pc['privacy'] == [storage['privacy']]
 
 
@@ -346,57 +555,26 @@ def test_test_data_storage(user: UserClient):
     s = file('erase-sectors-2-hdd.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=s)
     incidence_test = next(
-        ev for ev in snapshot['events']
+        ev for ev in snapshot['actions']
         if ev.get('reallocatedSectorCount', None) == 15
     )
     assert incidence_test['severity'] == 'Error'
 
 
-def test_snapshot_computer_monitor(user: UserClient):
-    s = file('computer-monitor.snapshot')
-    snapshot_and_check(user, s, event_types=('ManualRate',))
-    # todo check that ManualRate has generated an AggregateRate
-
-
-def test_snapshot_mobile_smartphone_imei_manual_rate(user: UserClient):
-    s = file('smartphone.snapshot')
-    snapshot = snapshot_and_check(user, s, event_types=('ManualRate',))
-    mobile, _ = user.get(res=m.Device, item=snapshot['device']['id'])
-    assert mobile['imei'] == 3568680000414120
-    # todo check that manual rate has been created
-
-
-@pytest.mark.xfail(reason='Test not developed')
-def test_snapshot_components_none():
-    """
-    Tests that a snapshot without components does not
-    remove them from the computer.
-    """
-
-
-@pytest.mark.xfail(reason='Test not developed')
-def test_snapshot_components_empty():
-    """
-    Tests that a snapshot whose components are an empty list remove
-    all its components.
-    """
-
-
 def assert_similar_device(device1: dict, device2: dict):
-    """
-    Like :class:`ereuse_devicehub.resources.device.models.Device.
+    """Like :class:`ereuse_devicehub.resources.device.models.Device.
     is_similar()` but adapted for testing.
     """
     assert isinstance(device1, dict) and device1
     assert isinstance(device2, dict) and device2
     for key in 'serialNumber', 'model', 'manufacturer', 'type':
-        assert device1.get(key, '').lower() == device2.get(key, '').lower()
+        if (device1.get(key, '') is not None) and (device2.get(key, '') is not None):
+            assert device1.get(key, '').lower() == device2.get(key, '').lower()
 
 
 def assert_similar_components(components1: List[dict], components2: List[dict]):
-    """
-    Asserts that the components in components1 are
-    similar than the components in components2.
+    """Asserts that the components in components1 are similar than
+    the components in components2.
     """
     assert len(components1) == len(components2)
     key = itemgetter('serialNumber')
@@ -408,32 +586,31 @@ def assert_similar_components(components1: List[dict], components2: List[dict]):
 
 def snapshot_and_check(user: UserClient,
                        input_snapshot: dict,
-                       event_types: Tuple[str] = tuple(),
+                       action_types: Tuple[str, ...] = tuple(),
                        perform_second_snapshot=True) -> dict:
-    """
-        Performs a Snapshot and then checks if the result is ok:
+    """Performs a Snapshot and then checks if the result is ok:
 
-        - There have been performed the types of events and in the same
-          order as described in the passed-in ``event_types``.
+        - There have been performed the types of actions and in the same
+          order as described in the passed-in ``action_types``.
         - The inputted devices are similar to the resulted ones.
-        - There is no Remove event after the first Add.
+        - There is no Remove action after the first Add.
         - All input components are now inside the parent device.
 
         Optionally, it can perform a second Snapshot which should
-        perform an exact result, except for the events.
+        perform an exact result, except for the actions.
 
         :return: The last resulting snapshot.
     """
-    snapshot, _ = user.post(res=Snapshot, data=input_snapshot)
-    assert all(e['type'] in event_types for e in snapshot['events'])
-    assert len(snapshot['events']) == len(event_types)
-    # Ensure there is no Remove event after the first Add
+    snapshot, _ = user.post(res=Snapshot, data=json_encode(input_snapshot))
+    assert all(e['type'] in action_types for e in snapshot['actions'])
+    assert len(snapshot['actions']) == len(action_types)
+    # Ensure there is no Remove action after the first Add
     found_add = False
-    for event in snapshot['events']:
-        if event['type'] == 'Add':
+    for action in snapshot['actions']:
+        if action['type'] == 'Add':
             found_add = True
         if found_add:
-            assert event['type'] != 'Receive', 'All Remove events must be before the Add ones'
+            assert action['type'] != 'Receive', 'All Remove actions must be before the Add ones'
     assert input_snapshot['device']
     assert_similar_device(input_snapshot['device'], snapshot['device'])
     if input_snapshot.get('components', None):
@@ -443,24 +620,309 @@ def snapshot_and_check(user: UserClient,
     if perform_second_snapshot:
         if 'uuid' in input_snapshot:
             input_snapshot['uuid'] = uuid4()
-        return snapshot_and_check(user, input_snapshot, event_types, perform_second_snapshot=False)
+        return snapshot_and_check(user, input_snapshot, action_types,
+                                  perform_second_snapshot=False)
     else:
         return snapshot
 
 
-def test_snapshot_keyboard(user: UserClient):
-    s = file('keyboard.snapshot')
-    snapshot = snapshot_and_check(user, s, event_types=('ManualRate',))
-    keyboard = snapshot['device']
-    assert keyboard['layout'] == 'ES'
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_erase_changing_hdd_between_pcs(user: UserClient):
+    """Tests when we erase one device and next change the disk in other device we
+    want see in the second device the disks erase."""
+    s1 = file('erase-sectors-2-hdd.snapshot')
+    s2 = file('erase-sectors-2-hdd.snapshot2')
+    snapshot1, _ = user.post(res=Snapshot, data=s1)
+    snapshot2, _ = user.post(res=Snapshot, data=s2)
+    dev1 = m.Device.query.filter_by(id=snapshot1['device']['id']).one()
+    dev2 = m.Device.query.filter_by(id=snapshot2['device']['id']).one()
+    tag1 = Tag(id='dev1', device=dev1)
+    tag2 = Tag(id='dev2', device=dev2)
+    db.session.commit()
+
+    assert dev2.components[1].actions[2].parent == dev1
+    doc1, response = user.get(res=documents.DocumentDef.t,
+                               item='erasures/{}'.format(dev1.id),
+                               accept=ANY)
+    doc2, response = user.get(res=documents.DocumentDef.t,
+                               item='erasures/{}'.format(dev2.id),
+                               accept=ANY)
+    assert 'dev1' in doc2
+    assert 'dev2' in doc2
 
 
+@pytest.mark.mvp
+@pytest.mark.xfail(reason='Debug and rewrite it')
 def test_pc_rating_rate_none(user: UserClient):
     """Tests a Snapshot with EraseSectors."""
+    # TODO this snapshot have a benchmarkprocessor and a benchmarkprocessorsysbench
     s = file('desktop-9644w8n-lenovo-0169622.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=s)
 
 
+@pytest.mark.mvp
 def test_pc_2(user: UserClient):
     s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
     snapshot, _ = user.post(res=Snapshot, data=s)
+
+
+
+@pytest.mark.mvp
+def test_save_snapshot_in_file(app: Devicehub, user: UserClient):
+    """ This test check if works the function save_snapshot_in_file """
+    snapshot_no_hid = yaml2json('basic.snapshot.nohid')
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    path_dir_base = os.path.join(tmp_snapshots, user.user['email'], 'errors')
+
+    save_json(snapshot_no_hid, tmp_snapshots, user.user['email'])
+
+    uuid = snapshot_no_hid['uuid']
+    files = [x for x in os.listdir(path_dir_base) if uuid in x]
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    if files:
+        path_snapshot = os.path.join(path_dir_base, files[0])
+        assert not "0001-01-01 00:00:00" in path_snapshot
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        shutil.rmtree(tmp_snapshots)
+
+    assert snapshot['software'] == snapshot_no_hid['software']
+    assert snapshot['version'] == snapshot_no_hid['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_action_no_snapshot_without_save_file(app: Devicehub, user: UserClient):
+    """ This test check if the function save_snapshot_in_file not work when we
+    send one other action different to snapshot
+    """
+    s = file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot')
+    snapshot, _ = user.post(res=Snapshot, data=s)
+
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    path_dir_base = os.path.join(tmp_snapshots, user.user['email'])
+
+    shutil.rmtree(tmp_snapshots)
+
+    action = {'type': Ready.t, 'devices': [snapshot['device']['id']]}
+    action, _ = user.post(action, res=Action)
+
+    assert os.path.exists(tmp_snapshots) == False
+
+@pytest.mark.mvp
+def test_save_snapshot_with_debug(app: Devicehub, user: UserClient):
+    """ This test check if works the function save_snapshot_in_file """
+    snapshot_file = yaml2json('basic.snapshot.with_debug')
+    debug = snapshot_file['debug']
+    user.post(res=Snapshot, data=json_encode(snapshot_file))
+
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    path_dir_base = os.path.join(tmp_snapshots, user.user['email'])
+
+    uuid = snapshot_file['uuid']
+    files = [x for x in os.listdir(path_dir_base) if uuid in x]
+
+    snapshot = {'debug': ''}
+    if files:
+        path_snapshot = os.path.join(path_dir_base, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        shutil.rmtree(tmp_snapshots)
+
+    assert snapshot['debug'] == debug
+
+
+@pytest.mark.mvp
+def test_backup_snapshot_with_errors(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    path_dir_base = os.path.join(tmp_snapshots, user.user['email'], 'errors')
+    snapshot_no_hid = yaml2json('basic.snapshot.badly_formed')
+    uuid = snapshot_no_hid['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(KeyError):
+        response = user.post(res=Snapshot, data=json_encode(snapshot_no_hid))
+
+    files = [x for x in os.listdir(path_dir_base) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(path_dir_base, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        shutil.rmtree(tmp_snapshots)
+
+    assert snapshot['software'] == snapshot_no_hid['software']
+    assert snapshot['version'] == snapshot_no_hid['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_failed_missing_cpu_benchmark(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    path_dir_base = os.path.join(tmp_snapshots, user.user['email'], 'errors')
+    snapshot_error = yaml2json('failed.snapshot.500.missing-cpu-benchmark')
+    uuid = snapshot_error['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(TypeError):
+        user.post(res=Snapshot, data=json_encode(snapshot_error))
+
+    files = [x for x in os.listdir(path_dir_base) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(path_dir_base, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        shutil.rmtree(tmp_snapshots)
+
+    assert snapshot['software'] == snapshot_error['software']
+    assert snapshot['version'] == snapshot_error['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_failed_missing_hdd_benchmark(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    path_dir_base = os.path.join(tmp_snapshots, user.user['email'], 'errors')
+    snapshot_error = yaml2json('failed.snapshot.500.missing-hdd-benchmark')
+    uuid = snapshot_error['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(TypeError):
+        user.post(res=Snapshot, data=json_encode(snapshot_error))
+
+    files = [x for x in os.listdir(path_dir_base) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(path_dir_base, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        shutil.rmtree(tmp_snapshots)
+
+    assert snapshot['software'] == snapshot_error['software']
+    assert snapshot['version'] == snapshot_error['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_not_failed_null_chassis(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    path_dir_base = os.path.join(tmp_snapshots, user.user['email'], 'errors')
+    snapshot_error = yaml2json('desktop-9644w8n-lenovo-0169622.snapshot')
+    snapshot_error['device']['chassis'] = None
+    uuid = snapshot_error['uuid']
+
+    snapshot, res = user.post(res=Snapshot, data=json_encode(snapshot_error))
+
+    shutil.rmtree(tmp_snapshots)
+
+    assert snapshot['software'] == snapshot_error['software']
+    assert snapshot['version'] == snapshot_error['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_failed_missing_chassis(app: Devicehub, user: UserClient):
+    """ This test check if the file snapshot is create when some snapshot is wrong """
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    path_dir_base = os.path.join(tmp_snapshots, user.user['email'], 'errors')
+    snapshot_error = yaml2json('failed.snapshot.422.missing-chassis')
+    uuid = snapshot_error['uuid']
+
+    snapshot = {'software': '', 'version': '', 'uuid': ''}
+    with pytest.raises(TypeError):
+        user.post(res=Snapshot, data=json_encode(snapshot_error))
+
+    files = [x for x in os.listdir(path_dir_base) if uuid in x]
+    if files:
+        path_snapshot = os.path.join(path_dir_base, files[0])
+        with open(path_snapshot) as file_snapshot:
+            snapshot = json.loads(file_snapshot.read())
+
+        shutil.rmtree(tmp_snapshots)
+
+    assert snapshot['software'] == snapshot_error['software']
+    assert snapshot['version'] == snapshot_error['version']
+    assert snapshot['uuid'] == uuid
+
+
+@pytest.mark.mvp
+def test_snapshot_failed_end_time_bug(app: Devicehub, user: UserClient):
+    """ This test check if the end_time = 0001-01-01 00:00:00+00:00
+    and then we get a /devices, this create a crash
+    """
+    snapshot_file = file('asus-end_time_bug88.snapshot')
+    snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
+    device, _ = user.get(res=m.Device, item=snapshot['device']['devicehubID'])
+    end_times = [x['endTime'] for x in device['actions']]
+
+    assert '1970-01-02T00:00:00+00:00' in end_times
+    assert not '0001-01-01T00:00:00+00:00' in end_times
+
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    shutil.rmtree(tmp_snapshots)
+
+@pytest.mark.mvp
+def test_snapshot_not_failed_end_time_bug(app: Devicehub, user: UserClient):
+    """ This test check if the end_time != 0001-01-01 00:00:00+00:00
+    and then we get a /devices, this create a crash
+    """
+    snapshot_file = yaml2json('asus-end_time_bug88.snapshot')
+    snapshot_file['endTime'] = '2001-01-01 00:00:00+00:00'
+    snapshot, _ = user.post(res=Snapshot, data=json_encode(snapshot_file))
+    device, _ = user.get(res=m.Device, item=snapshot['device']['devicehubID'])
+    end_times = [x['endTime'] for x in device['actions']]
+
+    assert not '1970-01-02T00:00:00+00:00' in end_times
+    assert not '0001-01-01T00:00:00+00:00' in end_times
+    assert '2001-01-01T00:00:00+00:00' in end_times
+
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    shutil.rmtree(tmp_snapshots)
+
+
+@pytest.mark.mvp
+def test_snapshot_bug_smallint_hdd(app: Devicehub, user: UserClient):
+    """ This test check if the end_time != 0001-01-01 00:00:00+00:00
+    and then we get a /devices, this create a crash
+    """
+    snapshot_file = file('asus-eee-1000h.snapshot.bug1857')
+    snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
+
+    act = [act for act in snapshot['actions'] if act['type'] == 'TestDataStorage'][0]
+    assert act['currentPendingSectorCount'] == 473302660
+    assert act['offlineUncorrectable'] == 182042944
+
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    shutil.rmtree(tmp_snapshots)
+
+
+@pytest.mark.mvp
+def test_snapshot_mobil(app: Devicehub, user: UserClient):
+    """ This test check if the end_time != 0001-01-01 00:00:00+00:00
+    and then we get a /devices, this create a crash
+    """
+    snapshot_file = file('mobil')
+    snapshot, _ = user.post(res=Snapshot, data=snapshot_file)
+    device, _ = user.get(res=m.Device, item=snapshot['device']['devicehubID'])
+
+    tmp_snapshots = app.config['TMP_SNAPSHOTS']
+    shutil.rmtree(tmp_snapshots)
+
+
+@pytest.mark.mvp
+def test_bug_141(user: UserClient):
+    """This test check one bug that create a problem when try to up one snapshot
+       with a big number in the parameter command_timeout of the DataStorage
+
+    """
+    dev = file('2021-5-4-13-41_time_out_test_datastorage')
+    user.post(dev, res=Snapshot)

@@ -1,0 +1,119 @@
+{
+  "type": "Snapshot",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "software": "Workbench",
+  "version": "11.0a1",
+  "closed": true,
+  "endTime": "0001-01-01 00:00:00+00:00",
+  "elapsed": 0,
+  "device": {
+    "actions": [],
+    "type": "Laptop",
+    "manufacturer": "Timi",
+    "model": "TM1613",
+    "serialNumber": "13138/00064437",
+    "chassis": "Netbook",
+    "sku": null,
+    "version": "A05"
+  },
+  "components": [
+    {
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 11969.98,
+          "elapsed": 0
+        }
+      ],
+      "type": "Processor",
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Core i5-6200U CPU @ 2.30GHz",
+      "serialNumber": null,
+      "speed": 2.684156,
+      "address": 64,
+      "cores": 2,
+      "threads": 4,
+      "brand": "Core i5",
+      "generation": 6
+    },
+    {
+      "actions": [],
+      "type": "RamModule",
+      "manufacturer": "Samsung",
+      "model": "M471A1K43BB0-CPB",
+      "serialNumber": null,
+      "format": "SODIMM",
+      "size": 8192.0,
+      "speed": 2133.0
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "model": "Sky Lake Integrated Graphics",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "NVIDIA Corporation",
+      "model": "NVIDIA Corporation",
+      "serialNumber": null,
+      "memory": null
+    },
+    {
+      "actions": [],
+      "type": "NetworkAdapter",
+      "manufacturer": "Intel Corporation",
+      "model": "Wireless 8260",
+      "serialNumber": "a0:c5:89:41:a8:a7",
+      "speed": null,
+      "variant": "3a",
+      "wireless": true
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "SunplusIT Inc",
+      "model": "XiaoMi USB 2.0 Webcam",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "SoundCard",
+      "manufacturer": "Intel Corporation",
+      "model": "Intel Corporation",
+      "serialNumber": null
+    },
+    {
+      "actions": [],
+      "type": "Display",
+      "model": "SAMSUNG SyncMaster",
+      "manufacturer": "SAM SAMSUNG",
+      "serialNumber": "H1CRA03915",
+      "resolutionWidth": 1024,
+      "resolutionHeight": 768,
+      "refreshRate": 70,
+      "size": 15.0,
+      "technology": null,
+      "productionDate": "2001-10-28T00:00:00"
+    },
+    {
+      "actions": [],
+      "type": "Motherboard",
+      "manufacturer": "Timi",
+      "model": "TM1613",
+      "serialNumber": "MMG5S000000226B1P02YK",
+      "usb": 1,
+      "firewire": 0,
+      "serial": 1,
+      "pcmcia": 0,
+      "slots": 0,
+      "biosDate": "2016-08-11T00:00:00",
+      "version": "A05",
+      "ramSlots": null,
+      "ramMaxSize": null
+    }
+  ]
+}

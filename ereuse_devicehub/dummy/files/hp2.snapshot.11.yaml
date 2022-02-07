@@ -10,7 +10,7 @@
     "type": "Processor",
     "serialNumber": null,
     "address": 64,
-    "events": [
+    "actions": [
     {
       "elapsed": 0,
       "rate": 23408.76,
@@ -29,7 +29,7 @@
     "type": "GraphicCard",
     "serialNumber": null,
     "memory": 256.0,
-    "events": []
+    "actions": []
   },
   {
     "speed": 1000,
@@ -38,14 +38,14 @@
     "type": "NetworkAdapter",
     "wireless": false,
     "serialNumber": "6c:62:6d:81:21:7f",
-    "events": []
+    "actions": []
   },
   {
     "model": "5 Series/3400 Series Chipset High Definition Audio",
     "manufacturer": "Intel Corporation",
     "type": "SoundCard",
     "serialNumber": null,
-    "events": []
+    "actions": []
   },
   {
     "interface": "DDR3",
@@ -56,7 +56,7 @@
     "manufacturer": "JEDEC ID:80 2C",
     "type": "RamModule",
     "speed": 1333.0,
-    "events": []
+    "actions": []
   },
   {
     "interface": "ATA",
@@ -65,7 +65,7 @@
     "manufacturer": "Hitachi",
     "type": "HardDrive",
     "serialNumber": "PVB200Z30JWXRF",
-    "events": [
+    "actions": [
     {
       "elapsed": 1,
       "type": "TestDataStorage",
@@ -80,17 +80,17 @@
       "readSpeed": 77.7
     },
     {
-      "startTime": "2018-07-11T10:32:14.445306",
+      "startTime": "2018-07-11T10:32:14.445306+00:00",
 
       "type": "EraseBasic",
       "severity": "Info",
-      "endTime": "2018-07-11T10:53:46.442123",
+      "endTime": "2018-07-11T10:53:46.442123+00:00",
       "steps": [
       {
-        "startTime": "2018-07-11T10:32:14.445496",
+        "startTime": "2018-07-11T10:32:14.445496+00:00",
         "type": "StepRandom",
         "severity": "Info",
-        "endTime": "2018-07-11T10:53:46.438901"
+        "endTime": "2018-07-11T10:53:46.438901+00:00"
       }
       ]
     }
@@ -103,7 +103,7 @@
     "manufacturer": "Seagate",
     "type": "HardDrive",
     "serialNumber": "9QZCVLJX",
-    "events": [
+    "actions": [
     {
       "elapsed": 0,
       "type": "TestDataStorage",
@@ -112,17 +112,17 @@
       "length": "Short"
     },
     {
-      "startTime": "2018-07-11T10:53:46.442187",
+      "startTime": "2018-07-11T10:53:46.442187+00:00",
 
       "type": "EraseBasic",
       "severity": "Info",
-      "endTime": "2018-07-11T11:16:28.469899",
+      "endTime": "2018-07-11T11:16:28.469899+00:00",
       "steps": [
       {
-        "startTime": "2018-07-11T10:53:46.442343",
+        "startTime": "2018-07-11T10:53:46.442343+00:00",
         "type": "StepRandom",
         "severity": "Info",
-        "endTime": "2018-07-11T11:16:28.463789"
+        "endTime": "2018-07-11T11:16:28.463789+00:00"
       }
       ]
     },
@@ -144,7 +144,7 @@
     "serialNumber": "CZC0408YP6",
     "slots": 0,
     "usb": 2,
-    "events": []
+    "actions": []
   }
   ],
   "closed": false,
@@ -155,7 +155,7 @@
     "type": "Desktop",
     "serialNumber": "CZC0408YP6",
     "chassis": "Tower",
-    "events": [
+    "actions": [
     {
       "severity": "Info",
       "elapsed": 60,
@@ -168,13 +168,7 @@
     }
     ]
   },
-  "expectedEvents": [
-    "Benchmark",
-    "SmartTest",
-    "StressTest",
-    "EraseBasic"
-  ],
   "software": "Workbench",
-  "endTime": "2018-07-11T10:30:22.395958",
+  "endTime": "2018-07-11T10:30:22.395958+00:00",
   "elapsed": 2766
 }

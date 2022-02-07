@@ -6,7 +6,7 @@
     "serialNumber": "74:2f:68:8b:fd:c8",
     "manufacturer": "Qualcomm Atheros",
     "wireless": true,
-    "events": []
+    "actions": []
   },
   {
     "type": "NetworkAdapter",
@@ -15,7 +15,7 @@
     "manufacturer": "Qualcomm Atheros",
     "speed": 100,
     "wireless": false,
-    "events": []
+    "actions": []
   },
   {
     "type": "Processor",
@@ -26,7 +26,7 @@
     "serialNumber": null,
     "manufacturer": "Intel Corp.",
     "speed": 1.667,
-    "events": [
+    "actions": [
     {
       "type": "BenchmarkProcessorSysbench",
       "rate": 164.0803,
@@ -45,21 +45,21 @@
     "serialNumber": null,
     "memory": 256.0,
     "manufacturer": "Intel Corporation",
-    "events": []
+    "actions": []
   },
   {
     "type": "SoundCard",
     "model": "NM10/ICH7 Family High Definition Audio Controller",
     "serialNumber": null,
     "manufacturer": "Intel Corporation",
-    "events": []
+    "actions": []
   },
   {
     "type": "SoundCard",
     "model": "USB 2.0 UVC VGA WebCam",
     "serialNumber": "0x0001",
     "manufacturer": "Azurewave",
-    "events": []
+    "actions": []
   },
   {
     "type": "RamModule",
@@ -70,7 +70,7 @@
     "serialNumber": null,
     "manufacturer": null,
     "speed": 667.0,
-    "events": []
+    "actions": []
   },
   {
     "type": "HardDrive",
@@ -79,7 +79,7 @@
     "interface": "ATA",
     "serialNumber": "E2024242CV86HJ",
     "manufacturer": "Hitachi",
-    "events": [
+    "actions": [
     {
       "type": "BenchmarkDataStorage",
       "elapsed": 16,
@@ -98,15 +98,15 @@
       "steps": [
       {
         "type": "StepRandom",
-        "startTime": "2018-07-03T09:15:22.257059",
+        "startTime": "2018-07-03T09:15:22.257059+00:00",
         "severity": "Info",
-        "endTime": "2018-07-03T10:32:11.843190"
+        "endTime": "2018-07-03T10:32:11.843190+00:00"
       }
       ],
-      "startTime": "2018-07-03T09:15:22.256074",
+      "startTime": "2018-07-03T09:15:22.256074+00:00",
       "severity": "Info",
 
-      "endTime": "2018-07-03T10:32:11.848455"
+      "endTime": "2018-07-03T10:32:11.848455+00:00"
     }
     ]
   },
@@ -120,7 +120,12 @@
     "serialNumber": "Eee0123456789",
     "usb": 5,
     "manufacturer": "ASUSTeK Computer INC.",
-    "events": []
+    "actions": [
+    {
+      "type": "TestBios",
+      "accessRange": "C"
+    }
+    ]
   }
   ],
   "elapsed": 4875,
@@ -128,14 +133,14 @@
   "version": "11.0a2",
   "type": "Snapshot",
   "software": "Workbench",
-  "endTime": "2018-07-03T09:10:57.034598",
+  "endTime": "2018-07-03T09:10:57.034598+00:00",
   "device": {
     "type": "Laptop",
     "model": "1001PXD",
     "serialNumber": "B8OAAS048286",
     "manufacturer": "ASUSTeK Computer INC.",
     "chassis": "Netbook",
-    "events": [
+    "actions": [
     {
       "type": "BenchmarkRamSysbench",
       "rate": 15.7188,
@@ -148,17 +153,10 @@
     },
     {
       "appearanceRange": "B",
-      "biosRange": "C",
       "functionalityRange": "A",
-      "type": "WorkbenchRate"
+      "type": "VisualTest"
     }
     ]
   },
-  "expectedEvents": [
-    "Benchmark",
-    "SmartTest",
-    "StressTest",
-    "EraseBasic"
-  ],
   "closed": false
 }

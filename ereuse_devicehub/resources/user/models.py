@@ -1,13 +1,16 @@
 from uuid import uuid4
 
+from citext import CIText
 from flask import current_app as app
-from sqlalchemy import Column
+from sqlalchemy import Column, Boolean, BigInteger, Sequence
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import EmailType, PasswordType
+from teal.db import IntEnum
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.inventory.model import Inventory
 from ereuse_devicehub.resources.models import STR_SIZE, Thing
+from ereuse_devicehub.resources.enums import SessionType
 
 
 class User(Thing):
@@ -20,6 +23,8 @@ class User(Thing):
                                        **kwargs
                                    )))
     token = Column(UUID(as_uuid=True), default=uuid4, unique=True, nullable=False)
+    active = Column(Boolean, default=True, nullable=False)
+    phantom = Column(Boolean, default=False, nullable=False)
     inventories = db.relationship(Inventory,
                                   backref=db.backref('users', lazy=True, collection_class=set),
                                   secondary=lambda: UserInventory.__table__,
@@ -27,17 +32,20 @@ class User(Thing):
 
     # todo set restriction that user has, at least, one active db
 
-    def __init__(self, email, password=None, inventories=None) -> None:
-        """
-        Creates an user.
+    def __init__(self, email, password=None, inventories=None, active=True, phantom=False) -> None:
+        """Creates an user.
         :param email:
         :param password:
         :param inventories: A set of Inventory where the user has
         access to. If none, the user is granted access to the current
         inventory.
+        :param active: allow active and deactive one account without delete the account
+        :param phantom: it's util for identify the phantom accounts
+        create during the trade actions
         """
         inventories = inventories or {Inventory.current}
-        super().__init__(email=email, password=password, inventories=inventories)
+        super().__init__(email=email, password=password, inventories=inventories,
+                         active=active, phantom=phantom)
 
     def __repr__(self) -> str:
         return '<User {0.email}>'.format(self)
@@ -51,9 +59,31 @@ class User(Thing):
         """The individual associated for this database, or None."""
         return next(iter(self.individuals), None)
 
+    @property
+    def code(self):
+        """Code of phantoms accounts"""
+        if not self.phantom:
+            return
+        return self.email.split('@')[0].split('_')[1]
+
 
 class UserInventory(db.Model):
     """Relationship between users and their inventories."""
     __table_args__ = {'schema': 'common'}
     user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(User.id), primary_key=True)
     inventory_id = db.Column(db.Unicode(), db.ForeignKey(Inventory.id), primary_key=True)
+
+
+class Session(Thing):
+    __table_args__ = {'schema': 'common'}
+    id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
+    expired = Column(BigInteger, default=0)
+    token = Column(UUID(as_uuid=True), default=uuid4, unique=True, nullable=False)
+    type = Column(IntEnum(SessionType), default=SessionType.Internal, nullable=False)
+    user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(User.id))
+    user = db.relationship(User,
+                           backref=db.backref('sessions', lazy=True, collection_class=set),
+                           collection_class=set)
+
+    def __str__(self) -> str:
+        return '{0.token}'.format(self)

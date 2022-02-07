@@ -1,0 +1,29 @@
+device:
+  manufacturer: p1
+  serialNumber: p1
+  model: p1
+  type: Desktop
+  chassis: Tower
+components:
+  - manufacturer: p1c1m
+    serialNumber: p1c1s
+    type: Motherboard
+  - manufacturer: p1c2m
+    serialNumber: p1c2s
+    model: p1c2
+    speed: 1.23
+    cores: 2
+    type: Processor
+    actions:
+      - type: BenchmarkProcessor
+        rate: 1
+        elapsed: 166
+  - manufacturer: p1c3m
+    serialNumber: p1c3s
+    type: GraphicCard
+    memory: 1.5
+elapsed: 25
+software: Workbench
+uuid: 77860eca-c3fd-41f6-a801-6af7bd8cf832
+version: '11.0'
+type: Snapshot

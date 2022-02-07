@@ -1,5 +1,4 @@
 from contextlib import suppress
-from distutils.version import StrictVersion
 from enum import Enum, IntEnum, unique
 from typing import Set, Union
 
@@ -10,33 +9,18 @@ import inflection
 class SnapshotSoftware(Enum):
     """The software used to perform the Snapshot."""
     Workbench = 'Workbench'
+    WorkbenchAndroid = 'WorkbenchAndroid'
     AndroidApp = 'AndroidApp'
     Web = 'Web'
     DesktopApp = 'DesktopApp'
+    WorkbenchDesktop = 'WorkbenchDesktop'
 
     def __str__(self):
         return self.name
 
 
-@unique
-class RatingSoftware(Enum):
-    """The software used to compute the Score."""
-    ECost = 'ECost'
-    """
-    The eReuse.org rate algorithm that focuses maximizing refurbishment
-    of devices in general, specially penalizing very low and very high
-    devices in order to stimulate medium-range devices.
-    
-    This model is cost-oriented. 
-    """
-    EMarket = 'EMarket'
-
-    def __str__(self):
-        return self.name
-
-
-RATE_POSITIVE = 0, 10
-RATE_NEGATIVE = -3, 5
+R_POSITIVE = 0, 10
+R_NEGATIVE = -3, 5
 
 
 @unique
@@ -52,10 +36,10 @@ class RatingRange(IntEnum):
     3. Medium.
     4. High.
     """
-    VERY_LOW = 2
-    LOW = 3
-    MEDIUM = 4
-    HIGH = 5
+    VERY_LOW = 1
+    LOW = 2
+    MEDIUM = 3
+    HIGH = 4
 
     @classmethod
     def from_score(cls, val: Union[int, float]) -> 'RatingRange':
@@ -83,24 +67,14 @@ class PriceSoftware(Enum):
 
 
 @unique
-class AggregateRatingVersions(Enum):
-    v1 = StrictVersion('1.0')
-    """
-    This version is set to aggregate :class:`ereuse_devicehub.resources.
-    event.models.WorkbenchRate` version X and :class:`ereuse_devicehub.
-    resources.event.models.PhotoboxRate` version Y.
-    """
-
-
-@unique
 class AppearanceRange(Enum):
     """Grades the imperfections that aesthetically affect the device, but not its usage."""
-    Z = '0. The device is new.'
-    A = 'A. Is like new (without visual damage)'
-    B = 'B. Is in really good condition (small visual damage in difficult places to spot)'
-    C = 'C. Is in good condition (small visual damage in parts that are easy to spot, not screens)'
-    D = 'D. Is acceptable (visual damage in visible parts, not screens)'
-    E = 'E. Is unacceptable (considerable visual damage that can affect usage)'
+    Z = 'Z. The device is new'
+    A = 'A. Is like new; without visual damage'
+    B = 'B. Is in really good condition; small visual damage in difficult places to spot'
+    C = 'C. Is in good condition; small visual damage in parts that are easy to spot, minor cosmetic blemishes on chassis'
+    D = 'D. Is acceptable; visual damage in visible parts, major cosmetic blemishes on chassis, missing cosmetic parts'
+    E = 'E. Is unacceptable; considerable visual damage, missing essential parts'
 
     def __str__(self):
         return self.name
@@ -109,18 +83,31 @@ class AppearanceRange(Enum):
 @unique
 class FunctionalityRange(Enum):
     """Grades the defects of a device that affect its usage."""
-    # todo sync with https://github.com/ereuse/rdevicescore#input
-    A = 'A. Everything works perfectly (buttons, and in case of screens there are no scratches)'
-    B = 'B. There is a button difficult to press or a small scratch in an edge of a screen'
-    C = 'C. A non-important button (or similar) doesn\'t work; screen has multiple scratches in edges'
-    D = 'D. Multiple buttons don\'t work; screen has visual damage resulting in uncomfortable usage'
+    A = 'A. All the buttons works perfectly, no screen/camera defects and chassis without usage issues'
+    B = 'B. There is a button difficult to press or unstable it, a screen/camera defect or chassis problem'
+    C = 'C.	Chassis defects or multiple buttons don\'t work; broken or unusable it, some screen/camera defect'
+    D = 'D.	Chassis severity usage problems. All buttons, screen or camera don\'t work; broken or unusable it'
 
     def __str__(self):
         return self.name
 
 
 @unique
-class Bios(Enum):
+class BatteryHealthRange(Enum):
+    """Grade the battery health status, depending on self report Android system"""
+    A = 'A. The battery health is very good'
+    B = 'B. Battery health is good'
+    C = 'C.	Battery health is overheat / over voltage status but can stand the minimum duration'
+    D = 'D.	Battery health is bad; can’t stand the minimum duration time'
+    E = 'E. Battery health is very bad; and status is dead; unusable or miss it'
+    NONE = 'NA. Grade doesn’t exists'
+
+    def __str__(self):
+        return self.name
+
+
+@unique
+class BiosAccessRange(Enum):
     """How difficult it has been to set the bios to boot from the network."""
     A = 'A. If by pressing a key you could access a boot menu with the network boot'
     B = 'B. You had to get into the BIOS, and in less than 5 steps you could set the network boot'
@@ -154,18 +141,6 @@ class ImageMimeTypes(Enum):
     """Supported image Mimetypes for Devicehub."""
     jpg = 'image/jpeg'
     png = 'image/png'
-
-
-@unique
-class SnapshotExpectedEvents(Enum):
-    """Events that Workbench can perform when processing a device."""
-    Benchmark = 'Benchmark'
-    TestDataStorage = 'TestDataStorage'
-    StressTest = 'StressTest'
-    EraseBasic = 'EraseBasic'
-    EraseSectors = 'EraseSectors'
-    SmartTest = 'SmartTest'
-    Install = 'Install'
 
 
 BOX_RATE_5 = 1, 5
@@ -277,6 +252,12 @@ class PrinterTechnology(Enum):
 
 
 @unique
+class CameraFacing(Enum):
+    Front = 'Front'
+    Back = 'Back'
+
+
+@unique
 class BatteryHealth(Enum):
     """The battery health status as in Android."""
     Cold = 'Cold'
@@ -289,26 +270,32 @@ class BatteryHealth(Enum):
 
 @unique
 class BatteryTechnology(Enum):
-    """The technology of the Battery."""
+    """The technology of the Battery. Adapted from
+    https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-power
+    adding ``Alkaline``.
+    """
     LiIon = 'Lithium-ion'
-    NiCad = 'Nickel-Cadmium'
+    NiCd = 'Nickel-Cadmium'
     NiMH = 'Nickel-metal hydride'
+    LiPoly = 'Lithium-ion Polymer'
+    LiFe = 'LiFe'
+    LiMn = 'Lithium Manganese'
     Al = 'Alkaline'
 
 
 class Severity(IntEnum):
-    """A flag evaluating the event execution. Ex. failed events
+    """A flag evaluating the action execution. Ex. failed actions
     have the value `Severity.Error`. Devicehub uses 4 severity levels:
 
-    * Info: default neutral severity. The event succeeded.
-    * Notice: The event succeeded but it is raising awareness.
+    * Info (Pass): default neutral severity. The action succeeded.
+    * Notice: The action succeeded but it is raising awareness.
       Notices are not usually that important but something
       (good or bad) worth checking.
-    * Warning: The event succeeded but there is something important
-      to check negatively affecting the event.
-    * Error: the event failed.
+    * Warning: The action succeeded but there is something important
+      to check negatively affecting the action.
+    * Error (Fail): the action failed.
 
-    Devicehub specially raises user awareness when an event
+    Devicehub specially raises user awareness when an action
     has a Severity of ``Warning`` or greater.
     """
 
@@ -365,7 +352,7 @@ class ErasureStandards(Enum):
     2. A second step erasing with random data, verifying the erasure
        success in each hard-drive sector.
     
-    And be an :class:`ereuse_devicehub.resources.event.models.EraseSectors`.
+    And be an :class:`ereuse_devicehub.resources.action.models.EraseSectors`.
     """
 
     def __str__(self):
@@ -374,12 +361,56 @@ class ErasureStandards(Enum):
     @classmethod
     def from_data_storage(cls, erasure) -> Set['ErasureStandards']:
         """Returns a set of erasure standards."""
-        from ereuse_devicehub.resources.event import models as events
+        from ereuse_devicehub.resources.action import models as actions
         standards = set()
-        if isinstance(erasure, events.EraseSectors):
+        if isinstance(erasure, actions.EraseSectors):
             with suppress(ValueError):
                 first_step, *other_steps = erasure.steps
-                if isinstance(first_step, events.StepZero) \
-                        and all(isinstance(step, events.StepRandom) for step in other_steps):
+                if isinstance(first_step, actions.StepZero) \
+                        and all(isinstance(step, actions.StepRandom) for step in other_steps):
                     standards.add(cls.HMG_IS5)
         return standards
+
+
+@unique
+class TransferState(IntEnum):
+    """State of transfer for a given Lot of devices.
+    """
+
+    """
+    * Initial: No transfer action in place.
+    * Initiated: The transfer action has been initiated by orginator.
+    * Accepted: The  transfer action has been accepted by destinator.
+
+    Devicehub specially raises user awareness when an action
+    has a Severity of ``Warning`` or greater.
+    """
+
+    Initial = 0
+    Initiated = 1
+    Accepted = 2
+    Completed = 3
+
+    def __str__(self):
+        return self.name
+    
+
+@unique
+class SessionType(IntEnum):
+    """
+    Enumaration of types of sessions:
+
+    * Internal: permanent Session for internal user. This is used in usb of WorkBench.
+    * External: permanent Session for external users. This is used in usb of WorkBench.
+    * Session: This is used for keep more than one session in the app frontend.
+
+    Devicehub specially raises user awareness when an action
+    has a Severity of ``Warning`` or greater.
+    """
+
+    Internal = 0
+    External = 1
+    Session = 2
+
+    def __str__(self):
+        return self.name

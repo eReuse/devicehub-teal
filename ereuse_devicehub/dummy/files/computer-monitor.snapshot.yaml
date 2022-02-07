@@ -10,8 +10,8 @@ device:
   resolutionWidth: 1920
   resolutionHeight: 1080
   size: 21.5
-  events:
-  - type: ManualRate
-    appearanceRange: A
-    functionalityRange: C
-    labelling: False
+  actions:
+    - type: VisualTest
+      appearanceRange: A
+      functionalityRange: C
+      labelling: False

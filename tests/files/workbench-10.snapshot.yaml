@@ -2,714 +2,714 @@
 _uuid: d0bbf629-c081-4f25-8b34-6619bca6fb46
 automatic: true
 benchmarks:
-- {'@type': BenchmarkRamSysbench, score: 8.7637}
+  - {'@type': BenchmarkRamSysbench, score: 8.7637}
 components:
-- '@type': Processor
-  address: 64
-  benchmarks:
-  - {'@type': BenchmarkProcessor, score: 11969.48}
-  - {'@type': BenchmarkProcessorSysbench, score: 20.3175}
-  manufacturer: Intel Corp.
-  model: Intel Core2 Duo CPU E8400 @ 3.00GHz
-  numberOfCores: 2
-  serialNumber: null
-  speed: 2.0
-- {'@type': RamModule, manufacturer: null, model: null, serialNumber: null, size: 2048,
-   speed: 1067.0}
-- {'@type': RamModule, manufacturer: null, model: null, serialNumber: null, size: 2048,
-   speed: 1067.0}
-- '@type': HardDrive
-  benchmark: {'@type': BenchmarkHardDrive, readingSpeed: 129.0, writingSpeed: 32.6}
-  interface: 'ata
+  - '@type': Processor
+    address: 64
+    benchmarks:
+      - {'@type': BenchmarkProcessor, score: 11969.48}
+      - {'@type': BenchmarkProcessorSysbench, score: 20.3175}
+    manufacturer: Intel Corp.
+    model: Intel Core2 Duo CPU E8400 @ 3.00GHz
+    numberOfCores: 2
+    serialNumber: null
+    speed: 2.0
+  - {'@type': RamModule, manufacturer: null, model: null, serialNumber: null, size: 2048,
+     speed: 1067.0}
+  - {'@type': RamModule, manufacturer: null, model: null, serialNumber: null, size: 2048,
+     speed: 1067.0}
+  - '@type': HardDrive
+    benchmark: {'@type': BenchmarkHardDrive, readingSpeed: 129.0, writingSpeed: 32.6}
+    interface: 'ata
 
     '
-  manufacturer: Seagate
-  model: ST3250318AS
-  serialNumber: 6VMB1A52
-  size: 238475
-  test: {'@type': TestHardDrive, CommandTimeout: 1786733725708, CurrentPendingSectorCount: 0,
-         OfflineUncorrectable: 0, assessment: true, severity: Info, firstError: null, lifetime: 16947,
-         passedLifetime: 16947, powerCycleCount: 1694, reallocatedSectorCount: 0, reportedUncorrectableErrors: 0,
-         status: Completed without error, type: Short offline}
-  type: HDD
-- {                                                                                                                                                                                                                                              '@type': GraphicCard, manufacturer: Intel Corporation, memory: 256.0, model: 4
-                                                                                                                                                                                                                                                                                                                         Series Chipset Integrated Graphics Controller, serialNumber: null}
-- '@type': Motherboard
-  connectors: {firewire: 0, pcmcia: 0, serial: 1, usb: 8}
-  manufacturer: LENOVO
-  model: LENOVO
-  serialNumber: null
-  totalSlots: 0
-  usedSlots: 2
-- {                                                                                                                                                                '@type': NetworkAdapter, manufacturer: Intel Corporation, model: 82567LM-3 Gigabit
-                                                                                                                                                                                                                               Network Connection, serialNumber: '00:21:86:2c:5e:d6', speed: 1000}
-- {                                                                                                                                      '@type': SoundCard, manufacturer: Intel Corporation, model: 82801JD/DO HD Audio
-                                                                                                                                                                                                Controller, serialNumber: null}
+    manufacturer: Seagate
+    model: ST3250318AS
+    serialNumber: 6VMB1A52
+    size: 238475
+    test: {'@type': TestHardDrive, CommandTimeout: 1786733725708, CurrentPendingSectorCount: 0,
+           OfflineUncorrectable: 0, assessment: true, severity: Info, firstError: null, lifetime: 16947,
+           passedLifetime: 16947, powerCycleCount: 1694, reallocatedSectorCount: 0, reportedUncorrectableErrors: 0,
+           status: Completed without error, type: Short offline}
+    type: HDD
+  - {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   '@type': GraphicCard, manufacturer: Intel Corporation, memory: 256.0, model: 4
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Series Chipset Integrated Graphics Controller, serialNumber: null}
+  - '@type': Motherboard
+    connectors: {firewire: 0, pcmcia: 0, serial: 1, usb: 8}
+    manufacturer: LENOVO
+    model: LENOVO
+    serialNumber: null
+    totalSlots: 0
+    usedSlots: 2
+  - {                                                                                                                                                                                                                                                                                                                                                                                                                '@type': NetworkAdapter, manufacturer: Intel Corporation, model: 82567LM-3 Gigabit
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Network Connection, serialNumber: '00:21:86:2c:5e:d6', speed: 1000}
+  - {                                                                                                                                                                                                                                                                                                                                               '@type': SoundCard, manufacturer: Intel Corporation, model: 82801JD/DO HD Audio
+                                                                                                                                                                                                                                                                                                                                                                                                           Controller, serialNumber: null}
 condition:
   appearance: {general: B}
   functionality: {general: A}
 date: '2018-05-09T10:32:15'
 debug:
-  capabilities: {                                                                                                                                                            dmi-2.5: DMI version 2.5, smbios-2.5: SMBIOS version 2.5, smp: Symmetric
-                                                                                                                                                                                                                                         Multi-Processing, smp-1.4: SMP specification v1.4}
+  capabilities: {                                                                                                                                                                                                                                                                                                                                                                                                      dmi-2.5: DMI version 2.5, smbios-2.5: SMBIOS version 2.5, smp: Symmetric
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   Multi-Processing, smp-1.4: SMP specification v1.4}
   children:
-  - children:
-    - capabilities: {                                                                                                                                                              acpi: ACPI, biosbootspecification: BIOS boot specification, cdboot: Booting
-                                                                                                                                                                                                                                                 from CD-ROM/DVD, edd: Enhanced Disk Drive extensions, escd: ESCD, ls120boot: Booting
-                                                                                                                                                                                                                                                                                                                     from LS-120, pci: PCI bus, pnp: Plug-and-Play, shadowing: BIOS shadowing,
-      smartbattery: Smart battery, upgrade: BIOS EEPROM can be upgraded, usb: USB
-                                                                           legacy emulation}
-      capacity: 4128768
-      claimed: true
-      class: memory
-      date: 04/24/2009
-      description: BIOS
-      id: firmware
-      physid: '0'
-      size: 128736
-      units: bytes
-      vendor: LENOVO
-      version: 5CKT48AUS
-    - businfo: cpu@0
-      capabilities: {                                                                                                                                                                                                          acpi: thermal control (ACPI), aperfmperf: true, apic: on-chip
-                                                                                                                                                                                                                                                                                 advanced programmable interrupt controller (APIC), arch_perfmon: true, boot: boot
-                                                                                                                                                                                                                                                                                                                                                          processor, bts: true, clflush: true, cmov: conditional move instruction,
-        constant_tsc: true, cpufreq: CPU Frequency scaling, cx16: true, cx8: compare
-                                                                          and exchange 8-byte, de: debugging extensions, ds_cpl: true, dtes64: true,
-        dtherm: true, dts: debug trace and EMON store MSRs, eagerfpu: true, est: true,
-        flexpriority: true, fpu: mathematical co-processor, fpu_exception: FPU exceptions
-                                                              reporting, fxsr: fast floating point save/restore, ht: HyperThreading, lahf_lm: true,
-        mca: machine check architecture, mce: machine check exceptions, mmx: multimedia
-                                                                          extensions (MMX), monitor: true, msr: model-specific registers, mtrr: memory
-                                                                                                                                            type range registers, nx: no-execute bit (NX), pae: 4GB+ memory addressing
-                                                                                                                                                                                             (Physical Address Extension), pat: page attribute table, pbe: pending break
-                                                                                                                                                                                                                                                        event, pdcm: true, pebs: true, pge: page global enable, pni: true, pse: page
-                                                                                                                                                                                                                                                                                                                             size extensions, pse36: 36-bit page size extensions, sep: fast system calls,
-        smx: true, ss: self-snoop, sse: streaming SIMD extensions (SSE), sse2: streaming
-                                                                           SIMD extensions (SSE2), sse4_1: true, ssse3: true, tm: thermal interrupt
-                                                                                                                                and status, tm2: true, tpr_shadow: true, tsc: time stamp counter, vme: virtual
-                                                                                                                                                                                                    mode extensions, vmx: CPU virtualization (Vanderpool), vnmi: true, wp: true,
-        x86-64: 64bits extensions (x86-64), xsave: true, xtpr: true}
-      capacity: 3600000000
-      children:
-      - capabilities: {asynchronous: Asynchronous, internal: Internal, write-back: Write-back}
-        capacity: 262144
-        claimed: true
-        class: memory
-        configuration: {level: '1'}
-        description: L1 cache
-        handle: DMI:0005
-        id: cache:0
-        physid: '5'
-        size: 16384
-        slot: L1 Cache
-        units: bytes
-      - capabilities: {burst: Burst, internal: Internal, write-back: Write-back}
-        capacity: 12582912
-        claimed: true
-        class: memory
-        configuration: {level: '2'}
-        description: L2 cache
-        handle: DMI:0006
-        id: cache:1
-        physid: '6'
-        size: 6291456
-        slot: L2 Cache
-        units: bytes
-      - capabilities: {logical: Logical CPU}
-        claimed: true
-        class: processor
-        description: Logical CPU
-        handle: CPU:1.0
-        id: logicalcpu:0
-        physid: '1.1'
-        width: 64
-      - capabilities: {logical: Logical CPU}
-        claimed: true
-        class: processor
-        description: Logical CPU
-        handle: CPU:1.1
-        id: logicalcpu:1
-        physid: '1.2'
-        width: 64
-      claimed: true
-      class: processor
-      clock: 333000000
-      configuration: {cores: '2', enabledcores: '2', id: '1', threads: '2'}
-      description: CPU
-      handle: DMI:0004
-      id: cpu:0
-      physid: '4'
-      product: Intel(R) Core(TM)2 Duo CPU     E8400  @ 3.00GHz
-      serial: 0001-067A-0000-0000-0000-0000
-      size: 2000000000
-      slot: LGA 775
-      units: Hz
-      vendor: Intel Corp.
-      version: 6.7.10
-      width: 64
     - children:
-      - {                                                                                                                                            claimed: true, class: memory, clock: 1067000000, description: DIMM DDR2 Synchronous
-                                                                                                                                                                                                        1067 MHz (0.9 ns), handle: 'DMI:001F', id: 'bank:0', physid: '0', product: '000000000000000000000000000000000000',
-        serial: '00000000', size: 2147483648, slot: J6G1, units: bytes, vendor: Unknown,
-        width: 40960}
-      - {claimed: true, class: memory, clock: 1067000000, description: 'DIMM DDR2
+        - capabilities: {                                                                                                                                                                                                                                                                                                                                                                                                           acpi: ACPI, biosbootspecification: BIOS boot specification, cdboot: Booting
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  from CD-ROM/DVD, edd: Enhanced Disk Drive extensions, escd: ESCD, ls120boot: Booting
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      from LS-120, pci: PCI bus, pnp: Plug-and-Play, shadowing: BIOS shadowing,
+          smartbattery: Smart battery, upgrade: BIOS EEPROM can be upgraded, usb: USB
+                                                                               legacy emulation}
+          capacity: 4128768
+          claimed: true
+          class: memory
+          date: 04/24/2009
+          description: BIOS
+          id: firmware
+          physid: '0'
+          size: 128736
+          units: bytes
+          vendor: LENOVO
+          version: 5CKT48AUS
+        - businfo: cpu@0
+          capabilities: {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         acpi: thermal control (ACPI), aperfmperf: true, apic: on-chip
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    advanced programmable interrupt controller (APIC), arch_perfmon: true, boot: boot
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             processor, bts: true, clflush: true, cmov: conditional move instruction,
+            constant_tsc: true, cpufreq: CPU Frequency scaling, cx16: true, cx8: compare
+                                                                              and exchange 8-byte, de: debugging extensions, ds_cpl: true, dtes64: true,
+            dtherm: true, dts: debug trace and EMON store MSRs, eagerfpu: true, est: true,
+            flexpriority: true, fpu: mathematical co-processor, fpu_exception: FPU exceptions
+                                                                  reporting, fxsr: fast floating point save/restore, ht: HyperThreading, lahf_lm: true,
+            mca: machine check architecture, mce: machine check exceptions, mmx: multimedia
+                                                                              extensions (MMX), monitor: true, msr: model-specific registers, mtrr: memory
+                                                                                                                                                type range registers, nx: no-execute bit (NX), pae: 4GB+ memory addressing
+                                                                                                                                                                                                 (Physical Address Extension), pat: page attribute table, pbe: pending break
+                                                                                                                                                                                                                                                            action, pdcm: true, pebs: true, pge: page global enable, pni: true, pse: page
+                                                                                                                                                                                                                                                                                                                                  size extensions, pse36: 36-bit page size extensions, sep: fast system calls,
+            smx: true, ss: self-snoop, sse: streaming SIMD extensions (SSE), sse2: streaming
+                                                                               SIMD extensions (SSE2), sse4_1: true, ssse3: true, tm: thermal interrupt
+                                                                                                                                    and status, tm2: true, tpr_shadow: true, tsc: time stamp counter, vme: virtual
+                                                                                                                                                                                                        mode extensions, vmx: CPU virtualization (Vanderpool), vnmi: true, wp: true,
+            x86-64: 64bits extensions (x86-64), xsave: true, xtpr: true}
+          capacity: 3600000000
+          children:
+            - capabilities: {asynchronous: Asynchronous, internal: Internal, write-back: Write-back}
+              capacity: 262144
+              claimed: true
+              class: memory
+              configuration: {level: '1'}
+              description: L1 cache
+              handle: DMI:0005
+              id: cache:0
+              physid: '5'
+              size: 16384
+              slot: L1 Cache
+              units: bytes
+            - capabilities: {burst: Burst, internal: Internal, write-back: Write-back}
+              capacity: 12582912
+              claimed: true
+              class: memory
+              configuration: {level: '2'}
+              description: L2 cache
+              handle: DMI:0006
+              id: cache:1
+              physid: '6'
+              size: 6291456
+              slot: L2 Cache
+              units: bytes
+            - capabilities: {logical: Logical CPU}
+              claimed: true
+              class: processor
+              description: Logical CPU
+              handle: CPU:1.0
+              id: logicalcpu:0
+              physid: '1.1'
+              width: 64
+            - capabilities: {logical: Logical CPU}
+              claimed: true
+              class: processor
+              description: Logical CPU
+              handle: CPU:1.1
+              id: logicalcpu:1
+              physid: '1.2'
+              width: 64
+          claimed: true
+          class: processor
+          clock: 333000000
+          configuration: {cores: '2', enabledcores: '2', id: '1', threads: '2'}
+          description: CPU
+          handle: DMI:0004
+          id: cpu:0
+          physid: '4'
+          product: Intel(R) Core(TM)2 Duo CPU     E8400  @ 3.00GHz
+          serial: 0001-067A-0000-0000-0000-0000
+          size: 2000000000
+          slot: LGA 775
+          units: Hz
+          vendor: Intel Corp.
+          version: 6.7.10
+          width: 64
+        - children:
+            - {                                                                                                                                                                                                                                                                                                                                                              claimed: true, class: memory, clock: 1067000000, description: DIMM DDR2 Synchronous
+                                                                                                                                                                                                                                                                                                                                                                                                                                1067 MHz (0.9 ns), handle: 'DMI:001F', id: 'bank:0', physid: '0', product: '000000000000000000000000000000000000',
+              serial: '00000000', size: 2147483648, slot: J6G1, units: bytes, vendor: Unknown,
+              width: 40960}
+            - {claimed: true, class: memory, clock: 1067000000, description: 'DIMM DDR2
           Synchronous 1067 MHz (0.9 ns) [empty]', handle: 'DMI:0020', id: 'bank:1',
-         physid: '1', product: 012345678901234567890123456789012345, serial: '01234567',
-         slot: J6G2, vendor: 48spaces}
-      - {                                                                                                                                            claimed: true, class: memory, clock: 1067000000, description: DIMM DDR2 Synchronous
-                                                                                                                                                                                                        1067 MHz (0.9 ns), handle: 'DMI:0021', id: 'bank:2', physid: '2', product: '000000000000000000000000000000000000',
-        serial: '00000000', size: 2147483648, slot: J6H1, units: bytes, vendor: Unknown,
-        width: 41984}
-      - {claimed: true, class: memory, clock: 1067000000, description: 'DIMM DDR2
+               physid: '1', product: 012345678901234567890123456789012345, serial: '01234567',
+               slot: J6G2, vendor: 48spaces}
+            - {                                                                                                                                                                                                                                                                                                                                                              claimed: true, class: memory, clock: 1067000000, description: DIMM DDR2 Synchronous
+                                                                                                                                                                                                                                                                                                                                                                                                                                1067 MHz (0.9 ns), handle: 'DMI:0021', id: 'bank:2', physid: '2', product: '000000000000000000000000000000000000',
+              serial: '00000000', size: 2147483648, slot: J6H1, units: bytes, vendor: Unknown,
+              width: 41984}
+            - {claimed: true, class: memory, clock: 1067000000, description: 'DIMM DDR2
           Synchronous 1067 MHz (0.9 ns) [empty]', handle: 'DMI:0022', id: 'bank:3',
-         physid: '3', product: 012345678901234567890123456789012345, serial: '01234567',
-         slot: J6H2, vendor: 48spaces}
-      claimed: true
-      class: memory
-      description: System Memory
-      handle: DMI:001E
-      id: memory
-      physid: 1e
-      size: 4294967296
-      slot: System board or motherboard
-      units: bytes
-    - businfo: cpu@1
-      capabilities: {cpufreq: CPU Frequency scaling, ht: HyperThreading, vmx: CPU
-                                                                           virtualization (Vanderpool)}
-      capacity: 3000000000
-      children:
-      - capabilities: {logical: Logical CPU}
-        claimed: true
-        class: processor
-        description: Logical CPU
-        handle: CPU:1.0
-        id: logicalcpu:0
-        physid: '1.1'
-      - capabilities: {logical: Logical CPU}
-        claimed: true
-        class: processor
-        description: Logical CPU
-        handle: CPU:1.1
-        id: logicalcpu:1
-        physid: '1.2'
-      claimed: true
-      class: processor
-      configuration: {id: '1'}
-      id: cpu:1
-      physid: '1'
-      serial: 0001-067A-0000-0000-0000-0000
-      size: 3000000000
-      units: Hz
-      version: 6.7.10
-    - businfo: pci@0000:00:00.0
-      children:
-      - businfo: pci@0000:00:02.0
-        capabilities: {                                                                                                                                bus_master: bus mastering, cap_list: PCI capabilities listing,
-          msi: Message Signalled Interrupts, pm: Power Management, rom: extension
-                                                                     ROM, vga_controller: true}
-        claimed: true
-        class: display
-        clock: 33000000
-        configuration: {driver: i915, latency: '0'}
-        description: VGA compatible controller
-        handle: PCI:0000:00:02.0
-        id: display:0
-        physid: '2'
-        product: 4 Series Chipset Integrated Graphics Controller
-        vendor: Intel Corporation
-        version: '03'
-        width: 64
-      - businfo: pci@0000:00:02.1
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       pm: Power Management}
-        class: display
-        clock: 33000000
-        configuration: {latency: '0'}
-        description: Display controller
-        handle: PCI:0000:00:02.1
-        id: display:1
-        physid: '2.1'
-        product: 4 Series Chipset Integrated Graphics Controller
-        vendor: Intel Corporation
-        version: '03'
-        width: 64
-      - businfo: pci@0000:00:03.0
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       msi: Message Signalled Interrupts, pm: Power Management}
-        claimed: true
-        class: communication
-        clock: 33000000
-        configuration: {driver: mei_me, latency: '0'}
-        description: Communication controller
-        handle: PCI:0000:00:03.0
-        id: communication:0
-        physid: '3'
-        product: 4 Series Chipset HECI Controller
-        vendor: Intel Corporation
-        version: '03'
-        width: 64
-      - businfo: pci@0000:00:03.2
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       ide: true, msi: Message Signalled Interrupts, pci_native_mode-only_controller__supports_bus_mastering: true,
-                       pm: Power Management}
-        class: storage
-        clock: 66000000
-        configuration: {latency: '0'}
-        description: IDE interface
-        handle: PCI:0000:00:03.2
-        id: ide
-        physid: '3.2'
-        product: 4 Series Chipset PT IDER Controller
-        vendor: Intel Corporation
-        version: '03'
-        width: 32
-      - businfo: pci@0000:00:03.3
-        capabilities: {                                                                                                          '16550': true, bus_master: bus mastering, cap_list: PCI capabilities
-                                                                                                                                                                             listing, msi: Message Signalled Interrupts, pm: Power Management}
-        claimed: true
-        class: communication
-        clock: 66000000
-        configuration: {driver: serial, latency: '0'}
-        description: Serial controller
-        handle: PCI:0000:00:03.3
-        id: communication:1
-        physid: '3.3'
-        product: 4 Series Chipset Serial KT Controller
-        vendor: Intel Corporation
-        version: '03'
-        width: 32
-      - businfo: pci@0000:00:19.0
-        capabilities: {                                                                                                                                          1000bt-fd: 1Gbit/s (full duplex), 100bt: 100Mbit/s, 100bt-fd: 100Mbit/s
-                                                                                                                                                                                                                       (full duplex), 10bt: 10Mbit/s, 10bt-fd: 10Mbit/s (full duplex), autonegotiation: Auto-negotiation,
-          bus_master: bus mastering, cap_list: PCI capabilities listing, ethernet: true,
-          msi: Message Signalled Interrupts, physical: Physical interface, pm: Power
-                                                                             Management, tp: twisted pair}
-        capacity: 1000000000
-        claimed: true
-        class: network
-        clock: 33000000
-        configuration: {autonegotiation: 'on', broadcast: 'yes', driver: e1000e, driverversion: 3.2.6-k,
-                        duplex: full, firmware: 0.4-3, ip: 192.168.2.24, latency: '0', link: 'yes',
-                        multicast: 'yes', port: twisted pair, speed: 100Mbit/s}
-        description: Ethernet interface
-        handle: PCI:0000:00:19.0
-        id: network
-        logicalname: enp0s25
-        physid: '19'
-        product: 82567LM-3 Gigabit Network Connection
-        serial: 00:21:86:2c:5e:d6
-        size: 100000000
-        units: bit/s
-        vendor: Intel Corporation
-        version: '02'
-        width: 32
-      - businfo: pci@0000:00:1a.0
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       uhci: Universal Host Controller Interface (USB1)}
-        children:
-        - businfo: usb@3
-          capabilities: {usb-1.10: USB 1.1}
+               physid: '3', product: 012345678901234567890123456789012345, serial: '01234567',
+               slot: J6H2, vendor: 48spaces}
           claimed: true
-          class: bus
-          configuration: {driver: hub, slots: '2', speed: 12Mbit/s}
-          handle: USB:3:1
-          id: usbhost
-          logicalname: usb3
+          class: memory
+          description: System Memory
+          handle: DMI:001E
+          id: memory
+          physid: 1e
+          size: 4294967296
+          slot: System board or motherboard
+          units: bytes
+        - businfo: cpu@1
+          capabilities: {cpufreq: CPU Frequency scaling, ht: HyperThreading, vmx: CPU
+                                                                               virtualization (Vanderpool)}
+          capacity: 3000000000
+          children:
+            - capabilities: {logical: Logical CPU}
+              claimed: true
+              class: processor
+              description: Logical CPU
+              handle: CPU:1.0
+              id: logicalcpu:0
+              physid: '1.1'
+            - capabilities: {logical: Logical CPU}
+              claimed: true
+              class: processor
+              description: Logical CPU
+              handle: CPU:1.1
+              id: logicalcpu:1
+              physid: '1.2'
+          claimed: true
+          class: processor
+          configuration: {id: '1'}
+          id: cpu:1
           physid: '1'
-          product: UHCI Host Controller
-          vendor: Linux 4.9.0-6-686 uhci_hcd
-          version: '4.09'
-        claimed: true
-        class: bus
-        clock: 33000000
-        configuration: {driver: uhci_hcd, latency: '0'}
-        description: USB controller
-        handle: PCI:0000:00:1a.0
-        id: usb:0
-        physid: 1a
-        product: '82801JD/DO (ICH10 Family) USB UHCI Controller #4'
-        vendor: Intel Corporation
-        version: '02'
-        width: 32
-      - businfo: pci@0000:00:1a.1
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       uhci: Universal Host Controller Interface (USB1)}
-        children:
-        - businfo: usb@4
-          capabilities: {usb-1.10: USB 1.1}
+          serial: 0001-067A-0000-0000-0000-0000
+          size: 3000000000
+          units: Hz
+          version: 6.7.10
+        - businfo: pci@0000:00:00.0
+          children:
+            - businfo: pci@0000:00:02.0
+              capabilities: {                                                                                                                                                                                                                                                                bus_master: bus mastering, cap_list: PCI capabilities listing,
+                msi: Message Signalled Interrupts, pm: Power Management, rom: extension
+                                                                           ROM, vga_controller: true}
+              claimed: true
+              class: display
+              clock: 33000000
+              configuration: {driver: i915, latency: '0'}
+              description: VGA compatible controller
+              handle: PCI:0000:00:02.0
+              id: display:0
+              physid: '2'
+              product: 4 Series Chipset Integrated Graphics Controller
+              vendor: Intel Corporation
+              version: '03'
+              width: 64
+            - businfo: pci@0000:00:02.1
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             pm: Power Management}
+              class: display
+              clock: 33000000
+              configuration: {latency: '0'}
+              description: Display controller
+              handle: PCI:0000:00:02.1
+              id: display:1
+              physid: '2.1'
+              product: 4 Series Chipset Integrated Graphics Controller
+              vendor: Intel Corporation
+              version: '03'
+              width: 64
+            - businfo: pci@0000:00:03.0
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             msi: Message Signalled Interrupts, pm: Power Management}
+              claimed: true
+              class: communication
+              clock: 33000000
+              configuration: {driver: mei_me, latency: '0'}
+              description: Communication controller
+              handle: PCI:0000:00:03.0
+              id: communication:0
+              physid: '3'
+              product: 4 Series Chipset HECI Controller
+              vendor: Intel Corporation
+              version: '03'
+              width: 64
+            - businfo: pci@0000:00:03.2
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             ide: true, msi: Message Signalled Interrupts, pci_native_mode-only_controller__supports_bus_mastering: true,
+                             pm: Power Management}
+              class: storage
+              clock: 66000000
+              configuration: {latency: '0'}
+              description: IDE interface
+              handle: PCI:0000:00:03.2
+              id: ide
+              physid: '3.2'
+              product: 4 Series Chipset PT IDER Controller
+              vendor: Intel Corporation
+              version: '03'
+              width: 32
+            - businfo: pci@0000:00:03.3
+              capabilities: {                                                                                                                                                                                                                                                                         '16550': true, bus_master: bus mastering, cap_list: PCI capabilities
+                                                                                                                                                                                                                                                                                                                                                  listing, msi: Message Signalled Interrupts, pm: Power Management}
+              claimed: true
+              class: communication
+              clock: 66000000
+              configuration: {driver: serial, latency: '0'}
+              description: Serial controller
+              handle: PCI:0000:00:03.3
+              id: communication:1
+              physid: '3.3'
+              product: 4 Series Chipset Serial KT Controller
+              vendor: Intel Corporation
+              version: '03'
+              width: 32
+            - businfo: pci@0000:00:19.0
+              capabilities: {                                                                                                                                                                                                                                                                                                                                                         1000bt-fd: 1Gbit/s (full duplex), 100bt: 100Mbit/s, 100bt-fd: 100Mbit/s
+                                                                                                                                                                                                                                                                                                                                                                                                                                            (full duplex), 10bt: 10Mbit/s, 10bt-fd: 10Mbit/s (full duplex), autonegotiation: Auto-negotiation,
+                bus_master: bus mastering, cap_list: PCI capabilities listing, ethernet: true,
+                msi: Message Signalled Interrupts, physical: Physical interface, pm: Power
+                                                                                   Management, tp: twisted pair}
+              capacity: 1000000000
+              claimed: true
+              class: network
+              clock: 33000000
+              configuration: {autonegotiation: 'on', broadcast: 'yes', driver: e1000e, driverversion: 3.2.6-k,
+                              duplex: full, firmware: 0.4-3, ip: 192.168.2.24, latency: '0', link: 'yes',
+                              multicast: 'yes', port: twisted pair, speed: 100Mbit/s}
+              description: Ethernet interface
+              handle: PCI:0000:00:19.0
+              id: network
+              logicalname: enp0s25
+              physid: '19'
+              product: 82567LM-3 Gigabit Network Connection
+              serial: 00:21:86:2c:5e:d6
+              size: 100000000
+              units: bit/s
+              vendor: Intel Corporation
+              version: '02'
+              width: 32
+            - businfo: pci@0000:00:1a.0
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             uhci: Universal Host Controller Interface (USB1)}
+              children:
+                - businfo: usb@3
+                  capabilities: {usb-1.10: USB 1.1}
+                  claimed: true
+                  class: bus
+                  configuration: {driver: hub, slots: '2', speed: 12Mbit/s}
+                  handle: USB:3:1
+                  id: usbhost
+                  logicalname: usb3
+                  physid: '1'
+                  product: UHCI Host Controller
+                  vendor: Linux 4.9.0-6-686 uhci_hcd
+                  version: '4.09'
+              claimed: true
+              class: bus
+              clock: 33000000
+              configuration: {driver: uhci_hcd, latency: '0'}
+              description: USB controller
+              handle: PCI:0000:00:1a.0
+              id: usb:0
+              physid: 1a
+              product: '82801JD/DO (ICH10 Family) USB UHCI Controller #4'
+              vendor: Intel Corporation
+              version: '02'
+              width: 32
+            - businfo: pci@0000:00:1a.1
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             uhci: Universal Host Controller Interface (USB1)}
+              children:
+                - businfo: usb@4
+                  capabilities: {usb-1.10: USB 1.1}
+                  claimed: true
+                  class: bus
+                  configuration: {driver: hub, slots: '2', speed: 12Mbit/s}
+                  handle: USB:4:1
+                  id: usbhost
+                  logicalname: usb4
+                  physid: '1'
+                  product: UHCI Host Controller
+                  vendor: Linux 4.9.0-6-686 uhci_hcd
+                  version: '4.09'
+              claimed: true
+              class: bus
+              clock: 33000000
+              configuration: {driver: uhci_hcd, latency: '0'}
+              description: USB controller
+              handle: PCI:0000:00:1a.1
+              id: usb:1
+              physid: 1a.1
+              product: '82801JD/DO (ICH10 Family) USB UHCI Controller #5'
+              vendor: Intel Corporation
+              version: '02'
+              width: 32
+            - businfo: pci@0000:00:1a.2
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             uhci: Universal Host Controller Interface (USB1)}
+              children:
+                - businfo: usb@5
+                  capabilities: {usb-1.10: USB 1.1}
+                  claimed: true
+                  class: bus
+                  configuration: {driver: hub, slots: '2', speed: 12Mbit/s}
+                  handle: USB:5:1
+                  id: usbhost
+                  logicalname: usb5
+                  physid: '1'
+                  product: UHCI Host Controller
+                  vendor: Linux 4.9.0-6-686 uhci_hcd
+                  version: '4.09'
+              claimed: true
+              class: bus
+              clock: 33000000
+              configuration: {driver: uhci_hcd, latency: '0'}
+              description: USB controller
+              handle: PCI:0000:00:1a.2
+              id: usb:2
+              physid: 1a.2
+              product: '82801JD/DO (ICH10 Family) USB UHCI Controller #6'
+              vendor: Intel Corporation
+              version: '02'
+              width: 32
+            - businfo: pci@0000:00:1a.7
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             debug: Debug port, ehci: Enhanced Host Controller Interface (USB2), pm: Power
+                                                                                                   Management}
+              children:
+                - businfo: usb@1
+                  capabilities: {usb-2.00: USB 2.0}
+                  claimed: true
+                  class: bus
+                  configuration: {driver: hub, slots: '6', speed: 480Mbit/s}
+                  handle: USB:1:1
+                  id: usbhost
+                  logicalname: usb1
+                  physid: '1'
+                  product: EHCI Host Controller
+                  vendor: Linux 4.9.0-6-686 ehci_hcd
+                  version: '4.09'
+              claimed: true
+              class: bus
+              clock: 33000000
+              configuration: {driver: ehci-pci, latency: '0'}
+              description: USB controller
+              handle: PCI:0000:00:1a.7
+              id: usb:3
+              physid: 1a.7
+              product: '82801JD/DO (ICH10 Family) USB2 EHCI Controller #2'
+              vendor: Intel Corporation
+              version: '02'
+              width: 32
+            - businfo: pci@0000:00:1b.0
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             msi: Message Signalled Interrupts, pciexpress: PCI Express, pm: Power Management}
+              claimed: true
+              class: multimedia
+              clock: 33000000
+              configuration: {driver: snd_hda_intel, latency: '0'}
+              description: Audio device
+              handle: PCI:0000:00:1b.0
+              id: multimedia
+              physid: 1b
+              product: 82801JD/DO (ICH10 Family) HD Audio Controller
+              vendor: Intel Corporation
+              version: '02'
+              width: 64
+            - businfo: pci@0000:00:1d.0
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             uhci: Universal Host Controller Interface (USB1)}
+              children:
+                - businfo: usb@6
+                  capabilities: {usb-1.10: USB 1.1}
+                  claimed: true
+                  class: bus
+                  configuration: {driver: hub, slots: '2', speed: 12Mbit/s}
+                  handle: USB:6:1
+                  id: usbhost
+                  logicalname: usb6
+                  physid: '1'
+                  product: UHCI Host Controller
+                  vendor: Linux 4.9.0-6-686 uhci_hcd
+                  version: '4.09'
+              claimed: true
+              class: bus
+              clock: 33000000
+              configuration: {driver: uhci_hcd, latency: '0'}
+              description: USB controller
+              handle: PCI:0000:00:1d.0
+              id: usb:4
+              physid: 1d
+              product: '82801JD/DO (ICH10 Family) USB UHCI Controller #1'
+              vendor: Intel Corporation
+              version: '02'
+              width: 32
+            - businfo: pci@0000:00:1d.1
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             uhci: Universal Host Controller Interface (USB1)}
+              children:
+                - businfo: usb@7
+                  capabilities: {usb-1.10: USB 1.1}
+                  claimed: true
+                  class: bus
+                  configuration: {driver: hub, slots: '2', speed: 12Mbit/s}
+                  handle: USB:7:1
+                  id: usbhost
+                  logicalname: usb7
+                  physid: '1'
+                  product: UHCI Host Controller
+                  vendor: Linux 4.9.0-6-686 uhci_hcd
+                  version: '4.09'
+              claimed: true
+              class: bus
+              clock: 33000000
+              configuration: {driver: uhci_hcd, latency: '0'}
+              description: USB controller
+              handle: PCI:0000:00:1d.1
+              id: usb:5
+              physid: 1d.1
+              product: '82801JD/DO (ICH10 Family) USB UHCI Controller #2'
+              vendor: Intel Corporation
+              version: '02'
+              width: 32
+            - businfo: pci@0000:00:1d.2
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             uhci: Universal Host Controller Interface (USB1)}
+              children:
+                - businfo: usb@8
+                  capabilities: {usb-1.10: USB 1.1}
+                  claimed: true
+                  class: bus
+                  configuration: {driver: hub, slots: '2', speed: 12Mbit/s}
+                  handle: USB:8:1
+                  id: usbhost
+                  logicalname: usb8
+                  physid: '1'
+                  product: UHCI Host Controller
+                  vendor: Linux 4.9.0-6-686 uhci_hcd
+                  version: '4.09'
+              claimed: true
+              class: bus
+              clock: 33000000
+              configuration: {driver: uhci_hcd, latency: '0'}
+              description: USB controller
+              handle: PCI:0000:00:1d.2
+              id: usb:6
+              physid: 1d.2
+              product: '82801JD/DO (ICH10 Family) USB UHCI Controller #3'
+              vendor: Intel Corporation
+              version: '02'
+              width: 32
+            - businfo: pci@0000:00:1d.7
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             debug: Debug port, ehci: Enhanced Host Controller Interface (USB2), pm: Power
+                                                                                                   Management}
+              children:
+                - businfo: usb@2
+                  capabilities: {usb-2.00: USB 2.0}
+                  claimed: true
+                  class: bus
+                  configuration: {driver: hub, slots: '6', speed: 480Mbit/s}
+                  handle: USB:2:1
+                  id: usbhost
+                  logicalname: usb2
+                  physid: '1'
+                  product: EHCI Host Controller
+                  vendor: Linux 4.9.0-6-686 ehci_hcd
+                  version: '4.09'
+              claimed: true
+              class: bus
+              clock: 33000000
+              configuration: {driver: ehci-pci, latency: '0'}
+              description: USB controller
+              handle: PCI:0000:00:1d.7
+              id: usb:7
+              physid: 1d.7
+              product: '82801JD/DO (ICH10 Family) USB2 EHCI Controller #1'
+              vendor: Intel Corporation
+              version: '02'
+              width: 32
+            - businfo: pci@0000:00:1e.0
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             pci: true, subtractive_decode: true}
+              claimed: true
+              class: bridge
+              clock: 33000000
+              description: PCI bridge
+              handle: PCIBUS:0000:11
+              id: pci
+              physid: 1e
+              product: 82801 PCI Bridge
+              vendor: Intel Corporation
+              version: a2
+              width: 32
+            - businfo: pci@0000:00:1f.0
+              capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
+                             isa: true}
+              claimed: true
+              class: bridge
+              clock: 33000000
+              configuration: {driver: lpc_ich, latency: '0'}
+              description: ISA bridge
+              handle: PCI:0000:00:1f.0
+              id: isa
+              physid: 1f
+              product: 82801JDO (ICH10DO) LPC Interface Controller
+              vendor: Intel Corporation
+              version: '02'
+              width: 32
+            - businfo: pci@0000:00:1f.2
+              capabilities: {                                                                                                                                                                                                                                                                              ahci_1.0: true, bus_master: bus mastering, cap_list: PCI capabilities
+                                                                                                                                                                                                                                                                                                                                                        listing, msi: Message Signalled Interrupts, pm: Power Management, storage: true}
+              claimed: true
+              class: storage
+              clock: 66000000
+              configuration: {driver: ahci, latency: '0'}
+              description: SATA controller
+              handle: PCI:0000:00:1f.2
+              id: storage
+              physid: 1f.2
+              product: 82801JD/DO (ICH10 Family) SATA AHCI Controller
+              vendor: Intel Corporation
+              version: '02'
+              width: 32
+            - businfo: pci@0000:00:1f.3
+              claimed: true
+              class: bus
+              clock: 33000000
+              configuration: {driver: i801_smbus, latency: '0'}
+              description: SMBus
+              handle: PCI:0000:00:1f.3
+              id: serial
+              physid: 1f.3
+              product: 82801JD/DO (ICH10 Family) SMBus Controller
+              vendor: Intel Corporation
+              version: '02'
+              width: 64
           claimed: true
-          class: bus
-          configuration: {driver: hub, slots: '2', speed: 12Mbit/s}
-          handle: USB:4:1
-          id: usbhost
-          logicalname: usb4
-          physid: '1'
-          product: UHCI Host Controller
-          vendor: Linux 4.9.0-6-686 uhci_hcd
-          version: '4.09'
-        claimed: true
-        class: bus
-        clock: 33000000
-        configuration: {driver: uhci_hcd, latency: '0'}
-        description: USB controller
-        handle: PCI:0000:00:1a.1
-        id: usb:1
-        physid: 1a.1
-        product: '82801JD/DO (ICH10 Family) USB UHCI Controller #5'
-        vendor: Intel Corporation
-        version: '02'
-        width: 32
-      - businfo: pci@0000:00:1a.2
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       uhci: Universal Host Controller Interface (USB1)}
-        children:
-        - businfo: usb@5
-          capabilities: {usb-1.10: USB 1.1}
+          class: bridge
+          clock: 33000000
+          description: Host bridge
+          handle: PCIBUS:0000:00
+          id: pci
+          physid: '100'
+          product: 4 Series Chipset DRAM Controller
+          vendor: Intel Corporation
+          version: '03'
+          width: 32
+        - capabilities: {emulated: Emulated device}
+          children:
+            - businfo: scsi@0:0.0.0
+              capabilities: {partitioned: Partitioned disk, 'partitioned:dos': MS-DOS partition
+                                                              table}
+              children:
+                - businfo: scsi@0:0.0.0,1
+                  capabilities: {                                                                                                                                                                                                                                                                                dir_nlink: directories with 65000+ subdirs, ext2: EXT2/EXT3,
+                    ext4: true, extended_attributes: Extended Attributes, extents: extent-based
+                                                                            allocation, huge_files: 16TB+ files, initialized: initialized volume,
+                    journaled: true, large_files: 4GB+ files, primary: Primary partition}
+                  capacity: 248984559616
+                  claimed: true
+                  class: volume
+                  configuration: {created: '2016-11-03 17:23:45', filesystem: ext4, lastmountpoint: /tmp/mnt,
+                                  modified: '2016-11-03 17:27:46', mounted: '2016-11-03 17:27:30', state: clean}
+                  description: EXT4 volume
+                  dev: '8:1'
+                  id: volume:0
+                  logicalname: /dev/sda1
+                  physid: '1'
+                  serial: a3e8943a-9a3f-4142-8d83-fecded5f0465
+                  size: 248984559616
+                  vendor: Linux
+                  version: '1.0'
+                - businfo: scsi@0:0.0.0,2
+                  capabilities: {nofs: No filesystem, primary: Primary partition}
+                  capacity: 1073741824
+                  claimed: true
+                  class: volume
+                  description: Linux swap / Solaris partition
+                  dev: '8:2'
+                  id: volume:1
+                  logicalname: /dev/sda2
+                  physid: '2'
+              claimed: true
+              class: disk
+              configuration: {ansiversion: '5', logicalsectorsize: '512', sectorsize: '512',
+                              signature: e4bb7bc9}
+              description: ATA Disk
+              dev: '8:0'
+              handle: SCSI:00:00:00:00
+              id: disk
+              logicalname: /dev/sda
+              physid: 0.0.0
+              product: ST3250318AS
+              serial: 6VMB1A52
+              size: 250059350016
+              units: bytes
+              vendor: Seagate
+              version: CC66
           claimed: true
-          class: bus
-          configuration: {driver: hub, slots: '2', speed: 12Mbit/s}
-          handle: USB:5:1
-          id: usbhost
-          logicalname: usb5
-          physid: '1'
-          product: UHCI Host Controller
-          vendor: Linux 4.9.0-6-686 uhci_hcd
-          version: '4.09'
-        claimed: true
-        class: bus
-        clock: 33000000
-        configuration: {driver: uhci_hcd, latency: '0'}
-        description: USB controller
-        handle: PCI:0000:00:1a.2
-        id: usb:2
-        physid: 1a.2
-        product: '82801JD/DO (ICH10 Family) USB UHCI Controller #6'
-        vendor: Intel Corporation
-        version: '02'
-        width: 32
-      - businfo: pci@0000:00:1a.7
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       debug: Debug port, ehci: Enhanced Host Controller Interface (USB2), pm: Power
-                                                                                             Management}
-        children:
-        - businfo: usb@1
-          capabilities: {usb-2.00: USB 2.0}
-          claimed: true
-          class: bus
-          configuration: {driver: hub, slots: '6', speed: 480Mbit/s}
-          handle: USB:1:1
-          id: usbhost
-          logicalname: usb1
-          physid: '1'
-          product: EHCI Host Controller
-          vendor: Linux 4.9.0-6-686 ehci_hcd
-          version: '4.09'
-        claimed: true
-        class: bus
-        clock: 33000000
-        configuration: {driver: ehci-pci, latency: '0'}
-        description: USB controller
-        handle: PCI:0000:00:1a.7
-        id: usb:3
-        physid: 1a.7
-        product: '82801JD/DO (ICH10 Family) USB2 EHCI Controller #2'
-        vendor: Intel Corporation
-        version: '02'
-        width: 32
-      - businfo: pci@0000:00:1b.0
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       msi: Message Signalled Interrupts, pciexpress: PCI Express, pm: Power Management}
-        claimed: true
-        class: multimedia
-        clock: 33000000
-        configuration: {driver: snd_hda_intel, latency: '0'}
-        description: Audio device
-        handle: PCI:0000:00:1b.0
-        id: multimedia
-        physid: 1b
-        product: 82801JD/DO (ICH10 Family) HD Audio Controller
-        vendor: Intel Corporation
-        version: '02'
-        width: 64
-      - businfo: pci@0000:00:1d.0
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       uhci: Universal Host Controller Interface (USB1)}
-        children:
-        - businfo: usb@6
-          capabilities: {usb-1.10: USB 1.1}
-          claimed: true
-          class: bus
-          configuration: {driver: hub, slots: '2', speed: 12Mbit/s}
-          handle: USB:6:1
-          id: usbhost
-          logicalname: usb6
-          physid: '1'
-          product: UHCI Host Controller
-          vendor: Linux 4.9.0-6-686 uhci_hcd
-          version: '4.09'
-        claimed: true
-        class: bus
-        clock: 33000000
-        configuration: {driver: uhci_hcd, latency: '0'}
-        description: USB controller
-        handle: PCI:0000:00:1d.0
-        id: usb:4
-        physid: 1d
-        product: '82801JD/DO (ICH10 Family) USB UHCI Controller #1'
-        vendor: Intel Corporation
-        version: '02'
-        width: 32
-      - businfo: pci@0000:00:1d.1
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       uhci: Universal Host Controller Interface (USB1)}
-        children:
-        - businfo: usb@7
-          capabilities: {usb-1.10: USB 1.1}
-          claimed: true
-          class: bus
-          configuration: {driver: hub, slots: '2', speed: 12Mbit/s}
-          handle: USB:7:1
-          id: usbhost
-          logicalname: usb7
-          physid: '1'
-          product: UHCI Host Controller
-          vendor: Linux 4.9.0-6-686 uhci_hcd
-          version: '4.09'
-        claimed: true
-        class: bus
-        clock: 33000000
-        configuration: {driver: uhci_hcd, latency: '0'}
-        description: USB controller
-        handle: PCI:0000:00:1d.1
-        id: usb:5
-        physid: 1d.1
-        product: '82801JD/DO (ICH10 Family) USB UHCI Controller #2'
-        vendor: Intel Corporation
-        version: '02'
-        width: 32
-      - businfo: pci@0000:00:1d.2
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       uhci: Universal Host Controller Interface (USB1)}
-        children:
-        - businfo: usb@8
-          capabilities: {usb-1.10: USB 1.1}
-          claimed: true
-          class: bus
-          configuration: {driver: hub, slots: '2', speed: 12Mbit/s}
-          handle: USB:8:1
-          id: usbhost
-          logicalname: usb8
-          physid: '1'
-          product: UHCI Host Controller
-          vendor: Linux 4.9.0-6-686 uhci_hcd
-          version: '4.09'
-        claimed: true
-        class: bus
-        clock: 33000000
-        configuration: {driver: uhci_hcd, latency: '0'}
-        description: USB controller
-        handle: PCI:0000:00:1d.2
-        id: usb:6
-        physid: 1d.2
-        product: '82801JD/DO (ICH10 Family) USB UHCI Controller #3'
-        vendor: Intel Corporation
-        version: '02'
-        width: 32
-      - businfo: pci@0000:00:1d.7
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       debug: Debug port, ehci: Enhanced Host Controller Interface (USB2), pm: Power
-                                                                                             Management}
-        children:
-        - businfo: usb@2
-          capabilities: {usb-2.00: USB 2.0}
-          claimed: true
-          class: bus
-          configuration: {driver: hub, slots: '6', speed: 480Mbit/s}
-          handle: USB:2:1
-          id: usbhost
-          logicalname: usb2
-          physid: '1'
-          product: EHCI Host Controller
-          vendor: Linux 4.9.0-6-686 ehci_hcd
-          version: '4.09'
-        claimed: true
-        class: bus
-        clock: 33000000
-        configuration: {driver: ehci-pci, latency: '0'}
-        description: USB controller
-        handle: PCI:0000:00:1d.7
-        id: usb:7
-        physid: 1d.7
-        product: '82801JD/DO (ICH10 Family) USB2 EHCI Controller #1'
-        vendor: Intel Corporation
-        version: '02'
-        width: 32
-      - businfo: pci@0000:00:1e.0
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       pci: true, subtractive_decode: true}
-        claimed: true
-        class: bridge
-        clock: 33000000
-        description: PCI bridge
-        handle: PCIBUS:0000:11
-        id: pci
-        physid: 1e
-        product: 82801 PCI Bridge
-        vendor: Intel Corporation
-        version: a2
-        width: 32
-      - businfo: pci@0000:00:1f.0
-        capabilities: {bus_master: bus mastering, cap_list: PCI capabilities listing,
-                       isa: true}
-        claimed: true
-        class: bridge
-        clock: 33000000
-        configuration: {driver: lpc_ich, latency: '0'}
-        description: ISA bridge
-        handle: PCI:0000:00:1f.0
-        id: isa
-        physid: 1f
-        product: 82801JDO (ICH10DO) LPC Interface Controller
-        vendor: Intel Corporation
-        version: '02'
-        width: 32
-      - businfo: pci@0000:00:1f.2
-        capabilities: {                                                                                                            ahci_1.0: true, bus_master: bus mastering, cap_list: PCI capabilities
-                                                                                                                                                                                listing, msi: Message Signalled Interrupts, pm: Power Management, storage: true}
-        claimed: true
-        class: storage
-        clock: 66000000
-        configuration: {driver: ahci, latency: '0'}
-        description: SATA controller
-        handle: PCI:0000:00:1f.2
-        id: storage
-        physid: 1f.2
-        product: 82801JD/DO (ICH10 Family) SATA AHCI Controller
-        vendor: Intel Corporation
-        version: '02'
-        width: 32
-      - businfo: pci@0000:00:1f.3
-        claimed: true
-        class: bus
-        clock: 33000000
-        configuration: {driver: i801_smbus, latency: '0'}
-        description: SMBus
-        handle: PCI:0000:00:1f.3
-        id: serial
-        physid: 1f.3
-        product: 82801JD/DO (ICH10 Family) SMBus Controller
-        vendor: Intel Corporation
-        version: '02'
-        width: 64
-      claimed: true
-      class: bridge
-      clock: 33000000
-      description: Host bridge
-      handle: PCIBUS:0000:00
-      id: pci
-      physid: '100'
-      product: 4 Series Chipset DRAM Controller
-      vendor: Intel Corporation
-      version: '03'
-      width: 32
-    - capabilities: {emulated: Emulated device}
-      children:
-      - businfo: scsi@0:0.0.0
-        capabilities: {partitioned: Partitioned disk, 'partitioned:dos': MS-DOS partition
-                                                        table}
-        children:
-        - businfo: scsi@0:0.0.0,1
-          capabilities: {                                                                                                                                        dir_nlink: directories with 65000+ subdirs, ext2: EXT2/EXT3,
-            ext4: true, extended_attributes: Extended Attributes, extents: extent-based
-                                                                    allocation, huge_files: 16TB+ files, initialized: initialized volume,
-            journaled: true, large_files: 4GB+ files, primary: Primary partition}
-          capacity: 248984559616
-          claimed: true
-          class: volume
-          configuration: {created: '2016-11-03 17:23:45', filesystem: ext4, lastmountpoint: /tmp/mnt,
-                          modified: '2016-11-03 17:27:46', mounted: '2016-11-03 17:27:30', state: clean}
-          description: EXT4 volume
-          dev: '8:1'
-          id: volume:0
-          logicalname: /dev/sda1
-          physid: '1'
-          serial: a3e8943a-9a3f-4142-8d83-fecded5f0465
-          size: 248984559616
-          vendor: Linux
-          version: '1.0'
-        - businfo: scsi@0:0.0.0,2
-          capabilities: {nofs: No filesystem, primary: Primary partition}
-          capacity: 1073741824
-          claimed: true
-          class: volume
-          description: Linux swap / Solaris partition
-          dev: '8:2'
-          id: volume:1
-          logicalname: /dev/sda2
+          class: storage
+          id: scsi:0
+          logicalname: scsi0
           physid: '2'
-        claimed: true
-        class: disk
-        configuration: {ansiversion: '5', logicalsectorsize: '512', sectorsize: '512',
-                        signature: e4bb7bc9}
-        description: ATA Disk
-        dev: '8:0'
-        handle: SCSI:00:00:00:00
-        id: disk
-        logicalname: /dev/sda
-        physid: 0.0.0
-        product: ST3250318AS
-        serial: 6VMB1A52
-        size: 250059350016
-        units: bytes
-        vendor: Seagate
-        version: CC66
+        - capabilities: {emulated: Emulated device}
+          children:
+            - businfo: scsi@1:0.0.0
+              capabilities: {                                                                                                                                                                                                                                                                                             audio: Audio CD playback, cd-r: CD-R burning, cd-rw: CD-RW
+                                                                                                                                                                                                                                                                                                                                                                          burning, dvd: DVD playback, dvd-r: DVD-R burning, dvd-ram: DVD-RAM burning,
+                removable: support is removable}
+              claimed: true
+              class: disk
+              configuration: {ansiversion: '5', status: nodisc}
+              description: DVD-RAM writer
+              dev: '11:0'
+              handle: SCSI:01:00:00:00
+              id: cdrom
+              logicalname: [/dev/cdrom, /dev/cdrw, /dev/dvd, /dev/dvdrw, /dev/sr0]
+              physid: 0.0.0
+              product: CDDVDW TS-H653F
+              vendor: TSSTcorp
+              version: LE08
+          claimed: true
+          class: storage
+          id: scsi:1
+          logicalname: scsi1
+          physid: '3'
       claimed: true
-      class: storage
-      id: scsi:0
-      logicalname: scsi0
-      physid: '2'
-    - capabilities: {emulated: Emulated device}
-      children:
-      - businfo: scsi@1:0.0.0
-        capabilities: {                                                                                                                  audio: Audio CD playback, cd-r: CD-R burning, cd-rw: CD-RW
-                                                                                                                                                                                         burning, dvd: DVD playback, dvd-r: DVD-R burning, dvd-ram: DVD-RAM burning,
-          removable: support is removable}
-        claimed: true
-        class: disk
-        configuration: {ansiversion: '5', status: nodisc}
-        description: DVD-RAM writer
-        dev: '11:0'
-        handle: SCSI:01:00:00:00
-        id: cdrom
-        logicalname: [/dev/cdrom, /dev/cdrw, /dev/dvd, /dev/dvdrw, /dev/sr0]
-        physid: 0.0.0
-        product: CDDVDW TS-H653F
-        vendor: TSSTcorp
-        version: LE08
-      claimed: true
-      class: storage
-      id: scsi:1
-      logicalname: scsi1
-      physid: '3'
-    claimed: true
-    class: bus
-    description: Motherboard
-    handle: DMI:0002
-    id: core
-    physid: '0'
-    product: LENOVO
-    serial: NONE
-    slot: INSIDE
-    vendor: LENOVO
-    version: NONE
-  - capabilities: {outbound: make outbound connections}
-    class: system
-    id: remoteaccess
-    physid: '1'
-    vendor: Intel
-  - {capacity: 125, class: power, description: Standard 235 ATX, id: power, physid: '2',
-     product: 'Diamond MM #87997/1845333', serial: '7481909424', units: mWh, vendor: 'PC
+      class: bus
+      description: Motherboard
+      handle: DMI:0002
+      id: core
+      physid: '0'
+      product: LENOVO
+      serial: NONE
+      slot: INSIDE
+      vendor: LENOVO
+      version: NONE
+    - capabilities: {outbound: make outbound connections}
+      class: system
+      id: remoteaccess
+      physid: '1'
+      vendor: Intel
+    - {capacity: 125, class: power, description: Standard 235 ATX, id: power, physid: '2',
+       product: 'Diamond MM #87997/1845333', serial: '7481909424', units: mWh, vendor: 'PC
       POwer & Cooling, INC', version: '2.30'}
   claimed: true
   class: system
@@ -732,5 +732,5 @@ osInstallation: {elapsed: '0:06:25', label: /media/workbench-images/LinuxMint18.
                  success: true}
 snapshotSoftware: Workbench
 tests:
-- {'@type': StressTest, elapsed: '0:05:00', success: true}
+  - {'@type': StressTest, elapsed: '0:05:00', success: true}
 version: 10.0b5
