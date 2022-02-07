@@ -1,10 +1,9 @@
-import datetime
-
 import flask
 from flask import Blueprint, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
 
+from ereuse_devicehub import messages
 from ereuse_devicehub.inventory.forms import (AllocateForm, LotDeviceForm,
                                               LotForm, NewActionForm,
                                               NewDeviceForm, TagDeviceForm,
@@ -303,6 +302,9 @@ class NewActionView(View):
 
         if self.form.validate_on_submit():
             self.form.save()
+
+            # TODO(@slamora): include details of created action
+            messages.success('Action created!')
             return flask.redirect(next_url)
 
 
