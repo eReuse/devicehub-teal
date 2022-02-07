@@ -80,6 +80,7 @@
               </button>
               <span class="d-none" id="activeActionModal" data-bs-toggle="modal" data-bs-target="#actionModal"></span>
               <span class="d-none" id="activeAllocateModal" data-bs-toggle="modal" data-bs-target="#allocateModal"></span>
+              <span class="d-none" id="activeDatawipeModal" data-bs-toggle="modal" data-bs-target="#datawipeModal"></span>
               <ul class="dropdown-menu" aria-labelledby="btnActions">
                 <li>
                     Status actions
@@ -139,7 +140,7 @@
                   </a>
                 </li>
                 <li>
-                  <a href="javascript:void()" class="dropdown-item">
+                  <a href="javascript:newDataWipe('DataWipe')" class="dropdown-item">
                     <i class="bi bi-eraser-fill"></i>
                     DataWipe
                   </a>
@@ -280,6 +281,7 @@
 {% include "inventory/removelot.html" %}
 {% include "inventory/actions.html" %}
 {% include "inventory/allocate.html" %}
+{% include "inventory/data_wipe.html" %}
 
 <!-- CDN -->
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>

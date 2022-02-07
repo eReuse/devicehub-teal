@@ -1,8 +1,12 @@
 $(document).ready(function() {
-    var show_action_form = $("#allocateModal").data('show-action-form');
-    if (show_action_form != "None") {
+    var show_allocate_form = $("#allocateModal").data('show-action-form');
+    var show_datawipe_form = $("#datawipeModal").data('show-action-form');
+    if (show_allocate_form != "None") {
         $("#allocateModal .btn-primary").show();
-        newAllocate(show_action_form);
+        newAllocate(show_allocate_form);
+    } else if (show_datawipe_form != "None") {
+        $("#datawipeModal .btn-primary").show();
+        newDataWipe(show_datawipe_form);
     } else {
         $(".deviceSelect").on("change", deviceSelect);
     }
@@ -26,6 +30,9 @@ function deviceSelect() {
 
         $("#allocateModal .pol").show();
         $("#allocateModal .btn-primary").hide();
+
+        $("#datawipeModal .pol").show();
+        $("#datawipeModal .btn-primary").hide();
     } else {
         $("#addingLotModal .pol").hide();
         $("#addingLotModal .btn-primary").show();
@@ -38,6 +45,9 @@ function deviceSelect() {
 
         $("#allocateModal .pol").hide();
         $("#allocateModal .btn-primary").show();
+
+        $("#datawipeModal .pol").hide();
+        $("#datawipeModal .btn-primary").show();
 
         $("#addingTagModal .pol").hide();
     }
@@ -69,11 +79,20 @@ function newAllocate(action) {
     $("#activeAllocateModal").click();
 }
 
+function newDataWipe(action) {
+    $("#datawipeModal #type").val(action);
+    $("#datawipeModal #title-action").html(action);
+    get_device_list();
+    deviceSelect();
+    $("#activeDatawipeModal").click();
+}
+
 function get_device_list() {
     var devices = $(".deviceSelect").filter(':checked');
 
     /* Insert the correct count of devices in actions form */
     var devices_count = devices.length;
+    $("#datawipeModal .devices-count").html(devices_count);
     $("#allocateModal .devices-count").html(devices_count);
     $("#actionModal .devices-count").html(devices_count);
 
