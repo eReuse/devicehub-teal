@@ -290,10 +290,10 @@ class TagUnlinkDeviceView(View):
 class NewActionView(View):
     methods = ['POST']
     decorators = [login_required]
-    _form = NewActionForm
+    form_class = NewActionForm
 
     def dispatch_request(self):
-        self.form = self._form()
+        self.form = self.form_class()
 
         if self.form.validate_on_submit():
             instance = self.form.save()
@@ -313,10 +313,10 @@ class NewActionView(View):
 
 class NewAllocateView(NewActionView, DeviceListMix):
     methods = ['POST']
-    _form = AllocateForm
+    form_class = AllocateForm
 
     def dispatch_request(self):
-        self.form = self._form()
+        self.form = self.form_class()
 
         if self.form.validate_on_submit():
             instance = self.form.save()
