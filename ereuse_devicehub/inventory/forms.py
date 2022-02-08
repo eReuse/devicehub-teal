@@ -1,13 +1,16 @@
 import json
+import copy
 from json.decoder import JSONDecodeError
 
 from flask import g, request
 from flask_wtf import FlaskForm
 from sqlalchemy.util import OrderedSet
+from wtforms.fields import FormField
 from wtforms import (DateField, FloatField, HiddenField, IntegerField,
                      MultipleFileField, FileField, SelectField, StringField,
-                     TextAreaField, BooleanField, URLField, validators)
+                     TextAreaField, BooleanField, URLField, validators, Form)
 
+from boltons.urlutils import URL
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.documents.models import DataWipeDocument
@@ -550,7 +553,9 @@ class AllocateForm(NewActionForm):
         return is_valid
 
 
-class DataWipeForm(NewActionForm):
+class DataWipeDocumentForm(Form):
+    date = DateField(u'Date', [validators.Optional()],
+                   description="Date when was data wipe")
     url = URLField(u'Url', [validators.Optional()],
                    description="Url where the document resides")
     success = BooleanField(u'Success', [validators.Optional()],
@@ -568,24 +573,32 @@ class DataWipeForm(NewActionForm):
 
         return is_valid
 
-    def save(self):
+    def save(self, commit=True):
         file_name = ''
         file_hash = ''
         if self.file_name.data:
             file_name = self.file_name.data.filename
             file_hash = insert_hash(self.file_name.data.read(), commit=False)
 
-        document = DataWipeDocument(
-            date=self.date.data,
-            id_document=self.id_document.data,
-            file_name=file_name,
-            file_hash=file_hash,
-            url=self.url.data,
-            software=self.software.data,
-            success=self.success.data
+        self.url.data = URL(self.url.data)
+        self._obj = DataWipeDocument(
+            document_type='DataWipeDocument',
         )
+        self.populate_obj(self._obj)
+        self._obj.file_name = file_name
+        self._obj.file_hash = file_hash
+        db.session.add(self._obj)
+        if commit:
+            db.session.commit()
 
-        db.session.add(document)
+        return self._obj
+
+
+class DataWipeForm(NewActionForm):
+    document = FormField(DataWipeDocumentForm)
+
+    def save(self):
+        self.document.form.save(commit=False)
 
         Model = db.Model._decl_class_registry.data[self.type.data]()
         self.instance = Model()
@@ -593,16 +606,16 @@ class DataWipeForm(NewActionForm):
         severity = self.severity.data
         self.devices.data = self._devices
         self.severity.data = Severity[self.severity.data]
-        self.instance.document = document
-        self.instance.file_name = file_name
 
-        # import pdb; pdb.set_trace()
-        #TODO AttributeError: can't set attribute
+        document = copy.copy(self.document)
+        del self.document
         self.populate_obj(self.instance)
+        self.instance.document = document.form._obj
         db.session.add(self.instance)
         db.session.commit()
 
         self.devices.data = devices
         self.severity.data = severity
+        self.document = document
 
         return self.instance
