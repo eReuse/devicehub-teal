@@ -295,34 +295,37 @@ class NewActionView(View):
     def dispatch_request(self):
         self.form = self._form()
 
-        next_url = url_for('inventory.devices.devicelist')
-        lot_id = self.form.lot.data
-        if lot_id:
-            next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
-
         if self.form.validate_on_submit():
             instance = self.form.save()
             messages.success('Action "{}" created successfully!'.format(instance.type))
+
+            next_url = self.get_next_url()
             return flask.redirect(next_url)
+
+    def get_next_url(self):
+        lot_id = self.form.lot.data
+
+        if lot_id:
+            return url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
+
+        return url_for('inventory.devices.devicelist')
 
 
 class NewAllocateView(NewActionView, DeviceListMix):
     methods = ['POST']
     _form = AllocateForm
 
-    def dispatch_request(self, lot_id=None):
+    def dispatch_request(self):
         self.form = self._form()
-
-        next_url = url_for('inventory.devices.devicelist')
-        lot_id = self.form.lot.data
-        if lot_id:
-            next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
 
         if self.form.validate_on_submit():
             instance = self.form.save()
             messages.success('Action "{}" created successfully!'.format(instance.type))
+
+            next_url = self.get_next_url()
             return flask.redirect(next_url)
 
+        lot_id = self.form.lot.data
         self.get_context(lot_id)
         self.context['form_new_allocate'] = self.form
         return flask.render_template(self.template_name, **self.context)
