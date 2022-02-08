@@ -1,7 +1,4 @@
-from audioop import add
-from curses import ERR
-from flask import session
-
+from flask import flash, session
 
 DEBUG = 10
 INFO = 20
@@ -26,21 +23,20 @@ DEFAULT_TAGS = {
 }
 
 DEFAULT_ICONS = {
-    DEBUG: 'tools',
-    INFO: 'info-circle',
-    SUCCESS: 'check-circle',
-    WARNING: 'exclamation-triangle',
-    ERROR: 'exclamation-octagon',
+    DEFAULT_TAGS[DEBUG]: 'tools',
+    DEFAULT_TAGS[INFO]: 'info-circle',
+    DEFAULT_TAGS[SUCCESS]: 'check-circle',
+    DEFAULT_TAGS[WARNING]: 'exclamation-triangle',
+    DEFAULT_TAGS[ERROR]: 'exclamation-octagon',
 }
 
 
 def add_message(level, message):
-    messages = session.get('_messages', [])
-
-    icon = DEFAULT_ICONS[level]
     level_tag = DEFAULT_TAGS[level]
+    if '_message_icon' not in session:
+        session['_message_icon'] = DEFAULT_ICONS
 
-    messages.append({'level': level_tag, 'icon': icon, 'content': message})
+    flash(message, level_tag)
 
 
 def debug(message):

@@ -176,10 +176,10 @@
 
 <main id="main" class="main">
   {% block messages %}
-    {% for message in session['_messages'] %}
-      <div class="alert alert-{{ message.level}} alert-dismissible fade show" role="alert">
-        <i class="bi bi-{{ message.icon }} me-1"></i>
-        {{ message.content }}
+    {% for level, message in get_flashed_messages(with_categories=true) %}
+      <div class="alert alert-{{ level}} alert-dismissible fade show" role="alert">
+        <i class="bi bi-{{ session['_message_icon'][level]}} me-1"></i>
+        {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     {% endfor %}
