@@ -16,8 +16,7 @@ marshmallow==3.0.0b11
 marshmallow-enum==1.4.1
 passlib==1.7.1
 phonenumbers==8.9.11
-pytest==3.7.2
-pytest-runner==4.2
+pytest==7.0.0
 python-dateutil==2.7.3
 python-stdnum==1.9
 PyYAML==5.4
