@@ -40,7 +40,7 @@
       </div>
       {% endif %}
       <div class="card">
-        <div class="card-body pt-3">
+        <div class="card-body pt-3" style="min-height: 650px;">
           <!-- Bordered Tabs -->
 
             <div class="btn-group dropdown ml-1">
@@ -57,7 +57,7 @@
                 <span class="caret"></span>
               </button>
               {% endif %}
-              <ul class="dropdown-menu" aria-labelledby="btnLots"">
+              <ul class="dropdown-menu" aria-labelledby="btnLots">
                 <li>
                   <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingLotModal">
                     <i class="bi bi-plus"></i>
@@ -78,12 +78,14 @@
                   <i class="bi bi-plus"></i>
                   New Actions
               </button>
-              <ul class="dropdown-menu" aria-labelledby="btnActions"">
+              <span class="d-none" id="activeActionModal" data-bs-toggle="modal" data-bs-target="#actionModal"></span>
+              <span class="d-none" id="activeAllocateModal" data-bs-toggle="modal" data-bs-target="#allocateModal"></span>
+              <ul class="dropdown-menu" aria-labelledby="btnActions">
                 <li>
                     Status actions
                 </li>
                 <li>
-                  <a href="javascript:newAction('Recycling')" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#actionModal">
+                  <a href="javascript:newAction('Recycling')" class="dropdown-item">
                     <i class="bi bi-recycle"></i>
                     Recycling
                   </a>
@@ -110,13 +112,13 @@
                     Allocation
                 </li>
                 <li>
-                  <a href="javascript:newAction('Allocate')" class="dropdown-item">
+                  <a href="javascript:newAllocate('Allocate')" class="dropdown-item">
                     <i class="bi bi-house-fill"></i>
                     Allocate
                   </a>
                 </li>
                 <li>
-                  <a href="javascript:newAction('Deallocate')" class="dropdown-item">
+                  <a href="javascript:newAllocate('Deallocate')" class="dropdown-item">
                     <i class="bi bi-house"></i>
                     Deallocate
                   </a>
@@ -137,7 +139,7 @@
                   </a>
                 </li>
                 <li>
-                  <a href="javascript:newAction('DataWipe')" class="dropdown-item">
+                  <a href="javascript:void()" class="dropdown-item">
                     <i class="bi bi-eraser-fill"></i>
                     DataWipe
                   </a>
@@ -232,7 +234,15 @@
                   <tbody>
                     {% for dev in devices %}
                     <tr>
-                      <td><input type="checkbox" class="deviceSelect" data="{{ dev.id }}"/></td>
+                      <td>
+                          <input type="checkbox" class="deviceSelect" data="{{ dev.id }}"
+                               data-device-type="{{ dev.type }}" data-device-manufacturer="{{ dev.manufacturer }}"
+                               data-device-dhid="{{ dev.devicehub_id }}"
+                               {% if form_new_allocate.type.data and dev.id in list_devices %}
+                                 checked="checked"
+                               {% endif %}
+                               />
+                      </td>
                       <td>
                         <a href="{{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}">
                           {{ dev.type }} {{ dev.manufacturer }} {{ dev.model }}
@@ -269,6 +279,7 @@
 {% include "inventory/removeDeviceslot.html" %}
 {% include "inventory/removelot.html" %}
 {% include "inventory/actions.html" %}
+{% include "inventory/allocate.html" %}
 
 <!-- CDN -->
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>

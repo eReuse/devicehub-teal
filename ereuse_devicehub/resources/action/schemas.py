@@ -55,6 +55,10 @@ class Action(Thing):
         if 'start_time' in data and data['start_time'] < unix_time:
             data['start_time'] = unix_time
 
+        if data.get('end_time') and data.get('start_time'):
+            if data['start_time'] > data['end_time']:
+                raise ValidationError('The action cannot finish before it starts.')
+
 
 class ActionWithOneDevice(Action):
     __doc__ = m.ActionWithOneDevice.__doc__

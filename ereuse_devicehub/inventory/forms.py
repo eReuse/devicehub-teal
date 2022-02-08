@@ -1,24 +1,31 @@
 import json
-from flask_wtf import FlaskForm
-from wtforms import StringField, validators, MultipleFileField, FloatField, IntegerField, \
-                    SelectField
-from flask import g, request
-from sqlalchemy.util import OrderedSet
 from json.decoder import JSONDecodeError
 
+from flask import g, request
+from flask_wtf import FlaskForm
+from sqlalchemy.util import OrderedSet
+from wtforms import (DateField, FloatField, HiddenField, IntegerField,
+                     MultipleFileField, SelectField, StringField,
+                     TextAreaField, validators)
+
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.device.models import Device, Computer, Smartphone, Cellphone, \
-                                                     Tablet, Monitor, Mouse, Keyboard, \
-                                                     MemoryCardReader, SAI
-from ereuse_devicehub.resources.action.models import RateComputer, Snapshot, VisualTest
-from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
+from ereuse_devicehub.resources.action.models import (Action, RateComputer,
+                                                      Snapshot, VisualTest)
+from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
+from ereuse_devicehub.resources.action.schemas import \
+    Snapshot as SnapshotSchema
+from ereuse_devicehub.resources.action.views.snapshot import (move_json,
+                                                              save_json)
+from ereuse_devicehub.resources.device.models import (SAI, Cellphone, Computer,
+                                                      Device, Keyboard,
+                                                      MemoryCardReader,
+                                                      Monitor, Mouse,
+                                                      Smartphone, Tablet)
+from ereuse_devicehub.resources.device.sync import Sync
+from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
-from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
-from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
-from ereuse_devicehub.resources.device.sync import Sync
-from ereuse_devicehub.resources.action.views.snapshot import save_json, move_json
 
 
 class LotDeviceForm(FlaskForm):
@@ -418,7 +425,6 @@ class TagDeviceForm(FlaskForm):
         self.delete = kwargs.pop('delete', None)
         self.device_id = kwargs.pop('device', None)
 
-        # import pdb; pdb.set_trace()
         super().__init__(*args, **kwargs)
 
         if self.delete:
@@ -466,7 +472,68 @@ class TagDeviceForm(FlaskForm):
 
 
 class NewActionForm(FlaskForm):
-    name = StringField(u'Name')
-    date = StringField(u'Date')
-    severity = StringField(u'Severity')
-    description = StringField(u'Description')
+    name = StringField(u'Name', [validators.length(max=50)])
+    devices = HiddenField()
+    date = DateField(u'Date', validators=(validators.Optional(),))
+    severity = SelectField(u'Severity', choices=[(v.name, v.name) for v in Severity])
+    description = TextAreaField(u'Description')
+    lot = HiddenField()
+    type = HiddenField()
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+        if self.devices.data:
+            devices = set(self.devices.data.split(","))
+            self._devices = OrderedSet(Device.query.filter(Device.id.in_(devices)).filter(
+                Device.owner_id == g.user.id).all())
+
+            if not self._devices:
+                return False
+
+        return True
+
+    def save(self):
+        Model = db.Model._decl_class_registry.data[self.type.data]()
+        self.instance = Model()
+        devices = self.devices.data
+        severity = self.severity.data
+        self.devices.data = self._devices
+        self.severity.data = Severity[self.severity.data]
+
+        self.populate_obj(self.instance)
+        db.session.add(self.instance)
+        db.session.commit()
+
+        self.devices.data = devices
+        self.severity.data = severity
+
+        return self.instance
+
+
+class AllocateForm(NewActionForm):
+    start_time = DateField(u'Start time')
+    end_time = DateField(u'End time')
+    final_user_code = StringField(u'Final user code', [validators.length(max=50)])
+    transaction = StringField(u'Transaction', [validators.length(max=50)])
+    end_users = IntegerField(u'End users')
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        start_time = self.start_time.data
+        end_time = self.end_time.data
+        if start_time and end_time and end_time < start_time:
+            error = ['The action cannot finish before it starts.']
+            self.start_time.errors = error
+            self.end_time.errors = error
+            is_valid = False
+
+        if not self.end_users.data:
+            self.end_users.errors = ["You need to specify a number of users"]
+            is_valid = False
+
+        return is_valid
