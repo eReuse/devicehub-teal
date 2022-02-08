@@ -301,10 +301,8 @@ class NewActionView(View):
             next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
 
         if self.form.validate_on_submit():
-            self.form.save()
-
-            # TODO(@slamora): include details of created action
-            messages.success('Action created!')
+            instance = self.form.save()
+            messages.success('Action "{}" created successfully!'.format(instance.type))
             return flask.redirect(next_url)
 
 
@@ -321,7 +319,8 @@ class NewAllocateView(NewActionView, DeviceListMix):
             next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
 
         if self.form.validate_on_submit():
-            self.form.save()
+            instance = self.form.save()
+            messages.success('Action "{}" created successfully!'.format(instance.type))
             return flask.redirect(next_url)
 
         self.get_context(lot_id)
