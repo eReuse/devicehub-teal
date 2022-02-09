@@ -336,12 +336,17 @@ class NewAllocateView(NewActionView, DeviceListMix):
 
 class NewDataWipeView(NewActionView, DeviceListMix):
     methods = ['POST']
-    _form = DataWipeForm
+    form_class = DataWipeForm
 
     def dispatch_request(self):
-        dispatch = super().dispatch_request()
-        if dispatch:
-            return dispatch
+        self.form = self.form_class()
+
+        if self.form.validate_on_submit():
+            instance = self.form.save()
+            messages.success('Action "{}" created successfully!'.format(instance.type))
+
+            next_url = self.get_next_url()
+            return flask.redirect(next_url)
 
         lot_id = self.form.lot.data
         self.get_context(lot_id)
