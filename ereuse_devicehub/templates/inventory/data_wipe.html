@@ -26,6 +26,28 @@
             {{ field }}
           {% elif field == form_new_datawipe.type %}
             {{ field }}
+          {% elif field == form_new_datawipe.document %}
+            {% for _field in field %}
+              <div class="col-12">
+                  {{ _field.label(class_="form-label") }}
+                  {% if _field == field.success %}
+                    <div class="form-check form-switch">
+                      {{ _field(class_="form-check-input") }}
+                      <small class="text-muted">{{ _field.description }}</small>
+                    </div>
+                  {% else %}
+                    {{ _field(class_="form-control") }}
+                    <small class="text-muted">{{ _field.description }}</small>
+                  {% endif %}
+                  {% if _field.errors %}
+                  <p class="text-danger">
+                    {% for error in _field.errors %}
+                      {{ error }}<br/>
+                    {% endfor %}
+                  </p>
+                  {% endif %}
+              </div>
+            {% endfor %}
           {% else %}
           <div class="col-12">
               {{ field.label(class_="form-label") }}
