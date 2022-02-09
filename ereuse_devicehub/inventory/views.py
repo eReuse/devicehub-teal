@@ -1,10 +1,9 @@
-import datetime
-
 import flask
 from flask import Blueprint, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
 
+from ereuse_devicehub import messages
 from ereuse_devicehub.inventory.forms import (AllocateForm, LotDeviceForm,
                                               LotForm, NewActionForm,
                                               NewDeviceForm, TagDeviceForm,
@@ -294,31 +293,42 @@ class TagUnlinkDeviceView(View):
 class NewActionView(View):
     methods = ['POST']
     decorators = [login_required]
-    _form = NewActionForm
+    form_class = NewActionForm
 
     def dispatch_request(self):
-        self.form = self._form()
-
-        next_url = url_for('inventory.devices.devicelist')
-        lot_id = self.form.lot.data
-        if lot_id:
-            next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
+        self.form = self.form_class()
 
         if self.form.validate_on_submit():
-            self.form.save()
+            instance = self.form.save()
+            messages.success('Action "{}" created successfully!'.format(instance.type))
+
+            next_url = self.get_next_url()
             return flask.redirect(next_url)
+
+    def get_next_url(self):
+        lot_id = self.form.lot.data
+
+        if lot_id:
+            return url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
+
+        return url_for('inventory.devices.devicelist')
 
 
 class NewAllocateView(NewActionView, DeviceListMix):
     methods = ['POST']
-    _form = AllocateForm
+    form_class = AllocateForm
 
     def dispatch_request(self):
-        lot_id = self.form.lot.data
-        dispatch = super().dispatch_request()
-        if dispatch:
-            return dispatch
+        self.form = self.form_class()
 
+        if self.form.validate_on_submit():
+            instance = self.form.save()
+            messages.success('Action "{}" created successfully!'.format(instance.type))
+
+            next_url = self.get_next_url()
+            return flask.redirect(next_url)
+
+        lot_id = self.form.lot.data
         self.get_context(lot_id)
         self.context['form_new_allocate'] = self.form
         return flask.render_template(self.template_name, **self.context)
