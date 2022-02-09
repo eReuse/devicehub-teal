@@ -144,5 +144,7 @@ def test_create_existing_inventory(cli, tdb1):
     cli.invoke('inv', 'add', '--common')
     with tdb1.app_context():
         assert db.has_schema('tdb1')
-    with pytest.raises(AssertionError, message='Schema tdb1 already exists.'):
+
+    with pytest.raises(AssertionError):
         cli.invoke('inv', 'add', '--common')
+        pytest.fail('Schema tdb1 already exists.')
