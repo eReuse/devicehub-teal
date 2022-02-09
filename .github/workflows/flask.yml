@@ -50,7 +50,7 @@ jobs:
         pip install virtualenv
         virtualenv env
         source env/bin/activate
-        pip install flake8 pytest pytest-xdist
+        pip install flake8 pytest coverage
         pip install -r requirements.txt
 
     - name: Prepare database
@@ -68,4 +68,11 @@ jobs:
     - name: Run Tests
       run: |
         source env/bin/activate
-        pytest -m mvp --maxfail=5 tests/ -n auto
+        coverage run --source='ereuse_devicehub' env/bin/pytest -m mvp --maxfail=5 tests/
+        coverage report --include='ereuse_devicehub/*'
+        coverage xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
