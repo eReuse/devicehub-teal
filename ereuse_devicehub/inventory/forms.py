@@ -619,3 +619,14 @@ class DataWipeForm(NewActionForm):
         self.document = document
 
         return self.instance
+
+
+class TradeForm(NewActionForm):
+    supplier = StringField(u'Supplier', [validators.DataRequired()],
+                   description="Please enter the supplier's email address")
+    receiver = StringField(u'Receiver', [validators.DataRequired()],
+                   description="Please enter the receiver's email address")
+    confirm = BooleanField(u'Confirm', [validators.Optional()],
+                   description="I need confirmation from the other user for every device and document.")
+    code = StringField(u'Code', [validators.Optional()],
+                   description="If you don't need confirm, you need put a code for trace the user in the statistics.")

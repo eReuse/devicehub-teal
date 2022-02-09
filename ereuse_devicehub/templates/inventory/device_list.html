@@ -44,20 +44,22 @@
           <!-- Bordered Tabs -->
 
             <div class="btn-group dropdown ml-1">
-              {% if lot and lot.is_temporary and not lot.devices %}
-              <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
-                <i class="bi bi-trash"></i>
-                Remove Lot
-                <span class="caret"></span>
-              </button>
-              {% else %}
               <button id="btnLots" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-folder2"></i>
                 Lots
                 <span class="caret"></span>
               </button>
-              {% endif %}
               <ul class="dropdown-menu" aria-labelledby="btnLots">
+              {% if lot and lot.is_temporary and not lot.devices %}
+                <li>
+                  <a href="javascript:newAction('Use')" class="dropdown-item"
+                      data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
+                    <i class="bi bi-trash"></i>
+                    Remove Lot
+                    <span class="caret"></span>
+                  </a>
+                </li>
+              {% endif %}
                 <li>
                   <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingLotModal">
                     <i class="bi bi-plus"></i>
@@ -70,6 +72,22 @@
                     Remove selected devices from a lot
                   </a>
                 </li>
+                {% if lot.is_temporary %}
+                <li>
+                  <a href="javascript:void()" class="dropdown-item"
+                    data-bs-toggle="modal" data-bs-target="#tradeLotModal">
+                    <i class="bi bi-plus"></i>
+                    Add supplier
+                  </a>
+                </li>
+                <li>
+                  <a href="javascript:void()" class="dropdown-item"
+                    data-bs-toggle="modal" data-bs-target="#tradeLotModal">
+                    <i class="bi bi-plus"></i>
+                    Add receiver
+                  </a>
+                </li>
+                {% endif %}
               </ul>
             </div>
 
@@ -282,6 +300,7 @@
 {% include "inventory/actions.html" %}
 {% include "inventory/allocate.html" %}
 {% include "inventory/data_wipe.html" %}
+{% include "inventory/trade.html" %}
 
 <!-- CDN -->
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>

@@ -8,7 +8,8 @@ from ereuse_devicehub.inventory.forms import (AllocateForm, LotDeviceForm,
                                               LotForm, NewActionForm,
                                               NewDeviceForm, TagDeviceForm,
                                               TagForm, TagUnnamedForm,
-                                              UploadSnapshotForm, DataWipeForm)
+                                              UploadSnapshotForm, DataWipeForm,
+                                              TradeForm)
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
@@ -37,6 +38,7 @@ class DeviceListMix(View):
             form_new_action = NewActionForm(lot=lot.id)
             form_new_allocate = AllocateForm(lot=lot.id)
             form_new_datawipe = DataWipeForm(lot=lot.id)
+            form_new_trade = TradeForm(lot=lot.id)
         else:
             devices = Device.query.filter(
                 Device.owner_id == current_user.id).filter(
@@ -45,6 +47,7 @@ class DeviceListMix(View):
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
+            form_new_trade = TradeForm()
 
         action_devices = form_new_action.devices.data
         list_devices = []
@@ -59,6 +62,7 @@ class DeviceListMix(View):
             'form_new_action': form_new_action,
             'form_new_allocate': form_new_allocate,
             'form_new_datawipe': form_new_datawipe,
+            'form_new_trade': form_new_trade,
             'lot': lot,
             'tags': tags,
             'list_devices': list_devices
@@ -354,7 +358,28 @@ class NewDataWipeView(NewActionView, DeviceListMix):
         return flask.render_template(self.template_name, **self.context)
 
 
+class NewTradeView(NewActionView, DeviceListMix):
+    methods = ['POST']
+    form_class = TradeForm
+
+    def dispatch_request(self):
+        self.form = self.form_class()
+
+        if self.form.validate_on_submit():
+            instance = self.form.save()
+            messages.success('Action "{}" created successfully!'.format(instance.type))
+
+            next_url = self.get_next_url()
+            return flask.redirect(next_url)
+
+        lot_id = self.form.lot.data
+        self.get_context(lot_id)
+        self.context['form_new_datawipe'] = self.form
+        return flask.render_template(self.template_name, **self.context)
+
+
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
+devices.add_url_rule('/action/trade/add/', view_func=NewTradeView.as_view('trade_add'))
 devices.add_url_rule('/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add'))
 devices.add_url_rule('/action/datawipe/add/', view_func=NewDataWipeView.as_view('datawipe_add'))
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
