@@ -642,9 +642,18 @@ class TradeForm(NewActionForm):
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
 
-        if not self.confirm and not self.code:
+        if not self.confirm.data and not self.code.data:
             self.code.errors = ["If you don't want confirm, you need a code"]
             is_valid = False
 
-        return is_valid
+        if self.confirm.data and not (self.receiver.data or self.supplier.data):
+            errors = ["If you want confirm, you need a email"]
+            if not self.receiver.data:
+                self.receiver.errors = errors
 
+            if not self.supplier.data:
+                self.supplier.errors = errors
+
+            is_valid = False
+
+        return is_valid
