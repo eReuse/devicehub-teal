@@ -49,6 +49,7 @@
                 Lots
                 <span class="caret"></span>
               </button>
+              <span class="d-none" id="activeTradeModal" data-bs-toggle="modal" data-bs-target="#tradeLotModal"></span>
               <ul class="dropdown-menu" aria-labelledby="btnLots">
               {% if lot and lot.is_temporary and not lot.devices %}
                 <li>
@@ -74,15 +75,13 @@
                 </li>
                 {% if lot.is_temporary %}
                 <li>
-                  <a href="javascript:void()" class="dropdown-item"
-                    data-bs-toggle="modal" data-bs-target="#tradeLotModal">
+                  <a href="javascript:newTrade('supplier')" class="dropdown-item">
                     <i class="bi bi-plus"></i>
                     Add supplier
                   </a>
                 </li>
                 <li>
-                  <a href="javascript:void()" class="dropdown-item"
-                    data-bs-toggle="modal" data-bs-target="#tradeLotModal">
+                  <a href="javascript:newTrade('receiver')" class="dropdown-item">
                     <i class="bi bi-plus"></i>
                     Add receiver
                   </a>

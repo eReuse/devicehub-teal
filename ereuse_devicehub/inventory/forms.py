@@ -622,11 +622,29 @@ class DataWipeForm(NewActionForm):
 
 
 class TradeForm(NewActionForm):
-    supplier = StringField(u'Supplier', [validators.DataRequired()],
-                   description="Please enter the supplier's email address")
-    receiver = StringField(u'Receiver', [validators.DataRequired()],
-                   description="Please enter the receiver's email address")
+    supplier = StringField(u'Supplier', [validators.Optional()],
+                   description="Please enter the supplier's email address",
+                   render_kw={'data-email': ""})
+    receiver = StringField(u'Receiver', [validators.Optional()],
+                   description="Please enter the receiver's email address",
+                   render_kw={'data-email': ""})
     confirm = BooleanField(u'Confirm', [validators.Optional()],
+                   default=True,
                    description="I need confirmation from the other user for every device and document.")
     code = StringField(u'Code', [validators.Optional()],
                    description="If you don't need confirm, you need put a code for trace the user in the statistics.")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.supplier.render_kw['data-email'] = g.user.email
+        self.receiver.render_kw['data-email'] = g.user.email
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not self.confirm and not self.code:
+            self.code.errors = ["If you don't want confirm, you need a code"]
+            is_valid = False
+
+        return is_valid
+

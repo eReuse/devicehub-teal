@@ -63,6 +63,27 @@ function removeTag() {
     }
 }
 
+function newTrade(action) {
+    var title = "Trade "
+    var receiver = $("#receiver").data("email");
+    var supplier = $("#supplier").data("email");
+    if (action == 'supplier') {
+        title = 'Trade Incoming';
+        $("#receiver").attr('disabled', 'disabled');
+        $("#supplier").prop('disabled', false);
+        $("#supplier").val('');
+        $("#receiver").val(receiver);
+    } else if (action == 'receiver') {
+        title = 'Trade Outgoing';
+        $("#supplier").attr('disabled', 'disabled');
+        $("#receiver").prop('disabled', false);
+        $("#receiver").val('');
+        $("#supplier").val(supplier);
+    }
+    $("#tradeLotModalModal #title-action").html(title);
+    $("#activeTradeModal").click();
+}
+
 function newAction(action) {
     $("#actionModal #type").val(action);
     $("#actionModal #title-action").html(action);

@@ -1,4 +1,5 @@
 import flask
+from flask import g
 from flask import Blueprint, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
@@ -38,7 +39,12 @@ class DeviceListMix(View):
             form_new_action = NewActionForm(lot=lot.id)
             form_new_allocate = AllocateForm(lot=lot.id)
             form_new_datawipe = DataWipeForm(lot=lot.id)
-            form_new_trade = TradeForm(lot=lot.id)
+            form_new_trade = TradeForm(
+                lot=lot.id,
+                receiver=g.user.email,
+                supplier=g.user.email,
+                type='Trade'
+            )
         else:
             devices = Device.query.filter(
                 Device.owner_id == current_user.id).filter(
@@ -47,7 +53,11 @@ class DeviceListMix(View):
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
-            form_new_trade = TradeForm()
+            form_new_trade = TradeForm(
+                receiver=g.user.email,
+                supplier=g.user.email,
+                type='Trade'
+            )
 
         action_devices = form_new_action.devices.data
         list_devices = []
@@ -301,6 +311,7 @@ class NewActionView(View):
 
     def dispatch_request(self):
         self.form = self.form_class()
+        # import pdb; pdb.set_trace()
 
         if self.form.validate_on_submit():
             instance = self.form.save()
