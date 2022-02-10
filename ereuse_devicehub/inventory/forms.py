@@ -1,28 +1,29 @@
+import copy
 import json
 from json.decoder import JSONDecodeError
 
-from flask import g, request
-from flask_wtf import FlaskForm
-from sqlalchemy.util import OrderedSet
-from wtforms import (DateField, FloatField, HiddenField, IntegerField,
-                     MultipleFileField, SelectField, StringField,
-                     TextAreaField, validators)
-
+from boltons.urlutils import URL
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import (Action, RateComputer,
-                                                      Snapshot, VisualTest)
+from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.action.schemas import \
     Snapshot as SnapshotSchema
-from ereuse_devicehub.resources.action.views.snapshot import (move_json,
-                                                              save_json)
+from ereuse_devicehub.resources.action.views.snapshot import move_json, save_json
 from ereuse_devicehub.resources.device.models import (SAI, Cellphone, Computer,
-                                                      Device, Keyboard,
-                                                      MemoryCardReader,
-                                                      Monitor, Mouse,
-                                                      Smartphone, Tablet)
+                                                      Device, Keyboard, MemoryCardReader,
+                                                      Monitor, Mouse, Smartphone, Tablet)
+from flask import g, request
+from flask_wtf import FlaskForm
+from sqlalchemy.util import OrderedSet
+from wtforms import (BooleanField, DateField, FileField, FloatField, Form,
+                     HiddenField, IntegerField, MultipleFileField, SelectField,
+                     StringField, TextAreaField, URLField, validators)
+from wtforms.fields import FormField
+
 from ereuse_devicehub.resources.device.sync import Sync
+from ereuse_devicehub.resources.documents.models import DataWipeDocument
 from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
+from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
@@ -472,10 +473,18 @@ class TagDeviceForm(FlaskForm):
 
 
 class NewActionForm(FlaskForm):
-    name = StringField(u'Name', [validators.length(max=50)])
+    name = StringField(u'Name', [validators.length(max=50)],
+                       description="A name or title of the event. Something to look for.")
     devices = HiddenField()
-    date = DateField(u'Date', validators=(validators.Optional(),))
-    severity = SelectField(u'Severity', choices=[(v.name, v.name) for v in Severity])
+    date = DateField(u'Date', [validators.Optional()],
+                     description="""When the action ends. For some actions like booking
+                                    the time when it expires, for others like renting the
+                                    time that the end rents. For specific actions, it is the
+                                    time in which they are carried out; differs from created
+                                    in that created is where the system receives the action.""")
+    severity = SelectField(u'Severity', choices=[(v.name, v.name) for v in Severity],
+                           description="""An indicator that evaluates the execution of the event.
+                                          For example, failed events are set to Error""")
     description = TextAreaField(u'Description')
     lot = HiddenField()
     type = HiddenField()
@@ -537,3 +546,71 @@ class AllocateForm(NewActionForm):
             is_valid = False
 
         return is_valid
+
+
+class DataWipeDocumentForm(Form):
+    date = DateField(u'Date', [validators.Optional()],
+                   description="Date when was data wipe")
+    url = URLField(u'Url', [validators.Optional()],
+                   description="Url where the document resides")
+    success = BooleanField(u'Success', [validators.Optional()],
+                   description="The erase was success or not?")
+    software = StringField(u'Software', [validators.Optional()],
+                   description="Which software has you use for erase the disks")
+    id_document = StringField(u'Document Id', [validators.Optional()],
+                   description="Identification number of document")
+    file_name = FileField(u'File', [validators.DataRequired()],
+                   description="""This file is not stored on our servers, it is only used to
+                                  generate a digital signature and obtain the name of the file.""")
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        return is_valid
+
+    def save(self, commit=True):
+        file_name = ''
+        file_hash = ''
+        if self.file_name.data:
+            file_name = self.file_name.data.filename
+            file_hash = insert_hash(self.file_name.data.read(), commit=False)
+
+        self.url.data = URL(self.url.data)
+        self._obj = DataWipeDocument(
+            document_type='DataWipeDocument',
+        )
+        self.populate_obj(self._obj)
+        self._obj.file_name = file_name
+        self._obj.file_hash = file_hash
+        db.session.add(self._obj)
+        if commit:
+            db.session.commit()
+
+        return self._obj
+
+
+class DataWipeForm(NewActionForm):
+    document = FormField(DataWipeDocumentForm)
+
+    def save(self):
+        self.document.form.save(commit=False)
+
+        Model = db.Model._decl_class_registry.data[self.type.data]()
+        self.instance = Model()
+        devices = self.devices.data
+        severity = self.severity.data
+        self.devices.data = self._devices
+        self.severity.data = Severity[self.severity.data]
+
+        document = copy.copy(self.document)
+        del self.document
+        self.populate_obj(self.instance)
+        self.instance.document = document.form._obj
+        db.session.add(self.instance)
+        db.session.commit()
+
+        self.devices.data = devices
+        self.severity.data = severity
+        self.document = document
+
+        return self.instance
