@@ -23,7 +23,6 @@ PyJWT==2.0.0a1
 pytest==7.0.0
 python-dateutil==2.7.3
 python-decouple==3.3
-python-dotenv==0.14.0
 python-stdnum==1.9
 PyYAML==5.4
 requests-mock==1.5.2
