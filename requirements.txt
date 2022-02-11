@@ -34,4 +34,3 @@ SQLAlchemy-Utils==0.33.11
 teal==0.2.0a38
 WeasyPrint==44
 webargs==5.5.3
-Werkzeug==0.15.3
