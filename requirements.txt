@@ -20,12 +20,10 @@ passlib==1.7.1
 phonenumbers==8.9.11
 psycopg2-binary==2.8.3
 PyJWT==2.0.0a1
-pytest==7.0.0
 python-dateutil==2.7.3
 python-decouple==3.3
 python-stdnum==1.9
 PyYAML==5.4
-requests-mock==1.5.2
 requests[security]==2.27.1
 sortedcontainers==2.1.0
 SQLAlchemy==1.2.17
