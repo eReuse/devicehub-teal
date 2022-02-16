@@ -313,6 +313,7 @@ class NewActionView(View):
         self.form = self.form_class()
 
         if self.form.validate_on_submit():
+            instance = self.form.save()
             messages.success('Action "{}" created successfully!'.format(self.form.type.data))
 
             next_url = self.get_next_url()
@@ -335,6 +336,7 @@ class NewAllocateView(NewActionView, DeviceListMix):
         self.form = self.form_class()
 
         if self.form.validate_on_submit():
+            instance = self.form.save()
             messages.success('Action "{}" created successfully!'.format(self.form.type.data))
 
             next_url = self.get_next_url()
@@ -354,6 +356,7 @@ class NewDataWipeView(NewActionView, DeviceListMix):
         self.form = self.form_class()
 
         if self.form.validate_on_submit():
+            instance = self.form.save()
             messages.success('Action "{}" created successfully!'.format(self.form.type.data))
 
             next_url = self.get_next_url()
@@ -373,6 +376,7 @@ class NewTradeView(NewActionView, DeviceListMix):
         self.form = self.form_class()
 
         if self.form.validate_on_submit():
+            instance = self.form.save()
             messages.success('Action "{}" created successfully!'.format(self.form.type.data))
 
             next_url = self.get_next_url()

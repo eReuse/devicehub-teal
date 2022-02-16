@@ -31,6 +31,7 @@ from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
+from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 
 
@@ -500,6 +501,7 @@ class NewActionForm(FlaskForm):
         if not is_valid:
             return False
 
+        self._devices = OrderedSet()
         if self.devices.data:
             devices = set(self.devices.data.split(","))
             self._devices = OrderedSet(Device.query.filter(Device.id.in_(devices)).filter(
@@ -638,14 +640,17 @@ class TradeForm(NewActionForm):
         super().__init__(*args, **kwargs)
         self.supplier.render_kw['data-email'] = g.user.email
         self.receiver.render_kw['data-email'] = g.user.email
+        self._lot = Lot.query.filter(Lot.id==self.lot.data).one()
 
     def validate(self, extra_validators=None):
-        is_valid = super().validate(extra_validators)
+        # is_valid = super().validate(extra_validators)
+        # import pdb; pdb.set_trace()
+        is_valid = True
 
         if not self.confirm.data and not self.code.data:
             self.code.errors = ["If you don't want confirm, you need a code"]
             is_valid = False
-
+# 
         if self.confirm.data and not (self.receiver.data or self.supplier.data):
             errors = ["If you want confirm, you need a email"]
             if not self.receiver.data:
@@ -656,4 +661,40 @@ class TradeForm(NewActionForm):
 
             is_valid = False
 
+        if self.confirm.data and is_valid:
+            user_to = User.query.filter_by(email=self.receiver.data).all() or [g.user]
+            user_from = User.query.filter_by(email=self.supplier.data).all() or [g.user]
+            if user_to == user_from:
+                is_valid = False
+            else:
+                self.user_to = user_to[0]
+                self.user_from = user_from[0]
+
+        self._devices = OrderedSet()
+        if self.devices.data:
+            devices = set(self.devices.data.split(","))
+            self._devices = OrderedSet(Device.query.filter(Device.id.in_(devices)).filter(
+                Device.owner_id == g.user.id).all())
+
         return is_valid
+
+    def save(self):
+        # import pdb; pdb.set_trace()
+        Model = db.Model._decl_class_registry.data[self.type.data]()
+        self.instance = Model()
+        self.instance.devices = self._devices
+        self.instance.severity = Severity[self.severity.data]
+        self.instance.user_from = self.user_from
+        self.instance.user_to = self.user_to
+        self.instance.lot_id = self._lot.id
+        self.instance.code = self.code.data
+        self.instance.confirm = self.confirm.data
+        self.instance.date = self.date.data
+        self.instance.name = self.name.data
+        self.instance.description = self.description.data
+
+        db.session.add(self.instance)
+        db.session.commit()
+
+
+        return self.instance
