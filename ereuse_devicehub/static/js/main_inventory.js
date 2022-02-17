@@ -15,6 +15,7 @@ $(document).ready(function() {
 
 function deviceSelect() {
     var devices_count = $(".deviceSelect").filter(':checked').length;
+    get_device_list();
     if (devices_count == 0) {
         $("#addingLotModal .pol").show();
         $("#addingLotModal .btn-primary").hide();
@@ -69,14 +70,14 @@ function newTrade(action) {
     var supplier = $("#supplier").data("email");
     if (action == 'supplier') {
         title = 'Trade Incoming';
-        $("#receiver").attr('disabled', 'disabled');
-        $("#supplier").prop('disabled', false);
+        $("#receiver").attr('readonly', 'readonly');
+        $("#supplier").prop('readonly', false);
         $("#supplier").val('');
         $("#receiver").val(receiver);
     } else if (action == 'receiver') {
         title = 'Trade Outgoing';
-        $("#supplier").attr('disabled', 'disabled');
-        $("#receiver").prop('disabled', false);
+        $("#supplier").attr('readonly', 'readonly');
+        $("#receiver").prop('readonly', false);
         $("#receiver").val('');
         $("#supplier").val(supplier);
     }
@@ -87,7 +88,6 @@ function newTrade(action) {
 function newAction(action) {
     $("#actionModal #type").val(action);
     $("#actionModal #title-action").html(action);
-    get_device_list();
     deviceSelect();
     $("#activeActionModal").click();
 }
@@ -95,7 +95,6 @@ function newAction(action) {
 function newAllocate(action) {
     $("#allocateModal #type").val(action);
     $("#allocateModal #title-action").html(action);
-    get_device_list();
     deviceSelect();
     $("#activeAllocateModal").click();
 }
@@ -103,7 +102,6 @@ function newAllocate(action) {
 function newDataWipe(action) {
     $("#datawipeModal #type").val(action);
     $("#datawipeModal #title-action").html(action);
-    get_device_list();
     deviceSelect();
     $("#activeDatawipeModal").click();
 }
