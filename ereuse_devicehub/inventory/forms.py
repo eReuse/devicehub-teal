@@ -496,7 +496,7 @@ class NewActionForm(FlaskForm):
     type = HiddenField()
 
     def validate(self, extra_validators=None):
-        is_valid = super().validate(extra_validators)
+        is_valid = self.generic_validation(extra_validators=extra_validators)
 
         if not is_valid:
             return False
@@ -511,6 +511,10 @@ class NewActionForm(FlaskForm):
                 return False
 
         return True
+
+    def generic_validation(self, extra_validators=None):
+        # Some times we want check validations without devices list
+        return super().validate(extra_validators)
 
     def save(self):
         Model = db.Model._decl_class_registry.data[self.type.data]()
@@ -640,17 +644,15 @@ class TradeForm(NewActionForm):
         super().__init__(*args, **kwargs)
         self.supplier.render_kw['data-email'] = g.user.email
         self.receiver.render_kw['data-email'] = g.user.email
-        self._lot = Lot.query.filter(Lot.id==self.lot.data).one()
+        self._lot = Lot.query.filter(Lot.id==self.lot.data).filter(Lot.owner_id==g.user.id).one()
 
     def validate(self, extra_validators=None):
-        # is_valid = super().validate(extra_validators)
-        # import pdb; pdb.set_trace()
-        is_valid = True
+        is_valid = self.generic_validation(extra_validators=extra_validators)
 
         if not self.confirm.data and not self.code.data:
             self.code.errors = ["If you don't want confirm, you need a code"]
             is_valid = False
-# 
+
         if self.confirm.data and not (self.receiver.data or self.supplier.data):
             errors = ["If you want confirm, you need a email"]
             if not self.receiver.data:
@@ -662,27 +664,30 @@ class TradeForm(NewActionForm):
             is_valid = False
 
         if self.confirm.data and is_valid:
-            user_to = User.query.filter_by(email=self.receiver.data).all() or [g.user]
-            user_from = User.query.filter_by(email=self.supplier.data).all() or [g.user]
+            user_to = User.query.filter_by(email=self.receiver.data).first() or g.user
+            user_from = User.query.filter_by(email=self.supplier.data).first() or g.user
             if user_to == user_from:
                 is_valid = False
             else:
-                self.user_to = user_to[0]
-                self.user_from = user_from[0]
-
-        self._devices = OrderedSet()
-        if self.devices.data:
-            devices = set(self.devices.data.split(","))
-            self._devices = OrderedSet(Device.query.filter(Device.id.in_(devices)).filter(
-                Device.owner_id == g.user.id).all())
+                self.user_to = user_to
+                self.user_from = user_from
 
         return is_valid
 
     def save(self):
+        self.create_phantom_account()
+        self.prepare_instance()
         # import pdb; pdb.set_trace()
+        self.create_automatic_trade()
+
+        db.session.commit()
+
+        return self.instance
+
+    def prepare_instance(self):
         Model = db.Model._decl_class_registry.data[self.type.data]()
         self.instance = Model()
-        self.instance.devices = self._devices
+        self.instance.devices = self._lot.devices
         self.instance.severity = Severity[self.severity.data]
         self.instance.user_from = self.user_from
         self.instance.user_to = self.user_to
@@ -692,9 +697,58 @@ class TradeForm(NewActionForm):
         self.instance.date = self.date.data
         self.instance.name = self.name.data
         self.instance.description = self.description.data
-
         db.session.add(self.instance)
-        db.session.commit()
 
+    def create_phantom_account(self):
+        """
+        If exist both users not to do nothing
+        If exist from but not to:
+            search if exist in the DB
+                if exist use it
+                else create new one
+        The same if exist to but not from
 
-        return self.instance
+        """
+        # Checks
+        if self.confirm.data or not self.code.data:
+            return
+
+        user_from = self.supplier.data
+        user_to = self.receiver.data
+        code = self.code.data
+
+        if user_from and user_to:
+            return
+
+        # Creating receiver phantom account
+        if user_from and not user_to:
+            assert g.user.email == user_from
+            user = self.create_user(code)
+            self.user_from = g.user
+            self.user_to = user
+            return
+
+        # Creating supplier phantom account
+        if not user_from and user_to:
+            assert g.user.email == user_to
+            user = self.create_user(code)
+            self.user_from = user
+            self.user_to = g.user
+
+    def create_user(self, code):
+        email = "{}_{}@dhub.com".format(str(g.user.id), code)
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            user = User(email=email, password='', active=False, phantom=True)
+            db.session.add(user)
+        return user
+
+    def create_automatic_trade(self):
+        # This method change the ownership of devices
+        # do nothing if an explicit confirmation is required
+        if self.confirm.data:
+            return
+
+        # Change the owner for every devices
+        for dev in self._lot.devices:
+            dev.change_owner(self.user_to)
