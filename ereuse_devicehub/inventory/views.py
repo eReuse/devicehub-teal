@@ -53,12 +53,7 @@ class DeviceListMix(View):
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
-            form_new_trade = TradeForm(
-                receiver=g.user.email,
-                supplier=g.user.email,
-                type='Trade'
-            )
-
+            form_new_trade = ''
         action_devices = form_new_action.devices.data
         list_devices = []
         if action_devices:
