@@ -1,12 +1,16 @@
 $(document).ready(function() {
     var show_allocate_form = $("#allocateModal").data('show-action-form');
     var show_datawipe_form = $("#datawipeModal").data('show-action-form');
+    var show_trade_form = $("#tradeLotModal").data('show-action-form');
     if (show_allocate_form != "None") {
         $("#allocateModal .btn-primary").show();
         newAllocate(show_allocate_form);
     } else if (show_datawipe_form != "None") {
         $("#datawipeModal .btn-primary").show();
         newDataWipe(show_datawipe_form);
+    } else if (show_trade_form != "None") {
+        $("#tradeLotModal .btn-primary").show();
+        newTrade(show_trade_form);
     } else {
         $(".deviceSelect").on("change", deviceSelect);
     }
@@ -58,7 +62,6 @@ function deviceSelect() {
 function removeTag() {
     var devices = $(".deviceSelect").filter(':checked');
     var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
-    console.log(devices_id);
     if (devices_id.length > 0) {
         var url = "/inventory/tag/devices/"+devices_id[0]+"/del/";
         window.location.href = url;
@@ -87,7 +90,7 @@ function newTrade(action) {
         $("#user_to").val('');
         $("#user_from").val(user_from);
     }
-    $("#tradeLotModalModal #title-action").html(title);
+    $("#tradeLotModal #title-action").html(title);
     $("#activeTradeModal").click();
 }
 

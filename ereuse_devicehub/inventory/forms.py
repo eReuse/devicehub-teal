@@ -539,6 +539,14 @@ class NewActionForm(FlaskForm):
 
         return self.instance
 
+    def check_valid(self):
+        # import pdb; pdb.set_trace()
+        if self.type.data in ['', None]:
+            return
+
+        if not self.validate():
+            return self.type.data
+
 
 class AllocateForm(NewActionForm):
     start_time = DateField(u'Start time')
@@ -654,36 +662,36 @@ class TradeForm(NewActionForm):
 
     def validate(self, extra_validators=None):
         is_valid = self.generic_validation(extra_validators=extra_validators)
+        email_from = self.user_from.data
+        email_to = self.user_to.data
 
         if not self.confirm.data and not self.code.data:
             self.code.errors = ["If you don't want confirm, you need a code"]
             is_valid = False
 
-        if self.confirm.data and not (self.user_to.data or self.user_to.data):
-            errors = ["If you want confirm, you need a email"]
-            if not self.user_to.data:
-                self.user_to.errors = errors
+        if self.confirm.data and not (email_from and email_to) or email_to == email_from or \
+              g.user.email not in [email_from, email_to]:
 
-            if not self.user_from.data:
-                self.user_from.errors = errors
+            errors = ["If you want confirm, you need a correct email"]
+            self.user_to.errors = errors
+            self.user_from.errors = errors
 
             is_valid = False
 
         if self.confirm.data and is_valid:
-            user_to = User.query.filter_by(email=self.user_to.data).first() or g.user
-            user_from = User.query.filter_by(email=self.user_from.data).first() or g.user
+            user_to = User.query.filter_by(email=email_to).first() or g.user
+            user_from = User.query.filter_by(email=email_from).first() or g.user
             if user_to == user_from:
                 is_valid = False
             else:
-                self.user_to = user_to
-                self.user_from = user_from
+                self.db_user_to = user_to
+                self.db_user_from = user_from
 
         return is_valid
 
     def save(self):
         self.create_phantom_account()
         self.prepare_instance()
-        # import pdb; pdb.set_trace()
         self.create_automatic_trade()
 
         db.session.commit()
@@ -693,9 +701,8 @@ class TradeForm(NewActionForm):
     def prepare_instance(self):
         Model = db.Model._decl_class_registry.data[self.type.data]()
         self.instance = Model()
-        # import pdb; pdb.set_trace()
-        self.instance.user_from = self.user_from
-        self.instance.user_to = self.user_to
+        self.instance.user_from = self.db_user_from
+        self.instance.user_to = self.db_user_to
         self.instance.lot_id = self._lot.id
         self.instance.devices = self._lot.devices
         self.instance.code = self.code.data
@@ -757,4 +764,14 @@ class TradeForm(NewActionForm):
 
         # Change the owner for every devices
         for dev in self._lot.devices:
-            dev.change_owner(self.user_to)
+            dev.change_owner(self.db_user_to)
+
+    def check_valid(self):
+        if self.user_from.data == self.user_to.data:
+            return
+
+        if self.user_from.data == g.user.email:
+            return 'user_to'
+
+        if self.user_to.data == g.user.email:
+            return 'user_form'

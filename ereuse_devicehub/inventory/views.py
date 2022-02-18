@@ -41,9 +41,8 @@ class DeviceListMix(View):
             form_new_datawipe = DataWipeForm(lot=lot.id)
             form_new_trade = TradeForm(
                 lot=lot.id,
-                receiver=g.user.email,
-                supplier=g.user.email,
-                type='Trade'
+                user_to=g.user.email,
+                user_from=g.user.email,
             )
         else:
             devices = Device.query.filter(
@@ -379,7 +378,7 @@ class NewTradeView(NewActionView, DeviceListMix):
 
         lot_id = self.form.lot.data
         self.get_context(lot_id)
-        self.context['form_new_datawipe'] = self.form
+        self.context['form_new_trade'] = self.form
         return flask.render_template(self.template_name, **self.context)
 
 
