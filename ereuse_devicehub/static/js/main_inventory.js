@@ -51,6 +51,7 @@ function deviceSelect() {
         $("#datawipeModal .btn-primary").show();
 
         $("#addingTagModal .pol").hide();
+        $("#addingTagModal .btn-primary").show();
     }
 }
 
@@ -62,6 +63,11 @@ function removeTag() {
         var url = "/inventory/tag/devices/"+devices_id[0]+"/del/";
         window.location.href = url;
     }
+}
+
+function addTag() {
+    deviceSelect();
+    $("#addingTagModal").click();
 }
 
 function newTrade(action) {
