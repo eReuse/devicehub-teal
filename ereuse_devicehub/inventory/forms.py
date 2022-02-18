@@ -55,6 +55,12 @@ class LotDeviceForm(FlaskForm):
         return bool(self._devices)
 
     def save(self):
+        trade = self._lot.trade
+        if trade:
+            for dev in self._devices:
+                if not trade in dev.actions:
+                    trade.devices.add(dev)
+
         self._lot.devices.update(self._devices)
         db.session.add(self._lot)
         db.session.commit()
