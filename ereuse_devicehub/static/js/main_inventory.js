@@ -66,20 +66,20 @@ function removeTag() {
 
 function newTrade(action) {
     var title = "Trade "
-    var receiver = $("#receiver").data("email");
-    var supplier = $("#supplier").data("email");
-    if (action == 'supplier') {
+    var user_to = $("#user_to").data("email");
+    var user_from = $("#user_from").data("email");
+    if (action == 'user_from') {
         title = 'Trade Incoming';
-        $("#receiver").attr('readonly', 'readonly');
-        $("#supplier").prop('readonly', false);
-        $("#supplier").val('');
-        $("#receiver").val(receiver);
-    } else if (action == 'receiver') {
+        $("#user_to").attr('readonly', 'readonly');
+        $("#user_from").prop('readonly', false);
+        $("#user_from").val('');
+        $("#user_to").val(user_to);
+    } else if (action == 'user_to') {
         title = 'Trade Outgoing';
-        $("#supplier").attr('readonly', 'readonly');
-        $("#receiver").prop('readonly', false);
-        $("#receiver").val('');
-        $("#supplier").val(supplier);
+        $("#user_from").attr('readonly', 'readonly');
+        $("#user_to").prop('readonly', false);
+        $("#user_to").val('');
+        $("#user_from").val(user_from);
     }
     $("#tradeLotModalModal #title-action").html(title);
     $("#activeTradeModal").click();

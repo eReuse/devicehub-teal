@@ -628,10 +628,10 @@ class DataWipeForm(NewActionForm):
 
 
 class TradeForm(NewActionForm):
-    supplier = StringField(u'Supplier', [validators.Optional()],
+    user_from = StringField(u'Supplier', [validators.Optional()],
                    description="Please enter the supplier's email address",
                    render_kw={'data-email': ""})
-    receiver = StringField(u'Receiver', [validators.Optional()],
+    user_to = StringField(u'Receiver', [validators.Optional()],
                    description="Please enter the receiver's email address",
                    render_kw={'data-email': ""})
     confirm = BooleanField(u'Confirm', [validators.Optional()],
@@ -642,8 +642,8 @@ class TradeForm(NewActionForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.supplier.render_kw['data-email'] = g.user.email
-        self.receiver.render_kw['data-email'] = g.user.email
+        self.user_from.render_kw['data-email'] = g.user.email
+        self.user_to.render_kw['data-email'] = g.user.email
         self._lot = Lot.query.filter(Lot.id==self.lot.data).filter(Lot.owner_id==g.user.id).one()
 
     def validate(self, extra_validators=None):
@@ -653,19 +653,19 @@ class TradeForm(NewActionForm):
             self.code.errors = ["If you don't want confirm, you need a code"]
             is_valid = False
 
-        if self.confirm.data and not (self.receiver.data or self.supplier.data):
+        if self.confirm.data and not (self.user_to.data or self.user_to.data):
             errors = ["If you want confirm, you need a email"]
-            if not self.receiver.data:
-                self.receiver.errors = errors
+            if not self.user_to.data:
+                self.user_to.errors = errors
 
-            if not self.supplier.data:
-                self.supplier.errors = errors
+            if not self.user_from.data:
+                self.user_from.errors = errors
 
             is_valid = False
 
         if self.confirm.data and is_valid:
-            user_to = User.query.filter_by(email=self.receiver.data).first() or g.user
-            user_from = User.query.filter_by(email=self.supplier.data).first() or g.user
+            user_to = User.query.filter_by(email=self.user_to.data).first() or g.user
+            user_from = User.query.filter_by(email=self.user_from.data).first() or g.user
             if user_to == user_from:
                 is_valid = False
             else:
@@ -687,11 +687,11 @@ class TradeForm(NewActionForm):
     def prepare_instance(self):
         Model = db.Model._decl_class_registry.data[self.type.data]()
         self.instance = Model()
-        self.instance.devices = self._lot.devices
-        self.instance.severity = Severity[self.severity.data]
+        # import pdb; pdb.set_trace()
         self.instance.user_from = self.user_from
         self.instance.user_to = self.user_to
         self.instance.lot_id = self._lot.id
+        self.instance.devices = self._lot.devices
         self.instance.code = self.code.data
         self.instance.confirm = self.confirm.data
         self.instance.date = self.date.data
@@ -713,8 +713,8 @@ class TradeForm(NewActionForm):
         if self.confirm.data or not self.code.data:
             return
 
-        user_from = self.supplier.data
-        user_to = self.receiver.data
+        user_from = self.user_from.data
+        user_to = self.user_to.data
         code = self.code.data
 
         if user_from and user_to:
