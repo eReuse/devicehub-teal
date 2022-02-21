@@ -32,6 +32,7 @@ from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 
 
@@ -540,7 +541,6 @@ class NewActionForm(FlaskForm):
         return self.instance
 
     def check_valid(self):
-        # import pdb; pdb.set_trace()
         if self.type.data in ['', None]:
             return
 
@@ -689,17 +689,18 @@ class TradeForm(NewActionForm):
 
         return is_valid
 
-    def save(self):
+    def save(self, commit=True):
         self.create_phantom_account()
         self.prepare_instance()
         self.create_automatic_trade()
 
-        db.session.commit()
+        if commit:
+            db.session.commit()
 
         return self.instance
 
     def prepare_instance(self):
-        Model = db.Model._decl_class_registry.data[self.type.data]()
+        Model = db.Model._decl_class_registry.data['Trade']()
         self.instance = Model()
         self.instance.user_from = self.db_user_from
         self.instance.user_to = self.db_user_to
@@ -774,4 +775,55 @@ class TradeForm(NewActionForm):
             return 'user_to'
 
         if self.user_to.data == g.user.email:
-            return 'user_form'
+            return 'user_from'
+
+
+class TradeDocumentForm(FlaskForm):
+    url = URLField(u'Url', [validators.Optional()],
+                   render_kw={'class': "form-control"},
+                   description="Url where the document resides")
+    description = StringField(u'Description', [validators.Optional()],
+                   render_kw={'class': "form-control"},
+                   description="")
+    id_document = StringField(u'Document Id', [validators.Optional()],
+                   render_kw={'class': "form-control"},
+                   description="Identification number of document")
+    date = DateField(u'Date', [validators.Optional()],
+                   render_kw={'class': "form-control"},
+                   description="")
+    file_name = FileField(u'File', [validators.DataRequired()],
+                   render_kw={'class': "form-control"},
+                   description="""This file is not stored on our servers, it is only used to
+                                  generate a digital signature and obtain the name of the file.""")
+
+    def __init__(self, *args, **kwargs):
+        lot_id = kwargs.pop('lot')
+        super().__init__(*args, **kwargs)
+        self._lot = Lot.query.filter(Lot.id==lot_id).one()
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if g.user not in [self._lot.trade.user_from, self._lot.trade.user_to]:
+            is_valid = False
+
+        return is_valid
+
+    def save(self, commit=True):
+        file_name = ''
+        file_hash = ''
+        if self.file_name.data:
+            file_name = self.file_name.data.filename
+            file_hash = insert_hash(self.file_name.data.read(), commit=False)
+
+        self.url.data = URL(self.url.data)
+        self._obj = TradeDocument(lot_id=self._lot.id)
+        self.populate_obj(self._obj)
+        self._obj.file_name = file_name
+        self._obj.file_hash = file_hash
+        db.session.add(self._obj)
+        self._lot.trade.documents.add(self._obj)
+        if commit:
+            db.session.commit()
+
+        return self._obj
