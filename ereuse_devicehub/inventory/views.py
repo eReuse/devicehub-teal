@@ -10,7 +10,7 @@ from ereuse_devicehub.inventory.forms import (AllocateForm, LotDeviceForm,
                                               NewDeviceForm, TagDeviceForm,
                                               TagForm, TagUnnamedForm,
                                               UploadSnapshotForm, DataWipeForm,
-                                              TradeForm)
+                                              TradeForm, TradeDocumentForm)
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
@@ -382,10 +382,31 @@ class NewTradeView(NewActionView, DeviceListMix):
         return flask.render_template(self.template_name, **self.context)
 
 
+class NewTradeDocumentView(View):
+    methods = ['POST', 'GET']
+    decorators = [login_required]
+    template_name = 'inventory/trade_document.html'
+    form_class = TradeDocumentForm
+    title = "Add new document"
+
+    def dispatch_request(self, lot_id):
+        self.form = self.form_class(lot=lot_id)
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success('Document created successfully!')
+            next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
+            return flask.redirect(next_url)
+
+        return flask.render_template(self.template_name, form=self.form, title=self.title)
+
+
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/action/trade/add/', view_func=NewTradeView.as_view('trade_add'))
 devices.add_url_rule('/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add'))
 devices.add_url_rule('/action/datawipe/add/', view_func=NewDataWipeView.as_view('datawipe_add'))
+devices.add_url_rule('/lot/<string:lot_id>/trade-document/add/',
+                         view_func=NewTradeDocumentView.as_view('trade_document_add'))
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule('/device/<string:id>/', view_func=DeviceDetailView.as_view('device_details'))
 devices.add_url_rule('/lot/<string:lot_id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
