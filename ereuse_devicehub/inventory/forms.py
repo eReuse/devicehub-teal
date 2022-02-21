@@ -1,34 +1,29 @@
-import json
 import copy
+import json
 from json.decoder import JSONDecodeError
-
-from flask import g, request
-from flask_wtf import FlaskForm
-from sqlalchemy.util import OrderedSet
-from wtforms.fields import FormField
-from wtforms import (DateField, FloatField, HiddenField, IntegerField,
-                     MultipleFileField, FileField, SelectField, StringField,
-                     TextAreaField, BooleanField, URLField, validators, Form)
 
 from boltons.urlutils import URL
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.hash_reports import insert_hash
-from ereuse_devicehub.resources.documents.models import DataWipeDocument
-from ereuse_devicehub.resources.action.models import (Action, RateComputer,
-                                                      Snapshot, VisualTest,
-                                                      DataWipe)
+from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.action.schemas import \
     Snapshot as SnapshotSchema
-from ereuse_devicehub.resources.action.views.snapshot import (move_json,
-                                                              save_json)
+from ereuse_devicehub.resources.action.views.snapshot import move_json, save_json
 from ereuse_devicehub.resources.device.models import (SAI, Cellphone, Computer,
-                                                      Device, Keyboard,
-                                                      MemoryCardReader,
-                                                      Monitor, Mouse,
-                                                      Smartphone, Tablet)
+                                                      Device, Keyboard, MemoryCardReader,
+                                                      Monitor, Mouse, Smartphone, Tablet)
+from flask import g, request
+from flask_wtf import FlaskForm
+from sqlalchemy.util import OrderedSet
+from wtforms import (BooleanField, DateField, FileField, FloatField, Form,
+                     HiddenField, IntegerField, MultipleFileField, SelectField,
+                     StringField, TextAreaField, URLField, validators)
+from wtforms.fields import FormField
+
 from ereuse_devicehub.resources.device.sync import Sync
+from ereuse_devicehub.resources.documents.models import DataWipeDocument
 from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
+from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user.models import User

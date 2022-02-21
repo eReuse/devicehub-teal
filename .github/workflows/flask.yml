@@ -47,9 +47,6 @@ jobs:
         sudo apt-get update -qy
         sudo apt-get -y install postgresql-client
         python -m pip install --upgrade pip
-        pip install virtualenv
-        virtualenv env
-        source env/bin/activate
         pip install flake8 pytest coverage
         pip install -r requirements.txt
 
@@ -64,6 +61,17 @@ jobs:
         psql -h "localhost" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION ltree SCHEMA public;"
         psql -h "localhost" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION citext SCHEMA public;"
         psql -h "localhost" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION pg_trgm SCHEMA public;"
+
+    - name: Lint with flake8
+      run: |
+        # stop the build if:
+        # - E9,F63,F7,F82: Python syntax errors or undefined names
+        # - E501: line longer than 120 characters
+        # - C901: complexity greater than 10
+        # - F401: modules imported but unused
+        # See: https://flake8.pycqa.org/en/latest/user/error-codes.html
+        flake8 . --select=E9,F63,F7,F82,E501,C901,F401
+        flake8 . --exit-zero
 
     - name: Run Tests
       run: |
