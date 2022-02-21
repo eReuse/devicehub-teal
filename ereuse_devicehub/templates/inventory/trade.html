@@ -1,3 +1,4 @@
+{% if form_new_trade %}
 <div class="modal fade" id="tradeLotModal" tabindex="-1" style="display: none;" aria-hidden="true"
     data-show-action-form="{{ form_new_trade.check_valid() }}">
   <div class="modal-dialog modal-lg">
@@ -54,3 +55,4 @@
     </div>
   </div>
 </div>
+{% endif %}
