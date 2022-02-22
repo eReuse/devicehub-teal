@@ -1,8 +1,9 @@
 import flask
-from flask import g
-from flask import Blueprint, request, url_for
+from io import StringIO
+from flask import Blueprint, request, url_for, g, make_response
 from flask.views import View
 from flask_login import current_user, login_required
+from werkzeug.exceptions import NotFound
 
 from ereuse_devicehub import messages
 from ereuse_devicehub.inventory.forms import (AllocateForm, LotDeviceForm,
@@ -401,6 +402,42 @@ class NewTradeDocumentView(View):
         return flask.render_template(self.template_name, form=self.form, title=self.title)
 
 
+class ExportsView(View):
+    methods = ['GET']
+    decorators = [login_required]
+
+    def dispatch_request(self, export_id):
+        import pdb; pdb.trace()
+        export_ids = {
+            'metrics': self.metrics(),
+            'devices-list': self.metrics(),
+            'certificates': self.metrics()
+        }
+
+        if export_id not in export_ids:
+            return NotFound()
+        return export_ids[export_id]()
+
+    def metrics(self):
+        """Get device query and put information in csv format."""
+        data = StringIO()
+        # cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        # first = True
+        # document_ids = self.get_documents_id()
+        # for device in query:
+        #     d = DeviceRow(device, document_ids)
+        #     if first:
+        #         cw.writerow(d.keys())
+        #         first = False
+        #     cw.writerow(d.values())
+        bfile = data.getvalue().encode('utf-8')
+        output = make_response(bfile)
+        # insert_hash(bfile)
+        output.headers['Content-Disposition'] = 'attachment; filename=export.csv'
+        output.headers['Content-type'] = 'text/csv'
+        return output
+
+
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/action/trade/add/', view_func=NewTradeView.as_view('trade_add'))
 devices.add_url_rule('/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add'))
@@ -423,3 +460,4 @@ devices.add_url_rule('/tag/unnamed/add/', view_func=TagAddUnnamedView.as_view('t
 devices.add_url_rule('/tag/<string:id>/', view_func=TagDetailView.as_view('tag_details'))
 devices.add_url_rule('/tag/devices/add/', view_func=TagLinkDeviceView.as_view('tag_devices_add'))
 devices.add_url_rule('/tag/devices/<int:id>/del/', view_func=TagUnlinkDeviceView.as_view('tag_devices_del'))
+devices.add_url_rule('/export/<string:export_id>', view_func=ExportsView.as_view('export'))
