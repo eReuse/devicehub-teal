@@ -732,7 +732,7 @@ class TradeForm(NewActionForm):
         email_to = self.user_to.data
 
         if not self.confirm.data and not self.code.data:
-            self.code.errors = ["If you don't want confirm, you need a code"]
+            self.code.errors = ["If you don't want to confirm, you need a code"]
             is_valid = False
 
         if (
@@ -757,9 +757,15 @@ class TradeForm(NewActionForm):
                 self.db_user_to = user_to
                 self.db_user_from = user_from
 
+        self.has_errors = not is_valid
         return is_valid
 
     def save(self, commit=True):
+        if self.has_errors:
+            raise ValueError(
+                "The %s could not be saved because the data didn't validate."
+                % (self.instance._meta.object_name)
+            )
         if not self.confirm.data:
             self.create_phantom_account()
         self.prepare_instance()
@@ -794,11 +800,6 @@ class TradeForm(NewActionForm):
         The same if exist to but not from
 
         """
-        # Checks
-        if self.code.data:
-            msg = "If you don't want confirm, you need a code"
-            return ValidationError(msg)
-
         user_from = self.user_from.data
         user_to = self.user_to.data
         code = self.code.data
