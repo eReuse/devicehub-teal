@@ -406,8 +406,10 @@ class ExportsView(View):
     methods = ['GET']
     decorators = [login_required]
 
-    def dispatch_request(self, export_id):
+    # def dispatch_request(self, export_id):
+    def dispatch_request(self):
         import pdb; pdb.trace()
+        export_id = 'metrics'
         export_ids = {
             'metrics': self.metrics(),
             'devices-list': self.metrics(),
@@ -460,4 +462,5 @@ devices.add_url_rule('/tag/unnamed/add/', view_func=TagAddUnnamedView.as_view('t
 devices.add_url_rule('/tag/<string:id>/', view_func=TagDetailView.as_view('tag_details'))
 devices.add_url_rule('/tag/devices/add/', view_func=TagLinkDeviceView.as_view('tag_devices_add'))
 devices.add_url_rule('/tag/devices/<int:id>/del/', view_func=TagUnlinkDeviceView.as_view('tag_devices_del'))
-devices.add_url_rule('/export/<string:export_id>', view_func=ExportsView.as_view('export'))
+# devices.add_url_rule('/export/<string:export_id>', view_func=ExportsView.as_view('export'))
+devices.add_url_rule('/export/', view_func=ExportsView.as_view('export'))
