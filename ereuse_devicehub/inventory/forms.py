@@ -727,6 +727,7 @@ class TradeForm(NewActionForm):
         code = self.code.data
 
         if user_from and user_to:
+            #  both users exist, no further action is necessary
             return
 
         # Creating receiver phantom account
