@@ -19,6 +19,7 @@ from wtforms import (BooleanField, DateField, FileField, FloatField, Form,
                      HiddenField, IntegerField, MultipleFileField, SelectField,
                      StringField, TextAreaField, URLField, validators)
 from wtforms.fields import FormField
+from wtforms.validators import ValidationError
 
 from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.documents.models import DataWipeDocument
@@ -685,7 +686,8 @@ class TradeForm(NewActionForm):
         return is_valid
 
     def save(self, commit=True):
-        self.create_phantom_account()
+        if not self.confirm.data:
+            self.create_phantom_account()
         self.prepare_instance()
         self.create_automatic_trade()
 
@@ -719,8 +721,9 @@ class TradeForm(NewActionForm):
 
         """
         # Checks
-        if self.confirm.data or not self.code.data:
-            return
+        if self.code.data:
+            msg = "If you don't want confirm, you need a code"
+            return ValidationError(msg)
 
         user_from = self.user_from.data
         user_to = self.user_to.data
@@ -745,7 +748,7 @@ class TradeForm(NewActionForm):
             self.user_from = user
             self.user_to = g.user
 
-    def create_user(self, code):
+    def get_or_create_user(self, code):
         email = "{}_{}@dhub.com".format(str(g.user.id), code)
         user = User.query.filter_by(email=email).first()
         if not user:
