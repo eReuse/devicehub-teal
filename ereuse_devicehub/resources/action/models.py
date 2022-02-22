@@ -1748,7 +1748,7 @@ class MoveOnDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     """Action than certify one movement of some indescriptible material of
     one container to an other."""
 
-    weight = db.Column(db.Float(nullable=True))
+    weight = db.Column(db.Float())
     weight.comment = """Weight than go to recycling"""
     container_from_id = db.Column(
         db.BigInteger,
