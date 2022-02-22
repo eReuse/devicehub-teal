@@ -32,8 +32,8 @@ from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 
 
 class LotDeviceForm(FlaskForm):
-    lot = StringField(u'Lot', [validators.UUID()])
-    devices = StringField(u'Devices', [validators.length(min=1)])
+    lot = StringField('Lot', [validators.UUID()])
+    devices = StringField('Devices', [validators.length(min=1)])
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
@@ -68,7 +68,7 @@ class LotDeviceForm(FlaskForm):
 
 
 class LotForm(FlaskForm):
-    name = StringField(u'Name', [validators.length(min=1)])
+    name = StringField('Name', [validators.length(min=1)])
 
     def __init__(self, *args, **kwargs):
         self.id = kwargs.pop('id', None)
@@ -103,7 +103,7 @@ class LotForm(FlaskForm):
 
 
 class UploadSnapshotForm(FlaskForm):
-    snapshot = MultipleFileField(u'Select a Snapshot File', [validators.DataRequired()])
+    snapshot = MultipleFileField('Select a Snapshot File', [validators.DataRequired()])
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
@@ -227,27 +227,27 @@ class UploadSnapshotForm(FlaskForm):
 
 
 class NewDeviceForm(FlaskForm):
-    type = StringField(u'Type', [validators.DataRequired()])
-    label = StringField(u'Label')
-    serial_number = StringField(u'Seria Number', [validators.DataRequired()])
-    model = StringField(u'Model', [validators.DataRequired()])
-    manufacturer = StringField(u'Manufacturer', [validators.DataRequired()])
-    appearance = StringField(u'Appearance', [validators.Optional()])
-    functionality = StringField(u'Functionality', [validators.Optional()])
-    brand = StringField(u'Brand')
-    generation = IntegerField(u'Generation')
-    version = StringField(u'Version')
-    weight = FloatField(u'Weight', [validators.DataRequired()])
-    width = FloatField(u'Width', [validators.DataRequired()])
-    height = FloatField(u'Height', [validators.DataRequired()])
-    depth = FloatField(u'Depth', [validators.DataRequired()])
-    variant = StringField(u'Variant', [validators.Optional()])
-    sku = StringField(u'SKU', [validators.Optional()])
-    image = StringField(u'Image', [validators.Optional(), validators.URL()])
-    imei = IntegerField(u'IMEI', [validators.Optional()])
-    meid = StringField(u'MEID', [validators.Optional()])
-    resolution = IntegerField(u'Resolution width', [validators.Optional()])
-    screen = FloatField(u'Screen size', [validators.Optional()])
+    type = StringField('Type', [validators.DataRequired()])
+    label = StringField('Label')
+    serial_number = StringField('Seria Number', [validators.DataRequired()])
+    model = StringField('Model', [validators.DataRequired()])
+    manufacturer = StringField('Manufacturer', [validators.DataRequired()])
+    appearance = StringField('Appearance', [validators.Optional()])
+    functionality = StringField('Functionality', [validators.Optional()])
+    brand = StringField('Brand')
+    generation = IntegerField('Generation')
+    version = StringField('Version')
+    weight = FloatField('Weight', [validators.DataRequired()])
+    width = FloatField('Width', [validators.DataRequired()])
+    height = FloatField('Height', [validators.DataRequired()])
+    depth = FloatField('Depth', [validators.DataRequired()])
+    variant = StringField('Variant', [validators.Optional()])
+    sku = StringField('SKU', [validators.Optional()])
+    image = StringField('Image', [validators.Optional(), validators.URL()])
+    imei = IntegerField('IMEI', [validators.Optional()])
+    meid = StringField('MEID', [validators.Optional()])
+    resolution = IntegerField('Resolution width', [validators.Optional()])
+    screen = FloatField('Screen size', [validators.Optional()])
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -387,7 +387,7 @@ class NewDeviceForm(FlaskForm):
 
 
 class TagForm(FlaskForm):
-    code = StringField(u'Code', [validators.length(min=1)])
+    code = StringField('Code', [validators.length(min=1)])
 
     def validate(self, extra_validators=None):
         error = ["This value is being used"]
@@ -415,7 +415,7 @@ class TagForm(FlaskForm):
 
 
 class TagUnnamedForm(FlaskForm):
-    amount = IntegerField(u'amount')
+    amount = IntegerField('amount')
 
     def save(self):
         num = self.amount.data
@@ -427,8 +427,8 @@ class TagUnnamedForm(FlaskForm):
 
 
 class TagDeviceForm(FlaskForm):
-    tag = SelectField(u'Tag', choices=[])
-    device = StringField(u'Device', [validators.Optional()])
+    tag = SelectField('Tag', choices=[])
+    device = StringField('Device', [validators.Optional()])
 
     def __init__(self, *args, **kwargs):
         self.delete = kwargs.pop('delete', None)
@@ -481,19 +481,19 @@ class TagDeviceForm(FlaskForm):
 
 
 class NewActionForm(FlaskForm):
-    name = StringField(u'Name', [validators.length(max=50)],
+    name = StringField('Name', [validators.length(max=50)],
                        description="A name or title of the event. Something to look for.")
     devices = HiddenField()
-    date = DateField(u'Date', [validators.Optional()],
+    date = DateField('Date', [validators.Optional()],
                      description="""When the action ends. For some actions like booking
                                     the time when it expires, for others like renting the
                                     time that the end rents. For specific actions, it is the
                                     time in which they are carried out; differs from created
                                     in that created is where the system receives the action.""")
-    severity = SelectField(u'Severity', choices=[(v.name, v.name) for v in Severity],
+    severity = SelectField('Severity', choices=[(v.name, v.name) for v in Severity],
                            description="""An indicator that evaluates the execution of the event.
                                           For example, failed events are set to Error""")
-    description = TextAreaField(u'Description')
+    description = TextAreaField('Description')
     lot = HiddenField()
     type = HiddenField()
 
@@ -544,11 +544,11 @@ class NewActionForm(FlaskForm):
 
 
 class AllocateForm(NewActionForm):
-    start_time = DateField(u'Start time')
-    end_time = DateField(u'End time')
-    final_user_code = StringField(u'Final user code', [validators.length(max=50)])
-    transaction = StringField(u'Transaction', [validators.length(max=50)])
-    end_users = IntegerField(u'End users')
+    start_time = DateField('Start time')
+    end_time = DateField('End time')
+    final_user_code = StringField('Final user code', [validators.length(max=50)])
+    transaction = StringField('Transaction', [validators.length(max=50)])
+    end_users = IntegerField('End users')
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
@@ -569,17 +569,17 @@ class AllocateForm(NewActionForm):
 
 
 class DataWipeDocumentForm(Form):
-    date = DateField(u'Date', [validators.Optional()],
+    date = DateField('Date', [validators.Optional()],
                    description="Date when was data wipe")
-    url = URLField(u'Url', [validators.Optional()],
+    url = URLField('Url', [validators.Optional()],
                    description="Url where the document resides")
-    success = BooleanField(u'Success', [validators.Optional()],
+    success = BooleanField('Success', [validators.Optional()],
                    description="The erase was success or not?")
-    software = StringField(u'Software', [validators.Optional()],
+    software = StringField('Software', [validators.Optional()],
                    description="Which software has you use for erase the disks")
-    id_document = StringField(u'Document Id', [validators.Optional()],
+    id_document = StringField('Document Id', [validators.Optional()],
                    description="Identification number of document")
-    file_name = FileField(u'File', [validators.DataRequired()],
+    file_name = FileField('File', [validators.DataRequired()],
                    description="""This file is not stored on our servers, it is only used to
                                   generate a digital signature and obtain the name of the file.""")
 
@@ -637,16 +637,16 @@ class DataWipeForm(NewActionForm):
 
 
 class TradeForm(NewActionForm):
-    user_from = StringField(u'Supplier', [validators.Optional()],
+    user_from = StringField('Supplier', [validators.Optional()],
                    description="Please enter the supplier's email address",
                    render_kw={'data-email': ""})
-    user_to = StringField(u'Receiver', [validators.Optional()],
+    user_to = StringField('Receiver', [validators.Optional()],
                    description="Please enter the receiver's email address",
                    render_kw={'data-email': ""})
-    confirm = BooleanField(u'Confirm', [validators.Optional()],
+    confirm = BooleanField('Confirm', [validators.Optional()],
                    default=True,
                    description="I need confirmation from the other user for every device and document.")
-    code = StringField(u'Code', [validators.Optional()],
+    code = StringField('Code', [validators.Optional()],
                    description="If you don't need confirm, you need put a code for trace the user in the statistics.")
 
     def __init__(self, *args, **kwargs):
@@ -774,19 +774,19 @@ class TradeForm(NewActionForm):
 
 
 class TradeDocumentForm(FlaskForm):
-    url = URLField(u'Url', [validators.Optional()],
+    url = URLField('Url', [validators.Optional()],
                    render_kw={'class': "form-control"},
                    description="Url where the document resides")
-    description = StringField(u'Description', [validators.Optional()],
+    description = StringField('Description', [validators.Optional()],
                    render_kw={'class': "form-control"},
                    description="")
-    id_document = StringField(u'Document Id', [validators.Optional()],
+    id_document = StringField('Document Id', [validators.Optional()],
                    render_kw={'class': "form-control"},
                    description="Identification number of document")
-    date = DateField(u'Date', [validators.Optional()],
+    date = DateField('Date', [validators.Optional()],
                    render_kw={'class': "form-control"},
                    description="")
-    file_name = FileField(u'File', [validators.DataRequired()],
+    file_name = FileField('File', [validators.DataRequired()],
                    render_kw={'class': "form-control"},
                    description="""This file is not stored on our servers, it is only used to
                                   generate a digital signature and obtain the name of the file.""")
