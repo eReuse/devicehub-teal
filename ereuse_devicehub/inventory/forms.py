@@ -736,7 +736,7 @@ class TradeForm(NewActionForm):
         # Create receiver (to) phantom account
         if user_from and not user_to:
             assert g.user.email == user_from
-            user = self.create_user(code)
+            user = self.get_or_create_user(code)
             self.user_from = g.user
             self.user_to = user
             return
@@ -744,7 +744,7 @@ class TradeForm(NewActionForm):
         # Create supplier (from) phantom account
         if not user_from and user_to:
             assert g.user.email == user_to
-            user = self.create_user(code)
+            user = self.get_or_create_user(code)
             self.user_from = user
             self.user_to = g.user
 
