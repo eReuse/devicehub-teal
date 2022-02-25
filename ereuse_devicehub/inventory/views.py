@@ -21,18 +21,11 @@ from ereuse_devicehub.inventory.forms import (
     TagUnnamedForm,
     TradeDocumentForm,
     TradeForm,
-    UploadSnapshotForm
+    UploadSnapshotForm,
 )
 from ereuse_devicehub.resources.action.models import Trade
-from ereuse_devicehub.resources.device.models import (
-    Computer,
-    DataStorage,
-    Device
-)
-from ereuse_devicehub.resources.documents.device_row import (
-    ActionRow,
-    DeviceRow
-)
+from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
+from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
