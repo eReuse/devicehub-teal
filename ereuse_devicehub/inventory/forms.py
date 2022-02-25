@@ -3,33 +3,34 @@ import json
 from json.decoder import JSONDecodeError
 
 from boltons.urlutils import URL
+from flask import g, request
+from flask_wtf import FlaskForm
+from sqlalchemy.util import OrderedSet
+from wtforms import (
+    BooleanField, DateField, FileField, FloatField, Form, HiddenField,
+    IntegerField, MultipleFileField, SelectField, StringField, TextAreaField,
+    URLField, validators)
+from wtforms.fields import FormField
+
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.action.schemas import \
     Snapshot as SnapshotSchema
-from ereuse_devicehub.resources.action.views.snapshot import move_json, save_json
-from ereuse_devicehub.resources.device.models import (SAI, Cellphone, Computer,
-                                                      Device, Keyboard, MemoryCardReader,
-                                                      Monitor, Mouse, Smartphone, Tablet)
-from flask import g, request
-from flask_wtf import FlaskForm
-from sqlalchemy.util import OrderedSet
-from wtforms import (BooleanField, DateField, FileField, FloatField, Form,
-                     HiddenField, IntegerField, MultipleFileField, SelectField,
-                     StringField, TextAreaField, URLField, validators)
-from wtforms.fields import FormField
-from wtforms.validators import ValidationError
-
+from ereuse_devicehub.resources.action.views.snapshot import (
+    move_json, save_json)
+from ereuse_devicehub.resources.device.models import (
+    SAI, Cellphone, Computer, Device, Keyboard, MemoryCardReader, Monitor,
+    Mouse, Smartphone, Tablet)
 from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.documents.models import DataWipeDocument
 from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
-from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
+from ereuse_devicehub.resources.user.models import User
 
 
 class LotDeviceForm(FlaskForm):
@@ -42,12 +43,19 @@ class LotDeviceForm(FlaskForm):
         if not is_valid:
             return False
 
-        self._lot = Lot.query.filter(Lot.id == self.lot.data).filter(
-            Lot.owner_id == g.user.id).one()
+        self._lot = (
+            Lot.query.filter(Lot.id == self.lot.data)
+            .filter(Lot.owner_id == g.user.id)
+            .one()
+        )
 
         devices = set(self.devices.data.split(","))
-        self._devices = Device.query.filter(Device.id.in_(devices)).filter(
-            Device.owner_id == g.user.id).distinct().all()
+        self._devices = (
+            Device.query.filter(Device.id.in_(devices))
+            .filter(Device.owner_id == g.user.id)
+            .distinct()
+            .all()
+        )
 
         return bool(self._devices)
 
@@ -55,7 +63,7 @@ class LotDeviceForm(FlaskForm):
         trade = self._lot.trade
         if trade:
             for dev in self._devices:
-                if not trade in dev.actions:
+                if trade not in dev.actions:
                     trade.devices.add(dev)
 
         self._lot.devices.update(self._devices)
@@ -75,8 +83,11 @@ class LotForm(FlaskForm):
         self.id = kwargs.pop('id', None)
         self.instance = None
         if self.id:
-            self.instance = Lot.query.filter(Lot.id == self.id).filter(
-                Lot.owner_id == g.user.id).one()
+            self.instance = (
+                Lot.query.filter(Lot.id == self.id)
+                .filter(Lot.owner_id == g.user.id)
+                .one()
+            )
         super().__init__(*args, **kwargs)
         if self.instance and not self.name.data:
             self.name.data = self.instance.name
@@ -172,8 +183,10 @@ class UploadSnapshotForm(FlaskForm):
         # this is a copy adaptated from ereuse_devicehub.resources.action.views.snapshot
         device = snapshot_json.pop('device')  # type: Computer
         components = None
-        if snapshot_json['software'] == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid):
-            components = snapshot_json.pop('components', None)  # type: List[Component]
+        if snapshot_json['software'] == (
+            SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid
+        ):
+            components = snapshot_json.pop('components', None)
             if isinstance(device, Computer) and device.hid:
                 device.add_mac_to_hid(components_snap=components)
         snapshot = Snapshot(**snapshot_json)
@@ -182,7 +195,9 @@ class UploadSnapshotForm(FlaskForm):
         actions_device = set(e for e in device.actions_one)
         device.actions_one.clear()
         if components:
-            actions_components = tuple(set(e for e in c.actions_one) for c in components)
+            actions_components = tuple(
+                set(e for e in c.actions_one) for c in components
+            )
             for component in components:
                 component.actions_one.clear()
 
@@ -252,14 +267,16 @@ class NewDeviceForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.devices = {"Smartphone": Smartphone,
-                        "Tablet": Tablet,
-                        "Cellphone": Cellphone,
-                        "Monitor": Monitor,
-                        "Mouse": Mouse,
-                        "Keyboard": Keyboard,
-                        "SAI": SAI,
-                        "MemoryCardReader": MemoryCardReader}
+        self.devices = {
+            "Smartphone": Smartphone,
+            "Tablet": Tablet,
+            "Cellphone": Cellphone,
+            "Monitor": Monitor,
+            "Mouse": Mouse,
+            "Keyboard": Keyboard,
+            "SAI": SAI,
+            "MemoryCardReader": MemoryCardReader,
+        }
 
         if not self.generation.data:
             self.generation.data = 1
@@ -336,29 +353,31 @@ class NewDeviceForm(FlaskForm):
             'software': 'Web',
             'version': '11.0',
             'device': {
-                 'type': self.type.data,
-                 'model': self.model.data,
-                 'manufacturer': self.manufacturer.data,
-                 'serialNumber': self.serial_number.data,
-                 'brand': self.brand.data,
-                 'version': self.version.data,
-                 'generation': self.generation.data,
-                 'sku': self.sku.data,
-                 'weight': self.weight.data,
-                 'width': self.width.data,
-                 'height': self.height.data,
-                 'depth': self.depth.data,
-                 'variant': self.variant.data,
-                 'image': self.image.data
-            }
+                'type': self.type.data,
+                'model': self.model.data,
+                'manufacturer': self.manufacturer.data,
+                'serialNumber': self.serial_number.data,
+                'brand': self.brand.data,
+                'version': self.version.data,
+                'generation': self.generation.data,
+                'sku': self.sku.data,
+                'weight': self.weight.data,
+                'width': self.width.data,
+                'height': self.height.data,
+                'depth': self.depth.data,
+                'variant': self.variant.data,
+                'image': self.image.data,
+            },
         }
 
         if self.appearance.data or self.functionality.data:
-            json_snapshot['device']['actions'] = [{
-                'type': 'VisualTest',
-                'appearanceRange': self.appearance.data,
-                'functionalityRange': self.functionality.data
-            }]
+            json_snapshot['device']['actions'] = [
+                {
+                    'type': 'VisualTest',
+                    'appearanceRange': self.appearance.data,
+                    'functionalityRange': self.functionality.data,
+                }
+            ]
 
         upload_form = UploadSnapshotForm()
         upload_form.sync = Sync()
@@ -395,7 +414,7 @@ class TagForm(FlaskForm):
         is_valid = super().validate(extra_validators)
         if not is_valid:
             return False
-        tag = Tag.query.filter(Tag.id==self.code.data).all()
+        tag = Tag.query.filter(Tag.id == self.code.data).all()
         if tag:
             self.code.errors = error
             return False
@@ -438,9 +457,11 @@ class TagDeviceForm(FlaskForm):
         super().__init__(*args, **kwargs)
 
         if self.delete:
-            tags = Tag.query.filter(Tag.owner_id==g.user.id).filter(Tag.device_id==self.device_id)
+            tags = Tag.query.filter(Tag.owner_id == g.user.id).filter_by(
+                device_id=self.device_id
+            )
         else:
-            tags = Tag.query.filter(Tag.owner_id==g.user.id).filter(Tag.device_id==None)
+            tags = Tag.query.filter(Tag.owner_id == g.user.id).filter_by(device_id=None)
 
         self.tag.choices = [(tag.id, tag.id) for tag in tags]
 
@@ -450,8 +471,11 @@ class TagDeviceForm(FlaskForm):
         if not is_valid:
             return False
 
-        self._tag = Tag.query.filter(Tag.id == self.tag.data).filter(
-            Tag.owner_id == g.user.id).one()
+        self._tag = (
+            Tag.query.filter(Tag.id == self.tag.data)
+            .filter(Tag.owner_id == g.user.id)
+            .one()
+        )
 
         if not self.delete and self._tag.device_id:
             self.tag.errors = [("This tag is actualy in use.")]
@@ -465,8 +489,11 @@ class TagDeviceForm(FlaskForm):
 
         if self.device_id or self.device.data:
             self.device_id = self.device_id or self.device.data
-            self._device = Device.query.filter(Device.id == self.device_id).filter(
-                Device.owner_id == g.user.id).one()
+            self._device = (
+                Device.query.filter(Device.id == self.device_id)
+                .filter(Device.owner_id == g.user.id)
+                .one()
+            )
 
         return True
 
@@ -482,18 +509,27 @@ class TagDeviceForm(FlaskForm):
 
 
 class NewActionForm(FlaskForm):
-    name = StringField('Name', [validators.length(max=50)],
-                       description="A name or title of the event. Something to look for.")
+    name = StringField(
+        'Name',
+        [validators.length(max=50)],
+        description="A name or title of the event. Something to look for.",
+    )
     devices = HiddenField()
-    date = DateField('Date', [validators.Optional()],
-                     description="""When the action ends. For some actions like booking
+    date = DateField(
+        'Date',
+        [validators.Optional()],
+        description="""When the action ends. For some actions like booking
                                     the time when it expires, for others like renting the
                                     time that the end rents. For specific actions, it is the
                                     time in which they are carried out; differs from created
-                                    in that created is where the system receives the action.""")
-    severity = SelectField('Severity', choices=[(v.name, v.name) for v in Severity],
-                           description="""An indicator that evaluates the execution of the event.
-                                          For example, failed events are set to Error""")
+                                    in that created is where the system receives the action.""",
+    )
+    severity = SelectField(
+        'Severity',
+        choices=[(v.name, v.name) for v in Severity],
+        description="""An indicator that evaluates the execution of the event.
+                                          For example, failed events are set to Error""",
+    )
     description = TextAreaField('Description')
     lot = HiddenField()
     type = HiddenField()
@@ -507,8 +543,11 @@ class NewActionForm(FlaskForm):
         self._devices = OrderedSet()
         if self.devices.data:
             devices = set(self.devices.data.split(","))
-            self._devices = OrderedSet(Device.query.filter(Device.id.in_(devices)).filter(
-                Device.owner_id == g.user.id).all())
+            self._devices = OrderedSet(
+                Device.query.filter(Device.id.in_(devices))
+                .filter(Device.owner_id == g.user.id)
+                .all()
+            )
 
             if not self._devices:
                 return False
@@ -570,19 +609,31 @@ class AllocateForm(NewActionForm):
 
 
 class DataWipeDocumentForm(Form):
-    date = DateField('Date', [validators.Optional()],
-                   description="Date when was data wipe")
-    url = URLField('Url', [validators.Optional()],
-                   description="Url where the document resides")
-    success = BooleanField('Success', [validators.Optional()],
-                   description="The erase was success or not?")
-    software = StringField('Software', [validators.Optional()],
-                   description="Which software has you use for erase the disks")
-    id_document = StringField('Document Id', [validators.Optional()],
-                   description="Identification number of document")
-    file_name = FileField('File', [validators.DataRequired()],
-                   description="""This file is not stored on our servers, it is only used to
-                                  generate a digital signature and obtain the name of the file.""")
+    date = DateField(
+        'Date', [validators.Optional()], description="Date when was data wipe"
+    )
+    url = URLField(
+        'Url', [validators.Optional()], description="Url where the document resides"
+    )
+    success = BooleanField(
+        'Success', [validators.Optional()], description="The erase was success or not?"
+    )
+    software = StringField(
+        'Software',
+        [validators.Optional()],
+        description="Which software has you use for erase the disks",
+    )
+    id_document = StringField(
+        'Document Id',
+        [validators.Optional()],
+        description="Identification number of document",
+    )
+    file_name = FileField(
+        'File',
+        [validators.DataRequired()],
+        description="""This file is not stored on our servers, it is only used to
+                                  generate a digital signature and obtain the name of the file.""",
+    )
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
@@ -638,23 +689,39 @@ class DataWipeForm(NewActionForm):
 
 
 class TradeForm(NewActionForm):
-    user_from = StringField('Supplier', [validators.Optional()],
-                   description="Please enter the supplier's email address",
-                   render_kw={'data-email': ""})
-    user_to = StringField('Receiver', [validators.Optional()],
-                   description="Please enter the receiver's email address",
-                   render_kw={'data-email': ""})
-    confirm = BooleanField('Confirm', [validators.Optional()],
-                   default=True,
-                   description="I need confirmation from the other user for every device and document.")
-    code = StringField('Code', [validators.Optional()],
-                   description="If you don't need confirm, you need put a code for trace the user in the statistics.")
+    user_from = StringField(
+        'Supplier',
+        [validators.Optional()],
+        description="Please enter the supplier's email address",
+        render_kw={'data-email': ""},
+    )
+    user_to = StringField(
+        'Receiver',
+        [validators.Optional()],
+        description="Please enter the receiver's email address",
+        render_kw={'data-email': ""},
+    )
+    confirm = BooleanField(
+        'Confirm',
+        [validators.Optional()],
+        default=True,
+        description="I need confirmation from the other user for every device and document.",
+    )
+    code = StringField(
+        'Code',
+        [validators.Optional()],
+        description="If you don't need confirm, you need put a code for trace the user in the statistics.",
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user_from.render_kw['data-email'] = g.user.email
         self.user_to.render_kw['data-email'] = g.user.email
-        self._lot = Lot.query.filter(Lot.id==self.lot.data).filter(Lot.owner_id==g.user.id).one()
+        self._lot = (
+            Lot.query.filter(Lot.id == self.lot.data)
+            .filter(Lot.owner_id == g.user.id)
+            .one()
+        )
 
     def validate(self, extra_validators=None):
         is_valid = self.generic_validation(extra_validators=extra_validators)
@@ -662,11 +729,15 @@ class TradeForm(NewActionForm):
         email_to = self.user_to.data
 
         if not self.confirm.data and not self.code.data:
-            self.code.errors = ["If you don't want confirm, you need a code"]
+            self.code.errors = ["If you don't want to confirm, you need a code"]
             is_valid = False
 
-        if self.confirm.data and not (email_from and email_to) or email_to == email_from or \
-              g.user.email not in [email_from, email_to]:
+        if (
+            self.confirm.data
+            and not (email_from and email_to)
+            or email_to == email_from
+            or g.user.email not in [email_from, email_to]
+        ):
 
             errors = ["If you want confirm, you need a correct email"]
             self.user_to.errors = errors
@@ -683,9 +754,15 @@ class TradeForm(NewActionForm):
                 self.db_user_to = user_to
                 self.db_user_from = user_from
 
+        self.has_errors = not is_valid
         return is_valid
 
     def save(self, commit=True):
+        if self.has_errors:
+            raise ValueError(
+                "The %s could not be saved because the data didn't validate."
+                % (self.instance._meta.object_name)
+            )
         if not self.confirm.data:
             self.create_phantom_account()
         self.prepare_instance()
@@ -720,11 +797,6 @@ class TradeForm(NewActionForm):
         The same if exist to but not from
 
         """
-        # Checks
-        if self.code.data:
-            msg = "If you don't want confirm, you need a code"
-            return ValidationError(msg)
-
         user_from = self.user_from.data
         user_to = self.user_to.data
         code = self.code.data
@@ -736,16 +808,16 @@ class TradeForm(NewActionForm):
         # Create receiver (to) phantom account
         if user_from and not user_to:
             assert g.user.email == user_from
-            user = self.get_or_create_user(code)
+
             self.user_from = g.user
-            self.user_to = user
+            self.user_to = self.get_or_create_user(code)
             return
 
         # Create supplier (from) phantom account
         if not user_from and user_to:
             assert g.user.email == user_to
-            user = self.get_or_create_user(code)
-            self.user_from = user
+
+            self.user_from = self.get_or_create_user(code)
             self.user_to = g.user
 
     def get_or_create_user(self, code):
@@ -778,27 +850,42 @@ class TradeForm(NewActionForm):
 
 
 class TradeDocumentForm(FlaskForm):
-    url = URLField('Url', [validators.Optional()],
-                   render_kw={'class': "form-control"},
-                   description="Url where the document resides")
-    description = StringField('Description', [validators.Optional()],
-                   render_kw={'class': "form-control"},
-                   description="")
-    id_document = StringField('Document Id', [validators.Optional()],
-                   render_kw={'class': "form-control"},
-                   description="Identification number of document")
-    date = DateField('Date', [validators.Optional()],
-                   render_kw={'class': "form-control"},
-                   description="")
-    file_name = FileField('File', [validators.DataRequired()],
-                   render_kw={'class': "form-control"},
-                   description="""This file is not stored on our servers, it is only used to
-                                  generate a digital signature and obtain the name of the file.""")
+    url = URLField(
+        'Url',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="Url where the document resides",
+    )
+    description = StringField(
+        'Description',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="",
+    )
+    id_document = StringField(
+        'Document Id',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="Identification number of document",
+    )
+    date = DateField(
+        'Date',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="",
+    )
+    file_name = FileField(
+        'File',
+        [validators.DataRequired()],
+        render_kw={'class': "form-control"},
+        description="""This file is not stored on our servers, it is only used to
+                                  generate a digital signature and obtain the name of the file.""",
+    )
 
     def __init__(self, *args, **kwargs):
         lot_id = kwargs.pop('lot')
         super().__init__(*args, **kwargs)
-        self._lot = Lot.query.filter(Lot.id==lot_id).one()
+        self._lot = Lot.query.filter(Lot.id == lot_id).one()
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
