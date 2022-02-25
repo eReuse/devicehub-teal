@@ -1,16 +1,23 @@
 import flask
-from flask import g
-from flask import Blueprint, request, url_for
+from flask import Blueprint, g, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
 
 from ereuse_devicehub import messages
-from ereuse_devicehub.inventory.forms import (AllocateForm, LotDeviceForm,
-                                              LotForm, NewActionForm,
-                                              NewDeviceForm, TagDeviceForm,
-                                              TagForm, TagUnnamedForm,
-                                              UploadSnapshotForm, DataWipeForm,
-                                              TradeForm, TradeDocumentForm)
+from ereuse_devicehub.inventory.forms import (
+    AllocateForm,
+    DataWipeForm,
+    LotDeviceForm,
+    LotForm,
+    NewActionForm,
+    NewDeviceForm,
+    TagDeviceForm,
+    TagForm,
+    TagUnnamedForm,
+    TradeDocumentForm,
+    TradeForm,
+    UploadSnapshotForm,
+)
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
@@ -29,8 +36,11 @@ class DeviceListMix(View):
         filter_types = ['Desktop', 'Laptop', 'Server']
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
         lot = None
-        tags = Tag.query.filter(Tag.owner_id == current_user.id).filter(
-            Tag.device_id == None).order_by(Tag.created.desc())
+        tags = (
+            Tag.query.filter(Tag.owner_id == current_user.id)
+            .filter(Tag.device_id == None)
+            .order_by(Tag.created.desc())
+        )
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
@@ -45,10 +55,12 @@ class DeviceListMix(View):
                 user_from=g.user.email,
             )
         else:
-            devices = Device.query.filter(
-                Device.owner_id == current_user.id).filter(
-                Device.type.in_(filter_types)).filter(Device.lots == None).order_by(
-                    Device.updated.desc())
+            devices = (
+                Device.query.filter(Device.owner_id == current_user.id)
+                .filter(Device.type.in_(filter_types))
+                .filter(Device.lots == None)
+                .order_by(Device.updated.desc())
+            )
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
@@ -69,14 +81,13 @@ class DeviceListMix(View):
             'form_new_trade': form_new_trade,
             'lot': lot,
             'tags': tags,
-            'list_devices': list_devices
+            'list_devices': list_devices,
         }
 
         return self.context
 
 
 class DeviceListView(DeviceListMix):
-
     def dispatch_request(self, lot_id=None):
         self.get_context(lot_id)
         return flask.render_template(self.template_name, **self.context)
@@ -88,8 +99,11 @@ class DeviceDetailView(View):
 
     def dispatch_request(self, id):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        device = Device.query.filter(
-            Device.owner_id == current_user.id).filter(Device.devicehub_id == id).one()
+        device = (
+            Device.query.filter(Device.owner_id == current_user.id)
+            .filter(Device.devicehub_id == id)
+            .one()
+        )
 
         context = {
             'device': device,
@@ -141,7 +155,8 @@ class LotCreateView(View):
             return flask.redirect(next_url)
 
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        return flask.render_template(self.template_name, form=form, title=self.title, lots=lots)
+        context = {'form': form, 'title': self.title, 'lots': lots}
+        return flask.render_template(self.template_name, **context)
 
 
 class LotUpdateView(View):
@@ -158,7 +173,8 @@ class LotUpdateView(View):
             return flask.redirect(next_url)
 
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        return flask.render_template(self.template_name, form=form, title=self.title, lots=lots)
+        context = {'form': form, 'title': self.title, 'lots': lots}
+        return flask.render_template(self.template_name, **context)
 
 
 class LotDeleteView(View):
@@ -179,13 +195,13 @@ class UploadSnapshotView(View):
     template_name = 'inventory/upload_snapshot.html'
 
     def dispatch_request(self):
-        context = {'page_title': 'Upload Snapshot'}
         lots = Lot.query.filter(Lot.owner_id == current_user.id).all()
         form = UploadSnapshotForm()
+        context = {'page_title': 'Upload Snapshot', 'lots': lots, 'form': form}
         if form.validate_on_submit():
             form.save()
 
-        return flask.render_template(self.template_name, form=form, lots=lots, **context)
+        return flask.render_template(self.template_name, **context)
 
 
 class DeviceCreateView(View):
@@ -194,15 +210,15 @@ class DeviceCreateView(View):
     template_name = 'inventory/device_create.html'
 
     def dispatch_request(self):
-        context = {'page_title': 'New Device'}
         lots = Lot.query.filter(Lot.owner_id == current_user.id).all()
         form = NewDeviceForm()
+        context = {'page_title': 'New Device', 'lots': lots, 'form': form}
         if form.validate_on_submit():
             form.save()
             next_url = url_for('inventory.devices.devicelist')
             return flask.redirect(next_url)
 
-        return flask.render_template(self.template_name, form=form, lots=lots, **context)
+        return flask.render_template(self.template_name, **context)
 
 
 class TagListView(View):
@@ -211,9 +227,10 @@ class TagListView(View):
     template_name = 'inventory/tag_list.html'
 
     def dispatch_request(self):
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
         tags = Tag.query.filter(Tag.owner_id == current_user.id)
         context = {
-            'lots': [],
+            'lots': lots,
             'tags': tags,
             'page_title': 'Tags Management',
         }
@@ -226,7 +243,8 @@ class TagAddView(View):
     template_name = 'inventory/tag_create.html'
 
     def dispatch_request(self):
-        context = {'page_title': 'New Tag'}
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        context = {'page_title': 'New Tag', 'lots': lots}
         form = TagForm()
         if form.validate_on_submit():
             form.save()
@@ -242,7 +260,8 @@ class TagAddUnnamedView(View):
     template_name = 'inventory/tag_create_unnamed.html'
 
     def dispatch_request(self):
-        context = {'page_title': 'New Unnamed Tag'}
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        context = {'page_title': 'New Unnamed Tag', 'lots': lots}
         form = TagUnnamedForm()
         if form.validate_on_submit():
             form.save()
@@ -258,8 +277,9 @@ class TagDetailView(View):
 
     def dispatch_request(self, id):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        tag = Tag.query.filter(
-            Tag.owner_id == current_user.id).filter(Tag.id == id).one()
+        tag = (
+            Tag.query.filter(Tag.owner_id == current_user.id).filter(Tag.id == id).one()
+        )
 
         context = {
             'lots': lots,
@@ -288,6 +308,7 @@ class TagUnlinkDeviceView(View):
     template_name = 'inventory/tag_unlink_device.html'
 
     def dispatch_request(self, id):
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
         form = TagDeviceForm(delete=True, device=id)
         if form.validate_on_submit():
             form.remove()
@@ -295,7 +316,9 @@ class TagUnlinkDeviceView(View):
             next_url = url_for('inventory.devices.devicelist')
             return flask.redirect(next_url)
 
-        return flask.render_template(self.template_name, form=form, referrer=request.referrer)
+        return flask.render_template(
+            self.template_name, form=form, lots=lots, referrer=request.referrer
+        )
 
 
 class NewActionView(View):
@@ -308,7 +331,9 @@ class NewActionView(View):
 
         if self.form.validate_on_submit():
             instance = self.form.save()
-            messages.success('Action "{}" created successfully!'.format(self.form.type.data))
+            messages.success(
+                'Action "{}" created successfully!'.format(self.form.type.data)
+            )
 
             next_url = self.get_next_url()
             return flask.redirect(next_url)
@@ -331,7 +356,9 @@ class NewAllocateView(NewActionView, DeviceListMix):
 
         if self.form.validate_on_submit():
             instance = self.form.save()
-            messages.success('Action "{}" created successfully!'.format(self.form.type.data))
+            messages.success(
+                'Action "{}" created successfully!'.format(self.form.type.data)
+            )
 
             next_url = self.get_next_url()
             return flask.redirect(next_url)
@@ -351,7 +378,9 @@ class NewDataWipeView(NewActionView, DeviceListMix):
 
         if self.form.validate_on_submit():
             instance = self.form.save()
-            messages.success('Action "{}" created successfully!'.format(self.form.type.data))
+            messages.success(
+                'Action "{}" created successfully!'.format(self.form.type.data)
+            )
 
             next_url = self.get_next_url()
             return flask.redirect(next_url)
@@ -371,7 +400,9 @@ class NewTradeView(NewActionView, DeviceListMix):
 
         if self.form.validate_on_submit():
             instance = self.form.save()
-            messages.success('Action "{}" created successfully!'.format(self.form.type.data))
+            messages.success(
+                'Action "{}" created successfully!'.format(self.form.type.data)
+            )
 
             next_url = self.get_next_url()
             return flask.redirect(next_url)
@@ -398,28 +429,57 @@ class NewTradeDocumentView(View):
             next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
             return flask.redirect(next_url)
 
-        return flask.render_template(self.template_name, form=self.form, title=self.title)
+        return flask.render_template(
+            self.template_name, form=self.form, title=self.title
+        )
 
 
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/action/trade/add/', view_func=NewTradeView.as_view('trade_add'))
-devices.add_url_rule('/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add'))
-devices.add_url_rule('/action/datawipe/add/', view_func=NewDataWipeView.as_view('datawipe_add'))
-devices.add_url_rule('/lot/<string:lot_id>/trade-document/add/',
-                         view_func=NewTradeDocumentView.as_view('trade_document_add'))
+devices.add_url_rule(
+    '/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add')
+)
+devices.add_url_rule(
+    '/action/datawipe/add/', view_func=NewDataWipeView.as_view('datawipe_add')
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/trade-document/add/',
+    view_func=NewTradeDocumentView.as_view('trade_document_add'),
+)
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
-devices.add_url_rule('/device/<string:id>/', view_func=DeviceDetailView.as_view('device_details'))
-devices.add_url_rule('/lot/<string:lot_id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
-devices.add_url_rule('/lot/devices/add/', view_func=LotDeviceAddView.as_view('lot_devices_add'))
-devices.add_url_rule('/lot/devices/del/', view_func=LotDeviceDeleteView.as_view('lot_devices_del'))
+devices.add_url_rule(
+    '/device/<string:id>/', view_func=DeviceDetailView.as_view('device_details')
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/device/', view_func=DeviceListView.as_view('lotdevicelist')
+)
+devices.add_url_rule(
+    '/lot/devices/add/', view_func=LotDeviceAddView.as_view('lot_devices_add')
+)
+devices.add_url_rule(
+    '/lot/devices/del/', view_func=LotDeviceDeleteView.as_view('lot_devices_del')
+)
 devices.add_url_rule('/lot/add/', view_func=LotCreateView.as_view('lot_add'))
-devices.add_url_rule('/lot/<string:id>/del/', view_func=LotDeleteView.as_view('lot_del'))
+devices.add_url_rule(
+    '/lot/<string:id>/del/', view_func=LotDeleteView.as_view('lot_del')
+)
 devices.add_url_rule('/lot/<string:id>/', view_func=LotUpdateView.as_view('lot_edit'))
-devices.add_url_rule('/upload-snapshot/', view_func=UploadSnapshotView.as_view('upload_snapshot'))
+devices.add_url_rule(
+    '/upload-snapshot/', view_func=UploadSnapshotView.as_view('upload_snapshot')
+)
 devices.add_url_rule('/device/add/', view_func=DeviceCreateView.as_view('device_add'))
 devices.add_url_rule('/tag/', view_func=TagListView.as_view('taglist'))
 devices.add_url_rule('/tag/add/', view_func=TagAddView.as_view('tag_add'))
-devices.add_url_rule('/tag/unnamed/add/', view_func=TagAddUnnamedView.as_view('tag_unnamed_add'))
-devices.add_url_rule('/tag/<string:id>/', view_func=TagDetailView.as_view('tag_details'))
-devices.add_url_rule('/tag/devices/add/', view_func=TagLinkDeviceView.as_view('tag_devices_add'))
-devices.add_url_rule('/tag/devices/<int:id>/del/', view_func=TagUnlinkDeviceView.as_view('tag_devices_del'))
+devices.add_url_rule(
+    '/tag/unnamed/add/', view_func=TagAddUnnamedView.as_view('tag_unnamed_add')
+)
+devices.add_url_rule(
+    '/tag/<string:id>/', view_func=TagDetailView.as_view('tag_details')
+)
+devices.add_url_rule(
+    '/tag/devices/add/', view_func=TagLinkDeviceView.as_view('tag_devices_add')
+)
+devices.add_url_rule(
+    '/tag/devices/<int:id>/del/',
+    view_func=TagUnlinkDeviceView.as_view('tag_devices_del'),
+)

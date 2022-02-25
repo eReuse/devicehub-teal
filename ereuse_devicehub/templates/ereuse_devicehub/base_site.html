@@ -5,7 +5,7 @@
 <header id="header" class="header fixed-top d-flex align-items-center">
 
   <div class="d-flex align-items-center justify-content-between">
-    <a href="index.html" class="logo d-flex align-items-center">
+    <a href="{{ url_for('inventory.devices.devicelist')}}" class="logo d-flex align-items-center">
       <img src="{{ url_for('static', filename='img/usody-logo-black.svg') }}" alt="">
     </a>
     <i class="bi bi-list toggle-sidebar-btn"></i>
@@ -81,7 +81,7 @@
 <aside id="sidebar" class="sidebar">
 
   <ul class="sidebar-nav" id="sidebar-nav">
-
+    <!-- We need defined before the Dashboard
     <li class="nav-item">
       <a class="nav-link collapsed" href="index.html">
         <i class="bi bi-grid"></i>
@@ -99,10 +99,18 @@
     <li class="nav-heading">Lots</li>
 
     <li class="nav-item">
+      {% if lot and lot.is_incoming %}
+      <a class="nav-link" data-bs-target="#incoming-lots-nav" data-bs-toggle="collapse" href="#">
+      {% else %}
       <a class="nav-link collapsed" data-bs-target="#incoming-lots-nav" data-bs-toggle="collapse" href="#">
+      {% endif %}
         <i class="bi bi-arrow-down-right"></i><span>Incoming Lots</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
+      {% if lot and lot.is_incoming %}
+      <ul id="incoming-lots-nav" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
+      {% else %}
       <ul id="incoming-lots-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+      {% endif %}
         {% for lot in lots %}
         {% if lot.is_incoming %}
         <li>
@@ -116,10 +124,18 @@
     </li><!-- End Incoming Lots Nav -->
 
     <li class="nav-item">
+      {% if lot and lot.is_outgoing %}
+      <a class="nav-link" data-bs-target="#outgoing-lots-nav" data-bs-toggle="collapse" href="#">
+      {% else %}
       <a class="nav-link collapsed" data-bs-target="#outgoing-lots-nav" data-bs-toggle="collapse" href="#">
+      {% endif %}
         <i class="bi bi-arrow-up-right"></i><span>Outgoing Lots</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
+      {% if lot and lot.is_outgoing %}
+      <ul id="outgoing-lots-nav" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
+      {% else %}
       <ul id="outgoing-lots-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+      {% endif %}
         {% for lot in lots %}
         {% if lot.is_outgoing %}
         <li>
@@ -133,10 +149,18 @@
     </li><!-- End Outgoing Lots Nav -->
 
     <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#temporal-lots-nav" data-bs-toggle="collapse" href="#">
+      {% if lot and lot.is_temporary %}
+      <a class="nav-link" data-bs-target="#temporal-lots-nav" data-bs-toggle="collapse" href="#">
+      {% else %}
+      <a class="nav-link collapsed"  data-bs-target="#temporal-lots-nav" data-bs-toggle="collapse" href="#">
+      {% endif %}
         <i class="bi bi-layout-text-window-reverse"></i><span>Temporary Lots</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
+      {% if lot and lot.is_temporary %}
+      <ul id="temporal-lots-nav" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
+      {% else %}
       <ul id="temporal-lots-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+      {% endif %}
         <li>
           <a href="{{ url_for('inventory.devices.lot_add')}}">
             <i class="bi bi-plus" style="font-size: larger;"></i><span>New temporary lot</span>
@@ -162,13 +186,6 @@
         <span>Tags</span>
       </a>
     </li><!-- End Tags Page Nav -->
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="{{ url_for('Document.StampsView') }}">
-        <i class="bi bi-pin-map-fill"></i>
-        <span>Stamp</span>
-      </a>
-    </li><!-- End Stamp Page Nav -->
 
   </ul>
 
