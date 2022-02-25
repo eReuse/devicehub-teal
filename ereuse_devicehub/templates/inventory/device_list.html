@@ -352,9 +352,7 @@
 {% include "inventory/actions.html" %}
 {% include "inventory/allocate.html" %}
 {% include "inventory/data_wipe.html" %}
-{% if lot and lot.is_temporary %}
-  {% include "inventory/trade.html" %}
-{% endif %}
+{% include "inventory/trade.html" %}
 
 <!-- CDN -->
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
