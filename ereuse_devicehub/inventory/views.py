@@ -133,7 +133,8 @@ class LotCreateView(View):
             return flask.redirect(next_url)
 
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        return flask.render_template(self.template_name, form=form, title=self.title, lots=lots)
+        context = {'form': form, 'title': self.title, 'lots': lots}
+        return flask.render_template(self.template_name, **context)
 
 
 class LotUpdateView(View):
@@ -150,7 +151,8 @@ class LotUpdateView(View):
             return flask.redirect(next_url)
 
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        return flask.render_template(self.template_name, form=form, title=self.title, lots=lots)
+        context = {'form': form, 'title': self.title, 'lots': lots}
+        return flask.render_template(self.template_name, **context)
 
 
 class LotDeleteView(View):
@@ -171,13 +173,13 @@ class UploadSnapshotView(View):
     template_name = 'inventory/upload_snapshot.html'
 
     def dispatch_request(self):
-        context = {'page_title': 'Upload Snapshot'}
         lots = Lot.query.filter(Lot.owner_id == current_user.id).all()
         form = UploadSnapshotForm()
+        context = {'page_title': 'Upload Snapshot', 'lots': lots, 'form': form}
         if form.validate_on_submit():
             form.save()
 
-        return flask.render_template(self.template_name, form=form, lots=lots, **context)
+        return flask.render_template(self.template_name, **context)
 
 
 class DeviceCreateView(View):
@@ -186,15 +188,15 @@ class DeviceCreateView(View):
     template_name = 'inventory/device_create.html'
 
     def dispatch_request(self):
-        context = {'page_title': 'New Device'}
         lots = Lot.query.filter(Lot.owner_id == current_user.id).all()
         form = NewDeviceForm()
+        context = {'page_title': 'New Device', 'lots': lots, 'form': form}
         if form.validate_on_submit():
             form.save()
             next_url = url_for('inventory.devices.devicelist')
             return flask.redirect(next_url)
 
-        return flask.render_template(self.template_name, form=form, lots=lots, **context)
+        return flask.render_template(self.template_name, **context)
 
 
 class TagListView(View):
@@ -203,9 +205,10 @@ class TagListView(View):
     template_name = 'inventory/tag_list.html'
 
     def dispatch_request(self):
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
         tags = Tag.query.filter(Tag.owner_id == current_user.id)
         context = {
-            'lots': [],
+            'lots': lots,
             'tags': tags,
             'page_title': 'Tags Management',
         }
@@ -218,7 +221,8 @@ class TagAddView(View):
     template_name = 'inventory/tag_create.html'
 
     def dispatch_request(self):
-        context = {'page_title': 'New Tag'}
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        context = {'page_title': 'New Tag', 'lots': lots}
         form = TagForm()
         if form.validate_on_submit():
             form.save()
@@ -234,7 +238,8 @@ class TagAddUnnamedView(View):
     template_name = 'inventory/tag_create_unnamed.html'
 
     def dispatch_request(self):
-        context = {'page_title': 'New Unnamed Tag'}
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        context = {'page_title': 'New Unnamed Tag', 'lots': lots}
         form = TagUnnamedForm()
         if form.validate_on_submit():
             form.save()
@@ -280,6 +285,7 @@ class TagUnlinkDeviceView(View):
     template_name = 'inventory/tag_unlink_device.html'
 
     def dispatch_request(self, id):
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
         form = TagDeviceForm(delete=True, device=id)
         if form.validate_on_submit():
             form.remove()
@@ -287,7 +293,7 @@ class TagUnlinkDeviceView(View):
             next_url = url_for('inventory.devices.devicelist')
             return flask.redirect(next_url)
 
-        return flask.render_template(self.template_name, form=form, referrer=request.referrer)
+        return flask.render_template(self.template_name, form=form, lots=lots, referrer=request.referrer)
 
 
 class NewActionView(View):
