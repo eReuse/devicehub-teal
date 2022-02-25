@@ -4,11 +4,18 @@ from flask.views import View
 from flask_login import current_user, login_required
 
 from ereuse_devicehub import messages
-from ereuse_devicehub.inventory.forms import (AllocateForm, LotDeviceForm,
-                                              LotForm, NewActionForm,
-                                              NewDeviceForm, TagDeviceForm,
-                                              TagForm, TagUnnamedForm,
-                                              UploadSnapshotForm, DataWipeForm)
+from ereuse_devicehub.inventory.forms import (
+    AllocateForm,
+    DataWipeForm,
+    LotDeviceForm,
+    LotForm,
+    NewActionForm,
+    NewDeviceForm,
+    TagDeviceForm,
+    TagForm,
+    TagUnnamedForm,
+    UploadSnapshotForm,
+)
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
@@ -27,8 +34,11 @@ class DeviceListMix(View):
         filter_types = ['Desktop', 'Laptop', 'Server']
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
         lot = None
-        tags = Tag.query.filter(Tag.owner_id == current_user.id).filter(
-            Tag.device_id == None).order_by(Tag.created.desc())
+        tags = (
+            Tag.query.filter(Tag.owner_id == current_user.id)
+            .filter(Tag.device_id == None)
+            .order_by(Tag.created.desc())
+        )
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
@@ -38,10 +48,12 @@ class DeviceListMix(View):
             form_new_allocate = AllocateForm(lot=lot.id)
             form_new_datawipe = DataWipeForm(lot=lot.id)
         else:
-            devices = Device.query.filter(
-                Device.owner_id == current_user.id).filter(
-                Device.type.in_(filter_types)).filter(Device.lots == None).order_by(
-                    Device.updated.desc())
+            devices = (
+                Device.query.filter(Device.owner_id == current_user.id)
+                .filter(Device.type.in_(filter_types))
+                .filter(Device.lots == None)
+                .order_by(Device.updated.desc())
+            )
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
@@ -61,14 +73,13 @@ class DeviceListMix(View):
             'form_new_datawipe': form_new_datawipe,
             'lot': lot,
             'tags': tags,
-            'list_devices': list_devices
+            'list_devices': list_devices,
         }
 
         return self.context
 
 
 class DeviceListView(DeviceListMix):
-
     def dispatch_request(self, lot_id=None):
         self.get_context(lot_id)
         return flask.render_template(self.template_name, **self.context)
@@ -80,8 +91,11 @@ class DeviceDetailView(View):
 
     def dispatch_request(self, id):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        device = Device.query.filter(
-            Device.owner_id == current_user.id).filter(Device.devicehub_id == id).one()
+        device = (
+            Device.query.filter(Device.owner_id == current_user.id)
+            .filter(Device.devicehub_id == id)
+            .one()
+        )
 
         context = {
             'device': device,
@@ -255,8 +269,9 @@ class TagDetailView(View):
 
     def dispatch_request(self, id):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        tag = Tag.query.filter(
-            Tag.owner_id == current_user.id).filter(Tag.id == id).one()
+        tag = (
+            Tag.query.filter(Tag.owner_id == current_user.id).filter(Tag.id == id).one()
+        )
 
         context = {
             'lots': lots,
@@ -293,7 +308,9 @@ class TagUnlinkDeviceView(View):
             next_url = url_for('inventory.devices.devicelist')
             return flask.redirect(next_url)
 
-        return flask.render_template(self.template_name, form=form, lots=lots, referrer=request.referrer)
+        return flask.render_template(
+            self.template_name, form=form, lots=lots, referrer=request.referrer
+        )
 
 
 class NewActionView(View):
@@ -361,21 +378,46 @@ class NewDataWipeView(NewActionView, DeviceListMix):
 
 
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
-devices.add_url_rule('/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add'))
-devices.add_url_rule('/action/datawipe/add/', view_func=NewDataWipeView.as_view('datawipe_add'))
+devices.add_url_rule(
+    '/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add')
+)
+devices.add_url_rule(
+    '/action/datawipe/add/', view_func=NewDataWipeView.as_view('datawipe_add')
+)
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
-devices.add_url_rule('/device/<string:id>/', view_func=DeviceDetailView.as_view('device_details'))
-devices.add_url_rule('/lot/<string:lot_id>/device/', view_func=DeviceListView.as_view('lotdevicelist'))
-devices.add_url_rule('/lot/devices/add/', view_func=LotDeviceAddView.as_view('lot_devices_add'))
-devices.add_url_rule('/lot/devices/del/', view_func=LotDeviceDeleteView.as_view('lot_devices_del'))
+devices.add_url_rule(
+    '/device/<string:id>/', view_func=DeviceDetailView.as_view('device_details')
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/device/', view_func=DeviceListView.as_view('lotdevicelist')
+)
+devices.add_url_rule(
+    '/lot/devices/add/', view_func=LotDeviceAddView.as_view('lot_devices_add')
+)
+devices.add_url_rule(
+    '/lot/devices/del/', view_func=LotDeviceDeleteView.as_view('lot_devices_del')
+)
 devices.add_url_rule('/lot/add/', view_func=LotCreateView.as_view('lot_add'))
-devices.add_url_rule('/lot/<string:id>/del/', view_func=LotDeleteView.as_view('lot_del'))
+devices.add_url_rule(
+    '/lot/<string:id>/del/', view_func=LotDeleteView.as_view('lot_del')
+)
 devices.add_url_rule('/lot/<string:id>/', view_func=LotUpdateView.as_view('lot_edit'))
-devices.add_url_rule('/upload-snapshot/', view_func=UploadSnapshotView.as_view('upload_snapshot'))
+devices.add_url_rule(
+    '/upload-snapshot/', view_func=UploadSnapshotView.as_view('upload_snapshot')
+)
 devices.add_url_rule('/device/add/', view_func=DeviceCreateView.as_view('device_add'))
 devices.add_url_rule('/tag/', view_func=TagListView.as_view('taglist'))
 devices.add_url_rule('/tag/add/', view_func=TagAddView.as_view('tag_add'))
-devices.add_url_rule('/tag/unnamed/add/', view_func=TagAddUnnamedView.as_view('tag_unnamed_add'))
-devices.add_url_rule('/tag/<string:id>/', view_func=TagDetailView.as_view('tag_details'))
-devices.add_url_rule('/tag/devices/add/', view_func=TagLinkDeviceView.as_view('tag_devices_add'))
-devices.add_url_rule('/tag/devices/<int:id>/del/', view_func=TagUnlinkDeviceView.as_view('tag_devices_del'))
+devices.add_url_rule(
+    '/tag/unnamed/add/', view_func=TagAddUnnamedView.as_view('tag_unnamed_add')
+)
+devices.add_url_rule(
+    '/tag/<string:id>/', view_func=TagDetailView.as_view('tag_details')
+)
+devices.add_url_rule(
+    '/tag/devices/add/', view_func=TagLinkDeviceView.as_view('tag_devices_add')
+)
+devices.add_url_rule(
+    '/tag/devices/<int:id>/del/',
+    view_func=TagUnlinkDeviceView.as_view('tag_devices_del'),
+)
