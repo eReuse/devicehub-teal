@@ -148,3 +148,14 @@ function get_device_list() {
     description = $.map(list_devices, function(x) { return x }).join(", ");
     $(".enumeration-devices").html(description);
 }
+
+function export_file(type_file) {
+    var devices = $(".deviceSelect").filter(':checked');
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data-device-dhid')}).join(",");
+    if (devices_id){
+        var url = "/inventory/export/"+type_file+"/?ids="+devices_id;
+        window.location.href = url;
+    } else {
+        $("#exportAlertModal").click();
+    }
+}

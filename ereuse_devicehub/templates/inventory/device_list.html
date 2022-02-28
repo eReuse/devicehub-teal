@@ -205,10 +205,30 @@
                     <i class="bi bi-reply"></i>
                     Exports
                 </button>
+                <span class="d-none" id="exportAlertModal" data-bs-toggle="modal" data-bs-target="#exportErrorModal"></span>
                 <ul class="dropdown-menu" aria-labelledby="btnExport">
                   <li>
-                    <a href="#" class="dropdown-item">
-                      TODO: Not implemented
+                    <a href="javascript:export_file('devices')" class="dropdown-item">
+                      <i class="bi bi-file-spreadsheet"></i>
+                      Devices Spreadsheet
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:export_file('metrics')" class="dropdown-item">
+                      <i class="bi bi-file-spreadsheet"></i>
+                      Metrics Spreadsheet
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:export_file('links')" class="dropdown-item">
+                      <i class="bi bi-link-45deg"></i>
+                      Public Links
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:export_file('certificates')" class="dropdown-item">
+                      <i class="bi bi-eraser-fill"></i>
+                      Erasure Certificate
                     </a>
                   </li>
                 </ul>
@@ -353,6 +373,7 @@
 {% include "inventory/allocate.html" %}
 {% include "inventory/data_wipe.html" %}
 {% include "inventory/trade.html" %}
+{% include "inventory/alert_export_error.html" %}
 
 <!-- CDN -->
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
