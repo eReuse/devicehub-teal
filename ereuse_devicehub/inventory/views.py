@@ -256,7 +256,10 @@ class TagAddUnnamedView(View):
         context = {'page_title': 'New Unnamed Tag', 'lots': lots}
         form = TagUnnamedForm()
         if form.validate_on_submit():
-            form.save()
+            tags = form.save()
+            if not tags:
+                msg = 'Sorry, the communication with the tag server is not possible now!'
+                messages.error(msg)
             next_url = url_for('inventory.devices.taglist')
             return flask.redirect(next_url)
 

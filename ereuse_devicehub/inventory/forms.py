@@ -1,6 +1,7 @@
 import copy
 import json
 from json.decoder import JSONDecodeError
+from requests.exceptions import ConnectionError
 
 from boltons.urlutils import URL
 from ereuse_devicehub.db import db
@@ -411,7 +412,11 @@ class TagUnnamedForm(FlaskForm):
 
     def save(self):
         num = self.amount.data
-        tags_id, _ = g.tag_provider.post('/', {}, query=[('num', num)])
+        try:
+            tags_id, _ = g.tag_provider.post('/', {}, query=[('num', num)])
+        except ConnectionError:
+            pass
+            return []
         tags = [Tag(id=tag_id, provider=g.inventory.tag_provider) for tag_id in tags_id]
         db.session.add_all(tags)
         db.session.commit()
