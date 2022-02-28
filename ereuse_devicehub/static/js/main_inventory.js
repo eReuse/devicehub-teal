@@ -155,5 +155,7 @@ function export_file(type_file) {
     if (devices_id){
         var url = "/inventory/export/"+type_file+"/?ids="+devices_id;
         window.location.href = url;
+    } else {
+        $("#exportAlertModal").click();
     }
 }
