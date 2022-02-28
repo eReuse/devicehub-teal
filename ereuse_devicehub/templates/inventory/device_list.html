@@ -33,8 +33,34 @@
         <div class="card-body pt-3">
           <!-- Bordered Tabs -->
 
-            <div class="col-12">
-                <h3><a href="{{ url_for('inventory.devices.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
+            <div class="row">
+              <div class="col-6">
+                  <h3><a href="{{ url_for('inventory.devices.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
+              </div>
+              <div class="col">
+                  {% if lot and lot.is_temporary and not lot.devices %}
+                    <a href="javascript:void()" class="" data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
+                      <i class="bi bi-trash"></i>
+                      Remove Lot
+                    </a>
+                  {% endif %}
+              </div>
+              <div class="col">
+                  {% if lot and lot.is_temporary %}
+                  <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingLotModal">
+                    <i class="bi bi-plus"></i>
+                    Add selected Devices to a lot
+                  </a>
+                  {% endif %}
+              </div>
+              <div class="col">
+                  {% if lot and lot.is_temporary %}
+                  <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#removeLotModal">
+                    <i class="bi bi-x"></i>
+                    Remove selected devices from a lot
+                  </a>
+                  {% endif %}
+              </div>
             </div>
         </div>
       </div>
