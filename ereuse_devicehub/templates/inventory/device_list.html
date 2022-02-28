@@ -39,7 +39,7 @@
               </div>
               <div class="col">
                   {% if lot and lot.is_temporary and not lot.devices %}
-                    <a href="javascript:void()" class="" data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
+                    <a href="javascript:void()" data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
                       <i class="bi bi-trash"></i>
                       Remove Lot
                     </a>
@@ -47,18 +47,18 @@
               </div>
               <div class="col">
                   {% if lot and lot.is_temporary %}
-                  <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingLotModal">
-                    <i class="bi bi-plus"></i>
-                    Add selected Devices to a lot
-                  </a>
+                    <a href="javascript:newTrade('user_from')">
+                      <i class="bi bi-plus"></i>
+                      Add supplier
+                    </a>
                   {% endif %}
               </div>
               <div class="col">
                   {% if lot and lot.is_temporary %}
-                  <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#removeLotModal">
-                    <i class="bi bi-x"></i>
-                    Remove selected devices from a lot
-                  </a>
+                    <a href="javascript:newTrade('user_to')">
+                      <i class="bi bi-plus"></i>
+                      Add receiver
+                    </a>
                   {% endif %}
               </div>
             </div>
@@ -92,16 +92,6 @@
                 </button>
                 <span class="d-none" id="activeTradeModal" data-bs-toggle="modal" data-bs-target="#tradeLotModal"></span>
                 <ul class="dropdown-menu" aria-labelledby="btnLots">
-                {% if lot and lot.is_temporary and not lot.devices %}
-                  <li>
-                    <a href="javascript:newAction('Use')" class="dropdown-item"
-                        data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
-                      <i class="bi bi-trash"></i>
-                      Remove Lot
-                      <span class="caret"></span>
-                    </a>
-                  </li>
-                {% endif %}
                   <li>
                     <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingLotModal">
                       <i class="bi bi-plus"></i>
@@ -114,29 +104,6 @@
                       Remove selected devices from a lot
                     </a>
                   </li>
-                  {% if lot.is_temporary %}
-                  <li>
-                    <a href="javascript:newTrade('user_from')" class="dropdown-item">
-                      <i class="bi bi-plus"></i>
-                      Add supplier
-                    </a>
-                  </li>
-                  <li>
-                    <a href="javascript:newTrade('user_to')" class="dropdown-item">
-                      <i class="bi bi-plus"></i>
-                      Add receiver
-                    </a>
-                  </li>
-                  {% endif %}
-                  {% if lot and not lot.is_temporary %}
-                  <li>
-                    <a href="{{ url_for('inventory.devices.trade_document_add', lot_id=lot.id)}}" class="dropdown-item">
-                      <i class="bi bi-plus"></i>
-                      Add new document
-                      <span class="caret"></span>
-                    </a>
-                  </li>
-                  {% endif %}
                 </ul>
               </div>
               <div class="btn-group dropdown ml-1" uib-dropdown="">
@@ -283,7 +250,7 @@
 
               <div class="btn-group dropdown ml-1" uib-dropdown="">
                 <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-tag"></i>
+                    <i class="bi bi-laptop"></i>
                     New Device
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
@@ -301,6 +268,24 @@
                   </li>
                 </ul>
               </div>
+
+              {% if lot and not lot.is_temporary %}
+              <div class="btn-group dropdown ml-1" uib-dropdown="">
+                <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-book"></i>
+                    Documents
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
+                  <li>
+                    <a href="{{ url_for('inventory.devices.trade_document_add', lot_id=lot.id)}}" class="dropdown-item">
+                      <i class="bi bi-plus"></i>
+                      Add new document
+                      <span class="caret"></span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              {% endif %}
 
               <div class="tab-content pt-2">
 
