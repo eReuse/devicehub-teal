@@ -1,5 +1,5 @@
 import flask
-from flask import Blueprint, request, url_for
+from flask import Blueprint, g, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
 
@@ -14,6 +14,8 @@ from ereuse_devicehub.inventory.forms import (
     TagDeviceForm,
     TagForm,
     TagUnnamedForm,
+    TradeDocumentForm,
+    TradeForm,
     UploadSnapshotForm,
 )
 from ereuse_devicehub.resources.device.models import Device
@@ -47,6 +49,11 @@ class DeviceListMix(View):
             form_new_action = NewActionForm(lot=lot.id)
             form_new_allocate = AllocateForm(lot=lot.id)
             form_new_datawipe = DataWipeForm(lot=lot.id)
+            form_new_trade = TradeForm(
+                lot=lot.id,
+                user_to=g.user.email,
+                user_from=g.user.email,
+            )
         else:
             devices = (
                 Device.query.filter(Device.owner_id == current_user.id)
@@ -57,7 +64,7 @@ class DeviceListMix(View):
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
-
+            form_new_trade = ''
         action_devices = form_new_action.devices.data
         list_devices = []
         if action_devices:
@@ -71,6 +78,7 @@ class DeviceListMix(View):
             'form_new_action': form_new_action,
             'form_new_allocate': form_new_allocate,
             'form_new_datawipe': form_new_datawipe,
+            'form_new_trade': form_new_trade,
             'lot': lot,
             'tags': tags,
             'list_devices': list_devices,
@@ -323,7 +331,9 @@ class NewActionView(View):
 
         if self.form.validate_on_submit():
             instance = self.form.save()
-            messages.success('Action "{}" created successfully!'.format(instance.type))
+            messages.success(
+                'Action "{}" created successfully!'.format(self.form.type.data)
+            )
 
             next_url = self.get_next_url()
             return flask.redirect(next_url)
@@ -346,7 +356,9 @@ class NewAllocateView(NewActionView, DeviceListMix):
 
         if self.form.validate_on_submit():
             instance = self.form.save()
-            messages.success('Action "{}" created successfully!'.format(instance.type))
+            messages.success(
+                'Action "{}" created successfully!'.format(self.form.type.data)
+            )
 
             next_url = self.get_next_url()
             return flask.redirect(next_url)
@@ -366,7 +378,9 @@ class NewDataWipeView(NewActionView, DeviceListMix):
 
         if self.form.validate_on_submit():
             instance = self.form.save()
-            messages.success('Action "{}" created successfully!'.format(instance.type))
+            messages.success(
+                'Action "{}" created successfully!'.format(self.form.type.data)
+            )
 
             next_url = self.get_next_url()
             return flask.redirect(next_url)
@@ -377,12 +391,60 @@ class NewDataWipeView(NewActionView, DeviceListMix):
         return flask.render_template(self.template_name, **self.context)
 
 
+class NewTradeView(NewActionView, DeviceListMix):
+    methods = ['POST']
+    form_class = TradeForm
+
+    def dispatch_request(self):
+        self.form = self.form_class()
+
+        if self.form.validate_on_submit():
+            instance = self.form.save()
+            messages.success(
+                'Action "{}" created successfully!'.format(self.form.type.data)
+            )
+
+            next_url = self.get_next_url()
+            return flask.redirect(next_url)
+
+        lot_id = self.form.lot.data
+        self.get_context(lot_id)
+        self.context['form_new_trade'] = self.form
+        return flask.render_template(self.template_name, **self.context)
+
+
+class NewTradeDocumentView(View):
+    methods = ['POST', 'GET']
+    decorators = [login_required]
+    template_name = 'inventory/trade_document.html'
+    form_class = TradeDocumentForm
+    title = "Add new document"
+
+    def dispatch_request(self, lot_id):
+        self.form = self.form_class(lot=lot_id)
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success('Document created successfully!')
+            next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
+            return flask.redirect(next_url)
+
+        return flask.render_template(
+            self.template_name, form=self.form, title=self.title
+        )
+
+
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
+devices.add_url_rule('/action/trade/add/', view_func=NewTradeView.as_view('trade_add'))
 devices.add_url_rule(
     '/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add')
 )
 devices.add_url_rule(
     '/action/datawipe/add/', view_func=NewDataWipeView.as_view('datawipe_add')
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/trade-document/add/',
+    view_func=NewTradeDocumentView.as_view('trade_document_add'),
 )
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule(
