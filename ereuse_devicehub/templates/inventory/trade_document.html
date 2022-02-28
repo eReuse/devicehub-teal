@@ -39,15 +39,15 @@
                 {{ field.label(class_="form-label") }}
                 {{ field }}
                 <small class="text-muted">{{ field.description }}</small>
-              {% endif %}
-              {% if field.errors %}
+                {% if field.errors %}
                 <p class="text-danger">
                   {% for error in field.errors %}
                     {{ error }}<br/>
                   {% endfor %}
                 </p>
-              {% endif %}
+                {% endif %}
               </div>
+              {% endif %}
             {% endfor %}
 
             <div class="col-12">
