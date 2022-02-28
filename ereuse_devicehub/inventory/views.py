@@ -1,7 +1,12 @@
+import csv
+from io import StringIO
+
 import flask
-from flask import Blueprint, request, url_for
+import flask_weasyprint
+from flask import Blueprint, g, make_response, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
+from werkzeug.exceptions import NotFound
 
 from ereuse_devicehub import messages
 from ereuse_devicehub.inventory.forms import (
@@ -14,9 +19,14 @@ from ereuse_devicehub.inventory.forms import (
     TagDeviceForm,
     TagForm,
     TagUnnamedForm,
+    TradeDocumentForm,
+    TradeForm,
     UploadSnapshotForm,
 )
-from ereuse_devicehub.resources.device.models import Device
+from ereuse_devicehub.resources.action.models import Trade
+from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
+from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
+from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 
@@ -36,7 +46,7 @@ class DeviceListMix(View):
         lot = None
         tags = (
             Tag.query.filter(Tag.owner_id == current_user.id)
-            .filter(Tag.device_id == None)
+            .filter(Tag.device_id.is_(None))
             .order_by(Tag.created.desc())
         )
 
@@ -47,17 +57,22 @@ class DeviceListMix(View):
             form_new_action = NewActionForm(lot=lot.id)
             form_new_allocate = AllocateForm(lot=lot.id)
             form_new_datawipe = DataWipeForm(lot=lot.id)
+            form_new_trade = TradeForm(
+                lot=lot.id,
+                user_to=g.user.email,
+                user_from=g.user.email,
+            )
         else:
             devices = (
                 Device.query.filter(Device.owner_id == current_user.id)
                 .filter(Device.type.in_(filter_types))
-                .filter(Device.lots == None)
+                .filter_by(lots=None)
                 .order_by(Device.updated.desc())
             )
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
-
+            form_new_trade = ''
         action_devices = form_new_action.devices.data
         list_devices = []
         if action_devices:
@@ -71,6 +86,7 @@ class DeviceListMix(View):
             'form_new_action': form_new_action,
             'form_new_allocate': form_new_allocate,
             'form_new_datawipe': form_new_datawipe,
+            'form_new_trade': form_new_trade,
             'lot': lot,
             'tags': tags,
             'list_devices': list_devices,
@@ -325,8 +341,10 @@ class NewActionView(View):
         self.form = self.form_class()
 
         if self.form.validate_on_submit():
-            instance = self.form.save()
-            messages.success('Action "{}" created successfully!'.format(instance.type))
+            self.form.save()
+            messages.success(
+                'Action "{}" created successfully!'.format(self.form.type.data)
+            )
 
             next_url = self.get_next_url()
             return flask.redirect(next_url)
@@ -348,8 +366,10 @@ class NewAllocateView(NewActionView, DeviceListMix):
         self.form = self.form_class()
 
         if self.form.validate_on_submit():
-            instance = self.form.save()
-            messages.success('Action "{}" created successfully!'.format(instance.type))
+            self.form.save()
+            messages.success(
+                'Action "{}" created successfully!'.format(self.form.type.data)
+            )
 
             next_url = self.get_next_url()
             return flask.redirect(next_url)
@@ -368,8 +388,10 @@ class NewDataWipeView(NewActionView, DeviceListMix):
         self.form = self.form_class()
 
         if self.form.validate_on_submit():
-            instance = self.form.save()
-            messages.success('Action "{}" created successfully!'.format(instance.type))
+            self.form.save()
+            messages.success(
+                'Action "{}" created successfully!'.format(self.form.type.data)
+            )
 
             next_url = self.get_next_url()
             return flask.redirect(next_url)
@@ -380,12 +402,185 @@ class NewDataWipeView(NewActionView, DeviceListMix):
         return flask.render_template(self.template_name, **self.context)
 
 
+class NewTradeView(NewActionView, DeviceListMix):
+    methods = ['POST']
+    form_class = TradeForm
+
+    def dispatch_request(self):
+        self.form = self.form_class()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success(
+                'Action "{}" created successfully!'.format(self.form.type.data)
+            )
+
+            next_url = self.get_next_url()
+            return flask.redirect(next_url)
+
+        lot_id = self.form.lot.data
+        self.get_context(lot_id)
+        self.context['form_new_trade'] = self.form
+        return flask.render_template(self.template_name, **self.context)
+
+
+class NewTradeDocumentView(View):
+    methods = ['POST', 'GET']
+    decorators = [login_required]
+    template_name = 'inventory/trade_document.html'
+    form_class = TradeDocumentForm
+    title = "Add new document"
+
+    def dispatch_request(self, lot_id):
+        self.form = self.form_class(lot=lot_id)
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success('Document created successfully!')
+            next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
+            return flask.redirect(next_url)
+
+        return flask.render_template(
+            self.template_name, form=self.form, title=self.title
+        )
+
+
+class ExportsView(View):
+    methods = ['GET']
+    decorators = [login_required]
+
+    def dispatch_request(self, export_id):
+        export_ids = {
+            'metrics': self.metrics,
+            'devices': self.devices_list,
+            'certificates': self.erasure,
+            'links': self.public_links,
+        }
+
+        if export_id not in export_ids:
+            return NotFound()
+        return export_ids[export_id]()
+
+    def find_devices(self):
+        args = request.args.get('ids')
+        ids = args.split(',') if args else []
+        query = Device.query.filter(Device.owner == g.user)
+        return query.filter(Device.devicehub_id.in_(ids))
+
+    def response_csv(self, data, name):
+        bfile = data.getvalue().encode('utf-8')
+        # insert proof
+        insert_hash(bfile)
+        output = make_response(bfile)
+        output.headers['Content-Disposition'] = 'attachment; filename={}'.format(name)
+        output.headers['Content-type'] = 'text/csv'
+        return output
+
+    def devices_list(self):
+        """Get device query and put information in csv format."""
+        data = StringIO()
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        first = True
+
+        for device in self.find_devices():
+            d = DeviceRow(device, {})
+            if first:
+                cw.writerow(d.keys())
+                first = False
+            cw.writerow(d.values())
+
+        return self.response_csv(data, "export.csv")
+
+    def metrics(self):
+        """Get device query and put information in csv format."""
+        data = StringIO()
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        first = True
+        devs_id = []
+        # Get the allocate info
+        for device in self.find_devices():
+            devs_id.append(device.id)
+            for allocate in device.get_metrics():
+                d = ActionRow(allocate)
+                if first:
+                    cw.writerow(d.keys())
+                    first = False
+                cw.writerow(d.values())
+
+        # Get the trade info
+        query_trade = Trade.query.filter(
+            Trade.devices.any(Device.id.in_(devs_id))
+        ).all()
+
+        lot_id = request.args.get('lot')
+        if lot_id and not query_trade:
+            lot = Lot.query.filter_by(id=lot_id).one()
+            if hasattr(lot, "trade") and lot.trade:
+                if g.user in [lot.trade.user_from, lot.trade.user_to]:
+                    query_trade = [lot.trade]
+
+        for trade in query_trade:
+            data_rows = trade.get_metrics()
+            for row in data_rows:
+                d = ActionRow(row)
+                if first:
+                    cw.writerow(d.keys())
+                    first = False
+                cw.writerow(d.values())
+
+        return self.response_csv(data, "actions_export.csv")
+
+    def public_links(self):
+        # get a csv with the publink links of this devices
+        data = StringIO()
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        cw.writerow(['links'])
+        host_url = request.host_url
+        for dev in self.find_devices():
+            code = dev.devicehub_id
+            link = [f"{host_url}devices/{code}"]
+            cw.writerow(link)
+
+        return self.response_csv(data, "links.csv")
+
+    def erasure(self):
+        template = self.build_erasure_certificate()
+        res = flask_weasyprint.render_pdf(
+            flask_weasyprint.HTML(string=template),
+            download_filename='erasure-certificate.pdf',
+        )
+        insert_hash(res.data)
+        return res
+
+    def build_erasure_certificate(self):
+        erasures = []
+        for device in self.find_devices():
+            if isinstance(device, Computer):
+                for privacy in device.privacy:
+                    erasures.append(privacy)
+            elif isinstance(device, DataStorage):
+                if device.privacy:
+                    erasures.append(device.privacy)
+
+        params = {
+            'title': 'Erasure Certificate',
+            'erasures': tuple(erasures),
+            'url_pdf': '',
+        }
+        return flask.render_template('inventory/erasure.html', **params)
+
+
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
+devices.add_url_rule('/action/trade/add/', view_func=NewTradeView.as_view('trade_add'))
 devices.add_url_rule(
     '/action/allocate/add/', view_func=NewAllocateView.as_view('allocate_add')
 )
 devices.add_url_rule(
     '/action/datawipe/add/', view_func=NewDataWipeView.as_view('datawipe_add')
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/trade-document/add/',
+    view_func=NewTradeDocumentView.as_view('trade_document_add'),
 )
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule(
@@ -423,4 +618,7 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/tag/devices/<int:id>/del/',
     view_func=TagUnlinkDeviceView.as_view('tag_devices_del'),
+)
+devices.add_url_rule(
+    '/export/<string:export_id>/', view_func=ExportsView.as_view('export')
 )

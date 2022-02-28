@@ -68,185 +68,243 @@
       <div class="card">
         <div class="card-body pt-3" style="min-height: 650px;">
           <!-- Bordered Tabs -->
+          {% if lot and not lot.is_temporary %}
+          <ul class="nav nav-tabs nav-tabs-bordered">
 
-            <div class="btn-group dropdown ml-1">
-              {% if lot and lot.is_temporary and not lot.devices %}
-              <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
-                <i class="bi bi-trash"></i>
-                Remove Lot
-                <span class="caret"></span>
-              </button>
-              {% else %}
-              <button id="btnLots" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-folder2"></i>
-                Lots
-                <span class="caret"></span>
-              </button>
-              {% endif %}
-              <ul class="dropdown-menu" aria-labelledby="btnLots">
-                <li>
-                  <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingLotModal">
+            <li class="nav-item">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#devices-list">Devices</button>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#trade-documents-list">Documents</button>
+            </li>
+
+          </ul>
+          {% endif %}
+          <div class="tab-content pt-5">
+            <div id="devices-list" class="tab-pane fade devices-list active show">
+
+              <div class="btn-group dropdown ml-1">
+                <button id="btnLots" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-folder2"></i>
+                  Lots
+                  <span class="caret"></span>
+                </button>
+                <span class="d-none" id="activeTradeModal" data-bs-toggle="modal" data-bs-target="#tradeLotModal"></span>
+                <ul class="dropdown-menu" aria-labelledby="btnLots">
+                {% if lot and lot.is_temporary and not lot.devices %}
+                  <li>
+                    <a href="javascript:newAction('Use')" class="dropdown-item"
+                        data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
+                      <i class="bi bi-trash"></i>
+                      Remove Lot
+                      <span class="caret"></span>
+                    </a>
+                  </li>
+                {% endif %}
+                  <li>
+                    <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingLotModal">
+                      <i class="bi bi-plus"></i>
+                      Add selected Devices to a lot
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#removeLotModal">
+                      <i class="bi bi-x"></i>
+                      Remove selected devices from a lot
+                    </a>
+                  </li>
+                  {% if lot.is_temporary %}
+                  <li>
+                    <a href="javascript:newTrade('user_from')" class="dropdown-item">
+                      <i class="bi bi-plus"></i>
+                      Add supplier
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:newTrade('user_to')" class="dropdown-item">
+                      <i class="bi bi-plus"></i>
+                      Add receiver
+                    </a>
+                  </li>
+                  {% endif %}
+                  {% if lot and not lot.is_temporary %}
+                  <li>
+                    <a href="{{ url_for('inventory.devices.trade_document_add', lot_id=lot.id)}}" class="dropdown-item">
+                      <i class="bi bi-plus"></i>
+                      Add new document
+                      <span class="caret"></span>
+                    </a>
+                  </li>
+                  {% endif %}
+                </ul>
+              </div>
+              <div class="btn-group dropdown ml-1" uib-dropdown="">
+                <button id="btnActions" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-plus"></i>
-                    Add selected Devices to a lot
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#removeLotModal">
-                    <i class="bi bi-x"></i>
-                    Remove selected devices from a lot
-                  </a>
-                </li>
-              </ul>
-            </div>
+                    New Actions
+                </button>
+                <span class="d-none" id="activeActionModal" data-bs-toggle="modal" data-bs-target="#actionModal"></span>
+                <span class="d-none" id="activeAllocateModal" data-bs-toggle="modal" data-bs-target="#allocateModal"></span>
+                <span class="d-none" id="activeDatawipeModal" data-bs-toggle="modal" data-bs-target="#datawipeModal"></span>
+                <ul class="dropdown-menu" aria-labelledby="btnActions">
+                  <li>
+                      Status actions
+                  </li>
+                  <li>
+                    <a href="javascript:newAction('Recycling')" class="dropdown-item">
+                      <i class="bi bi-recycle"></i>
+                      Recycling
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:newAction('Use')" class="dropdown-item">
+                      <i class="bi bi-play-circle-fill"></i>
+                      Use
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:newAction('Refurbish')" class="dropdown-item">
+                      <i class="bi bi-tools"></i>
+                      Refurbish
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:newAction('Management')" class="dropdown-item">
+                      <i class="bi bi-mastodon"></i>
+                      Management
+                    </a>
+                  </li>
+                  <li>
+                      Allocation
+                  </li>
+                  <li>
+                    <a href="javascript:newAllocate('Allocate')" class="dropdown-item">
+                      <i class="bi bi-house-fill"></i>
+                      Allocate
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:newAllocate('Deallocate')" class="dropdown-item">
+                      <i class="bi bi-house"></i>
+                      Deallocate
+                    </a>
+                  </li>
+                  <li>
+                      Physical actions
+                  </li>
+                  <li>
+                    <a href="javascript:newAction('ToPrepare')" class="dropdown-item">
+                      <i class="bi bi-tools"></i>
+                      ToPrepare
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:newAction('Prepare')" class="dropdown-item">
+                      <i class="bi bi-egg"></i>
+                      Prepare
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:newDataWipe('DataWipe')" class="dropdown-item">
+                      <i class="bi bi-eraser-fill"></i>
+                      DataWipe
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:newAction('ToRepair')" class="dropdown-item">
+                      <i class="bi bi-screwdriver"></i>
+                      ToRepair
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:newAction('Ready')" class="dropdown-item">
+                      <i class="bi bi-check2-all"></i>
+                      Ready
+                    </a>
+                  </li>
+                </ul>
+              </div>
 
-            <div class="btn-group dropdown ml-1" uib-dropdown="">
-              <button id="btnActions" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-plus"></i>
-                  New Actions
-              </button>
-              <span class="d-none" id="activeActionModal" data-bs-toggle="modal" data-bs-target="#actionModal"></span>
-              <span class="d-none" id="activeAllocateModal" data-bs-toggle="modal" data-bs-target="#allocateModal"></span>
-              <span class="d-none" id="activeDatawipeModal" data-bs-toggle="modal" data-bs-target="#datawipeModal"></span>
-              <ul class="dropdown-menu" aria-labelledby="btnActions">
-                <li>
-                    Status actions
-                </li>
-                <li>
-                  <a href="javascript:newAction('Recycling')" class="dropdown-item">
-                    <i class="bi bi-recycle"></i>
-                    Recycling
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:newAction('Use')" class="dropdown-item">
-                    <i class="bi bi-play-circle-fill"></i>
-                    Use
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:newAction('Refurbish')" class="dropdown-item">
-                    <i class="bi bi-tools"></i>
-                    Refurbish
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:newAction('Management')" class="dropdown-item">
-                    <i class="bi bi-mastodon"></i>
-                    Management
-                  </a>
-                </li>
-                <li>
-                    Allocation
-                </li>
-                <li>
-                  <a href="javascript:newAllocate('Allocate')" class="dropdown-item">
-                    <i class="bi bi-house-fill"></i>
-                    Allocate
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:newAllocate('Deallocate')" class="dropdown-item">
-                    <i class="bi bi-house"></i>
-                    Deallocate
-                  </a>
-                </li>
-                <li>
-                    Physical actions
-                </li>
-                <li>
-                  <a href="javascript:newAction('ToPrepare')" class="dropdown-item">
-                    <i class="bi bi-tools"></i>
-                    ToPrepare
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:newAction('Prepare')" class="dropdown-item">
-                    <i class="bi bi-egg"></i>
-                    Prepare
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:newDataWipe('DataWipe')" class="dropdown-item">
-                    <i class="bi bi-eraser-fill"></i>
-                    DataWipe
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:newAction('ToRepair')" class="dropdown-item">
-                    <i class="bi bi-screwdriver"></i>
-                    ToRepair
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:newAction('Ready')" class="dropdown-item">
-                    <i class="bi bi-check2-all"></i>
-                    Ready
-                  </a>
-                </li>
-              </ul>
-            </div>
+              <div class="btn-group dropdown ml-1" uib-dropdown="">
+                <button id="btnExport" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-reply"></i>
+                    Exports
+                </button>
+                <span class="d-none" id="exportAlertModal" data-bs-toggle="modal" data-bs-target="#exportErrorModal"></span>
+                <ul class="dropdown-menu" aria-labelledby="btnExport">
+                  <li>
+                    <a href="javascript:export_file('devices')" class="dropdown-item">
+                      <i class="bi bi-file-spreadsheet"></i>
+                      Devices Spreadsheet
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:export_file('metrics')" class="dropdown-item">
+                      <i class="bi bi-file-spreadsheet"></i>
+                      Metrics Spreadsheet
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:export_file('links')" class="dropdown-item">
+                      <i class="bi bi-link-45deg"></i>
+                      Public Links
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:export_file('certificates')" class="dropdown-item">
+                      <i class="bi bi-eraser-fill"></i>
+                      Erasure Certificate
+                    </a>
+                  </li>
+                </ul>
+              </div>
 
-            <div class="btn-group dropdown ml-1" uib-dropdown="">
-              <button id="btnExport" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-reply"></i>
-                  Exports
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="btnExport">
-                <li>
-                  <a href="#" class="dropdown-item">
-                    TODO: Not implemented
-                  </a>
-                </li>
-              </ul>
-            </div>
+              <div class="btn-group dropdown ml-1" uib-dropdown="">
+                <button id="btnTags" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-tag"></i>
+                    Tags
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="btnTags">
+                  <li>
+                    <a href="javascript:addTag()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingTagModal">
+                      <i class="bi bi-plus"></i>
+                      Add Tag to selected Devices
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:removeTag()" class="dropdown-item">
+                      <i class="bi bi-x"></i>
+                      Remove Tag from selected Devices
+                    </a>
+                  </li>
+                </ul>
+              </div>
 
-            <div class="btn-group dropdown ml-1" uib-dropdown="">
-              <button id="btnTags" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-tag"></i>
-                  Tags
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="btnTags">
-                <li>
-                  <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingTagModal">
-                    <i class="bi bi-plus"></i>
-                    Add Tag to selected Devices
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:removeTag()" class="dropdown-item">
-                    <i class="bi bi-x"></i>
-                    Remove Tag from selected Devices
-                  </a>
-                </li>
-              </ul>
-            </div>
+              <div class="btn-group dropdown ml-1" uib-dropdown="">
+                <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-tag"></i>
+                    New Device
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
+                  <li>
+                    <a href="{{ url_for('inventory.devices.upload_snapshot') }}" class="dropdown-item">
+                      <i class="bi bi-plus"></i>
+                      Upload a new Snapshot
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{{ url_for('inventory.devices.device_add') }}" class="dropdown-item">
+                      <i class="bi bi-plus"></i>
+                      Create a new Device
+                    </a>
+                  </li>
+                </ul>
+              </div>
 
-            <div class="btn-group dropdown ml-1" uib-dropdown="">
-              <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-tag"></i>
-                  New Device
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
-                <li>
-                  <a href="{{ url_for('inventory.devices.upload_snapshot') }}" class="dropdown-item">
-                    <i class="bi bi-plus"></i>
-                    Upload a new Snapshot
-                  </a>
-                </li>
-                <li>
-                  <a href="{{ url_for('inventory.devices.device_add') }}" class="dropdown-item">
-                    <i class="bi bi-plus"></i>
-                    Create a new Device
-                  </a>
-                </li>
-              </ul>
-            </div>
+              <div class="tab-content pt-2">
 
-          <div class="tab-content pt-2">
-
-            <div class="tab-pane fade show active profile-overview" id="profile-overview">
-
-              <h5 class="card-title">Computers</h5>
+                <h5 class="card-title">Computers</h5>
                 <table class="table">
                   <thead>
                     <tr>
@@ -293,8 +351,40 @@
                   </tbody>
                 </table>
 
-          </div><!-- End Bordered Tabs -->
+                </div>
+              </div>
+              {% if lot and not lot.is_temporary %}
+              <div id="trade-documents-list" class="tab-pane fade trade-documents-list">
+                <h5 class="card-title">Documents</h5>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">File</th>
+                      <th scope="col" data-type="date" data-format="DD-MM-YYYY">Uploaded on</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for doc in lot.trade.documents %}
+                    <tr>
+                      <td>
+                        {% if doc.url.to_text() %}
+                          <a href="{{ doc.url.to_text() }}" target="_blank">{{ doc.file_name}}</a>
+                        {% else %}
+                          {{ doc.file_name}}
+                        {% endif %}
+                      </td>
+                      <td>
+                          {{ doc.created.strftime('%H:%M %d-%m-%Y')}}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% endif %}
 
+            </div><!-- End Bordered Tabs -->
+          </div>
         </div>
       </div>
 
@@ -308,6 +398,8 @@
 {% include "inventory/actions.html" %}
 {% include "inventory/allocate.html" %}
 {% include "inventory/data_wipe.html" %}
+{% include "inventory/trade.html" %}
+{% include "inventory/alert_export_error.html" %}
 
 <!-- CDN -->
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
