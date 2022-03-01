@@ -31,6 +31,8 @@ from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.action.models import Trade
+from sqlalchemy import or_
 
 
 class LotDeviceForm(FlaskForm):
@@ -718,9 +720,14 @@ class TradeForm(NewActionForm):
         self.user_from.render_kw['data-email'] = g.user.email
         self.user_to.render_kw['data-email'] = g.user.email
         self._lot = (
-            Lot.query.filter(Lot.id == self.lot.data)
-            .filter(Lot.owner_id == g.user.id)
-            .one()
+            # Lot.query.filter(Lot.id == self.lot.data)
+            # .filter(Lot.owner_id == g.user.id)
+            # .one()
+            Lot.query.outerjoin(Trade)
+            .filter(Lot.id == self.lot.data)
+            .filter(or_(Trade.user_from == g.user,
+                        Trade.user_to == g.user,
+                        Lot.owner_id == g.user.id)).one()
         )
 
     def validate(self, extra_validators=None):
