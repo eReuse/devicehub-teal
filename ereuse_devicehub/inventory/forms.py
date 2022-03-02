@@ -724,9 +724,6 @@ class TradeForm(NewActionForm):
         self.user_from.render_kw['data-email'] = g.user.email
         self.user_to.render_kw['data-email'] = g.user.email
         self._lot = (
-            # Lot.query.filter(Lot.id == self.lot.data)
-            # .filter(Lot.owner_id == g.user.id)
-            # .one()
             Lot.query.outerjoin(Trade)
             .filter(Lot.id == self.lot.data)
             .filter(or_(Trade.user_from == g.user,
