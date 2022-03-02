@@ -464,9 +464,9 @@ class TagDeviceForm(FlaskForm):
         if self.delete:
             tags = Tag.query.filter(Tag.owner_id == g.user.id).filter_by(
                 device_id=self.device_id
-            )
+            ).order_by(Tag.id)
         else:
-            tags = Tag.query.filter(Tag.owner_id == g.user.id).filter_by(device_id=None)
+            tags = Tag.query.filter(Tag.owner_id == g.user.id).filter_by(device_id=None).order_by(Tag.id)
 
         self.tag.choices = [(tag.id, tag.id) for tag in tags]
 

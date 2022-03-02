@@ -47,7 +47,7 @@ class DeviceListMix(View):
         tags = (
             Tag.query.filter(Tag.owner_id == current_user.id)
             .filter(Tag.device_id.is_(None))
-            .order_by(Tag.created.desc())
+            .order_by(Tag.id.asc())
         )
 
         if lot_id:
@@ -236,7 +236,7 @@ class TagListView(View):
 
     def dispatch_request(self):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        tags = Tag.query.filter(Tag.owner_id == current_user.id)
+        tags = Tag.query.filter(Tag.owner_id == current_user.id).order_by(Tag.id)
         context = {
             'lots': lots,
             'tags': tags,
