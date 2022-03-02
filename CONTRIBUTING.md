@@ -1,5 +1,3 @@
-; SHARED on https://pad.cas.cat/usody-devicehub-contributing
-
 # Contributing to devicehub
 
 ## Writing code
