@@ -180,7 +180,7 @@ class UploadSnapshotForm(FlaskForm):
         db.session.commit()
         return response
 
-    def build(self, snapshot_json):
+    def build(self, snapshot_json):  # noqa: C901
         # this is a copy adaptated from ereuse_devicehub.resources.action.views.snapshot
         device = snapshot_json.pop('device')  # type: Computer
         components = None
@@ -294,7 +294,7 @@ class NewDeviceForm(FlaskForm):
         if not self.depth.data:
             self.depth.data = 0.1
 
-    def validate(self, extra_validators=None):
+    def validate(self, extra_validators=None):  # noqa: C901
         error = ["Not a correct value"]
         is_valid = super().validate(extra_validators)
 
@@ -489,7 +489,7 @@ class TagDeviceForm(FlaskForm):
         if self.device.data:
             try:
                 self.device.data = int(self.device.data.split(',')[-1])
-            except:
+            except:  # noqa: E722
                 self.device.data = None
 
         if self.device_id or self.device.data:
