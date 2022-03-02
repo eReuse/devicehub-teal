@@ -46,9 +46,11 @@ class LotDeviceForm(FlaskForm):
             return False
 
         self._lot = (
-            Lot.query.filter(Lot.id == self.lot.data)
-            .filter(Lot.owner_id == g.user.id)
-            .one()
+            Lot.query.outerjoin(Trade)
+            .filter(Lot.id == self.lot.data)
+            .filter(or_(Trade.user_from == g.user,
+                        Trade.user_to == g.user,
+                        Lot.owner_id == g.user.id)).one()
         )
 
         devices = set(self.devices.data.split(","))
@@ -68,14 +70,16 @@ class LotDeviceForm(FlaskForm):
                 if trade not in dev.actions:
                     trade.devices.add(dev)
 
-        self._lot.devices.update(self._devices)
-        db.session.add(self._lot)
-        db.session.commit()
+        if self._devices:
+            self._lot.devices.update(self._devices)
+            db.session.add(self._lot)
+            db.session.commit()
 
     def remove(self):
-        self._lot.devices.difference_update(self._devices)
-        db.session.add(self._lot)
-        db.session.commit()
+        if self._devices:
+            self._lot.devices.difference_update(self._devices)
+            db.session.add(self._lot)
+            db.session.commit()
 
 
 class LotForm(FlaskForm):

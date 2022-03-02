@@ -135,9 +135,14 @@ class LotDeviceAddView(View):
         form = LotDeviceForm()
         if form.validate_on_submit():
             form.save()
+            messages.success(
+                'Add devices to lot "{}" successfully!'.format(form._lot.name)
+            )
+        else:
+            messages.error('Error adding devices to lot!')
 
-            next_url = request.referrer or url_for('inventory.devices.devicelist')
-            return flask.redirect(next_url)
+        next_url = request.referrer or url_for('inventory.devices.devicelist')
+        return flask.redirect(next_url)
 
 
 class LotDeviceDeleteView(View):
@@ -149,9 +154,14 @@ class LotDeviceDeleteView(View):
         form = LotDeviceForm()
         if form.validate_on_submit():
             form.remove()
+            messages.success(
+                'Remove devices from lot "{}" successfully!'.format(form._lot.name)
+            )
+        else:
+            messages.error('Error removing devices from lot!')
 
-            next_url = request.referrer or url_for('inventory.devices.devicelist')
-            return flask.redirect(next_url)
+        next_url = request.referrer or url_for('inventory.devices.devicelist')
+        return flask.redirect(next_url)
 
 
 class LotCreateView(View):
