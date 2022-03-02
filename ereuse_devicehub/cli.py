@@ -11,7 +11,7 @@ import sys
 sys.ps1 = '\001\033[92m\002>>> \001\033[0m\002'
 sys.ps2= '\001\033[94m\002... \001\033[0m\002'
 
-import os, readline, rlcompleter, atexit
+import os, readline, atexit
 history_file = os.path.join(os.environ['HOME'], '.python_history')
 try:
   readline.read_history_file(history_file)
