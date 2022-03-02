@@ -822,7 +822,6 @@ class TradeForm(NewActionForm):
 
             self.user_from = g.user
             self.user_to = self.get_or_create_user(code)
-            return
 
         # Create supplier (from) phantom account
         if not user_from and user_to:
@@ -830,6 +829,9 @@ class TradeForm(NewActionForm):
 
             self.user_from = self.get_or_create_user(code)
             self.user_to = g.user
+
+        self.db_user_to = self.user_to
+        self.db_user_from = self.user_from
 
     def get_or_create_user(self, code):
         email = "{}_{}@dhub.com".format(str(g.user.id), code)
