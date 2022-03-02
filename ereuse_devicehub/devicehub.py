@@ -10,7 +10,6 @@ from ereuse_utils.session import DevicehubClient
 from flask import _app_ctx_stack, g
 from flask_login import LoginManager, current_user
 from flask_sqlalchemy import SQLAlchemy
-from flask_wtf.csrf import CSRFProtect
 from teal.db import SchemaSQLAlchemy
 from teal.teal import Teal
 
