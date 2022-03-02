@@ -1,8 +1,8 @@
 import os
 
 import click.testing
-import ereuse_utils
 import flask.cli
+import ereuse_utils
 
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.devicehub import Devicehub
