@@ -62,15 +62,26 @@ function deviceSelect() {
 function removeTag() {
     var devices = $(".deviceSelect").filter(':checked');
     var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
-    if (devices_id.length > 0) {
+    if (devices_id.length == 1) {
         var url = "/inventory/tag/devices/"+devices_id[0]+"/del/";
         window.location.href = url;
+    } else {
+        $("#unlinkTagAlertModal").click();
     }
 }
 
 function addTag() {
-    deviceSelect();
-    $("#addingTagModal").click();
+    var devices = $(".deviceSelect").filter(':checked');
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
+    if (devices_id.length == 1) {
+        $("#addingTagModal .pol").hide();
+        $("#addingTagModal .btn-primary").show();
+    } else {
+        $("#addingTagModal .pol").show();
+        $("#addingTagModal .btn-primary").hide();
+    }
+
+    $("#addTagAlertModal").click();
 }
 
 function newTrade(action) {

@@ -231,17 +231,19 @@
                     <i class="bi bi-tag"></i>
                     Tags
                 </button>
+                <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
+                <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
                 <ul class="dropdown-menu" aria-labelledby="btnTags">
                   <li>
-                    <a href="javascript:addTag()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingTagModal">
+                    <a href="javascript:addTag()" class="dropdown-item">
                       <i class="bi bi-plus"></i>
-                      Add Tag to selected Devices
+                      Add Tag to selected Device
                     </a>
                   </li>
                   <li>
                     <a href="javascript:removeTag()" class="dropdown-item">
                       <i class="bi bi-x"></i>
-                      Remove Tag from selected Devices
+                      Remove Tag from selected Device
                     </a>
                   </li>
                 </ul>
@@ -384,6 +386,7 @@
 {% include "inventory/data_wipe.html" %}
 {% include "inventory/trade.html" %}
 {% include "inventory/alert_export_error.html" %}
+{% include "inventory/alert_unlink_tag_error.html" %}
 
 <!-- Custom Code -->
 <script>
