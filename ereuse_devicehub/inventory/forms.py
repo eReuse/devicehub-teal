@@ -32,6 +32,8 @@ from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.action.models import Trade
+from sqlalchemy import or_
 
 
 class LotDeviceForm(FlaskForm):
@@ -45,9 +47,11 @@ class LotDeviceForm(FlaskForm):
             return False
 
         self._lot = (
-            Lot.query.filter(Lot.id == self.lot.data)
-            .filter(Lot.owner_id == g.user.id)
-            .one()
+            Lot.query.outerjoin(Trade)
+            .filter(Lot.id == self.lot.data)
+            .filter(or_(Trade.user_from == g.user,
+                        Trade.user_to == g.user,
+                        Lot.owner_id == g.user.id)).one()
         )
 
         devices = set(self.devices.data.split(","))
@@ -67,14 +71,16 @@ class LotDeviceForm(FlaskForm):
                 if trade not in dev.actions:
                     trade.devices.add(dev)
 
-        self._lot.devices.update(self._devices)
-        db.session.add(self._lot)
-        db.session.commit()
+        if self._devices:
+            self._lot.devices.update(self._devices)
+            db.session.add(self._lot)
+            db.session.commit()
 
     def remove(self):
-        self._lot.devices.difference_update(self._devices)
-        db.session.add(self._lot)
-        db.session.commit()
+        if self._devices:
+            self._lot.devices.difference_update(self._devices)
+            db.session.add(self._lot)
+            db.session.commit()
 
 
 class LotForm(FlaskForm):
@@ -723,9 +729,11 @@ class TradeForm(NewActionForm):
         self.user_from.render_kw['data-email'] = g.user.email
         self.user_to.render_kw['data-email'] = g.user.email
         self._lot = (
-            Lot.query.filter(Lot.id == self.lot.data)
-            .filter(Lot.owner_id == g.user.id)
-            .one()
+            Lot.query.outerjoin(Trade)
+            .filter(Lot.id == self.lot.data)
+            .filter(or_(Trade.user_from == g.user,
+                        Trade.user_to == g.user,
+                        Lot.owner_id == g.user.id)).one()
         )
 
     def validate(self, extra_validators=None):
@@ -816,7 +824,6 @@ class TradeForm(NewActionForm):
 
             self.user_from = g.user
             self.user_to = self.get_or_create_user(code)
-            return
 
         # Create supplier (from) phantom account
         if not user_from and user_to:
@@ -824,6 +831,9 @@ class TradeForm(NewActionForm):
 
             self.user_from = self.get_or_create_user(code)
             self.user_to = g.user
+
+        self.db_user_to = self.user_to
+        self.db_user_from = self.user_from
 
     def get_or_create_user(self, code):
         email = "{}_{}@dhub.com".format(str(g.user.id), code)

@@ -7,6 +7,7 @@ from flask import Blueprint, g, make_response, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
 from werkzeug.exceptions import NotFound
+from sqlalchemy import or_
 
 from ereuse_devicehub import messages
 from ereuse_devicehub.inventory.forms import (
@@ -42,7 +43,10 @@ class DeviceListMix(View):
         # TODO @cayop adding filter
         # https://github.com/eReuse/devicehub-teal/blob/testing/ereuse_devicehub/resources/device/views.py#L56
         filter_types = ['Desktop', 'Laptop', 'Server']
-        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        lots = Lot.query.outerjoin(Trade) \
+            .filter(or_(Trade.user_from == g.user,
+                        Trade.user_to == g.user,
+                        Lot.owner_id == g.user.id)).distinct()
         lot = None
         tags = (
             Tag.query.filter(Tag.owner_id == current_user.id)
@@ -51,6 +55,7 @@ class DeviceListMix(View):
         )
 
         if lot_id:
+            # import pdb; pdb.set_trace()
             lot = lots.filter(Lot.id == lot_id).one()
             devices = [dev for dev in lot.devices if dev.type in filter_types]
             devices = sorted(devices, key=lambda x: x.updated, reverse=True)
@@ -130,9 +135,14 @@ class LotDeviceAddView(View):
         form = LotDeviceForm()
         if form.validate_on_submit():
             form.save()
+            messages.success(
+                'Add devices to lot "{}" successfully!'.format(form._lot.name)
+            )
+        else:
+            messages.error('Error adding devices to lot!')
 
-            next_url = request.referrer or url_for('inventory.devices.devicelist')
-            return flask.redirect(next_url)
+        next_url = request.referrer or url_for('inventory.devices.devicelist')
+        return flask.redirect(next_url)
 
 
 class LotDeviceDeleteView(View):
@@ -144,9 +154,14 @@ class LotDeviceDeleteView(View):
         form = LotDeviceForm()
         if form.validate_on_submit():
             form.remove()
+            messages.success(
+                'Remove devices from lot "{}" successfully!'.format(form._lot.name)
+            )
+        else:
+            messages.error('Error removing devices from lot!')
 
-            next_url = request.referrer or url_for('inventory.devices.devicelist')
-            return flask.redirect(next_url)
+        next_url = request.referrer or url_for('inventory.devices.devicelist')
+        return flask.redirect(next_url)
 
 
 class LotCreateView(View):
