@@ -45,7 +45,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update -qy
-        sudo apt-get -y install postgresql-client
+        sudo apt-get -y install postgresql-client --no-install-recommends
         python -m pip install --upgrade pip
         pip install flake8 pytest coverage
         pip install -r requirements.txt
