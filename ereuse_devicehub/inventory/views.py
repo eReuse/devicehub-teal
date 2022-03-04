@@ -1,13 +1,15 @@
 import csv
+import logging
 from io import StringIO
 
 import flask
 import flask_weasyprint
-from flask import Blueprint, g, make_response, request, url_for
+from flask import Blueprint, g, make_response, request, url_for, app
 from flask.views import View
 from flask_login import current_user, login_required
 from werkzeug.exceptions import NotFound
 from sqlalchemy import or_
+from requests.exceptions import ConnectionError
 
 from ereuse_devicehub import messages
 from ereuse_devicehub.inventory.forms import (
@@ -33,6 +35,8 @@ from ereuse_devicehub.resources.tag.model import Tag
 
 # TODO(@slamora): rename base 'inventory.devices' --> 'inventory'
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
+
+logger = logging.getLogger(__name__)
 
 
 class DeviceListMix(View):
@@ -287,10 +291,14 @@ class TagAddUnnamedView(View):
         context = {'page_title': 'New Unnamed Tag', 'lots': lots}
         form = TagUnnamedForm()
         if form.validate_on_submit():
-            tags = form.save()
-            if not tags:
-                msg = 'Sorry, the communication with the tag server is not possible now!'
+            try:
+                form.save()
+            except ConnectionError as e:
+                logger.error("Error while trying to connect to tag server: {}".format(e))
+                msg = ("Sorry, we cannot create the unnamed tags requested because "
+                    "some error happens while connecting to the tag server!")
                 messages.error(msg)
+
             next_url = url_for('inventory.devices.taglist')
             return flask.redirect(next_url)
 
