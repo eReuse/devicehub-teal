@@ -279,10 +279,17 @@
               <div class="tab-content pt-2">
 
                 <h5 class="card-title">Computers</h5>
+                <form method="get">
+                  <select class="form-data" name="filter">
+                    <option value="Computer">Computer</option>
+                    <option value="Monitor">Monitor</option>
+                  </select>
+                  <input type="submit" class="btn btn-primary" value="Search" />
+                </form>
                 <table class="table">
                   <thead>
                     <tr>
-                      <th scope="col">Select all</th>
+                      <th scope="col">Select</th>
                       <th scope="col">Title</th>
                       <th scope="col">DHID</th>
                       <th scope="col">Tags</th>

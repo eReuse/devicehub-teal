@@ -42,7 +42,13 @@ class DeviceListMix(View):
     def get_context(self, lot_id):
         # TODO @cayop adding filter
         # https://github.com/eReuse/devicehub-teal/blob/testing/ereuse_devicehub/resources/device/views.py#L56
-        filter_types = ['Desktop', 'Laptop', 'Server']
+        import pdb; pdb.set_trace()
+        type_device = {
+            None: ['Desktop', 'Laptop', 'Server'],
+            'Computer': ['Computer'],
+            'Monitor': ['Monitor'],
+        }
+        filter_types = type_device[request.get('filter')]
         lots = Lot.query.outerjoin(Trade) \
             .filter(or_(Trade.user_from == g.user,
                         Trade.user_to == g.user,
