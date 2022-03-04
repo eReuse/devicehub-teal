@@ -58,7 +58,7 @@
                       <td>
                         {% if tag.device %}
                         <a href={{ url_for('inventory.devices.device_details', id=tag.device.devicehub_id)}}>
-                          {{ tag.device.type }} {{ tag.device.manufacturer|d('', true) }} {{ tag.device.model|d('', true) }}
+                          {{ tag.device.verbose_name }}
                         </a>
                         {% endif %}
                       </td>

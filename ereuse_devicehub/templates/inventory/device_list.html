@@ -316,7 +316,7 @@
                       </td>
                       <td>
                         <a href="{{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}">
-                          {{ dev.type }} {{ dev.manufacturer|d('', true) }} {{ dev.model|d('', true) }}
+                          {{ dev.verbose_name }}
                         </a>
                       </td>
                       <td>
