@@ -33,7 +33,7 @@
                 <form method="post" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
                   {{ form.csrf_token }}
 
-                  <div class="col-12">
+                  <div>
                     <label for="name" class="form-label">Select a Snapshot file</label>
                     <div class="input-group has-validation">
                       {{ form.snapshot }}
@@ -54,7 +54,7 @@
                     {% endif %}
                   </div>
 
-                  <div class="col-12">
+                  <div>
                     <a href="{{ url_for('inventory.devices.devicelist') }}" class="btn btn-danger">Cancel</a>
                     <button class="btn btn-primary" type="submit">Send</button>
                   </div>

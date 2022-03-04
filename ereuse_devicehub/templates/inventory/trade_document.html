@@ -35,7 +35,7 @@
             {{ form.csrf_token }}
             {% for field in form %}
               {% if field != form.csrf_token %}
-              <div class="col-12">
+              <div>
                 {{ field.label(class_="form-label") }}
                 {{ field }}
                 <small class="text-muted">{{ field.description }}</small>
@@ -50,7 +50,7 @@
               {% endif %}
             {% endfor %}
 
-            <div class="col-12">
+            <div>
               <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=form._lot.id) }}" class="btn btn-danger">Cancel</a>
               <button class="btn btn-primary" type="submit">Save</button>
             </div>

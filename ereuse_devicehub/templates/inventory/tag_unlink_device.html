@@ -32,7 +32,7 @@
                 <form method="post" class="row g-3 needs-validation" novalidate>
                   {{ form.csrf_token }}
 
-                  <div class="col-12">
+                  <div>
                     <label for="tag" class="form-label">Tag</label>
                     <div class="input-group has-validation">
                       {{ form.tag(class_="form-control") }}
@@ -48,7 +48,7 @@
                   </div>
                   <input class="devicesList" type="hidden" name="device" />
 
-                  <div class="col-12">
+                  <div>
                     <a href="{{ referrer }}" class="btn btn-danger">Cancel</a>
                     <button class="btn btn-primary" type="submit">Unlink</button>
                   </div>

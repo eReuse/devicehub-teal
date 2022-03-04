@@ -31,7 +31,7 @@
                 <form method="post" class="row g-3 needs-validation" novalidate>
                   {{ form.csrf_token }}
 
-                  <div class="col-12">
+                  <div>
                     <div class="form-group has-validation mb-2">
                       <label for="name" class="form-label">Type *</label>
                       <select id="type" class="form-control" name="type" required="">
@@ -369,7 +369,7 @@
 
                   </div>
 
-                  <div class="col-12">
+                  <div>
                     <a href="{{ url_for('inventory.devices.devicelist') }}" class="btn btn-danger">Cancel</a>
                     <button class="btn btn-primary" type="submit">Save</button>
                   </div>
