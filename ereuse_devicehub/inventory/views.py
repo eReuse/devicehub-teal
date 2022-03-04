@@ -211,6 +211,13 @@ class LotDeleteView(View):
 
     def dispatch_request(self, id):
         form = LotForm(id=id)
+        if form.instance.devices:
+            msg = ("Sorry, the lot cannot be deleted because it still "
+                "has associated devices. Only empty lots can be deleted")
+            messages.error(msg)
+            next_url = url_for('inventory.devices.lotdevicelist', lot_id=id)
+            return flask.redirect(next_url)
+
         form.remove()
         next_url = url_for('inventory.devices.devicelist')
         return flask.redirect(next_url)

@@ -37,7 +37,7 @@
                   <h3><a href="{{ url_for('inventory.devices.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
               </div>
               <div class="col">
-                  {% if lot and lot.is_temporary and not lot.devices %}
+                  {% if lot and lot.is_temporary %}
                     <a href="javascript:void()" data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
                       <i class="bi bi-trash"></i>
                       Remove Lot
