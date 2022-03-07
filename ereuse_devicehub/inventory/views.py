@@ -32,6 +32,7 @@ from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
+from ereuse_devicehub.db import db
 
 # TODO(@slamora): rename base 'inventory.devices' --> 'inventory'
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
@@ -142,6 +143,7 @@ class LotDeviceAddView(View):
             messages.success(
                 'Add devices to lot "{}" successfully!'.format(form._lot.name)
             )
+            db.session.commit()
         else:
             messages.error('Error adding devices to lot!')
 
@@ -161,6 +163,7 @@ class LotDeviceDeleteView(View):
             messages.success(
                 'Remove devices from lot "{}" successfully!'.format(form._lot.name)
             )
+            db.session.commit()
         else:
             messages.error('Error removing devices from lot!')
 

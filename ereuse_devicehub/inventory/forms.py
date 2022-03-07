@@ -72,13 +72,11 @@ class LotDeviceForm(FlaskForm):
         if self._devices:
             self._lot.devices.update(self._devices)
             db.session.add(self._lot)
-            db.session.commit()
 
     def remove(self):
         if self._devices:
             self._lot.devices.difference_update(self._devices)
             db.session.add(self._lot)
-            db.session.commit()
 
 
 class LotForm(FlaskForm):
