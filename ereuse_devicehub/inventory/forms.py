@@ -49,7 +49,7 @@ class FilterForm(FlaskForm):
 
         type_device = {
             None: ['Desktop', 'Laptop', 'Server'],
-            'Computer': ['Computer'],
+            'Computer': ['Desktop', 'Laptop', 'Server'],
             'Monitor': ['Monitor'],
         }
         return type_device.get(request.args.get('filter')) or type_device[None]
