@@ -62,7 +62,7 @@ class LotDeviceForm(FlaskForm):
 
         return bool(self._devices)
 
-    def save(self):
+    def save(self, commit=True):
         trade = self._lot.trade
         if trade:
             for dev in self._devices:
@@ -73,10 +73,16 @@ class LotDeviceForm(FlaskForm):
             self._lot.devices.update(self._devices)
             db.session.add(self._lot)
 
-    def remove(self):
+        if commit:
+            db.session.commit()
+
+    def remove(self, commit=True):
         if self._devices:
             self._lot.devices.difference_update(self._devices)
             db.session.add(self._lot)
+
+        if commit:
+            db.session.commit()
 
 
 class LotForm(FlaskForm):

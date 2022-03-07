@@ -139,7 +139,7 @@ class LotDeviceAddView(View):
     def dispatch_request(self):
         form = LotDeviceForm()
         if form.validate_on_submit():
-            form.save()
+            form.save(commit=False)
             messages.success(
                 'Add devices to lot "{}" successfully!'.format(form._lot.name)
             )
@@ -159,7 +159,7 @@ class LotDeviceDeleteView(View):
     def dispatch_request(self):
         form = LotDeviceForm()
         if form.validate_on_submit():
-            form.remove()
+            form.remove(commit=False)
             messages.success(
                 'Remove devices from lot "{}" successfully!'.format(form._lot.name)
             )
