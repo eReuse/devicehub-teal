@@ -38,7 +38,8 @@
               </div>
               <div class="col">
                   {% if lot and lot.is_temporary %}
-                    <a href="javascript:void()" data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
+                    <span class="d-none" id="activeRemoveLotModal" data-bs-toggle="modal" data-bs-target="#btnRemoveLots"></span>
+                    <a href="javascript:removeLot()">
                       <i class="bi bi-trash"></i>
                       Remove Lot
                     </a>

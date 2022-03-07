@@ -9,12 +9,15 @@
 
         <div class="modal-body">
             Are you sure that you want to remove lot <strong>{{ lot.name }}</strong>?
+            <p class="text-danger">
+               There are devices in this lot, are you sure you want to delete it?
+            </p>
         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <a href="{{ url_for('inventory.devices.lot_del', id=lot.id)}}" type="button" class="btn btn-primary">
-            Save changes
+            Confirm
           </a>
         </div>
 

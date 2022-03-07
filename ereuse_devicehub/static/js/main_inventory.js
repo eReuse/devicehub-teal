@@ -59,6 +59,16 @@ function deviceSelect() {
     }
 }
 
+function removeLot() {
+    var devices = $(".deviceSelect");
+    if (devices.length > 0) {
+        $("#btnRemoveLots .text-danger").show();
+    } else {
+        $("#btnRemoveLots .text-danger").hide();
+    }
+    $("#activeRemoveLotModal").click();
+}
+
 function removeTag() {
     var devices = $(".deviceSelect").filter(':checked');
     var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
