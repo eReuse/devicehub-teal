@@ -35,6 +35,26 @@ from ereuse_devicehub.resources.action.models import Trade
 from sqlalchemy import or_
 
 
+DEVICES = [
+    ("Computer", "Computer"),
+    ("Monitor", "Monitor"),
+]
+
+
+class FilterForm(FlaskForm):
+    filter = SelectField('', choices=DEVICES, default="Comupter",
+        render_kw={'class': "form-select"})
+
+    def search(self):
+
+        type_device = {
+            None: ['Desktop', 'Laptop', 'Server'],
+            'Computer': ['Computer'],
+            'Monitor': ['Monitor'],
+        }
+        return type_device.get(request.args.get('filter')) or type_device[None]
+
+
 class LotDeviceForm(FlaskForm):
     lot = StringField('Lot', [validators.UUID()])
     devices = StringField('Devices', [validators.length(min=1)])

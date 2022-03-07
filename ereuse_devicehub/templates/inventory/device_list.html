@@ -280,11 +280,17 @@
 
                 <h5 class="card-title">Computers</h5>
                 <form method="get">
-                  <select class="form-data" name="filter">
-                    <option value="Computer">Computer</option>
-                    <option value="Monitor">Monitor</option>
-                  </select>
-                  <input type="submit" class="btn btn-primary" value="Search" />
+                  <div class="row">
+                  <div class="col-2">
+                  {% for f in form_filter %}
+                    {{ f }}
+                  {% endfor %}
+                  </div>
+                  <div class="col-1">
+                    <input type="submit" class="btn btn-primary" value="Search" />
+                  </div>
+                  <div class="col"></div>
+                  </div>
                 </form>
                 <table class="table">
                   <thead>

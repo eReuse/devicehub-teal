@@ -13,6 +13,7 @@ from ereuse_devicehub import messages
 from ereuse_devicehub.inventory.forms import (
     AllocateForm,
     DataWipeForm,
+    FilterForm,
     LotDeviceForm,
     LotForm,
     NewActionForm,
@@ -40,15 +41,9 @@ class DeviceListMix(View):
     template_name = 'inventory/device_list.html'
 
     def get_context(self, lot_id):
-        # TODO @cayop adding filter
-        # https://github.com/eReuse/devicehub-teal/blob/testing/ereuse_devicehub/resources/device/views.py#L56
-        import pdb; pdb.set_trace()
-        type_device = {
-            None: ['Desktop', 'Laptop', 'Server'],
-            'Computer': ['Computer'],
-            'Monitor': ['Monitor'],
-        }
-        filter_types = type_device[request.get('filter')]
+        form_filter = FilterForm()
+        filter_types = form_filter.search()
+
         lots = Lot.query.outerjoin(Trade) \
             .filter(or_(Trade.user_from == g.user,
                         Trade.user_to == g.user,
@@ -61,7 +56,6 @@ class DeviceListMix(View):
         )
 
         if lot_id:
-            # import pdb; pdb.set_trace()
             lot = lots.filter(Lot.id == lot_id).one()
             devices = [dev for dev in lot.devices if dev.type in filter_types]
             devices = sorted(devices, key=lambda x: x.updated, reverse=True)
@@ -98,6 +92,7 @@ class DeviceListMix(View):
             'form_new_allocate': form_new_allocate,
             'form_new_datawipe': form_new_datawipe,
             'form_new_trade': form_new_trade,
+            'form_filter': form_filter,
             'lot': lot,
             'tags': tags,
             'list_devices': list_devices,
