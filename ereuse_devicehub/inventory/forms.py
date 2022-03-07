@@ -113,7 +113,7 @@ class LotForm(FlaskForm):
         return self.id
 
     def remove(self):
-        if self.instance and not self.instance.devices:
+        if self.instance and not self.instance.trade:
             self.instance.delete()
             db.session.commit()
         return self.instance
