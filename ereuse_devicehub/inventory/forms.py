@@ -37,7 +37,60 @@ from sqlalchemy import or_
 
 DEVICES = [
     ("Computer", "Computer"),
+    ("Desktop", "Desktop"),
+    ("Laptop", "Laptop"),
+    ("Server", "Server"),
     ("Monitor", "Monitor"),
+    ("ComputerMonitor", "ComputerMonitor"),
+    ("TelevisionSet", "TelevisionSet"),
+    ("Projector", "Projector"),
+    ("Mobile", "Mobile"),
+    ("Smartphone", "Smartphone"),
+    ("Tablet", "Tablet"),
+    ("Cellphone", "Cellphone"),
+    ("JoinedComponentTableMixin", "JoinedComponentTableMixin"),
+    ("GraphicCard", "GraphicCard"),
+    ("DataStorage", "DataStorage"),
+    ("HardDrive", "HardDrive"),
+    ("SolidStateDrive", "SolidStateDrive"),
+    ("Motherboard", "Motherboard"),
+    ("NetworkMixin", "NetworkMixin"),
+    ("NetworkAdapter", "NetworkAdapter"),
+    ("Processor", "Processor"),
+    ("RamModule", "RamModule"),
+    ("SoundCard", "SoundCard"),
+    ("Display", "Display"),
+    ("Battery", "Battery"),
+    ("Camera", "Camera"),
+    ("ComputerAccessory", "ComputerAccessory"),
+    ("SAI", "SAI"),
+    ("Keyboard", "Keyboard"),
+    ("Mouse", "Mouse"),
+    ("MemoryCardReader", "MemoryCardReader"),
+    ("Networking", "Networking"),
+    ("Router", "Router"),
+    ("Switch", "Switch"),
+    ("Hub", "Hub"),
+    ("WirelessAccessPoint", "WirelessAccessPoint"),
+    ("Printer", "Printer"),
+    ("LabelPrinter", "LabelPrinter"),
+    ("Sound", "Sound"),
+    ("Microphone", "Microphone"),
+    ("Video", "Video"),
+    ("VideoScaler", "VideoScaler"),
+    ("Videoconference", "Videoconference"),
+    ("Cooking", "Cooking"),
+    ("Mixer", "Mixer"),
+    ("DIYAndGardening", "DIYAndGardening"),
+    ("Drill", "Drill"),
+    ("PackOfScrewdrivers", "PackOfScrewdrivers"),
+    ("Home", "Home"),
+    ("Dehumidifier", "Dehumidifier"),
+    ("Stairs", "Stairs"),
+    ("Recreation", "Recreation"),
+    ("Bike", "Bike"),
+    ("Racket", "Racket"),
+    ("Manufacturer", "Manufacturer")
 ]
 
 
@@ -46,13 +99,15 @@ class FilterForm(FlaskForm):
         render_kw={'class': "form-select"})
 
     def search(self):
+        device = dict(DEVICES).get(request.args.get('filter'))
 
-        type_device = {
-            None: ['Desktop', 'Laptop', 'Server'],
-            'Computer': ['Desktop', 'Laptop', 'Server'],
-            'Monitor': ['Monitor'],
-        }
-        return type_device.get(request.args.get('filter')) or type_device[None]
+        if device == "Computer":
+            return ['Desktop', 'Laptop', 'Server']
+
+        if device:
+            return [device]
+
+        return ['Desktop', 'Laptop', 'Server']
 
 
 class LotDeviceForm(FlaskForm):
