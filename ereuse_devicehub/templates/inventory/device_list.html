@@ -1,6 +1,5 @@
 {% extends "ereuse_devicehub/base_site.html" %}
 {% block main %}
-<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
 
 <div class="pagetitle">
   <h1>Inventory</h1>
@@ -33,9 +32,24 @@
         <div class="card-body pt-3">
           <!-- Bordered Tabs -->
 
-            <div class="col-12">
-                <h3><a href="{{ url_for('inventory.devices.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
+          <div class="d-flex align-items-center justify-content-between">
+            <h3><a href="{{ url_for('inventory.devices.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
+
+            <div><!-- lot actions -->
+              {% if lot.is_temporary %}
+                <span class="d-none" id="activeRemoveLotModal" data-bs-toggle="modal" data-bs-target="#btnRemoveLots"></span>
+                <a class="me-2" href="javascript:removeLot()">
+                  <i class="bi bi-trash"></i> Remove Lot
+                </a>
+                <a class="me-2" href="javascript:newTrade('user_from')">
+                  <i class="bi bi-arrow-down-right"></i> Add supplier
+                </a>
+                <a href="javascript:newTrade('user_to')">
+                  <i class="bi bi-arrow-up-right"></i> Add receiver
+                </a>
+              {% endif %}
             </div>
+          </div>
         </div>
       </div>
       {% endif %}
@@ -66,16 +80,6 @@
                 </button>
                 <span class="d-none" id="activeTradeModal" data-bs-toggle="modal" data-bs-target="#tradeLotModal"></span>
                 <ul class="dropdown-menu" aria-labelledby="btnLots">
-                {% if lot and lot.is_temporary and not lot.devices %}
-                  <li>
-                    <a href="javascript:newAction('Use')" class="dropdown-item"
-                        data-bs-toggle="modal" data-bs-target="#btnRemoveLots">
-                      <i class="bi bi-trash"></i>
-                      Remove Lot
-                      <span class="caret"></span>
-                    </a>
-                  </li>
-                {% endif %}
                   <li>
                     <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingLotModal">
                       <i class="bi bi-plus"></i>
@@ -88,29 +92,6 @@
                       Remove selected devices from a lot
                     </a>
                   </li>
-                  {% if lot.is_temporary %}
-                  <li>
-                    <a href="javascript:newTrade('user_from')" class="dropdown-item">
-                      <i class="bi bi-plus"></i>
-                      Add supplier
-                    </a>
-                  </li>
-                  <li>
-                    <a href="javascript:newTrade('user_to')" class="dropdown-item">
-                      <i class="bi bi-plus"></i>
-                      Add receiver
-                    </a>
-                  </li>
-                  {% endif %}
-                  {% if lot and not lot.is_temporary %}
-                  <li>
-                    <a href="{{ url_for('inventory.devices.trade_document_add', lot_id=lot.id)}}" class="dropdown-item">
-                      <i class="bi bi-plus"></i>
-                      Add new document
-                      <span class="caret"></span>
-                    </a>
-                  </li>
-                  {% endif %}
                 </ul>
               </div>
               <div class="btn-group dropdown ml-1" uib-dropdown="">
@@ -239,17 +220,19 @@
                     <i class="bi bi-tag"></i>
                     Tags
                 </button>
+                <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
+                <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
                 <ul class="dropdown-menu" aria-labelledby="btnTags">
                   <li>
-                    <a href="javascript:addTag()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingTagModal">
+                    <a href="javascript:addTag()" class="dropdown-item">
                       <i class="bi bi-plus"></i>
-                      Add Tag to selected Devices
+                      Add Tag to selected Device
                     </a>
                   </li>
                   <li>
                     <a href="javascript:removeTag()" class="dropdown-item">
                       <i class="bi bi-x"></i>
-                      Remove Tag from selected Devices
+                      Remove Tag from selected Device
                     </a>
                   </li>
                 </ul>
@@ -257,7 +240,7 @@
 
               <div class="btn-group dropdown ml-1" uib-dropdown="">
                 <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-tag"></i>
+                    <i class="bi bi-laptop"></i>
                     New Device
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
@@ -275,6 +258,24 @@
                   </li>
                 </ul>
               </div>
+
+              {% if lot and not lot.is_temporary %}
+              <div class="btn-group dropdown ml-1" uib-dropdown="">
+                <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-book"></i>
+                    Documents
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
+                  <li>
+                    <a href="{{ url_for('inventory.devices.trade_document_add', lot_id=lot.id)}}" class="dropdown-item">
+                      <i class="bi bi-plus"></i>
+                      Add new document
+                      <span class="caret"></span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              {% endif %}
 
               <div class="tab-content pt-2">
 
@@ -304,7 +305,7 @@
                       </td>
                       <td>
                         <a href="{{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}">
-                          {{ dev.type }} {{ dev.manufacturer }} {{ dev.model }}
+                          {{ dev.verbose_name }}
                         </a>
                       </td>
                       <td>
@@ -374,16 +375,11 @@
 {% include "inventory/data_wipe.html" %}
 {% include "inventory/trade.html" %}
 {% include "inventory/alert_export_error.html" %}
+{% include "inventory/alert_unlink_tag_error.html" %}
 
-<!-- CDN -->
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
 <!-- Custom Code -->
 <script>
   const table = new simpleDatatables.DataTable("table")
 </script>
-<script>
-
-</script>
-<script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/main_inventory.js') }}"></script>
 {% endblock main %}

@@ -1,13 +1,15 @@
 import csv
+import logging
 from io import StringIO
 
 import flask
 import flask_weasyprint
-from flask import Blueprint, g, make_response, request, url_for
+from flask import Blueprint, g, make_response, request, url_for, app
 from flask.views import View
 from flask_login import current_user, login_required
 from werkzeug.exceptions import NotFound
 from sqlalchemy import or_
+from requests.exceptions import ConnectionError
 
 from ereuse_devicehub import messages
 from ereuse_devicehub.inventory.forms import (
@@ -30,9 +32,12 @@ from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
+from ereuse_devicehub.db import db
 
 # TODO(@slamora): rename base 'inventory.devices' --> 'inventory'
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
+
+logger = logging.getLogger(__name__)
 
 
 class DeviceListMix(View):
@@ -51,7 +56,7 @@ class DeviceListMix(View):
         tags = (
             Tag.query.filter(Tag.owner_id == current_user.id)
             .filter(Tag.device_id.is_(None))
-            .order_by(Tag.created.desc())
+            .order_by(Tag.id.asc())
         )
 
         if lot_id:
@@ -134,10 +139,11 @@ class LotDeviceAddView(View):
     def dispatch_request(self):
         form = LotDeviceForm()
         if form.validate_on_submit():
-            form.save()
+            form.save(commit=False)
             messages.success(
                 'Add devices to lot "{}" successfully!'.format(form._lot.name)
             )
+            db.session.commit()
         else:
             messages.error('Error adding devices to lot!')
 
@@ -153,10 +159,11 @@ class LotDeviceDeleteView(View):
     def dispatch_request(self):
         form = LotDeviceForm()
         if form.validate_on_submit():
-            form.remove()
+            form.remove(commit=False)
             messages.success(
                 'Remove devices from lot "{}" successfully!'.format(form._lot.name)
             )
+            db.session.commit()
         else:
             messages.error('Error removing devices from lot!')
 
@@ -207,6 +214,12 @@ class LotDeleteView(View):
 
     def dispatch_request(self, id):
         form = LotForm(id=id)
+        if form.instance.trade:
+            msg = "Sorry, the lot cannot be deleted because have a trade action "
+            messages.error(msg)
+            next_url = url_for('inventory.devices.lotdevicelist', lot_id=id)
+            return flask.redirect(next_url)
+
         form.remove()
         next_url = url_for('inventory.devices.devicelist')
         return flask.redirect(next_url)
@@ -251,7 +264,7 @@ class TagListView(View):
 
     def dispatch_request(self):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        tags = Tag.query.filter(Tag.owner_id == current_user.id)
+        tags = Tag.query.filter(Tag.owner_id == current_user.id).order_by(Tag.id)
         context = {
             'lots': lots,
             'tags': tags,
@@ -287,7 +300,14 @@ class TagAddUnnamedView(View):
         context = {'page_title': 'New Unnamed Tag', 'lots': lots}
         form = TagUnnamedForm()
         if form.validate_on_submit():
-            form.save()
+            try:
+                form.save()
+            except ConnectionError as e:
+                logger.error("Error while trying to connect to tag server: {}".format(e))
+                msg = ("Sorry, we cannot create the unnamed tags requested because "
+                    "some error happens while connecting to the tag server!")
+                messages.error(msg)
+
             next_url = url_for('inventory.devices.taglist')
             return flask.redirect(next_url)
 

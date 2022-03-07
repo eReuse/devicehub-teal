@@ -65,5 +65,5 @@ function printpdf() {
     min_tag_side = (Math.min(height, width)/2) + border;
     pdf.addImage(imgData, 'PNG', border, border, img_side, img_side);
     pdf.text(tag, max_tag_side, min_tag_side);
-    pdf.save('Tags.pdf');
+    pdf.save('Tag_'+tag+'.pdf');
 }

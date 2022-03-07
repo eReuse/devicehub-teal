@@ -34,7 +34,7 @@
                 <form method="post" class="row g-3 needs-validation" novalidate>
                   {{ form.csrf_token }}
 
-                  <div class="col-12">
+                  <div>
                     <label for="name" class="form-label">Name</label>
                     <div class="input-group has-validation">
                       <input type="text" name="name" class="form-control" required value="{{ form.name.data|default('', true) }}">
@@ -42,8 +42,12 @@
                     </div>
                   </div>
 
-                  <div class="col-12">
-                    <a href="{{ url_for('inventory.devices.devicelist') }}" class="btn btn-danger">Cancel</a>
+                  <div>
+                    {% if form.id %}
+                      <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=form.id) }}" class="btn btn-danger">Cancel</a>
+                    {% else %}
+                      <a href="{{ url_for('inventory.devices.devicelist') }}" class="btn btn-danger">Cancel</a>
+                    {% endif %}
                     <button class="btn btn-primary" type="submit">Save</button>
                   </div>
                 </form>
