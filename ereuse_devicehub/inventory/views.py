@@ -41,7 +41,6 @@ logger = logging.getLogger(__name__)
 
 
 class GenericMixView(View):
-
     def get_lots(self):
         return (
             Lot.query.outerjoin(Trade)
@@ -246,7 +245,12 @@ class UploadSnapshotView(GenericMixView):
     def dispatch_request(self, lot_id=None):
         lots = self.get_lots()
         form = UploadSnapshotForm()
-        context = {'page_title': 'Upload Snapshot', 'lots': lots, 'form': form, 'lot_id': lot_id}
+        context = {
+            'page_title': 'Upload Snapshot',
+            'lots': lots,
+            'form': form,
+            'lot_id': lot_id,
+        }
         if form.validate_on_submit():
             snapshot = form.save(commit=False)
             # import pdb; pdb.set_trace()
@@ -267,7 +271,12 @@ class DeviceCreateView(GenericMixView):
     def dispatch_request(self, lot_id=None):
         lots = self.get_lots()
         form = NewDeviceForm()
-        context = {'page_title': 'New Device', 'lots': lots, 'form': form, 'lot_id': lot_id}
+        context = {
+            'page_title': 'New Device',
+            'lots': lots,
+            'form': form,
+            'lot_id': lot_id,
+        }
         if form.validate_on_submit():
             snapshot = form.save(commit=False)
             next_url = url_for('inventory.devices.devicelist')
@@ -278,9 +287,7 @@ class DeviceCreateView(GenericMixView):
                 db.session.add(lot)
 
             db.session.commit()
-            messages.success(
-                'Device "{}" created successfully!'.format(form.type.data)
-            )
+            messages.success('Device "{}" created successfully!'.format(form.type.data))
             return flask.redirect(next_url)
 
         return flask.render_template(self.template_name, **context)
@@ -669,11 +676,13 @@ devices.add_url_rule(
     '/upload-snapshot/', view_func=UploadSnapshotView.as_view('upload_snapshot')
 )
 devices.add_url_rule(
-    '/lot/<string:lot_id>/upload-snapshot/', view_func=UploadSnapshotView.as_view('lot_upload_snapshot')
+    '/lot/<string:lot_id>/upload-snapshot/',
+    view_func=UploadSnapshotView.as_view('lot_upload_snapshot'),
 )
 devices.add_url_rule('/device/add/', view_func=DeviceCreateView.as_view('device_add'))
 devices.add_url_rule(
-    '/lot/<string:lot_id>/device/add/', view_func=DeviceCreateView.as_view('lot_device_add')
+    '/lot/<string:lot_id>/device/add/',
+    view_func=DeviceCreateView.as_view('lot_device_add'),
 )
 devices.add_url_rule('/tag/', view_func=TagListView.as_view('taglist'))
 devices.add_url_rule('/tag/add/', view_func=TagAddView.as_view('tag_add'))

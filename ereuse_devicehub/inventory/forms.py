@@ -1,26 +1,46 @@
 import copy
 import json
 from json.decoder import JSONDecodeError
+
 from boltons.urlutils import URL
 from flask import g, request
 from flask_wtf import FlaskForm
+from sqlalchemy import or_
 from sqlalchemy.util import OrderedSet
 from wtforms import (
-    BooleanField, DateField, FileField, FloatField, Form, HiddenField,
-    IntegerField, MultipleFileField, SelectField, StringField, TextAreaField,
-    URLField, validators)
+    BooleanField,
+    DateField,
+    FileField,
+    FloatField,
+    Form,
+    HiddenField,
+    IntegerField,
+    MultipleFileField,
+    SelectField,
+    StringField,
+    TextAreaField,
+    URLField,
+    validators,
+)
 from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
+from ereuse_devicehub.resources.action.models import RateComputer, Snapshot, Trade
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
-from ereuse_devicehub.resources.action.schemas import \
-    Snapshot as SnapshotSchema
-from ereuse_devicehub.resources.action.views.snapshot import (
-    move_json, save_json)
+from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
+from ereuse_devicehub.resources.action.views.snapshot import move_json, save_json
 from ereuse_devicehub.resources.device.models import (
-    SAI, Cellphone, Computer, Device, Keyboard, MemoryCardReader, Monitor,
-    Mouse, Smartphone, Tablet)
+    SAI,
+    Cellphone,
+    Computer,
+    Device,
+    Keyboard,
+    MemoryCardReader,
+    Monitor,
+    Mouse,
+    Smartphone,
+    Tablet,
+)
 from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.documents.models import DataWipeDocument
 from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
@@ -30,8 +50,6 @@ from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.action.models import Trade
-from sqlalchemy import or_
 
 
 class LotDeviceForm(FlaskForm):
@@ -47,9 +65,14 @@ class LotDeviceForm(FlaskForm):
         self._lot = (
             Lot.query.outerjoin(Trade)
             .filter(Lot.id == self.lot.data)
-            .filter(or_(Trade.user_from == g.user,
-                        Trade.user_to == g.user,
-                        Lot.owner_id == g.user.id)).one()
+            .filter(
+                or_(
+                    Trade.user_from == g.user,
+                    Trade.user_to == g.user,
+                    Lot.owner_id == g.user.id,
+                )
+            )
+            .one()
         )
 
         devices = set(self.devices.data.split(","))
@@ -468,11 +491,17 @@ class TagDeviceForm(FlaskForm):
         super().__init__(*args, **kwargs)
 
         if self.delete:
-            tags = Tag.query.filter(Tag.owner_id == g.user.id).filter_by(
-                device_id=self.device_id
-            ).order_by(Tag.id)
+            tags = (
+                Tag.query.filter(Tag.owner_id == g.user.id)
+                .filter_by(device_id=self.device_id)
+                .order_by(Tag.id)
+            )
         else:
-            tags = Tag.query.filter(Tag.owner_id == g.user.id).filter_by(device_id=None).order_by(Tag.id)
+            tags = (
+                Tag.query.filter(Tag.owner_id == g.user.id)
+                .filter_by(device_id=None)
+                .order_by(Tag.id)
+            )
 
         self.tag.choices = [(tag.id, tag.id) for tag in tags]
 
@@ -731,9 +760,14 @@ class TradeForm(NewActionForm):
         self._lot = (
             Lot.query.outerjoin(Trade)
             .filter(Lot.id == self.lot.data)
-            .filter(or_(Trade.user_from == g.user,
-                        Trade.user_to == g.user,
-                        Lot.owner_id == g.user.id)).one()
+            .filter(
+                or_(
+                    Trade.user_from == g.user,
+                    Trade.user_to == g.user,
+                    Lot.owner_id == g.user.id,
+                )
+            )
+            .one()
         )
 
     def validate(self, extra_validators=None):
