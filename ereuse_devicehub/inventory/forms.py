@@ -163,7 +163,7 @@ class UploadSnapshotForm(FlaskForm):
 
         return True
 
-    def save(self):
+    def save(self, commit=True):
         if any([x == 'Error' for x in self.result.values()]):
             return
         # result = []
@@ -185,7 +185,8 @@ class UploadSnapshotForm(FlaskForm):
 
             move_json(self.tmp_snapshots, path_snapshot, g.user.email)
 
-        db.session.commit()
+        if commit:
+            db.session.commit()
         return response
 
     def build(self, snapshot_json):  # noqa: C901
@@ -355,7 +356,7 @@ class NewDeviceForm(FlaskForm):
 
         return True
 
-    def save(self):
+    def save(self, commit=True):
 
         json_snapshot = {
             'type': 'Snapshot',
@@ -411,7 +412,8 @@ class NewDeviceForm(FlaskForm):
             snapshot.device.resolution = self.resolution.data
             snapshot.device.screen = self.screen.data
 
-        db.session.commit()
+        if commit:
+            db.session.commit()
         return snapshot
 
 
