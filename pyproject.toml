@@ -3,4 +3,4 @@ skip-string-normalization = true
 target-version = ['py38']
 
 [tool.isort]
-multi_line_output = 4
+profile = "black"
