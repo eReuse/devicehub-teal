@@ -245,13 +245,21 @@
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
                   <li>
+                    {% if lot %}
+                    <a href="{{ url_for('inventory.devices.lot_upload_snapshot', lot_id=lot.id) }}" class="dropdown-item">
+                    {% else %}
                     <a href="{{ url_for('inventory.devices.upload_snapshot') }}" class="dropdown-item">
+                    {% endif %}
                       <i class="bi bi-plus"></i>
                       Upload a new Snapshot
                     </a>
                   </li>
                   <li>
+                    {% if lot %}
+                    <a href="{{ url_for('inventory.devices.lot_device_add', lot_id=lot.id) }}" class="dropdown-item">
+                    {% else %}
                     <a href="{{ url_for('inventory.devices.device_add') }}" class="dropdown-item">
+                    {% endif %}
                       <i class="bi bi-plus"></i>
                       Create a new Device
                     </a>
