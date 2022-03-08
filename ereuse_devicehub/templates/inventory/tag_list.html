@@ -1,6 +1,5 @@
 {% extends "ereuse_devicehub/base_site.html" %}
 {% block main %}
-<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
 
 <div class="pagetitle">
   <h1>Inventory</h1>
@@ -59,7 +58,7 @@
                       <td>
                         {% if tag.device %}
                         <a href={{ url_for('inventory.devices.device_details', id=tag.device.devicehub_id)}}>
-                          {{ tag.device.type }} {{ tag.device.manufacturer }} {{ tag.device.model }}
+                          {{ tag.device.verbose_name }}
                         </a>
                         {% endif %}
                       </td>
@@ -77,14 +76,8 @@
   </div>
 </section>
 
-<!-- CDN -->
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
 <!-- Custom Code -->
 <script>
   const table = new simpleDatatables.DataTable("table")
 </script>
-<script>
-
-</script>
-<script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
 {% endblock main %}

@@ -474,6 +474,13 @@ class Device(Thing):
                                         key=attrgetter('type'))  # last test of each type
         return self._warning_actions(current_tests)
 
+    @property
+    def verbose_name(self):
+        type = self.type or ''
+        manufacturer = self.manufacturer or ''
+        model = self.model or ''
+        return f'{type} {manufacturer} {model}'
+
     @declared_attr
     def __mapper_args__(cls):
         """Defines inheritance.

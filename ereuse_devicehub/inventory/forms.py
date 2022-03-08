@@ -1,7 +1,6 @@
 import copy
 import json
 from json.decoder import JSONDecodeError
-
 from boltons.urlutils import URL
 from flask import g, request
 from flask_wtf import FlaskForm
@@ -139,7 +138,7 @@ class LotDeviceForm(FlaskForm):
 
         return bool(self._devices)
 
-    def save(self):
+    def save(self, commit=True):
         trade = self._lot.trade
         if trade:
             for dev in self._devices:
@@ -149,12 +148,16 @@ class LotDeviceForm(FlaskForm):
         if self._devices:
             self._lot.devices.update(self._devices)
             db.session.add(self._lot)
+
+        if commit:
             db.session.commit()
 
-    def remove(self):
+    def remove(self, commit=True):
         if self._devices:
             self._lot.devices.difference_update(self._devices)
             db.session.add(self._lot)
+
+        if commit:
             db.session.commit()
 
 
@@ -190,7 +193,7 @@ class LotForm(FlaskForm):
         return self.id
 
     def remove(self):
-        if self.instance and not self.instance.devices:
+        if self.instance and not self.instance.trade:
             self.instance.delete()
             db.session.commit()
         return self.instance
@@ -541,9 +544,9 @@ class TagDeviceForm(FlaskForm):
         if self.delete:
             tags = Tag.query.filter(Tag.owner_id == g.user.id).filter_by(
                 device_id=self.device_id
-            )
+            ).order_by(Tag.id)
         else:
-            tags = Tag.query.filter(Tag.owner_id == g.user.id).filter_by(device_id=None)
+            tags = Tag.query.filter(Tag.owner_id == g.user.id).filter_by(device_id=None).order_by(Tag.id)
 
         self.tag.choices = [(tag.id, tag.id) for tag in tags]
 

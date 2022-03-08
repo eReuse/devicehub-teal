@@ -1,6 +1,5 @@
 {% extends "ereuse_devicehub/base_site.html" %}
 {% block main %}
-<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
 
 <div class="pagetitle">
   <h1>Inventory</h1>
@@ -35,7 +34,7 @@
                 <div class="col-lg-9 col-md-8">
                     {% if tag.device %}
                       <a href="{{url_for('inventory.devices.device_details', id=tag.device.devicehub_id)}}">
-                          {{ tag.device.manufacturer }} {{ tag.device.model }}
+                          {{ tag.device.verbose_name }}
                       </a>
                     {% endif %}
                 </div>
@@ -106,7 +105,6 @@
     </div>
   </div>
 </section>
-<script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/qrcode.js') }}"></script>
 <script src="{{ url_for('static', filename='js/jspdf.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/print.pdf.js') }}"></script>
