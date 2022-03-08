@@ -57,7 +57,9 @@ class DeviceListMix(View):
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
-            devices = [dev for dev in lot.devices if dev.type in filter_types]
+            devices = lot.devices
+            if filter_types:
+                devices = [dev for dev in lot.devices if dev.type in filter_types]
             devices = sorted(devices, key=lambda x: x.updated, reverse=True)
             form_new_action = NewActionForm(lot=lot.id)
             form_new_allocate = AllocateForm(lot=lot.id)
@@ -68,12 +70,20 @@ class DeviceListMix(View):
                 user_from=g.user.email,
             )
         else:
-            devices = (
-                Device.query.filter(Device.owner_id == current_user.id)
-                .filter(Device.type.in_(filter_types))
-                .filter_by(lots=None)
-                .order_by(Device.updated.desc())
-            )
+            if "All" in filter_types:
+                devices = (
+                    Device.query.filter(Device.owner_id == current_user.id)
+                    .filter_by(lots=None)
+                    .order_by(Device.updated.desc())
+                )
+            else:
+                devices = (
+                    Device.query.filter(Device.owner_id == current_user.id)
+                    .filter_by(lots=None)
+                    .filter(Device.type.in_(filter_types))
+                    .order_by(Device.updated.desc())
+                )
+
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
