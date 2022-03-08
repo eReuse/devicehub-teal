@@ -36,6 +36,7 @@ from sqlalchemy import or_
 
 
 DEVICES = [
+    ("All", "All"),
     ("Computer", "Computer"),
     ("Desktop", "Desktop"),
     ("Laptop", "Laptop"),
@@ -95,7 +96,7 @@ DEVICES = [
 
 
 class FilterForm(FlaskForm):
-    filter = SelectField('', choices=DEVICES, default="Comupter",
+    filter = SelectField('', choices=DEVICES, default="Computer",
         render_kw={'class': "form-select"})
 
     def search(self):
