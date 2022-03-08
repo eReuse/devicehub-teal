@@ -4,14 +4,15 @@ from io import StringIO
 
 import flask
 import flask_weasyprint
-from flask import Blueprint, g, make_response, request, url_for, app
+from flask import Blueprint, g, make_response, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
-from werkzeug.exceptions import NotFound
-from sqlalchemy import or_
 from requests.exceptions import ConnectionError
+from sqlalchemy import or_
+from werkzeug.exceptions import NotFound
 
 from ereuse_devicehub import messages
+from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.forms import (
     AllocateForm,
     DataWipeForm,
@@ -32,7 +33,6 @@ from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
-from ereuse_devicehub.db import db
 
 # TODO(@slamora): rename base 'inventory.devices' --> 'inventory'
 devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
@@ -48,10 +48,17 @@ class DeviceListMix(View):
         # TODO @cayop adding filter
         # https://github.com/eReuse/devicehub-teal/blob/testing/ereuse_devicehub/resources/device/views.py#L56
         filter_types = ['Desktop', 'Laptop', 'Server']
-        lots = Lot.query.outerjoin(Trade) \
-            .filter(or_(Trade.user_from == g.user,
-                        Trade.user_to == g.user,
-                        Lot.owner_id == g.user.id)).distinct()
+        lots = (
+            Lot.query.outerjoin(Trade)
+            .filter(
+                or_(
+                    Trade.user_from == g.user,
+                    Trade.user_to == g.user,
+                    Lot.owner_id == g.user.id,
+                )
+            )
+            .distinct()
+        )
         lot = None
         tags = (
             Tag.query.filter(Tag.owner_id == current_user.id)
@@ -303,9 +310,13 @@ class TagAddUnnamedView(View):
             try:
                 form.save()
             except ConnectionError as e:
-                logger.error("Error while trying to connect to tag server: {}".format(e))
-                msg = ("Sorry, we cannot create the unnamed tags requested because "
-                    "some error happens while connecting to the tag server!")
+                logger.error(
+                    "Error while trying to connect to tag server: {}".format(e)
+                )
+                msg = (
+                    "Sorry, we cannot create the unnamed tags requested because "
+                    "some error happens while connecting to the tag server!"
+                )
                 messages.error(msg)
 
             next_url = url_for('inventory.devices.taglist')
