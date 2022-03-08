@@ -279,7 +279,11 @@
 
               <div class="tab-content pt-2">
 
-                <h5 class="card-title">Computers</h5>
+                {% if form_filter.filter.data %}
+                <h5 class="card-title">{{ form_filter.filter.data }}</h5>
+                {% else %}
+                <h5 class="card-title">Computer</h5>
+                {% endif %}
                 <form method="get">
                   <div class="row">
                   <div class="col-2">
