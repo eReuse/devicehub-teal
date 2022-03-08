@@ -98,14 +98,22 @@ class FilterForm(FlaskForm):
     filter = SelectField('', choices=DEVICES, default="Computer",
         render_kw={'class': "form-select"})
 
-    def search(self):
-        device = dict(DEVICES).get(request.args.get('filter'))
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.device = dict(DEVICES).get(request.args.get('filter'))
+        if self.device:
+            self.filter.data = self.device
 
-        if device == "Computer":
+    def search(self):
+
+        if self.device == "Computer":
             return ['Desktop', 'Laptop', 'Server']
 
-        if device:
-            return [device]
+        if self.device == "DataStorage":
+            return ['HardDrive', 'SolidStateDrive']
+
+        if self.device:
+            return [self.device]
 
         return ['Desktop', 'Laptop', 'Server']
 
