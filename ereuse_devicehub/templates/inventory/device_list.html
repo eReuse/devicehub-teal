@@ -92,6 +92,14 @@
                       Remove selected devices from a lot
                     </a>
                   </li>
+                  <li>
+                    <form method="post" action="{{ url_for('inventory.devices.lot_devices_del_show') }}">
+                      {% for f in form_lot_device_del %}
+                        {{ f }}
+                      {% endfor %}
+                      <input type="submit" value="Remove selected devices from a lot" />
+                    </form>
+                  </li>
                 </ul>
               </div>
               <div class="btn-group dropdown ml-1" uib-dropdown="">

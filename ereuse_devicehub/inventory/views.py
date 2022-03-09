@@ -18,6 +18,7 @@ from ereuse_devicehub.inventory.forms import (
     DataWipeForm,
     FilterForm,
     LotDeviceForm,
+    LotDeviceShowForm,
     LotForm,
     NewActionForm,
     NewDeviceForm,
@@ -119,6 +120,7 @@ class DeviceListMix(GenericMixView):
             'form_new_datawipe': form_new_datawipe,
             'form_new_trade': form_new_trade,
             'form_filter': form_filter,
+            'form_lot_device_del': LotDeviceShowForm(),
             'lot': lot,
             'tags': tags,
             'list_devices': list_devices,
@@ -171,6 +173,29 @@ class LotDeviceAddView(View):
 
         next_url = request.referrer or url_for('inventory.devices.devicelist')
         return flask.redirect(next_url)
+
+
+class LotDeviceDeleteShowView(GenericMixView):
+    methods = ['POST']
+    decorators = [login_required]
+    template_name = 'inventory/removeDeviceslot2.html'
+    title = 'Remove from a lot'
+
+    def dispatch_request(self, lot_id=None):
+        # import pdb; pdb.set_trace()
+        next_url = request.referrer or url_for('inventory.devices.devicelist')
+        form = LotDeviceShowForm()
+        if not form.validate_on_submit():
+            messages.error('Error, you need select one or more devices!')
+            if lot_id:
+                next_url = url_for('inventory.devices.lotdevicelist', lot_id=form.id)
+
+            return flask.redirect(next_url)
+
+        lots = self.get_lots()
+        form_lot = LotDeviceForm(devices=form.devices)
+        context = {'form': form_lot, 'title': self.title, 'lots': lots}
+        return flask.render_template(self.template_name, **context)
 
 
 class LotDeviceDeleteView(View):
@@ -675,6 +700,10 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/lot/devices/del/', view_func=LotDeviceDeleteView.as_view('lot_devices_del')
+)
+devices.add_url_rule(
+    '/lot/devices/del/show',
+    view_func=LotDeviceDeleteShowView.as_view('lot_devices_del_show'),
 )
 devices.add_url_rule('/lot/add/', view_func=LotCreateView.as_view('lot_add'))
 devices.add_url_rule(

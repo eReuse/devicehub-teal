@@ -137,8 +137,15 @@ class FilterForm(FlaskForm):
 
 
 class LotDeviceForm(FlaskForm):
-    lot = StringField('Lot', [validators.UUID()])
     devices = StringField('Devices', [validators.length(min=1)])
+    lot = SelectField('Lot', choices=[])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # TODO
+        self.lot.choices = [
+            (lot.id, lot.name) for lot in Lot.query.filter(Lot.owner_id == g.user.id)
+        ]
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
@@ -1046,3 +1053,15 @@ class TradeDocumentForm(FlaskForm):
             db.session.commit()
 
         return self._obj
+
+
+class LotDeviceShowForm(FlaskForm):
+    devices = StringField(render_kw={'class': "devicesList"})
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        device_ids = self.devices.data.split(",")
+        self._devices = Device.query.filter(Device.id.in_(device_ids)).all()
+
+        return is_valid
