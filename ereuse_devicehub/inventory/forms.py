@@ -137,15 +137,34 @@ class FilterForm(FlaskForm):
 
 
 class LotDeviceForm(FlaskForm):
-    devices = StringField('Devices', [validators.length(min=1)])
-    lot = SelectField('Lot', choices=[])
+    devices = StringField(
+        'Devices', [validators.length(min=1)], render_kw={'class': "d-none"}
+    )
+    lot = SelectField('Lot', choices=[], render_kw={'class': "form-select"})
 
     def __init__(self, *args, **kwargs):
+        self.action = kwargs.pop('action', None)
+        self._devices = kwargs.pop('_devices', None)
         super().__init__(*args, **kwargs)
-        # TODO
-        self.lot.choices = [
-            (lot.id, lot.name) for lot in Lot.query.filter(Lot.owner_id == g.user.id)
-        ]
+        # import pdb; pdb.set_trace()
+        self._lots = Lot.query.filter(Lot.owner_id == g.user.id)
+        lots = []
+        if self._devices:
+            lots = [set(dev.lots) for dev in self._devices]
+
+        if self.action == 'remove' and lots:
+            x = lots[0]
+            common_lots = x.intersection(*lots[1:])
+            self.lot.choices = [
+                (lot.id, lot.name) for lot in self._lots if lot in common_lots
+            ]
+        elif self.action == 'add' and lots:
+            x = lots[0]
+            self.lot.choices = [
+                (lot.id, lot.name) for lot in self._lots if lot not in lots
+            ]
+        else:
+            self.lot.choices = [(lot.id, lot.name) for lot in self._lots]
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
@@ -1056,7 +1075,7 @@ class TradeDocumentForm(FlaskForm):
 
 
 class LotDeviceShowForm(FlaskForm):
-    devices = StringField(render_kw={'class': "devicesList"})
+    devices = StringField(render_kw={'class': "devicesList d-none"})
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)

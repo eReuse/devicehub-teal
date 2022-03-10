@@ -193,7 +193,9 @@ class LotDeviceDeleteShowView(GenericMixView):
             return flask.redirect(next_url)
 
         lots = self.get_lots()
-        form_lot = LotDeviceForm(devices=form.devices)
+        form_lot = LotDeviceForm(
+            devices=form.devices, action='remove', _devices=form._devices
+        )
         context = {'form': form_lot, 'title': self.title, 'lots': lots}
         return flask.render_template(self.template_name, **context)
 
@@ -214,7 +216,7 @@ class LotDeviceDeleteView(View):
         else:
             messages.error('Error removing devices from lot!')
 
-        next_url = request.referrer or url_for('inventory.devices.devicelist')
+        next_url = url_for('inventory.devices.lotdevicelist', lot_id=form._lot.id)
         return flask.redirect(next_url)
 
 

@@ -97,7 +97,10 @@
                       {% for f in form_lot_device_del %}
                         {{ f }}
                       {% endfor %}
-                      <input type="submit" value="Remove selected devices from a lot" />
+                      <a href="javascript:void()" onclick="document.review.submit()" class="dropdown-item">
+                        <i class="bi bi-x"></i>
+                        Remove selected devices from a lot
+                      </a>
                     </form>
                   </li>
                 </ul>
