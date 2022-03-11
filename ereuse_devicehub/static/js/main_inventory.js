@@ -180,3 +180,11 @@ function export_file(type_file) {
         $("#exportAlertModal").click();
     }
 }
+
+function lot_devices_del() {
+    $('#lot_devices_del').submit();
+}
+
+function lot_devices_add() {
+    $('#lot_devices_add').submit();
+}

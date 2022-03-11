@@ -93,11 +93,22 @@
                     </a>
                   </li>
                   <li>
-                    <form method="post" action="{{ url_for('inventory.devices.lot_devices_del_show') }}">
+                    <form id="lot_devices_add" method="post" action="{{ url_for('inventory.devices.lot_devices') }}">
+                      {% for f in form_lot_device_add %}
+                        {{ f }}
+                      {% endfor %}
+                      <a href="javascript:lot_devices_add()" class="dropdown-item">
+                        <i class="bi bi-x"></i>
+                        Add selected Devices to a lot
+                      </a>
+                    </form>
+                  </li>
+                  <li>
+                    <form id="lot_devices_del" method="post" action="{{ url_for('inventory.devices.lot_devices') }}">
                       {% for f in form_lot_device_del %}
                         {{ f }}
                       {% endfor %}
-                      <a href="javascript:void()" onclick="document.review.submit()" class="dropdown-item">
+                      <a href="javascript:lot_devices_del()" class="dropdown-item">
                         <i class="bi bi-x"></i>
                         Remove selected devices from a lot
                       </a>

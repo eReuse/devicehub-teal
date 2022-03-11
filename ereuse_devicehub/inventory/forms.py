@@ -152,7 +152,7 @@ class LotDeviceForm(FlaskForm):
         if self._devices:
             lots = [set(dev.lots) for dev in self._devices]
 
-        if self.action == 'remove' and lots:
+        if self.action == 'del' and lots:
             x = lots[0]
             common_lots = x.intersection(*lots[1:])
             self.lot.choices = [
@@ -160,8 +160,9 @@ class LotDeviceForm(FlaskForm):
             ]
         elif self.action == 'add' and lots:
             x = lots[0]
+            common_lots = x.union(*lots[1:])
             self.lot.choices = [
-                (lot.id, lot.name) for lot in self._lots if lot not in lots
+                (lot.id, lot.name) for lot in self._lots if lot not in common_lots
             ]
         else:
             self.lot.choices = [(lot.id, lot.name) for lot in self._lots]
@@ -1076,9 +1077,16 @@ class TradeDocumentForm(FlaskForm):
 
 class LotDeviceShowForm(FlaskForm):
     devices = StringField(render_kw={'class': "devicesList d-none"})
+    action = StringField(render_kw={'class': "d-none"})
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
+
+        if not self.devices.data:
+            return False
+
+        if self.action.data not in ['add', 'del']:
+            return False
 
         device_ids = self.devices.data.split(",")
         self._devices = Device.query.filter(Device.id.in_(device_ids)).all()
