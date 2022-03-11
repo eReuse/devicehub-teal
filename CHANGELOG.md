@@ -5,13 +5,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.ht
 ml).
 
-## master
-  [1.0.12-beta]
 
-## testing
-  [1.0.13-beta]
-
-## [1.0.13-beta]
+## [2.0.0-alpha]
+- [changes] #209 adding a new device in a lot if it is created from a lot
+- [addend] #208 render from backend filter for type of devices in the general list
+- [bugfix] #206 fix 2 bugs about visibility devices when you are not the owner
+- [addend] #205 ux improvements
+- [addend] #204 render from backend export files
+- [addend] #203 render from backend Trade action
+- [addend] #201 render from backend Data Wipe action
+- [addend] #196 render from backend action system
+- [addend] #195 render from backend tags system
+- [addend] #193 render from backend devices and lots
+- [changes] #191 pass to drop teal and use the pure flask and use render from flask
 
 ## [1.0.12-beta]
 - [changes] #187 now is possible duplicate slots of RAM.
