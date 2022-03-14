@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.ht
 ml).
 
+## master
+  []
+
+## testing
+  []
 
 ## [2.0.0-alpha]
 - [changed] #209 adding a new device in a lot if it is created from a lot
