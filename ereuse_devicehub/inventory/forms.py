@@ -51,43 +51,29 @@ from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 from ereuse_devicehub.resources.user.models import User
 
-DEVICES = [
-    ("All", "All"),
-    ("Desktop", "Desktop"),
-    ("Laptop", "Laptop"),
-    ("Server", "Server"),
-    ("ComputerMonitor", "ComputerMonitor"),
-    ("TelevisionSet", "TelevisionSet"),
-    ("Projector", "Projector"),
-    ("Mobile", "Mobile"),
-    ("Smartphone", "Smartphone"),
-    ("Tablet", "Tablet"),
-    ("Cellphone", "Cellphone"),
-    ("GraphicCard", "GraphicCard"),
-    ("HardDrive", "HardDrive"),
-    ("SolidStateDrive", "SolidStateDrive"),
-    ("Motherboard", "Motherboard"),
-    ("NetworkAdapter", "NetworkAdapter"),
-    ("Processor", "Processor"),
-    ("RamModule", "RamModule"),
-    ("SoundCard", "SoundCard"),
-    ("Battery", "Battery"),
-    ("Keyboard", "Keyboard"),
-    ("Mouse", "Mouse"),
-    ("MemoryCardReader", "MemoryCardReader"),
-    ("GraphicCard", "GraphicCard"),
-    ("HardDrive", "HardDrive"),
-    ("SolidStateDrive", "SolidStateDrive"),
-    ("Motherboard", "Motherboard"),
-    ("NetworkAdapter", "NetworkAdapter"),
-    ("Processor", "Processor"),
-    ("RamModule", "RamModule"),
-    ("SoundCard", "SoundCard"),
-    ("Battery", "Battery"),
-    ("Keyboard", "Keyboard"),
-    ("Mouse", "Mouse"),
-    ("MemoryCardReader", "MemoryCardReader"),
-]
+DEVICES = {
+    "All": ["All"],
+    "Computer": [
+        "Desktop",
+        "Laptop",
+        "Server",
+    ],
+    "Monitor": ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"],
+    "Mobile, tablet & smartphone": ["Mobile", "Tablet", "Smartphone", "Cellphone"],
+    "DataStorage": ["HardDrive", "SolidStateDrive"],
+    "Accessories & Peripherals": [
+        "GraphicCard",
+        "Motherboard",
+        "NetworkAdapter",
+        "Processor",
+        "RamModule",
+        "SoundCard",
+        "Battery",
+        "Keyboard",
+        "Mouse",
+        "MemoryCardReader",
+    ],
+}
 
 
 class FilterForm(FlaskForm):
@@ -97,17 +83,13 @@ class FilterForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.device = dict(DEVICES).get(request.args.get('filter'))
+        types_of_devices = [item for sublist in DEVICES.values() for item in sublist]
+        dev = request.args.get('filter')
+        self.device = dev if dev in types_of_devices else None
         if self.device:
             self.filter.data = self.device
 
     def search(self):
-
-        if self.device == "Computer":
-            return ['Desktop', 'Laptop', 'Server']
-
-        if self.device == "DataStorage":
-            return ['HardDrive', 'SolidStateDrive']
 
         if self.device:
             return [self.device]

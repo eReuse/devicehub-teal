@@ -296,46 +296,7 @@
                   <div class="row">
                   <div class="col-2">
                   {% for f in form_filter %}
-                    {% if f == form_filter.filter %}
-                    <select id="filter" class="form-select" name="filter">
-                      <option value="All" {% if form_filter.filter.data == 'All' %}selected="selected"{% endif %}>All</option>
-                      <optgroup label="Computer">
-                        <option value="Desktop" {% if form_filter.filter.data == 'Desktop' %}selected="selected"{% endif %}>Desktop</option>
-                        <option {% if form_filter.filter.data == 'Laptop' %}selected="selected"{% endif %} value="Laptop">Laptop</option>
-                        <option {% if form_filter.filter.data == 'Server' %}selected="selected"{% endif %} value="Server">Server</option>
-                      </optgroup>
-                      <optgroup label="Monitor">
-                        <option value="ComputerMonitor" {% if form_filter.filter.data == 'ComputerMonitor' %}selected="selected"{% endif %}>ComputerMonitor</option>
-                        <option {% if form_filter.filter.data == 'TelevisionSet' %}selected="selected"{% endif %} value="TelevisionSet">TelevisionSet</option>
-                        <option {% if form_filter.filter.data == 'Projector' %}selected="selected"{% endif %} value="Projector">Projector</option>
-                      </optgroup>
-                      <optgroup label="Mobile, tablet & smartphone">
-                        <option {% if form_filter.filter.data == 'Mobile' %}selected="selected"{% endif %} value="Mobile">Mobile</option>
-                        <option {% if form_filter.filter.data == 'Smartphone' %}selected="selected"{% endif %} value="Smartphone">Smartphone</option>
-                        <option {% if form_filter.filter.data == 'Tablet' %}selected="selected"{% endif %} value="Tablet">Tablet</option>
-                        <option {% if form_filter.filter.data == 'Cellphone' %}selected="selected"{% endif %} value="Cellphone">Cellphone</option>
-                      </optgroup>
-                      <optgroup label="Data Storage">
-                        <option {% if form_filter.filter.data == 'HardDrive' %}selected="selected"{% endif %} value="HardDrive">HardDrive</option>
-                        <option {% if form_filter.filter.data == 'SolidStateDrive' %}selected="selected"{% endif %} value="SolidStateDrive">SolidStateDrive</option>
-                      </optgroup>
-                      <optgroup label="Accessories & Peripherals">
-                        <option {% if form_filter.filter.data == 'GraphicCard' %}selected="selected"{% endif %} value="GraphicCard">GraphicCard</option>
-                        <option {% if form_filter.filter.data == 'Motherboard' %}selected="selected"{% endif %} value="Motherboard">Motherboard</option>
-                        <option {% if form_filter.filter.data == 'NetworkAdapter' %}selected="selected"{% endif %} value="NetworkAdapter">NetworkAdapter</option>
-                        <option {% if form_filter.filter.data == 'Processor' %}selected="selected"{% endif %} value="Processor">Processor</option>
-                        <option {% if form_filter.filter.data == 'RamModule' %}selected="selected"{% endif %} value="RamModule">RamModule</option>
-                        <option {% if form_filter.filter.data == 'SoundCard' %}selected="selected"{% endif %} value="SoundCard">SoundCard</option>
-                        <option {% if form_filter.filter.data == 'Battery' %}selected="selected"{% endif %} value="Battery">Battery</option>
-                        <option {% if form_filter.filter.data == 'Keyboard' %}selected="selected"{% endif %} value="Keyboard">Keyboard</option>
-                        <option {% if form_filter.filter.data == 'Mouse' %}selected="selected"{% endif %} value="Mouse">Mouse</option>
-                        <option {% if form_filter.filter.data == 'NetworkAdapter' %}selected="selected"{% endif %} value="NetworkAdapter">NetworkAdapter</option>
-                        <option {% if form_filter.filter.data == 'MemoryCardReader' %}selected="selected"{% endif %} value="MemoryCardReader">MemoryCardReader</option>
-                      </optgroup>
-                    </select>
-                    {% else %}
                     {{ f }}
-                    {% endif %}
                   {% endfor %}
                   </div>
                   <div class="col-1">
