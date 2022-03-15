@@ -10,9 +10,7 @@ ml).
 ## testing
 
 ## [2.0.0-alpha]
-- [changed] #209 adding a new device in a lot if it is created from a lot
 - [added] #208 render from backend filter for type of devices in the general list
-- [fixed] #206 fix 2 bugs about visibility devices when you are not the owner
 - [added] #205 ux improvements
 - [added] #204 render from backend export files
 - [added] #203 render from backend Trade action
@@ -20,7 +18,9 @@ ml).
 - [added] #196 render from backend action system
 - [added] #195 render from backend tags system
 - [added] #193 render from backend devices and lots
+- [changed] #209 adding a new device in a lot if it is created from a lot
 - [changed] #191 pass to drop teal and use the pure flask and use render from flask
+- [fixed] #206 fix 2 bugs about visibility devices when you are not the owner
 
 ## [1.0.12-beta]
 - [changed] #187 now is possible duplicate slots of RAM.
@@ -31,11 +31,11 @@ ml).
 
 ## [1.0.10-beta]
 - [added] #170 can delete/deactivate devices.
-- [fixed] #168 can to do a trade without devices.
 - [added] #167 new actions of status devices: use, recycling, refurbish and management.
-- [changed] #177 new structure of trade.
-- [fixed] #184 clean nested of schemas of lot
 - [added] #182 adding power on hours
+- [changed] #177 new structure of trade.
+- [fixed] #168 can to do a trade without devices.
+- [fixed] #184 clean nested of schemas of lot
 
 ## [1.0.9-beta]
 - [added] #159 external document as proof of erase of disk
@@ -65,11 +65,11 @@ ml).
 - [added] #98 adding endpoint for insert a new live
 - [added] #98 adding endpoint for get all licences in one query
 - [added] #102 adding endpoint for download metrics
-- [fixed] #100 fixing bug of scheme live
-- [fixed] #101 fixing bug when 2 users have one device and launch one live
 - [changed] #114 clean blockchain of all models
 - [changed] #118 deactivate manual merge
 - [changed] #118 clean datas of public information of devices
+- [fixed] #100 fixing bug of scheme live
+- [fixed] #101 fixing bug when 2 users have one device and launch one live
 - [removed] #114 remove proof system
 
 ## [1.0.3-beta]
@@ -78,6 +78,6 @@ ml).
 
 ## [1.0.2-beta]
 - [added] #87 allocate, deallocate and live actions
-- [fixed] #89 save json on disk only for shapshots
 - [added] #83 add owner_id in all kind of device
+- [fixed] #89 save json on disk only for shapshots
 - [fixed] #91 The most old time allow is 1970-01-01
