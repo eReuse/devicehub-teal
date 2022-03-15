@@ -16,6 +16,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.forms import (
     AllocateForm,
     DataWipeForm,
+    FilterForm,
     LotDeviceForm,
     LotForm,
     NewActionForm,
@@ -60,9 +61,8 @@ class DeviceListMix(GenericMixView):
     template_name = 'inventory/device_list.html'
 
     def get_context(self, lot_id):
-        # TODO @cayop adding filter
-        # https://github.com/eReuse/devicehub-teal/blob/testing/ereuse_devicehub/resources/device/views.py#L56
-        filter_types = ['Desktop', 'Laptop', 'Server']
+        form_filter = FilterForm()
+        filter_types = form_filter.search()
         lots = self.get_lots()
         lot = None
         tags = (
@@ -72,9 +72,10 @@ class DeviceListMix(GenericMixView):
         )
 
         if lot_id:
-            # import pdb; pdb.set_trace()
             lot = lots.filter(Lot.id == lot_id).one()
-            devices = [dev for dev in lot.devices if dev.type in filter_types]
+            devices = lot.devices
+            if "All" not in filter_types:
+                devices = [dev for dev in lot.devices if dev.type in filter_types]
             devices = sorted(devices, key=lambda x: x.updated, reverse=True)
             form_new_action = NewActionForm(lot=lot.id)
             form_new_allocate = AllocateForm(lot=lot.id)
@@ -85,12 +86,20 @@ class DeviceListMix(GenericMixView):
                 user_from=g.user.email,
             )
         else:
-            devices = (
-                Device.query.filter(Device.owner_id == current_user.id)
-                .filter(Device.type.in_(filter_types))
-                .filter_by(lots=None)
-                .order_by(Device.updated.desc())
-            )
+            if "All" in filter_types:
+                devices = (
+                    Device.query.filter(Device.owner_id == current_user.id)
+                    .filter_by(lots=None)
+                    .order_by(Device.updated.desc())
+                )
+            else:
+                devices = (
+                    Device.query.filter(Device.owner_id == current_user.id)
+                    .filter_by(lots=None)
+                    .filter(Device.type.in_(filter_types))
+                    .order_by(Device.updated.desc())
+                )
+
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
@@ -109,6 +118,7 @@ class DeviceListMix(GenericMixView):
             'form_new_allocate': form_new_allocate,
             'form_new_datawipe': form_new_datawipe,
             'form_new_trade': form_new_trade,
+            'form_filter': form_filter,
             'lot': lot,
             'tags': tags,
             'list_devices': list_devices,
