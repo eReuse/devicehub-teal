@@ -5,7 +5,7 @@
 <header id="header" class="header fixed-top d-flex align-items-center">
 
   <div class="d-flex align-items-center justify-content-between">
-    <a href="{{ url_for('inventory.devices.devicelist')}}" class="logo d-flex align-items-center">
+    <a href="{{ url_for('inventory.devicelist')}}" class="logo d-flex align-items-center">
       <img src="{{ url_for('static', filename='img/usody-logo-black.svg') }}" alt="">
     </a>
     <i class="bi bi-list toggle-sidebar-btn"></i>
@@ -90,7 +90,7 @@
     </li><!-- End Dashboard Nav -->
 
     <li class="nav-item">
-      <a class="nav-link collapsed" href="{{ url_for('inventory.devices.devicelist') }}">
+      <a class="nav-link collapsed" href="{{ url_for('inventory.devicelist') }}">
         <i class="bi-menu-button-wide"></i>
         <span>Unassigned devices</span>
       </a>
@@ -114,7 +114,7 @@
         {% for lot in lots %}
         {% if lot.is_incoming %}
         <li>
-          <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
+          <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}">
             <i class="bi bi-circle"></i><span>{{ lot.name }}</span>
           </a>
         </li>
@@ -139,7 +139,7 @@
         {% for lot in lots %}
         {% if lot.is_outgoing %}
         <li>
-          <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
+          <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}">
             <i class="bi bi-circle"></i><span>{{ lot.name }}</span>
           </a>
         </li>
@@ -162,14 +162,14 @@
       <ul id="temporal-lots-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
       {% endif %}
         <li>
-          <a href="{{ url_for('inventory.devices.lot_add')}}">
+          <a href="{{ url_for('inventory.lot_add')}}">
             <i class="bi bi-plus" style="font-size: larger;"></i><span>New temporary lot</span>
           </a>
         </li>
         {% for lot in lots %}
         {% if lot.is_temporary %}
         <li>
-          <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=lot.id) }}">
+          <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}">
             <i class="bi bi-circle"></i><span>{{ lot.name }}</span>
           </a>
         </li>
@@ -181,7 +181,7 @@
     <li class="nav-heading">Utils</li>
 
     <li class="nav-item">
-      <a class="nav-link collapsed" href="{{ url_for('inventory.devices.taglist')}}">
+      <a class="nav-link collapsed" href="{{ url_for('inventory.taglist')}}">
         <i class="bi bi-tags"></i>
         <span>Tags</span>
       </a>

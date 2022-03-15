@@ -44,9 +44,9 @@
 
                   <div>
                     {% if form.id %}
-                      <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=form.id) }}" class="btn btn-danger">Cancel</a>
+                      <a href="{{ url_for('inventory.lotdevicelist', lot_id=form.id) }}" class="btn btn-danger">Cancel</a>
                     {% else %}
-                      <a href="{{ url_for('inventory.devices.devicelist') }}" class="btn btn-danger">Cancel</a>
+                      <a href="{{ url_for('inventory.devicelist') }}" class="btn btn-danger">Cancel</a>
                     {% endif %}
                     <button class="btn btn-primary" type="submit">Save</button>
                   </div>

@@ -35,8 +35,7 @@ from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 
-# TODO(@slamora): rename base 'inventory.devices' --> 'inventory'
-devices = Blueprint('inventory.devices', __name__, url_prefix='/inventory')
+devices = Blueprint('inventory', __name__, url_prefix='/inventory')
 
 logger = logging.getLogger(__name__)
 
@@ -171,7 +170,7 @@ class LotDeviceAddView(View):
         else:
             messages.error('Error adding devices to lot!')
 
-        next_url = request.referrer or url_for('inventory.devices.devicelist')
+        next_url = request.referrer or url_for('inventory.devicelist')
         return flask.redirect(next_url)
 
 
@@ -191,7 +190,7 @@ class LotDeviceDeleteView(View):
         else:
             messages.error('Error removing devices from lot!')
 
-        next_url = request.referrer or url_for('inventory.devices.devicelist')
+        next_url = request.referrer or url_for('inventory.devicelist')
         return flask.redirect(next_url)
 
 
@@ -205,7 +204,7 @@ class LotCreateView(GenericMixView):
         form = LotForm()
         if form.validate_on_submit():
             form.save()
-            next_url = url_for('inventory.devices.lotdevicelist', lot_id=form.id)
+            next_url = url_for('inventory.lotdevicelist', lot_id=form.id)
             return flask.redirect(next_url)
 
         lots = self.get_lots()
@@ -228,7 +227,7 @@ class LotUpdateView(View):
         form = LotForm(id=id)
         if form.validate_on_submit():
             form.save()
-            next_url = url_for('inventory.devices.lotdevicelist', lot_id=id)
+            next_url = url_for('inventory.lotdevicelist', lot_id=id)
             return flask.redirect(next_url)
 
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
@@ -251,11 +250,11 @@ class LotDeleteView(View):
         if form.instance.trade:
             msg = "Sorry, the lot cannot be deleted because have a trade action "
             messages.error(msg)
-            next_url = url_for('inventory.devices.lotdevicelist', lot_id=id)
+            next_url = url_for('inventory.lotdevicelist', lot_id=id)
             return flask.redirect(next_url)
 
         form.remove()
-        next_url = url_for('inventory.devices.devicelist')
+        next_url = url_for('inventory.devicelist')
         return flask.redirect(next_url)
 
 
@@ -302,9 +301,9 @@ class DeviceCreateView(GenericMixView):
         }
         if form.validate_on_submit():
             snapshot = form.save(commit=False)
-            next_url = url_for('inventory.devices.devicelist')
+            next_url = url_for('inventory.devicelist')
             if lot_id:
-                next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
+                next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
                 lot = lots.filter(Lot.id == lot_id).one()
                 lot.devices.add(snapshot.device)
                 db.session.add(lot)
@@ -344,7 +343,7 @@ class TagAddView(View):
         form = TagForm()
         if form.validate_on_submit():
             form.save()
-            next_url = url_for('inventory.devices.taglist')
+            next_url = url_for('inventory.taglist')
             return flask.redirect(next_url)
 
         return flask.render_template(self.template_name, form=form, **context)
@@ -376,7 +375,7 @@ class TagAddUnnamedView(View):
                 )
                 messages.error(msg)
 
-            next_url = url_for('inventory.devices.taglist')
+            next_url = url_for('inventory.taglist')
             return flask.redirect(next_url)
 
         return flask.render_template(self.template_name, form=form, **context)
@@ -425,7 +424,7 @@ class TagUnlinkDeviceView(View):
         if form.validate_on_submit():
             form.remove()
 
-            next_url = url_for('inventory.devices.devicelist')
+            next_url = url_for('inventory.devicelist')
             return flask.redirect(next_url)
 
         return flask.render_template(
@@ -458,9 +457,9 @@ class NewActionView(View):
         lot_id = self.form.lot.data
 
         if lot_id:
-            return url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
+            return url_for('inventory.lotdevicelist', lot_id=lot_id)
 
-        return url_for('inventory.devices.devicelist')
+        return url_for('inventory.devicelist')
 
 
 class NewAllocateView(NewActionView, DeviceListMix):
@@ -542,7 +541,7 @@ class NewTradeDocumentView(View):
         if self.form.validate_on_submit():
             self.form.save()
             messages.success('Document created successfully!')
-            next_url = url_for('inventory.devices.lotdevicelist', lot_id=lot_id)
+            next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
             return flask.redirect(next_url)
 
         return flask.render_template(

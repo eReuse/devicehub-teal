@@ -29,9 +29,7 @@ class LoginView(View):
             if not is_safe_url(flask.request, next_url):
                 return flask.abort(400)
 
-            return flask.redirect(
-                next_url or flask.url_for('inventory.devices.devicelist')
-            )
+            return flask.redirect(next_url or flask.url_for('inventory.devicelist'))
         context = {'form': form, 'version': __version__}
         return flask.render_template('ereuse_devicehub/user_login.html', **context)
 
