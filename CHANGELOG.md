@@ -10,16 +10,18 @@ ml).
 ## testing
 
 ## [2.0.0-alpha]
-- [added] #208 render from backend filter for type of devices in the general list
-- [added] #205 ux improvements
-- [added] #204 render from backend export files
-- [added] #203 render from backend Trade action
-- [added] #201 render from backend Data Wipe action
-- [added] #196 render from backend action system
-- [added] #195 render from backend tags system
-- [added] #193 render from backend devices and lots
-- [changed] #209 adding a new device in a lot if it is created from a lot
+First server render HTML version. Completely rewrites views of angular JS client on flask.
+- [added] #193 render on backend devices and lots
+- [added] #195 render on backend tags system
+- [added] #196 render on backend action system
+- [added] #201 render on backend Data Wipe action
+- [added] #203 render on backend Trade action
+- [added] #204 render on backend export files
+- [added] #205 UX improvements
+- [added] #208 render on backend filter for type of devices in the general list
 - [changed] #191 pass to drop teal and use the pure flask and use render from flask
+- [changed] #207 Create automatic tag only for Computers.
+- [changed] #209 adding a new device in a lot if it is created from a lot
 - [fixed] #206 fix 2 bugs about visibility devices when you are not the owner
 
 ## [1.0.12-beta]
