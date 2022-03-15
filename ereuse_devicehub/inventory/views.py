@@ -11,7 +11,7 @@ from requests.exceptions import ConnectionError
 from sqlalchemy import or_
 from werkzeug.exceptions import NotFound
 
-from ereuse_devicehub import messages
+from ereuse_devicehub import __version__, messages
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.forms import (
     AllocateForm,
@@ -122,6 +122,7 @@ class DeviceListMix(GenericMixView):
             'lot': lot,
             'tags': tags,
             'list_devices': list_devices,
+            'version': __version__,
         }
 
         return self.context
@@ -149,6 +150,7 @@ class DeviceDetailView(GenericMixView):
             'device': device,
             'lots': lots,
             'page_title': 'Device {}'.format(device.devicehub_id),
+            'version': __version__,
         }
         return flask.render_template(self.template_name, **context)
 
@@ -207,7 +209,12 @@ class LotCreateView(GenericMixView):
             return flask.redirect(next_url)
 
         lots = self.get_lots()
-        context = {'form': form, 'title': self.title, 'lots': lots}
+        context = {
+            'form': form,
+            'title': self.title,
+            'lots': lots,
+            'version': __version__,
+        }
         return flask.render_template(self.template_name, **context)
 
 
@@ -225,7 +232,12 @@ class LotUpdateView(View):
             return flask.redirect(next_url)
 
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        context = {'form': form, 'title': self.title, 'lots': lots}
+        context = {
+            'form': form,
+            'title': self.title,
+            'lots': lots,
+            'version': __version__,
+        }
         return flask.render_template(self.template_name, **context)
 
 
@@ -260,6 +272,7 @@ class UploadSnapshotView(GenericMixView):
             'lots': lots,
             'form': form,
             'lot_id': lot_id,
+            'version': __version__,
         }
         if form.validate_on_submit():
             snapshot = form.save(commit=False)
@@ -285,6 +298,7 @@ class DeviceCreateView(GenericMixView):
             'lots': lots,
             'form': form,
             'lot_id': lot_id,
+            'version': __version__,
         }
         if form.validate_on_submit():
             snapshot = form.save(commit=False)
@@ -314,6 +328,7 @@ class TagListView(View):
             'lots': lots,
             'tags': tags,
             'page_title': 'Tags Management',
+            'version': __version__,
         }
         return flask.render_template(self.template_name, **context)
 
@@ -325,7 +340,7 @@ class TagAddView(View):
 
     def dispatch_request(self):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        context = {'page_title': 'New Tag', 'lots': lots}
+        context = {'page_title': 'New Tag', 'lots': lots, 'version': __version__}
         form = TagForm()
         if form.validate_on_submit():
             form.save()
@@ -342,7 +357,11 @@ class TagAddUnnamedView(View):
 
     def dispatch_request(self):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        context = {'page_title': 'New Unnamed Tag', 'lots': lots}
+        context = {
+            'page_title': 'New Unnamed Tag',
+            'lots': lots,
+            'version': __version__,
+        }
         form = TagUnnamedForm()
         if form.validate_on_submit():
             try:
@@ -377,6 +396,7 @@ class TagDetailView(View):
             'lots': lots,
             'tag': tag,
             'page_title': '{} Tag'.format(tag.code),
+            'version': __version__,
         }
         return flask.render_template(self.template_name, **context)
 
@@ -409,7 +429,11 @@ class TagUnlinkDeviceView(View):
             return flask.redirect(next_url)
 
         return flask.render_template(
-            self.template_name, form=form, lots=lots, referrer=request.referrer
+            self.template_name,
+            form=form,
+            lots=lots,
+            referrer=request.referrer,
+            version=__version__,
         )
 
 
@@ -522,7 +546,7 @@ class NewTradeDocumentView(View):
             return flask.redirect(next_url)
 
         return flask.render_template(
-            self.template_name, form=self.form, title=self.title
+            self.template_name, form=self.form, title=self.title, version=__version__
         )
 
 

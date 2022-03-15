@@ -3,6 +3,7 @@ from flask import Blueprint
 from flask.views import View
 from flask_login import current_user, login_required, login_user, logout_user
 
+from ereuse_devicehub import __version__
 from ereuse_devicehub.forms import LoginForm
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.utils import is_safe_url
@@ -31,7 +32,8 @@ class LoginView(View):
             return flask.redirect(
                 next_url or flask.url_for('inventory.devices.devicelist')
             )
-        return flask.render_template('ereuse_devicehub/user_login.html', form=form)
+        context = {'form': form, 'version': __version__}
+        return flask.render_template('ereuse_devicehub/user_login.html', **context)
 
 
 class LogoutView(View):
@@ -47,6 +49,7 @@ class UserProfileView(View):
     def dispatch_request(self):
         context = {
             'current_user': current_user,
+            'version': __version__,
         }
         return flask.render_template(self.template_name, **context)
 
