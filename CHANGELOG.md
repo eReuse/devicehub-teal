@@ -6,10 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## master
-  []
 
 ## testing
-  []
 
 ## [2.0.0-alpha]
 - [changed] #209 adding a new device in a lot if it is created from a lot
@@ -72,7 +70,7 @@ ml).
 - [changed] #114 clean blockchain of all models
 - [changed] #118 deactivate manual merge
 - [changed] #118 clean datas of public information of devices
-- [remove] #114 remove proof system 
+- [removed] #114 remove proof system
 
 ## [1.0.3-beta]
 - [added] #85 add mac of network adapter to device hid
