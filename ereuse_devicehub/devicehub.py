@@ -7,7 +7,8 @@ import click
 import click_spinner
 import ereuse_utils.cli
 from ereuse_utils.session import DevicehubClient
-from flask.globals import _app_ctx_stack, g
+from flask import _app_ctx_stack, g
+from flask_login import LoginManager, current_user
 from flask_sqlalchemy import SQLAlchemy
 from teal.db import SchemaSQLAlchemy
 from teal.teal import Teal
@@ -19,6 +20,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.dummy.dummy import Dummy
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.inventory import Inventory, InventoryDef
+from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.templating import Environment
 
 
@@ -60,6 +62,17 @@ class Devicehub(Teal):
         inv.command('del')(self.delete_inventory)
         inv.command('search')(self.regenerate_search)
         self.before_request(self._prepare_request)
+
+        self.configure_extensions()
+
+    def configure_extensions(self):
+        # configure Flask-Login
+        login_manager = LoginManager()
+        login_manager.init_app(self)
+
+        @login_manager.user_loader
+        def load_user(user_id):
+            return User.query.get(user_id)
 
     # noinspection PyMethodOverriding
     @click.option('--name', '-n',
@@ -150,6 +163,9 @@ class Devicehub(Teal):
         inv = g.inventory = Inventory.current  # type: Inventory
         g.tag_provider = DevicehubClient(base_url=inv.tag_provider,
                                          token=DevicehubClient.encode_token(inv.tag_token))
+        # NOTE: models init methods expects that current user is
+        #   available on g.user (e.g. to initialize object owner)
+        g.user = current_user
 
     def create_client(self, email='user@dhub.com', password='1234'):
         client = UserClient(self, email, password, response_wrapper=self.response_class)

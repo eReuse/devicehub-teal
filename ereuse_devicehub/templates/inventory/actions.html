@@ -1,0 +1,54 @@
+<div class="modal fade" id="actionModal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">New Action <span id="title-action"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form action="{{ url_for('inventory.action_add') }}" method="post">
+      {{ form_new_action.csrf_token }}
+        <div class="modal-body">
+          {% for field in form_new_action %}
+          {% if field != form_new_action.csrf_token %}
+          {% if field == form_new_action.devices  %}
+          <div class="col-12">
+              {{ field.label(class_="form-label") }}: <span class="devices-count"></span>
+              {{ field(class_="devicesList") }}
+              <p class="text-danger pol">
+                  You need select first some device before to do one action
+              </p>
+              <p class="enumeration-devices"></p>
+          </div>
+          {% elif field == form_new_action.lot %}
+            {{ field }}
+          {% elif field == form_new_action.type %}
+            {{ field }}
+          {% else %}
+          <div class="col-12">
+              {{ field.label(class_="form-label") }}
+              {{ field(class_="form-control") }}
+              {% if field.errors %}
+              <p class="text-danger">
+                {% for error in field.errors %}
+                  {{ error }}<br/>
+                {% endfor %}
+              </p>
+              {% endif %}
+          </div>
+          {% endif %}
+          {% endif %}
+          {% endfor %}
+        </div>
+
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <input type="submit" class="btn btn-primary" style="display: none;" value="Create" />
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>

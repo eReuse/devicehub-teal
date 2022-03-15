@@ -1,0 +1,77 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>Inventory</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item active">{{ page_title }}</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+    <div class="col-xl-8">
+
+      <div class="card">
+              <div class="card-body">
+
+                <div class="pt-4 pb-2">
+                  <h5 class="card-title text-center pb-0 fs-4">Upload Snapshot</h5>
+                  <p class="text-center small">Please select a file snapshot.</p>
+                  {% if form.form_errors %}
+                  <p class="text-danger">
+                    {% for error in form.form_errors %}
+                      {{ error }}<br/>
+                    {% endfor %}
+                  </p>
+                  {% endif %}
+                </div>
+
+                <form method="post" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
+                  {{ form.csrf_token }}
+
+                  <div>
+                    <label for="name" class="form-label">Select a Snapshot file</label>
+                    <div class="input-group has-validation">
+                      {{ form.snapshot }}
+                      <div class="invalid-feedback">You can select multiple files Snapshots JSON.</div>
+                    </div>
+                    {% if form.result %}
+                      {% for filename, result in form.result.items() %}
+                        {% if result == 'Ok' %}
+                        <p class="text-success">
+                        {{ filename }}: {{ result }}<br/>
+                        </p>
+                        {% else %}
+                        <p class="text-danger">
+                        {{ filename }}: {{ result }}<br/>
+                        </p>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                  </div>
+
+                  <div>
+                    {% if lot_id %}
+                    <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot_id) }}" class="btn btn-danger">Cancel</a>
+                    {% else %}
+                    <a href="{{ url_for('inventory.devicelist') }}" class="btn btn-danger">Cancel</a>
+                    {% endif %}
+                    <button class="btn btn-primary" type="submit">Send</button>
+                  </div>
+                </form>
+
+              </div>
+
+      </div>
+
+    </div>
+
+    <div class="col-xl-8">
+    </div>
+  </div>
+</section>
+{% endblock main %}

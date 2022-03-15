@@ -1,0 +1,33 @@
+<div class="modal fade" id="addingTagModal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Adding to a tag</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form action="{{ url_for('inventory.tag_devices_add') }}" method="post">
+      {{ form_tag_device.csrf_token }}
+        <div class="modal-body">
+          Please write a name of a tag
+          <select class="form-control selectpicker" id="selectTag" name="tag" data-live-search="true">
+            {% for tag in tags %}
+            <option value="{{ tag.id }}">{{ tag.id }}</option>
+            {% endfor %}
+          </select>
+          <input class="devicesList" type="hidden" name="device" />
+          <p class="text-danger pol">
+              You need select first one device and only one for add this in a tag
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <input type="submit" class="btn btn-primary" style="display: none;" value="Save changes" />
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,62 @@
+{% if form_new_trade %}
+<div class="modal fade" id="tradeLotModal" tabindex="-1" style="display: none;" aria-hidden="true"
+    data-show-action-form="{{ form_new_trade.check_valid() }}">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">New Action <span id="title-action"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form action="{{ url_for('inventory.trade_add') }}" method="post">
+      {{ form_new_trade.csrf_token }}
+        <div class="modal-body">
+          {% for field in form_new_trade %}
+          {% if field != form_new_trade.csrf_token %}
+          {% if field == form_new_trade.devices  %}
+            {{ field }}
+          {% elif field == form_new_trade.lot %}
+            {{ field }}
+          {% elif field == form_new_trade.type %}
+            {{ field }}
+          {% else %}
+          <div class="col-12">
+              {{ field.label(class_="form-label") }}
+              {% if field == form_new_trade.confirm %}
+                <div class="form-check form-switch">
+                  {{ field(class_="form-check-input") }}
+                  <small class="text-muted">{{ field.description }}</small>
+                </div>
+              {% else %}
+                {{ field(class_="form-control") }}
+                <small class="text-muted">{{ field.description }}</small>
+              {% endif %}
+              {% if field.errors %}
+              <p class="text-danger">
+                {% for error in field.errors %}
+                  {{ error }}<br/>
+                {% endfor %}
+              </p>
+              {% endif %}
+          </div>
+          {% endif %}
+          {% endif %}
+          {% endfor %}
+        </div>
+
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <input type="submit" class="btn btn-primary" value="Create" />
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="modal fade" id="tradeLotModal" tabindex="-1" style="display: none;" aria-hidden="true"
+    data-show-action-form="None">
+</div>
+{% endif %}

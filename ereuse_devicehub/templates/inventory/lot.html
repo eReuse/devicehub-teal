@@ -1,0 +1,65 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>{{ title }}</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <!-- TODO@slamora replace with lot list URL when exists -->
+      <li class="breadcrumb-item"><a href="#TODO-lot-list">Lots</a></li>
+      <li class="breadcrumb-item">Lot</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+    <div class="col-xl-4">
+
+      <div class="card">
+              <div class="card-body">
+
+                <div class="pt-4 pb-2">
+                  <h5 class="card-title text-center pb-0 fs-4">{{ title }}</h5>
+                  <p class="text-center small">Please enter a name of the lot.</p>
+                  {% if form.form_errors %}
+                  <p class="text-danger">
+                    {% for error in form.form_errors %}
+                      {{ error }}<br/>
+                    {% endfor %}
+                  </p>
+                  {% endif %}
+                </div>
+
+                <form method="post" class="row g-3 needs-validation" novalidate>
+                  {{ form.csrf_token }}
+
+                  <div>
+                    <label for="name" class="form-label">Name</label>
+                    <div class="input-group has-validation">
+                      <input type="text" name="name" class="form-control" required value="{{ form.name.data|default('', true) }}">
+                      <div class="invalid-feedback">Please enter a name of the lot.</div>
+                    </div>
+                  </div>
+
+                  <div>
+                    {% if form.id %}
+                      <a href="{{ url_for('inventory.lotdevicelist', lot_id=form.id) }}" class="btn btn-danger">Cancel</a>
+                    {% else %}
+                      <a href="{{ url_for('inventory.devicelist') }}" class="btn btn-danger">Cancel</a>
+                    {% endif %}
+                    <button class="btn btn-primary" type="submit">Save</button>
+                  </div>
+                </form>
+
+              </div>
+
+      </div>
+
+    </div>
+
+    <div class="col-xl-8">
+    </div>
+  </div>
+</section>
+{% endblock main %}

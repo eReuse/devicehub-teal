@@ -136,6 +136,10 @@ class Tag(Thing):
     def code(self) -> str:
         return hashcode.encode(self.internal_id)
 
+    @property
+    def get_provider(self) -> str:
+        return self.provider.to_text() if self.provider else ''
+
     def delete(self):
         """Deletes the tag.
 
