@@ -9,7 +9,7 @@ ml).
 
 ## testing
 
-## [2.0.0-alpha]
+## [2.0.0] - 2022-03-15
 First server render HTML version. Completely rewrites views of angular JS client on flask.
 - [added] #193 render on backend devices and lots
 - [added] #195 render on backend tags system
