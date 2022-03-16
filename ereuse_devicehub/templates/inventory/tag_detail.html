@@ -47,10 +47,10 @@
                     <div id="print">
                       <div class="row">
                         <div class="col">
-                          <div id="qrcode"></div>
+                          <div id="{{ tag.id }}"></div>
                         </div>
                         <div class="col">
-                          <div style="padding-top: 55px"><b id="tag">{{ tag.id }}</b></div>
+                          <div style="padding-top: 55px"><b class="tag">{{ tag.id }}</b></div>
                         </div>
                       </div>
                     </div>
@@ -109,6 +109,6 @@
 <script src="{{ url_for('static', filename='js/jspdf.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/print.pdf.js') }}"></script>
 <script type="text/javascript">
-    qr_draw("{{url_for('inventory.device_details', id=tag.device.devicehub_id, _external=True)}}");
+    qr_draw("{{url_for('inventory.device_details', id=tag.device.devicehub_id, _external=True)}}", "#{{ tag.id }}");
 </script>
 {% endblock main %}

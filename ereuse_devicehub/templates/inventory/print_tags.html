@@ -32,7 +32,9 @@
                           <div id="{{ tag.id }}"></div>
                         </div>
                         <div class="col">
-                          <div style="padding-top: 55px"><b id="tag_{{ tag.id }}">{{ tag.id }}</b></div>
+                          <div style="padding-top: 55px">
+                              <b class="tag">{{ tag.id }}</b>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -95,14 +97,7 @@
 <script src="{{ url_for('static', filename='js/print.pdf.js') }}"></script>
 <script type="text/javascript">
 {% for tag in tags %}
-new QRCode(document.getElementById("{{ tag.id }}"), {
-    text: "{{url_for('inventory.device_details', id=tag.device.devicehub_id, _external=True)}}",
-    width: 128,
-    height: 128,
-    colorDark : "#000000",
-    colorLight : "#ffffff",
-    correctLevel : QRCode.CorrectLevel.H
-});
+qr_draw("{{ url_for('inventory.device_details', id=tag.device.devicehub_id, _external=True) }}", "#{{ tag.id }}")
 {% endfor %}
 </script>
 {% endblock main %}
