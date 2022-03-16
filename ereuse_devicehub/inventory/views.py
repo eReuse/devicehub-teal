@@ -21,6 +21,7 @@ from ereuse_devicehub.inventory.forms import (
     LotForm,
     NewActionForm,
     NewDeviceForm,
+    PrintTagsForm,
     TagDeviceForm,
     TagForm,
     TagUnnamedForm,
@@ -118,6 +119,7 @@ class DeviceListMix(GenericMixView):
             'form_new_datawipe': form_new_datawipe,
             'form_new_trade': form_new_trade,
             'form_filter': form_filter,
+            'form_print_tags': PrintTagsForm(),
             'lot': lot,
             'tags': tags,
             'list_devices': list_devices,
@@ -379,6 +381,35 @@ class TagAddUnnamedView(View):
             return flask.redirect(next_url)
 
         return flask.render_template(self.template_name, form=form, **context)
+
+
+class PrintTagsView(View):
+    """This View is used to print labels from multiple devices"""
+
+    methods = ['POST', 'GET']
+    decorators = [login_required]
+    template_name = 'inventory/print_tags.html'
+    title = 'Design and implementation of labels'
+
+    def dispatch_request(self):
+        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        context = {
+            'lots': lots,
+            'page_title': self.title,
+            'version': __version__,
+            'referrer': request.referrer,
+        }
+
+        form = PrintTagsForm()
+        if form.validate_on_submit():
+            context['form'] = form
+            context['tags'] = form._tags
+            return flask.render_template(self.template_name, **context)
+        else:
+            messages.error('Error you need select one or more devices')
+
+        next_url = request.referrer or url_for('inventory.devicelist')
+        return flask.redirect(next_url)
 
 
 class TagDetailView(View):
@@ -733,4 +764,8 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/export/<string:export_id>/', view_func=ExportsView.as_view('export')
+)
+devices.add_url_rule(
+    '/tags/print',
+    view_func=PrintTagsView.as_view('print_tags'),
 )

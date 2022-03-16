@@ -235,6 +235,17 @@
                       Remove Tag from selected Device
                     </a>
                   </li>
+                  <li>
+                    <form id="print_tags" method="post" action="{{ url_for('inventory.print_tags') }}">
+                      {% for f in form_print_tags %}
+                        {{ f }}
+                      {% endfor %}
+                      <a href="javascript:$('#print_tags').submit()" class="dropdown-item">
+                        <i class="bi bi-x"></i>
+                        Print tags
+                      </a>
+                    </form>
+                  </li>
                 </ul>
               </div>
 

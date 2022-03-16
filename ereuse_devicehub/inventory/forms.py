@@ -1007,3 +1007,18 @@ class TradeDocumentForm(FlaskForm):
             db.session.commit()
 
         return self._obj
+
+
+class PrintTagsForm(FlaskForm):
+    devices = StringField(render_kw={'class': "devicesList d-none"})
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not self.devices.data:
+            return False
+
+        device_ids = self.devices.data.split(",")
+        self._tags = Tag.query.filter(Tag.device_id.in_(device_ids)).all()
+
+        return is_valid
