@@ -1019,6 +1019,18 @@ class PrintTagsForm(FlaskForm):
             return False
 
         device_ids = self.devices.data.split(",")
-        self._tags = Tag.query.filter(Tag.device_id.in_(device_ids)).all()
+        self._devices = (
+            Device.query.filter(Device.id.in_(device_ids))
+            .filter(Device.owner_id == g.user.id)
+            .distinct()
+            .all()
+        )
+        dhids = [x.devicehub_id for x in self._devices]
+        # filter for found all tags of a list of devices
+        # self._tags = Tag.query.filter(Tag.owner_id == g.user.id).filter(Tag.device_id.in_(dhids)).all()
+        # filter for  found all tags equal to devicehub_id
+        self._tags = (
+            Tag.query.filter(Tag.owner_id == g.user.id).filter(Tag.id.in_(dhids)).all()
+        )
 
         return is_valid
