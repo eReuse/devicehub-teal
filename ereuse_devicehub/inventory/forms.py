@@ -3,6 +3,7 @@ import json
 from json.decoder import JSONDecodeError
 
 from boltons.urlutils import URL
+from flask import current_app as app
 from flask import g, request
 from flask_wtf import FlaskForm
 from sqlalchemy import or_
@@ -234,12 +235,9 @@ class UploadSnapshotForm(FlaskForm):
     def save(self, commit=True):
         if any([x == 'Error' for x in self.result.values()]):
             return
-        # result = []
         self.sync = Sync()
         schema = SnapshotSchema()
-        # self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
-        # TODO @cayop get correct var config
-        self.tmp_snapshots = '/tmp/'
+        self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         for filename, snapshot_json in self.snapshots:
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
             snapshot_json.pop('debug', None)
