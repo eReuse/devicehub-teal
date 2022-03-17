@@ -5,7 +5,7 @@
   <h1>Inventory</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devices.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devicelist')}}">Inventory</a></li>
       {% if not lot %}
       <li class="breadcrumb-item active">Unassgined</li>
       {% elif lot.is_temporary %}
@@ -33,7 +33,7 @@
           <!-- Bordered Tabs -->
 
           <div class="d-flex align-items-center justify-content-between">
-            <h3><a href="{{ url_for('inventory.devices.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
+            <h3><a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
 
             <div><!-- lot actions -->
               {% if lot.is_temporary %}
@@ -246,9 +246,9 @@
                 <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
                   <li>
                     {% if lot %}
-                    <a href="{{ url_for('inventory.devices.lot_upload_snapshot', lot_id=lot.id) }}" class="dropdown-item">
+                    <a href="{{ url_for('inventory.lot_upload_snapshot', lot_id=lot.id) }}" class="dropdown-item">
                     {% else %}
-                    <a href="{{ url_for('inventory.devices.upload_snapshot') }}" class="dropdown-item">
+                    <a href="{{ url_for('inventory.upload_snapshot') }}" class="dropdown-item">
                     {% endif %}
                       <i class="bi bi-plus"></i>
                       Upload a new Snapshot
@@ -256,9 +256,9 @@
                   </li>
                   <li>
                     {% if lot %}
-                    <a href="{{ url_for('inventory.devices.lot_device_add', lot_id=lot.id) }}" class="dropdown-item">
+                    <a href="{{ url_for('inventory.lot_device_add', lot_id=lot.id) }}" class="dropdown-item">
                     {% else %}
-                    <a href="{{ url_for('inventory.devices.device_add') }}" class="dropdown-item">
+                    <a href="{{ url_for('inventory.device_add') }}" class="dropdown-item">
                     {% endif %}
                       <i class="bi bi-plus"></i>
                       Create a new Device
@@ -275,7 +275,7 @@
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
                   <li>
-                    <a href="{{ url_for('inventory.devices.trade_document_add', lot_id=lot.id)}}" class="dropdown-item">
+                    <a href="{{ url_for('inventory.trade_document_add', lot_id=lot.id)}}" class="dropdown-item">
                       <i class="bi bi-plus"></i>
                       Add new document
                       <span class="caret"></span>
@@ -286,12 +286,24 @@
               {% endif %}
 
               <div class="tab-content pt-2">
+                <form method="get">
+                  <div class="d-flex mt-4 mb-4">
+                    {% for f in form_filter %}
+                      {{ f }}
+                    {% endfor %}
+                    <input type="submit" class="ms-2 btn btn-primary" value="Filter" />
+                  </div>
+                </form>
 
-                <h5 class="card-title">Computers</h5>
+                <p class="mt-3">
+                  Displaying devices of type
+                  <em>{{ form_filter.filter.data or "Computer" }}</em>
+                </p>
+
                 <table class="table">
                   <thead>
                     <tr>
-                      <th scope="col">Select all</th>
+                      <th scope="col">Select</th>
                       <th scope="col">Title</th>
                       <th scope="col">DHID</th>
                       <th scope="col">Tags</th>
@@ -312,18 +324,18 @@
                                />
                       </td>
                       <td>
-                        <a href="{{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}">
+                        <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
                           {{ dev.verbose_name }}
                         </a>
                       </td>
                       <td>
-                        <a href="{{ url_for('inventory.devices.device_details', id=dev.devicehub_id)}}">
+                        <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
                           {{ dev.devicehub_id }}
                         </a>
                       </td>
                       <td>
                         {% for t in dev.tags | sort(attribute="id") %}
-                         <a href="{{ url_for('inventory.devices.tag_details', id=t.id)}}">{{ t.id }}</a>
+                         <a href="{{ url_for('inventory.tag_details', id=t.id)}}">{{ t.id }}</a>
                          {% if not loop.last %},{% endif %}
                         {% endfor %}
                       </td>

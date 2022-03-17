@@ -5,7 +5,7 @@
   <h1>Inventory</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devices.taglist')}}">Tag management</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.taglist')}}">Tag management</a></li>
       <li class="breadcrumb-item active">Tag details {{ tag.id }}</li>
     </ol>
   </nav>
@@ -33,7 +33,7 @@
                 <div class="col-lg-3 col-md-4 label">Device</div>
                 <div class="col-lg-9 col-md-8">
                     {% if tag.device %}
-                      <a href="{{url_for('inventory.devices.device_details', id=tag.device.devicehub_id)}}">
+                      <a href="{{url_for('inventory.device_details', id=tag.device.devicehub_id)}}">
                           {{ tag.device.verbose_name }}
                       </a>
                     {% endif %}
@@ -109,6 +109,6 @@
 <script src="{{ url_for('static', filename='js/jspdf.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/print.pdf.js') }}"></script>
 <script type="text/javascript">
-    qr_draw("{{url_for('inventory.devices.device_details', id=tag.device.devicehub_id, _external=True)}}");
+    qr_draw("{{url_for('inventory.device_details', id=tag.device.devicehub_id, _external=True)}}");
 </script>
 {% endblock main %}

@@ -30,7 +30,7 @@
             {% endif %}
           </div>
 
-          <form action="{{ url_for('inventory.devices.trade_document_add', lot_id=form._lot.id) }}" method="post"
+          <form action="{{ url_for('inventory.trade_document_add', lot_id=form._lot.id) }}" method="post"
                 class="row g-3 needs-validation" enctype="multipart/form-data">
             {{ form.csrf_token }}
             {% for field in form %}
@@ -51,7 +51,7 @@
             {% endfor %}
 
             <div>
-              <a href="{{ url_for('inventory.devices.lotdevicelist', lot_id=form._lot.id) }}" class="btn btn-danger">Cancel</a>
+              <a href="{{ url_for('inventory.lotdevicelist', lot_id=form._lot.id) }}" class="btn btn-danger">Cancel</a>
               <button class="btn btn-primary" type="submit">Save</button>
             </div>
           </form>

@@ -51,6 +51,51 @@ from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 from ereuse_devicehub.resources.user.models import User
 
+DEVICES = {
+    "All": ["All"],
+    "Computer": [
+        "Desktop",
+        "Laptop",
+        "Server",
+    ],
+    "Monitor": ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"],
+    "Mobile, tablet & smartphone": ["Mobile", "Tablet", "Smartphone", "Cellphone"],
+    "DataStorage": ["HardDrive", "SolidStateDrive"],
+    "Accessories & Peripherals": [
+        "GraphicCard",
+        "Motherboard",
+        "NetworkAdapter",
+        "Processor",
+        "RamModule",
+        "SoundCard",
+        "Battery",
+        "Keyboard",
+        "Mouse",
+        "MemoryCardReader",
+    ],
+}
+
+
+class FilterForm(FlaskForm):
+    filter = SelectField(
+        '', choices=DEVICES, default="Computer", render_kw={'class': "form-select"}
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        types_of_devices = [item for sublist in DEVICES.values() for item in sublist]
+        dev = request.args.get('filter')
+        self.device = dev if dev in types_of_devices else None
+        if self.device:
+            self.filter.data = self.device
+
+    def search(self):
+
+        if self.device:
+            return [self.device]
+
+        return ['Desktop', 'Laptop', 'Server']
+
 
 class LotDeviceForm(FlaskForm):
     lot = StringField('Lot', [validators.UUID()])

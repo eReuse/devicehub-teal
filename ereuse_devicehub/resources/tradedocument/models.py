@@ -72,7 +72,7 @@ class TradeDocument(Thing):
     file_hash.comment = """This is the hash of the file produced from frontend."""
     url = db.Column(URL())
     url.comment = """This is the url where resides the document."""
-    weight = db.Column(db.Float(nullable=True))
+    weight = db.Column(db.Float())
     weight.comment = """This is the weight of one container than this document express."""
 
     __table_args__ = (
@@ -150,10 +150,10 @@ class TradeDocument(Thing):
         with suppress(StopIteration, ValueError):
             actions = copy.copy(self.actions)
             actions.sort(key=lambda x: x.created)
-            t_trades = ['Trade', 
-                        'Confirm', 
-                        'ConfirmRevokeDocument', 
-                        'RevokeDocument', 
+            t_trades = ['Trade',
+                        'Confirm',
+                        'ConfirmRevokeDocument',
+                        'RevokeDocument',
                         'ConfirmDocument']
             return next(e for e in reversed(actions) if e.t in t_trades)
 

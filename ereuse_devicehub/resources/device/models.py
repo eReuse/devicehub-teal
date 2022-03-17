@@ -1217,8 +1217,9 @@ def create_code_tag(mapper, connection, device):
     this tag is the same of devicehub_id.
     """
     from ereuse_devicehub.resources.tag.model import Tag
-    tag = Tag(device_id=device.id, id=device.devicehub_id)
-    db.session.add(tag)
+    if isinstance(device, Computer):
+        tag = Tag(device_id=device.id, id=device.devicehub_id)
+        db.session.add(tag)
 
 
 event.listen(Device, 'after_insert', create_code_tag, propagate=True)
