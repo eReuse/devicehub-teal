@@ -13,7 +13,7 @@ from decouple import config
 from psycopg2 import IntegrityError
 from sqlalchemy.exc import ProgrammingError
 
-from ereuse_devicehub.client import Client, UserClient
+from ereuse_devicehub.client import Client, UserClient, UserClientFlask
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
@@ -133,6 +133,31 @@ def user2(app: Devicehub) -> UserClient:
             app, user.email, password, response_wrapper=app.response_class
         )
         client.login()
+        return client
+
+
+@pytest.fixture()
+def user3(app: Devicehub) -> UserClientFlask:
+    """Gets a client with a logged-in dummy user."""
+    with app.app_context():
+        password = 'foo'
+        user = create_user(password=password)
+        client = UserClientFlask(
+            app, user.email, password
+        )
+        return client
+
+
+@pytest.fixture()
+def user4(app: Devicehub) -> UserClient:
+    """Gets a client with a logged-in dummy user."""
+    with app.app_context():
+        password = 'foo'
+        email = 'foo2@foo.com'
+        user = create_user(email=email, password=password)
+        client = UserClientFlask(
+            app, user.email, password
+        )
         return client
 
 

@@ -2,7 +2,7 @@ import pytest
 from flask.testing import FlaskClient
 from flask_wtf.csrf import generate_csrf
 
-from ereuse_devicehub.client import UserClient
+from ereuse_devicehub.client import UserClient, UserClientFlask
 from ereuse_devicehub.devicehub import Devicehub
 from tests import conftest
 
@@ -35,19 +35,27 @@ def test_login(user: UserClient, app: Devicehub):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_inventory(user: UserClient, app: Devicehub):
-    client = FlaskClient(app, use_cookies=True)
-    client.get('/login/')
+def test_inventory(user3: UserClientFlask):
+    body, status = user3.get('/inventory/device/')
+
+    assert status == '200 OK'
+    assert "Unassgined" in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_lot(user3: UserClientFlask):
+    body, status = user3.get('/inventory/lot/add/')
+
+    assert status == '200 OK'
+    assert "Add a new lot" in body
+
     data = {
-        'email': user.email,
-        'password': 'foo',
-        'remember': False,
+        'name': 'lot1',
         'csrf_token': generate_csrf(),
     }
-    body, status, headers = client.post('/login/', data=data, follow_redirects=True)
-    body, status, headers = client.get('/inventory/device/', headers=headers)
-
-    body = next(body).decode("utf-8")
-    assert status == '200 OK'
     # import pdb; pdb.set_trace()
-    assert "Unassgined" in body
+    body, status = user3.post('/inventory/lot/add/', data=data)
+
+    assert status == '200 OK'
+    assert "lot1" in body

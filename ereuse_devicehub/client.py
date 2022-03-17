@@ -1,5 +1,7 @@
 from inspect import isclass
 from typing import Dict, Iterable, Type, Union
+from flask.testing import FlaskClient
+from flask_wtf.csrf import generate_csrf
 
 from ereuse_utils.test import JSON, Res
 from teal.client import Client as TealClient, Query, Status
@@ -156,3 +158,61 @@ class UserClient(Client):
         response = super().login(self.email, self.password)
         self.user = response[0]
         return response
+
+
+class UserClientFlask:
+
+    def __init__(self, application,
+                 email: str,
+                 password: str,
+                 response_wrapper=None,
+                 use_cookies=True,
+                 follow_redirects=True):
+        self.email = email
+        self.password = password
+        self.follow_redirects = follow_redirects
+        self.user = None
+
+        self.client = FlaskClient(application, use_cookies=use_cookies)
+        self.client.get('/login/')
+
+        data = {
+            'email': email,
+            'password': password,
+            'csrf_token': generate_csrf(),
+        }
+        body, status, headers = self.client.post('/login/', data=data, follow_redirects=True)
+        self.headers = headers
+        body = next(body).decode("utf-8")
+        assert "Unassgined" in body
+
+    def get(self,
+            uri='',
+            data=None,
+            follow_redirects=True,
+            **kw):
+
+        body, status, headers = self.client.get(
+            uri,
+            data=data,
+            follow_redirects=follow_redirects,
+            headers=self.headers
+        )
+        body = next(body).decode("utf-8")
+        return (body, status)
+
+    def post(self,
+            uri='',
+            data=None,
+            follow_redirects=True,
+            **kw):
+
+        import pdb; pdb.set_trace()
+        body, status, headers = self.client.post(
+            uri,
+            data=data,
+            follow_redirects=follow_redirects,
+            headers=self.headers
+        )
+        body = next(body).decode("utf-8")
+        return (body, status)
