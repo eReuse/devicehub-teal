@@ -142,9 +142,7 @@ def user3(app: Devicehub) -> UserClientFlask:
     with app.app_context():
         password = 'foo'
         user = create_user(password=password)
-        client = UserClientFlask(
-            app, user.email, password
-        )
+        client = UserClientFlask(app, user.email, password)
         return client
 
 
@@ -155,9 +153,7 @@ def user4(app: Devicehub) -> UserClient:
         password = 'foo'
         email = 'foo2@foo.com'
         user = create_user(email=email, password=password)
-        client = UserClientFlask(
-            app, user.email, password
-        )
+        client = UserClientFlask(app, user.email, password)
         return client
 
 
