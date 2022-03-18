@@ -1,18 +1,21 @@
 """ This is the view for Snapshots """
 
-import os
 import json
+import os
 import shutil
 from datetime import datetime
 
-from flask import current_app as app, g
+from flask import current_app as app
+from flask import g
+from flask.json import jsonify
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
-from ereuse_devicehub.resources.device.models import Computer
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
-from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
+from ereuse_devicehub.resources.action.schemas import Snapshot2
+from ereuse_devicehub.resources.device.models import Computer
+from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 
 
@@ -59,11 +62,12 @@ def move_json(tmp_snapshots, path_name, user, live=False):
         os.remove(path_name)
 
 
-class SnapshotView():
+class SnapshotView:
     """Performs a Snapshot.
 
     See `Snapshot` section in docs for more info.
     """
+
     # Note that if we set the device / components into the snapshot
     # model object, when we flush them to the db we will flush
     # snapshot, and we want to wait to flush snapshot at the end
@@ -74,8 +78,12 @@ class SnapshotView():
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
         snapshot_json.pop('debug', None)
-        self.snapshot_json = resource_def.schema.load(snapshot_json)
-        self.response = self.build()
+        if snapshot_json.get('version') in ["14.0.0"]:
+            self.validate_json(snapshot_json)
+            self.response = self.build2()
+        else:
+            self.snapshot_json = resource_def.schema.load(snapshot_json)
+            self.response = self.build()
         move_json(self.tmp_snapshots, self.path_snapshot, g.user.email)
 
     def post(self):
@@ -84,8 +92,12 @@ class SnapshotView():
     def build(self):
         device = self.snapshot_json.pop('device')  # type: Computer
         components = None
-        if self.snapshot_json['software'] == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid):
-            components = self.snapshot_json.pop('components', None)  # type: List[Component]
+        if self.snapshot_json['software'] == (
+            SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid
+        ):
+            components = self.snapshot_json.pop(
+                'components', None
+            )  # type: List[Component]
             if isinstance(device, Computer) and device.hid:
                 device.add_mac_to_hid(components_snap=components)
         snapshot = Snapshot(**self.snapshot_json)
@@ -94,7 +106,9 @@ class SnapshotView():
         actions_device = set(e for e in device.actions_one)
         device.actions_one.clear()
         if components:
-            actions_components = tuple(set(e for e in c.actions_one) for c in components)
+            actions_components = tuple(
+                set(e for e in c.actions_one) for c in components
+            )
             for component in components:
                 component.actions_one.clear()
 
@@ -141,3 +155,12 @@ class SnapshotView():
         ret.status_code = 201
         db.session.commit()
         return ret
+
+    def validate_json(self, snapshot_json):
+        self.schema2 = Snapshot2()
+        self.snapshot_json = self.schema2.load(snapshot_json)
+
+    def build2(self):
+        res = jsonify("Ok")
+        res.status_code = 201
+        return res
