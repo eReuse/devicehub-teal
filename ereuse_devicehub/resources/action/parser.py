@@ -185,12 +185,14 @@ class Demidecode:
 
 
 class LsHw:
-    def __init__(self, dmi, jshw, default="n/a"):
+    def __init__(self, dmi, jshw, hwinfo, default="n/a"):
         self.default = default
         self.hw = self.loads(jshw)
+        self.hwinfo = hwinfo.splitlines()
         self.childrens = self.hw.get('children', [])
         self.dmi = dmi
         self.components = dmi.components
+        self.device = dmi.device
         self.add_components()
 
     def add_components(self):
@@ -208,6 +210,7 @@ class LsHw:
         for x in self.childrens:
             if not x['id'] == 'network':
                 continue
+
             self.components.append(
                 {
                     "actions": [],
@@ -220,6 +223,43 @@ class LsHw:
                     "wireless": bool(x.get('configuration', {}).get('wireless', False)),
                 }
             )
+
+    def get_display(self):
+        if not self.device['type'] == 'Laptop':
+            return
+
+        for x in self.childrens:
+            if not x['id'] == 'display':
+                continue
+
+            width, height = self.get_display_resolution(x)
+            self.components.append(
+                {
+                    "actions": [],
+                    "type": "Display",
+                    "model": x.get("product"),
+                    "manufacturer": x.get('vendor'),
+                    "serialNumber": x.get('serial'),
+                    "resolutionWidth": width,
+                    "resolutionHeight": height,
+                    "technology": "LCD",
+                    "productionDate": "2009-01-04T00:00:00",
+                    "refreshRate": 60,
+                    "size": self.get_display_size(),
+                }
+            )
+
+    def get_display_resolution(self, display):
+        resolution = display.get('configuration', {}).get('resolution', "1, 1")
+        return resolution.split(",")
+
+    def get_display_size(self):
+        width = height = 1
+        for line in self.hwinfo:
+            if '  Size:' not in line:
+                continue
+            width, height = line.split('  Size:')[1].split(" mm")[0].split("x")
+            break
 
     def loads(jshw):
         if isinstance(jshw, dict):
