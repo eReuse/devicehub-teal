@@ -1025,10 +1025,9 @@ class PrintTagsForm(FlaskForm):
             .distinct()
             .all()
         )
+
+        # print only tags that are DHID
         dhids = [x.devicehub_id for x in self._devices]
-        # filter for found all tags of a list of devices
-        # self._tags = Tag.query.filter(Tag.owner_id == g.user.id).filter(Tag.device_id.in_(dhids)).all()
-        # filter for  found all tags equal to devicehub_id
         self._tags = (
             Tag.query.filter(Tag.owner_id == g.user.id).filter(Tag.id.in_(dhids)).all()
         )
