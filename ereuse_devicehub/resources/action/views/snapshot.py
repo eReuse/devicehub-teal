@@ -11,6 +11,7 @@ from flask.json import jsonify
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.parser.parser import ParseSnapshot
 from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.action.schemas import Snapshot2
@@ -161,6 +162,6 @@ class SnapshotView:
         self.snapshot_json = self.schema2.load(snapshot_json)
 
     def build2(self):
-        res = jsonify("Ok")
-        res.status_code = 201
-        return res
+        snap = ParseSnapshot(self.snapshot_json)
+        self.snapshot_json = snap.snapshot_json
+        return self.build()

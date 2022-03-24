@@ -24,7 +24,7 @@ class ParseSnapshot:
         self.hwinfo = self.parse_hwinfo()
 
         self.set_basic_datas()
-        self.computer = {
+        self.snapshot_json = {
             "device": self.device,
             "software": "Workbench",
             "components": self.components(),
