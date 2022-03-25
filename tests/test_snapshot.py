@@ -42,7 +42,7 @@ from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 from tests import conftest
-from tests.conftest import file, json_encode, yaml2json
+from tests.conftest import file, json_encode, yaml2json, file_json
 
 
 @pytest.mark.mvp
@@ -1019,10 +1019,25 @@ def test_min_validate_fields(user: UserClient):
         "type": "Snapshot",
         "uuid": "d1b70cb8-8929-4f36-99b7-fe052cec0abd",
         "version": "14.0.0",
-        "endTime": "2016-11-03T17:17:17.266543+00:00",
-        "dmidecode": '',
-        "smartctl": '',
+        "timestamp": "2016-11-03T17:17:17.266543+00:00",
+        "data": {"smart": [], "dmidecode": "", "hwinfo": ""}
     }
     body, res = user.post(snapshot, res=Snapshot)
     assert body == 'Ok'
+    assert res.status == '201 CREATED'
+
+
+@pytest.mark.mvp
+def test_snapshot_wb_lite(user: UserClient):
+    """This test check the minimum validation of json that come from snapshot"""
+    snapshot = file_json("example_wb14_x1.json")
+    body, res = user.post(snapshot, res=Snapshot)
+
+    a = [x['type'] for x in body['components']]
+    import pdb; pdb.set_trace()
+
+    ssd = [x for x in body['components'] if x['type'] == 'SolidStateDrive'][0]
+
+    assert body['device']['manufacturer'] == 'lenovo'
+    assert ssd['serialNumber'] == 's35anx0j'
     assert res.status == '201 CREATED'
