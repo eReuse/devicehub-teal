@@ -13,7 +13,7 @@ from ereuse_devicehub.parser.computer import (
 class ParseSnapshot:
     def __init__(self, snapshot, default="n/a"):
         self.default = default
-        self.dmidecode_raw = snapshot["data"]["demidecode"]
+        self.dmidecode_raw = snapshot["data"]["dmidecode"]
         self.smart_raw = snapshot["data"]["smart"]
         self.hwinfo_raw = snapshot["data"]["hwinfo"]
         self.device = {"actions": []}
@@ -24,16 +24,16 @@ class ParseSnapshot:
         self.hwinfo = self.parse_hwinfo()
 
         self.set_basic_datas()
+        self.set_components()
         self.snapshot_json = {
             "device": self.device,
             "software": "Workbench",
-            "components": self.components(),
+            "components": self.components,
             "uuid": snapshot['uuid'],
             "type": snapshot['type'],
             "version": snapshot["version"],
-            "endTime": snapshot["endTime"],
-            "elapsed": 0,
-            "closed": True,
+            "endTime": snapshot["timestamp"],
+            "elapsed": 1,
         }
 
     def set_basic_datas(self):
@@ -43,12 +43,14 @@ class ParseSnapshot:
         self.device['type'] = self.get_type()
         self.device['sku'] = self.get_sku()
         self.device['version'] = self.get_version()
-        self.device['uuid'] = self.get_uuid()
+        # self.device['uuid'] = self.get_uuid()
 
     def set_components(self):
         self.get_cpu()
         self.get_ram()
         self.get_mother_board()
+        self.get_data_storage()
+        self.get_networks()
 
     def get_cpu(self):
         # TODO @cayop generation, brand and address not exist in dmidecode
@@ -57,7 +59,7 @@ class ParseSnapshot:
                 {
                     "actions": [],
                     "type": "Processor",
-                    "speed": cpu.get('Max Speed'),
+                    "speed": self.get_cpu_speed(cpu),
                     "cores": int(cpu.get('Core Count', 1)),
                     "model": cpu.get('Version'),
                     "threads": int(cpu.get('Thread Count', 1)),
@@ -80,8 +82,8 @@ class ParseSnapshot:
                     "speed": self.get_ram_speed(ram),
                     "manufacturer": ram.get("Manufacturer", self.default),
                     "serialNumber": ram.get("Serial Number", self.default),
-                    "interface": ram.get("Type", self.default),
-                    "format": ram.get("Format", self.default),  # "DIMM",
+                    "interface": ram.get("Type", "DDR"),
+                    "format": ram.get("Format", "DIMM"),  # "DIMM",
                     "model": ram.get(
                         "Model", self.default
                     ),  # "48594D503131325336344350362D53362020",
@@ -98,11 +100,11 @@ class ParseSnapshot:
                     "version": moder_board.get("Version"),
                     "serialNumber": moder_board.get("Serial Number"),
                     "manufacturer": moder_board.get("Manufacturer"),
-                    "ramSlots": self.get_ram_slots(),
-                    "ramMaxSize": self.get_max_ram_size(),
-                    "slots": len(self.dmi.get("Number Of Devices")),
                     "biosDate": self.get_bios_date(),
                     "firewire": self.get_firmware(),
+                    "ramMaxSize": self.get_max_ram_size(),
+                    "ramSlots": len(self.dmi.get("Memory Device")),
+                    "slots": self.get_ram_slots(),
                     "model": moder_board.get("Product Name"),  # ??
                     "pcmcia": self.get_pcmcia_num(),  # ??
                     "serial": self.get_serial_num(),  # ??
@@ -112,57 +114,70 @@ class ParseSnapshot:
 
     def get_usb_num(self):
         return len(
-            [u for u in self.get("Port Connector") if u.get("Port Type") == "USB"]
+            [u for u in self.dmi.get("Port Connector") if u.get("Port Type") == "USB"]
         )
 
     def get_serial_num(self):
         return len(
-            [u for u in self.get("Port Connector") if u.get("Port Type") == "SERIAL"]
+            [
+                u
+                for u in self.dmi.get("Port Connector")
+                if u.get("Port Type") == "SERIAL"
+            ]
         )
 
     def get_pcmcia_num(self):
         return len(
-            [u for u in self.get("Port Connector") if u.get("Port Type") == "PCMCIA"]
+            [
+                u
+                for u in self.dmi.get("Port Connector")
+                if u.get("Port Type") == "PCMCIA"
+            ]
         )
 
     def get_bios_date(self):
-        return self.get("BIOS")[0].get("Release Date", self.default)
+        return self.dmi.get("BIOS")[0].get("Release Date", self.default)
 
     def get_firmware(self):
-        return self.get("BIOS")[0].get("Firmware Revision", self.default)
+        return int(float(self.dmi.get("BIOS")[0].get("Firmware Revision", 1)))
 
     def get_max_ram_size(self):
-        size = self.dmi.get("Physical Memory Array")
-        if size:
-            size = size.get("Maximum Capacity")
+        size = 0
+        for slot in self.dmi.get("Physical Memory Array"):
+            capacity = slot.get("Maximum Capacity", '0').split(" ")[0]
+            size += int(capacity)
 
-        return size.split(" GB")[0] if size else self.default
+        return size
 
     def get_ram_slots(self):
-        slots = self.dmi.get("Physical Memory Array")
-        if slots:
-            slots = slots.get("Number Of Devices")
-        return int(slots) if slots else self.default
+        slots = 0
+        for x in self.dmi.get("Physical Memory Array"):
+            slots += int(x.get("Number Of Devices", 0))
+        return slots
 
     def get_ram_size(self, ram):
-        size = ram.get("Size")
-        return size.split(" MB")[0] if size else self.default
+        size = ram.get("Size", "0")
+        return int(size.split(" ")[0])
 
     def get_ram_speed(self, ram):
-        size = ram.get("Speed")
-        return size.split(" MT/s")[0] if size else self.default
+        size = ram.get("Speed", "0")
+        return int(size.split(" ")[0])
+
+    def get_cpu_speed(self, cpu):
+        speed = cpu.get('Max Speed', "0")
+        return float(speed.split(" ")[0]) / 1024
 
     def get_sku(self):
-        return self.get("System")[0].get("SKU Number", self.default)
+        return self.dmi.get("System")[0].get("SKU Number", self.default)
 
     def get_version(self):
-        return self.get("System")[0].get("Version", self.default)
+        return self.dmi.get("System")[0].get("Version", self.default)
 
     def get_uuid(self):
-        return self.get("System")[0].get("UUID", self.default)
+        return self.dmi.get("System")[0].get("UUID", self.default)
 
     def get_chassis(self):
-        return self.get("Chassis")[0].get("Type", self.default)
+        return self.dmi.get("Chassis")[0].get("Type", self.default)
 
     def get_type(self):
         chassis_type = self.get_chassis()
@@ -205,6 +220,7 @@ class ParseSnapshot:
     def get_data_storage(self):
 
         for sm in self.smart:
+            # import pdb; pdb.set_trace()
             model = sm.get('model_name')
             manufacturer = None
             if len(model.split(" ")) == 2:
@@ -241,23 +257,42 @@ class ParseSnapshot:
         return x.get(total_capacity) / 1024**2
 
     def get_networks(self):
-        addr = []
-        for line in self.hwinfo:
-            for y in line:
-                if "Permanent HW Address:" in y:
-                    mac = y.split("  Permanent HW Address: ")[1]
-                    addr.extend(mac)
+        hw_class = "  Hardware Class: "
+        mac = "  Permanent HW Address: "
+        model = "  Model: "
+        wireless = "wireless"
 
-        return addr
+        for line in self.hwinfo:
+            iface = {
+                "variant": "1",
+                "actions": [],
+                "speed": 100.0,
+                "type": "NetworkAdapter",
+                "wireless": False,
+                "manufacturer": "Ethernet",
+            }
+            for y in line:
+                if hw_class in y and not y.split(hw_class)[1] == 'network':
+                    break
+
+                if mac in y:
+                    iface["serialNumber"] = y.split(mac)[1]
+                if model in y:
+                    iface["model"] = y.split(model)[1]
+                if wireless in y:
+                    iface["wireless"] = True
+
+            if iface.get("serialNumber"):
+                self.components.append(iface)
 
     def parse_hwinfo(self):
         hw_blocks = self.hwinfo_raw.split("\n\n")
         return [x.split("\n") for x in hw_blocks]
 
     def loads(self, x):
-        if isinstance(x, dict) or isinstance(x, list):
-            return x
-        return json.loads(x)
+        if isinstance(x, str):
+            return json.loads(x)
+        return x
 
 
 class LsHw:

@@ -14,7 +14,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.parser.parser import ParseSnapshot
 from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
-from ereuse_devicehub.resources.action.schemas import Snapshot2
+from ereuse_devicehub.resources.action.schemas import Snapshot_lite
 from ereuse_devicehub.resources.device.models import Computer
 from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
@@ -136,14 +136,14 @@ class SnapshotView:
             if db_device.owner_id != g.user.id:
                 raise InsufficientPermission()
             # Compute ratings
-            try:
-                rate_computer, price = RateComputer.compute(db_device)
-            except CannotRate:
-                pass
-            else:
-                snapshot.actions.add(rate_computer)
-                if price:
-                    snapshot.actions.add(price)
+            # try:
+            #     rate_computer, price = RateComputer.compute(db_device)
+            # except CannotRate:
+            #     pass
+            # else:
+            #     snapshot.actions.add(rate_computer)
+            #     if price:
+            #         snapshot.actions.add(price)
         elif snapshot.software == SnapshotSoftware.WorkbenchAndroid:
             pass  # TODO try except to compute RateMobile
         # Check if HID is null and add Severity:Warning to Snapshot
@@ -158,10 +158,11 @@ class SnapshotView:
         return ret
 
     def validate_json(self, snapshot_json):
-        self.schema2 = Snapshot2()
+        self.schema2 = Snapshot_lite()
         self.snapshot_json = self.schema2.load(snapshot_json)
 
     def build2(self):
         snap = ParseSnapshot(self.snapshot_json)
-        self.snapshot_json = snap.snapshot_json
+        snap_json = snap.snapshot_json
+        self.snapshot_json = self.resource_def.schema.load(snap_json)
         return self.build()

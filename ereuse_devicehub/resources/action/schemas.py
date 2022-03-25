@@ -416,11 +416,18 @@ class Install(ActionWithOneDevice):
     address = Integer(validate=OneOf({8, 16, 32, 64, 128, 256}))
 
 
-class Snapshot2(MarshmallowSchema):
-    uuid = UUID()
-    version = Version(required=True, description='The version of the software.')
+class Snapshot_lite_data(MarshmallowSchema):
+    dmidecode = String(required=False)
+    hwinfo = String(required=False)
+    smart = String(required=False)
+
+
+class Snapshot_lite(MarshmallowSchema):
+    uuid = String()
+    version = String()
     type = String()
-    endTime = DateTime('iso', dump_only=True, description=m.Thing.updated.comment)
+    timestamp = String()
+    data = Nested(Snapshot_lite_data)
 
     @validates_schema
     def validate_workbench_version(self, data: dict):
