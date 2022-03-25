@@ -1,4 +1,5 @@
 import io
+import json
 import uuid
 import jwt
 import ereuse_utils
@@ -164,6 +165,11 @@ def yaml2json(name: str) -> dict:
 def file(name: str) -> dict:
     """Opens and parses a YAML file from the ``files`` subdir. And decode"""
     return json_encode(yaml2json(name))
+
+
+def file_json(name):
+    with Path(__file__).parent.joinpath('files').joinpath(name).open() as f:
+        return json.loads(f.read())
 
 
 def file_workbench(name: str) -> dict:
