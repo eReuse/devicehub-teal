@@ -42,7 +42,7 @@ from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 from tests import conftest
-from tests.conftest import file, json_encode, yaml2json, file_json
+from tests.conftest import file, file_json, json_encode, yaml2json
 
 
 @pytest.mark.mvp
@@ -1020,7 +1020,7 @@ def test_min_validate_fields(user: UserClient):
         "uuid": "d1b70cb8-8929-4f36-99b7-fe052cec0abd",
         "version": "14.0.0",
         "timestamp": "2016-11-03T17:17:17.266543+00:00",
-        "data": {"smart": [], "dmidecode": "", "hwinfo": ""}
+        "data": {"smart": [], "dmidecode": "", "hwinfo": ""},
     }
     body, res = user.post(snapshot, res=Snapshot)
     assert body == 'Ok'
@@ -1034,7 +1034,9 @@ def test_snapshot_wb_lite(user: UserClient):
     body, res = user.post(snapshot, res=Snapshot)
 
     a = [x['type'] for x in body['components']]
-    import pdb; pdb.set_trace()
+    import pdb
+
+    pdb.set_trace()
 
     ssd = [x for x in body['components'] if x['type'] == 'SolidStateDrive'][0]
 
