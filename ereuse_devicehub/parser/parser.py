@@ -1,13 +1,12 @@
 import json
+import logging
+from enum import Enum, unique
 
 from dmidecode import DMIParse
 
-from ereuse_devicehub.parser.computer import (
-    Display,
-    GraphicCard,
-    NetworkAdapter,
-    SoundCard,
-)
+from ereuse_devicehub.parser.computer import Computer
+
+logger = logging.getLogger(__name__)
 
 
 class ParseSnapshot:
@@ -57,7 +56,7 @@ class ParseSnapshot:
         for cpu in self.dmi.get('Processor'):
             self.components.append(
                 {
-                    "actions": [],
+                    "actions": set(),
                     "type": "Processor",
                     "speed": self.get_cpu_speed(cpu),
                     "cores": int(cpu.get('Core Count', 1)),
@@ -76,17 +75,15 @@ class ParseSnapshot:
         for ram in self.dmi.get("Memory Device"):
             self.components.append(
                 {
-                    "actions": [],
+                    "actions": set(),
                     "type": "RamModule",
                     "size": self.get_ram_size(ram),
                     "speed": self.get_ram_speed(ram),
                     "manufacturer": ram.get("Manufacturer", self.default),
                     "serialNumber": ram.get("Serial Number", self.default),
-                    "interface": ram.get("Type", "DDR"),
-                    "format": ram.get("Format", "DIMM"),  # "DIMM",
-                    "model": ram.get(
-                        "Model", self.default
-                    ),  # "48594D503131325336344350362D53362020",
+                    "interface": self.get_ram_type(ram),
+                    "format": self.get_ram_format(ram),
+                    "model": ram.get("Part Number", self.default),
                 }
             )
 
@@ -95,7 +92,7 @@ class ParseSnapshot:
         for moder_board in self.dmi.get("Baseboard"):
             self.components.append(
                 {
-                    "actions": [],
+                    "actions": set(),
                     "type": "Motherboard",
                     "version": moder_board.get("Version"),
                     "serialNumber": moder_board.get("Serial Number"),
@@ -163,6 +160,16 @@ class ParseSnapshot:
         size = ram.get("Speed", "0")
         return int(size.split(" ")[0])
 
+    def get_ram_type(self, ram):
+        TYPES = {'ddr', 'sdram', 'sodimm'}
+        for t in TYPES:
+            if t in ram.get("Type", "DDR"):
+                return t
+
+    def get_ram_format(self, ram):
+        channel = ram.get("Locator", "DIMM")
+        return 'SODIMM' if 'SODIMM' in channel else 'DIMM'
+
     def get_cpu_speed(self, cpu):
         speed = cpu.get('Max Speed', "0")
         return float(speed.split(" ")[0]) / 1024
@@ -228,7 +235,7 @@ class ParseSnapshot:
 
             self.components.append(
                 {
-                    "actions": [],
+                    "actions": set(),
                     "type": self.get_data_storage_type(sm),
                     "model": model,
                     "manufacturer": manufacturer,
@@ -265,7 +272,7 @@ class ParseSnapshot:
         for line in self.hwinfo:
             iface = {
                 "variant": "1",
-                "actions": [],
+                "actions": set(),
                 "speed": 100.0,
                 "type": "NetworkAdapter",
                 "wireless": False,
@@ -295,102 +302,162 @@ class ParseSnapshot:
         return x
 
 
-class LsHw:
-    def __init__(self, dmi, jshw, hwinfo, default="n/a"):
+class ParseSnapshotLsHw:
+    @unique
+    class DataStorageInterface(Enum):
+        ATA = 'ATA'
+        USB = 'USB'
+        PCI = 'PCI'
+        NVME = 'NVME'
+
+        def __str__(self):
+            return self.value
+
+    def __init__(self, snapshot, default="n/a"):
         self.default = default
-        self.hw = self.loads(jshw)
-        self.hwinfo = hwinfo.splitlines()
-        self.childrens = self.hw.get('children', [])
-        self.dmi = dmi
-        self.components = dmi.components
-        self.device = dmi.device
-        self.add_components()
+        self.dmidecode_raw = snapshot["data"]["dmidecode"]
+        self.smart_raw = snapshot["data"]["smart"]
+        self.hwinfo_raw = snapshot["data"]["hwinfo"]
+        self.lshw_raw = snapshot["data"]["lshw"]
+        self.device = {"actions": []}
+        self.components = []
+        self.components_obj = []
 
-    def add_components(self):
-        self.get_cpu_addr()
-        self.get_networks()
-        self.get_display()
-        self.get_sound_card()
-        self.get_graphic_card()
+        self.dmi = DMIParse(self.dmidecode_raw)
+        self.smart = self.loads(self.smart_raw)
+        self.hwinfo = self.parse_hwinfo()
+        self.lshw = self.loads(self.lshw_raw)
 
-    def get_cpu_addr(self):
-        for cpu in self.components:
-            if not cpu['type'] == "Processor":
-                continue
+        self.set_basic_datas()
+        self.set_components()
 
-            cpu["address"] = self.hw.get("width")
+        self.snapshot_json = {
+            "device": self.device,
+            "software": "Workbench",
+            "components": self.components,
+            "uuid": snapshot['uuid'],
+            "type": snapshot['type'],
+            "version": snapshot["version"],
+            "endTime": snapshot["timestamp"],
+            "elapsed": 1,
+        }
+        # import pdb; pdb.set_trace()
 
-    def get_networks(self):
-        networks = NetworkAdapter.new(self.lshw, self.hwinfo)
+    def parse_hwinfo(self):
+        hw_blocks = self.hwinfo_raw.split("\n\n")
+        return [x.split("\n") for x in hw_blocks]
 
-        for x in networks:
+    def loads(self, x):
+        if isinstance(x, str):
+            return json.loads(x)
+        return x
+
+    def set_basic_datas(self):
+        pc, self.components_obj = Computer.run(self.lshw_raw, self.hwinfo_raw)
+        # import pdb; pdb.set_trace()
+        self.device = pc.dump()
+
+    def set_components(self):
+        memory = None
+
+        for x in self.components_obj:
+            if x.type == 'RamModule':
+                memory = 1
+
+            if x.type == 'Motherboard':
+                x.slots = self.get_ram_slots()
+
+            self.components.append(x.dump())
+
+        if not memory:
+            self.get_ram()
+
+        self.get_data_storage()
+
+    def get_ram(self):
+        for ram in self.dmi.get("Memory Device"):
             self.components.append(
                 {
-                    "actions": [],
-                    "type": "NetworkAdapter",
-                    "serialNumber": x.serial_number,
-                    "speed": x.speed,
-                    "model": x.model,
-                    "manufacturer": x.manufacturer,
-                    "variant": x.variant,
-                    "wireless": x.wireless,
+                    "actions": set(),
+                    "type": "RamModule",
+                    "size": self.get_ram_size(ram),
+                    "speed": self.get_ram_speed(ram),
+                    "manufacturer": ram.get("Manufacturer", self.default),
+                    "serialNumber": ram.get("Serial Number", self.default),
+                    "interface": self.get_ram_type(ram),
+                    "format": self.get_ram_format(ram),
+                    "model": ram.get("Part Number", self.default),
                 }
             )
 
-    def get_display(self):
-        if not self.device['type'] == 'Laptop':
-            return
+    def get_ram_size(self, ram):
+        size = ram.get("Size", "0")
+        return int(size.split(" ")[0])
 
-        displays = Display.new(self.lshw, self.hwinfo)
+    def get_ram_speed(self, ram):
+        size = ram.get("Speed", "0")
+        return int(size.split(" ")[0])
 
-        for x in displays:
+    def get_ram_slots(self):
+        slots = 0
+        for x in self.dmi.get("Physical Memory Array"):
+            slots += int(x.get("Number Of Devices", 0))
+        return slots
+
+    def get_ram_type(self, ram):
+        TYPES = {'ddr', 'sdram', 'sodimm'}
+        for t in TYPES:
+            if t in ram.get("Type", "DDR"):
+                return t
+
+    def get_ram_format(self, ram):
+        channel = ram.get("Locator", "DIMM")
+        return 'SODIMM' if 'SODIMM' in channel else 'DIMM'
+
+    def get_data_storage(self):
+
+        for sm in self.smart:
+            # import pdb; pdb.set_trace()
+            model = sm.get('model_name')
+            manufacturer = None
+            if len(model.split(" ")) > 1:
+                mm = model.split(" ")
+                model = mm[-1]
+                manufacturer = " ".join(mm[:-1])
+
             self.components.append(
                 {
-                    "actions": [],
-                    "type": "Display",
-                    "model": x.model,
-                    "manufacturer": x.manufacturer,
-                    "serialNumber": x.serial_number,
-                    "resolutionWidth": x.resolution_width,
-                    "resolutionHeight": x.resolution_height,
-                    "refreshRate": x.refresh_rate,
-                    "technology": x.technology,
-                    "productionDate": x.production_date,
-                    "size": x.size,
+                    "actions": set(),
+                    "type": self.get_data_storage_type(sm),
+                    "model": model,
+                    "manufacturer": manufacturer,
+                    "serialNumber": sm.get('serial_number'),
+                    "size": self.get_data_storage_size(sm),
+                    "variant": sm.get("firmware_version"),
+                    "interface": self.get_data_storage_interface(sm),
                 }
             )
 
-    def get_sound_card(self):
-        soundcards = SoundCard.new(self.lshw, self.hwinfo)
+    def get_data_storage_type(self, x):
+        # TODO @cayop add more SSDS types
+        SSDS = ["nvme"]
+        SSD = 'SolidStateDrive'
+        HDD = 'HardDrive'
+        type_dev = x.get('device', {}).get('type')
+        return SSD if type_dev in SSDS else HDD
 
-        for x in soundcards:
-            self.components.append(
-                {
-                    "actions": [],
-                    "type": "SoundCard",
-                    "model": x.model,
-                    "manufacturer": x.manufacturer,
-                    "serialNumber": x.serial_number,
-                }
+    def get_data_storage_interface(self, x):
+        interface = x.get('device', {}).get('protocol', 'ATA')
+        try:
+            self.DataStorageInterface(interface.upper())
+        except ValueError as err:
+            logger.error(
+                "interface {} is not in DataStorageInterface Enum".format(interface)
             )
+            raise err
 
-    def get_graphic_card(self):
-        # TODO @cayop memory get info from lspci on fly
-        graphicards = GraphicCard.new(self.lshw, self.hwinfo)
-
-        for x in graphicards:
-            self.components.append(
-                {
-                    "actions": [],
-                    "type": "GraphicCard",
-                    "model": x.model,
-                    "manufacturer": x.manufacturer,
-                    "serialNumber": x.serial_number,
-                    "memory": x.memory,
-                }
-            )
-
-    def loads(jshw):
-        if isinstance(jshw, dict):
-            return jshw
-        return json.loads(jshw)
+    def get_data_storage_size(self, x):
+        type_dev = x.get('device', {}).get('type')
+        total_capacity = "{type}_total_capacity".format(type=type_dev)
+        # convert bytes to Mb
+        return x.get(total_capacity) / 1024**2

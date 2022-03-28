@@ -1030,13 +1030,12 @@ def test_min_validate_fields(user: UserClient):
 @pytest.mark.mvp
 def test_snapshot_wb_lite(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
+    # import pdb; pdb.set_trace()
+
     snapshot = file_json("example_wb14_x1.json")
     body, res = user.post(snapshot, res=Snapshot)
 
-    a = [x['type'] for x in body['components']]
-    import pdb
-
-    pdb.set_trace()
+    # a = [x['type'] for x in body['components']]
 
     ssd = [x for x in body['components'] if x['type'] == 'SolidStateDrive'][0]
 

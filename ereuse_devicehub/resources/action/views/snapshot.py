@@ -11,7 +11,7 @@ from flask.json import jsonify
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.parser.parser import ParseSnapshot
+from ereuse_devicehub.parser.parser import ParseSnapshotLsHw, ParseSnapshot
 from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.action.schemas import Snapshot_lite
@@ -79,9 +79,9 @@ class SnapshotView:
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
         snapshot_json.pop('debug', None)
-        if snapshot_json.get('version') in ["14.0.0"]:
+        if snapshot_json.get('version') in ["2022.03"]:
             self.validate_json(snapshot_json)
-            self.response = self.build2()
+            self.response = self.build_lite()
         else:
             self.snapshot_json = resource_def.schema.load(snapshot_json)
             self.response = self.build()
@@ -161,8 +161,8 @@ class SnapshotView:
         self.schema2 = Snapshot_lite()
         self.snapshot_json = self.schema2.load(snapshot_json)
 
-    def build2(self):
-        snap = ParseSnapshot(self.snapshot_json)
-        snap_json = snap.snapshot_json
-        self.snapshot_json = self.resource_def.schema.load(snap_json)
+    def build_lite(self):
+        snap = ParseSnapshotLsHw(self.snapshot_json)
+        # snap = ParseSnapshot(self.snapshot_json)
+        self.snapshot_json = self.resource_def.schema.load(snap.snapshot_json)
         return self.build()

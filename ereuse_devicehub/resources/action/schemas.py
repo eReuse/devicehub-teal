@@ -420,6 +420,7 @@ class Snapshot_lite_data(MarshmallowSchema):
     dmidecode = String(required=False)
     hwinfo = String(required=False)
     smart = String(required=False)
+    lshw = String(required=False)
 
 
 class Snapshot_lite(MarshmallowSchema):

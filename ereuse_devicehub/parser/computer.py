@@ -90,9 +90,8 @@ class Processor(Component):
             self.cores = int(node['configuration']['cores'])
             self.threads = int(node['configuration']['threads'])
         except KeyError:
-            self.threads = os.cpu_count()
-            if self.threads == 1:
-                self.cores = 1  # If there is only one thread there is only one core
+            self.threads = 1
+            self.cores = 1
         self.serial_number = None  # Processors don't have valid SN :-(
         self.brand, self.generation = self.processor_brand_generation(self.model)
 
@@ -282,17 +281,18 @@ class GraphicCard(Component):
     def _memory(bus_info):
         """The size of the memory of the gpu."""
         try:
-            lines = cmd.run(
-                'lspci',
-                '-v -s {bus} | ',
-                'grep \'prefetchable\' | ',
-                'grep -v \'non-prefetchable\' | ',
-                'egrep -o \'[0-9]{{1,3}}[KMGT]+\''.format(bus=bus_info),
-                shell=True,
-            ).stdout.splitlines()
-            return max(
-                (base2.Quantity(value).to('MiB') for value in lines), default=None
-            )
+            # lines = cmd.run(
+            #     'lspci',
+            #     '-v -s {bus} | ',
+            #     'grep \'prefetchable\' | ',
+            #     'grep -v \'non-prefetchable\' | ',
+            #     'egrep -o \'[0-9]{{1,3}}[KMGT]+\''.format(bus=bus_info),
+            #     shell=True,
+            # ).stdout.splitlines()
+            # return max(
+            #     (base2.Quantity(value).to('MiB') for value in lines), default=None
+            # )
+            return None
         except subprocess.CalledProcessError:
             return None
 
@@ -307,6 +307,7 @@ class Motherboard(Component):
     def new(cls, lshw, hwinfo, **kwargs) -> C:
         node = next(get_nested_dicts_with_key_value(lshw, 'description', 'Motherboard'))
         bios_node = next(get_nested_dicts_with_key_value(lshw, 'id', 'firmware'))
+        # bios_node = '1'
         memory_array = next(
             g.indents(hwinfo, 'Physical Memory Array', indent='    '), None
         )
@@ -321,16 +322,16 @@ class Motherboard(Component):
         self.firewire = self.num_interfaces(node, 'firewire')
         self.serial = self.num_interfaces(node, 'serial')
         self.pcmcia = self.num_interfaces(node, 'pcmcia')
-        self.slots = int(
-            run(
-                'dmidecode -t 17 | ' 'grep -o BANK | ' 'wc -l',
-                check=True,
-                universal_newlines=True,
-                shell=True,
-                stdout=PIPE,
-            ).stdout
-        )
-        self.bios_date = dateutil.parser.parse(bios_node['date'])
+        self.slots = int(2)
+        #     run(
+        #         'dmidecode -t 17 | ' 'grep -o BANK | ' 'wc -l',
+        #         check=True,
+        #         universal_newlines=True,
+        #         shell=True,
+        #         stdout=PIPE,
+        #     ).stdout
+
+        self.bios_date = dateutil.parser.parse(bios_node['date']).isoformat()
         self.version = bios_node['version']
         self.ram_slots = self.ram_max_size = None
         if memory_array:
@@ -435,7 +436,7 @@ class Display(Component):
             g.kv(node, 'Year of Manufacture'), g.kv(node, 'Week of Manufacture')
         )
         # We assume it has been produced the first day of such week
-        self.production_date = datetime.strptime(d, '%Y %W %w')
+        self.production_date = datetime.strptime(d, '%Y %W %w').isoformat()
         self._aspect_ratio = Fraction(self.resolution_width, self.resolution_height)
 
     def __str__(self) -> str:
@@ -465,12 +466,13 @@ class Battery(Component):
     @classmethod
     def new(cls, lshw, hwinfo, **kwargs) -> Iterator[C]:
         try:
-            uevent = cmd.run(
-                'cat', '/sys/class/power_supply/BAT*/uevent', shell=True
-            ).stdout.splitlines()
+            # uevent = cmd.run(
+            #     'cat', '/sys/class/power_supply/BAT*/uevent', shell=True
+            # ).stdout.splitlines()
+            return
         except CalledProcessError:
             return
-        yield cls(uevent)
+        # yield cls(uevent)
 
     def __init__(self, node: List[str]) -> None:
         super().__init__(node)
