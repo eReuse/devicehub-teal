@@ -27,8 +27,7 @@ from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
-from ereuse_devicehub.resources.action.models import RateComputer, Snapshot, Trade
-from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
+from ereuse_devicehub.resources.action.models import Snapshot, Trade
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
 from ereuse_devicehub.resources.action.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.views.snapshot import move_json, save_json

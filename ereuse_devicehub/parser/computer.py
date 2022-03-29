@@ -1,18 +1,16 @@
 import json
-import os
 import re
 import subprocess
 from contextlib import suppress
 from datetime import datetime
 from enum import Enum, unique
 from fractions import Fraction
-from subprocess import PIPE, CalledProcessError, run
-from typing import Iterator, List, Optional, Tuple, Type, TypeVar
+from subprocess import PIPE, run
+from typing import Iterator, List, Optional, Type, TypeVar
 from warnings import catch_warnings, filterwarnings
 
 import dateutil.parser
 import pySMART
-from ereuse_utils import cmd
 from ereuse_utils import getter as g
 from ereuse_utils import text
 from ereuse_utils.nested_lookup import (
@@ -97,7 +95,7 @@ class Processor(Component):
 
         assert not hasattr(self, 'cores') or 1 <= self.cores <= 16
 
-    @staticmethod
+    @staticmethod  # noqa: C901
     def processor_brand_generation(model: str):
         """Generates the ``brand`` and ``generation`` fields for the given model.
 
@@ -105,10 +103,11 @@ class Processor(Component):
 
         - The brand as a string or None.
         - The generation as an int or None.
+        Intel desktop processor numbers:
+        https://www.intel.com/content/www/us/en/processors/processor-numbers.html
+        Intel server processor numbers:
+        https://www.intel.com/content/www/us/en/processors/processor-numbers-data-center.html
         """
-        # Intel desktop processor numbers: https://www.intel.com/content/www/us/en/processors/processor-numbers.html
-        # Intel server processor numbers: https://www.intel.com/content/www/us/en/processors/processor-numbers-data-center.html
-
         if 'Duo' in model:
             return 'Core2 Duo', None
         if 'Quad' in model:
@@ -447,76 +446,6 @@ class Display(Component):
         )
 
 
-class Battery(Component):
-    class Technology(Enum):
-        """ereuse.org Battery technology with translated values from
-        the Linux Kernel convention, from
-        https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-power.
-        """
-
-        LiIon = 'Li-ion'
-        NiCd = 'NiCd'
-        NiMH = 'NiMH'
-        LiPoly = 'Li-poly'
-        LiFe = 'LiFe'
-        LiMn = 'LiMn'
-
-    PRE = 'POWER_SUPPLY_'
-
-    @classmethod
-    def new(cls, lshw, hwinfo, **kwargs) -> Iterator[C]:
-        try:
-            # uevent = cmd.run(
-            #     'cat', '/sys/class/power_supply/BAT*/uevent', shell=True
-            # ).stdout.splitlines()
-            return
-        except CalledProcessError:
-            return
-        # yield cls(uevent)
-
-    def __init__(self, node: List[str]) -> None:
-        super().__init__(node)
-        try:
-            self.serial_number = g.kv(
-                node, self.PRE + 'SERIAL_NUMBER', sep='=', type=str
-            )
-            self.manufacturer = g.kv(node, self.PRE + 'MANUFACTURER', sep='=')
-            self.model = g.kv(node, self.PRE + 'MODEL_NAME', sep='=')
-            self.size = g.kv(node, self.PRE + 'CHARGE_FULL_DESIGN', sep='=', default=0)
-            if self.size is not None:
-                self.size = self.size // 1000
-            self.technology = g.kv(
-                node, self.PRE + 'TECHNOLOGY', sep='=', type=self.Technology
-            )
-            measure = MeasureBattery(
-                size=g.kv(node, self.PRE + 'CHARGE_FULL', sep='='),
-                voltage=g.kv(node, self.PRE + 'VOLTAGE_NOW', sep='='),
-                cycle_count=g.kv(node, self.PRE + 'CYCLE_COUNT', sep='='),
-            )
-            try:
-                measure.size = measure.size.m
-                measure.voltage = measure.voltage.m
-            except AttributeError:
-                pass
-            self.actions.add(measure)
-            self._wear = (
-                round(1 - measure.size / self.size, 2)
-                if self.size and measure.size
-                else None
-            )
-            self._node = node
-        except NoBatteryInfo:
-            self._node = None
-
-    def __str__(self) -> str:
-        try:
-            return '{0} {1.technology}. Size: {1.size} Wear: {1._wear:%}'.format(
-                super().__str__(), self
-            )
-        except TypeError:
-            return 'There is not currently battery information'
-
-
 class Computer(Device):
     CHASSIS_TYPE = {
         'Desktop': {
@@ -573,7 +502,6 @@ class Computer(Device):
 
     COMPONENTS = list(Component.__subclasses__())  # type: List[Type[Component]]
     COMPONENTS.remove(Motherboard)
-    COMPONENTS.remove(Battery)
 
     def __init__(self, node: dict) -> None:
         super().__init__(node)
@@ -616,7 +544,3 @@ class Computer(Device):
     def __str__(self) -> str:
         specs = super().__str__()
         return '{} with {} MB of RAM.'.format(specs, self._ram)
-
-
-class NoBatteryInfo(Exception):
-    print('Cannot get battery information')
