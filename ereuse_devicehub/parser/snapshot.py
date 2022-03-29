@@ -1,21 +1,15 @@
 from datetime import datetime, timezone
-from distutils.version import StrictVersion
 from enum import Enum, unique
-from typing import List, Optional
-from uuid import UUID
+from typing import List
 
-import inflection
-from ereuse_utils import cli
-from ereuse_utils.cli import Line
-from ereuse_utils.session import DevicehubClient
-
-from ereuse_workbench.computer import Component, Computer, DataStorage, SoundCard
+from ereuse_workbench.computer import Component, Computer, DataStorage
 from ereuse_workbench.utils import Dumpeable
 
 
 @unique
 class SnapshotSoftware(Enum):
     """The algorithm_software used to perform the Snapshot."""
+
     Workbench = 'Workbench'
     AndroidApp = 'AndroidApp'
     Web = 'Web'
@@ -51,6 +45,5 @@ class Snapshot(Dumpeable):
         self._storages = tuple(c for c in self.components if isinstance(c, DataStorage))
 
     def close(self):
-        """Closes the Snapshot
-        """
+        """Closes the Snapshot"""
         self.closed = True
