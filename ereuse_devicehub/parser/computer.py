@@ -1,16 +1,11 @@
 import json
 import re
-import subprocess
 from contextlib import suppress
 from datetime import datetime
-from enum import Enum, unique
 from fractions import Fraction
-from subprocess import PIPE, run
 from typing import Iterator, List, Optional, Type, TypeVar
-from warnings import catch_warnings, filterwarnings
 
 import dateutil.parser
-import pySMART
 from ereuse_utils import getter as g
 from ereuse_utils import text
 from ereuse_utils.nested_lookup import (
@@ -184,87 +179,6 @@ class RamModule(Component):
         return '{} {} {}'.format(super().__str__(), self.format, self.size)
 
 
-class DataStorage(Component):
-    @classmethod
-    def new(cls, lshw, hwinfo, **kwargs) -> Iterator[C]:
-        disks = get_nested_dicts_with_key_containing_value(lshw, 'id', 'disk')
-
-        usb_disks = list()  # List of disks that are plugged in an USB host
-        for usb in get_nested_dicts_with_key_containing_value(lshw, 'id', 'usbhost'):
-            usb_disks.extend(
-                get_nested_dicts_with_key_containing_value(usb, 'id', 'disk')
-            )
-
-        for disk in (n for n in disks if n not in usb_disks):
-            # We can get nodes that are not truly disks as they don't have size
-            if 'size' in disk:
-                interface = DataStorage.get_interface(disk)
-                removable = interface == 'usb' or disk.get('capabilities', {}).get(
-                    'removable', False
-                )
-                if not removable:
-                    yield cls(disk, interface)
-
-    SSD = 'SolidStateDrive'
-    HDD = 'HardDrive'
-
-    @unique
-    class DataStorageInterface(Enum):
-        ATA = 'ATA'
-        USB = 'USB'
-        PCI = 'PCI'
-
-        def __str__(self):
-            return self.value
-
-    def __init__(self, node: dict, interface: str) -> None:
-        super().__init__(node)
-        self.from_lshw(node)
-        self.size = unit.Quantity(node['size'], node.get('units', 'B')).to('MB').m
-        self.interface = (
-            self.DataStorageInterface(interface.upper()) if interface else None
-        )
-        self._logical_name = node['logicalname']
-        self.variant = node['version']
-
-        with catch_warnings():
-            filterwarnings('error')
-            try:
-                smart = pySMART.Device(self._logical_name)
-            except Warning:
-                self.type = self.HDD
-            else:
-                self.type = self.SSD if smart.is_ssd else self.HDD
-                self.serial_number = self.serial_number or smart.serial
-                self.model = self.model or smart.model
-
-        assert 1.0 < self.size < 1000000000000000.0, 'Invalid HDD size {}'.format(
-            self.size
-        )
-
-    def __str__(self) -> str:
-        return '{} {} {} with {} MB'.format(
-            super().__str__(), self.interface, self.type, self.size
-        )
-
-    @staticmethod
-    def get_interface(node: dict):
-        interface = run(
-            'udevadm info '
-            '--query=all '
-            '--name={} | '
-            'grep '
-            'ID_BUS | '
-            'cut -c 11-'.format(node['logicalname']),
-            check=True,
-            universal_newlines=True,
-            shell=True,
-            stdout=PIPE,
-        ).stdout
-        # todo not sure if ``interface != usb`` is needed
-        return interface.strip()
-
-
 class GraphicCard(Component):
     @classmethod
     def new(cls, lshw, hwinfo, **kwargs) -> Iterator[C]:
@@ -279,21 +193,7 @@ class GraphicCard(Component):
     @staticmethod
     def _memory(bus_info):
         """The size of the memory of the gpu."""
-        try:
-            # lines = cmd.run(
-            #     'lspci',
-            #     '-v -s {bus} | ',
-            #     'grep \'prefetchable\' | ',
-            #     'grep -v \'non-prefetchable\' | ',
-            #     'egrep -o \'[0-9]{{1,3}}[KMGT]+\''.format(bus=bus_info),
-            #     shell=True,
-            # ).stdout.splitlines()
-            # return max(
-            #     (base2.Quantity(value).to('MiB') for value in lines), default=None
-            # )
-            return None
-        except subprocess.CalledProcessError:
-            return None
+        return None
 
     def __str__(self) -> str:
         return '{} with {}'.format(super().__str__(), self.memory)
