@@ -1028,17 +1028,19 @@ def test_min_validate_fields(user: UserClient):
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_snapshot_wb_lite(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
-    # import pdb; pdb.set_trace()
 
     snapshot = file_json("example_wb14_x1.json")
     body, res = user.post(snapshot, res=Snapshot)
-
-    # a = [x['type'] for x in body['components']]
 
     ssd = [x for x in body['components'] if x['type'] == 'SolidStateDrive'][0]
 
     assert body['device']['manufacturer'] == 'lenovo'
     assert ssd['serialNumber'] == 's35anx0j'
     assert res.status == '201 CREATED'
+    assert '00:28:f8:a6:d5:7e' in body['device']['hid']
+
+    dev = m.Device.query.filter_by(id=body['device']['id']).one()
+    assert dev.actions[0].power_on_hours == 6013
