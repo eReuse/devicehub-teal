@@ -319,7 +319,7 @@ class Motherboard(Component):
         super().__init__(node)
         self.from_lshw(node)
         self.usb = self.num_interfaces(node, 'usb')
-        self.firewire = str(self.num_interfaces(node, 'firewire'))
+        self.firewire = self.num_interfaces(node, 'firewire')
         self.serial = self.num_interfaces(node, 'serial')
         self.pcmcia = self.num_interfaces(node, 'pcmcia')
         self.slots = int(2)

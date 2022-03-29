@@ -98,7 +98,7 @@ class ParseSnapshot:
                     "serialNumber": moder_board.get("Serial Number"),
                     "manufacturer": moder_board.get("Manufacturer"),
                     "biosDate": self.get_bios_date(),
-                    "firewire": self.get_firmware(),
+                    # "firewire": self.get_firmware(),
                     "ramMaxSize": self.get_max_ram_size(),
                     "ramSlots": len(self.dmi.get("Memory Device")),
                     "slots": self.get_ram_slots(),
