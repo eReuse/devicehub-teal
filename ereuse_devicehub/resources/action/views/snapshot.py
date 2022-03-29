@@ -11,9 +11,8 @@ from flask.json import jsonify
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.parser.parser import ParseSnapshot, ParseSnapshotLsHw
-from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
-from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
+from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
+from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.action.schemas import Snapshot_lite
 from ereuse_devicehub.resources.device.models import Computer
 from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
