@@ -136,6 +136,7 @@ class Computer(Device):
     owner_id = UUID(data_key='ownerID')
     transfer_state = EnumField(enums.TransferState, description=m.Computer.transfer_state.comment)
     receiver_id = UUID(data_key='receiverID')
+    uuid = UUID(required=False)
 
 
 class Desktop(Computer):
@@ -271,7 +272,8 @@ class Motherboard(Component):
     slots = Integer(validate=Range(0, 20),
                     description=m.Motherboard.slots.comment)
     usb = Integer(validate=Range(0, 20), description=m.Motherboard.usb.comment)
-    firewire = Integer(validate=Range(0, 20), description=m.Motherboard.firewire.comment)
+    # firewire = Integer(validate=Range(0, 20), description=m.Motherboard.firewire.comment)
+    firewire = String(description=m.Motherboard.firewire.comment)
     serial = Integer(validate=Range(0, 20), description=m.Motherboard.serial.comment)
     pcmcia = Integer(validate=Range(0, 20), description=m.Motherboard.pcmcia.comment)
     bios_date = Date(validate=Range(datetime.date(year=1980, month=1, day=1),

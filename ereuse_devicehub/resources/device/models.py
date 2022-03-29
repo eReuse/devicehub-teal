@@ -663,6 +663,7 @@ class Computer(Device):
                             db.ForeignKey(User.id),
                             nullable=True)
     receiver = db.relationship(User, primaryjoin=receiver_id == User.id)
+    uuid = db.Column(UUID(as_uuid=True), nullable=True)
 
     def __init__(self, *args, **kwargs) -> None:
         if args:
@@ -955,7 +956,7 @@ class Motherboard(JoinedComponentTableMixin, Component):
     slots = Column(SmallInteger, check_range('slots', min=0))
     slots.comment = """PCI slots the motherboard has."""
     usb = Column(SmallInteger, check_range('usb', min=0))
-    firewire = Column(SmallInteger, check_range('firewire', min=0))
+    firewire = Column(CIText())
     serial = Column(SmallInteger, check_range('serial', min=0))
     pcmcia = Column(SmallInteger, check_range('pcmcia', min=0))
     bios_date = Column(db.Date)

@@ -136,7 +136,7 @@ class ParseSnapshot:
         return self.dmi.get("BIOS")[0].get("Release Date", self.default)
 
     def get_firmware(self):
-        return int(float(self.dmi.get("BIOS")[0].get("Firmware Revision", 1)))
+        return self.dmi.get("BIOS")[0].get("Firmware Revision", '1')
 
     def get_max_ram_size(self):
         size = 0
@@ -354,8 +354,8 @@ class ParseSnapshotLsHw:
 
     def set_basic_datas(self):
         pc, self.components_obj = Computer.run(self.lshw_raw, self.hwinfo_raw)
-        # import pdb; pdb.set_trace()
         self.device = pc.dump()
+        self.device['uuid'] = self.dmi.get("System")[0].get("UUID")
 
     def set_components(self):
         memory = None
