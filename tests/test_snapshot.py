@@ -23,7 +23,6 @@ from ereuse_devicehub.resources.action.models import (
     BenchmarkProcessor,
     EraseSectors,
     EreusePrice,
-    RateComputer,
     Ready,
     Snapshot,
     SnapshotRequest,
@@ -97,7 +96,7 @@ def test_snapshot_post(user: UserClient):
     snapshot = snapshot_and_check(
         user,
         yaml2json('basic.snapshot'),
-        action_types=(BenchmarkProcessor.t, VisualTest.t, RateComputer.t),
+        action_types=(BenchmarkProcessor.t, VisualTest.t),
         perform_second_snapshot=False,
     )
     assert snapshot['software'] == 'Workbench'
@@ -118,12 +117,6 @@ def test_snapshot_post(user: UserClient):
         m.RamModule.t,
         m.Processor.t,
     }
-    rate = next(e for e in snapshot['actions'] if e['type'] == RateComputer.t)
-    rate, _ = user.get(res=Action, item=rate['id'])
-    assert rate['device']['id'] == snapshot['device']['id']
-    rate['components'].sort(key=key)
-    assert rate['components'] == snapshot['components']
-    assert rate['snapshot']['id'] == snapshot['id']
 
 
 @pytest.mark.mvp
@@ -155,14 +148,14 @@ def test_snapshot_update_timefield_updated(user: UserClient):
     snapshot = snapshot_and_check(
         user,
         computer1,
-        action_types=(BenchmarkProcessor.t, RateComputer.t),
+        action_types=(BenchmarkProcessor.t,),
         perform_second_snapshot=False,
     )
     computer2 = yaml2json('2-second-device-with-components-of-first.snapshot')
     snapshot_and_check(
         user,
         computer2,
-        action_types=('Remove', 'RateComputer'),
+        action_types=('Remove',),
         perform_second_snapshot=False,
     )
     pc1_devicehub_id = snapshot['device']['devicehubID']
@@ -230,11 +223,11 @@ def test_snapshot_component_add_remove(user: UserClient):
     # Components contain parent
     assert all(c['parent'] == pc1_id for c in pc1['components'])
     # pc has three actions: Snapshot, BenchmarkProcessor and RateComputer
-    assert len(pc1['actions']) == 3
+    assert len(pc1['actions']) == 2
     assert pc1['actions'][1]['type'] == Snapshot.t
     # p1c1s has Snapshot
     p1c1s, _ = user.get(res=m.Device, item=pc1['components'][0]['devicehubID'])
-    assert tuple(e['type'] for e in p1c1s['actions']) == ('Snapshot', 'RateComputer')
+    assert tuple(e['type'] for e in p1c1s['actions']) == ('Snapshot',)
 
     # We register a new device
     # It has the processor of the first one (p1c2s)
@@ -259,22 +252,19 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert tuple(e['type'] for e in pc1['actions']) == (
         'BenchmarkProcessor',
         'Snapshot',
-        'RateComputer',
         'Remove',
     )
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p1c2s', 'p2c1s')
     assert all(c['parent'] == pc2_id for c in pc2['components'])
-    assert tuple(e['type'] for e in pc2['actions']) == ('Snapshot', 'RateComputer')
+    assert tuple(e['type'] for e in pc2['actions']) == ('Snapshot',)
     # p1c2s has two Snapshots, a Remove and an Add
     p1c2s, _ = user.get(res=m.Device, item=pc2['components'][0]['devicehubID'])
     assert tuple(e['type'] for e in p1c2s['actions']) == (
         'BenchmarkProcessor',
         'Snapshot',
-        'RateComputer',
         'Snapshot',
         'Remove',
-        'RateComputer',
     )
 
     # We register the first device again, but removing motherboard
@@ -285,7 +275,7 @@ def test_snapshot_component_add_remove(user: UserClient):
         '3-first-device-but-removing-motherboard-and-adding-processor-from-2.snapshot'
     )
     snapshot_and_check(
-        user, s3, ('Remove', 'RateComputer'), perform_second_snapshot=False
+        user, s3, ('Remove',), perform_second_snapshot=False
     )
     pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
     pc2, _ = user.get(res=m.Device, item=pc2_devicehub_id)
@@ -302,17 +292,14 @@ def test_snapshot_component_add_remove(user: UserClient):
         # id, type, components, snapshot
         ('BenchmarkProcessor', []),  # first BenchmarkProcessor
         ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # first Snapshot1
-        ('RateComputer', ['p1c1s', 'p1c2s', 'p1c3s']),
         ('Remove', ['p1c2s']),  # Remove Processor in Snapshot2
         ('Snapshot', ['p1c2s', 'p1c3s']),  # This Snapshot3
-        ('RateComputer', ['p1c2s', 'p1c3s']),
     )
     # PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
     assert all(c['parent'] == pc2_id for c in pc2['components'])
     assert tuple(e['type'] for e in pc2['actions']) == (
         'Snapshot',  # Second Snapshot
-        'RateComputer',
         'Remove',  # the processor we added in 2.
     )
     # p1c2s has Snapshot, Remove and Add
@@ -320,13 +307,10 @@ def test_snapshot_component_add_remove(user: UserClient):
     assert tuple(get_actions_info(p1c2s['actions'])) == (
         ('BenchmarkProcessor', []),  # first BenchmarkProcessor
         ('Snapshot', ['p1c1s', 'p1c2s', 'p1c3s']),  # First Snapshot to PC1
-        ('RateComputer', ['p1c1s', 'p1c2s', 'p1c3s']),
         ('Snapshot', ['p1c2s', 'p2c1s']),  # Second Snapshot to PC2
         ('Remove', ['p1c2s']),  # ...which caused p1c2s to be removed form PC1
-        ('RateComputer', ['p1c2s', 'p2c1s']),
         ('Snapshot', ['p1c2s', 'p1c3s']),  # The third Snapshot to PC1
         ('Remove', ['p1c2s']),  # ...which caused p1c2 to be removed from PC2
-        ('RateComputer', ['p1c2s', 'p1c3s']),
     )
 
     # We register the first device but without the processor,
@@ -334,21 +318,17 @@ def test_snapshot_component_add_remove(user: UserClient):
     s4 = yaml2json(
         '4-first-device-but-removing-processor.snapshot-and-adding-graphic-card'
     )
-    snapshot4 = snapshot_and_check(
-        user, s4, ('RateComputer',), perform_second_snapshot=False
-    )
     pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
     pc2, _ = user.get(res=m.Device, item=pc2_devicehub_id)
     # Check if the update_timestamp is updated
     update3_pc2 = pc2['updated']
     update4_pc1 = pc1['updated']
-    assert not update4_pc1 in [update1_pc1, update2_pc1, update3_pc1]
+    assert update4_pc1 in [update1_pc1, update2_pc1, update3_pc1]
     assert update3_pc2 == update2_pc2
     # PC 0: p1c3s, p1c4s. PC1: p2c1s
-    assert {c['serialNumber'] for c in pc1['components']} == {'p1c3s'}
+    assert {c['serialNumber'] for c in pc1['components']} == {'p1c2s', 'p1c3s'}
     assert all(c['parent'] == pc1_id for c in pc1['components'])
     # This last Action only
-    assert get_actions_info(pc1['actions'])[-1] == ('RateComputer', ['p1c3s'])
     # PC2
     # We haven't changed PC2
     assert tuple(c['serialNumber'] for c in pc2['components']) == ('p2c1s',)
@@ -386,7 +366,7 @@ def test_snapshot_tag_inner_tag(user: UserClient, tag_id: str, app: Devicehub):
     b['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
 
     snapshot_and_check(
-        user, b, action_types=(RateComputer.t, BenchmarkProcessor.t, VisualTest.t)
+        user, b, action_types=(BenchmarkProcessor.t, VisualTest.t)
     )
     with app.app_context():
         tag = Tag.query.all()[0]  # type: Tag
@@ -508,33 +488,6 @@ def test_not_remove_ram_in_same_computer(user: UserClient):
 
 
 @pytest.mark.mvp
-def test_ereuse_price(user: UserClient):
-    """Tests a Snapshot with EraseSectors and the resulting privacy
-    properties.
-
-    This tests ensures that only the last erasure is picked up, as
-    erasures have always custom endTime value set.
-    """
-    s = yaml2json('erase-sectors.snapshot')
-    assert s['components'][0]['actions'][0]['endTime'] == '2018-06-01T09:12:06+02:00'
-    s['device']['type'] = 'Server'
-    snapshot = snapshot_and_check(
-        user,
-        s,
-        action_types=(
-            EraseSectors.t,
-            BenchmarkDataStorage.t,
-            BenchmarkProcessor.t,
-            RateComputer.t,
-            EreusePrice.t,
-        ),
-        perform_second_snapshot=False,
-    )
-    ereuse_price = snapshot['actions'][-1]
-    assert len(ereuse_price) > 0
-
-
-@pytest.mark.mvp
 def test_erase_privacy_standards_endtime_sort(user: UserClient):
     """Tests a Snapshot with EraseSectors and the resulting privacy
     properties.
@@ -551,8 +504,6 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
             EraseSectors.t,
             BenchmarkDataStorage.t,
             BenchmarkProcessor.t,
-            RateComputer.t,
-            EreusePrice.t,
         ),
         perform_second_snapshot=False,
     )
@@ -569,8 +520,6 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
             EraseSectors.t,
             BenchmarkDataStorage.t,
             BenchmarkProcessor.t,
-            RateComputer.t,
-            EreusePrice.t,
         ),
         perform_second_snapshot=False,
     )
@@ -587,8 +536,6 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
         erasure2,
         benchmark_hdd1,
         _snapshot1,
-        _,
-        _,
         benchmark_hdd2,
         _snapshot2,
     ) = storage['actions'][:8]
@@ -1010,21 +957,6 @@ def test_bug_141(user: UserClient):
     """
     dev = file('2021-5-4-13-41_time_out_test_datastorage')
     user.post(dev, res=Snapshot)
-
-
-@pytest.mark.mvp
-def test_min_validate_fields(user: UserClient):
-    """This test check the minimum validation of json that come from snapshot"""
-    snapshot = {
-        "type": "Snapshot",
-        "uuid": "d1b70cb8-8929-4f36-99b7-fe052cec0abd",
-        "version": "14.0.0",
-        "timestamp": "2016-11-03T17:17:17.266543+00:00",
-        "data": {"smart": [], "dmidecode": "", "hwinfo": ""},
-    }
-    body, res = user.post(snapshot, res=Snapshot)
-    assert body == 'Ok'
-    assert res.status == '201 CREATED'
 
 
 @pytest.mark.mvp
