@@ -956,7 +956,7 @@ class Motherboard(JoinedComponentTableMixin, Component):
     slots = Column(SmallInteger, check_range('slots', min=0))
     slots.comment = """PCI slots the motherboard has."""
     usb = Column(SmallInteger, check_range('usb', min=0))
-    firewire = Column(CIText())
+    firewire = Column(SmallInteger, check_range('firewire', min=0))
     serial = Column(SmallInteger, check_range('serial', min=0))
     pcmcia = Column(SmallInteger, check_range('pcmcia', min=0))
     bios_date = Column(db.Date)
