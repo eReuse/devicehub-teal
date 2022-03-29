@@ -235,7 +235,7 @@ class ActionView(View):
             # snapshot_data = decode_snapshot(json)
 
             snapshot_data = json
-            if 'data' in json and not json.get("data", {}).get("dmidecode"):
+            if 'data' in json and isinstance(json['data'], str):
                 snapshot_data = decode_snapshot(json)
 
             if not snapshot_data:
