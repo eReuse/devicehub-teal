@@ -42,7 +42,7 @@ class ParseSnapshot:
         self.device['type'] = self.get_type()
         self.device['sku'] = self.get_sku()
         self.device['version'] = self.get_version()
-        # self.device['uuid'] = self.get_uuid()
+        self.device['uuid'] = self.get_uuid()
 
     def set_components(self):
         self.get_cpu()
@@ -56,7 +56,7 @@ class ParseSnapshot:
         for cpu in self.dmi.get('Processor'):
             self.components.append(
                 {
-                    "actions": set(),
+                    "actions": [],
                     "type": "Processor",
                     "speed": self.get_cpu_speed(cpu),
                     "cores": int(cpu.get('Core Count', 1)),
@@ -75,7 +75,7 @@ class ParseSnapshot:
         for ram in self.dmi.get("Memory Device"):
             self.components.append(
                 {
-                    "actions": set(),
+                    "actions": [],
                     "type": "RamModule",
                     "size": self.get_ram_size(ram),
                     "speed": self.get_ram_speed(ram),
@@ -92,7 +92,7 @@ class ParseSnapshot:
         for moder_board in self.dmi.get("Baseboard"):
             self.components.append(
                 {
-                    "actions": set(),
+                    "actions": [],
                     "type": "Motherboard",
                     "version": moder_board.get("Version"),
                     "serialNumber": moder_board.get("Serial Number"),
@@ -235,7 +235,7 @@ class ParseSnapshot:
 
             self.components.append(
                 {
-                    "actions": set(),
+                    "actions": [],
                     "type": self.get_data_storage_type(sm),
                     "model": model,
                     "manufacturer": manufacturer,
@@ -272,7 +272,7 @@ class ParseSnapshot:
         for line in self.hwinfo:
             iface = {
                 "variant": "1",
-                "actions": set(),
+                "actions": [],
                 "speed": 100.0,
                 "type": "NetworkAdapter",
                 "wireless": False,
@@ -378,7 +378,7 @@ class ParseSnapshotLsHw:
         for ram in self.dmi.get("Memory Device"):
             self.components.append(
                 {
-                    "actions": set(),
+                    "actions": [],
                     "type": "RamModule",
                     "size": self.get_ram_size(ram),
                     "speed": self.get_ram_speed(ram),
@@ -427,7 +427,7 @@ class ParseSnapshotLsHw:
 
             self.components.append(
                 {
-                    "actions": set(),
+                    "actions": [self.get_test_data_storage(sm)],
                     "type": self.get_data_storage_type(sm),
                     "model": model,
                     "manufacturer": manufacturer,
@@ -461,3 +461,29 @@ class ParseSnapshotLsHw:
         total_capacity = "{type}_total_capacity".format(type=type_dev)
         # convert bytes to Mb
         return x.get(total_capacity) / 1024**2
+
+    def get_test_data_storage(self, smart):
+        log = "smart_health_information_log"
+        action = {
+            "status": "Completed without error",
+            "reallocatedSectorCount": smart.get("reallocated_sector_count", 0),
+            "currentPendingSectorCount": smart.get("current_pending_sector_count", 0),
+            "assessment": True,
+            "severity": "Info",
+            "offlineUncorrectable": smart.get("offline_uncorrectable", 0),
+            "lifetime": 0,
+            "type": "TestDataStorage",
+            "length": "Short",
+            "elapsed": 0,
+            "reportedUncorrectableErrors": smart.get(
+                "reported_uncorrectable_errors", 0
+            ),
+            "powerCycleCount": smart.get("power_cycle_count", 0),
+        }
+
+        for k in smart.keys():
+            if log in k:
+                action['lifetime'] = smart[k].get("power_on_hours", 0)
+                action['powerOnHours'] = smart[k].get("power_on_hours", 0)
+
+        return action
