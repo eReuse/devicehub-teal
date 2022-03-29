@@ -26,9 +26,11 @@ from wtforms import (
 from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.resources.action.models import RateComputer, Snapshot, Trade
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
+from ereuse_devicehub.resources.action.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.views.snapshot import move_json, save_json
 from ereuse_devicehub.resources.device.models import (
     SAI,
@@ -235,12 +237,19 @@ class UploadSnapshotForm(FlaskForm):
     def save(self, commit=True):
         if any([x == 'Error' for x in self.result.values()]):
             return
+        # import pdb; pdb.set_trace()
         self.sync = Sync()
         schema = SnapshotSchema()
+        schema_lite = Snapshot_lite()
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         for filename, snapshot_json in self.snapshots:
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
             snapshot_json.pop('debug', None)
+            if snapshot_json.get('version') in ["2022.03"]:
+                self.snapshot_json = schema_lite.load(snapshot_json)
+                snap = ParseSnapshotLsHw(self.snapshot_json)
+                snapshot_json = snap.snapshot_json
+
             snapshot_json = schema.load(snapshot_json)
             response = self.build(snapshot_json)
 
@@ -299,15 +308,6 @@ class UploadSnapshotForm(FlaskForm):
             # Check ownership of (non-component) device to from current.user
             if db_device.owner_id != g.user.id:
                 raise InsufficientPermission()
-            # Compute ratings
-            try:
-                rate_computer, price = RateComputer.compute(db_device)
-            except CannotRate:
-                pass
-            else:
-                snapshot.actions.add(rate_computer)
-                if price:
-                    snapshot.actions.add(price)
         elif snapshot.software == SnapshotSoftware.WorkbenchAndroid:
             pass  # TODO try except to compute RateMobile
         # Check if HID is null and add Severity:Warning to Snapshot
