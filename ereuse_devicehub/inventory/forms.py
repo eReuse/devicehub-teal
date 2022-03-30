@@ -27,9 +27,9 @@ from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
+from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
-from ereuse_devicehub.resources.action.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.views.snapshot import move_json, save_json
 from ereuse_devicehub.resources.device.models import (
     SAI,
@@ -233,6 +233,13 @@ class UploadSnapshotForm(FlaskForm):
 
         return True
 
+    def is_wb_lite_snapshot(self, version: str) -> bool:
+        is_lite = False
+        if version in app.config['WORKBENCH_LITE']:
+            is_lite = True
+
+        return is_lite
+
     def save(self, commit=True):
         if any([x == 'Error' for x in self.result.values()]):
             return
@@ -243,7 +250,8 @@ class UploadSnapshotForm(FlaskForm):
         for filename, snapshot_json in self.snapshots:
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
             snapshot_json.pop('debug', None)
-            if snapshot_json.get('version') in ["2022.03"]:
+            version = snapshot_json.get('version')
+            if self.is_wb_lite_snapshot(version):
                 self.snapshot_json = schema_lite.load(snapshot_json)
                 snap = ParseSnapshotLsHw(self.snapshot_json)
                 snapshot_json = snap.snapshot_json

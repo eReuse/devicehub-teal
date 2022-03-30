@@ -7,8 +7,7 @@ from math import hypot
 from typing import Iterator, List, Optional, Type, TypeVar
 
 import dateutil.parser
-from ereuse_utils import getter as g
-from ereuse_utils import text
+from ereuse_utils import getter, text
 from ereuse_utils.nested_lookup import (
     get_nested_dicts_with_key_containing_value,
     get_nested_dicts_with_key_value,
@@ -33,15 +32,15 @@ class Device(Dumpeable):
         super().__init__()
 
     def from_lshw(self, lshw_node: dict):
-        self.manufacturer = g.dict(lshw_node, 'vendor', default=None, type=str)
-        self.model = g.dict(
+        self.manufacturer = getter.dict(lshw_node, 'vendor', default=None, type=str)
+        self.model = getter.dict(
             lshw_node,
             'product',
             remove={self.manufacturer} if self.manufacturer else set(),
             default=None,
             type=str,
         )
-        self.serial_number = g.dict(lshw_node, 'serial', default=None, type=str)
+        self.serial_number = getter.dict(lshw_node, 'serial', default=None, type=str)
 
     def __str__(self) -> str:
         return ' '.join(x for x in (self.model, self.serial_number) if x)
@@ -208,7 +207,7 @@ class Motherboard(Component):
         bios_node = next(get_nested_dicts_with_key_value(lshw, 'id', 'firmware'))
         # bios_node = '1'
         memory_array = next(
-            g.indents(hwinfo, 'Physical Memory Array', indent='    '), None
+            getter.indents(hwinfo, 'Physical Memory Array', indent='    '), None
         )
         return cls(node, bios_node, memory_array)
 
@@ -234,8 +233,8 @@ class Motherboard(Component):
         self.version = bios_node['version']
         self.ram_slots = self.ram_max_size = None
         if memory_array:
-            self.ram_slots = g.kv(memory_array, 'Slots', default=None)
-            self.ram_max_size = g.kv(memory_array, 'Max. Size', default=None)
+            self.ram_slots = getter.kv(memory_array, 'Slots', default=None)
+            self.ram_max_size = getter.kv(memory_array, 'Max. Size', default=None)
             if self.ram_max_size:
                 self.ram_max_size = next(text.numbers(self.ram_max_size))
 
@@ -306,33 +305,34 @@ class Display(Component):
 
     @classmethod
     def new(cls, lshw, hwinfo, **kwargs) -> Iterator[C]:
-        for node in g.indents(hwinfo, 'Monitor'):
+        for node in getter.indents(hwinfo, 'Monitor'):
             yield cls(node)
 
     def __init__(self, node: dict) -> None:
         super().__init__(node)
-        self.model = g.kv(node, 'Model')
-        self.manufacturer = g.kv(node, 'Vendor')
-        self.serial_number = g.kv(node, 'Serial ID', default=None, type=str)
+        self.model = getter.kv(node, 'Model')
+        self.manufacturer = getter.kv(node, 'Vendor')
+        self.serial_number = getter.kv(node, 'Serial ID', default=None, type=str)
         self.resolution_width, self.resolution_height, refresh_rate = text.numbers(
-            g.kv(node, 'Resolution')
+            getter.kv(node, 'Resolution')
         )
         self.refresh_rate = unit.Quantity(refresh_rate, 'Hz').m
         with suppress(StopIteration):
             # some monitors can have several resolutions, and the one
             # in "Detailed Timings" seems the highest one
-            timings = next(g.indents(node, 'Detailed Timings', indent='     '))
+            timings = next(getter.indents(node, 'Detailed Timings', indent='     '))
             self.resolution_width, self.resolution_height = text.numbers(
-                g.kv(timings, 'Resolution')
+                getter.kv(timings, 'Resolution')
             )
         x, y = (
             unit.convert(v, 'millimeter', 'inch')
-            for v in text.numbers(g.kv(node, 'Size'))
+            for v in text.numbers(getter.kv(node, 'Size'))
         )
         self.size = hypot(x, y)
         self.technology = next((t for t in self.TECHS if t in node[0]), None)
         d = '{} {} 0'.format(
-            g.kv(node, 'Year of Manufacture'), g.kv(node, 'Week of Manufacture')
+            getter.kv(node, 'Year of Manufacture'),
+            getter.kv(node, 'Week of Manufacture'),
         )
         # We assume it has been produced the first day of such week
         self.production_date = datetime.strptime(d, '%Y %W %w').isoformat()
@@ -413,8 +413,8 @@ class Computer(Device):
         self.chassis = next(
             t for t, values in self.CHASSIS_DH.items() if chassis in values
         )
-        self.sku = g.dict(node, ('configuration', 'sku'), default=None, type=str)
-        self.version = g.dict(node, 'version', default=None, type=str)
+        self.sku = getter.dict(node, ('configuration', 'sku'), default=None, type=str)
+        self.version = getter.dict(node, 'version', default=None, type=str)
         self._ram = None
 
     @classmethod

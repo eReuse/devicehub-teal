@@ -1,19 +1,8 @@
 from datetime import datetime, timezone
-from enum import Enum, unique
 from typing import List
 
 from ereuse_workbench.computer import Component, Computer, DataStorage
 from ereuse_workbench.utils import Dumpeable
-
-
-@unique
-class SnapshotSoftware(Enum):
-    """The algorithm_software used to perform the Snapshot."""
-
-    Workbench = 'Workbench'
-    AndroidApp = 'AndroidApp'
-    Web = 'Web'
-    DesktopApp = 'DesktopApp'
 
 
 class Snapshot(Dumpeable):
