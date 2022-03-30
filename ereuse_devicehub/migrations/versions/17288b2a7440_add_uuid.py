@@ -5,6 +5,7 @@ Revises: 8571fb32c912
 Create Date: 2022-03-29 11:49:39.270791
 
 """
+import citext
 import sqlalchemy as sa
 from alembic import context, op
 from sqlalchemy.dialects import postgresql
@@ -29,7 +30,13 @@ def upgrade():
         sa.Column('uuid', postgresql.UUID(as_uuid=True), nullable=True),
         schema=f'{get_inv()}',
     )
+    op.add_column(
+        'snapshot',
+        sa.Column('wbid', citext.CIText(), nullable=True),
+        schema=f'{get_inv()}',
+    )
 
 
 def downgrade():
     op.drop_column('computer', 'uuid', schema=f'{get_inv()}')
+    op.drop_column('snapshot', 'wbid', schema=f'{get_inv()}')

@@ -33,6 +33,7 @@ class ParseSnapshot:
             "version": snapshot["version"],
             "endTime": snapshot["timestamp"],
             "elapsed": 1,
+            "wbid": snapshot["wbid"],
         }
 
     def set_basic_datas(self):
@@ -339,6 +340,7 @@ class ParseSnapshotLsHw:
             "version": snapshot["version"],
             "endTime": snapshot["timestamp"],
             "elapsed": 1,
+            "wbid": snapshot["wbid"],
         }
 
     def parse_hwinfo(self):

@@ -274,9 +274,7 @@ def test_snapshot_component_add_remove(user: UserClient):
     s3 = yaml2json(
         '3-first-device-but-removing-motherboard-and-adding-processor-from-2.snapshot'
     )
-    snapshot_and_check(
-        user, s3, ('Remove',), perform_second_snapshot=False
-    )
+    snapshot_and_check(user, s3, ('Remove',), perform_second_snapshot=False)
     pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
     pc2, _ = user.get(res=m.Device, item=pc2_devicehub_id)
     # Check if the update_timestamp is updated
@@ -365,9 +363,7 @@ def test_snapshot_tag_inner_tag(user: UserClient, tag_id: str, app: Devicehub):
     b = yaml2json('basic.snapshot')
     b['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
 
-    snapshot_and_check(
-        user, b, action_types=(BenchmarkProcessor.t, VisualTest.t)
-    )
+    snapshot_and_check(user, b, action_types=(BenchmarkProcessor.t, VisualTest.t))
     with app.app_context():
         tag = Tag.query.all()[0]  # type: Tag
         assert tag.device_id == 3, 'Tag should be linked to the first device'
@@ -970,6 +966,7 @@ def test_snapshot_wb_lite(user: UserClient):
     ssd = [x for x in body['components'] if x['type'] == 'SolidStateDrive'][0]
 
     assert body['device']['manufacturer'] == 'lenovo'
+    assert body['wbid'] == "LXVC"
     assert ssd['serialNumber'] == 's35anx0j'
     assert res.status == '201 CREATED'
     assert '00:28:f8:a6:d5:7e' in body['device']['hid']

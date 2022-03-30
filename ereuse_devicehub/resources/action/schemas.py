@@ -424,10 +424,12 @@ class Snapshot_lite_data(MarshmallowSchema):
 
 
 class Snapshot_lite(MarshmallowSchema):
-    uuid = String()
-    version = String()
-    type = String()
-    timestamp = String()
+    uuid = String(required=True)
+    version = String(required=True)
+    software = String(required=True)
+    wbid = String(required=True)
+    type = String(required=True)
+    timestamp = String(required=True)
     data = Nested(Snapshot_lite_data)
 
     @validates_schema
@@ -451,6 +453,7 @@ class Snapshot(ActionWithOneDevice):
     See docs for more info.
     """
     uuid = UUID()
+    wbid = String(required=False)
     software = EnumField(
         SnapshotSoftware,
         required=True,
