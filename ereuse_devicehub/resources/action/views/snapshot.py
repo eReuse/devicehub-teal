@@ -7,13 +7,12 @@ from datetime import datetime
 
 from flask import current_app as app
 from flask import g
-from flask.json import jsonify
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.resources.action.models import Snapshot
-from ereuse_devicehub.resources.action.schemas import Snapshot_lite
+from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.device.models import Computer
 from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
@@ -78,12 +77,13 @@ class SnapshotView:
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
         snapshot_json.pop('debug', None)
-        if snapshot_json.get('version') in ["2022.03"]:
+        version = snapshot_json.get('version')
+        if self.is_wb_lite_snapshot(version):
             self.validate_json(snapshot_json)
-            self.response = self.build_lite()
-        else:
-            self.snapshot_json = resource_def.schema.load(snapshot_json)
-            self.response = self.build()
+            snapshot_json = self.build_lite()
+
+        self.snapshot_json = resource_def.schema.load(snapshot_json)
+        self.response = self.build()
         move_json(self.tmp_snapshots, self.path_snapshot, g.user.email)
 
     def post(self):
@@ -134,15 +134,6 @@ class SnapshotView:
             # Check ownership of (non-component) device to from current.user
             if db_device.owner_id != g.user.id:
                 raise InsufficientPermission()
-            # Compute ratings
-            # try:
-            #     rate_computer, price = RateComputer.compute(db_device)
-            # except CannotRate:
-            #     pass
-            # else:
-            #     snapshot.actions.add(rate_computer)
-            #     if price:
-            #         snapshot.actions.add(price)
         elif snapshot.software == SnapshotSoftware.WorkbenchAndroid:
             pass  # TODO try except to compute RateMobile
         # Check if HID is null and add Severity:Warning to Snapshot
@@ -161,7 +152,13 @@ class SnapshotView:
         self.snapshot_json = self.schema2.load(snapshot_json)
 
     def build_lite(self):
-        snap = ParseSnapshotLsHw(self.snapshot_json)
         # snap = ParseSnapshot(self.snapshot_json)
-        self.snapshot_json = self.resource_def.schema.load(snap.snapshot_json)
-        return self.build()
+        snap = ParseSnapshotLsHw(self.snapshot_json)
+        return snap.snapshot_json
+
+    def is_wb_lite_snapshot(self, version: str) -> bool:
+        is_lite = False
+        if version in app.config['WORKBENCH_LITE']:
+            is_lite = True
+
+        return is_lite

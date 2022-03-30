@@ -416,34 +416,6 @@ class Install(ActionWithOneDevice):
     address = Integer(validate=OneOf({8, 16, 32, 64, 128, 256}))
 
 
-class Snapshot_lite_data(MarshmallowSchema):
-    dmidecode = String(required=False)
-    hwinfo = String(required=False)
-    smart = String(required=False)
-    lshw = String(required=False)
-
-
-class Snapshot_lite(MarshmallowSchema):
-    uuid = String(required=True)
-    version = String(required=True)
-    software = String(required=True)
-    wbid = String(required=True)
-    type = String(required=True)
-    timestamp = String(required=True)
-    data = Nested(Snapshot_lite_data)
-
-    @validates_schema
-    def validate_workbench_version(self, data: dict):
-        if data['version'] < app.config['MIN_WORKBENCH']:
-            raise ValidationError(
-                'Min. supported Workbench version is '
-                '{} but yours is {}.'.format(
-                    app.config['MIN_WORKBENCH'], data['version']
-                ),
-                field_names=['version'],
-            )
-
-
 class Snapshot(ActionWithOneDevice):
     __doc__ = m.Snapshot.__doc__
     """
