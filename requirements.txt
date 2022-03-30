@@ -44,4 +44,4 @@ python-decouple==3.3
 python-dotenv==0.14.0
 pyjwt==2.0.0a1
 pint==0.9
-dmidecode==0.9.0
+py-dmidecode==0.1.0
