@@ -227,7 +227,6 @@ class ParseSnapshot:
     def get_data_storage(self):
 
         for sm in self.smart:
-            # import pdb; pdb.set_trace()
             model = sm.get('model_name')
             manufacturer = None
             if len(model.split(" ")) == 2:
@@ -341,7 +340,6 @@ class ParseSnapshotLsHw:
             "endTime": snapshot["timestamp"],
             "elapsed": 1,
         }
-        # import pdb; pdb.set_trace()
 
     def parse_hwinfo(self):
         hw_blocks = self.hwinfo_raw.split("\n\n")
@@ -417,7 +415,6 @@ class ParseSnapshotLsHw:
     def get_data_storage(self):
 
         for sm in self.smart:
-            # import pdb; pdb.set_trace()
             model = sm.get('model_name')
             manufacturer = None
             if len(model.split(" ")) > 1:

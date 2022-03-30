@@ -236,7 +236,6 @@ class UploadSnapshotForm(FlaskForm):
     def save(self, commit=True):
         if any([x == 'Error' for x in self.result.values()]):
             return
-        # import pdb; pdb.set_trace()
         self.sync = Sync()
         schema = SnapshotSchema()
         schema_lite = Snapshot_lite()
