@@ -3,6 +3,7 @@ import re
 from contextlib import suppress
 from datetime import datetime
 from fractions import Fraction
+from math import hypot
 from typing import Iterator, List, Optional, Type, TypeVar
 
 import dateutil.parser
@@ -12,7 +13,6 @@ from ereuse_utils.nested_lookup import (
     get_nested_dicts_with_key_containing_value,
     get_nested_dicts_with_key_value,
 )
-from numpy import hypot
 
 from ereuse_devicehub.parser import base2, unit, utils
 from ereuse_devicehub.parser.utils import Dumpeable
@@ -326,10 +326,10 @@ class Display(Component):
                 g.kv(timings, 'Resolution')
             )
         x, y = (
-            unit.Quantity(v, 'millimeter').to('inch')
+            unit.convert(v, 'millimeter', 'inch')
             for v in text.numbers(g.kv(node, 'Size'))
         )
-        self.size = float(hypot(x, y).m)
+        self.size = hypot(x, y)
         self.technology = next((t for t in self.TECHS if t in node[0]), None)
         d = '{} {} 0'.format(
             g.kv(node, 'Year of Manufacture'), g.kv(node, 'Week of Manufacture')
