@@ -45,3 +45,4 @@ python-dotenv==0.14.0
 pyjwt==2.0.0a1
 pint==0.9
 py-dmidecode==0.1.0
+numpy==1.16.3

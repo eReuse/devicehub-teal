@@ -3,7 +3,6 @@ import re
 from contextlib import suppress
 from datetime import datetime
 from fractions import Fraction
-from math import hypot
 from typing import Iterator, List, Optional, Type, TypeVar
 
 import dateutil.parser
@@ -13,6 +12,7 @@ from ereuse_utils.nested_lookup import (
     get_nested_dicts_with_key_containing_value,
     get_nested_dicts_with_key_value,
 )
+from numpy import hypot
 
 from ereuse_devicehub.parser import base2, unit, utils
 from ereuse_devicehub.parser.utils import Dumpeable
