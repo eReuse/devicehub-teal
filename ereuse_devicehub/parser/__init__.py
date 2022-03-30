@@ -23,8 +23,3 @@ base2 = UnitRegistry()
 base2.load_definitions(str(unit_registry / 'base2.quantities.txt'))
 
 GiB = base2.GiB
-
-
-# pint
-# numpy
-# pySMART

@@ -41,3 +41,4 @@ python-decouple==3.3
 python-dotenv==0.14.0
 pyjwt==2.0.0a1
 numpy==1.16.3
+pint==0.9
