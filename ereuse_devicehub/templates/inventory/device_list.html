@@ -236,11 +236,11 @@
                     </a>
                   </li>
                   <li>
-                    <form id="print_tags" method="post" action="{{ url_for('inventory.print_tags') }}">
-                      {% for f in form_print_tags %}
+                    <form id="print_labels" method="post" action="{{ url_for('label.print_labels') }}">
+                      {% for f in form_print_labels %}
                         {{ f }}
                       {% endfor %}
-                      <a href="javascript:$('#print_tags').submit()" class="dropdown-item">
+                      <a href="javascript:$('#print_labels').submit()" class="dropdown-item">
                         <i class="bi bi-x"></i>
                         Print labels
                       </a>
@@ -346,7 +346,7 @@
                       </td>
                       <td>
                         {% for t in dev.tags | sort(attribute="id") %}
-                         <a href="{{ url_for('inventory.tag_details', id=t.id)}}">{{ t.id }}</a>
+                         <a href="{{ url_for('label.label_details', id=t.id)}}">{{ t.id }}</a>
                          {% if not loop.last %},{% endif %}
                         {% endfor %}
                       </td>

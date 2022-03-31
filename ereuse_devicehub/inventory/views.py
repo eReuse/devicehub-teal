@@ -7,7 +7,6 @@ import flask_weasyprint
 from flask import Blueprint, g, make_response, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
-from requests.exceptions import ConnectionError
 from sqlalchemy import or_
 from werkzeug.exceptions import NotFound
 
@@ -21,14 +20,12 @@ from ereuse_devicehub.inventory.forms import (
     LotForm,
     NewActionForm,
     NewDeviceForm,
-    PrintTagsForm,
     TagDeviceForm,
-    TagForm,
-    TagUnnamedForm,
     TradeDocumentForm,
     TradeForm,
     UploadSnapshotForm,
 )
+from ereuse_devicehub.label.forms import PrintLabelsForm
 from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
@@ -119,7 +116,7 @@ class DeviceListMix(GenericMixView):
             'form_new_datawipe': form_new_datawipe,
             'form_new_trade': form_new_trade,
             'form_filter': form_filter,
-            'form_print_tags': PrintTagsForm(),
+            'form_print_labels': PrintLabelsForm(),
             'lot': lot,
             'tags': tags,
             'list_devices': list_devices,
@@ -314,120 +311,6 @@ class DeviceCreateView(GenericMixView):
             messages.success('Device "{}" created successfully!'.format(form.type.data))
             return flask.redirect(next_url)
 
-        return flask.render_template(self.template_name, **context)
-
-
-class TagListView(View):
-    methods = ['GET']
-    decorators = [login_required]
-    template_name = 'inventory/tag_list.html'
-
-    def dispatch_request(self):
-        lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        tags = Tag.query.filter(Tag.owner_id == current_user.id).order_by(Tag.id)
-        context = {
-            'lots': lots,
-            'tags': tags,
-            'page_title': 'Tags Management',
-            'version': __version__,
-        }
-        return flask.render_template(self.template_name, **context)
-
-
-class TagAddView(View):
-    methods = ['GET', 'POST']
-    decorators = [login_required]
-    template_name = 'inventory/tag_create.html'
-
-    def dispatch_request(self):
-        lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        context = {'page_title': 'New Tag', 'lots': lots, 'version': __version__}
-        form = TagForm()
-        if form.validate_on_submit():
-            form.save()
-            next_url = url_for('inventory.taglist')
-            return flask.redirect(next_url)
-
-        return flask.render_template(self.template_name, form=form, **context)
-
-
-class TagAddUnnamedView(View):
-    methods = ['GET', 'POST']
-    decorators = [login_required]
-    template_name = 'inventory/tag_create_unnamed.html'
-
-    def dispatch_request(self):
-        lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        context = {
-            'page_title': 'New Unnamed Tag',
-            'lots': lots,
-            'version': __version__,
-        }
-        form = TagUnnamedForm()
-        if form.validate_on_submit():
-            try:
-                form.save()
-            except ConnectionError as e:
-                logger.error(
-                    "Error while trying to connect to tag server: {}".format(e)
-                )
-                msg = (
-                    "Sorry, we cannot create the unnamed tags requested because "
-                    "some error happens while connecting to the tag server!"
-                )
-                messages.error(msg)
-
-            next_url = url_for('inventory.taglist')
-            return flask.redirect(next_url)
-
-        return flask.render_template(self.template_name, form=form, **context)
-
-
-class PrintTagsView(View):
-    """This View is used to print labels from multiple devices"""
-
-    methods = ['POST', 'GET']
-    decorators = [login_required]
-    template_name = 'inventory/print_tags.html'
-    title = 'Design and implementation of labels'
-
-    def dispatch_request(self):
-        lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        context = {
-            'lots': lots,
-            'page_title': self.title,
-            'version': __version__,
-            'referrer': request.referrer,
-        }
-
-        form = PrintTagsForm()
-        if form.validate_on_submit():
-            context['form'] = form
-            context['tags'] = form._tags
-            return flask.render_template(self.template_name, **context)
-        else:
-            messages.error('Error you need select one or more devices')
-
-        next_url = request.referrer or url_for('inventory.devicelist')
-        return flask.redirect(next_url)
-
-
-class TagDetailView(View):
-    decorators = [login_required]
-    template_name = 'inventory/tag_detail.html'
-
-    def dispatch_request(self, id):
-        lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        tag = (
-            Tag.query.filter(Tag.owner_id == current_user.id).filter(Tag.id == id).one()
-        )
-
-        context = {
-            'lots': lots,
-            'tag': tag,
-            'page_title': '{} Tag'.format(tag.code),
-            'version': __version__,
-        }
         return flask.render_template(self.template_name, **context)
 
 
@@ -747,14 +630,6 @@ devices.add_url_rule(
     '/lot/<string:lot_id>/device/add/',
     view_func=DeviceCreateView.as_view('lot_device_add'),
 )
-devices.add_url_rule('/tag/', view_func=TagListView.as_view('taglist'))
-devices.add_url_rule('/tag/add/', view_func=TagAddView.as_view('tag_add'))
-devices.add_url_rule(
-    '/tag/unnamed/add/', view_func=TagAddUnnamedView.as_view('tag_unnamed_add')
-)
-devices.add_url_rule(
-    '/tag/<string:id>/', view_func=TagDetailView.as_view('tag_details')
-)
 devices.add_url_rule(
     '/tag/devices/add/', view_func=TagLinkDeviceView.as_view('tag_devices_add')
 )
@@ -764,8 +639,4 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/export/<string:export_id>/', view_func=ExportsView.as_view('export')
-)
-devices.add_url_rule(
-    '/tags/print',
-    view_func=PrintTagsView.as_view('print_tags'),
 )

@@ -2,47 +2,29 @@
 {% block main %}
 
 <div class="pagetitle">
-  <h1>Inventory</h1>
+  <h1>Print Labels</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ url_for('inventory.taglist')}}">Tag management</a></li>
-      <li class="breadcrumb-item active">Tag details {{ tag.id }}</li>
+      <li class="breadcrumb-item"><a href="{{ url_for('label.label_list')}}">Tag management</a></li>
+      <li class="breadcrumb-item active">Print Labels</li>
     </ol>
   </nav>
 </div><!-- End Page Title -->
 
 <section class="section profile">
   <div class="row">
-
-    <div class="col-xl-12">
+    <div class="col-xl-8">
 
       <div class="card">
-        <div class="card-body pt-3">
-          <h3>{{ tag.id }}</h3>
-          <div class="tab-content pt-2">
-
-            <div class="tab-pane fade show active" id="type">
-              <h5 class="card-title">Type Details</h5>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label ">Type</div>
-                <div class="col-lg-9 col-md-8">{% if tag.provider %}UnNamed Tag{% else %}Named{% endif %}</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Device</div>
-                <div class="col-lg-9 col-md-8">
-                    {% if tag.device %}
-                      <a href="{{url_for('inventory.device_details', id=tag.device.devicehub_id)}}">
-                          {{ tag.device.verbose_name }}
-                      </a>
-                    {% endif %}
+              <div class="card-body">
+                <div class="pt-4 pb-2">
+                  <h5 class="card-title text-center pb-0 fs-4">Print Labels</h5>
+                  <p class="text-center small">{{ title }}</p>
                 </div>
-              </div>
 
-              <h5 class="card-title">Print Label</h5>
               <div class="row">
                 <div class="col-lg-3 col-md-4">
+                  {% for tag in tags %}
                   <div style="width:256px; height:148px; border: solid 1px; padding: 10px;">
                     <div id="print">
                       <div class="row">
@@ -50,13 +32,18 @@
                           <div id="{{ tag.id }}"></div>
                         </div>
                         <div class="col">
-                          <div style="padding-top: 55px"><b class="tag">{{ tag.id }}</b></div>
+                          <div style="padding-top: 55px">
+                              <b class="tag">{{ tag.id }}</b>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
+                  {% endfor %}
                 </div>
-                <div class="col-lg-5 col-md-6 label">
+                <div class="col-1">
+                </div>
+                <div class="col label">
                   <label class="col-form-label col-sm-2">Size</label>
                   <div class="col-sm-10">
                     <div class="input-group mb-3">
@@ -86,7 +73,7 @@
                   </div>
                 </div>
               </div>
-              <div class="row">
+              <div class="row mt-5">
                 <div class="col-lg-3 col-md-4">
                     <a href="javascript:printpdf()" class="btn btn-success">Print</a>
                 </div>
@@ -109,6 +96,8 @@
 <script src="{{ url_for('static', filename='js/jspdf.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/print.pdf.js') }}"></script>
 <script type="text/javascript">
-    qr_draw("{{url_for('inventory.device_details', id=tag.device.devicehub_id, _external=True)}}", "#{{ tag.id }}");
+{% for tag in tags %}
+qr_draw("{{ url_for('inventory.device_details', id=tag.device.devicehub_id, _external=True) }}", "#{{ tag.id }}")
+{% endfor %}
 </script>
 {% endblock main %}
