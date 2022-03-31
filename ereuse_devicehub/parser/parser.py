@@ -316,17 +316,15 @@ class ParseSnapshotLsHw:
     def __init__(self, snapshot, default="n/a"):
         self.default = default
         self.dmidecode_raw = snapshot["data"]["dmidecode"]
-        self.smart_raw = snapshot["data"]["smart"]
+        self.smart = snapshot["data"]["smart"]
         self.hwinfo_raw = snapshot["data"]["hwinfo"]
-        self.lshw_raw = snapshot["data"]["lshw"]
+        self.lshw = snapshot["data"]["lshw"]
         self.device = {"actions": []}
         self.components = []
         self.components_obj = []
 
         self.dmi = DMIParse(self.dmidecode_raw)
-        self.smart = self.loads(self.smart_raw)
         self.hwinfo = self.parse_hwinfo()
-        self.lshw = self.loads(self.lshw_raw)
 
         self.set_basic_datas()
         self.set_components()
@@ -353,7 +351,7 @@ class ParseSnapshotLsHw:
         return x
 
     def set_basic_datas(self):
-        pc, self.components_obj = Computer.run(self.lshw_raw, self.hwinfo_raw)
+        pc, self.components_obj = Computer.run(self.lshw, self.hwinfo_raw)
         self.device = pc.dump()
         self.device['uuid'] = self.dmi.get("System")[0].get("UUID")
 
