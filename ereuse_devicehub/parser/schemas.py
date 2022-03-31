@@ -1,14 +1,14 @@
 from flask import current_app as app
 from marshmallow import Schema as MarshmallowSchema
 from marshmallow import ValidationError, validates_schema
-from marshmallow.fields import Nested, String
+from marshmallow.fields import Dict, List, Nested, String
 
 
 class Snapshot_lite_data(MarshmallowSchema):
     dmidecode = String(required=False)
     hwinfo = String(required=False)
-    smart = String(required=False)
-    lshw = String(required=False)
+    smart = List(Dict(), required=False)
+    lshw = Dict(required=False)
 
 
 class Snapshot_lite(MarshmallowSchema):
