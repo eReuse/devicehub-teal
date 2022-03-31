@@ -73,10 +73,10 @@ class Action(Thing):
     @validates_schema
     def validate_times(self, data: dict):
         unix_time = datetime.fromisoformat("1970-01-02 00:00:00+00:00")
-        if 'end_time' in data and data['end_time'] < unix_time:
+        if 'end_time' in data and data['end_time'].replace(tzinfo=tzutc()) < unix_time:
             data['end_time'] = unix_time
 
-        if 'start_time' in data and data['start_time'] < unix_time:
+        if 'start_time' in data and data['start_time'].replace(tzinfo=tzutc()) < unix_time:
             data['start_time'] = unix_time
 
         if data.get('end_time') and data.get('start_time'):
