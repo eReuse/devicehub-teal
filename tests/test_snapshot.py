@@ -960,16 +960,17 @@ def test_bug_141(user: UserClient):
 def test_snapshot_wb_lite(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
 
-    snapshot = file_json("example_wb14_x1.json")
+    # snapshot = file_json("example_wb14_x1.json")
+    snapshot = file_json("2022-03-31_17h18m51s_ZQMPKKX51K67R68VO2X9RNZL08JPL_snapshot.json")
     body, res = user.post(snapshot, res=Snapshot)
 
     ssd = [x for x in body['components'] if x['type'] == 'SolidStateDrive'][0]
 
     assert body['device']['manufacturer'] == 'lenovo'
-    assert body['wbid'] == "LXVC"
-    assert ssd['serialNumber'] == 's35anx0j'
+    # assert body['wbid'] == "LXVC"
+    assert ssd['serialNumber'] == 's35anx0j401001'
     assert res.status == '201 CREATED'
     assert '00:28:f8:a6:d5:7e' in body['device']['hid']
 
     dev = m.Device.query.filter_by(id=body['device']['id']).one()
-    assert dev.actions[0].power_on_hours == 6013
+    assert dev.actions[0].power_on_hours == 6032
