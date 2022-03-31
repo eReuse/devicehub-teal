@@ -7,11 +7,11 @@ from flask_login import current_user, login_required
 from requests.exceptions import ConnectionError
 
 from ereuse_devicehub import __version__, messages
-from ereuse_devicehub.label.forms import PrintLabelsForm, TagForm, TagUnnamedForm
+from ereuse_devicehub.labels.forms import PrintLabelsForm, TagForm, TagUnnamedForm
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 
-label = Blueprint('label', __name__, url_prefix='/label')
+labels = Blueprint('labels', __name__, url_prefix='/labels')
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class TagListView(View):
     methods = ['GET']
     decorators = [login_required]
-    template_name = 'label/label_list.html'
+    template_name = 'labels/label_list.html'
 
     def dispatch_request(self):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
@@ -36,7 +36,7 @@ class TagListView(View):
 class TagAddView(View):
     methods = ['GET', 'POST']
     decorators = [login_required]
-    template_name = 'label/tag_create.html'
+    template_name = 'labels/tag_create.html'
 
     def dispatch_request(self):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
@@ -44,7 +44,7 @@ class TagAddView(View):
         form = TagForm()
         if form.validate_on_submit():
             form.save()
-            next_url = url_for('label.label_list')
+            next_url = url_for('labels.label_list')
             return flask.redirect(next_url)
 
         return flask.render_template(self.template_name, form=form, **context)
@@ -53,7 +53,7 @@ class TagAddView(View):
 class TagAddUnnamedView(View):
     methods = ['GET', 'POST']
     decorators = [login_required]
-    template_name = 'label/tag_create_unnamed.html'
+    template_name = 'labels/tag_create_unnamed.html'
 
     def dispatch_request(self):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
@@ -76,7 +76,7 @@ class TagAddUnnamedView(View):
                 )
                 messages.error(msg)
 
-            next_url = url_for('label.label_list')
+            next_url = url_for('labels.label_list')
             return flask.redirect(next_url)
 
         return flask.render_template(self.template_name, form=form, **context)
@@ -87,7 +87,7 @@ class PrintLabelsView(View):
 
     methods = ['POST', 'GET']
     decorators = [login_required]
-    template_name = 'label/print_labels.html'
+    template_name = 'labels/print_labels.html'
     title = 'Design and implementation of labels'
 
     def dispatch_request(self):
@@ -113,7 +113,7 @@ class PrintLabelsView(View):
 
 class LabelDetailView(View):
     decorators = [login_required]
-    template_name = 'label/label_detail.html'
+    template_name = 'labels/label_detail.html'
 
     def dispatch_request(self, id):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
@@ -130,13 +130,13 @@ class LabelDetailView(View):
         return flask.render_template(self.template_name, **context)
 
 
-label.add_url_rule('/', view_func=TagListView.as_view('label_list'))
-label.add_url_rule('/add/', view_func=TagAddView.as_view('tag_add'))
-label.add_url_rule(
+labels.add_url_rule('/', view_func=TagListView.as_view('label_list'))
+labels.add_url_rule('/add/', view_func=TagAddView.as_view('tag_add'))
+labels.add_url_rule(
     '/unnamed/add/', view_func=TagAddUnnamedView.as_view('tag_unnamed_add')
 )
-label.add_url_rule(
+labels.add_url_rule(
     '/print',
     view_func=PrintLabelsView.as_view('print_labels'),
 )
-label.add_url_rule('/<string:id>/', view_func=LabelDetailView.as_view('label_details'))
+labels.add_url_rule('/<string:id>/', view_func=LabelDetailView.as_view('label_details'))

@@ -25,7 +25,7 @@ from ereuse_devicehub.inventory.forms import (
     TradeForm,
     UploadSnapshotForm,
 )
-from ereuse_devicehub.label.forms import PrintLabelsForm
+from ereuse_devicehub.labels.forms import PrintLabelsForm
 from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow

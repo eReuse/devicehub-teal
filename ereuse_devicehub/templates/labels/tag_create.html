@@ -5,7 +5,7 @@
   <h1>{{ title }}</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ url_for('label.label_list')}}">Tag management</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('labels.label_list')}}">Tag management</a></li>
       <li class="breadcrumb-item">{{ page_title }}</li>
     </ol>
   </nav>
@@ -19,8 +19,8 @@
               <div class="card-body">
 
                 <div class="pt-4 pb-2">
-                  <h5 class="card-title text-center pb-0 fs-4">Add new Unnamed Tags</h5>
-                  <p class="text-center small">Please enter a number of the tags to issue.</p>
+                  <h5 class="card-title text-center pb-0 fs-4">Add a new Tag</h5>
+                  <p class="text-center small">Please enter a code for the tag.</p>
                   {% if form.form_errors %}
                   <p class="text-danger">
                     {% for error in form.form_errors %}
@@ -34,14 +34,14 @@
                   {{ form.csrf_token }}
 
                   <div>
-                    <label for="code" class="form-label">Amount</label>
+                    <label for="code" class="form-label">code</label>
                     <div class="input-group has-validation">
-                      {{ form.amount(class_="form-control") }}
-                      <div class="invalid-feedback">Please enter a number of the tags to issue.</div>
+                      <input type="text" name="code" class="form-control" required value="{{ form.code.data|default('', true) }}">
+                      <div class="invalid-feedback">Please enter a code of the tag.</div>
                     </div>
-                    {% if form.amount.errors %}
+                    {% if form.code.errors %}
                     <p class="text-danger">
-                      {% for error in form.amount.errors %}
+                      {% for error in form.code.errors %}
                         {{ error }}<br/>
                       {% endfor %}
                     </p>
@@ -49,7 +49,7 @@
                   </div>
 
                   <div>
-                    <a href="{{ url_for('label.label_list') }}" class="btn btn-danger">Cancel</a>
+                    <a href="{{ url_for('labels.label_list') }}" class="btn btn-danger">Cancel</a>
                     <button class="btn btn-primary" type="submit">Save</button>
                   </div>
                 </form>
