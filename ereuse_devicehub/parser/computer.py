@@ -1,4 +1,3 @@
-import json
 import re
 from contextlib import suppress
 from datetime import datetime
@@ -418,7 +417,7 @@ class Computer(Device):
         self._ram = None
 
     @classmethod
-    def run(cls, lshw_raw, hwinfo_raw):
+    def run(cls, lshw, hwinfo_raw):
         """
         Gets hardware information from the computer and its components,
         like serial numbers or model names, and benchmarks them.
@@ -426,7 +425,6 @@ class Computer(Device):
         This function uses ``LSHW`` as the main source of hardware information,
         which is obtained once when it is instantiated.
         """
-        lshw = json.loads(lshw_raw)
         hwinfo = hwinfo_raw.splitlines()
         computer = cls(lshw)
         components = []
