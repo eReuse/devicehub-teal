@@ -961,7 +961,8 @@ def test_snapshot_wb_lite(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
 
     # snapshot = file_json("example_wb14_x1.json")
-    snapshot = file_json("2022-03-31_17h18m51s_ZQMPKKX51K67R68VO2X9RNZL08JPL_snapshot.json")
+    # snapshot = file_json("2022-03-31_17h18m51s_ZQMPKKX51K67R68VO2X9RNZL08JPL_snapshot.json")
+    snapshot = file_json("2022-04-01_06h28m54s_YKPZ27NJ2NMRO4893M4L5NRZV5YJ1_snapshot.json")
     body, res = user.post(snapshot, res=Snapshot)
 
     ssd = [x for x in body['components'] if x['type'] == 'SolidStateDrive'][0]
