@@ -4,6 +4,7 @@ from enum import Enum, unique
 
 from dmidecode import DMIParse
 
+from ereuse_devicehub.parser import base2
 from ereuse_devicehub.parser.computer import Computer
 
 logger = logging.getLogger(__name__)
@@ -315,6 +316,7 @@ class ParseSnapshotLsHw:
 
     def __init__(self, snapshot, default="n/a"):
         self.default = default
+        self.uuid = snapshot.get("uuid")
         self.dmidecode_raw = snapshot["data"]["dmidecode"]
         self.smart = snapshot["data"]["smart"]
         self.hwinfo_raw = snapshot["data"]["hwinfo"]
@@ -322,6 +324,7 @@ class ParseSnapshotLsHw:
         self.device = {"actions": []}
         self.components = []
         self.components_obj = []
+        self._errors = []
 
         self.dmi = DMIParse(self.dmidecode_raw)
         self.hwinfo = self.parse_hwinfo()
@@ -353,7 +356,7 @@ class ParseSnapshotLsHw:
     def set_basic_datas(self):
         pc, self.components_obj = Computer.run(self.lshw, self.hwinfo_raw)
         self.device = pc.dump()
-        self.device['uuid'] = self.dmi.get("System")[0].get("UUID")
+        self.device['uuid'] = self.get_uuid()
 
     def set_components(self):
         memory = None
@@ -389,12 +392,27 @@ class ParseSnapshotLsHw:
             )
 
     def get_ram_size(self, ram):
-        size = ram.get("Size", "0")
-        return int(size.split(" ")[0])
+        size = ram.get("Size")
+        if not len(size.split(" ")) == 2:
+            txt = "Error: Snapshot: {uuid} have this ram Size: {size}".format(
+                uuid=self.uuid, size=size
+            )
+            self.errors(txt)
+            return 128
+        size, units = size.split(" ")
+        return base2.Quantity(float(size), units).to('MiB').m
 
     def get_ram_speed(self, ram):
-        size = ram.get("Speed", "0")
-        return int(size.split(" ")[0])
+        speed = ram.get("Speed", "100")
+        if not len(speed.split(" ")) == 2:
+            txt = "Error: Snapshot: {uuid} have this ram Speed: {speed}".format(
+                uuid=self.uuid, speed=speed
+            )
+            self.errors(txt)
+            return 100
+        # return int(speed.split(" ")[0])
+        speed, units = speed.split(" ")
+        return base2.Quantity(float(speed), units).to('MHz').m
 
     def get_ram_slots(self):
         slots = 0
@@ -412,12 +430,25 @@ class ParseSnapshotLsHw:
         channel = ram.get("Locator", "DIMM")
         return 'SODIMM' if 'SODIMM' in channel else 'DIMM'
 
+    def get_uuid(self):
+        uuid = self.dmi.get("System")[0].get("UUID")
+        try:
+            uuid.UUID(uuid)
+        except AttributeError as err:
+            self.errors(err)
+            txt = "Error: Snapshot: {uuid} have this uuid: {device}".format(
+                uuid=self.uuid, device=uuid
+            )
+            self.errors(txt)
+            uuid = None
+        return uuid
+
     def get_data_storage(self):
 
         for sm in self.smart:
             model = sm.get('model_name')
             manufacturer = None
-            if len(model.split(" ")) > 1:
+            if model and len(model.split(" ")) > 1:
                 mm = model.split(" ")
                 model = mm[-1]
                 manufacturer = " ".join(mm[:-1])
@@ -441,21 +472,24 @@ class ParseSnapshotLsHw:
         SSD = 'SolidStateDrive'
         HDD = 'HardDrive'
         type_dev = x.get('device', {}).get('type')
-        return SSD if type_dev in SSDS else HDD
+        trim = x.get("trim", {}).get("supported") == "true"
+        return SSD if type_dev in SSDS or trim else HDD
 
     def get_data_storage_interface(self, x):
         interface = x.get('device', {}).get('protocol', 'ATA')
         try:
             self.DataStorageInterface(interface.upper())
         except ValueError as err:
-            logger.error(
-                "interface {} is not in DataStorageInterface Enum".format(interface)
-            )
-            raise err
+            txt = "interface {} is not in DataStorageInterface Enum".format(interface)
+            self.errors(err)
+            self.errors(txt)
+        return "ATA"
 
     def get_data_storage_size(self, x):
-        type_dev = x.get('device', {}).get('type')
+        type_dev = x.get('device', {}).get('protocol', '').lower()
         total_capacity = "{type}_total_capacity".format(type=type_dev)
+        if not x.get(total_capacity):
+            return 1
         # convert bytes to Mb
         return x.get(total_capacity) / 1024**2
 
@@ -484,3 +518,10 @@ class ParseSnapshotLsHw:
                 action['powerOnHours'] = smart[k].get("power_on_hours", 0)
 
         return action
+
+    def errors(self, txt=None):
+        if not txt:
+            return self._errors
+
+        logger.error(txt)
+        self._errors.append(txt)
