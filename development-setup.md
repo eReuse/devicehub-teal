@@ -51,4 +51,4 @@ Finally login into `localhost:5000/login/`
 ## Troubleshooting
 
 - If when execute dh command it thows an error, install this dependencies in your distro
-  - `sudo apt install python3-pip python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0`
+  - `sudo apt install -y libpango1.0-0 libcairo2 libpq-dev`
