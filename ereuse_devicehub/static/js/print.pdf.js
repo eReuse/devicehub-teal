@@ -5,8 +5,8 @@ $(document).ready(function() {
     load_size();
 })
 
-function qr_draw(url) {
-    var qrcode = new QRCode($("#qrcode")[0], {
+function qr_draw(url, id) {
+    var qrcode = new QRCode($(id)[0], {
         text: url,
         width: 128,
         height: 128,
@@ -54,16 +54,26 @@ function printpdf() {
     var border = 2;
     var height = parseInt($("#height-tag").val());
     var width = parseInt($("#width-tag").val());
-    var tag = $("#tag").text();
-    var pdf = new jsPDF('l', 'mm', [width, height]);
-    var imgData = $('#qrcode img').attr("src");
     img_side = Math.min(height, width) - 2*border;
     max_tag_side = (Math.max(height, width)/2) + border;
     if (max_tag_side < img_side) {
         max_tag_side = img_side+ 2*border;
     };
     min_tag_side = (Math.min(height, width)/2) + border;
-    pdf.addImage(imgData, 'PNG', border, border, img_side, img_side);
-    pdf.text(tag, max_tag_side, min_tag_side);
-    pdf.save('Tag_'+tag+'.pdf');
+    var last_tag_code = '';
+
+    var pdf = new jsPDF('l', 'mm', [width, height]);
+    $(".tag").map(function(x, y) {
+        if (x != 0){
+            pdf.addPage();
+            console.log(x)
+        };
+        var tag = $(y).text();
+        last_tag_code = tag;
+        var imgData = $('#'+tag+' img').attr("src");
+        pdf.addImage(imgData, 'PNG', border, border, img_side, img_side);
+        pdf.text(tag, max_tag_side, min_tag_side);
+    });
+
+    pdf.save('Tag_'+last_tag_code+'.pdf');
 }
