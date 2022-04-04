@@ -2,8 +2,7 @@
 
 ## Installing
 
-complete this steps from readme
-- #installing
+complete this steps from [README - Installing](README.md#installing)
 
 ## Setup project
 
