@@ -8,6 +8,7 @@ ml).
 ## master
 
 ## testing
+- [changed] #2970 #2971 Print DHID-QR label for selected devices.
 
 ## [2.0.0] - 2022-03-15
 First server render HTML version. Completely rewrites views of angular JS client on flask.
