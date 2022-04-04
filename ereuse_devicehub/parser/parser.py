@@ -6,6 +6,8 @@ from dmidecode import DMIParse
 
 from ereuse_devicehub.parser import base2
 from ereuse_devicehub.parser.computer import Computer
+from ereuse_devicehub.parser.models import SnapshotErrors
+from ereuse_devicehub.resources.enums import Severity
 
 logger = logging.getLogger(__name__)
 
@@ -435,7 +437,7 @@ class ParseSnapshotLsHw:
         try:
             uuid.UUID(uuid)
         except AttributeError as err:
-            self.errors(err)
+            self.errors("{}".format(err))
             txt = "Error: Snapshot: {uuid} have this uuid: {device}".format(
                 uuid=self.uuid, device=uuid
             )
@@ -481,7 +483,7 @@ class ParseSnapshotLsHw:
             self.DataStorageInterface(interface.upper())
         except ValueError as err:
             txt = "interface {} is not in DataStorageInterface Enum".format(interface)
-            self.errors(err)
+            self.errors("{}".format(err))
             self.errors(txt)
         return "ATA"
 
@@ -519,9 +521,13 @@ class ParseSnapshotLsHw:
 
         return action
 
-    def errors(self, txt=None):
+    def errors(self, txt=None, severity=Severity.Info):
         if not txt:
             return self._errors
 
         logger.error(txt)
         self._errors.append(txt)
+        error = SnapshotErrors(
+            description=txt, snapshot_uuid=self.uuid, severity=severity
+        )
+        error.save()

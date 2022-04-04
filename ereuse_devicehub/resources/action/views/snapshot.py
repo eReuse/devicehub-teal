@@ -7,12 +7,14 @@ from datetime import datetime
 
 from flask import current_app as app
 from flask import g
+from marshmallow import ValidationError
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.parser.models import SnapshotErrors
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
-from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.parser.schemas import Snapshot_lite
+from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.device.models import Computer
 from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
@@ -82,7 +84,17 @@ class SnapshotView:
             self.validate_json(snapshot_json)
             snapshot_json = self.build_lite()
 
-        self.snapshot_json = resource_def.schema.load(snapshot_json)
+        try:
+            self.snapshot_json = resource_def.schema.load(snapshot_json)
+        except ValidationError as err:
+            txt = "{}".format(err)
+            uuid = snapshot_json.get('uuid')
+            error = SnapshotErrors(
+                description=txt, snapshot_uuid=uuid, severity=Severity.Error
+            )
+            error.save(commit=True)
+            raise err
+
         self.response = self.build()
         move_json(self.tmp_snapshots, self.path_snapshot, g.user.email)
 
