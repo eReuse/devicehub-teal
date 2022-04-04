@@ -11,7 +11,7 @@ The requirements are:
 
 -  Python 3.7.3 or higher. In debian 10 is `# apt install python3`.
 -  [PostgreSQL 11 or higher](https://www.postgresql.org/download/).
--  Weasyprint [dependencie](http://weasyprint.readthedocs.io/en/stable/install.html>)
+-  Weasyprint [dependencie](http://weasyprint.readthedocs.io/en/stable/install.html)
 
 Install Devicehub with *pip*: `pip3 install -U -r requirements.txt -e .`
 
@@ -20,8 +20,8 @@ Create a PostgreSQL database called *devicehub* by running [create-db](examples/
 
 -  In Linux, execute the following two commands (adapt them to your distro):
 
-   1. ``sudo su - postgres``.
-   2. ``bash examples/create-db.sh devicehub dhub``, and password ``ereuse``.
+   1. `sudo su - postgres`.
+   2. `bash examples/create-db.sh devicehub dhub`, and password `ereuse`.
 
 -  In MacOS: `bash examples/create-db.sh devicehub dhub`, and password `ereuse`.
 
@@ -45,28 +45,22 @@ $ export dhi=dbtest;dh run --debugger
 
 The error ‘bdist_wheel’ can happen when you work with a *virtual environment*.  
 To fix it, install in the *virtual environment* wheel
-package. ``pip3 install wheel``
+package. `pip3 install wheel`
 
 ## Multiple instances
 
-Devicehub can run as a single inventory or with multiple inventories,
-each inventory being an instance of the ``devicehub``. To add a new inventory 
-execute:
+Devicehub can run as a single inventory or with multiple inventories, each inventory being an instance of the `devicehub`. To add a new inventory  execute:
 ```bash
 $ export dhi=dbtest;  dh inv add --name dbtest
 ```
 
-Note: The ``dh`` command is like ``flask``, but it allows you to create and delete instances, and interface to them
-directly.
+Note: The `dh` command is like `flask`, but it allows you to create and delete instances, and interface to them directly.
 
 
 # Testing
 
 1. `git clone` this project.
-2. Create a database for testing executing `create-db.sh` like the
-   normal installation but changing the first parameter from
-   `devicehub` to `dh_test`: `create-db.sh dh_test dhub` and
-   password `ereuse`.
+2. Create a database for testing executing `create-db.sh` like the normal installation but changing the first parameter from `devicehub` to `dh_test`: `create-db.sh dh_test dhub` and password `ereuse`.
 3. Execute at the root folder of the project `python3 setup.py test`.
 
 
