@@ -17,6 +17,7 @@ from teal.marshmallow import ValidationError
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.parser.models import SnapshotErrors
 from ereuse_devicehub.resources.action.models import (
     Action,
     BenchmarkDataStorage,
@@ -960,9 +961,7 @@ def test_bug_141(user: UserClient):
 def test_snapshot_wb_lite(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
 
-    # snapshot = file_json("example_wb14_x1.json")
-    # snapshot = file_json("2022-03-31_17h18m51s_ZQMPKKX51K67R68VO2X9RNZL08JPL_snapshot.json")
-    snapshot = file_json("2022-04-01_06h28m54s_YKPZ27NJ2NMRO4893M4L5NRZV5YJ1_snapshot.json")
+    snapshot = file_json("2022-03-31_17h18m51s_ZQMPKKX51K67R68VO2X9RNZL08JPL_snapshot.json")
     body, res = user.post(snapshot, res=Snapshot)
 
     ssd = [x for x in body['components'] if x['type'] == 'SolidStateDrive'][0]
@@ -975,3 +974,27 @@ def test_snapshot_wb_lite(user: UserClient):
 
     dev = m.Device.query.filter_by(id=body['device']['id']).one()
     assert dev.actions[0].power_on_hours == 6032
+    errors = SnapshotErrors.query.filter().all()
+    assert errors == []
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_wb_lite_qemu(user: UserClient):
+    """This test check the minimum validation of json that come from snapshot"""
+
+    snapshot = file_json(
+        "2022-04-01_06h28m54s_YKPZ27NJ2NMRO4893M4L5NRZV5YJ1_snapshot.json"
+    )
+    body, res = user.post(snapshot, res=Snapshot)
+
+    assert body['wbid'] == "YKPZ27NJ2NMRO4893M4L5NRZV5YJ1"
+    assert res.status == '201 CREATED'
+
+    dev = m.Device.query.filter_by(id=body['device']['id']).one()
+    assert dev.manufacturer == 'qemu'
+    assert dev.model == 'standard'
+    assert dev.serial_number is None
+    assert dev.hid is None
+    assert dev.actions[0].power_on_hours == 0
+    assert dev.actions[1].power_on_hours == 0
