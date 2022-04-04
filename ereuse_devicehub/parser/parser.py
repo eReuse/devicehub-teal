@@ -1,5 +1,6 @@
 import json
 import logging
+import uuid
 from enum import Enum, unique
 
 from dmidecode import DMIParse
@@ -412,9 +413,10 @@ class ParseSnapshotLsHw:
             )
             self.errors(txt)
             return 100
-        # return int(speed.split(" ")[0])
         speed, units = speed.split(" ")
-        return base2.Quantity(float(speed), units).to('MHz').m
+        return float(speed)
+        # TODO @cayop is neccesary change models for accept sizes more high of speed or change to string
+        # return base2.Quantity(float(speed), units).to('MHz').m
 
     def get_ram_slots(self):
         slots = 0
@@ -433,17 +435,17 @@ class ParseSnapshotLsHw:
         return 'SODIMM' if 'SODIMM' in channel else 'DIMM'
 
     def get_uuid(self):
-        uuid = self.dmi.get("System")[0].get("UUID")
+        dmi_uuid = self.dmi.get("System")[0].get("UUID")
         try:
-            uuid.UUID(uuid)
-        except AttributeError as err:
+            uuid.UUID(dmi_uuid)
+        except (ValueError, AttributeError) as err:
             self.errors("{}".format(err))
             txt = "Error: Snapshot: {uuid} have this uuid: {device}".format(
-                uuid=self.uuid, device=uuid
+                uuid=self.uuid, device=dmi_uuid
             )
             self.errors(txt)
-            uuid = None
-        return uuid
+            dmi_uuid = None
+        return dmi_uuid
 
     def get_data_storage(self):
 
