@@ -241,7 +241,7 @@
                         {{ f }}
                       {% endfor %}
                       <a href="javascript:$('#print_labels').submit()" class="dropdown-item">
-                        <i class="bi bi-x"></i>
+                        <i class="bi bi-printer"></i>
                         Print labels
                       </a>
                     </form>
@@ -261,7 +261,7 @@
                     {% else %}
                     <a href="{{ url_for('inventory.upload_snapshot') }}" class="dropdown-item">
                     {% endif %}
-                      <i class="bi bi-plus"></i>
+                      <i class="bi bi-upload"></i>
                       Upload a new Snapshot
                     </a>
                   </li>
