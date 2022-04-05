@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from operator import itemgetter
 from typing import List, Tuple
 from uuid import uuid4
+from pathlib import Path
 
 import pytest
 from boltons import urlutils
@@ -998,3 +999,41 @@ def test_snapshot_wb_lite_qemu(user: UserClient):
     assert dev.hid is None
     assert dev.actions[0].power_on_hours == 0
     assert dev.actions[1].power_on_hours == 0
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_wb_lite_old_snapshots(user: UserClient):
+    """This test check the minimum validation of json that come from snapshot"""
+    wb_dir = Path(__file__).parent.joinpath('files/wb_lite/')
+    for f in os.listdir(wb_dir)[:10]:
+        # import pdb; pdb.set_trace()
+        file_name = "wb_lite/{}".format(f)
+        snapshot_11 = file_json(file_name)
+        if not snapshot_11.get('debug'):
+            continue
+        lshw = snapshot_11['debug']['lshw']
+        hwinfo = snapshot_11['debug']['hwinfo']
+        snapshot_lite = {
+            'timestamp': snapshot_11['endTime'],
+            'type': 'Snapshot',
+            'uuid': str(uuid.uuid4()),
+            'wbid': 'MLKO1',
+            'software': 'Workbench',
+            'version': '2022.03.00',
+            'data': {
+                'lshw': lshw,
+                'hwinfo': hwinfo,
+                'smart': [],
+                'dmidecode': ''
+            }
+        }
+
+        body11, res = user.post(snapshot_11, res=Snapshot)
+        bodyLite, res = user.post(snapshot_lite, res=Snapshot)
+
+        assert body11['device']['hid'] == bodyLite['device']['hid']
+        assert body11['device']['id'] == bodyLite['device']['id']
+        assert body11['device']['serialNumber'] == bodyLite['device']['serialNumber']
+        assert body11['device']['model'] == bodyLite['device']['model']
+        assert body11['device']['manufacturer'] == bodyLite['device']['manufacturer']
