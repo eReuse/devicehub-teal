@@ -6,6 +6,7 @@ from boltons.urlutils import URL
 from flask import current_app as app
 from flask import g, request
 from flask_wtf import FlaskForm
+from marshmallow import ValidationError
 from sqlalchemy import or_
 from sqlalchemy.util import OrderedSet
 from wtforms import (
@@ -26,6 +27,7 @@ from wtforms import (
 from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.parser.models import SnapshotErrors
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
@@ -256,7 +258,18 @@ class UploadSnapshotForm(FlaskForm):
                 snap = ParseSnapshotLsHw(self.snapshot_json)
                 snapshot_json = snap.snapshot_json
 
-            snapshot_json = schema.load(snapshot_json)
+            try:
+                snapshot_json = schema.load(snapshot_json)
+            except ValidationError as err:
+                txt = "{}".format(err)
+                uuid = snapshot_json.get('uuid')
+                error = SnapshotErrors(
+                    description=txt, snapshot_uuid=uuid, severity=Severity.Error
+                )
+                error.save(commit=True)
+                self.result[filename] = 'Error'
+                continue
+
             response = self.build(snapshot_json)
 
             if hasattr(response, 'type'):
