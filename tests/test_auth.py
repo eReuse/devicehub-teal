@@ -24,11 +24,14 @@ def test_authenticate_error(app: Devicehub):
         MESSAGE = 'Provide a suitable token.'
         create_user()
         # Token doesn't exist
-        with pytest.raises(Unauthorized, message=MESSAGE):
+        with pytest.raises(Unauthorized):
             app.auth.authenticate(token=str(uuid4()))
+            pytest.fail(MESSAGE)
+
         # Wrong token format
-        with pytest.raises(Unauthorized, message=MESSAGE):
+        with pytest.raises(Unauthorized):
             app.auth.authenticate(token='this is a wrong uuid')
+            pytest.fail(MESSAGE)
 
 
 @pytest.mark.mvp

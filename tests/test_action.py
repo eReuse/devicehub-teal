@@ -75,14 +75,14 @@ def test_erase_basic():
 def test_validate_device_data_storage():
     """Checks the validation for data-storage-only actions works."""
     # We can't set a GraphicCard
-    with pytest.raises(TypeError,
-                       message='EraseBasic.device must be a DataStorage '
-                               'but you passed <GraphicCard None model=\'foo-bar\' S/N=\'foo\'>'):
+    with pytest.raises(TypeError):
         models.EraseBasic(
             device=GraphicCard(serial_number='foo', manufacturer='bar', model='foo-bar'),
             clean_with_zeros=True,
             **conftest.T
         )
+        pytest.fail('EraseBasic.device must be a DataStorage '
+                    'but you passed <GraphicCard None model=\'foo-bar\' S/N=\'foo\'>')
 
 
 @pytest.mark.mvp
@@ -335,10 +335,10 @@ def test_outgoinlot_status_actions(action_model: models.Action, user: UserClient
 @pytest.mark.parametrize('action_model',
                          (pytest.param(ams, id=ams.__class__.__name__)
                           for ams in [
-                              models.Recycling, 
-                              models.Use, 
-                              models.Refurbish, 
-                              models.Management 
+                              models.Recycling,
+                              models.Use,
+                              models.Refurbish,
+                              models.Management
                           ]))
 def test_incominglot_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
     """Test of status actions in outgoinlot."""
@@ -494,10 +494,10 @@ def test_recycling_container(user: UserClient):
 @pytest.mark.parametrize('action_model',
                          (pytest.param(ams, id=ams.__class__.__name__)
                           for ams in [
-                              models.Recycling, 
-                              models.Use, 
-                              models.Refurbish, 
-                              models.Management 
+                              models.Recycling,
+                              models.Use,
+                              models.Refurbish,
+                              models.Management
                           ]))
 def test_status_without_lot(action_model: models.Action, user: UserClient):
     """Test of status actions for devices without lot."""
@@ -512,10 +512,10 @@ def test_status_without_lot(action_model: models.Action, user: UserClient):
 @pytest.mark.parametrize('action_model',
                          (pytest.param(ams, id=ams.__class__.__name__)
                           for ams in [
-                              models.Recycling, 
-                              models.Use, 
-                              models.Refurbish, 
-                              models.Management 
+                              models.Recycling,
+                              models.Use,
+                              models.Refurbish,
+                              models.Management
                           ]))
 def test_status_in_temporary_lot(action_model: models.Action, user: UserClient):
     """Test of status actions for devices in a temporary lot."""
@@ -913,7 +913,7 @@ def test_allocate(user: UserClient):
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
     devicehub_id = snapshot['device']['devicehubID']
-    post_request = {"transaction": "ccc", 
+    post_request = {"transaction": "ccc",
                     "finalUserCode": "aabbcc",
                     "name": "John",
                     "severity": "Info",
@@ -1638,7 +1638,7 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices)
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -1659,8 +1659,8 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
         'type': 'Confirm',
         'action': trade.id,
         'devices': [
-            snap1['device']['id'], 
-            snap2['device']['id'], 
+            snap1['device']['id'],
+            snap2['device']['id'],
             snap3['device']['id'],
             snap4['device']['id'],
             snap5['device']['id'],
@@ -1677,7 +1677,7 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
     assert trade.devices[-1].actions[-1].t == 'Confirm'
     assert trade.devices[-1].actions[-1].user == trade.user_from
 
-    # The manager remove one device of the lot and automaticaly 
+    # The manager remove one device of the lot and automaticaly
     # is create one revoke action
     device_10 = trade.devices[-1]
     lot, _ = user.delete({},
@@ -1804,7 +1804,7 @@ def test_trade_case2(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices[:-1])
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -1926,7 +1926,7 @@ def test_trade_case4(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices[:-1])
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -1991,7 +1991,7 @@ def test_trade_case5(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices)
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2057,7 +2057,7 @@ def test_trade_case6(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices[:-1])
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2125,7 +2125,7 @@ def test_trade_case7(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices)
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2192,7 +2192,7 @@ def test_trade_case8(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices)
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2266,7 +2266,7 @@ def test_trade_case9(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices[:-1])
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2348,7 +2348,7 @@ def test_trade_case10(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices[:-1])
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2435,7 +2435,7 @@ def test_trade_case11(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices)
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2507,7 +2507,7 @@ def test_trade_case12(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices)
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2584,7 +2584,7 @@ def test_trade_case13(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices[:-1])
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2664,7 +2664,7 @@ def test_trade_case14(user: UserClient, user2: UserClient):
                        item='{}/devices'.format(lot['id']),
                        query=devices[:-1])
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',

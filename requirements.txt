@@ -12,35 +12,32 @@ Flask-Cors==3.0.10
 Flask-Login==0.5.0
 Flask-SQLAlchemy==2.3.2
 Flask-WTF==1.0.0
+flask-WeasyPrint==0.5
 hashids==1.2.0
 inflection==0.3.1
+# lock itsdangerous version until upgrade to Flask 2.x
 itsdangerous==2.0.1
 # lock Jinja2 version because it's the latest compatible with Flask 1.0.X
 # see related info on https://github.com/pallets/jinja/issues/1628
 Jinja2==3.0.3
 marshmallow==3.0.0b11
 marshmallow-enum==1.4.1
+more-itertools==8.12.0
 passlib==1.7.1
 phonenumbers==8.9.11
-pytest==3.7.2
-pytest-runner==4.2
+psycopg2-binary==2.8.3
+PyJWT==2.0.0a1
 python-dateutil==2.7.3
+python-decouple==3.3
 python-stdnum==1.9
 PyYAML==5.4
 requests[security]==2.27.1
-requests-mock==1.5.2
+sortedcontainers==2.1.0
 SQLAlchemy==1.3.24
+sqlalchemy-citext==1.3.post0
 SQLAlchemy-Utils==0.33.11
 # teal under development version
 -e git+https://github.com/eReuse/teal/@upgrade-dependencies#egg=teal
+WeasyPrint==44
 webargs==5.5.3
 Werkzeug>=2.0
-sqlalchemy-citext==1.3.post0
-flask-weasyprint==0.5
-weasyprint==44
-psycopg2-binary==2.8.3
-sortedcontainers==2.1.0
-tqdm==4.32.2
-python-decouple==3.3
-python-dotenv==0.14.0
-pyjwt==2.0.0a1
