@@ -1006,8 +1006,7 @@ def test_snapshot_wb_lite_qemu(user: UserClient):
 def test_snapshot_wb_lite_old_snapshots(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
     wb_dir = Path(__file__).parent.joinpath('files/wb_lite/')
-    for f in os.listdir(wb_dir)[:10]:
-        # import pdb; pdb.set_trace()
+    for f in os.listdir(wb_dir):
         file_name = "wb_lite/{}".format(f)
         snapshot_11 = file_json(file_name)
         if not snapshot_11.get('debug'):
@@ -1032,8 +1031,48 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
         body11, res = user.post(snapshot_11, res=Snapshot)
         bodyLite, res = user.post(snapshot_lite, res=Snapshot)
 
-        assert body11['device']['hid'] == bodyLite['device']['hid']
-        assert body11['device']['id'] == bodyLite['device']['id']
-        assert body11['device']['serialNumber'] == bodyLite['device']['serialNumber']
-        assert body11['device']['model'] == bodyLite['device']['model']
-        assert body11['device']['manufacturer'] == bodyLite['device']['manufacturer']
+        try:
+            assert body11['device'].get('hid') == bodyLite['device'].get('hid')
+            if body11['device'].get('hid'):
+                assert body11['device']['id'] == bodyLite['device']['id']
+            assert body11['device'].get('serialNumber') == bodyLite['device'].get('serialNumber')
+            assert body11['device'].get('model') == bodyLite['device'].get('model')
+            assert body11['device'].get('manufacturer') == bodyLite['device'].get('manufacturer')
+        except Exception as err:
+            # import pdb; pdb.set_trace()
+            raise err
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_errors(user: UserClient):
+    """This test check the minimum validation of json that come from snapshot"""
+    snapshot_11 = file_json('snapshotErrors.json')
+    lshw = snapshot_11['debug']['lshw']
+    hwinfo = snapshot_11['debug']['hwinfo']
+    snapshot_lite = {
+        'timestamp': snapshot_11['endTime'],
+        'type': 'Snapshot',
+        'uuid': str(uuid.uuid4()),
+        'wbid': 'MLKO1',
+        'software': 'Workbench',
+        'version': '2022.03.00',
+        'data': {
+            'lshw': lshw,
+            'hwinfo': hwinfo,
+            'smart': [],
+            'dmidecode': ''
+        }
+    }
+
+    assert SnapshotErrors.query.all() == []
+    body11, res = user.post(snapshot_11, res=Snapshot)
+    assert SnapshotErrors.query.all() == []
+    bodyLite, res = user.post(snapshot_lite, res=Snapshot)
+    assert len(SnapshotErrors.query.all()) == 2
+
+    assert body11['device'].get('hid') == bodyLite['device'].get('hid')
+    assert body11['device']['id'] == bodyLite['device']['id']
+    assert body11['device'].get('serialNumber') == bodyLite['device'].get('serialNumber')
+    assert body11['device'].get('model') == bodyLite['device'].get('model')
+    assert body11['device'].get('manufacturer') == bodyLite['device'].get('manufacturer')
