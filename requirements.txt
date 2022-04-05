@@ -31,7 +31,8 @@ requests[security]==2.27.1
 requests-mock==1.5.2
 SQLAlchemy==1.3.24
 SQLAlchemy-Utils==0.33.11
-teal==0.2.0a38
+# teal under development version
+-e git+https://github.com/eReuse/teal/@upgrade-dependencies#egg=teal
 webargs==5.5.3
 Werkzeug==0.15.3
 sqlalchemy-citext==1.3.post0
