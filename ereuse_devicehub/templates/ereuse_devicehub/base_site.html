@@ -53,7 +53,7 @@
           </li>
 
           <li>
-            <a class="dropdown-item d-flex align-items-center" href="pages-faq.html">
+            <a class="dropdown-item d-flex align-items-center" href="https://help.usody.com/" target="_blank">
               <i class="bi bi-question-circle"></i>
               <span>Need Help?</span>
             </a>
@@ -195,7 +195,11 @@
   {% block messages %}
     {% for level, message in get_flashed_messages(with_categories=true) %}
       <div class="alert alert-{{ level}} alert-dismissible fade show" role="alert">
-        <i class="bi bi-{{ session['_message_icon'][level]}} me-1"></i>
+        {% if '_message_icon' in session %}
+          <i class="bi bi-{{ session['_message_icon'][level]}} me-1"></i>
+        {% else %}<!-- fallback if 3rd party libraries (e.g. flask_login.login_required) -->
+          <i class="bi bi-info-circle me-1"></i>
+        {% endif %}
         {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
