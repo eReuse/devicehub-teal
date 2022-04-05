@@ -1030,6 +1030,22 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
 
         body11, res = user.post(snapshot_11, res=Snapshot)
         bodyLite, res = user.post(snapshot_lite, res=Snapshot)
+        components11 = []
+        componentsLite = []
+        for c in body11.get('components', []):
+            if c['type'] in ["HardDrive", "SolidStateDrive"]:
+                continue
+            components11.append({
+                c.get('model'),
+                c['type'],
+                c.get('manufacturer')
+            })
+        for c in bodyLite.get('components', []):
+            componentsLite.append({
+                c.get('model'),
+                c['type'],
+                c.get('manufacturer')
+            })
 
         try:
             assert body11['device'].get('hid') == bodyLite['device'].get('hid')
@@ -1038,6 +1054,11 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
             assert body11['device'].get('serialNumber') == bodyLite['device'].get('serialNumber')
             assert body11['device'].get('model') == bodyLite['device'].get('model')
             assert body11['device'].get('manufacturer') == bodyLite['device'].get('manufacturer')
+
+            # wbLite can find more components than wb11
+            assert len(components11) <= len(componentsLite)
+            for c in components11:
+                assert c in componentsLite
         except Exception as err:
             # import pdb; pdb.set_trace()
             raise err
@@ -1076,3 +1097,23 @@ def test_snapshot_errors(user: UserClient):
     assert body11['device'].get('serialNumber') == bodyLite['device'].get('serialNumber')
     assert body11['device'].get('model') == bodyLite['device'].get('model')
     assert body11['device'].get('manufacturer') == bodyLite['device'].get('manufacturer')
+    components11 = []
+    componentsLite = []
+    for c in body11['components']:
+        if c['type'] == "HardDrive":
+            continue
+        components11.append({
+            c['model'],
+            c['type'],
+            c['manufacturer']
+        })
+    for c in bodyLite['components']:
+        componentsLite.append({
+            c['model'],
+            c['type'],
+            c['manufacturer']
+        })
+
+    assert len(components11) == len(componentsLite)
+    for c in components11:
+        assert c in componentsLite
