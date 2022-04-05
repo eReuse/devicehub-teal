@@ -435,7 +435,10 @@ class ParseSnapshotLsHw:
         return 'SODIMM' if 'SODIMM' in channel else 'DIMM'
 
     def get_uuid(self):
-        dmi_uuid = self.dmi.get("System")[0].get("UUID")
+        dmi_uuid = 'undefined'
+        if self.dmi.get("System"):
+            dmi_uuid = self.dmi.get("System")[0].get("UUID")
+
         try:
             uuid.UUID(dmi_uuid)
         except (ValueError, AttributeError) as err:
