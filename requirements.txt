@@ -34,7 +34,7 @@ SQLAlchemy-Utils==0.33.11
 # teal under development version
 -e git+https://github.com/eReuse/teal/@upgrade-dependencies#egg=teal
 webargs==5.5.3
-Werkzeug==0.15.3
+Werkzeug>=2.0
 sqlalchemy-citext==1.3.post0
 flask-weasyprint==0.5
 weasyprint==44
