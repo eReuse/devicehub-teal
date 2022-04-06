@@ -34,7 +34,7 @@ class Agent(Thing):
     last_name = Column(CIText())
     name.comment = """The name of the organization or person."""
     tax_id = Column(Unicode(length=STR_SM_SIZE), check_lower('tax_id'))
-    tax_id.comment = """The Tax / Fiscal ID of the organization, 
+    tax_id.comment = """The Tax / Fiscal ID of the organization,
     e.g. the TIN in the US or the CIF/NIF in Spain.
     """
     country = Column(DBEnum(enums.Country))
