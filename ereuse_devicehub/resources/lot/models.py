@@ -275,7 +275,7 @@ class LotDeviceDescendants(db.Model):
         LotDevice.device_id,
         _desc.c.id.label('parent_lot_id'),
         _ancestor.c.id.label('ancestor_lot_id'),
-        None
+        db.column('padding')  # foo column to have same nunber of columns on joined selects (union)
     ]).select_from(_ancestor).select_from(lot_device).where(db.text(descendants))
 
     # Components
