@@ -1,8 +1,18 @@
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import BooleanField, EmailField, PasswordField, validators
+from wtforms import (
+    BooleanField,
+    EmailField,
+    PasswordField,
+    SelectField,
+    StringField,
+    validators,
+)
 
+from ereuse_devicehub.enums import Country
 from ereuse_devicehub.resources.user.models import User
+
+COUNTRY = [(x.name, x.value) for x in Country]
 
 
 class LoginForm(FlaskForm):
@@ -59,3 +69,27 @@ class LoginForm(FlaskForm):
             self.form_errors.append(self.error_messages['inactive'])
 
         return user.is_active
+
+
+class ProfileForm(FlaskForm):
+    name = StringField(
+        'First name',
+        [validators.Length(min=2, max=35)],
+        render_kw={'class': "form-control"},
+    )
+    last_name = StringField(
+        'Last name',
+        [validators.Length(min=2, max=35)],
+        render_kw={'class': "form-control"},
+    )
+    email = StringField(
+        'Email Address',
+        [validators.Length(min=6, max=35)],
+        render_kw={'class': "form-control"},
+    )
+    telephone = StringField(
+        'Phone', [validators.Length(min=6, max=35)], render_kw={'class': "form-control"}
+    )
+    country = SelectField(
+        'Country', choices=COUNTRY, default="es", render_kw={'class': "form-select"}
+    )

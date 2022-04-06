@@ -4,7 +4,7 @@ from flask.views import View
 from flask_login import current_user, login_required, login_user, logout_user
 
 from ereuse_devicehub import __version__
-from ereuse_devicehub.forms import LoginForm
+from ereuse_devicehub.forms import LoginForm, ProfileForm
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.utils import is_safe_url
 
@@ -50,11 +50,13 @@ class UserProfileView(View):
     template_name = 'ereuse_devicehub/user_profile.html'
 
     def dispatch_request(self):
+        form = ProfileForm()
         sessions = {s.created.strftime('%H:%M %d-%m-%Y') for s in current_user.sessions}
         context = {
             'current_user': current_user,
             'sessions': sessions,
             'version': __version__,
+            'profile_form': form,
         }
         return flask.render_template(self.template_name, **context)
 
