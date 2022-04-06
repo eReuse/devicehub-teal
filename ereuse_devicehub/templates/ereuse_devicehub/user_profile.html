@@ -27,7 +27,7 @@
 
     </div>
 
-    <div class="col-xl-8 d-none"><!-- TODO (hidden until is implemented )-->
+    <div class="col-xl-8"><!-- TODO (hidden until is implemented )-->
 
       <div class="card">
         <div class="card-body pt-3">
@@ -54,45 +54,72 @@
           <div class="tab-content pt-2">
 
             <div class="tab-pane fade show active profile-overview" id="profile-overview">
-              <h5 class="card-title">About</h5>
-              <p class="small fst-italic">Sunt est soluta temporibus accusantium neque nam maiores cumque temporibus. Tempora libero non est unde veniam est qui dolor. Ut sunt iure rerum quae quisquam autem eveniet perspiciatis odit. Fuga sequi sed ea saepe at unde.</p>
-
               <h5 class="card-title">Profile Details</h5>
 
               <div class="row">
+                <div class="col-lg-3 col-md-4 label">Account user</div>
+                <div class="col-lg-9 col-md-8">{{ current_user.email or ''}}</div>
+              </div>
+
+              {% for u in current_user.individuals %}
+
+              <div class="row">
                 <div class="col-lg-3 col-md-4 label ">Full Name</div>
-                <div class="col-lg-9 col-md-8">Kevin Anderson</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Company</div>
-                <div class="col-lg-9 col-md-8">Lueilwitz, Wisoky and Leuschke</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Job</div>
-                <div class="col-lg-9 col-md-8">Web Designer</div>
+                <div class="col-lg-9 col-md-8">{{ u.get_full_name or ''}}</div>
               </div>
 
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Country</div>
-                <div class="col-lg-9 col-md-8">USA</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Address</div>
-                <div class="col-lg-9 col-md-8">A108 Adam Street, New York, NY 535022</div>
+                <div class="col-lg-9 col-md-8">{{ u.country or ''}}</div>
               </div>
 
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Phone</div>
-                <div class="col-lg-9 col-md-8">(436) 486-3538 x29071</div>
+                <div class="col-lg-9 col-md-8">{{ u.telephone or ''}}</div>
               </div>
 
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Email</div>
-                <div class="col-lg-9 col-md-8">k.anderson@example.com</div>
+                <div class="col-lg-9 col-md-8">{{ u.email or ''}}</div>
               </div>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Created</div>
+                <div class="col-lg-9 col-md-8">{{ u.created.strftime('%H:%M %d-%m-%Y') or ''}}</div>
+              </div>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Last login</div>
+                <div class="col-lg-9 col-md-8">
+                    {% for s in sessions %}
+                    {{ s }}<br />
+                    {% endfor %}
+                </div>
+              </div>
+
+              {% if u.active_org %}
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Company name</div>
+                <div class="col-lg-9 col-md-8">{{ u.active_org.name  or ''}}</div>
+              </div>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Company country</div>
+                <div class="col-lg-9 col-md-8">{{ u.active_org.country or '' }}</div>
+              </div>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Company Phone</div>
+                <div class="col-lg-9 col-md-8">{{ u.active_org.telephone or '' }}</div>
+              </div>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Company Email</div>
+                <div class="col-lg-9 col-md-8">{{ u.active_org.email or '' }}</div>
+              </div>
+
+              {% endif %}
+              {% endfor %}
 
             </div>
 

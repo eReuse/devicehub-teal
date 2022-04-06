@@ -3,7 +3,9 @@ from operator import attrgetter
 from uuid import uuid4
 
 from citext import CIText
-from sqlalchemy import Column, Enum as DBEnum, ForeignKey, Unicode, UniqueConstraint
+from sqlalchemy import Column
+from sqlalchemy import Enum as DBEnum
+from sqlalchemy import ForeignKey, Unicode, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship, validates
@@ -29,6 +31,7 @@ class Agent(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     type = Column(Unicode, nullable=False)
     name = Column(CIText())
+    last_name = Column(CIText())
     name.comment = """The name of the organization or person."""
     tax_id = Column(Unicode(length=STR_SM_SIZE), check_lower('tax_id'))
     tax_id.comment = """The Tax / Fiscal ID of the organization, 
@@ -42,8 +45,14 @@ class Agent(Thing):
     __table_args__ = (
         UniqueConstraint(tax_id, country, name='Registration Number per country.'),
         UniqueConstraint(tax_id, name, name='One tax ID with one name.'),
-        db.Index('agent_type', type, postgresql_using='hash')
+        db.Index('agent_type', type, postgresql_using='hash'),
     )
+
+    @property
+    def get_full_name(self):
+        if self.last_name:
+            return "{} {}".format(self.name, self.last_name)
+        return self.name
 
     @declared_attr
     def __mapper_args__(cls):
@@ -63,7 +72,9 @@ class Agent(Thing):
     @property
     def actions(self) -> list:
         # todo test
-        return sorted(chain(self.actions_agent, self.actions_to), key=attrgetter('created'))
+        return sorted(
+            chain(self.actions_agent, self.actions_to), key=attrgetter('created')
+        )
 
     @validates('name')
     def does_not_contain_slash(self, _, value: str):
@@ -76,15 +87,17 @@ class Agent(Thing):
 
 
 class Organization(JoinedTableMixin, Agent):
-    default_of = db.relationship(Inventory,
-                                 uselist=False,
-                                 lazy=True,
-                                 backref=backref('org', lazy=True),
-                                 # We need to use this as we cannot do Inventory.foreign -> Org
-                                 # as foreign keys can only reference to one table
-                                 # and we have multiple organization table (one per schema)
-                                 foreign_keys=[Inventory.org_id],
-                                 primaryjoin=lambda: Organization.id == Inventory.org_id)
+    default_of = db.relationship(
+        Inventory,
+        uselist=False,
+        lazy=True,
+        backref=backref('org', lazy=True),
+        # We need to use this as we cannot do Inventory.foreign -> Org
+        # as foreign keys can only reference to one table
+        # and we have multiple organization table (one per schema)
+        foreign_keys=[Inventory.org_id],
+        primaryjoin=lambda: Organization.id == Inventory.org_id,
+    )
 
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(**kwargs, name=name)
@@ -97,12 +110,17 @@ class Organization(JoinedTableMixin, Agent):
 
 class Individual(JoinedTableMixin, Agent):
     active_org_id = Column(UUID(as_uuid=True), ForeignKey(Organization.id))
-    active_org = relationship(Organization, primaryjoin=active_org_id == Organization.id)
+
+    active_org = relationship(
+        Organization, primaryjoin=active_org_id == Organization.id
+    )
 
     user_id = Column(UUID(as_uuid=True), ForeignKey(User.id), unique=True)
-    user = relationship(User,
-                        backref=backref('individuals', lazy=True, collection_class=set),
-                        primaryjoin=user_id == User.id)
+    user = relationship(
+        User,
+        backref=backref('individuals', lazy=True, collection_class=set),
+        primaryjoin=user_id == User.id,
+    )
 
 
 class Membership(Thing):
@@ -110,20 +128,29 @@ class Membership(Thing):
 
     For example, because the individual works in or because is a member of.
     """
-    id = Column(Unicode(), check_lower('id'))
-    organization_id = Column(UUID(as_uuid=True), ForeignKey(Organization.id), primary_key=True)
-    organization = relationship(Organization,
-                                backref=backref('members', collection_class=set, lazy=True),
-                                primaryjoin=organization_id == Organization.id)
-    individual_id = Column(UUID(as_uuid=True), ForeignKey(Individual.id), primary_key=True)
-    individual = relationship(Individual,
-                              backref=backref('member_of', collection_class=set, lazy=True),
-                              primaryjoin=individual_id == Individual.id)
 
-    def __init__(self, organization: Organization, individual: Individual, id: str = None) -> None:
-        super().__init__(organization=organization,
-                         individual=individual,
-                         id=id)
+    id = Column(Unicode(), check_lower('id'))
+    organization_id = Column(
+        UUID(as_uuid=True), ForeignKey(Organization.id), primary_key=True
+    )
+    organization = relationship(
+        Organization,
+        backref=backref('members', collection_class=set, lazy=True),
+        primaryjoin=organization_id == Organization.id,
+    )
+    individual_id = Column(
+        UUID(as_uuid=True), ForeignKey(Individual.id), primary_key=True
+    )
+    individual = relationship(
+        Individual,
+        backref=backref('member_of', collection_class=set, lazy=True),
+        primaryjoin=individual_id == Individual.id,
+    )
+
+    def __init__(
+        self, organization: Organization, individual: Individual, id: str = None
+    ) -> None:
+        super().__init__(organization=organization, individual=individual, id=id)
 
     __table_args__ = (
         UniqueConstraint(id, organization_id, name='One member id per organization.'),
@@ -134,6 +161,7 @@ class Person(Individual):
     """A person in the system. There can be several persons pointing to
     a real.
     """
+
     pass
 
 

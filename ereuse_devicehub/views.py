@@ -50,8 +50,10 @@ class UserProfileView(View):
     template_name = 'ereuse_devicehub/user_profile.html'
 
     def dispatch_request(self):
+        sessions = {s.created.strftime('%H:%M %d-%m-%Y') for s in current_user.sessions}
         context = {
             'current_user': current_user,
+            'sessions': sessions,
             'version': __version__,
         }
         return flask.render_template(self.template_name, **context)
