@@ -1,6 +1,6 @@
 alembic==1.4.2
 anytree==2.4.3
-apispec==0.39.0
+apispec==5.1.1
 boltons==18.0.1
 click==8.0
 click-spinner==0.1.8
@@ -33,9 +33,9 @@ python-stdnum==1.9
 PyYAML==5.4
 requests[security]==2.27.1
 sortedcontainers==2.1.0
-SQLAlchemy==1.3.24
+SQLAlchemy==1.4.34
 sqlalchemy-citext==1.3.post0
-SQLAlchemy-Utils==0.33.11
+SQLAlchemy-Utils==0.38.2
 # teal under development version
 -e git+https://github.com/eReuse/teal/@upgrade-dependencies#egg=teal
 WeasyPrint==44
