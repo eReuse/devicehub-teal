@@ -71,25 +71,20 @@
           {% endif %}
           <div class="tab-content pt-5">
             <div id="devices-list" class="tab-pane fade devices-list active show">
-
               <div class="btn-group dropdown ml-1">
-                <button id="btnLots" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <button id="btnLots" type="button" onclick="processSelectedDevices()" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="bi bi-folder2"></i>
                   Lots
                   <span class="caret"></span>
                 </button>
-                <span class="d-none" id="activeTradeModal" data-bs-toggle="modal" data-bs-target="#tradeLotModal"></span>
-                <ul class="dropdown-menu" aria-labelledby="btnLots">
+                <ul class="dropdown-menu" aria-labelledby="btnLots" style="width: 300px;">
+                  <h6 class="dropdown-header">Select some devices to manage lots</h6>
+                  <ul style="list-style-type: none; margin: 0; padding: 0;" class="mx-3" id="LotsSelector"></ul>
+                  <li><hr /></li>
                   <li>
-                    <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingLotModal">
-                      <i class="bi bi-plus"></i>
-                      Add selected Devices to a lot
-                    </a>
-                  </li>
-                  <li>
-                    <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#removeLotModal">
-                      <i class="bi bi-x"></i>
-                      Remove selected devices from a lot
+                    <a href="#" class="dropdown-item" id="ApplyDeviceLots">
+                      <i class="bi bi-check"></i>
+                      Apply
                     </a>
                   </li>
                 </ul>
@@ -303,7 +298,7 @@
                 <table class="table">
                   <thead>
                     <tr>
-                      <th scope="col">Select</th>
+                      <th scope="col" style="min-with: 14px">Select</th>
                       <th scope="col">Title</th>
                       <th scope="col">DHID</th>
                       <th scope="col">Tags</th>
@@ -383,6 +378,8 @@
         </div>
       </div>
 
+      <div id="NotificationsContainer" style="position: absolute; bottom: 0; right: 0; margin: 10px; margin-top: 70px; width: calc(100% - 310px);"></div>
+
     </div>
   </div>
 </section>
@@ -400,6 +397,13 @@
 <!-- Custom Code -->
 <script>
   const table = new simpleDatatables.DataTable("table")
+  const API_URLS = {
+    Auth_Token: "Basic ZDc5YjQyOGItZTJjMy00NDA0LThhODItNzJjMTNmOWNkYmNjOg==", // {{ current_user.token }}
+    currentUserID: "{{ current_user.id }}",
+    lots: "{{ url_for('Lot.main') }}",
+    devices: "{{ url_for('Device.main') }}",
+    devices_modify: "{{ url_for('Lot.lot-device', id='UUID') }}",
+}
 </script>
 <script src="{{ url_for('static', filename='js/main_inventory.js') }}"></script>
 {% endblock main %}
