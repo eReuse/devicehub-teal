@@ -8,6 +8,7 @@ from dmidecode import DMIParse
 from ereuse_devicehub.parser import base2
 from ereuse_devicehub.parser.computer import Computer
 from ereuse_devicehub.parser.models import SnapshotErrors
+from ereuse_devicehub.resources.action.schemas import Snapshot
 from ereuse_devicehub.resources.enums import Severity
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,9 @@ class ParseSnapshot:
             "elapsed": 1,
             "wbid": snapshot["wbid"],
         }
+
+    def get_snapshot(self):
+        return Snapshot().load(self.snapshot_json)
 
     def set_basic_datas(self):
         self.device['manufacturer'] = self.dmi.manufacturer()
@@ -336,16 +340,19 @@ class ParseSnapshotLsHw:
         self.set_components()
 
         self.snapshot_json = {
+            "type": "Snapshot",
             "device": self.device,
             "software": "Workbench",
             "components": self.components,
             "uuid": snapshot['uuid'],
-            "type": snapshot['type'],
             "version": snapshot["version"],
             "endTime": snapshot["timestamp"],
             "elapsed": 1,
             "wbid": snapshot["wbid"],
         }
+
+    def get_snapshot(self):
+        return Snapshot().load(self.snapshot_json)
 
     def parse_hwinfo(self):
         hw_blocks = self.hwinfo_raw.split("\n\n")
