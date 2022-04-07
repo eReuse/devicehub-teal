@@ -963,7 +963,7 @@ def test_snapshot_wb_lite(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
 
     snapshot = file_json("2022-03-31_17h18m51s_ZQMPKKX51K67R68VO2X9RNZL08JPL_snapshot.json")
-    body, res = user.post(snapshot, res=Snapshot)
+    body, res = user.post(snapshot, uri="/api/inventory/")
 
     ssd = [x for x in body['components'] if x['type'] == 'SolidStateDrive'][0]
 
@@ -987,7 +987,8 @@ def test_snapshot_wb_lite_qemu(user: UserClient):
     snapshot = file_json(
         "2022-04-01_06h28m54s_YKPZ27NJ2NMRO4893M4L5NRZV5YJ1_snapshot.json"
     )
-    body, res = user.post(snapshot, res=Snapshot)
+    # body, res = user.post(snapshot, res=Snapshot)
+    body, res = user.post(snapshot, uri="/api/inventory/")
 
     assert body['wbid'] == "YKPZ27NJ2NMRO4893M4L5NRZV5YJ1"
     assert res.status == '201 CREATED'
@@ -1089,7 +1090,7 @@ def test_snapshot_errors(user: UserClient):
     assert SnapshotErrors.query.all() == []
     body11, res = user.post(snapshot_11, res=Snapshot)
     assert SnapshotErrors.query.all() == []
-    bodyLite, res = user.post(snapshot_lite, res=Snapshot)
+    bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
     assert len(SnapshotErrors.query.all()) == 2
 
     assert body11['device'].get('hid') == bodyLite['device'].get('hid')
