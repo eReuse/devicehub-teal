@@ -23,6 +23,7 @@ from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.user.models import Session
 from ereuse_devicehub.resources.enums import SessionType
+from ereuse_devicehub.api.views import api
 
 STARTT = datetime(year=2000, month=1, day=1, hour=1)
 """A dummy starting time to use in tests."""
@@ -69,6 +70,7 @@ def app(request, _app: Devicehub) -> Devicehub:
                      tag_token=uuid.UUID('52dacef0-6bcb-4919-bfed-f10d2c96ecee'),
                      erase=False,
                      common=True)
+        _app.register_blueprint(api)
 
     with _app.app_context():
         try:
