@@ -398,7 +398,7 @@
 <script>
   const table = new simpleDatatables.DataTable("table")
   const API_URLS = {
-    Auth_Token: "Basic ZDc5YjQyOGItZTJjMy00NDA0LThhODItNzJjMTNmOWNkYmNjOg==", // {{ current_user.token }}
+    Auth_Token: `Basic ${btoa("{{ current_user.token }}")}`, // 
     currentUserID: "{{ current_user.id }}",
     lots: "{{ url_for('Lot.main') }}",
     devices: "{{ url_for('Device.main') }}",
