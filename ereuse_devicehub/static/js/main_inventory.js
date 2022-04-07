@@ -268,21 +268,34 @@ async function processSelectedDevices() {
          * @param {number} deviceID device id
          */
         manage(event, lotID, deviceListID) {
-            const checked = event.srcElement.checked
+            event.preventDefault()
+            const indeterminate = event.srcElement.indeterminate
+            const checked = !event.srcElement.checked
 
             var found = this.list.filter(list => list.lotID == lotID)[0]
+            var foundIndex = found != undefined ? this.list.findLastIndex(x => x.lotID == found.lotID) : -1
 
             if (checked) {
                 if (found != undefined && found.type == "Remove") {
-                    this.list = this.list.filter(list => list.lotID != lotID)
+                    if (found.isFromIndeterminate == true) {
+                        found.type = "Add"
+                        this.list[foundIndex] = found
+                    } else {
+                        this.list = this.list.filter(list => list.lotID != lotID)
+                    }
                 } else {
-                    this.list.push({ type: "Add", lotID: lotID, devices: deviceListID })
+                    this.list.push({ type: "Add", lotID: lotID, devices: deviceListID, isFromIndeterminate: indeterminate })
                 }
             } else {
                 if (found != undefined && found.type == "Add") {
-                    this.list = this.list.filter(list => list.lotID != lotID)
+                    if (found.isFromIndeterminate == true) {
+                        found.type = "Remove"
+                        this.list[foundIndex] = found
+                    } else {
+                        this.list = this.list.filter(list => list.lotID != lotID)
+                    }
                 } else {
-                    this.list.push({ type: "Remove", lotID: lotID, devices: deviceListID })
+                    this.list.push({ type: "Remove", lotID: lotID, devices: deviceListID, isFromIndeterminate: indeterminate })
                 }
             }
 
@@ -313,8 +326,8 @@ async function processSelectedDevices() {
             document.getElementById("NotificationsContainer").appendChild(toast)
             if (!isError) {
                 setTimeout(() => toast.classList.remove("show"), 3000)
-                setTimeout(() => toast.remove(), 3500)
             }
+            setTimeout(() => document.getElementById("NotificationsContainer").innerHTML == "", 3500)
         }
 
         /**
@@ -371,7 +384,7 @@ async function processSelectedDevices() {
             doc.children[0].indeterminate = true;
         }
 
-        doc.children[0].addEventListener('change', (ev) => actions.manage(ev, lotID, selectedDevicesIDs))
+        doc.children[0].addEventListener('mouseup', (ev) => actions.manage(ev, lotID, selectedDevicesIDs))
         elementTarget.append(doc)
     }
 
