@@ -48,7 +48,9 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         schema=f'{get_inv()}',
     )
+    op.execute(f"CREATE SEQUENCE {get_inv()}.snapshot_errors_seq START 1;")
 
 
 def downgrade():
     op.drop_table('snapshot_errors', schema=f'{get_inv()}')
+    op.execute(f"DROP SEQUENCE {get_inv()}.snapshot_errors_seq;")

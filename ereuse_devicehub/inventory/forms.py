@@ -282,7 +282,7 @@ class UploadSnapshotForm(FlaskForm, SnapshotMix):
 
         if commit:
             db.session.commit()
-        return response
+        return self.result
 
 
 class NewDeviceForm(FlaskForm):
