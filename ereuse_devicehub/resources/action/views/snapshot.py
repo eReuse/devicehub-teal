@@ -13,12 +13,12 @@ from sqlalchemy.util import OrderedSet
 from ereuse_devicehub.db import db
 from ereuse_devicehub.parser.models import SnapshotErrors
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
-from ereuse_devicehub.resources.api.schemas import Snapshot_lite
+from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.device.models import Computer
+from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
-from ereuse_devicehub.resources.device.sync import Sync
 
 
 def save_json(req_json, tmp_snapshots, user, live=False):
@@ -67,19 +67,19 @@ def move_json(tmp_snapshots, path_name, user, live=False):
 class SnapshotMix:
     sync = Sync()
 
-    def build(self):
-        device = self.snapshot_json.pop('device')  # type: Computer
+    def build(self, snapshot_json=None):  # noqa: C901
+        if not snapshot_json:
+            snapshot_json = self.snapshot_json
+        device = snapshot_json.pop('device')  # type: Computer
         components = None
-        if self.snapshot_json['software'] == (
+        if snapshot_json['software'] == (
             SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid
         ):
-            components = self.snapshot_json.pop(
-                'components', None
-            )  # type: List[Component]
+            components = snapshot_json.pop('components', None)  # type: List[Component]
             if isinstance(device, Computer) and device.hid:
                 device.add_mac_to_hid(components_snap=components)
         # import pdb; pdb.set_trace()
-        snapshot = Snapshot(**self.snapshot_json)
+        snapshot = Snapshot(**snapshot_json)
 
         # Remove new actions from devices so they don't interfere with sync
         actions_device = set(e for e in device.actions_one)
@@ -138,11 +138,6 @@ class SnapshotView(SnapshotMix):
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
         snapshot_json.pop('debug', None)
-        version = snapshot_json.get('version')
-        if self.is_wb_lite_snapshot(version):
-            self.validate_json(snapshot_json)
-            snapshot_json = self.build_lite()
-
         try:
             self.snapshot_json = resource_def.schema.load(snapshot_json)
         except ValidationError as err:
@@ -164,19 +159,3 @@ class SnapshotView(SnapshotMix):
 
     def post(self):
         return self.response
-
-    def validate_json(self, snapshot_json):
-        self.schema2 = Snapshot_lite()
-        self.snapshot_json = self.schema2.load(snapshot_json)
-
-    def build_lite(self):
-        # snap = ParseSnapshot(self.snapshot_json)
-        snap = ParseSnapshotLsHw(self.snapshot_json)
-        return snap.snapshot_json
-
-    def is_wb_lite_snapshot(self, version: str) -> bool:
-        is_lite = False
-        if version in app.config['WORKBENCH_LITE']:
-            is_lite = True
-
-        return is_lite

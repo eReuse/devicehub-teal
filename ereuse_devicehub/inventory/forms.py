@@ -32,7 +32,11 @@ from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
-from ereuse_devicehub.resources.action.views.snapshot import move_json, save_json
+from ereuse_devicehub.resources.action.views.snapshot import (
+    SnapshotMix,
+    move_json,
+    save_json,
+)
 from ereuse_devicehub.resources.device.models import (
     SAI,
     Cellphone,
@@ -195,10 +199,13 @@ class LotForm(FlaskForm):
         return self.instance
 
 
-class UploadSnapshotForm(FlaskForm):
+class UploadSnapshotForm(FlaskForm, SnapshotMix):
     snapshot = MultipleFileField('Select a Snapshot File', [validators.DataRequired()])
 
     def validate(self, extra_validators=None):
+        import pdb
+
+        pdb.set_trace()
         is_valid = super().validate(extra_validators)
 
         if not is_valid:
@@ -245,18 +252,16 @@ class UploadSnapshotForm(FlaskForm):
     def save(self, commit=True):
         if any([x == 'Error' for x in self.result.values()]):
             return
-        self.sync = Sync()
         schema = SnapshotSchema()
         schema_lite = Snapshot_lite()
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         for filename, snapshot_json in self.snapshots:
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
             snapshot_json.pop('debug', None)
-            version = snapshot_json.get('version')
+            version = snapshot_json.get('schema_version')
             if self.is_wb_lite_snapshot(version):
                 self.snapshot_json = schema_lite.load(snapshot_json)
-                snap = ParseSnapshotLsHw(self.snapshot_json)
-                snapshot_json = snap.snapshot_json
+                snapshot_json = ParseSnapshotLsHw(self.snapshot_json).snapshot_json
 
             try:
                 snapshot_json = schema.load(snapshot_json)
@@ -271,6 +276,7 @@ class UploadSnapshotForm(FlaskForm):
                 continue
 
             response = self.build(snapshot_json)
+            db.session.add(response)
 
             if hasattr(response, 'type'):
                 self.result[filename] = 'Ok'
@@ -283,7 +289,7 @@ class UploadSnapshotForm(FlaskForm):
             db.session.commit()
         return response
 
-    def build(self, snapshot_json):  # noqa: C901
+    def build2(self, snapshot_json):  # noqa: C901
         # this is a copy adaptated from ereuse_devicehub.resources.action.views.snapshot
         device = snapshot_json.pop('device')  # type: Computer
         components = None

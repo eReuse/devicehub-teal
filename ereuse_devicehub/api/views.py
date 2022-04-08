@@ -50,9 +50,22 @@ class InventoryView(LoginMix, SnapshotMix):
         snapshot_json = json.loads(request.data)
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
-        schema = Snapshot_lite()
+        snapshot_json = self.validate(snapshot_json)
+        self.snapshot_json = ParseSnapshotLsHw(snapshot_json).get_snapshot()
+
+        snapshot = self.build()
+        db.session.add(snapshot)
+        db.session().final_flush()
+        db.session.commit()
+        self.response = self.schema.jsonify(snapshot)
+        self.response.status_code = 201
+        move_json(self.tmp_snapshots, self.path_snapshot, g.user.email)
+        return self.response
+
+    def validate(self, snapshot_json):
+        self.schema = Snapshot_lite()
         try:
-            snapshot_json = schema.load(snapshot_json)
+            return self.schema.load(snapshot_json)
         except ValidationError as err:
             txt = "{}".format(err)
             uuid = snapshot_json.get('uuid')
@@ -61,15 +74,6 @@ class InventoryView(LoginMix, SnapshotMix):
             )
             error.save(commit=True)
             raise err
-        self.snapshot_json = ParseSnapshotLsHw(snapshot_json).get_snapshot()
-        snapshot = self.build()
-        db.session.add(snapshot)
-        db.session().final_flush()
-        db.session.commit()
-        self.response = schema.jsonify(snapshot)
-        self.response.status_code = 201
-        move_json(self.tmp_snapshots, self.path_snapshot, g.user.email)
-        return self.response
 
 
 api.add_url_rule('/inventory/', view_func=InventoryView.as_view('inventory'))

@@ -5,6 +5,7 @@ from enum import Enum, unique
 
 from dmidecode import DMIParse
 
+from marshmallow import ValidationError
 from ereuse_devicehub.parser import base2
 from ereuse_devicehub.parser.computer import Computer
 from ereuse_devicehub.parser.models import SnapshotErrors
@@ -352,7 +353,16 @@ class ParseSnapshotLsHw:
         }
 
     def get_snapshot(self):
-        return Snapshot().load(self.snapshot_json)
+        try:
+            return Snapshot().load(self.snapshot_json)
+        except ValidationError as err:
+            txt = "{}".format(err)
+            uuid = self.snapshot_json.get('uuid')
+            error = SnapshotErrors(
+                description=txt, snapshot_uuid=uuid, severity=Severity.Error
+            )
+            error.save(commit=True)
+            raise err
 
     def parse_hwinfo(self):
         hw_blocks = self.hwinfo_raw.split("\n\n")
