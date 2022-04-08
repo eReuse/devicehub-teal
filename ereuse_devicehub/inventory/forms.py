@@ -40,7 +40,6 @@ from ereuse_devicehub.resources.action.views.snapshot import (
 from ereuse_devicehub.resources.device.models import (
     SAI,
     Cellphone,
-    Computer,
     Device,
     Keyboard,
     MemoryCardReader,
@@ -51,12 +50,11 @@ from ereuse_devicehub.resources.device.models import (
 )
 from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.documents.models import DataWipeDocument
-from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
+from ereuse_devicehub.resources.enums import Severity
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
-from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 from ereuse_devicehub.resources.user.models import User
 
 DEVICES = {
@@ -203,9 +201,6 @@ class UploadSnapshotForm(FlaskForm, SnapshotMix):
     snapshot = MultipleFileField('Select a Snapshot File', [validators.DataRequired()])
 
     def validate(self, extra_validators=None):
-        import pdb
-
-        pdb.set_trace()
         is_valid = super().validate(extra_validators)
 
         if not is_valid:
@@ -288,59 +283,6 @@ class UploadSnapshotForm(FlaskForm, SnapshotMix):
         if commit:
             db.session.commit()
         return response
-
-    def build2(self, snapshot_json):  # noqa: C901
-        # this is a copy adaptated from ereuse_devicehub.resources.action.views.snapshot
-        device = snapshot_json.pop('device')  # type: Computer
-        components = None
-        if snapshot_json['software'] == (
-            SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid
-        ):
-            components = snapshot_json.pop('components', None)
-            if isinstance(device, Computer) and device.hid:
-                device.add_mac_to_hid(components_snap=components)
-        snapshot = Snapshot(**snapshot_json)
-
-        # Remove new actions from devices so they don't interfere with sync
-        actions_device = set(e for e in device.actions_one)
-        device.actions_one.clear()
-        if components:
-            actions_components = tuple(
-                set(e for e in c.actions_one) for c in components
-            )
-            for component in components:
-                component.actions_one.clear()
-
-        assert not device.actions_one
-        assert all(not c.actions_one for c in components) if components else True
-        db_device, remove_actions = self.sync.run(device, components)
-
-        del device  # Do not use device anymore
-        snapshot.device = db_device
-        snapshot.actions |= remove_actions | actions_device  # Set actions to snapshot
-        # commit will change the order of the components by what
-        # the DB wants. Let's get a copy of the list so we preserve order
-        ordered_components = OrderedSet(x for x in snapshot.components)
-
-        # Add the new actions to the db-existing devices and components
-        db_device.actions_one |= actions_device
-        if components:
-            for component, actions in zip(ordered_components, actions_components):
-                component.actions_one |= actions
-                snapshot.actions |= actions
-
-        if snapshot.software == SnapshotSoftware.Workbench:
-            # Check ownership of (non-component) device to from current.user
-            if db_device.owner_id != g.user.id:
-                raise InsufficientPermission()
-        elif snapshot.software == SnapshotSoftware.WorkbenchAndroid:
-            pass  # TODO try except to compute RateMobile
-        # Check if HID is null and add Severity:Warning to Snapshot
-        if snapshot.device.hid is None:
-            snapshot.severity = Severity.Warning
-
-        db.session.add(snapshot)
-        return snapshot
 
 
 class NewDeviceForm(FlaskForm):
