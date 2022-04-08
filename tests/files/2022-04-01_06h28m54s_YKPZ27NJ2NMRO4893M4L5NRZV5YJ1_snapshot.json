@@ -5,6 +5,7 @@
   "wbid": "YKPZ27NJ2NMRO4893M4L5NRZV5YJ1",
   "software": "Workbench",
   "version": "2022.03.00",
+  "schema_version": "V1",
   "data": {
     "lshw": {
       "id": "wb",

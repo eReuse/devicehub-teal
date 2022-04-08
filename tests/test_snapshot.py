@@ -1021,6 +1021,7 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
             'wbid': 'MLKO1',
             'software': 'Workbench',
             'version': '2022.03.00',
+            "schema_version": "V1",
             'data': {
                 'lshw': lshw,
                 'hwinfo': hwinfo,
@@ -1079,6 +1080,7 @@ def test_snapshot_errors(user: UserClient):
         'wbid': 'MLKO1',
         'software': 'Workbench',
         'version': '2022.03.00',
+        "schema_version": "V1",
         'data': {
             'lshw': lshw,
             'hwinfo': hwinfo,
