@@ -1031,7 +1031,7 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
         }
 
         body11, res = user.post(snapshot_11, res=Snapshot)
-        bodyLite, res = user.post(snapshot_lite, res=Snapshot)
+        bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
         components11 = []
         componentsLite = []
         for c in body11.get('components', []):
