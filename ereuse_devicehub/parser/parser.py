@@ -1,16 +1,15 @@
 import json
 import logging
 import uuid
-from enum import Enum, unique
 
 from dmidecode import DMIParse
-
 from marshmallow import ValidationError
+
 from ereuse_devicehub.parser import base2
 from ereuse_devicehub.parser.computer import Computer
 from ereuse_devicehub.parser.models import SnapshotErrors
 from ereuse_devicehub.resources.action.schemas import Snapshot
-from ereuse_devicehub.resources.enums import Severity
+from ereuse_devicehub.resources.enums import DataStorageInterface, Severity
 
 logger = logging.getLogger(__name__)
 
@@ -312,16 +311,6 @@ class ParseSnapshot:
 
 
 class ParseSnapshotLsHw:
-    @unique
-    class DataStorageInterface(Enum):
-        ATA = 'ATA'
-        USB = 'USB'
-        PCI = 'PCI'
-        NVME = 'NVME'
-
-        def __str__(self):
-            return self.value
-
     def __init__(self, snapshot, default="n/a"):
         self.default = default
         self.uuid = snapshot.get("uuid")
@@ -502,7 +491,7 @@ class ParseSnapshotLsHw:
     def get_data_storage_interface(self, x):
         interface = x.get('device', {}).get('protocol', 'ATA')
         try:
-            self.DataStorageInterface(interface.upper())
+            DataStorageInterface(interface.upper())
         except ValueError as err:
             txt = "interface {} is not in DataStorageInterface Enum".format(interface)
             self.errors("{}".format(err))

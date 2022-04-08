@@ -199,7 +199,7 @@ class DataStorageInterface(Enum):
     ATA = 'ATA'
     USB = 'USB'
     PCI = 'PCI'
-    NVMe = 'NVMe'
+    NVME = 'NVME'
 
     def __str__(self):
         return self.value
