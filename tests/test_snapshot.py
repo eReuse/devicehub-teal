@@ -1023,8 +1023,14 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
             'wbid': 'MLKO1',
             'software': 'Workbench',
             'version': '2022.03.00',
-            "schema_version": "V1",
-            'data': {'lshw': lshw, 'hwinfo': hwinfo, 'smart': [], 'dmidecode': ''},
+            "schema_api": "1.0.0",
+            'data': {
+                'lshw': lshw,
+                'hwinfo': hwinfo,
+                'smart': [],
+                'dmidecode': '',
+                'lspci': '',
+            },
         }
 
         body11, res = user.post(snapshot_11, res=Snapshot)
@@ -1073,8 +1079,14 @@ def test_snapshot_errors(user: UserClient):
         'wbid': 'MLKO1',
         'software': 'Workbench',
         'version': '2022.03.00',
-        "schema_version": "V1",
-        'data': {'lshw': lshw, 'hwinfo': hwinfo, 'smart': [], 'dmidecode': ''},
+        "schema_api": "1.0.0",
+        'data': {
+            'lshw': lshw,
+            'hwinfo': hwinfo,
+            'smart': [],
+            'dmidecode': '',
+            'lspci': '',
+        },
     }
 
     assert SnapshotErrors.query.all() == []

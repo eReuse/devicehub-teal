@@ -63,7 +63,7 @@ class DevicehubConfig(Config):
     """The minimum version of ereuse.org workbench that this devicehub
     accepts. we recommend not changing this value.
     """
-    WORKBENCH_LITE = ["V1"]
+    WORKBENCH_LITE = ["1.0.0"]
 
     TMP_SNAPSHOTS = config('TMP_SNAPSHOTS', '/tmp/snapshots')
     TMP_LIVES = config('TMP_LIVES', '/tmp/lives')

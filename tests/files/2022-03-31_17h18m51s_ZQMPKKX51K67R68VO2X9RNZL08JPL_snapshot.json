@@ -5,8 +5,9 @@
   "wbid": "MLKO1Y0R55XZM051WQ5KJM01RY44Q",
   "software": "Workbench",
   "version": "2022.03.00",
-  "schema_version": "V1",
+  "schema_api": "1.0.0",
   "data": {
+    "lspci": "",
     "lshw": {
       "id": "__",
       "class": "system",

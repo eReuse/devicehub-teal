@@ -11,12 +11,13 @@ class Snapshot_lite_data(MarshmallowSchema):
     hwinfo = String(required=False)
     smart = List(Dict(), required=False)
     lshw = Dict(required=False)
+    lspci = String(required=False)
 
 
 class Snapshot_lite(Thing):
     uuid = String(required=True)
     version = String(required=True)
-    schema_version = String(required=True)
+    schema_api = String(required=True)
     software = String(required=True)
     wbid = String(required=True)
     type = String(required=True)
@@ -25,7 +26,7 @@ class Snapshot_lite(Thing):
 
     @validates_schema
     def validate_workbench_version(self, data: dict):
-        if data['schema_version'] not in app.config['WORKBENCH_LITE']:
+        if data['schema_api'] not in app.config['WORKBENCH_LITE']:
             raise ValidationError(
                 'Min. supported Workbench version is '
                 '{} but yours is {}.'.format(

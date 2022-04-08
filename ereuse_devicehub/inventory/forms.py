@@ -253,7 +253,7 @@ class UploadSnapshotForm(FlaskForm, SnapshotMix):
         for filename, snapshot_json in self.snapshots:
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
             snapshot_json.pop('debug', None)
-            version = snapshot_json.get('schema_version')
+            version = snapshot_json.get('schema_api')
             if self.is_wb_lite_snapshot(version):
                 self.snapshot_json = schema_lite.load(snapshot_json)
                 snapshot_json = ParseSnapshotLsHw(self.snapshot_json).snapshot_json
