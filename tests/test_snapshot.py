@@ -4,9 +4,9 @@ import shutil
 import uuid
 from datetime import datetime, timedelta, timezone
 from operator import itemgetter
+from pathlib import Path
 from typing import List, Tuple
 from uuid import uuid4
-from pathlib import Path
 
 import pytest
 from boltons import urlutils
@@ -962,7 +962,9 @@ def test_bug_141(user: UserClient):
 def test_snapshot_wb_lite(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
 
-    snapshot = file_json("2022-03-31_17h18m51s_ZQMPKKX51K67R68VO2X9RNZL08JPL_snapshot.json")
+    snapshot = file_json(
+        "2022-03-31_17h18m51s_ZQMPKKX51K67R68VO2X9RNZL08JPL_snapshot.json"
+    )
     body, res = user.post(snapshot, uri="/api/inventory/")
 
     ssd = [x for x in body['components'] if x['type'] == 'SolidStateDrive'][0]
@@ -1022,12 +1024,7 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
             'software': 'Workbench',
             'version': '2022.03.00',
             "schema_version": "V1",
-            'data': {
-                'lshw': lshw,
-                'hwinfo': hwinfo,
-                'smart': [],
-                'dmidecode': ''
-            }
+            'data': {'lshw': lshw, 'hwinfo': hwinfo, 'smart': [], 'dmidecode': ''},
         }
 
         body11, res = user.post(snapshot_11, res=Snapshot)
@@ -1037,25 +1034,21 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
         for c in body11.get('components', []):
             if c['type'] in ["HardDrive", "SolidStateDrive"]:
                 continue
-            components11.append({
-                c.get('model'),
-                c['type'],
-                c.get('manufacturer')
-            })
+            components11.append({c.get('model'), c['type'], c.get('manufacturer')})
         for c in bodyLite.get('components', []):
-            componentsLite.append({
-                c.get('model'),
-                c['type'],
-                c.get('manufacturer')
-            })
+            componentsLite.append({c.get('model'), c['type'], c.get('manufacturer')})
 
         try:
             assert body11['device'].get('hid') == bodyLite['device'].get('hid')
             if body11['device'].get('hid'):
                 assert body11['device']['id'] == bodyLite['device']['id']
-            assert body11['device'].get('serialNumber') == bodyLite['device'].get('serialNumber')
+            assert body11['device'].get('serialNumber') == bodyLite['device'].get(
+                'serialNumber'
+            )
             assert body11['device'].get('model') == bodyLite['device'].get('model')
-            assert body11['device'].get('manufacturer') == bodyLite['device'].get('manufacturer')
+            assert body11['device'].get('manufacturer') == bodyLite['device'].get(
+                'manufacturer'
+            )
 
             # wbLite can find more components than wb11
             assert len(components11) <= len(componentsLite)
@@ -1081,12 +1074,7 @@ def test_snapshot_errors(user: UserClient):
         'software': 'Workbench',
         'version': '2022.03.00',
         "schema_version": "V1",
-        'data': {
-            'lshw': lshw,
-            'hwinfo': hwinfo,
-            'smart': [],
-            'dmidecode': ''
-        }
+        'data': {'lshw': lshw, 'hwinfo': hwinfo, 'smart': [], 'dmidecode': ''},
     }
 
     assert SnapshotErrors.query.all() == []
@@ -1097,25 +1085,21 @@ def test_snapshot_errors(user: UserClient):
 
     assert body11['device'].get('hid') == bodyLite['device'].get('hid')
     assert body11['device']['id'] == bodyLite['device']['id']
-    assert body11['device'].get('serialNumber') == bodyLite['device'].get('serialNumber')
+    assert body11['device'].get('serialNumber') == bodyLite['device'].get(
+        'serialNumber'
+    )
     assert body11['device'].get('model') == bodyLite['device'].get('model')
-    assert body11['device'].get('manufacturer') == bodyLite['device'].get('manufacturer')
+    assert body11['device'].get('manufacturer') == bodyLite['device'].get(
+        'manufacturer'
+    )
     components11 = []
     componentsLite = []
     for c in body11['components']:
         if c['type'] == "HardDrive":
             continue
-        components11.append({
-            c['model'],
-            c['type'],
-            c['manufacturer']
-        })
+        components11.append({c['model'], c['type'], c['manufacturer']})
     for c in bodyLite['components']:
-        componentsLite.append({
-            c['model'],
-            c['type'],
-            c['manufacturer']
-        })
+        componentsLite.append({c['model'], c['type'], c['manufacturer']})
 
     assert len(components11) == len(componentsLite)
     for c in components11:

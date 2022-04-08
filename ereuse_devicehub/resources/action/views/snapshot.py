@@ -78,7 +78,6 @@ class SnapshotMix:
             components = snapshot_json.pop('components', None)  # type: List[Component]
             if isinstance(device, Computer) and device.hid:
                 device.add_mac_to_hid(components_snap=components)
-        # import pdb; pdb.set_trace()
         snapshot = Snapshot(**snapshot_json)
 
         # Remove new actions from devices so they don't interfere with sync
