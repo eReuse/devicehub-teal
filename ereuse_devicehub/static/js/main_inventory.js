@@ -349,6 +349,7 @@ async function processSelectedDevices() {
                     }
                 }
             })
+            this.list = []
         }
     }
 
