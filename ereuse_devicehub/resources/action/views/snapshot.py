@@ -12,8 +12,6 @@ from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.parser.models import SnapshotErrors
-from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
-from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.device.models import Computer
 from ereuse_devicehub.resources.device.sync import Sync
