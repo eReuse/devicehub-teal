@@ -20,5 +20,5 @@ app.register_blueprint(labels)
 # NOTE: enable by blueprint to exclude API views
 # TODO(@slamora: enable by default & exclude API views when decouple of Teal is completed
 csrf = CSRFProtect(app)
-csrf.protect(core)
-csrf.protect(devices)
+# csrf.protect(core)
+# csrf.protect(devices)
