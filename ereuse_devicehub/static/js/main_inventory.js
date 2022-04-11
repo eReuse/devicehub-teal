@@ -332,6 +332,7 @@ async function processSelectedDevices() {
          * Get actions and execute call request to add or remove devices from lots
          */
         doActions() {
+            var requestCount = 0; // This is for count all requested api count, to perform reRender of table device list
             this.list.forEach(async action => {
                 if (action.type == "Add") {
                     try {
@@ -348,8 +349,25 @@ async function processSelectedDevices() {
                         this.notifyUser("Fail to remove devices from selected lot/s", error.responseJSON.message, true);
                     }
                 }
+                
+                requestCount += 1
+                if (requestCount == this.list.length) {
+                    this.reRenderTable();
+                    this.list = []
+                }
             })
-            this.list = []
+        }
+
+        /**
+         * Re-render list in table
+         */
+        async reRenderTable() {
+            var newRequest = await Api.doRequest(window.location)
+
+            var tmpDiv = document.createElement("div")
+            tmpDiv.innerHTML = newRequest
+
+            document.querySelector("table.table > tbody").innerHTML = tmpDiv.querySelector("table.table > tbody").innerHTML
         }
     }
 
