@@ -220,4 +220,14 @@
   </div>
 </footer><!-- End Footer -->
 
+<script>
+  const API_URLS = {
+    Auth_Token: `Basic ${btoa("{{ current_user.token }}:")}`, // 
+    currentUserID: "{{ current_user.id }}",
+    lots: "{{ url_for('Lot.main') }}",
+    devices: "{{ url_for('Device.main') }}",
+    devices_modify: "{{ url_for('Lot.lot-device', id='UUID') }}",
+  }
+</script>
+
 {% endblock body %}
