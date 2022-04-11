@@ -1,9 +1,10 @@
 import flask
-from flask import Blueprint
+from flask import Blueprint, request
 from flask.views import View
 from flask_login import current_user, login_required, login_user, logout_user
 
-from ereuse_devicehub import __version__
+from ereuse_devicehub import __version__, messages
+from ereuse_devicehub.db import db
 from ereuse_devicehub.forms import LoginForm, ProfileForm
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.utils import is_safe_url
@@ -46,11 +47,15 @@ class LogoutView(View):
 
 
 class UserProfileView(View):
+    methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'ereuse_devicehub/user_profile.html'
 
     def dispatch_request(self):
         form = ProfileForm()
+        if request.method == 'GET':
+            form = ProfileForm(user=current_user.individual)
+
         sessions = {s.created.strftime('%H:%M %d-%m-%Y') for s in current_user.sessions}
         context = {
             'current_user': current_user,
@@ -58,6 +63,14 @@ class UserProfileView(View):
             'version': __version__,
             'profile_form': form,
         }
+
+        if form.validate_on_submit():
+            form.save(commit=False)
+            messages.success('Modify user Profile datas successfully!')
+        elif form.errors:
+            messages.error('Error modify user Profile data!')
+
+        db.session.commit()
         return flask.render_template(self.template_name, **context)
 
 

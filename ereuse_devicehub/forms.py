@@ -1,3 +1,4 @@
+from flask import g
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
 from wtforms import (
@@ -9,6 +10,7 @@ from wtforms import (
     validators,
 )
 
+from ereuse_devicehub.db import db
 from ereuse_devicehub.enums import Country
 from ereuse_devicehub.resources.user.models import User
 
@@ -93,3 +95,25 @@ class ProfileForm(FlaskForm):
     country = SelectField(
         'Country', choices=COUNTRY, default="es", render_kw={'class': "form-select"}
     )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.name.data = user.name
+            self.last_name.data = user.last_name
+            self.email.data = user.email
+            self.telephone.data = user.telephone
+            self.country.data = user.country
+
+    def save(self, commit=True):
+        agent = g.user.individual
+        agent.name = self.name.data
+        agent.last_name = self.last_name.data
+        agent.email = self.email.data
+        agent.telephone = self.telephone.data
+        agent.country = self.country.data
+
+        db.session.add(agent)
+        if commit:
+            db.session.commit()

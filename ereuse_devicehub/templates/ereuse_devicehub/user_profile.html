@@ -135,6 +135,13 @@
                   <label for="company" class="col-md-4 col-lg-3 col-form-label">{{ f.label }}</label>
                   <div class="col-md-8 col-lg-9">
                     {{ f }}
+                    {% if f.errors %}
+                    <p class="text-danger">
+                      {% for error in f.errors %}
+                        {{ error }}<br/>
+                      {% endfor %}
+                    </p>
+                    {% endif %}
                   </div>
                 </div>
                 {% endif %}
@@ -149,7 +156,7 @@
             <div class="tab-pane fade pt-3" id="profile-settings">
 
               <!-- Settings Form -->
-              <form>
+              <form class="d-none">
 
                 <div class="row mb-3">
                   <label for="fullName" class="col-md-4 col-lg-3 col-form-label">Email Notifications</label>
