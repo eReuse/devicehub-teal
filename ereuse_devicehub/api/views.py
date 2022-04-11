@@ -3,7 +3,7 @@ from binascii import Error as asciiError
 
 from flask import Blueprint
 from flask import current_app as app
-from flask import g, request
+from flask import g, jsonify, request
 from flask.views import View
 from marshmallow import ValidationError
 from werkzeug.exceptions import Unauthorized
@@ -51,7 +51,12 @@ class InventoryView(LoginMix, SnapshotMix):
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
         snapshot_json = self.validate(snapshot_json)
-        self.snapshot_json = ParseSnapshotLsHw(snapshot_json).get_snapshot()
+        try:
+            self.snapshot_json = ParseSnapshotLsHw(snapshot_json).get_snapshot()
+        except ValidationError:
+            self.response = jsonify('')
+            self.response.status_code = 201
+            return self.response
 
         snapshot = self.build()
         db.session.add(snapshot)
