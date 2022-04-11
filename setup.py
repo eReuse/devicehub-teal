@@ -24,7 +24,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     python_requires='>=3.7.3',
-    long_description=Path('README.rst').read_text('utf8'),
+    long_description=Path('README.md').read_text('utf8'),
     install_requires=[
         'teal>=0.2.0a38',  # teal always first
         'click',
