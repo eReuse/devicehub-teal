@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).ready(function() {
     var show_allocate_form = $("#allocateModal").data('show-action-form');
     var show_datawipe_form = $("#datawipeModal").data('show-action-form');
     var show_trade_form = $("#tradeLotModal").data('show-action-form');
@@ -71,9 +71,9 @@ function removeLot() {
 
 function removeTag() {
     var devices = $(".deviceSelect").filter(':checked');
-    var devices_id = $.map(devices, function (x) { return $(x).attr('data') });
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
     if (devices_id.length == 1) {
-        var url = "/inventory/tag/devices/" + devices_id[0] + "/del/";
+        var url = "/inventory/tag/devices/"+devices_id[0]+"/del/";
         window.location.href = url;
     } else {
         $("#unlinkTagAlertModal").click();
@@ -82,7 +82,7 @@ function removeTag() {
 
 function addTag() {
     var devices = $(".deviceSelect").filter(':checked');
-    var devices_id = $.map(devices, function (x) { return $(x).attr('data') });
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
     if (devices_id.length == 1) {
         $("#addingTagModal .pol").hide();
         $("#addingTagModal .btn-primary").show();
@@ -146,8 +146,8 @@ function get_device_list() {
     $("#actionModal .devices-count").html(devices_count);
 
     /* Insert the correct value in the input devicesList */
-    var devices_id = $.map(devices, function (x) { return $(x).attr('data') }).join(",");
-    $.map($(".devicesList"), function (x) {
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data')}).join(",");
+    $.map($(".devicesList"), function(x) {
         $(x).val(devices_id);
     });
 
@@ -166,15 +166,15 @@ function get_device_list() {
         return typ + " " + manuf + " " + dhid;
     });
 
-    description = $.map(list_devices, function (x) { return x }).join(", ");
+    description = $.map(list_devices, function(x) { return x }).join(", ");
     $(".enumeration-devices").html(description);
 }
 
 function export_file(type_file) {
     var devices = $(".deviceSelect").filter(':checked');
-    var devices_id = $.map(devices, function (x) { return $(x).attr('data-device-dhid') }).join(",");
-    if (devices_id) {
-        var url = "/inventory/export/" + type_file + "/?ids=" + devices_id;
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data-device-dhid')}).join(",");
+    if (devices_id){
+        var url = "/inventory/export/"+type_file+"/?ids="+devices_id;
         window.location.href = url;
     } else {
         $("#exportAlertModal").click();
@@ -349,7 +349,7 @@ async function processSelectedDevices() {
                         this.notifyUser("Fail to remove devices from selected lot/s", error.responseJSON.message, true);
                     }
                 }
-                
+
                 requestCount += 1
                 if (requestCount == this.list.length) {
                     this.reRenderTable();
