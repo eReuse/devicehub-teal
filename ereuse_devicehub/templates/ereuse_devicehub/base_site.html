@@ -12,9 +12,20 @@
   </div><!-- End Logo -->
 
   <div class="search-bar">
-    <form class="search-form d-flex align-items-center" method="POST" action="#">
-      <input type="text" name="query" placeholder="Search" title="Enter search keyword">
+    <form class="search-form d-flex align-items-center" method="POST" id="SearchForm" action="#">
+      <input class="dropdown-toggle" type="text" name="query" placeholder="Search" title="Enter search keyword" autocomplete="off" id="dropdownSearch" data-bs-toggle="dropdown" aria-expanded="false">
       <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+
+      <ul class="dropdown-menu" autoClose="outside" aria-labelledby="dropdownSearch" id="dropdown-search-list" style="min-width: 100px;">
+        <li><a class="dropdown-item" style="display: flex; align-items: center;" href="#"><i class="bi bi-laptop"></i><span style="margin-right: 10px">This is a extra large device name to test long titles</span> <span class="badge bg-secondary" style="margin-left: auto;">{DHID ID}</span></a></li>
+        <li><a class="dropdown-item" style="display: flex; align-items: center;" href="#"><i class="bi bi-laptop"></i> <span>Device Name 2</span> <span class="badge bg-secondary" style="margin-left: auto;">{DHID ID}</span></a></li>
+        <li><a class="dropdown-item" style="display: flex; align-items: center;" href="#"><i class="bi bi-laptop"></i> <span>Device Name 3</span> <span class="badge bg-secondary" style="margin-left: auto;">{DHID ID}</span></a></li>
+        <li><a class="dropdown-item" style="display: flex; align-items: center;" href="#"><i class="bi bi-laptop"></i> <span>Device Name 4</span> <span class="badge bg-secondary" style="margin-left: auto;">{DHID ID}</span></a></li>
+        <li><a class="dropdown-item" style="display: flex; align-items: center;" href="#"><i class="bi bi-folder2"></i> lot 1</a></li>
+        <li><a class="dropdown-item" style="display: flex; align-items: center;" href="#"><i class="bi bi-folder2"></i> lot 2</a></li>
+        <li><a class="dropdown-item" style="display: flex; align-items: center;" href="#"><i class="bi bi-folder2"></i> lot 3</a></li>
+        <li><a class="dropdown-item" style="display: flex; align-items: center;" href="#"><i class="bi bi-folder2"></i> lot 4</a></li>
+      </ul>
     </form>
   </div><!-- End Search Bar -->
 
@@ -223,5 +234,17 @@
     Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a> // DeviceHub {{ version }}
   </div>
 </footer><!-- End Footer -->
+
+<!-- API_CALLS -->
+<script>
+  const API_URLS = {
+    Auth_Token: `Basic ${btoa("{{ current_user.token }}:")}`, // 
+    currentUserID: "{{ current_user.id }}",
+    lots: "{{ url_for('Lot.main') }}",
+    lots_detail: "{{ url_for('inventory.lotdevicelist', lot_id='ReplaceTEXT') }}",
+    devices: "{{ url_for('Device.main') }}",
+    devices_detail: "{{ url_for('inventory.device_details', id='ReplaceTEXT')}}"
+  }
+</script>
 
 {% endblock body %}
