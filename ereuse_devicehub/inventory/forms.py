@@ -485,46 +485,6 @@ class NewDeviceForm(FlaskForm):
         return snapshot
 
 
-class TagForm(FlaskForm):
-    code = StringField('Code', [validators.length(min=1)])
-
-    def validate(self, extra_validators=None):
-        error = ["This value is being used"]
-        is_valid = super().validate(extra_validators)
-        if not is_valid:
-            return False
-        tag = Tag.query.filter(Tag.id == self.code.data).all()
-        if tag:
-            self.code.errors = error
-            return False
-
-        return True
-
-    def save(self):
-        self.instance = Tag(id=self.code.data)
-        db.session.add(self.instance)
-        db.session.commit()
-        return self.instance
-
-    def remove(self):
-        if not self.instance.device and not self.instance.provider:
-            self.instance.delete()
-            db.session.commit()
-        return self.instance
-
-
-class TagUnnamedForm(FlaskForm):
-    amount = IntegerField('amount')
-
-    def save(self):
-        num = self.amount.data
-        tags_id, _ = g.tag_provider.post('/', {}, query=[('num', num)])
-        tags = [Tag(id=tag_id, provider=g.inventory.tag_provider) for tag_id in tags_id]
-        db.session.add_all(tags)
-        db.session.commit()
-        return tags
-
-
 class TagDeviceForm(FlaskForm):
     tag = SelectField('Tag', choices=[])
     device = StringField('Device', [validators.Optional()])

@@ -8,6 +8,8 @@ ml).
 ## master
 
 ## testing
+- [changed] #211 Print DHID-QR label for selected devices.
+- [fixed] #214 Login workflow
 
 ## [2.0.0] - 2022-03-15
 First server render HTML version. Completely rewrites views of angular JS client on flask.

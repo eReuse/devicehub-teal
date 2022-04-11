@@ -11,6 +11,11 @@ from ereuse_devicehub.utils import is_safe_url
 core = Blueprint('core', __name__)
 
 
+@core.route("/")
+def index():
+    return flask.redirect(flask.url_for('core.login'))
+
+
 class LoginView(View):
     methods = ['GET', 'POST']
     template_name = 'ereuse_devicehub/user_login.html'
