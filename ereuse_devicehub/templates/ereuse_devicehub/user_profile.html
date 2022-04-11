@@ -132,7 +132,7 @@
                   {{ f }}
                 {% else %}
                 <div class="row mb-3">
-                  <label for="company" class="col-md-4 col-lg-3 col-form-label">{{ f.label }}</label>
+                  <label class="col-md-4 col-lg-3 col-form-label">{{ f.label }}</label>
                   <div class="col-md-8 col-lg-9">
                     {{ f }}
                     {% if f.errors %}
@@ -197,29 +197,26 @@
 
             <div class="tab-pane fade pt-3" id="profile-change-password">
               <!-- Change Password Form -->
-              <form>
-
+              <form action="{{ url_for('core.set-password') }}" method="post">
+              {% for  f in password_form %}
+                {% if f == password_form.csrf_token %}
+                  {{ f }}
+                {% else %}
                 <div class="row mb-3">
-                  <label for="currentPassword" class="col-md-4 col-lg-3 col-form-label">Current Password</label>
+                  <label class="col-md-4 col-lg-3 col-form-label">{{ f.label }}</label>
                   <div class="col-md-8 col-lg-9">
-                    <input name="password" type="password" class="form-control" id="currentPassword">
+                    {{ f }}
+                    {% if f.errors %}
+                    <p class="text-danger">
+                      {% for error in f.errors %}
+                        {{ error }}<br/>
+                      {% endfor %}
+                    </p>
+                    {% endif %}
                   </div>
                 </div>
-
-                <div class="row mb-3">
-                  <label for="newPassword" class="col-md-4 col-lg-3 col-form-label">New Password</label>
-                  <div class="col-md-8 col-lg-9">
-                    <input name="newpassword" type="password" class="form-control" id="newPassword">
-                  </div>
-                </div>
-
-                <div class="row mb-3">
-                  <label for="renewPassword" class="col-md-4 col-lg-3 col-form-label">Re-enter New Password</label>
-                  <div class="col-md-8 col-lg-9">
-                    <input name="renewpassword" type="password" class="form-control" id="renewPassword">
-                  </div>
-                </div>
-
+                {% endif %}
+              {% endfor %}
                 <div class="text-center">
                   <button type="submit" class="btn btn-primary">Change Password</button>
                 </div>

@@ -5,7 +5,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 from ereuse_devicehub import __version__, messages
 from ereuse_devicehub.db import db
-from ereuse_devicehub.forms import LoginForm, ProfileForm
+from ereuse_devicehub.forms import LoginForm, PasswordForm, ProfileForm
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.utils import is_safe_url
 
@@ -62,18 +62,38 @@ class UserProfileView(View):
             'sessions': sessions,
             'version': __version__,
             'profile_form': form,
+            'password_form': PasswordForm(),
         }
 
         if form.validate_on_submit():
             form.save(commit=False)
             messages.success('Modify user Profile datas successfully!')
+            db.session.commit()
         elif form.errors:
-            messages.error('Error modify user Profile data!')
+            messages.error('Error modifying user Profile data!')
+
+        return flask.render_template(self.template_name, **context)
+
+
+class UserPasswordView(View):
+    methods = ['POST']
+    decorators = [login_required]
+
+    def dispatch_request(self):
+        form = PasswordForm()
+        # import pdb; pdb.set_trace()
+        db.session.commit()
+        if form.validate_on_submit():
+            form.save(commit=False)
+            messages.success('Reset user password successfully!')
+        else:
+            messages.error('Error modifying user password!')
 
         db.session.commit()
-        return flask.render_template(self.template_name, **context)
+        return flask.redirect(flask.url_for('core.user-profile'))
 
 
 core.add_url_rule('/login/', view_func=LoginView.as_view('login'))
 core.add_url_rule('/logout/', view_func=LogoutView.as_view('logout'))
 core.add_url_rule('/profile/', view_func=UserProfileView.as_view('user-profile'))
+core.add_url_rule('/set_password/', view_func=UserPasswordView.as_view('set-password'))
