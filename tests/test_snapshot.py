@@ -1116,3 +1116,14 @@ def test_snapshot_errors(user: UserClient):
     assert len(components11) == len(componentsLite)
     for c in components11:
         assert c in componentsLite
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_errors_timestamp(user: UserClient):
+    """This test check the minimum validation of json that come from snapshot"""
+    snapshot_lite = file_json('snapshot-error-timestamp.json')
+
+    bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
+    assert res.status_code == 201
+    assert len(SnapshotErrors.query.all()) == 1
