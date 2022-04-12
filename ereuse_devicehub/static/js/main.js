@@ -4,7 +4,7 @@
 * Author: BootstrapMade.com
 * License: https://bootstrapmade.com/license/
 */
-(function() {
+(function () {
   "use strict";
 
   /**
@@ -40,8 +40,8 @@
   /**
    * Sidebar toggle
    */
-   if (select('.toggle-sidebar-btn')) {
-    on('click', '.toggle-sidebar-btn', function(e) {
+  if (select('.toggle-sidebar-btn')) {
+    on('click', '.toggle-sidebar-btn', function (e) {
       select('body').classList.toggle('toggle-sidebar')
     })
   }
@@ -50,7 +50,7 @@
    * Search bar toggle
    */
   if (select('.search-bar-toggle')) {
-    on('click', '.search-bar-toggle', function(e) {
+    on('click', '.search-bar-toggle', function (e) {
       select('.search-bar').classList.toggle('search-bar-show')
     })
   }
@@ -110,10 +110,10 @@
   /**
    * Initiate tooltips
    */
-   var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-   var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-     return new bootstrap.Tooltip(tooltipTriggerEl)
-   })
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  })
 
   /**
    * Initiate quill editors
@@ -184,8 +184,8 @@
   var needsValidation = document.querySelectorAll('.needs-validation')
 
   Array.prototype.slice.call(needsValidation)
-    .forEach(function(form) {
-      form.addEventListener('submit', function(event) {
+    .forEach(function (form) {
+      form.addEventListener('submit', function (event) {
         if (!form.checkValidity()) {
           event.preventDefault()
           event.stopPropagation()
@@ -206,16 +206,16 @@
   /**
    * Autoresize echart charts
    */
-   const mainContainer = select('#main');
-   if (mainContainer) {
-     setTimeout(() => {
-       new ResizeObserver(function() {
-         select('.echart', true).forEach(getEchart => {
-           echarts.getInstanceByDom(getEchart).resize();
-         })
-       }).observe(mainContainer);
-     }, 200);
-   }
+  const mainContainer = select('#main');
+  if (mainContainer) {
+    setTimeout(() => {
+      new ResizeObserver(function () {
+        select('.echart', true).forEach(getEchart => {
+          echarts.getInstanceByDom(getEchart).resize();
+        })
+      }).observe(mainContainer);
+    }, 200);
+  }
 
   /**
    * Select all functionality
@@ -280,15 +280,15 @@
       let resultCount = 0;
       function searchCompleted() {
         resultCount++;
-        if (resultCount < 2 && document.getElementById("dropdown-search-list").children.length > 0) {
-          setTimeout(() => {
+        setTimeout(() => {
+          if (resultCount == 2 && document.getElementById("dropdown-search-list").children.length == 2) {
             document.getElementById("dropdown-search-list").innerHTML = `
             <li id="deviceSearchLoader" class="dropdown-item">
             <i class="bi bi-x-lg"></i>
                     <span style="margin-right: 10px">Nothing found</span>
             </li>`
-          }, 100)
-        }
+          }
+        }, 100)
       }
 
       timeoutHandler = setTimeout(async () => {
