@@ -57,7 +57,7 @@
                       <td>{{ tag.get_provider }}</td>
                       <td>
                         {% if tag.device %}
-                        <a href={{ url_for('inventory.device_details', id=tag.device.devicehub_id)}}>
+                        <a href="{{ url_for('inventory.device_details', id=tag.device.devicehub_id)}}">
                           {{ tag.device.verbose_name }}
                         </a>
                         {% endif %}
