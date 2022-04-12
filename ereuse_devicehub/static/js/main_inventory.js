@@ -240,15 +240,34 @@ window.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
     })
 
-    var timeoutHandler = setTimeout(() => { }, 1000)
-    var dropdownList = document.getElementById("dropdown-search-list")
+    let timeoutHandler = setTimeout(() => { }, 1)
+    let dropdownList = document.getElementById("dropdown-search-list")
+    let defaultEmptySearch = document.getElementById("dropdown-search-list").innerHTML
 
 
     inputSearch.addEventListener("input", (e) => {
-        console.log("Timeout restart")
         clearTimeout(timeoutHandler)
+        let searchText = e.target.value
+        if (searchText == '') {
+            document.getElementById("dropdown-search-list").innerHTML = defaultEmptySearch;
+            return
+        }
+
+        let resultCount = 0;
+        function searchCompleted() {
+            resultCount++;
+            if (resultCount < 2 && document.getElementById("dropdown-search-list").children.length > 0) {
+                setTimeout(() => {
+                    document.getElementById("dropdown-search-list").innerHTML = `
+                <li id="deviceSearchLoader" class="dropdown-item">
+                <i class="bi bi-x-lg"></i>
+                        <span style="margin-right: 10px">Nothing found</span>
+                </li>`
+                }, 100)
+            }
+        }
+        
         timeoutHandler = setTimeout(async () => {
-            console.log("timeout start")
             dropdownList.innerHTML = `
                 <li id="deviceSearchLoader" class="dropdown-item">
                     <i class="bi bi-laptop"></i>
@@ -261,9 +280,8 @@ window.addEventListener("DOMContentLoaded", () => {
                     <div class="spinner-border spinner-border-sm" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                </li>
-                `
-            var searchText = e.target.value
+                </li>`;
+
 
             try {
                 Api.get_devices(searchText.toUpperCase()).then(devices => {
@@ -282,15 +300,24 @@ window.addEventListener("DOMContentLoaded", () => {
                                 <span style="margin-right: 10px">${verboseName}</span>
                                 <span class="badge bg-secondary" style="margin-left: auto;">${device.devicehubID}</span>
                             </a>
-                        </li>`
+                        </li>`;
                         dropdownList.innerHTML += templateString
                         if (i == 4) { // Limit to 4 resullts
                             break;
                         }
                     }
+
+                    searchCompleted();
                 })
             } catch (error) {
-                console.log(error)
+                dropdownList.innerHTML += `
+                <li id="deviceSearchLoader" class="dropdown-item">
+                <i class="bi bi-x"></i>
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Error searching devices</span>
+                    </div>
+                </li>`;
+                console.log(error);
             }
 
             try {
@@ -305,17 +332,25 @@ window.addEventListener("DOMContentLoaded", () => {
                                     <i class="bi bi-folder2"></i>
                                     <span style="margin-right: 10px">${lot.name}</span>
                                 </a>
-                            </li>`
+                            </li>`;
                             dropdownList.innerHTML += templateString
-                            if (i == 4) {
+                            if (i == 4) { // Limit to 4 resullts
                                 break;
                             }
                         }
                     }
+                    searchCompleted();
                 })
 
             } catch (error) {
-                console.log(error)
+                dropdownList.innerHTML += `
+                <li id="deviceSearchLoader" class="dropdown-item">
+                <i class="bi bi-x"></i>
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Error searching lots</span>
+                    </div>
+                </li>`;
+                console.log(error);
             }
         }, 1000)
     })
