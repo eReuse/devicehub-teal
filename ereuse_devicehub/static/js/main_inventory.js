@@ -367,7 +367,15 @@ async function processSelectedDevices() {
             var tmpDiv = document.createElement("div")
             tmpDiv.innerHTML = newRequest
 
-            document.querySelector("table.table > tbody").innerHTML = tmpDiv.querySelector("table.table > tbody").innerHTML
+            var oldTable = Array.from(document.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
+            var newTable = Array.from(tmpDiv.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
+
+            for (let i = 0; i < oldTable.length; i++) {
+                if (!newTable.includes(oldTable[i])) {
+                    // variable from device_list.html --> See: ereuse_devicehub\templates\inventory\device_list.html (Ln: 411)
+                    table.rows().remove(i)
+                }
+            }
         }
     }
 
