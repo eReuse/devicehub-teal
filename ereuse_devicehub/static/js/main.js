@@ -40,7 +40,7 @@
   /**
    * Sidebar toggle
    */
-  if (select('.toggle-sidebar-btn')) {
+   if (select('.toggle-sidebar-btn')) {
     on('click', '.toggle-sidebar-btn', function(e) {
       select('body').classList.toggle('toggle-sidebar')
     })
@@ -110,10 +110,10 @@
   /**
    * Initiate tooltips
    */
-  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-  var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl)
-  })
+   var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+   var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+     return new bootstrap.Tooltip(tooltipTriggerEl)
+   })
 
   /**
    * Initiate quill editors
@@ -141,31 +141,31 @@
           }],
           ["bold", "italic", "underline", "strike"],
           [{
-              color: []
-            },
-            {
-              background: []
-            }
+            color: []
+          },
+          {
+            background: []
+          }
           ],
           [{
-              script: "super"
-            },
-            {
-              script: "sub"
-            }
+            script: "super"
+          },
+          {
+            script: "sub"
+          }
           ],
           [{
-              list: "ordered"
-            },
-            {
-              list: "bullet"
-            },
-            {
-              indent: "-1"
-            },
-            {
-              indent: "+1"
-            }
+            list: "ordered"
+          },
+          {
+            list: "bullet"
+          },
+          {
+            indent: "-1"
+          },
+          {
+            indent: "+1"
+          }
           ],
           ["direction", {
             align: []
@@ -206,50 +206,178 @@
   /**
    * Autoresize echart charts
    */
-  const mainContainer = select('#main');
-  if (mainContainer) {
-    setTimeout(() => {
-      new ResizeObserver(function() {
-        select('.echart', true).forEach(getEchart => {
-          echarts.getInstanceByDom(getEchart).resize();
-        })
-      }).observe(mainContainer);
-    }, 200);
-  }
+   const mainContainer = select('#main');
+   if (mainContainer) {
+     setTimeout(() => {
+       new ResizeObserver(function() {
+         select('.echart', true).forEach(getEchart => {
+           echarts.getInstanceByDom(getEchart).resize();
+         })
+       }).observe(mainContainer);
+     }, 200);
+   }
 
   /**
    * Select all functionality
    */
-   var btnSelectAll = document.getElementById("SelectAllBTN");
-   var tableListCheckboxes = document.querySelectorAll(".deviceSelect");
+  var btnSelectAll = document.getElementById("SelectAllBTN");
+  var tableListCheckboxes = document.querySelectorAll(".deviceSelect");
 
-   function itemListCheckChanged(event) {
-       let isAllChecked = Array.from(tableListCheckboxes).map(itm => itm.checked);
-       if (isAllChecked.every(bool => bool == true)) {
-           btnSelectAll.checked = true;
-           btnSelectAll.indeterminate = false;
-       } else if (isAllChecked.every(bool => bool == false)) {
-           btnSelectAll.checked = false;
-           btnSelectAll.indeterminate = false;
-       } else {
-           btnSelectAll.indeterminate = true;
-       }
-   }
-   
-   tableListCheckboxes.forEach(item => {
-       item.addEventListener("click", itemListCheckChanged);
-   })
+  function itemListCheckChanged(event) {
+    let isAllChecked = Array.from(tableListCheckboxes).map(itm => itm.checked);
+    if (isAllChecked.every(bool => bool == true)) {
+      btnSelectAll.checked = true;
+      btnSelectAll.indeterminate = false;
+    } else if (isAllChecked.every(bool => bool == false)) {
+      btnSelectAll.checked = false;
+      btnSelectAll.indeterminate = false;
+    } else {
+      btnSelectAll.indeterminate = true;
+    }
+  }
 
-   btnSelectAll.addEventListener("click", event => {
-       let checkedState = event.target.checked;
-       tableListCheckboxes.forEach(ckeckbox => ckeckbox.checked = checkedState);
-   })
+  tableListCheckboxes.forEach(item => {
+    item.addEventListener("click", itemListCheckChanged);
+  })
+
+  btnSelectAll.addEventListener("click", event => {
+    let checkedState = event.target.checked;
+    tableListCheckboxes.forEach(ckeckbox => ckeckbox.checked = checkedState);
+  })
 
   /**
    * Avoid hide dropdown when user clicked inside
    */
   document.getElementById("dropDownLotsSelector").addEventListener("click", event => {
     event.stopPropagation();
+  })
+
+  /**
+   * Search form functionality
+   */
+  window.addEventListener("DOMContentLoaded", () => {
+    var searchForm = document.getElementById("SearchForm")
+    var inputSearch = document.querySelector("#SearchForm > input")
+    var doSearch = true
+
+    searchForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+    })
+
+    let timeoutHandler = setTimeout(() => { }, 1)
+    let dropdownList = document.getElementById("dropdown-search-list")
+    let defaultEmptySearch = document.getElementById("dropdown-search-list").innerHTML
+
+
+    inputSearch.addEventListener("input", (e) => {
+      clearTimeout(timeoutHandler)
+      let searchText = e.target.value
+      if (searchText == '') {
+        document.getElementById("dropdown-search-list").innerHTML = defaultEmptySearch;
+        return
+      }
+
+      let resultCount = 0;
+      function searchCompleted() {
+        resultCount++;
+        if (resultCount < 2 && document.getElementById("dropdown-search-list").children.length > 0) {
+          setTimeout(() => {
+            document.getElementById("dropdown-search-list").innerHTML = `
+            <li id="deviceSearchLoader" class="dropdown-item">
+            <i class="bi bi-x-lg"></i>
+                    <span style="margin-right: 10px">Nothing found</span>
+            </li>`
+          }, 100)
+        }
+      }
+
+      timeoutHandler = setTimeout(async () => {
+        dropdownList.innerHTML = `
+        <li id="deviceSearchLoader" class="dropdown-item">
+            <i class="bi bi-laptop"></i>
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </li>
+        <li id="lotSearchLoader" class="dropdown-item">
+            <i class="bi bi-folder2"></i>
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </li>`;
+
+
+        try {
+          Api.search_device(searchText.toUpperCase()).then(devices => {
+            dropdownList.querySelector("#deviceSearchLoader").style = "display: none"
+
+            for (let i = 0; i < devices.length; i++) {
+              const device = devices[i];
+
+              // See: ereuse_devicehub/resources/device/models.py
+              var verboseName = `${device.type} ${device.manufacturer} ${device.model}`
+
+              const templateString = `
+              <li>
+                  <a class="dropdown-item" href="${API_URLS.devices_detail.replace("ReplaceTEXT", device.devicehubID)}" style="display: flex; align-items: center;" href="#">
+                      <i class="bi bi-laptop"></i>
+                      <span style="margin-right: 10px">${verboseName}</span>
+                      <span class="badge bg-secondary" style="margin-left: auto;">${device.devicehubID}</span>
+                  </a>
+              </li>`;
+              dropdownList.innerHTML += templateString
+              if (i == 4) { // Limit to 4 resullts
+                break;
+              }
+            }
+
+            searchCompleted();
+          })
+        } catch (error) {
+          dropdownList.innerHTML += `
+          <li id="deviceSearchLoader" class="dropdown-item">
+          <i class="bi bi-x"></i>
+              <div class="spinner-border spinner-border-sm" role="status">
+                  <span class="visually-hidden">Error searching devices</span>
+              </div>
+          </li>`;
+          console.log(error);
+        }
+
+        try {
+          Api.get_lots().then(lots => {
+            dropdownList.querySelector("#lotSearchLoader").style = "display: none"
+            for (let i = 0; i < lots.length; i++) {
+              const lot = lots[i];
+              if (lot.name.toUpperCase().includes(searchText.toUpperCase())) {
+                const templateString = `
+                <li>
+                    <a class="dropdown-item" href="${API_URLS.lots_detail.replace("ReplaceTEXT", lot.id)}" style="display: flex; align-items: center;" href="#">
+                        <i class="bi bi-folder2"></i>
+                        <span style="margin-right: 10px">${lot.name}</span>
+                    </a>
+                </li>`;
+                dropdownList.innerHTML += templateString
+                if (i == 4) { // Limit to 4 resullts
+                  break;
+                }
+              }
+            }
+            searchCompleted();
+          })
+
+        } catch (error) {
+          dropdownList.innerHTML += `
+          <li id="deviceSearchLoader" class="dropdown-item">
+          <i class="bi bi-x"></i>
+              <div class="spinner-border spinner-border-sm" role="status">
+                  <span class="visually-hidden">Error searching lots</span>
+              </div>
+          </li>`;
+          console.log(error);
+        }
+      }, 1000)
+    })
   })
 
 })();
