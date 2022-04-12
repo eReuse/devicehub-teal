@@ -8,9 +8,9 @@ ml).
 ## master
 
 ## testing
-- [changed] #218 add reactivit to device lots
-- [added] #219 add functionality to searchbar (Lots and devices)
+- [added] #219 Add functionality to searchbar (Lots and devices).
 - [changed] #211 Print DHID-QR label for selected devices.
+- [changed] #218 Add reactivity to device lots.
 - [fixed] #214 Login workflow
 
 ## [2.0.0] - 2022-03-15
