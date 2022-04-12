@@ -184,7 +184,7 @@ function export_file(type_file) {
 
 
 /**
- * Añade reactividad al botón de lotes
+ * Reactive lots button
  */
 async function processSelectedDevices() {
     const Api = {
