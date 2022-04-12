@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(document).ready(function () {
     var show_allocate_form = $("#allocateModal").data('show-action-form');
     var show_datawipe_form = $("#datawipeModal").data('show-action-form');
     var show_trade_form = $("#tradeLotModal").data('show-action-form');
@@ -71,9 +71,9 @@ function removeLot() {
 
 function removeTag() {
     var devices = $(".deviceSelect").filter(':checked');
-    var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
+    var devices_id = $.map(devices, function (x) { return $(x).attr('data') });
     if (devices_id.length == 1) {
-        var url = "/inventory/tag/devices/"+devices_id[0]+"/del/";
+        var url = "/inventory/tag/devices/" + devices_id[0] + "/del/";
         window.location.href = url;
     } else {
         $("#unlinkTagAlertModal").click();
@@ -82,7 +82,7 @@ function removeTag() {
 
 function addTag() {
     var devices = $(".deviceSelect").filter(':checked');
-    var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
+    var devices_id = $.map(devices, function (x) { return $(x).attr('data') });
     if (devices_id.length == 1) {
         $("#addingTagModal .pol").hide();
         $("#addingTagModal .btn-primary").show();
@@ -146,8 +146,8 @@ function get_device_list() {
     $("#actionModal .devices-count").html(devices_count);
 
     /* Insert the correct value in the input devicesList */
-    var devices_id = $.map(devices, function(x) { return $(x).attr('data')}).join(",");
-    $.map($(".devicesList"), function(x) {
+    var devices_id = $.map(devices, function (x) { return $(x).attr('data') }).join(",");
+    $.map($(".devicesList"), function (x) {
         $(x).val(devices_id);
     });
 
@@ -166,17 +166,194 @@ function get_device_list() {
         return typ + " " + manuf + " " + dhid;
     });
 
-    description = $.map(list_devices, function(x) { return x }).join(", ");
+    description = $.map(list_devices, function (x) { return x }).join(", ");
     $(".enumeration-devices").html(description);
 }
 
 function export_file(type_file) {
     var devices = $(".deviceSelect").filter(':checked');
-    var devices_id = $.map(devices, function(x) { return $(x).attr('data-device-dhid')}).join(",");
-    if (devices_id){
-        var url = "/inventory/export/"+type_file+"/?ids="+devices_id;
+    var devices_id = $.map(devices, function (x) { return $(x).attr('data-device-dhid') }).join(",");
+    if (devices_id) {
+        var url = "/inventory/export/" + type_file + "/?ids=" + devices_id;
         window.location.href = url;
     } else {
         $("#exportAlertModal").click();
     }
 }
+
+window.addEventListener("DOMContentLoaded", () => {
+    var searchForm = document.getElementById("SearchForm")
+    var inputSearch = document.querySelector("#SearchForm > input")
+    var doSearch = true
+
+    const Api = {
+        /**
+         * get lots id
+         * @returns get lots
+         */
+        async get_lots() {
+            var request = await this.doRequest(API_URLS.lots, "GET", null)
+            if (request != undefined) return request.items
+            throw request
+        },
+
+        /**
+         * Get filtered devices info
+         * @param {number[]} ids devices ids
+         * @returns full detailed device list
+         */
+        async get_devices(id) {
+            var request = await this.doRequest(API_URLS.devices + '?filter={"devicehub_id": ["' + id + '"]}', "GET", null)
+            if (request != undefined) return request.items
+            throw request
+        },
+
+        /**
+         * 
+         * @param {string} url URL to be requested
+         * @param {String} type Action type
+         * @param {String | Object} body body content
+         * @returns {Object[]}
+         */
+        async doRequest(url, type, body) {
+            var result;
+            try {
+                result = await $.ajax({
+                    url: url,
+                    type: type,
+                    headers: {
+                        "Authorization": API_URLS.Auth_Token
+                    },
+                    body: body
+                });
+                return result
+            } catch (error) {
+                console.error(error)
+                throw error
+            }
+        }
+    }
+
+
+
+    searchForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+    })
+
+    let timeoutHandler = setTimeout(() => { }, 1)
+    let dropdownList = document.getElementById("dropdown-search-list")
+    let defaultEmptySearch = document.getElementById("dropdown-search-list").innerHTML
+
+
+    inputSearch.addEventListener("input", (e) => {
+        clearTimeout(timeoutHandler)
+        let searchText = e.target.value
+        if (searchText == '') {
+            document.getElementById("dropdown-search-list").innerHTML = defaultEmptySearch;
+            return
+        }
+
+        let resultCount = 0;
+        function searchCompleted() {
+            resultCount++;
+            if (resultCount < 2 && document.getElementById("dropdown-search-list").children.length > 0) {
+                setTimeout(() => {
+                    document.getElementById("dropdown-search-list").innerHTML = `
+                <li id="deviceSearchLoader" class="dropdown-item">
+                <i class="bi bi-x-lg"></i>
+                        <span style="margin-right: 10px">Nothing found</span>
+                </li>`
+                }, 100)
+            }
+        }
+        
+        timeoutHandler = setTimeout(async () => {
+            dropdownList.innerHTML = `
+                <li id="deviceSearchLoader" class="dropdown-item">
+                    <i class="bi bi-laptop"></i>
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </li>
+                <li id="lotSearchLoader" class="dropdown-item">
+                    <i class="bi bi-folder2"></i>
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </li>`;
+
+
+            try {
+                Api.get_devices(searchText.toUpperCase()).then(devices => {
+                    dropdownList.querySelector("#deviceSearchLoader").style = "display: none"
+
+                    for (let i = 0; i < devices.length; i++) {
+                        const device = devices[i];
+
+                        // See: ereuse_devicehub/resources/device/models.py
+                        var verboseName = `${device.type} ${device.manufacturer} ${device.model}`
+
+                        const templateString = `
+                        <li>
+                            <a class="dropdown-item" href="${API_URLS.devices_detail.replace("ReplaceTEXT", device.devicehubID)}" style="display: flex; align-items: center;" href="#">
+                                <i class="bi bi-laptop"></i>
+                                <span style="margin-right: 10px">${verboseName}</span>
+                                <span class="badge bg-secondary" style="margin-left: auto;">${device.devicehubID}</span>
+                            </a>
+                        </li>`;
+                        dropdownList.innerHTML += templateString
+                        if (i == 4) { // Limit to 4 resullts
+                            break;
+                        }
+                    }
+
+                    searchCompleted();
+                })
+            } catch (error) {
+                dropdownList.innerHTML += `
+                <li id="deviceSearchLoader" class="dropdown-item">
+                <i class="bi bi-x"></i>
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Error searching devices</span>
+                    </div>
+                </li>`;
+                console.log(error);
+            }
+
+            try {
+                Api.get_lots().then(lots => {
+                    dropdownList.querySelector("#lotSearchLoader").style = "display: none"
+                    for (let i = 0; i < lots.length; i++) {
+                        const lot = lots[i];
+                        if (lot.name.toUpperCase().includes(searchText.toUpperCase())) {
+                            const templateString = `
+                            <li>
+                                <a class="dropdown-item" href="${API_URLS.lots_detail.replace("ReplaceTEXT", lot.id)}" style="display: flex; align-items: center;" href="#">
+                                    <i class="bi bi-folder2"></i>
+                                    <span style="margin-right: 10px">${lot.name}</span>
+                                </a>
+                            </li>`;
+                            dropdownList.innerHTML += templateString
+                            if (i == 4) { // Limit to 4 resullts
+                                break;
+                            }
+                        }
+                    }
+                    searchCompleted();
+                })
+
+            } catch (error) {
+                dropdownList.innerHTML += `
+                <li id="deviceSearchLoader" class="dropdown-item">
+                <i class="bi bi-x"></i>
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Error searching lots</span>
+                    </div>
+                </li>`;
+                console.log(error);
+            }
+        }, 1000)
+    })
+
+
+})
