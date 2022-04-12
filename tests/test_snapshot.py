@@ -1127,3 +1127,6 @@ def test_snapshot_errors_timestamp(user: UserClient):
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
     assert res.status_code == 201
     assert len(SnapshotErrors.query.all()) == 1
+    error = SnapshotErrors.query.all()[0]
+    assert snapshot_lite['wbid'] == error.wbid
+    assert user.user['id'] == str(error.owner_id)
