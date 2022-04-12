@@ -261,7 +261,7 @@ async function processSelectedDevices() {
 
         /**
          * Manage the actions that will be performed when applying the changes
-         * @param {*} ev event (Should be a checkbos type)
+         * @param {*} ev event (Should be a checkbox type)
          * @param {string} lotID lot id
          * @param {number} deviceID device id
          */
