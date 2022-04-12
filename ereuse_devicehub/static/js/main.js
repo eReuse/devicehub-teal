@@ -245,4 +245,11 @@
        tableListCheckboxes.forEach(ckeckbox => ckeckbox.checked = checkedState);
    })
 
+  /**
+   * Avoid hide dropdown when user clicked inside
+   */
+  document.getElementById("dropDownLotsSelector").addEventListener("click", event => {
+    event.stopPropagation();
+  })
+
 })();
