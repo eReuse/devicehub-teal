@@ -282,13 +282,13 @@ async function processSelectedDevices() {
                         this.notifyUser("Fail to remove devices from selected lot/s", error.responseJSON.message, true);
                     }
                 }
-
                 requestCount += 1
                 if (requestCount == this.list.length) {
                     this.reRenderTable();
-                    this.list = []
+                    this.list = [];
                 }
             })
+            document.getElementById("dropDownLotsSelector").classList.remove("show");
         }
 
         /**
