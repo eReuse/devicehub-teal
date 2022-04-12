@@ -104,7 +104,7 @@ class ProfileForm(FlaskForm):
             self.last_name.data = user.last_name
             self.email.data = user.email
             self.telephone.data = user.telephone
-            self.country.data = user.country
+            self.country.data = user.country.name
 
     def save(self, commit=True):
         agent = g.user.individual
@@ -143,18 +143,15 @@ class PasswordForm(FlaskForm):
             return False
 
         if not g.user.check_password(self.password.data):
-            self.password.errors = ['Incorrect password']
             return False
 
         if self.newpassword.data != self.renewpassword.data:
-            self.newpassword.errors = ['Is not the same password']
-            self.renewpassword.errors = ['Is not the same password']
             return False
 
         return True
 
     def save(self, commit=True):
-        g.user.password = generate_password_hash(self.newpassword.data)
+        g.user.password = self.newpassword.data
 
         db.session.add(g.user)
         if commit:

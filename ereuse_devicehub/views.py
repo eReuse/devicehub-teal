@@ -81,7 +81,6 @@ class UserPasswordView(View):
 
     def dispatch_request(self):
         form = PasswordForm()
-        # import pdb; pdb.set_trace()
         db.session.commit()
         if form.validate_on_submit():
             form.save(commit=False)
