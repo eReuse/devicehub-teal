@@ -264,8 +264,12 @@ class UploadSnapshotForm(FlaskForm, SnapshotMix):
             except ValidationError as err:
                 txt = "{}".format(err)
                 uuid = snapshot_json.get('uuid')
+                wbid = snapshot_json.get('wbid')
                 error = SnapshotErrors(
-                    description=txt, snapshot_uuid=uuid, severity=Severity.Error
+                    description=txt,
+                    snapshot_uuid=uuid,
+                    severity=Severity.Error,
+                    wbid=wbid,
                 )
                 error.save(commit=True)
                 self.result[filename] = 'Error'
