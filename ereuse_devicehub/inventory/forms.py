@@ -249,6 +249,7 @@ class UploadSnapshotForm(FlaskForm, SnapshotMix):
             return
         schema = SnapshotSchema()
         schema_lite = Snapshot_lite()
+        devices = []
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         for filename, snapshot_json in self.snapshots:
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
@@ -272,6 +273,7 @@ class UploadSnapshotForm(FlaskForm, SnapshotMix):
 
             response = self.build(snapshot_json)
             db.session.add(response)
+            devices.append(response.device)
 
             if hasattr(response, 'type'):
                 self.result[filename] = 'Ok'
@@ -282,7 +284,7 @@ class UploadSnapshotForm(FlaskForm, SnapshotMix):
 
         if commit:
             db.session.commit()
-        return self.result
+        return self.result, devices
 
 
 class NewDeviceForm(FlaskForm):

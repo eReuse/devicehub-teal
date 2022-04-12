@@ -273,10 +273,12 @@ class UploadSnapshotView(GenericMixView):
             'version': __version__,
         }
         if form.validate_on_submit():
-            snapshot = form.save(commit=False)
+            # import pdb; pdb.set_trace()
+            snapshot, devices = form.save(commit=False)
             if lot_id:
                 lot = lots.filter(Lot.id == lot_id).one()
-                lot.devices.add(snapshot.device)
+                for dev in devices:
+                    lot.devices.add(dev)
                 db.session.add(lot)
             db.session.commit()
 
