@@ -8,6 +8,7 @@ ml).
 ## master
 
 ## testing
+- [changed] #219 add reactivit to device lots
 - [changed] #211 Print DHID-QR label for selected devices.
 - [fixed] #214 Login workflow
 
