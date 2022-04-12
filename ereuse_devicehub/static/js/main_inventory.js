@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).ready(function() {
     var show_allocate_form = $("#allocateModal").data('show-action-form');
     var show_datawipe_form = $("#datawipeModal").data('show-action-form');
     var show_trade_form = $("#tradeLotModal").data('show-action-form');
@@ -71,9 +71,9 @@ function removeLot() {
 
 function removeTag() {
     var devices = $(".deviceSelect").filter(':checked');
-    var devices_id = $.map(devices, function (x) { return $(x).attr('data') });
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
     if (devices_id.length == 1) {
-        var url = "/inventory/tag/devices/" + devices_id[0] + "/del/";
+        var url = "/inventory/tag/devices/"+devices_id[0]+"/del/";
         window.location.href = url;
     } else {
         $("#unlinkTagAlertModal").click();
@@ -82,7 +82,7 @@ function removeTag() {
 
 function addTag() {
     var devices = $(".deviceSelect").filter(':checked');
-    var devices_id = $.map(devices, function (x) { return $(x).attr('data') });
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
     if (devices_id.length == 1) {
         $("#addingTagModal .pol").hide();
         $("#addingTagModal .btn-primary").show();
@@ -146,8 +146,8 @@ function get_device_list() {
     $("#actionModal .devices-count").html(devices_count);
 
     /* Insert the correct value in the input devicesList */
-    var devices_id = $.map(devices, function (x) { return $(x).attr('data') }).join(",");
-    $.map($(".devicesList"), function (x) {
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data')}).join(",");
+    $.map($(".devicesList"), function(x) {
         $(x).val(devices_id);
     });
 
@@ -166,194 +166,219 @@ function get_device_list() {
         return typ + " " + manuf + " " + dhid;
     });
 
-    description = $.map(list_devices, function (x) { return x }).join(", ");
+    description = $.map(list_devices, function(x) { return x }).join(", ");
     $(".enumeration-devices").html(description);
 }
 
 function export_file(type_file) {
     var devices = $(".deviceSelect").filter(':checked');
-    var devices_id = $.map(devices, function (x) { return $(x).attr('data-device-dhid') }).join(",");
-    if (devices_id) {
-        var url = "/inventory/export/" + type_file + "/?ids=" + devices_id;
+    var devices_id = $.map(devices, function(x) { return $(x).attr('data-device-dhid')}).join(",");
+    if (devices_id){
+        var url = "/inventory/export/"+type_file+"/?ids="+devices_id;
         window.location.href = url;
     } else {
         $("#exportAlertModal").click();
     }
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-    var searchForm = document.getElementById("SearchForm")
-    var inputSearch = document.querySelector("#SearchForm > input")
-    var doSearch = true
 
-    const Api = {
-        /**
-         * get lots id
-         * @returns get lots
-         */
-        async get_lots() {
-            var request = await this.doRequest(API_URLS.lots, "GET", null)
-            if (request != undefined) return request.items
-            throw request
-        },
+/**
+ * Reactive lots button
+ */
+async function processSelectedDevices() {
+    class Actions {
+
+        constructor() {
+            this.list = []; // list of petitions of requests @item --> {type: ["Remove" | "Add"], "LotID": string, "devices": number[]}
+        }
 
         /**
-         * Get filtered devices info
-         * @param {number[]} ids devices ids
-         * @returns full detailed device list
+         * Manage the actions that will be performed when applying the changes
+         * @param {*} ev event (Should be a checkbox type)
+         * @param {string} lotID lot id
+         * @param {number} deviceID device id
          */
-        async get_devices(id) {
-            var request = await this.doRequest(API_URLS.devices + '?filter={"devicehub_id": ["' + id + '"]}', "GET", null)
-            if (request != undefined) return request.items
-            throw request
-        },
+        manage(event, lotID, deviceListID) {
+            event.preventDefault();
+            const indeterminate = event.srcElement.indeterminate;
+            const checked = !event.srcElement.checked;
+
+            var found = this.list.filter(list => list.lotID == lotID)[0];
+            var foundIndex = found != undefined ? this.list.findLastIndex(x => x.lotID == found.lotID) : -1;
+
+            if (checked) {
+                if (found != undefined && found.type == "Remove") {
+                    if (found.isFromIndeterminate == true) {
+                        found.type = "Add";
+                        this.list[foundIndex] = found;
+                    } else {
+                        this.list = this.list.filter(list => list.lotID != lotID);
+                    }
+                } else {
+                    this.list.push({ type: "Add", lotID: lotID, devices: deviceListID, isFromIndeterminate: indeterminate });
+                }
+            } else {
+                if (found != undefined && found.type == "Add") {
+                    if (found.isFromIndeterminate == true) {
+                        found.type = "Remove";
+                        this.list[foundIndex] = found;
+                    } else {
+                        this.list = this.list.filter(list => list.lotID != lotID);
+                    }
+                } else {
+                    this.list.push({ type: "Remove", lotID: lotID, devices: deviceListID, isFromIndeterminate: indeterminate });
+                }
+            }
+
+            if (this.list.length > 0) {
+                document.getElementById("ApplyDeviceLots").classList.remove("disabled");
+            } else {
+                document.getElementById("ApplyDeviceLots").classList.add("disabled");
+            }
+        }
 
         /**
-         * 
-         * @param {string} url URL to be requested
-         * @param {String} type Action type
-         * @param {String | Object} body body content
-         * @returns {Object[]}
+         * Creates notification to give feedback to user
+         * @param {string} title notification title
+         * @param {string | null} toastText notification text
+         * @param {boolean} isError defines if a toast is a error
          */
-        async doRequest(url, type, body) {
-            var result;
-            try {
-                result = await $.ajax({
-                    url: url,
-                    type: type,
-                    headers: {
-                        "Authorization": API_URLS.Auth_Token
-                    },
-                    body: body
-                });
-                return result
-            } catch (error) {
-                console.error(error)
-                throw error
+        notifyUser(title, toastText, isError) {
+            let toast = document.createElement("div");
+            toast.classList = "alert alert-dismissible fade show " + (isError ? "alert-danger" : "alert-success");
+            toast.attributes["data-autohide"] = !isError;
+            toast.attributes["role"] = "alert";
+            toast.style = "margin-left: auto; width: fit-content;";
+            toast.innerHTML = `<strong>${title}</strong><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+            if (toastText && toastText.length > 0) {
+                toast.innerHTML += `<br>${toastText}`;
+            }
+
+            document.getElementById("NotificationsContainer").appendChild(toast);
+            if (!isError) {
+                setTimeout(() => toast.classList.remove("show"), 3000);
+            }
+            setTimeout(() => document.getElementById("NotificationsContainer").innerHTML == "", 3500);
+        }
+
+        /**
+         * Get actions and execute call request to add or remove devices from lots
+         */
+        doActions() {
+            var requestCount = 0; // This is for count all requested api count, to perform reRender of table device list
+            this.list.forEach(async action => {
+                if (action.type == "Add") {
+                    try {
+                        await Api.devices_add(action.lotID, action.devices);
+                        this.notifyUser("Devices sucefully aded to selected lot/s", "", false);
+                    } catch (error) {
+                        this.notifyUser("Failed to add devices to selected lot/s", error.responseJSON.message, true);
+                    }
+                } else if (action.type == "Remove") {
+                    try {
+                        await Api.devices_remove(action.lotID, action.devices);
+                        this.notifyUser("Devices sucefully removed from selected lot/s", "", false);
+                    } catch (error) {
+                        this.notifyUser("Fail to remove devices from selected lot/s", error.responseJSON.message, true);
+                    }
+                }
+                requestCount += 1
+                if (requestCount == this.list.length) {
+                    this.reRenderTable();
+                    this.list = [];
+                }
+            })
+            document.getElementById("dropDownLotsSelector").classList.remove("show");
+        }
+
+        /**
+         * Re-render list in table
+         */
+        async reRenderTable() {
+            var newRequest = await Api.doRequest(window.location)
+
+            var tmpDiv = document.createElement("div")
+            tmpDiv.innerHTML = newRequest
+
+            var oldTable = Array.from(document.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
+            var newTable = Array.from(tmpDiv.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
+
+            for (let i = 0; i < oldTable.length; i++) {
+                if (!newTable.includes(oldTable[i])) {
+                    // variable from device_list.html --> See: ereuse_devicehub\templates\inventory\device_list.html (Ln: 411)
+                    table.rows().remove(i)
+                }
             }
         }
     }
 
+    var eventClickActions;
 
+    /**
+     * Generates a list item with a correspondient checkbox state
+     * @param {String} lotID 
+     * @param {String} lotName 
+     * @param {Array<number>} selectedDevicesIDs
+     * @param {HTMLElement} target
+     */
+    function templateLot(lotID, lot, selectedDevicesIDs, elementTarget, actions) {
+        elementTarget.innerHTML = ""
 
-    searchForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-    })
+        var htmlTemplate = `<input class="form-check-input" type="checkbox" id="${lotID}" style="width: 20px; height: 20px; margin-right: 7px;">
+            <label class="form-check-label" for="${lotID}">${lot.name}</label>`;
 
-    let timeoutHandler = setTimeout(() => { }, 1)
-    let dropdownList = document.getElementById("dropdown-search-list")
-    let defaultEmptySearch = document.getElementById("dropdown-search-list").innerHTML
+        var existLotList = selectedDevicesIDs.map(selected => lot.devices.includes(selected));
 
+        var doc = document.createElement('li');
+        doc.innerHTML = htmlTemplate;
 
-    inputSearch.addEventListener("input", (e) => {
-        clearTimeout(timeoutHandler)
-        let searchText = e.target.value
-        if (searchText == '') {
-            document.getElementById("dropdown-search-list").innerHTML = defaultEmptySearch;
-            return
+        if (selectedDevicesIDs.length <= 0) {
+            doc.children[0].disabled = true;
+        } else if (existLotList.every(value => value == true)) {
+            doc.children[0].checked = true;
+        } else if (existLotList.every(value => value == false)) {
+            doc.children[0].checked = false;
+        } else {
+            doc.children[0].indeterminate = true;
         }
 
-        let resultCount = 0;
-        function searchCompleted() {
-            resultCount++;
-            if (resultCount < 2 && document.getElementById("dropdown-search-list").children.length > 0) {
-                setTimeout(() => {
-                    document.getElementById("dropdown-search-list").innerHTML = `
-                <li id="deviceSearchLoader" class="dropdown-item">
-                <i class="bi bi-x-lg"></i>
-                        <span style="margin-right: 10px">Nothing found</span>
-                </li>`
-                }, 100)
-            }
-        }
-        
-        timeoutHandler = setTimeout(async () => {
-            dropdownList.innerHTML = `
-                <li id="deviceSearchLoader" class="dropdown-item">
-                    <i class="bi bi-laptop"></i>
-                    <div class="spinner-border spinner-border-sm" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </li>
-                <li id="lotSearchLoader" class="dropdown-item">
-                    <i class="bi bi-folder2"></i>
-                    <div class="spinner-border spinner-border-sm" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </li>`;
+        doc.children[0].addEventListener('mouseup', (ev) => actions.manage(ev, lotID, selectedDevicesIDs));
+        elementTarget.append(doc);
+    }
 
+    var listHTML = $("#LotsSelector")
 
-            try {
-                Api.get_devices(searchText.toUpperCase()).then(devices => {
-                    dropdownList.querySelector("#deviceSearchLoader").style = "display: none"
+    // Get selected devices
+    var selectedDevicesIDs = $.map($(".deviceSelect").filter(':checked'), function (x) { return parseInt($(x).attr('data')) });
+    if (selectedDevicesIDs.length <= 0) {
+        listHTML.html('<li style="color: red; text-align: center">No devices selected</li>');
+        return;
+    }
 
-                    for (let i = 0; i < devices.length; i++) {
-                        const device = devices[i];
+    // Initialize Actions list, and set checkbox triggers
+    var actions = new Actions();
+    if (eventClickActions) {
+        document.getElementById("ApplyDeviceLots").removeEventListener(eventClickActions);
+    }
+    eventClickActions = document.getElementById("ApplyDeviceLots").addEventListener("click", () => actions.doActions());
+    document.getElementById("ApplyDeviceLots").classList.add("disabled");
 
-                        // See: ereuse_devicehub/resources/device/models.py
-                        var verboseName = `${device.type} ${device.manufacturer} ${device.model}`
+    try {
+        listHTML.html('<li style="text-align: center"><div class="spinner-border text-info" style="margin: auto" role="status"></div></li>')
+        var devices = await Api.get_devices(selectedDevicesIDs);
+        var lots = await Api.get_lots();
 
-                        const templateString = `
-                        <li>
-                            <a class="dropdown-item" href="${API_URLS.devices_detail.replace("ReplaceTEXT", device.devicehubID)}" style="display: flex; align-items: center;" href="#">
-                                <i class="bi bi-laptop"></i>
-                                <span style="margin-right: 10px">${verboseName}</span>
-                                <span class="badge bg-secondary" style="margin-left: auto;">${device.devicehubID}</span>
-                            </a>
-                        </li>`;
-                        dropdownList.innerHTML += templateString
-                        if (i == 4) { // Limit to 4 resullts
-                            break;
-                        }
-                    }
+        lots = lots.map(lot => {
+            lot.devices = devices
+                .filter(device => device.lots.filter(devicelot => devicelot.id == lot.id).length > 0)
+                .map(device => parseInt(device.id));
+            return lot;
+        })
 
-                    searchCompleted();
-                })
-            } catch (error) {
-                dropdownList.innerHTML += `
-                <li id="deviceSearchLoader" class="dropdown-item">
-                <i class="bi bi-x"></i>
-                    <div class="spinner-border spinner-border-sm" role="status">
-                        <span class="visually-hidden">Error searching devices</span>
-                    </div>
-                </li>`;
-                console.log(error);
-            }
-
-            try {
-                Api.get_lots().then(lots => {
-                    dropdownList.querySelector("#lotSearchLoader").style = "display: none"
-                    for (let i = 0; i < lots.length; i++) {
-                        const lot = lots[i];
-                        if (lot.name.toUpperCase().includes(searchText.toUpperCase())) {
-                            const templateString = `
-                            <li>
-                                <a class="dropdown-item" href="${API_URLS.lots_detail.replace("ReplaceTEXT", lot.id)}" style="display: flex; align-items: center;" href="#">
-                                    <i class="bi bi-folder2"></i>
-                                    <span style="margin-right: 10px">${lot.name}</span>
-                                </a>
-                            </li>`;
-                            dropdownList.innerHTML += templateString
-                            if (i == 4) { // Limit to 4 resullts
-                                break;
-                            }
-                        }
-                    }
-                    searchCompleted();
-                })
-
-            } catch (error) {
-                dropdownList.innerHTML += `
-                <li id="deviceSearchLoader" class="dropdown-item">
-                <i class="bi bi-x"></i>
-                    <div class="spinner-border spinner-border-sm" role="status">
-                        <span class="visually-hidden">Error searching lots</span>
-                    </div>
-                </li>`;
-                console.log(error);
-            }
-        }, 1000)
-    })
-
-
-})
+        listHTML.html('');
+        lots.forEach(lot => templateLot(lot.id, lot, selectedDevicesIDs, listHTML, actions));
+    } catch (error) {
+        console.log(error);
+        listHTML.html('<li style="color: red; text-align: center">Error feching devices and lots<br>(see console for more details)</li>');
+    }
+}

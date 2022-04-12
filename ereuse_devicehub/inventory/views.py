@@ -16,7 +16,6 @@ from ereuse_devicehub.inventory.forms import (
     AllocateForm,
     DataWipeForm,
     FilterForm,
-    LotDeviceForm,
     LotForm,
     NewActionForm,
     NewDeviceForm,
@@ -109,7 +108,6 @@ class DeviceListMix(GenericMixView):
         self.context = {
             'devices': devices,
             'lots': lots,
-            'form_lot_device': LotDeviceForm(),
             'form_tag_device': TagDeviceForm(),
             'form_new_action': form_new_action,
             'form_new_allocate': form_new_allocate,
@@ -151,46 +149,6 @@ class DeviceDetailView(GenericMixView):
             'version': __version__,
         }
         return flask.render_template(self.template_name, **context)
-
-
-class LotDeviceAddView(View):
-    methods = ['POST']
-    decorators = [login_required]
-    template_name = 'inventory/device_list.html'
-
-    def dispatch_request(self):
-        form = LotDeviceForm()
-        if form.validate_on_submit():
-            form.save(commit=False)
-            messages.success(
-                'Add devices to lot "{}" successfully!'.format(form._lot.name)
-            )
-            db.session.commit()
-        else:
-            messages.error('Error adding devices to lot!')
-
-        next_url = request.referrer or url_for('inventory.devicelist')
-        return flask.redirect(next_url)
-
-
-class LotDeviceDeleteView(View):
-    methods = ['POST']
-    decorators = [login_required]
-    template_name = 'inventory/device_list.html'
-
-    def dispatch_request(self):
-        form = LotDeviceForm()
-        if form.validate_on_submit():
-            form.remove(commit=False)
-            messages.success(
-                'Remove devices from lot "{}" successfully!'.format(form._lot.name)
-            )
-            db.session.commit()
-        else:
-            messages.error('Error removing devices from lot!')
-
-        next_url = request.referrer or url_for('inventory.devicelist')
-        return flask.redirect(next_url)
 
 
 class LotCreateView(GenericMixView):
@@ -606,12 +564,6 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/lot/<string:lot_id>/device/', view_func=DeviceListView.as_view('lotdevicelist')
-)
-devices.add_url_rule(
-    '/lot/devices/add/', view_func=LotDeviceAddView.as_view('lot_devices_add')
-)
-devices.add_url_rule(
-    '/lot/devices/del/', view_func=LotDeviceDeleteView.as_view('lot_devices_del')
 )
 devices.add_url_rule('/lot/add/', view_func=LotCreateView.as_view('lot_add'))
 devices.add_url_rule(
