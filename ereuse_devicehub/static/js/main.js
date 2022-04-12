@@ -217,4 +217,39 @@
     }, 200);
   }
 
+  /**
+   * Select all functionality
+   */
+   var btnSelectAll = document.getElementById("SelectAllBTN");
+   var tableListCheckboxes = document.querySelectorAll(".deviceSelect");
+
+   function itemListCheckChanged(event) {
+       let isAllChecked = Array.from(tableListCheckboxes).map(itm => itm.checked);
+       if (isAllChecked.every(bool => bool == true)) {
+           btnSelectAll.checked = true;
+           btnSelectAll.indeterminate = false;
+       } else if (isAllChecked.every(bool => bool == false)) {
+           btnSelectAll.checked = false;
+           btnSelectAll.indeterminate = false;
+       } else {
+           btnSelectAll.indeterminate = true;
+       }
+   }
+   
+   tableListCheckboxes.forEach(item => {
+       item.addEventListener("click", itemListCheckChanged);
+   })
+
+   btnSelectAll.addEventListener("click", event => {
+       let checkedState = event.target.checked;
+       tableListCheckboxes.forEach(ckeckbox => ckeckbox.checked = checkedState);
+   })
+
+  /**
+   * Avoid hide dropdown when user clicked inside
+   */
+  document.getElementById("dropDownLotsSelector").addEventListener("click", event => {
+    event.stopPropagation();
+  })
+
 })();
