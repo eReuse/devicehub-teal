@@ -24,7 +24,7 @@
               {% if form.form_errors %}
               <p class="text-danger">
                 {% for error in form.form_errors %}
-                {{ error }}<br />
+                {{ error }}<br/>
                 {% endfor %}
               </p>
               {% endif %}
@@ -35,8 +35,7 @@
 
               <div class="col-12">
                 <label for="yourEmail" class="form-label">Email</label>
-                <input type="email" name="email" class="form-control" id="yourEmail" required
-                  value="{{ form.email.data|default('', true) }}">
+                <input type="email" name="email" class="form-control" id="yourEmail" required value="{{ form.email.data|default('', true) }}">
                 <div class="invalid-feedback">Please enter your email.</div>
               </div>
 
