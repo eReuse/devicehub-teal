@@ -85,7 +85,7 @@ class User(UserMixin, Thing):
 
     @property
     def get_full_name(self):
-        if self.individual:
+        if self.individuals:
             return self.individual.get_full_name
 
         return self.email
