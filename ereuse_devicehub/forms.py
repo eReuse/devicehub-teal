@@ -12,6 +12,7 @@ from wtforms import (
 )
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.user.models import User
 
 COUNTRY = [(x.name, x.value) for x in Country]
@@ -100,6 +101,21 @@ class ProfileForm(FlaskForm):
             self.telephone.data = user.telephone
             if user.country:
                 self.country.data = user.country.name
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+        # import pdb; pdb.set_trace()
+        email = self.email.data
+        if email != g.user.individual.email:
+            if Agent.query.filter_by(email=email).first():
+                self.email.errors = ['You can not use this email.']
+                return False
+
+        return True
 
     def save(self, commit=True):
         agent = g.user.individual
