@@ -31,7 +31,6 @@ class Agent(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     type = Column(Unicode, nullable=False)
     name = Column(CIText())
-    last_name = Column(CIText())
     name.comment = """The name of the organization or person."""
     tax_id = Column(Unicode(length=STR_SM_SIZE), check_lower('tax_id'))
     tax_id.comment = """The Tax / Fiscal ID of the organization,
@@ -50,8 +49,6 @@ class Agent(Thing):
 
     @property
     def get_full_name(self):
-        if self.last_name:
-            return "{} {}".format(self.name, self.last_name)
         return self.name
 
     @declared_attr

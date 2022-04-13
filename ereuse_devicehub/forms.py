@@ -79,11 +79,6 @@ class ProfileForm(FlaskForm):
         [validators.Length(min=2, max=35)],
         render_kw={'class': "form-control"},
     )
-    last_name = StringField(
-        'Last name',
-        [validators.Length(min=2, max=35)],
-        render_kw={'class': "form-control"},
-    )
     email = StringField(
         'Email Address',
         [validators.Length(min=6, max=35)],
@@ -101,7 +96,6 @@ class ProfileForm(FlaskForm):
         super().__init__(*args, **kwargs)
         if user:
             self.name.data = user.name
-            self.last_name.data = user.last_name
             self.email.data = user.email
             self.telephone.data = user.telephone
             if user.country:
@@ -110,7 +104,6 @@ class ProfileForm(FlaskForm):
     def save(self, commit=True):
         agent = g.user.individual
         agent.name = self.name.data
-        agent.last_name = self.last_name.data
         agent.email = self.email.data
         agent.telephone = self.telephone.data
         agent.country = self.country.data
