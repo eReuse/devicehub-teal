@@ -108,7 +108,6 @@ class ProfileForm(FlaskForm):
         if not is_valid:
             return False
 
-        # import pdb; pdb.set_trace()
         email = self.email.data
         if email != g.user.individual.email:
             if Agent.query.filter_by(email=email).first():
