@@ -1,5 +1,6 @@
 from flask import g
 from flask_wtf import FlaskForm
+from teal.enums import Country
 from werkzeug.security import generate_password_hash
 from wtforms import (
     BooleanField,
@@ -11,7 +12,6 @@ from wtforms import (
 )
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.enums import Country
 from ereuse_devicehub.resources.user.models import User
 
 COUNTRY = [(x.name, x.value) for x in Country]
@@ -104,7 +104,8 @@ class ProfileForm(FlaskForm):
             self.last_name.data = user.last_name
             self.email.data = user.email
             self.telephone.data = user.telephone
-            self.country.data = user.country.name
+            if user.country:
+                self.country.data = user.country.name
 
     def save(self, commit=True):
         agent = g.user.individual
