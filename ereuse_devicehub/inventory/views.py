@@ -46,11 +46,6 @@ class DeviceListMix(GenericMixView):
         form_filter = FilterForm(lots, lot_id)
         devices = form_filter.search()
         lot = None
-        tags = (
-            Tag.query.filter(Tag.owner_id == current_user.id)
-            .filter(Tag.device_id.is_(None))
-            .order_by(Tag.id.asc())
-        )
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
@@ -67,10 +62,6 @@ class DeviceListMix(GenericMixView):
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
             form_new_trade = ''
-        action_devices = form_new_action.devices.data
-        list_devices = []
-        if action_devices:
-            list_devices.extend([int(x) for x in action_devices.split(",")])
 
         self.context.update(
             {
@@ -83,12 +74,26 @@ class DeviceListMix(GenericMixView):
                 'form_filter': form_filter,
                 'form_print_labels': PrintLabelsForm(),
                 'lot': lot,
-                'tags': tags,
-                'list_devices': list_devices,
+                'tags': self.get_user_tags(),
+                'list_devices': self.get_selected_devices(form_new_action),
             }
         )
 
         return self.context
+
+    def get_user_tags(self):
+        return (
+            Tag.query.filter(Tag.owner_id == current_user.id)
+            .filter(Tag.device_id.is_(None))
+            .order_by(Tag.id.asc())
+        )
+
+    def get_selected_devices(self, action_form):
+        """Retrieve selected devices (when action form is submited)"""
+        action_devices = action_form.devices.data
+        if action_devices:
+            return [int(x) for x in action_devices.split(",")]
+        return []
 
 
 class DeviceListView(DeviceListMix):
