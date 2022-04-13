@@ -1,4 +1,5 @@
 import io
+import json
 import uuid
 import jwt
 import ereuse_utils
@@ -22,6 +23,7 @@ from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.user.models import Session
 from ereuse_devicehub.resources.enums import SessionType
+from ereuse_devicehub.api.views import api
 
 STARTT = datetime(year=2000, month=1, day=1, hour=1)
 """A dummy starting time to use in tests."""
@@ -68,6 +70,7 @@ def app(request, _app: Devicehub) -> Devicehub:
                      tag_token=uuid.UUID('52dacef0-6bcb-4919-bfed-f10d2c96ecee'),
                      erase=False,
                      common=True)
+        _app.register_blueprint(api)
 
     with _app.app_context():
         try:
@@ -164,6 +167,11 @@ def yaml2json(name: str) -> dict:
 def file(name: str) -> dict:
     """Opens and parses a YAML file from the ``files`` subdir. And decode"""
     return json_encode(yaml2json(name))
+
+
+def file_json(name):
+    with Path(__file__).parent.joinpath('files').joinpath(name).open() as f:
+        return json.loads(f.read())
 
 
 def file_workbench(name: str) -> dict:

@@ -1,0 +1,9 @@
+HZ = hertz = hz
+KHZ = kilohertz = khz
+MHZ = megahertz = mhz
+GHZ = gigahertz = ghz
+B = byte = b = UNIT = unit
+KB = kilobyte = kb = K = k
+MB = megabyte = mb = M = m
+GB = gigabyte = gb = G = g
+T = terabyte = tb = T = t

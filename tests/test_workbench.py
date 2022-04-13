@@ -41,7 +41,6 @@ def test_workbench_server_condensed(user: UserClient):
         ('BenchmarkProcessorSysbench', cpu_id),
         ('StressTest', pc_id),
         ('EraseSectors', ssd_id),
-        ('EreusePrice', pc_id),
         ('BenchmarkRamSysbench', pc_id),
         ('BenchmarkProcessor', cpu_id),
         ('Install', ssd_id),
@@ -49,7 +48,6 @@ def test_workbench_server_condensed(user: UserClient):
         ('BenchmarkDataStorage', ssd_id),
         ('BenchmarkDataStorage', hdd_id),
         ('TestDataStorage', ssd_id),
-        ('RateComputer', pc_id)
     }
     assert snapshot['closed']
     assert snapshot['severity'] == 'Info'
@@ -61,10 +59,6 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['networkSpeeds'] == [1000, 58]
     assert device['processorModel'] == device['components'][3]['model'] == 'p1-1ml'
     assert device['ramSize'] == 2048, 'There are 3 RAM: 2 x 1024 and 1 None sizes'
-    assert device['rate']['closed']
-    assert device['rate']['severity'] == 'Info'
-    assert device['rate']['rating'] == 1
-    assert device['rate']['type'] == RateComputer.t
     # TODO JN why haven't same order in actions on each execution?
     assert any([ac['type'] in [BenchmarkProcessor.t, BenchmarkRamSysbench.t] for ac in device['actions']])
     assert 'tag1' in [x['id'] for x in device['tags']]
@@ -145,8 +139,6 @@ def test_real_hp_11(user: UserClient):
     assert pc['hid'] == 'desktop-hewlett-packard-hp_compaq_8100_elite_sff-czc0408yjg-6c:62:6d:81:22:9f'
     assert pc['chassis'] == 'Tower'
     assert set(e['type'] for e in snapshot['actions']) == {
-        'EreusePrice',
-        'RateComputer',
         'BenchmarkDataStorage',
         'BenchmarkProcessor',
         'BenchmarkProcessorSysbench',
@@ -156,7 +148,8 @@ def test_real_hp_11(user: UserClient):
         'TestBios',
         'VisualTest'
     }
-    assert len(list(e['type'] for e in snapshot['actions'])) == 10
+
+    assert len(list(e['type'] for e in snapshot['actions'])) == 8
     assert pc['networkSpeeds'] == [1000, None], 'Device has no WiFi'
     assert pc['processorModel'] == 'intel core i3 cpu 530 @ 2.93ghz'
     assert pc['ramSize'] == 8192
@@ -175,6 +168,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     """Checks the values of the device, components,
     actions and their relationships of a real pc.
     """
+    # import pdb; pdb.set_trace()
     s = file('real-eee-1001pxd.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     pc, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
@@ -186,19 +180,10 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert pc['hid'] == 'laptop-asustek_computer_inc-1001pxd-b8oaas048286-14:da:e9:42:f6:7c'
     assert len(pc['tags']) == 1
     assert pc['networkSpeeds'] == [100, 0], 'Although it has WiFi we do not know the speed'
-    assert pc['rate']
-    rate = pc['rate']
     # assert pc['actions'][0]['appearanceRange'] == 'A'
     # assert pc['actions'][0]['functionalityRange'] == 'B'
     # TODO add appearance and functionality Range in device[rate]
 
-    assert rate['processorRange'] == 'LOW'
-    assert rate['ramRange'] == 'LOW'
-    assert rate['ratingRange'] == 'LOW'
-    assert rate['ram'] == 1.53
-    # TODO add camelCase instead of snake_case
-    assert rate['dataStorage'] == 3.76
-    assert rate['type'] == 'RateComputer'
     components = snapshot['components']
     wifi = components[0]
     assert wifi['hid'] == 'networkadapter-qualcomm_atheros-' \
@@ -232,7 +217,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert em.BenchmarkRamSysbench.t in action_types
     assert em.StressTest.t in action_types
     assert em.Snapshot.t in action_types
-    assert len(actions) == 8
+    assert len(actions) == 6
     gpu = components[3]
     assert gpu['model'] == 'atom processor d4xx/d5xx/n4xx/n5xx integrated graphics controller'
     assert gpu['manufacturer'] == 'intel corporation'
@@ -242,7 +227,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert em.BenchmarkRamSysbench.t in action_types
     assert em.StressTest.t in action_types
     assert em.Snapshot.t in action_types
-    assert len(action_types) == 6
+    assert len(action_types) == 4
     sound = components[4]
     assert sound['model'] == 'nm10/ich7 family high definition audio controller'
     sound = components[5]
@@ -264,7 +249,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert em.TestDataStorage.t in action_types
     assert em.EraseBasic.t in action_types
     assert em.Snapshot.t in action_types
-    assert len(action_types) == 9
+    assert len(action_types) == 7
     erase = next(e for e in hdd['actions'] if e['type'] == em.EraseBasic.t)
     assert erase['endTime']
     assert erase['startTime']

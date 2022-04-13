@@ -3,8 +3,10 @@ import json
 from json.decoder import JSONDecodeError
 
 from boltons.urlutils import URL
+from flask import current_app as app
 from flask import g, request
 from flask_wtf import FlaskForm
+from marshmallow import ValidationError
 from sqlalchemy import or_
 from sqlalchemy.util import OrderedSet
 from wtforms import (
@@ -25,14 +27,19 @@ from wtforms import (
 from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import RateComputer, Snapshot, Trade
-from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
+from ereuse_devicehub.parser.models import SnapshotErrors
+from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
+from ereuse_devicehub.parser.schemas import Snapshot_lite
+from ereuse_devicehub.resources.action.models import Snapshot, Trade
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
-from ereuse_devicehub.resources.action.views.snapshot import move_json, save_json
+from ereuse_devicehub.resources.action.views.snapshot import (
+    SnapshotMix,
+    move_json,
+    save_json,
+)
 from ereuse_devicehub.resources.device.models import (
     SAI,
     Cellphone,
-    Computer,
     Device,
     Keyboard,
     MemoryCardReader,
@@ -43,12 +50,11 @@ from ereuse_devicehub.resources.device.models import (
 )
 from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.documents.models import DataWipeDocument
-from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
+from ereuse_devicehub.resources.enums import Severity
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
-from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 from ereuse_devicehub.resources.user.models import User
 
 DEVICES = {
@@ -135,7 +141,7 @@ class LotForm(FlaskForm):
         return self.instance
 
 
-class UploadSnapshotForm(FlaskForm):
+class UploadSnapshotForm(FlaskForm, SnapshotMix):
     snapshot = MultipleFileField('Select a Snapshot File', [validators.DataRequired()])
 
     def validate(self, extra_validators=None):
@@ -175,20 +181,47 @@ class UploadSnapshotForm(FlaskForm):
 
         return True
 
+    def is_wb_lite_snapshot(self, version: str) -> bool:
+        is_lite = False
+        if version in app.config['WORKBENCH_LITE']:
+            is_lite = True
+
+        return is_lite
+
     def save(self, commit=True):
         if any([x == 'Error' for x in self.result.values()]):
             return
-        # result = []
-        self.sync = Sync()
         schema = SnapshotSchema()
-        # self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
-        # TODO @cayop get correct var config
-        self.tmp_snapshots = '/tmp/'
+        schema_lite = Snapshot_lite()
+        devices = []
+        self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         for filename, snapshot_json in self.snapshots:
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
             snapshot_json.pop('debug', None)
-            snapshot_json = schema.load(snapshot_json)
+            version = snapshot_json.get('schema_api')
+            if self.is_wb_lite_snapshot(version):
+                self.snapshot_json = schema_lite.load(snapshot_json)
+                snapshot_json = ParseSnapshotLsHw(self.snapshot_json).snapshot_json
+
+            try:
+                snapshot_json = schema.load(snapshot_json)
+            except ValidationError as err:
+                txt = "{}".format(err)
+                uuid = snapshot_json.get('uuid')
+                wbid = snapshot_json.get('wbid')
+                error = SnapshotErrors(
+                    description=txt,
+                    snapshot_uuid=uuid,
+                    severity=Severity.Error,
+                    wbid=wbid,
+                )
+                error.save(commit=True)
+                self.result[filename] = 'Error'
+                continue
+
             response = self.build(snapshot_json)
+            db.session.add(response)
+            devices.append(response.device)
 
             if hasattr(response, 'type'):
                 self.result[filename] = 'Ok'
@@ -199,69 +232,7 @@ class UploadSnapshotForm(FlaskForm):
 
         if commit:
             db.session.commit()
-        return response
-
-    def build(self, snapshot_json):  # noqa: C901
-        # this is a copy adaptated from ereuse_devicehub.resources.action.views.snapshot
-        device = snapshot_json.pop('device')  # type: Computer
-        components = None
-        if snapshot_json['software'] == (
-            SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid
-        ):
-            components = snapshot_json.pop('components', None)
-            if isinstance(device, Computer) and device.hid:
-                device.add_mac_to_hid(components_snap=components)
-        snapshot = Snapshot(**snapshot_json)
-
-        # Remove new actions from devices so they don't interfere with sync
-        actions_device = set(e for e in device.actions_one)
-        device.actions_one.clear()
-        if components:
-            actions_components = tuple(
-                set(e for e in c.actions_one) for c in components
-            )
-            for component in components:
-                component.actions_one.clear()
-
-        assert not device.actions_one
-        assert all(not c.actions_one for c in components) if components else True
-        db_device, remove_actions = self.sync.run(device, components)
-
-        del device  # Do not use device anymore
-        snapshot.device = db_device
-        snapshot.actions |= remove_actions | actions_device  # Set actions to snapshot
-        # commit will change the order of the components by what
-        # the DB wants. Let's get a copy of the list so we preserve order
-        ordered_components = OrderedSet(x for x in snapshot.components)
-
-        # Add the new actions to the db-existing devices and components
-        db_device.actions_one |= actions_device
-        if components:
-            for component, actions in zip(ordered_components, actions_components):
-                component.actions_one |= actions
-                snapshot.actions |= actions
-
-        if snapshot.software == SnapshotSoftware.Workbench:
-            # Check ownership of (non-component) device to from current.user
-            if db_device.owner_id != g.user.id:
-                raise InsufficientPermission()
-            # Compute ratings
-            try:
-                rate_computer, price = RateComputer.compute(db_device)
-            except CannotRate:
-                pass
-            else:
-                snapshot.actions.add(rate_computer)
-                if price:
-                    snapshot.actions.add(price)
-        elif snapshot.software == SnapshotSoftware.WorkbenchAndroid:
-            pass  # TODO try except to compute RateMobile
-        # Check if HID is null and add Severity:Warning to Snapshot
-        if snapshot.device.hid is None:
-            snapshot.severity = Severity.Warning
-
-        db.session.add(snapshot)
-        return snapshot
+        return self.result, devices
 
 
 class NewDeviceForm(FlaskForm):

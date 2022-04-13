@@ -337,6 +337,7 @@ def test_export_computer_monitor(user: UserClient):
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)
+
     # Open fixture csv and transform to list
     with Path(__file__).parent.joinpath('files').joinpath('computer-monitor.csv').open() \
             as csv_file:
@@ -435,12 +436,14 @@ def test_report_devices_stock_control(user: UserClient, user2: UserClient):
         'Register in field is not a datetime'
 
     # Pop dates fields from csv lists to compare them
+    fixture_csv[1] = fixture_csv[1][0].split(";")
     fixture_csv[1] = fixture_csv[1][:5] + fixture_csv[1][6:]
     export_csv[1] = export_csv[1][:5] + export_csv[1][6:]
 
-    assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
+    export_header = [";".join(export_csv[0])]
+    assert fixture_csv[0] == export_header, 'Headers are not equal'
     assert fixture_csv[1] == export_csv[1], 'Computer information are not equal'
-    assert fixture_csv == export_csv
+    assert fixture_csv == [export_header, export_csv[1]]
 
 
 @pytest.mark.mvp

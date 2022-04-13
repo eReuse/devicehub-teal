@@ -8,6 +8,7 @@ import inflection
 @unique
 class SnapshotSoftware(Enum):
     """The software used to perform the Snapshot."""
+
     Workbench = 'Workbench'
     WorkbenchAndroid = 'WorkbenchAndroid'
     AndroidApp = 'AndroidApp'
@@ -36,6 +37,7 @@ class RatingRange(IntEnum):
     3. Medium.
     4. High.
     """
+
     VERY_LOW = 1
     LOW = 2
     MEDIUM = 3
@@ -69,6 +71,7 @@ class PriceSoftware(Enum):
 @unique
 class AppearanceRange(Enum):
     """Grades the imperfections that aesthetically affect the device, but not its usage."""
+
     Z = 'Z. The device is new'
     A = 'A. Is like new; without visual damage'
     B = 'B. Is in really good condition; small visual damage in difficult places to spot'
@@ -83,6 +86,7 @@ class AppearanceRange(Enum):
 @unique
 class FunctionalityRange(Enum):
     """Grades the defects of a device that affect its usage."""
+
     A = 'A. All the buttons works perfectly, no screen/camera defects and chassis without usage issues'
     B = 'B. There is a button difficult to press or unstable it, a screen/camera defect or chassis problem'
     C = 'C.	Chassis defects or multiple buttons don\'t work; broken or unusable it, some screen/camera defect'
@@ -95,6 +99,7 @@ class FunctionalityRange(Enum):
 @unique
 class BatteryHealthRange(Enum):
     """Grade the battery health status, depending on self report Android system"""
+
     A = 'A. The battery health is very good'
     B = 'B. Battery health is good'
     C = 'C.	Battery health is overheat / over voltage status but can stand the minimum duration'
@@ -109,6 +114,7 @@ class BatteryHealthRange(Enum):
 @unique
 class BiosAccessRange(Enum):
     """How difficult it has been to set the bios to boot from the network."""
+
     A = 'A. If by pressing a key you could access a boot menu with the network boot'
     B = 'B. You had to get into the BIOS, and in less than 5 steps you could set the network boot'
     C = 'C. Like B, but with more than 5 steps'
@@ -139,6 +145,7 @@ class ImageSoftware(Enum):
 @unique
 class ImageMimeTypes(Enum):
     """Supported image Mimetypes for Devicehub."""
+
     jpg = 'image/jpeg'
     png = 'image/png'
 
@@ -148,6 +155,7 @@ BOX_RATE_3 = 1, 3
 
 
 # After looking at own databases
+
 
 @unique
 class RamInterface(Enum):
@@ -163,6 +171,7 @@ class RamInterface(Enum):
     here for those cases where there is no more specific information.
     Please, try to always use DDRø-6 denominations.
     """
+
     SDRAM = 'SDRAM'
     DDR = 'DDR SDRAM'
     DDR2 = 'DDR2 SDRAM'
@@ -170,6 +179,7 @@ class RamInterface(Enum):
     DDR4 = 'DDR4 SDRAM'
     DDR5 = 'DDR5 SDRAM'
     DDR6 = 'DDR6 SDRAM'
+    LPDDR3 = 'LPDDR3'
 
     def __str__(self):
         return self.value
@@ -189,6 +199,7 @@ class DataStorageInterface(Enum):
     ATA = 'ATA'
     USB = 'USB'
     PCI = 'PCI'
+    NVME = 'NVME'
 
     def __str__(self):
         return self.value
@@ -211,6 +222,7 @@ class DisplayTech(Enum):
 @unique
 class ComputerChassis(Enum):
     """The chassis of a computer."""
+
     Tower = 'Tower'
     Docking = 'Docking'
     AllInOne = 'All in one'
@@ -235,6 +247,7 @@ class ReceiverRole(Enum):
     The role that the receiver takes in the reception;
     the meaning of the reception.
     """
+
     Intermediary = 'Generic user in the workflow of the device.'
     FinalUser = 'The user that will use the device.'
     CollectionPoint = 'A collection point.'
@@ -244,6 +257,7 @@ class ReceiverRole(Enum):
 
 class PrinterTechnology(Enum):
     """Technology of the printer."""
+
     Toner = 'Toner / Laser'
     Inkjet = 'Liquid inkjet'
     SolidInk = 'Solid ink'
@@ -260,6 +274,7 @@ class CameraFacing(Enum):
 @unique
 class BatteryHealth(Enum):
     """The battery health status as in Android."""
+
     Cold = 'Cold'
     Dead = 'Dead'
     Good = 'Good'
@@ -274,6 +289,7 @@ class BatteryTechnology(Enum):
     https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-power
     adding ``Alkaline``.
     """
+
     LiIon = 'Lithium-ion'
     NiCd = 'Nickel-Cadmium'
     NiMH = 'Nickel-metal hydride'
@@ -329,10 +345,11 @@ class PhysicalErasureMethod(Enum):
     and non able to be re-built.
     """
 
-    Shred = 'Reduction of the data-storage to the required certified ' \
-            'standard sizes.'
-    Disintegration = 'Reduction of the data-storage to smaller sizes ' \
-                     'than the certified standard ones.'
+    Shred = 'Reduction of the data-storage to the required certified ' 'standard sizes.'
+    Disintegration = (
+        'Reduction of the data-storage to smaller sizes '
+        'than the certified standard ones.'
+    )
 
     def __str__(self):
         return self.name
@@ -362,20 +379,21 @@ class ErasureStandards(Enum):
     def from_data_storage(cls, erasure) -> Set['ErasureStandards']:
         """Returns a set of erasure standards."""
         from ereuse_devicehub.resources.action import models as actions
+
         standards = set()
         if isinstance(erasure, actions.EraseSectors):
             with suppress(ValueError):
                 first_step, *other_steps = erasure.steps
-                if isinstance(first_step, actions.StepZero) \
-                        and all(isinstance(step, actions.StepRandom) for step in other_steps):
+                if isinstance(first_step, actions.StepZero) and all(
+                    isinstance(step, actions.StepRandom) for step in other_steps
+                ):
                     standards.add(cls.HMG_IS5)
         return standards
 
 
 @unique
 class TransferState(IntEnum):
-    """State of transfer for a given Lot of devices.
-    """
+    """State of transfer for a given Lot of devices."""
 
     """
     * Initial: No transfer action in place.
@@ -393,7 +411,7 @@ class TransferState(IntEnum):
 
     def __str__(self):
         return self.name
-    
+
 
 @unique
 class SessionType(IntEnum):

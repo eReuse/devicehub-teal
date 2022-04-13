@@ -14,42 +14,83 @@ import copy
 from collections import Iterable
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal, ROUND_HALF_EVEN, ROUND_UP
+from decimal import ROUND_HALF_EVEN, ROUND_UP, Decimal
 from typing import Optional, Set, Union
 from uuid import uuid4
+from dateutil.tz import tzutc
 
 import inflection
 import teal.db
 from boltons import urlutils
 from citext import CIText
-from flask import current_app as app, g
+from flask import current_app as app
+from flask import g
 from sortedcontainers import SortedSet
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Enum as DBEnum, \
-    Float, ForeignKey, Integer, Interval, JSON, Numeric, SmallInteger, Unicode, event, orm
+from sqlalchemy import JSON, BigInteger, Boolean, CheckConstraint, Column
+from sqlalchemy import Enum as DBEnum
+from sqlalchemy import (
+    Float,
+    ForeignKey,
+    Integer,
+    Interval,
+    Numeric,
+    SmallInteger,
+    Unicode,
+    event,
+    orm,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
-from teal.db import (CASCADE_OWN, INHERIT_COND, IP, POLYMORPHIC_ID,
-    POLYMORPHIC_ON, StrictVersionType, URL, check_lower, check_range, ResourceNotFound)
+from teal.db import (
+    CASCADE_OWN,
+    INHERIT_COND,
+    IP,
+    POLYMORPHIC_ID,
+    POLYMORPHIC_ON,
+    URL,
+    ResourceNotFound,
+    StrictVersionType,
+    check_lower,
+    check_range,
+)
 from teal.enums import Country, Currency, Subdivision
 from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Agent
-from ereuse_devicehub.resources.device.models import Component, Computer, DataStorage, Desktop, \
-    Device, Laptop, Server
-from ereuse_devicehub.resources.enums import AppearanceRange, BatteryHealth, BiosAccessRange, \
-    ErasureStandards, FunctionalityRange, PhysicalErasureMethod, PriceSoftware, \
-    R_NEGATIVE, R_POSITIVE, RatingRange, Severity, SnapshotSoftware, \
-    TestDataStorageLength
-from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
-from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.device.metrics import TradeMetrics
+from ereuse_devicehub.resources.device.models import (
+    Component,
+    Computer,
+    DataStorage,
+    Desktop,
+    Device,
+    Laptop,
+    Server,
+)
+from ereuse_devicehub.resources.enums import (
+    R_NEGATIVE,
+    R_POSITIVE,
+    AppearanceRange,
+    BatteryHealth,
+    BiosAccessRange,
+    ErasureStandards,
+    FunctionalityRange,
+    PhysicalErasureMethod,
+    PriceSoftware,
+    RatingRange,
+    Severity,
+    SnapshotSoftware,
+    TestDataStorageLength,
+)
+from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
+from ereuse_devicehub.resources.tradedocument.models import TradeDocument
+from ereuse_devicehub.resources.user.models import User
 
 
 class JoinedTableMixin:
@@ -59,17 +100,11 @@ class JoinedTableMixin:
         return Column(UUID(as_uuid=True), ForeignKey(Action.id), primary_key=True)
 
 
-_sorted_actions = {
-    'order_by': lambda: Action.end_time,
-    'collection_class': SortedSet
-}
+_sorted_actions = {'order_by': lambda: Action.end_time, 'collection_class': SortedSet}
 
 
 def sorted_actions_by(data):
-    return {
-        'order_by': lambda: data,
-        'collection_class': SortedSet
-    }
+    return {'order_by': lambda: data, 'collection_class': SortedSet}
 
 
 """For db.backref, return the actions sorted by end_time."""
@@ -80,6 +115,7 @@ class Action(Thing):
 
     This class extends `Schema's Action <https://schema.org/Action>`_.
     """
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     type = Column(Unicode, nullable=False)
     name = Column(CIText(), default='', nullable=False)
@@ -108,24 +144,28 @@ class Action(Thing):
     created is the where the system received the action.
     """
 
-    snapshot_id = Column(UUID(as_uuid=True), ForeignKey('snapshot.id',
-                                                        use_alter=True,
-                                                        name='snapshot_actions'))
-    snapshot = relationship('Snapshot',
-                            backref=backref('actions',
-                                            lazy=True,
-                                            cascade=CASCADE_OWN,
-                                            **_sorted_actions),
-                            primaryjoin='Action.snapshot_id == Snapshot.id')
+    snapshot_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey('snapshot.id', use_alter=True, name='snapshot_actions'),
+    )
+    snapshot = relationship(
+        'Snapshot',
+        backref=backref('actions', lazy=True, cascade=CASCADE_OWN, **_sorted_actions),
+        primaryjoin='Action.snapshot_id == Snapshot.id',
+    )
 
-    author_id = Column(UUID(as_uuid=True),
-                       ForeignKey(User.id),
-                       nullable=False,
-                       default=lambda: g.user.id)
+    author_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
     # todo compute the org
-    author = relationship(User,
-                          backref=backref('authored_actions', lazy=True, collection_class=set),
-                          primaryjoin=author_id == User.id)
+    author = relationship(
+        User,
+        backref=backref('authored_actions', lazy=True, collection_class=set),
+        primaryjoin=author_id == User.id,
+    )
     author_id.comment = """The user that recorded this action in the system.
 
     This does not necessarily has to be the person that produced
@@ -133,25 +173,31 @@ class Action(Thing):
     ``agent``.
     """
 
-    agent_id = Column(UUID(as_uuid=True),
-                      ForeignKey(Agent.id),
-                      nullable=False,
-                      default=lambda: g.user.individual.id)
+    agent_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey(Agent.id),
+        nullable=False,
+        default=lambda: g.user.individual.id,
+    )
     # todo compute the org
-    agent = relationship(Agent,
-                         backref=backref('actions_agent', lazy=True, **_sorted_actions),
-                         primaryjoin=agent_id == Agent.id)
+    agent = relationship(
+        Agent,
+        backref=backref('actions_agent', lazy=True, **_sorted_actions),
+        primaryjoin=agent_id == Agent.id,
+    )
     agent_id.comment = """The direct performer or driver of the action. e.g. John wrote a book.
 
     It can differ with the user that registered the action in the
     system, which can be in their behalf.
     """
 
-    components = relationship(Component,
-                              backref=backref('actions_components', lazy=True, **_sorted_actions),
-                              secondary=lambda: ActionComponent.__table__,
-                              order_by=lambda: Component.id,
-                              collection_class=OrderedSet)
+    components = relationship(
+        Component,
+        backref=backref('actions_components', lazy=True, **_sorted_actions),
+        secondary=lambda: ActionComponent.__table__,
+        order_by=lambda: Component.id,
+        collection_class=OrderedSet,
+    )
     components.comment = """The components that are affected by the action.
 
     When performing actions to parent devices their components are
@@ -165,9 +211,11 @@ class Action(Thing):
     that are added or removed.
     """
     parent_id = Column(BigInteger, ForeignKey(Computer.id))
-    parent = relationship(Computer,
-                          backref=backref('actions_parent', lazy=True, **_sorted_actions),
-                          primaryjoin=parent_id == Computer.id)
+    parent = relationship(
+        Computer,
+        backref=backref('actions_parent', lazy=True, **_sorted_actions),
+        primaryjoin=parent_id == Computer.id,
+    )
     parent_id.comment = """For actions that are performed to components,
     the device parent at that time.
 
@@ -178,7 +226,7 @@ class Action(Thing):
     __table_args__ = (
         db.Index('ix_id', id, postgresql_using='hash'),
         db.Index('ix_type', type, postgresql_using='hash'),
-        db.Index('ix_parent_id', parent_id, postgresql_using='hash')
+        db.Index('ix_parent_id', parent_id, postgresql_using='hash'),
     )
 
     @property
@@ -226,7 +274,7 @@ class Action(Thing):
         super().__init__(**kwargs)
 
     def __lt__(self, other):
-        return self.end_time < other.end_time
+        return self.end_time.replace(tzinfo=tzutc()) < other.end_time.replace(tzinfo=tzutc())
 
     def __str__(self) -> str:
         return '{}'.format(self.severity)
@@ -244,17 +292,20 @@ class JoinedWithOneDeviceMixin:
     # noinspection PyMethodParameters
     @declared_attr
     def id(cls):
-        return Column(UUID(as_uuid=True), ForeignKey(ActionWithOneDevice.id), primary_key=True)
+        return Column(
+            UUID(as_uuid=True), ForeignKey(ActionWithOneDevice.id), primary_key=True
+        )
 
 
 class ActionWithOneDevice(JoinedTableMixin, Action):
     device_id = Column(BigInteger, ForeignKey(Device.id), nullable=False)
-    device = relationship(Device,
-                          backref=backref('actions_one',
-                                          lazy=True,
-                                          cascade=CASCADE_OWN,
-                                          **_sorted_actions),
-                          primaryjoin=Device.id == device_id)
+    device = relationship(
+        Device,
+        backref=backref(
+            'actions_one', lazy=True, cascade=CASCADE_OWN, **_sorted_actions
+        ),
+        primaryjoin=Device.id == device_id,
+    )
 
     __table_args__ = (
         db.Index('action_one_device_id_index', device_id, postgresql_using='hash'),
@@ -278,11 +329,13 @@ class ActionWithOneDevice(JoinedTableMixin, Action):
 
 
 class ActionWithMultipleDevices(Action):
-    devices = relationship(Device,
-                           backref=backref('actions_multiple', lazy=True, **_sorted_actions),
-                           secondary=lambda: ActionDevice.__table__,
-                           order_by=lambda: Device.id,
-                           collection_class=OrderedSet)
+    devices = relationship(
+        Device,
+        backref=backref('actions_multiple', lazy=True, **_sorted_actions),
+        secondary=lambda: ActionDevice.__table__,
+        order_by=lambda: Device.id,
+        collection_class=OrderedSet,
+    )
 
     def __repr__(self) -> str:
         return '<{0.t} {0.id} {0.severity} devices={0.devices!r}>'.format(self)
@@ -290,29 +343,38 @@ class ActionWithMultipleDevices(Action):
 
 class ActionDevice(db.Model):
     device_id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
-    action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleDevices.id),
-                       primary_key=True)
-    device = relationship(Device,
-                          backref=backref('actions_device',
-                                          lazy=True),
-                          primaryjoin=Device.id == device_id)
-    action = relationship(Action,
-                          backref=backref('actions_device',
-                                          lazy=True),
-                          primaryjoin=Action.id == action_id)
-    created = db.Column(db.TIMESTAMP(timezone=True),
-                        nullable=False,
-                        index=True,
-                        server_default=db.text('CURRENT_TIMESTAMP'))
+    action_id = Column(
+        UUID(as_uuid=True), ForeignKey(ActionWithMultipleDevices.id), primary_key=True
+    )
+    device = relationship(
+        Device,
+        backref=backref('actions_device', lazy=True),
+        primaryjoin=Device.id == device_id,
+    )
+    action = relationship(
+        Action,
+        backref=backref('actions_device', lazy=True),
+        primaryjoin=Action.id == action_id,
+    )
+    created = db.Column(
+        db.TIMESTAMP(timezone=True),
+        nullable=False,
+        index=True,
+        server_default=db.text('CURRENT_TIMESTAMP'),
+    )
     created.comment = """When Devicehub created this."""
-    author_id = Column(UUID(as_uuid=True),
-                       ForeignKey(User.id),
-                       nullable=False,
-                       default=lambda: g.user.id)
+    author_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
     # todo compute the org
-    author = relationship(User,
-                          backref=backref('authored_actions_device', lazy=True, collection_class=set),
-                          primaryjoin=author_id == User.id)
+    author = relationship(
+        User,
+        backref=backref('authored_actions_device', lazy=True, collection_class=set),
+        primaryjoin=author_id == User.id,
+    )
 
     def __init__(self, **kwargs) -> None:
         self.created = kwargs.get('created', datetime.now(timezone.utc))
@@ -320,17 +382,22 @@ class ActionDevice(db.Model):
 
 
 class ActionWithMultipleTradeDocuments(ActionWithMultipleDevices):
-    documents = relationship(TradeDocument,
-                           backref=backref('actions_docs', lazy=True, **_sorted_actions),
-                           secondary=lambda: ActionTradeDocument.__table__,
-                           order_by=lambda: TradeDocument.id,
-                           collection_class=OrderedSet)
+    documents = relationship(
+        TradeDocument,
+        backref=backref('actions_docs', lazy=True, **_sorted_actions),
+        secondary=lambda: ActionTradeDocument.__table__,
+        order_by=lambda: TradeDocument.id,
+        collection_class=OrderedSet,
+    )
 
 
 class ActionTradeDocument(db.Model):
     document_id = Column(BigInteger, ForeignKey(TradeDocument.id), primary_key=True)
-    action_id = Column(UUID(as_uuid=True), ForeignKey(ActionWithMultipleTradeDocuments.id),
-                       primary_key=True)
+    action_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey(ActionWithMultipleTradeDocuments.id),
+        primary_key=True,
+    )
 
 
 class Add(ActionWithOneDevice):
@@ -350,21 +417,25 @@ class Remove(ActionWithOneDevice):
 
 
 class Allocate(JoinedTableMixin, ActionWithMultipleDevices):
-    """The act of allocate one list of devices to one person
-    """
+    """The act of allocate one list of devices to one person"""
+
     final_user_code = Column(CIText(), default='', nullable=True)
     final_user_code.comment = """This is a internal code for mainteing the secrets of the
         personal datas of the new holder"""
     transaction = Column(CIText(), default='', nullable=True)
-    transaction.comment = "The code used from the owner for relation with external tool."
+    transaction.comment = (
+        "The code used from the owner for relation with external tool."
+    )
     end_users = Column(Numeric(precision=4), check_range('end_users', 0), nullable=True)
 
 
 class Deallocate(JoinedTableMixin, ActionWithMultipleDevices):
-    """The act of deallocate one list of devices to one person of the system or not
-    """
-    transaction= Column(CIText(), default='', nullable=True)
-    transaction.comment = "The code used from the owner for relation with external tool."
+    """The act of deallocate one list of devices to one person of the system or not"""
+
+    transaction = Column(CIText(), default='', nullable=True)
+    transaction.comment = (
+        "The code used from the owner for relation with external tool."
+    )
 
 
 class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
@@ -387,6 +458,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     Devicehub automatically shows the standards that each erasure
     follows.
     """
+
     method = 'Shred'
     """The method or software used to destroy the data."""
 
@@ -427,32 +499,43 @@ class EraseSectors(EraseBasic):
     """A secured-way of erasing data storages, checking sector-by-sector
     the erasure, using `badblocks <https://en.wikipedia.org/wiki/Badblocks>`_.
     """
+
     method = 'Badblocks'
 
 
 class ErasePhysical(EraseBasic):
     """The act of physically destroying a data storage unit."""
+
     method = Column(DBEnum(PhysicalErasureMethod))
 
 
 class Step(db.Model):
-    erasure_id = Column(UUID(as_uuid=True),
-                        ForeignKey(EraseBasic.id, ondelete='CASCADE'),
-                        primary_key=True)
+    erasure_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey(EraseBasic.id, ondelete='CASCADE'),
+        primary_key=True,
+    )
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     num = Column(SmallInteger, primary_key=True)
     severity = Column(teal.db.IntEnum(Severity), default=Severity.Info, nullable=False)
     start_time = Column(db.TIMESTAMP(timezone=True), nullable=False)
     start_time.comment = Action.start_time.comment
-    end_time = Column(db.TIMESTAMP(timezone=True), CheckConstraint('end_time > start_time'),
-                      nullable=False)
+    end_time = Column(
+        db.TIMESTAMP(timezone=True),
+        CheckConstraint('end_time > start_time'),
+        nullable=False,
+    )
     end_time.comment = Action.end_time.comment
 
-    erasure = relationship(EraseBasic,
-                           backref=backref('steps',
-                                           cascade=CASCADE_OWN,
-                                           order_by=num,
-                                           collection_class=ordering_list('num')))
+    erasure = relationship(
+        EraseBasic,
+        backref=backref(
+            'steps',
+            cascade=CASCADE_OWN,
+            order_by=num,
+            collection_class=ordering_list('num'),
+        ),
+    )
 
     @property
     def elapsed(self):
@@ -573,6 +656,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     the actions in an ``actions`` property inside each affected ``component``
     or ``device``.
     """
+
     uuid = Column(UUID(as_uuid=True), unique=True)
     version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)
     software = Column(DBEnum(SnapshotSoftware), nullable=False)
@@ -580,6 +664,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     elapsed.comment = """For Snapshots made with Workbench, the total amount
     of time it took to complete.
     """
+    wbid = Column(CIText(), nullable=True)
 
     def get_last_lifetimes(self):
         """We get the lifetime and serial_number of the first disk"""
@@ -597,7 +682,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
                     continue
                 if not act.lifetime:
                     continue
-                data['lifetime'] = act.lifetime.total_seconds()/3600
+                data['lifetime'] = act.lifetime.total_seconds() / 3600
                 break
             hdds.append(data)
 
@@ -611,6 +696,7 @@ class Install(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """The action of installing an Operative System to a data
     storage unit.
     """
+
     elapsed = Column(Interval, nullable=False)
     address = Column(SmallInteger, check_range('address', 8, 256))
 
@@ -618,15 +704,15 @@ class Install(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 class SnapshotRequest(db.Model):
     id = Column(UUID(as_uuid=True), ForeignKey(Snapshot.id), primary_key=True)
     request = Column(JSON, nullable=False)
-    snapshot = relationship(Snapshot,
-                            backref=backref('request',
-                                            lazy=True,
-                                            uselist=False,
-                                            cascade=CASCADE_OWN))
+    snapshot = relationship(
+        Snapshot,
+        backref=backref('request', lazy=True, uselist=False, cascade=CASCADE_OWN),
+    )
 
 
 class Benchmark(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """The act of gauging the performance of a device."""
+
     elapsed = Column(Interval)
 
     @declared_attr
@@ -652,17 +738,20 @@ class BenchmarkMixin:
 
 class BenchmarkDataStorage(Benchmark):
     """Benchmarks the data storage unit reading and writing speeds."""
+
     id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
     read_speed = Column(Float(decimal_return_scale=2), nullable=False)
     write_speed = Column(Float(decimal_return_scale=2), nullable=False)
 
     def __str__(self) -> str:
         return 'Read: {0:.2f} MB/s, write: {0:.2f} MB/s'.format(
-                self.read_speed, self.write_speed)
+            self.read_speed, self.write_speed
+        )
 
 
 class BenchmarkWithRate(Benchmark):
     """The act of benchmarking a device with a single rate."""
+
     id = Column(UUID(as_uuid=True), ForeignKey(Benchmark.id), primary_key=True)
     rate = Column(Float, nullable=False)
 
@@ -676,6 +765,7 @@ class BenchmarkProcessor(BenchmarkWithRate):
     a reliable way of rating processors and we keep it for compatibility
     purposes.
     """
+
     pass
 
 
@@ -683,6 +773,7 @@ class BenchmarkProcessorSysbench(BenchmarkProcessor):
     """Benchmarks a processor by using the processor benchmarking
     utility of `sysbench <https://github.com/akopytov/sysbench>`_.
     """
+
     pass
 
 
@@ -690,6 +781,7 @@ class BenchmarkRamSysbench(BenchmarkWithRate):
     """Benchmarks a RAM by using the ram benchmarking
     utility of `sysbench <https://github.com/akopytov/sysbench>`_.
     """
+
     pass
 
 
@@ -742,6 +834,7 @@ class MeasureBattery(TestMixin, Test):
     * :attr:`Severity.Error`: whether the health are Dead, Overheat or OverVoltage.
     * :attr:`Severity.Warning`: whether the health are UnspecifiedValue or Cold.
     """
+
     size = db.Column(db.Integer, nullable=False)
     size.comment = """Maximum battery capacity, in mAh."""
     voltage = db.Column(db.Integer, nullable=False)
@@ -773,6 +866,7 @@ class TestDataStorage(TestMixin, Test):
     * :attr:`Severity.Warning`: if there is a significant chance for
       the data storage to fail in the following year.
     """
+
     length = Column(DBEnum(TestDataStorageLength), nullable=False)  # todo from type
     status = Column(Unicode(), check_lower('status'), nullable=False)
     lifetime = Column(Interval)
@@ -797,8 +891,12 @@ class TestDataStorage(TestMixin, Test):
             # Test finished successfully
             if not self.assessment:
                 self.severity = Severity.Error
-            elif self.current_pending_sector_count and self.current_pending_sector_count > 40 \
-                    or self.reallocated_sector_count and self.reallocated_sector_count > 10:
+            elif (
+                self.current_pending_sector_count
+                and self.current_pending_sector_count > 40
+                or self.reallocated_sector_count
+                and self.reallocated_sector_count > 10
+            ):
                 self.severity = Severity.Warning
 
     def __str__(self) -> str:
@@ -816,7 +914,7 @@ class TestDataStorage(TestMixin, Test):
     def power_on_hours(self):
         if not self.lifetime:
             return 0
-        return int(self.lifetime.total_seconds()/3600)
+        return int(self.lifetime.total_seconds() / 3600)
 
     @reported_uncorrectable_errors.setter
     def reported_uncorrectable_errors(self, value):
@@ -834,6 +932,7 @@ class StressTest(TestMixin, Test):
     * :attr:`Severity.Error`: whether failed StressTest.
     * :attr:`Severity.Warning`: if stress test are less than 5 minutes.
     """
+
     elapsed = Column(Interval, nullable=False)
 
     @validates('elapsed')
@@ -855,6 +954,7 @@ class TestAudio(TestMixin, Test):
     * :attr:`Severity.Error`: whether speaker or microphone variables fail.
     * :attr:`Severity.Warning`: .
     """
+
     _speaker = Column('speaker', Boolean)
     _speaker.comment = """Whether the speaker works as expected."""
     _microphone = Column('microphone', Boolean)
@@ -953,6 +1053,7 @@ class TestBios(TestMixin, Test):
     * :attr:`Severity.Error`: whether Bios beeps or access range is D or E.
     * :attr:`Severity.Warning`: whether access range is B or C.
     """
+
     beeps_power_on = Column(Boolean)
     beeps_power_on.comment = """Whether there are no beeps or error
     codes when booting up.
@@ -985,6 +1086,7 @@ class VisualTest(TestMixin, Test):
     * :attr:`Severity.Info`: whether appearance range is B or A and
                                 functionality range is A.
     """
+
     appearance_range = Column(DBEnum(AppearanceRange), nullable=True)
     appearance_range.comment = AppearanceRange.__doc__
     functionality_range = Column(DBEnum(FunctionalityRange), nullable=True)
@@ -994,8 +1096,7 @@ class VisualTest(TestMixin, Test):
 
     def __str__(self) -> str:
         return super().__str__() + '. Appearance {} and functionality {}'.format(
-            self.appearance_range,
-            self.functionality_range
+            self.appearance_range, self.functionality_range
         )
 
 
@@ -1006,22 +1107,29 @@ class Rate(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     * Appearance (A). Visual evaluation, surface deterioration.
     * Performance (Q). Components characteristics and components benchmarks.
     """
+
     N = 2
     """The number of significant digits for rates.
     Values are rounded and stored to it.
     """
 
-    _rating = Column('rating', Float(decimal_return_scale=N), check_range('rating', *R_POSITIVE))
+    _rating = Column(
+        'rating', Float(decimal_return_scale=N), check_range('rating', *R_POSITIVE)
+    )
     _rating.comment = """The rating for the content."""
     version = Column(StrictVersionType)
     version.comment = """The version of the software."""
-    _appearance = Column('appearance',
-                         Float(decimal_return_scale=N),
-                         check_range('appearance', *R_NEGATIVE))
+    _appearance = Column(
+        'appearance',
+        Float(decimal_return_scale=N),
+        check_range('appearance', *R_NEGATIVE),
+    )
     _appearance.comment = """Subjective value representing aesthetic aspects."""
-    _functionality = Column('functionality',
-                            Float(decimal_return_scale=N),
-                            check_range('functionality', *R_NEGATIVE))
+    _functionality = Column(
+        'functionality',
+        Float(decimal_return_scale=N),
+        check_range('functionality', *R_NEGATIVE),
+    )
     _functionality.comment = """Subjective value representing usage aspects."""
 
     @property
@@ -1088,19 +1196,28 @@ class RateComputer(RateMixin, Rate):
     It's the starting point for calculating the rate.
     Algorithm explained in v1.0 file.
     """
-    _processor = Column('processor',
-                        Float(decimal_return_scale=Rate.N),
-                        check_range('processor', *R_POSITIVE))
+
+    _processor = Column(
+        'processor',
+        Float(decimal_return_scale=Rate.N),
+        check_range('processor', *R_POSITIVE),
+    )
     _processor.comment = """The rate of the Processor."""
-    _ram = Column('ram', Float(decimal_return_scale=Rate.N), check_range('ram', *R_POSITIVE))
+    _ram = Column(
+        'ram', Float(decimal_return_scale=Rate.N), check_range('ram', *R_POSITIVE)
+    )
     _ram.comment = """The rate of the RAM."""
-    _data_storage = Column('data_storage',
-                           Float(decimal_return_scale=Rate.N),
-                           check_range('data_storage', *R_POSITIVE))
+    _data_storage = Column(
+        'data_storage',
+        Float(decimal_return_scale=Rate.N),
+        check_range('data_storage', *R_POSITIVE),
+    )
     _data_storage.comment = """'Data storage rate, like HHD, SSD.'"""
-    _graphic_card = Column('graphic_card',
-                           Float(decimal_return_scale=Rate.N),
-                           check_range('graphic_card', *R_POSITIVE))
+    _graphic_card = Column(
+        'graphic_card',
+        Float(decimal_return_scale=Rate.N),
+        check_range('graphic_card', *R_POSITIVE),
+    )
     _graphic_card.comment = 'Graphic card rate.'
 
     @property
@@ -1155,9 +1272,12 @@ class RateComputer(RateMixin, Rate):
     def compute(cls, device):
         """The act of compute general computer rate."""
         from ereuse_devicehub.resources.action.rate.v1_0 import rate_algorithm
+
         rate = rate_algorithm.compute(device)
         price = None
-        with suppress(InvalidRangeForPrice):  # We will have exception if range == VERY_LOW
+        with suppress(
+            InvalidRangeForPrice
+        ):  # We will have exception if range == VERY_LOW
             price = EreusePrice(rate)
         return rate, price
 
@@ -1179,7 +1299,9 @@ class Price(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     ROUND = ROUND_HALF_EVEN
     currency = Column(DBEnum(Currency), nullable=False)
     currency.comment = """The currency of this price as for ISO 4217."""
-    price = Column(Numeric(precision=19, scale=SCALE), check_range('price', 0), nullable=False)
+    price = Column(
+        Numeric(precision=19, scale=SCALE), check_range('price', 0), nullable=False
+    )
     price.comment = """The value."""
     software = Column(DBEnum(PriceSoftware))
     software.comment = """The software used to compute this price,
@@ -1192,18 +1314,20 @@ class Price(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     rating_id.comment = """The Rate used to auto-compute
     this price, if it has not been set manually.
     """
-    rating = relationship(Rate,
-                          backref=backref('price',
-                                          lazy=True,
-                                          cascade=CASCADE_OWN,
-                                          uselist=False),
-                          primaryjoin=Rate.id == rating_id)
+    rating = relationship(
+        Rate,
+        backref=backref('price', lazy=True, cascade=CASCADE_OWN, uselist=False),
+        primaryjoin=Rate.id == rating_id,
+    )
 
     def __init__(self, *args, **kwargs) -> None:
         if 'price' in kwargs:
             assert isinstance(kwargs['price'], Decimal), 'Price must be a Decimal'
-        super().__init__(currency=kwargs.pop('currency', app.config['PRICE_CURRENCY']), *args,
-                         **kwargs)
+        super().__init__(
+            currency=kwargs.pop('currency', app.config['PRICE_CURRENCY']),
+            *args,
+            **kwargs,
+        )
 
     @classmethod
     def to_price(cls, value: Union[Decimal, float], rounding=ROUND) -> Decimal:
@@ -1238,12 +1362,8 @@ class EreusePrice(Price):
     (represented by its last :class:`.Rate`) multiplied by a constants
     value agreed by a circuit or platform.
     """
-    MULTIPLIER = {
-        Computer: 20,
-        Desktop: 20,
-        Laptop: 30,
-        Server: 40
-    }
+
+    MULTIPLIER = {Computer: 20, Desktop: 20, Laptop: 30, Server: 40}
 
     class Type:
         def __init__(self, percentage: float, price: Decimal) -> None:
@@ -1259,11 +1379,11 @@ class EreusePrice(Price):
             Desktop: {
                 RatingRange.HIGH: {
                     STANDARD: (0.35125, 0.204375, 0.444375),
-                    WARRANTY2: (0.47425, 0.275875, 0.599875)
+                    WARRANTY2: (0.47425, 0.275875, 0.599875),
                 },
                 RatingRange.MEDIUM: {
                     STANDARD: (0.385, 0.2558333333, 0.3591666667),
-                    WARRANTY2: (0.539, 0.3581666667, 0.5028333333)
+                    WARRANTY2: (0.539, 0.3581666667, 0.5028333333),
                 },
                 RatingRange.LOW: {
                     STANDARD: (0.5025, 0.30875, 0.18875),
@@ -1272,16 +1392,16 @@ class EreusePrice(Price):
             Laptop: {
                 RatingRange.HIGH: {
                     STANDARD: (0.3469230769, 0.195, 0.4580769231),
-                    WARRANTY2: (0.4522307692, 0.2632307692, 0.6345384615)
+                    WARRANTY2: (0.4522307692, 0.2632307692, 0.6345384615),
                 },
                 RatingRange.MEDIUM: {
                     STANDARD: (0.382, 0.1735, 0.4445),
-                    WARRANTY2: (0.5108, 0.2429, 0.6463)
+                    WARRANTY2: (0.5108, 0.2429, 0.6463),
                 },
                 RatingRange.LOW: {
                     STANDARD: (0.4528571429, 0.2264285714, 0.3207142857),
-                }
-            }
+                },
+            },
         }
         SCHEMA[Server] = SCHEMA[Computer] = SCHEMA[Desktop]
 
@@ -1296,13 +1416,17 @@ class EreusePrice(Price):
         if not rating.rating_range or rating.rating_range == RatingRange.VERY_LOW:
             raise InvalidRangeForPrice()
         # We pass ROUND_UP strategy so price is always greater than what refurbisher... amounts
-        price = self.to_price(rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP)
-        super().__init__(rating=rating,
-                         device=rating.device,
-                         price=price,
-                         software=kwargs.pop('software', app.config['PRICE_SOFTWARE']),
-                         version=kwargs.pop('version', app.config['PRICE_VERSION']),
-                         **kwargs)
+        price = self.to_price(
+            rating.rating * self.MULTIPLIER[rating.device.__class__], ROUND_UP
+        )
+        super().__init__(
+            rating=rating,
+            device=rating.device,
+            price=price,
+            software=kwargs.pop('software', app.config['PRICE_SOFTWARE']),
+            version=kwargs.pop('version', app.config['PRICE_VERSION']),
+            **kwargs,
+        )
         self._compute()
 
     @orm.reconstructor
@@ -1314,9 +1438,12 @@ class EreusePrice(Price):
         self.retailer = self._service(self.Service.RETAILER)
         self.platform = self._service(self.Service.PLATFORM)
         if hasattr(self.refurbisher, 'warranty2'):
-            self.warranty2 = round(self.refurbisher.warranty2.amount
-                                   + self.retailer.warranty2.amount
-                                   + self.platform.warranty2.amount, 2)
+            self.warranty2 = round(
+                self.refurbisher.warranty2.amount
+                + self.retailer.warranty2.amount
+                + self.platform.warranty2.amount,
+                2,
+            )
 
     def _service(self, role):
         return self.Service(self.device, self.rating.rating_range, role, self.price)
@@ -1353,42 +1480,47 @@ class ToPrepare(ActionWithMultipleDevices):
     Usually **ToPrepare** is the next action done after registering the
     device.
     """
+
     pass
 
 
 class DataWipe(JoinedTableMixin, ActionWithMultipleDevices):
-    """The device has been selected for insert one proof of erease disk.
-    """
+    """The device has been selected for insert one proof of erease disk."""
+
     document_comment = """The user that gets the device due this deal."""
-    document_id = db.Column(BigInteger,
-                            db.ForeignKey('data_wipe_document.id'),
-                            nullable=False)
-    document = db.relationship('DataWipeDocument',
-                          backref=backref('actions',
-                                          lazy=True,
-                                          cascade=CASCADE_OWN),
-                          primaryjoin='DataWipe.document_id == DataWipeDocument.id')
+    document_id = db.Column(
+        BigInteger, db.ForeignKey('data_wipe_document.id'), nullable=False
+    )
+    document = db.relationship(
+        'DataWipeDocument',
+        backref=backref('actions', lazy=True, cascade=CASCADE_OWN),
+        primaryjoin='DataWipe.document_id == DataWipeDocument.id',
+    )
 
 
 class ActionStatus(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     """This is a meta-action than mark the status of the devices"""
 
-    rol_user_id = db.Column(UUID(as_uuid=True),
-                        db.ForeignKey(User.id),
-                        nullable=False,
-                        default=lambda: g.user.id)
+    rol_user_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
     rol_user = db.relationship(User, primaryjoin=rol_user_id == User.id)
     rol_user_comment = """The user that ."""
-    trade_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey('trade.id'),
-                         nullable=True)
-    trade = db.relationship('Trade',
-                            backref=backref('status_changes',
-                                            uselist=True,
-                                            lazy=True,
-                                            order_by=lambda: Action.end_time,
-                                            collection_class=list),
-                            primaryjoin='ActionStatus.trade_id == Trade.id')
+    trade_id = db.Column(UUID(as_uuid=True), db.ForeignKey('trade.id'), nullable=True)
+    trade = db.relationship(
+        'Trade',
+        backref=backref(
+            'status_changes',
+            uselist=True,
+            lazy=True,
+            order_by=lambda: Action.end_time,
+            collection_class=list,
+        ),
+        primaryjoin='ActionStatus.trade_id == Trade.id',
+    )
 
 
 class Recycling(ActionStatus):
@@ -1422,6 +1554,7 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     information about its state (in the form of a ``Snapshot`` action)
     and usage statistics.
     """
+
     serial_number = Column(Unicode(), check_lower('serial_number'))
     serial_number.comment = """The serial number of the Hard Disk in lower case."""
     usage_time_hdd = Column(Interval, nullable=True)
@@ -1432,7 +1565,7 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
     @property
     def final_user_code(self):
-        """ show the final_user_code of the last action Allocate."""
+        """show the final_user_code of the last action Allocate."""
         actions = self.device.actions
         actions.sort(key=lambda x: x.created)
         for e in reversed(actions):
@@ -1463,7 +1596,7 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
     def last_usage_time_allocate(self):
         """If we don't have self.usage_time_hdd then we need search the last
-           action Live with usage_time_allocate valid"""
+        action Live with usage_time_allocate valid"""
         for e in self.actions:
             if isinstance(e, Live) and e.created < self.created:
                 if not e.usage_time_allocate:
@@ -1504,7 +1637,10 @@ class Live(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
     def get_last_lifetime(self, snapshot):
         for a in snapshot.actions:
-            if a.type == 'TestDataStorage' and a.device.serial_number == self.serial_number:
+            if (
+                a.type == 'TestDataStorage'
+                and a.device.serial_number == self.serial_number
+            ):
                 return a.lifetime
         return None
 
@@ -1530,10 +1666,13 @@ class CancelReservation(Organize):
 
 class ActionStatusDocuments(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     """This is a meta-action that marks the state of the devices."""
-    rol_user_id = db.Column(UUID(as_uuid=True),
-                        db.ForeignKey(User.id),
-                        nullable=False,
-                        default=lambda: g.user.id)
+
+    rol_user_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
     rol_user = db.relationship(User, primaryjoin=rol_user_id == User.id)
     rol_user_comment = """The user that ."""
 
@@ -1544,31 +1683,40 @@ class RecyclingDocument(ActionStatusDocuments):
 
 class ConfirmDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     """Users confirm the one action trade this confirmation it's link to trade
-       and the document that confirm
+    and the document that confirm
     """
-    user_id = db.Column(UUID(as_uuid=True),
-                        db.ForeignKey(User.id),
-                        nullable=False,
-                        default=lambda: g.user.id)
+
+    user_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
     user = db.relationship(User, primaryjoin=user_id == User.id)
     user_comment = """The user that accept the offer."""
-    action_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey('action.id'),
-                         nullable=False)
-    action = db.relationship('Action',
-                            backref=backref('acceptances_document',
-                                            uselist=True,
-                                            lazy=True,
-                                            order_by=lambda: Action.end_time,
-                                            collection_class=list),
-                            primaryjoin='ConfirmDocument.action_id == Action.id')
+    action_id = db.Column(
+        UUID(as_uuid=True), db.ForeignKey('action.id'), nullable=False
+    )
+    action = db.relationship(
+        'Action',
+        backref=backref(
+            'acceptances_document',
+            uselist=True,
+            lazy=True,
+            order_by=lambda: Action.end_time,
+            collection_class=list,
+        ),
+        primaryjoin='ConfirmDocument.action_id == Action.id',
+    )
 
     def __repr__(self) -> str:
         if self.action.t in ['Trade']:
             origin = 'To'
             if self.user == self.action.user_from:
                 origin = 'From'
-            return '<{0.t}app/views/inventory/ {0.id} accepted by {1}>'.format(self, origin)
+            return '<{0.t}app/views/inventory/ {0.id} accepted by {1}>'.format(
+                self, origin
+            )
 
 
 class RevokeDocument(ConfirmDocument):
@@ -1581,24 +1729,31 @@ class ConfirmRevokeDocument(ConfirmDocument):
 
 class Confirm(JoinedTableMixin, ActionWithMultipleDevices):
     """Users confirm the one action trade this confirmation it's link to trade
-       and the devices that confirm
+    and the devices that confirm
     """
-    user_id = db.Column(UUID(as_uuid=True),
-                        db.ForeignKey(User.id),
-                        nullable=False,
-                        default=lambda: g.user.id)
+
+    user_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
     user = db.relationship(User, primaryjoin=user_id == User.id)
     user_comment = """The user that accept the offer."""
-    action_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey('action.id'),
-                         nullable=False)
-    action = db.relationship('Action',
-                            backref=backref('acceptances',
-                                            uselist=True,
-                                            lazy=True,
-                                            order_by=lambda: Action.end_time,
-                                            collection_class=list),
-                            primaryjoin='Confirm.action_id == Action.id')
+    action_id = db.Column(
+        UUID(as_uuid=True), db.ForeignKey('action.id'), nullable=False
+    )
+    action = db.relationship(
+        'Action',
+        backref=backref(
+            'acceptances',
+            uselist=True,
+            lazy=True,
+            order_by=lambda: Action.end_time,
+            collection_class=list,
+        ),
+        primaryjoin='Confirm.action_id == Action.id',
+    )
 
     def __repr__(self) -> str:
         if self.action.t in ['Trade']:
@@ -1631,15 +1786,12 @@ class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):
 
     This class and its inheritors
     extend `Schema's Trade <http://schema.org/TradeAction>`_.
-        """
-    user_from_id = db.Column(UUID(as_uuid=True),
-                             db.ForeignKey(User.id),
-                             nullable=False)
+    """
+
+    user_from_id = db.Column(UUID(as_uuid=True), db.ForeignKey(User.id), nullable=False)
     user_from = db.relationship(User, primaryjoin=user_from_id == User.id)
     user_from_comment = """The user that offers the device due this deal."""
-    user_to_id = db.Column(UUID(as_uuid=True),
-                           db.ForeignKey(User.id),
-                           nullable=False)
+    user_to_id = db.Column(UUID(as_uuid=True), db.ForeignKey(User.id), nullable=False)
     user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
     user_to_comment = """The user that gets the device due this deal."""
     price = Column(Float(decimal_return_scale=2), nullable=True)
@@ -1647,20 +1799,23 @@ class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     currency.comment = """The currency of this price as for ISO 4217."""
     date = Column(db.TIMESTAMP(timezone=True))
     confirm = Column(Boolean, default=False, nullable=False)
-    confirm.comment = """If you need confirmation of the user, you need actevate this field"""
+    confirm.comment = (
+        """If you need confirmation of the user, you need actevate this field"""
+    )
     code = Column(CIText(), nullable=True)
-    code.comment = """If the user not exist, you need a code to be able to do the traceability"""
-    lot_id = db.Column(UUID(as_uuid=True),
-                       db.ForeignKey('lot.id',
-                                     use_alter=True,
-                                     name='lot_trade'),
-                       nullable=True)
-    lot = relationship('Lot',
-                       backref=backref('trade',
-                                       lazy=True,
-                                       uselist=False,
-                                       cascade=CASCADE_OWN),
-                       primaryjoin='Trade.lot_id == Lot.id')
+    code.comment = (
+        """If the user not exist, you need a code to be able to do the traceability"""
+    )
+    lot_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey('lot.id', use_alter=True, name='lot_trade'),
+        nullable=True,
+    )
+    lot = relationship(
+        'Lot',
+        backref=backref('trade', lazy=True, uselist=False, cascade=CASCADE_OWN),
+        primaryjoin='Trade.lot_id == Lot.id',
+    )
 
     def get_metrics(self):
         """
@@ -1696,6 +1851,7 @@ class Rent(Trade):
 
 class CancelTrade(Trade):
     """The act of cancelling a `Sell`_, `Donate`_ or `Rent`_."""
+
     # todo cancelTrade does not do anything
 
 
@@ -1704,6 +1860,7 @@ class ToDisposeProduct(Trade):
 
     See :class:`.DisposeProduct`.
     """
+
     # todo test this
 
 
@@ -1717,6 +1874,7 @@ class DisposeProduct(Trade):
     and :class:`.Recover` for disposing in-house, this is,
     without trading the device.
     """
+
     # todo For usability purposes, users might not directly perform
     #     *DisposeProduct*, but this could automatically be done when
     #     performing :class:`.ToDispose` + :class:`.Receive` to a
@@ -1724,11 +1882,12 @@ class DisposeProduct(Trade):
 
 
 class TransferOwnershipBlockchain(Trade):
-    """ The act of change owenership of devices between two users (ethereum address)"""
+    """The act of change owenership of devices between two users (ethereum address)"""
 
 
 class MakeAvailable(ActionWithMultipleDevices):
     """The act of setting willingness for trading."""
+
     pass
 
 
@@ -1739,32 +1898,28 @@ class MoveOnDocument(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     weight = db.Column(db.Float())
     weight.comment = """Weight than go to recycling"""
     container_from_id = db.Column(
-        db.BigInteger,
-        db.ForeignKey('trade_document.id'),
-        nullable=False
+        db.BigInteger, db.ForeignKey('trade_document.id'), nullable=False
     )
     container_from = db.relationship(
         'TradeDocument',
-        backref=backref('containers_from',
-                        lazy=True,
-                        cascade=CASCADE_OWN),
-        primaryjoin='MoveOnDocument.container_from_id == TradeDocument.id'
+        backref=backref('containers_from', lazy=True, cascade=CASCADE_OWN),
+        primaryjoin='MoveOnDocument.container_from_id == TradeDocument.id',
     )
-    container_from_id.comment = """This is the trade document used as container in a incoming lot"""
+    container_from_id.comment = (
+        """This is the trade document used as container in a incoming lot"""
+    )
 
     container_to_id = db.Column(
-        db.BigInteger,
-        db.ForeignKey('trade_document.id'),
-        nullable=False
+        db.BigInteger, db.ForeignKey('trade_document.id'), nullable=False
     )
     container_to = db.relationship(
         'TradeDocument',
-        backref=backref('containers_to',
-                        lazy=True,
-                        cascade=CASCADE_OWN),
+        backref=backref('containers_to', lazy=True, cascade=CASCADE_OWN),
         primaryjoin='MoveOnDocument.container_to_id == TradeDocument.id',
     )
-    container_to_id.comment = """This is the trade document used as container in a outgoing lot"""
+    container_to_id.comment = (
+        """This is the trade document used as container in a outgoing lot"""
+    )
 
 
 class Delete(ActionWithMultipleDevices):
@@ -1779,6 +1934,7 @@ class Migrate(JoinedTableMixin, ActionWithMultipleDevices):
     """Moves the devices to a new database/inventory. Devices cannot be
     modified anymore at the previous database.
     """
+
     other = Column(URL(), nullable=False)
     other.comment = """
         The URL of the Migrate in the other end.
@@ -1799,26 +1955,34 @@ class MigrateFrom(Migrate):
 # The following listeners avoids setting values to actions that
 # do not make sense. For example, EraseBasic to a graphic card.
 
+
 @event.listens_for(TestDataStorage.device, Events.set.__name__, propagate=True)
 @event.listens_for(Install.device, Events.set.__name__, propagate=True)
 @event.listens_for(EraseBasic.device, Events.set.__name__, propagate=True)
-def validate_device_is_data_storage(target: Action, value: DataStorage, old_value, initiator):
+def validate_device_is_data_storage(
+    target: Action, value: DataStorage, old_value, initiator
+):
     """Validates that the device for data-storage actions is effectively a data storage."""
     if value and not isinstance(value, DataStorage):
-        raise TypeError('{} must be a DataStorage but you passed {}'.format(initiator.impl, value))
+        raise TypeError(
+            '{} must be a DataStorage but you passed {}'.format(initiator.impl, value)
+        )
 
 
 @event.listens_for(BenchmarkRamSysbench.device, Events.set.__name__, propagate=True)
 def actions_not_for_components(target: Action, value: Device, old_value, initiator):
     """Validates actions that cannot be performed to components."""
     if isinstance(value, Component):
-        raise TypeError('{!r} cannot be performed to a component ({!r}).'.format(target, value))
+        raise TypeError(
+            '{!r} cannot be performed to a component ({!r}).'.format(target, value)
+        )
 
 
 # The following listeners keep relationships with device <-> components synced with the action
 # So, if you add or remove devices from actions these listeners will
 # automatically add/remove the ``components`` and ``parent`` of such actions
 # See the tests for examples
+
 
 @event.listens_for(ActionWithOneDevice.device, Events.set.__name__, propagate=True)
 def update_components_action_one(target: ActionWithOneDevice, device: Device, __, ___):
@@ -1832,15 +1996,21 @@ def update_components_action_one(target: ActionWithOneDevice, device: Device, __
         if isinstance(device, Computer):
             target.components |= device.components
     elif isinstance(device, Computer):
-            device.add_mac_to_hid()
+        device.add_mac_to_hid()
 
 
-@event.listens_for(ActionWithMultipleDevices.devices, Events.init_collection.__name__,
-                   propagate=True)
-@event.listens_for(ActionWithMultipleDevices.devices, Events.bulk_replace.__name__, propagate=True)
-@event.listens_for(ActionWithMultipleDevices.devices, Events.append.__name__, propagate=True)
-def update_components_action_multiple(target: ActionWithMultipleDevices,
-                                      value: Union[Set[Device], Device], _):
+@event.listens_for(
+    ActionWithMultipleDevices.devices, Events.init_collection.__name__, propagate=True
+)
+@event.listens_for(
+    ActionWithMultipleDevices.devices, Events.bulk_replace.__name__, propagate=True
+)
+@event.listens_for(
+    ActionWithMultipleDevices.devices, Events.append.__name__, propagate=True
+)
+def update_components_action_multiple(
+    target: ActionWithMultipleDevices, value: Union[Set[Device], Device], _
+):
     """Syncs the :attr:`.Action.components` with the components in
     :attr:`ereuse_devicehub.resources.device.models.Computer.components`.
     """
@@ -1851,8 +2021,12 @@ def update_components_action_multiple(target: ActionWithMultipleDevices,
             target.components |= device.components
 
 
-@event.listens_for(ActionWithMultipleDevices.devices, Events.remove.__name__, propagate=True)
-def remove_components_action_multiple(target: ActionWithMultipleDevices, device: Device, __):
+@event.listens_for(
+    ActionWithMultipleDevices.devices, Events.remove.__name__, propagate=True
+)
+def remove_components_action_multiple(
+    target: ActionWithMultipleDevices, device: Device, __
+):
     """Syncs the :attr:`.Action.components` with the components in
     :attr:`ereuse_devicehub.resources.device.models.Computer.components`.
     """

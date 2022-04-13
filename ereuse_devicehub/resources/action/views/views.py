@@ -1,35 +1,49 @@
 """ This is the view for Snapshots """
 
-import jwt
-import ereuse_utils
 from datetime import timedelta
 from distutils.version import StrictVersion
 from uuid import UUID
 
-from flask import current_app as app, request, g
+import ereuse_utils
+import jwt
+from flask import current_app as app
+from flask import g, request
 from teal.db import ResourceNotFound
 from teal.marshmallow import ValidationError
 from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
-from ereuse_devicehub.resources.action.models import (Action, Snapshot, VisualTest,
-                                                      InitTransfer, Live, Allocate, Deallocate,
-                                                      Trade, Confirm, Revoke)
+from ereuse_devicehub.resources.action.models import (
+    Action,
+    Allocate,
+    Confirm,
+    Deallocate,
+    InitTransfer,
+    Live,
+    Revoke,
+    Snapshot,
+    Trade,
+    VisualTest,
+)
 from ereuse_devicehub.resources.action.views import trade as trade_view
-from ereuse_devicehub.resources.action.views.snapshot import SnapshotView, save_json, move_json
 from ereuse_devicehub.resources.action.views.documents import ErasedView
-from ereuse_devicehub.resources.device.models import Device, Computer, DataStorage
+from ereuse_devicehub.resources.action.views.snapshot import (
+    SnapshotView,
+    move_json,
+    save_json,
+)
+from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.enums import Severity
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
 
-class AllocateMix():
+class AllocateMix:
     model = None
 
     def post(self):
-        """ Create one res_obj """
+        """Create one res_obj"""
         res_json = request.get_json()
         res_obj = self.model(**res_json)
         db.session.add(res_obj)
@@ -40,13 +54,18 @@ class AllocateMix():
         return ret
 
     def find(self, args: dict):
-        res_objs = self.model.query.filter_by(author=g.user) \
-            .order_by(self.model.created.desc()) \
+        res_objs = (
+            self.model.query.filter_by(author=g.user)
+            .order_by(self.model.created.desc())
             .paginate(per_page=200)
+        )
         return things_response(
             self.schema.dump(res_objs.items, many=True, nested=0),
-            res_objs.page, res_objs.per_page, res_objs.total,
-            res_objs.prev_num, res_objs.next_num
+            res_objs.page,
+            res_objs.per_page,
+            res_objs.total,
+            res_objs.prev_num,
+            res_objs.next_num,
         )
 
 
@@ -99,7 +118,9 @@ class LiveView(View):
 
         if not serial_number:
             """There aren't any disk"""
-            raise ResourceNotFound("There aren't any disk in this device {}".format(device))
+            raise ResourceNotFound(
+                "There aren't any disk in this device {}".format(device)
+            )
         return usage_time_hdd, serial_number
 
     def get_hid(self, snapshot):
@@ -109,8 +130,11 @@ class LiveView(View):
             return None
         if not components:
             return device.hid
-        macs = [c.serial_number for c in components
-                if c.type == 'NetworkAdapter' and c.serial_number is not None]
+        macs = [
+            c.serial_number
+            for c in components
+            if c.type == 'NetworkAdapter' and c.serial_number is not None
+        ]
         macs.sort()
         mac = ''
         hid = device.hid
@@ -124,12 +148,10 @@ class LiveView(View):
     def live(self, snapshot):
         """If the device.allocated == True, then this snapshot create an action live."""
         hid = self.get_hid(snapshot)
-        if not hid or not Device.query.filter(
-                Device.hid == hid).count():
+        if not hid or not Device.query.filter(Device.hid == hid).count():
             raise ValidationError('Device not exist.')
 
-        device = Device.query.filter(
-            Device.hid == hid, Device.allocated == True).one()
+        device = Device.query.filter(Device.hid == hid, Device.allocated == True).one()
         # Is not necessary
         if not device:
             raise ValidationError('Device not exist.')
@@ -138,16 +160,18 @@ class LiveView(View):
 
         usage_time_hdd, serial_number = self.get_hdd_details(snapshot, device)
 
-        data_live = {'usage_time_hdd': usage_time_hdd,
-                     'serial_number': serial_number,
-                     'snapshot_uuid': snapshot['uuid'],
-                     'description': '',
-                     'software': snapshot['software'],
-                     'software_version': snapshot['version'],
-                     'licence_version': snapshot['licence_version'],
-                     'author_id': device.owner_id,
-                     'agent_id': device.owner.individual.id,
-                     'device': device}
+        data_live = {
+            'usage_time_hdd': usage_time_hdd,
+            'serial_number': serial_number,
+            'snapshot_uuid': snapshot['uuid'],
+            'description': '',
+            'software': snapshot['software'],
+            'software_version': snapshot['version'],
+            'licence_version': snapshot['licence_version'],
+            'author_id': device.owner_id,
+            'agent_id': device.owner.individual.id,
+            'device': device,
+        }
 
         live = Live(**data_live)
 
@@ -172,7 +196,12 @@ class LiveView(View):
 
 def decode_snapshot(data):
     try:
-        return jwt.decode(data['data'], app.config['JWT_PASS'], algorithms="HS256", json_encoder=ereuse_utils.JSONEncoder)
+        return jwt.decode(
+            data['data'],
+            app.config['JWT_PASS'],
+            algorithms="HS256",
+            json_encoder=ereuse_utils.JSONEncoder,
+        )
     except jwt.exceptions.InvalidSignatureError as err:
         txt = 'Invalid snapshot'
         raise ValidationError(txt)
@@ -200,13 +229,13 @@ class ActionView(View):
 
             # TODO @cayop uncomment at four weeks
             # if not 'data' in json:
-                # txt = 'Invalid snapshot'
-                # raise ValidationError(txt)
+            # txt = 'Invalid snapshot'
+            # raise ValidationError(txt)
 
             # snapshot_data = decode_snapshot(json)
 
             snapshot_data = json
-            if 'data' in json:
+            if 'data' in json and isinstance(json['data'], str):
                 snapshot_data = decode_snapshot(json)
 
             if not snapshot_data:
@@ -248,7 +277,9 @@ class ActionView(View):
             return confirm.post()
 
         if json['type'] == 'ConfirmRevokeDocument':
-            confirm_revoke = trade_view.ConfirmRevokeDocumentView(json, resource_def, self.schema)
+            confirm_revoke = trade_view.ConfirmRevokeDocumentView(
+                json, resource_def, self.schema
+            )
             return confirm_revoke.post()
 
         if json['type'] == 'DataWipe':

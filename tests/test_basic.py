@@ -30,6 +30,7 @@ def test_api_docs(client: Client):
     assert set(docs['paths'].keys()) == {
         '/actions/',
         '/apidocs',
+        '/api/inventory/',
         '/allocates/',
         '/deallocates/',
         '/deliverynotes/',

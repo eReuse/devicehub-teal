@@ -181,7 +181,7 @@ def test_device_query(user: UserClient):
     assert i['url'] == '/devices/'
     assert i['items'][0]['url'] == '/devices/%s' % snapshot['device']['devicehubID']
     pc = next(d for d in i['items'] if d['type'] == 'Desktop')
-    assert len(pc['actions']) == 4
+    assert len(pc['actions']) == 3
     assert len(pc['components']) == 3
     assert pc['tags'][0]['id'] == pc['devicehubID']
 
