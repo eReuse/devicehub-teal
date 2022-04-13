@@ -69,7 +69,8 @@ class User(UserMixin, Thing):
     @property
     def individual(self):
         """The individual associated for this database, or None."""
-        return next(iter(self.individuals), None)
+        if self.individuals:
+            return next(iter(self.individuals), None)
 
     @property
     def code(self):
