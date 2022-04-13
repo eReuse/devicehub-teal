@@ -547,6 +547,25 @@ class ExportsView(View):
         return flask.render_template('inventory/erasure.html', **params)
 
 
+class SnapshotListView(GenericMixView):
+    decorators = [login_required]
+    template_name = 'inventory/snapshot_list.html'
+
+    def dispatch_request(self):
+        self.get_context()
+        return flask.render_template(self.template_name, **self.context)
+
+    def get_context(self):
+        lots = self.get_lots()
+
+        self.context = {
+            'lots': lots,
+            'version': __version__,
+        }
+
+        return self.context
+
+
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/action/trade/add/', view_func=NewTradeView.as_view('trade_add'))
 devices.add_url_rule(
@@ -560,6 +579,7 @@ devices.add_url_rule(
     view_func=NewTradeDocumentView.as_view('trade_document_add'),
 )
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
+devices.add_url_rule('/snapshot/', view_func=SnapshotListView.as_view('snapshotlist'))
 devices.add_url_rule(
     '/device/<string:id>/', view_func=DeviceDetailView.as_view('device_details')
 )
