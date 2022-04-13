@@ -200,8 +200,9 @@ async function processSelectedDevices() {
          */
         manage(event, lotID, deviceListID) {
             event.preventDefault();
-            const indeterminate = event.srcElement.indeterminate;
-            const checked = !event.srcElement.checked;
+            const srcElement = event.srcElement.parentElement.children[0]
+            const indeterminate = srcElement.indeterminate;
+            const checked = !srcElement.checked;
 
             var found = this.list.filter(list => list.lotID == lotID)[0];
             var foundIndex = found != undefined ? this.list.findLastIndex(x => x.lotID == found.lotID) : -1;
@@ -343,6 +344,7 @@ async function processSelectedDevices() {
         }
 
         doc.children[0].addEventListener('mouseup', (ev) => actions.manage(ev, lotID, selectedDevicesIDs));
+        doc.children[1].addEventListener('mouseup', (ev) => actions.manage(ev, lotID, selectedDevicesIDs));
         elementTarget.append(doc);
     }
 
