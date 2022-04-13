@@ -25,6 +25,7 @@ from ereuse_devicehub.inventory.forms import (
     UploadSnapshotForm,
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
+from ereuse_devicehub.parser.models import SnapshotErrors
 from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
@@ -557,8 +558,12 @@ class SnapshotListView(GenericMixView):
 
     def get_context(self):
         lots = self.get_lots()
+        snapshot_errors = SnapshotErrors.query.filter(
+            SnapshotErrors.owner == current_user
+        ).order_by(SnapshotErrors.created.desc())
 
         self.context = {
+            'snapshot_errors': snapshot_errors,
             'lots': lots,
             'version': __version__,
         }
@@ -579,7 +584,9 @@ devices.add_url_rule(
     view_func=NewTradeDocumentView.as_view('trade_document_add'),
 )
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
-devices.add_url_rule('/snapshot/', view_func=SnapshotListView.as_view('snapshotlist'))
+devices.add_url_rule(
+    '/snapshot/errors/', view_func=SnapshotListView.as_view('snapshot_errors_list')
+)
 devices.add_url_rule(
     '/device/<string:id>/', view_func=DeviceDetailView.as_view('device_details')
 )

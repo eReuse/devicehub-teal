@@ -33,7 +33,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for snap in snapshots_errors %}
+                    {% for snap in snapshot_errors %}
                     <tr>
                       <td>
                           {{ snap.wbid }}
@@ -46,7 +46,7 @@
                       <td>
                           {{ snap.description }}
                       </td>
-                      <td>{{ dev.created.strftime('%H:%M %d-%m-%Y') }}</td>
+                      <td>{{ snap.created.strftime('%H:%M %d-%m-%Y') }}</td>
                     </tr>
                     {% endfor %}
                   </tbody>
