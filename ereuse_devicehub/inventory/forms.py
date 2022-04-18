@@ -100,7 +100,7 @@ class FilterForm(FlaskForm):
         if self.device:
             return [self.device]
 
-        return ['Desktop', 'Laptop', 'Server']
+        return ['Desktop', 'Laptop', 'Server', 'Computer']
 
 
 class LotDeviceForm(FlaskForm):
