@@ -120,7 +120,11 @@ class ParseSnapshot:
 
     def get_usb_num(self):
         return len(
-            [u for u in self.dmi.get("Port Connector") if u.get("Port Type") == "USB"]
+            [
+                u
+                for u in self.dmi.get("Port Connector")
+                if "USB" in u.get("Port Type", "").upper()
+            ]
         )
 
     def get_serial_num(self):
@@ -128,7 +132,7 @@ class ParseSnapshot:
             [
                 u
                 for u in self.dmi.get("Port Connector")
-                if u.get("Port Type") == "SERIAL"
+                if "SERIAL" in u.get("Port Type", "").upper()
             ]
         )
 
@@ -137,7 +141,7 @@ class ParseSnapshot:
             [
                 u
                 for u in self.dmi.get("Port Connector")
-                if u.get("Port Type") == "PCMCIA"
+                if "PCMCIA" in u.get("Port Type", "").upper()
             ]
         )
 
@@ -461,6 +465,8 @@ class ParseSnapshotLsHw:
     def get_data_storage(self):
 
         for sm in self.smart:
+            if sm.get('smartctl', {}).get('exit_status') != 0:
+                continue
             model = sm.get('model_name')
             manufacturer = None
             if model and len(model.split(" ")) > 1:
@@ -487,7 +493,7 @@ class ParseSnapshotLsHw:
         SSD = 'SolidStateDrive'
         HDD = 'HardDrive'
         type_dev = x.get('device', {}).get('type')
-        trim = x.get("trim", {}).get("supported") == "true"
+        trim = x.get('trim', {}).get("supported") in [True, "true"]
         return SSD if type_dev in SSDS or trim else HDD
 
     def get_data_storage_interface(self, x):
@@ -503,15 +509,14 @@ class ParseSnapshotLsHw:
         return "ATA"
 
     def get_data_storage_size(self, x):
-        type_dev = x.get('device', {}).get('protocol', '').lower()
-        total_capacity = "{type}_total_capacity".format(type=type_dev)
-        if not x.get(total_capacity):
+        total_capacity = x.get('user_capacity', {}).get('bytes')
+        if not total_capacity:
             return 1
         # convert bytes to Mb
-        return x.get(total_capacity) / 1024**2
+        return total_capacity / 1024**2
 
     def get_test_data_storage(self, smart):
-        log = "smart_health_information_log"
+        hours = smart.get("power_on_time", {}).get('hours', 0)
         action = {
             "status": "Completed without error",
             "reallocatedSectorCount": smart.get("reallocated_sector_count", 0),
@@ -519,7 +524,8 @@ class ParseSnapshotLsHw:
             "assessment": True,
             "severity": "Info",
             "offlineUncorrectable": smart.get("offline_uncorrectable", 0),
-            "lifetime": 0,
+            "lifetime": hours,
+            "powerOnHours": hours,
             "type": "TestDataStorage",
             "length": "Short",
             "elapsed": 0,
@@ -528,11 +534,6 @@ class ParseSnapshotLsHw:
             ),
             "powerCycleCount": smart.get("power_cycle_count", 0),
         }
-
-        for k in smart.keys():
-            if log in k:
-                action['lifetime'] = smart[k].get("power_on_hours", 0)
-                action['powerOnHours'] = smart[k].get("power_on_hours", 0)
 
         return action
 
