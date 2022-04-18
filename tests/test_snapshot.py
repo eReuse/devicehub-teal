@@ -987,12 +987,11 @@ def test_snapshot_wb_lite_qemu(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
 
     snapshot = file_json(
-        "2022-04-01_06h28m54s_YKPZ27NJ2NMRO4893M4L5NRZV5YJ1_snapshot.json"
+        "qemu-cc9927a9-55ad-4937-b36b-7185147d9fa9.json"
     )
-    # body, res = user.post(snapshot, res=Snapshot)
     body, res = user.post(snapshot, uri="/api/inventory/")
 
-    assert body['wbid'] == "YKPZ27NJ2NMRO4893M4L5NRZV5YJ1"
+    assert body['wbid'] == "VL0L5"
     assert res.status == '201 CREATED'
 
     dev = m.Device.query.filter_by(id=body['device']['id']).one()
@@ -1000,8 +999,10 @@ def test_snapshot_wb_lite_qemu(user: UserClient):
     assert dev.model == 'standard'
     assert dev.serial_number is None
     assert dev.hid is None
-    assert dev.actions[0].power_on_hours == 0
-    assert dev.actions[1].power_on_hours == 0
+    assert dev.actions[0].power_on_hours == 1
+    assert dev.components[-1].size == 40960
+    assert dev.components[-1].serial_number == 'qm00001'
+
 
 
 @pytest.mark.mvp
