@@ -1130,3 +1130,27 @@ def test_snapshot_errors_timestamp(user: UserClient):
     error = SnapshotErrors.query.all()[0]
     assert snapshot_lite['wbid'] == error.wbid
     assert user.user['id'] == str(error.owner_id)
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_errors_no_serial_number(user: UserClient):
+    """This test check the minimum validation of json that come from snapshot"""
+    snapshot_lite = file_json('desktop-amd-bug-no-sn.json')
+
+    bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
+    assert res.status_code == 201
+    assert len(SnapshotErrors.query.all()) == 0
+    dev = m.Device.query.filter_by(id=bodyLite['device']['id']).one()
+    assert not dev.model
+    assert not dev.manufacturer
+    assert not dev.serial_number
+    assert dev.type == "Desktop"
+    for c in dev.components:
+        if not c.type == "HardDrive":
+            continue
+        assert c.serial_number == 'vd051gtf024b4l'
+        assert c.model == "hdt722520dlat80"
+        assert not c.manufacturer
+        test = c.actions[-1]
+        assert test.power_on_hours == 19819
