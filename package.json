@@ -18,7 +18,7 @@
   "scripts": {
     "lint": "eslint ereuse_devicehub --ext .js",
     "lint:fix": "eslint ereuse_devicehub --ext .js --fix",
-    "lint:report": "eslint --ext .ts --output-file eslint_report.json --format json src"
+    "lint:report": "eslint --ext .js --output-file eslint_report.json --format json ereuse_devicehub"
   },
   "keywords": [],
   "author": "",
