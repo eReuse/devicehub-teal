@@ -25,14 +25,22 @@ jobs:
         node-version: '16'
     - name: Install dependencies
       run: npm install
-    - name: Lint & fix
-      run: npm run lint:fix
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v3
+    - name: Test Code Linting
+      run: npm run lint
+    - name: Save Code Linting Report JSON
+      # npm script for ESLint
+      # eslint --output-file eslint_report.json --format json src
+      # See https://eslint.org/docs/user-guide/command-line-interface#options
+      run: npm run lint:report
+      # Continue to the next step even if this fails
+      continue-on-error: true
+    - name: Annotate Code Linting Results
+      uses: ataylorme/eslint-annotate-action@1.2.0
       with:
-        branch: ${{ github.ref_name }}-autofix
-        reviewers: ${{ github.actor }}
-        labels: autofix
-        delete-branch: true
-        title: "Improve codestyle"
-        body: "Automated PR to improve codestyle"
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        report-json: "eslint_report.json"
+    - name: Upload ESLint report
+      uses: actions/upload-artifact@v2
+      with:
+        name: eslint_report.json
+        path: eslint_report.json

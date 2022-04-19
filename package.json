@@ -16,7 +16,9 @@
     "eslint-plugin-prettier": "^4.0.0"
   },
   "scripts": {
-    "lint:fix": "eslint ereuse_devicehub --ext .js --fix"
+    "lint": "eslint ereuse_devicehub --ext .js",
+    "lint:fix": "eslint ereuse_devicehub --ext .js --fix",
+    "lint:report": "eslint --ext .ts --output-file eslint_report.json --format json src"
   },
   "keywords": [],
   "author": "",
