@@ -16,30 +16,23 @@ on:
     branches: [master, testing]
 
 jobs:
-  eslint:
-    name: Run eslint scanning
+  build: 
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install ESLint
-        run: yarn
-
-      - name: Run ESLint
-        run: npx eslint ereuse_devicehub
-          --config .eslintrc.js
-          --ext .js
-          --output-file eslint-results.sarif
-        continue-on-error: true
-
-      - name: Generate report
-        uses: tinovyatkin/action-eslint@v1
-        with:
-          repo-token: ${{secrets.GITHUB_TOKEN}}
-          check-name: eslint # this is the check name from above 👆 where to post annotations
-          extensions: 'js'
-          annotations: true
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '16'
+    - name: Install dependencies
+      run: npm install
+    - name: Lint & fix
+      run: npx eslint ereuse_devicehub --fix --ext .js
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v3
+      with:
+        branch: ${{ github.ref_name }}-autofix
+        reviewers: ${{ github.actor }}
+        labels: autofix
+        delete-branch: true
+        title: "Improve codestyle"
+        body: "Automated PR to improve codestyle"
