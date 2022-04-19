@@ -119,3 +119,7 @@ ENV/
 
 # Temporal dir
 tmp/
+
+# NPM modules
+node_modules/
+ereuse_devicehub/static/js/api.js
