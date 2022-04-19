@@ -26,7 +26,7 @@ jobs:
     - name: Install dependencies
       run: npm install
     - name: Lint & fix
-      run: npm lint:fix
+      run: npm run lint:fix
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v3
       with:
