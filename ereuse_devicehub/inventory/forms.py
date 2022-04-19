@@ -97,62 +97,6 @@ class FilterForm(FlaskForm):
         return ['Desktop', 'Laptop', 'Server']
 
 
-class LotDeviceForm(FlaskForm):
-    lot = StringField('Lot', [validators.UUID()])
-    devices = StringField('Devices', [validators.length(min=1)])
-
-    def validate(self, extra_validators=None):
-        is_valid = super().validate(extra_validators)
-
-        if not is_valid:
-            return False
-
-        self._lot = (
-            Lot.query.outerjoin(Trade)
-            .filter(Lot.id == self.lot.data)
-            .filter(
-                or_(
-                    Trade.user_from == g.user,
-                    Trade.user_to == g.user,
-                    Lot.owner_id == g.user.id,
-                )
-            )
-            .one()
-        )
-
-        devices = set(self.devices.data.split(","))
-        self._devices = (
-            Device.query.filter(Device.id.in_(devices))
-            .filter(Device.owner_id == g.user.id)
-            .distinct()
-            .all()
-        )
-
-        return bool(self._devices)
-
-    def save(self, commit=True):
-        trade = self._lot.trade
-        if trade:
-            for dev in self._devices:
-                if trade not in dev.actions:
-                    trade.devices.add(dev)
-
-        if self._devices:
-            self._lot.devices.update(self._devices)
-            db.session.add(self._lot)
-
-        if commit:
-            db.session.commit()
-
-    def remove(self, commit=True):
-        if self._devices:
-            self._lot.devices.difference_update(self._devices)
-            db.session.add(self._lot)
-
-        if commit:
-            db.session.commit()
-
-
 class LotForm(FlaskForm):
     name = StringField('Name', [validators.length(min=1)])
 
@@ -483,46 +427,6 @@ class NewDeviceForm(FlaskForm):
         if commit:
             db.session.commit()
         return snapshot
-
-
-class TagForm(FlaskForm):
-    code = StringField('Code', [validators.length(min=1)])
-
-    def validate(self, extra_validators=None):
-        error = ["This value is being used"]
-        is_valid = super().validate(extra_validators)
-        if not is_valid:
-            return False
-        tag = Tag.query.filter(Tag.id == self.code.data).all()
-        if tag:
-            self.code.errors = error
-            return False
-
-        return True
-
-    def save(self):
-        self.instance = Tag(id=self.code.data)
-        db.session.add(self.instance)
-        db.session.commit()
-        return self.instance
-
-    def remove(self):
-        if not self.instance.device and not self.instance.provider:
-            self.instance.delete()
-            db.session.commit()
-        return self.instance
-
-
-class TagUnnamedForm(FlaskForm):
-    amount = IntegerField('amount')
-
-    def save(self):
-        num = self.amount.data
-        tags_id, _ = g.tag_provider.post('/', {}, query=[('num', num)])
-        tags = [Tag(id=tag_id, provider=g.inventory.tag_provider) for tag_id in tags_id]
-        db.session.add_all(tags)
-        db.session.commit()
-        return tags
 
 
 class TagDeviceForm(FlaskForm):

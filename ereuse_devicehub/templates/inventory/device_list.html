@@ -38,14 +38,14 @@
             <div><!-- lot actions -->
               {% if lot.is_temporary %}
                 <span class="d-none" id="activeRemoveLotModal" data-bs-toggle="modal" data-bs-target="#btnRemoveLots"></span>
-                <a class="me-2" href="javascript:removeLot()">
-                  <i class="bi bi-trash"></i> Remove Lot
-                </a>
                 <a class="me-2" href="javascript:newTrade('user_from')">
                   <i class="bi bi-arrow-down-right"></i> Add supplier
                 </a>
-                <a href="javascript:newTrade('user_to')">
+                <a class="me-2" href="javascript:newTrade('user_to')">
                   <i class="bi bi-arrow-up-right"></i> Add receiver
+                </a>
+                <a class="text-danger" href="javascript:removeLot()">
+                  <i class="bi bi-trash"></i> Delete Lot
                 </a>
               {% endif %}
             </div>
@@ -71,25 +71,22 @@
           {% endif %}
           <div class="tab-content pt-5">
             <div id="devices-list" class="tab-pane fade devices-list active show">
-
+              <label class="btn btn-primary " for="SelectAllBTN"><input type="checkbox" id="SelectAllBTN" autocomplete="off"></label>
               <div class="btn-group dropdown ml-1">
-                <button id="btnLots" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <button id="btnLots" type="button" onclick="processSelectedDevices()" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="bi bi-folder2"></i>
                   Lots
                   <span class="caret"></span>
                 </button>
                 <span class="d-none" id="activeTradeModal" data-bs-toggle="modal" data-bs-target="#tradeLotModal"></span>
-                <ul class="dropdown-menu" aria-labelledby="btnLots">
+                <ul class="dropdown-menu" aria-labelledby="btnLots" style="width: 300px;" id="dropDownLotsSelector">
+                  <h6 class="dropdown-header">Select some devices to manage lots</h6>
+                  <ul style="list-style-type: none; margin: 0; padding: 0;" class="mx-3" id="LotsSelector"></ul>
+                  <li><hr /></li>
                   <li>
-                    <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addingLotModal">
-                      <i class="bi bi-plus"></i>
-                      Add selected Devices to a lot
-                    </a>
-                  </li>
-                  <li>
-                    <a href="javascript:void()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#removeLotModal">
-                      <i class="bi bi-x"></i>
-                      Remove selected devices from a lot
+                    <a href="#" class="dropdown-item" id="ApplyDeviceLots">
+                      <i class="bi bi-check"></i>
+                      Apply
                     </a>
                   </li>
                 </ul>
@@ -235,6 +232,17 @@
                       Remove Tag from selected Device
                     </a>
                   </li>
+                  <li>
+                    <form id="print_labels" method="post" action="{{ url_for('labels.print_labels') }}">
+                      {% for f in form_print_labels %}
+                        {{ f }}
+                      {% endfor %}
+                      <a href="javascript:$('#print_labels').submit()" class="dropdown-item">
+                        <i class="bi bi-printer"></i>
+                        Print labels
+                      </a>
+                    </form>
+                  </li>
                 </ul>
               </div>
 
@@ -250,7 +258,7 @@
                     {% else %}
                     <a href="{{ url_for('inventory.upload_snapshot') }}" class="dropdown-item">
                     {% endif %}
-                      <i class="bi bi-plus"></i>
+                      <i class="bi bi-upload"></i>
                       Upload a new Snapshot
                     </a>
                   </li>
@@ -335,7 +343,7 @@
                       </td>
                       <td>
                         {% for t in dev.tags | sort(attribute="id") %}
-                         <a href="{{ url_for('inventory.tag_details', id=t.id)}}">{{ t.id }}</a>
+                         <a href="{{ url_for('labels.label_details', id=t.id)}}">{{ t.id }}</a>
                          {% if not loop.last %},{% endif %}
                         {% endfor %}
                       </td>
@@ -383,13 +391,13 @@
         </div>
       </div>
 
+      <div id="NotificationsContainer" style="position: absolute; bottom: 0; right: 0; margin: 10px; margin-top: 70px; width: calc(100% - 310px);"></div>
+
     </div>
   </div>
 </section>
-{% include "inventory/addDeviceslot.html" %}
 {% include "inventory/addDevicestag.html" %}
-{% include "inventory/removeDeviceslot.html" %}
-{% include "inventory/removelot.html" %}
+{% include "inventory/lot_delete_modal.html" %}
 {% include "inventory/actions.html" %}
 {% include "inventory/allocate.html" %}
 {% include "inventory/data_wipe.html" %}
