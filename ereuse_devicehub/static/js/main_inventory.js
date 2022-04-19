@@ -1,7 +1,7 @@
-$(document).ready(function() {
-    var show_allocate_form = $("#allocateModal").data('show-action-form');
-    var show_datawipe_form = $("#datawipeModal").data('show-action-form');
-    var show_trade_form = $("#tradeLotModal").data('show-action-form');
+$(document).ready(() => {
+    const show_allocate_form = $("#allocateModal").data("show-action-form");
+    const show_datawipe_form = $("#datawipeModal").data("show-action-form");
+    const show_trade_form = $("#tradeLotModal").data("show-action-form");
     if (show_allocate_form != "None") {
         $("#allocateModal .btn-primary").show();
         newAllocate(show_allocate_form);
@@ -18,7 +18,7 @@ $(document).ready(function() {
 })
 
 function deviceSelect() {
-    var devices_count = $(".deviceSelect").filter(':checked').length;
+    const devices_count = $(".deviceSelect").filter(":checked").length;
     get_device_list();
     if (devices_count == 0) {
         $("#addingLotModal .pol").show();
@@ -60,7 +60,7 @@ function deviceSelect() {
 }
 
 function removeLot() {
-    var devices = $(".deviceSelect");
+    const devices = $(".deviceSelect");
     if (devices.length > 0) {
         $("#btnRemoveLots .text-danger").show();
     } else {
@@ -70,10 +70,10 @@ function removeLot() {
 }
 
 function removeTag() {
-    var devices = $(".deviceSelect").filter(':checked');
-    var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
+    const devices = $(".deviceSelect").filter(":checked");
+    const devices_id = $.map(devices, (x) => $(x).attr("data"));
     if (devices_id.length == 1) {
-        var url = "/inventory/tag/devices/"+devices_id[0]+"/del/";
+        const url = `/inventory/tag/devices/${devices_id[0]}/del/`;
         window.location.href = url;
     } else {
         $("#unlinkTagAlertModal").click();
@@ -81,8 +81,8 @@ function removeTag() {
 }
 
 function addTag() {
-    var devices = $(".deviceSelect").filter(':checked');
-    var devices_id = $.map(devices, function(x) { return $(x).attr('data')});
+    const devices = $(".deviceSelect").filter(":checked");
+    const devices_id = $.map(devices, (x) => $(x).attr("data"));
     if (devices_id.length == 1) {
         $("#addingTagModal .pol").hide();
         $("#addingTagModal .btn-primary").show();
@@ -95,20 +95,20 @@ function addTag() {
 }
 
 function newTrade(action) {
-    var title = "Trade "
-    var user_to = $("#user_to").data("email");
-    var user_from = $("#user_from").data("email");
-    if (action == 'user_from') {
-        title = 'Trade Incoming';
-        $("#user_to").attr('readonly', 'readonly');
-        $("#user_from").prop('readonly', false);
-        $("#user_from").val('');
+    let title = "Trade "
+    const user_to = $("#user_to").data("email");
+    const user_from = $("#user_from").data("email");
+    if (action == "user_from") {
+        title = "Trade Incoming";
+        $("#user_to").attr("readonly", "readonly");
+        $("#user_from").prop("readonly", false);
+        $("#user_from").val("");
         $("#user_to").val(user_to);
-    } else if (action == 'user_to') {
-        title = 'Trade Outgoing';
-        $("#user_from").attr('readonly', 'readonly');
-        $("#user_to").prop('readonly', false);
-        $("#user_to").val('');
+    } else if (action == "user_to") {
+        title = "Trade Outgoing";
+        $("#user_from").attr("readonly", "readonly");
+        $("#user_to").prop("readonly", false);
+        $("#user_to").val("");
         $("#user_from").val(user_from);
     }
     $("#tradeLotModal #title-action").html(title);
@@ -137,44 +137,44 @@ function newDataWipe(action) {
 }
 
 function get_device_list() {
-    var devices = $(".deviceSelect").filter(':checked');
+    const devices = $(".deviceSelect").filter(":checked");
 
     /* Insert the correct count of devices in actions form */
-    var devices_count = devices.length;
+    const devices_count = devices.length;
     $("#datawipeModal .devices-count").html(devices_count);
     $("#allocateModal .devices-count").html(devices_count);
     $("#actionModal .devices-count").html(devices_count);
 
     /* Insert the correct value in the input devicesList */
-    var devices_id = $.map(devices, function(x) { return $(x).attr('data')}).join(",");
-    $.map($(".devicesList"), function(x) {
+    const devices_id = $.map(devices, (x) => $(x).attr("data")).join(",");
+    $.map($(".devicesList"), (x) => {
         $(x).val(devices_id);
     });
 
     /* Create a list of devices for human representation */
-    var computer = {
+    const computer = {
         "Desktop": "<i class='bi bi-building'></i>",
         "Laptop": "<i class='bi bi-laptop'></i>",
     };
-    list_devices = devices.map(function (x) {
-        var typ = $(devices[x]).data("device-type");
-        var manuf = $(devices[x]).data("device-manufacturer");
-        var dhid = $(devices[x]).data("device-dhid");
+    list_devices = devices.map((x) => {
+        let typ = $(devices[x]).data("device-type");
+        const manuf = $(devices[x]).data("device-manufacturer");
+        const dhid = $(devices[x]).data("device-dhid");
         if (computer[typ]) {
             typ = computer[typ];
         };
-        return typ + " " + manuf + " " + dhid;
+        return `${typ  } ${  manuf  } ${  dhid}`;
     });
 
-    description = $.map(list_devices, function(x) { return x }).join(", ");
+    description = $.map(list_devices, (x) => x).join(", ");
     $(".enumeration-devices").html(description);
 }
 
 function export_file(type_file) {
-    var devices = $(".deviceSelect").filter(':checked');
-    var devices_id = $.map(devices, function(x) { return $(x).attr('data-device-dhid')}).join(",");
+    const devices = $(".deviceSelect").filter(":checked");
+    const devices_id = $.map(devices, (x) => $(x).attr("data-device-dhid")).join(",");
     if (devices_id){
-        var url = "/inventory/export/"+type_file+"/?ids="+devices_id;
+        const url = `/inventory/export/${type_file}/?ids=${devices_id}`;
         window.location.href = url;
     } else {
         $("#exportAlertModal").click();
@@ -200,11 +200,11 @@ async function processSelectedDevices() {
          */
         manage(event, lotID, deviceListID) {
             event.preventDefault();
-            const indeterminate = event.srcElement.indeterminate;
+            const {indeterminate} = event.srcElement;
             const checked = !event.srcElement.checked;
 
-            var found = this.list.filter(list => list.lotID == lotID)[0];
-            var foundIndex = found != undefined ? this.list.findLastIndex(x => x.lotID == found.lotID) : -1;
+            const found = this.list.filter(list => list.lotID == lotID)[0];
+            const foundIndex = found != undefined ? this.list.findLastIndex(x => x.lotID == found.lotID) : -1;
 
             if (checked) {
                 if (found != undefined && found.type == "Remove") {
@@ -215,10 +215,9 @@ async function processSelectedDevices() {
                         this.list = this.list.filter(list => list.lotID != lotID);
                     }
                 } else {
-                    this.list.push({ type: "Add", lotID: lotID, devices: deviceListID, isFromIndeterminate: indeterminate });
+                    this.list.push({ type: "Add", lotID, devices: deviceListID, isFromIndeterminate: indeterminate });
                 }
-            } else {
-                if (found != undefined && found.type == "Add") {
+            } else if (found != undefined && found.type == "Add") {
                     if (found.isFromIndeterminate == true) {
                         found.type = "Remove";
                         this.list[foundIndex] = found;
@@ -226,9 +225,8 @@ async function processSelectedDevices() {
                         this.list = this.list.filter(list => list.lotID != lotID);
                     }
                 } else {
-                    this.list.push({ type: "Remove", lotID: lotID, devices: deviceListID, isFromIndeterminate: indeterminate });
+                    this.list.push({ type: "Remove", lotID, devices: deviceListID, isFromIndeterminate: indeterminate });
                 }
-            }
 
             if (this.list.length > 0) {
                 document.getElementById("ApplyDeviceLots").classList.remove("disabled");
@@ -244,10 +242,10 @@ async function processSelectedDevices() {
          * @param {boolean} isError defines if a toast is a error
          */
         notifyUser(title, toastText, isError) {
-            let toast = document.createElement("div");
-            toast.classList = "alert alert-dismissible fade show " + (isError ? "alert-danger" : "alert-success");
+            const toast = document.createElement("div");
+            toast.classList = `alert alert-dismissible fade show ${  isError ? "alert-danger" : "alert-success"}`;
             toast.attributes["data-autohide"] = !isError;
-            toast.attributes["role"] = "alert";
+            toast.attributes.role = "alert";
             toast.style = "margin-left: auto; width: fit-content;";
             toast.innerHTML = `<strong>${title}</strong><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
             if (toastText && toastText.length > 0) {
@@ -265,7 +263,7 @@ async function processSelectedDevices() {
          * Get actions and execute call request to add or remove devices from lots
          */
         doActions() {
-            var requestCount = 0; // This is for count all requested api count, to perform reRender of table device list
+            let requestCount = 0; // This is for count all requested api count, to perform reRender of table device list
             this.list.forEach(async action => {
                 if (action.type == "Add") {
                     try {
@@ -295,13 +293,13 @@ async function processSelectedDevices() {
          * Re-render list in table
          */
         async reRenderTable() {
-            var newRequest = await Api.doRequest(window.location)
+            const newRequest = await Api.doRequest(window.location)
 
-            var tmpDiv = document.createElement("div")
+            const tmpDiv = document.createElement("div")
             tmpDiv.innerHTML = newRequest
 
-            var oldTable = Array.from(document.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
-            var newTable = Array.from(tmpDiv.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
+            const oldTable = Array.from(document.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
+            const newTable = Array.from(tmpDiv.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
 
             for (let i = 0; i < oldTable.length; i++) {
                 if (!newTable.includes(oldTable[i])) {
@@ -312,7 +310,7 @@ async function processSelectedDevices() {
         }
     }
 
-    var eventClickActions;
+    let eventClickActions;
 
     /**
      * Generates a list item with a correspondient checkbox state
@@ -324,12 +322,12 @@ async function processSelectedDevices() {
     function templateLot(lotID, lot, selectedDevicesIDs, elementTarget, actions) {
         elementTarget.innerHTML = ""
 
-        var htmlTemplate = `<input class="form-check-input" type="checkbox" id="${lotID}" style="width: 20px; height: 20px; margin-right: 7px;">
+        const htmlTemplate = `<input class="form-check-input" type="checkbox" id="${lotID}" style="width: 20px; height: 20px; margin-right: 7px;">
             <label class="form-check-label" for="${lotID}">${lot.name}</label>`;
 
-        var existLotList = selectedDevicesIDs.map(selected => lot.devices.includes(selected));
+        const existLotList = selectedDevicesIDs.map(selected => lot.devices.includes(selected));
 
-        var doc = document.createElement('li');
+        const doc = document.createElement("li");
         doc.innerHTML = htmlTemplate;
 
         if (selectedDevicesIDs.length <= 0) {
@@ -342,21 +340,21 @@ async function processSelectedDevices() {
             doc.children[0].indeterminate = true;
         }
 
-        doc.children[0].addEventListener('mouseup', (ev) => actions.manage(ev, lotID, selectedDevicesIDs));
+        doc.children[0].addEventListener("mouseup", (ev) => actions.manage(ev, lotID, selectedDevicesIDs));
         elementTarget.append(doc);
     }
 
-    var listHTML = $("#LotsSelector")
+    const listHTML = $("#LotsSelector")
 
     // Get selected devices
-    var selectedDevicesIDs = $.map($(".deviceSelect").filter(':checked'), function (x) { return parseInt($(x).attr('data')) });
+    const selectedDevicesIDs = $.map($(".deviceSelect").filter(":checked"), (x) => parseInt($(x).attr("data")));
     if (selectedDevicesIDs.length <= 0) {
-        listHTML.html('<li style="color: red; text-align: center">No devices selected</li>');
+        listHTML.html("<li style=\"color: red; text-align: center\">No devices selected</li>");
         return;
     }
 
     // Initialize Actions list, and set checkbox triggers
-    var actions = new Actions();
+    const actions = new Actions();
     if (eventClickActions) {
         document.getElementById("ApplyDeviceLots").removeEventListener(eventClickActions);
     }
@@ -364,9 +362,9 @@ async function processSelectedDevices() {
     document.getElementById("ApplyDeviceLots").classList.add("disabled");
 
     try {
-        listHTML.html('<li style="text-align: center"><div class="spinner-border text-info" style="margin: auto" role="status"></div></li>')
-        var devices = await Api.get_devices(selectedDevicesIDs);
-        var lots = await Api.get_lots();
+        listHTML.html("<li style=\"text-align: center\"><div class=\"spinner-border text-info\" style=\"margin: auto\" role=\"status\"></div></li>")
+        const devices = await Api.get_devices(selectedDevicesIDs);
+        let lots = await Api.get_lots();
 
         lots = lots.map(lot => {
             lot.devices = devices
@@ -375,10 +373,10 @@ async function processSelectedDevices() {
             return lot;
         })
 
-        listHTML.html('');
+        listHTML.html("");
         lots.forEach(lot => templateLot(lot.id, lot, selectedDevicesIDs, listHTML, actions));
     } catch (error) {
         console.log(error);
-        listHTML.html('<li style="color: red; text-align: center">Error feching devices and lots<br>(see console for more details)</li>');
+        listHTML.html("<li style=\"color: red; text-align: center\">Error feching devices and lots<br>(see console for more details)</li>");
     }
 }
