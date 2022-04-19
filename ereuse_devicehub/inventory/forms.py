@@ -97,62 +97,6 @@ class FilterForm(FlaskForm):
         return ['Desktop', 'Laptop', 'Server']
 
 
-class LotDeviceForm(FlaskForm):
-    lot = StringField('Lot', [validators.UUID()])
-    devices = StringField('Devices', [validators.length(min=1)])
-
-    def validate(self, extra_validators=None):
-        is_valid = super().validate(extra_validators)
-
-        if not is_valid:
-            return False
-
-        self._lot = (
-            Lot.query.outerjoin(Trade)
-            .filter(Lot.id == self.lot.data)
-            .filter(
-                or_(
-                    Trade.user_from == g.user,
-                    Trade.user_to == g.user,
-                    Lot.owner_id == g.user.id,
-                )
-            )
-            .one()
-        )
-
-        devices = set(self.devices.data.split(","))
-        self._devices = (
-            Device.query.filter(Device.id.in_(devices))
-            .filter(Device.owner_id == g.user.id)
-            .distinct()
-            .all()
-        )
-
-        return bool(self._devices)
-
-    def save(self, commit=True):
-        trade = self._lot.trade
-        if trade:
-            for dev in self._devices:
-                if trade not in dev.actions:
-                    trade.devices.add(dev)
-
-        if self._devices:
-            self._lot.devices.update(self._devices)
-            db.session.add(self._lot)
-
-        if commit:
-            db.session.commit()
-
-    def remove(self, commit=True):
-        if self._devices:
-            self._lot.devices.difference_update(self._devices)
-            db.session.add(self._lot)
-
-        if commit:
-            db.session.commit()
-
-
 class LotForm(FlaskForm):
     name = StringField('Name', [validators.length(min=1)])
 
