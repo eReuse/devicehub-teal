@@ -464,7 +464,6 @@ class ParseSnapshotLsHw:
 
     def get_data_storage(self):
 
-        # import pdb; pdb.set_trace()
         for sm in self.smart:
             if sm.get('smartctl', {}).get('exit_status') == 1:
                 continue

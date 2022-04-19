@@ -1155,3 +1155,17 @@ def test_snapshot_errors_no_serial_number(user: UserClient):
         assert not c.manufacturer
         test = c.actions[-1]
         assert test.power_on_hours == 19819
+
+
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_check_tests_lite(user: UserClient):
+    """This test check the minimum validation of json that come from snapshot"""
+    snapshot_lite = file_json('test_lite/2022-4-13-19-5_user@dhub.com_b27dbf43-b88a-4505-ae27-10de5a95919e.json')
+
+    bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
+    assert res.status_code == 201
+    SnapshotErrors.query.all()
+    dev = m.Device.query.filter_by(id=bodyLite['device']['id']).one()
+    # import pdb; pdb.set_trace()
+
+
