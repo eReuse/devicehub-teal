@@ -254,7 +254,14 @@ class UserClientFlask:
         body = next(body).decode("utf-8")
         assert "Unassgined" in body
 
-    def get(self, uri='', data=None, follow_redirects=True, **kw):
+    def get(
+        self,
+        uri='',
+        data=None,
+        follow_redirects=True,
+        content_type='text/html; charset=utf-8',
+        **kw,
+    ):
 
         body, status, headers = self.client.get(
             uri, data=data, follow_redirects=follow_redirects, headers=self.headers
@@ -262,10 +269,21 @@ class UserClientFlask:
         body = next(body).decode("utf-8")
         return (body, status)
 
-    def post(self, uri='', data=None, follow_redirects=True, **kw):
+    def post(
+        self,
+        uri='',
+        data=None,
+        follow_redirects=True,
+        content_type='application/x-www-form-urlencoded',
+        **kw,
+    ):
 
         body, status, headers = self.client.post(
-            uri, data=data, follow_redirects=follow_redirects, headers=self.headers
+            uri,
+            data=data,
+            follow_redirects=follow_redirects,
+            headers=self.headers,
+            content_type=content_type,
         )
         body = next(body).decode("utf-8")
         return (body, status)
