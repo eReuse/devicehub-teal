@@ -25,8 +25,8 @@ jobs:
         node-version: '16'
     - name: Install dependencies
       run: npm install
-    - name: Test Code Linting
-      run: npm run lint
+    - name: Test Code Linting & fix it
+      run: npm run lint:fix
     - name: Save Code Linting Report JSON
       # npm script for ESLint
       # eslint --output-file eslint_report.json --format json src
