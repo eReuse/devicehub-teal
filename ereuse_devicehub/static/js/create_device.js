@@ -1,15 +1,15 @@
-$(document).ready(function() {
+$(document).ready(() => {
    $("#type").on("change", deviceInputs);
    deviceInputs();
 })
 
 function deviceInputs() {
-    if ($("#type").val() == 'Monitor') {
+    if ($("#type").val() == "Monitor") {
         $("#screen").show();
         $("#resolution").show();
         $("#imei").hide();
         $("#meid").hide();
-    } else if (['Smartphone', 'Cellphone', 'Tablet'].includes($("#type").val())) {
+    } else if (["Smartphone", "Cellphone", "Tablet"].includes($("#type").val())) {
         $("#screen").hide();
         $("#resolution").hide();
         $("#imei").show();
