@@ -3,11 +3,6 @@ from setuptools import find_packages, setup
 from ereuse_devicehub import __version__
 
 
-test_requires = [
-    'pytest',
-    'requests_mock'
-]
-
 setup(
     name='ereuse-devicehub',
     version=__version__,
@@ -52,17 +47,12 @@ setup(
         'docs-auto': [
             'sphinx-autobuild'
         ],
-        'test': test_requires
     },
-    tests_require=test_requires,
     entry_points={
         'console_scripts': [
             'dh = ereuse_devicehub.cli:cli'
         ]
     },
-    setup_requires=[
-        'pytest-runner'
-    ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Web Environment',
@@ -71,8 +61,7 @@ setup(
         'License :: OSI Approved :: GNU Affero General Public License v3',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
         'Topic :: Software Development :: Libraries :: Python Modules',
