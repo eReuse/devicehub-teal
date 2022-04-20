@@ -25,6 +25,16 @@ jobs:
         node-version: '16'
     - name: Install dependencies
       run: npm install
+    - name: Run linters
+      uses: wearerequired/lint-action@v1
+      with:
+        eslint: true
+        prettier: false
+        commit_message: "Fix code style issues with ${linter}"
+        auto_fix: true
+        commit: true
+        github_token: "${{ secrets.GITHUB_TOKEN }}"
+        git_name: "Lint Action"
     - name: Save Code Linting Report JSON
       # npm script for ESLint
       # eslint --output-file eslint_report.json --format json src
@@ -37,16 +47,6 @@ jobs:
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
         report-json: "eslint_report.json"
-    - name: Run linters
-      uses: wearerequired/lint-action@v1
-      with:
-        eslint: true
-        prettier: false
-        commit_message: "Fix code style issues with ${linter}"
-        auto_fix: true
-        commit: true
-        github_token: "${{ secrets.GITHUB_TOKEN }}"
-        git_name: "Lint Action"
     - name: Upload ESLint report
       uses: actions/upload-artifact@v2
       with:
