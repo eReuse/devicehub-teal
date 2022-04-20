@@ -10,6 +10,7 @@ from flask_wtf.csrf import generate_csrf
 from ereuse_devicehub.client import UserClient, UserClientFlask
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.action.models import Snapshot
+from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
 from tests import conftest
 
@@ -421,3 +422,58 @@ def test_print_labels(user3: UserClientFlask):
     path = "/inventory/device/{}/".format(dev.devicehub_id)
     assert path in body
     assert "tag1" not in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_monitor(user3: UserClientFlask):
+    uri = '/inventory/device/add/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "New Device" in body
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Monitor",
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Device &#34;Monitor&#34; created successfully!' in body
+    dev = Device.query.one()
+    assert dev.type == 'Monitor'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_filter_monitor(user3: UserClientFlask):
+    uri = '/inventory/device/add/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Monitor",
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+    }
+    user3.post(uri, data=data)
+    csrf = generate_csrf()
+    # import pdb; pdb.set_trace()
+
+    uri = f'/inventory/device/?filter=Monitor&csrf_token={csrf}'
+    body, status = user3.get(uri)
+
+    assert status == '200 OK'
+    dev = Device.query.one()
+    assert dev.devicehub_id in body
