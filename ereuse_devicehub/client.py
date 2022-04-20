@@ -260,13 +260,15 @@ class UserClientFlask:
         data=None,
         follow_redirects=True,
         content_type='text/html; charset=utf-8',
+        decode=True,
         **kw,
     ):
 
         body, status, headers = self.client.get(
             uri, data=data, follow_redirects=follow_redirects, headers=self.headers
         )
-        body = next(body).decode("utf-8")
+        if decode:
+            body = next(body).decode("utf-8")
         return (body, status)
 
     def post(
@@ -275,6 +277,7 @@ class UserClientFlask:
         data=None,
         follow_redirects=True,
         content_type='application/x-www-form-urlencoded',
+        decode=True,
         **kw,
     ):
 
@@ -285,5 +288,6 @@ class UserClientFlask:
             headers=self.headers,
             content_type=content_type,
         )
-        body = next(body).decode("utf-8")
+        if decode:
+            body = next(body).decode("utf-8")
         return (body, status)
