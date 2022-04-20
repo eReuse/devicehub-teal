@@ -1,0 +1,54 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# ESLint is a tool for identifying and reporting on patterns
+# found in ECMAScript/JavaScript code.
+# More details at https://github.com/eslint/eslint
+# and https://eslint.org
+
+name: ESLint
+
+on:
+  push:
+    branches: [master, testing]
+  pull_request:
+    branches: [master, testing]
+
+jobs:
+  build: 
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '16'
+    - name: Install dependencies
+      run: npm install
+    - name: Save Code Linting Report JSON
+      # npm script for ESLint
+      # eslint --output-file eslint_report.json --format json src
+      # See https://eslint.org/docs/user-guide/command-line-interface#options
+      run: npm run lint:report
+      # Continue to the next step even if this fails
+      continue-on-error: true
+    - name: Annotate Code Linting Results
+      uses: ataylorme/eslint-annotate-action@1.2.0
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        report-json: "eslint_report.json"
+    - name: Run linters
+      uses: wearerequired/lint-action@v1
+      with:
+        eslint: true
+        prettier: false
+        commit_message: "Fix code style issues with ${linter}"
+        auto_fix: true
+        commit: true
+        github_token: "${{ secrets.GITHUB_TOKEN }}"
+        git_name: "Lint Action"
+    - name: Upload ESLint report
+      uses: actions/upload-artifact@v2
+      with:
+        name: eslint_report.json
+        path: eslint_report.json
