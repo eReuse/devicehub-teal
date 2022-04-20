@@ -14,6 +14,22 @@ from ereuse_devicehub.resources.lot.models import Lot
 from tests import conftest
 
 
+def create_device(user, file_name):
+    uri = '/inventory/upload-snapshot/'
+    snapshot = conftest.yaml2json(file_name.split(".json")[0])
+    b_snapshot = bytes(json.dumps(snapshot), 'utf-8')
+    file_snap = (BytesIO(b_snapshot), file_name)
+    user.get(uri)
+
+    data = {
+        'snapshot': file_snap,
+        'csrf_token': generate_csrf(),
+    }
+    user.post(uri, data=data, content_type="multipart/form-data")
+
+    return Snapshot.query.one()
+
+
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_login(user: UserClient, app: Devicehub):
@@ -154,69 +170,31 @@ def test_upload_snapshot(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_inventory_with_device(user3: UserClientFlask):
-    uri = '/inventory/upload-snapshot/'
-    file_name = 'real-eee-1001pxd.snapshot.12.json'
-    snapshot = conftest.yaml2json(file_name.split(".json")[0])
-    b_snapshot = bytes(json.dumps(snapshot), 'utf-8')
-    file_snap = (BytesIO(b_snapshot), file_name)
-    user3.get(uri)
-
-    data = {
-        'snapshot': file_snap,
-        'csrf_token': generate_csrf(),
-    }
-    user3.post(uri, data=data, content_type="multipart/form-data")
-
+    db_snapthot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
     body, status = user3.get('/inventory/device/')
 
     assert status == '200 OK'
     assert "Unassgined" in body
-    db_snapthot = Snapshot.query.one()
     assert db_snapthot.device.devicehub_id in body
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_inventory_filter(user3: UserClientFlask):
-    uri = '/inventory/upload-snapshot/'
-    file_name = 'real-eee-1001pxd.snapshot.12.json'
-    snapshot = conftest.yaml2json(file_name.split(".json")[0])
-    b_snapshot = bytes(json.dumps(snapshot), 'utf-8')
-    file_snap = (BytesIO(b_snapshot), file_name)
-    user3.get(uri)
-
-    data = {
-        'snapshot': file_snap,
-        'csrf_token': generate_csrf(),
-    }
-    user3.post(uri, data=data, content_type="multipart/form-data")
+    db_snapthot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
 
     csrf = generate_csrf()
     body, status = user3.get(f'/inventory/device/?filter=Laptop&csrf_token={csrf}')
 
     assert status == '200 OK'
     assert "Unassgined" in body
-    db_snapthot = Snapshot.query.one()
     assert db_snapthot.device.devicehub_id in body
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_export_devices(user3: UserClientFlask):
-    uri = '/inventory/upload-snapshot/'
-    file_name = 'real-eee-1001pxd.snapshot.12.json'
-    snapshot = conftest.yaml2json(file_name.split(".json")[0])
-    b_snapshot = bytes(json.dumps(snapshot), 'utf-8')
-    file_snap = (BytesIO(b_snapshot), file_name)
-    user3.get(uri)
-
-    data = {
-        'snapshot': file_snap,
-        'csrf_token': generate_csrf(),
-    }
-    user3.post(uri, data=data, content_type="multipart/form-data")
-
-    snap = Snapshot.query.one()
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
     uri = "/inventory/export/devices/?ids={id}".format(id=snap.device.devicehub_id)
 
     body, status = user3.get(uri)
@@ -242,3 +220,204 @@ def test_export_devices(user3: UserClientFlask):
     assert (
         fixture_csv[1][86:] == export_csv[1][86:]
     ), 'Computer information are not equal'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_export_metrics(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    uri = "/inventory/export/metrics/?ids={id}".format(id=snap.device.devicehub_id)
+
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert body == ''
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_export_links(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    uri = "/inventory/export/links/?ids={id}".format(id=snap.device.devicehub_id)
+
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    body = body.split("\n")
+    assert ['links', 'http://localhost/devices/O48N2', ''] == body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_export_certificates(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    uri = "/inventory/export/certificates/?ids={id}".format(id=snap.device.devicehub_id)
+
+    body, status = user3.get(uri, decode=False)
+    body = str(next(body))
+    assert status == '200 OK'
+    assert "PDF-1.5" in body
+    assert 'hts54322' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_labels(user3: UserClientFlask):
+    body, status = user3.get('/labels/')
+
+    assert status == '200 OK'
+    assert "Tags Management" in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_tag(user3: UserClientFlask):
+    uri = '/labels/add/'
+    body, status = user3.get(uri)
+
+    assert status == '200 OK'
+    assert "Add a new Tag" in body
+
+    data = {
+        'code': "tag1",
+        'csrf_token': generate_csrf(),
+    }
+    body, status = user3.post(uri, data=data)
+
+    assert status == '200 OK'
+    assert "tag1" in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_label_details(user3: UserClientFlask):
+    uri = '/labels/add/'
+    user3.get(uri)
+
+    data = {
+        'code': "tag1",
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data)
+
+    body, status = user3.get('/labels/tag1/')
+    assert "tag1" in body
+    assert "Print Label" in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_link_tag_to_device(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/labels/add/'
+    user3.get(uri)
+
+    data = {
+        'code': "tag1",
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data)
+
+    body, status = user3.get('/inventory/device/')
+    assert "tag1" in body
+
+    data = {
+        'tag': "tag1",
+        'device': dev.id,
+        'csrf_token': generate_csrf(),
+    }
+
+    uri = '/inventory/tag/devices/add/'
+    user3.post(uri, data=data)
+    assert len(list(dev.tags)) == 2
+    tag = list(dev.tags)[0]
+    assert tag.id == "tag1"
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_unlink_tag_to_device(user3: UserClientFlask):
+    # create device
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+
+    # create tag
+    uri = '/labels/add/'
+    user3.get(uri)
+
+    data = {
+        'code': "tag1",
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data)
+
+    # link tag to device
+    data = {
+        'tag': "tag1",
+        'device': dev.id,
+        'csrf_token': generate_csrf(),
+    }
+
+    uri = '/inventory/tag/devices/add/'
+    user3.post(uri, data=data)
+
+    # unlink tag to device
+    uri = '/inventory/tag/devices/{id}/del/'.format(id=dev.id)
+    user3.get(uri)
+
+    data = {
+        'code': "tag1",
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data)
+
+    data = {
+        'tag': "tag1",
+        'csrf_token': generate_csrf(),
+    }
+
+    user3.post(uri, data=data)
+    assert len(list(dev.tags)) == 1
+    tag = list(dev.tags)[0]
+    assert not tag.id == "tag1"
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_print_labels(user3: UserClientFlask):
+    # create device
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+
+    # create tag
+    uri = '/labels/add/'
+    user3.get(uri)
+
+    data = {
+        'code': "tag1",
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data)
+
+    # link tag to device
+    data = {
+        'tag': "tag1",
+        'device': dev.id,
+        'csrf_token': generate_csrf(),
+    }
+
+    uri = '/inventory/tag/devices/add/'
+    user3.post(uri, data=data)
+
+    assert len(list(dev.tags)) == 2
+
+    uri = '/labels/print'
+    data = {
+        'devices': "{}".format(dev.id),
+        'csrf_token': generate_csrf(),
+    }
+    body, status = user3.post(uri, data=data)
+
+    assert status == '200 OK'
+    path = "/inventory/device/{}/".format(dev.devicehub_id)
+    assert path in body
+    assert "tag1" not in body
