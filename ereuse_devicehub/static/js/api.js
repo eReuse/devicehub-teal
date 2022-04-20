@@ -38,7 +38,7 @@ const Api = {
      */
     async devices_add(lotID, listDevices) {
         const queryURL = `${API_URLS.devices_modify.replace("UUID", lotID)  }?${  listDevices.map(deviceID => `id=${  deviceID}`).join("&")}`;
-        return await Api.doRequest(queryURL, "POST", null);
+        return Api.doRequest(queryURL, "POST", null);
     },
 
     /**
@@ -48,7 +48,7 @@ const Api = {
      */
     async devices_remove(lotID, listDevices) {
         const queryURL = `${API_URLS.devices_modify.replace("UUID", lotID)  }?${  listDevices.map(deviceID => `id=${  deviceID}`).join("&")}`;
-        return await Api.doRequest(queryURL, "DELETE", null);
+        return Api.doRequest(queryURL, "DELETE", null);
     },
 
     /**

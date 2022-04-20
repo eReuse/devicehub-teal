@@ -240,7 +240,7 @@
 
   btnSelectAll.addEventListener("click", event => {
     const checkedState = event.target.checked;
-    tableListCheckboxes.forEach(ckeckbox => ckeckbox.checked = checkedState);
+    tableListCheckboxes.forEach(ckeckbox => {ckeckbox.checked = checkedState});
   })
 
   /**
