@@ -315,15 +315,18 @@ class NewActionView(View):
 
     def dispatch_request(self):
         self.form = self.form_class()
+        next_url = self.get_next_url()
 
         if self.form.validate_on_submit():
             self.form.save()
             messages.success(
                 'Action "{}" created successfully!'.format(self.form.type.data)
             )
-
             next_url = self.get_next_url()
             return flask.redirect(next_url)
+
+        messages.error('Action {} error!'.format(self.form.type.data))
+        return flask.redirect(next_url)
 
     def get_next_url(self):
         lot_id = self.form.lot.data
@@ -350,10 +353,9 @@ class NewAllocateView(NewActionView, DeviceListMix):
             next_url = self.get_next_url()
             return flask.redirect(next_url)
 
-        lot_id = self.form.lot.data
-        self.get_context(lot_id)
-        self.context['form_new_allocate'] = self.form
-        return flask.render_template(self.template_name, **self.context)
+        messages.error('Action {} error!'.format(self.form.type.data))
+        next_url = self.get_next_url()
+        return flask.redirect(next_url)
 
 
 class NewDataWipeView(NewActionView, DeviceListMix):
@@ -372,10 +374,9 @@ class NewDataWipeView(NewActionView, DeviceListMix):
             next_url = self.get_next_url()
             return flask.redirect(next_url)
 
-        lot_id = self.form.lot.data
-        self.get_context(lot_id)
-        self.context['form_new_datawipe'] = self.form
-        return flask.render_template(self.template_name, **self.context)
+        messages.error('Action {} error!'.format(self.form.type.data))
+        next_url = self.get_next_url()
+        return flask.redirect(next_url)
 
 
 class NewTradeView(NewActionView, DeviceListMix):
@@ -394,10 +395,9 @@ class NewTradeView(NewActionView, DeviceListMix):
             next_url = self.get_next_url()
             return flask.redirect(next_url)
 
-        lot_id = self.form.lot.data
-        self.get_context(lot_id)
-        self.context['form_new_trade'] = self.form
-        return flask.render_template(self.template_name, **self.context)
+        messages.error('Action {} error!'.format(self.form.type.data))
+        next_url = self.get_next_url()
+        return flask.redirect(next_url)
 
 
 class NewTradeDocumentView(View):
