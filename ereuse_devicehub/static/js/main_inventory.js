@@ -393,10 +393,10 @@ async function processSelectedDevices() {
         })
 
 
-        var lotsList = [];
-        lotsList.push(lots.filter(lot => lot.state == "true").sort((a,b) => a["name"].localeCompare(b["name"])));
-        lotsList.push(lots.filter(lot => lot.state == "indetermined").sort((a,b) => a["name"].localeCompare(b["name"])));
-        lotsList.push(lots.filter(lot => lot.state == "false").sort((a,b) => a["name"].localeCompare(b["name"])));
+        let lotsList = [];
+        lotsList.push(lots.filter(lot => lot.state == "true").sort((a,b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "indetermined").sort((a,b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "false").sort((a,b) => a.name.localeCompare(b.name)));
         lotsList = lotsList.flat(); // flat array
 
         listHTML.html("");
