@@ -58,6 +58,16 @@ def test_login(user: UserClient, app: Devicehub):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_profile(user3: UserClientFlask):
+    body, status = user3.get('/profile/')
+
+    assert status == '200 OK'
+    assert "Profile" in body
+    assert user3.email in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_inventory(user3: UserClientFlask):
     body, status = user3.get('/inventory/device/')
 
@@ -116,7 +126,6 @@ def test_update_lot(user3: UserClientFlask):
     user3.get('/inventory/lot/add/')
 
     # Add lot
-    # import pdb; pdb.set_trace()
     data = {
         'name': "lot1",
         'csrf_token': generate_csrf(),
@@ -330,8 +339,8 @@ def test_link_tag_to_device(user3: UserClientFlask):
     uri = '/inventory/tag/devices/add/'
     user3.post(uri, data=data)
     assert len(list(dev.tags)) == 2
-    tag = list(dev.tags)[0]
-    assert tag.id == "tag1"
+    tags = [tag.id for tag in dev.tags]
+    assert "tag1" in tags
 
 
 @pytest.mark.mvp
@@ -469,11 +478,377 @@ def test_filter_monitor(user3: UserClientFlask):
     }
     user3.post(uri, data=data)
     csrf = generate_csrf()
-    # import pdb; pdb.set_trace()
 
     uri = f'/inventory/device/?filter=Monitor&csrf_token={csrf}'
     body, status = user3.get(uri)
 
     assert status == '200 OK'
     dev = Device.query.one()
+    assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_recycling(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    # fail request
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Allocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+    }
+
+    uri = '/inventory/action/add/'
+    body, status = user3.post(uri, data=data)
+    assert dev.actions[-1].type == 'EreusePrice'
+    assert 'Action Allocate error!' in body
+
+    # good request
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Recycling",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+    }
+
+    uri = '/inventory/action/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert dev.actions[-1].type == 'Recycling'
+    assert 'Action &#34;Recycling&#34; created successfully!' in body
+    assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_error_without_devices(user3: UserClientFlask):
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Recycling",
+        'severity': "Info",
+        'devices': "",
+    }
+
+    uri = '/inventory/action/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Action Recycling error!' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_use(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Use",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+    }
+
+    uri = '/inventory/action/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert dev.actions[-1].type == 'Use'
+    assert 'Action &#34;Use&#34; created successfully!' in body
+    assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_refurbish(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Refurbish",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+    }
+
+    uri = '/inventory/action/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert dev.actions[-1].type == 'Refurbish'
+    assert 'Action &#34;Refurbish&#34; created successfully!' in body
+    assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_management(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Management",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+    }
+
+    uri = '/inventory/action/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert dev.actions[-1].type == 'Management'
+    assert 'Action &#34;Management&#34; created successfully!' in body
+    assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_allocate(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Allocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-01-01',
+        'end_time': '2000-06-01',
+        'end_users': 2,
+    }
+
+    uri = '/inventory/action/allocate/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert dev.actions[-1].type == 'Allocate'
+    assert 'Action &#34;Allocate&#34; created successfully!' in body
+    assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_allocate_error_required(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Trade",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+    }
+
+    uri = '/inventory/action/allocate/add/'
+    body, status = user3.post(uri, data=data)
+    assert dev.actions[-1].type != 'Allocate'
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Allocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+    }
+
+    uri = '/inventory/action/allocate/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'You need to specify a number of users' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_allocate_error_dates(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Allocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-06-01',
+        'end_time': '2000-01-01',
+        'end_users': 2,
+    }
+
+    uri = '/inventory/action/allocate/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'The action cannot finish before it starts.' in body
+    assert dev.actions[-1].type != 'Allocate'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_deallocate(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Allocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-01-01',
+        'end_time': '2000-06-01',
+        'end_users': 2,
+    }
+
+    uri = '/inventory/action/allocate/add/'
+
+    user3.post(uri, data=data)
+    assert dev.actions[-1].type == 'Allocate'
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Deallocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-01-01',
+        'end_time': '2000-06-01',
+        'end_users': 2,
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert dev.actions[-1].type == 'Deallocate'
+    assert 'Action &#34;Deallocate&#34; created successfully!' in body
+    assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_toprepare(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "ToPrepare",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+    }
+
+    uri = '/inventory/action/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert dev.actions[-1].type == 'ToPrepare'
+    assert 'Action &#34;ToPrepare&#34; created successfully!' in body
+    assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_prepare(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Prepare",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+    }
+
+    uri = '/inventory/action/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert dev.actions[-1].type == 'Prepare'
+    assert 'Action &#34;Prepare&#34; created successfully!' in body
+    assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_torepair(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "ToRepair",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+    }
+
+    uri = '/inventory/action/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert dev.actions[-1].type == 'ToRepair'
+    assert 'Action &#34;ToRepair&#34; created successfully!' in body
+    assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_ready(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Ready",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+    }
+
+    uri = '/inventory/action/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert dev.actions[-1].type == 'Ready'
+    assert 'Action &#34;Ready&#34; created successfully!' in body
+    assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_datawipe(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    b_file = b'1234567890'
+    file_name = "my_file.doc"
+    file_upload = (BytesIO(b_file), file_name)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "DataWipe",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'document-file_name': file_upload,
+    }
+
+    uri = '/inventory/action/datawipe/add/'
+    body, status = user3.post(uri, data=data, content_type="multipart/form-data")
+    assert status == '200 OK'
+    assert dev.actions[-1].type == 'DataWipe'
+    assert 'Action &#34;DataWipe&#34; created successfully!' in body
     assert dev.devicehub_id in body
