@@ -53,7 +53,14 @@ class InventoryView(LoginMix, SnapshotMix):
         snapshot_json = self.validate(snapshot_json)
         try:
             self.snapshot_json = ParseSnapshotLsHw(snapshot_json).get_snapshot()
-        except ValidationError:
+        except Exception as err:
+            txt = "{}, {}".format(err.__class__, err)
+            uuid = snapshot_json.get('uuid')
+            wbid = snapshot_json.get('wbid')
+            error = SnapshotErrors(
+                description=txt, snapshot_uuid=uuid, severity=Severity.Error, wbid=wbid
+            )
+            error.save(commit=True)
             self.response = jsonify('')
             self.response.status_code = 201
             return self.response
