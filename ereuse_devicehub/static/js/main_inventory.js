@@ -397,7 +397,7 @@ async function processSelectedDevices() {
         lotsList.push(lots.filter(lot => lot.state == "true").sort((a,b) => a["name"].localeCompare(b["name"])));
         lotsList.push(lots.filter(lot => lot.state == "indetermined").sort((a,b) => a["name"].localeCompare(b["name"])));
         lotsList.push(lots.filter(lot => lot.state == "false").sort((a,b) => a["name"].localeCompare(b["name"])));
-        lotsList = lotsList.flat(); // Aplana el array
+        lotsList = lotsList.flat(); // flat array
 
         listHTML.html("");
         lotsList.forEach(lot => templateLot(lot, listHTML, actions));
