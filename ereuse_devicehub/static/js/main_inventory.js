@@ -1,4 +1,5 @@
-$(document).ready(() => {
+$(document).ready(function() {
+    $(".deviceSelect").on("change", deviceSelect);
     const show_allocate_form = $("#allocateModal").data("show-action-form");
     const show_datawipe_form = $("#datawipeModal").data("show-action-form");
     const show_trade_form = $("#tradeLotModal").data("show-action-form");
@@ -11,8 +12,6 @@ $(document).ready(() => {
     } else if (show_trade_form != "None") {
         $("#tradeLotModal .btn-primary").show();
         newTrade(show_trade_form);
-    } else {
-        $(".deviceSelect").on("change", deviceSelect);
     }
     // $('#selectLot').selectpicker();
 })
@@ -179,6 +178,11 @@ function export_file(type_file) {
     } else {
         $("#exportAlertModal").click();
     }
+}
+
+function print_labels() {
+    deviceSelect();
+    $('#print_labels').submit();
 }
 
 
