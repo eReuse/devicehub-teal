@@ -3,7 +3,6 @@ import logging
 import uuid
 
 from dmidecode import DMIParse
-from marshmallow import ValidationError
 
 from ereuse_devicehub.parser import base2
 from ereuse_devicehub.parser.computer import Computer
@@ -347,17 +346,7 @@ class ParseSnapshotLsHw:
         }
 
     def get_snapshot(self):
-        try:
-            return Snapshot().load(self.snapshot_json)
-        except ValidationError as err:
-            txt = "{}".format(err)
-            uuid = self.snapshot_json.get('uuid')
-            wbid = self.snapshot_json.get('wbid')
-            error = SnapshotErrors(
-                description=txt, snapshot_uuid=uuid, severity=Severity.Error, wbid=wbid
-            )
-            error.save(commit=True)
-            raise err
+        return Snapshot().load(self.snapshot_json)
 
     def parse_hwinfo(self):
         hw_blocks = self.hwinfo_raw.split("\n\n")
