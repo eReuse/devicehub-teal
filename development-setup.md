@@ -30,11 +30,6 @@ Create a demo table
 export dhi=dbtest; dh dummy
 ```
 
-copy `examples/app.py` to project directory:
-```bash
-copy examples/app.py .
-```
-
 ## Run project
 
 Run the app
