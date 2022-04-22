@@ -15,7 +15,7 @@
     margin: 0;
     padding: 0;
     min-width: max-content;
-    max-height: 40vh;
+    max-height: 380px;
     overflow-y: auto;
 }
 
