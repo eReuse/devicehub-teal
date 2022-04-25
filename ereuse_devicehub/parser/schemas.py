@@ -19,7 +19,7 @@ class Snapshot_lite(Thing):
     version = String(required=True)
     schema_api = String(required=True)
     software = String(required=True)
-    wbid = String(required=True)
+    sid = String(required=True)
     type = String(required=True)
     timestamp = String(required=True)
     data = Nested(Snapshot_lite_data)

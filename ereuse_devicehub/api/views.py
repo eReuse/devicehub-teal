@@ -56,9 +56,9 @@ class InventoryView(LoginMix, SnapshotMix):
         except Exception as err:
             txt = "{}, {}".format(err.__class__, err)
             uuid = snapshot_json.get('uuid')
-            wbid = snapshot_json.get('wbid')
+            sid = snapshot_json.get('sid')
             error = SnapshotErrors(
-                description=txt, snapshot_uuid=uuid, severity=Severity.Error, wbid=wbid
+                description=txt, snapshot_uuid=uuid, severity=Severity.Error, sid=sid
             )
             error.save(commit=True)
             self.response = jsonify('')

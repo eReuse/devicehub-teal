@@ -37,7 +37,7 @@ class ParseSnapshot:
             "version": "14.0.0",
             "endTime": snapshot["timestamp"],
             "elapsed": 1,
-            "wbid": snapshot["wbid"],
+            "sid": snapshot["sid"],
         }
 
     def get_snapshot(self):
@@ -317,7 +317,7 @@ class ParseSnapshotLsHw:
     def __init__(self, snapshot, default="n/a"):
         self.default = default
         self.uuid = snapshot.get("uuid")
-        self.wbid = snapshot.get("wbid")
+        self.sid = snapshot.get("sid")
         self.dmidecode_raw = snapshot["data"]["dmidecode"]
         self.smart = snapshot["data"]["smart"]
         self.hwinfo_raw = snapshot["data"]["hwinfo"]
@@ -342,7 +342,7 @@ class ParseSnapshotLsHw:
             "version": "14.0.0",
             "endTime": snapshot["timestamp"],
             "elapsed": 1,
-            "wbid": snapshot["wbid"],
+            "sid": snapshot["sid"],
         }
 
     def get_snapshot(self):
@@ -398,8 +398,10 @@ class ParseSnapshotLsHw:
     def get_ram_size(self, ram):
         size = ram.get("Size")
         if not len(size.split(" ")) == 2:
-            txt = "Error: Snapshot: {uuid}, tag: {wbid} have this ram Size: {size}".format(
-                uuid=self.uuid, size=size, wbid=self.wbid
+            txt = (
+                "Error: Snapshot: {uuid}, tag: {sid} have this ram Size: {size}".format(
+                    uuid=self.uuid, size=size, sid=self.sid
+                )
             )
             self.errors(txt)
             return 128
@@ -409,8 +411,8 @@ class ParseSnapshotLsHw:
     def get_ram_speed(self, ram):
         speed = ram.get("Speed", "100")
         if not len(speed.split(" ")) == 2:
-            txt = "Error: Snapshot: {uuid}, tag: {wbid} have this ram Speed: {speed}".format(
-                uuid=self.uuid, speed=speed, wbid=self.wbid
+            txt = "Error: Snapshot: {uuid}, tag: {sid} have this ram Speed: {speed}".format(
+                uuid=self.uuid, speed=speed, sid=self.sid
             )
             self.errors(txt)
             return 100
@@ -444,8 +446,8 @@ class ParseSnapshotLsHw:
             uuid.UUID(dmi_uuid)
         except (ValueError, AttributeError) as err:
             self.errors("{}".format(err))
-            txt = "Error: Snapshot: {uuid} tag: {wbid} have this uuid: {device}".format(
-                uuid=self.uuid, device=dmi_uuid, wbid=self.wbid
+            txt = "Error: Snapshot: {uuid} tag: {sid} have this uuid: {device}".format(
+                uuid=self.uuid, device=dmi_uuid, sid=self.sid
             )
             self.errors(txt)
             dmi_uuid = None
@@ -491,7 +493,7 @@ class ParseSnapshotLsHw:
             DataStorageInterface(interface.upper())
         except ValueError as err:
             txt = "tag: {}, interface {} is not in DataStorageInterface Enum".format(
-                interface, self.wbid
+                interface, self.sid
             )
             self.errors("{}".format(err))
             self.errors(txt)
@@ -533,6 +535,6 @@ class ParseSnapshotLsHw:
         logger.error(txt)
         self._errors.append(txt)
         error = SnapshotErrors(
-            description=txt, snapshot_uuid=self.uuid, severity=severity, wbid=self.wbid
+            description=txt, snapshot_uuid=self.uuid, severity=severity, sid=self.sid
         )
         error.save()

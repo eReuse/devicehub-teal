@@ -14,7 +14,7 @@ class SnapshotErrors(Thing):
 
     id = Column(BigInteger, Sequence('snapshot_errors_seq'), primary_key=True)
     description = Column(CIText(), default='', nullable=False)
-    wbid = Column(CIText(), nullable=True)
+    sid = Column(CIText(), nullable=True)
     severity = Column(SmallInteger, default=Severity.Info, nullable=False)
     snapshot_uuid = Column(UUID(as_uuid=True), nullable=False)
     owner_id = db.Column(
