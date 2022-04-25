@@ -34,6 +34,15 @@ def upgrade_datas():
                 where wbid='{wbid}';"""
             con.execute(sql)
 
+    sql = f"select wbid from {get_inv()}.snapshot_errors;"
+    snapshots = con.execute(sql)
+    for snap in snapshots:
+        wbid = snap.wbid
+        if wbid:
+            sql = f"""update {get_inv()}.snapshot set sid='{wbid}'
+                where wbid='{wbid}';"""
+            con.execute(sql)
+
 
 def upgrade():
     op.add_column(
@@ -44,6 +53,16 @@ def upgrade():
     upgrade_datas()
     op.drop_column('snapshot', 'wbid', schema=f'{get_inv()}')
 
+    op.add_column(
+        'snapshot_errors',
+        sa.Column('sid', citext.CIText(), nullable=True),
+        schema=f'{get_inv()}',
+    )
+    upgrade_datas()
+    op.drop_column('snapshot', 'wbid', schema=f'{get_inv()}')
+    op.drop_column('snapshot_errors', 'wbid', schema=f'{get_inv()}')
+
 
 def downgrade():
     op.drop_column('snapshot', 'sid', schema=f'{get_inv()}')
+    op.drop_column('snapshot_errors', 'sid', schema=f'{get_inv()}')
