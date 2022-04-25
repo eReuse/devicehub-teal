@@ -664,7 +664,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     elapsed.comment = """For Snapshots made with Workbench, the total amount
     of time it took to complete.
     """
-    wbid = Column(CIText(), nullable=True)
+    sid = Column(CIText(), nullable=True)
 
     def get_last_lifetimes(self):
         """We get the lifetime and serial_number of the first disk"""
