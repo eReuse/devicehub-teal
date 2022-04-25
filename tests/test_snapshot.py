@@ -1065,6 +1065,63 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_lite_error_422(user: UserClient):
+    """This test check the minimum validation of json that come from snapshot"""
+    snapshot_11 = file_json('snapshotErrors.json')
+    lshw = snapshot_11['debug']['lshw']
+    hwinfo = snapshot_11['debug']['hwinfo']
+    snapshot_lite = {
+        'timestamp': snapshot_11['endTime'],
+        'type': 'Snapshot',
+        'uuid': str(uuid.uuid4()),
+        'sid': 'MLKO1',
+        'software': 'Workbench',
+        'version': '2022.03.00',
+        "schema_api": "1.0.0",
+    }
+
+    for k in ['lshw', 'hwinfo', 'smart', 'dmidecode', 'lspci']:
+        data = {
+            'lshw': lshw,
+            'hwinfo': '',
+            'smart': [],
+            'dmidecode': '',
+            'lspci': '',
+        }
+        data.pop(k)
+        snapshot_lite['data'] = data
+        user.post(snapshot_lite, uri="/api/inventory/", status=422)
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_lite_minimum(user: UserClient):
+    """This test check the minimum validation of json that come from snapshot"""
+    snapshot_11 = file_json('snapshotErrors.json')
+    lshw = snapshot_11['debug']['lshw']
+    snapshot_lite = {
+        'timestamp': snapshot_11['endTime'],
+        'type': 'Snapshot',
+        'uuid': str(uuid.uuid4()),
+        'sid': 'MLKO1',
+        'software': 'Workbench',
+        'version': '2022.03.00',
+        "schema_api": "1.0.0",
+        'data': {
+            'lshw': lshw,
+            'hwinfo': '',
+            'smart': [],
+            'dmidecode': '',
+            'lspci': '',
+        },
+    }
+    bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
+    assert bodyLite['sid'] == 'MLKO1'
+    assert res.status_code == 201
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_snapshot_errors(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
     snapshot_11 = file_json('snapshotErrors.json')
