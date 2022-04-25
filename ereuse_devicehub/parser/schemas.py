@@ -7,11 +7,11 @@ from ereuse_devicehub.resources.schemas import Thing
 
 
 class Snapshot_lite_data(MarshmallowSchema):
-    dmidecode = String(required=False)
-    hwinfo = String(required=False)
-    smart = List(Dict(), required=False)
-    lshw = Dict(required=False)
-    lspci = String(required=False)
+    dmidecode = String(required=True)
+    hwinfo = String(required=True)
+    smart = List(Dict(), required=True)
+    lshw = Dict(required=True)
+    lspci = String(required=True)
 
 
 class Snapshot_lite(Thing):
@@ -22,7 +22,7 @@ class Snapshot_lite(Thing):
     sid = String(required=True)
     type = String(required=True)
     timestamp = String(required=True)
-    data = Nested(Snapshot_lite_data)
+    data = Nested(Snapshot_lite_data, required=True)
 
     @validates_schema
     def validate_workbench_version(self, data: dict):
