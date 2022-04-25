@@ -320,28 +320,33 @@ async function processSelectedDevices() {
      * @param {Array<number>} selectedDevicesIDs
      * @param {HTMLElement} target
      */
-    function templateLot(lotID, lot, selectedDevicesIDs, elementTarget, actions) {
+    function templateLot(lot, elementTarget, actions) {
         elementTarget.innerHTML = ""
+        const {id, name, state} = lot;
 
-        const htmlTemplate = `<input class="form-check-input" type="checkbox" id="${lotID}" style="width: 20px; height: 20px; margin-right: 7px;">
-            <label class="form-check-label" for="${lotID}">${lot.name}</label>`;
-
-        const existLotList = selectedDevicesIDs.map(selected => lot.devices.includes(selected));
+        const htmlTemplate = `<input class="form-check-input" type="checkbox" id="${id}" style="width: 20px; height: 20px; margin-right: 7px;">
+            <label class="form-check-label" for="${id}">${name}</label>`;
 
         const doc = document.createElement("li");
         doc.innerHTML = htmlTemplate;
 
-        if (selectedDevicesIDs.length <= 0) {
-            doc.children[0].disabled = true;
-        } else if (existLotList.every(value => value == true)) {
-            doc.children[0].checked = true;
-        } else if (existLotList.every(value => value == false)) {
-            doc.children[0].checked = false;
-        } else {
-            doc.children[0].indeterminate = true;
+        switch (state) {
+            case "true":
+                doc.children[0].checked = true;
+                break;
+            case "false":
+                doc.children[0].checked = false;
+                break;
+            case "indetermined":
+                doc.children[0].indeterminate = true;
+                break;
+            default:
+                console.warn("This shouldn't be happend: Lot without state: ", lot);
+                break;
         }
-        doc.children[0].addEventListener("mouseup", (ev) => actions.manage(ev, lotID, selectedDevicesIDs));
-        doc.children[1].addEventListener("mouseup", (ev) => actions.manage(ev, lotID, selectedDevicesIDs));
+
+        doc.children[0].addEventListener("mouseup", (ev) => actions.manage(ev, id, selectedDevicesIDs));
+        doc.children[1].addEventListener("mouseup", (ev) => actions.manage(ev, id, selectedDevicesIDs));
         elementTarget.append(doc);
     }
 
@@ -371,11 +376,31 @@ async function processSelectedDevices() {
             lot.devices = devices
                 .filter(device => device.lots.filter(devicelot => devicelot.id == lot.id).length > 0)
                 .map(device => parseInt(device.id));
+
+             switch (lot.devices.length) {
+                case 0:
+                    lot.state = "false";
+                    break;
+                case selectedDevicesIDs.length:
+                    lot.state = "true";
+                    break;
+                default:
+                    lot.state = "indetermined";
+                    break;
+            }
+
             return lot;
         })
 
+
+        let lotsList = [];
+        lotsList.push(lots.filter(lot => lot.state == "true").sort((a,b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "indetermined").sort((a,b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "false").sort((a,b) => a.name.localeCompare(b.name)));
+        lotsList = lotsList.flat(); // flat array
+
         listHTML.html("");
-        lots.forEach(lot => templateLot(lot.id, lot, selectedDevicesIDs, listHTML, actions));
+        lotsList.forEach(lot => templateLot(lot, listHTML, actions));
     } catch (error) {
         console.log(error);
         listHTML.html("<li style=\"color: red; text-align: center\">Error feching devices and lots<br>(see console for more details)</li>");

@@ -1,0 +1,25 @@
+/**
+* eReuse CSS
+*/
+
+/*--------------------------------------------------------------
+# LotsSelector
+--------------------------------------------------------------*/
+
+#dropDownLotsSelector {
+    max-height: 500px;
+}
+
+#dropDownLotsSelector>ul#LotsSelector {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    min-width: max-content;
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+#dropDownLotsSelector #ApplyDeviceLots {
+    padding-top: 0px;
+    padding-bottom: 5px;
+}
