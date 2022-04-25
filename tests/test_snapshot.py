@@ -966,16 +966,17 @@ def test_snapshot_wb_lite(user: UserClient):
         "2022-03-31_17h18m51s_ZQMPKKX51K67R68VO2X9RNZL08JPL_snapshot.json"
     )
     body, res = user.post(snapshot, uri="/api/inventory/")
+    # import pdb; pdb.set_trace()
 
-    ssd = [x for x in body['components'] if x['type'] == 'SolidStateDrive'][0]
+    dev = m.Device.query.filter_by(devicehub_id=body['dhid']).one()
+    ssd = [x for x in dev.components if x.type == 'SolidStateDrive'][0]
 
-    assert body['device']['manufacturer'] == 'lenovo'
-    # assert body['sid'] == "LXVC"
-    assert ssd['serialNumber'] == 's35anx0j401001'
+    assert dev.manufacturer == 'lenovo'
+    assert body['sid'] == "MLKO1Y0R55XZM051WQ5KJM01RY44Q"
+    assert ssd.serial_number == 's35anx0j401001'
     assert res.status == '201 CREATED'
-    assert '00:28:f8:a6:d5:7e' in body['device']['hid']
+    assert '00:28:f8:a6:d5:7e' in dev.hid
 
-    dev = m.Device.query.filter_by(id=body['device']['id']).one()
     assert dev.actions[0].power_on_hours == 6032
     errors = SnapshotErrors.query.filter().all()
     assert errors == []
@@ -994,7 +995,7 @@ def test_snapshot_wb_lite_qemu(user: UserClient):
     assert body['sid'] == "VL0L5"
     assert res.status == '201 CREATED'
 
-    dev = m.Device.query.filter_by(id=body['device']['id']).one()
+    dev = m.Device.query.filter_by(devicehub_id=body['dhid']).one()
     assert dev.manufacturer == 'qemu'
     assert dev.model == 'standard'
     assert dev.serial_number is None
@@ -1002,7 +1003,6 @@ def test_snapshot_wb_lite_qemu(user: UserClient):
     assert dev.actions[0].power_on_hours == 1
     assert dev.components[-1].size == 40960
     assert dev.components[-1].serial_number == 'qm00001'
-
 
 
 @pytest.mark.mvp
@@ -1036,26 +1036,23 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
 
         body11, res = user.post(snapshot_11, res=Snapshot)
         bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
+        dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
         components11 = []
         componentsLite = []
         for c in body11.get('components', []):
             if c['type'] in ["HardDrive", "SolidStateDrive"]:
                 continue
             components11.append({c.get('model'), c['type'], c.get('manufacturer')})
-        for c in bodyLite.get('components', []):
-            componentsLite.append({c.get('model'), c['type'], c.get('manufacturer')})
+        for c in dev.components:
+            componentsLite.append({c.model, c.type, c.manufacturer})
 
         try:
-            assert body11['device'].get('hid') == bodyLite['device'].get('hid')
+            assert body11['device'].get('hid') == dev.hid
             if body11['device'].get('hid'):
-                assert body11['device']['id'] == bodyLite['device']['id']
-            assert body11['device'].get('serialNumber') == bodyLite['device'].get(
-                'serialNumber'
-            )
-            assert body11['device'].get('model') == bodyLite['device'].get('model')
-            assert body11['device'].get('manufacturer') == bodyLite['device'].get(
-                'manufacturer'
-            )
+                assert body11['device']['id'] == dev.id
+            assert body11['device'].get('serialNumber') == dev.serial_number
+            assert body11['device'].get('model') == dev.model
+            assert body11['device'].get('manufacturer') == dev.manufacturer
 
             # wbLite can find more components than wb11
             assert len(components11) <= len(componentsLite)
@@ -1094,25 +1091,22 @@ def test_snapshot_errors(user: UserClient):
     body11, res = user.post(snapshot_11, res=Snapshot)
     assert SnapshotErrors.query.all() == []
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
+    dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
     assert len(SnapshotErrors.query.all()) == 2
 
-    assert body11['device'].get('hid') == bodyLite['device'].get('hid')
-    assert body11['device']['id'] == bodyLite['device']['id']
-    assert body11['device'].get('serialNumber') == bodyLite['device'].get(
-        'serialNumber'
-    )
-    assert body11['device'].get('model') == bodyLite['device'].get('model')
-    assert body11['device'].get('manufacturer') == bodyLite['device'].get(
-        'manufacturer'
-    )
+    assert body11['device'].get('hid') == dev.hid
+    assert body11['device']['id'] == dev.id
+    assert body11['device'].get('serialNumber') == dev.serial_number
+    assert body11['device'].get('model') == dev.model
+    assert body11['device'].get('manufacturer') == dev.manufacturer
     components11 = []
     componentsLite = []
     for c in body11['components']:
         if c['type'] == "HardDrive":
             continue
         components11.append({c['model'], c['type'], c['manufacturer']})
-    for c in bodyLite['components']:
-        componentsLite.append({c['model'], c['type'], c['manufacturer']})
+    for c in dev.components:
+        componentsLite.append({c.model, c.type, c.manufacturer})
 
     assert len(components11) == len(componentsLite)
     for c in components11:
@@ -1142,7 +1136,7 @@ def test_snapshot_errors_no_serial_number(user: UserClient):
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
     assert res.status_code == 201
     assert len(SnapshotErrors.query.all()) == 0
-    dev = m.Device.query.filter_by(id=bodyLite['device']['id']).one()
+    dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
     assert not dev.model
     assert not dev.manufacturer
     assert not dev.serial_number
@@ -1165,7 +1159,5 @@ def test_snapshot_check_tests_lite(user: UserClient):
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
     assert res.status_code == 201
     SnapshotErrors.query.all()
-    dev = m.Device.query.filter_by(id=bodyLite['device']['id']).one()
+    dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
     # import pdb; pdb.set_trace()
-
-
