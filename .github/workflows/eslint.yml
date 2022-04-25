@@ -12,7 +12,7 @@ name: ESLint
 on:
   push:
     branches: [master, testing]
-  pull_request:
+  pull_request_target:
     branches: [master, testing]
 
 jobs:
@@ -45,8 +45,9 @@ jobs:
     - name: Annotate Code Linting Results
       uses: ataylorme/eslint-annotate-action@1.2.0
       with:
-        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
         report-json: "eslint_report.json"
+        only-pr-files: true
     - name: Upload ESLint report
       uses: actions/upload-artifact@v2
       with:
