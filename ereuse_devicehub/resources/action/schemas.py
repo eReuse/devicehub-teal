@@ -425,7 +425,7 @@ class Snapshot(ActionWithOneDevice):
     See docs for more info.
     """
     uuid = UUID()
-    wbid = String(required=False)
+    sid = String(required=False)
     software = EnumField(
         SnapshotSoftware,
         required=True,

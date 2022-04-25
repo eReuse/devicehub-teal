@@ -17,12 +17,12 @@ from datetime import datetime, timedelta, timezone
 from decimal import ROUND_HALF_EVEN, ROUND_UP, Decimal
 from typing import Optional, Set, Union
 from uuid import uuid4
-from dateutil.tz import tzutc
 
 import inflection
 import teal.db
 from boltons import urlutils
 from citext import CIText
+from dateutil.tz import tzutc
 from flask import current_app as app
 from flask import g
 from sortedcontainers import SortedSet
@@ -274,7 +274,9 @@ class Action(Thing):
         super().__init__(**kwargs)
 
     def __lt__(self, other):
-        return self.end_time.replace(tzinfo=tzutc()) < other.end_time.replace(tzinfo=tzutc())
+        return self.end_time.replace(tzinfo=tzutc()) < other.end_time.replace(
+            tzinfo=tzutc()
+        )
 
     def __str__(self) -> str:
         return '{}'.format(self.severity)
