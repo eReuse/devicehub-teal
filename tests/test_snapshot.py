@@ -1065,7 +1065,7 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_snapshot_lite_error_422(user: UserClient):
+def test_snapshot_lite_error_400(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
     snapshot_11 = file_json('snapshotErrors.json')
     lshw = snapshot_11['debug']['lshw']
@@ -1080,6 +1080,8 @@ def test_snapshot_lite_error_422(user: UserClient):
         "schema_api": "1.0.0",
     }
 
+    user.post(snapshot_lite, uri="/api/inventory/", status=400)
+
     for k in ['lshw', 'hwinfo', 'smart', 'dmidecode', 'lspci']:
         data = {
             'lshw': lshw,
@@ -1090,7 +1092,7 @@ def test_snapshot_lite_error_422(user: UserClient):
         }
         data.pop(k)
         snapshot_lite['data'] = data
-        user.post(snapshot_lite, uri="/api/inventory/", status=422)
+        user.post(snapshot_lite, uri="/api/inventory/", status=400)
 
 
 @pytest.mark.mvp
