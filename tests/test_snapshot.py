@@ -970,7 +970,7 @@ def test_snapshot_wb_lite(user: UserClient):
     ssd = [x for x in body['components'] if x['type'] == 'SolidStateDrive'][0]
 
     assert body['device']['manufacturer'] == 'lenovo'
-    # assert body['wbid'] == "LXVC"
+    # assert body['sid'] == "LXVC"
     assert ssd['serialNumber'] == 's35anx0j401001'
     assert res.status == '201 CREATED'
     assert '00:28:f8:a6:d5:7e' in body['device']['hid']
@@ -991,7 +991,7 @@ def test_snapshot_wb_lite_qemu(user: UserClient):
     )
     body, res = user.post(snapshot, uri="/api/inventory/")
 
-    assert body['wbid'] == "VL0L5"
+    assert body['sid'] == "VL0L5"
     assert res.status == '201 CREATED'
 
     dev = m.Device.query.filter_by(id=body['device']['id']).one()
@@ -1021,7 +1021,7 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
             'timestamp': snapshot_11['endTime'],
             'type': 'Snapshot',
             'uuid': str(uuid.uuid4()),
-            'wbid': 'MLKO1',
+            'sid': 'MLKO1',
             'software': 'Workbench',
             'version': '2022.03.00',
             "schema_api": "1.0.0",
@@ -1077,7 +1077,7 @@ def test_snapshot_errors(user: UserClient):
         'timestamp': snapshot_11['endTime'],
         'type': 'Snapshot',
         'uuid': str(uuid.uuid4()),
-        'wbid': 'MLKO1',
+        'sid': 'MLKO1',
         'software': 'Workbench',
         'version': '2022.03.00',
         "schema_api": "1.0.0",
@@ -1129,7 +1129,7 @@ def test_snapshot_errors_timestamp(user: UserClient):
     assert res.status_code == 201
     assert len(SnapshotErrors.query.all()) == 1
     error = SnapshotErrors.query.all()[0]
-    assert snapshot_lite['wbid'] == error.wbid
+    assert snapshot_lite['sid'] == error.sid
     assert user.user['id'] == str(error.owner_id)
 
 
