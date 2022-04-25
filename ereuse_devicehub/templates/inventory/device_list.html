@@ -407,7 +407,9 @@
 
 <!-- Custom Code -->
 <script>
-  const table = new simpleDatatables.DataTable("table")
+  const table = new simpleDatatables.DataTable("table", {
+    perPage: 20
+  })
 </script>
 <script src="{{ url_for('static', filename='js/main_inventory.js') }}"></script>
 {% endblock main %}
