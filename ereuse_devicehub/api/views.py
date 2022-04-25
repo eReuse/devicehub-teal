@@ -69,7 +69,13 @@ class InventoryView(LoginMix, SnapshotMix):
         db.session.add(snapshot)
         db.session().final_flush()
         db.session.commit()
-        self.response = self.schema.jsonify(snapshot)
+        self.response = jsonify(
+            {
+                'url': snapshot.device.url,
+                'dhid': snapshot.device.devicehub_id,
+                'sid': snapshot.sid,
+            }
+        )
         self.response.status_code = 201
         move_json(self.tmp_snapshots, self.path_snapshot, g.user.email)
         return self.response
