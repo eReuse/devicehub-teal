@@ -5,7 +5,8 @@ from flask import Blueprint
 from flask import current_app as app
 from flask import g, jsonify, request
 from flask.views import View
-from marshmallow import ValidationError
+from flask.wrappers import Response
+from marshmallow.exceptions import ValidationError
 from werkzeug.exceptions import Unauthorized
 
 from ereuse_devicehub.auth import Auth
@@ -51,6 +52,8 @@ class InventoryView(LoginMix, SnapshotMix):
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
         snapshot_json = self.validate(snapshot_json)
+        if type(snapshot_json) == Response:
+            return snapshot_json
         try:
             self.snapshot_json = ParseSnapshotLsHw(snapshot_json).get_snapshot()
         except Exception as err:
@@ -87,11 +90,15 @@ class InventoryView(LoginMix, SnapshotMix):
         except ValidationError as err:
             txt = "{}".format(err)
             uuid = snapshot_json.get('uuid')
+            sid = snapshot_json.get('sid')
             error = SnapshotErrors(
-                description=txt, snapshot_uuid=uuid, severity=Severity.Error
+                description=txt, snapshot_uuid=uuid, severity=Severity.Error, sid=sid
             )
             error.save(commit=True)
-            raise err
+            # raise err
+            self.response = jsonify(err)
+            self.response.status_code = 400
+            return self.response
 
 
 api.add_url_rule('/inventory/', view_func=InventoryView.as_view('inventory'))
