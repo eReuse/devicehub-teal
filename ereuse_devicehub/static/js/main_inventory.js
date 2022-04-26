@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(document).ready(() => {
     $(".deviceSelect").on("change", deviceSelect);
     const show_allocate_form = $("#allocateModal").data("show-action-form");
     const show_datawipe_form = $("#datawipeModal").data("show-action-form");
@@ -182,7 +182,7 @@ function export_file(type_file) {
 
 function print_labels() {
     deviceSelect();
-    $('#print_labels').submit();
+    $("#print_labels").submit();
 }
 
 
