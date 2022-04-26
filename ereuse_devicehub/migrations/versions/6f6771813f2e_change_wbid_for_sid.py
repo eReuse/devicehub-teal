@@ -25,7 +25,7 @@ def get_inv():
 
 def upgrade_datas():
     con = op.get_bind()
-    sql = f"select wbid from {get_inv()}.snapshot;"
+    sql = f"select * from {get_inv()}.snapshot;"
     snapshots = con.execute(sql)
     for snap in snapshots:
         wbid = snap.wbid
@@ -50,8 +50,6 @@ def upgrade():
         sa.Column('sid', citext.CIText(), nullable=True),
         schema=f'{get_inv()}',
     )
-    upgrade_datas()
-    op.drop_column('snapshot', 'wbid', schema=f'{get_inv()}')
 
     op.add_column(
         'snapshot_errors',
