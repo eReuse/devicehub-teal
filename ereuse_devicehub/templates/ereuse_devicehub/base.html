@@ -29,6 +29,7 @@
 
   <!-- Template Main CSS File -->
   <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/devicehub.css') }}" rel="stylesheet">
 
   <!-- =======================================================
   * Template Name: NiceAdmin - v2.2.0
@@ -49,6 +50,20 @@
 
   <!-- Template Main JS File -->
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+  <!-- Api backend -->
+  <script>
+    const API_URLS = {
+      Auth_Token: `Basic ${btoa("{{ current_user.token }}:")}`, //
+      currentUserID: "{{ current_user.id }}",
+      lots: "{{ url_for('Lot.main') }}",
+      lots_detail: "{{ url_for('inventory.lotdevicelist', lot_id='ReplaceTEXT') }}",
+      devices: "{{ url_for('Device.main') }}",
+      devices_modify: "{{ url_for('Lot.lot-device', id='UUID') }}",
+      devices_detail: "{{ url_for('inventory.device_details', id='ReplaceTEXT')}}"
+    }
+  </script>
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
 
 </body>
 
