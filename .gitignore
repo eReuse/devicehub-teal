@@ -119,3 +119,11 @@ ENV/
 
 # Temporal dir
 tmp/
+
+# NPM modules
+node_modules/
+yarn.lock
+
+# ESLint Report
+eslint_report.json
+

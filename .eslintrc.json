@@ -1,0 +1,36 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true,
+        "jquery": true
+    },
+    "extends": [
+        "airbnb",
+        "prettier"
+    ],
+    "plugins": [
+        "prettier"
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "rules": {
+        "quotes": ["error","double"],
+        "no-use-before-define": "off",
+        "no-unused-vars": "warn",
+        "no-undef": "warn",
+        "camelcase": "off",
+        "no-console": "off",
+        "no-plusplus": "off",
+        "no-param-reassign": "off",
+        "no-new": "warn",
+        "strict": "off",
+        "class-methods-use-this": "off",
+        "eqeqeq": "warn",
+        "radix": "warn"
+    },
+    "globals": {
+        "API_URLS": true,
+        "Api": true
+    }
+}

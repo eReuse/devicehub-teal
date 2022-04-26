@@ -4,7 +4,7 @@ const Api = {
      * @returns get lots
      */
     async get_lots() {
-        var request = await this.doRequest(API_URLS.lots, "GET", null);
+        const request = await this.doRequest(API_URLS.lots, "GET", null);
         if (request != undefined) return request.items;
         throw request;
     },
@@ -15,7 +15,7 @@ const Api = {
      * @returns full detailed device list
      */
     async get_devices(ids) {
-        var request = await this.doRequest(API_URLS.devices + '?filter={"id": [' + ids.toString() + ']}', "GET", null);
+        const request = await this.doRequest(`${API_URLS.devices  }?filter={"id": [${  ids.toString()  }]}`, "GET", null);
         if (request != undefined) return request.items;
         throw request;
     },
@@ -26,7 +26,7 @@ const Api = {
          * @returns full detailed device list
          */
     async search_device(id) {
-        var request = await this.doRequest(API_URLS.devices + '?filter={"devicehub_id": ["' + id + '"]}', "GET", null)
+        const request = await this.doRequest(`${API_URLS.devices  }?filter={"devicehub_id": ["${  id  }"]}`, "GET", null)
         if (request != undefined) return request.items
         throw request
     },
@@ -37,8 +37,8 @@ const Api = {
      * @param {number[]} listDevices list devices id
      */
     async devices_add(lotID, listDevices) {
-        var queryURL = API_URLS.devices_modify.replace("UUID", lotID) + "?" + listDevices.map(deviceID => "id=" + deviceID).join("&");
-        return await Api.doRequest(queryURL, "POST", null);
+        const queryURL = `${API_URLS.devices_modify.replace("UUID", lotID)  }?${  listDevices.map(deviceID => `id=${  deviceID}`).join("&")}`;
+        return Api.doRequest(queryURL, "POST", null);
     },
 
     /**
@@ -47,8 +47,8 @@ const Api = {
      * @param {number[]} listDevices list devices id
      */
     async devices_remove(lotID, listDevices) {
-        var queryURL = API_URLS.devices_modify.replace("UUID", lotID) + "?" + listDevices.map(deviceID => "id=" + deviceID).join("&");
-        return await Api.doRequest(queryURL, "DELETE", null);
+        const queryURL = `${API_URLS.devices_modify.replace("UUID", lotID)  }?${  listDevices.map(deviceID => `id=${  deviceID}`).join("&")}`;
+        return Api.doRequest(queryURL, "DELETE", null);
     },
 
     /**
@@ -59,13 +59,13 @@ const Api = {
      * @returns 
      */
     async doRequest(url, type, body) {
-        var result;
+        let result;
         try {
             result = await $.ajax({
-                url: url,
-                type: type,
+                url,
+                type,
                 headers: { "Authorization": API_URLS.Auth_Token },
-                body: body
+                body
             });
             return result;
         } catch (error) {

@@ -32,10 +32,10 @@
         <div class="card-body pt-3">
           <!-- Bordered Tabs -->
 
-          <div class="d-flex align-items-center justify-content-between">
-            <h3><a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
+          <div class="d-flex align-items-center justify-content-between row">
+            <h3 class="col-sm-12 col-md-5"><a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
 
-            <div><!-- lot actions -->
+            <div class="col-sm-12 col-md-7 d-md-flex justify-content-md-end"><!-- lot actions -->
               {% if lot.is_temporary %}
                 <span class="d-none" id="activeRemoveLotModal" data-bs-toggle="modal" data-bs-target="#btnRemoveLots"></span>
                 <a class="me-2" href="javascript:newTrade('user_from')">
@@ -69,7 +69,7 @@
 
           </ul>
           {% endif %}
-          <div class="tab-content pt-5">
+          <div class="tab-content pt-1">
             <div id="devices-list" class="tab-pane fade devices-list active show">
               <label class="btn btn-primary " for="SelectAllBTN"><input type="checkbox" id="SelectAllBTN" autocomplete="off"></label>
               <div class="btn-group dropdown ml-1">
@@ -79,9 +79,9 @@
                   <span class="caret"></span>
                 </button>
                 <span class="d-none" id="activeTradeModal" data-bs-toggle="modal" data-bs-target="#tradeLotModal"></span>
-                <ul class="dropdown-menu" aria-labelledby="btnLots" style="width: 300px;" id="dropDownLotsSelector">
+                <ul class="dropdown-menu" aria-labelledby="btnLots" id="dropDownLotsSelector">
                   <h6 class="dropdown-header">Select some devices to manage lots</h6>
-                  <ul style="list-style-type: none; margin: 0; padding: 0;" class="mx-3" id="LotsSelector"></ul>
+                  <ul class="mx-3" id="LotsSelector"></ul>
                   <li><hr /></li>
                   <li>
                     <a href="#" class="dropdown-item" id="ApplyDeviceLots">
@@ -91,7 +91,7 @@
                   </li>
                 </ul>
               </div>
-              <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnActions" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-plus"></i>
                     New Actions
@@ -178,7 +178,7 @@
                 </ul>
               </div>
 
-              <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnExport" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-reply"></i>
                     Exports
@@ -212,7 +212,7 @@
                 </ul>
               </div>
 
-              <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnTags" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-tag"></i>
                     Tags
@@ -246,7 +246,7 @@
                 </ul>
               </div>
 
-              <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-laptop"></i>
                     New Device
@@ -407,7 +407,9 @@
 
 <!-- Custom Code -->
 <script>
-  const table = new simpleDatatables.DataTable("table")
+  const table = new simpleDatatables.DataTable("table", {
+    perPage: 20
+  })
 </script>
 <script src="{{ url_for('static', filename='js/main_inventory.js') }}"></script>
 {% endblock main %}
