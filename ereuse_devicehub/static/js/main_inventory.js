@@ -182,7 +182,7 @@ function export_file(type_file) {
 
 function print_labels() {
     deviceSelect();
-    $('#print_labels').submit();
+    $("#print_labels").submit();
 }
 
 
