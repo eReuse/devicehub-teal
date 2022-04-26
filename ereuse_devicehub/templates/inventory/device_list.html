@@ -237,7 +237,7 @@
                       {% for f in form_print_labels %}
                         {{ f }}
                       {% endfor %}
-                      <a href="javascript:print_labels()" class="dropdown-item">
+                      <a href="javascript:$('#print_labels').submit()" class="dropdown-item">
                         <i class="bi bi-printer"></i>
                         Print labels
                       </a>
