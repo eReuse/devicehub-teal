@@ -3,6 +3,8 @@ import logging
 import uuid
 
 from dmidecode import DMIParse
+from flask import request
+from marshmallow.exceptions import ValidationError
 
 from ereuse_devicehub.parser import base2
 from ereuse_devicehub.parser.computer import Computer
@@ -358,8 +360,24 @@ class ParseSnapshotLsHw:
         return x
 
     def set_basic_datas(self):
-        pc, self.components_obj = Computer.run(self.lshw, self.hwinfo_raw)
-        self.device = pc.dump()
+        try:
+            pc, self.components_obj = Computer.run(
+                self.lshw, self.hwinfo_raw, self.uuid, self.sid
+            )
+            pc = pc.dump()
+            minimum_hid = None in [pc['manufacturer'], pc['model'], pc['serialNumber']]
+            if minimum_hid and not self.components_obj:
+                # if no there are hid and any components return 422
+                raise Exception
+        except Exception:
+            msg = """It has not been possible to create the device because we lack data.
+                You can find more information at: {}""".format(
+                request.url_root
+            )
+            txt = json.dumps({'sid': self.sid, 'message': msg})
+            raise ValidationError(txt)
+
+        self.device = pc
         self.device['uuid'] = self.get_uuid()
 
     def set_components(self):
