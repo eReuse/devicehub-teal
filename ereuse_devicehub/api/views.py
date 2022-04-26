@@ -54,19 +54,8 @@ class InventoryView(LoginMix, SnapshotMix):
         snapshot_json = self.validate(snapshot_json)
         if type(snapshot_json) == Response:
             return snapshot_json
-        try:
-            self.snapshot_json = ParseSnapshotLsHw(snapshot_json).get_snapshot()
-        except Exception as err:
-            txt = "{}, {}".format(err.__class__, err)
-            uuid = snapshot_json.get('uuid')
-            sid = snapshot_json.get('sid')
-            error = SnapshotErrors(
-                description=txt, snapshot_uuid=uuid, severity=Severity.Error, sid=sid
-            )
-            error.save(commit=True)
-            self.response = jsonify('')
-            self.response.status_code = 201
-            return self.response
+
+        self.snapshot_json = ParseSnapshotLsHw(snapshot_json).get_snapshot()
 
         snapshot = self.build()
         db.session.add(snapshot)
