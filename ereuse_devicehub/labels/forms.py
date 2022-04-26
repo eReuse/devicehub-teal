@@ -1,6 +1,6 @@
 from flask import g
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, StringField, validators
+from wtforms import HiddenField, IntegerField, StringField, validators
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
@@ -48,7 +48,7 @@ class TagUnnamedForm(FlaskForm):
 
 
 class PrintLabelsForm(FlaskForm):
-    devices = StringField(render_kw={'class': "devicesList d-none"})
+    devices = HiddenField(render_kw={'class': "devicesList"})
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
