@@ -1,3 +1,4 @@
+import logging
 import re
 from contextlib import suppress
 from datetime import datetime
@@ -13,7 +14,11 @@ from ereuse_utils.nested_lookup import (
 )
 
 from ereuse_devicehub.parser import base2, unit, utils
+from ereuse_devicehub.parser.models import SnapshotErrors
 from ereuse_devicehub.parser.utils import Dumpeable
+from ereuse_devicehub.resources.enums import Severity
+
+logger = logging.getLogger(__name__)
 
 
 class Device(Dumpeable):
@@ -417,7 +422,7 @@ class Computer(Device):
         self._ram = None
 
     @classmethod
-    def run(cls, lshw, hwinfo_raw):
+    def run(cls, lshw, hwinfo_raw, uuid=None, sid=None):
         """
         Gets hardware information from the computer and its components,
         like serial numbers or model names, and benchmarks them.
@@ -428,16 +433,34 @@ class Computer(Device):
         hwinfo = hwinfo_raw.splitlines()
         computer = cls(lshw)
         components = []
-        for Component in cls.COMPONENTS:
-            if Component == Display and computer.type != 'Laptop':
-                continue  # Only get display info when computer is laptop
-            components.extend(Component.new(lshw=lshw, hwinfo=hwinfo))
-        components.append(Motherboard.new(lshw, hwinfo))
+        try:
+            for Component in cls.COMPONENTS:
+                if Component == Display and computer.type != 'Laptop':
+                    continue  # Only get display info when computer is laptop
+                components.extend(Component.new(lshw=lshw, hwinfo=hwinfo))
+            components.append(Motherboard.new(lshw, hwinfo))
+            computer._ram = sum(
+                ram.size for ram in components if isinstance(ram, RamModule)
+            )
+        except Exception as err:
+            # if there are any problem with components, save the problem and continue
+            txt = "Error: Snapshot: {uuid}, sid: {sid}, type_error: {type}, error: {error}".format(
+                uuid=uuid, sid=sid, type=err.__class__, error=err
+            )
+            cls.errors(txt, uuid=uuid, sid=sid)
 
-        computer._ram = sum(
-            ram.size for ram in components if isinstance(ram, RamModule)
-        )
         return computer, components
+
+    @classmethod
+    def errors(cls, txt=None, uuid=None, sid=None, severity=Severity.Error):
+        if not txt:
+            return
+
+        logger.error(txt)
+        error = SnapshotErrors(
+            description=txt, snapshot_uuid=uuid, severity=severity, sid=sid
+        )
+        error.save()
 
     def __str__(self) -> str:
         specs = super().__str__()
