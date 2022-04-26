@@ -15,7 +15,7 @@ from requests.exceptions import HTTPError
 from teal.db import DBError, UniqueViolation
 from teal.marshmallow import ValidationError
 
-from ereuse_devicehub.client import UserClient
+from ereuse_devicehub.client import UserClient, Client
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.parser.models import SnapshotErrors
@@ -966,7 +966,6 @@ def test_snapshot_wb_lite(user: UserClient):
         "2022-03-31_17h18m51s_ZQMPKKX51K67R68VO2X9RNZL08JPL_snapshot.json"
     )
     body, res = user.post(snapshot, uri="/api/inventory/")
-    # import pdb; pdb.set_trace()
 
     dev = m.Device.query.filter_by(devicehub_id=body['dhid']).one()
     ssd = [x for x in dev.components if x.type == 'SolidStateDrive'][0]
@@ -1059,7 +1058,6 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
             for c in components11:
                 assert c in componentsLite
         except Exception as err:
-            # import pdb; pdb.set_trace()
             raise err
 
 
@@ -1069,7 +1067,6 @@ def test_snapshot_lite_error_400(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
     snapshot_11 = file_json('snapshotErrors.json')
     lshw = snapshot_11['debug']['lshw']
-    hwinfo = snapshot_11['debug']['hwinfo']
     snapshot_lite = {
         'timestamp': snapshot_11['endTime'],
         'type': 'Snapshot',
@@ -1097,6 +1094,31 @@ def test_snapshot_lite_error_400(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_lite_error_422(user: UserClient):
+    """This test check the minimum validation of json that come from snapshot"""
+    snapshot_11 = file_json('snapshotErrors.json')
+    snapshot_lite = {
+        'timestamp': snapshot_11['endTime'],
+        'type': 'Snapshot',
+        'uuid': str(uuid.uuid4()),
+        'sid': 'MLKO1',
+        'software': 'Workbench',
+        'version': '2022.03.00',
+        "schema_api": "1.0.0",
+        'data': {
+            'lshw': {},
+            'hwinfo': '',
+            'smart': [],
+            'dmidecode': '',
+            'lspci': '',
+        },
+    }
+
+    user.post(snapshot_lite, uri="/api/inventory/", status=422)
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_snapshot_lite_minimum(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
     snapshot_11 = file_json('snapshotErrors.json')
@@ -1120,6 +1142,63 @@ def test_snapshot_lite_minimum(user: UserClient):
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
     assert bodyLite['sid'] == 'MLKO1'
     assert res.status_code == 201
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_lite_error_in_components(user: UserClient):
+    """This test check the minimum validation of json that come from snapshot"""
+    snapshot_11 = file_json('snapshotErrorsComponents.json')
+    lshw = snapshot_11['debug']['lshw']
+    snapshot_lite = {
+        'timestamp': snapshot_11['endTime'],
+        'type': 'Snapshot',
+        'uuid': str(uuid.uuid4()),
+        'sid': 'MLKO1',
+        'software': 'Workbench',
+        'version': '2022.03.00',
+        "schema_api": "1.0.0",
+        'data': {
+            'lshw': lshw,
+            'hwinfo': '',
+            'smart': [],
+            'dmidecode': '',
+            'lspci': '',
+        },
+    }
+    bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
+    assert bodyLite['sid'] == 'MLKO1'
+    assert res.status_code == 201
+
+    dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
+    assert 'Motherboard' not in [x.type for x in dev.components]
+    error = SnapshotErrors.query.all()[0]
+    assert 'StopIteration' in error.description
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_lite_error_403(client: Client):
+    """This test check the minimum validation of json that come from snapshot"""
+    snapshot_11 = file_json('snapshotErrors.json')
+    lshw = snapshot_11['debug']['lshw']
+    snapshot_lite = {
+        'timestamp': snapshot_11['endTime'],
+        'type': 'Snapshot',
+        'uuid': str(uuid.uuid4()),
+        'sid': 'MLKO1',
+        'software': 'Workbench',
+        'version': '2022.03.00',
+        "schema_api": "1.0.0",
+        'data': {
+            'lshw': lshw,
+            'hwinfo': '',
+            'smart': [],
+            'dmidecode': '',
+            'lspci': '',
+        },
+    }
+    client.post(snapshot_lite, uri="/api/inventory/", status=401)
 
 
 @pytest.mark.mvp
@@ -1177,13 +1256,7 @@ def test_snapshot_errors(user: UserClient):
 def test_snapshot_errors_timestamp(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
     snapshot_lite = file_json('snapshot-error-timestamp.json')
-
-    bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
-    assert res.status_code == 201
-    assert len(SnapshotErrors.query.all()) == 1
-    error = SnapshotErrors.query.all()[0]
-    assert snapshot_lite['sid'] == error.sid
-    assert user.user['id'] == str(error.owner_id)
+    user.post(snapshot_lite, uri="/api/inventory/", status=422)
 
 
 @pytest.mark.mvp
@@ -1219,4 +1292,3 @@ def test_snapshot_check_tests_lite(user: UserClient):
     assert res.status_code == 201
     SnapshotErrors.query.all()
     dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
-    # import pdb; pdb.set_trace()
