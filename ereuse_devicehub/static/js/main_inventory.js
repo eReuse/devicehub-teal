@@ -353,8 +353,17 @@ async function processSelectedDevices() {
     const listHTML = $("#LotsSelector")
 
     // Get selected devices
-    const selectedDevicesIDs = $.map($(".deviceSelect").filter(":checked"), (x) => parseInt($(x).attr("data")));
-    if (selectedDevicesIDs.length <= 0) {
+    // const selectedDevicesIDs = $.map($(".deviceSelect").filter(":checked"), (x) => parseInt($(x).attr("data")));
+
+    
+    const selectedDevices = table.rows().dt.activeRows.filter(item => item.childNodes[0].children[0].checked).map(item => {
+        const child = item.childNodes[0].children[0]
+        const info = {}
+        Object.values(child.attributes).forEach(attrib => { info[attrib.nodeName] = attrib.nodeValue})
+        return info
+    })
+
+    if (selectedDevices.length <= 0) {
         listHTML.html("<li style=\"color: red; text-align: center\">No devices selected</li>");
         return;
     }
@@ -369,7 +378,7 @@ async function processSelectedDevices() {
 
     try {
         listHTML.html("<li style=\"text-align: center\"><div class=\"spinner-border text-info\" style=\"margin: auto\" role=\"status\"></div></li>")
-        const devices = await Api.get_devices(selectedDevicesIDs);
+        const devices = await Api.get_devices(selectedDevices.map(dev => dev.data));
         let lots = await Api.get_lots();
 
         lots = lots.map(lot => {
@@ -381,7 +390,7 @@ async function processSelectedDevices() {
                 case 0:
                     lot.state = "false";
                     break;
-                case selectedDevicesIDs.length:
+                case selectedDevices.length:
                     lot.state = "true";
                     break;
                 default:
