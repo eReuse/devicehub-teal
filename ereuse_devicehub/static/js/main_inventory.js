@@ -268,14 +268,14 @@ async function processSelectedDevices() {
             this.list.forEach(async action => {
                 if (action.type == "Add") {
                     try {
-                        await Api.devices_add(action.lotID, action.devices);
+                        await Api.devices_add(action.lotID, action.devices.map(dev => dev.data));
                         this.notifyUser("Devices sucefully aded to selected lot/s", "", false);
                     } catch (error) {
                         this.notifyUser("Failed to add devices to selected lot/s", error.responseJSON.message, true);
                     }
                 } else if (action.type == "Remove") {
                     try {
-                        await Api.devices_remove(action.lotID, action.devices);
+                        await Api.devices_remove(action.lotID, action.devices.map(dev => dev.data));
                         this.notifyUser("Devices sucefully removed from selected lot/s", "", false);
                     } catch (error) {
                         this.notifyUser("Fail to remove devices from selected lot/s", error.responseJSON.message, true);
@@ -347,13 +347,13 @@ async function processSelectedDevices() {
                 break;
         }
 
-        doc.children[0].addEventListener("mouseup", (ev) => actions.manage(ev, id, selectedDevicesIDs));
-        doc.children[1].addEventListener("mouseup", (ev) => actions.manage(ev, id, selectedDevicesIDs));
+        doc.children[0].addEventListener("mouseup", (ev) => actions.manage(ev, id, selectedDevices));
+        doc.children[1].addEventListener("mouseup", (ev) => actions.manage(ev, id, selectedDevices));
         elementTarget.append(doc);
     }
 
     const listHTML = $("#LotsSelector")
-    
+
     const selectedDevices = table.rows().dt.activeRows.filter(item => item.childNodes[0].children[0].checked).map(item => {
         const child = item.childNodes[0].children[0]
         const info = {}
