@@ -196,9 +196,9 @@ async function processSelectedDevices() {
          * Manage the actions that will be performed when applying the changes
          * @param {EventSource} ev event (Should be a checkbox type)
          * @param {Lot} lot lot id
-         * @param {Device[]} deviceList device id
+         * @param {Device[]} selectedDevices device id
          */
-        manage(event, lot, deviceListID) {
+        manage(event, lot, selectedDevices) {
             event.preventDefault();
             const lotID = lot.id;
             const srcElement = event.srcElement.parentElement.children[0]
@@ -210,12 +210,12 @@ async function processSelectedDevices() {
                 if (found && found.type == "Remove") {
                     found.type = "Add";
                 } else {
-                    this.list.push({ type: "Add", lot, devices: deviceListID });
+                    this.list.push({ type: "Add", lot, devices: selectedDevices });
                 }
             } else if (found && found.type == "Add") {
                 found.type = "Remove";
             } else {
-                this.list.push({ type: "Remove", lot, devices: deviceListID });
+                this.list.push({ type: "Remove", lot, devices: selectedDevices });
             }
 
             if (this.list.length > 0) {
@@ -257,14 +257,14 @@ async function processSelectedDevices() {
             this.list.forEach(async action => {
                 if (action.type == "Add") {
                     try {
-                        await Api.devices_add(action.lot.id, action.devices.map(dev => dev.data));
+                        await Api.devices_add(action.lot.id, action.devices.map(dev => dev.id));
                         this.notifyUser("Devices sucefully aded to selected lot/s", "", false);
                     } catch (error) {
                         this.notifyUser("Failed to add devices to selected lot/s", error.responseJSON.message, true);
                     }
                 } else if (action.type == "Remove") {
                     try {
-                        await Api.devices_remove(action.lot.id, action.devices.map(dev => dev.data));
+                        await Api.devices_remove(action.lot.id, action.devices.map(dev => dev.id));
                         this.notifyUser("Devices sucefully removed from selected lot/s", "", false);
                     } catch (error) {
                         this.notifyUser("Fail to remove devices from selected lot/s", error.responseJSON.message, true);
@@ -304,10 +304,11 @@ async function processSelectedDevices() {
     /**
      * Generates a list item with a correspondient checkbox state
      * @param {Object} lot Lot model server
+     * @param {Device[]} selectedDevices list selected devices
      * @param {HTMLElement} elementTarget 
-     * @param {Array<Action>} actions
+     * @param {Action[]} actions
      */
-    function templateLot(lot, elementTarget, actions) {
+    function templateLot(lot, selectedDevices, elementTarget, actions) {
         elementTarget.innerHTML = ""
         const { id, name, state } = lot;
 
@@ -340,14 +341,9 @@ async function processSelectedDevices() {
     const listHTML = $("#LotsSelector")
 
     // Get selected devices
-    const selectedDevices = table.rows().dt.activeRows.filter(item => item.querySelector("input").checked).map(item => {
-        const child = item.childNodes[0].children[0]
-        const info = {}
-        Object.values(child.attributes).forEach(attrib => { info[attrib.nodeName] = attrib.nodeValue })
-        return info
-    })
+    const selectedDevicesID = table.rows().dt.activeRows.filter(item => item.querySelector("input").checked).map(item => item.querySelector("input").attributes.data.value)
 
-    if (selectedDevices.length <= 0) {
+    if (selectedDevicesID.length <= 0) {
         listHTML.html("<li style=\"color: red; text-align: center\">No devices selected</li>");
         return;
     }
@@ -403,11 +399,11 @@ async function processSelectedDevices() {
 
     try {
         listHTML.html("<li style=\"text-align: center\"><div class=\"spinner-border text-info\" style=\"margin: auto\" role=\"status\"></div></li>")
-        const devices = await Api.get_devices(selectedDevices.map(dev => dev.data));
+        const selectedDevices = await Api.get_devices(selectedDevicesID);
         let lots = await Api.get_lots();
 
         lots = lots.map(lot => {
-            lot.devices = devices
+            lot.devices = selectedDevices
                 .filter(device => device.lots.filter(devicelot => devicelot.id == lot.id).length > 0)
                 .map(device => parseInt(device.id));
 
@@ -415,7 +411,7 @@ async function processSelectedDevices() {
                 case 0:
                     lot.state = "false";
                     break;
-                case selectedDevices.length:
+                case selectedDevicesID.length:
                     lot.state = "true";
                     break;
                 default:
@@ -433,7 +429,7 @@ async function processSelectedDevices() {
         lotsList = lotsList.flat(); // flat array
 
         listHTML.html("");
-        lotsList.forEach(lot => templateLot(lot, listHTML, actions));
+        lotsList.forEach(lot => templateLot(lot, selectedDevices, listHTML, actions));
     } catch (error) {
         console.log(error);
         listHTML.html("<li style=\"color: red; text-align: center\">Error feching devices and lots<br>(see console for more details)</li>");
