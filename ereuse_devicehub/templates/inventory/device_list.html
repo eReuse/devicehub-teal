@@ -336,6 +336,9 @@
                                />
                       </td>
                       <td>
+                        {% if dev.get_type_logo() %}
+                        <i class="{{ dev.get_type_logo() }}" title="{{ dev.type }}"></i>
+                        {% endif %}
                         <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
                           {{ dev.verbose_name }}
                         </a>
