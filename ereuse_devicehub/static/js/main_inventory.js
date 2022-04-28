@@ -276,6 +276,7 @@ async function processSelectedDevices() {
                     this.list = [];
                 }
             })
+            $("#confirmLotsModal").modal("hide"); // Hide dialog when click "Save changes"
             document.getElementById("dropDownLotsSelector").classList.remove("show");
         }
 
@@ -302,10 +303,9 @@ async function processSelectedDevices() {
 
     /**
      * Generates a list item with a correspondient checkbox state
-     * @param {String} lotID 
-     * @param {String} lotName 
-     * @param {Array<number>} selectedDevicesIDs
-     * @param {HTMLElement} target
+     * @param {Object} lot Lot model server
+     * @param {HTMLElement} elementTarget 
+     * @param {Array<Action>} actions
      */
     function templateLot(lot, elementTarget, actions) {
         elementTarget.innerHTML = ""
@@ -357,7 +357,48 @@ async function processSelectedDevices() {
     if (eventClickActions) {
         document.getElementById("ApplyDeviceLots").removeEventListener(eventClickActions);
     }
-    eventClickActions = document.getElementById("ApplyDeviceLots").addEventListener("click", () => actions.doActions());
+    eventClickActions = document.getElementById("ApplyDeviceLots").addEventListener("click", () => {
+        const modal = $("#confirmLotsModal")
+        modal.modal({ keyboard: false })
+
+        let list_changes_html = "";
+        //  {type: ["Remove" | "Add"], "LotID": string, "devices": number[]}
+        actions.list.forEach(action => {
+            let type;
+            let devices;
+            if (action.type == "Add") {
+                type = "success";
+                devices = action.devices.filter(dev => !action.lot.devices.includes(dev)) // Only show affected devices
+            } else {
+                type = "danger";
+                devices = action.devices.filter(dev => action.lot.devices.includes(dev)) // Only show affected devices
+            }
+            list_changes_html += `
+            <div class="card border-primary mb-3 w-100">
+            <div class="card-header" title="${action.lotID}">${action.lot.name}</div>
+            <div class="card-body pt-3">
+              <p class="card-text">
+                ${devices.map(item => {
+                    const dhid = $(".deviceSelect").filter(`[data=${item}]`)[0].attributes["data-device-dhid"].value;
+                    const name = $(".deviceSelect").filter(`[data=${item}]`)[0].attributes["data-device-vname"].value;
+                    return `<span class="badge bg-${type}" title="${name}">${dhid}</span>`
+                }).join(" ")}
+              </p>
+            </div>
+          </div>`;
+        })
+
+        modal.find(".modal-body").html(list_changes_html)
+
+        const el = document.getElementById("SaveAllActions")
+        const elClone = el.cloneNode(true);
+        el.parentNode.replaceChild(elClone, el);
+        elClone.addEventListener("click", () => actions.doActions())
+        
+        modal.modal("show")
+
+        // actions.doActions();
+    });
     document.getElementById("ApplyDeviceLots").classList.add("disabled");
 
     try {
@@ -384,7 +425,6 @@ async function processSelectedDevices() {
 
             return lot;
         })
-
 
         let lotsList = [];
         lotsList.push(lots.filter(lot => lot.state == "true").sort((a,b) => a.name.localeCompare(b.name)));

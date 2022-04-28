@@ -329,7 +329,7 @@
                       <td>
                           <input type="checkbox" class="deviceSelect" data="{{ dev.id }}"
                                data-device-type="{{ dev.type }}" data-device-manufacturer="{{ dev.manufacturer }}"
-                               data-device-dhid="{{ dev.devicehub_id }}"
+                               data-device-dhid="{{ dev.devicehub_id }}" data-device-vname="{{ dev.verbose_name }}"
                                {% if form_new_allocate.type.data and dev.id in list_devices %}
                                  checked="checked"
                                {% endif %}
@@ -408,6 +408,7 @@
 {% include "inventory/trade.html" %}
 {% include "inventory/alert_export_error.html" %}
 {% include "inventory/alert_unlink_tag_error.html" %}
+{% include "inventory/alert_lots_changes.html" %}
 
 <!-- Custom Code -->
 <script>
