@@ -194,12 +194,13 @@ async function processSelectedDevices() {
 
         /**
          * Manage the actions that will be performed when applying the changes
-         * @param {*} ev event (Should be a checkbox type)
-         * @param {string} lotID lot id
-         * @param {number} deviceID device id
+         * @param {EventSource} ev event (Should be a checkbox type)
+         * @param {Lot} lot lot id
+         * @param {Device[]} deviceList device id
          */
-        manage(event, lotID, deviceListID) {
+        manage(event, lot, deviceList) {
             event.preventDefault();
+            const lotID = lot.id;
             const srcElement = event.srcElement.parentElement.children[0]
             const {indeterminate} = srcElement;
             const checked = !srcElement.checked;
@@ -216,18 +217,18 @@ async function processSelectedDevices() {
                         this.list = this.list.filter(list => list.lotID != lotID);
                     }
                 } else {
-                    this.list.push({ type: "Add", lotID, devices: deviceListID, isFromIndeterminate: indeterminate });
+                    this.list.push({ type: "Add", lot, devices: deviceList, isFromIndeterminate: indeterminate });
                 }
             } else if (found != undefined && found.type == "Add") {
-                    if (found.isFromIndeterminate == true) {
-                        found.type = "Remove";
-                        this.list[foundIndex] = found;
-                    } else {
-                        this.list = this.list.filter(list => list.lotID != lotID);
-                    }
+                if (found.isFromIndeterminate == true) {
+                    found.type = "Remove";
+                    this.list[foundIndex] = found;
                 } else {
-                    this.list.push({ type: "Remove", lotID, devices: deviceListID, isFromIndeterminate: indeterminate });
+                    this.list = this.list.filter(list => list.lotID != lotID);
                 }
+            } else {
+                this.list.push({ type: "Remove", lot, devices: deviceList, isFromIndeterminate: indeterminate });
+            }
 
             if (this.list.length > 0) {
                 document.getElementById("ApplyDeviceLots").classList.remove("disabled");
@@ -268,14 +269,14 @@ async function processSelectedDevices() {
             this.list.forEach(async action => {
                 if (action.type == "Add") {
                     try {
-                        await Api.devices_add(action.lotID, action.devices);
+                        await Api.devices_add(action.lot.id, action.devices.map(dev => dev.data));
                         this.notifyUser("Devices sucefully aded to selected lot/s", "", false);
                     } catch (error) {
                         this.notifyUser("Failed to add devices to selected lot/s", error.responseJSON.message, true);
                     }
                 } else if (action.type == "Remove") {
                     try {
-                        await Api.devices_remove(action.lotID, action.devices);
+                        await Api.devices_remove(action.lot.id, action.devices.map(dev => dev.data));
                         this.notifyUser("Devices sucefully removed from selected lot/s", "", false);
                     } catch (error) {
                         this.notifyUser("Fail to remove devices from selected lot/s", error.responseJSON.message, true);
@@ -343,19 +344,25 @@ async function processSelectedDevices() {
                 break;
         }
 
-        doc.children[0].addEventListener("mouseup", (ev) => actions.manage(ev, id, selectedDevicesIDs));
-        doc.children[1].addEventListener("mouseup", (ev) => actions.manage(ev, id, selectedDevicesIDs));
+        doc.children[0].addEventListener("mouseup", (ev) => actions.manage(ev, lot, selectedDevices));
+        doc.children[1].addEventListener("mouseup", (ev) => actions.manage(ev, lot, selectedDevices));
         elementTarget.append(doc);
     }
 
     const listHTML = $("#LotsSelector")
 
-     // Get selected devices
-     const selectedDevicesIDs = $.map($(".deviceSelect").filter(":checked"), (x) => parseInt($(x).attr("data")));
-     if (selectedDevicesIDs.length <= 0) {
-         listHTML.html("<li style=\"color: red; text-align: center\">No devices selected</li>");
-         return;
-     }
+    // Get selected devices
+    const selectedDevices = table.rows().dt.activeRows.filter(item => item.querySelector("input").checked).map(item => {
+        const child = item.childNodes[0].children[0]
+        const info = {}
+        Object.values(child.attributes).forEach(attrib => { info[attrib.nodeName] = attrib.nodeValue })
+        return info
+    })
+
+    if (selectedDevices.length <= 0) {
+        listHTML.html("<li style=\"color: red; text-align: center\">No devices selected</li>");
+        return;
+    }
 
     // Initialize Actions list, and set checkbox triggers
     const actions = new Actions();
@@ -367,7 +374,7 @@ async function processSelectedDevices() {
 
     try {
         listHTML.html("<li style=\"text-align: center\"><div class=\"spinner-border text-info\" style=\"margin: auto\" role=\"status\"></div></li>")
-        const devices = await Api.get_devices(selectedDevicesIDs);
+        const devices = await Api.get_devices(selectedDevices.map(dev => dev.data));
         let lots = await Api.get_lots();
 
         lots = lots.map(lot => {
@@ -375,11 +382,11 @@ async function processSelectedDevices() {
                 .filter(device => device.lots.filter(devicelot => devicelot.id == lot.id).length > 0)
                 .map(device => parseInt(device.id));
 
-             switch (lot.devices.length) {
+            switch (lot.devices.length) {
                 case 0:
                     lot.state = "false";
                     break;
-                case selectedDevicesIDs.length:
+                case selectedDevices.length:
                     lot.state = "true";
                     break;
                 default:
