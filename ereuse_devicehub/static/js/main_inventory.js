@@ -299,15 +299,13 @@ async function processSelectedDevices() {
             const tmpDiv = document.createElement("div")
             tmpDiv.innerHTML = newRequest
 
-            const oldTable = Array.from(document.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
             const newTable = Array.from(tmpDiv.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
 
-            for (let i = 0; i < oldTable.length; i++) {
-                if (!newTable.includes(oldTable[i])) {
-                    // variable from device_list.html --> See: ereuse_devicehub\templates\inventory\device_list.html (Ln: 411)
-                    table.rows().remove(i)
+            table.rows().dt.activeRows.forEach(row => {
+                if (!newTable.includes(row.querySelector("input").attributes["data-device-dhid"].value)) {
+                    row.remove()
                 }
-            }
+            })
         }
     }
 
@@ -352,12 +350,12 @@ async function processSelectedDevices() {
 
     const listHTML = $("#LotsSelector")
 
-    // Get selected devices
-    const selectedDevicesIDs = $.map($(".deviceSelect").filter(":checked"), (x) => parseInt($(x).attr("data")));
-    if (selectedDevicesIDs.length <= 0) {
-        listHTML.html("<li style=\"color: red; text-align: center\">No devices selected</li>");
-        return;
-    }
+     // Get selected devices
+     const selectedDevicesIDs = $.map($(".deviceSelect").filter(":checked"), (x) => parseInt($(x).attr("data")));
+     if (selectedDevicesIDs.length <= 0) {
+         listHTML.html("<li style=\"color: red; text-align: center\">No devices selected</li>");
+         return;
+     }
 
     // Initialize Actions list, and set checkbox triggers
     const actions = new Actions();
