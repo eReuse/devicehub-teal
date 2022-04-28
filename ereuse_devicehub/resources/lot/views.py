@@ -29,6 +29,7 @@ class LotView(View):
         """
         format = EnumField(LotFormat, missing=None)
         search = f.Str(missing=None)
+        type = f.Str(missing=None)
 
     def post(self):
         l = request.get_json()
@@ -88,6 +89,7 @@ class LotView(View):
         else:
             query = Lot.query
             query = self.visibility_filter(query)
+            query = self.type_filter(query, args)
             if args['search']:
                 query = query.filter(Lot.name.ilike(args['search'] + '%'))
             lots = query.paginate(per_page=6 if args['search'] else query.count())
@@ -102,6 +104,21 @@ class LotView(View):
             .filter(or_(Trade.user_from == g.user,
                         Trade.user_to == g.user,
                         Lot.owner_id == g.user.id))
+        return query
+
+    def type_filter(self, query, args):
+        lot_type = args.get('type')
+
+        # temporary
+        if lot_type == "temporary":
+            return query.filter(Lot.trade == None)
+
+        if lot_type == "incoming":
+            return query.filter(Lot.trade and Trade.user_to == g.user)
+
+        if lot_type == "outgoing":
+            return query.filter(Lot.trade and Trade.user_from == g.user)
+
         return query
 
     def query(self, args):
