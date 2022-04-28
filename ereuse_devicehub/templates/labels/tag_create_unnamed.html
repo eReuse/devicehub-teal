@@ -5,7 +5,7 @@
   <h1>{{ title }}</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ url_for('labels.label_list')}}">Tag management</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('labels.label_list')}}">Unique Identifier management</a></li>
       <li class="breadcrumb-item">{{ page_title }}</li>
     </ol>
   </nav>
@@ -19,8 +19,8 @@
               <div class="card-body">
 
                 <div class="pt-4 pb-2">
-                  <h5 class="card-title text-center pb-0 fs-4">Add new Unnamed Tags</h5>
-                  <p class="text-center small">Please enter a number of the tags to issue.</p>
+                  <h5 class="card-title text-center pb-0 fs-4">Add new Unnamed Unique Identifiers</h5>
+                  <p class="text-center small">Please enter a number of the unique identifiers to issue.</p>
                   {% if form.form_errors %}
                   <p class="text-danger">
                     {% for error in form.form_errors %}
@@ -37,7 +37,7 @@
                     <label for="code" class="form-label">Amount</label>
                     <div class="input-group has-validation">
                       {{ form.amount(class_="form-control") }}
-                      <div class="invalid-feedback">Please enter a number of the tags to issue.</div>
+                      <div class="invalid-feedback">Please enter a number of the unique identifiers to issue.</div>
                     </div>
                     {% if form.amount.errors %}
                     <p class="text-danger">

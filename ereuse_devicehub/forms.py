@@ -1,7 +1,9 @@
+from flask import g
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
 from wtforms import BooleanField, EmailField, PasswordField, validators
 
+from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.user.models import User
 
 
@@ -59,3 +61,43 @@ class LoginForm(FlaskForm):
             self.form_errors.append(self.error_messages['inactive'])
 
         return user.is_active
+
+
+class PasswordForm(FlaskForm):
+    password = PasswordField(
+        'Current Password',
+        [validators.DataRequired()],
+        render_kw={'class': "form-control"},
+    )
+    newpassword = PasswordField(
+        'New Password',
+        [validators.DataRequired()],
+        render_kw={'class': "form-control"},
+    )
+    renewpassword = PasswordField(
+        'Re-enter New Password',
+        [validators.DataRequired()],
+        render_kw={'class': "form-control"},
+    )
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+        if not g.user.check_password(self.password.data):
+            return False
+
+        if self.newpassword.data != self.renewpassword.data:
+            return False
+
+        return True
+
+    def save(self, commit=True):
+        g.user.password = self.newpassword.data
+
+        db.session.add(g.user)
+        if commit:
+            db.session.commit()
+        return
