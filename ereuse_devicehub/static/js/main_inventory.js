@@ -163,7 +163,7 @@ function get_device_list() {
         if (computer[typ]) {
             typ = computer[typ];
         };
-        return `${typ  } ${  manuf  } ${  dhid}`;
+        return `${typ} ${manuf} ${dhid}`;
     });
 
     description = $.map(list_devices, (x) => x).join(", ");
@@ -173,7 +173,7 @@ function get_device_list() {
 function export_file(type_file) {
     const devices = $(".deviceSelect").filter(":checked");
     const devices_id = $.map(devices, (x) => $(x).attr("data-device-dhid")).join(",");
-    if (devices_id){
+    if (devices_id) {
         const url = `/inventory/export/${type_file}/?ids=${devices_id}`;
         window.location.href = url;
     } else {
@@ -198,7 +198,7 @@ async function processSelectedDevices() {
          * @param {Lot} lot lot id
          * @param {Device[]} deviceList device id
          */
-         manage(event, lot, deviceListID) {
+        manage(event, lot, deviceListID) {
             event.preventDefault();
             const lotID = lot.id;
             const srcElement = event.srcElement.parentElement.children[0]
@@ -210,13 +210,13 @@ async function processSelectedDevices() {
                 if (found && found.type == "Remove") {
                     found.type = "Add";
                 } else {
-                    this.list.push({ type: "Add", lot, devices: deviceListID});
+                    this.list.push({ type: "Add", lot, devices: deviceListID });
                 }
             } else if (found && found.type == "Add") {
-                    found.type = "Remove";
-                } else {
-                    this.list.push({ type: "Remove", lot, devices: deviceListID});
-                }
+                found.type = "Remove";
+            } else {
+                this.list.push({ type: "Remove", lot, devices: deviceListID });
+            }
 
             if (this.list.length > 0) {
                 document.getElementById("ApplyDeviceLots").classList.remove("disabled");
@@ -233,7 +233,7 @@ async function processSelectedDevices() {
          */
         notifyUser(title, toastText, isError) {
             const toast = document.createElement("div");
-            toast.classList = `alert alert-dismissible fade show ${  isError ? "alert-danger" : "alert-success"}`;
+            toast.classList = `alert alert-dismissible fade show ${isError ? "alert-danger" : "alert-success"}`;
             toast.attributes["data-autohide"] = !isError;
             toast.attributes.role = "alert";
             toast.style = "margin-left: auto; width: fit-content;";
@@ -309,7 +309,7 @@ async function processSelectedDevices() {
      */
     function templateLot(lot, elementTarget, actions) {
         elementTarget.innerHTML = ""
-        const {id, name, state} = lot;
+        const { id, name, state } = lot;
 
         const htmlTemplate = `<input class="form-check-input" type="checkbox" id="${id}" style="width: 20px; height: 20px; margin-right: 7px;">
             <label class="form-check-label" for="${id}">${name}</label>`;
@@ -379,10 +379,10 @@ async function processSelectedDevices() {
             <div class="card-body pt-3">
               <p class="card-text">
                 ${devices.map(item => {
-                    const dhid = $(".deviceSelect").filter(`[data=${item}]`)[0].attributes["data-device-dhid"].value;
-                    const name = $(".deviceSelect").filter(`[data=${item}]`)[0].attributes["data-device-vname"].value;
-                    return `<span class="badge bg-${type}" title="${name}">${dhid}</span>`
-                }).join(" ")}
+                const dhid = $(".deviceSelect").filter(`[data=${item}]`)[0].attributes["data-device-dhid"].value;
+                const name = $(".deviceSelect").filter(`[data=${item}]`)[0].attributes["data-device-vname"].value;
+                return `<span class="badge bg-${type}" title="${name}">${dhid}</span>`
+            }).join(" ")}
               </p>
             </div>
           </div>`;
@@ -394,7 +394,7 @@ async function processSelectedDevices() {
         const elClone = el.cloneNode(true);
         el.parentNode.replaceChild(elClone, el);
         elClone.addEventListener("click", () => actions.doActions())
-        
+
         modal.modal("show")
 
         // actions.doActions();
@@ -427,9 +427,9 @@ async function processSelectedDevices() {
         })
 
         let lotsList = [];
-        lotsList.push(lots.filter(lot => lot.state == "true").sort((a,b) => a.name.localeCompare(b.name)));
-        lotsList.push(lots.filter(lot => lot.state == "indetermined").sort((a,b) => a.name.localeCompare(b.name)));
-        lotsList.push(lots.filter(lot => lot.state == "false").sort((a,b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "true").sort((a, b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "indetermined").sort((a, b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "false").sort((a, b) => a.name.localeCompare(b.name)));
         lotsList = lotsList.flat(); // flat array
 
         listHTML.html("");
