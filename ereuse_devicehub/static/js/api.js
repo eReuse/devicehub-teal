@@ -4,11 +4,8 @@ const Api = {
      * @returns get lots
      */
     async get_lots() {
-        const request = await this.doRequest(API_URLS.lots, "GET", null);
-        if (request != undefined) {
-            request.items = request.items.filter(itm => !itm.trade) // Avoid show outgoing or incomming trades
-            return request.items;
-        }
+        const request = await this.doRequest(`${API_URLS.lots}?type=temporary`, "GET", null);
+        if (request != undefined) return request.items;
         throw request;
     },
 
