@@ -38,14 +38,16 @@
             <div class="col-sm-12 col-md-7 d-md-flex justify-content-md-end"><!-- lot actions -->
               {% if lot.is_temporary %}
                 <span class="d-none" id="activeRemoveLotModal" data-bs-toggle="modal" data-bs-target="#btnRemoveLots"></span>
-                {% if 1 == 2 %}
+
+                {% if 1 == 2 %}{# <!-- TODO (@slamora) Don't render Trade buttons until implementation is finished --> #}
                 <a class="me-2" href="javascript:newTrade('user_from')">
                   <i class="bi bi-arrow-down-right"></i> Add supplier
                 </a>
                 <a class="me-2" href="javascript:newTrade('user_to')">
                   <i class="bi bi-arrow-up-right"></i> Add receiver
                 </a>
-                {% endif %}
+                {% endif %}{# <!-- /end TODO --> #}
+
                 <a class="text-danger" href="javascript:removeLot()">
                   <i class="bi bi-trash"></i> Delete Lot
                 </a>
