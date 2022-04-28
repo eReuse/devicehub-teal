@@ -213,25 +213,42 @@
               </div>
 
               <div class="btn-group dropdown m-1" uib-dropdown="">
-                <button id="btnTags" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <button id="btnUniqueID" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-tag"></i>
-                    Tags
+                    Unique Identifiers
                 </button>
                 <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
                 <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
-                <ul class="dropdown-menu" aria-labelledby="btnTags">
+                <ul class="dropdown-menu" aria-labelledby="btnUniqueID">
                   <li>
                     <a href="javascript:addTag()" class="dropdown-item">
                       <i class="bi bi-plus"></i>
-                      Add Tag to selected Device
+                      Add Unique Identifier to selected Device
                     </a>
                   </li>
                   <li>
                     <a href="javascript:removeTag()" class="dropdown-item">
                       <i class="bi bi-x"></i>
-                      Remove Tag from selected Device
+                      Remove Unique Identifier from selected Device
                     </a>
                   </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('labels.label_list')}}">
+                      <i class="bi bi-tools"></i>
+                      Unique Identifier Management
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="btn-group dropdown m-1" uib-dropdown="">
+                <button id="btnTags" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-tag"></i>
+                    Labels
+                </button>
+                <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
+                <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
+                <ul class="dropdown-menu" aria-labelledby="btnTags">
                   <li>
                     <form id="print_labels" method="post" action="{{ url_for('labels.print_labels') }}">
                       {% for f in form_print_labels %}
@@ -314,7 +331,7 @@
                       <th scope="col">Select</th>
                       <th scope="col">Title</th>
                       <th scope="col">DHID</th>
-                      <th scope="col">Tags</th>
+                      <th scope="col">Unique Identifiers</th>
                       <th scope="col">Status</th>
                       <th scope="col" data-type="date" data-format="DD-MM-YYYY">Update</th>
                     </tr>

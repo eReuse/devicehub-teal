@@ -18,8 +18,8 @@
               <div class="card-body">
 
                 <div class="pt-4 pb-2">
-                  <h1 class="card-title text-center pb-0 fs-4">Unlink Tag from Device</h1>
-                  <p class="text-center small">Please enter a code for the tag.</p>
+                  <h1 class="card-title text-center pb-0 fs-4">Unlink Unique Identifier from Device</h1>
+                  <p class="text-center small">Please enter a code for the unique identifier.</p>
                   {% if form.form_errors %}
                   <p class="text-danger">
                     {% for error in form.form_errors %}
@@ -33,10 +33,10 @@
                   {{ form.csrf_token }}
 
                   <div>
-                    <label for="tag" class="form-label">Tag</label>
+                    <label for="tag" class="form-label">Unique Identifier</label>
                     <div class="input-group has-validation">
                       {{ form.tag(class_="form-control") }}
-                      <div class="invalid-feedback">Please select tag.</div>
+                      <div class="invalid-feedback">Please select unique identifier.</div>
                     </div>
                     {% if form.tag.errors %}
                     <p class="text-danger">

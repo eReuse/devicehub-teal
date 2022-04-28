@@ -5,8 +5,8 @@
   <h1>Inventory</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ url_for('labels.label_list')}}">Tag management</a></li>
-      <li class="breadcrumb-item active">Tag details {{ tag.id }}</li>
+      <li class="breadcrumb-item"><a href="{{ url_for('labels.label_list')}}">Unique Identifier management</a></li>
+      <li class="breadcrumb-item active">Unique Identifier details {{ tag.id }}</li>
     </ol>
   </nav>
 </div><!-- End Page Title -->
@@ -26,7 +26,7 @@
 
               <div class="row">
                 <div class="col-lg-3 col-md-4 label ">Type</div>
-                <div class="col-lg-9 col-md-8">{% if tag.provider %}UnNamed Tag{% else %}Named{% endif %}</div>
+                <div class="col-lg-9 col-md-8">{% if tag.provider %}UnNamed Unique Identifier{% else %}Named Unique Identifier{% endif %}</div>
               </div>
 
               <div class="row">
