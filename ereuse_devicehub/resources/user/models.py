@@ -69,8 +69,7 @@ class User(UserMixin, Thing):
     @property
     def individual(self):
         """The individual associated for this database, or None."""
-        if self.individuals:
-            return next(iter(self.individuals), None)
+        return next(iter(self.individuals), None)
 
     @property
     def code(self):
@@ -86,9 +85,8 @@ class User(UserMixin, Thing):
 
     @property
     def get_full_name(self):
-        if self.individuals:
-            return self.individual.get_full_name
-
+        # TODO(@slamora) create first_name & last_name fields???
+        # needs to be discussed related to Agent <--> User concepts
         return self.email
 
     def check_password(self, password):

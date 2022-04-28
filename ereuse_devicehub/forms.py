@@ -1,21 +1,10 @@
 from flask import g
 from flask_wtf import FlaskForm
-from teal.enums import Country
 from werkzeug.security import generate_password_hash
-from wtforms import (
-    BooleanField,
-    EmailField,
-    PasswordField,
-    SelectField,
-    StringField,
-    validators,
-)
+from wtforms import BooleanField, EmailField, PasswordField, validators
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.user.models import User
-
-COUNTRY = [(x.name, x.value) for x in Country]
 
 
 class LoginForm(FlaskForm):
@@ -72,60 +61,6 @@ class LoginForm(FlaskForm):
             self.form_errors.append(self.error_messages['inactive'])
 
         return user.is_active
-
-
-class ProfileForm(FlaskForm):
-    name = StringField(
-        'First name',
-        [validators.Length(min=2, max=35)],
-        render_kw={'class': "form-control"},
-    )
-    email = StringField(
-        'Email Address',
-        [validators.Length(min=6, max=35)],
-        render_kw={'class': "form-control"},
-    )
-    telephone = StringField(
-        'Phone', [validators.Length(min=6, max=35)], render_kw={'class': "form-control"}
-    )
-    country = SelectField(
-        'Country', choices=COUNTRY, default="es", render_kw={'class': "form-select"}
-    )
-
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
-        super().__init__(*args, **kwargs)
-        if user:
-            self.name.data = user.name
-            self.email.data = user.email
-            self.telephone.data = user.telephone
-            if user.country:
-                self.country.data = user.country.name
-
-    def validate(self, extra_validators=None):
-        is_valid = super().validate(extra_validators)
-
-        if not is_valid:
-            return False
-
-        email = self.email.data
-        if email != g.user.individual.email:
-            if Agent.query.filter_by(email=email).first():
-                self.email.errors = ['You can not use this email.']
-                return False
-
-        return True
-
-    def save(self, commit=True):
-        agent = g.user.individual
-        agent.name = self.name.data
-        agent.email = self.email.data
-        agent.telephone = self.telephone.data
-        agent.country = self.country.data
-
-        db.session.add(agent)
-        if commit:
-            db.session.commit()
 
 
 class PasswordForm(FlaskForm):
