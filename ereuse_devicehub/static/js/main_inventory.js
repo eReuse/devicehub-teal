@@ -163,7 +163,7 @@ function get_device_list() {
         if (computer[typ]) {
             typ = computer[typ];
         };
-        return `${typ  } ${  manuf  } ${  dhid}`;
+        return `${typ} ${manuf} ${dhid}`;
     });
 
     description = $.map(list_devices, (x) => x).join(", ");
@@ -173,7 +173,7 @@ function get_device_list() {
 function export_file(type_file) {
     const devices = $(".deviceSelect").filter(":checked");
     const devices_id = $.map(devices, (x) => $(x).attr("data-device-dhid")).join(",");
-    if (devices_id){
+    if (devices_id) {
         const url = `/inventory/export/${type_file}/?ids=${devices_id}`;
         window.location.href = url;
     } else {
@@ -233,7 +233,7 @@ async function processSelectedDevices() {
          */
         notifyUser(title, toastText, isError) {
             const toast = document.createElement("div");
-            toast.classList = `alert alert-dismissible fade show ${  isError ? "alert-danger" : "alert-success"}`;
+            toast.classList = `alert alert-dismissible fade show ${isError ? "alert-danger" : "alert-success"}`;
             toast.attributes["data-autohide"] = !isError;
             toast.attributes.role = "alert";
             toast.style = "margin-left: auto; width: fit-content;";
@@ -381,9 +381,9 @@ async function processSelectedDevices() {
         })
 
         let lotsList = [];
-        lotsList.push(lots.filter(lot => lot.state == "true").sort((a,b) => a.name.localeCompare(b.name)));
-        lotsList.push(lots.filter(lot => lot.state == "indetermined").sort((a,b) => a.name.localeCompare(b.name)));
-        lotsList.push(lots.filter(lot => lot.state == "false").sort((a,b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "true").sort((a, b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "indetermined").sort((a, b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "false").sort((a, b) => a.name.localeCompare(b.name)));
         lotsList = lotsList.flat(); // flat array
 
         listHTML.html("");
