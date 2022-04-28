@@ -43,16 +43,49 @@
               <h5 class="card-title">Print Label</h5>
               <div class="row">
                 <div class="col-lg-3 col-md-4">
-                  <div style="width:256px; height:148px; border: solid 1px; padding: 10px;">
+                  <div style="width:256px; min-height:148px; border: solid 1px; padding: 10px;">
                     <div id="print">
                       <div class="row">
-                        <div class="col">
+                        <div class="col qr">
                           <div id="{{ tag.id }}"></div>
                         </div>
-                        <div class="col">
-                          <div style="padding-top: 55px"><b class="tag">{{ tag.id }}</b></div>
+                        <div class="col dhid">
+                          <div style="padding-top: 55px">
+                            {% if tag.device %}
+                              <b class="tag" data-serial-number="{{ tag.device.serial_number or '' }}"
+                                  data-manufacturer="{{ tag.device.manufacturer or '' }}"
+                                  data-model="{{ tag.device.model or '' }}">{{ tag.id }}</b>
+                            {% else %}
+                              <b class="tag" data-serial-number=""
+                                  data-manufacturer=""
+                                  data-model="">{{ tag.id }}</b>
+                            {% endif %}
+                          </div>
                         </div>
                       </div>
+                      {% if tag.device %}
+                      <div class="row serial_number" style="display: none">
+                        <div class="col">
+                          <div>
+                              <b>{{ tag.device.serial_number or '' }}</b>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row manufacturer" style="display: none">
+                        <div class="col">
+                          <div>
+                              <b>{{ tag.device.manufacturer or '' }}</b>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row model" style="display: none">
+                        <div class="col">
+                          <div>
+                              <span style="font-size: 12px;">{{ tag.device.model or '' }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      {% endif %}
                     </div>
                   </div>
                 </div>
@@ -84,20 +117,43 @@
                       <span class="input-group-text">mm</span>
                     </div>
                   </div>
+                  {% if tag.device %}
+                  <div class="col-sm-10">
+                    <div class="form-switch">
+                      <input class="form-check-input" name="qr" type="checkbox" id="qrCheck" checked="">
+                      <label class="form-check-label" for="qrCheck">QR</label>
+                    </div>
+                    <div class="form-switch">
+                      <input class="form-check-input" name="dhid" type="checkbox" id="dhidCheck" checked="">
+                      <label class="form-check-label" for="dhidCheck">Tag</label>
+                    </div>
+                    <div class="form-switch">
+                      <input class="form-check-input" name="serial_number" type="checkbox" id="serialNumberCheck">
+                      <label class="form-check-label" for="serialNumberCheck">Serial number</label>
+                    </div>
+                    <div class="form-switch">
+                      <input class="form-check-input" name="manufacturer" type="checkbox" id="manufacturerCheck">
+                      <label class="form-check-label" for="manufacturerCheck">Manufacturer</label>
+                    </div>
+                    <div class="form-switch">
+                      <input class="form-check-input" name="model" type="checkbox" id="modelCheck">
+                      <label class="form-check-label" for="modelCheck">Model</label>
+                    </div>
+                  </div>
+                  {% endif %}
+                  <div class="row mt-5">
+                    <div class="col-lg-3 col-md-4">
+                        <a href="javascript:printpdf()" class="btn btn-success">Print labels</a>
+                    </div>
+                    <div class="col-lg-3 col-md-4">
+                        <a href="javascript:save_settings()" class="btn btn-primary">Save settings</a>
+                    </div>
+                    <div class="col-lg-3 col-md-4">
+                        <a href="javascript:reset_settings()" class="btn btn-danger">Reset settings</a>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="row">
-                <div class="col-lg-3 col-md-4">
-                    <a href="javascript:printpdf()" class="btn btn-success">Print</a>
-                </div>
-                <div class="col-lg-3 col-md-4">
-                    <a href="javascript:save_size()" class="btn btn-primary">Save</a>
-                </div>
-                <div class="col-lg-3 col-md-4">
-                    <a href="javascript:reset_size()" class="btn btn-danger">Reset</a>
-                </div>
-              </div>
-
             </div>
 
         </div>
