@@ -353,6 +353,7 @@ async function processSelectedDevices() {
     if (eventClickActions) {
         document.getElementById("ApplyDeviceLots").removeEventListener(eventClickActions);
     }
+
     eventClickActions = document.getElementById("ApplyDeviceLots").addEventListener("click", () => {
         const modal = $("#confirmLotsModal")
         modal.modal({ keyboard: false })
@@ -364,10 +365,10 @@ async function processSelectedDevices() {
             let devices;
             if (action.type == "Add") {
                 type = "success";
-                devices = action.devices.filter(dev => !action.lot.devices.includes(dev)) // Only show affected devices
+                devices = action.devices.filter(dev => !action.lot.devices.includes(dev.id)) // Only show affected devices
             } else {
                 type = "danger";
-                devices = action.devices.filter(dev => action.lot.devices.includes(dev)) // Only show affected devices
+                devices = action.devices.filter(dev => action.lot.devices.includes(dev.id)) // Only show affected devices
             }
             list_changes_html += `
             <div class="card border-primary mb-3 w-100">
@@ -375,9 +376,8 @@ async function processSelectedDevices() {
             <div class="card-body pt-3">
               <p class="card-text">
                 ${devices.map(item => {
-                const dhid = $(".deviceSelect").filter(`[data=${item}]`)[0].attributes["data-device-dhid"].value;
-                const name = $(".deviceSelect").filter(`[data=${item}]`)[0].attributes["data-device-vname"].value;
-                return `<span class="badge bg-${type}" title="${name}">${dhid}</span>`
+                const name = `${item.type} ${item.manufacturer} ${item.model}`
+                return `<span class="badge bg-${type}" title="${name}">${item.devicehubID}</span>`;
             }).join(" ")}
               </p>
             </div>
