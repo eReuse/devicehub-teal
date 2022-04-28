@@ -198,37 +198,25 @@ async function processSelectedDevices() {
          * @param {Lot} lot lot id
          * @param {Device[]} deviceList device id
          */
-        manage(event, lot, deviceList) {
+         manage(event, lot, deviceListID) {
             event.preventDefault();
             const lotID = lot.id;
             const srcElement = event.srcElement.parentElement.children[0]
-            const {indeterminate} = srcElement;
             const checked = !srcElement.checked;
 
-            const found = this.list.filter(list => list.lotID == lotID)[0];
-            const foundIndex = found != undefined ? this.list.findLastIndex(x => x.lotID == found.lotID) : -1;
+            const found = this.list.filter(list => list.lot.id == lotID)[0];
 
             if (checked) {
-                if (found != undefined && found.type == "Remove") {
-                    if (found.isFromIndeterminate == true) {
-                        found.type = "Add";
-                        this.list[foundIndex] = found;
-                    } else {
-                        this.list = this.list.filter(list => list.lotID != lotID);
-                    }
+                if (found && found.type == "Remove") {
+                    found.type = "Add";
                 } else {
-                    this.list.push({ type: "Add", lot, devices: deviceList, isFromIndeterminate: indeterminate });
+                    this.list.push({ type: "Add", lot, devices: deviceListID});
                 }
-            } else if (found != undefined && found.type == "Add") {
-                if (found.isFromIndeterminate == true) {
+            } else if (found && found.type == "Add") {
                     found.type = "Remove";
-                    this.list[foundIndex] = found;
                 } else {
-                    this.list = this.list.filter(list => list.lotID != lotID);
+                    this.list.push({ type: "Remove", lot, devices: deviceListID});
                 }
-            } else {
-                this.list.push({ type: "Remove", lot, devices: deviceList, isFromIndeterminate: indeterminate });
-            }
 
             if (this.list.length > 0) {
                 document.getElementById("ApplyDeviceLots").classList.remove("disabled");
