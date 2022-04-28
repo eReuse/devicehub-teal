@@ -2,37 +2,44 @@ from uuid import uuid4
 
 from flask import current_app as app
 from flask_login import UserMixin
-from sqlalchemy import Column, Boolean, BigInteger, Sequence
+from sqlalchemy import BigInteger, Boolean, Column, Sequence
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import EmailType, PasswordType
 from teal.db import IntEnum
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.enums import SessionType
 from ereuse_devicehub.resources.inventory.model import Inventory
 from ereuse_devicehub.resources.models import STR_SIZE, Thing
-from ereuse_devicehub.resources.enums import SessionType
 
 
 class User(UserMixin, Thing):
     __table_args__ = {'schema': 'common'}
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
     email = Column(EmailType, nullable=False, unique=True)
-    password = Column(PasswordType(max_length=STR_SIZE,
-                                   onload=lambda **kwargs: dict(
-                                       schemes=app.config['PASSWORD_SCHEMES'],
-                                       **kwargs
-                                   )))
+    password = Column(
+        PasswordType(
+            max_length=STR_SIZE,
+            onload=lambda **kwargs: dict(
+                schemes=app.config['PASSWORD_SCHEMES'], **kwargs
+            ),
+        )
+    )
     token = Column(UUID(as_uuid=True), default=uuid4, unique=True, nullable=False)
     active = Column(Boolean, default=True, nullable=False)
     phantom = Column(Boolean, default=False, nullable=False)
-    inventories = db.relationship(Inventory,
-                                  backref=db.backref('users', lazy=True, collection_class=set),
-                                  secondary=lambda: UserInventory.__table__,
-                                  collection_class=set)
+    inventories = db.relationship(
+        Inventory,
+        backref=db.backref('users', lazy=True, collection_class=set),
+        secondary=lambda: UserInventory.__table__,
+        collection_class=set,
+    )
 
     # todo set restriction that user has, at least, one active db
 
-    def __init__(self, email, password=None, inventories=None, active=True, phantom=False) -> None:
+    def __init__(
+        self, email, password=None, inventories=None, active=True, phantom=False
+    ) -> None:
         """Creates an user.
         :param email:
         :param password:
@@ -44,8 +51,13 @@ class User(UserMixin, Thing):
         create during the trade actions
         """
         inventories = inventories or {Inventory.current}
-        super().__init__(email=email, password=password, inventories=inventories,
-                         active=active, phantom=phantom)
+        super().__init__(
+            email=email,
+            password=password,
+            inventories=inventories,
+            active=active,
+            phantom=phantom,
+        )
 
     def __repr__(self) -> str:
         return '<User {0.email}>'.format(self)
@@ -73,8 +85,8 @@ class User(UserMixin, Thing):
 
     @property
     def get_full_name(self):
-        # TODO(@slamora) create first_name & last_name fields and use
-        # them to generate user full name
+        # TODO(@slamora) create first_name & last_name fields???
+        # needs to be discussed related to Agent <--> User concepts
         return self.email
 
     def check_password(self, password):
@@ -84,9 +96,12 @@ class User(UserMixin, Thing):
 
 class UserInventory(db.Model):
     """Relationship between users and their inventories."""
+
     __table_args__ = {'schema': 'common'}
     user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(User.id), primary_key=True)
-    inventory_id = db.Column(db.Unicode(), db.ForeignKey(Inventory.id), primary_key=True)
+    inventory_id = db.Column(
+        db.Unicode(), db.ForeignKey(Inventory.id), primary_key=True
+    )
 
 
 class Session(Thing):
@@ -96,9 +111,11 @@ class Session(Thing):
     token = Column(UUID(as_uuid=True), default=uuid4, unique=True, nullable=False)
     type = Column(IntEnum(SessionType), default=SessionType.Internal, nullable=False)
     user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(User.id))
-    user = db.relationship(User,
-                           backref=db.backref('sessions', lazy=True, collection_class=set),
-                           collection_class=set)
+    user = db.relationship(
+        User,
+        backref=db.backref('sessions', lazy=True, collection_class=set),
+        collection_class=set,
+    )
 
     def __str__(self) -> str:
         return '{0.token}'.format(self)
