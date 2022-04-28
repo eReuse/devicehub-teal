@@ -47,10 +47,6 @@ class Agent(Thing):
         db.Index('agent_type', type, postgresql_using='hash'),
     )
 
-    @property
-    def get_full_name(self):
-        return self.name
-
     @declared_attr
     def __mapper_args__(cls):
         """Defines inheritance.
