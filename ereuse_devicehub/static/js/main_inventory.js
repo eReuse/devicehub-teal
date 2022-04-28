@@ -283,8 +283,10 @@ async function processSelectedDevices() {
                 }
                 requestCount += 1
                 if (requestCount == this.list.length) {
-                    this.reRenderTable();
-                    this.list = [];
+                    setTimeout(() => {
+                        this.reRenderTable();
+                        this.list = [];
+                    }, 2000)
                 }
             })
             document.getElementById("dropDownLotsSelector").classList.remove("show");
