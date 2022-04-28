@@ -353,10 +353,6 @@ async function processSelectedDevices() {
     }
 
     const listHTML = $("#LotsSelector")
-
-    // Get selected devices
-    // const selectedDevicesIDs = $.map($(".deviceSelect").filter(":checked"), (x) => parseInt($(x).attr("data")));
-
     
     const selectedDevices = table.rows().dt.activeRows.filter(item => item.childNodes[0].children[0].checked).map(item => {
         const child = item.childNodes[0].children[0]
