@@ -354,6 +354,9 @@ class NewAllocateView(NewActionView, DeviceListMix):
             return flask.redirect(next_url)
 
         messages.error('Action {} error!'.format(self.form.type.data))
+        for k, v in self.form.errors.items():
+            value = ';'.join(v)
+            messages.error('Action Error {key}: {value}!'.format(key=k, value=value))
         next_url = self.get_next_url()
         return flask.redirect(next_url)
 
