@@ -335,6 +335,11 @@ async function processSelectedDevices() {
                 }
             }
             table.rows().remove(rowsToRemove);
+
+            // Restore state of checkbox
+            const selectAllBTN = document.getElementById("SelectAllBTN");
+            selectAllBTN.checked = false;
+            selectAllBTN.indeterminate = false;
         }
     }
 
