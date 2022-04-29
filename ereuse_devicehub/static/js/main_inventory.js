@@ -17,8 +17,98 @@ $(document).ready(() => {
     // $('#selectLot').selectpicker();
 })
 
+class TableController {
+    static #tableRows = table.activeRows;
+
+    static #tableRowsPage = () => table.pages[table.rows().dt.currentPage - 1];
+
+    /**
+     * @returns Selected inputs from device list
+     */
+    static getSelectedDevices() {
+        return this.#tableRows
+            .filter(element => element.querySelector("input").checked)
+            .map(element => element.querySelector("input"))
+    }
+
+    /**
+     * @returns Selected inputs in current page from device list
+     */
+    static getAllSelectedDevicesInCurrentPage() {
+        return this.#tableRowsPage()
+            .filter(element => element.querySelector("input").checked)
+            .map(element => element.querySelector("input"))
+    }
+
+    /**
+     * @returns All inputs from device list
+     */
+    static getAllDevices() {
+        return this.#tableRows
+            .map(element => element.querySelector("input"))
+    }
+
+    /**
+     * @returns All inputs from current page in device list
+     */
+    static getAllDevicesInCurrentPage() {
+        return this.#tableRowsPage()
+            .map(element => element.querySelector("input"))
+    }
+
+    /**
+     * 
+     * @param {HTMLElement} DOMElements 
+     * @returns Procesed input atributes to an Object class
+     */
+    static ProcessTR(DOMElements) {
+        return DOMElements.map(element => {
+            const info = {}
+            info.checked = element.checked
+            Object.values(element.attributes).forEach(attrib => { info[attrib.nodeName.replace(/-/g, "_")] = attrib.nodeValue })
+            return info
+        })
+    }
+}
+
+/**
+ * Select all functionality
+ */
+window.addEventListener("DOMContentLoaded", () => {
+    const btnSelectAll = document.getElementById("SelectAllBTN");
+
+    function itemListCheckChanged() {
+        const listDevices = TableController.getAllDevicesInCurrentPage()
+        const isAllChecked = listDevices.map(itm => itm.checked);
+
+        if (isAllChecked.every(bool => bool == true)) {
+            btnSelectAll.checked = true;
+            btnSelectAll.indeterminate = false;
+        } else if (isAllChecked.every(bool => bool == false)) {
+            btnSelectAll.checked = false;
+            btnSelectAll.indeterminate = false;
+        } else {
+            btnSelectAll.indeterminate = true;
+        }
+    }
+
+    TableController.getAllDevices().forEach(item => {
+        item.addEventListener("click", itemListCheckChanged);
+    })
+
+    btnSelectAll.addEventListener("click", event => {
+        const checkedState = event.target.checked;
+        TableController.getAllDevicesInCurrentPage().forEach(ckeckbox => { ckeckbox.checked = checkedState });
+    })
+
+    // https://github.com/fiduswriter/Simple-DataTables/wiki/Events
+    table.on("datatable.page", () => itemListCheckChanged());
+    table.on("datatable.perpage", () => itemListCheckChanged());
+    table.on("datatable.update", () => itemListCheckChanged());
+})
+
 function deviceSelect() {
-    const devices_count = $(".deviceSelect").filter(":checked").length;
+    const devices_count = TableController.getSelectedDevices().length;
     get_device_list();
     if (devices_count == 0) {
         $("#addingLotModal .pol").show();
@@ -60,7 +150,7 @@ function deviceSelect() {
 }
 
 function removeLot() {
-    const devices = $(".deviceSelect");
+    const devices = TableController.getAllDevices();
     if (devices.length > 0) {
         $("#btnRemoveLots .text-danger").show();
     } else {
@@ -70,8 +160,8 @@ function removeLot() {
 }
 
 function removeTag() {
-    const devices = $(".deviceSelect").filter(":checked");
-    const devices_id = $.map(devices, (x) => $(x).attr("data"));
+    const devices = TableController.getSelectedDevices();
+    const devices_id = devices.map(dev => dev.data);
     if (devices_id.length == 1) {
         const url = `/inventory/tag/devices/${devices_id[0]}/del/`;
         window.location.href = url;
@@ -81,8 +171,8 @@ function removeTag() {
 }
 
 function addTag() {
-    const devices = $(".deviceSelect").filter(":checked");
-    const devices_id = $.map(devices, (x) => $(x).attr("data"));
+    const devices = TableController.getSelectedDevices();
+    const devices_id = devices.map(dev => dev.data);
     if (devices_id.length == 1) {
         $("#addingTagModal .pol").hide();
         $("#addingTagModal .btn-primary").show();
@@ -137,7 +227,7 @@ function newDataWipe(action) {
 }
 
 function get_device_list() {
-    const devices = $(".deviceSelect").filter(":checked");
+    const devices = TableController.getSelectedDevices();
 
     /* Insert the correct count of devices in actions form */
     const devices_count = devices.length;
@@ -156,10 +246,11 @@ function get_device_list() {
         "Desktop": "<i class='bi bi-building'></i>",
         "Laptop": "<i class='bi bi-laptop'></i>",
     };
+
     list_devices = devices.map((x) => {
-        let typ = $(devices[x]).data("device-type");
-        const manuf = $(devices[x]).data("device-manufacturer");
-        const dhid = $(devices[x]).data("device-dhid");
+        let typ = $(x).data("device-type");
+        const manuf = $(x).data("device-manufacturer");
+        const dhid = $(x).data("device-dhid");
         if (computer[typ]) {
             typ = computer[typ];
         };
@@ -171,7 +262,7 @@ function get_device_list() {
 }
 
 function export_file(type_file) {
-    const devices = $(".deviceSelect").filter(":checked");
+    const devices = TableController.getSelectedDevices();
     const devices_id = $.map(devices, (x) => $(x).attr("data-device-dhid")).join(",");
     if (devices_id) {
         const url = `/inventory/export/${type_file}/?ids=${devices_id}`;
@@ -291,11 +382,20 @@ async function processSelectedDevices() {
 
             const newTable = Array.from(tmpDiv.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
 
-            table.rows().dt.activeRows.forEach(row => {
+            // https://github.com/fiduswriter/Simple-DataTables/wiki/rows()#removeselect-arraynumber
+            const rowsToRemove = []
+            for (let i = 0; i < table.activeRows.length; i++) {
+                const row = table.activeRows[i];
                 if (!newTable.includes(row.querySelector("input").attributes["data-device-dhid"].value)) {
-                    row.remove()
+                    rowsToRemove.push(i)
                 }
-            })
+            }
+            table.rows().remove(rowsToRemove);
+
+            // Restore state of checkbox
+            const selectAllBTN = document.getElementById("SelectAllBTN");
+            selectAllBTN.checked = false;
+            selectAllBTN.indeterminate = false;
         }
     }
 
@@ -341,7 +441,7 @@ async function processSelectedDevices() {
     const listHTML = $("#LotsSelector")
 
     // Get selected devices
-    const selectedDevicesID = table.rows().dt.activeRows.filter(item => item.querySelector("input").checked).map(item => item.querySelector("input").attributes.data.value)
+    const selectedDevicesID = TableController.ProcessTR(TableController.getSelectedDevices()).map(item => item.data)
 
     if (selectedDevicesID.length <= 0) {
         listHTML.html("<li style=\"color: red; text-align: center\">No devices selected</li>");
