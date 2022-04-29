@@ -32,21 +32,25 @@
         <div class="card-body pt-3">
           <!-- Bordered Tabs -->
 
-          <div class="d-flex align-items-center justify-content-between">
-            <h3><a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
+          <div class="d-flex align-items-center justify-content-between row">
+            <h3 class="col-sm-12 col-md-5"><a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
 
-            <div><!-- lot actions -->
+            <div class="col-sm-12 col-md-7 d-md-flex justify-content-md-end"><!-- lot actions -->
               {% if lot.is_temporary %}
-                <span class="d-none" id="activeRemoveLotModal" data-bs-toggle="modal" data-bs-target="#btnRemoveLots"></span>
+
+                {% if 1 == 2 %}{# <!-- TODO (@slamora) Don't render Trade buttons until implementation is finished --> #}
                 <a class="me-2" href="javascript:newTrade('user_from')">
                   <i class="bi bi-arrow-down-right"></i> Add supplier
                 </a>
                 <a class="me-2" href="javascript:newTrade('user_to')">
                   <i class="bi bi-arrow-up-right"></i> Add receiver
                 </a>
+                {% endif %}{# <!-- /end TODO --> #}
+
                 <a class="text-danger" href="javascript:removeLot()">
                   <i class="bi bi-trash"></i> Delete Lot
                 </a>
+                <span class="d-none" id="activeRemoveLotModal" data-bs-toggle="modal" data-bs-target="#btnRemoveLots"></span>
               {% endif %}
             </div>
           </div>
@@ -69,7 +73,7 @@
 
           </ul>
           {% endif %}
-          <div class="tab-content pt-5">
+          <div class="tab-content pt-1">
             <div id="devices-list" class="tab-pane fade devices-list active show">
               <label class="btn btn-primary " for="SelectAllBTN"><input type="checkbox" id="SelectAllBTN" autocomplete="off"></label>
               <div class="btn-group dropdown ml-1">
@@ -79,9 +83,9 @@
                   <span class="caret"></span>
                 </button>
                 <span class="d-none" id="activeTradeModal" data-bs-toggle="modal" data-bs-target="#tradeLotModal"></span>
-                <ul class="dropdown-menu" aria-labelledby="btnLots" style="width: 300px;" id="dropDownLotsSelector">
+                <ul class="dropdown-menu" aria-labelledby="btnLots" id="dropDownLotsSelector">
                   <h6 class="dropdown-header">Select some devices to manage lots</h6>
-                  <ul style="list-style-type: none; margin: 0; padding: 0;" class="mx-3" id="LotsSelector"></ul>
+                  <ul class="mx-3" id="LotsSelector"></ul>
                   <li><hr /></li>
                   <li>
                     <a href="#" class="dropdown-item" id="ApplyDeviceLots">
@@ -91,7 +95,7 @@
                   </li>
                 </ul>
               </div>
-              <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnActions" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-plus"></i>
                     New Actions
@@ -178,7 +182,7 @@
                 </ul>
               </div>
 
-              <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnExport" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-reply"></i>
                     Exports
@@ -212,26 +216,43 @@
                 </ul>
               </div>
 
-              <div class="btn-group dropdown ml-1" uib-dropdown="">
-                <button id="btnTags" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              <div class="btn-group dropdown m-1" uib-dropdown="">
+                <button id="btnUniqueID" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-tag"></i>
-                    Tags
+                    Unique Identifiers
                 </button>
                 <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
                 <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
-                <ul class="dropdown-menu" aria-labelledby="btnTags">
+                <ul class="dropdown-menu" aria-labelledby="btnUniqueID">
                   <li>
                     <a href="javascript:addTag()" class="dropdown-item">
                       <i class="bi bi-plus"></i>
-                      Add Tag to selected Device
+                      Add Unique Identifier to selected Device
                     </a>
                   </li>
                   <li>
                     <a href="javascript:removeTag()" class="dropdown-item">
                       <i class="bi bi-x"></i>
-                      Remove Tag from selected Device
+                      Remove Unique Identifier from selected Device
                     </a>
                   </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for('labels.label_list')}}">
+                      <i class="bi bi-tools"></i>
+                      Unique Identifier Management
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="btn-group dropdown m-1" uib-dropdown="">
+                <button id="btnTags" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-tag"></i>
+                    Labels
+                </button>
+                <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
+                <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
+                <ul class="dropdown-menu" aria-labelledby="btnTags">
                   <li>
                     <form id="print_labels" method="post" action="{{ url_for('labels.print_labels') }}">
                       {% for f in form_print_labels %}
@@ -246,7 +267,7 @@
                 </ul>
               </div>
 
-              <div class="btn-group dropdown ml-1" uib-dropdown="">
+              <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-laptop"></i>
                     New Device
@@ -314,7 +335,7 @@
                       <th scope="col">Select</th>
                       <th scope="col">Title</th>
                       <th scope="col">DHID</th>
-                      <th scope="col">Tags</th>
+                      <th scope="col">Unique Identifiers</th>
                       <th scope="col">Status</th>
                       <th scope="col" data-type="date" data-format="DD-MM-YYYY">Update</th>
                     </tr>
@@ -332,6 +353,9 @@
                                />
                       </td>
                       <td>
+                        {% if dev.get_type_logo() %}
+                        <i class="{{ dev.get_type_logo() }}" title="{{ dev.type }}"></i>
+                        {% endif %}
                         <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
                           {{ dev.verbose_name }}
                         </a>
@@ -407,7 +431,9 @@
 
 <!-- Custom Code -->
 <script>
-  const table = new simpleDatatables.DataTable("table")
+  const table = new simpleDatatables.DataTable("table", {
+    perPage: 20
+  })
 </script>
 <script src="{{ url_for('static', filename='js/main_inventory.js') }}"></script>
 {% endblock main %}

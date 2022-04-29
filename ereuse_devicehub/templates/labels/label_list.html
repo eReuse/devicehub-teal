@@ -19,18 +19,18 @@
         <div class="card-body pt-3">
           <!-- Bordered Tabs -->
 
-            <div class="btn-group dropdown ml-1">
+            <div class="btn-group dropdown m-1">
               <a href="{{ url_for('labels.tag_add')}}" type="button" class="btn btn-primary">
                 <i class="bi bi-plus"></i>
-                Create Named Tag
+                Create Named Unique Identifier
                 <span class="caret"></span>
               </a>
             </div>
 
-            <div class="btn-group dropdown ml-1" uib-dropdown="">
+            <div class="btn-group dropdown m-1" uib-dropdown="">
               <a href="{{ url_for('labels.tag_unnamed_add')}}" type="button" class="btn btn-primary">
                 <i class="bi bi-plus"></i>
-                Create UnNamed Tag
+                Create UnNamed Unique Identifier
                 <span class="caret"></span>
               </a>
             </div>
@@ -53,11 +53,11 @@
                     {% for tag in tags %}
                     <tr>
                       <td><a href="{{ url_for('labels.label_details', id=tag.id) }}">{{ tag.id }}</a></td>
-                      <td>{% if tag.provider %}Unnamed tag {% else %}Named tag{% endif %}</td>
+                      <td>{% if tag.provider %}Unnamed unique Identifier {% else %}Named unique identifier{% endif %}</td>
                       <td>{{ tag.get_provider }}</td>
                       <td>
                         {% if tag.device %}
-                        <a href={{ url_for('inventory.device_details', id=tag.device.devicehub_id)}}>
+                        <a href="{{ url_for('inventory.device_details', id=tag.device.devicehub_id)}}">
                           {{ tag.device.verbose_name }}
                         </a>
                         {% endif %}

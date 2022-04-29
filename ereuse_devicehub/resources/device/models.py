@@ -1,20 +1,30 @@
-import pathlib
 import copy
+import pathlib
 import time
-from flask import g
 from contextlib import suppress
 from fractions import Fraction
 from itertools import chain
 from operator import attrgetter
 from typing import Dict, List, Set
-from flask_sqlalchemy import event
 
 from boltons import urlutils
 from citext import CIText
 from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
+from flask import g
+from flask_sqlalchemy import event
 from more_itertools import unique_everseen
-from sqlalchemy import BigInteger, Boolean, Column, Enum as DBEnum, Float, ForeignKey, Integer, \
-    Sequence, SmallInteger, Unicode, inspect, text
+from sqlalchemy import BigInteger, Boolean, Column
+from sqlalchemy import Enum as DBEnum
+from sqlalchemy import (
+    Float,
+    ForeignKey,
+    Integer,
+    Sequence,
+    SmallInteger,
+    Unicode,
+    inspect,
+    text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -22,19 +32,41 @@ from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
-from teal.db import CASCADE_DEL, POLYMORPHIC_ID, POLYMORPHIC_ON, ResourceNotFound, URL, \
-    check_lower, check_range, IntEnum
+from teal.db import (
+    CASCADE_DEL,
+    POLYMORPHIC_ID,
+    POLYMORPHIC_ON,
+    URL,
+    IntEnum,
+    ResourceNotFound,
+    check_lower,
+    check_range,
+)
 from teal.enums import Layouts
 from teal.marshmallow import ValidationError
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.utils import hashcode
-from ereuse_devicehub.resources.enums import BatteryTechnology, CameraFacing, ComputerChassis, \
-    DataStorageInterface, DisplayTech, PrinterTechnology, RamFormat, RamInterface, Severity, TransferState
-from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing, listener_reset_field_updated_in_actual_time
-from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.device.metrics import Metrics
+from ereuse_devicehub.resources.enums import (
+    BatteryTechnology,
+    CameraFacing,
+    ComputerChassis,
+    DataStorageInterface,
+    DisplayTech,
+    PrinterTechnology,
+    RamFormat,
+    RamInterface,
+    Severity,
+    TransferState,
+)
+from ereuse_devicehub.resources.models import (
+    STR_SM_SIZE,
+    Thing,
+    listener_reset_field_updated_in_actual_time,
+)
+from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.utils import hashcode
 
 
 def create_code(context):
@@ -58,17 +90,21 @@ class Device(Thing):
     Devices can contain ``Components``, which are just a type of device
     (it is a recursive relationship).
     """
+
     id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
     id.comment = """The identifier of the device for this database. Used only
     internally for software; users should not use this.
     """
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     hid = Column(Unicode(), check_lower('hid'), unique=False)
-    hid.comment = """The Hardware ID (HID) is the ID traceability
+    hid.comment = (
+        """The Hardware ID (HID) is the ID traceability
     systems use to ID a device globally. This field is auto-generated
     from Devicehub using literal identifiers from the device,
     so it can re-generated *offline*.
-    """ + HID_CONVERSION_DOC
+    """
+        + HID_CONVERSION_DOC
+    )
     model = Column(Unicode(), check_lower('model'))
     model.comment = """The model of the device in lower case.
 
@@ -118,14 +154,18 @@ class Device(Thing):
     image = db.Column(db.URL)
     image.comment = "An image of the device."
 
-    owner_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey(User.id),
-                         nullable=False,
-                         default=lambda: g.user.id)
+    owner_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
     owner = db.relationship(User, primaryjoin=owner_id == User.id)
     allocated = db.Column(Boolean, default=False)
     allocated.comment = "device is allocated or not."
-    devicehub_id = db.Column(db.CIText(), nullable=True, unique=True, default=create_code)
+    devicehub_id = db.Column(
+        db.CIText(), nullable=True, unique=True, default=create_code
+    )
     devicehub_id.comment = "device have a unique code."
     active = db.Column(Boolean, default=True)
 
@@ -152,12 +192,12 @@ class Device(Thing):
         'image',
         'allocated',
         'devicehub_id',
-        'active'
+        'active',
     }
 
     __table_args__ = (
         db.Index('device_id', id, postgresql_using='hash'),
-        db.Index('type_index', type, postgresql_using='hash')
+        db.Index('type_index', type, postgresql_using='hash'),
     )
 
     def __init__(self, **kw) -> None:
@@ -187,7 +227,9 @@ class Device(Thing):
         for ac in actions_one:
             ac.real_created = ac.created
 
-        return sorted(chain(actions_multiple, actions_one), key=lambda x: x.real_created)
+        return sorted(
+            chain(actions_multiple, actions_one), key=lambda x: x.real_created
+        )
 
     @property
     def problems(self):
@@ -196,8 +238,9 @@ class Device(Thing):
         There can be up to 3 actions: current Snapshot,
         current Physical action, current Trading action.
         """
-        from ereuse_devicehub.resources.device import states
         from ereuse_devicehub.resources.action.models import Snapshot
+        from ereuse_devicehub.resources.device import states
+
         actions = set()
         with suppress(LookupError, ValueError):
             actions.add(self.last_action_of(Snapshot))
@@ -217,11 +260,13 @@ class Device(Thing):
         """
         # todo ensure to remove materialized values when start using them
         # todo or self.__table__.columns if inspect fails
-        return {c.key: getattr(self, c.key, None)
-                for c in inspect(self.__class__).attrs
-                if isinstance(c, ColumnProperty)
-                and not getattr(c, 'foreign_keys', None)
-                and c.key not in self._NON_PHYSICAL_PROPS}
+        return {
+            c.key: getattr(self, c.key, None)
+            for c in inspect(self.__class__).attrs
+            if isinstance(c, ColumnProperty)
+            and not getattr(c, 'foreign_keys', None)
+            and c.key not in self._NON_PHYSICAL_PROPS
+        }
 
     @property
     def public_properties(self) -> Dict[str, object or None]:
@@ -234,11 +279,13 @@ class Device(Thing):
         """
         non_public = ['amount', 'transfer_state', 'receiver_id']
         hide_properties = list(self._NON_PHYSICAL_PROPS) + non_public
-        return {c.key: getattr(self, c.key, None)
-                for c in inspect(self.__class__).attrs
-                if isinstance(c, ColumnProperty)
-                and not getattr(c, 'foreign_keys', None)
-                and c.key not in hide_properties}
+        return {
+            c.key: getattr(self, c.key, None)
+            for c in inspect(self.__class__).attrs
+            if isinstance(c, ColumnProperty)
+            and not getattr(c, 'foreign_keys', None)
+            and c.key not in hide_properties
+        }
 
     @property
     def public_actions(self) -> List[object]:
@@ -260,6 +307,7 @@ class Device(Thing):
         """The last Rate of the device."""
         with suppress(LookupError, ValueError):
             from ereuse_devicehub.resources.action.models import Rate
+
             return self.last_action_of(Rate)
 
     @property
@@ -268,12 +316,14 @@ class Device(Thing):
         ever been set."""
         with suppress(LookupError, ValueError):
             from ereuse_devicehub.resources.action.models import Price
+
             return self.last_action_of(Price)
 
     @property
     def last_action_trading(self):
         """which is the last action trading"""
         from ereuse_devicehub.resources.device import states
+
         with suppress(LookupError, ValueError):
             return self.last_action_of(*states.Trading.actions())
 
@@ -287,6 +337,7 @@ class Device(Thing):
             - Management
         """
         from ereuse_devicehub.resources.device import states
+
         with suppress(LookupError, ValueError):
             return self.last_action_of(*states.Status.actions())
 
@@ -300,6 +351,7 @@ class Device(Thing):
             - Management
         """
         from ereuse_devicehub.resources.device import states
+
         status_actions = [ac.t for ac in states.Status.actions()]
         history = []
         for ac in self.actions:
@@ -329,13 +381,15 @@ class Device(Thing):
         if not hasattr(lot, 'trade'):
             return
 
-        Status = {0: 'Trade',
-                  1: 'Confirm',
-                  2: 'NeedConfirmation',
-                  3: 'TradeConfirmed',
-                  4: 'Revoke',
-                  5: 'NeedConfirmRevoke',
-                  6: 'RevokeConfirmed'}
+        Status = {
+            0: 'Trade',
+            1: 'Confirm',
+            2: 'NeedConfirmation',
+            3: 'TradeConfirmed',
+            4: 'Revoke',
+            5: 'NeedConfirmRevoke',
+            6: 'RevokeConfirmed',
+        }
 
         trade = lot.trade
         user_from = trade.user_from
@@ -408,6 +462,7 @@ class Device(Thing):
         """If the actual trading state is an revoke action, this property show
         the id of that revoke"""
         from ereuse_devicehub.resources.device import states
+
         with suppress(LookupError, ValueError):
             action = self.last_action_of(*states.Trading.actions())
             if action.type == 'Revoke':
@@ -417,6 +472,7 @@ class Device(Thing):
     def physical(self):
         """The actual physical state, None otherwise."""
         from ereuse_devicehub.resources.device import states
+
         with suppress(LookupError, ValueError):
             action = self.last_action_of(*states.Physical.actions())
             return states.Physical(action.__class__)
@@ -425,6 +481,7 @@ class Device(Thing):
     def traking(self):
         """The actual traking state, None otherwise."""
         from ereuse_devicehub.resources.device import states
+
         with suppress(LookupError, ValueError):
             action = self.last_action_of(*states.Traking.actions())
             return states.Traking(action.__class__)
@@ -433,6 +490,7 @@ class Device(Thing):
     def usage(self):
         """The actual usage state, None otherwise."""
         from ereuse_devicehub.resources.device import states
+
         with suppress(LookupError, ValueError):
             action = self.last_action_of(*states.Usage.actions())
             return states.Usage(action.__class__)
@@ -470,8 +528,11 @@ class Device(Thing):
         test has been executed.
         """
         from ereuse_devicehub.resources.action.models import Test
-        current_tests = unique_everseen((e for e in reversed(self.actions) if isinstance(e, Test)),
-                                        key=attrgetter('type'))  # last test of each type
+
+        current_tests = unique_everseen(
+            (e for e in reversed(self.actions) if isinstance(e, Test)),
+            key=attrgetter('type'),
+        )  # last test of each type
         return self._warning_actions(current_tests)
 
     @property
@@ -496,7 +557,9 @@ class Device(Thing):
 
     def set_hid(self):
         with suppress(TypeError):
-            self.hid = Naming.hid(self.type, self.manufacturer, self.model, self.serial_number)
+            self.hid = Naming.hid(
+                self.type, self.manufacturer, self.model, self.serial_number
+            )
 
     def last_action_of(self, *types):
         """Gets the last action of the given types.
@@ -509,7 +572,9 @@ class Device(Thing):
             actions.sort(key=lambda x: x.created)
             return next(e for e in reversed(actions) if isinstance(e, types))
         except StopIteration:
-            raise LookupError('{!r} does not contain actions of types {}.'.format(self, types))
+            raise LookupError(
+                '{!r} does not contain actions of types {}.'.format(self, types)
+            )
 
     def which_user_put_this_device_in_trace(self):
         """which is the user than put this device in this trade"""
@@ -546,6 +611,32 @@ class Device(Thing):
         metrics = Metrics(device=self)
         return metrics.get_metrics()
 
+    def get_type_logo(self):
+        # This is used for see one logo of type of device in the frontend
+        types = {
+            "Desktop": "bi bi-file-post-fill",
+            "Laptop": "bi bi-laptop",
+            "Server": "bi bi-server",
+            "Processor": "bi bi-cpu",
+            "RamModule": "bi bi-list",
+            "Motherboard": "bi bi-cpu-fill",
+            "NetworkAdapter": "bi bi-hdd-network",
+            "GraphicCard": "bi bi-brush",
+            "SoundCard": "bi bi-volume-up-fill",
+            "Monitor": "bi bi-display",
+            "Display": "bi bi-display",
+            "ComputerMonitor": "bi bi-display",
+            "TelevisionSet": "bi bi-easel",
+            "TV": "bi bi-easel",
+            "Projector": "bi bi-camera-video",
+            "Tablet": "bi bi-tablet-landscape",
+            "Smartphone": "bi bi-phone",
+            "Cellphone": "bi bi-telephone",
+            "HardDrive": "bi bi-hdd-stack",
+            "SolidStateDrive": "bi bi-hdd",
+        }
+        return types.get(self.type, '')
+
     def __lt__(self, other):
         return self.id < other.id
 
@@ -571,19 +662,24 @@ class Device(Thing):
 
 class DisplayMixin:
     """Base class for the Display Component and the Monitor Device."""
-    size = Column(Float(decimal_return_scale=1), check_range('size', 2, 150), nullable=True)
+
+    size = Column(
+        Float(decimal_return_scale=1), check_range('size', 2, 150), nullable=True
+    )
     size.comment = """The size of the monitor in inches."""
     technology = Column(DBEnum(DisplayTech))
     technology.comment = """The technology the monitor uses to display
     the image.
     """
-    resolution_width = Column(SmallInteger, check_range('resolution_width', 10, 20000),
-                              nullable=True)
+    resolution_width = Column(
+        SmallInteger, check_range('resolution_width', 10, 20000), nullable=True
+    )
     resolution_width.comment = """The maximum horizontal resolution the
     monitor can natively support in pixels.
     """
-    resolution_height = Column(SmallInteger, check_range('resolution_height', 10, 20000),
-                               nullable=True)
+    resolution_height = Column(
+        SmallInteger, check_range('resolution_height', 10, 20000), nullable=True
+    )
     resolution_height.comment = """The maximum vertical resolution the
     monitor can natively support in pixels.
     """
@@ -622,8 +718,12 @@ class DisplayMixin:
 
     def __str__(self) -> str:
         if self.size:
-            return '{0.t} {0.serial_number} {0.size}in ({0.aspect_ratio}) {0.technology}'.format(self)
-        return '{0.t} {0.serial_number} 0in ({0.aspect_ratio}) {0.technology}'.format(self)
+            return '{0.t} {0.serial_number} {0.size}in ({0.aspect_ratio}) {0.technology}'.format(
+                self
+            )
+        return '{0.t} {0.serial_number} 0in ({0.aspect_ratio}) {0.technology}'.format(
+            self
+        )
 
     def __format__(self, format_spec: str) -> str:
         v = ''
@@ -645,6 +745,7 @@ class Computer(Device):
     Computer is broadly extended by ``Desktop``, ``Laptop``, and
     ``Server``. The property ``chassis`` defines it more granularly.
     """
+
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     chassis = Column(DBEnum(ComputerChassis), nullable=True)
     chassis.comment = """The physical form of the computer.
@@ -652,16 +753,18 @@ class Computer(Device):
     It is a subset of the Linux definition of DMI / DMI decode.
     """
     amount = Column(Integer, check_range('amount', min=0, max=100), default=0)
-    owner_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey(User.id),
-                         nullable=False,
-                         default=lambda: g.user.id)
+    owner_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
     # author = db.relationship(User, primaryjoin=owner_id == User.id)
-    transfer_state = db.Column(IntEnum(TransferState), default=TransferState.Initial, nullable=False)
+    transfer_state = db.Column(
+        IntEnum(TransferState), default=TransferState.Initial, nullable=False
+    )
     transfer_state.comment = TransferState.__doc__
-    receiver_id = db.Column(UUID(as_uuid=True),
-                            db.ForeignKey(User.id),
-                            nullable=True)
+    receiver_id = db.Column(UUID(as_uuid=True), db.ForeignKey(User.id), nullable=True)
     receiver = db.relationship(User, primaryjoin=receiver_id == User.id)
 
     def __init__(self, *args, **kwargs) -> None:
@@ -684,22 +787,30 @@ class Computer(Device):
     @property
     def ram_size(self) -> int:
         """The total of RAM memory the computer has."""
-        return sum(ram.size or 0 for ram in self.components if isinstance(ram, RamModule))
+        return sum(
+            ram.size or 0 for ram in self.components if isinstance(ram, RamModule)
+        )
 
     @property
     def data_storage_size(self) -> int:
         """The total of data storage the computer has."""
-        return sum(ds.size or 0 for ds in self.components if isinstance(ds, DataStorage))
+        return sum(
+            ds.size or 0 for ds in self.components if isinstance(ds, DataStorage)
+        )
 
     @property
     def processor_model(self) -> str:
         """The model of one of the processors of the computer."""
-        return next((p.model for p in self.components if isinstance(p, Processor)), None)
+        return next(
+            (p.model for p in self.components if isinstance(p, Processor)), None
+        )
 
     @property
     def graphic_card_model(self) -> str:
         """The model of one of the graphic cards of the computer."""
-        return next((p.model for p in self.components if isinstance(p, GraphicCard)), None)
+        return next(
+            (p.model for p in self.components if isinstance(p, GraphicCard)), None
+        )
 
     @property
     def network_speeds(self) -> List[int]:
@@ -724,16 +835,18 @@ class Computer(Device):
         it is not None.
         """
         return set(
-            privacy for privacy in
-            (hdd.privacy for hdd in self.components if isinstance(hdd, DataStorage))
+            privacy
+            for privacy in (
+                hdd.privacy for hdd in self.components if isinstance(hdd, DataStorage)
+            )
             if privacy
         )
 
     @property
     def external_document_erasure(self):
-        """Returns the external ``DataStorage`` proof of erasure.
-        """
+        """Returns the external ``DataStorage`` proof of erasure."""
         from ereuse_devicehub.resources.action.models import DataWipe
+
         urls = set()
         try:
             ev = self.last_action_of(DataWipe)
@@ -756,8 +869,11 @@ class Computer(Device):
         if not self.hid:
             return
         components = self.components if components_snap is None else components_snap
-        macs_network = [c.serial_number for c in components
-                        if c.type == 'NetworkAdapter' and c.serial_number is not None]
+        macs_network = [
+            c.serial_number
+            for c in components
+            if c.type == 'NetworkAdapter' and c.serial_number is not None
+        ]
         macs_network.sort()
         mac = macs_network[0] if macs_network else ''
         if not mac or mac in self.hid:
@@ -823,9 +939,13 @@ class Mobile(Device):
     """
     ram_size = db.Column(db.Integer, check_range('ram_size', min=128, max=36000))
     ram_size.comment = """The total of RAM of the device in MB."""
-    data_storage_size = db.Column(db.Integer, check_range('data_storage_size', 0, 10 ** 8))
+    data_storage_size = db.Column(
+        db.Integer, check_range('data_storage_size', 0, 10**8)
+    )
     data_storage_size.comment = """The total of data storage of the device in MB"""
-    display_size = db.Column(db.Float(decimal_return_scale=1), check_range('display_size', min=0.1, max=30.0))
+    display_size = db.Column(
+        db.Float(decimal_return_scale=1), check_range('display_size', min=0.1, max=30.0)
+    )
     display_size.comment = """The total size of the device screen"""
 
     @validates('imei')
@@ -855,20 +975,23 @@ class Cellphone(Mobile):
 
 class Component(Device):
     """A device that can be inside another device."""
+
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
 
     parent_id = Column(BigInteger, ForeignKey(Computer.id))
-    parent = relationship(Computer,
-                          backref=backref('components',
-                                          lazy=True,
-                                          cascade=CASCADE_DEL,
-                                          order_by=lambda: Component.id,
-                                          collection_class=OrderedSet),
-                          primaryjoin=parent_id == Computer.id)
-
-    __table_args__ = (
-        db.Index('parent_index', parent_id, postgresql_using='hash'),
+    parent = relationship(
+        Computer,
+        backref=backref(
+            'components',
+            lazy=True,
+            cascade=CASCADE_DEL,
+            order_by=lambda: Component.id,
+            collection_class=OrderedSet,
+        ),
+        primaryjoin=parent_id == Computer.id,
     )
+
+    __table_args__ = (db.Index('parent_index', parent_id, postgresql_using='hash'),)
 
     def similar_one(self, parent: Computer, blacklist: Set[int]) -> 'Component':
         """Gets a component that:
@@ -881,11 +1004,16 @@ class Component(Device):
                           when looking for similar ones.
         """
         assert self.hid is None, 'Don\'t use this method with a component that has HID'
-        component = self.__class__.query \
-            .filter_by(parent=parent, hid=None, owner_id=self.owner_id,
-                       **self.physical_properties) \
-            .filter(~Component.id.in_(blacklist)) \
+        component = (
+            self.__class__.query.filter_by(
+                parent=parent,
+                hid=None,
+                owner_id=self.owner_id,
+                **self.physical_properties,
+            )
+            .filter(~Component.id.in_(blacklist))
             .first()
+        )
         if not component:
             raise ResourceNotFound(self.type)
         return component
@@ -908,7 +1036,8 @@ class GraphicCard(JoinedComponentTableMixin, Component):
 
 class DataStorage(JoinedComponentTableMixin, Component):
     """A device that stores information."""
-    size = Column(Integer, check_range('size', min=1, max=10 ** 8))
+
+    size = Column(Integer, check_range('size', min=1, max=10**8))
     size.comment = """The size of the data-storage in MB."""
     interface = Column(DBEnum(DataStorageInterface))
 
@@ -919,6 +1048,7 @@ class DataStorage(JoinedComponentTableMixin, Component):
         This is, the last erasure performed to the data storage.
         """
         from ereuse_devicehub.resources.action.models import EraseBasic
+
         try:
             ev = self.last_action_of(EraseBasic)
         except LookupError:
@@ -933,9 +1063,9 @@ class DataStorage(JoinedComponentTableMixin, Component):
 
     @property
     def external_document_erasure(self):
-        """Returns the external ``DataStorage`` proof of erasure.
-        """
+        """Returns the external ``DataStorage`` proof of erasure."""
         from ereuse_devicehub.resources.action.models import DataWipe
+
         try:
             ev = self.last_action_of(DataWipe)
             return ev.document.url.to_text()
@@ -985,6 +1115,7 @@ class NetworkAdapter(JoinedComponentTableMixin, NetworkMixin, Component):
 
 class Processor(JoinedComponentTableMixin, Component):
     """The CPU."""
+
     speed = Column(Float, check_range('speed', 0.1, 15))
     speed.comment = """The regular CPU speed."""
     cores = Column(SmallInteger, check_range('cores', 1, 10))
@@ -999,6 +1130,7 @@ class Processor(JoinedComponentTableMixin, Component):
 
 class RamModule(JoinedComponentTableMixin, Component):
     """A stick of RAM."""
+
     size = Column(SmallInteger, check_range('size', min=128, max=17000))
     size.comment = """The capacity of the RAM stick."""
     speed = Column(SmallInteger, check_range('speed', min=100, max=10000))
@@ -1016,6 +1148,7 @@ class Display(JoinedComponentTableMixin, DisplayMixin, Component):
     mobiles, smart-watches, and so on; excluding ``ComputerMonitor``
     and ``TelevisionSet``.
     """
+
     pass
 
 
@@ -1031,14 +1164,16 @@ class Battery(JoinedComponentTableMixin, Component):
 
     @property
     def capacity(self) -> float:
-        """The quantity of """
+        """The quantity of"""
         from ereuse_devicehub.resources.action.models import MeasureBattery
+
         real_size = self.last_action_of(MeasureBattery).size
         return real_size / self.size if real_size and self.size else None
 
 
 class Camera(Component):
     """The camera of a device."""
+
     focal_length = db.Column(db.SmallInteger)
     video_height = db.Column(db.SmallInteger)
     video_width = db.Column(db.Integer)
@@ -1051,6 +1186,7 @@ class Camera(Component):
 
 class ComputerAccessory(Device):
     """Computer peripherals and similar accessories."""
+
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
     pass
 
@@ -1073,6 +1209,7 @@ class MemoryCardReader(ComputerAccessory):
 
 class Networking(NetworkMixin, Device):
     """Routers, switches, hubs..."""
+
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
 
 
@@ -1118,6 +1255,7 @@ class Microphone(Sound):
 
 class Video(Device):
     """Devices related to video treatment."""
+
     pass
 
 
@@ -1131,6 +1269,7 @@ class Videoconference(Video):
 
 class Cooking(Device):
     """Cooking devices."""
+
     pass
 
 
@@ -1182,6 +1321,7 @@ class Manufacturer(db.Model):
     Ideally users should use the names from this list when submitting
     devices.
     """
+
     name = db.Column(CIText(), primary_key=True)
     name.comment = """The normalized name of the manufacturer."""
     url = db.Column(URL(), unique=True)
@@ -1192,7 +1332,7 @@ class Manufacturer(db.Model):
     __table_args__ = (
         # from https://niallburkley.com/blog/index-columns-for-like-in-postgres/
         db.Index('name_index', text('name gin_trgm_ops'), postgresql_using='gin'),
-        {'schema': 'common'}
+        {'schema': 'common'},
     )
 
     @classmethod
@@ -1202,10 +1342,7 @@ class Manufacturer(db.Model):
         #: Dialect used to write the CSV
 
         with pathlib.Path(__file__).parent.joinpath('manufacturers.csv').open() as f:
-            cursor.copy_expert(
-                'COPY common.manufacturer FROM STDIN (FORMAT csv)',
-                f
-            )
+            cursor.copy_expert('COPY common.manufacturer FROM STDIN (FORMAT csv)', f)
 
 
 listener_reset_field_updated_in_actual_time(Device)
@@ -1217,6 +1354,7 @@ def create_code_tag(mapper, connection, device):
     this tag is the same of devicehub_id.
     """
     from ereuse_devicehub.resources.tag.model import Tag
+
     if isinstance(device, Computer):
         tag = Tag(device_id=device.id, id=device.devicehub_id)
         db.session.add(tag)
