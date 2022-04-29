@@ -18,9 +18,9 @@ $(document).ready(() => {
 })
 
 class TableController {
-    static #tableRows = table.rows().dt.activeRows;
-    
-    static #tableRowsPage = table.rows().dt.pages[table.rows().dt.currentPage - 1];
+    static #tableRows = table.activeRows;
+
+    static #tableRowsPage = () => table.pages[table.rows().dt.currentPage - 1];
 
     /**
      * @returns Selected inputs from device list
@@ -35,7 +35,7 @@ class TableController {
      * @returns Selected inputs in current page from device list
      */
      static getAllSelectedDevicesInCurrentPage() {
-        return this.#tableRowsPage
+        return this.#tableRowsPage()
             .filter(element => element.querySelector("input").checked)
             .map(element => element.querySelector("input"))
     }
@@ -52,7 +52,7 @@ class TableController {
      * @returns All inputs from current page in device list
      */
      static getAllDevicesInCurrentPage() {
-        return this.#tableRows
+        return this.#tableRowsPage()
             .map(element => element.querySelector("input"))
     }
 
