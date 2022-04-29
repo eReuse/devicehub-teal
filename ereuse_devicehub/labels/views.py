@@ -27,7 +27,7 @@ class TagListView(View):
         context = {
             'lots': lots,
             'tags': tags,
-            'page_title': 'Tags Management',
+            'page_title': 'Unique Identifiers Management',
             'version': __version__,
         }
         return flask.render_template(self.template_name, **context)
