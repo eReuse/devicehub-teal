@@ -216,34 +216,6 @@
   }
 
   /**
-   * Select all functionality
-   */
-  const btnSelectAll = document.getElementById("SelectAllBTN");
-  const tableListCheckboxes = document.querySelectorAll(".deviceSelect");
-
-  function itemListCheckChanged(event) {
-    const isAllChecked = Array.from(tableListCheckboxes).map(itm => itm.checked);
-    if (isAllChecked.every(bool => bool == true)) {
-      btnSelectAll.checked = true;
-      btnSelectAll.indeterminate = false;
-    } else if (isAllChecked.every(bool => bool == false)) {
-      btnSelectAll.checked = false;
-      btnSelectAll.indeterminate = false;
-    } else {
-      btnSelectAll.indeterminate = true;
-    }
-  }
-
-  tableListCheckboxes.forEach(item => {
-    item.addEventListener("click", itemListCheckChanged);
-  })
-
-  btnSelectAll.addEventListener("click", event => {
-    const checkedState = event.target.checked;
-    tableListCheckboxes.forEach(ckeckbox => {ckeckbox.checked = checkedState});
-  })
-
-  /**
    * Avoid hide dropdown when user clicked inside
    */
   document.getElementById("dropDownLotsSelector").addEventListener("click", event => {

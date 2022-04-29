@@ -34,7 +34,7 @@ class TableController {
     /**
      * @returns Selected inputs in current page from device list
      */
-     static getAllSelectedDevicesInCurrentPage() {
+    static getAllSelectedDevicesInCurrentPage() {
         return this.#tableRowsPage()
             .filter(element => element.querySelector("input").checked)
             .map(element => element.querySelector("input"))
@@ -70,6 +70,42 @@ class TableController {
         })
     }
 }
+
+/**
+ * Select all functionality
+ */
+window.addEventListener("DOMContentLoaded", () => {
+    const btnSelectAll = document.getElementById("SelectAllBTN");
+
+    function itemListCheckChanged() {
+        const listDevices = TableController.getAllDevicesInCurrentPage()
+        const isAllChecked = listDevices.map(itm => itm.checked);
+
+        if (isAllChecked.every(bool => bool == true)) {
+            btnSelectAll.checked = true;
+            btnSelectAll.indeterminate = false;
+        } else if (isAllChecked.every(bool => bool == false)) {
+            btnSelectAll.checked = false;
+            btnSelectAll.indeterminate = false;
+        } else {
+            btnSelectAll.indeterminate = true;
+        }
+    }
+
+    TableController.getAllDevices().forEach(item => {
+        item.addEventListener("click", itemListCheckChanged);
+    })
+
+    btnSelectAll.addEventListener("click", event => {
+        const checkedState = event.target.checked;
+        TableController.getAllDevicesInCurrentPage().forEach(ckeckbox => { ckeckbox.checked = checkedState });
+    })
+
+    // https://github.com/fiduswriter/Simple-DataTables/wiki/Events
+    table.on("datatable.page", () => itemListCheckChanged());
+    table.on("datatable.perpage", () => itemListCheckChanged());
+    table.on("datatable.update", () => itemListCheckChanged());
+})
 
 function deviceSelect() {
     const devices_count = TableController.getSelectedDevices().length;
