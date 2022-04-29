@@ -173,7 +173,7 @@ def test_upload_snapshot(user3: UserClientFlask):
     assert str(db_snapthot.uuid) == snapshot['uuid']
     assert dev.type == 'Laptop'
     assert dev.serial_number == 'b8oaas048285'
-    assert len(dev.actions) == 12
+    assert len(dev.actions) == 10
     assert len(dev.components) == 9
 
 
@@ -505,7 +505,7 @@ def test_action_recycling(user3: UserClientFlask):
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
-    assert dev.actions[-1].type == 'EreusePrice'
+    assert dev.actions[-1].type == 'Snapshot'
     assert 'Action Allocate error!' in body
 
     # good request
