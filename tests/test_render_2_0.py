@@ -274,7 +274,7 @@ def test_labels(user3: UserClientFlask):
     body, status = user3.get('/labels/')
 
     assert status == '200 OK'
-    assert "Tags Management" in body
+    assert "Unique Identifiers Management" in body
 
 
 @pytest.mark.mvp
@@ -284,7 +284,7 @@ def test_add_tag(user3: UserClientFlask):
     body, status = user3.get(uri)
 
     assert status == '200 OK'
-    assert "Add a new Tag" in body
+    assert "Add a new Unique Identifier" in body
 
     data = {
         'code': "tag1",
@@ -667,7 +667,7 @@ def test_action_allocate_error_required(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert 'You need to specify a number of users' in body
+    assert 'Action Allocate error' in body
 
 
 @pytest.mark.mvp
@@ -691,7 +691,7 @@ def test_action_allocate_error_dates(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert 'The action cannot finish before it starts.' in body
+    assert 'Action Allocate error' in body
     assert dev.actions[-1].type != 'Allocate'
 
 
