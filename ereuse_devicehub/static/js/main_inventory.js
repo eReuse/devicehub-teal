@@ -326,11 +326,15 @@ async function processSelectedDevices() {
 
             const newTable = Array.from(tmpDiv.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
 
-            table.rows().dt.activeRows.forEach(row => {
+            // https://github.com/fiduswriter/Simple-DataTables/wiki/rows()#removeselect-arraynumber
+            const rowsToRemove = []
+            for (let i = 0; i < table.activeRows.length; i++) {
+                const row = table.activeRows[i];
                 if (!newTable.includes(row.querySelector("input").attributes["data-device-dhid"].value)) {
-                    row.remove()
+                    rowsToRemove.push(i)
                 }
-            })
+            }
+            table.rows().remove(rowsToRemove);
         }
     }
 
