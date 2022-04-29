@@ -24,14 +24,17 @@ class TableController {
      * @returns This will return all input attributes from selected devices
      */
     static getSelectedDevices() {
-        return this.#ProcessTR(this.#tableRows.filter(element => element.querySelector("input").checked))
+        return this.#tableRows
+            .filter(element => element.querySelector("input").checked)
+            .map(element => element.querySelector("input"))
     }
 
     /**
      * @returns This will return all input attributes from all devices in list
      */
     static getAllDevices() {
-        return this.#ProcessTR(this.#tableRows)
+        return this.#tableRows
+            .map(element => element.querySelector("input"))
     }
 
     /**
@@ -39,18 +42,18 @@ class TableController {
      * @param {HTMLElement} DOMElements 
      * @returns Procesed input atributes to an Object class
      */
-    static #ProcessTR(DOMElements) {
+    static ProcessTR(DOMElements) {
         return DOMElements.map(element => {
             const info = {}
-            info.checked = element.querySelector("input").checked
-            Object.values(element.querySelector("input").attributes).forEach(attrib => {info[attrib.nodeName] = attrib.nodeValue})
+            info.checked = element.checked
+            Object.values(element.attributes).forEach(attrib => {info[attrib.nodeName.replace(/-/g, "_")] = attrib.nodeValue})
             return info
         })
     }
 }
 
 function deviceSelect() {
-    const devices_count = $(".deviceSelect").filter(":checked").length;
+    const devices_count = TableController.getSelectedDevices().length;
     get_device_list();
     if (devices_count == 0) {
         $("#addingLotModal .pol").show();
@@ -92,7 +95,7 @@ function deviceSelect() {
 }
 
 function removeLot() {
-    const devices = $(".deviceSelect");
+    const devices = TableController.getAllDevices();
     if (devices.length > 0) {
         $("#btnRemoveLots .text-danger").show();
     } else {
@@ -102,8 +105,8 @@ function removeLot() {
 }
 
 function removeTag() {
-    const devices = $(".deviceSelect").filter(":checked");
-    const devices_id = $.map(devices, (x) => $(x).attr("data"));
+    const devices = TableController.getSelectedDevices();
+    const devices_id = devices.map(dev => dev.data);
     if (devices_id.length == 1) {
         const url = `/inventory/tag/devices/${devices_id[0]}/del/`;
         window.location.href = url;
@@ -113,8 +116,8 @@ function removeTag() {
 }
 
 function addTag() {
-    const devices = $(".deviceSelect").filter(":checked");
-    const devices_id = $.map(devices, (x) => $(x).attr("data"));
+    const devices = TableController.getSelectedDevices();
+    const devices_id = devices.map(dev => dev.data);
     if (devices_id.length == 1) {
         $("#addingTagModal .pol").hide();
         $("#addingTagModal .btn-primary").show();
@@ -169,7 +172,7 @@ function newDataWipe(action) {
 }
 
 function get_device_list() {
-    const devices = $(".deviceSelect").filter(":checked");
+    const devices = TableController.getSelectedDevices();
 
     /* Insert the correct count of devices in actions form */
     const devices_count = devices.length;
@@ -188,10 +191,11 @@ function get_device_list() {
         "Desktop": "<i class='bi bi-building'></i>",
         "Laptop": "<i class='bi bi-laptop'></i>",
     };
+
     list_devices = devices.map((x) => {
-        let typ = $(devices[x]).data("device-type");
-        const manuf = $(devices[x]).data("device-manufacturer");
-        const dhid = $(devices[x]).data("device-dhid");
+        let typ = $(x).data("device-type");
+        const manuf = $(x).data("device-manufacturer");
+        const dhid = $(x).data("device-dhid");
         if (computer[typ]) {
             typ = computer[typ];
         };
@@ -203,7 +207,7 @@ function get_device_list() {
 }
 
 function export_file(type_file) {
-    const devices = $(".deviceSelect").filter(":checked");
+    const devices = TableController.getSelectedDevices();
     const devices_id = $.map(devices, (x) => $(x).attr("data-device-dhid")).join(",");
     if (devices_id) {
         const url = `/inventory/export/${type_file}/?ids=${devices_id}`;
@@ -372,7 +376,7 @@ async function processSelectedDevices() {
     const listHTML = $("#LotsSelector")
 
     // Get selected devices
-    const selectedDevicesID = TableController.getSelectedDevices().map(item => item.data)
+    const selectedDevicesID = TableController.ProcessTR(TableController.getSelectedDevices()).map(item => item.data)
 
     if (selectedDevicesID.length <= 0) {
         listHTML.html("<li style=\"color: red; text-align: center\">No devices selected</li>");
