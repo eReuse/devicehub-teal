@@ -51,7 +51,7 @@ class TableController {
     /**
      * @returns All inputs from current page in device list
      */
-     static getAllDevicesInCurrentPage() {
+    static getAllDevicesInCurrentPage() {
         return this.#tableRowsPage()
             .map(element => element.querySelector("input"))
     }
@@ -65,7 +65,7 @@ class TableController {
         return DOMElements.map(element => {
             const info = {}
             info.checked = element.checked
-            Object.values(element.attributes).forEach(attrib => {info[attrib.nodeName.replace(/-/g, "_")] = attrib.nodeValue})
+            Object.values(element.attributes).forEach(attrib => { info[attrib.nodeName.replace(/-/g, "_")] = attrib.nodeValue })
             return info
         })
     }

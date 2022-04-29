@@ -14,9 +14,9 @@
     el = el.trim()
     if (all) {
       return [...document.querySelectorAll(el)]
-    } 
-      return document.querySelector(el)
-    
+    }
+    return document.querySelector(el)
+
   }
 
   /**
