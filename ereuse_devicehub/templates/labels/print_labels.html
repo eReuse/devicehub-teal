@@ -24,16 +24,39 @@
 
               <div class="row">
                 <div class="col-lg-3 col-md-4">
-                  {% for tag in tags %}
-                  <div style="width:256px; height:148px; border: solid 1px; padding: 10px;">
-                    <div id="print">
+                  {% for dev in devices %}
+                  <div style="width:256px; min-height:148px; border: solid 1px; padding: 10px;">
+                    <div>
                       <div class="row">
-                        <div class="col">
-                          <div id="{{ tag.id }}"></div>
+                        <div class="col qr">
+                          <div id="{{ dev.devicehub_id }}"></div>
                         </div>
-                        <div class="col">
+                        <div class="col dhid">
                           <div style="padding-top: 55px">
-                              <b class="tag">{{ tag.id }}</b>
+                              <b class="tag" data-serial-number="{{ dev.serial_number or '' }}"
+                                  data-manufacturer="{{ dev.manufacturer or '' }}"
+                                  data-model="{{ dev.model or '' }}">{{ dev.devicehub_id }}</b>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row serial_number" style="display: none">
+                        <div class="col">
+                          <div>
+                              <b>{{ dev.serial_number or '' }}</b>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row manufacturer" style="display: none">
+                        <div class="col">
+                          <div>
+                              <b>{{ dev.manufacturer or '' }}</b>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row model" style="display: none">
+                        <div class="col">
+                          <div>
+                              <span style="font-size: 12px;">{{ dev.model or '' }}</span>
                           </div>
                         </div>
                       </div>
@@ -71,20 +94,41 @@
                       <span class="input-group-text">mm</span>
                     </div>
                   </div>
+                  <div class="col-sm-10">
+                    <div class="form-switch">
+                      <input class="form-check-input" name="qr" type="checkbox" id="qrCheck" checked="">
+                      <label class="form-check-label" for="qrCheck">QR</label>
+                    </div>
+                    <div class="form-switch">
+                      <input class="form-check-input" name="dhid" type="checkbox" id="dhidCheck" checked="">
+                      <label class="form-check-label" for="dhidCheck">Dhid</label>
+                    </div>
+                    <div class="form-switch">
+                      <input class="form-check-input" name="serial_number" type="checkbox" id="serialNumberCheck">
+                      <label class="form-check-label" for="serialNumberCheck">Serial number</label>
+                    </div>
+                    <div class="form-switch">
+                      <input class="form-check-input" name="manufacturer" type="checkbox" id="manufacturerCheck">
+                      <label class="form-check-label" for="manufacturerCheck">Manufacturer</label>
+                    </div>
+                    <div class="form-switch">
+                      <input class="form-check-input" name="model" type="checkbox" id="modelCheck">
+                      <label class="form-check-label" for="modelCheck">Model</label>
+                    </div>
+                  </div>
+                  <div class="row mt-5">
+                    <div class="col-lg-3 col-md-4">
+                        <a href="javascript:printpdf()" class="btn btn-success">Print labels</a>
+                    </div>
+                    <div class="col-lg-3 col-md-4">
+                        <a href="javascript:save_settings()" class="btn btn-primary">Save settings</a>
+                    </div>
+                    <div class="col-lg-3 col-md-4">
+                        <a href="javascript:reset_settings()" class="btn btn-danger">Reset settings</a>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="row mt-5">
-                <div class="col-lg-3 col-md-4">
-                    <a href="javascript:printpdf()" class="btn btn-success">Print labels</a>
-                </div>
-                <div class="col-lg-3 col-md-4">
-                    <a href="javascript:save_size()" class="btn btn-primary">Save label size</a>
-                </div>
-                <div class="col-lg-3 col-md-4">
-                    <a href="javascript:reset_size()" class="btn btn-danger">Reset label size</a>
-                </div>
-              </div>
-
             </div>
 
         </div>
@@ -96,8 +140,8 @@
 <script src="{{ url_for('static', filename='js/jspdf.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/print.pdf.js') }}"></script>
 <script type="text/javascript">
-{% for tag in tags %}
-qr_draw("{{ url_for('inventory.device_details', id=tag.device.devicehub_id, _external=True) }}", "#{{ tag.id }}")
+{% for dev in devices %}
+qr_draw("{{ url_for('inventory.device_details', id=dev.devicehub_id, _external=True) }}", "#{{ dev.devicehub_id }}")
 {% endfor %}
 </script>
 {% endblock main %}
