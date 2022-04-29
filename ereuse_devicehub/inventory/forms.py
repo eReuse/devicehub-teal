@@ -468,7 +468,7 @@ class TagDeviceForm(FlaskForm):
         db.session.commit()
 
 
-class NewActionForm(FlaskForm):
+class ActionFormMix(FlaskForm):
     name = StringField(
         'Name',
         [validators.length(max=50)],
@@ -500,17 +500,23 @@ class NewActionForm(FlaskForm):
         if not is_valid:
             return False
 
-        self._devices = OrderedSet()
-        if self.devices.data:
-            devices = set(self.devices.data.split(","))
-            self._devices = OrderedSet(
-                Device.query.filter(Device.id.in_(devices))
-                .filter(Device.owner_id == g.user.id)
-                .all()
-            )
+        if self.type.data in [None, '']:
+            return False
 
-            if not self._devices:
-                return False
+        if not self.devices.data:
+            return False
+
+        self._devices = OrderedSet()
+
+        devices = set(self.devices.data.split(","))
+        self._devices = OrderedSet(
+            Device.query.filter(Device.id.in_(devices))
+            .filter(Device.owner_id == g.user.id)
+            .all()
+        )
+
+        if not self._devices:
+            return False
 
         return True
 
@@ -543,7 +549,20 @@ class NewActionForm(FlaskForm):
             return self.type.data
 
 
-class AllocateForm(NewActionForm):
+class NewActionForm(ActionFormMix):
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+        if self.type.data in ['Allocate', 'Deallocate', 'Trade', 'DataWipe']:
+            return False
+
+        return True
+
+
+class AllocateForm(ActionFormMix):
     start_time = DateField('Start time')
     end_time = DateField('End time')
     final_user_code = StringField('Final user code', [validators.length(max=50)])
@@ -552,6 +571,9 @@ class AllocateForm(NewActionForm):
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
+
+        if self.type.data not in ['Allocate', 'Deallocate']:
+            return False
 
         start_time = self.start_time.data
         end_time = self.end_time.data
@@ -621,7 +643,7 @@ class DataWipeDocumentForm(Form):
         return self._obj
 
 
-class DataWipeForm(NewActionForm):
+class DataWipeForm(ActionFormMix):
     document = FormField(DataWipeDocumentForm)
 
     def save(self):
@@ -648,7 +670,7 @@ class DataWipeForm(NewActionForm):
         return self.instance
 
 
-class TradeForm(NewActionForm):
+class TradeForm(ActionFormMix):
     user_from = StringField(
         'Supplier',
         [validators.Optional()],
@@ -694,6 +716,9 @@ class TradeForm(NewActionForm):
         is_valid = self.generic_validation(extra_validators=extra_validators)
         email_from = self.user_from.data
         email_to = self.user_to.data
+
+        if self.type.data != "Trade":
+            return False
 
         if not self.confirm.data and not self.code.data:
             self.code.errors = ["If you don't want to confirm, you need a code"]
