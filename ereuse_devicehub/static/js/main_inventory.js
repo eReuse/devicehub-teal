@@ -19,9 +19,11 @@ $(document).ready(() => {
 
 class TableController {
     static #tableRows = table.rows().dt.activeRows;
+    
+    static #tableRowsPage = table.rows().dt.pages[table.rows().dt.currentPage - 1];
 
     /**
-     * @returns This will return all input attributes from selected devices
+     * @returns Selected inputs from device list
      */
     static getSelectedDevices() {
         return this.#tableRows
@@ -30,9 +32,26 @@ class TableController {
     }
 
     /**
-     * @returns This will return all input attributes from all devices in list
+     * @returns Selected inputs in current page from device list
+     */
+     static getAllSelectedDevicesInCurrentPage() {
+        return this.#tableRowsPage
+            .filter(element => element.querySelector("input").checked)
+            .map(element => element.querySelector("input"))
+    }
+
+    /**
+     * @returns All inputs from device list
      */
     static getAllDevices() {
+        return this.#tableRows
+            .map(element => element.querySelector("input"))
+    }
+
+    /**
+     * @returns All inputs from current page in device list
+     */
+     static getAllDevicesInCurrentPage() {
         return this.#tableRows
             .map(element => element.querySelector("input"))
     }
