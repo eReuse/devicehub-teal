@@ -27,7 +27,8 @@
         "strict": "off",
         "class-methods-use-this": "off",
         "eqeqeq": "warn",
-        "radix": "warn"
+        "radix": "warn",
+        "max-classes-per-file": ["error", 2]
     },
     "globals": {
         "API_URLS": true,

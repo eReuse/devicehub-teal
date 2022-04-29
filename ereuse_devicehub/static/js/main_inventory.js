@@ -17,6 +17,38 @@ $(document).ready(() => {
     // $('#selectLot').selectpicker();
 })
 
+class TableController {
+    static #tableRows = table.rows().dt.activeRows;
+
+    /**
+     * @returns This will return all input attributes from selected devices
+     */
+    static getSelectedDevices() {
+        return this.#ProcessTR(this.#tableRows.filter(element => element.querySelector("input").checked))
+    }
+
+    /**
+     * @returns This will return all input attributes from all devices in list
+     */
+    static getAllDevices() {
+        return this.#ProcessTR(this.#tableRows)
+    }
+
+    /**
+     * 
+     * @param {HTMLElement} DOMElements 
+     * @returns Procesed input atributes to an Object class
+     */
+    static #ProcessTR(DOMElements) {
+        return DOMElements.map(element => {
+            const info = {}
+            info.checked = element.querySelector("input").checked
+            Object.values(element.querySelector("input").attributes).forEach(attrib => {info[attrib.nodeName] = attrib.nodeValue})
+            return info
+        })
+    }
+}
+
 function deviceSelect() {
     const devices_count = $(".deviceSelect").filter(":checked").length;
     get_device_list();
@@ -340,7 +372,7 @@ async function processSelectedDevices() {
     const listHTML = $("#LotsSelector")
 
     // Get selected devices
-    const selectedDevicesID = table.rows().dt.activeRows.filter(item => item.querySelector("input").checked).map(item => item.querySelector("input").attributes.data.value)
+    const selectedDevicesID = TableController.getSelectedDevices().map(item => item.data)
 
     if (selectedDevicesID.length <= 0) {
         listHTML.html("<li style=\"color: red; text-align: center\">No devices selected</li>");
