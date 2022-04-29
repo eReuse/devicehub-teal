@@ -1,7 +1,7 @@
 import pytest
 
-from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.client import Client
+from ereuse_devicehub.devicehub import Devicehub
 
 
 @pytest.mark.mvp
@@ -28,37 +28,65 @@ def test_api_docs(client: Client):
     """Tests /apidocs correct initialization."""
     docs, _ = client.get('/apidocs')
     assert set(docs['paths'].keys()) == {
+        '/',
         '/actions/',
-        '/apidocs',
         '/allocates/',
+        '/apidocs',
         '/deallocates/',
         '/deliverynotes/',
         '/devices/',
         '/devices/static/{filename}',
-        '/documents/static/{filename}',
         '/documents/actions/',
-        '/documents/erasures/',
-        '/documents/devices/',
-        '/documents/stamps/',
-        '/documents/wbconf/{wbtype}',
-        '/documents/internalstats/',
-        '/documents/stock/',
         '/documents/check/',
+        '/documents/devices/',
+        '/documents/erasures/',
+        '/documents/internalstats/',
         '/documents/lots/',
-        '/versions/',
-        '/manufacturers/',
+        '/documents/stamps/',
+        '/documents/static/{filename}',
+        '/documents/stock/',
+        '/documents/wbconf/{wbtype}',
+        '/inventory/action/add/',
+        '/inventory/action/allocate/add/',
+        '/inventory/action/datawipe/add/',
+        '/inventory/action/trade/add/',
+        '/inventory/device/',
+        '/inventory/device/add/',
+        '/inventory/device/{id}/',
+        '/inventory/export/{export_id}/',
+        '/inventory/lot/add/',
+        '/inventory/lot/{id}/',
+        '/inventory/lot/{id}/del/',
+        '/inventory/lot/{lot_id}/device/',
+        '/inventory/lot/{lot_id}/device/add/',
+        '/inventory/lot/{lot_id}/trade-document/add/',
+        '/inventory/lot/{lot_id}/upload-snapshot/',
+        '/inventory/tag/devices/add/',
+        '/inventory/tag/devices/{id}/del/',
+        '/inventory/upload-snapshot/',
+        '/labels/',
+        '/labels/add/',
+        '/labels/print',
+        '/labels/unnamed/add/',
+        '/labels/{id}/',
         '/licences/',
         '/lives/',
+        '/login/',
+        '/logout/',
         '/lots/',
         '/lots/{id}/children',
         '/lots/{id}/devices',
+        '/manufacturers/',
         '/metrics/',
+        '/profile/',
+        '/set_password/',
         '/tags/',
         '/tags/{tag_id}/device/{device_id}',
         '/trade-documents/',
         '/users/',
         '/users/login/',
         '/users/logout/',
+        '/versions/',
     }
     assert docs['info'] == {'title': 'Devicehub', 'version': '0.2'}
     assert docs['components']['securitySchemes']['bearerAuth'] == {
@@ -67,6 +95,6 @@ def test_api_docs(client: Client):
         'description:': 'HTTP Basic scheme',
         'type': 'http',
         'scheme': 'basic',
-        'name': 'Authorization'
+        'name': 'Authorization',
     }
     assert len(docs['definitions']) == 132
