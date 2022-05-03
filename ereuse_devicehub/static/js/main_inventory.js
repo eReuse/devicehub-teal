@@ -348,14 +348,16 @@ async function processSelectedDevices() {
             this.list.forEach(async action => {
                 if (action.type == "Add") {
                     try {
-                        await Api.devices_add(action.lot.id, action.devices.map(dev => dev.id));
+                        const devicesIDs = action.devices.filter(dev => !action.lot.devices.includes(dev.id)).map(dev => dev.id)
+                        await Api.devices_add(action.lot.id, devicesIDs);
                         this.notifyUser("Devices sucefully aded to selected lot/s", "", false);
                     } catch (error) {
                         this.notifyUser("Failed to add devices to selected lot/s", error.responseJSON.message, true);
                     }
                 } else if (action.type == "Remove") {
                     try {
-                        await Api.devices_remove(action.lot.id, action.devices.map(dev => dev.id));
+                        const devicesIDs = action.devices.filter(dev => action.lot.devices.includes(dev.id)).map(dev => dev.id)
+                        await Api.devices_remove(action.lot.id, devicesIDs);
                         this.notifyUser("Devices sucefully removed from selected lot/s", "", false);
                     } catch (error) {
                         this.notifyUser("Fail to remove devices from selected lot/s", error.responseJSON.message, true);
