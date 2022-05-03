@@ -64,10 +64,7 @@ class PrintLabelsForm(FlaskForm):
             .all()
         )
 
-        # print only tags that are DHID
-        dhids = [x.devicehub_id for x in self._devices]
-        self._tags = (
-            Tag.query.filter(Tag.owner_id == g.user.id).filter(Tag.id.in_(dhids)).all()
-        )
+        if not self._devices:
+            return False
 
         return is_valid

@@ -27,7 +27,7 @@ class TagListView(View):
         context = {
             'lots': lots,
             'tags': tags,
-            'page_title': 'Tags Management',
+            'page_title': 'Unique Identifiers Management',
             'version': __version__,
         }
         return flask.render_template(self.template_name, **context)
@@ -102,7 +102,7 @@ class PrintLabelsView(View):
         form = PrintLabelsForm()
         if form.validate_on_submit():
             context['form'] = form
-            context['tags'] = form._tags
+            context['devices'] = form._devices
             return flask.render_template(self.template_name, **context)
         else:
             messages.error('Error you need select one or more devices')
