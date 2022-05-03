@@ -159,7 +159,7 @@ class LotCreateView(GenericMixView):
         return flask.render_template(self.template_name, **self.context)
 
 
-class LotUpdateView(View):
+class LotUpdateView(GenericMixView):
     methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'inventory/lot.html'
