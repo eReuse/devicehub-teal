@@ -76,6 +76,7 @@ class TableController {
  */
 window.addEventListener("DOMContentLoaded", () => {
     const btnSelectAll = document.getElementById("SelectAllBTN");
+    const alertInfoDevices = document.getElementById("select-devices-info");
 
     function itemListCheckChanged() {
         const listDevices = TableController.getAllDevicesInCurrentPage()
@@ -84,11 +85,20 @@ window.addEventListener("DOMContentLoaded", () => {
         if (isAllChecked.every(bool => bool == true)) {
             btnSelectAll.checked = true;
             btnSelectAll.indeterminate = false;
+            alertInfoDevices.innerHTML = `Selected devices: ${TableController.getSelectedDevices().length}
+                                            ${
+                                                TableController.getAllDevices().length != TableController.getSelectedDevices().length
+                                                    ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
+                                                    : ""
+                                            }`;
+            alertInfoDevices.classList.remove("d-none");
         } else if (isAllChecked.every(bool => bool == false)) {
             btnSelectAll.checked = false;
             btnSelectAll.indeterminate = false;
+            alertInfoDevices.classList.add("d-none")
         } else {
             btnSelectAll.indeterminate = true;
+            alertInfoDevices.classList.add("d-none")
         }
     }
 
@@ -99,6 +109,12 @@ window.addEventListener("DOMContentLoaded", () => {
     btnSelectAll.addEventListener("click", event => {
         const checkedState = event.target.checked;
         TableController.getAllDevicesInCurrentPage().forEach(ckeckbox => { ckeckbox.checked = checkedState });
+        itemListCheckChanged()
+    })
+
+    alertInfoDevices.addEventListener("click", () => {
+        TableController.getAllDevices().forEach(ckeckbox => { ckeckbox.checked = true });
+        itemListCheckChanged()
     })
 
     // https://github.com/fiduswriter/Simple-DataTables/wiki/Events
