@@ -89,7 +89,7 @@ window.addEventListener("DOMContentLoaded", () => {
                                             ${
                                                 TableController.getAllDevices().length != TableController.getSelectedDevices().length
                                                     ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
-                                                    : ""
+                                                    : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
                                             }`;
             alertInfoDevices.classList.remove("d-none");
         } else if (isAllChecked.every(bool => bool == false)) {
@@ -113,7 +113,8 @@ window.addEventListener("DOMContentLoaded", () => {
     })
 
     alertInfoDevices.addEventListener("click", () => {
-        TableController.getAllDevices().forEach(ckeckbox => { ckeckbox.checked = true });
+        const checkState = TableController.getAllDevices().length == TableController.getSelectedDevices().length
+        TableController.getAllDevices().forEach(ckeckbox => { ckeckbox.checked = !checkState });
         itemListCheckChanged()
     })
 
