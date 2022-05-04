@@ -183,7 +183,7 @@ h1, h2, h3, h4, h5, h6 {
   color: #fff;
 }
 
-.btn-primary:hover {
+.btn-primary:hover, .btn-primary:focus {
   background-color: #cc0066;
   border-color: #cc0066;
   color: #fff;
@@ -1028,7 +1028,7 @@ h1, h2, h3, h4, h5, h6 {
   padding: 12px 15px;
 }
 .contact .php-email-form button[type=submit] {
-  background: #4154f1;
+  background: #993365;
   border: 0;
   padding: 10px 30px;
   color: #fff;
@@ -1036,7 +1036,15 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 4px;
 }
 .contact .php-email-form button[type=submit]:hover {
-  background: #5969f3;
+  background: #993365;
+}
+button[type=submit] {
+  background-color: #993365;
+  border-color: #993365;
+}
+button[type=submit]:hover {
+  background-color: #993365;
+  border-color: #993365;
 }
 @-webkit-keyframes animate-loading {
   0% {
