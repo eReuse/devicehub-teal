@@ -63,7 +63,7 @@ class InventoryView(LoginMix, SnapshotMix):
         db.session.commit()
         self.response = jsonify(
             {
-                'url': snapshot.device.url,
+                'url': snapshot.device.url.to_text(),
                 'dhid': snapshot.device.devicehub_id,
                 'sid': snapshot.sid,
             }
