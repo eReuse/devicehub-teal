@@ -631,7 +631,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   font-size: 15px;
   font-weight: 600;
-  color: #4154f1;
+  color: #993365;
   transition: 0.3;
   background: #f6f9ff;
   padding: 10px 15px;
@@ -640,7 +640,7 @@ h1, h2, h3, h4, h5, h6 {
 .sidebar-nav .nav-link i {
   font-size: 16px;
   margin-right: 10px;
-  color: #4154f1;
+  color: #993365;
 }
 .sidebar-nav .nav-link.collapsed {
   color: #6c757d;
@@ -650,11 +650,11 @@ h1, h2, h3, h4, h5, h6 {
   color: #899bbd;
 }
 .sidebar-nav .nav-link:hover {
-  color: #4154f1;
+  color: #993365;
   background: #f6f9ff;
 }
 .sidebar-nav .nav-link:hover i {
-  color: #4154f1;
+  color: #993365;
 }
 .sidebar-nav .nav-link .bi-chevron-down {
   margin-right: 0;
@@ -685,7 +685,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 50%;
 }
 .sidebar-nav .nav-content a:hover, .sidebar-nav .nav-content a.active {
-  color: #4154f1;
+  color: #993365;
 }
 .sidebar-nav .nav-content a.active i {
   background-color: #4154f1;
