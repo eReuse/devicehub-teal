@@ -351,12 +351,12 @@ h1, h2, h3, h4, h5, h6 {
   color: #2c384e;
 }
 .nav-tabs-bordered .nav-link:hover, .nav-tabs-bordered .nav-link:focus {
-  color: #4154f1;
+  color: #993365;
 }
 .nav-tabs-bordered .nav-link.active {
   background-color: #fff;
-  color: #4154f1;
-  border-bottom: 2px solid #4154f1;
+  color: #993365;
+  border-bottom: 2px solid #993365;
 }
 
 /*--------------------------------------------------------------
