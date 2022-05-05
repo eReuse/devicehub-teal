@@ -27,6 +27,14 @@
             </li>
 
             <li class="nav-item">
+              <a class="nav-link" href="{{ device.public_link }}" target="_blank">Web</a>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#lots">Lots</button>
+            </li>
+
+            <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#status">Status</button>
             </li>
 
@@ -66,6 +74,50 @@
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Serial Number</div>
                 <div class="col-lg-9 col-md-8">{{ device.serial_number }}</div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade profile-overview" id="lots">
+              <h5 class="card-title">Incoming Lots</h5>
+
+              <div class="row">
+              {% for lot in device.lots %}
+                {% if lot.is_incoming %}
+                <div class="col">
+                  <a class="ms-3" href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}">
+                    <span>{{ lot.name }}</span>
+                  </a>
+                </div>
+                {% endif %}
+              {% endfor %}
+              </div>
+
+              <h5 class="card-title">Outgoing Lots</h5>
+
+              <div class="row">
+              {% for lot in device.lots %}
+                {% if lot.is_outgoing %}
+                <div class="col">
+                  <a class="ms-3" href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}">
+                    <span>{{ lot.name }}</span>
+                  </a>
+                </div>
+                {% endif %}
+              {% endfor %}
+              </div>
+
+              <h5 class="card-title">Temporary Lots</h5>
+
+              <div class="row">
+              {% for lot in device.lots %}
+                {% if lot.is_temporary %}
+                <div class="col">
+                  <a class="ms-3" href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}">
+                    <span>{{ lot.name }}</span>
+                  </a>
+                </div>
+                {% endif %}
+              {% endfor %}
               </div>
             </div>
 

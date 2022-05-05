@@ -668,7 +668,7 @@ def test_action_allocate_error_required(user3: UserClientFlask):
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
     assert 'Action Allocate error' in body
-    assert 'You need to specify a number of users!' in body
+    assert 'Not a valid date value.' in body
 
 
 @pytest.mark.mvp
