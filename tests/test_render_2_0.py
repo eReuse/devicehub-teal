@@ -245,18 +245,6 @@ def test_export_metrics(user3: UserClientFlask):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_export_links(user3: UserClientFlask):
-    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
-    uri = "/inventory/export/links/?ids={id}".format(id=snap.device.devicehub_id)
-
-    body, status = user3.get(uri)
-    assert status == '200 OK'
-    body = body.split("\n")
-    assert ['links', 'http://localhost/devices/O48N2', ''] == body
-
-
-@pytest.mark.mvp
-@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_export_certificates(user3: UserClientFlask):
     snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
     uri = "/inventory/export/certificates/?ids={id}".format(id=snap.device.devicehub_id)

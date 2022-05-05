@@ -422,7 +422,6 @@ class ExportsView(View):
             'metrics': self.metrics,
             'devices': self.devices_list,
             'certificates': self.erasure,
-            'links': self.public_links,
         }
 
         if export_id not in export_ids:
@@ -497,19 +496,6 @@ class ExportsView(View):
                 cw.writerow(d.values())
 
         return self.response_csv(data, "actions_export.csv")
-
-    def public_links(self):
-        # get a csv with the publink links of this devices
-        data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
-        cw.writerow(['links'])
-        host_url = request.host_url
-        for dev in self.find_devices():
-            code = dev.devicehub_id
-            link = [f"{host_url}devices/{code}"]
-            cw.writerow(link)
-
-        return self.response_csv(data, "links.csv")
 
     def erasure(self):
         template = self.build_erasure_certificate()
