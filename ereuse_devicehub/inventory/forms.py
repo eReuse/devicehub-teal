@@ -603,21 +603,39 @@ class AllocateForm(ActionFormMix):
     end_users = IntegerField('End users', [validators.Optional()])
 
     def validate(self, extra_validators=None):
-        is_valid = super().validate(extra_validators)
+        if not super().validate(extra_validators):
+            return False
 
         if self.type.data not in ['Allocate', 'Deallocate']:
             return False
 
+        if not self.validate_dates():
+            return False
+
+        if not self.check_devices():
+            return False
+
+        return True
+
+    def validate_dates(self):
         start_time = self.start_time.data
         end_time = self.end_time.data
+
+        if not start_time:
+            self.start_time.errors = ['Not a valid date value.!']
+            return False
+
         if start_time and end_time and end_time < start_time:
             error = ['The action cannot finish before it starts.']
             self.end_time.errors = error
-            is_valid = False
+            return False
 
-        if is_valid and not end_time:
+        if not end_time:
             self.end_time.data = self.start_time.data
 
+        return True
+
+    def check_devices(self):
         if self.type.data == 'Allocate':
             txt = "You need deallocate before allocate this device again"
             for device in self._devices:
@@ -636,7 +654,7 @@ class AllocateForm(ActionFormMix):
 
                 device.allocated = False
 
-        return is_valid
+        return True
 
 
 class DataWipeDocumentForm(Form):
