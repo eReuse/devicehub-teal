@@ -593,10 +593,14 @@ class NewActionForm(ActionFormMix):
 
 class AllocateForm(ActionFormMix):
     start_time = DateField('Start time')
-    end_time = DateField('End time')
-    final_user_code = StringField('Final user code', [validators.length(max=50)])
-    transaction = StringField('Transaction', [validators.length(max=50)])
-    end_users = IntegerField('End users')
+    end_time = DateField('End time', [validators.Optional()])
+    final_user_code = StringField(
+        'Final user code', [validators.Optional(), validators.length(max=50)]
+    )
+    transaction = StringField(
+        'Transaction', [validators.Optional(), validators.length(max=50)]
+    )
+    end_users = IntegerField('End users', [validators.Optional()])
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
@@ -608,13 +612,29 @@ class AllocateForm(ActionFormMix):
         end_time = self.end_time.data
         if start_time and end_time and end_time < start_time:
             error = ['The action cannot finish before it starts.']
-            self.start_time.errors = error
             self.end_time.errors = error
             is_valid = False
 
-        if not self.end_users.data:
-            self.end_users.errors = ["You need to specify a number of users"]
-            is_valid = False
+        if is_valid and not end_time:
+            self.end_time.data = self.start_time.data
+
+        if self.type.data == 'Allocate':
+            txt = "You need deallocate before allocate this device again"
+            for device in self._devices:
+                if device.allocated:
+                    self.devices.errors = [txt]
+                    return False
+
+                device.allocated = True
+
+        if self.type.data == 'Deallocate':
+            txt = "Sorry some of this devices are actually deallocate"
+            for device in self._devices:
+                if not device.allocated:
+                    self.devices.errors = [txt]
+                    return False
+
+                device.allocated = False
 
         return is_valid
 
