@@ -252,7 +252,7 @@ class UserClientFlask:
         )
         self.headers = headers
         body = next(body).decode("utf-8")
-        assert "Unassgined" in body
+        assert "Unassigned" in body
 
     def get(
         self,

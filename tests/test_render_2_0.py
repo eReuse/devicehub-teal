@@ -72,7 +72,7 @@ def test_inventory(user3: UserClientFlask):
     body, status = user3.get('/inventory/device/')
 
     assert status == '200 OK'
-    assert "Unassgined" in body
+    assert "Unassigned" in body
 
 
 @pytest.mark.mvp
@@ -184,7 +184,7 @@ def test_inventory_with_device(user3: UserClientFlask):
     body, status = user3.get('/inventory/device/')
 
     assert status == '200 OK'
-    assert "Unassgined" in body
+    assert "Unassigned" in body
     assert db_snapthot.device.devicehub_id in body
 
 
@@ -197,7 +197,7 @@ def test_inventory_filter(user3: UserClientFlask):
     body, status = user3.get(f'/inventory/device/?filter=Laptop&csrf_token={csrf}')
 
     assert status == '200 OK'
-    assert "Unassgined" in body
+    assert "Unassigned" in body
     assert db_snapthot.device.devicehub_id in body
 
 
