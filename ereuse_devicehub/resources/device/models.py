@@ -10,7 +10,7 @@ from typing import Dict, List, Set
 from boltons import urlutils
 from citext import CIText
 from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
-from flask import g
+from flask import g, request
 from flask_sqlalchemy import event
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column
@@ -296,6 +296,11 @@ class Device(Thing):
         actions = [ac for ac in self.actions if ac.t not in hide_actions]
         actions.reverse()
         return actions
+
+    @property
+    def public_link(self) -> str:
+        host_url = request.host_url.strip('/')
+        return "{}{}".format(host_url, self.url.to_text())
 
     @property
     def url(self) -> urlutils.URL:

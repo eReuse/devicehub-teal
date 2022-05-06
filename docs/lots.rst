@@ -9,6 +9,12 @@ dags-with-materialized-paths-using-postgres-ltree/>`_ you have
 a low-level technical implementation of how lots and their
 relationships are mapped.
 
+Getting lots
+************
+
+You can get lots list by ``GET /lots/``
+There are one optional filter ``type``, only works with this 3 values ``temporary``, ``incoming`` and ``outgoing``
+
 Create lots
 ***********
 You create a lot by ``POST /lots/`` a `JSON Lot object <https://
@@ -27,7 +33,6 @@ To remove children lots the idea is the same:
 And for devices is all the same:
 ``POST /lots/<parent-lot-id>/devices/?id=<device-id-1>&id=<device-id-2>``;
 idem for removing devices.
-
 
 Sharing lots
 ************

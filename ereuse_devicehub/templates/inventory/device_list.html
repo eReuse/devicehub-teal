@@ -202,12 +202,6 @@
                     </a>
                   </li>
                   <li>
-                    <a href="javascript:export_file('links')" class="dropdown-item">
-                      <i class="bi bi-link-45deg"></i>
-                      Public Links
-                    </a>
-                  </li>
-                  <li>
                     <a href="javascript:export_file('certificates')" class="dropdown-item">
                       <i class="bi bi-eraser-fill"></i>
                       Erasure Certificate
@@ -313,6 +307,10 @@
                 </ul>
               </div>
               {% endif %}
+
+              <div id="select-devices-info" class="alert alert-info mb-0 mt-3 d-none" role="alert">
+                If this text is showing is because there are an error
+              </div>
 
               <div class="tab-content pt-2">
                 <form method="get">
