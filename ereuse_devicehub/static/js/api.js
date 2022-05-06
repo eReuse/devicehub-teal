@@ -4,7 +4,7 @@ const Api = {
      * @returns get lots
      */
     async get_lots() {
-        const request = await this.doRequest(API_URLS.lots, "GET", null);
+        const request = await this.doRequest(`${API_URLS.lots}?type=temporary`, "GET", null);
         if (request != undefined) return request.items;
         throw request;
     },
