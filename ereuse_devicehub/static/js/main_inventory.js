@@ -18,7 +18,7 @@ $(document).ready(() => {
 })
 
 class TableController {
-    static #tableRows = table.activeRows;
+    static #tableRows = () => table.activeRows.length > 0 ? table.activeRows : [];
 
     static #tableRowsPage = () => table.pages[table.rows().dt.currentPage - 1];
 
@@ -26,7 +26,8 @@ class TableController {
      * @returns Selected inputs from device list
      */
     static getSelectedDevices() {
-        return this.#tableRows
+        if (this.#tableRows() == undefined) return [];
+        return this.#tableRows()
             .filter(element => element.querySelector("input").checked)
             .map(element => element.querySelector("input"))
     }
@@ -35,6 +36,7 @@ class TableController {
      * @returns Selected inputs in current page from device list
      */
     static getAllSelectedDevicesInCurrentPage() {
+        if (this.#tableRowsPage() == undefined) return [];
         return this.#tableRowsPage()
             .filter(element => element.querySelector("input").checked)
             .map(element => element.querySelector("input"))
@@ -44,7 +46,8 @@ class TableController {
      * @returns All inputs from device list
      */
     static getAllDevices() {
-        return this.#tableRows
+        if (this.#tableRows() == undefined) return [];
+        return this.#tableRows()
             .map(element => element.querySelector("input"))
     }
 
@@ -52,13 +55,14 @@ class TableController {
      * @returns All inputs from current page in device list
      */
     static getAllDevicesInCurrentPage() {
+        if (this.#tableRowsPage() == undefined) return [];
         return this.#tableRowsPage()
             .map(element => element.querySelector("input"))
     }
 
     /**
-     * 
-     * @param {HTMLElement} DOMElements 
+     *
+     * @param {HTMLElement} DOMElements
      * @returns Procesed input atributes to an Object class
      */
     static ProcessTR(DOMElements) {
@@ -367,7 +371,7 @@ async function processSelectedDevices() {
                     try {
                         const devicesIDs = action.devices.filter(dev => !action.lot.devices.includes(dev.id)).map(dev => dev.id)
                         await Api.devices_add(action.lot.id, devicesIDs);
-                        this.notifyUser("Devices sucefully aded to selected lot/s", "", false);
+                        this.notifyUser("Devices sucefully added to selected lot/s", "", false);
                     } catch (error) {
                         this.notifyUser("Failed to add devices to selected lot/s", error.responseJSON.message, true);
                     }
@@ -377,7 +381,7 @@ async function processSelectedDevices() {
                         await Api.devices_remove(action.lot.id, devicesIDs);
                         this.notifyUser("Devices sucefully removed from selected lot/s", "", false);
                     } catch (error) {
-                        this.notifyUser("Fail to remove devices from selected lot/s", error.responseJSON.message, true);
+                        this.notifyUser("Failed to remove devices from selected lot/s", error.responseJSON.message, true);
                     }
                 }
                 requestCount += 1
@@ -386,6 +390,7 @@ async function processSelectedDevices() {
                     this.list = [];
                 }
             })
+            $("#confirmLotsModal").modal("hide"); // Hide dialog when click "Save changes"
             document.getElementById("dropDownLotsSelector").classList.remove("show");
         }
 
@@ -423,7 +428,7 @@ async function processSelectedDevices() {
      * Generates a list item with a correspondient checkbox state
      * @param {Object} lot Lot model server
      * @param {Device[]} selectedDevices list selected devices
-     * @param {HTMLElement} elementTarget 
+     * @param {HTMLElement} elementTarget
      * @param {Action[]} actions
      */
     function templateLot(lot, selectedDevices, elementTarget, actions) {
@@ -471,7 +476,48 @@ async function processSelectedDevices() {
     if (eventClickActions) {
         document.getElementById("ApplyDeviceLots").removeEventListener(eventClickActions);
     }
-    eventClickActions = document.getElementById("ApplyDeviceLots").addEventListener("click", () => actions.doActions());
+
+    eventClickActions = document.getElementById("ApplyDeviceLots").addEventListener("click", () => {
+        const modal = $("#confirmLotsModal")
+        modal.modal({ keyboard: false })
+
+        let list_changes_html = "";
+        //  {type: ["Remove" | "Add"], "LotID": string, "devices": number[]}
+        actions.list.forEach(action => {
+            let type;
+            let devices;
+            if (action.type == "Add") {
+                type = "success";
+                devices = action.devices.filter(dev => !action.lot.devices.includes(dev.id)) // Only show affected devices
+            } else {
+                type = "danger";
+                devices = action.devices.filter(dev => action.lot.devices.includes(dev.id)) // Only show affected devices
+            }
+            list_changes_html += `
+            <div class="card border-primary mb-3 w-100">
+            <div class="card-header" title="${action.lotID}">${action.lot.name}</div>
+            <div class="card-body pt-3">
+              <p class="card-text">
+                ${devices.map(item => {
+                const name = `${item.type} ${item.manufacturer} ${item.model}`
+                return `<span class="badge bg-${type}" title="${name}">${item.devicehubID}</span>`;
+            }).join(" ")}
+              </p>
+            </div>
+          </div>`;
+        })
+
+        modal.find(".modal-body").html(list_changes_html)
+
+        const el = document.getElementById("SaveAllActions")
+        const elClone = el.cloneNode(true);
+        el.parentNode.replaceChild(elClone, el);
+        elClone.addEventListener("click", () => actions.doActions())
+
+        modal.modal("show")
+
+        // actions.doActions();
+    });
     document.getElementById("ApplyDeviceLots").classList.add("disabled");
 
     try {
