@@ -61,8 +61,8 @@ class TableController {
     }
 
     /**
-     * 
-     * @param {HTMLElement} DOMElements 
+     *
+     * @param {HTMLElement} DOMElements
      * @returns Procesed input atributes to an Object class
      */
     static ProcessTR(DOMElements) {
@@ -371,7 +371,7 @@ async function processSelectedDevices() {
                     try {
                         const devicesIDs = action.devices.filter(dev => !action.lot.devices.includes(dev.id)).map(dev => dev.id)
                         await Api.devices_add(action.lot.id, devicesIDs);
-                        this.notifyUser("Devices sucefully aded to selected lot/s", "", false);
+                        this.notifyUser("Devices sucefully added to selected lot/s", "", false);
                     } catch (error) {
                         this.notifyUser("Failed to add devices to selected lot/s", error.responseJSON.message, true);
                     }
@@ -381,7 +381,7 @@ async function processSelectedDevices() {
                         await Api.devices_remove(action.lot.id, devicesIDs);
                         this.notifyUser("Devices sucefully removed from selected lot/s", "", false);
                     } catch (error) {
-                        this.notifyUser("Fail to remove devices from selected lot/s", error.responseJSON.message, true);
+                        this.notifyUser("Failed to remove devices from selected lot/s", error.responseJSON.message, true);
                     }
                 }
                 requestCount += 1
@@ -428,7 +428,7 @@ async function processSelectedDevices() {
      * Generates a list item with a correspondient checkbox state
      * @param {Object} lot Lot model server
      * @param {Device[]} selectedDevices list selected devices
-     * @param {HTMLElement} elementTarget 
+     * @param {HTMLElement} elementTarget
      * @param {Action[]} actions
      */
     function templateLot(lot, selectedDevices, elementTarget, actions) {
