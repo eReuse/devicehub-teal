@@ -17,8 +17,115 @@ $(document).ready(() => {
     // $('#selectLot').selectpicker();
 })
 
+class TableController {
+    static #tableRows = table.activeRows;
+
+    static #tableRowsPage = () => table.pages[table.rows().dt.currentPage - 1];
+
+    /**
+     * @returns Selected inputs from device list
+     */
+    static getSelectedDevices() {
+        return this.#tableRows
+            .filter(element => element.querySelector("input").checked)
+            .map(element => element.querySelector("input"))
+    }
+
+    /**
+     * @returns Selected inputs in current page from device list
+     */
+    static getAllSelectedDevicesInCurrentPage() {
+        return this.#tableRowsPage()
+            .filter(element => element.querySelector("input").checked)
+            .map(element => element.querySelector("input"))
+    }
+
+    /**
+     * @returns All inputs from device list
+     */
+    static getAllDevices() {
+        return this.#tableRows
+            .map(element => element.querySelector("input"))
+    }
+
+    /**
+     * @returns All inputs from current page in device list
+     */
+    static getAllDevicesInCurrentPage() {
+        return this.#tableRowsPage()
+            .map(element => element.querySelector("input"))
+    }
+
+    /**
+     * 
+     * @param {HTMLElement} DOMElements 
+     * @returns Procesed input atributes to an Object class
+     */
+    static ProcessTR(DOMElements) {
+        return DOMElements.map(element => {
+            const info = {}
+            info.checked = element.checked
+            Object.values(element.attributes).forEach(attrib => { info[attrib.nodeName.replace(/-/g, "_")] = attrib.nodeValue })
+            return info
+        })
+    }
+}
+
+/**
+ * Select all functionality
+ */
+window.addEventListener("DOMContentLoaded", () => {
+    const btnSelectAll = document.getElementById("SelectAllBTN");
+    const alertInfoDevices = document.getElementById("select-devices-info");
+
+    function itemListCheckChanged() {
+        const listDevices = TableController.getAllDevicesInCurrentPage()
+        const isAllChecked = listDevices.map(itm => itm.checked);
+
+        if (isAllChecked.every(bool => bool == true)) {
+            btnSelectAll.checked = true;
+            btnSelectAll.indeterminate = false;
+            alertInfoDevices.innerHTML = `Selected devices: ${TableController.getSelectedDevices().length}
+                                            ${
+                                                TableController.getAllDevices().length != TableController.getSelectedDevices().length
+                                                    ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
+                                                    : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
+                                            }`;
+            alertInfoDevices.classList.remove("d-none");
+        } else if (isAllChecked.every(bool => bool == false)) {
+            btnSelectAll.checked = false;
+            btnSelectAll.indeterminate = false;
+            alertInfoDevices.classList.add("d-none")
+        } else {
+            btnSelectAll.indeterminate = true;
+            alertInfoDevices.classList.add("d-none")
+        }
+    }
+
+    TableController.getAllDevices().forEach(item => {
+        item.addEventListener("click", itemListCheckChanged);
+    })
+
+    btnSelectAll.addEventListener("click", event => {
+        const checkedState = event.target.checked;
+        TableController.getAllDevicesInCurrentPage().forEach(ckeckbox => { ckeckbox.checked = checkedState });
+        itemListCheckChanged()
+    })
+
+    alertInfoDevices.addEventListener("click", () => {
+        const checkState = TableController.getAllDevices().length == TableController.getSelectedDevices().length
+        TableController.getAllDevices().forEach(ckeckbox => { ckeckbox.checked = !checkState });
+        itemListCheckChanged()
+    })
+
+    // https://github.com/fiduswriter/Simple-DataTables/wiki/Events
+    table.on("datatable.page", () => itemListCheckChanged());
+    table.on("datatable.perpage", () => itemListCheckChanged());
+    table.on("datatable.update", () => itemListCheckChanged());
+})
+
 function deviceSelect() {
-    const devices_count = $(".deviceSelect").filter(":checked").length;
+    const devices_count = TableController.getSelectedDevices().length;
     get_device_list();
     if (devices_count == 0) {
         $("#addingLotModal .pol").show();
@@ -60,7 +167,7 @@ function deviceSelect() {
 }
 
 function removeLot() {
-    const devices = $(".deviceSelect");
+    const devices = TableController.getAllDevices();
     if (devices.length > 0) {
         $("#btnRemoveLots .text-danger").show();
     } else {
@@ -70,8 +177,8 @@ function removeLot() {
 }
 
 function removeTag() {
-    const devices = $(".deviceSelect").filter(":checked");
-    const devices_id = $.map(devices, (x) => $(x).attr("data"));
+    const devices = TableController.getSelectedDevices();
+    const devices_id = devices.map(dev => dev.data);
     if (devices_id.length == 1) {
         const url = `/inventory/tag/devices/${devices_id[0]}/del/`;
         window.location.href = url;
@@ -81,8 +188,8 @@ function removeTag() {
 }
 
 function addTag() {
-    const devices = $(".deviceSelect").filter(":checked");
-    const devices_id = $.map(devices, (x) => $(x).attr("data"));
+    const devices = TableController.getSelectedDevices();
+    const devices_id = devices.map(dev => dev.data);
     if (devices_id.length == 1) {
         $("#addingTagModal .pol").hide();
         $("#addingTagModal .btn-primary").show();
@@ -137,7 +244,7 @@ function newDataWipe(action) {
 }
 
 function get_device_list() {
-    const devices = $(".deviceSelect").filter(":checked");
+    const devices = TableController.getSelectedDevices();
 
     /* Insert the correct count of devices in actions form */
     const devices_count = devices.length;
@@ -156,14 +263,15 @@ function get_device_list() {
         "Desktop": "<i class='bi bi-building'></i>",
         "Laptop": "<i class='bi bi-laptop'></i>",
     };
+
     list_devices = devices.map((x) => {
-        let typ = $(devices[x]).data("device-type");
-        const manuf = $(devices[x]).data("device-manufacturer");
-        const dhid = $(devices[x]).data("device-dhid");
+        let typ = $(x).data("device-type");
+        const manuf = $(x).data("device-manufacturer");
+        const dhid = $(x).data("device-dhid");
         if (computer[typ]) {
             typ = computer[typ];
         };
-        return `${typ  } ${  manuf  } ${  dhid}`;
+        return `${typ} ${manuf} ${dhid}`;
     });
 
     description = $.map(list_devices, (x) => x).join(", ");
@@ -171,9 +279,9 @@ function get_device_list() {
 }
 
 function export_file(type_file) {
-    const devices = $(".deviceSelect").filter(":checked");
+    const devices = TableController.getSelectedDevices();
     const devices_id = $.map(devices, (x) => $(x).attr("data-device-dhid")).join(",");
-    if (devices_id){
+    if (devices_id) {
         const url = `/inventory/export/${type_file}/?ids=${devices_id}`;
         window.location.href = url;
     } else {
@@ -194,40 +302,29 @@ async function processSelectedDevices() {
 
         /**
          * Manage the actions that will be performed when applying the changes
-         * @param {*} ev event (Should be a checkbox type)
-         * @param {string} lotID lot id
-         * @param {number} deviceID device id
+         * @param {EventSource} ev event (Should be a checkbox type)
+         * @param {Lot} lot lot id
+         * @param {Device[]} selectedDevices device id
          */
-        manage(event, lotID, deviceListID) {
+        manage(event, lot, selectedDevices) {
             event.preventDefault();
+            const lotID = lot.id;
             const srcElement = event.srcElement.parentElement.children[0]
-            const {indeterminate} = srcElement;
             const checked = !srcElement.checked;
 
-            const found = this.list.filter(list => list.lotID == lotID)[0];
-            const foundIndex = found != undefined ? this.list.findLastIndex(x => x.lotID == found.lotID) : -1;
+            const found = this.list.filter(list => list.lot.id == lotID)[0];
 
             if (checked) {
-                if (found != undefined && found.type == "Remove") {
-                    if (found.isFromIndeterminate == true) {
-                        found.type = "Add";
-                        this.list[foundIndex] = found;
-                    } else {
-                        this.list = this.list.filter(list => list.lotID != lotID);
-                    }
+                if (found && found.type == "Remove") {
+                    found.type = "Add";
                 } else {
-                    this.list.push({ type: "Add", lotID, devices: deviceListID, isFromIndeterminate: indeterminate });
+                    this.list.push({ type: "Add", lot, devices: selectedDevices });
                 }
-            } else if (found != undefined && found.type == "Add") {
-                    if (found.isFromIndeterminate == true) {
-                        found.type = "Remove";
-                        this.list[foundIndex] = found;
-                    } else {
-                        this.list = this.list.filter(list => list.lotID != lotID);
-                    }
-                } else {
-                    this.list.push({ type: "Remove", lotID, devices: deviceListID, isFromIndeterminate: indeterminate });
-                }
+            } else if (found && found.type == "Add") {
+                found.type = "Remove";
+            } else {
+                this.list.push({ type: "Remove", lot, devices: selectedDevices });
+            }
 
             if (this.list.length > 0) {
                 document.getElementById("ApplyDeviceLots").classList.remove("disabled");
@@ -244,7 +341,7 @@ async function processSelectedDevices() {
          */
         notifyUser(title, toastText, isError) {
             const toast = document.createElement("div");
-            toast.classList = `alert alert-dismissible fade show ${  isError ? "alert-danger" : "alert-success"}`;
+            toast.classList = `alert alert-dismissible fade show ${isError ? "alert-danger" : "alert-success"}`;
             toast.attributes["data-autohide"] = !isError;
             toast.attributes.role = "alert";
             toast.style = "margin-left: auto; width: fit-content;";
@@ -268,14 +365,16 @@ async function processSelectedDevices() {
             this.list.forEach(async action => {
                 if (action.type == "Add") {
                     try {
-                        await Api.devices_add(action.lotID, action.devices);
+                        const devicesIDs = action.devices.filter(dev => !action.lot.devices.includes(dev.id)).map(dev => dev.id)
+                        await Api.devices_add(action.lot.id, devicesIDs);
                         this.notifyUser("Devices sucefully aded to selected lot/s", "", false);
                     } catch (error) {
                         this.notifyUser("Failed to add devices to selected lot/s", error.responseJSON.message, true);
                     }
                 } else if (action.type == "Remove") {
                     try {
-                        await Api.devices_remove(action.lotID, action.devices);
+                        const devicesIDs = action.devices.filter(dev => action.lot.devices.includes(dev.id)).map(dev => dev.id)
+                        await Api.devices_remove(action.lot.id, devicesIDs);
                         this.notifyUser("Devices sucefully removed from selected lot/s", "", false);
                     } catch (error) {
                         this.notifyUser("Fail to remove devices from selected lot/s", error.responseJSON.message, true);
@@ -299,15 +398,22 @@ async function processSelectedDevices() {
             const tmpDiv = document.createElement("div")
             tmpDiv.innerHTML = newRequest
 
-            const oldTable = Array.from(document.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
             const newTable = Array.from(tmpDiv.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
 
-            for (let i = 0; i < oldTable.length; i++) {
-                if (!newTable.includes(oldTable[i])) {
-                    // variable from device_list.html --> See: ereuse_devicehub\templates\inventory\device_list.html (Ln: 411)
-                    table.rows().remove(i)
+            // https://github.com/fiduswriter/Simple-DataTables/wiki/rows()#removeselect-arraynumber
+            const rowsToRemove = []
+            for (let i = 0; i < table.activeRows.length; i++) {
+                const row = table.activeRows[i];
+                if (!newTable.includes(row.querySelector("input").attributes["data-device-dhid"].value)) {
+                    rowsToRemove.push(i)
                 }
             }
+            table.rows().remove(rowsToRemove);
+
+            // Restore state of checkbox
+            const selectAllBTN = document.getElementById("SelectAllBTN");
+            selectAllBTN.checked = false;
+            selectAllBTN.indeterminate = false;
         }
     }
 
@@ -315,14 +421,14 @@ async function processSelectedDevices() {
 
     /**
      * Generates a list item with a correspondient checkbox state
-     * @param {String} lotID 
-     * @param {String} lotName 
-     * @param {Array<number>} selectedDevicesIDs
-     * @param {HTMLElement} target
+     * @param {Object} lot Lot model server
+     * @param {Device[]} selectedDevices list selected devices
+     * @param {HTMLElement} elementTarget 
+     * @param {Action[]} actions
      */
-    function templateLot(lot, elementTarget, actions) {
+    function templateLot(lot, selectedDevices, elementTarget, actions) {
         elementTarget.innerHTML = ""
-        const {id, name, state} = lot;
+        const { id, name, state } = lot;
 
         const htmlTemplate = `<input class="form-check-input" type="checkbox" id="${id}" style="width: 20px; height: 20px; margin-right: 7px;">
             <label class="form-check-label" for="${id}">${name}</label>`;
@@ -345,16 +451,17 @@ async function processSelectedDevices() {
                 break;
         }
 
-        doc.children[0].addEventListener("mouseup", (ev) => actions.manage(ev, id, selectedDevicesIDs));
-        doc.children[1].addEventListener("mouseup", (ev) => actions.manage(ev, id, selectedDevicesIDs));
+        doc.children[0].addEventListener("mouseup", (ev) => actions.manage(ev, lot, selectedDevices));
+        doc.children[1].addEventListener("mouseup", (ev) => actions.manage(ev, lot, selectedDevices));
         elementTarget.append(doc);
     }
 
     const listHTML = $("#LotsSelector")
 
     // Get selected devices
-    const selectedDevicesIDs = $.map($(".deviceSelect").filter(":checked"), (x) => parseInt($(x).attr("data")));
-    if (selectedDevicesIDs.length <= 0) {
+    const selectedDevicesID = TableController.ProcessTR(TableController.getSelectedDevices()).map(item => item.data)
+
+    if (selectedDevicesID.length <= 0) {
         listHTML.html("<li style=\"color: red; text-align: center\">No devices selected</li>");
         return;
     }
@@ -369,19 +476,19 @@ async function processSelectedDevices() {
 
     try {
         listHTML.html("<li style=\"text-align: center\"><div class=\"spinner-border text-info\" style=\"margin: auto\" role=\"status\"></div></li>")
-        const devices = await Api.get_devices(selectedDevicesIDs);
+        const selectedDevices = await Api.get_devices(selectedDevicesID);
         let lots = await Api.get_lots();
 
         lots = lots.map(lot => {
-            lot.devices = devices
+            lot.devices = selectedDevices
                 .filter(device => device.lots.filter(devicelot => devicelot.id == lot.id).length > 0)
                 .map(device => parseInt(device.id));
 
-             switch (lot.devices.length) {
+            switch (lot.devices.length) {
                 case 0:
                     lot.state = "false";
                     break;
-                case selectedDevicesIDs.length:
+                case selectedDevicesID.length:
                     lot.state = "true";
                     break;
                 default:
@@ -392,15 +499,14 @@ async function processSelectedDevices() {
             return lot;
         })
 
-
         let lotsList = [];
-        lotsList.push(lots.filter(lot => lot.state == "true").sort((a,b) => a.name.localeCompare(b.name)));
-        lotsList.push(lots.filter(lot => lot.state == "indetermined").sort((a,b) => a.name.localeCompare(b.name)));
-        lotsList.push(lots.filter(lot => lot.state == "false").sort((a,b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "true").sort((a, b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "indetermined").sort((a, b) => a.name.localeCompare(b.name)));
+        lotsList.push(lots.filter(lot => lot.state == "false").sort((a, b) => a.name.localeCompare(b.name)));
         lotsList = lotsList.flat(); // flat array
 
         listHTML.html("");
-        lotsList.forEach(lot => templateLot(lot, listHTML, actions));
+        lotsList.forEach(lot => templateLot(lot, selectedDevices, listHTML, actions));
     } catch (error) {
         console.log(error);
         listHTML.html("<li style=\"color: red; text-align: center\">Error feching devices and lots<br>(see console for more details)</li>");
