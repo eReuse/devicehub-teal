@@ -90,11 +90,10 @@ window.addEventListener("DOMContentLoaded", () => {
             btnSelectAll.checked = true;
             btnSelectAll.indeterminate = false;
             alertInfoDevices.innerHTML = `Selected devices: ${TableController.getSelectedDevices().length}
-                                            ${
-                                                TableController.getAllDevices().length != TableController.getSelectedDevices().length
-                                                    ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
-                                                    : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
-                                            }`;
+            ${TableController.getAllDevices().length != TableController.getSelectedDevices().length
+                    ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
+                    : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
+            }`;
             alertInfoDevices.classList.remove("d-none");
         } else if (isAllChecked.every(bool => bool == false)) {
             btnSelectAll.checked = false;
@@ -315,19 +314,30 @@ async function processSelectedDevices() {
             const lotID = lot.id;
             const srcElement = event.srcElement.parentElement.children[0]
             const checked = !srcElement.checked;
+            const { indeterminate } = srcElement
 
             const found = this.list.filter(list => list.lot.id == lotID)[0];
 
             if (checked) {
                 if (found && found.type == "Remove") {
-                    found.type = "Add";
+                    const affectedDevices = found.devices.filter(dev => found.lot.devices.includes(dev.id))
+                    if (affectedDevices.length > 0 && found.indeterminate == false) { // Remove action from list
+                        actions.list = actions.list.filter(x => x.lot.id != found.lot.id)
+                    } else {
+                        found.type = "Add";
+                    }
                 } else {
-                    this.list.push({ type: "Add", lot, devices: selectedDevices });
+                    this.list.push({ type: "Add", lot, devices: selectedDevices, indeterminate });
                 }
             } else if (found && found.type == "Add") {
-                found.type = "Remove";
+                const affectedDevices = found.devices.filter(dev => !found.lot.devices.includes(dev.id))
+                if (affectedDevices.length > 0 && found.indeterminate == false) { // Remove action from list
+                    actions.list = actions.list.filter(x => x.lot.id != found.lot.id)
+                } else {
+                    found.type = "Remove";
+                }
             } else {
-                this.list.push({ type: "Remove", lot, devices: selectedDevices });
+                this.list.push({ type: "Remove", lot, devices: selectedDevices, indeterminate });
             }
 
             if (this.list.length > 0) {
