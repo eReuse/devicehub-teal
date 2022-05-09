@@ -52,7 +52,7 @@ from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 from ereuse_devicehub.resources.user.models import User
 
 DEVICES = {
-    "All": ["All"],
+    "All": ["Devices", "Components"],
     "Computer": [
         "Desktop",
         "Laptop",

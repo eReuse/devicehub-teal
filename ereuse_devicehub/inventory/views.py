@@ -40,32 +40,13 @@ logger = logging.getLogger(__name__)
 class DeviceListMix(GenericMixView):
     template_name = 'inventory/device_list.html'
 
-    def get_context(self, lot_id):
-        super().get_context()
-        lots = self.context['lots']
-        form_filter = FilterForm()
-        filter_types = form_filter.search()
-        lot = None
-        tags = (
-            Tag.query.filter(Tag.owner_id == current_user.id)
-            .filter(Tag.device_id.is_(None))
-            .order_by(Tag.id.asc())
-        )
-
+    def _get_devices(self, lots, lot):
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
             devices = lot.devices
             if "All" not in filter_types:
                 devices = [dev for dev in lot.devices if dev.type in filter_types]
             devices = sorted(devices, key=lambda x: x.updated, reverse=True)
-            form_new_action = NewActionForm(lot=lot.id)
-            form_new_allocate = AllocateForm(lot=lot.id)
-            form_new_datawipe = DataWipeForm(lot=lot.id)
-            form_new_trade = TradeForm(
-                lot=lot.id,
-                user_to=g.user.email,
-                user_from=g.user.email,
-            )
         else:
             if "All" in filter_types:
                 devices = (
@@ -81,6 +62,31 @@ class DeviceListMix(GenericMixView):
                     .order_by(Device.updated.desc())
                 )
 
+        return devices
+
+    def get_context(self, lot_id):
+        super().get_context()
+        lots = self.context['lots']
+        form_filter = FilterForm()
+        filter_types = form_filter.search()
+        lot = None
+        tags = (
+            Tag.query.filter(Tag.owner_id == current_user.id)
+            .filter(Tag.device_id.is_(None))
+            .order_by(Tag.id.asc())
+        )
+
+        if lot_id:
+            lot = lots.filter(Lot.id == lot_id).one()
+            form_new_action = NewActionForm(lot=lot.id)
+            form_new_allocate = AllocateForm(lot=lot.id)
+            form_new_datawipe = DataWipeForm(lot=lot.id)
+            form_new_trade = TradeForm(
+                lot=lot.id,
+                user_to=g.user.email,
+                user_from=g.user.email,
+            )
+        else:
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
@@ -92,7 +98,7 @@ class DeviceListMix(GenericMixView):
 
         self.context.update(
             {
-                'devices': devices,
+                'devices': self._get_devices(lots, lot),
                 'form_tag_device': TagDeviceForm(),
                 'form_new_action': form_new_action,
                 'form_new_allocate': form_new_allocate,
