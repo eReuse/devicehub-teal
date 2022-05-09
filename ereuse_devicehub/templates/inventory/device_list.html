@@ -369,7 +369,7 @@
                          {% if not loop.last %},{% endif %}
                         {% endfor %}
                       </td>
-                      <td>{% if dev.status %}{{ dev.status }}{% endif %}</td>
+                      <td>{% if dev.status %}{{ dev.status.type }}{% endif %}</td>
                       <td>{{ dev.updated.strftime('%H:%M %d-%m-%Y') }}</td>
                     </tr>
                     {% endfor %}
