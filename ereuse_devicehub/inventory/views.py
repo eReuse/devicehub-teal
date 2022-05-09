@@ -40,35 +40,11 @@ logger = logging.getLogger(__name__)
 class DeviceListMix(GenericMixView):
     template_name = 'inventory/device_list.html'
 
-    def _get_devices(self, lots, lot):
-        if lot_id:
-            lot = lots.filter(Lot.id == lot_id).one()
-            devices = lot.devices
-            if "All" not in filter_types:
-                devices = [dev for dev in lot.devices if dev.type in filter_types]
-            devices = sorted(devices, key=lambda x: x.updated, reverse=True)
-        else:
-            if "All" in filter_types:
-                devices = (
-                    Device.query.filter(Device.owner_id == current_user.id)
-                    .filter_by(lots=None)
-                    .order_by(Device.updated.desc())
-                )
-            else:
-                devices = (
-                    Device.query.filter(Device.owner_id == current_user.id)
-                    .filter_by(lots=None)
-                    .filter(Device.type.in_(filter_types))
-                    .order_by(Device.updated.desc())
-                )
-
-        return devices
-
     def get_context(self, lot_id):
         super().get_context()
         lots = self.context['lots']
-        form_filter = FilterForm()
-        filter_types = form_filter.search()
+        form_filter = FilterForm(lots, lot_id)
+        devices = form_filter.search()
         lot = None
         tags = (
             Tag.query.filter(Tag.owner_id == current_user.id)
@@ -98,7 +74,7 @@ class DeviceListMix(GenericMixView):
 
         self.context.update(
             {
-                'devices': self._get_devices(lots, lot),
+                'devices': devices,
                 'form_tag_device': TagDeviceForm(),
                 'form_new_action': form_new_action,
                 'form_new_allocate': form_new_allocate,
