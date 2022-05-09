@@ -8,6 +8,17 @@ ml).
 ## master
 
 ## testing
+- [added] #257 Add functionality to search generic categories like all components.
+- [fixed] #255 Fix status column on device list.
+- [fixed] #254 Fix minor types in frontend.
+- [changed] #253 Drop download public links.
+
+- [fixed] #224 fix clickable lots selector not working when click in text.
+- [fixed] #223 fix trade lots modal.
+- [added] #222 Allow user to update its password.
+- [fixed] #221 Fix responsive issues on frontend.
+- [changed] #220 Add reactive lots list.
+
 - [added] #219 Add functionality to searchbar (Lots and devices).
 - [changed] #211 Print DHID-QR label for selected devices.
 - [changed] #218 Add reactivity to device lots.
