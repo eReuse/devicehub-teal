@@ -142,9 +142,7 @@ class FilterForm(FlaskForm):
         if self.device_type:
             self.filter.data = self.device_type
 
-    def search(self):
-
-        # Filter from lots
+    def filter_from_lots(self):
         if self.lot_id:
             self.lot = self.lots.filter(Lot.id == self.lot_id).one()
             device_ids = (d.id for d in self.lot.devices)
@@ -154,6 +152,8 @@ class FilterForm(FlaskForm):
                 lots=None
             )
 
+    def search(self):
+        self.filter_from_lots()
         filter_type = None
         if self.device_type:
             filter_type = [self.device_type]
@@ -165,8 +165,11 @@ class FilterForm(FlaskForm):
         if "All Devices" == self.device_type:
             filter_type = None
 
-        if "All Components" == self.device_type:
+        elif "All Components" == self.device_type:
             filter_type = COMPONENTS
+
+        elif "All Computers" == self.device_type:
+            filter_type = COMPUTERS
 
         elif "All Monitors" == self.device_type:
             filter_type = MONITORS
