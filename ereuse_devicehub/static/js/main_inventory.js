@@ -278,7 +278,7 @@ function get_device_list() {
         return `${typ} ${manuf} ${dhid}`;
     });
 
-    description = $.map(list_devices, (x) => x).join(", ");
+    const description = $.map(list_devices, (x) => x).join(", ");
     $(".enumeration-devices").html(description);
 }
 

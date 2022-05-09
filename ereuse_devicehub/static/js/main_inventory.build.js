@@ -1,6 +1,12 @@
 "use strict";
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _classStaticPrivateFieldSpecGet(receiver, classConstructor, descriptor) { _classCheckPrivateStaticAccess(receiver, classConstructor); _classCheckPrivateStaticFieldDescriptor(descriptor, "get"); return _classApplyDescriptorGet(receiver, descriptor); }
+
+function _classCheckPrivateStaticFieldDescriptor(descriptor, action) { if (descriptor === undefined) { throw new TypeError("attempted to " + action + " private static field before its declaration"); } }
+
+function _classCheckPrivateStaticAccess(receiver, classConstructor) { if (receiver !== classConstructor) { throw new TypeError("Private static access of wrong provenance"); } }
+
+function _classApplyDescriptorGet(receiver, descriptor) { if (descriptor.get) { return descriptor.get.call(receiver); } return descriptor.value; }
 
 $(document).ready(() => {
   const show_allocate_form = $("#allocateModal").data("show-action-form");
@@ -27,8 +33,8 @@ class TableController {
    * @returns Selected inputs from device list
    */
   static getSelectedDevices() {
-    if (this.tableRows() == undefined) return [];
-    return this.tableRows().filter(element => element.querySelector("input").checked).map(element => element.querySelector("input"));
+    if (_classStaticPrivateFieldSpecGet(this, TableController, _tableRows).call(this) == undefined) return [];
+    return _classStaticPrivateFieldSpecGet(this, TableController, _tableRows).call(this).filter(element => element.querySelector("input").checked).map(element => element.querySelector("input"));
   }
   /**
    * @returns Selected inputs in current page from device list
@@ -36,8 +42,8 @@ class TableController {
 
 
   static getAllSelectedDevicesInCurrentPage() {
-    if (this.tableRowsPage() == undefined) return [];
-    return this.tableRowsPage().filter(element => element.querySelector("input").checked).map(element => element.querySelector("input"));
+    if (_classStaticPrivateFieldSpecGet(this, TableController, _tableRowsPage).call(this) == undefined) return [];
+    return _classStaticPrivateFieldSpecGet(this, TableController, _tableRowsPage).call(this).filter(element => element.querySelector("input").checked).map(element => element.querySelector("input"));
   }
   /**
    * @returns All inputs from device list
@@ -45,8 +51,8 @@ class TableController {
 
 
   static getAllDevices() {
-    if (this.tableRows() == undefined) return [];
-    return this.tableRows().map(element => element.querySelector("input"));
+    if (_classStaticPrivateFieldSpecGet(this, TableController, _tableRows).call(this) == undefined) return [];
+    return _classStaticPrivateFieldSpecGet(this, TableController, _tableRows).call(this).map(element => element.querySelector("input"));
   }
   /**
    * @returns All inputs from current page in device list
@@ -54,8 +60,8 @@ class TableController {
 
 
   static getAllDevicesInCurrentPage() {
-    if (this.tableRowsPage() == undefined) return [];
-    return this.tableRowsPage().map(element => element.querySelector("input"));
+    if (_classStaticPrivateFieldSpecGet(this, TableController, _tableRowsPage).call(this) == undefined) return [];
+    return _classStaticPrivateFieldSpecGet(this, TableController, _tableRowsPage).call(this).map(element => element.querySelector("input"));
   }
   /**
    *
@@ -81,10 +87,14 @@ class TableController {
  */
 
 
-_defineProperty(TableController, "tableRows", () => table.activeRows.length > 0 ? table.activeRows : []);
-
-_defineProperty(TableController, "tableRowsPage", () => table.pages[table.rows().dt.currentPage - 1]);
-
+var _tableRows = {
+  writable: true,
+  value: () => table.activeRows.length > 0 ? table.activeRows : []
+};
+var _tableRowsPage = {
+  writable: true,
+  value: () => table.pages[table.rows().dt.currentPage - 1]
+};
 window.addEventListener("DOMContentLoaded", () => {
   const btnSelectAll = document.getElementById("SelectAllBTN");
   const alertInfoDevices = document.getElementById("select-devices-info");
@@ -279,7 +289,7 @@ function get_device_list() {
     ;
     return "".concat(typ, " ").concat(manuf, " ").concat(dhid);
   });
-  description = $.map(list_devices, x => x).join(", ");
+  const description = $.map(list_devices, x => x).join(", ");
   $(".enumeration-devices").html(description);
 }
 
