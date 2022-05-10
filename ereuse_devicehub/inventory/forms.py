@@ -163,7 +163,7 @@ class FilterForm(FlaskForm):
 
         # Generic Filters
         if "All Devices" == self.device_type:
-            filter_type = None
+            filter_type = COMPUTERS + ["Monitor"] + MOBILE
 
         elif "All Components" == self.device_type:
             filter_type = COMPONENTS
