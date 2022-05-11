@@ -91,10 +91,10 @@ window.addEventListener("DOMContentLoaded", () => {
                     : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
             }`;
 
-        if (TableController.getAllDevices().length > 0) {
-            alertInfoDevices.classList.remove("d-none");
-        } else {
+        if (TableController.getSelectedDevices().length <= 0) {
             alertInfoDevices.classList.add("d-none")
+        } else {
+            alertInfoDevices.classList.remove("d-none");
         }
 
         if (isAllChecked.every(bool => bool == true)) {
