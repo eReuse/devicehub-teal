@@ -111,6 +111,8 @@ window.addEventListener("DOMContentLoaded", () => {
         } else {
             btnSelectAll.disabled = false;
         }
+
+        get_device_list();
     }
 
     TableController.getAllDevices().forEach(item => {
