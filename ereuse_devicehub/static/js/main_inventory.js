@@ -83,26 +83,33 @@ window.addEventListener("DOMContentLoaded", () => {
     const alertInfoDevices = document.getElementById("select-devices-info");
 
     function itemListCheckChanged() {
-        const listDevices = TableController.getAllDevicesInCurrentPage()
-        const isAllChecked = listDevices.map(itm => itm.checked);
+        alertInfoDevices.innerHTML = `Selected devices: ${TableController.getSelectedDevices().length}
+            ${TableController.getAllDevices().length != TableController.getSelectedDevices().length
+                    ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
+                    : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
+            }`;
 
-        if (isAllChecked.every(bool => bool == true)) {
-            btnSelectAll.checked = true;
-            btnSelectAll.indeterminate = false;
-            alertInfoDevices.innerHTML = `Selected devices: ${TableController.getSelectedDevices().length}
-                                            ${
-                                                TableController.getAllDevices().length != TableController.getSelectedDevices().length
-                                                    ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
-                                                    : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
-                                            }`;
-            alertInfoDevices.classList.remove("d-none");
-        } else if (isAllChecked.every(bool => bool == false)) {
-            btnSelectAll.checked = false;
-            btnSelectAll.indeterminate = false;
+        if (TableController.getSelectedDevices().length <= 0) {
             alertInfoDevices.classList.add("d-none")
         } else {
+            alertInfoDevices.classList.remove("d-none");
+        }
+
+        if (TableController.getAllDevices().length == TableController.getSelectedDevices().length) {
+            btnSelectAll.checked = true;
+            btnSelectAll.indeterminate = false;
+        } else if(TableController.getAllSelectedDevicesInCurrentPage().length > 0) {
             btnSelectAll.indeterminate = true;
-            alertInfoDevices.classList.add("d-none")
+        } else {
+            btnSelectAll.checked = false;
+            btnSelectAll.indeterminate = false;
+        }
+
+        if (TableController.getAllDevices().length == 0) {
+            btnSelectAll.checked = false;
+            btnSelectAll.disabled = true;
+        } else {
+            btnSelectAll.disabled = false;
         }
     }
 
@@ -126,6 +133,8 @@ window.addEventListener("DOMContentLoaded", () => {
     table.on("datatable.page", () => itemListCheckChanged());
     table.on("datatable.perpage", () => itemListCheckChanged());
     table.on("datatable.update", () => itemListCheckChanged());
+
+    itemListCheckChanged();
 })
 
 function deviceSelect() {

@@ -8,6 +8,8 @@ ml).
 ## master
 
 ## testing
+
+## [2.1.0] - 2022-05-11
 - [added] #219 Add functionality to searchbar (Lots and devices).
 - [added] #222 Allow user to update its password.
 - [added] #233 Filter in out trades from lots selector.
