@@ -1,0 +1,67 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>Inventory</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item active">{{ page_title }}</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+
+    <div class="col-xl-12">
+
+      <div class="card">
+        <div class="card-body pt-3">
+          <!-- Bordered Tabs -->
+
+          <div class="tab-content pt-2">
+
+            <div class="tab-pane fade show active profile-overview" id="profile-overview">
+
+              <h5 class="card-title">Snapshot</h5>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Sid</th>
+                      <th scope="col">Workbench Version</th>
+                      <th scope="col">Errors</th>
+                      <th scope="col">DHID</th>
+                      <th scope="col">Uploaded</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for snap in snapshots %}
+                    <tr>
+                      <td>{{ snap.sid or ''}}</td>
+                      <td>{{ snap.version }}</td>
+                      <td>{{ snap.status }}</td>
+                      <td>
+                          <a href="{{ url_for('inventory.device_details', id=snap.device.devicehub_id)}}">
+                              {{ snap.device.devicehub_id }}
+                          </a>
+                      </td>
+                      <td>{{ snap.created.strftime('%H:%M %d-%m-%Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+
+          </div><!-- End Bordered Tabs -->
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Custom Code -->
+<script>
+  const table = new simpleDatatables.DataTable("table")
+</script>
+{% endblock main %}
