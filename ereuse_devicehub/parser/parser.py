@@ -3,7 +3,8 @@ import logging
 import uuid
 
 from dmidecode import DMIParse
-from marshmallow import ValidationError
+from flask import request
+from marshmallow.exceptions import ValidationError
 
 from ereuse_devicehub.parser import base2
 from ereuse_devicehub.parser.computer import Computer
@@ -38,7 +39,7 @@ class ParseSnapshot:
             "version": "14.0.0",
             "endTime": snapshot["timestamp"],
             "elapsed": 1,
-            "wbid": snapshot["wbid"],
+            "sid": snapshot["sid"],
         }
 
     def get_snapshot(self):
@@ -120,7 +121,11 @@ class ParseSnapshot:
 
     def get_usb_num(self):
         return len(
-            [u for u in self.dmi.get("Port Connector") if u.get("Port Type") == "USB"]
+            [
+                u
+                for u in self.dmi.get("Port Connector")
+                if "USB" in u.get("Port Type", "").upper()
+            ]
         )
 
     def get_serial_num(self):
@@ -128,7 +133,7 @@ class ParseSnapshot:
             [
                 u
                 for u in self.dmi.get("Port Connector")
-                if u.get("Port Type") == "SERIAL"
+                if "SERIAL" in u.get("Port Type", "").upper()
             ]
         )
 
@@ -137,7 +142,7 @@ class ParseSnapshot:
             [
                 u
                 for u in self.dmi.get("Port Connector")
-                if u.get("Port Type") == "PCMCIA"
+                if "PCMCIA" in u.get("Port Type", "").upper()
             ]
         )
 
@@ -314,7 +319,7 @@ class ParseSnapshotLsHw:
     def __init__(self, snapshot, default="n/a"):
         self.default = default
         self.uuid = snapshot.get("uuid")
-        self.wbid = snapshot.get("wbid")
+        self.sid = snapshot.get("sid")
         self.dmidecode_raw = snapshot["data"]["dmidecode"]
         self.smart = snapshot["data"]["smart"]
         self.hwinfo_raw = snapshot["data"]["hwinfo"]
@@ -339,21 +344,11 @@ class ParseSnapshotLsHw:
             "version": "14.0.0",
             "endTime": snapshot["timestamp"],
             "elapsed": 1,
-            "wbid": snapshot["wbid"],
+            "sid": snapshot["sid"],
         }
 
     def get_snapshot(self):
-        try:
-            return Snapshot().load(self.snapshot_json)
-        except ValidationError as err:
-            txt = "{}".format(err)
-            uuid = self.snapshot_json.get('uuid')
-            wbid = self.snapshot_json.get('wbid')
-            error = SnapshotErrors(
-                description=txt, snapshot_uuid=uuid, severity=Severity.Error, wbid=wbid
-            )
-            error.save(commit=True)
-            raise err
+        return Snapshot().load(self.snapshot_json)
 
     def parse_hwinfo(self):
         hw_blocks = self.hwinfo_raw.split("\n\n")
@@ -365,8 +360,24 @@ class ParseSnapshotLsHw:
         return x
 
     def set_basic_datas(self):
-        pc, self.components_obj = Computer.run(self.lshw, self.hwinfo_raw)
-        self.device = pc.dump()
+        try:
+            pc, self.components_obj = Computer.run(
+                self.lshw, self.hwinfo_raw, self.uuid, self.sid
+            )
+            pc = pc.dump()
+            minimum_hid = None in [pc['manufacturer'], pc['model'], pc['serialNumber']]
+            if minimum_hid and not self.components_obj:
+                # if no there are hid and any components return 422
+                raise Exception
+        except Exception:
+            msg = """It has not been possible to create the device because we lack data.
+                You can find more information at: {}""".format(
+                request.url_root
+            )
+            txt = json.dumps({'sid': self.sid, 'message': msg})
+            raise ValidationError(txt)
+
+        self.device = pc
         self.device['uuid'] = self.get_uuid()
 
     def set_components(self):
@@ -405,8 +416,10 @@ class ParseSnapshotLsHw:
     def get_ram_size(self, ram):
         size = ram.get("Size")
         if not len(size.split(" ")) == 2:
-            txt = "Error: Snapshot: {uuid}, tag: {wbid} have this ram Size: {size}".format(
-                uuid=self.uuid, size=size, wbid=self.wbid
+            txt = (
+                "Error: Snapshot: {uuid}, tag: {sid} have this ram Size: {size}".format(
+                    uuid=self.uuid, size=size, sid=self.sid
+                )
             )
             self.errors(txt)
             return 128
@@ -416,8 +429,8 @@ class ParseSnapshotLsHw:
     def get_ram_speed(self, ram):
         speed = ram.get("Speed", "100")
         if not len(speed.split(" ")) == 2:
-            txt = "Error: Snapshot: {uuid}, tag: {wbid} have this ram Speed: {speed}".format(
-                uuid=self.uuid, speed=speed, wbid=self.wbid
+            txt = "Error: Snapshot: {uuid}, tag: {sid} have this ram Speed: {speed}".format(
+                uuid=self.uuid, speed=speed, sid=self.sid
             )
             self.errors(txt)
             return 100
@@ -451,8 +464,8 @@ class ParseSnapshotLsHw:
             uuid.UUID(dmi_uuid)
         except (ValueError, AttributeError) as err:
             self.errors("{}".format(err))
-            txt = "Error: Snapshot: {uuid} tag: {wbid} have this uuid: {device}".format(
-                uuid=self.uuid, device=dmi_uuid, wbid=self.wbid
+            txt = "Error: Snapshot: {uuid} tag: {sid} have this uuid: {device}".format(
+                uuid=self.uuid, device=dmi_uuid, sid=self.sid
             )
             self.errors(txt)
             dmi_uuid = None
@@ -461,6 +474,8 @@ class ParseSnapshotLsHw:
     def get_data_storage(self):
 
         for sm in self.smart:
+            if sm.get('smartctl', {}).get('exit_status') == 1:
+                continue
             model = sm.get('model_name')
             manufacturer = None
             if model and len(model.split(" ")) > 1:
@@ -487,7 +502,7 @@ class ParseSnapshotLsHw:
         SSD = 'SolidStateDrive'
         HDD = 'HardDrive'
         type_dev = x.get('device', {}).get('type')
-        trim = x.get("trim", {}).get("supported") == "true"
+        trim = x.get('trim', {}).get("supported") in [True, "true"]
         return SSD if type_dev in SSDS or trim else HDD
 
     def get_data_storage_interface(self, x):
@@ -496,22 +511,21 @@ class ParseSnapshotLsHw:
             DataStorageInterface(interface.upper())
         except ValueError as err:
             txt = "tag: {}, interface {} is not in DataStorageInterface Enum".format(
-                interface, self.wbid
+                interface, self.sid
             )
             self.errors("{}".format(err))
             self.errors(txt)
         return "ATA"
 
     def get_data_storage_size(self, x):
-        type_dev = x.get('device', {}).get('protocol', '').lower()
-        total_capacity = "{type}_total_capacity".format(type=type_dev)
-        if not x.get(total_capacity):
+        total_capacity = x.get('user_capacity', {}).get('bytes')
+        if not total_capacity:
             return 1
         # convert bytes to Mb
-        return x.get(total_capacity) / 1024**2
+        return total_capacity / 1024**2
 
     def get_test_data_storage(self, smart):
-        log = "smart_health_information_log"
+        hours = smart.get("power_on_time", {}).get('hours', 0)
         action = {
             "status": "Completed without error",
             "reallocatedSectorCount": smart.get("reallocated_sector_count", 0),
@@ -519,7 +533,8 @@ class ParseSnapshotLsHw:
             "assessment": True,
             "severity": "Info",
             "offlineUncorrectable": smart.get("offline_uncorrectable", 0),
-            "lifetime": 0,
+            "lifetime": hours,
+            "powerOnHours": hours,
             "type": "TestDataStorage",
             "length": "Short",
             "elapsed": 0,
@@ -528,11 +543,6 @@ class ParseSnapshotLsHw:
             ),
             "powerCycleCount": smart.get("power_cycle_count", 0),
         }
-
-        for k in smart.keys():
-            if log in k:
-                action['lifetime'] = smart[k].get("power_on_hours", 0)
-                action['powerOnHours'] = smart[k].get("power_on_hours", 0)
 
         return action
 
@@ -543,6 +553,6 @@ class ParseSnapshotLsHw:
         logger.error(txt)
         self._errors.append(txt)
         error = SnapshotErrors(
-            description=txt, snapshot_uuid=self.uuid, severity=severity, wbid=self.wbid
+            description=txt, snapshot_uuid=self.uuid, severity=severity, sid=self.sid
         )
         error.save()

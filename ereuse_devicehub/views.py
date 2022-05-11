@@ -1,10 +1,14 @@
 import flask
-from flask import Blueprint
+from flask import Blueprint, g
 from flask.views import View
 from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy import or_
 
-from ereuse_devicehub import __version__
-from ereuse_devicehub.forms import LoginForm
+from ereuse_devicehub import __version__, messages
+from ereuse_devicehub.db import db
+from ereuse_devicehub.forms import LoginForm, PasswordForm
+from ereuse_devicehub.resources.action.models import Trade
+from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.utils import is_safe_url
 
@@ -45,18 +49,65 @@ class LogoutView(View):
         return flask.redirect(flask.url_for('core.login'))
 
 
-class UserProfileView(View):
+class GenericMixView(View):
+    decorators = [login_required]
+
+    def get_lots(self):
+        return (
+            Lot.query.outerjoin(Trade)
+            .filter(
+                or_(
+                    Trade.user_from == g.user,
+                    Trade.user_to == g.user,
+                    Lot.owner_id == g.user.id,
+                )
+            )
+            .distinct()
+        )
+
+    def get_context(self):
+        self.context = {
+            'lots': self.get_lots(),
+            'version': __version__,
+        }
+
+        return self.context
+
+
+class UserProfileView(GenericMixView):
     decorators = [login_required]
     template_name = 'ereuse_devicehub/user_profile.html'
 
     def dispatch_request(self):
-        context = {
-            'current_user': current_user,
-            'version': __version__,
-        }
-        return flask.render_template(self.template_name, **context)
+        self.get_context()
+        self.context.update(
+            {
+                'current_user': current_user,
+                'password_form': PasswordForm(),
+            }
+        )
+
+        return flask.render_template(self.template_name, **self.context)
+
+
+class UserPasswordView(View):
+    methods = ['POST']
+    decorators = [login_required]
+
+    def dispatch_request(self):
+        form = PasswordForm()
+        db.session.commit()
+        if form.validate_on_submit():
+            form.save(commit=False)
+            messages.success('Reset user password successfully!')
+        else:
+            messages.error('Error modifying user password!')
+
+        db.session.commit()
+        return flask.redirect(flask.url_for('core.user-profile'))
 
 
 core.add_url_rule('/login/', view_func=LoginView.as_view('login'))
 core.add_url_rule('/logout/', view_func=LogoutView.as_view('logout'))
 core.add_url_rule('/profile/', view_func=UserProfileView.as_view('user-profile'))
+core.add_url_rule('/set_password/', view_func=UserPasswordView.as_view('set-password'))

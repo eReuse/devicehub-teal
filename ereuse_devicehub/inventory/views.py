@@ -7,10 +7,9 @@ import flask_weasyprint
 from flask import Blueprint, g, make_response, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
-from sqlalchemy import or_
 from werkzeug.exceptions import NotFound
 
-from ereuse_devicehub import __version__, messages
+from ereuse_devicehub import messages
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.forms import (
     AllocateForm,
@@ -32,35 +31,21 @@ from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
+from ereuse_devicehub.views import GenericMixView
 
 devices = Blueprint('inventory', __name__, url_prefix='/inventory')
 
 logger = logging.getLogger(__name__)
 
 
-class GenericMixView(View):
-    def get_lots(self):
-        return (
-            Lot.query.outerjoin(Trade)
-            .filter(
-                or_(
-                    Trade.user_from == g.user,
-                    Trade.user_to == g.user,
-                    Lot.owner_id == g.user.id,
-                )
-            )
-            .distinct()
-        )
-
-
 class DeviceListMix(GenericMixView):
-    decorators = [login_required]
     template_name = 'inventory/device_list.html'
 
     def get_context(self, lot_id):
-        form_filter = FilterForm()
-        filter_types = form_filter.search()
-        lots = self.get_lots()
+        super().get_context()
+        lots = self.context['lots']
+        form_filter = FilterForm(lots, lot_id)
+        devices = form_filter.search()
         lot = None
         tags = (
             Tag.query.filter(Tag.owner_id == current_user.id)
@@ -70,10 +55,6 @@ class DeviceListMix(GenericMixView):
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
-            devices = lot.devices
-            if "All" not in filter_types:
-                devices = [dev for dev in lot.devices if dev.type in filter_types]
-            devices = sorted(devices, key=lambda x: x.updated, reverse=True)
             form_new_action = NewActionForm(lot=lot.id)
             form_new_allocate = AllocateForm(lot=lot.id)
             form_new_datawipe = DataWipeForm(lot=lot.id)
@@ -83,20 +64,6 @@ class DeviceListMix(GenericMixView):
                 user_from=g.user.email,
             )
         else:
-            if "All" in filter_types:
-                devices = (
-                    Device.query.filter(Device.owner_id == current_user.id)
-                    .filter_by(lots=None)
-                    .order_by(Device.updated.desc())
-                )
-            else:
-                devices = (
-                    Device.query.filter(Device.owner_id == current_user.id)
-                    .filter_by(lots=None)
-                    .filter(Device.type.in_(filter_types))
-                    .order_by(Device.updated.desc())
-                )
-
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
@@ -106,21 +73,21 @@ class DeviceListMix(GenericMixView):
         if action_devices:
             list_devices.extend([int(x) for x in action_devices.split(",")])
 
-        self.context = {
-            'devices': devices,
-            'lots': lots,
-            'form_tag_device': TagDeviceForm(),
-            'form_new_action': form_new_action,
-            'form_new_allocate': form_new_allocate,
-            'form_new_datawipe': form_new_datawipe,
-            'form_new_trade': form_new_trade,
-            'form_filter': form_filter,
-            'form_print_labels': PrintLabelsForm(),
-            'lot': lot,
-            'tags': tags,
-            'list_devices': list_devices,
-            'version': __version__,
-        }
+        self.context.update(
+            {
+                'devices': devices,
+                'form_tag_device': TagDeviceForm(),
+                'form_new_action': form_new_action,
+                'form_new_allocate': form_new_allocate,
+                'form_new_datawipe': form_new_datawipe,
+                'form_new_trade': form_new_trade,
+                'form_filter': form_filter,
+                'form_print_labels': PrintLabelsForm(),
+                'lot': lot,
+                'tags': tags,
+                'list_devices': list_devices,
+            }
+        )
 
         return self.context
 
@@ -136,20 +103,20 @@ class DeviceDetailView(GenericMixView):
     template_name = 'inventory/device_detail.html'
 
     def dispatch_request(self, id):
-        lots = self.get_lots()
+        self.get_context()
         device = (
             Device.query.filter(Device.owner_id == current_user.id)
             .filter(Device.devicehub_id == id)
             .one()
         )
 
-        context = {
-            'device': device,
-            'lots': lots,
-            'page_title': 'Device {}'.format(device.devicehub_id),
-            'version': __version__,
-        }
-        return flask.render_template(self.template_name, **context)
+        self.context.update(
+            {
+                'device': device,
+                'page_title': 'Device {}'.format(device.devicehub_id),
+            }
+        )
+        return flask.render_template(self.template_name, **self.context)
 
 
 class LotCreateView(GenericMixView):
@@ -165,17 +132,17 @@ class LotCreateView(GenericMixView):
             next_url = url_for('inventory.lotdevicelist', lot_id=form.id)
             return flask.redirect(next_url)
 
-        lots = self.get_lots()
-        context = {
-            'form': form,
-            'title': self.title,
-            'lots': lots,
-            'version': __version__,
-        }
-        return flask.render_template(self.template_name, **context)
+        self.get_context()
+        self.context.update(
+            {
+                'form': form,
+                'title': self.title,
+            }
+        )
+        return flask.render_template(self.template_name, **self.context)
 
 
-class LotUpdateView(View):
+class LotUpdateView(GenericMixView):
     methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'inventory/lot.html'
@@ -188,14 +155,14 @@ class LotUpdateView(View):
             next_url = url_for('inventory.lotdevicelist', lot_id=id)
             return flask.redirect(next_url)
 
-        lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        context = {
-            'form': form,
-            'title': self.title,
-            'lots': lots,
-            'version': __version__,
-        }
-        return flask.render_template(self.template_name, **context)
+        self.get_context()
+        self.context.update(
+            {
+                'form': form,
+                'title': self.title,
+            }
+        )
+        return flask.render_template(self.template_name, **self.context)
 
 
 class LotDeleteView(View):
@@ -222,25 +189,26 @@ class UploadSnapshotView(GenericMixView):
     template_name = 'inventory/upload_snapshot.html'
 
     def dispatch_request(self, lot_id=None):
-        lots = self.get_lots()
+        self.get_context()
         form = UploadSnapshotForm()
-        context = {
-            'page_title': 'Upload Snapshot',
-            'lots': lots,
-            'form': form,
-            'lot_id': lot_id,
-            'version': __version__,
-        }
+        self.context.update(
+            {
+                'page_title': 'Upload Snapshot',
+                'form': form,
+                'lot_id': lot_id,
+            }
+        )
         if form.validate_on_submit():
             snapshot, devices = form.save(commit=False)
             if lot_id:
+                lots = self.context['lots']
                 lot = lots.filter(Lot.id == lot_id).one()
                 for dev in devices:
                     lot.devices.add(dev)
                 db.session.add(lot)
             db.session.commit()
 
-        return flask.render_template(self.template_name, **context)
+        return flask.render_template(self.template_name, **self.context)
 
 
 class DeviceCreateView(GenericMixView):
@@ -249,20 +217,21 @@ class DeviceCreateView(GenericMixView):
     template_name = 'inventory/device_create.html'
 
     def dispatch_request(self, lot_id=None):
-        lots = self.get_lots()
+        self.get_context()
         form = NewDeviceForm()
-        context = {
-            'page_title': 'New Device',
-            'lots': lots,
-            'form': form,
-            'lot_id': lot_id,
-            'version': __version__,
-        }
+        self.context.update(
+            {
+                'page_title': 'New Device',
+                'form': form,
+                'lot_id': lot_id,
+            }
+        )
         if form.validate_on_submit():
             snapshot = form.save(commit=False)
             next_url = url_for('inventory.devicelist')
             if lot_id:
                 next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+                lots = self.context['lots']
                 lot = lots.filter(Lot.id == lot_id).one()
                 lot.devices.add(snapshot.device)
                 db.session.add(lot)
@@ -271,7 +240,7 @@ class DeviceCreateView(GenericMixView):
             messages.success('Device "{}" created successfully!'.format(form.type.data))
             return flask.redirect(next_url)
 
-        return flask.render_template(self.template_name, **context)
+        return flask.render_template(self.template_name, **self.context)
 
 
 class TagLinkDeviceView(View):
@@ -287,13 +256,13 @@ class TagLinkDeviceView(View):
             return flask.redirect(request.referrer)
 
 
-class TagUnlinkDeviceView(View):
+class TagUnlinkDeviceView(GenericMixView):
     methods = ['POST', 'GET']
     decorators = [login_required]
     template_name = 'inventory/tag_unlink_device.html'
 
     def dispatch_request(self, id):
-        lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        self.get_context()
         form = TagDeviceForm(delete=True, device=id)
         if form.validate_on_submit():
             form.remove()
@@ -301,13 +270,14 @@ class TagUnlinkDeviceView(View):
             next_url = url_for('inventory.devicelist')
             return flask.redirect(next_url)
 
-        return flask.render_template(
-            self.template_name,
-            form=form,
-            lots=lots,
-            referrer=request.referrer,
-            version=__version__,
+        self.context.update(
+            {
+                'form': form,
+                'referrer': request.referrer,
+            }
         )
+
+        return flask.render_template(self.template_name, **self.context)
 
 
 class NewActionView(View):
@@ -317,15 +287,18 @@ class NewActionView(View):
 
     def dispatch_request(self):
         self.form = self.form_class()
+        next_url = self.get_next_url()
 
         if self.form.validate_on_submit():
             self.form.save()
             messages.success(
                 'Action "{}" created successfully!'.format(self.form.type.data)
             )
-
             next_url = self.get_next_url()
             return flask.redirect(next_url)
+
+        messages.error('Action {} error!'.format(self.form.type.data))
+        return flask.redirect(next_url)
 
     def get_next_url(self):
         lot_id = self.form.lot.data
@@ -352,10 +325,12 @@ class NewAllocateView(NewActionView, DeviceListMix):
             next_url = self.get_next_url()
             return flask.redirect(next_url)
 
-        lot_id = self.form.lot.data
-        self.get_context(lot_id)
-        self.context['form_new_allocate'] = self.form
-        return flask.render_template(self.template_name, **self.context)
+        messages.error('Action {} error!'.format(self.form.type.data))
+        for k, v in self.form.errors.items():
+            value = ';'.join(v)
+            messages.error('Action Error {key}: {value}!'.format(key=k, value=value))
+        next_url = self.get_next_url()
+        return flask.redirect(next_url)
 
 
 class NewDataWipeView(NewActionView, DeviceListMix):
@@ -374,10 +349,9 @@ class NewDataWipeView(NewActionView, DeviceListMix):
             next_url = self.get_next_url()
             return flask.redirect(next_url)
 
-        lot_id = self.form.lot.data
-        self.get_context(lot_id)
-        self.context['form_new_datawipe'] = self.form
-        return flask.render_template(self.template_name, **self.context)
+        messages.error('Action {} error!'.format(self.form.type.data))
+        next_url = self.get_next_url()
+        return flask.redirect(next_url)
 
 
 class NewTradeView(NewActionView, DeviceListMix):
@@ -396,10 +370,9 @@ class NewTradeView(NewActionView, DeviceListMix):
             next_url = self.get_next_url()
             return flask.redirect(next_url)
 
-        lot_id = self.form.lot.data
-        self.get_context(lot_id)
-        self.context['form_new_trade'] = self.form
-        return flask.render_template(self.template_name, **self.context)
+        messages.error('Action {} error!'.format(self.form.type.data))
+        next_url = self.get_next_url()
+        return flask.redirect(next_url)
 
 
 class NewTradeDocumentView(View):
@@ -411,6 +384,7 @@ class NewTradeDocumentView(View):
 
     def dispatch_request(self, lot_id):
         self.form = self.form_class(lot=lot_id)
+        self.get_context()
 
         if self.form.validate_on_submit():
             self.form.save()
@@ -418,9 +392,8 @@ class NewTradeDocumentView(View):
             next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
             return flask.redirect(next_url)
 
-        return flask.render_template(
-            self.template_name, form=self.form, title=self.title, version=__version__
-        )
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
 
 
 class ExportsView(View):
@@ -432,7 +405,6 @@ class ExportsView(View):
             'metrics': self.metrics,
             'devices': self.devices_list,
             'certificates': self.erasure,
-            'links': self.public_links,
         }
 
         if export_id not in export_ids:
@@ -507,19 +479,6 @@ class ExportsView(View):
                 cw.writerow(d.values())
 
         return self.response_csv(data, "actions_export.csv")
-
-    def public_links(self):
-        # get a csv with the publink links of this devices
-        data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
-        cw.writerow(['links'])
-        host_url = request.host_url
-        for dev in self.find_devices():
-            code = dev.devicehub_id
-            link = [f"{host_url}devices/{code}"]
-            cw.writerow(link)
-
-        return self.response_csv(data, "links.csv")
 
     def erasure(self):
         template = self.build_erasure_certificate()

@@ -58,16 +58,30 @@ from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.models import User
 
 DEVICES = {
-    "All": ["All"],
+    "All": ["All Devices", "All Components"],
     "Computer": [
+        "All Computers",
         "Desktop",
         "Laptop",
         "Server",
     ],
-    "Monitor": ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"],
-    "Mobile, tablet & smartphone": ["Mobile", "Tablet", "Smartphone", "Cellphone"],
-    "DataStorage": ["HardDrive", "SolidStateDrive"],
+    "Monitor": [
+        "All Monitors",
+        "ComputerMonitor",
+        "Monitor",
+        "TelevisionSet",
+        "Projector",
+    ],
+    "Mobile, tablet & smartphone": [
+        "All Mobile",
+        "Mobile",
+        "Tablet",
+        "Smartphone",
+        "Cellphone",
+    ],
+    "DataStorage": ["All DataStorage", "HardDrive", "SolidStateDrive"],
     "Accessories & Peripherals": [
+        "All Peripherals",
         "GraphicCard",
         "Motherboard",
         "NetworkAdapter",
@@ -81,26 +95,104 @@ DEVICES = {
     ],
 }
 
+COMPUTERS = ['Desktop', 'Laptop', 'Server', 'Computer']
+
+COMPONENTS = [
+    'GraphicCard',
+    'DataStorage',
+    'HardDrive',
+    'DataStorage',
+    'SolidStateDrive',
+    'Motherboard',
+    'NetworkAdapter',
+    'Processor',
+    'RamModule',
+    'SoundCard',
+    'Display',
+    'Battery',
+    'Camera',
+]
+
+MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
+MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
+DATASTORAGE = ["HardDrive", "SolidStateDrive"]
+PERIPHERALS = [
+    "GraphicCard",
+    "Motherboard",
+    "NetworkAdapter",
+    "Processor",
+    "RamModule",
+    "SoundCard",
+    "Battery",
+    "Keyboard",
+    "Mouse",
+    "MemoryCardReader",
+]
+
 
 class FilterForm(FlaskForm):
     filter = SelectField(
-        '', choices=DEVICES, default="Computer", render_kw={'class': "form-select"}
+        '', choices=DEVICES, default="All Computers", render_kw={'class': "form-select"}
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, lots, lot_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.lots = lots
+        self.lot_id = lot_id
+        self._get_types()
+
+    def _get_types(self):
         types_of_devices = [item for sublist in DEVICES.values() for item in sublist]
         dev = request.args.get('filter')
-        self.device = dev if dev in types_of_devices else None
-        if self.device:
-            self.filter.data = self.device
+        self.device_type = dev if dev in types_of_devices else None
+        if self.device_type:
+            self.filter.data = self.device_type
+
+    def filter_from_lots(self):
+        if self.lot_id:
+            self.lot = self.lots.filter(Lot.id == self.lot_id).one()
+            device_ids = (d.id for d in self.lot.devices)
+            self.devices = Device.query.filter(Device.id.in_(device_ids))
+        else:
+            self.devices = Device.query.filter(Device.owner_id == g.user.id).filter_by(
+                lots=None
+            )
 
     def search(self):
+        self.filter_from_lots()
+        filter_type = None
+        if self.device_type:
+            filter_type = [self.device_type]
+        else:
+            # Case without Filter
+            filter_type = COMPUTERS
 
-        if self.device:
-            return [self.device]
+        # Generic Filters
+        if "All Devices" == self.device_type:
+            filter_type = COMPUTERS + ["Monitor"] + MOBILE
 
-        return ['Desktop', 'Laptop', 'Server']
+        elif "All Components" == self.device_type:
+            filter_type = COMPONENTS
+
+        elif "All Computers" == self.device_type:
+            filter_type = COMPUTERS
+
+        elif "All Monitors" == self.device_type:
+            filter_type = MONITORS
+
+        elif "All Mobile" == self.device_type:
+            filter_type = MOBILE
+
+        elif "All DataStorage" == self.device_type:
+            filter_type = DATASTORAGE
+
+        elif "All Peripherals" == self.device_type:
+            filter_type = PERIPHERALS
+
+        if filter_type:
+            self.devices = self.devices.filter(Device.type.in_(filter_type))
+
+        return self.devices.order_by(Device.updated.desc())
 
 
 class LotForm(FlaskForm):
@@ -208,12 +300,12 @@ class UploadSnapshotForm(FlaskForm, SnapshotMix):
             except ValidationError as err:
                 txt = "{}".format(err)
                 uuid = snapshot_json.get('uuid')
-                wbid = snapshot_json.get('wbid')
+                sid = snapshot_json.get('sid')
                 error = SnapshotErrors(
                     description=txt,
                     snapshot_uuid=uuid,
                     severity=Severity.Error,
-                    wbid=wbid,
+                    sid=sid,
                 )
                 error.save(commit=True)
                 self.result[filename] = 'Error'
@@ -468,7 +560,7 @@ class TagDeviceForm(FlaskForm):
         db.session.commit()
 
 
-class NewActionForm(FlaskForm):
+class ActionFormMix(FlaskForm):
     name = StringField(
         'Name',
         [validators.length(max=50)],
@@ -500,17 +592,23 @@ class NewActionForm(FlaskForm):
         if not is_valid:
             return False
 
-        self._devices = OrderedSet()
-        if self.devices.data:
-            devices = set(self.devices.data.split(","))
-            self._devices = OrderedSet(
-                Device.query.filter(Device.id.in_(devices))
-                .filter(Device.owner_id == g.user.id)
-                .all()
-            )
+        if self.type.data in [None, '']:
+            return False
 
-            if not self._devices:
-                return False
+        if not self.devices.data:
+            return False
+
+        self._devices = OrderedSet()
+
+        devices = set(self.devices.data.split(","))
+        self._devices = OrderedSet(
+            Device.query.filter(Device.id.in_(devices))
+            .filter(Device.owner_id == g.user.id)
+            .all()
+        )
+
+        if not self._devices:
+            return False
 
         return True
 
@@ -543,29 +641,83 @@ class NewActionForm(FlaskForm):
             return self.type.data
 
 
-class AllocateForm(NewActionForm):
-    start_time = DateField('Start time')
-    end_time = DateField('End time')
-    final_user_code = StringField('Final user code', [validators.length(max=50)])
-    transaction = StringField('Transaction', [validators.length(max=50)])
-    end_users = IntegerField('End users')
-
+class NewActionForm(ActionFormMix):
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
 
+        if not is_valid:
+            return False
+
+        if self.type.data in ['Allocate', 'Deallocate', 'Trade', 'DataWipe']:
+            return False
+
+        return True
+
+
+class AllocateForm(ActionFormMix):
+    start_time = DateField('Start time')
+    end_time = DateField('End time', [validators.Optional()])
+    final_user_code = StringField(
+        'Final user code', [validators.Optional(), validators.length(max=50)]
+    )
+    transaction = StringField(
+        'Transaction', [validators.Optional(), validators.length(max=50)]
+    )
+    end_users = IntegerField('End users', [validators.Optional()])
+
+    def validate(self, extra_validators=None):
+        if not super().validate(extra_validators):
+            return False
+
+        if self.type.data not in ['Allocate', 'Deallocate']:
+            return False
+
+        if not self.validate_dates():
+            return False
+
+        if not self.check_devices():
+            return False
+
+        return True
+
+    def validate_dates(self):
         start_time = self.start_time.data
         end_time = self.end_time.data
+
+        if not start_time:
+            self.start_time.errors = ['Not a valid date value.!']
+            return False
+
         if start_time and end_time and end_time < start_time:
             error = ['The action cannot finish before it starts.']
-            self.start_time.errors = error
             self.end_time.errors = error
-            is_valid = False
+            return False
 
-        if not self.end_users.data:
-            self.end_users.errors = ["You need to specify a number of users"]
-            is_valid = False
+        if not end_time:
+            self.end_time.data = self.start_time.data
 
-        return is_valid
+        return True
+
+    def check_devices(self):
+        if self.type.data == 'Allocate':
+            txt = "You need deallocate before allocate this device again"
+            for device in self._devices:
+                if device.allocated:
+                    self.devices.errors = [txt]
+                    return False
+
+                device.allocated = True
+
+        if self.type.data == 'Deallocate':
+            txt = "Sorry some of this devices are actually deallocate"
+            for device in self._devices:
+                if not device.allocated:
+                    self.devices.errors = [txt]
+                    return False
+
+                device.allocated = False
+
+        return True
 
 
 class DataWipeDocumentForm(Form):
@@ -621,7 +773,7 @@ class DataWipeDocumentForm(Form):
         return self._obj
 
 
-class DataWipeForm(NewActionForm):
+class DataWipeForm(ActionFormMix):
     document = FormField(DataWipeDocumentForm)
 
     def save(self):
@@ -648,7 +800,7 @@ class DataWipeForm(NewActionForm):
         return self.instance
 
 
-class TradeForm(NewActionForm):
+class TradeForm(ActionFormMix):
     user_from = StringField(
         'Supplier',
         [validators.Optional()],
@@ -694,6 +846,9 @@ class TradeForm(NewActionForm):
         is_valid = self.generic_validation(extra_validators=extra_validators)
         email_from = self.user_from.data
         email_to = self.user_to.data
+
+        if self.type.data != "Trade":
+            return False
 
         if not self.confirm.data and not self.code.data:
             self.code.errors = ["If you don't want to confirm, you need a code"]
