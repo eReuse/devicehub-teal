@@ -52,16 +52,30 @@ from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 from ereuse_devicehub.resources.user.models import User
 
 DEVICES = {
-    "All": ["All"],
+    "All": ["All Devices", "All Components"],
     "Computer": [
+        "All Computers",
         "Desktop",
         "Laptop",
         "Server",
     ],
-    "Monitor": ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"],
-    "Mobile, tablet & smartphone": ["Mobile", "Tablet", "Smartphone", "Cellphone"],
-    "DataStorage": ["HardDrive", "SolidStateDrive"],
+    "Monitor": [
+        "All Monitors",
+        "ComputerMonitor",
+        "Monitor",
+        "TelevisionSet",
+        "Projector",
+    ],
+    "Mobile, tablet & smartphone": [
+        "All Mobile",
+        "Mobile",
+        "Tablet",
+        "Smartphone",
+        "Cellphone",
+    ],
+    "DataStorage": ["All DataStorage", "HardDrive", "SolidStateDrive"],
     "Accessories & Peripherals": [
+        "All Peripherals",
         "GraphicCard",
         "Motherboard",
         "NetworkAdapter",
@@ -75,26 +89,104 @@ DEVICES = {
     ],
 }
 
+COMPUTERS = ['Desktop', 'Laptop', 'Server']
+
+COMPONENTS = [
+    'GraphicCard',
+    'DataStorage',
+    'HardDrive',
+    'DataStorage',
+    'SolidStateDrive',
+    'Motherboard',
+    'NetworkAdapter',
+    'Processor',
+    'RamModule',
+    'SoundCard',
+    'Display',
+    'Battery',
+    'Camera',
+]
+
+MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
+MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
+DATASTORAGE = ["HardDrive", "SolidStateDrive"]
+PERIPHERALS = [
+    "GraphicCard",
+    "Motherboard",
+    "NetworkAdapter",
+    "Processor",
+    "RamModule",
+    "SoundCard",
+    "Battery",
+    "Keyboard",
+    "Mouse",
+    "MemoryCardReader",
+]
+
 
 class FilterForm(FlaskForm):
     filter = SelectField(
-        '', choices=DEVICES, default="Computer", render_kw={'class': "form-select"}
+        '', choices=DEVICES, default="All Computers", render_kw={'class': "form-select"}
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, lots, lot_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.lots = lots
+        self.lot_id = lot_id
+        self._get_types()
+
+    def _get_types(self):
         types_of_devices = [item for sublist in DEVICES.values() for item in sublist]
         dev = request.args.get('filter')
-        self.device = dev if dev in types_of_devices else None
-        if self.device:
-            self.filter.data = self.device
+        self.device_type = dev if dev in types_of_devices else None
+        if self.device_type:
+            self.filter.data = self.device_type
+
+    def filter_from_lots(self):
+        if self.lot_id:
+            self.lot = self.lots.filter(Lot.id == self.lot_id).one()
+            device_ids = (d.id for d in self.lot.devices)
+            self.devices = Device.query.filter(Device.id.in_(device_ids))
+        else:
+            self.devices = Device.query.filter(Device.owner_id == g.user.id).filter_by(
+                lots=None
+            )
 
     def search(self):
+        self.filter_from_lots()
+        filter_type = None
+        if self.device_type:
+            filter_type = [self.device_type]
+        else:
+            # Case without Filter
+            filter_type = COMPUTERS
 
-        if self.device:
-            return [self.device]
+        # Generic Filters
+        if "All Devices" == self.device_type:
+            filter_type = COMPUTERS + ["Monitor"] + MOBILE
 
-        return ['Desktop', 'Laptop', 'Server']
+        elif "All Components" == self.device_type:
+            filter_type = COMPONENTS
+
+        elif "All Computers" == self.device_type:
+            filter_type = COMPUTERS
+
+        elif "All Monitors" == self.device_type:
+            filter_type = MONITORS
+
+        elif "All Mobile" == self.device_type:
+            filter_type = MOBILE
+
+        elif "All DataStorage" == self.device_type:
+            filter_type = DATASTORAGE
+
+        elif "All Peripherals" == self.device_type:
+            filter_type = PERIPHERALS
+
+        if filter_type:
+            self.devices = self.devices.filter(Device.type.in_(filter_type))
+
+        return self.devices.order_by(Device.updated.desc())
 
 
 class LotForm(FlaskForm):

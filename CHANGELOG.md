@@ -8,10 +8,33 @@ ml).
 ## master
 
 ## testing
+
+## [2.1.0] - 2022-05-11
 - [added] #219 Add functionality to searchbar (Lots and devices).
+- [added] #222 Allow user to update its password.
+- [added] #233 Filter in out trades from lots selector.
+- [added] #236 Allow select multiple devices in multiple pages.
+- [added] #237 Confirmation dialog on apply lots changes.
+- [added] #238 Customize labels.
+- [added] #242 Add icons in list of devices.
+- [added] #244 Select full devices.
+- [added] #257 Add functionality to search generic categories like all components.
+- [added] #252 new tabs lots and public link in details of one device.
 - [changed] #211 Print DHID-QR label for selected devices.
 - [changed] #218 Add reactivity to device lots.
+- [changed] #220 Add reactive lots list.
+- [changed] #232 Set max lots list to 20.
+- [changed] #235 Hide trade buttons.
+- [changed] #239 Change Tags for Unique Identifier.
+- [changed] #247 Change colors.
+- [changed] #253 Drop download public links.
 - [fixed] #214 Login workflow
+- [fixed] #221 Fix responsive issues on frontend.
+- [fixed] #223 fix trade lots modal.
+- [fixed] #224 fix clickable lots selector not working when click in text.
+- [fixed] #254 Fix minor types in frontend.
+- [fixed] #255 Fix status column on device list.
+
 
 ## [2.0.0] - 2022-03-15
 First server render HTML version. Completely rewrites views of angular JS client on flask.

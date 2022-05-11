@@ -43,8 +43,8 @@ class DeviceListMix(GenericMixView):
     def get_context(self, lot_id):
         super().get_context()
         lots = self.context['lots']
-        form_filter = FilterForm()
-        filter_types = form_filter.search()
+        form_filter = FilterForm(lots, lot_id)
+        devices = form_filter.search()
         lot = None
         tags = (
             Tag.query.filter(Tag.owner_id == current_user.id)
@@ -54,10 +54,6 @@ class DeviceListMix(GenericMixView):
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
-            devices = lot.devices
-            if "All" not in filter_types:
-                devices = [dev for dev in lot.devices if dev.type in filter_types]
-            devices = sorted(devices, key=lambda x: x.updated, reverse=True)
             form_new_action = NewActionForm(lot=lot.id)
             form_new_allocate = AllocateForm(lot=lot.id)
             form_new_datawipe = DataWipeForm(lot=lot.id)
@@ -67,20 +63,6 @@ class DeviceListMix(GenericMixView):
                 user_from=g.user.email,
             )
         else:
-            if "All" in filter_types:
-                devices = (
-                    Device.query.filter(Device.owner_id == current_user.id)
-                    .filter_by(lots=None)
-                    .order_by(Device.updated.desc())
-                )
-            else:
-                devices = (
-                    Device.query.filter(Device.owner_id == current_user.id)
-                    .filter_by(lots=None)
-                    .filter(Device.type.in_(filter_types))
-                    .order_by(Device.updated.desc())
-                )
-
             form_new_action = NewActionForm()
             form_new_allocate = AllocateForm()
             form_new_datawipe = DataWipeForm()
