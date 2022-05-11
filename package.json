@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "description": "Devicehub is a distributed IT Asset Management System focused in reusing devices, created under the project [eReuse.org](https://www.ereuse.org)",
   "main": "index.js",
+  "browserslist": "> 0.25%, not dead",
   "directories": {
     "doc": "docs",
     "example": "examples",
     "test": "tests"
   },
   "devDependencies": {
+    "@babel/cli": "^7.17.10",
+    "@babel/preset-env": "^7.17.10",
     "eslint": "^8.13.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.5.0",
@@ -17,12 +20,14 @@
   },
   "scripts": {
     "lint:report": "eslint ereuse_devicehub --ext .js --output-file eslint_report.json --format json",
-    "lint:fix": "eslint ereuse_devicehub --ext .js --fix"
+    "lint:fix": "eslint ereuse_devicehub --ext .js --fix",
+    "babel": "babel ereuse_devicehub/static/js/main_inventory.js --out-file ereuse_devicehub/static/js/main_inventory.build.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/core": "^7.17.10",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.29.4",
     "eslint-plugin-react-hooks": "^4.4.0"

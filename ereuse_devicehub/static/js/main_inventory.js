@@ -277,7 +277,7 @@ function get_device_list() {
         "Laptop": "<i class='bi bi-laptop'></i>",
     };
 
-    list_devices = devices.map((x) => {
+    const list_devices = devices.map((x) => {
         let typ = $(x).data("device-type");
         const manuf = $(x).data("device-manufacturer");
         const dhid = $(x).data("device-dhid");
@@ -287,7 +287,7 @@ function get_device_list() {
         return `${typ} ${manuf} ${dhid}`;
     });
 
-    description = $.map(list_devices, (x) => x).join(", ");
+    const description = $.map(list_devices, (x) => x).join(", ");
     $(".enumeration-devices").html(description);
 }
 

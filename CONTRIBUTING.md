@@ -2,6 +2,15 @@
 
 ## Writing code
 
+### Javascript and compatibility with "old" browsers
+**Warning:** This project is using babel compiler... You need run an additional build step to make build js file
+```bash
+npm install
+npm run babel
+```
+NOTE: If you prefer you can use yarn instead, it's compatible
+NOTE2: This only affect to file `ereuse_devicehub/static/js/main_inventory.js`.
+
 ### Coding style
 
 #### Python style
