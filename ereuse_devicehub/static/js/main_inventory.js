@@ -98,7 +98,7 @@ window.addEventListener("DOMContentLoaded", () => {
         if (TableController.getAllDevices().length == TableController.getSelectedDevices().length) {
             btnSelectAll.checked = true;
             btnSelectAll.indeterminate = false;
-        } else if(TableController.getAllDevices().length < TableController.getSelectedDevices().length) {
+        } else if(TableController.getAllSelectedDevicesInCurrentPage().length > 0) {
             btnSelectAll.indeterminate = true;
         } else {
             btnSelectAll.checked = false;
