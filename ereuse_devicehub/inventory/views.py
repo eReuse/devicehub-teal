@@ -510,7 +510,7 @@ class SnapshotListView(GenericMixView):
     decorators = [login_required]
     template_name = 'inventory/snapshots_list.html'
 
-    def dispatch_request(self, id):
+    def dispatch_request(self):
         self.get_context()
         self.context['page_title'] = "Snapshots"
         self.context['snapshots'] = []
