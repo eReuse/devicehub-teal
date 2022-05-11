@@ -104,6 +104,13 @@ window.addEventListener("DOMContentLoaded", () => {
             btnSelectAll.checked = false;
             btnSelectAll.indeterminate = false;
         }
+
+        if (TableController.getAllDevices().length == 0) {
+            btnSelectAll.checked = false;
+            btnSelectAll.disabled = true;
+        } else {
+            btnSelectAll.disabled = false;
+        }
     }
 
     TableController.getAllDevices().forEach(item => {
@@ -126,6 +133,8 @@ window.addEventListener("DOMContentLoaded", () => {
     table.on("datatable.page", () => itemListCheckChanged());
     table.on("datatable.perpage", () => itemListCheckChanged());
     table.on("datatable.update", () => itemListCheckChanged());
+
+    itemListCheckChanged();
 })
 
 function deviceSelect() {
