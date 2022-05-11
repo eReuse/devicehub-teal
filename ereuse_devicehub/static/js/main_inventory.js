@@ -83,8 +83,6 @@ window.addEventListener("DOMContentLoaded", () => {
     const alertInfoDevices = document.getElementById("select-devices-info");
 
     function itemListCheckChanged() {
-        const listDevices = TableController.getAllDevicesInCurrentPage()
-        const isAllChecked = listDevices.map(itm => itm.checked);
         alertInfoDevices.innerHTML = `Selected devices: ${TableController.getSelectedDevices().length}
             ${TableController.getAllDevices().length != TableController.getSelectedDevices().length
                     ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
@@ -97,14 +95,14 @@ window.addEventListener("DOMContentLoaded", () => {
             alertInfoDevices.classList.remove("d-none");
         }
 
-        if (isAllChecked.every(bool => bool == true)) {
+        if (TableController.getAllDevices().length == TableController.getSelectedDevices().length) {
             btnSelectAll.checked = true;
             btnSelectAll.indeterminate = false;
-        } else if (isAllChecked.every(bool => bool == false)) {
+        } else if(TableController.getAllDevices().length < TableController.getSelectedDevices().length) {
+            btnSelectAll.indeterminate = true;
+        } else {
             btnSelectAll.checked = false;
             btnSelectAll.indeterminate = false;
-        } else {
-            btnSelectAll.indeterminate = true;
         }
     }
 
