@@ -392,7 +392,7 @@
                     {% for doc in lot.trade.documents %}
                     <tr>
                       <td>
-                        {% if doc.url.to_text() %}
+                        {% if doc.url %}
                           <a href="{{ doc.url.to_text() }}" target="_blank">{{ doc.file_name}}</a>
                         {% else %}
                           {{ doc.file_name}}
