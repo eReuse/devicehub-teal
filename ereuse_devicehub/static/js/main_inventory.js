@@ -78,9 +78,27 @@ class TableController {
 /**
  * Select all functionality
  */
-window.addEventListener("DOMContentLoaded", () => {
+
+const selectorController = (action) => {
     const btnSelectAll = document.getElementById("SelectAllBTN");
     const alertInfoDevices = document.getElementById("select-devices-info");
+
+    function softInit() {
+        TableController.getAllDevices().forEach(item => {
+            item.addEventListener("click", itemListCheckChanged);
+        })
+
+        // https://github.com/fiduswriter/Simple-DataTables/wiki/Events
+        table.on("datatable.page", () => itemListCheckChanged());
+        table.on("datatable.perpage", () => itemListCheckChanged());
+        table.on("datatable.update", () => itemListCheckChanged());
+    }
+    
+    if (action == "softInit") {
+        softInit();
+        itemListCheckChanged();
+        return;
+    }
 
     function itemListCheckChanged() {
         alertInfoDevices.innerHTML = `Selected devices: ${TableController.getSelectedDevices().length}
@@ -114,11 +132,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
         get_device_list();
     }
-
-    TableController.getAllDevices().forEach(item => {
-        item.addEventListener("click", itemListCheckChanged);
-    })
-
+    
     btnSelectAll.addEventListener("click", event => {
         const checkedState = event.target.checked;
         TableController.getAllDevicesInCurrentPage().forEach(ckeckbox => { ckeckbox.checked = checkedState });
@@ -131,13 +145,12 @@ window.addEventListener("DOMContentLoaded", () => {
         itemListCheckChanged()
     })
 
-    // https://github.com/fiduswriter/Simple-DataTables/wiki/Events
-    table.on("datatable.page", () => itemListCheckChanged());
-    table.on("datatable.perpage", () => itemListCheckChanged());
-    table.on("datatable.update", () => itemListCheckChanged());
+    softInit();
 
     itemListCheckChanged();
-})
+}
+
+window.addEventListener("DOMContentLoaded", () => selectorController());
 
 function deviceSelect() {
     const devices_count = TableController.getSelectedDevices().length;
@@ -439,6 +452,9 @@ async function processSelectedDevices() {
             const selectAllBTN = document.getElementById("SelectAllBTN");
             selectAllBTN.checked = false;
             selectAllBTN.indeterminate = false;
+
+            // Re-init SelectorController
+            selectorController("softInit");
         }
     }
 
