@@ -49,27 +49,22 @@ class DeviceListMix(GenericMixView):
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
-            form_new_action = NewActionForm(lot=lot.id)
-            form_new_allocate = AllocateForm(lot=lot.id)
-            form_new_datawipe = DataWipeForm(lot=lot.id)
             form_new_trade = TradeForm(
                 lot=lot.id,
                 user_to=g.user.email,
                 user_from=g.user.email,
             )
         else:
-            form_new_action = NewActionForm()
-            form_new_allocate = AllocateForm()
-            form_new_datawipe = DataWipeForm()
             form_new_trade = ''
 
+        form_new_action = NewActionForm(lot=lot_id)
         self.context.update(
             {
                 'devices': devices,
                 'form_tag_device': TagDeviceForm(),
                 'form_new_action': form_new_action,
-                'form_new_allocate': form_new_allocate,
-                'form_new_datawipe': form_new_datawipe,
+                'form_new_allocate': AllocateForm(lot=lot_id),
+                'form_new_datawipe': DataWipeForm(lot=lot_id),
                 'form_new_trade': form_new_trade,
                 'form_filter': form_filter,
                 'form_print_labels': PrintLabelsForm(),
