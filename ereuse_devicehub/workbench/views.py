@@ -35,33 +35,15 @@ class SettingsView(GenericMixView):
         return flask.render_template(self.template_name, **self.context)
 
     def download(self):
+        url = "https://{}/api/".format(app.config['HOST'])
         self.wbContext = {
             'token': self.get_token(),
-            'host': app.config['HOST'],
-            'inventory': app.config['SCHEMA'],
-            'benchmark': False,
-            'stress_test': 1,
-            'erase': '',
-            'steps': 0,
-            'leading_zeros': False,
+            'url': url,
         }
-        options = {"register": self.register, "soft": self.soft, "hard": self.hard}
+        options = {"register": self.register}
         return options[self.opt]()
 
     def register(self):
-        data = flask.render_template('workbench/wbSettings.ini', **self.wbContext)
-        return self.response_download(data)
-
-    def soft(self):
-        self.wbContext['erase'] = 'EraseBasic'
-        self.wbContext['steps'] = 1
-        data = flask.render_template('workbench/wbSettings.ini', **self.wbContext)
-        return self.response_download(data)
-
-    def hard(self):
-        self.wbContext['erase'] = 'EraseSectors'
-        self.wbContext['steps'] = 1
-        self.wbContext['leading_zeros'] = True
         data = flask.render_template('workbench/wbSettings.ini', **self.wbContext)
         return self.response_download(data)
 
