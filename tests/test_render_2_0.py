@@ -862,7 +862,6 @@ def test_wb_settings_register(user3: UserClientFlask):
     body, status = user3.get(uri)
 
     assert status == '200 OK'
-    assert "WB_BENCHMARK = False" in body
-    assert "WB_ERASE = \n" in body
-    assert "WB_ERASE_STEPS = 0" in body
-    assert "WB_ERASE_LEADING_ZEROS = False" in body
+    assert "TOKEN = " in body
+    assert "URL = https://" in body
+    assert "/api/inventory/" in body
