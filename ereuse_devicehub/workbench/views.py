@@ -29,13 +29,13 @@ class SettingsView(GenericMixView):
         )
 
         self.opt = request.values.get('opt')
-        if self.opt in ['register', 'soft', 'hard']:
+        if self.opt in ['register']:
             return self.download()
 
         return flask.render_template(self.template_name, **self.context)
 
     def download(self):
-        url = "https://{}/api/".format(app.config['HOST'])
+        url = "https://{}/api/inventory/".format(app.config['HOST'])
         self.wbContext = {
             'token': self.get_token(),
             'url': url,
