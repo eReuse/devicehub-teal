@@ -2,7 +2,7 @@
 
 function _classStaticPrivateFieldSpecGet(receiver, classConstructor, descriptor) { _classCheckPrivateStaticAccess(receiver, classConstructor); _classCheckPrivateStaticFieldDescriptor(descriptor, "get"); return _classApplyDescriptorGet(receiver, descriptor); }
 
-function _classCheckPrivateStaticFieldDescriptor(descriptor, action) { if (descriptor === undefined) { throw new TypeError(`attempted to ${  action  } private static field before its declaration`); } }
+function _classCheckPrivateStaticFieldDescriptor(descriptor, action) { if (descriptor === undefined) { throw new TypeError("attempted to " + action + " private static field before its declaration"); } }
 
 function _classCheckPrivateStaticAccess(receiver, classConstructor) { if (receiver !== classConstructor) { throw new TypeError("Private static access of wrong provenance"); } }
 
@@ -100,22 +100,32 @@ window.addEventListener("DOMContentLoaded", () => {
   const alertInfoDevices = document.getElementById("select-devices-info");
 
   function itemListCheckChanged() {
-    const listDevices = TableController.getAllDevicesInCurrentPage();
-    const isAllChecked = listDevices.map(itm => itm.checked);
+    alertInfoDevices.innerHTML = "Selected devices: ".concat(TableController.getSelectedDevices().length, "\n            ").concat(TableController.getAllDevices().length != TableController.getSelectedDevices().length ? "<a href=\"#\" class=\"ml-3\">Select all devices (".concat(TableController.getAllDevices().length, ")</a>") : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>");
 
-    if (isAllChecked.every(bool => bool == true)) {
-      btnSelectAll.checked = true;
-      btnSelectAll.indeterminate = false;
-      alertInfoDevices.innerHTML = "Selected devices: ".concat(TableController.getSelectedDevices().length, "\n                                            ").concat(TableController.getAllDevices().length != TableController.getSelectedDevices().length ? "<a href=\"#\" class=\"ml-3\">Select all devices (".concat(TableController.getAllDevices().length, ")</a>") : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>");
-      alertInfoDevices.classList.remove("d-none");
-    } else if (isAllChecked.every(bool => bool == false)) {
-      btnSelectAll.checked = false;
-      btnSelectAll.indeterminate = false;
+    if (TableController.getSelectedDevices().length <= 0) {
       alertInfoDevices.classList.add("d-none");
     } else {
-      btnSelectAll.indeterminate = true;
-      alertInfoDevices.classList.add("d-none");
+      alertInfoDevices.classList.remove("d-none");
     }
+
+    if (TableController.getAllDevices().length == TableController.getSelectedDevices().length) {
+      btnSelectAll.checked = true;
+      btnSelectAll.indeterminate = false;
+    } else if (TableController.getAllSelectedDevicesInCurrentPage().length > 0) {
+      btnSelectAll.indeterminate = true;
+    } else {
+      btnSelectAll.checked = false;
+      btnSelectAll.indeterminate = false;
+    }
+
+    if (TableController.getAllDevices().length == 0) {
+      btnSelectAll.checked = false;
+      btnSelectAll.disabled = true;
+    } else {
+      btnSelectAll.disabled = false;
+    }
+
+    get_device_list();
   }
 
   TableController.getAllDevices().forEach(item => {
@@ -139,6 +149,7 @@ window.addEventListener("DOMContentLoaded", () => {
   table.on("datatable.page", () => itemListCheckChanged());
   table.on("datatable.perpage", () => itemListCheckChanged());
   table.on("datatable.update", () => itemListCheckChanged());
+  itemListCheckChanged();
 });
 
 function deviceSelect() {
@@ -327,25 +338,44 @@ async function processSelectedDevices() {
       const lotID = lot.id;
       const srcElement = event.srcElement.parentElement.children[0];
       const checked = !srcElement.checked;
+      const {
+        indeterminate
+      } = srcElement;
       const found = this.list.filter(list => list.lot.id == lotID)[0];
 
       if (checked) {
         if (found && found.type == "Remove") {
-          found.type = "Add";
+          const affectedDevices = found.devices.filter(dev => found.lot.devices.includes(dev.id));
+
+          if (affectedDevices.length > 0 && found.indeterminate == false) {
+            // Remove action from list
+            actions.list = actions.list.filter(x => x.lot.id != found.lot.id);
+          } else {
+            found.type = "Add";
+          }
         } else {
           this.list.push({
             type: "Add",
             lot,
-            devices: selectedDevices
+            devices: selectedDevices,
+            indeterminate
           });
         }
       } else if (found && found.type == "Add") {
-        found.type = "Remove";
+        const affectedDevices = found.devices.filter(dev => !found.lot.devices.includes(dev.id));
+
+        if (affectedDevices.length > 0 && found.indeterminate == false) {
+          // Remove action from list
+          actions.list = actions.list.filter(x => x.lot.id != found.lot.id);
+        } else {
+          found.type = "Remove";
+        }
       } else {
         this.list.push({
           type: "Remove",
           lot,
-          devices: selectedDevices
+          devices: selectedDevices,
+          indeterminate
         });
       }
 
@@ -430,19 +460,23 @@ async function processSelectedDevices() {
       const newRequest = await Api.doRequest(window.location);
       const tmpDiv = document.createElement("div");
       tmpDiv.innerHTML = newRequest;
-      const newTable = Array.from(tmpDiv.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value); // https://github.com/fiduswriter/Simple-DataTables/wiki/rows()#removeselect-arraynumber
-
-      const rowsToRemove = [];
-
-      for (let i = 0; i < table.activeRows.length; i++) {
-        const row = table.activeRows[i];
-
-        if (!newTable.includes(row.querySelector("input").attributes["data-device-dhid"].value)) {
-          rowsToRemove.push(i);
-        }
-      }
-
-      table.rows().remove(rowsToRemove); // Restore state of checkbox
+      const newTable = document.createElement("table");
+      newTable.innerHTML = tmpDiv.querySelector("table").innerHTML;
+      newTable.classList = "table";
+      const oldTable = document.querySelector(".dataTable-wrapper");
+      oldTable.parentElement.replaceChild(newTable, oldTable);
+      table = new simpleDatatables.DataTable(newTable, {
+        perPage: 20
+      }); // https://github.com/fiduswriter/Simple-DataTables/wiki/rows()#removeselect-arraynumber
+      // const rowsToRemove = []
+      // for (let i = 0; i < table.activeRows.length; i++) {
+      //     const row = table.activeRows[i];
+      //     if (!newTable.includes(row.querySelector("input").attributes["data-device-dhid"].value)) {
+      //         rowsToRemove.push(i)
+      //     }
+      // }
+      // table.rows().remove(rowsToRemove);
+      // // Restore state of checkbox
 
       const selectAllBTN = document.getElementById("SelectAllBTN");
       selectAllBTN.checked = false;
