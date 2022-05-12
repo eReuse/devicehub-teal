@@ -692,7 +692,7 @@ class AllocateForm(ActionFormMix):
     transaction = StringField(
         'Transaction', [validators.Optional(), validators.length(max=50)]
     )
-    end_users = IntegerField('End users', [validators.Optional()])
+    end_users = IntegerField('Number of end users', [validators.Optional()])
 
     def validate(self, extra_validators=None):
         if not super().validate(extra_validators):
