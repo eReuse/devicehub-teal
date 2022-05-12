@@ -1,4 +1,5 @@
 ereuse_devicehub/static/vendor
 ereuse_devicehub/static/js/print.pdf.js
 ereuse_devicehub/static/js/qrcode.js
+*.build.js
 *.min.js
