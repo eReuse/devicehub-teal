@@ -40,10 +40,10 @@ logger = logging.getLogger(__name__)
 class DeviceListMix(GenericMixView):
     template_name = 'inventory/device_list.html'
 
-    def get_context(self, lot_id):
+    def get_context(self, lot_id, unassigned=False):
         super().get_context()
         lots = self.context['lots']
-        form_filter = FilterForm(lots, lot_id)
+        form_filter = FilterForm(lots, lot_id, unassigned=unassigned)
         devices = form_filter.search()
         lot = None
 
@@ -71,6 +71,7 @@ class DeviceListMix(GenericMixView):
                 'lot': lot,
                 'tags': self.get_user_tags(),
                 'list_devices': self.get_selected_devices(form_new_action),
+                'unassigned_devices': unassigned,
             }
         )
 
@@ -93,7 +94,8 @@ class DeviceListMix(GenericMixView):
 
 class DeviceListView(DeviceListMix):
     def dispatch_request(self, lot_id=None):
-        self.get_context(lot_id)
+        unassigned = request.args.get('unassigned', False)
+        self.get_context(lot_id, unassigned)
         return flask.render_template(self.template_name, **self.context)
 
 
