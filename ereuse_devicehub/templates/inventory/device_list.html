@@ -357,6 +357,14 @@
                         <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
                           {{ dev.verbose_name }}
                         </a>
+                        {% if dev.lots | length > 0 %}
+                        <br />
+                        <h6>
+                          {% for lot in dev.lots %}
+                            <span class="badge badge-pill bg-dark">{{ lot.name }}</span>
+                          {% endfor %}
+                        </h6>
+                        {% endif %}
                       </td>
                       <td>
                         <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
@@ -430,7 +438,7 @@
 
 <!-- Custom Code -->
 <script>
-  const table = new simpleDatatables.DataTable("table", {
+  let table = new simpleDatatables.DataTable("table", {
     perPage: 20
   })
 </script>
