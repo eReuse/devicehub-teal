@@ -84,7 +84,7 @@
                 </button>
                 <span class="d-none" id="activeTradeModal" data-bs-toggle="modal" data-bs-target="#tradeLotModal"></span>
                 <ul class="dropdown-menu" aria-labelledby="btnLots" id="dropDownLotsSelector">
-                  <h6 class="dropdown-header">Select some devices to manage lots</h6>
+                  <h6 class="dropdown-header">Select lots where to store the selected devices</h6>
                   <ul class="mx-3" id="LotsSelector"></ul>
                   <li><hr /></li>
                   <li>
@@ -213,7 +213,7 @@
               <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnUniqueID" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-tag"></i>
-                    Unique Identifiers
+                    Unique Identifiers (Tags)
                 </button>
                 <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
                 <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
@@ -392,7 +392,7 @@
                     {% for doc in lot.trade.documents %}
                     <tr>
                       <td>
-                        {% if doc.url.to_text() %}
+                        {% if doc.url %}
                           <a href="{{ doc.url.to_text() }}" target="_blank">{{ doc.file_name}}</a>
                         {% else %}
                           {{ doc.file_name}}
@@ -434,5 +434,5 @@
     perPage: 20
   })
 </script>
-<script src="{{ url_for('static', filename='js/main_inventory.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main_inventory.build.js') }}"></script>
 {% endblock main %}

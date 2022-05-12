@@ -60,7 +60,7 @@
                     <button class="btn btn-primary w-100" type="submit">Login</button>
                   </div>
                   <div class="col-12">
-                    <p class="small mb-0">Don't have account? <a href="#TODO">Create an account</a></p>
+                    <p class="small mb-0">Don't have account? <a href="#TODO" onclick="$('#exampleModal').modal('show')" data-toggle="modal" data-target="#exampleModal">Create an account</a></p>
                   </div>
                 </form>
 
@@ -83,4 +83,18 @@
 
   </div>
 </main><!-- End #main -->
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog  modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Do you want to try USOdy tools?</h5>
+      </div>
+      <div class="modal-body">
+        Just write an email to <a href="mali:hello@usody.com">hello@usody.com</a>
+      </div>
+    </div>
+  </div>
+</div> <!-- End register modal -->
 {% endblock body %}
