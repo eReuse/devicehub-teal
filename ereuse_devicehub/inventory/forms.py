@@ -684,6 +684,7 @@ class NewActionForm(ActionFormMix):
 
 
 class AllocateForm(ActionFormMix):
+    date = HiddenField('')
     start_time = DateField('Start time')
     end_time = DateField('End time', [validators.Optional()])
     final_user_code = StringField(
