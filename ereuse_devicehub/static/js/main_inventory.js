@@ -93,7 +93,7 @@ const selectorController = (action) => {
         table.on("datatable.perpage", () => itemListCheckChanged());
         table.on("datatable.update", () => itemListCheckChanged());
     }
-    
+
     if (action == "softInit") {
         softInit();
         itemListCheckChanged();
@@ -103,8 +103,8 @@ const selectorController = (action) => {
     function itemListCheckChanged() {
         alertInfoDevices.innerHTML = `Selected devices: ${TableController.getSelectedDevices().length}
             ${TableController.getAllDevices().length != TableController.getSelectedDevices().length
-                    ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
-                    : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
+                ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
+                : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
             }`;
 
         if (TableController.getSelectedDevices().length <= 0) {
@@ -132,7 +132,7 @@ const selectorController = (action) => {
 
         get_device_list();
     }
-    
+
     btnSelectAll.addEventListener("click", event => {
         const checkedState = event.target.checked;
         TableController.getAllDevicesInCurrentPage().forEach(ckeckbox => { ckeckbox.checked = checkedState });
@@ -317,6 +317,26 @@ function export_file(type_file) {
     }
 }
 
+class lotsSearcher {
+    static lots = [];
+
+    /**
+     * do search when lot change in the search input
+     */
+    static doSearch(inputSearch) {
+        lotsSearcher.lots.map((lot) => {
+            if (lot.querySelector("label").innerText.toLowerCase().includes(inputSearch.toLowerCase())) {
+                lot.style.display = "block";
+            } else {
+                lot.style.display = "none";
+            }
+        })
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("lots-search").addEventListener("input", (e) => { lotsSearcher.doSearch(e.target.value) })
+})
 
 /**
  * Reactive lots button
@@ -438,7 +458,7 @@ async function processSelectedDevices() {
             const tmpDiv = document.createElement("div")
             tmpDiv.innerHTML = newRequest
 
-            
+
             const newTable = document.createElement("table")
             newTable.innerHTML = tmpDiv.querySelector("table").innerHTML
             newTable.classList = "table"
@@ -495,6 +515,7 @@ async function processSelectedDevices() {
         doc.children[0].addEventListener("mouseup", (ev) => actions.manage(ev, lot, selectedDevices));
         doc.children[1].addEventListener("mouseup", (ev) => actions.manage(ev, lot, selectedDevices));
         elementTarget.append(doc);
+        lotsSearcher.lots.push(doc);
     }
 
     const listHTML = $("#LotsSelector")
@@ -588,6 +609,7 @@ async function processSelectedDevices() {
         lotsList = lotsList.flat(); // flat array
 
         listHTML.html("");
+        lotsSearcher.lots = [];
         lotsList.forEach(lot => templateLot(lot, selectedDevices, listHTML, actions));
     } catch (error) {
         console.log(error);
