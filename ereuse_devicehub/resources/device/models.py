@@ -333,6 +333,35 @@ class Device(Thing):
             return self.last_action_of(*states.Trading.actions())
 
     @property
+    def allocated_status(self):
+        """Show the actual status of device for this owner.
+        The status depend of one of this 4 actions:
+            - Use
+            - Refurbish
+            - Recycling
+            - Management
+        """
+        from ereuse_devicehub.resources.device import states
+
+        with suppress(LookupError, ValueError):
+            return self.last_action_of(*states.Usage.actions())
+
+    @property
+    def physical_status(self):
+        """Show the actual status of device for this owner.
+        The status depend of one of this 4 actions:
+            - Use
+            - Refurbish
+            - Recycling
+            - Management
+        """
+        from ereuse_devicehub.resources.device import states
+
+        with suppress(LookupError, ValueError):
+            # import pdb; pdb.set_trace()
+            return self.last_action_of(*states.Physical.actions())
+
+    @property
     def status(self):
         """Show the actual status of device for this owner.
         The status depend of one of this 4 actions:
