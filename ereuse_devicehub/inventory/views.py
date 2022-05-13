@@ -1,5 +1,6 @@
 import csv
 import logging
+from distutils.util import strtobool
 from io import StringIO
 
 import flask
@@ -40,10 +41,10 @@ logger = logging.getLogger(__name__)
 class DeviceListMix(GenericMixView):
     template_name = 'inventory/device_list.html'
 
-    def get_context(self, lot_id, unassigned=False):
+    def get_context(self, lot_id, only_unassigned=True):
         super().get_context()
         lots = self.context['lots']
-        form_filter = FilterForm(lots, lot_id, unassigned=unassigned)
+        form_filter = FilterForm(lots, lot_id, only_unassigned=only_unassigned)
         devices = form_filter.search()
         lot = None
 
@@ -71,7 +72,7 @@ class DeviceListMix(GenericMixView):
                 'lot': lot,
                 'tags': self.get_user_tags(),
                 'list_devices': self.get_selected_devices(form_new_action),
-                'unassigned_devices': unassigned,
+                'unassigned_devices': only_unassigned,
             }
         )
 
@@ -94,8 +95,10 @@ class DeviceListMix(GenericMixView):
 
 class DeviceListView(DeviceListMix):
     def dispatch_request(self, lot_id=None):
-        unassigned = request.args.get('unassigned', False)
-        self.get_context(lot_id, unassigned)
+        only_unassigned = request.args.get(
+            'only_unassigned', default=True, type=strtobool
+        )
+        self.get_context(lot_id, only_unassigned)
         return flask.render_template(self.template_name, **self.context)
 
 
