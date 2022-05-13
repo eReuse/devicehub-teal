@@ -7,7 +7,11 @@
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="{{ url_for('inventory.devicelist')}}">Inventory</a></li>
       {% if not lot %}
-      <li class="breadcrumb-item active">Unassigned</li>
+        {% if unassigned_devices %}
+          <li class="breadcrumb-item active">Unassigned</li>
+        {% else %}
+          <li class="breadcrumb-item active">All devices</li>
+        {% endif %}
       {% elif lot.is_temporary %}
       <li class="breadcrumb-item active">Temporary Lot</li>
       <li class="breadcrumb-item active">{{ lot.name }}</li>
