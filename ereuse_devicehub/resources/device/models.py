@@ -334,12 +334,11 @@ class Device(Thing):
 
     @property
     def allocated_status(self):
-        """Show the actual status of device for this owner.
-        The status depend of one of this 4 actions:
-            - Use
-            - Refurbish
-            - Recycling
-            - Management
+        """Show the actual status of device.
+        The status depend of one of this 3 actions:
+            - Allocate
+            - Deallocate
+            - InUse (Live register)
         """
         from ereuse_devicehub.resources.device import states
 
@@ -350,10 +349,11 @@ class Device(Thing):
     def physical_status(self):
         """Show the actual status of device for this owner.
         The status depend of one of this 4 actions:
-            - Use
-            - Refurbish
-            - Recycling
-            - Management
+            - ToPrepare
+            - Prepare
+            - DataWipe
+            - ToRepair
+            - Ready
         """
         from ereuse_devicehub.resources.device import states
 
@@ -588,6 +588,20 @@ class Device(Thing):
         if cls.t == 'Device':
             args[POLYMORPHIC_ON] = cls.type
         return args
+
+    def is_status(self, action):
+        from ereuse_devicehub.resources.device import states
+
+        if action.type in states.Usage.__members__:
+            return "Allocate State: "
+
+        if action.type in states.Status.__members__:
+            return "Lifecycle State: "
+
+        if action.type in states.Physical.__members__:
+            return "Physical State: "
+
+        return ""
 
     def set_hid(self):
         with suppress(TypeError):

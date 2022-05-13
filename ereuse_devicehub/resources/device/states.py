@@ -51,20 +51,18 @@ class Trading(State):
 class Physical(State):
     """Physical states.
 
-    :cvar ToBeRepaired: The device has been selected for reparation.
-    :cvar Repaired: The device has been repaired.
-    :cvar Preparing: The device is going to be or being prepared.
-    :cvar Prepared: The device has been prepared.
+    :cvar Repair: The device has been repaired.
+    :cvar ToPrepare: The device is going to be or being prepared.
+    :cvar Prepare: The device has been prepared.
     :cvar Ready: The device is in working conditions.
     :cvar DataWipe: Do DataWipe over the device.
     """
 
-    ToBeRepaired = e.ToRepair
-    Repaired = e.Repair
-    Preparing = e.ToPrepare
-    Prepared = e.Prepare
-    Ready = e.Ready
+    ToPrepare = e.ToPrepare
+    Prepare = e.Prepare
     DataWipe = e.DataWipe
+    ToRepair = e.ToRepair
+    Ready = e.Ready
 
 
 class Traking(State):
