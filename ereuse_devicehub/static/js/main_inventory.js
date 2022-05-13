@@ -324,7 +324,7 @@ class lotsSearcher {
      * do search when lot change in the search input
      */
     static doSearch(inputSearch) {
-        lotsSearcher.lots.map((lot) => {
+        lotsSearcher.lots.forEach((lot) => {
             if (lot.querySelector("label").innerText.toLowerCase().includes(inputSearch.toLowerCase())) {
                 lot.style.display = "block";
             } else {
