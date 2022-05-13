@@ -324,13 +324,16 @@ class lotsSearcher {
      * do search when lot change in the search input
      */
     static doSearch(inputSearch) {
-        lotsSearcher.lots.forEach((lot) => {
-            if (lot.querySelector("label").innerText.toLowerCase().includes(inputSearch.toLowerCase())) {
-                lot.style.display = "block";
+        const lotsList = document.getElementById("LotsSelector").children;
+
+        for (let i = 0; i < lotsList.length; i++) {
+            const lot = lotsList[i].querySelector("label");
+            if (lot.innerText.toLowerCase().includes(inputSearch.toLowerCase())) {
+                lot.parentElement.style.display = "";
             } else {
-                lot.style.display = "none";
+                lot.parentElement.style.display = "none";
             }
-        })
+        }
     }
 }
 
@@ -515,7 +518,6 @@ async function processSelectedDevices() {
         doc.children[0].addEventListener("mouseup", (ev) => actions.manage(ev, lot, selectedDevices));
         doc.children[1].addEventListener("mouseup", (ev) => actions.manage(ev, lot, selectedDevices));
         elementTarget.append(doc);
-        lotsSearcher.lots.push(doc);
     }
 
     const listHTML = $("#LotsSelector")
@@ -609,7 +611,6 @@ async function processSelectedDevices() {
         lotsList = lotsList.flat(); // flat array
 
         listHTML.html("");
-        lotsSearcher.lots = [];
         lotsList.forEach(lot => templateLot(lot, selectedDevices, listHTML, actions));
     } catch (error) {
         console.log(error);
