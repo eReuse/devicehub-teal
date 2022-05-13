@@ -358,10 +358,9 @@
                           {{ dev.verbose_name }}
                         </a>
                         {% if dev.lots | length > 0 %}
-                        <br />
-                        <h6>
+                        <h6 class="d-inline">
                           {% for lot in dev.lots %}
-                            <span class="badge rounded-pill bg-dark">{{ lot.name }}</span>
+                            <span class="badge rounded-pill bg-light text-dark">{{ lot.name }}</span>
                           {% endfor %}
                         </h6>
                         {% endif %}
