@@ -342,6 +342,7 @@
                       <th scope="col">Allocated Status</th>
                       <th scope="col">Physical Status</th>
                       <th scope="col" data-type="date" data-format="DD-MM-YYYY">Update</th>
+                      <th scope="col"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -357,10 +358,10 @@
                                />
                       </td>
                       <td>
+                        <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
                         {% if dev.get_type_logo() %}
                         <i class="{{ dev.get_type_logo() }}" title="{{ dev.type }}"></i>
                         {% endif %}
-                        <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
                           {{ dev.verbose_name }}
                         </a>
                         {% if dev.lots | length > 0 %}
@@ -386,6 +387,11 @@
                       <td>{% if dev.allocated_status %}{{ dev.allocated_status.type }}{% endif %}</td>
                       <td>{% if dev.physical_status %}{{ dev.physical_status.type }}{% endif %}</td>
                       <td>{{ dev.updated.strftime('%H:%M %d-%m-%Y') }}</td>
+                      <td>
+                        <a href="{{ dev.public_link }}" target="_blank">
+                          <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                      </td>
                     </tr>
                     {% endfor %}
                   </tbody>
