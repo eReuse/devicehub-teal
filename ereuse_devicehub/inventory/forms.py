@@ -40,10 +40,10 @@ from ereuse_devicehub.resources.action.views.snapshot import (
 from ereuse_devicehub.resources.device.models import (
     SAI,
     Cellphone,
+    ComputerMonitor,
     Device,
     Keyboard,
     MemoryCardReader,
-    Monitor,
     Mouse,
     Smartphone,
     Tablet,
@@ -127,7 +127,7 @@ class FilterForm(FlaskForm):
 
         # Generic Filters
         if "All Devices" == self.device_type:
-            filter_type = COMPUTERS + ["Monitor"] + MOBILE
+            filter_type = COMPUTERS + MONITORS + MOBILE
 
         elif "All Computers" == self.device_type:
             filter_type = COMPUTERS
@@ -305,7 +305,7 @@ class NewDeviceForm(FlaskForm):
             "Smartphone": Smartphone,
             "Tablet": Tablet,
             "Cellphone": Cellphone,
-            "Monitor": Monitor,
+            "ComputerMonitor": ComputerMonitor,
             "Mouse": Mouse,
             "Keyboard": Keyboard,
             "SAI": SAI,
@@ -421,7 +421,7 @@ class NewDeviceForm(FlaskForm):
         path_snapshot = save_json(json_snapshot, self.tmp_snapshots, g.user.email)
         snapshot_json = schema.load(json_snapshot)
 
-        if self.type.data == 'Monitor':
+        if self.type.data == 'ComputerMonitor':
             snapshot_json['device'].resolution_width = self.resolution.data
             snapshot_json['device'].size = self.screen.data
 
@@ -432,7 +432,7 @@ class NewDeviceForm(FlaskForm):
         snapshot = upload_form.build(snapshot_json)
 
         move_json(self.tmp_snapshots, path_snapshot, g.user.email)
-        if self.type.data == 'Monitor':
+        if self.type.data == 'ComputerMonitor':
             snapshot.device.resolution = self.resolution.data
             snapshot.device.screen = self.screen.data
 
