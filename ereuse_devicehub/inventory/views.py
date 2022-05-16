@@ -1,5 +1,6 @@
 import csv
 import logging
+from distutils.util import strtobool
 from io import StringIO
 
 import flask
@@ -40,60 +41,64 @@ logger = logging.getLogger(__name__)
 class DeviceListMix(GenericMixView):
     template_name = 'inventory/device_list.html'
 
-    def get_context(self, lot_id):
+    def get_context(self, lot_id, only_unassigned=True):
         super().get_context()
         lots = self.context['lots']
-        form_filter = FilterForm(lots, lot_id)
+        form_filter = FilterForm(lots, lot_id, only_unassigned=only_unassigned)
         devices = form_filter.search()
         lot = None
-        tags = (
-            Tag.query.filter(Tag.owner_id == current_user.id)
-            .filter(Tag.device_id.is_(None))
-            .order_by(Tag.id.asc())
-        )
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
-            form_new_action = NewActionForm(lot=lot.id)
-            form_new_allocate = AllocateForm(lot=lot.id)
-            form_new_datawipe = DataWipeForm(lot=lot.id)
             form_new_trade = TradeForm(
                 lot=lot.id,
                 user_to=g.user.email,
                 user_from=g.user.email,
             )
         else:
-            form_new_action = NewActionForm()
-            form_new_allocate = AllocateForm()
-            form_new_datawipe = DataWipeForm()
             form_new_trade = ''
-        action_devices = form_new_action.devices.data
-        list_devices = []
-        if action_devices:
-            list_devices.extend([int(x) for x in action_devices.split(",")])
 
+        form_new_action = NewActionForm(lot=lot_id)
         self.context.update(
             {
                 'devices': devices,
                 'form_tag_device': TagDeviceForm(),
                 'form_new_action': form_new_action,
-                'form_new_allocate': form_new_allocate,
-                'form_new_datawipe': form_new_datawipe,
+                'form_new_allocate': AllocateForm(lot=lot_id),
+                'form_new_datawipe': DataWipeForm(lot=lot_id),
                 'form_new_trade': form_new_trade,
                 'form_filter': form_filter,
                 'form_print_labels': PrintLabelsForm(),
                 'lot': lot,
-                'tags': tags,
-                'list_devices': list_devices,
+                'tags': self.get_user_tags(),
+                'list_devices': self.get_selected_devices(form_new_action),
+                'unassigned_devices': only_unassigned,
             }
         )
 
         return self.context
 
+    def get_user_tags(self):
+        return (
+            Tag.query.filter(Tag.owner_id == current_user.id)
+            .filter(Tag.device_id.is_(None))
+            .order_by(Tag.id.asc())
+        )
+
+    def get_selected_devices(self, action_form):
+        """Retrieve selected devices (when action form is submited)"""
+        action_devices = action_form.devices.data
+        if action_devices:
+            return [int(x) for x in action_devices.split(",")]
+        return []
+
 
 class DeviceListView(DeviceListMix):
     def dispatch_request(self, lot_id=None):
-        self.get_context(lot_id)
+        only_unassigned = request.args.get(
+            'only_unassigned', default=True, type=strtobool
+        )
+        self.get_context(lot_id, only_unassigned)
         return flask.render_template(self.template_name, **self.context)
 
 

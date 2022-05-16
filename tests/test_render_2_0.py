@@ -843,3 +843,26 @@ def test_action_datawipe(user3: UserClientFlask):
     assert dev.actions[-1].type == 'DataWipe'
     assert 'Action &#34;DataWipe&#34; created successfully!' in body
     assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_wb_settings(user3: UserClientFlask):
+    uri = '/workbench/settings/'
+    body, status = user3.get(uri)
+
+    assert status == '200 OK'
+    assert "Download your settings for Workbench" in body
+    assert "Workbench Settings" in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_wb_settings_register(user3: UserClientFlask):
+    uri = '/workbench/settings/?opt=register'
+    body, status = user3.get(uri)
+
+    assert status == '200 OK'
+    assert "TOKEN = " in body
+    assert "URL = https://" in body
+    assert "/api/inventory/" in body
