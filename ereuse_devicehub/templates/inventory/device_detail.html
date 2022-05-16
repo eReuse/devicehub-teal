@@ -124,16 +124,28 @@
             <div class="tab-pane fade profile-overview" id="status">
               <h5 class="card-title">Status Details</h5>
               <div class="row">
-                <div class="col-lg-3 col-md-4 label">Physical States</div>
-                <div class="col-lg-9 col-md-8">{{ device.physical or '' }}</div>
+                <div class="col-lg-3 col-md-4 label">Physical State</div>
+                <div class="col-lg-9 col-md-8">
+                    {% if device.physical_status %}
+                    {{ device.physical_status.type }}
+                    {% endif %}
+                </div>
               </div>
               <div class="row">
-                <div class="col-lg-3 col-md-4 label">Trading States</div>
-                <div class="col-lg-9 col-md-8">{{ device.last_action_trading  or ''}}</div>
+                <div class="col-lg-3 col-md-4 label">Lifecycle State</div>
+                <div class="col-lg-9 col-md-8">
+                    {% if device.status %}
+                    {{ device.status.type }}
+                    {% endif %}
+                </div>
               </div>
               <div class="row">
-                <div class="col-lg-3 col-md-4 label">Usage States</div>
-                <div class="col-lg-9 col-md-8">{{ device.usage or '' }}</div>
+                <div class="col-lg-3 col-md-4 label">Allocated State</div>
+                <div class="col-lg-9 col-md-8">
+                    {% if device.allocated_status %}
+                    {{ device.allocated_status.type }}
+                    {% endif %}
+                </div>
               </div>
             </div>
 

@@ -224,11 +224,12 @@ def test_export_devices(user3: UserClientFlask):
     ), 'Computer information are not equal'
     assert fixture_csv[1][20] == export_csv[1][20], 'Computer information are not equal'
     assert (
-        fixture_csv[1][22:82] == export_csv[1][22:82]
+        fixture_csv[1][22:83] == export_csv[1][22:83]
     ), 'Computer information are not equal'
-    assert fixture_csv[1][83] == export_csv[1][83], 'Computer information are not equal'
+
+    assert fixture_csv[1][84] == export_csv[1][84], 'Computer information are not equal'
     assert (
-        fixture_csv[1][86:] == export_csv[1][86:]
+        fixture_csv[1][88:] == export_csv[1][88:]
     ), 'Computer information are not equal'
 
 
