@@ -33,7 +33,7 @@ from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
 from ereuse_devicehub.resources.action.views.snapshot import (
-    SnapshotMix,
+    SnapshotMixin,
     move_json,
     save_json,
 )
@@ -233,7 +233,7 @@ class LotForm(FlaskForm):
         return self.instance
 
 
-class UploadSnapshotForm(FlaskForm, SnapshotMix):
+class UploadSnapshotForm(SnapshotMixin, FlaskForm):
     snapshot = MultipleFileField('Select a Snapshot File', [validators.DataRequired()])
 
     def validate(self, extra_validators=None):
@@ -560,7 +560,7 @@ class TagDeviceForm(FlaskForm):
         db.session.commit()
 
 
-class ActionFormMix(FlaskForm):
+class ActionFormMixin(FlaskForm):
     name = StringField(
         'Name',
         [validators.length(max=50)],
@@ -641,7 +641,7 @@ class ActionFormMix(FlaskForm):
             return self.type.data
 
 
-class NewActionForm(ActionFormMix):
+class NewActionForm(ActionFormMixin):
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
 
@@ -654,7 +654,7 @@ class NewActionForm(ActionFormMix):
         return True
 
 
-class AllocateForm(ActionFormMix):
+class AllocateForm(ActionFormMixin):
     start_time = DateField('Start time')
     end_time = DateField('End time', [validators.Optional()])
     final_user_code = StringField(
@@ -773,7 +773,7 @@ class DataWipeDocumentForm(Form):
         return self._obj
 
 
-class DataWipeForm(ActionFormMix):
+class DataWipeForm(ActionFormMixin):
     document = FormField(DataWipeDocumentForm)
 
     def save(self):
@@ -800,7 +800,7 @@ class DataWipeForm(ActionFormMix):
         return self.instance
 
 
-class TradeForm(ActionFormMix):
+class TradeForm(ActionFormMixin):
     user_from = StringField(
         'Supplier',
         [validators.Optional()],

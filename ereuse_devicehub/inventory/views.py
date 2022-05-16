@@ -30,14 +30,14 @@ from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
-from ereuse_devicehub.views import GenericMixView
+from ereuse_devicehub.views import GenericMixin
 
 devices = Blueprint('inventory', __name__, url_prefix='/inventory')
 
 logger = logging.getLogger(__name__)
 
 
-class DeviceListMix(GenericMixView):
+class DeviceListMixin(GenericMixin):
     template_name = 'inventory/device_list.html'
 
     def get_context(self, lot_id):
@@ -91,13 +91,13 @@ class DeviceListMix(GenericMixView):
         return self.context
 
 
-class DeviceListView(DeviceListMix):
+class DeviceListView(DeviceListMixin):
     def dispatch_request(self, lot_id=None):
         self.get_context(lot_id)
         return flask.render_template(self.template_name, **self.context)
 
 
-class DeviceDetailView(GenericMixView):
+class DeviceDetailView(GenericMixin):
     decorators = [login_required]
     template_name = 'inventory/device_detail.html'
 
@@ -118,7 +118,7 @@ class DeviceDetailView(GenericMixView):
         return flask.render_template(self.template_name, **self.context)
 
 
-class LotCreateView(GenericMixView):
+class LotCreateView(GenericMixin):
     methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'inventory/lot.html'
@@ -141,7 +141,7 @@ class LotCreateView(GenericMixView):
         return flask.render_template(self.template_name, **self.context)
 
 
-class LotUpdateView(GenericMixView):
+class LotUpdateView(GenericMixin):
     methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'inventory/lot.html'
@@ -182,7 +182,7 @@ class LotDeleteView(View):
         return flask.redirect(next_url)
 
 
-class UploadSnapshotView(GenericMixView):
+class UploadSnapshotView(GenericMixin):
     methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'inventory/upload_snapshot.html'
@@ -210,7 +210,7 @@ class UploadSnapshotView(GenericMixView):
         return flask.render_template(self.template_name, **self.context)
 
 
-class DeviceCreateView(GenericMixView):
+class DeviceCreateView(GenericMixin):
     methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'inventory/device_create.html'
@@ -255,7 +255,7 @@ class TagLinkDeviceView(View):
             return flask.redirect(request.referrer)
 
 
-class TagUnlinkDeviceView(GenericMixView):
+class TagUnlinkDeviceView(GenericMixin):
     methods = ['POST', 'GET']
     decorators = [login_required]
     template_name = 'inventory/tag_unlink_device.html'
@@ -308,7 +308,7 @@ class NewActionView(View):
         return url_for('inventory.devicelist')
 
 
-class NewAllocateView(NewActionView, DeviceListMix):
+class NewAllocateView(DeviceListMixin, NewActionView):
     methods = ['POST']
     form_class = AllocateForm
 
@@ -332,7 +332,7 @@ class NewAllocateView(NewActionView, DeviceListMix):
         return flask.redirect(next_url)
 
 
-class NewDataWipeView(NewActionView, DeviceListMix):
+class NewDataWipeView(DeviceListMixin, NewActionView):
     methods = ['POST']
     form_class = DataWipeForm
 
@@ -353,7 +353,7 @@ class NewDataWipeView(NewActionView, DeviceListMix):
         return flask.redirect(next_url)
 
 
-class NewTradeView(NewActionView, DeviceListMix):
+class NewTradeView(DeviceListMixin, NewActionView):
     methods = ['POST']
     form_class = TradeForm
 

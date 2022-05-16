@@ -15,7 +15,7 @@ from ereuse_devicehub.parser.models import SnapshotErrors
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.views.snapshot import (
-    SnapshotMix,
+    SnapshotMixin,
     move_json,
     save_json,
 )
@@ -24,7 +24,7 @@ from ereuse_devicehub.resources.enums import Severity
 api = Blueprint('api', __name__, url_prefix='/api')
 
 
-class LoginMix(View):
+class LoginMixin(View):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.authenticate()
@@ -44,7 +44,7 @@ class LoginMix(View):
         g.user = self.user
 
 
-class InventoryView(LoginMix, SnapshotMix):
+class InventoryView(LoginMixin, SnapshotMixin):
     methods = ['POST']
 
     def dispatch_request(self):

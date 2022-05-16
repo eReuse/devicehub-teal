@@ -49,7 +49,7 @@ class LogoutView(View):
         return flask.redirect(flask.url_for('core.login'))
 
 
-class GenericMixView(View):
+class GenericMixin(View):
     decorators = [login_required]
 
     def get_lots(self):
@@ -74,7 +74,7 @@ class GenericMixView(View):
         return self.context
 
 
-class UserProfileView(GenericMixView):
+class UserProfileView(GenericMixin):
     decorators = [login_required]
     template_name = 'ereuse_devicehub/user_profile.html'
 

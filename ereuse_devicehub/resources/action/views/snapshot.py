@@ -62,7 +62,7 @@ def move_json(tmp_snapshots, path_name, user, live=False):
         os.remove(path_name)
 
 
-class SnapshotMix:
+class SnapshotMixin:
     sync = Sync()
 
     def build(self, snapshot_json=None):  # noqa: C901
@@ -119,7 +119,7 @@ class SnapshotMix:
         return snapshot
 
 
-class SnapshotView(SnapshotMix):
+class SnapshotView(SnapshotMixin):
     """Performs a Snapshot.
 
     See `Snapshot` section in docs for more info.
