@@ -4,7 +4,7 @@ $(document).ready(() => {
 })
 
 function deviceInputs() {
-    if ($("#type").val() == "Monitor") {
+    if ($("#type").val() == "ComputerMonitor") {
         $("#screen").show();
         $("#resolution").show();
         $("#imei").hide();
