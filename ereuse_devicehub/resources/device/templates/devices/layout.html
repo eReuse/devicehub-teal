@@ -154,6 +154,37 @@
                         </tbody>
                     </table>
                 </div>
+                <h4>Actual Status</h4>
+                <ol>
+                    <li>
+                        <strong>
+                            Lifecycle Status
+                        </strong>
+                        —
+                        {% if device.status %}
+                        {{ device.status.type }}
+                        {% endif %}
+                    </li>
+                    <li>
+                        <strong>
+                            Allocate Status
+                        </strong>
+                        —
+                        {% if device.allocated_status %}
+                        {{ device.allocated_status.type }}
+                        {% endif %}
+                    </li>
+                    <li>
+                        <strong>
+                            Physical Status
+                        </strong>
+                        —
+                        {% if device.physical_status %}
+                        {{ device.physical_status.type }}
+                        {% endif %}
+                    </li>
+                </ol>
+
                 <h4>Public traceability log of the device</h4>
                 <div class="text-right">
                     <small>Latest one.</small>
@@ -162,10 +193,17 @@
                     {% for action in device.public_actions %}
                         <li>
                             <strong>
-                                {{ action.type }}
+                                {{ device.is_status(action) }}
+                                {% if not device.is_status(action) %}
+                                  {{ action.type }}
+                                {% endif %}
                             </strong>
                             —
-                            {{ action }}
+                            {% if device.is_status(action) %}
+                              {{ action }} {{ action.type }}
+                            {% else %}
+                              {{ action }}
+                            {% endif %}
                             <br>
                             <div class="text-muted">
                                 <small>

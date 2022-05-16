@@ -78,38 +78,61 @@ class TableController {
 /**
  * Select all functionality
  */
-window.addEventListener("DOMContentLoaded", () => {
+
+const selectorController = (action) => {
     const btnSelectAll = document.getElementById("SelectAllBTN");
     const alertInfoDevices = document.getElementById("select-devices-info");
 
-    function itemListCheckChanged() {
-        const listDevices = TableController.getAllDevicesInCurrentPage()
-        const isAllChecked = listDevices.map(itm => itm.checked);
+    function softInit() {
+        TableController.getAllDevices().forEach(item => {
+            item.addEventListener("click", itemListCheckChanged);
+        })
 
-        if (isAllChecked.every(bool => bool == true)) {
-            btnSelectAll.checked = true;
-            btnSelectAll.indeterminate = false;
-            alertInfoDevices.innerHTML = `Selected devices: ${TableController.getSelectedDevices().length}
-                                            ${
-                                                TableController.getAllDevices().length != TableController.getSelectedDevices().length
-                                                    ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
-                                                    : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
-                                            }`;
-            alertInfoDevices.classList.remove("d-none");
-        } else if (isAllChecked.every(bool => bool == false)) {
-            btnSelectAll.checked = false;
-            btnSelectAll.indeterminate = false;
-            alertInfoDevices.classList.add("d-none")
-        } else {
-            btnSelectAll.indeterminate = true;
-            alertInfoDevices.classList.add("d-none")
-        }
+        // https://github.com/fiduswriter/Simple-DataTables/wiki/Events
+        table.on("datatable.page", () => itemListCheckChanged());
+        table.on("datatable.perpage", () => itemListCheckChanged());
+        table.on("datatable.update", () => itemListCheckChanged());
+    }
+    
+    if (action == "softInit") {
+        softInit();
+        itemListCheckChanged();
+        return;
     }
 
-    TableController.getAllDevices().forEach(item => {
-        item.addEventListener("click", itemListCheckChanged);
-    })
+    function itemListCheckChanged() {
+        alertInfoDevices.innerHTML = `Selected devices: ${TableController.getSelectedDevices().length}
+            ${TableController.getAllDevices().length != TableController.getSelectedDevices().length
+                    ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
+                    : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
+            }`;
 
+        if (TableController.getSelectedDevices().length <= 0) {
+            alertInfoDevices.classList.add("d-none")
+        } else {
+            alertInfoDevices.classList.remove("d-none");
+        }
+
+        if (TableController.getAllDevices().length == TableController.getSelectedDevices().length) {
+            btnSelectAll.checked = true;
+            btnSelectAll.indeterminate = false;
+        } else if(TableController.getAllSelectedDevicesInCurrentPage().length > 0) {
+            btnSelectAll.indeterminate = true;
+        } else {
+            btnSelectAll.checked = false;
+            btnSelectAll.indeterminate = false;
+        }
+
+        if (TableController.getAllDevices().length == 0) {
+            btnSelectAll.checked = false;
+            btnSelectAll.disabled = true;
+        } else {
+            btnSelectAll.disabled = false;
+        }
+
+        get_device_list();
+    }
+    
     btnSelectAll.addEventListener("click", event => {
         const checkedState = event.target.checked;
         TableController.getAllDevicesInCurrentPage().forEach(ckeckbox => { ckeckbox.checked = checkedState });
@@ -122,11 +145,12 @@ window.addEventListener("DOMContentLoaded", () => {
         itemListCheckChanged()
     })
 
-    // https://github.com/fiduswriter/Simple-DataTables/wiki/Events
-    table.on("datatable.page", () => itemListCheckChanged());
-    table.on("datatable.perpage", () => itemListCheckChanged());
-    table.on("datatable.update", () => itemListCheckChanged());
-})
+    softInit();
+
+    itemListCheckChanged();
+}
+
+window.addEventListener("DOMContentLoaded", () => selectorController());
 
 function deviceSelect() {
     const devices_count = TableController.getSelectedDevices().length;
@@ -268,7 +292,7 @@ function get_device_list() {
         "Laptop": "<i class='bi bi-laptop'></i>",
     };
 
-    list_devices = devices.map((x) => {
+    const list_devices = devices.map((x) => {
         let typ = $(x).data("device-type");
         const manuf = $(x).data("device-manufacturer");
         const dhid = $(x).data("device-dhid");
@@ -278,7 +302,7 @@ function get_device_list() {
         return `${typ} ${manuf} ${dhid}`;
     });
 
-    description = $.map(list_devices, (x) => x).join(", ");
+    const description = $.map(list_devices, (x) => x).join(", ");
     $(".enumeration-devices").html(description);
 }
 
@@ -315,19 +339,30 @@ async function processSelectedDevices() {
             const lotID = lot.id;
             const srcElement = event.srcElement.parentElement.children[0]
             const checked = !srcElement.checked;
+            const { indeterminate } = srcElement
 
             const found = this.list.filter(list => list.lot.id == lotID)[0];
 
             if (checked) {
                 if (found && found.type == "Remove") {
-                    found.type = "Add";
+                    const affectedDevices = found.devices.filter(dev => found.lot.devices.includes(dev.id))
+                    if (affectedDevices.length > 0 && found.indeterminate == false) { // Remove action from list
+                        actions.list = actions.list.filter(x => x.lot.id != found.lot.id)
+                    } else {
+                        found.type = "Add";
+                    }
                 } else {
-                    this.list.push({ type: "Add", lot, devices: selectedDevices });
+                    this.list.push({ type: "Add", lot, devices: selectedDevices, indeterminate });
                 }
             } else if (found && found.type == "Add") {
-                found.type = "Remove";
+                const affectedDevices = found.devices.filter(dev => !found.lot.devices.includes(dev.id))
+                if (affectedDevices.length > 0 && found.indeterminate == false) { // Remove action from list
+                    actions.list = actions.list.filter(x => x.lot.id != found.lot.id)
+                } else {
+                    found.type = "Remove";
+                }
             } else {
-                this.list.push({ type: "Remove", lot, devices: selectedDevices });
+                this.list.push({ type: "Remove", lot, devices: selectedDevices, indeterminate });
             }
 
             if (this.list.length > 0) {
@@ -403,22 +438,23 @@ async function processSelectedDevices() {
             const tmpDiv = document.createElement("div")
             tmpDiv.innerHTML = newRequest
 
-            const newTable = Array.from(tmpDiv.querySelectorAll("table.table > tbody > tr .deviceSelect")).map(x => x.attributes["data-device-dhid"].value)
+            
+            const newTable = document.createElement("table")
+            newTable.innerHTML = tmpDiv.querySelector("table").innerHTML
+            newTable.classList = "table"
 
-            // https://github.com/fiduswriter/Simple-DataTables/wiki/rows()#removeselect-arraynumber
-            const rowsToRemove = []
-            for (let i = 0; i < table.activeRows.length; i++) {
-                const row = table.activeRows[i];
-                if (!newTable.includes(row.querySelector("input").attributes["data-device-dhid"].value)) {
-                    rowsToRemove.push(i)
-                }
-            }
-            table.rows().remove(rowsToRemove);
+            const oldTable = document.querySelector(".dataTable-wrapper")
+            oldTable.parentElement.replaceChild(newTable, oldTable)
 
-            // Restore state of checkbox
+            table = new simpleDatatables.DataTable(newTable, {perPage: 20})
+
+            // // Restore state of checkbox
             const selectAllBTN = document.getElementById("SelectAllBTN");
             selectAllBTN.checked = false;
             selectAllBTN.indeterminate = false;
+
+            // Re-init SelectorController
+            selectorController("softInit");
         }
     }
 

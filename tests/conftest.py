@@ -26,6 +26,7 @@ from ereuse_devicehub.resources.enums import SessionType
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import Session, User
 from ereuse_devicehub.views import core
+from ereuse_devicehub.workbench.views import workbench
 
 STARTT = datetime(year=2000, month=1, day=1, hour=1)
 """A dummy starting time to use in tests."""
@@ -61,6 +62,7 @@ def _app(config: TestConfig) -> Devicehub:
     app.register_blueprint(devices)
     app.register_blueprint(labels)
     app.register_blueprint(api)
+    app.register_blueprint(workbench)
     app.config["SQLALCHEMY_RECORD_QUERIES"] = True
     app.config['PROFILE'] = True
     # app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])

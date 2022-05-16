@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 Type;Chassis;Serial Number;Model;Manufacturer;Registered in;Physical state;Trading state;Price;Processor;RAM (MB);Data Storage Size (MB)
 Desktop;Microtower;d1s;d1ml;d1mr;Tue Mar 29 18:13:05 2022;;;;p1ml;0;0
+=======
+Type;Chassis;Serial Number;Model;Manufacturer;Registered in;Physical state;Allocate state;Lifecycle state;Price;Processor;RAM (MB);Data Storage Size (MB);Rate;Range;Processor Rate;Processor Range;RAM Rate;RAM Range;Data Storage Rate;Data Storage Range
+Desktop;Microtower;d1s;d1ml;d1mr;Mon May 16 09:34:22 2022;;;;;p1ml;0;0;1.0;Very low;1.0;Very low;1.0;Very low;1.0;Very low
+>>>>>>> testing

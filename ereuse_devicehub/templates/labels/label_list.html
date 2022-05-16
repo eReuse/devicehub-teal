@@ -47,6 +47,7 @@
                       <th scope="col">Type</th>
                       <th scope="col">Provider</th>
                       <th scope="col">Device</th>
+                      <th scope="col">Created</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -62,6 +63,7 @@
                         </a>
                         {% endif %}
                       </td>
+                      <td>{{ tag.created.strftime('%H:%M %d-%m-%Y') }}</td>
                     </tr>
                     {% endfor %}
                   </tbody>

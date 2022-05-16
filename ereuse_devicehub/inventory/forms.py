@@ -58,7 +58,7 @@ from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.models import User
 
 DEVICES = {
-    "All": ["All Devices", "All Components"],
+    "All": ["All Devices"],
     "Computer": [
         "All Computers",
         "Desktop",
@@ -79,55 +79,12 @@ DEVICES = {
         "Smartphone",
         "Cellphone",
     ],
-    "DataStorage": ["All DataStorage", "HardDrive", "SolidStateDrive"],
-    "Accessories & Peripherals": [
-        "All Peripherals",
-        "GraphicCard",
-        "Motherboard",
-        "NetworkAdapter",
-        "Processor",
-        "RamModule",
-        "SoundCard",
-        "Battery",
-        "Keyboard",
-        "Mouse",
-        "MemoryCardReader",
-    ],
 }
 
 COMPUTERS = ['Desktop', 'Laptop', 'Server', 'Computer']
 
-COMPONENTS = [
-    'GraphicCard',
-    'DataStorage',
-    'HardDrive',
-    'DataStorage',
-    'SolidStateDrive',
-    'Motherboard',
-    'NetworkAdapter',
-    'Processor',
-    'RamModule',
-    'SoundCard',
-    'Display',
-    'Battery',
-    'Camera',
-]
-
 MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
 MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
-DATASTORAGE = ["HardDrive", "SolidStateDrive"]
-PERIPHERALS = [
-    "GraphicCard",
-    "Motherboard",
-    "NetworkAdapter",
-    "Processor",
-    "RamModule",
-    "SoundCard",
-    "Battery",
-    "Keyboard",
-    "Mouse",
-    "MemoryCardReader",
-]
 
 
 class FilterForm(FlaskForm):
@@ -139,6 +96,7 @@ class FilterForm(FlaskForm):
         super().__init__(*args, **kwargs)
         self.lots = lots
         self.lot_id = lot_id
+        self.only_unassigned = kwargs.pop('only_unassigned', True)
         self._get_types()
 
     def _get_types(self):
@@ -154,9 +112,9 @@ class FilterForm(FlaskForm):
             device_ids = (d.id for d in self.lot.devices)
             self.devices = Device.query.filter(Device.id.in_(device_ids))
         else:
-            self.devices = Device.query.filter(Device.owner_id == g.user.id).filter_by(
-                lots=None
-            )
+            self.devices = Device.query.filter(Device.owner_id == g.user.id)
+            if self.only_unassigned:
+                self.devices = self.devices.filter_by(lots=None)
 
     def search(self):
         self.filter_from_lots()
@@ -171,9 +129,6 @@ class FilterForm(FlaskForm):
         if "All Devices" == self.device_type:
             filter_type = COMPUTERS + ["Monitor"] + MOBILE
 
-        elif "All Components" == self.device_type:
-            filter_type = COMPONENTS
-
         elif "All Computers" == self.device_type:
             filter_type = COMPUTERS
 
@@ -182,12 +137,6 @@ class FilterForm(FlaskForm):
 
         elif "All Mobile" == self.device_type:
             filter_type = MOBILE
-
-        elif "All DataStorage" == self.device_type:
-            filter_type = DATASTORAGE
-
-        elif "All Peripherals" == self.device_type:
-            filter_type = PERIPHERALS
 
         if filter_type:
             self.devices = self.devices.filter(Device.type.in_(filter_type))
@@ -655,6 +604,7 @@ class NewActionForm(ActionFormMixin):
 
 
 class AllocateForm(ActionFormMixin):
+    date = HiddenField('')
     start_time = DateField('Start time')
     end_time = DateField('End time', [validators.Optional()])
     final_user_code = StringField(
@@ -663,7 +613,7 @@ class AllocateForm(ActionFormMixin):
     transaction = StringField(
         'Transaction', [validators.Optional(), validators.length(max=50)]
     )
-    end_users = IntegerField('End users', [validators.Optional()])
+    end_users = IntegerField('Number of end users', [validators.Optional()])
 
     def validate(self, extra_validators=None):
         if not super().validate(extra_validators):
