@@ -275,7 +275,7 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
 
     def is_wb_lite_snapshot(self, version: str) -> bool:
         is_lite = False
-        if version in app.config['WORKBENCH_LITE']:
+        if version in app.config['SCHEMA_WORKBENCH']:
             is_lite = True
 
         return is_lite

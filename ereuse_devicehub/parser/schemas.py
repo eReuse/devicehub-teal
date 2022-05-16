@@ -26,11 +26,11 @@ class Snapshot_lite(Thing):
 
     @validates_schema
     def validate_workbench_version(self, data: dict):
-        if data['schema_api'] not in app.config['WORKBENCH_LITE']:
+        if data['schema_api'] not in app.config['SCHEMA_WORKBENCH']:
             raise ValidationError(
                 'Min. supported Workbench version is '
                 '{} but yours is {}.'.format(
-                    app.config['WORKBENCH_LITE'][0], data['version']
+                    app.config['SCHEMA_WORKBENCH'][0], data['version']
                 ),
                 field_names=['version'],
             )
