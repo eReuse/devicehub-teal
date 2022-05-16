@@ -193,7 +193,10 @@
                     {% for action in device.public_actions %}
                         <li>
                             <strong>
-                                {{ device.is_status(action) }} {{ action.type }}
+                                {{ device.is_status(action) }}
+                                {% if not device.is_status(action) %}
+                                  {{ action.type }}
+                                {% endif %}
                             </strong>
                             —
                             {% if device.is_status(action) %}
