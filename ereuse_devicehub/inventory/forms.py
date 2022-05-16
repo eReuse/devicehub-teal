@@ -52,7 +52,7 @@ from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 from ereuse_devicehub.resources.user.models import User
 
 DEVICES = {
-    "All": ["All Devices", "All Components"],
+    "All": ["All Devices"],
     "Computer": [
         "All Computers",
         "Desktop",
@@ -73,55 +73,12 @@ DEVICES = {
         "Smartphone",
         "Cellphone",
     ],
-    "DataStorage": ["All DataStorage", "HardDrive", "SolidStateDrive"],
-    "Accessories & Peripherals": [
-        "All Peripherals",
-        "GraphicCard",
-        "Motherboard",
-        "NetworkAdapter",
-        "Processor",
-        "RamModule",
-        "SoundCard",
-        "Battery",
-        "Keyboard",
-        "Mouse",
-        "MemoryCardReader",
-    ],
 }
 
 COMPUTERS = ['Desktop', 'Laptop', 'Server']
 
-COMPONENTS = [
-    'GraphicCard',
-    'DataStorage',
-    'HardDrive',
-    'DataStorage',
-    'SolidStateDrive',
-    'Motherboard',
-    'NetworkAdapter',
-    'Processor',
-    'RamModule',
-    'SoundCard',
-    'Display',
-    'Battery',
-    'Camera',
-]
-
 MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
 MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
-DATASTORAGE = ["HardDrive", "SolidStateDrive"]
-PERIPHERALS = [
-    "GraphicCard",
-    "Motherboard",
-    "NetworkAdapter",
-    "Processor",
-    "RamModule",
-    "SoundCard",
-    "Battery",
-    "Keyboard",
-    "Mouse",
-    "MemoryCardReader",
-]
 
 
 class FilterForm(FlaskForm):
@@ -166,9 +123,6 @@ class FilterForm(FlaskForm):
         if "All Devices" == self.device_type:
             filter_type = COMPUTERS + ["Monitor"] + MOBILE
 
-        elif "All Components" == self.device_type:
-            filter_type = COMPONENTS
-
         elif "All Computers" == self.device_type:
             filter_type = COMPUTERS
 
@@ -177,12 +131,6 @@ class FilterForm(FlaskForm):
 
         elif "All Mobile" == self.device_type:
             filter_type = MOBILE
-
-        elif "All DataStorage" == self.device_type:
-            filter_type = DATASTORAGE
-
-        elif "All Peripherals" == self.device_type:
-            filter_type = PERIPHERALS
 
         if filter_type:
             self.devices = self.devices.filter(Device.type.in_(filter_type))
