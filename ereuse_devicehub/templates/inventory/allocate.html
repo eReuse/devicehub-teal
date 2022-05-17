@@ -29,6 +29,9 @@
           {% else %}
           <div class="col-12">
               {{ field.label(class_="form-label") }}
+              {% if field == form_new_allocate.start_time %}
+                <span class="text-danger">*</span>
+              {% endif %}
               {{ field(class_="form-control") }}
               {% if field.errors %}
               <p class="text-danger">

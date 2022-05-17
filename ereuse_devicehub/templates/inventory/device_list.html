@@ -7,7 +7,11 @@
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="{{ url_for('inventory.devicelist')}}">Inventory</a></li>
       {% if not lot %}
-      <li class="breadcrumb-item active">Unassigned</li>
+        {% if unassigned_devices %}
+          <li class="breadcrumb-item active">Unassigned</li>
+        {% else %}
+          <li class="breadcrumb-item active">All devices</li>
+        {% endif %}
       {% elif lot.is_temporary %}
       <li class="breadcrumb-item active">Temporary Lot</li>
       <li class="breadcrumb-item active">{{ lot.name }}</li>
@@ -213,7 +217,7 @@
               <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnUniqueID" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-tag"></i>
-                    Unique Identifiers
+                    Unique Identifiers (Tags)
                 </button>
                 <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
                 <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
@@ -334,8 +338,11 @@
                       <th scope="col">Title</th>
                       <th scope="col">DHID</th>
                       <th scope="col">Unique Identifiers</th>
-                      <th scope="col">Status</th>
+                      <th scope="col">Lifecycle Status</th>
+                      <th scope="col">Allocated Status</th>
+                      <th scope="col">Physical Status</th>
                       <th scope="col" data-type="date" data-format="DD-MM-YYYY">Update</th>
+                      <th scope="col"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -351,12 +358,19 @@
                                />
                       </td>
                       <td>
+                        <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
                         {% if dev.get_type_logo() %}
                         <i class="{{ dev.get_type_logo() }}" title="{{ dev.type }}"></i>
                         {% endif %}
-                        <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
                           {{ dev.verbose_name }}
                         </a>
+                        {% if dev.lots | length > 0 %}
+                        <h6 class="d-inline">
+                          {% for lot in dev.lots %}
+                            <span class="badge rounded-pill bg-light text-dark">{{ lot.name }}</span>
+                          {% endfor %}
+                        </h6>
+                        {% endif %}
                       </td>
                       <td>
                         <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
@@ -370,7 +384,14 @@
                         {% endfor %}
                       </td>
                       <td>{% if dev.status %}{{ dev.status.type }}{% endif %}</td>
+                      <td>{% if dev.allocated_status %}{{ dev.allocated_status.type }}{% endif %}</td>
+                      <td>{% if dev.physical_status %}{{ dev.physical_status.type }}{% endif %}</td>
                       <td>{{ dev.updated.strftime('%H:%M %d-%m-%Y') }}</td>
+                      <td>
+                        <a href="{{ dev.public_link }}" target="_blank">
+                          <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                      </td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -430,9 +451,9 @@
 
 <!-- Custom Code -->
 <script>
-  const table = new simpleDatatables.DataTable("table", {
+  let table = new simpleDatatables.DataTable("table", {
     perPage: 20
   })
 </script>
-<script src="{{ url_for('static', filename='js/main_inventory.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main_inventory.build.js') }}"></script>
 {% endblock main %}

@@ -19,7 +19,7 @@ def test_dependencies():
         # Simplejson has a different signature than stdlib json
         # should be fixed though
         # noinspection PyUnresolvedReferences
-        import simplejson
+        import simplejson  # noqa: F401
 
 
 # noinspection PyArgumentList
@@ -88,6 +88,7 @@ def test_api_docs(client: Client):
         '/users/login/',
         '/users/logout/',
         '/versions/',
+        '/workbench/settings/',
     }
     assert docs['info'] == {'title': 'Devicehub', 'version': '0.2'}
     assert docs['components']['securitySchemes']['bearerAuth'] == {

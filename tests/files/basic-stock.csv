@@ -1,2 +1,2 @@
-Type;Chassis;Serial Number;Model;Manufacturer;Registered in;Physical state;Trading state;Price;Processor;RAM (MB);Data Storage Size (MB)
-Desktop;Microtower;d1s;d1ml;d1mr;Tue Mar 29 18:13:05 2022;;;;p1ml;0;0
+Type;Chassis;Serial Number;Model;Manufacturer;Registered in;Physical state;Allocate state;Lifecycle state;Price;Processor;RAM (MB);Data Storage Size (MB)
+Desktop;Microtower;d1s;d1ml;d1mr;Mon May 16 19:08:44 2022;;;;;p1ml;0;0

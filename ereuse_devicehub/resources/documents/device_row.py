@@ -70,16 +70,19 @@ class DeviceRow(OrderedDict):
         self['Updated in (software)'] = device.updated
         self['Updated in (web)'] = ''
 
+        self['Physical state'] = ''
+        if device.physical_status:
+            self['Physical state'] = device.physical_status.type
+
+        self['Allocate state'] = ''
+        if device.allocated_status:
+            self['Allocate state'] = device.allocated_status.type
+
         try:
-            self['Physical state'] = device.last_action_of(
-                *states.Physical.actions()).t
-        except LookupError:
-            self['Physical state'] = ''
-        try:
-            self['Trading state'] = device.last_action_of(
+            self['Lifecycle state'] = device.last_action_of(
                 *states.Trading.actions()).t
         except LookupError:
-            self['Trading state'] = ''
+            self['Lifecycle state'] = ''
         if isinstance(device, d.Computer):
             self['Processor'] = none2str(device.processor_model)
             self['RAM (MB)'] = none2str(device.ram_size)
@@ -367,15 +370,18 @@ class StockRow(OrderedDict):
         self['Model'] = none2str(device.model)
         self['Manufacturer'] = none2str(device.manufacturer)
         self['Registered in'] = format(device.created, '%c')
+        self['Physical state'] = ''
+        if device.physical_status:
+            self['Physical state'] = device.physical_status.type
+
+        self['Allocate state'] = ''
+        if device.allocated_status:
+            self['Allocate state'] = device.allocated_status.type
+
         try:
-            self['Physical state'] = device.last_action_of(
-                *states.Physical.actions()).t
+            self['Lifecycle state'] = device.last_action_of(*states.Trading.actions()).t
         except LookupError:
-            self['Physical state'] = ''
-        try:
-            self['Trading state'] = device.last_action_of(*states.Trading.actions()).t
-        except LookupError:
-            self['Trading state'] = ''
+            self['Lifecycle state'] = ''
             self['Price'] = none2str(device.price)
             self['Processor'] = none2str(device.processor_model)
             self['RAM (MB)'] = none2str(device.ram_size)

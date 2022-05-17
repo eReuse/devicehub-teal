@@ -1,0 +1,43 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>{{ title }}</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">{{ page_title }}</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+    <div class="col-xl-6">
+
+      <div class="card">
+        <div class="card-body">
+
+          <div class="pt-6 pb-2">
+            <h5 class="card-title text-center pb-0 fs-4">Download your settings for Workbench</h5>
+            <p class="text-center small">Please select one of this options</p>
+            <div class="row pt-3">
+              <div class="col-5">
+                <a href="{{ url_for('workbench.settings') }}?opt=register" class="btn btn-primary">Register devices</a>
+              </div>
+              <div class="col">
+                <p class="small">Download the settings only for register devices.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="col-xl-8">
+    </div>
+  </div>
+</section>
+{% endblock main %}

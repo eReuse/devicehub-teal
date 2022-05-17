@@ -23,7 +23,9 @@ class TagListView(View):
 
     def dispatch_request(self):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        tags = Tag.query.filter(Tag.owner_id == current_user.id).order_by(Tag.id)
+        tags = Tag.query.filter(Tag.owner_id == current_user.id).order_by(
+            Tag.created.desc()
+        )
         context = {
             'lots': lots,
             'tags': tags,

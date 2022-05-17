@@ -65,6 +65,16 @@
           </li>
 
           <li>
+            <a class="dropdown-item d-flex align-items-center" href="{{ url_for('workbench.settings') }}">
+              <i class="bi bi-tools"></i>
+              <span>Workbench Settings</span>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li>
             <a class="dropdown-item d-flex align-items-center" href="https://help.usody.com/" target="_blank">
               <i class="bi bi-question-circle"></i>
               <span>Need Help?</span>
@@ -100,6 +110,15 @@
         <span>Dashboard</span>
       </a>
     </li><!-- End Dashboard Nav -->
+
+    <li class="nav-heading">Devices</li>
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{{ url_for('inventory.devicelist') }}?only_unassigned=false">
+        <i class="bi bi-laptop"></i>
+        <span>All devices</span>
+      </a>
+    </li>
 
     <li class="nav-item">
       <a class="nav-link collapsed" href="{{ url_for('inventory.snapshotslist') }}">

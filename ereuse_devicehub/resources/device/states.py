@@ -33,6 +33,7 @@ class Trading(State):
     :cvar ProductDisposed: The device has been removed
           from the facility. It does not mean end-of-life.
     """
+
     Reserved = e.Reserve
     Trade = e.Trade
     Confirm = e.Confirm
@@ -50,16 +51,17 @@ class Trading(State):
 class Physical(State):
     """Physical states.
 
-    :cvar ToBeRepaired: The device has been selected for reparation.
-    :cvar Repaired: The device has been repaired.
-    :cvar Preparing: The device is going to be or being prepared.
-    :cvar Prepared: The device has been prepared.
+    :cvar Repair: The device has been repaired.
+    :cvar ToPrepare: The device is going to be or being prepared.
+    :cvar Prepare: The device has been prepared.
     :cvar Ready: The device is in working conditions.
+    :cvar DataWipe: Do DataWipe over the device.
     """
-    ToBeRepaired = e.ToRepair
-    Repaired = e.Repair
-    Preparing = e.ToPrepare
-    Prepared = e.Prepare
+
+    ToPrepare = e.ToPrepare
+    Prepare = e.Prepare
+    DataWipe = e.DataWipe
+    ToRepair = e.ToRepair
     Ready = e.Ready
 
 
@@ -68,22 +70,24 @@ class Traking(State):
 
     :cvar Receive: The device changes hands
     """
+
     # Receive = e.Receive
     pass
 
-    
+
 class Usage(State):
     """Usage states.
 
     :cvar Allocate: The device is allocate in other Agent (organization, person ...)
     :cvar Deallocate: The device is deallocate and return to the owner
-    :cvar InUse: The device is being reported to be in active use. 
+    :cvar InUse: The device is being reported to be in active use.
     """
+
     Allocate = e.Allocate
     Deallocate = e.Deallocate
     InUse = e.Live
 
-    
+
 class Status(State):
     """Define status of device for one user.
     :cvar Use: The device is in use for one final user.
@@ -91,6 +95,7 @@ class Status(State):
     :cvar Recycling: The device is sended to recycling.
     :cvar Management: The device is owned by one Manager.
     """
+
     Use = e.Use
     Refurbish = e.Refurbish
     Recycling = e.Recycling

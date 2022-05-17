@@ -1,37 +1,47 @@
-import os
+import copy
 import ipaddress
 import json
+import os
 import shutil
-import copy
-import pytest
-
 from datetime import datetime, timedelta
-from io import BytesIO
-from dateutil.tz import tzutc
 from decimal import Decimal
-from typing import Tuple, Type
-from pytest import raises
+from io import BytesIO
 from json.decoder import JSONDecodeError
+from typing import Tuple, Type
 
-from flask import current_app as app, g
+import pytest
+from dateutil.tz import tzutc
+from flask import current_app as app
+from flask import g
+from pytest import raises
 from sqlalchemy.util import OrderedSet
 from teal.enums import Currency, Subdivision
 
+from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
-from ereuse_devicehub.client import UserClient, Client
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources import enums
-from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.agent.models import Person
-from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.action import models
+from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.device import states
-from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, HardDrive, \
-    RamModule, SolidStateDrive
+from ereuse_devicehub.resources.device.models import (
+    Desktop,
+    Device,
+    GraphicCard,
+    HardDrive,
+    RamModule,
+    SolidStateDrive,
+)
+from ereuse_devicehub.resources.enums import (
+    ComputerChassis,
+    Severity,
+    TestDataStorageLength,
+)
+from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
-from ereuse_devicehub.resources.enums import ComputerChassis, Severity, TestDataStorageLength
+from ereuse_devicehub.resources.user.models import User
 from tests import conftest
-from tests.conftest import create_user, file, yaml2json, json_encode
+from tests.conftest import create_user, file, json_encode, yaml2json
 
 
 @pytest.mark.mvp
@@ -56,11 +66,8 @@ def test_author():
 def test_erase_basic():
     erasure = models.EraseBasic(
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
-        steps=[
-            models.StepZero(**conftest.T),
-            models.StepRandom(**conftest.T)
-        ],
-        **conftest.T
+        steps=[models.StepZero(**conftest.T), models.StepRandom(**conftest.T)],
+        **conftest.T,
     )
     db.session.add(erasure)
     db.session.commit()
@@ -75,13 +82,17 @@ def test_erase_basic():
 def test_validate_device_data_storage():
     """Checks the validation for data-storage-only actions works."""
     # We can't set a GraphicCard
-    with pytest.raises(TypeError,
-                       message='EraseBasic.device must be a DataStorage '
-                               'but you passed <GraphicCard None model=\'foo-bar\' S/N=\'foo\'>'):
+    with pytest.raises(
+        TypeError,
+        message='EraseBasic.device must be a DataStorage '
+        'but you passed <GraphicCard None model=\'foo-bar\' S/N=\'foo\'>',
+    ):
         models.EraseBasic(
-            device=GraphicCard(serial_number='foo', manufacturer='bar', model='foo-bar'),
+            device=GraphicCard(
+                serial_number='foo', manufacturer='bar', model='foo-bar'
+            ),
             clean_with_zeros=True,
-            **conftest.T
+            **conftest.T,
         )
 
 
@@ -89,13 +100,15 @@ def test_validate_device_data_storage():
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_erase_sectors_steps_erasure_standards_hmg_is5():
     erasure = models.EraseSectors(
-        device=SolidStateDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
+        device=SolidStateDrive(
+            serial_number='foo', manufacturer='bar', model='foo-bar'
+        ),
         steps=[
             models.StepZero(**conftest.T),
             models.StepRandom(**conftest.T),
-            models.StepRandom(**conftest.T)
+            models.StepRandom(**conftest.T),
         ],
-        **conftest.T
+        **conftest.T,
     )
     db.session.add(erasure)
     db.session.commit()
@@ -118,7 +131,7 @@ def test_test_data_storage_working():
         elapsed=timedelta(minutes=25),
         length=TestDataStorageLength.Short,
         status=':-(',
-        lifetime=timedelta(days=120)
+        lifetime=timedelta(days=120),
     )
     db.session.add(test)
     db.session.flush()
@@ -132,7 +145,7 @@ def test_test_data_storage_working():
         elapsed=timedelta(minutes=25),
         length=TestDataStorageLength.Short,
         status=':-(',
-        lifetime=timedelta(days=120)
+        lifetime=timedelta(days=120),
     )
     db.session.add(test2)
     db.session.flush()
@@ -144,9 +157,9 @@ def test_test_data_storage_working():
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_install():
     hdd = HardDrive(serial_number='sn')
-    install = models.Install(name='LinuxMint 18.04 es',
-                             elapsed=timedelta(seconds=25),
-                             device=hdd)
+    install = models.Install(
+        name='LinuxMint 18.04 es', elapsed=timedelta(seconds=25), device=hdd
+    )
     db.session.add(install)
     db.session.commit()
 
@@ -154,10 +167,12 @@ def test_install():
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_update_components_action_one():
-    computer = Desktop(serial_number='sn1',
-                       model='ml1',
-                       manufacturer='mr1',
-                       chassis=ComputerChassis.Tower)
+    computer = Desktop(
+        serial_number='sn1',
+        model='ml1',
+        manufacturer='mr1',
+        chassis=ComputerChassis.Tower,
+    )
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 
@@ -183,10 +198,12 @@ def test_update_components_action_one():
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_update_components_action_multiple():
-    computer = Desktop(serial_number='sn1',
-                       model='ml1',
-                       manufacturer='mr1',
-                       chassis=ComputerChassis.Tower)
+    computer = Desktop(
+        serial_number='sn1',
+        model='ml1',
+        manufacturer='mr1',
+        chassis=ComputerChassis.Tower,
+    )
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 
@@ -213,10 +230,12 @@ def test_update_components_action_multiple():
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_update_parent():
-    computer = Desktop(serial_number='sn1',
-                       model='ml1',
-                       manufacturer='mr1',
-                       chassis=ComputerChassis.Tower)
+    computer = Desktop(
+        serial_number='sn1',
+        model='ml1',
+        manufacturer='mr1',
+        chassis=ComputerChassis.Tower,
+    )
     hdd = HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar')
     computer.components.add(hdd)
 
@@ -232,17 +251,21 @@ def test_update_parent():
 
 
 @pytest.mark.mvp
-@pytest.mark.parametrize('action_model_state',
-                         (pytest.param(ams, id=ams[0].__class__.__name__)
-                          for ams in [
-                              (models.ToRepair, states.Physical.ToBeRepaired),
-                              (models.Repair, states.Physical.Repaired),
-                              (models.ToPrepare, states.Physical.Preparing),
-                              (models.Ready, states.Physical.Ready),
-                              (models.Prepare, states.Physical.Prepared)
-                          ]))
-def test_generic_action(action_model_state: Tuple[models.Action, states.Trading],
-                        user: UserClient):
+@pytest.mark.parametrize(
+    'action_model_state',
+    (
+        pytest.param(ams, id=ams[0].__class__.__name__)
+        for ams in [
+            (models.ToPrepare, states.Physical.ToPrepare),
+            (models.Prepare, states.Physical.Prepare),
+            (models.ToRepair, states.Physical.ToRepair),
+            (models.Ready, states.Physical.Ready),
+        ]
+    ),
+)
+def test_generic_action(
+    action_model_state: Tuple[models.Action, states.Trading], user: UserClient
+):
     """Tests POSTing all generic actions."""
     action_model, state = action_model_state
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
@@ -257,15 +280,16 @@ def test_generic_action(action_model_state: Tuple[models.Action, states.Trading]
 
 
 @pytest.mark.mvp
-@pytest.mark.parametrize('action_model',
-                         (pytest.param(ams, id=ams.__class__.__name__)
-                          for ams in [
-                              models.Recycling,
-                              models.Use,
-                              models.Refurbish,
-                              models.Management
-                          ]))
-def test_simple_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
+@pytest.mark.parametrize(
+    'action_model',
+    (
+        pytest.param(ams, id=ams.__class__.__name__)
+        for ams in [models.Recycling, models.Use, models.Refurbish, models.Management]
+    ),
+)
+def test_simple_status_actions(
+    action_model: models.Action, user: UserClient, user2: UserClient
+):
     """Simple test of status action."""
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
 
@@ -278,23 +302,23 @@ def test_simple_status_actions(action_model: models.Action, user: UserClient, us
 
 
 @pytest.mark.mvp
-@pytest.mark.parametrize('action_model',
-                         (pytest.param(ams, id=ams.__class__.__name__)
-                          for ams in [
-                              models.Recycling,
-                              models.Use,
-                              models.Refurbish,
-                              models.Management
-                          ]))
-def test_outgoinlot_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
+@pytest.mark.parametrize(
+    'action_model',
+    (
+        pytest.param(ams, id=ams.__class__.__name__)
+        for ams in [models.Recycling, models.Use, models.Refurbish, models.Management]
+    ),
+)
+def test_outgoinlot_status_actions(
+    action_model: models.Action, user: UserClient, user2: UserClient
+):
     """Test of status actions in outgoinlot."""
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    user.post({},
-              res=Lot,
-              item='{}/devices'.format(lot['id']),
-              query=[('id', device['id'])])
+    user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=[('id', device['id'])]
+    )
 
     request_post = {
         'type': 'Trade',
@@ -317,10 +341,13 @@ def test_outgoinlot_status_actions(action_model: models.Action, user: UserClient
     assert action['rol_user']['id'] == user2.user['id']
 
     # Remove device from lot
-    lot, _ = user.delete({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=[('id', device['id'])], status=200)
+    lot, _ = user.delete(
+        {},
+        res=Lot,
+        item='{}/devices'.format(lot['id']),
+        query=[('id', device['id'])],
+        status=200,
+    )
 
     action = {'type': action_model.t, 'devices': [device['id']]}
     action, _ = user.post(action, res=models.Action)
@@ -332,23 +359,23 @@ def test_outgoinlot_status_actions(action_model: models.Action, user: UserClient
 
 
 @pytest.mark.mvp
-@pytest.mark.parametrize('action_model',
-                         (pytest.param(ams, id=ams.__class__.__name__)
-                          for ams in [
-                              models.Recycling, 
-                              models.Use, 
-                              models.Refurbish, 
-                              models.Management 
-                          ]))
-def test_incominglot_status_actions(action_model: models.Action, user: UserClient, user2: UserClient):
+@pytest.mark.parametrize(
+    'action_model',
+    (
+        pytest.param(ams, id=ams.__class__.__name__)
+        for ams in [models.Recycling, models.Use, models.Refurbish, models.Management]
+    ),
+)
+def test_incominglot_status_actions(
+    action_model: models.Action, user: UserClient, user2: UserClient
+):
     """Test of status actions in outgoinlot."""
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    user.post({},
-              res=Lot,
-              item='{}/devices'.format(lot['id']),
-              query=[('id', device['id'])])
+    user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=[('id', device['id'])]
+    )
 
     request_post = {
         'type': 'Trade',
@@ -396,10 +423,9 @@ def test_history_status_actions(user: UserClient, user2: UserClient):
 
     # Case 3
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    user.post({},
-              res=Lot,
-              item='{}/devices'.format(lot['id']),
-              query=[('id', device.id)])
+    user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=[('id', device.id)]
+    )
 
     request_post = {
         'type': 'Trade',
@@ -417,14 +443,16 @@ def test_history_status_actions(user: UserClient, user2: UserClient):
     action3, _ = user.post(action3, res=models.Action)
     assert action3['id'] == str(device.status.id)
     assert device.status.t == models.Use.t
-    assert [action2['id'], action3['id']] == [str(ac.id) for ac in device.history_status]
+    assert [action2['id'], action3['id']] == [
+        str(ac.id) for ac in device.history_status
+    ]
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_use_changing_owner(user: UserClient, user2: UserClient):
     """Check if is it possible to do a use action for one device
-       when you are not the owner.
+    when you are not the owner.
     """
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device = Device.query.filter_by(id=snap['device']['id']).one()
@@ -433,10 +461,9 @@ def test_use_changing_owner(user: UserClient, user2: UserClient):
 
     # Trade
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    user.post({},
-              res=Lot,
-              item='{}/devices'.format(lot['id']),
-              query=[('id', device.id)])
+    user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=[('id', device.id)]
+    )
 
     request_post = {
         'type': 'Trade',
@@ -453,11 +480,7 @@ def test_use_changing_owner(user: UserClient, user2: UserClient):
     trade = models.Trade.query.one()
 
     # Doble confirmation and change of owner
-    request_confirm = {
-        'type': 'Confirm',
-        'action': trade.id,
-        'devices': [device.id]
-    }
+    request_confirm = {'type': 'Confirm', 'action': trade.id, 'devices': [device.id]}
 
     user2.post(res=models.Action, data=request_confirm)
     assert device.owner.email == user2.email
@@ -475,30 +498,33 @@ def test_use_changing_owner(user: UserClient, user2: UserClient):
 def test_recycling_container(user: UserClient):
     """Test of status action recycling for a container."""
     lot, _ = user.post({'name': 'MyLotOut'}, res=Lot)
-    url = 'http://www.ereuse.org/',
+    url = ('http://www.ereuse.org/',)
     request_post = {
         'filename': 'test.pdf',
         'hash': 'bbbbbbbb',
         'url': url,
         'weight': 150,
-        'lot': lot['id']
+        'lot': lot['id'],
     }
     tradedocument, _ = user.post(res=TradeDocument, data=request_post)
-    action = {'type': models.Recycling.t, 'devices': [], 'documents': [tradedocument['id']]}
+    action = {
+        'type': models.Recycling.t,
+        'devices': [],
+        'documents': [tradedocument['id']],
+    }
     action, _ = user.post(action, res=models.Action)
     trade = TradeDocument.query.one()
     assert str(trade.actions[0].id) == action['id']
 
 
 @pytest.mark.mvp
-@pytest.mark.parametrize('action_model',
-                         (pytest.param(ams, id=ams.__class__.__name__)
-                          for ams in [
-                              models.Recycling, 
-                              models.Use, 
-                              models.Refurbish, 
-                              models.Management 
-                          ]))
+@pytest.mark.parametrize(
+    'action_model',
+    (
+        pytest.param(ams, id=ams.__class__.__name__)
+        for ams in [models.Recycling, models.Use, models.Refurbish, models.Management]
+    ),
+)
 def test_status_without_lot(action_model: models.Action, user: UserClient):
     """Test of status actions for devices without lot."""
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
@@ -509,23 +535,21 @@ def test_status_without_lot(action_model: models.Action, user: UserClient):
 
 
 @pytest.mark.mvp
-@pytest.mark.parametrize('action_model',
-                         (pytest.param(ams, id=ams.__class__.__name__)
-                          for ams in [
-                              models.Recycling, 
-                              models.Use, 
-                              models.Refurbish, 
-                              models.Management 
-                          ]))
+@pytest.mark.parametrize(
+    'action_model',
+    (
+        pytest.param(ams, id=ams.__class__.__name__)
+        for ams in [models.Recycling, models.Use, models.Refurbish, models.Management]
+    ),
+)
 def test_status_in_temporary_lot(action_model: models.Action, user: UserClient):
     """Test of status actions for devices in a temporary lot."""
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snap['device']['id']
     lot, _ = user.post({'name': 'MyLotOut'}, res=Lot)
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=[('id', device_id)])
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=[('id', device_id)]
+    )
     action = {'type': action_model.t, 'devices': [device_id]}
     action, _ = user.post(action, res=models.Action)
     device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
@@ -540,11 +564,15 @@ def test_live(user: UserClient, client: Client, app: Devicehub):
     snapshot, _ = user.post(acer, res=models.Snapshot)
     acer = yaml2json('acer.happy.battery.snapshot')
     device_id = snapshot['device']['id']
-    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id], "description": "aaa",
-                    "finalUserCode": "abcdefjhi",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_request = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "finalUserCode": "abcdefjhi",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_request)
@@ -574,11 +602,15 @@ def test_live_example(user: UserClient, client: Client, app: Devicehub):
     acer = file('snapshotLive')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id], "description": "aaa",
-                    "finalUserCode": "abcdefjhi",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_request = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "finalUserCode": "abcdefjhi",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_request)
@@ -595,7 +627,9 @@ def test_live_example(user: UserClient, client: Client, app: Devicehub):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_live_two_users(user: UserClient, user2: UserClient, client: Client, app: Devicehub):
+def test_live_two_users(
+    user: UserClient, user2: UserClient, client: Client, app: Devicehub
+):
     """Tests inserting a Live into the database and GETting it."""
     acer = file('snapshotLive')
     snapshot, _ = user.post(acer, res=models.Snapshot)
@@ -603,11 +637,15 @@ def test_live_two_users(user: UserClient, user2: UserClient, client: Client, app
     acer2['uuid'] = '3b6a9288-0ba6-4bdd-862a-2b1f660e7115'
     snapshot2, _ = user2.post(json_encode(acer2), res=models.Snapshot)
     device_id = snapshot['device']['id']
-    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id], "description": "aaa",
-                    "finalUserCode": "abcdefjhi",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_request = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "finalUserCode": "abcdefjhi",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_request)
@@ -624,7 +662,9 @@ def test_live_two_users(user: UserClient, user2: UserClient, client: Client, app
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_live_two_allocated(user: UserClient, user2: UserClient, client: Client, app: Devicehub):
+def test_live_two_allocated(
+    user: UserClient, user2: UserClient, client: Client, app: Devicehub
+):
     """Tests inserting a Live into the database and GETting it."""
     acer = file('snapshotLive')
     snapshot, _ = user.post(acer, res=models.Snapshot)
@@ -633,17 +673,25 @@ def test_live_two_allocated(user: UserClient, user2: UserClient, client: Client,
     snapshot2, _ = user2.post(json_encode(acer2), res=models.Snapshot)
     device_id = snapshot['device']['id']
     device_id2 = snapshot2['device']['id']
-    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id], "description": "aaa",
-                    "finalUserCode": "abcdefjhi",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_request = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "finalUserCode": "abcdefjhi",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
-    post_request2 = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id2], "description": "aaa",
-                    "finalUserCode": "abcdefjhi",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_request2 = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id2],
+        "description": "aaa",
+        "finalUserCode": "abcdefjhi",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_request)
@@ -661,23 +709,29 @@ def test_live_two_allocated(user: UserClient, user2: UserClient, client: Client,
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_without_TestDataStorage(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it.
-       If the live don't have a TestDataStorage, then save live and response None
+    If the live don't have a TestDataStorage, then save live and response None
     """
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
     db_device = Device.query.filter_by(id=device_id).one()
-    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id], "description": "aaa",
-                    "finalUserCode": "abcdefjhi",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_request = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "finalUserCode": "abcdefjhi",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_request)
     acer = yaml2json('acer.happy.battery.snapshot')
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
-    actions = [a for a in acer['components'][7]['actions'] if a['type'] != 'TestDataStorage']
+    actions = [
+        a for a in acer['components'][7]['actions'] if a['type'] != 'TestDataStorage'
+    ]
     acer['components'][7]['actions'] = actions
     acer.pop('elapsed')
     acer['licence_version'] = '1.0.0'
@@ -695,17 +749,21 @@ def test_live_without_TestDataStorage(user: UserClient, client: Client, app: Dev
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_without_hdd_1(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it.
-       The snapshot have hdd but the live no, and response 404
+    The snapshot have hdd but the live no, and response 404
     """
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
     db_device = Device.query.filter_by(id=device_id).one()
-    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id], "description": "aaa",
-                    "finalUserCode": "abcdefjhi",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_request = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "finalUserCode": "abcdefjhi",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_request)
@@ -725,7 +783,7 @@ def test_live_without_hdd_1(user: UserClient, client: Client, app: Devicehub):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_without_hdd_2(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it.
-       The snapshot haven't hdd and the live neither, and response 404
+    The snapshot haven't hdd and the live neither, and response 404
     """
     acer = yaml2json('acer.happy.battery.snapshot')
     components = [a for a in acer['components'] if a['type'] != 'HardDrive']
@@ -733,11 +791,15 @@ def test_live_without_hdd_2(user: UserClient, client: Client, app: Devicehub):
     snapshot, _ = user.post(json_encode(acer), res=models.Snapshot)
     device_id = snapshot['device']['id']
     db_device = Device.query.filter_by(id=device_id).one()
-    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id], "description": "aaa",
-                    "finalUserCode": "abcdefjhi",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_request = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "finalUserCode": "abcdefjhi",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_request)
@@ -754,8 +816,8 @@ def test_live_without_hdd_2(user: UserClient, client: Client, app: Devicehub):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_without_hdd_3(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it.
-       The snapshot haven't hdd and the live have, and save the live
-       with usage_time_allocate == 0
+    The snapshot haven't hdd and the live have, and save the live
+    with usage_time_allocate == 0
     """
     acer = yaml2json('acer.happy.battery.snapshot')
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
@@ -764,11 +826,15 @@ def test_live_without_hdd_3(user: UserClient, client: Client, app: Devicehub):
     snapshot, _ = user.post(json_encode(acer), res=models.Snapshot)
     device_id = snapshot['device']['id']
     db_device = Device.query.filter_by(id=device_id).one()
-    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id], "description": "aaa",
-                    "finalUserCode": "abcdefjhi",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_request = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "finalUserCode": "abcdefjhi",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_request)
@@ -790,24 +856,30 @@ def test_live_without_hdd_3(user: UserClient, client: Client, app: Devicehub):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_with_hdd_with_old_time(user: UserClient, client: Client, app: Devicehub):
     """Tests inserting a Live into the database and GETting it.
-       The snapshot hdd have a lifetime higher than lifetime of the live action
-       save the live with usage_time_allocate == 0
+    The snapshot hdd have a lifetime higher than lifetime of the live action
+    save the live with usage_time_allocate == 0
     """
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
     db_device = Device.query.filter_by(id=device_id).one()
-    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id], "description": "aaa",
-                    "finalUserCode": "abcdefjhi",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_request = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "finalUserCode": "abcdefjhi",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_request)
     acer = yaml2json('acer.happy.battery.snapshot')
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec3"
-    action = [a for a in acer['components'][7]['actions'] if a['type'] == 'TestDataStorage']
+    action = [
+        a for a in acer['components'][7]['actions'] if a['type'] == 'TestDataStorage'
+    ]
     action[0]['lifetime'] -= 100
     acer.pop('elapsed')
     acer['licence_version'] = '1.0.0'
@@ -825,16 +897,19 @@ def test_live_with_hdd_with_old_time(user: UserClient, client: Client, app: Devi
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_live_search_last_allocate(user: UserClient, client: Client, app: Devicehub):
-    """Tests inserting a Live into the database and GETting it.
-    """
+    """Tests inserting a Live into the database and GETting it."""
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id], "description": "aaa",
-                    "finalUserCode": "abcdefjhi",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_request = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "finalUserCode": "abcdefjhi",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_request)
@@ -847,7 +922,9 @@ def test_live_search_last_allocate(user: UserClient, client: Client, app: Device
     acer['licence_version'] = '1.0.0'
     live, _ = client.post(acer, res=models.Live)
     acer['uuid'] = "490fb8c0-81a1-42e9-95e0-5e7db7038ec4"
-    actions = [a for a in acer['components'][7]['actions'] if a['type'] != 'TestDataStorage']
+    actions = [
+        a for a in acer['components'][7]['actions'] if a['type'] != 'TestDataStorage'
+    ]
     acer['components'][7]['actions'] = actions
     live, _ = client.post(acer, res=models.Live)
     assert live['usageTimeAllocate'] == 1000
@@ -857,17 +934,21 @@ def test_live_search_last_allocate(user: UserClient, client: Client, app: Device
 
 @pytest.mark.mvp
 def test_save_live_json(app: Devicehub, user: UserClient, client: Client):
-    """ This test check if works the function save_snapshot_in_file """
+    """This test check if works the function save_snapshot_in_file"""
     acer = yaml2json('acer.happy.battery.snapshot')
     snapshot, _ = user.post(json_encode(acer), res=models.Snapshot)
     debug = 'AAA'
     acer['debug'] = debug
     device_id = snapshot['device']['id']
-    post_request = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id], "description": "aaa",
-                    "finalUserCode": "abcdefjhi",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_request = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "finalUserCode": "abcdefjhi",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_request)
@@ -899,8 +980,7 @@ def test_save_live_json(app: Devicehub, user: UserClient, client: Client):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_licences(client: Client):
-    """Tests inserting a Live into the database and GETting it.
-    """
+    """Tests inserting a Live into the database and GETting it."""
     licences, _ = client.get('/licences/')
     licences = json.loads(licences)
     assert licences[0]['USOdyPrivacyPolicyVersion'] == '1.0.0'
@@ -909,19 +989,20 @@ def test_licences(client: Client):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_allocate(user: UserClient):
-    """ Tests allocate """
+    """Tests allocate"""
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
     devicehub_id = snapshot['device']['devicehubID']
-    post_request = {"transaction": "ccc", 
-                    "finalUserCode": "aabbcc",
-                    "name": "John",
-                    "severity": "Info",
-                    "endUsers": 1,
-                    "devices": [device_id],
-                    "description": "aaa",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00",
+    post_request = {
+        "transaction": "ccc",
+        "finalUserCode": "aabbcc",
+        "name": "John",
+        "severity": "Info",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     allocate, _ = user.post(res=models.Allocate, data=post_request)
@@ -953,19 +1034,20 @@ def test_allocate(user: UserClient):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_allocate_bad_dates(user: UserClient):
-    """ Tests allocate """
+    """Tests allocate"""
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
     delay = timedelta(days=30)
     future = datetime.now().replace(tzinfo=tzutc()) + delay
-    post_request = {"transaction": "ccc",
-                    "finalUserCode": "aabbcc",
-                    "name": "John",
-                    "severity": "Info",
-                    "end_users": 1,
-                    "devices": [device_id],
-                    "description": "aaa",
-                    "start_time": future,
+    post_request = {
+        "transaction": "ccc",
+        "finalUserCode": "aabbcc",
+        "name": "John",
+        "severity": "Info",
+        "end_users": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "start_time": future,
     }
 
     res, _ = user.post(res=models.Allocate, data=post_request, status=422)
@@ -976,21 +1058,26 @@ def test_allocate_bad_dates(user: UserClient):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_deallocate(user: UserClient):
-    """ Tests deallocate """
+    """Tests deallocate"""
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
     devicehub_id = snapshot['device']['devicehubID']
-    post_deallocate = {"startTime": "2020-11-01T02:00:00+00:00",
-                       "transaction": "ccc",
-                       "devices": [device_id]
+    post_deallocate = {
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "transaction": "ccc",
+        "devices": [device_id],
     }
     res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
     assert res['code'] == 422
     assert res['type'] == 'ValidationError'
-    post_allocate = {"transaction": "ccc", "name": "John", "endUsers": 1,
-                    "devices": [device_id], "description": "aaa",
-                    "startTime": "2020-11-01T02:00:00+00:00",
-                    "endTime": "2020-12-01T02:00:00+00:00"
+    post_allocate = {
+        "transaction": "ccc",
+        "name": "John",
+        "endUsers": 1,
+        "devices": [device_id],
+        "description": "aaa",
+        "startTime": "2020-11-01T02:00:00+00:00",
+        "endTime": "2020-12-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_allocate)
@@ -1008,16 +1095,16 @@ def test_deallocate(user: UserClient):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_deallocate_bad_dates(user: UserClient):
-    """ Tests deallocate with bad date of start_time """
+    """Tests deallocate with bad date of start_time"""
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
-    delay  = timedelta(days=30)
+    delay = timedelta(days=30)
     future = datetime.now().replace(tzinfo=tzutc()) + delay
-    post_deallocate = {"startTime": future,
-                       "devices": [device_id]
-    }
-    post_allocate = {"devices": [device_id], "description": "aaa",
-                     "startTime": "2020-11-01T02:00:00+00:00"
+    post_deallocate = {"startTime": future, "devices": [device_id]}
+    post_allocate = {
+        "devices": [device_id],
+        "description": "aaa",
+        "startTime": "2020-11-01T02:00:00+00:00",
     }
 
     user.post(res=models.Allocate, data=post_allocate)
@@ -1037,7 +1124,7 @@ def test_trade_endpoint(user: UserClient, user2: UserClient):
         'userTo': user2.user['email'],
         'price': 1.0,
         'date': "2020-12-01T02:00:00+00:00",
-        'devices': [snapshot['device']['id']]
+        'devices': [snapshot['device']['id']],
     }
     action, _ = user.post(res=models.Trade, data=request_post)
 
@@ -1075,10 +1162,9 @@ def test_offer_without_to(user: UserClient):
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device = Device.query.filter_by(id=snapshot['device']['id']).one()
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    user.post({},
-              res=Lot,
-              item='{}/devices'.format(lot['id']),
-              query=[('id', device.id)])
+    user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=[('id', device.id)]
+    )
 
     # check the owner of the device
     assert device.owner.email == user.email
@@ -1093,7 +1179,7 @@ def test_offer_without_to(user: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'lot': lot['id'],
         'confirms': False,
-        'code': 'MAX'
+        'code': 'MAX',
     }
     user.post(res=models.Action, data=request_post)
 
@@ -1120,7 +1206,7 @@ def test_offer_without_to(user: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'lot': lot['id'],
         'confirms': False,
-        'code': 'MAX'
+        'code': 'MAX',
     }
     user.post(res=models.Action, data=request_post, status=422)
     trade = models.Trade.query.one()
@@ -1142,7 +1228,7 @@ def test_offer_without_to(user: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'lot': lot2.id,
         'confirms': False,
-        'code': 'MAX'
+        'code': 'MAX',
     }
     user.post(res=models.Action, data=request_post2)
     assert User.query.filter_by(email=device.owner.email).count() == 1
@@ -1172,7 +1258,7 @@ def test_offer_without_from(user: UserClient, user2: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'lot': lot.id,
         'confirms': False,
-        'code': 'MAX'
+        'code': 'MAX',
     }
     action, _ = user2.post(res=models.Action, data=request_post, status=422)
 
@@ -1216,7 +1302,7 @@ def test_offer_without_users(user: UserClient):
         'date': "2020-12-01T02:00:00+00:00",
         'lot': lot.id,
         'confirms': False,
-        'code': 'MAX'
+        'code': 'MAX',
     }
     action, response = user.post(res=models.Action, data=request_post, status=422)
     txt = 'you need one user from or user to for to do a trade'
@@ -1284,8 +1370,12 @@ def test_offer_without_devices(user: UserClient):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_price_custom():
-    computer = Desktop(serial_number='sn1', model='ml1', manufacturer='mr1',
-                       chassis=ComputerChassis.Docking)
+    computer = Desktop(
+        serial_number='sn1',
+        model='ml1',
+        manufacturer='mr1',
+        chassis=ComputerChassis.Docking,
+    )
     price = models.Price(price=Decimal(25.25), currency=Currency.EUR)
     price.device = computer
     assert computer.price == price
@@ -1308,12 +1398,15 @@ def test_price_custom_client(user: UserClient):
     """As test_price_custom but creating the price through the API."""
     s = file('basic.snapshot')
     snapshot, _ = user.post(s, res=models.Snapshot)
-    price, _ = user.post({
-        'type': 'Price',
-        'price': 25,
-        'currency': Currency.EUR.name,
-        'device': snapshot['device']['id']
-    }, res=models.Action)
+    price, _ = user.post(
+        {
+            'type': 'Price',
+            'price': 25,
+            'currency': Currency.EUR.name,
+            'device': snapshot['device']['id'],
+        },
+        res=models.Action,
+    )
     assert 25 == price['price']
     assert Currency.EUR.name == price['currency']
 
@@ -1326,10 +1419,11 @@ def test_price_custom_client(user: UserClient):
 def test_erase_physical():
     erasure = models.ErasePhysical(
         device=HardDrive(serial_number='foo', manufacturer='bar', model='foo-bar'),
-        method=enums.PhysicalErasureMethod.Disintegration
+        method=enums.PhysicalErasureMethod.Disintegration,
     )
     db.session.add(erasure)
     db.session.commit()
+
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -1338,10 +1432,9 @@ def test_endpoint_confirm(user: UserClient, user2: UserClient):
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    user.post({},
-              res=Lot,
-              item='{}/devices'.format(lot['id']),
-              query=[('id', device_id)])
+    user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=[('id', device_id)]
+    )
 
     request_post = {
         'type': 'Trade',
@@ -1359,11 +1452,7 @@ def test_endpoint_confirm(user: UserClient, user2: UserClient):
 
     assert trade.devices[0].owner.email == user.email
 
-    request_confirm = {
-        'type': 'Confirm',
-        'action': trade.id,
-        'devices': [device_id]
-    }
+    request_confirm = {'type': 'Confirm', 'action': trade.id, 'devices': [device_id]}
 
     user2.post(res=models.Action, data=request_confirm)
     user2.post(res=models.Action, data=request_confirm, status=422)
@@ -1378,10 +1467,9 @@ def test_confirm_revoke(user: UserClient, user2: UserClient):
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     device_id = snapshot['device']['id']
     lot, _ = user.post({'name': 'MyLot'}, res=Lot)
-    user.post({},
-              res=Lot,
-              item='{}/devices'.format(lot['id']),
-              query=[('id', device_id)])
+    user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=[('id', device_id)]
+    )
 
     request_post = {
         'type': 'Trade',
@@ -1398,18 +1486,13 @@ def test_confirm_revoke(user: UserClient, user2: UserClient):
     trade = models.Trade.query.one()
     device = trade.devices[0]
 
-    request_confirm = {
-        'type': 'Confirm',
-        'action': trade.id,
-        'devices': [device_id]
-    }
+    request_confirm = {'type': 'Confirm', 'action': trade.id, 'devices': [device_id]}
 
     request_revoke = {
         'type': 'Revoke',
         'action': trade.id,
         'devices': [device_id],
     }
-
 
     # Normal confirmation
     user2.post(res=models.Action, data=request_confirm)
@@ -1433,29 +1516,34 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
     snap3, _ = user.post(file('asus-1001pxd.snapshot'), res=models.Snapshot)
-    snap4, _ = user.post(file('desktop-9644w8n-lenovo-0169622.snapshot'), res=models.Snapshot)
-    snap5, _ = user.post(file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot'), res=models.Snapshot)
+    snap4, _ = user.post(
+        file('desktop-9644w8n-lenovo-0169622.snapshot'), res=models.Snapshot
+    )
+    snap5, _ = user.post(
+        file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot'),
+        res=models.Snapshot,
+    )
     snap6, _ = user.post(file('1-device-with-components.snapshot'), res=models.Snapshot)
     snap7, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=models.Snapshot)
     snap8, _ = user.post(file('complete.export.snapshot'), res=models.Snapshot)
     snap9, _ = user.post(file('real-hp-quad-core.snapshot.11'), res=models.Snapshot)
     snap10, _ = user.post(file('david.lshw.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id']),
-               ('id', snap3['device']['id']),
-               ('id', snap4['device']['id']),
-               ('id', snap5['device']['id']),
-               ('id', snap6['device']['id']),
-               ('id', snap7['device']['id']),
-               ('id', snap8['device']['id']),
-               ('id', snap9['device']['id']),
-               ('id', snap10['device']['id']),
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[:7])
+    devices = [
+        ('id', snap1['device']['id']),
+        ('id', snap2['device']['id']),
+        ('id', snap3['device']['id']),
+        ('id', snap4['device']['id']),
+        ('id', snap5['device']['id']),
+        ('id', snap6['device']['id']),
+        ('id', snap7['device']['id']),
+        ('id', snap8['device']['id']),
+        ('id', snap9['device']['id']),
+        ('id', snap10['device']['id']),
+    ]
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[:7]
+    )
 
     # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the SCRAP to confirm it
@@ -1478,7 +1566,11 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     request_confirm = {
         'type': 'Confirm',
         'action': trade.id,
-        'devices': [snap1['device']['id'], snap2['device']['id'], snap3['device']['id']]
+        'devices': [
+            snap1['device']['id'],
+            snap2['device']['id'],
+            snap3['device']['id'],
+        ],
     }
     assert trade.devices[0].actions[-2].t == 'Trade'
     assert trade.devices[0].actions[-1].t == 'Confirm'
@@ -1493,25 +1585,20 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     request_confirm = {
         'type': 'Confirm',
         'action': trade.id,
-        'devices': [
-            snap10['device']['id']
-        ]
+        'devices': [snap10['device']['id']],
     }
 
     user2.post(res=models.Action, data=request_confirm, status=422)
 
-
     # The manager add 3 device more into the lot
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[7:])
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[7:]
+    )
 
     assert trade.devices[-1].actions[-2].t == 'Trade'
     assert trade.devices[-1].actions[-1].t == 'Confirm'
     assert trade.devices[-1].actions[-1].user == trade.user_to
     assert len(trade.devices[0].actions) == n_actions
-
 
     # the SCRAP confirms the rest of devices
     request_confirm = {
@@ -1524,8 +1611,8 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
             snap7['device']['id'],
             snap8['device']['id'],
             snap9['device']['id'],
-            snap10['device']['id']
-        ]
+            snap10['device']['id'],
+        ],
     }
 
     user2.post(res=models.Action, data=request_confirm)
@@ -1537,17 +1624,15 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     # The manager remove one device of the lot and automaticaly
     # is create one revoke action
     device_10 = trade.devices[-1]
-    lot, _ = user.delete({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:], status=200)
+    lot, _ = user.delete(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:], status=200
+    )
     assert len(trade.lot.devices) == len(trade.devices) == 10
     assert device_10.actions[-1].t == 'Revoke'
 
-    lot, _ = user.delete({},
-                         res=Lot,
-                         item='{}/devices'.format(lot['id']),
-                         query=devices[-1:], status=200)
+    lot, _ = user.delete(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:], status=200
+    )
 
     assert device_10.actions[-1].t == 'Revoke'
 
@@ -1555,9 +1640,7 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     request_confirm_revoke = {
         'type': 'Revoke',
         'action': trade.id,
-        'devices': [
-            snap10['device']['id']
-        ]
+        'devices': [snap10['device']['id']],
     }
 
     user2.post(res=models.Action, data=request_confirm_revoke)
@@ -1570,30 +1653,24 @@ def test_usecase_confirmation(user: UserClient, user2: UserClient):
     request_confirm_revoke = {
         'type': 'Revoke',
         'action': trade.id,
-        'devices': [
-            snap9['device']['id']
-        ]
+        'devices': [snap9['device']['id']],
     }
 
     # The manager add again device_10
     # assert len(trade.devices) == 9
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:]
+    )
 
     assert device_10.actions[-1].t == 'Confirm'
     assert device_10 in trade.devices
     assert len(trade.devices) == 10
 
-
     # the SCRAP confirms the action trade for device_10
     request_reconfirm = {
         'type': 'Confirm',
         'action': trade.id,
-        'devices': [
-            snap10['device']['id']
-        ]
+        'devices': [snap10['device']['id']],
     }
     user2.post(res=models.Action, data=request_reconfirm)
     assert device_10.actions[-1].t == 'Confirm'
@@ -1614,31 +1691,34 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
     snap3, _ = user.post(file('asus-1001pxd.snapshot'), res=models.Snapshot)
-    snap4, _ = user.post(file('desktop-9644w8n-lenovo-0169622.snapshot'), res=models.Snapshot)
-    snap5, _ = user.post(file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot'), res=models.Snapshot)
+    snap4, _ = user.post(
+        file('desktop-9644w8n-lenovo-0169622.snapshot'), res=models.Snapshot
+    )
+    snap5, _ = user.post(
+        file('laptop-hp_255_g3_notebook-hewlett-packard-cnd52270fw.snapshot'),
+        res=models.Snapshot,
+    )
     snap6, _ = user.post(file('1-device-with-components.snapshot'), res=models.Snapshot)
     snap7, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=models.Snapshot)
     snap8, _ = user.post(file('complete.export.snapshot'), res=models.Snapshot)
     snap9, _ = user.post(file('real-hp-quad-core.snapshot.11'), res=models.Snapshot)
     snap10, _ = user.post(file('david.lshw.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id']),
-               ('id', snap3['device']['id']),
-               ('id', snap4['device']['id']),
-               ('id', snap5['device']['id']),
-               ('id', snap6['device']['id']),
-               ('id', snap7['device']['id']),
-               ('id', snap8['device']['id']),
-               ('id', snap9['device']['id']),
-               ('id', snap10['device']['id']),
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices)
+    devices = [
+        ('id', snap1['device']['id']),
+        ('id', snap2['device']['id']),
+        ('id', snap3['device']['id']),
+        ('id', snap4['device']['id']),
+        ('id', snap5['device']['id']),
+        ('id', snap6['device']['id']),
+        ('id', snap7['device']['id']),
+        ('id', snap8['device']['id']),
+        ('id', snap9['device']['id']),
+        ('id', snap10['device']['id']),
+    ]
+    lot, _ = user.post({}, res=Lot, item='{}/devices'.format(lot['id']), query=devices)
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -1659,8 +1739,8 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
         'type': 'Confirm',
         'action': trade.id,
         'devices': [
-            snap1['device']['id'], 
-            snap2['device']['id'], 
+            snap1['device']['id'],
+            snap2['device']['id'],
             snap3['device']['id'],
             snap4['device']['id'],
             snap5['device']['id'],
@@ -1668,8 +1748,8 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
             snap7['device']['id'],
             snap8['device']['id'],
             snap9['device']['id'],
-            snap10['device']['id']
-        ]
+            snap10['device']['id'],
+        ],
     }
 
     user2.post(res=models.Action, data=request_confirm)
@@ -1677,31 +1757,28 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
     assert trade.devices[-1].actions[-1].t == 'Confirm'
     assert trade.devices[-1].actions[-1].user == trade.user_from
 
-    # The manager remove one device of the lot and automaticaly 
+    # The manager remove one device of the lot and automaticaly
     # is create one revoke action
     device_10 = trade.devices[-1]
-    lot, _ = user.delete({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:], status=200)
+    lot, _ = user.delete(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:], status=200
+    )
     # assert len(trade.lot.devices) == len(trade.devices) == 9
     # assert not device_10 in trade.devices
     assert device_10.actions[-1].t == 'Revoke'
 
-    lot, _ = user.delete({},
-                         res=Lot,
-                         item='{}/devices'.format(lot['id']),
-                         query=devices[-1:], status=200)
+    lot, _ = user.delete(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:], status=200
+    )
 
     assert device_10.actions[-1].t == 'Revoke'
     # assert device_10.actions[-2].t == 'Confirm'
 
     # The manager add again device_10
     # assert len(trade.devices) == 9
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:]
+    )
 
     # assert device_10.actions[-1].t == 'Confirm'
     assert device_10 in trade.devices
@@ -1711,9 +1788,7 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
     request_confirm_revoke = {
         'type': 'ConfirmRevoke',
         'action': device_10.actions[-2].id,
-        'devices': [
-            snap10['device']['id']
-        ]
+        'devices': [snap10['device']['id']],
     }
 
     # check validation error
@@ -1721,11 +1796,11 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
 
     # the SCRAP confirms the action trade for device_10
     # request_reconfirm = {
-        # 'type': 'Confirm',
-        # 'action': trade.id,
-        # 'devices': [
-            # snap10['device']['id']
-        # ]
+    # 'type': 'Confirm',
+    # 'action': trade.id,
+    # 'devices': [
+    # snap10['device']['id']
+    # ]
     # }
     # user2.post(res=models.Action, data=request_reconfirm)
     # assert device_10.actions[-1].t == 'Confirm'
@@ -1744,13 +1819,13 @@ def test_trade_case1(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id']),
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[:-1])
+    devices = [
+        ('id', snap1['device']['id']),
+        ('id', snap2['device']['id']),
+    ]
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[:-1]
+    )
 
     # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
@@ -1775,10 +1850,9 @@ def test_trade_case1(user: UserClient, user2: UserClient):
     assert device.actions[-1].t == 'Confirm'
     assert device.actions[-1].user == trade.user_to
 
-    user.delete({},
-                res=Lot,
-                item='{}/devices'.format(lot.id),
-                query=devices[:-1], status=200)
+    user.delete(
+        {}, res=Lot, item='{}/devices'.format(lot.id), query=devices[:-1], status=200
+    )
 
     assert device not in trade.lot.devices
     assert device.trading(trade.lot) == 'RevokeConfirmed'
@@ -1796,15 +1870,15 @@ def test_trade_case2(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id']),
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[:-1])
+    devices = [
+        ('id', snap1['device']['id']),
+        ('id', snap2['device']['id']),
+    ]
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[:-1]
+    )
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -1820,10 +1894,9 @@ def test_trade_case2(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
 
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:]
+    )
 
     device1, device2 = trade.devices
 
@@ -1860,13 +1933,13 @@ def test_trade_case3(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id']),
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[:-1])
+    devices = [
+        ('id', snap1['device']['id']),
+        ('id', snap2['device']['id']),
+    ]
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[:-1]
+    )
 
     # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
@@ -1884,10 +1957,9 @@ def test_trade_case3(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
 
-    lot, _ = user2.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
+    lot, _ = user2.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:]
+    )
 
     device1, device2 = trade.devices
 
@@ -1898,10 +1970,9 @@ def test_trade_case3(user: UserClient, user2: UserClient):
     assert device2.actions[-1].t == 'Confirm'
     assert device2.actions[-1].user == trade.user_from
 
-    lot, _ = user2.delete({},
-                         res=Lot,
-                         item='{}/devices'.format(lot['id']),
-                         query=devices[-1:], status=200)
+    lot, _ = user2.delete(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:], status=200
+    )
 
     assert device2.actions[-2].t == 'Confirm'
     assert device2.actions[-1].t == 'Revoke'
@@ -1918,15 +1989,15 @@ def test_trade_case4(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id']),
-              ]
-    lot1, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[:-1])
+    devices = [
+        ('id', snap1['device']['id']),
+        ('id', snap2['device']['id']),
+    ]
+    lot1, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[:-1]
+    )
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -1942,10 +2013,9 @@ def test_trade_case4(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
 
-    lot2, _ = user2.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
+    lot2, _ = user2.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:]
+    )
 
     device1, device2 = trade.devices
 
@@ -1983,15 +2053,13 @@ def test_trade_case5(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id']),
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices)
+    devices = [
+        ('id', snap1['device']['id']),
+        ('id', snap2['device']['id']),
+    ]
+    lot, _ = user.post({}, res=Lot, item='{}/devices'.format(lot['id']), query=devices)
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2016,10 +2084,9 @@ def test_trade_case5(user: UserClient, user2: UserClient):
     assert device2.actions[-1].t == 'Confirm'
     assert device2.actions[-1].user == trade.user_to
 
-    lot, _ = user2.delete({},
-                         res=Lot,
-                         item='{}/devices'.format(lot['id']),
-                         query=devices[-1:], status=200)
+    lot, _ = user2.delete(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:], status=200
+    )
 
     assert device2.actions[-2].t == 'Confirm'
     assert device2.actions[-1].t == 'Revoke'
@@ -2049,15 +2116,15 @@ def test_trade_case6(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id']),
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[:-1])
+    devices = [
+        ('id', snap1['device']['id']),
+        ('id', snap2['device']['id']),
+    ]
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[:-1]
+    )
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2073,10 +2140,9 @@ def test_trade_case6(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
 
-    lot, _ = user2.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
+    lot, _ = user2.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:]
+    )
 
     device1, device2 = trade.devices
 
@@ -2087,10 +2153,9 @@ def test_trade_case6(user: UserClient, user2: UserClient):
     assert device2.actions[-1].t == 'Confirm'
     assert device2.actions[-1].user == trade.user_from
 
-    lot, _ = user.delete({},
-                         res=Lot,
-                         item='{}/devices'.format(lot['id']),
-                         query=devices[-1:], status=200)
+    lot, _ = user.delete(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:], status=200
+    )
 
     assert device2.actions[-2].t == 'Confirm'
     assert device2.actions[-1].t == 'Revoke'
@@ -2120,12 +2185,9 @@ def test_trade_case7(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
 
     devices = [('id', snap1['device']['id'])]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices)
+    lot, _ = user.post({}, res=Lot, item='{}/devices'.format(lot['id']), query=devices)
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2152,10 +2214,9 @@ def test_trade_case7(user: UserClient, user2: UserClient):
     user2.post(res=models.Action, data=request_confirm)
     assert device.trading(trade.lot) == 'TradeConfirmed'
 
-    lot, _ = user.delete({},
-                         res=Lot,
-                         item='{}/devices'.format(lot['id']),
-                         query=devices, status=200)
+    lot, _ = user.delete(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices, status=200
+    )
 
     request_confirm_revoke = {
         'type': 'Revoke',
@@ -2187,12 +2248,9 @@ def test_trade_case8(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
 
     devices = [('id', snap1['device']['id'])]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices)
+    lot, _ = user.post({}, res=Lot, item='{}/devices'.format(lot['id']), query=devices)
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2258,15 +2316,12 @@ def test_trade_case9(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id'])
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[:-1])
+    devices = [('id', snap1['device']['id']), ('id', snap2['device']['id'])]
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[:-1]
+    )
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2282,10 +2337,9 @@ def test_trade_case9(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
 
-    lot, _ = user2.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
+    lot, _ = user2.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:]
+    )
 
     device1, device = trade.devices
 
@@ -2303,10 +2357,9 @@ def test_trade_case9(user: UserClient, user2: UserClient):
 
     assert device.owner == trade.user_to
 
-    lot, _ = user2.delete({},
-                         res=Lot,
-                         item='{}/devices'.format(lot['id']),
-                         query=devices[-1:], status=200)
+    lot, _ = user2.delete(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:], status=200
+    )
 
     request_confirm_revoke = {
         'type': 'Revoke',
@@ -2340,15 +2393,12 @@ def test_trade_case10(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id'])
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[:-1])
+    devices = [('id', snap1['device']['id']), ('id', snap2['device']['id'])]
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[:-1]
+    )
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2364,10 +2414,9 @@ def test_trade_case10(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
 
-    lot, _ = user2.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
+    lot, _ = user2.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:]
+    )
 
     device1, device = trade.devices
 
@@ -2427,15 +2476,10 @@ def test_trade_case11(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id'])
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices)
+    devices = [('id', snap1['device']['id']), ('id', snap2['device']['id'])]
+    lot, _ = user.post({}, res=Lot, item='{}/devices'.format(lot['id']), query=devices)
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2463,10 +2507,9 @@ def test_trade_case11(user: UserClient, user2: UserClient):
     user2.post(res=models.Action, data=request_confirm)
     assert device.trading(trade.lot) == 'TradeConfirmed'
 
-    lot, _ = user2.delete({},
-                         res=Lot,
-                         item='{}/devices'.format(lot['id']),
-                         query=devices[-1:], status=200)
+    lot, _ = user2.delete(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:], status=200
+    )
     assert device.trading(trade.lot) == 'Revoke'
 
     request_confirm_revoke = {
@@ -2499,15 +2542,10 @@ def test_trade_case12(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id'])
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices)
+    devices = [('id', snap1['device']['id']), ('id', snap2['device']['id'])]
+    lot, _ = user.post({}, res=Lot, item='{}/devices'.format(lot['id']), query=devices)
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2576,15 +2614,12 @@ def test_trade_case13(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id'])
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[:-1])
+    devices = [('id', snap1['device']['id']), ('id', snap2['device']['id'])]
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[:-1]
+    )
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2600,10 +2635,9 @@ def test_trade_case13(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
 
-    lot, _ = user2.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
+    lot, _ = user2.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:]
+    )
 
     device1, device = trade.devices
     assert device1.trading(trade.lot) == 'NeedConfirmation'
@@ -2619,10 +2653,9 @@ def test_trade_case13(user: UserClient, user2: UserClient):
     assert device1.trading(trade.lot) == 'Confirm'
     assert device.trading(trade.lot) == 'TradeConfirmed'
 
-    lot, _ = user.delete({},
-                         res=Lot,
-                         item='{}/devices'.format(lot['id']),
-                         query=devices[-1:], status=200)
+    lot, _ = user.delete(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:], status=200
+    )
     assert device1.trading(trade.lot) == 'Confirm'
     assert device.trading(trade.lot) == 'Revoke'
 
@@ -2656,15 +2689,12 @@ def test_trade_case14(user: UserClient, user2: UserClient):
     snap1, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     snap2, _ = user2.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
 
-    devices = [('id', snap1['device']['id']),
-               ('id', snap2['device']['id'])
-              ]
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[:-1])
+    devices = [('id', snap1['device']['id']), ('id', snap2['device']['id'])]
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[:-1]
+    )
 
-    # the manager shares the temporary lot with the SCRAP as an incoming lot 
+    # the manager shares the temporary lot with the SCRAP as an incoming lot
     # for the CRAP to confirm it
     request_post = {
         'type': 'Trade',
@@ -2680,10 +2710,9 @@ def test_trade_case14(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_post)
     trade = models.Trade.query.one()
 
-    lot, _ = user2.post({},
-                       res=Lot,
-                       item='{}/devices'.format(lot['id']),
-                       query=devices[-1:])
+    lot, _ = user2.post(
+        {}, res=Lot, item='{}/devices'.format(lot['id']), query=devices[-1:]
+    )
 
     device1, device = trade.devices
     assert device1.trading(trade.lot) == 'NeedConfirmation'
@@ -2734,11 +2763,26 @@ def test_trade_case14(user: UserClient, user2: UserClient):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_action_web_erase(user: UserClient, client: Client):
     import hashlib
+
     from ereuse_devicehub.resources.documents import documents
+
     bfile = BytesIO(b'abc')
     hash3 = hashlib.sha3_256(bfile.read()).hexdigest()
     snap, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
-    request = {'type': 'DataWipe', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'nada que describir', 'url': 'http://www.google.com/', 'documentId': '33', 'endTime': '2021-07-07T22:00:00.000Z', 'filename': 'Certificado de borrado1.pdf', 'hash': hash3, 'success': 1, 'software': "Blanco"}
+    request = {
+        'type': 'DataWipe',
+        'devices': [snap['device']['id']],
+        'name': 'borrado universal',
+        'severity': 'Info',
+        'description': 'nada que describir',
+        'url': 'http://www.google.com/',
+        'documentId': '33',
+        'endTime': '2021-07-07T22:00:00.000Z',
+        'filename': 'Certificado de borrado1.pdf',
+        'hash': hash3,
+        'success': 1,
+        'software': "Blanco",
+    }
 
     user.post(res=models.Action, data=request)
     action = models.DataWipe.query.one()
@@ -2748,12 +2792,14 @@ def test_action_web_erase(user: UserClient, client: Client):
     assert action.document.file_hash == request['hash']
 
     bfile = BytesIO(b'abc')
-    response, _ = client.post(res=documents.DocumentDef.t,
-            item='stamps/',
-            content_type='multipart/form-data',
-            accept='text/html',
-            data={'docUpload': [(bfile, 'example.csv')]},
-            status=200)
+    response, _ = client.post(
+        res=documents.DocumentDef.t,
+        item='stamps/',
+        content_type='multipart/form-data',
+        accept='text/html',
+        data={'docUpload': [(bfile, 'example.csv')]},
+        status=200,
+    )
     assert "alert alert-info" in response
     assert "100% coincidence." in response
     assert not "alert alert-danger" in response
@@ -2764,13 +2810,15 @@ def test_action_web_erase(user: UserClient, client: Client):
 def test_moveOnDocument(user: UserClient, user2: UserClient):
     lotIn, _ = user.post({'name': 'MyLotIn'}, res=Lot)
     lotOut, _ = user.post({'name': 'MyLotOut'}, res=Lot)
-    url = 'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
+    url = (
+        'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
+    )
     request_post1 = {
         'filename': 'test.pdf',
         'hash': 'bbbbbbbb',
         'url': url,
         'weight': 150,
-        'lot': lotIn['id']
+        'lot': lotIn['id'],
     }
     tradedocument_from, _ = user.post(res=TradeDocument, data=request_post1)
     id_hash = 'aaaaaaaaa'
@@ -2779,7 +2827,7 @@ def test_moveOnDocument(user: UserClient, user2: UserClient):
         'hash': id_hash,
         'url': url,
         'weight': 0,
-        'lot': lotOut['id']
+        'lot': lotOut['id'],
     }
     tradedocument_to, _ = user.post(res=TradeDocument, data=request_post2)
 
@@ -2802,7 +2850,7 @@ def test_moveOnDocument(user: UserClient, user2: UserClient):
         'weight': 15,
         'container_from': tradedocument_from['id'],
         'container_to': id_hash,
-        'description': description
+        'description': description,
     }
     doc, _ = user.post(res=models.Action, data=request_moveOn)
 
@@ -2810,7 +2858,7 @@ def test_moveOnDocument(user: UserClient, user2: UserClient):
     assert doc['container_from']['id'] == tradedocument_from['id']
     assert doc['container_to']['id'] == tradedocument_to['id']
 
-    mvs= models.MoveOnDocument.query.filter().first()
+    mvs = models.MoveOnDocument.query.filter().first()
     trade_from = TradeDocument.query.filter_by(id=tradedocument_from['id']).one()
     trade_to = TradeDocument.query.filter_by(id=tradedocument_to['id']).one()
     assert trade_from in mvs.documents
@@ -2826,7 +2874,14 @@ def test_delete_devices(user: UserClient):
     """This action deactive one device and simulate than one devices is delete."""
 
     snap, _ = user.post(file('acer.happy.battery.snapshot'), res=models.Snapshot)
-    request = {'type': 'Delete', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z'}
+    request = {
+        'type': 'Delete',
+        'devices': [snap['device']['id']],
+        'name': 'borrado universal',
+        'severity': 'Info',
+        'description': 'duplicity of devices',
+        'endTime': '2021-07-07T22:00:00.000Z',
+    }
 
     action, _ = user.post(res=models.Action, data=request)
 
@@ -2839,8 +2894,6 @@ def test_delete_devices(user: UserClient):
     assert action_delete.t == 'Delete'
     assert str(action_delete.id) == action['id']
     assert db_device.active == False
-
-
 
     # Check use of filter from frontend
     url = '/devices/?filter={"type":["Computer"]}'
@@ -2857,14 +2910,28 @@ def test_delete_devices_check_sync(user: UserClient):
     file_snap1 = file('1-device-with-components.snapshot')
     file_snap2 = file('2-device-with-components.snapshot')
     snap, _ = user.post(file_snap1, res=models.Snapshot)
-    request = {'type': 'Delete', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z'}
+    request = {
+        'type': 'Delete',
+        'devices': [snap['device']['id']],
+        'name': 'borrado universal',
+        'severity': 'Info',
+        'description': 'duplicity of devices',
+        'endTime': '2021-07-07T22:00:00.000Z',
+    }
 
     action, _ = user.post(res=models.Action, data=request)
 
     device1 = Device.query.filter_by(id=snap['device']['id']).one()
 
     snap2, _ = user.post(file_snap2, res=models.Snapshot)
-    request2 = {'type': 'Delete', 'devices': [snap2['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z'}
+    request2 = {
+        'type': 'Delete',
+        'devices': [snap2['device']['id']],
+        'name': 'borrado universal',
+        'severity': 'Info',
+        'description': 'duplicity of devices',
+        'endTime': '2021-07-07T22:00:00.000Z',
+    }
 
     action2, _ = user.post(res=models.Action, data=request2)
 
@@ -2872,8 +2939,17 @@ def test_delete_devices_check_sync(user: UserClient):
     # check than device2 is an other device than device1
     assert device2.id != device1.id
     # check than device2 have the components of device1
-    assert len([x for x in device2.components
-        if device1.id in [y.device.id for y in x.actions if hasattr(y, 'device')]]) == 1
+    assert (
+        len(
+            [
+                x
+                for x in device2.components
+                if device1.id
+                in [y.device.id for y in x.actions if hasattr(y, 'device')]
+            ]
+        )
+        == 1
+    )
 
 
 @pytest.mark.mvp
@@ -2885,7 +2961,14 @@ def test_delete_devices_permitions(user: UserClient, user2: UserClient):
     snap, _ = user.post(file_snap, res=models.Snapshot)
     device = Device.query.filter_by(id=snap['device']['id']).one()
 
-    request = {'type': 'Delete', 'devices': [snap['device']['id']], 'name': 'borrado universal', 'severity': 'Info', 'description': 'duplicity of devices', 'endTime': '2021-07-07T22:00:00.000Z'}
+    request = {
+        'type': 'Delete',
+        'devices': [snap['device']['id']],
+        'name': 'borrado universal',
+        'severity': 'Info',
+        'description': 'duplicity of devices',
+        'endTime': '2021-07-07T22:00:00.000Z',
+    }
     action, _ = user2.post(res=models.Action, data=request, status=422)
 
 
@@ -2895,13 +2978,15 @@ def test_moveOnDocument_bug168(user: UserClient, user2: UserClient):
     """If you use one moveOnDocument in a trade Document. Next you can not drop this document."""
     lotIn, _ = user.post({'name': 'MyLotIn'}, res=Lot)
     lotOut, _ = user.post({'name': 'MyLotOut'}, res=Lot)
-    url = 'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
+    url = (
+        'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
+    )
     request_post1 = {
         'filename': 'test.pdf',
         'hash': 'bbbbbbbb',
         'url': url,
         'weight': 150,
-        'lot': lotIn['id']
+        'lot': lotIn['id'],
     }
     tradedocument_from, _ = user.post(res=TradeDocument, data=request_post1)
     id_hash = 'aaaaaaaaa'
@@ -2910,7 +2995,7 @@ def test_moveOnDocument_bug168(user: UserClient, user2: UserClient):
         'hash': id_hash,
         'url': url,
         'weight': 0,
-        'lot': lotOut['id']
+        'lot': lotOut['id'],
     }
     tradedocument_to, _ = user.post(res=TradeDocument, data=request_post2)
 
@@ -2933,7 +3018,7 @@ def test_moveOnDocument_bug168(user: UserClient, user2: UserClient):
         'weight': 4,
         'container_from': tradedocument_from['id'],
         'container_to': id_hash,
-        'description': description
+        'description': description,
     }
     doc, _ = user.post(res=models.Action, data=request_moveOn)
     trade = models.Trade.query.one()
