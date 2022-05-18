@@ -422,7 +422,7 @@ class ParseSnapshotLsHw:
                     uuid=self.uuid, size=size, sid=self.sid
                 )
             )
-            self.errors(txt)
+            self.errors(txt, severity=Severity.Warning)
             return 128
         size, units = size.split(" ")
         return base2.Quantity(float(size), units).to('MiB').m
@@ -433,7 +433,7 @@ class ParseSnapshotLsHw:
             txt = "Error: Snapshot: {uuid}, tag: {sid} have this ram Speed: {speed}".format(
                 uuid=self.uuid, speed=speed, sid=self.sid
             )
-            self.errors(txt)
+            self.errors(txt, severity=Severity.Warning)
             return 100
         speed, units = speed.split(" ")
         return float(speed)
@@ -468,7 +468,7 @@ class ParseSnapshotLsHw:
             txt = "Error: Snapshot: {uuid} tag: {sid} have this uuid: {device}".format(
                 uuid=self.uuid, device=dmi_uuid, sid=self.sid
             )
-            self.errors(txt)
+            self.errors(txt, severity=Severity.Warning)
             dmi_uuid = None
         return dmi_uuid
 
@@ -515,7 +515,7 @@ class ParseSnapshotLsHw:
                 interface, self.sid
             )
             self.errors("{}".format(err))
-            self.errors(txt)
+            self.errors(txt, severity=Severity.Warning)
         return "ATA"
 
     def get_data_storage_size(self, x):
