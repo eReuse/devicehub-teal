@@ -455,5 +455,11 @@
     perPage: 20
   })
 </script>
-<script src="{{ url_for('static', filename='js/main_inventory.build.js') }}"></script>
+{% if config['DEBUG'] %}
+  <script src="{{ url_for('static', filename='js/main_inventory.js') }}"></script>
+{% else %}
+  <script src="{{ url_for('static', filename='js/main_inventory.build.js') }}"></script>
+{% endif %}
+
+
 {% endblock main %}
