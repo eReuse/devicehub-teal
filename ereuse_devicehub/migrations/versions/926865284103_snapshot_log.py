@@ -43,7 +43,7 @@ def upgrade():
         ),
         sa.Column('id', sa.BigInteger(), nullable=False),
         sa.Column('description', citext.CIText(), nullable=True),
-        sa.Column('workbench_version', citext.CIText(), nullable=True),
+        sa.Column('version', citext.CIText(), nullable=True),
         sa.Column('sid', citext.CIText(), nullable=True),
         sa.Column('severity', sa.SmallInteger(), nullable=False),
         sa.Column('snapshot_uuid', postgresql.UUID(as_uuid=True), nullable=True),
@@ -69,3 +69,34 @@ def upgrade():
 def downgrade():
     op.drop_table('snapshots_log', schema=f'{get_inv()}')
     op.execute(f"DROP SEQUENCE {get_inv()}.snapshots_log_seq;")
+
+    op.create_table(
+        'snapshot_errors',
+        sa.Column(
+            'updated',
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text('CURRENT_TIMESTAMP'),
+            nullable=False,
+            comment='The last time Devicehub recorded a change for \n    this thing.\n    ',
+        ),
+        sa.Column(
+            'created',
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text('CURRENT_TIMESTAMP'),
+            nullable=False,
+            comment='When Devicehub created this.',
+        ),
+        sa.Column('id', sa.BigInteger(), nullable=False),
+        sa.Column('description', citext.CIText(), nullable=False),
+        sa.Column('snapshot_uuid', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('severity', sa.SmallInteger(), nullable=False),
+        sa.Column('sid', citext.CIText(), nullable=True),
+        sa.Column('owner_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.ForeignKeyConstraint(
+            ['owner_id'],
+            ['common.user.id'],
+        ),
+        sa.PrimaryKeyConstraint('id'),
+        schema=f'{get_inv()}',
+    )
+    op.execute(f"CREATE SEQUENCE {get_inv()}.snapshot_errors_seq START 1;")
