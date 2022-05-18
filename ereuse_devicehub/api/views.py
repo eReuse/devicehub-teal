@@ -66,6 +66,7 @@ class InventoryView(LoginMixin, SnapshotMixin):
             severity=Severity.Info,
             sid=snapshot.sid,
             version=snapshot.version,
+            snapshot=snapshot,
         )
         snap_log.save()
 

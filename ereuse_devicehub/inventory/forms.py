@@ -236,10 +236,14 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
         schema_lite = Snapshot_lite()
         devices = []
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
+        # import pdb; pdb.set_trace()
         for filename, snapshot_json in self.snapshots:
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
             snapshot_json.pop('debug', None)
             version = snapshot_json.get('schema_api')
+            uuid = snapshot_json.get('uuid')
+            sid = snapshot_json.get('sid')
+            software_version = snapshot_json.get('version')
             if self.is_wb_lite_snapshot(version):
                 self.snapshot_json = schema_lite.load(snapshot_json)
                 snapshot_json = ParseSnapshotLsHw(self.snapshot_json).snapshot_json
@@ -248,13 +252,12 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
                 snapshot_json = schema.load(snapshot_json)
             except ValidationError as err:
                 txt = "{}".format(err)
-                uuid = snapshot_json.get('uuid')
-                sid = snapshot_json.get('sid')
                 error = SnapshotsLog(
                     description=txt,
                     snapshot_uuid=uuid,
                     severity=Severity.Error,
                     sid=sid,
+                    version=software_version,
                 )
                 error.save(commit=True)
                 self.result[filename] = 'Error'
@@ -263,6 +266,15 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
             response = self.build(snapshot_json)
             db.session.add(response)
             devices.append(response.device)
+            snap_log = SnapshotsLog(
+                description='Ok',
+                snapshot_uuid=uuid,
+                severity=Severity.Error,
+                sid=sid,
+                version=software_version,
+                snapshot=response,
+            )
+            snap_log.save()
 
             if hasattr(response, 'type'):
                 self.result[filename] = 'Ok'
