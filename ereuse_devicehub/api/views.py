@@ -59,6 +59,16 @@ class InventoryView(LoginMixin, SnapshotMixin):
 
         snapshot = self.build()
         db.session.add(snapshot)
+
+        snap_log = SnapshotsLog(
+            description='Ok',
+            snapshot_uuid=snapshot.uuid,
+            severity=Severity.Info,
+            sid=snapshot.sid,
+            version=snapshot.version,
+        )
+        snap_log.save()
+
         db.session().final_flush()
         db.session.commit()
         self.response = jsonify(
@@ -80,8 +90,13 @@ class InventoryView(LoginMixin, SnapshotMixin):
             txt = "{}".format(err)
             uuid = snapshot_json.get('uuid')
             sid = snapshot_json.get('sid')
+            version = snapshot_json.get('version')
             error = SnapshotsLog(
-                description=txt, snapshot_uuid=uuid, severity=Severity.Error, sid=sid
+                description=txt,
+                snapshot_uuid=uuid,
+                severity=Severity.Error,
+                sid=sid,
+                version=version,
             )
             error.save(commit=True)
             # raise err
