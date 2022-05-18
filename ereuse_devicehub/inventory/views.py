@@ -25,8 +25,8 @@ from ereuse_devicehub.inventory.forms import (
     UploadSnapshotForm,
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
-from ereuse_devicehub.parser.models import SnapshotErrors
-from ereuse_devicehub.resources.action.models import Snapshot, Trade
+from ereuse_devicehub.parser.models import SnapshotsLog
+from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
 from ereuse_devicehub.resources.hash_reports import insert_hash
@@ -513,33 +513,17 @@ class ExportsView(View):
         return flask.render_template('inventory/erasure.html', **params)
 
 
-class SnapshotErrorsListView(GenericMixView):
-    methods = ['GET']
-    decorators = [login_required]
-    template_name = 'inventory/snapshot_errors_list.html'
-
-    def dispatch_request(self):
-        self.get_context()
-        self.context['page_title'] = "Snapshot Errors"
-        snapshot_errors = SnapshotErrors.query.filter(
-            SnapshotErrors.owner == current_user
-        ).order_by(SnapshotErrors.created.desc())
-        self.context['snapshot_errors'] = snapshot_errors
-
-        return flask.render_template(self.template_name, **self.context)
-
-
-class SnapshotListView(GenericMixView):
-    decorators = [login_required]
+class SnapshotListView(GenericMixin):
     template_name = 'inventory/snapshots_list.html'
 
     def dispatch_request(self):
         self.get_context()
-        snapshots = Snapshot.query.filter(Snapshot.author == current_user).order_by(
-            Snapshot.created.desc()
-        )
-        self.context['page_title'] = "Snapshots"
-        self.context['snapshots'] = snapshots
+        self.context['page_title'] = "Snapshots Logs"
+        snapshots_log = SnapshotsLog.query.filter(
+            SnapshotsLog.owner == current_user
+        ).order_by(SnapshotsLog.created.desc())
+        self.context['snapshots_log'] = snapshots_log
+
         return flask.render_template(self.template_name, **self.context)
 
 
@@ -556,10 +540,6 @@ devices.add_url_rule(
     view_func=NewTradeDocumentView.as_view('trade_document_add'),
 )
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
-devices.add_url_rule(
-    '/snapshot/errors/',
-    view_func=SnapshotErrorsListView.as_view('snapshot_errors_list'),
-)
 devices.add_url_rule(
     '/device/<string:id>/', view_func=DeviceDetailView.as_view('device_details')
 )

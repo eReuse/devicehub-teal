@@ -50,6 +50,7 @@ class LogoutView(View):
 
 
 class GenericMixin(View):
+    methods = ['GET']
     decorators = [login_required]
 
     def get_lots(self):
