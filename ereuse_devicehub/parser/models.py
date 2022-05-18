@@ -15,7 +15,7 @@ class SnapshotsLog(Thing):
 
     id = Column(BigInteger, Sequence('snapshots_log_seq'), primary_key=True)
     severity = Column(SmallInteger, default=Severity.Info, nullable=False)
-    workbench_version = Column(CIText(), default='', nullable=True)
+    version = Column(CIText(), default='', nullable=True)
     description = Column(CIText(), default='', nullable=True)
     sid = Column(CIText(), nullable=True)
     dhid = Column(CIText(), nullable=True)
