@@ -236,7 +236,6 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
         schema_lite = Snapshot_lite()
         devices = []
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
-        # import pdb; pdb.set_trace()
         for filename, snapshot_json in self.snapshots:
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
             snapshot_json.pop('debug', None)

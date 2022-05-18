@@ -358,7 +358,6 @@ class Device(Thing):
         from ereuse_devicehub.resources.device import states
 
         with suppress(LookupError, ValueError):
-            # import pdb; pdb.set_trace()
             return self.last_action_of(*states.Physical.actions())
 
     @property
