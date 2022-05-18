@@ -15,3 +15,9 @@ repos:
     rev: 0.0.9
     hooks:
     -   id: check_pdb_hook
+  - repo: local
+    hooks:
+    -   id: build-js
+        name: build-js
+        entry: npm run babel
+        language: node
