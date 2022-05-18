@@ -320,6 +320,7 @@ class ParseSnapshotLsHw:
         self.default = default
         self.uuid = snapshot.get("uuid")
         self.sid = snapshot.get("sid")
+        self.version = snapshot.get("version")
         self.dmidecode_raw = snapshot["data"]["dmidecode"]
         self.smart = snapshot["data"]["smart"]
         self.hwinfo_raw = snapshot["data"]["hwinfo"]
@@ -362,7 +363,7 @@ class ParseSnapshotLsHw:
     def set_basic_datas(self):
         try:
             pc, self.components_obj = Computer.run(
-                self.lshw, self.hwinfo_raw, self.uuid, self.sid
+                self.lshw, self.hwinfo_raw, self.uuid, self.sid, self.version
             )
             pc = pc.dump()
             minimum_hid = None in [pc['manufacturer'], pc['model'], pc['serialNumber']]
@@ -546,13 +547,17 @@ class ParseSnapshotLsHw:
 
         return action
 
-    def errors(self, txt=None, severity=Severity.Info):
+    def errors(self, txt=None, severity=Severity.Error):
         if not txt:
             return self._errors
 
         logger.error(txt)
         self._errors.append(txt)
         error = SnapshotsLog(
-            description=txt, snapshot_uuid=self.uuid, severity=severity, sid=self.sid
+            description=txt,
+            snapshot_uuid=self.uuid,
+            severity=severity,
+            sid=self.sid,
+            version=self.version,
         )
         error.save()
