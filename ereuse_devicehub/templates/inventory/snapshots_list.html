@@ -5,7 +5,8 @@
   <h1>Inventory</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item active">{{ page_title }}</li>
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item active">Snapshots</li>
     </ol>
   </nav>
 </div><!-- End Page Title -->
@@ -16,34 +17,47 @@
     <div class="col-xl-12">
 
       <div class="card">
-        <div class="card-body pt-3">
+        <div class="card-body pt-3" style="min-height: 650px;">
           <!-- Bordered Tabs -->
-
-          <div class="tab-content pt-2">
-
-            <div class="tab-pane fade show active profile-overview" id="profile-overview">
-
-              <h5 class="card-title">Snapshot</h5>
+          <div class="tab-content pt-5">
+            <div id="devices-list" class="tab-pane fade devices-list active show">
+              <div class="tab-content pt-2">
                 <table class="table">
                   <thead>
                     <tr>
-                      <th scope="col">Sid</th>
-                      <th scope="col">Workbench Version</th>
-                      <th scope="col">Errors</th>
-                      <th scope="col">DHID</th>
-                      <th scope="col">Uploaded</th>
+                      <th scope="col">SID</th>
+                      <th scope="col">Snapshot id</th>
+                      <th scope="col">Version</th>
+                      <th scope="col">Device</th>
+                      <th scope="col">Status</th>
+                      <th scope="col">Description</th>
+                      <th scope="col" data-type="date" data-format="DD-MM-YYYY">Time</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {% for snap in snapshots %}
+                    {% for snap in snapshots_log %}
                     <tr>
-                      <td>{{ snap.sid or ''}}</td>
-                      <td>{{ snap.version }}</td>
-                      <td>{{ snap.status }}</td>
                       <td>
-                          <a href="{{ url_for('inventory.device_details', id=snap.device.devicehub_id)}}">
-                              {{ snap.device.devicehub_id }}
-                          </a>
+                          {{ snap.sid }}
+                      </td>
+                      <td>
+                          {{ snap.snapshot_uuid }}
+                      </td>
+                      <td>
+                          {{ snap.workbench_version }}
+                      </td>
+                      <td>
+                        {% if snap.snapshot %}
+                        <a href="{{ url_for('inventory.device_details', id=snap.snapshot.device.devicehub_id)}}">
+                          {{ snap.snapshot.device.devicehub_id }}
+                        </a>
+                        {% endif %}
+                      </td>
+                      <td>
+                          {{ snap.severity }}
+                      </td>
+                      <td>
+                          {{ snap.description }}
                       </td>
                       <td>{{ snap.created.strftime('%H:%M %d-%m-%Y') }}</td>
                     </tr>
@@ -51,10 +65,15 @@
                   </tbody>
                 </table>
 
-          </div><!-- End Bordered Tabs -->
+                </div>
+              </div>
 
+            </div><!-- End Bordered Tabs -->
+          </div>
         </div>
       </div>
+
+      <div id="NotificationsContainer" style="position: absolute; bottom: 0; right: 0; margin: 10px; margin-top: 70px; width: calc(100% - 310px);"></div>
 
     </div>
   </div>
