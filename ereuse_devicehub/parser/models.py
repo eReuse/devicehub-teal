@@ -11,22 +11,22 @@ from ereuse_devicehub.resources.user.models import User
 
 
 class SnapshotsLog(Thing):
-    """A Snapshot errors."""
+    """A Snapshot log."""
 
     id = Column(BigInteger, Sequence('snapshots_log_seq'), primary_key=True)
     severity = Column(SmallInteger, default=Severity.Info, nullable=False)
     version = Column(CIText(), default='', nullable=True)
     description = Column(CIText(), default='', nullable=True)
     sid = Column(CIText(), nullable=True)
-    dhid = Column(CIText(), nullable=True)
-    snapshot_id = Column(UUID(as_uuid=True), db.ForeignKey(User.id), nullable=True)
+    snapshot_uuid = Column(UUID(as_uuid=True), nullable=True)
+    snapshot_id = Column(UUID(as_uuid=True), db.ForeignKey(Snapshot.id), nullable=True)
     owner_id = db.Column(
         UUID(as_uuid=True),
         db.ForeignKey(User.id),
         nullable=False,
         default=lambda: g.user.id,
     )
-    snapshot = db.relationship(User, primaryjoin=snapshot_id == Snapshot.id)
+    snapshot = db.relationship(Snapshot, primaryjoin=snapshot_id == Snapshot.id)
     owner = db.relationship(User, primaryjoin=owner_id == User.id)
 
     def save(self, commit=False):
