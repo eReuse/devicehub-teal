@@ -11,7 +11,7 @@ from werkzeug.exceptions import Unauthorized
 
 from ereuse_devicehub.auth import Auth
 from ereuse_devicehub.db import db
-from ereuse_devicehub.parser.models import SnapshotErrors
+from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.views.snapshot import (
@@ -80,7 +80,7 @@ class InventoryView(LoginMixin, SnapshotMixin):
             txt = "{}".format(err)
             uuid = snapshot_json.get('uuid')
             sid = snapshot_json.get('sid')
-            error = SnapshotErrors(
+            error = SnapshotsLog(
                 description=txt, snapshot_uuid=uuid, severity=Severity.Error, sid=sid
             )
             error.save(commit=True)

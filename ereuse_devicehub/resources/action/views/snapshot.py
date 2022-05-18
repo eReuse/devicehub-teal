@@ -11,7 +11,7 @@ from marshmallow import ValidationError
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.parser.models import SnapshotErrors
+from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.device.models import Computer
 from ereuse_devicehub.resources.device.sync import Sync
@@ -140,7 +140,7 @@ class SnapshotView(SnapshotMixin):
         except ValidationError as err:
             txt = "{}".format(err)
             uuid = snapshot_json.get('uuid')
-            error = SnapshotErrors(
+            error = SnapshotsLog(
                 description=txt, snapshot_uuid=uuid, severity=Severity.Error
             )
             error.save(commit=True)

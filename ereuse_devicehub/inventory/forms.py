@@ -27,7 +27,7 @@ from wtforms import (
 from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.parser.models import SnapshotErrors
+from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
@@ -250,7 +250,7 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
                 txt = "{}".format(err)
                 uuid = snapshot_json.get('uuid')
                 sid = snapshot_json.get('sid')
-                error = SnapshotErrors(
+                error = SnapshotsLog(
                     description=txt,
                     snapshot_uuid=uuid,
                     severity=Severity.Error,

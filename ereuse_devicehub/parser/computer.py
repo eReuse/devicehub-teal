@@ -14,7 +14,7 @@ from ereuse_utils.nested_lookup import (
 )
 
 from ereuse_devicehub.parser import base2, unit, utils
-from ereuse_devicehub.parser.models import SnapshotErrors
+from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.parser.utils import Dumpeable
 from ereuse_devicehub.resources.enums import Severity
 
@@ -457,7 +457,7 @@ class Computer(Device):
             return
 
         logger.error(txt)
-        error = SnapshotErrors(
+        error = SnapshotsLog(
             description=txt, snapshot_uuid=uuid, severity=severity, sid=sid
         )
         error.save()

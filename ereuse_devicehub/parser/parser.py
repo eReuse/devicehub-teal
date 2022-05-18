@@ -8,7 +8,7 @@ from marshmallow.exceptions import ValidationError
 
 from ereuse_devicehub.parser import base2
 from ereuse_devicehub.parser.computer import Computer
-from ereuse_devicehub.parser.models import SnapshotErrors
+from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.resources.action.schemas import Snapshot
 from ereuse_devicehub.resources.enums import DataStorageInterface, Severity
 
@@ -552,7 +552,7 @@ class ParseSnapshotLsHw:
 
         logger.error(txt)
         self._errors.append(txt)
-        error = SnapshotErrors(
+        error = SnapshotsLog(
             description=txt, snapshot_uuid=self.uuid, severity=severity, sid=self.sid
         )
         error.save()
