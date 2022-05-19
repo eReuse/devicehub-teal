@@ -519,12 +519,41 @@ class SnapshotListView(GenericMixin):
     def dispatch_request(self):
         self.get_context()
         self.context['page_title'] = "Snapshots Logs"
-        snapshots_log = SnapshotsLog.query.filter(
-            SnapshotsLog.owner == current_user
-        ).order_by(SnapshotsLog.created.desc())
-        self.context['snapshots_log'] = snapshots_log
+        self.context['snapshots_log'] = self.get_snapshots_log()
 
         return flask.render_template(self.template_name, **self.context)
+
+    def get_snapshots_log(self):
+        snapshots_log = SnapshotsLog.query.filter(
+            SnapshotsLog.owner == g.user
+        ).order_by(SnapshotsLog.created.desc())
+        logs = {}
+        for snap in snapshots_log:
+            if snap.snapshot_uuid not in logs:
+                logs[snap.snapshot_uuid] = {
+                    'sid': snap.sid,
+                    'snapshot_uuid': snap.snapshot_uuid,
+                    'version': snap.version,
+                    'device': snap.snapshot.device.devicehub_id
+                    if snap.snapshot
+                    else '',
+                    'status': snap.get_status(),
+                    'severity': snap.severity,
+                    'created': snap.created,
+                }
+                continue
+
+            if snap.created > logs[snap.snapshot_uuid]['created']:
+                logs[snap.snapshot_uuid]['created'] = snap.created
+
+            if snap.severity > logs[snap.snapshot_uuid]['severity']:
+                logs[snap.snapshot_uuid]['severity'] = snap.severity
+                logs[snap.snapshot_uuid]['status'] = snap.get_status()
+
+        result = sorted(logs.values(), key=lambda d: d['created'])
+        result.reverse()
+
+        return result
 
 
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))

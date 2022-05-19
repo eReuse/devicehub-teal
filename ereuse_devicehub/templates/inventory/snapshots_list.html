@@ -30,7 +30,6 @@
                       <th scope="col">Version</th>
                       <th scope="col">Device</th>
                       <th scope="col">Status</th>
-                      <th scope="col">Description</th>
                       <th scope="col" data-type="date" data-format="DD-MM-YYYY">Time</th>
                     </tr>
                   </thead>
@@ -47,17 +46,14 @@
                           {{ snap.version }}
                       </td>
                       <td>
-                        {% if snap.snapshot %}
-                        <a href="{{ url_for('inventory.device_details', id=snap.snapshot.device.devicehub_id)}}">
-                          {{ snap.snapshot.device.devicehub_id }}
+                        {% if snap.device %}
+                        <a href="{{ url_for('inventory.device_details', id=snap.device) }}">
+                          {{ snap.device }}
                         </a>
                         {% endif %}
                       </td>
                       <td>
-                          {{ snap.get_status() }}
-                      </td>
-                      <td>
-                          {{ snap.description }}
+                          {{ snap.status }}
                       </td>
                       <td>{{ snap.created.strftime('%H:%M %d-%m-%Y') }}</td>
                     </tr>
