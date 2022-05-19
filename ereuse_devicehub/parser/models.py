@@ -40,3 +40,9 @@ class SnapshotsLog(Thing):
             return Severity(self.severity)
 
         return ''
+
+    def get_device(self):
+        if self.snapshot:
+            return self.snapshot.device.devicehub_id
+
+        return ''

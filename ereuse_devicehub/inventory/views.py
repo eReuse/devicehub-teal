@@ -534,9 +534,7 @@ class SnapshotListView(GenericMixin):
                     'sid': snap.sid,
                     'snapshot_uuid': snap.snapshot_uuid,
                     'version': snap.version,
-                    'device': snap.snapshot.device.devicehub_id
-                    if snap.snapshot
-                    else '',
+                    'device': snap.get_device(),
                     'status': snap.get_status(),
                     'severity': snap.severity,
                     'created': snap.created,
@@ -554,6 +552,29 @@ class SnapshotListView(GenericMixin):
         result.reverse()
 
         return result
+
+
+class SnapshotDetailView(GenericMixin):
+    template_name = 'inventory/snapshot_detail.html'
+
+    def dispatch_request(self, snapshot_uuid):
+        self.snapshot_uuid = snapshot_uuid
+        self.get_context()
+        self.context['page_title'] = "Snapshot Detail"
+        self.context['snapshots_log'] = self.get_snapshots_log()
+        self.context['snapshot_uuid'] = snapshot_uuid
+        self.context['snapshot_sid'] = ''
+        if self.context['snapshots_log'].count():
+            self.context['snapshot_sid'] = self.context['snapshots_log'][0].sid
+
+        return flask.render_template(self.template_name, **self.context)
+
+    def get_snapshots_log(self):
+        return (
+            SnapshotsLog.query.filter(SnapshotsLog.owner == g.user)
+            .filter(SnapshotsLog.snapshot_uuid == self.snapshot_uuid)
+            .order_by(SnapshotsLog.created.desc())
+        )
 
 
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
@@ -603,3 +624,7 @@ devices.add_url_rule(
     '/export/<string:export_id>/', view_func=ExportsView.as_view('export')
 )
 devices.add_url_rule('/snapshots/', view_func=SnapshotListView.as_view('snapshotslist'))
+devices.add_url_rule(
+    '/snapshots/<string:snapshot_uuid>/',
+    view_func=SnapshotDetailView.as_view('snapshot_detail'),
+)
