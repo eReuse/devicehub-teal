@@ -106,11 +106,11 @@ class Lot(Thing):
 
     @property
     def is_incoming(self):
-        return bool(self.trade and self.trade.user_to == current_user)
+        return bool(self.trade and self.trade.user_to == g.user)
 
     @property
     def is_outgoing(self):
-        return bool(self.trade and self.trade.user_from == current_user)
+        return bool(self.trade and self.trade.user_from == g.user)
 
     @classmethod
     def descendantsq(cls, id):
