@@ -127,11 +127,12 @@ class Lot(Thing):
         if hasattr(self, 'trade'):
             return self.trade.user_to == g.user
         return False
-        # return bool(self.trade and self.trade.user_to == g.user)
 
     @property
     def is_outgoing(self):
-        return bool(self.trade and self.trade.user_from == g.user)
+        if hasattr(self, 'trade'):
+            return self.trade.user_to == g.user
+        return False
 
     @classmethod
     def descendantsq(cls, id):
