@@ -36,10 +36,7 @@ class SnapshotsLog(Thing):
             db.session.commit()
 
     def get_status(self):
-        if self.severity:
-            return Severity(self.severity)
-
-        return ''
+        return Severity(self.severity)
 
     def get_device(self):
         if self.snapshot:
