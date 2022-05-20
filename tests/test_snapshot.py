@@ -978,7 +978,8 @@ def test_snapshot_wb_lite(user: UserClient):
 
     assert dev.actions[0].power_on_hours == 6032
     errors = SnapshotsLog.query.filter().all()
-    assert errors == []
+    assert len(errors) == 1
+    assert errors[0].description == 'Ok'
 
 
 @pytest.mark.mvp
@@ -1170,8 +1171,8 @@ def test_snapshot_lite_error_in_components(user: UserClient):
 
     dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
     assert 'Motherboard' not in [x.type for x in dev.components]
-    error = SnapshotsLog.query.all()[0]
-    assert 'StopIteration' in error.description
+    error = SnapshotsLog.query.all()
+    assert 'StopIteration' in error[0].description
 
 
 @pytest.mark.mvp
@@ -1228,7 +1229,7 @@ def test_snapshot_errors(user: UserClient):
     assert SnapshotsLog.query.all() == []
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
     dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
-    assert len(SnapshotsLog.query.all()) == 2
+    assert len(SnapshotsLog.query.all()) == 3
 
     assert body11['device'].get('hid') == dev.hid
     assert body11['device']['id'] == dev.id
@@ -1265,7 +1266,9 @@ def test_snapshot_errors_no_serial_number(user: UserClient):
 
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
     assert res.status_code == 201
-    assert len(SnapshotsLog.query.all()) == 0
+    logs = SnapshotsLog.query.all()
+    assert len(logs) == 1
+    assert logs[0].description == 'Ok'
     dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
     assert not dev.model
     assert not dev.manufacturer
