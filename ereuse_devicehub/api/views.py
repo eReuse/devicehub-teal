@@ -65,7 +65,7 @@ class InventoryView(LoginMixin, SnapshotMixin):
             snapshot_uuid=snapshot.uuid,
             severity=Severity.Info,
             sid=snapshot.sid,
-            version=snapshot.version,
+            version=str(snapshot.version),
             snapshot=snapshot,
         )
         snap_log.save()
@@ -97,7 +97,7 @@ class InventoryView(LoginMixin, SnapshotMixin):
                 snapshot_uuid=uuid,
                 severity=Severity.Error,
                 sid=sid,
-                version=version,
+                version=str(version),
             )
             error.save(commit=True)
             # raise err

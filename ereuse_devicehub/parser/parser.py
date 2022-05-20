@@ -320,7 +320,7 @@ class ParseSnapshotLsHw:
         self.default = default
         self.uuid = snapshot.get("uuid")
         self.sid = snapshot.get("sid")
-        self.version = snapshot.get("version")
+        self.version = str(snapshot.get("version"))
         self.dmidecode_raw = snapshot["data"]["dmidecode"]
         self.smart = snapshot["data"]["smart"]
         self.hwinfo_raw = snapshot["data"]["hwinfo"]
