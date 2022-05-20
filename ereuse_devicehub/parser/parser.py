@@ -418,7 +418,7 @@ class ParseSnapshotLsHw:
         size = ram.get("Size")
         if not len(size.split(" ")) == 2:
             txt = (
-                "Error: Snapshot: {uuid}, tag: {sid} have this ram Size: {size}".format(
+                "Error: Snapshot: {uuid}, Sid: {sid} have this ram Size: {size}".format(
                     uuid=self.uuid, size=size, sid=self.sid
                 )
             )
@@ -430,7 +430,7 @@ class ParseSnapshotLsHw:
     def get_ram_speed(self, ram):
         speed = ram.get("Speed", "100")
         if not len(speed.split(" ")) == 2:
-            txt = "Error: Snapshot: {uuid}, tag: {sid} have this ram Speed: {speed}".format(
+            txt = "Error: Snapshot: {uuid}, Sid: {sid} have this ram Speed: {speed}".format(
                 uuid=self.uuid, speed=speed, sid=self.sid
             )
             self.errors(txt, severity=Severity.Warning)
@@ -465,7 +465,7 @@ class ParseSnapshotLsHw:
             uuid.UUID(dmi_uuid)
         except (ValueError, AttributeError) as err:
             self.errors("{}".format(err))
-            txt = "Error: Snapshot: {uuid} tag: {sid} have this uuid: {device}".format(
+            txt = "Error: Snapshot: {uuid} sid: {sid} have this uuid: {device}".format(
                 uuid=self.uuid, device=dmi_uuid, sid=self.sid
             )
             self.errors(txt, severity=Severity.Warning)
@@ -511,8 +511,8 @@ class ParseSnapshotLsHw:
         try:
             DataStorageInterface(interface.upper())
         except ValueError as err:
-            txt = "tag: {}, interface {} is not in DataStorageInterface Enum".format(
-                interface, self.sid
+            txt = "Sid: {}, interface {} is not in DataStorageInterface Enum".format(
+                self.sid, interface
             )
             self.errors("{}".format(err))
             self.errors(txt, severity=Severity.Warning)

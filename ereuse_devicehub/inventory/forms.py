@@ -268,7 +268,7 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
             snap_log = SnapshotsLog(
                 description='Ok',
                 snapshot_uuid=uuid,
-                severity=Severity.Error,
+                severity=Severity.Info,
                 sid=sid,
                 version=software_version,
                 snapshot=response,
