@@ -64,7 +64,6 @@ class GenericMixin(View):
                 )
             )
             .distinct()
-            .all()
         )
 
     def get_context(self):
