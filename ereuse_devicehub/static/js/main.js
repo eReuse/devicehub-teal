@@ -218,9 +218,13 @@
   /**
    * Avoid hide dropdown when user clicked inside
    */
-  document.getElementById("dropDownLotsSelector").addEventListener("click", event => {
-    event.stopPropagation();
-  })
+  const dropdownLotSelector = document.getElementById("dropDownLotsSelector")
+  if (dropdownLotSelector != null) { // If exists selector it will set click event
+    dropdownLotSelector.addEventListener("click", event => {
+      event.stopPropagation();
+    })
+  }
+
 
   /**
    * Search form functionality

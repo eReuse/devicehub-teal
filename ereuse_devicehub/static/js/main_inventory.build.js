@@ -1,5 +1,7 @@
 "use strict";
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classStaticPrivateFieldSpecGet(receiver, classConstructor, descriptor) { _classCheckPrivateStaticAccess(receiver, classConstructor); _classCheckPrivateStaticFieldDescriptor(descriptor, "get"); return _classApplyDescriptorGet(receiver, descriptor); }
 
 function _classCheckPrivateStaticFieldDescriptor(descriptor, action) { if (descriptor === undefined) { throw new TypeError("attempted to " + action + " private static field before its declaration"); } }
@@ -328,10 +330,37 @@ function export_file(type_file) {
     $("#exportAlertModal").click();
   }
 }
+
+class lotsSearcher {
+  /**
+   * do search when lot change in the search input
+   */
+  static doSearch(inputSearch) {
+    const lotsList = document.getElementById("LotsSelector").children;
+
+    for (let i = 0; i < lotsList.length; i++) {
+      const lot = lotsList[i].querySelector("label");
+
+      if (lot.innerText.toLowerCase().includes(inputSearch.toLowerCase())) {
+        lot.parentElement.style.display = "";
+      } else {
+        lot.parentElement.style.display = "none";
+      }
+    }
+  }
+
+}
+
+_defineProperty(lotsSearcher, "lots", []);
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("lots-search").addEventListener("input", e => {
+    lotsSearcher.doSearch(e.target.value);
+  });
+});
 /**
  * Reactive lots button
  */
-
 
 async function processSelectedDevices() {
   class Actions {
