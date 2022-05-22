@@ -319,10 +319,11 @@ function export_file(type_file) {
 
 class lotsSearcher {
     static lots = [];
+
     static lotsSearchElement = null;
     
     static getListLots = () => {
-        let lotsList = document.getElementById("LotsSelector")
+        const lotsList = document.getElementById("LotsSelector")
         if (lotsList) {
                                                  // Apply filter to get only labels
             return Array.from(lotsList.children).filter(item => item.querySelector("label"));
