@@ -332,15 +332,22 @@ function export_file(type_file) {
 }
 
 class lotsSearcher {
+  static enable() {
+    if (this.lotsSearchElement) this.lotsSearchElement.disabled = false;
+  }
+
+  static disable() {
+    if (this.lotsSearchElement) this.lotsSearchElement.disabled = true;
+  }
   /**
    * do search when lot change in the search input
    */
+
+
   static doSearch(inputSearch) {
-    const lotsList = document.getElementById("LotsSelector").children;
+    const lots = this.getListLots();
 
-    for (let i = 0; i < lotsList.length; i++) {
-      const lot = lotsList[i].querySelector("label");
-
+    for (let i = 0; i < lots.length; i++) {
       if (lot.innerText.toLowerCase().includes(inputSearch.toLowerCase())) {
         lot.parentElement.style.display = "";
       } else {
@@ -353,8 +360,22 @@ class lotsSearcher {
 
 _defineProperty(lotsSearcher, "lots", []);
 
+_defineProperty(lotsSearcher, "lotsSearchElement", null);
+
+_defineProperty(lotsSearcher, "getListLots", () => {
+  let lotsList = document.getElementById("LotsSelector");
+
+  if (lotsList) {
+    // Apply filter to get only labels
+    return Array.from(lotsList.children).filter(item => item.querySelector("label"));
+  }
+
+  return [];
+});
+
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("lots-search").addEventListener("input", e => {
+  lotsSearcher.lotsSearchElement = document.getElementById("lots-search");
+  lotsSearcher.lotsSearchElement.addEventListener("input", e => {
     lotsSearcher.doSearch(e.target.value);
   });
 });
@@ -613,6 +634,7 @@ async function processSelectedDevices() {
   document.getElementById("ApplyDeviceLots").classList.add("disabled");
 
   try {
+    lotsSearcher.disable();
     listHTML.html("<li style=\"text-align: center\"><div class=\"spinner-border text-info\" style=\"margin: auto\" role=\"status\"></div></li>");
     const selectedDevices = await Api.get_devices(selectedDevicesID);
     let lots = await Api.get_lots();
@@ -643,6 +665,7 @@ async function processSelectedDevices() {
 
     listHTML.html("");
     lotsList.forEach(lot => templateLot(lot, selectedDevices, listHTML, actions));
+    lotsSearcher.enable();
   } catch (error) {
     console.log(error);
     listHTML.html("<li style=\"color: red; text-align: center\">Error feching devices and lots<br>(see console for more details)</li>");
