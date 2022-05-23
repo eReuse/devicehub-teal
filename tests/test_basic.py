@@ -62,6 +62,8 @@ def test_api_docs(client: Client):
         '/inventory/lot/{lot_id}/device/add/',
         '/inventory/lot/{lot_id}/trade-document/add/',
         '/inventory/lot/{lot_id}/upload-snapshot/',
+        '/inventory/snapshots/{snapshot_uuid}/',
+        '/inventory/snapshots/',
         '/inventory/tag/devices/add/',
         '/inventory/tag/devices/{id}/del/',
         '/inventory/upload-snapshot/',
