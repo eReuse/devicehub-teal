@@ -87,7 +87,16 @@
                   <span class="caret"></span>
                 </button>
                 <span class="d-none" id="activeTradeModal" data-bs-toggle="modal" data-bs-target="#tradeLotModal"></span>
+
                 <ul class="dropdown-menu" aria-labelledby="btnLots" id="dropDownLotsSelector">
+                  <div class="row w-100">
+                    <div class="input-group mb-3 mx-2">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1"><i class="bi bi-search"></i></span>
+                      </div>
+                      <input type="text" class="form-control" id="lots-search" placeholder="search" aria-label="search" aria-describedby="basic-addon1">
+                    </div>
+                  </div>
                   <h6 class="dropdown-header">Select lots where to store the selected devices</h6>
                   <ul class="mx-3" id="LotsSelector"></ul>
                   <li><hr /></li>
