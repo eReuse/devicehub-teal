@@ -8,7 +8,7 @@ from marshmallow.exceptions import ValidationError
 
 from ereuse_devicehub.parser import base2
 from ereuse_devicehub.parser.computer import Computer
-from ereuse_devicehub.parser.models import SnapshotErrors
+from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.resources.action.schemas import Snapshot
 from ereuse_devicehub.resources.enums import DataStorageInterface, Severity
 
@@ -320,6 +320,7 @@ class ParseSnapshotLsHw:
         self.default = default
         self.uuid = snapshot.get("uuid")
         self.sid = snapshot.get("sid")
+        self.version = str(snapshot.get("version"))
         self.dmidecode_raw = snapshot["data"]["dmidecode"]
         self.smart = snapshot["data"]["smart"]
         self.hwinfo_raw = snapshot["data"]["hwinfo"]
@@ -362,7 +363,7 @@ class ParseSnapshotLsHw:
     def set_basic_datas(self):
         try:
             pc, self.components_obj = Computer.run(
-                self.lshw, self.hwinfo_raw, self.uuid, self.sid
+                self.lshw, self.hwinfo_raw, self.uuid, self.sid, self.version
             )
             pc = pc.dump()
             minimum_hid = None in [pc['manufacturer'], pc['model'], pc['serialNumber']]
@@ -417,11 +418,11 @@ class ParseSnapshotLsHw:
         size = ram.get("Size")
         if not len(size.split(" ")) == 2:
             txt = (
-                "Error: Snapshot: {uuid}, tag: {sid} have this ram Size: {size}".format(
+                "Error: Snapshot: {uuid}, Sid: {sid} have this ram Size: {size}".format(
                     uuid=self.uuid, size=size, sid=self.sid
                 )
             )
-            self.errors(txt)
+            self.errors(txt, severity=Severity.Warning)
             return 128
         size, units = size.split(" ")
         return base2.Quantity(float(size), units).to('MiB').m
@@ -429,10 +430,10 @@ class ParseSnapshotLsHw:
     def get_ram_speed(self, ram):
         speed = ram.get("Speed", "100")
         if not len(speed.split(" ")) == 2:
-            txt = "Error: Snapshot: {uuid}, tag: {sid} have this ram Speed: {speed}".format(
+            txt = "Error: Snapshot: {uuid}, Sid: {sid} have this ram Speed: {speed}".format(
                 uuid=self.uuid, speed=speed, sid=self.sid
             )
-            self.errors(txt)
+            self.errors(txt, severity=Severity.Warning)
             return 100
         speed, units = speed.split(" ")
         return float(speed)
@@ -464,10 +465,10 @@ class ParseSnapshotLsHw:
             uuid.UUID(dmi_uuid)
         except (ValueError, AttributeError) as err:
             self.errors("{}".format(err))
-            txt = "Error: Snapshot: {uuid} tag: {sid} have this uuid: {device}".format(
+            txt = "Error: Snapshot: {uuid} sid: {sid} have this uuid: {device}".format(
                 uuid=self.uuid, device=dmi_uuid, sid=self.sid
             )
-            self.errors(txt)
+            self.errors(txt, severity=Severity.Warning)
             dmi_uuid = None
         return dmi_uuid
 
@@ -510,11 +511,11 @@ class ParseSnapshotLsHw:
         try:
             DataStorageInterface(interface.upper())
         except ValueError as err:
-            txt = "tag: {}, interface {} is not in DataStorageInterface Enum".format(
-                interface, self.sid
+            txt = "Sid: {}, interface {} is not in DataStorageInterface Enum".format(
+                self.sid, interface
             )
             self.errors("{}".format(err))
-            self.errors(txt)
+            self.errors(txt, severity=Severity.Warning)
         return "ATA"
 
     def get_data_storage_size(self, x):
@@ -546,13 +547,17 @@ class ParseSnapshotLsHw:
 
         return action
 
-    def errors(self, txt=None, severity=Severity.Info):
+    def errors(self, txt=None, severity=Severity.Error):
         if not txt:
             return self._errors
 
         logger.error(txt)
         self._errors.append(txt)
-        error = SnapshotErrors(
-            description=txt, snapshot_uuid=self.uuid, severity=severity, sid=self.sid
+        error = SnapshotsLog(
+            description=txt,
+            snapshot_uuid=self.uuid,
+            severity=severity,
+            sid=self.sid,
+            version=self.version,
         )
         error.save()

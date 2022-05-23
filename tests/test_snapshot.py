@@ -15,10 +15,10 @@ from requests.exceptions import HTTPError
 from teal.db import DBError, UniqueViolation
 from teal.marshmallow import ValidationError
 
-from ereuse_devicehub.client import UserClient, Client
+from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
-from ereuse_devicehub.parser.models import SnapshotErrors
+from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.resources.action.models import (
     Action,
     BenchmarkDataStorage,
@@ -977,8 +977,9 @@ def test_snapshot_wb_lite(user: UserClient):
     assert '00:28:f8:a6:d5:7e' in dev.hid
 
     assert dev.actions[0].power_on_hours == 6032
-    errors = SnapshotErrors.query.filter().all()
-    assert errors == []
+    errors = SnapshotsLog.query.filter().all()
+    assert len(errors) == 1
+    assert errors[0].description == 'Ok'
 
 
 @pytest.mark.mvp
@@ -986,9 +987,7 @@ def test_snapshot_wb_lite(user: UserClient):
 def test_snapshot_wb_lite_qemu(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
 
-    snapshot = file_json(
-        "qemu-cc9927a9-55ad-4937-b36b-7185147d9fa9.json"
-    )
+    snapshot = file_json("qemu-cc9927a9-55ad-4937-b36b-7185147d9fa9.json")
     body, res = user.post(snapshot, uri="/api/inventory/")
 
     assert body['sid'] == "VL0L5"
@@ -1172,8 +1171,8 @@ def test_snapshot_lite_error_in_components(user: UserClient):
 
     dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
     assert 'Motherboard' not in [x.type for x in dev.components]
-    error = SnapshotErrors.query.all()[0]
-    assert 'StopIteration' in error.description
+    error = SnapshotsLog.query.all()
+    assert 'StopIteration' in error[0].description
 
 
 @pytest.mark.mvp
@@ -1225,12 +1224,12 @@ def test_snapshot_errors(user: UserClient):
         },
     }
 
-    assert SnapshotErrors.query.all() == []
+    assert SnapshotsLog.query.all() == []
     body11, res = user.post(snapshot_11, res=Snapshot)
-    assert SnapshotErrors.query.all() == []
+    assert SnapshotsLog.query.all() == []
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
     dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
-    assert len(SnapshotErrors.query.all()) == 2
+    assert len(SnapshotsLog.query.all()) == 3
 
     assert body11['device'].get('hid') == dev.hid
     assert body11['device']['id'] == dev.id
@@ -1267,7 +1266,9 @@ def test_snapshot_errors_no_serial_number(user: UserClient):
 
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
     assert res.status_code == 201
-    assert len(SnapshotErrors.query.all()) == 0
+    logs = SnapshotsLog.query.all()
+    assert len(logs) == 1
+    assert logs[0].description == 'Ok'
     dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
     assert not dev.model
     assert not dev.manufacturer
@@ -1286,9 +1287,11 @@ def test_snapshot_errors_no_serial_number(user: UserClient):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_snapshot_check_tests_lite(user: UserClient):
     """This test check the minimum validation of json that come from snapshot"""
-    snapshot_lite = file_json('test_lite/2022-4-13-19-5_user@dhub.com_b27dbf43-b88a-4505-ae27-10de5a95919e.json')
+    snapshot_lite = file_json(
+        'test_lite/2022-4-13-19-5_user@dhub.com_b27dbf43-b88a-4505-ae27-10de5a95919e.json'
+    )
 
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
     assert res.status_code == 201
-    SnapshotErrors.query.all()
+    SnapshotsLog.query.all()
     dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()

@@ -25,6 +25,7 @@ from ereuse_devicehub.inventory.forms import (
     UploadSnapshotForm,
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
+from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
@@ -512,6 +513,70 @@ class ExportsView(View):
         return flask.render_template('inventory/erasure.html', **params)
 
 
+class SnapshotListView(GenericMixin):
+    template_name = 'inventory/snapshots_list.html'
+
+    def dispatch_request(self):
+        self.get_context()
+        self.context['page_title'] = "Snapshots Logs"
+        self.context['snapshots_log'] = self.get_snapshots_log()
+
+        return flask.render_template(self.template_name, **self.context)
+
+    def get_snapshots_log(self):
+        snapshots_log = SnapshotsLog.query.filter(
+            SnapshotsLog.owner == g.user
+        ).order_by(SnapshotsLog.created.desc())
+        logs = {}
+        for snap in snapshots_log:
+            if snap.snapshot_uuid not in logs:
+                logs[snap.snapshot_uuid] = {
+                    'sid': snap.sid,
+                    'snapshot_uuid': snap.snapshot_uuid,
+                    'version': snap.version,
+                    'device': snap.get_device(),
+                    'status': snap.get_status(),
+                    'severity': snap.severity,
+                    'created': snap.created,
+                }
+                continue
+
+            if snap.created > logs[snap.snapshot_uuid]['created']:
+                logs[snap.snapshot_uuid]['created'] = snap.created
+
+            if snap.severity > logs[snap.snapshot_uuid]['severity']:
+                logs[snap.snapshot_uuid]['severity'] = snap.severity
+                logs[snap.snapshot_uuid]['status'] = snap.get_status()
+
+        result = sorted(logs.values(), key=lambda d: d['created'])
+        result.reverse()
+
+        return result
+
+
+class SnapshotDetailView(GenericMixin):
+    template_name = 'inventory/snapshot_detail.html'
+
+    def dispatch_request(self, snapshot_uuid):
+        self.snapshot_uuid = snapshot_uuid
+        self.get_context()
+        self.context['page_title'] = "Snapshot Detail"
+        self.context['snapshots_log'] = self.get_snapshots_log()
+        self.context['snapshot_uuid'] = snapshot_uuid
+        self.context['snapshot_sid'] = ''
+        if self.context['snapshots_log'].count():
+            self.context['snapshot_sid'] = self.context['snapshots_log'][0].sid
+
+        return flask.render_template(self.template_name, **self.context)
+
+    def get_snapshots_log(self):
+        return (
+            SnapshotsLog.query.filter(SnapshotsLog.owner == g.user)
+            .filter(SnapshotsLog.snapshot_uuid == self.snapshot_uuid)
+            .order_by(SnapshotsLog.created.desc())
+        )
+
+
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/action/trade/add/', view_func=NewTradeView.as_view('trade_add'))
 devices.add_url_rule(
@@ -557,4 +622,9 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/export/<string:export_id>/', view_func=ExportsView.as_view('export')
+)
+devices.add_url_rule('/snapshots/', view_func=SnapshotListView.as_view('snapshotslist'))
+devices.add_url_rule(
+    '/snapshots/<string:snapshot_uuid>/',
+    view_func=SnapshotDetailView.as_view('snapshot_detail'),
 )
