@@ -68,7 +68,7 @@ jobs:
 
     - name: Adding minimum datas
       env:
-        SECRET_KEY = 'f00046306835001b55c230092e3a7990485beda0bc3bf732088d1ba1b5b74110e22e3f9ec3a24890272554b37d4'
+        SECRET_KEY: 'f00046306835001b55c230092e3a7990485beda0bc3bf732088d1ba1b5b74110e22e3f9ec3a24890272554b37d4'
       run: |
         alembic -x inventory=dbtest upgrade head
         dh dummy --yes
