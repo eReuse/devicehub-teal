@@ -49,6 +49,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest coverage
         pip install -r requirements.txt
+        alembic -x inventory=dbtest upgrade head
+        dh dummy --yes
+        mkdir bin
+        wget https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz
+        tar xf geckodriver-v0.30.0-linux64.tar.gz -C bin/
 
     - name: Prepare database
       env:
@@ -79,6 +84,7 @@ jobs:
         coverage run --source='ereuse_devicehub' -m pytest -m mvp --maxfail=5 tests/
         coverage report --include='ereuse_devicehub/*'
         coverage xml
+        flask run & pytest tests/test_selenium.py
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
