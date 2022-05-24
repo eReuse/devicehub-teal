@@ -93,7 +93,7 @@ const selectorController = (action) => {
         table.on("datatable.perpage", () => itemListCheckChanged());
         table.on("datatable.update", () => itemListCheckChanged());
     }
-    
+
     if (action == "softInit") {
         softInit();
         itemListCheckChanged();
@@ -103,8 +103,8 @@ const selectorController = (action) => {
     function itemListCheckChanged() {
         alertInfoDevices.innerHTML = `Selected devices: ${TableController.getSelectedDevices().length}
             ${TableController.getAllDevices().length != TableController.getSelectedDevices().length
-                    ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
-                    : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
+                ? `<a href="#" class="ml-3">Select all devices (${TableController.getAllDevices().length})</a>`
+                : "<a href=\"#\" class=\"ml-3\">Cancel selection</a>"
             }`;
 
         if (TableController.getSelectedDevices().length <= 0) {
@@ -132,7 +132,7 @@ const selectorController = (action) => {
 
         get_device_list();
     }
-    
+
     btnSelectAll.addEventListener("click", event => {
         const checkedState = event.target.checked;
         TableController.getAllDevicesInCurrentPage().forEach(ckeckbox => { ckeckbox.checked = checkedState });
@@ -317,6 +317,47 @@ function export_file(type_file) {
     }
 }
 
+class lotsSearcher {
+    static lots = [];
+
+    static lotsSearchElement = null;
+    
+    static getListLots = () => {
+        const lotsList = document.getElementById("LotsSelector")
+        if (lotsList) {
+                                                 // Apply filter to get only labels
+            return Array.from(lotsList.children).filter(item => item.querySelector("label"));
+        }
+        return [];
+    }
+
+    static enable() {
+        if (this.lotsSearchElement) this.lotsSearchElement.disabled = false;
+    }
+
+    static disable() {
+        if (this.lotsSearchElement) this.lotsSearchElement.disabled = true;
+    }
+
+    /**
+     * do search when lot change in the search input
+     */
+    static doSearch(inputSearch) {
+        const lots = this.getListLots();
+        for (let i = 0; i < lots.length; i++) {
+            if (lot.innerText.toLowerCase().includes(inputSearch.toLowerCase())) {
+                lot.parentElement.style.display = "";
+            } else {
+                lot.parentElement.style.display = "none";
+            }
+        }
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    lotsSearcher.lotsSearchElement = document.getElementById("lots-search");
+    lotsSearcher.lotsSearchElement.addEventListener("input", (e) => { lotsSearcher.doSearch(e.target.value) })
+})
 
 /**
  * Reactive lots button
@@ -438,7 +479,7 @@ async function processSelectedDevices() {
             const tmpDiv = document.createElement("div")
             tmpDiv.innerHTML = newRequest
 
-            
+
             const newTable = document.createElement("table")
             newTable.innerHTML = tmpDiv.querySelector("table").innerHTML
             newTable.classList = "table"
@@ -557,6 +598,7 @@ async function processSelectedDevices() {
     document.getElementById("ApplyDeviceLots").classList.add("disabled");
 
     try {
+        lotsSearcher.disable()
         listHTML.html("<li style=\"text-align: center\"><div class=\"spinner-border text-info\" style=\"margin: auto\" role=\"status\"></div></li>")
         const selectedDevices = await Api.get_devices(selectedDevicesID);
         let lots = await Api.get_lots();
@@ -589,6 +631,7 @@ async function processSelectedDevices() {
 
         listHTML.html("");
         lotsList.forEach(lot => templateLot(lot, selectedDevices, listHTML, actions));
+        lotsSearcher.enable();
     } catch (error) {
         console.log(error);
         listHTML.html("<li style=\"color: red; text-align: center\">Error feching devices and lots<br>(see console for more details)</li>");

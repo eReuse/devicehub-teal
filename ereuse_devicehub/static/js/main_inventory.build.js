@@ -1,5 +1,7 @@
 "use strict";
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classStaticPrivateFieldSpecGet(receiver, classConstructor, descriptor) { _classCheckPrivateStaticAccess(receiver, classConstructor); _classCheckPrivateStaticFieldDescriptor(descriptor, "get"); return _classApplyDescriptorGet(receiver, descriptor); }
 
 function _classCheckPrivateStaticFieldDescriptor(descriptor, action) { if (descriptor === undefined) { throw new TypeError("attempted to " + action + " private static field before its declaration"); } }
@@ -328,10 +330,58 @@ function export_file(type_file) {
     $("#exportAlertModal").click();
   }
 }
+
+class lotsSearcher {
+  static enable() {
+    if (this.lotsSearchElement) this.lotsSearchElement.disabled = false;
+  }
+
+  static disable() {
+    if (this.lotsSearchElement) this.lotsSearchElement.disabled = true;
+  }
+  /**
+   * do search when lot change in the search input
+   */
+
+
+  static doSearch(inputSearch) {
+    const lots = this.getListLots();
+
+    for (let i = 0; i < lots.length; i++) {
+      if (lot.innerText.toLowerCase().includes(inputSearch.toLowerCase())) {
+        lot.parentElement.style.display = "";
+      } else {
+        lot.parentElement.style.display = "none";
+      }
+    }
+  }
+
+}
+
+_defineProperty(lotsSearcher, "lots", []);
+
+_defineProperty(lotsSearcher, "lotsSearchElement", null);
+
+_defineProperty(lotsSearcher, "getListLots", () => {
+  let lotsList = document.getElementById("LotsSelector");
+
+  if (lotsList) {
+    // Apply filter to get only labels
+    return Array.from(lotsList.children).filter(item => item.querySelector("label"));
+  }
+
+  return [];
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  lotsSearcher.lotsSearchElement = document.getElementById("lots-search");
+  lotsSearcher.lotsSearchElement.addEventListener("input", e => {
+    lotsSearcher.doSearch(e.target.value);
+  });
+});
 /**
  * Reactive lots button
  */
-
 
 async function processSelectedDevices() {
   class Actions {
@@ -584,6 +634,7 @@ async function processSelectedDevices() {
   document.getElementById("ApplyDeviceLots").classList.add("disabled");
 
   try {
+    lotsSearcher.disable();
     listHTML.html("<li style=\"text-align: center\"><div class=\"spinner-border text-info\" style=\"margin: auto\" role=\"status\"></div></li>");
     const selectedDevices = await Api.get_devices(selectedDevicesID);
     let lots = await Api.get_lots();
@@ -614,6 +665,7 @@ async function processSelectedDevices() {
 
     listHTML.html("");
     lotsList.forEach(lot => templateLot(lot, selectedDevices, listHTML, actions));
+    lotsSearcher.enable();
   } catch (error) {
     console.log(error);
     listHTML.html("<li style=\"color: red; text-align: center\">Error feching devices and lots<br>(see console for more details)</li>");
