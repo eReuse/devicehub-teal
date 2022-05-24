@@ -5,12 +5,10 @@ Revises: 3eb50297c365
 Create Date: 2020-12-29 20:19:46.981207
 
 """
-from alembic import context
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 import teal
-
+from alembic import context, op
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'b4bd1538bad5'
@@ -25,33 +23,66 @@ def get_inv():
         raise ValueError("Inventory value is not specified")
     return INV
 
+
 def upgrade():
     # Live action
     op.drop_table('live', schema=f'{get_inv()}')
-    op.create_table('live',
+    op.create_table(
+        'live',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('serial_number', sa.Unicode(), nullable=True,
-                  comment='The serial number of the Hard Disk in lower case.'),
+        sa.Column(
+            'serial_number',
+            sa.Unicode(),
+            nullable=True,
+            comment='The serial number of the Hard Disk in lower case.',
+        ),
         sa.Column('usage_time_hdd', sa.Interval(), nullable=True),
         sa.Column('snapshot_uuid', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('software_version', teal.db.StrictVersionType(length=32), nullable=False),
-        sa.Column('licence_version', teal.db.StrictVersionType(length=32), nullable=False),
-        sa.Column('software', sa.Enum('Workbench', 'WorkbenchAndroid', 'AndroidApp', 'Web', 
-            'DesktopApp', 'WorkbenchDesktop',  name='snapshotsoftware'), nullable=False),
-        sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
+        sa.Column(
+            'software_version', teal.db.StrictVersionType(length=32), nullable=False
+        ),
+        sa.Column(
+            'licence_version', teal.db.StrictVersionType(length=32), nullable=False
+        ),
+        sa.Column(
+            'software',
+            sa.Enum(
+                'Workbench',
+                'WorkbenchAndroid',
+                'AndroidApp',
+                'Web',
+                'DesktopApp',
+                'WorkbenchDesktop',
+                name='snapshotsoftware',
+            ),
+            nullable=False,
+        ),
+        sa.ForeignKeyConstraint(
+            ['id'],
+            [f'{get_inv()}.action.id'],
+        ),
         sa.PrimaryKeyConstraint('id'),
-        schema=f'{get_inv()}'
+        schema=f'{get_inv()}',
     )
+
 
 def downgrade():
     op.drop_table('live', schema=f'{get_inv()}')
-    op.create_table('live',
+    op.create_table(
+        'live',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('serial_number', sa.Unicode(), nullable=True,
-                  comment='The serial number of the Hard Disk in lower case.'),
+        sa.Column(
+            'serial_number',
+            sa.Unicode(),
+            nullable=True,
+            comment='The serial number of the Hard Disk in lower case.',
+        ),
         sa.Column('usage_time_hdd', sa.Interval(), nullable=True),
         sa.Column('snapshot_uuid', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.ForeignKeyConstraint(['id'], [f'{get_inv()}.action.id'], ),
+        sa.ForeignKeyConstraint(
+            ['id'],
+            [f'{get_inv()}.action.id'],
+        ),
         sa.PrimaryKeyConstraint('id'),
-        schema=f'{get_inv()}'
+        schema=f'{get_inv()}',
     )
