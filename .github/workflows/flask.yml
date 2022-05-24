@@ -49,8 +49,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest coverage
         pip install -r requirements.txt
-        alembic -x inventory=dbtest upgrade head
-        dh dummy --yes
         mkdir bin
         wget https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz
         tar xf geckodriver-v0.30.0-linux64.tar.gz -C bin/
@@ -66,6 +64,11 @@ jobs:
         psql -h "localhost" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION ltree SCHEMA public;"
         psql -h "localhost" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION citext SCHEMA public;"
         psql -h "localhost" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION pg_trgm SCHEMA public;"
+
+    - name: Adding minimum datas
+      run: |
+        alembic -x inventory=dbtest upgrade head
+        dh dummy --yes
 
     - name: Lint with flake8
       run: |
