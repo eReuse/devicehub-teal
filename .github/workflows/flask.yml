@@ -74,6 +74,7 @@ jobs:
       run: |
         alembic -x inventory=dbtest upgrade head
         dh dummy --yes
+        flask run & pytest tests/test_selenium.py
 
     - name: Lint with flake8
       run: |
@@ -92,7 +93,6 @@ jobs:
         coverage run --source='ereuse_devicehub' -m pytest -m mvp --maxfail=5 tests/
         coverage report --include='ereuse_devicehub/*'
         coverage xml
-        flask run & pytest tests/test_selenium.py
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
