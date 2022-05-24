@@ -148,7 +148,6 @@ def upgrade():
         name='currency',
         create_type=False,
         checkfirst=True,
-        schema=f'{get_inv()}',
     )
 
     op.drop_table('trade', schema=f'{get_inv()}')

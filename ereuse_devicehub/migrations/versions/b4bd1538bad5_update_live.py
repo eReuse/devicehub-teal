@@ -25,6 +25,20 @@ def get_inv():
 
 
 def upgrade():
+    # op.execute("COMMIT")
+    op.execute("ALTER TYPE snapshotsoftware ADD VALUE 'WorkbenchDesktop'")
+    SOFTWARE = sa.Enum(
+        'Workbench',
+        'WorkbenchAndroid',
+        'AndroidApp',
+        'Web',
+        'DesktopApp',
+        'WorkbenchDesktop',
+        name='snapshotsoftware',
+        create_type=False,
+        checkfirst=True,
+    )
+
     # Live action
     op.drop_table('live', schema=f'{get_inv()}')
     op.create_table(
@@ -44,19 +58,7 @@ def upgrade():
         sa.Column(
             'licence_version', teal.db.StrictVersionType(length=32), nullable=False
         ),
-        sa.Column(
-            'software',
-            sa.Enum(
-                'Workbench',
-                'WorkbenchAndroid',
-                'AndroidApp',
-                'Web',
-                'DesktopApp',
-                'WorkbenchDesktop',
-                name='snapshotsoftware',
-            ),
-            nullable=False,
-        ),
+        sa.Column('software', SOFTWARE, nullable=False),
         sa.ForeignKeyConstraint(
             ['id'],
             [f'{get_inv()}.action.id'],
@@ -85,4 +87,7 @@ def downgrade():
         ),
         sa.PrimaryKeyConstraint('id'),
         schema=f'{get_inv()}',
+    )
+    op.execute(
+        "select e.enumlabel FROM pg_enum e JOIN pg_type t ON e.enumtypid = t.oid WHERE t.typname = 'snapshotsoftware'"
     )
