@@ -350,7 +350,8 @@
                       <th scope="col">Lifecycle Status</th>
                       <th scope="col">Allocated Status</th>
                       <th scope="col">Physical Status</th>
-                      <th scope="col" data-type="date" data-format="DD-MM-YYYY">Update</th>
+                      <th scope="col" data-type="date" data-format="YYYY-MM-DD">Updated in</th>
+                      <th scope="col" data-type="date" data-format="YYYY-MM-DD hh:mm:ss">Registered in</th>
                       <th scope="col"></th>
                     </tr>
                   </thead>
@@ -395,7 +396,8 @@
                       <td>{% if dev.status %}{{ dev.status.type }}{% endif %}</td>
                       <td>{% if dev.allocated_status %}{{ dev.allocated_status.type }}{% endif %}</td>
                       <td>{% if dev.physical_status %}{{ dev.physical_status.type }}{% endif %}</td>
-                      <td>{{ dev.updated.strftime('%H:%M %d-%m-%Y') }}</td>
+                      <td>{{ dev.updated.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                      <td>{{ dev.created.strftime('%Y-%m-%d %H:%M:%S')}}</td>
                       <td>
                         <a href="{{ dev.public_link }}" target="_blank">
                           <i class="bi bi-box-arrow-up-right"></i>
