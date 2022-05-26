@@ -1,6 +1,5 @@
 import copy
 import pathlib
-import time
 from contextlib import suppress
 from fractions import Fraction
 from itertools import chain
@@ -358,7 +357,6 @@ class Device(Thing):
         from ereuse_devicehub.resources.device import states
 
         with suppress(LookupError, ValueError):
-            # import pdb; pdb.set_trace()
             return self.last_action_of(*states.Physical.actions())
 
     @property
@@ -407,7 +405,7 @@ class Device(Thing):
     def tradings(self):
         return {str(x.id): self.trading(x.lot) for x in self.actions if x.t == 'Trade'}
 
-    def trading(self, lot, simple=None):
+    def trading(self, lot, simple=None):  # noqa: C901
         """The trading state, or None if no Trade action has
         ever been performed to this device. This extract the posibilities for to do.
         This method is performed for show in the web.
