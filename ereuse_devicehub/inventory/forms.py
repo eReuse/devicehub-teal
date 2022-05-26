@@ -1,4 +1,5 @@
 import copy
+import datetime
 import json
 from json.decoder import JSONDecodeError
 
@@ -667,6 +668,10 @@ class AllocateForm(ActionFormMix):
             self.start_time.errors = ['Not a valid date value.!']
             return False
 
+        if start_time > datetime.datetime.now().date():
+            self.start_time.errors = ['Not a valid date value.!']
+            return False
+
         if start_time and end_time and end_time < start_time:
             error = ['The action cannot finish before it starts.']
             self.end_time.errors = error
@@ -679,23 +684,100 @@ class AllocateForm(ActionFormMix):
 
     def check_devices(self):
         if self.type.data == 'Allocate':
-            txt = "You need deallocate before allocate this device again"
-            for device in self._devices:
-                if device.allocated:
-                    self.devices.errors = [txt]
-                    return False
-
-                device.allocated = True
-
+            return self.check_allocate()
         if self.type.data == 'Deallocate':
-            txt = "Sorry some of this devices are actually deallocate"
-            for device in self._devices:
-                if not device.allocated:
+            return self.check_deallocate()
+        return True
+
+    def check_allocate(self):
+        txt = "You need deallocate before allocate this device again"
+        for device in self._devices:
+            # |  Allo  -  Deallo  |  Allo  -  Deallo  |
+
+            allocates = [
+                ac for ac in device.actions if ac.type in ['Allocate', 'Deallocate']
+            ]
+            allocates.sort(key=lambda x: x.start_time)
+            allocates.reverse()
+            last_deallocate = None
+            last_allocate = None
+            for ac in allocates:
+                if (
+                    ac.type == 'Deallocate'
+                    and ac.start_time.date() < self.start_time.data
+                ):
+                    # allow to do the action
+                    break
+
+                # check if this action is between an old allocate - deallocate
+                if ac.type == 'Deallocate':
+                    last_deallocate = ac
+                    continue
+
+                if (
+                    ac.type == 'Allocate'
+                    and ac.start_time.date() > self.start_time.data
+                ):
+                    last_deallocate = None
+                    last_allocate = None
+                    continue
+
+                if ac.type == 'Allocate':
+                    last_allocate = ac
+
+                if last_allocate or not last_deallocate:
                     self.devices.errors = [txt]
                     return False
 
-                device.allocated = False
+            device.allocated = True
+        return True
 
+    def check_deallocate(self):
+        txt = "Sorry some of this devices are actually deallocate"
+        for device in self._devices:
+            allocates = [
+                ac for ac in device.actions if ac.type in ['Allocate', 'Deallocate']
+            ]
+            allocates.sort(key=lambda x: x.start_time)
+            allocates.reverse()
+            last_deallocate = None
+            last_allocate = None
+
+            for ac in allocates:
+                # check if this action is between an old allocate - deallocate
+                # |  Allo  -  Deallo  |  Allo  -  Deallo  |
+                # |  Allo  |
+                if (
+                    ac.type == 'Allocate'
+                    and ac.start_time.date() > self.start_time.data
+                ):
+                    last_allocate = None
+                    last_deallocate = None
+                    continue
+
+                if ac.type == 'Allocate' and not last_deallocate:
+                    last_allocate = ac
+                    break
+
+                if (
+                    ac.type == 'Deallocate'
+                    and ac.start_time.date() > self.start_time.data
+                ):
+                    last_deallocate = ac
+                    continue
+
+                if ac.type == 'Deallocate':
+                    last_allocate = None
+
+                if last_deallocate or not last_allocate:
+                    self.devices.errors = [txt]
+                    return False
+
+            if not last_deallocate and not last_allocate:
+                self.devices.errors = [txt]
+                return False
+
+            device.allocated = False
         return True
 
 
