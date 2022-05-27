@@ -8,6 +8,7 @@ from teal.db import CASCADE_OWN
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.models import Thing
+from ereuse_devicehub.resources.user.models import User
 
 
 class Transfer(Thing):
@@ -18,7 +19,7 @@ class Transfer(Thing):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     code = Column(CIText(), default='', nullable=False)
-    closed = Boolean(default=False)
+    closed = Column(Boolean, nullable=False, default=False)
     date = Column(db.TIMESTAMP(timezone=True))
     description = Column(CIText(), default='', nullable=True)
     lot_id = db.Column(
@@ -31,3 +32,7 @@ class Transfer(Thing):
         backref=backref('transfer', lazy=True, uselist=False, cascade=CASCADE_OWN),
         primaryjoin='Transfer.lot_id == Lot.id',
     )
+    user_from_id = db.Column(UUID(as_uuid=True), db.ForeignKey(User.id), nullable=True)
+    user_from = db.relationship(User, primaryjoin=user_from_id == User.id)
+    user_to_id = db.Column(UUID(as_uuid=True), db.ForeignKey(User.id), nullable=True)
+    user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
