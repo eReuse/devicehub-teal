@@ -78,6 +78,17 @@
           </ul>
           {% endif %}
           <div class="tab-content pt-1">
+            {% if lot and lot.is_temporary %}
+            <div class="tab-pane active show mb-5">
+                <a type="button" href="{{ url_for('inventory.new_transfer', lot_id=lot.id, type_id='outgoing') }}" class="btn btn-primary" style="float: right;">
+                  Outgoing Transfer
+                </a>
+                <a type="button" href="{{ url_for('inventory.new_transfer', lot_id=lot.id, type_id='incoming') }}" class="btn btn-primary" style="float: right; margin-right: 15px;">
+                  Incoming Transfer
+                </a>
+                <div style="display: block;"></div>
+            </div>
+            {% endif %}
             <div id="devices-list" class="tab-pane fade devices-list active show">
               <label class="btn btn-primary " for="SelectAllBTN"><input type="checkbox" id="SelectAllBTN" autocomplete="off"></label>
               <div class="btn-group dropdown ml-1">

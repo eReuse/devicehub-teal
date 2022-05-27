@@ -26,6 +26,7 @@ from wtforms import (
 from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.inventory.models import Transfer
 from ereuse_devicehub.resources.action.models import RateComputer, Snapshot, Trade
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
@@ -1094,6 +1095,59 @@ class TradeDocumentForm(FlaskForm):
         self._obj.file_hash = file_hash
         db.session.add(self._obj)
         self._lot.trade.documents.add(self._obj)
+        if commit:
+            db.session.commit()
+
+        return self._obj
+
+
+class TransferForm(FlaskForm):
+    code = StringField(
+        'Code',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="You need put a code for transfer the external user",
+    )
+    date = DateField(
+        'Date',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="""Date when the transfer is closed""",
+    )
+    description = TextAreaField(
+        'Description',
+        render_kw={'class': "form-control"},
+    )
+    type = HiddenField()
+
+    def __init__(self, *args, **kwargs):
+        lot_id = kwargs.pop('lot_id')
+        super().__init__(*args, **kwargs)
+        self._tmp_lot = Lot.query.filter(Lot.id == lot_id).one()
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if self.type.data not in ['incoming', 'outgoing']:
+            is_valid = False
+
+        return is_valid
+
+    def save(self, commit=True):
+        self.newlot = Lot(name=self._tmp_lot.name)
+        self.newlot.devices = self._tmp_lot.devices
+        db.session.add(self.newlot)
+
+        self._obj = Transfer(lot=self.newlot)
+        self.populate_obj(self._obj)
+
+        if self.type.data == 'incoming':
+            self._obj.user_to = g.user
+        elif self.type.data == 'outgoing':
+            self._obj.user_from = g.user
+
+        db.session.add(self._obj)
+
         if commit:
             db.session.commit()
 

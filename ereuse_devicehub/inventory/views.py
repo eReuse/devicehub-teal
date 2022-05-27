@@ -22,6 +22,7 @@ from ereuse_devicehub.inventory.forms import (
     TagDeviceForm,
     TradeDocumentForm,
     TradeForm,
+    TransferForm,
     UploadSnapshotForm,
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
@@ -400,6 +401,29 @@ class NewTradeDocumentView(View):
         return flask.render_template(self.template_name, **self.context)
 
 
+class NewTransferView(GenericMixView):
+    methods = ['POST', 'GET']
+    template_name = 'inventory/new_transfer.html'
+    form_class = TransferForm
+    title = "Add new transfer"
+
+    def dispatch_request(self, lot_id, type_id):
+        self.form = self.form_class(lot_id=lot_id, type=type_id)
+        self.get_context()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            new_lot_id = lot_id
+            if self.form.newlot.id:
+                new_lot_id = self.form.newlot.id
+            messages.success('Transfer created successfully!')
+            next_url = url_for('inventory.lotdevicelist', lot_id=new_lot_id)
+            return flask.redirect(next_url)
+
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
+
+
 class ExportsView(View):
     methods = ['GET']
     decorators = [login_required]
@@ -556,4 +580,8 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/export/<string:export_id>/', view_func=ExportsView.as_view('export')
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/transfer/<string:type_id>/',
+    view_func=NewTransferView.as_view('new_transfer'),
 )
