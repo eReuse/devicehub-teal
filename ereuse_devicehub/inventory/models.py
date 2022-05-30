@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from citext import CIText
-from sqlalchemy import Boolean, Column
+from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from teal.db import CASCADE_OWN
@@ -19,7 +19,6 @@ class Transfer(Thing):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     code = Column(CIText(), default='', nullable=False)
-    closed = Column(Boolean, nullable=False, default=False)
     date = Column(db.TIMESTAMP(timezone=True))
     description = Column(CIText(), default='', nullable=True)
     lot_id = db.Column(
@@ -36,3 +35,10 @@ class Transfer(Thing):
     user_from = db.relationship(User, primaryjoin=user_from_id == User.id)
     user_to_id = db.Column(UUID(as_uuid=True), db.ForeignKey(User.id), nullable=True)
     user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
+
+    @property
+    def closed(self):
+        if self.date:
+            return True
+
+        return False

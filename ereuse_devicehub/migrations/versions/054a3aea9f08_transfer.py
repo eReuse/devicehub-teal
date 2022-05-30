@@ -42,7 +42,6 @@ def upgrade():
         ),
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('code', citext.CIText(), nullable=False),
-        sa.Column('closed', sa.Boolean(), nullable=False),
         sa.Column(
             'description',
             citext.CIText(),
