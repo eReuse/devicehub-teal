@@ -40,7 +40,7 @@
             <h3 class="col-sm-12 col-md-5"><a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
 
             <div class="col-sm-12 col-md-7 d-md-flex justify-content-md-end"><!-- lot actions -->
-              {% if lot.is_temporary %}
+              {% if lot.is_temporary or not lot.transfer.closed %}
 
                 {% if 1 == 2 %}{# <!-- TODO (@slamora) Don't render Trade buttons until implementation is finished --> #}
                 <a class="me-2" href="javascript:newTrade('user_from')">
@@ -73,6 +73,12 @@
 
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#trade-documents-list">Documents</button>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#edit-transfer">
+              Transfer ({% if lot.transfer.closed %}Closed{% else %}Open{% endif %})
+              </button>
             </li>
 
           </ul>
@@ -448,6 +454,38 @@
                     {% endfor %}
                   </tbody>
                 </table>
+              </div>
+              <div id="edit-transfer" class="tab-pane fade edit-transfer">
+                <h5 class="card-title">Transfer</h5>
+                <form method="post" action="{{ url_for('inventory.edit_transfer', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
+                  {{ form_transfer.csrf_token }}
+
+                  {% for field in form_transfer %}
+                    {% if field != form_transfer.csrf_token %}
+                      <div class="col-12">
+                      {% if field != form_transfer.type %}
+                        {{ field.label(class_="form-label") }}
+                        {% if field == form_transfer.code %}
+                        <span class="text-danger">*</span>
+                        {% endif %}
+                        {{ field }}
+                        {% if field.errors %}
+                          <p class="text-danger">
+                            {% for error in field.errors %}
+                              {{ error }}<br/>
+                            {% endfor %}
+                          </p>
+                        {% endif %}
+                      {% endif %}
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+
+                  <div>
+                    <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}" class="btn btn-danger">Cancel</a>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                  </div>
+                </form>
               </div>
               {% endif %}
 
