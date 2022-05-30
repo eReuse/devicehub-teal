@@ -1169,6 +1169,7 @@ class EditTransferForm(TransferForm):
     )
 
     def __init__(self, *args, **kwargs):
+        # import pdb;pdb.set_trace()
         super().__init__(*args, **kwargs)
         del self.type
 

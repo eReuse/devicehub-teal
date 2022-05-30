@@ -54,7 +54,7 @@ class DeviceListMix(GenericMixView):
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
             if not lot.is_temporary and lot.transfer:
-                form_transfer = EditTransferForm(lot_id=lot.id, id=lot.transfer.id)
+                form_transfer = EditTransferForm(lot_id=lot.id)
 
         form_new_action = NewActionForm(lot=lot_id)
         self.context.update(
@@ -412,7 +412,7 @@ class NewTransferView(GenericMixView):
             self.form.save()
             new_lot_id = lot_id
             if self.form.newlot.id:
-                new_lot_id = self.form.newlot.id
+                new_lot_id = "{}".format(self.form.newlot.id)
                 Lot.query.filter(Lot.id == new_lot_id).one()
             messages.success('Transfer created successfully!')
             next_url = url_for('inventory.lotdevicelist', lot_id=new_lot_id)
