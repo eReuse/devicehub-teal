@@ -1135,17 +1135,19 @@ def test_edit_transfer(user3: UserClientFlask):
     body, status = user3.get(uri)
     assert status == '200 OK'
     assert 'Transfer (Open)' not in body
-    assert 'Delete Lot' in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' in body
 
     # create new incoming lot
     uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
     data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
     body, status = user3.post(uri, data=data)
     assert 'Transfer (Open)' in body
-    assert 'Delete Lot' in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' in body
+    lot = Lot.query.filter()[1]
+    assert lot.transfer is not None
 
     # edit transfer with errors
-    # import pdb; pdb.set_trace()
+    lot_id = lot.id
     uri = f'/inventory/lot/{lot_id}/transfer/'
     data = {
         'csrf_token': generate_csrf(),
@@ -1154,16 +1156,13 @@ def test_edit_transfer(user3: UserClientFlask):
         'date': datetime.datetime.now().date() + datetime.timedelta(15),
     }
     body, status = user3.post(uri, data=data)
-    assert 'Transfer (Open)' not in body
-    assert 'Delete Lot' in body
-
     assert status == '200 OK'
     assert 'Transfer updated error!' in body
-    assert 'Delete Lot' in body
     assert 'one one one' not in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' in body
     assert 'Transfer (Open)' in body
 
-    # edit transfer successfully
+    # # edit transfer successfully
     data = {
         'csrf_token': generate_csrf(),
         'code': 'AAA',
@@ -1173,6 +1172,6 @@ def test_edit_transfer(user3: UserClientFlask):
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
     assert 'Transfer updated successfully!' in body
-    assert 'Delete Lot' not in body
-    assert 'Transfer (Closed)' in body
     assert 'one one one' in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' not in body
+    assert 'Transfer (Closed)' in body
