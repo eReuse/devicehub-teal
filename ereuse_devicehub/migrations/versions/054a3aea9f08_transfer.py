@@ -5,6 +5,8 @@ Revises: 8571fb32c912
 Create Date: 2022-05-27 11:07:18.245322
 
 """
+from uuid import uuid4
+
 import citext
 import sqlalchemy as sa
 from alembic import context, op
@@ -22,6 +24,31 @@ def get_inv():
     if not INV:
         raise ValueError("Inventory value is not specified")
     return INV
+
+
+def upgrade_datas():
+    sql = f'select user_from_id, user_to_id, lot_id, code from {get_inv()}.trade where confirm=False'
+    con = op.get_bind()
+
+    sql_phantom = 'select id from common.user where phantom=True'
+    phantoms = [x[0] for x in con.execute(sql_phantom)]
+
+    for ac in con.execute(sql):
+        id = uuid4()
+        user_from = ac.user_from_id
+        user_to = ac.user_to_id
+        lot = ac.lot_id
+        code = ac.code
+        columns = '(id, user_from_id, user_to_id, lot_id, code)'
+        values = f'(\'{id}\', \'{user_from}\', \'{user_to}\', \'{lot}\', \'{code}\')'
+        if user_from not in phantoms:
+            columns = '(id, user_to_id, lot_id, code)'
+        values = f'(\'{id}\', \'{user_to}\', \'{lot}\', \'{code}\')'
+        if user_to not in phantoms:
+            columns = '(id, user_from_id, lot_id, code)'
+        values = f'(\'{id}\', \'{user_from}\', \'{lot}\', \'{code}\')'
+        new_transfer = f'insert into {get_inv()}.transfer {columns} values {values}'
+        op.execute(new_transfer)
 
 
 def upgrade():
@@ -45,7 +72,7 @@ def upgrade():
         sa.Column(
             'description',
             citext.CIText(),
-            nullable=False,
+            nullable=True,
             comment='A comment about the action.',
         ),
         sa.Column('date', sa.TIMESTAMP(timezone=True), nullable=True),
@@ -82,6 +109,8 @@ def upgrade():
         postgresql_using='hash',
         schema=f'{get_inv()}',
     )
+
+    upgrade_datas()
 
 
 def downgrade():
