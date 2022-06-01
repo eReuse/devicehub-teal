@@ -41,12 +41,12 @@ def upgrade_datas():
         code = ac.code
         columns = '(id, user_from_id, user_to_id, lot_id, code)'
         values = f'(\'{id}\', \'{user_from}\', \'{user_to}\', \'{lot}\', \'{code}\')'
-        if user_from not in phantoms:
-            columns = '(id, user_to_id, lot_id, code)'
-        values = f'(\'{id}\', \'{user_to}\', \'{lot}\', \'{code}\')'
         if user_to not in phantoms:
+            columns = '(id, user_to_id, lot_id, code)'
+            values = f'(\'{id}\', \'{user_to}\', \'{lot}\', \'{code}\')'
+        if user_from not in phantoms:
             columns = '(id, user_from_id, lot_id, code)'
-        values = f'(\'{id}\', \'{user_from}\', \'{lot}\', \'{code}\')'
+            values = f'(\'{id}\', \'{user_from}\', \'{lot}\', \'{code}\')'
         new_transfer = f'insert into {get_inv()}.transfer {columns} values {values}'
         op.execute(new_transfer)
 
