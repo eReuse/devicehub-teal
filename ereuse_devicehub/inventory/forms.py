@@ -26,6 +26,7 @@ from wtforms import (
 from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.inventory.models import Transfer
 from ereuse_devicehub.resources.action.models import RateComputer, Snapshot, Trade
 from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
@@ -1098,3 +1099,85 @@ class TradeDocumentForm(FlaskForm):
             db.session.commit()
 
         return self._obj
+
+
+class TransferForm(FlaskForm):
+    code = StringField(
+        'Code',
+        [validators.DataRequired()],
+        render_kw={'class': "form-control"},
+        description="You need put a code for transfer the external user",
+    )
+    description = TextAreaField(
+        'Description',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+    )
+    type = HiddenField()
+
+    def __init__(self, *args, **kwargs):
+        self._type = kwargs.get('type')
+        lot_id = kwargs.pop('lot_id', None)
+        self._tmp_lot = Lot.query.filter(Lot.id == lot_id).one()
+        super().__init__(*args, **kwargs)
+        self._obj = None
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+        if not self._tmp_lot:
+            return False
+
+        if self._type and self.type.data not in ['incoming', 'outgoing']:
+            return False
+
+        if self._obj and self.date.data:
+            if self.date.data > datetime.datetime.now().date():
+                return False
+
+        return is_valid
+
+    def save(self, commit=True):
+        self.set_obj()
+        db.session.add(self._obj)
+
+        if commit:
+            db.session.commit()
+
+        return self._obj
+
+    def set_obj(self):
+        self.newlot = Lot(name=self._tmp_lot.name)
+        self.newlot.devices = self._tmp_lot.devices
+        db.session.add(self.newlot)
+
+        self._obj = Transfer(lot=self.newlot)
+
+        self.populate_obj(self._obj)
+
+        if self.type.data == 'incoming':
+            self._obj.user_to = g.user
+        elif self.type.data == 'outgoing':
+            self._obj.user_from = g.user
+
+
+class EditTransferForm(TransferForm):
+    date = DateField(
+        'Date',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="""Date when the transfer is closed""",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        del self.type
+
+        self._obj = self._tmp_lot.transfer
+
+        if not self.data['csrf_token']:
+            self.code.data = self._obj.code
+            self.description.data = self._obj.description
+            self.date.data = self._obj.date
+
+    def set_obj(self, commit=True):
+        self.populate_obj(self._obj)

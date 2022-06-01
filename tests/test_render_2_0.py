@@ -1084,3 +1084,94 @@ def test_wb_settings_register(user3: UserClientFlask):
     assert "TOKEN = " in body
     assert "URL = https://" in body
     assert "/api/inventory/" in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_create_transfer(user3: UserClientFlask):
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+
+    lot_id = lot.id
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert 'Add new transfer' in body
+    assert 'Code' in body
+    assert 'Description' in body
+    assert 'Save' in body
+
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Transfer created successfully!' in body
+    assert 'Delete Lot' in body
+    assert 'Incoming Lot' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_edit_transfer(user3: UserClientFlask):
+    # create lot
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+
+    # render temporary lot
+    lot_id = lot.id
+    uri = f'/inventory/lot/{lot_id}/device/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert 'Transfer (<span class="text-success">Open</span>)' not in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' in body
+
+    # create new incoming lot
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    body, status = user3.post(uri, data=data)
+    assert 'Transfer (<span class="text-success">Open</span>)' in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' in body
+    lot = Lot.query.filter()[1]
+    assert lot.transfer is not None
+
+    # edit transfer with errors
+    lot_id = lot.id
+    uri = f'/inventory/lot/{lot_id}/transfer/'
+    data = {
+        'csrf_token': generate_csrf(),
+        'code': 'AAA',
+        'description': 'one one one',
+        'date': datetime.datetime.now().date() + datetime.timedelta(15),
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Transfer updated error!' in body
+    assert 'one one one' not in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' in body
+    assert 'Transfer (<span class="text-success">Open</span>)' in body
+
+    # # edit transfer successfully
+    data = {
+        'csrf_token': generate_csrf(),
+        'code': 'AAA',
+        'description': 'one one one',
+        'date': datetime.datetime.now().date() - datetime.timedelta(15),
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Transfer updated successfully!' in body
+    assert 'one one one' in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' not in body
+    assert 'Transfer (<span class="text-danger">Closed</span>)' in body

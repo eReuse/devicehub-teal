@@ -37,10 +37,19 @@
           <!-- Bordered Tabs -->
 
           <div class="d-flex align-items-center justify-content-between row">
-            <h3 class="col-sm-12 col-md-5"><a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
+            <div class="col-sm-12 col-md-5">
+              <h3>
+                <a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a>
+              </h3>
+              {% if lot.transfer.code and lot.transfer.user_to and not lot.transfer.user_to.phantom %}
+                <span>{{ lot.transfer.code }} <i class="bi bi-arrow-right"></i> {{ lot.transfer.user_to.email }}</span>
+              {% elif lot.transfer.code and lot.transfer.user_from and not lot.transfer.user_from.phantom %}
+                <span>{{ lot.transfer.user_from.email }} <i class="bi bi-arrow-right"></i> {{ lot.transfer.code }}</span>
+              {% endif %}
+            </div>
 
             <div class="col-sm-12 col-md-7 d-md-flex justify-content-md-end"><!-- lot actions -->
-              {% if lot.is_temporary %}
+              {% if lot.is_temporary or not lot.transfer.closed %}
 
                 {% if 1 == 2 %}{# <!-- TODO (@slamora) Don't render Trade buttons until implementation is finished --> #}
                 <a class="me-2" href="javascript:newTrade('user_from')">
@@ -75,9 +84,28 @@
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#trade-documents-list">Documents</button>
             </li>
 
+            {% if lot.transfer %}
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#edit-transfer">
+              Transfer ({% if lot.transfer.closed %}<span class="text-danger">Closed</span>{% else %}<span class="text-success">Open</span>{% endif %})
+              </button>
+            </li>
+            {% endif %}
+
           </ul>
           {% endif %}
           <div class="tab-content pt-1">
+            {% if lot and lot.is_temporary %}
+            <div class="tab-pane active show mb-5">
+                <a type="button" href="{{ url_for('inventory.new_transfer', lot_id=lot.id, type_id='outgoing') }}" class="btn btn-primary" style="float: right;">
+                  Outgoing Transfer
+                </a>
+                <a type="button" href="{{ url_for('inventory.new_transfer', lot_id=lot.id, type_id='incoming') }}" class="btn btn-primary" style="float: right; margin-right: 15px;">
+                  Incoming Transfer
+                </a>
+                <div style="display: block;"></div>
+            </div>
+            {% endif %}
             <div id="devices-list" class="tab-pane fade devices-list active show">
               <label class="btn btn-primary " for="SelectAllBTN"><input type="checkbox" id="SelectAllBTN" autocomplete="off"></label>
               <div class="btn-group dropdown ml-1">
@@ -437,6 +465,38 @@
                     {% endfor %}
                   </tbody>
                 </table>
+              </div>
+              <div id="edit-transfer" class="tab-pane fade edit-transfer">
+                <h5 class="card-title">Transfer</h5>
+                <form method="post" action="{{ url_for('inventory.edit_transfer', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
+                  {{ form_transfer.csrf_token }}
+
+                  {% for field in form_transfer %}
+                    {% if field != form_transfer.csrf_token %}
+                      <div class="col-12">
+                      {% if field != form_transfer.type %}
+                        {{ field.label(class_="form-label") }}
+                        {% if field == form_transfer.code %}
+                        <span class="text-danger">*</span>
+                        {% endif %}
+                        {{ field }}
+                        {% if field.errors %}
+                          <p class="text-danger">
+                            {% for error in field.errors %}
+                              {{ error }}<br/>
+                            {% endfor %}
+                          </p>
+                        {% endif %}
+                      {% endif %}
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+
+                  <div>
+                    <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}" class="btn btn-danger">Cancel</a>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                  </div>
+                </form>
               </div>
               {% endif %}
 
