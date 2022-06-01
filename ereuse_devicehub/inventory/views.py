@@ -415,7 +415,7 @@ class NewTransferView(GenericMixView):
                 new_lot_id = "{}".format(self.form.newlot.id)
                 Lot.query.filter(Lot.id == new_lot_id).one()
             messages.success('Transfer created successfully!')
-            next_url = url_for('inventory.lotdevicelist', lot_id=new_lot_id)
+            next_url = url_for('inventory.lotdevicelist', lot_id=str(new_lot_id))
             return flask.redirect(next_url)
 
         self.context.update({'form': self.form, 'title': self.title})
