@@ -15,6 +15,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.forms import (
     AllocateForm,
     DataWipeForm,
+    EditTransferForm,
     FilterForm,
     LotForm,
     NewActionForm,
@@ -22,6 +23,7 @@ from ereuse_devicehub.inventory.forms import (
     TagDeviceForm,
     TradeDocumentForm,
     TradeForm,
+    TransferForm,
     UploadSnapshotForm,
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
@@ -48,16 +50,12 @@ class DeviceListMixin(GenericMixin):
         form_filter = FilterForm(lots, lot_id, only_unassigned=only_unassigned)
         devices = form_filter.search()
         lot = None
+        form_transfer = ''
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
-            form_new_trade = TradeForm(
-                lot=lot.id,
-                user_to=g.user.email,
-                user_from=g.user.email,
-            )
-        else:
-            form_new_trade = ''
+            if not lot.is_temporary and lot.transfer:
+                form_transfer = EditTransferForm(lot_id=lot.id)
 
         form_new_action = NewActionForm(lot=lot_id)
         self.context.update(
@@ -67,7 +65,7 @@ class DeviceListMixin(GenericMixin):
                 'form_new_action': form_new_action,
                 'form_new_allocate': AllocateForm(lot=lot_id),
                 'form_new_datawipe': DataWipeForm(lot=lot_id),
-                'form_new_trade': form_new_trade,
+                'form_transfer': form_transfer,
                 'form_filter': form_filter,
                 'form_print_labels': PrintLabelsForm(),
                 'lot': lot,
@@ -402,6 +400,48 @@ class NewTradeDocumentView(View):
         return flask.render_template(self.template_name, **self.context)
 
 
+class NewTransferView(GenericMixin):
+    methods = ['POST', 'GET']
+    template_name = 'inventory/new_transfer.html'
+    form_class = TransferForm
+    title = "Add new transfer"
+
+    def dispatch_request(self, lot_id, type_id):
+        self.form = self.form_class(lot_id=lot_id, type=type_id)
+        self.get_context()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            new_lot_id = lot_id
+            if self.form.newlot.id:
+                new_lot_id = "{}".format(self.form.newlot.id)
+                Lot.query.filter(Lot.id == new_lot_id).one()
+            messages.success('Transfer created successfully!')
+            next_url = url_for('inventory.lotdevicelist', lot_id=str(new_lot_id))
+            return flask.redirect(next_url)
+
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
+
+
+class EditTransferView(GenericMixin):
+    methods = ['POST']
+    form_class = EditTransferForm
+
+    def dispatch_request(self, lot_id):
+        self.get_context()
+        form = self.form_class(request.form, lot_id=lot_id)
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+
+        if form.validate_on_submit():
+            form.save()
+            messages.success('Transfer updated successfully!')
+            return flask.redirect(next_url)
+
+        messages.error('Transfer updated error!')
+        return flask.redirect(next_url)
+
+
 class ExportsView(View):
     methods = ['GET']
     decorators = [login_required]
@@ -627,4 +667,12 @@ devices.add_url_rule('/snapshots/', view_func=SnapshotListView.as_view('snapshot
 devices.add_url_rule(
     '/snapshots/<string:snapshot_uuid>/',
     view_func=SnapshotDetailView.as_view('snapshot_detail'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/transfer/<string:type_id>/',
+    view_func=NewTransferView.as_view('new_transfer'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/transfer/',
+    view_func=EditTransferView.as_view('edit_transfer'),
 )

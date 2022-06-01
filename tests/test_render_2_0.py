@@ -1,4 +1,5 @@
 import csv
+import datetime
 import json
 from io import BytesIO
 from pathlib import Path
@@ -688,6 +689,34 @@ def test_action_allocate_error_dates(user3: UserClientFlask):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_allocate_error_future_dates(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+    start_time = (datetime.datetime.now() + datetime.timedelta(1)).strftime('%Y-%m-%d')
+    end_time = (datetime.datetime.now() + datetime.timedelta(10)).strftime('%Y-%m-%d')
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Allocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': start_time,
+        'end_time': end_time,
+        'end_users': 2,
+    }
+
+    uri = '/inventory/action/allocate/add/'
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Action Allocate error' in body
+    assert 'Not a valid date value.!' in body
+    assert dev.actions[-1].type != 'Allocate'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_action_deallocate(user3: UserClientFlask):
     snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
     dev = snap.device
@@ -707,7 +736,7 @@ def test_action_deallocate(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert dev.actions[-1].type == 'Allocate'
+    assert dev.allocated_status.type == 'Allocate'
 
     data = {
         'csrf_token': generate_csrf(),
@@ -720,9 +749,198 @@ def test_action_deallocate(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'Deallocate'
+    assert dev.allocated_status.type == 'Deallocate'
     assert 'Action &#34;Deallocate&#34; created successfully!' in body
     assert dev.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_deallocate_error(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Allocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-05-01',
+        'end_time': '2000-06-01',
+        'end_users': 2,
+    }
+
+    uri = '/inventory/action/allocate/add/'
+
+    user3.post(uri, data=data)
+    assert dev.allocated_status.type == 'Allocate'
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Deallocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-01-01',
+        'end_time': '2000-02-01',
+        'end_users': 2,
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert dev.allocated_status.type != 'Deallocate'
+    assert 'Action Deallocate error!' in body
+    assert 'Sorry some of this devices are actually deallocate' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_allocate_deallocate_error(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Allocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-01-01',
+        'end_time': '2000-01-01',
+        'end_users': 2,
+    }
+
+    uri = '/inventory/action/allocate/add/'
+
+    user3.post(uri, data=data)
+    assert dev.allocated_status.type == 'Allocate'
+    assert len(dev.actions) == 13
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Deallocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-02-01',
+        'end_time': '2000-02-01',
+        'end_users': 2,
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert dev.allocated_status.type == 'Deallocate'
+    assert len(dev.actions) == 14
+
+    # is not possible to do an allocate between an allocate and an deallocate
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Allocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-01-15',
+        'end_time': '2000-01-15',
+        'end_users': 2,
+    }
+
+    user3.post(uri, data=data)
+    assert dev.allocated_status.type == 'Deallocate'
+    # assert 'Action Deallocate error!' in body
+    # assert 'Sorry some of this devices are actually deallocate' in body
+    #
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Deallocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-01-15',
+        'end_time': '2000-01-15',
+        'end_users': 2,
+    }
+
+    user3.post(uri, data=data)
+    assert len(dev.actions) == 14
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_allocate_deallocate_error2(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Allocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-01-10',
+        'end_users': 2,
+    }
+
+    uri = '/inventory/action/allocate/add/'
+
+    user3.post(uri, data=data)
+    assert len(dev.actions) == 13
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Deallocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-01-20',
+        'end_users': 2,
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert len(dev.actions) == 14
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Allocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-02-10',
+        'end_users': 2,
+    }
+
+    uri = '/inventory/action/allocate/add/'
+
+    user3.post(uri, data=data)
+    assert len(dev.actions) == 15
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Deallocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-02-20',
+        'end_users': 2,
+    }
+    user3.post(uri, data=data)
+    assert len(dev.actions) == 16
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Allocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-01-25',
+        'end_users': 2,
+    }
+    user3.post(uri, data=data)
+    assert len(dev.actions) == 17
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Deallocate",
+        'severity': "Info",
+        'devices': "{}".format(dev.id),
+        'start_time': '2000-01-27',
+        'end_users': 2,
+    }
+    user3.post(uri, data=data)
+    assert len(dev.actions) == 18
 
 
 @pytest.mark.mvp
@@ -866,3 +1084,94 @@ def test_wb_settings_register(user3: UserClientFlask):
     assert "TOKEN = " in body
     assert "URL = https://" in body
     assert "/api/inventory/" in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_create_transfer(user3: UserClientFlask):
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+
+    lot_id = lot.id
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert 'Add new transfer' in body
+    assert 'Code' in body
+    assert 'Description' in body
+    assert 'Save' in body
+
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Transfer created successfully!' in body
+    assert 'Delete Lot' in body
+    assert 'Incoming Lot' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_edit_transfer(user3: UserClientFlask):
+    # create lot
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+
+    # render temporary lot
+    lot_id = lot.id
+    uri = f'/inventory/lot/{lot_id}/device/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert 'Transfer (<span class="text-success">Open</span>)' not in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' in body
+
+    # create new incoming lot
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    body, status = user3.post(uri, data=data)
+    assert 'Transfer (<span class="text-success">Open</span>)' in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' in body
+    lot = Lot.query.filter()[1]
+    assert lot.transfer is not None
+
+    # edit transfer with errors
+    lot_id = lot.id
+    uri = f'/inventory/lot/{lot_id}/transfer/'
+    data = {
+        'csrf_token': generate_csrf(),
+        'code': 'AAA',
+        'description': 'one one one',
+        'date': datetime.datetime.now().date() + datetime.timedelta(15),
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Transfer updated error!' in body
+    assert 'one one one' not in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' in body
+    assert 'Transfer (<span class="text-success">Open</span>)' in body
+
+    # # edit transfer successfully
+    data = {
+        'csrf_token': generate_csrf(),
+        'code': 'AAA',
+        'description': 'one one one',
+        'date': datetime.datetime.now().date() - datetime.timedelta(15),
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Transfer updated successfully!' in body
+    assert 'one one one' in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' not in body
+    assert 'Transfer (<span class="text-danger">Closed</span>)' in body

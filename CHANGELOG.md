@@ -8,6 +8,7 @@ ml).
 ## master
 
 ## testing
+- [added] #273 Allow search/filter lots on lots management component.
 
 ## [2.1.1] - 2022-05-11
 Hot fix release.

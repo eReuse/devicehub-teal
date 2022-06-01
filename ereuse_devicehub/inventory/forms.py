@@ -1,4 +1,5 @@
 import copy
+import datetime
 import json
 from json.decoder import JSONDecodeError
 
@@ -27,6 +28,7 @@ from wtforms import (
 from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.inventory.models import Transfer
 from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
@@ -649,6 +651,10 @@ class AllocateForm(ActionFormMixin):
             self.start_time.errors = ['Not a valid date value.!']
             return False
 
+        if start_time > datetime.datetime.now().date():
+            self.start_time.errors = ['Not a valid date value.!']
+            return False
+
         if start_time and end_time and end_time < start_time:
             error = ['The action cannot finish before it starts.']
             self.end_time.errors = error
@@ -661,23 +667,100 @@ class AllocateForm(ActionFormMixin):
 
     def check_devices(self):
         if self.type.data == 'Allocate':
-            txt = "You need deallocate before allocate this device again"
-            for device in self._devices:
-                if device.allocated:
-                    self.devices.errors = [txt]
-                    return False
-
-                device.allocated = True
-
+            return self.check_allocate()
         if self.type.data == 'Deallocate':
-            txt = "Sorry some of this devices are actually deallocate"
-            for device in self._devices:
-                if not device.allocated:
+            return self.check_deallocate()
+        return True
+
+    def check_allocate(self):
+        txt = "You need deallocate before allocate this device again"
+        for device in self._devices:
+            # |  Allo  -  Deallo  |  Allo  -  Deallo  |
+
+            allocates = [
+                ac for ac in device.actions if ac.type in ['Allocate', 'Deallocate']
+            ]
+            allocates.sort(key=lambda x: x.start_time)
+            allocates.reverse()
+            last_deallocate = None
+            last_allocate = None
+            for ac in allocates:
+                if (
+                    ac.type == 'Deallocate'
+                    and ac.start_time.date() < self.start_time.data
+                ):
+                    # allow to do the action
+                    break
+
+                # check if this action is between an old allocate - deallocate
+                if ac.type == 'Deallocate':
+                    last_deallocate = ac
+                    continue
+
+                if (
+                    ac.type == 'Allocate'
+                    and ac.start_time.date() > self.start_time.data
+                ):
+                    last_deallocate = None
+                    last_allocate = None
+                    continue
+
+                if ac.type == 'Allocate':
+                    last_allocate = ac
+
+                if last_allocate or not last_deallocate:
                     self.devices.errors = [txt]
                     return False
 
-                device.allocated = False
+            device.allocated = True
+        return True
 
+    def check_deallocate(self):
+        txt = "Sorry some of this devices are actually deallocate"
+        for device in self._devices:
+            allocates = [
+                ac for ac in device.actions if ac.type in ['Allocate', 'Deallocate']
+            ]
+            allocates.sort(key=lambda x: x.start_time)
+            allocates.reverse()
+            last_deallocate = None
+            last_allocate = None
+
+            for ac in allocates:
+                # check if this action is between an old allocate - deallocate
+                # |  Allo  -  Deallo  |  Allo  -  Deallo  |
+                # |  Allo  |
+                if (
+                    ac.type == 'Allocate'
+                    and ac.start_time.date() > self.start_time.data
+                ):
+                    last_allocate = None
+                    last_deallocate = None
+                    continue
+
+                if ac.type == 'Allocate' and not last_deallocate:
+                    last_allocate = ac
+                    break
+
+                if (
+                    ac.type == 'Deallocate'
+                    and ac.start_time.date() > self.start_time.data
+                ):
+                    last_deallocate = ac
+                    continue
+
+                if ac.type == 'Deallocate':
+                    last_allocate = None
+
+                if last_deallocate or not last_allocate:
+                    self.devices.errors = [txt]
+                    return False
+
+            if not last_deallocate and not last_allocate:
+                self.devices.errors = [txt]
+                return False
+
+            device.allocated = False
         return True
 
 
@@ -998,3 +1081,85 @@ class TradeDocumentForm(FlaskForm):
             db.session.commit()
 
         return self._obj
+
+
+class TransferForm(FlaskForm):
+    code = StringField(
+        'Code',
+        [validators.DataRequired()],
+        render_kw={'class': "form-control"},
+        description="You need put a code for transfer the external user",
+    )
+    description = TextAreaField(
+        'Description',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+    )
+    type = HiddenField()
+
+    def __init__(self, *args, **kwargs):
+        self._type = kwargs.get('type')
+        lot_id = kwargs.pop('lot_id', None)
+        self._tmp_lot = Lot.query.filter(Lot.id == lot_id).one()
+        super().__init__(*args, **kwargs)
+        self._obj = None
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+        if not self._tmp_lot:
+            return False
+
+        if self._type and self.type.data not in ['incoming', 'outgoing']:
+            return False
+
+        if self._obj and self.date.data:
+            if self.date.data > datetime.datetime.now().date():
+                return False
+
+        return is_valid
+
+    def save(self, commit=True):
+        self.set_obj()
+        db.session.add(self._obj)
+
+        if commit:
+            db.session.commit()
+
+        return self._obj
+
+    def set_obj(self):
+        self.newlot = Lot(name=self._tmp_lot.name)
+        self.newlot.devices = self._tmp_lot.devices
+        db.session.add(self.newlot)
+
+        self._obj = Transfer(lot=self.newlot)
+
+        self.populate_obj(self._obj)
+
+        if self.type.data == 'incoming':
+            self._obj.user_to = g.user
+        elif self.type.data == 'outgoing':
+            self._obj.user_from = g.user
+
+
+class EditTransferForm(TransferForm):
+    date = DateField(
+        'Date',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="""Date when the transfer is closed""",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        del self.type
+
+        self._obj = self._tmp_lot.transfer
+
+        if not self.data['csrf_token']:
+            self.code.data = self._obj.code
+            self.description.data = self._obj.description
+            self.date.data = self._obj.date
+
+    def set_obj(self, commit=True):
+        self.populate_obj(self._obj)
