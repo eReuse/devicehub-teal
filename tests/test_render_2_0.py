@@ -858,7 +858,7 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
     }
 
     user3.post(uri, data=data)
-    assert len(dev.actions) == 14
+    assert len(dev.actions) == 11
 
 
 @pytest.mark.mvp
@@ -881,7 +881,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert len(dev.actions) == 13
+    assert len(dev.actions) == 11
 
     data = {
         'csrf_token': generate_csrf(),
