@@ -87,7 +87,7 @@
             {% if lot.transfer %}
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#edit-transfer">
-              Transfer ({% if lot.transfer.closed %}Closed{% else %}Open{% endif %})
+              Transfer ({% if lot.transfer.closed %}<span class="text-danger">Closed</span>{% else %}<span class="text-success">Open</span>{% endif %})
               </button>
             </li>
             {% endif %}
