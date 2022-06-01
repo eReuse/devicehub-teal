@@ -815,7 +815,7 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
 
     user3.post(uri, data=data)
     assert dev.allocated_status.type == 'Allocate'
-    assert len(dev.actions) == 13
+    assert len(dev.actions) == 11
 
     data = {
         'csrf_token': generate_csrf(),
@@ -829,7 +829,7 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
     assert dev.allocated_status.type == 'Deallocate'
-    assert len(dev.actions) == 14
+    assert len(dev.actions) == 12
 
     # is not possible to do an allocate between an allocate and an deallocate
     data = {
@@ -858,7 +858,7 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
     }
 
     user3.post(uri, data=data)
-    assert len(dev.actions) == 11
+    assert len(dev.actions) == 12
 
 
 @pytest.mark.mvp
@@ -893,7 +893,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert len(dev.actions) == 14
+    assert len(dev.actions) == 12
 
     data = {
         'csrf_token': generate_csrf(),
@@ -907,7 +907,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert len(dev.actions) == 15
+    assert len(dev.actions) == 13
 
     data = {
         'csrf_token': generate_csrf(),
@@ -918,7 +918,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
         'end_users': 2,
     }
     user3.post(uri, data=data)
-    assert len(dev.actions) == 16
+    assert len(dev.actions) == 14
 
     data = {
         'csrf_token': generate_csrf(),
@@ -929,7 +929,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
         'end_users': 2,
     }
     user3.post(uri, data=data)
-    assert len(dev.actions) == 17
+    assert len(dev.actions) == 15
 
     data = {
         'csrf_token': generate_csrf(),
@@ -940,7 +940,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
         'end_users': 2,
     }
     user3.post(uri, data=data)
-    assert len(dev.actions) == 18
+    assert len(dev.actions) == 16
 
 
 @pytest.mark.mvp
