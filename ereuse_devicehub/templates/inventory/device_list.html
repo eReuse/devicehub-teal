@@ -37,7 +37,16 @@
           <!-- Bordered Tabs -->
 
           <div class="d-flex align-items-center justify-content-between row">
-            <h3 class="col-sm-12 col-md-5"><a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a></h3>
+            <div class="col-sm-12 col-md-5">
+              <h3>
+                <a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a>
+              </h3>
+              {% if lot.transfer.code and lot.transfer.user_to.phantom %}
+                <span>{{ lot.transfer.code }} -> {{ lot.transfer.user_to.email }}</span>
+              {% elif lot.transfer.code and lot.transfer.user_from.phantom %}
+                <span>{{ lot.transfer.user_from.email }} -> {{ lot.transfer.code }}</span>
+              {% endif %}
+            </div>
 
             <div class="col-sm-12 col-md-7 d-md-flex justify-content-md-end"><!-- lot actions -->
               {% if lot.is_temporary or not lot.transfer.closed %}
