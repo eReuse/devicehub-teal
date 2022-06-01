@@ -41,9 +41,9 @@
               <h3>
                 <a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a>
               </h3>
-              {% if lot.transfer.code and lot.transfer.user_to.phantom %}
+              {% if lot.transfer.code and not lot.transfer.user_to.phantom %}
                 <span>{{ lot.transfer.code }} -> {{ lot.transfer.user_to.email }}</span>
-              {% elif lot.transfer.code and lot.transfer.user_from.phantom %}
+              {% elif lot.transfer.code and not lot.transfer.user_from.phantom %}
                 <span>{{ lot.transfer.user_from.email }} -> {{ lot.transfer.code }}</span>
               {% endif %}
             </div>
