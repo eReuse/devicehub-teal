@@ -82,6 +82,26 @@ MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
 MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
 
 
+class AdvancedSearchForm(FlaskForm):
+    q = StringField('Search', [validators.length(min=1)])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        dhids = [x.strip() for x in self.q.data.split(' ')]
+        if ',' in self.q.data:
+            dhids = [x.strip() for x in self.q.data.split(',')]
+        if ';' in self.q.data:
+            dhids = [x.strip() for x in self.q.data.split(';')]
+
+        self.devices = []
+        if dhids:
+            self.search(dhids)
+
+    def search(self, dhids):
+        self.devices = Device.query.filter(Device.devicehub_id.in_(dhids))
+
+
 class FilterForm(FlaskForm):
     filter = SelectField(
         '', choices=DEVICES, default="All Computers", render_kw={'class': "form-select"}
