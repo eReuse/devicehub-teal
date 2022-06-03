@@ -129,6 +129,8 @@ class SnapshotView(SnapshotMixin):
     # snapshot, and we want to wait to flush snapshot at the end
 
     def __init__(self, snapshot_json: dict, resource_def, schema):
+        from ereuse_devicehub.parser.models import SnapshotsLog
+
         self.schema = schema
         self.resource_def = resource_def
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
@@ -136,18 +138,29 @@ class SnapshotView(SnapshotMixin):
         snapshot_json.pop('debug', None)
         try:
             self.snapshot_json = resource_def.schema.load(snapshot_json)
-        except ValidationError as err:
-            from ereuse_devicehub.parser.models import SnapshotsLog
+            snapshot = self.build()
+        except Exception as err:
             txt = "{}".format(err)
             uuid = snapshot_json.get('uuid')
+            version = snapshot_json.get('version')
             error = SnapshotsLog(
-                description=txt, snapshot_uuid=uuid, severity=Severity.Error
+                description=txt,
+                snapshot_uuid=uuid,
+                severity=Severity.Error,
+                version=str(version),
             )
             error.save(commit=True)
             raise err
 
-        snapshot = self.build()
         db.session.add(snapshot)
+        snap_log = SnapshotsLog(
+            description='Ok',
+            snapshot_uuid=snapshot.uuid,
+            severity=Severity.Info,
+            version=str(snapshot.version),
+            snapshot=snapshot,
+        )
+        snap_log.save()
         db.session().final_flush()
         self.response = self.schema.jsonify(snapshot)  # transform it back
         self.response.status_code = 201
