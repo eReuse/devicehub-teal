@@ -44,7 +44,7 @@ class Transfer(Thing):
         return False
 
 
-class Notes(Thing):
+class DeliveryNote(Thing):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     number = Column(CIText(), default='', nullable=False)
     date = Column(db.TIMESTAMP(timezone=True))
@@ -56,19 +56,27 @@ class Notes(Thing):
         db.ForeignKey('transfer.id'),
         nullable=False,
     )
-
-
-class DeliveryNote(Notes):
     transfer = relationship(
         'Transfer',
         backref=backref('delivery_note', lazy=True, uselist=False, cascade=CASCADE_OWN),
-        primaryjoin='Notes.transfer_id == Transfer.id',
+        primaryjoin='DeliveryNote.transfer_id == Transfer.id',
     )
 
 
-class ReceiverNote(Notes):
+class ReceiverNote(Thing):
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    number = Column(CIText(), default='', nullable=False)
+    date = Column(db.TIMESTAMP(timezone=True))
+    units = Column(Integer, default=0)
+    weight = Column(Integer, default=0)
+
+    transfer_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey('transfer.id'),
+        nullable=False,
+    )
     transfer = relationship(
         'Transfer',
         backref=backref('receiver_note', lazy=True, uselist=False, cascade=CASCADE_OWN),
-        primaryjoin='Notes.transfer_id == Transfer.id',
+        primaryjoin='ReceiverNote.transfer_id == Transfer.id',
     )

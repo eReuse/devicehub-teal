@@ -28,7 +28,7 @@ from wtforms import (
 from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.inventory.models import Transfer
+from ereuse_devicehub.inventory.models import DeliveryNote, ReceiverNote, Transfer
 from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
@@ -1183,3 +1183,73 @@ class EditTransferForm(TransferForm):
 
     def set_obj(self, commit=True):
         self.populate_obj(self._obj)
+
+
+class NotesForm(FlaskForm):
+    number = StringField(
+        'Number',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="You can put a number for tracer of receiver or delivery",
+    )
+    date = DateField(
+        'Date',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="""Date when the transfer was do it""",
+    )
+    units = IntegerField(
+        'Units',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="Number of units",
+    )
+    weight = IntegerField(
+        'Weight',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="Weight expressed in Kg",
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.type = kwargs.pop('type', None)
+        lot_id = kwargs.pop('lot_id', None)
+        self._tmp_lot = Lot.query.filter(Lot.id == lot_id).one()
+        self._obj = None
+        super().__init__(*args, **kwargs)
+
+        if self._tmp_lot.transfer:
+            if self.type == 'Delivery':
+                self._obj = self._tmp_lot.transfer.delivery_note
+                if not self._obj:
+                    self._obj = DeliveryNote(transfer_id=self._tmp_lot.transfer.id)
+
+                self.date.description = """Date when the delivery was do it."""
+                self.number.description = (
+                    """You can put a number for tracer of delivery note."""
+                )
+
+            if self.type == 'Receiver':
+                self._obj = self._tmp_lot.transfer.receiver_note
+                if not self._obj:
+                    self._obj = ReceiverNote(transfer_id=self._tmp_lot.transfer.id)
+
+                self.date.description = """Date when the receipt was do it."""
+                self.number.description = (
+                    """You can put a number for tracer of receiber note."""
+                )
+
+        if self._obj and not self.data['csrf_token']:
+            self.number.data = self._obj.number
+            self.date.data = self._obj.date
+            self.units.data = self._obj.units
+            self.weight.data = self._obj.weight
+
+    def save(self, commit=True):
+        self.populate_obj(self._obj)
+        db.session.add(self._obj)
+
+        if commit:
+            db.session.commit()
+
+        return self._obj
