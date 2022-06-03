@@ -345,10 +345,11 @@ class lotsSearcher {
     static doSearch(inputSearch) {
         const lots = this.getListLots();
         for (let i = 0; i < lots.length; i++) {
+            const lot = lots[i]
             if (lot.innerText.toLowerCase().includes(inputSearch.toLowerCase())) {
-                lot.parentElement.style.display = "";
+                lot.style.display = "";
             } else {
-                lot.parentElement.style.display = "none";
+                lot.style.display = "none";
             }
         }
     }

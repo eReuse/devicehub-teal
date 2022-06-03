@@ -348,10 +348,12 @@ class lotsSearcher {
     const lots = this.getListLots();
 
     for (let i = 0; i < lots.length; i++) {
+      const lot = lots[i];
+
       if (lot.innerText.toLowerCase().includes(inputSearch.toLowerCase())) {
-        lot.parentElement.style.display = "";
+        lot.style.display = "";
       } else {
-        lot.parentElement.style.display = "none";
+        lot.style.display = "none";
       }
     }
   }
@@ -363,7 +365,7 @@ _defineProperty(lotsSearcher, "lots", []);
 _defineProperty(lotsSearcher, "lotsSearchElement", null);
 
 _defineProperty(lotsSearcher, "getListLots", () => {
-  let lotsList = document.getElementById("LotsSelector");
+  const lotsList = document.getElementById("LotsSelector");
 
   if (lotsList) {
     // Apply filter to get only labels

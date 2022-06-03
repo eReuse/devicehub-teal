@@ -13,6 +13,7 @@ from werkzeug.exceptions import NotFound
 from ereuse_devicehub import messages
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.forms import (
+    AdvancedSearchForm,
     AllocateForm,
     DataWipeForm,
     EditTransferForm,
@@ -98,6 +99,19 @@ class DeviceListView(DeviceListMixin):
             'only_unassigned', default=True, type=strtobool
         )
         self.get_context(lot_id, only_unassigned)
+        return flask.render_template(self.template_name, **self.context)
+
+
+class AdvancedSearchView(DeviceListMixin):
+    methods = ['GET', 'POST']
+    template_name = 'inventory/search.html'
+    title = "Advanced Search"
+
+    def dispatch_request(self):
+        query = request.args.get('q', '')
+        self.get_context(None)
+        form = AdvancedSearchForm(q=query)
+        self.context.update({'devices': form.devices, 'advanced_form': form})
         return flask.render_template(self.template_name, **self.context)
 
 
@@ -630,6 +644,9 @@ devices.add_url_rule(
     view_func=NewTradeDocumentView.as_view('trade_document_add'),
 )
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
+devices.add_url_rule(
+    '/search/', view_func=AdvancedSearchView.as_view('advanced_search')
+)
 devices.add_url_rule(
     '/device/<string:id>/', view_func=DeviceDetailView.as_view('device_details')
 )
