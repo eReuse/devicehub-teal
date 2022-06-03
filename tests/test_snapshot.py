@@ -189,6 +189,12 @@ def test_snapshot_power_on_hours(user: UserClient):
         == test_data_storage.power_on_hours
     )
 
+    errors = SnapshotsLog.query.filter().all()
+    snap_log = errors[0]
+    assert str(snap_log.snapshot.uuid) == snap['uuid']
+    assert len(errors) == 1
+    assert errors[0].description == 'Ok'
+
 
 @pytest.mark.mvp
 def test_snapshot_component_add_remove(user: UserClient):
@@ -765,6 +771,7 @@ def test_save_snapshot_with_debug(app: Devicehub, user: UserClient):
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_backup_snapshot_with_errors(app: Devicehub, user: UserClient):
     """This test check if the file snapshot is create when some snapshot is wrong"""
     tmp_snapshots = app.config['TMP_SNAPSHOTS']
@@ -775,6 +782,13 @@ def test_backup_snapshot_with_errors(app: Devicehub, user: UserClient):
     snapshot = {'software': '', 'version': '', 'uuid': ''}
     with pytest.raises(KeyError):
         response = user.post(res=Snapshot, data=json_encode(snapshot_no_hid))
+
+    errors = SnapshotsLog.query.filter().all()
+    snap_log = errors[0]
+    assert snap_log.description == "'BenchmarkProcessorr'"
+    assert snap_log.version == "11.0b9"
+    assert str(snap_log.snapshot_uuid) == '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
+    assert len(errors) == 1
 
     files = [x for x in os.listdir(path_dir_base) if uuid in x]
     if files:
