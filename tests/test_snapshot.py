@@ -1240,10 +1240,10 @@ def test_snapshot_errors(user: UserClient):
 
     assert SnapshotsLog.query.all() == []
     body11, res = user.post(snapshot_11, res=Snapshot)
-    assert SnapshotsLog.query.all() == []
+    assert len(SnapshotsLog.query.all()) == 1
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
     dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
-    assert len(SnapshotsLog.query.all()) == 3
+    assert len(SnapshotsLog.query.all()) == 4
 
     assert body11['device'].get('hid') == dev.hid
     assert body11['device']['id'] == dev.id
