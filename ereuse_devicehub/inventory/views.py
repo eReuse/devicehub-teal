@@ -21,6 +21,7 @@ from ereuse_devicehub.inventory.forms import (
     LotForm,
     NewActionForm,
     NewDeviceForm,
+    NotesForm,
     TagDeviceForm,
     TradeDocumentForm,
     TradeForm,
@@ -52,11 +53,15 @@ class DeviceListMixin(GenericMixin):
         devices = form_filter.search()
         lot = None
         form_transfer = ''
+        form_delivery = ''
+        form_receiver = ''
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
             if not lot.is_temporary and lot.transfer:
                 form_transfer = EditTransferForm(lot_id=lot.id)
+                form_delivery = NotesForm(lot_id=lot.id, type='Delivery')
+                form_receiver = NotesForm(lot_id=lot.id, type='Receiver')
 
         form_new_action = NewActionForm(lot=lot_id)
         self.context.update(
@@ -67,6 +72,8 @@ class DeviceListMixin(GenericMixin):
                 'form_new_allocate': AllocateForm(lot=lot_id),
                 'form_new_datawipe': DataWipeForm(lot=lot_id),
                 'form_transfer': form_transfer,
+                'form_delivery': form_delivery,
+                'form_receiver': form_receiver,
                 'form_filter': form_filter,
                 'form_print_labels': PrintLabelsForm(),
                 'lot': lot,
@@ -453,6 +460,10 @@ class EditTransferView(GenericMixin):
             return flask.redirect(next_url)
 
         messages.error('Transfer updated error!')
+        for k, v in form.errors.items():
+            value = ';'.join(v)
+            key = form[k].label.text
+            messages.error('Error {key}: {value}!'.format(key=key, value=value))
         return flask.redirect(next_url)
 
 
@@ -631,6 +642,50 @@ class SnapshotDetailView(GenericMixin):
         )
 
 
+class DeliveryNoteView(GenericMixin):
+    methods = ['POST']
+    form_class = NotesForm
+
+    def dispatch_request(self, lot_id):
+        self.get_context()
+        form = self.form_class(request.form, lot_id=lot_id, type='Delivery')
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+
+        if form.validate_on_submit():
+            form.save()
+            messages.success('Delivery Note updated successfully!')
+            return flask.redirect(next_url)
+
+        messages.error('Delivery Note updated error!')
+        for k, v in form.errors.items():
+            value = ';'.join(v)
+            key = form[k].label.text
+            messages.error('Error {key}: {value}!'.format(key=key, value=value))
+        return flask.redirect(next_url)
+
+
+class ReceiverNoteView(GenericMixin):
+    methods = ['POST']
+    form_class = NotesForm
+
+    def dispatch_request(self, lot_id):
+        self.get_context()
+        form = self.form_class(request.form, lot_id=lot_id, type='Receiver')
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+
+        if form.validate_on_submit():
+            form.save()
+            messages.success('Receiver Note updated successfully!')
+            return flask.redirect(next_url)
+
+        messages.error('Receiver Note updated error!')
+        for k, v in form.errors.items():
+            value = ';'.join(v)
+            key = form[k].label.text
+            messages.error('Error {key}: {value}!'.format(key=key, value=value))
+        return flask.redirect(next_url)
+
+
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/action/trade/add/', view_func=NewTradeView.as_view('trade_add'))
 devices.add_url_rule(
@@ -692,4 +747,12 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/lot/<string:lot_id>/transfer/',
     view_func=EditTransferView.as_view('edit_transfer'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/deliverynote/',
+    view_func=DeliveryNoteView.as_view('delivery_note'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/receivernote/',
+    view_func=ReceiverNoteView.as_view('receiver_note'),
 )

@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from citext import CIText
-from sqlalchemy import Column
+from sqlalchemy import Column, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from teal.db import CASCADE_OWN
@@ -23,8 +23,8 @@ class Transfer(Thing):
     description = Column(CIText(), default='', nullable=True)
     lot_id = db.Column(
         UUID(as_uuid=True),
-        db.ForeignKey('lot.id', use_alter=True, name='lot_trade'),
-        nullable=True,
+        db.ForeignKey('lot.id', use_alter=True, name='lot_transfer'),
+        nullable=False,
     )
     lot = relationship(
         'Lot',
@@ -42,3 +42,41 @@ class Transfer(Thing):
             return True
 
         return False
+
+
+class DeliveryNote(Thing):
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    number = Column(CIText(), default='', nullable=False)
+    date = Column(db.TIMESTAMP(timezone=True))
+    units = Column(Integer, default=0)
+    weight = Column(Integer, default=0)
+
+    transfer_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey('transfer.id'),
+        nullable=False,
+    )
+    transfer = relationship(
+        'Transfer',
+        backref=backref('delivery_note', lazy=True, uselist=False, cascade=CASCADE_OWN),
+        primaryjoin='DeliveryNote.transfer_id == Transfer.id',
+    )
+
+
+class ReceiverNote(Thing):
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    number = Column(CIText(), default='', nullable=False)
+    date = Column(db.TIMESTAMP(timezone=True))
+    units = Column(Integer, default=0)
+    weight = Column(Integer, default=0)
+
+    transfer_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey('transfer.id'),
+        nullable=False,
+    )
+    transfer = relationship(
+        'Transfer',
+        backref=backref('receiver_note', lazy=True, uselist=False, cascade=CASCADE_OWN),
+        primaryjoin='ReceiverNote.transfer_id == Transfer.id',
+    )
