@@ -53,6 +53,8 @@ class DeviceListMixin(GenericMixin):
         devices = form_filter.search()
         lot = None
         form_transfer = ''
+        form_delivery = ''
+        form_receiver = ''
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
@@ -458,6 +460,10 @@ class EditTransferView(GenericMixin):
             return flask.redirect(next_url)
 
         messages.error('Transfer updated error!')
+        for k, v in form.errors.items():
+            value = ';'.join(v)
+            key = form[k].label.text
+            messages.error('Error {key}: {value}!'.format(key=key, value=value))
         return flask.redirect(next_url)
 
 
@@ -647,10 +653,14 @@ class DeliveryNoteView(GenericMixin):
 
         if form.validate_on_submit():
             form.save()
-            messages.success('Transfer updated successfully!')
+            messages.success('Delivery Note updated successfully!')
             return flask.redirect(next_url)
 
-        messages.error('Transfer updated error!')
+        messages.error('Delivery Note updated error!')
+        for k, v in form.errors.items():
+            value = ';'.join(v)
+            key = form[k].label.text
+            messages.error('Error {key}: {value}!'.format(key=key, value=value))
         return flask.redirect(next_url)
 
 
@@ -665,10 +675,14 @@ class ReceiverNoteView(GenericMixin):
 
         if form.validate_on_submit():
             form.save()
-            messages.success('Transfer updated successfully!')
+            messages.success('Receiver Note updated successfully!')
             return flask.redirect(next_url)
 
-        messages.error('Transfer updated error!')
+        messages.error('Receiver Note updated error!')
+        for k, v in form.errors.items():
+            value = ';'.join(v)
+            key = form[k].label.text
+            messages.error('Error {key}: {value}!'.format(key=key, value=value))
         return flask.redirect(next_url)
 
 
@@ -736,9 +750,9 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/lot/<string:lot_id>/deliverynote/',
-    view_func=DeliveryNoteView.as_view('deliverynote'),
+    view_func=DeliveryNoteView.as_view('delivery_note'),
 )
 devices.add_url_rule(
     '/lot/<string:lot_id>/receivernote/',
-    view_func=ReceiverNoteView.as_view('receivernote'),
+    view_func=ReceiverNoteView.as_view('receiver_note'),
 )

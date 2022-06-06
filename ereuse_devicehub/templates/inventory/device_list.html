@@ -490,6 +490,7 @@
                         <span class="text-danger">*</span>
                         {% endif %}
                         {{ field }}
+                        <small class="text-muted">{{ field.description }}</small>
                         {% if field.errors %}
                           <p class="text-danger">
                             {% for error in field.errors %}
@@ -510,7 +511,7 @@
               </div>
               <div id="edit-delivery-note" class="tab-pane fade edit-delivery-note">
                 <h5 class="card-title">Delivery Note</h5>
-                <form method="post" action="{{ url_for('inventory.edit_transfer', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
+                <form method="post" action="{{ url_for('inventory.delivery_note', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
                   {{ form_delivery.csrf_token }}
 
                   {% for field in form_delivery %}
@@ -519,6 +520,7 @@
                       {% if field != form_delivery.type %}
                         {{ field.label(class_="form-label") }}
                         {{ field }}
+                        <small class="text-muted">{{ field.description }}</small>
                         {% if field.errors %}
                           <p class="text-danger">
                             {% for error in field.errors %}
@@ -531,15 +533,17 @@
                     {% endif %}
                   {% endfor %}
 
+                  {% if lot.transfer and form_receiver.is_editable() %}
                   <div>
                     <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}" class="btn btn-danger">Cancel</a>
                     <button class="btn btn-primary" type="submit">Save</button>
                   </div>
+                  {% endif %}
                 </form>
               </div>
               <div id="edit-receiver-note" class="tab-pane fade edit-receiver-note">
                 <h5 class="card-title">Receiver Note</h5>
-                <form method="post" action="{{ url_for('inventory.edit_transfer', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
+                <form method="post" action="{{ url_for('inventory.receiver_note', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
                   {{ form_receiver.csrf_token }}
 
                   {% for field in form_receiver %}
@@ -548,6 +552,7 @@
                       {% if field != form_receiver.type %}
                         {{ field.label(class_="form-label") }}
                         {{ field }}
+                        <small class="text-muted">{{ field.description }}</small>
                         {% if field.errors %}
                           <p class="text-danger">
                             {% for error in field.errors %}
@@ -560,10 +565,12 @@
                     {% endif %}
                   {% endfor %}
 
+                  {% if lot.transfer and form_receiver.is_editable() %}
                   <div>
                     <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}" class="btn btn-danger">Cancel</a>
                     <button class="btn btn-primary" type="submit">Save</button>
                   </div>
+                  {% endif %}
                 </form>
               </div>
               {% endif %}

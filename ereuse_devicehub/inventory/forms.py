@@ -1181,6 +1181,14 @@ class EditTransferForm(TransferForm):
             self.description.data = self._obj.description
             self.date.data = self._obj.date
 
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+        date = self.date.data
+        if date and date > datetime.datetime.now().date():
+            self.date.errors = ["You have to choose a date before today."]
+            is_valid = False
+        return is_valid
+
     def set_obj(self, commit=True):
         self.populate_obj(self._obj)
 
@@ -1239,13 +1247,58 @@ class NotesForm(FlaskForm):
                     """You can put a number for tracer of receiber note."""
                 )
 
+            if self.is_editable():
+                self.number.render_kw.pop('disabled', None)
+                self.date.render_kw.pop('disabled', None)
+                self.units.render_kw.pop('disabled', None)
+                self.weight.render_kw.pop('disabled', None)
+            else:
+                disabled = {'disabled': "disabled"}
+                self.number.render_kw.update(disabled)
+                self.date.render_kw.update(disabled)
+                self.units.render_kw.update(disabled)
+                self.weight.render_kw.update(disabled)
+
         if self._obj and not self.data['csrf_token']:
             self.number.data = self._obj.number
             self.date.data = self._obj.date
             self.units.data = self._obj.units
             self.weight.data = self._obj.weight
 
+    def is_editable(self):
+        if not self._tmp_lot.transfer:
+            return False
+
+        if self._tmp_lot.transfer.closed:
+            return False
+
+        if self._tmp_lot.transfer.code:
+            return True
+
+        if self._tmp_lot.transfer.user_from == g.user and self.type == 'Receiver':
+            return False
+
+        if self._tmp_lot.transfer.user_to == g.user and self.type == 'Delivery':
+            return False
+
+        return True
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+        date = self.date.data
+        if date and date > datetime.datetime.now().date():
+            self.date.errors = ["You have to choose a date before today."]
+            is_valid = False
+
+        if not self.is_editable():
+            is_valid = False
+
+        return is_valid
+
     def save(self, commit=True):
+        if self._tmp_lot.transfer.closed:
+            return self._obj
+
         self.populate_obj(self._obj)
         db.session.add(self._obj)
 
