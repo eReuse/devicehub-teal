@@ -1175,3 +1175,137 @@ def test_edit_transfer(user3: UserClientFlask):
     assert 'one one one' in body
     assert '<i class="bi bi-trash"></i> Delete Lot' not in body
     assert 'Transfer (<span class="text-danger">Closed</span>)' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_edit_deliverynote(user3: UserClientFlask):
+    # create lot
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+    lot_id = lot.id
+
+    # create new incoming lot
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    user3.post(uri, data=data)
+    lot = Lot.query.filter()[1]
+    lot_id = lot.id
+
+    # edit delivery with errors
+    uri = f'/inventory/lot/{lot_id}/deliverynote/'
+    data = {
+        'csrf_token': generate_csrf(),
+        'number': 'AAA',
+        'units': 10,
+        'weight': 50,
+        'date': datetime.datetime.now().date() + datetime.timedelta(15),
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Delivery Note updated error!' in body
+
+    # # edit transfer successfully
+    data['date'] = datetime.datetime.now().date() - datetime.timedelta(15)
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Delivery Note updated successfully!' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_edit_receivernote(user3: UserClientFlask):
+    # create lot
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+    lot_id = lot.id
+
+    # create new incoming lot
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    user3.post(uri, data=data)
+    lot = Lot.query.filter()[1]
+    lot_id = lot.id
+
+    # edit delivery with errors
+    uri = f'/inventory/lot/{lot_id}/receivernote/'
+    data = {
+        'csrf_token': generate_csrf(),
+        'number': 'AAA',
+        'units': 10,
+        'weight': 50,
+        'date': datetime.datetime.now().date() + datetime.timedelta(15),
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Receiver Note updated error!' in body
+
+    # # edit transfer successfully
+    data['date'] = datetime.datetime.now().date() - datetime.timedelta(15)
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Receiver Note updated successfully!' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_edit_notes_with_closed_transfer(user3: UserClientFlask):
+    # create lot
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+    lot_id = lot.id
+
+    # create new incoming lot
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    user3.post(uri, data=data)
+    lot = Lot.query.filter()[1]
+    lot_id = lot.id
+
+    # edit transfer adding date
+    uri = f'/inventory/lot/{lot_id}/transfer/'
+    data['date'] = datetime.datetime.now().date() - datetime.timedelta(15)
+    user3.post(uri, data=data)
+    assert lot.transfer.closed is True
+
+    # edit delivery with errors
+    uri = f'/inventory/lot/{lot_id}/deliverynote/'
+    data = {
+        'csrf_token': generate_csrf(),
+        'number': 'AAA',
+        'units': 10,
+        'weight': 50,
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Delivery Note updated error!' in body
+
+    # edit receiver with errors
+    uri = f'/inventory/lot/{lot_id}/receivernote/'
+    data = {
+        'csrf_token': generate_csrf(),
+        'number': 'AAA',
+        'units': 10,
+        'weight': 50,
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Receiver Note updated error!' in body
