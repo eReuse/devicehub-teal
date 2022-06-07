@@ -27,7 +27,7 @@ def get_inv():
 def upgrade():
     # op.execute("COMMIT")
     op.execute("ALTER TYPE snapshotsoftware ADD VALUE 'WorkbenchDesktop'")
-    SOFTWARE = sa.Enum(
+    SOFTWARE = sa.dialects.postgresql.ENUM(
         'Workbench',
         'WorkbenchAndroid',
         'AndroidApp',
