@@ -37,16 +37,18 @@
                     {% for snap in snapshots_log %}
                     <tr>
                       <td>
-                        {% if snap.sid %}
+                        {% if snap.sid and snap.snapshot_uuid %}
                         <a href="{{ url_for('inventory.snapshot_detail', snapshot_uuid=snap.snapshot_uuid) }}">
                           {{ snap.sid }}
                         </a>
                         {% endif %}
                       </td>
                       <td>
+                        {% if snap.snapshot_uuid %}
                         <a href="{{ url_for('inventory.snapshot_detail', snapshot_uuid=snap.snapshot_uuid) }}">
                           {{ snap.snapshot_uuid }}
                         </a>
+                        {% endif %}
                       </td>
                       <td>
                           {{ snap.version }}
