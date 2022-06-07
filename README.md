@@ -25,12 +25,12 @@ Create a PostgreSQL database called *devicehub* by running [create-db](examples/
 
 -  In MacOS: `bash examples/create-db.sh devicehub dhub`, and password `ereuse`.
 
-Configure project using environment file (you can use provided example as quickstart):                    
+Configure project using environment file (you can use provided example as quickstart):
 ```bash
 $ cp examples/env.example .env
 ```
 
-Using the `dh` tool for set up with one or multiple inventories.  
+Using the `dh` tool for set up with one or multiple inventories.
 Create the tables in the database by executing:
 
 ```bash
@@ -43,7 +43,7 @@ Finally, run the app:
 $ export dhi=dbtest;dh run --debugger
 ```
 
-The error ‘bdist_wheel’ can happen when you work with a *virtual environment*.  
+The error ‘bdist_wheel’ can happen when you work with a *virtual environment*.
 To fix it, install in the *virtual environment* wheel
 package. `pip3 install wheel`
 
@@ -123,7 +123,7 @@ To see a full list of migrations use
 $ alembic history
 ```
 
-# Upgrade an deployment
+# Upgrade a deployment
 
 For upgrade an instance of devicehub you need to do:
 
