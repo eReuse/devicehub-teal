@@ -8,32 +8,32 @@ ml).
 ## master
 
 ## testing
-- [added] #292 Add delivery note and receiver note.
-- [added] #291 SnapshotLog in old api.
-- [added] #290 Add advanced search.
-- [added] #289 Add transfer.
-- [added] #277 Add developement build & precomit build.
-- [added] #274 Add columns status in device list.
-- [added] #273 Allow search/filter lots on lots management component.
-- [added] #272 Show lots on deviceList.
-- [added] #271 Add view for show all devices.
-- [added] #270 Add tags in device list.
-- [added] #268 Add column created in device list.
-- [added] #265 Add feature for download Workbench settings.
-- [added] #225 List of snapshots.
 - [added] #212 Server side render parser Workbench Snapshots.
-- [changed] #293 add options in select number of items per page. (50, 100)
-- [changed] #283 Change visual format for dates in device list.
-- [changed] #282 upgrade dependencies pyjwt from 2.0.0a1 to 2.4.0.
+- [added] #225 List of snapshots.
+- [added] #265 Add feature for download Workbench settings.
+- [added] #268 Add column created in device list.
+- [added] #270 Add tags in device list.
+- [added] #271 Add view for show all devices.
+- [added] #272 Show lots on deviceList.
+- [added] #273 Allow search/filter lots on lots management component.
+- [added] #274 Add columns status in device list.
+- [added] #277 Add developement build & precomit build.
+- [added] #289 Add transfer.
+- [added] #290 Add advanced search.
+- [added] #291 SnapshotLog in old api.
+- [added] #292 Add delivery note and receiver note.
 - [changed] #275 remove all components in the filter of the device list.
-- [fixed] #287 apply button out of card.
-- [fixed] #285 lots search not working.
-- [fixed] #284 Allocate bugs.
-- [fixed] #280 fix enums in migration process.
-- [fixed] #276 Create Computer Monitor instead of Monitor in form of create a new device.
-- [fixed] #269 Allocate bugs.
-- [fixed] #267 ESLint ignore builded JS files.
+- [changed] #282 upgrade dependencies pyjwt from 2.0.0a1 to 2.4.0.
+- [changed] #283 Change visual format for dates in device list.
+- [changed] #293 add options in select number of items per page. (50, 100)
 - [fixed] #263 Fix select All devices options in select filter.
+- [fixed] #267 ESLint ignore builded JS files.
+- [fixed] #269 Allocate bugs.
+- [fixed] #276 Create Computer Monitor instead of Monitor in form of create a new device.
+- [fixed] #280 fix enums in migration process.
+- [fixed] #284 Allocate bugs.
+- [fixed] #285 lots search not working.
+- [fixed] #287 apply button out of card.
 
 ## [2.1.1] - 2022-05-11
 Hot fix release.
