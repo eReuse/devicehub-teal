@@ -8,6 +8,8 @@ ml).
 ## master
 
 ## testing
+
+## [2.2.0 rc1] - 2022-06-07
 - [added] #212 Server side render parser Workbench Snapshots.
 - [added] #225 List of snapshots.
 - [added] #265 Add feature for download Workbench settings.
