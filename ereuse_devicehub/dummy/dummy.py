@@ -20,6 +20,7 @@ from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
 from ereuse_devicehub.resources.user.models import Session
 from ereuse_devicehub.resources.enums import SessionType
+from ereuse_devicehub.parser.models import SnapshotsLog
 
 
 class Dummy:
@@ -65,6 +66,7 @@ class Dummy:
                          erase=True,
                          common=True)
         print('Creating stuff...'.ljust(30), end='')
+        assert SnapshotsLog.query.filter().all() == []
         with click_spinner.spinner():
             out = runner.invoke('org', 'add', *self.ORG).output
             org_id = json.loads(out)['id']
@@ -95,7 +97,8 @@ class Dummy:
             for path in bar:
                 with path.open() as f:
                     snapshot = yaml.load(f)
-                s, _ = user1.post(res=m.Snapshot, data=self.json_encode(snapshot))
+                # s, _ = user1.post(res=m.Snapshot, data=self.json_encode(snapshot))
+                s, _ = user1.post(res=m.Snapshot, data=snapshot)
                 if s.get('uuid', None) == 'ec23c11b-80b6-42cd-ac5c-73ba7acddbc4':
                     sample_pc = s['device']['id']
                     sample_pc_devicehub_id = s['device']['devicehubID']
