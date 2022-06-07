@@ -174,7 +174,7 @@ def test_upload_snapshot(user3: UserClientFlask):
     assert str(db_snapthot.uuid) == snapshot['uuid']
     assert dev.type == 'Laptop'
     assert dev.serial_number == 'b8oaas048285'
-    assert len(dev.actions) == 12
+    assert len(dev.actions) == 10
     assert len(dev.components) == 9
 
 
@@ -495,7 +495,7 @@ def test_action_recycling(user3: UserClientFlask):
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
-    assert dev.actions[-1].type == 'EreusePrice'
+    assert dev.actions[-1].type == 'Snapshot'
     assert 'Action Allocate error!' in body
 
     # good request
@@ -815,7 +815,7 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
 
     user3.post(uri, data=data)
     assert dev.allocated_status.type == 'Allocate'
-    assert len(dev.actions) == 13
+    assert len(dev.actions) == 11
 
     data = {
         'csrf_token': generate_csrf(),
@@ -829,7 +829,7 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
     assert dev.allocated_status.type == 'Deallocate'
-    assert len(dev.actions) == 14
+    assert len(dev.actions) == 12
 
     # is not possible to do an allocate between an allocate and an deallocate
     data = {
@@ -858,7 +858,7 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
     }
 
     user3.post(uri, data=data)
-    assert len(dev.actions) == 14
+    assert len(dev.actions) == 12
 
 
 @pytest.mark.mvp
@@ -881,7 +881,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert len(dev.actions) == 13
+    assert len(dev.actions) == 11
 
     data = {
         'csrf_token': generate_csrf(),
@@ -893,7 +893,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert len(dev.actions) == 14
+    assert len(dev.actions) == 12
 
     data = {
         'csrf_token': generate_csrf(),
@@ -907,7 +907,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert len(dev.actions) == 15
+    assert len(dev.actions) == 13
 
     data = {
         'csrf_token': generate_csrf(),
@@ -918,7 +918,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
         'end_users': 2,
     }
     user3.post(uri, data=data)
-    assert len(dev.actions) == 16
+    assert len(dev.actions) == 14
 
     data = {
         'csrf_token': generate_csrf(),
@@ -929,7 +929,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
         'end_users': 2,
     }
     user3.post(uri, data=data)
-    assert len(dev.actions) == 17
+    assert len(dev.actions) == 15
 
     data = {
         'csrf_token': generate_csrf(),
@@ -940,7 +940,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
         'end_users': 2,
     }
     user3.post(uri, data=data)
-    assert len(dev.actions) == 18
+    assert len(dev.actions) == 16
 
 
 @pytest.mark.mvp
@@ -1084,3 +1084,228 @@ def test_wb_settings_register(user3: UserClientFlask):
     assert "TOKEN = " in body
     assert "URL = https://" in body
     assert "/api/inventory/" in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_create_transfer(user3: UserClientFlask):
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+
+    lot_id = lot.id
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert 'Add new transfer' in body
+    assert 'Code' in body
+    assert 'Description' in body
+    assert 'Save' in body
+
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Transfer created successfully!' in body
+    assert 'Delete Lot' in body
+    assert 'Incoming Lot' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_edit_transfer(user3: UserClientFlask):
+    # create lot
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+
+    # render temporary lot
+    lot_id = lot.id
+    uri = f'/inventory/lot/{lot_id}/device/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert 'Transfer (<span class="text-success">Open</span>)' not in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' in body
+
+    # create new incoming lot
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    body, status = user3.post(uri, data=data)
+    assert 'Transfer (<span class="text-success">Open</span>)' in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' in body
+    lot = Lot.query.filter()[1]
+    assert lot.transfer is not None
+
+    # edit transfer with errors
+    lot_id = lot.id
+    uri = f'/inventory/lot/{lot_id}/transfer/'
+    data = {
+        'csrf_token': generate_csrf(),
+        'code': 'AAA',
+        'description': 'one one one',
+        'date': datetime.datetime.now().date() + datetime.timedelta(15),
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Transfer updated error!' in body
+    assert 'one one one' not in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' in body
+    assert 'Transfer (<span class="text-success">Open</span>)' in body
+
+    # # edit transfer successfully
+    data = {
+        'csrf_token': generate_csrf(),
+        'code': 'AAA',
+        'description': 'one one one',
+        'date': datetime.datetime.now().date() - datetime.timedelta(15),
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Transfer updated successfully!' in body
+    assert 'one one one' in body
+    assert '<i class="bi bi-trash"></i> Delete Lot' not in body
+    assert 'Transfer (<span class="text-danger">Closed</span>)' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_edit_deliverynote(user3: UserClientFlask):
+    # create lot
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+    lot_id = lot.id
+
+    # create new incoming lot
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    user3.post(uri, data=data)
+    lot = Lot.query.filter()[1]
+    lot_id = lot.id
+
+    # edit delivery with errors
+    uri = f'/inventory/lot/{lot_id}/deliverynote/'
+    data = {
+        'csrf_token': generate_csrf(),
+        'number': 'AAA',
+        'units': 10,
+        'weight': 50,
+        'date': datetime.datetime.now().date() + datetime.timedelta(15),
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Delivery Note updated error!' in body
+
+    # # edit transfer successfully
+    data['date'] = datetime.datetime.now().date() - datetime.timedelta(15)
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Delivery Note updated successfully!' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_edit_receivernote(user3: UserClientFlask):
+    # create lot
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+    lot_id = lot.id
+
+    # create new incoming lot
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    user3.post(uri, data=data)
+    lot = Lot.query.filter()[1]
+    lot_id = lot.id
+
+    # edit delivery with errors
+    uri = f'/inventory/lot/{lot_id}/receivernote/'
+    data = {
+        'csrf_token': generate_csrf(),
+        'number': 'AAA',
+        'units': 10,
+        'weight': 50,
+        'date': datetime.datetime.now().date() + datetime.timedelta(15),
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Receiver Note updated error!' in body
+
+    # # edit transfer successfully
+    data['date'] = datetime.datetime.now().date() - datetime.timedelta(15)
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Receiver Note updated successfully!' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_edit_notes_with_closed_transfer(user3: UserClientFlask):
+    # create lot
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+    lot_id = lot.id
+
+    # create new incoming lot
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    user3.post(uri, data=data)
+    lot = Lot.query.filter()[1]
+    lot_id = lot.id
+
+    # edit transfer adding date
+    uri = f'/inventory/lot/{lot_id}/transfer/'
+    data['date'] = datetime.datetime.now().date() - datetime.timedelta(15)
+    user3.post(uri, data=data)
+    assert lot.transfer.closed is True
+
+    # edit delivery with errors
+    uri = f'/inventory/lot/{lot_id}/deliverynote/'
+    data = {
+        'csrf_token': generate_csrf(),
+        'number': 'AAA',
+        'units': 10,
+        'weight': 50,
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Delivery Note updated error!' in body
+
+    # edit receiver with errors
+    uri = f'/inventory/lot/{lot_id}/receivernote/'
+    data = {
+        'csrf_token': generate_csrf(),
+        'number': 'AAA',
+        'units': 10,
+        'weight': 50,
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Receiver Note updated error!' in body

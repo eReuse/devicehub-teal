@@ -1,0 +1,2429 @@
+{
+  "timestamp": "2022-03-31 19:47:53.482140",
+  "type": "Snapshot",
+  "uuid": "696547a3-7700-44de-a66b-e0f9262c41a5",
+  "sid": "46895LX05688KN264LZ934Y09963Q",
+  "software": "Workbench",
+  "version": "2022.03.00",
+  "data": {
+    "lshw": {
+      "id": "__",
+      "class": "system",
+      "claimed": true,
+      "handle": "DMI:000C",
+      "description": "Notebook",
+      "product": "20HRCTO1WW (LENOVO_MT_20HR_BU_Think_FM_ThinkPad X1 Carbon 5th)",
+      "vendor": "LENOVO",
+      "version": "ThinkPad X1 Carbon 5th",
+      "serial": "PF0QMY5N",
+      "width": 64,
+      "configuration": {
+        "administrator_password": "disabled",
+        "chassis": "notebook",
+        "family": "ThinkPad X1 Carbon 5th",
+        "power-on_password": "disabled",
+        "sku": "LENOVO_MT_20HR_BU_Think_FM_ThinkPad X1 Carbon 5th",
+        "uuid": "305f33cc-33ca-11b2-a85c-aad0993c0c99"
+      },
+      "capabilities": {
+        "smbios-3.0.0": "SMBIOS version 3.0.0",
+        "dmi-3.0.0": "DMI version 3.0.0",
+        "smp": "Symmetric Multi-Processing",
+        "vsyscall32": "32-bit processes"
+      },
+      "children": [
+        {
+          "id": "core",
+          "class": "bus",
+          "claimed": true,
+          "handle": "DMI:000D",
+          "description": "Motherboard",
+          "product": "20HRCTO1WW",
+          "vendor": "LENOVO",
+          "physid": "0",
+          "version": "SDK0J40709 WIN",
+          "serial": "L3HF74S00AZ",
+          "slot": "Not Available",
+          "children": [
+            {
+              "id": "memory",
+              "class": "memory",
+              "claimed": true,
+              "handle": "DMI:0003",
+              "description": "System Memory",
+              "physid": "3",
+              "slot": "System board or motherboard",
+              "units": "bytes",
+              "size": 17045651456,
+              "children": [
+                {
+                  "id": "bank:0",
+                  "class": "memory",
+                  "claimed": true,
+                  "handle": "DMI:0004",
+                  "description": "Row of chips LPDDR3 Synchronous Unbuffered (Unregistered) 1867 MHz (0,5 ns) [empty]",
+                  "product": "K4EBE304EB-EGCF",
+                  "vendor": "Samsung",
+                  "physid": "0",
+                  "serial": "00000000",
+                  "slot": "ChannelA-DIMM0",
+                  "width": 64,
+                  "clock": 1867000000
+                },
+                {
+                  "id": "bank:1",
+                  "class": "memory",
+                  "claimed": true,
+                  "handle": "DMI:0005",
+                  "description": "Row of chips LPDDR3 Synchronous Unbuffered (Unregistered) 1867 MHz (0,5 ns) [empty]",
+                  "product": "K4EBE304EB-EGCF",
+                  "vendor": "Samsung",
+                  "physid": "1",
+                  "serial": "00000000",
+                  "slot": "ChannelB-DIMM0",
+                  "width": 64,
+                  "clock": 1867000000
+                }
+              ]
+            },
+            {
+              "id": "cache:0",
+              "class": "memory",
+              "claimed": true,
+              "handle": "DMI:0007",
+              "description": "L1 cache",
+              "physid": "7",
+              "slot": "L1 Cache",
+              "units": "bytes",
+              "size": 131072,
+              "capacity": 131072,
+              "configuration": {
+                "level": "1"
+              },
+              "capabilities": {
+                "synchronous": "Synchronous",
+                "internal": "Internal",
+                "write-back": "Write-back",
+                "unified": "Unified cache"
+              }
+            },
+            {
+              "id": "cache:1",
+              "class": "memory",
+              "claimed": true,
+              "handle": "DMI:0008",
+              "description": "L2 cache",
+              "physid": "8",
+              "slot": "L2 Cache",
+              "units": "bytes",
+              "size": 524288,
+              "capacity": 524288,
+              "configuration": {
+                "level": "2"
+              },
+              "capabilities": {
+                "synchronous": "Synchronous",
+                "internal": "Internal",
+                "write-back": "Write-back",
+                "unified": "Unified cache"
+              }
+            },
+            {
+              "id": "cache:2",
+              "class": "memory",
+              "claimed": true,
+              "handle": "DMI:0009",
+              "description": "L3 cache",
+              "physid": "9",
+              "slot": "L3 Cache",
+              "units": "bytes",
+              "size": 4194304,
+              "capacity": 4194304,
+              "configuration": {
+                "level": "3"
+              },
+              "capabilities": {
+                "synchronous": "Synchronous",
+                "internal": "Internal",
+                "write-back": "Write-back",
+                "unified": "Unified cache"
+              }
+            },
+            {
+              "id": "cpu",
+              "class": "processor",
+              "claimed": true,
+              "handle": "DMI:000A",
+              "description": "CPU",
+              "product": "Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz",
+              "vendor": "Intel Corp.",
+              "physid": "a",
+              "businfo": "cpu@0",
+              "version": "6.142.9",
+              "serial": "None",
+              "slot": "U3E1",
+              "units": "Hz",
+              "size": 3493648000,
+              "capacity": 3500000000,
+              "width": 64,
+              "clock": 100000000,
+              "configuration": {
+                "cores": "2",
+                "enabledcores": "2",
+                "microcode": "78",
+                "threads": "4"
+              },
+              "capabilities": {
+                "lm": "64bits extensions (x86-64)",
+                "fpu": "mathematical co-processor",
+                "fpu_exception": "FPU exceptions reporting",
+                "wp": true,
+                "vme": "virtual mode extensions",
+                "de": "debugging extensions",
+                "pse": "page size extensions",
+                "tsc": "time stamp counter",
+                "msr": "model-specific registers",
+                "pae": "4GB+ memory addressing (Physical Address Extension)",
+                "mce": "machine check exceptions",
+                "cx8": "compare and exchange 8-byte",
+                "apic": "on-chip advanced programmable interrupt controller (APIC)",
+                "sep": "fast system calls",
+                "mtrr": "memory type range registers",
+                "pge": "page global enable",
+                "mca": "machine check architecture",
+                "cmov": "conditional move instruction",
+                "pat": "page attribute table",
+                "pse36": "36-bit page size extensions",
+                "clflush": true,
+                "dts": "debug trace and EMON store MSRs",
+                "acpi": "thermal control (ACPI)",
+                "mmx": "multimedia extensions (MMX)",
+                "fxsr": "fast floating point save/restore",
+                "sse": "streaming SIMD extensions (SSE)",
+                "sse2": "streaming SIMD extensions (SSE2)",
+                "ss": "self-snoop",
+                "ht": "HyperThreading",
+                "tm": "thermal interrupt and status",
+                "pbe": "pending break event",
+                "syscall": "fast system calls",
+                "nx": "no-execute bit (NX)",
+                "pdpe1gb": true,
+                "rdtscp": true,
+                "x86-64": "64bits extensions (x86-64)",
+                "constant_tsc": true,
+                "art": true,
+                "arch_perfmon": true,
+                "pebs": true,
+                "bts": true,
+                "rep_good": true,
+                "nopl": true,
+                "xtopology": true,
+                "nonstop_tsc": true,
+                "cpuid": true,
+                "aperfmperf": true,
+                "pni": true,
+                "pclmulqdq": true,
+                "dtes64": true,
+                "monitor": true,
+                "ds_cpl": true,
+                "vmx": true,
+                "est": true,
+                "tm2": true,
+                "ssse3": true,
+                "sdbg": true,
+                "fma": true,
+                "cx16": true,
+                "xtpr": true,
+                "pdcm": true,
+                "pcid": true,
+                "sse4_1": true,
+                "sse4_2": true,
+                "x2apic": true,
+                "movbe": true,
+                "popcnt": true,
+                "aes": true,
+                "xsave": true,
+                "avx": true,
+                "f16c": true,
+                "rdrand": true,
+                "lahf_lm": true,
+                "abm": true,
+                "3dnowprefetch": true,
+                "cpuid_fault": true,
+                "epb": true,
+                "invpcid_single": true,
+                "pti": true,
+                "tpr_shadow": true,
+                "vnmi": true,
+                "flexpriority": true,
+                "ept": true,
+                "vpid": true,
+                "ept_ad": true,
+                "fsgsbase": true,
+                "tsc_adjust": true,
+                "bmi1": true,
+                "avx2": true,
+                "smep": true,
+                "bmi2": true,
+                "erms": true,
+                "invpcid": true,
+                "mpx": true,
+                "rdseed": true,
+                "adx": true,
+                "smap": true,
+                "clflushopt": true,
+                "intel_pt": true,
+                "xsaveopt": true,
+                "xsavec": true,
+                "xgetbv1": true,
+                "xsaves": true,
+                "dtherm": true,
+                "ida": true,
+                "arat": true,
+                "pln": true,
+                "pts": true,
+                "hwp": true,
+                "hwp_notify": true,
+                "hwp_act_window": true,
+                "hwp_epp": true,
+                "cpufreq": "CPU Frequency scaling"
+              }
+            },
+            {
+              "id": "firmware",
+              "class": "memory",
+              "claimed": true,
+              "description": "BIOS",
+              "vendor": "LENOVO",
+              "physid": "b",
+              "version": "N1MET31W (1.16 )",
+              "date": "03/10/2017",
+              "units": "bytes",
+              "size": 131072,
+              "capacity": 16777216,
+              "capabilities": {
+                "pci": "PCI bus",
+                "pnp": "Plug-and-Play",
+                "upgrade": "BIOS EEPROM can be upgraded",
+                "shadowing": "BIOS shadowing",
+                "cdboot": "Booting from CD-ROM/DVD",
+                "bootselect": "Selectable boot path",
+                "edd": "Enhanced Disk Drive extensions",
+                "int13floppy720": "3.5\" 720KB floppy",
+                "int5printscreen": "Print Screen key",
+                "int9keyboard": "i8042 keyboard controller",
+                "int14serial": "INT14 serial line control",
+                "int17printer": "INT17 printer control",
+                "int10video": "INT10 CGA/Mono video",
+                "acpi": "ACPI",
+                "usb": "USB legacy emulation",
+                "biosbootspecification": "BIOS boot specification",
+                "uefi": "UEFI specification is supported"
+              }
+            },
+            {
+              "id": "pci",
+              "class": "bridge",
+              "claimed": true,
+              "handle": "PCIBUS:0000:00",
+              "description": "Host bridge",
+              "product": "Xeon E3-1200 v6/7th Gen Core Processor Host Bridge/DRAM Registers",
+              "vendor": "Intel Corporation",
+              "physid": "100",
+              "businfo": "pci@0000:00:00.0",
+              "version": "02",
+              "width": 32,
+              "clock": 33000000,
+              "configuration": {
+                "driver": "skl_uncore"
+              },
+              "children": [
+                {
+                  "id": "display",
+                  "class": "display",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:02.0",
+                  "description": "VGA compatible controller",
+                  "product": "HD Graphics 620",
+                  "vendor": "Intel Corporation",
+                  "physid": "2",
+                  "businfo": "pci@0000:00:02.0",
+                  "logicalname": "/dev/fb0",
+                  "version": "02",
+                  "width": 64,
+                  "clock": 33000000,
+                  "configuration": {
+                    "depth": "32",
+                    "driver": "i915",
+                    "latency": "0",
+                    "resolution": "1920,1080"
+                  },
+                  "capabilities": {
+                    "pciexpress": "PCI Express",
+                    "msi": "Message Signalled Interrupts",
+                    "pm": "Power Management",
+                    "vga_controller": true,
+                    "bus_master": "bus mastering",
+                    "cap_list": "PCI capabilities listing",
+                    "rom": "extension ROM",
+                    "fb": "framebuffer"
+                  }
+                },
+                {
+                  "id": "generic:0",
+                  "class": "generic",
+                  "handle": "PCI:0000:00:08.0",
+                  "description": "System peripheral",
+                  "product": "Xeon E3-1200 v5/v6 / E3-1500 v5 / 6th/7th/8th Gen Core Processor Gaussian Mixture Model",
+                  "vendor": "Intel Corporation",
+                  "physid": "8",
+                  "businfo": "pci@0000:00:08.0",
+                  "version": "00",
+                  "width": 64,
+                  "clock": 33000000,
+                  "configuration": {
+                    "latency": "0"
+                  },
+                  "capabilities": {
+                    "msi": "Message Signalled Interrupts",
+                    "pm": "Power Management",
+                    "cap_list": "PCI capabilities listing"
+                  }
+                },
+                {
+                  "id": "usb",
+                  "class": "bus",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:14.0",
+                  "description": "USB controller",
+                  "product": "Sunrise Point-LP USB 3.0 xHCI Controller",
+                  "vendor": "Intel Corporation",
+                  "physid": "14",
+                  "businfo": "pci@0000:00:14.0",
+                  "version": "21",
+                  "width": 64,
+                  "clock": 33000000,
+                  "configuration": {
+                    "driver": "xhci_hcd",
+                    "latency": "0"
+                  },
+                  "capabilities": {
+                    "pm": "Power Management",
+                    "msi": "Message Signalled Interrupts",
+                    "xhci": true,
+                    "bus_master": "bus mastering",
+                    "cap_list": "PCI capabilities listing"
+                  },
+                  "children": [
+                    {
+                      "id": "usbhost:0",
+                      "class": "bus",
+                      "claimed": true,
+                      "handle": "USB:1:1",
+                      "product": "xHCI Host Controller",
+                      "vendor": "Linux 5.4.72-gentoo-x86_64 xhci-hcd",
+                      "physid": "0",
+                      "businfo": "usb@1",
+                      "logicalname": "usb1",
+                      "version": "5.04",
+                      "configuration": {
+                        "driver": "hub",
+                        "slots": "12",
+                        "speed": "480Mbit/s"
+                      },
+                      "capabilities": {
+                        "usb-2.00": "USB 2.0"
+                      },
+                      "children": [
+                        {
+                          "id": "usb:0",
+                          "class": "communication",
+                          "claimed": true,
+                          "handle": "USB:1:2",
+                          "description": "Bluetooth wireless interface",
+                          "vendor": "Intel Corp.",
+                          "physid": "7",
+                          "businfo": "usb@1:7",
+                          "version": "0.10",
+                          "configuration": {
+                            "driver": "btusb",
+                            "maxpower": "100mA",
+                            "speed": "12Mbit/s"
+                          },
+                          "capabilities": {
+                            "bluetooth": "Bluetooth wireless radio",
+                            "usb-2.00": "USB 2.0"
+                          }
+                        },
+                        {
+                          "id": "usb:1",
+                          "class": "multimedia",
+                          "claimed": true,
+                          "handle": "USB:1:3",
+                          "description": "Video",
+                          "product": "Integrated Camera: Integrated C",
+                          "vendor": "8SSC20F27049L1GZ6CB00MH",
+                          "physid": "8",
+                          "businfo": "usb@1:8",
+                          "logicalname": [
+                            "input9",
+                            "/dev/input/event8"
+                          ],
+                          "version": "0.16",
+                          "serial": "200901010001",
+                          "configuration": {
+                            "driver": "uvcvideo",
+                            "maxpower": "500mA",
+                            "speed": "480Mbit/s"
+                          },
+                          "capabilities": {
+                            "usb-2.00": "USB 2.0",
+                            "usb": "USB"
+                          }
+                        },
+                        {
+                          "id": "usb:2",
+                          "class": "generic",
+                          "handle": "USB:1:4",
+                          "description": "Generic USB device",
+                          "vendor": "Validity Sensors, Inc.",
+                          "physid": "9",
+                          "businfo": "usb@1:9",
+                          "version": "1.64",
+                          "serial": "d6aa80ed14a7",
+                          "configuration": {
+                            "maxpower": "100mA",
+                            "speed": "12Mbit/s"
+                          },
+                          "capabilities": {
+                            "usb-2.00": "USB 2.0"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": "usbhost:1",
+                      "class": "bus",
+                      "claimed": true,
+                      "handle": "USB:2:1",
+                      "product": "xHCI Host Controller",
+                      "vendor": "Linux 5.4.72-gentoo-x86_64 xhci-hcd",
+                      "physid": "1",
+                      "businfo": "usb@2",
+                      "logicalname": "usb2",
+                      "version": "5.04",
+                      "configuration": {
+                        "driver": "hub",
+                        "slots": "6",
+                        "speed": "5000Mbit/s"
+                      },
+                      "capabilities": {
+                        "usb-3.00": true
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "generic:1",
+                  "class": "generic",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:14.2",
+                  "description": "Signal processing controller",
+                  "product": "Sunrise Point-LP Thermal subsystem",
+                  "vendor": "Intel Corporation",
+                  "physid": "14.2",
+                  "businfo": "pci@0000:00:14.2",
+                  "version": "21",
+                  "width": 64,
+                  "clock": 33000000,
+                  "configuration": {
+                    "driver": "intel_pch_thermal",
+                    "latency": "0"
+                  },
+                  "capabilities": {
+                    "pm": "Power Management",
+                    "msi": "Message Signalled Interrupts",
+                    "cap_list": "PCI capabilities listing"
+                  }
+                },
+                {
+                  "id": "communication",
+                  "class": "communication",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:16.0",
+                  "description": "Communication controller",
+                  "product": "Sunrise Point-LP CSME HECI #1",
+                  "vendor": "Intel Corporation",
+                  "physid": "16",
+                  "businfo": "pci@0000:00:16.0",
+                  "version": "21",
+                  "width": 64,
+                  "clock": 33000000,
+                  "configuration": {
+                    "driver": "mei_me",
+                    "latency": "0"
+                  },
+                  "capabilities": {
+                    "pm": "Power Management",
+                    "msi": "Message Signalled Interrupts",
+                    "bus_master": "bus mastering",
+                    "cap_list": "PCI capabilities listing"
+                  }
+                },
+                {
+                  "id": "pci:0",
+                  "class": "bridge",
+                  "claimed": true,
+                  "handle": "PCIBUS:0000:02",
+                  "description": "PCI bridge",
+                  "product": "Sunrise Point-LP PCI Express Root Port #1",
+                  "vendor": "Intel Corporation",
+                  "physid": "1c",
+                  "businfo": "pci@0000:00:1c.0",
+                  "version": "f1",
+                  "width": 32,
+                  "clock": 33000000,
+                  "configuration": {
+                    "driver": "pcieport"
+                  },
+                  "capabilities": {
+                    "pci": true,
+                    "pciexpress": "PCI Express",
+                    "msi": "Message Signalled Interrupts",
+                    "pm": "Power Management",
+                    "normal_decode": true,
+                    "bus_master": "bus mastering",
+                    "cap_list": "PCI capabilities listing"
+                  },
+                  "children": [
+                    {
+                      "id": "generic",
+                      "class": "bus",
+                      "claimed": true,
+                      "handle": "PCI:0000:02:00.0",
+                      "description": "MMC Host",
+                      "product": "RTS525A PCI Express Card Reader",
+                      "vendor": "Realtek Semiconductor Co., Ltd.",
+                      "physid": "0",
+                      "businfo": "pci@0000:02:00.0",
+                      "logicalname": "mmc0",
+                      "version": "01",
+                      "width": 32,
+                      "clock": 33000000,
+                      "configuration": {
+                        "driver": "rtsx_pci",
+                        "latency": "0"
+                      },
+                      "capabilities": {
+                        "pm": "Power Management",
+                        "msi": "Message Signalled Interrupts",
+                        "pciexpress": "PCI Express",
+                        "bus_master": "bus mastering",
+                        "cap_list": "PCI capabilities listing"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "pci:1",
+                  "class": "bridge",
+                  "claimed": true,
+                  "handle": "PCIBUS:0000:04",
+                  "description": "PCI bridge",
+                  "product": "Sunrise Point-LP PCI Express Root Port #3",
+                  "vendor": "Intel Corporation",
+                  "physid": "1c.2",
+                  "businfo": "pci@0000:00:1c.2",
+                  "version": "f1",
+                  "width": 32,
+                  "clock": 33000000,
+                  "configuration": {
+                    "driver": "pcieport"
+                  },
+                  "capabilities": {
+                    "pci": true,
+                    "pciexpress": "PCI Express",
+                    "msi": "Message Signalled Interrupts",
+                    "pm": "Power Management",
+                    "normal_decode": true,
+                    "bus_master": "bus mastering",
+                    "cap_list": "PCI capabilities listing"
+                  },
+                  "children": [
+                    {
+                      "id": "network",
+                      "class": "network",
+                      "claimed": true,
+                      "handle": "PCI:0000:04:00.0",
+                      "description": "Wireless interface",
+                      "product": "Wireless 8265 / 8275",
+                      "vendor": "Intel Corporation",
+                      "physid": "0",
+                      "businfo": "pci@0000:04:00.0",
+                      "logicalname": "wlp4s0",
+                      "version": "88",
+                      "serial": "00:28:f8:a6:d5:7e",
+                      "width": 64,
+                      "clock": 33000000,
+                      "configuration": {
+                        "broadcast": "yes",
+                        "driver": "iwlwifi",
+                        "driverversion": "5.4.72-gentoo-x86_64",
+                        "firmware": "36.ad812ee0.0",
+                        "ip": "192.168.1.39",
+                        "latency": "0",
+                        "link": "yes",
+                        "multicast": "yes",
+                        "wireless": "IEEE 802.11"
+                      },
+                      "capabilities": {
+                        "pm": "Power Management",
+                        "msi": "Message Signalled Interrupts",
+                        "pciexpress": "PCI Express",
+                        "bus_master": "bus mastering",
+                        "cap_list": "PCI capabilities listing",
+                        "ethernet": true,
+                        "physical": "Physical interface",
+                        "wireless": "Wireless-LAN"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "pci:2",
+                  "class": "bridge",
+                  "claimed": true,
+                  "handle": "PCIBUS:0000:05",
+                  "description": "PCI bridge",
+                  "product": "Sunrise Point-LP PCI Express Root Port #5",
+                  "vendor": "Intel Corporation",
+                  "physid": "1c.4",
+                  "businfo": "pci@0000:00:1c.4",
+                  "version": "f1",
+                  "width": 32,
+                  "clock": 33000000,
+                  "configuration": {
+                    "driver": "pcieport"
+                  },
+                  "capabilities": {
+                    "pci": true,
+                    "pciexpress": "PCI Express",
+                    "msi": "Message Signalled Interrupts",
+                    "pm": "Power Management",
+                    "normal_decode": true,
+                    "bus_master": "bus mastering",
+                    "cap_list": "PCI capabilities listing"
+                  },
+                  "children": [
+                    {
+                      "id": "nvme",
+                      "class": "storage",
+                      "claimed": true,
+                      "handle": "PCI:0000:05:00.0",
+                      "description": "NVMe device",
+                      "product": "SAMSUNG MZVLW1T0HMLH-000L7",
+                      "vendor": "Samsung Electronics Co Ltd",
+                      "physid": "0",
+                      "businfo": "pci@0000:05:00.0",
+                      "logicalname": "/dev/nvme0",
+                      "version": "6L7QCXY7",
+                      "serial": "S35ANX0J401001",
+                      "width": 64,
+                      "clock": 33000000,
+                      "configuration": {
+                        "driver": "nvme",
+                        "latency": "0",
+                        "nqn": "nqn.2014.08.org.nvmexpress:144d144dS35ANX0J401001      SAMSUNG MZVLW1T0HMLH-000L7",
+                        "state": "live"
+                      },
+                      "capabilities": {
+                        "nvme": true,
+                        "pm": "Power Management",
+                        "msi": "Message Signalled Interrupts",
+                        "pciexpress": "PCI Express",
+                        "msix": "MSI-X",
+                        "nvm_express": true,
+                        "bus_master": "bus mastering",
+                        "cap_list": "PCI capabilities listing"
+                      },
+                      "children": [
+                        {
+                          "id": "namespace",
+                          "class": "disk",
+                          "claimed": true,
+                          "handle": "GUID:a240de2f-0a5b-4704-907b-266b2b0272aa",
+                          "description": "NVMe disk",
+                          "physid": "1",
+                          "businfo": "nvme@0:1",
+                          "logicalname": "/dev/nvme0n1",
+                          "units": "bytes",
+                          "size": 1024209543168,
+                          "configuration": {
+                            "guid": "a240de2f-0a5b-4704-907b-266b2b0272aa",
+                            "logicalsectorsize": "512",
+                            "sectorsize": "512",
+                            "wwid": "eui.002538b471b40718"
+                          },
+                          "capabilities": {
+                            "gpt-1.00": "GUID Partition Table version 1.00",
+                            "partitioned": "Partitioned disk",
+                            "partitioned:gpt": "GUID partition table"
+                          },
+                          "children": [
+                            {
+                              "id": "volume:0",
+                              "class": "volume",
+                              "claimed": true,
+                              "handle": "GUID:631d2564-60c5-4ba8-8fdc-f9f9a9fe8342",
+                              "description": "Windows FAT volume",
+                              "vendor": "mkfs.fat",
+                              "physid": "1",
+                              "businfo": "nvme@0:1,1",
+                              "logicalname": [
+                                "/dev/nvme0n1p1",
+                                "/boot/efi"
+                              ],
+                              "dev": "259:1",
+                              "version": "FAT32",
+                              "serial": "b0c3-af95",
+                              "size": 998227968,
+                              "capacity": 999292416,
+                              "configuration": {
+                                "FATs": "2",
+                                "filesystem": "fat",
+                                "mount.fstype": "vfat",
+                                "mount.options": "rw,relatime,fmask=0077,dmask=0077,codepage=437,iocharset=ascii,shortname=mixed,errors=remount-ro",
+                                "name": "EFI",
+                                "state": "mounted"
+                              },
+                              "capabilities": {
+                                "boot": "Contains boot code",
+                                "fat": "Windows FAT",
+                                "initialized": "initialized volume"
+                              }
+                            },
+                            {
+                              "id": "volume:1",
+                              "class": "volume",
+                              "claimed": true,
+                              "handle": "GUID:52951680-c216-4d41-8990-fa1077a8b4a6",
+                              "description": "EXT4 volume",
+                              "vendor": "Linux",
+                              "physid": "2",
+                              "businfo": "nvme@0:1,2",
+                              "logicalname": [
+                                "/dev/nvme0n1p2",
+                                "/"
+                              ],
+                              "dev": "259:2",
+                              "version": "1.0",
+                              "serial": "789e6c5c-7e98-4971-be6e-5772b2427751",
+                              "size": 249999998976,
+                              "capacity": 249999999488,
+                              "configuration": {
+                                "created": "2020-11-07 14:20:41",
+                                "filesystem": "ext4",
+                                "label": "GENTOO",
+                                "lastmountpoint": "/",
+                                "modified": "2020-11-08 08:10:25",
+                                "mount.fstype": "ext4",
+                                "mount.options": "rw,relatime,errors=remount-ro",
+                                "mounted": "2022-03-15 08:04:31",
+                                "name": "ROOT",
+                                "state": "mounted"
+                              },
+                              "capabilities": {
+                                "journaled": true,
+                                "extended_attributes": "Extended Attributes",
+                                "large_files": "4GB+ files",
+                                "huge_files": "16TB+ files",
+                                "dir_nlink": "directories with 65000+ subdirs",
+                                "recover": "needs recovery",
+                                "64bit": "64bit filesystem",
+                                "extents": "extent-based allocation",
+                                "ext4": true,
+                                "ext2": "EXT2/EXT3",
+                                "initialized": "initialized volume"
+                              }
+                            },
+                            {
+                              "id": "volume:2",
+                              "class": "volume",
+                              "claimed": true,
+                              "handle": "GUID:dcdda707-de03-4d98-9c9c-5978faadaea3",
+                              "description": "swap partition",
+                              "vendor": "NetBSD",
+                              "physid": "3",
+                              "businfo": "nvme@0:1,3",
+                              "logicalname": "/dev/nvme0n1p3",
+                              "dev": "259:3",
+                              "serial": "dcdda707-de03-4d98-9c9c-5978faadaea3",
+                              "capacity": 2999975424,
+                              "configuration": {
+                                "name": "SWAP BSD"
+                              },
+                              "capabilities": {
+                                "nofs": "No filesystem"
+                              }
+                            },
+                            {
+                              "id": "volume:3",
+                              "class": "volume",
+                              "claimed": true,
+                              "handle": "GUID:cf6b5554-fc7f-449d-8a23-dc18e923d85b",
+                              "description": "Linux swap volume",
+                              "vendor": "Linux",
+                              "physid": "4",
+                              "businfo": "nvme@0:1,4",
+                              "logicalname": "/dev/nvme0n1p4",
+                              "dev": "259:4",
+                              "version": "1",
+                              "serial": "0e61b980-1d5b-4e02-9414-7c3c3d9b9c57",
+                              "size": 2999243520,
+                              "capacity": 2999975424,
+                              "configuration": {
+                                "filesystem": "swap",
+                                "pagesize": "4095"
+                              },
+                              "capabilities": {
+                                "nofs": "No filesystem",
+                                "swap": "Linux swap",
+                                "initialized": "initialized volume"
+                              }
+                            },
+                            {
+                              "id": "volume:4",
+                              "class": "volume",
+                              "claimed": true,
+                              "handle": "GUID:3fc34104-ca09-4c3d-b153-7dd09de4185a",
+                              "description": "FFS partition",
+                              "vendor": "NetBSD",
+                              "physid": "5",
+                              "businfo": "nvme@0:1,5",
+                              "logicalname": "/dev/nvme0n1p5",
+                              "dev": "259:5",
+                              "serial": "3fc34104-ca09-4c3d-b153-7dd09de4185a",
+                              "capacity": 200000142848,
+                              "configuration": {
+                                "name": "Devuan"
+                              }
+                            },
+                            {
+                              "id": "volume:5",
+                              "class": "volume",
+                              "claimed": true,
+                              "handle": "GUID:02d94658-530e-c844-ab78-ac48b52b48f9",
+                              "description": "ZFS partition",
+                              "vendor": "FreeBSD",
+                              "physid": "6",
+                              "businfo": "nvme@0:1,6",
+                              "logicalname": "/dev/nvme0n1p6",
+                              "dev": "259:6",
+                              "serial": "02d94658-530e-c844-ab78-ac48b52b48f9",
+                              "capacity": 567208647680
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "pci:3",
+                  "class": "bridge",
+                  "claimed": true,
+                  "handle": "PCIBUS:0000:06",
+                  "description": "PCI bridge",
+                  "product": "Sunrise Point-LP PCI Express Root Port #9",
+                  "vendor": "Intel Corporation",
+                  "physid": "1d",
+                  "businfo": "pci@0000:00:1d.0",
+                  "version": "f1",
+                  "width": 32,
+                  "clock": 33000000,
+                  "configuration": {
+                    "driver": "pcieport"
+                  },
+                  "capabilities": {
+                    "pci": true,
+                    "pciexpress": "PCI Express",
+                    "msi": "Message Signalled Interrupts",
+                    "pm": "Power Management",
+                    "normal_decode": true,
+                    "bus_master": "bus mastering",
+                    "cap_list": "PCI capabilities listing"
+                  },
+                  "children": [
+                    {
+                      "id": "pci",
+                      "class": "bridge",
+                      "claimed": true,
+                      "handle": "PCIBUS:0000:07",
+                      "description": "PCI bridge",
+                      "product": "JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]",
+                      "vendor": "Intel Corporation",
+                      "physid": "0",
+                      "businfo": "pci@0000:06:00.0",
+                      "version": "02",
+                      "width": 32,
+                      "clock": 33000000,
+                      "configuration": {
+                        "driver": "pcieport"
+                      },
+                      "capabilities": {
+                        "pci": true,
+                        "pm": "Power Management",
+                        "msi": "Message Signalled Interrupts",
+                        "pciexpress": "PCI Express",
+                        "normal_decode": true,
+                        "bus_master": "bus mastering",
+                        "cap_list": "PCI capabilities listing"
+                      },
+                      "children": [
+                        {
+                          "id": "pci:0",
+                          "class": "bridge",
+                          "claimed": true,
+                          "handle": "PCIBUS:0000:08",
+                          "description": "PCI bridge",
+                          "product": "JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]",
+                          "vendor": "Intel Corporation",
+                          "physid": "0",
+                          "businfo": "pci@0000:07:00.0",
+                          "version": "02",
+                          "width": 32,
+                          "clock": 33000000,
+                          "configuration": {
+                            "driver": "pcieport"
+                          },
+                          "capabilities": {
+                            "pci": true,
+                            "pm": "Power Management",
+                            "msi": "Message Signalled Interrupts",
+                            "pciexpress": "PCI Express",
+                            "normal_decode": true,
+                            "bus_master": "bus mastering",
+                            "cap_list": "PCI capabilities listing"
+                          }
+                        },
+                        {
+                          "id": "pci:1",
+                          "class": "bridge",
+                          "claimed": true,
+                          "handle": "PCIBUS:0000:09",
+                          "description": "PCI bridge",
+                          "product": "JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]",
+                          "vendor": "Intel Corporation",
+                          "physid": "1",
+                          "businfo": "pci@0000:07:01.0",
+                          "version": "02",
+                          "width": 32,
+                          "clock": 33000000,
+                          "configuration": {
+                            "driver": "pcieport"
+                          },
+                          "capabilities": {
+                            "pci": true,
+                            "pm": "Power Management",
+                            "msi": "Message Signalled Interrupts",
+                            "pciexpress": "PCI Express",
+                            "normal_decode": true,
+                            "bus_master": "bus mastering",
+                            "cap_list": "PCI capabilities listing"
+                          }
+                        },
+                        {
+                          "id": "pci:2",
+                          "class": "bridge",
+                          "claimed": true,
+                          "handle": "PCIBUS:0000:3c",
+                          "description": "PCI bridge",
+                          "product": "JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]",
+                          "vendor": "Intel Corporation",
+                          "physid": "2",
+                          "businfo": "pci@0000:07:02.0",
+                          "version": "02",
+                          "width": 32,
+                          "clock": 33000000,
+                          "configuration": {
+                            "driver": "pcieport"
+                          },
+                          "capabilities": {
+                            "pci": true,
+                            "pm": "Power Management",
+                            "msi": "Message Signalled Interrupts",
+                            "pciexpress": "PCI Express",
+                            "normal_decode": true,
+                            "bus_master": "bus mastering",
+                            "cap_list": "PCI capabilities listing"
+                          },
+                          "children": [
+                            {
+                              "id": "usb",
+                              "class": "bus",
+                              "claimed": true,
+                              "handle": "PCI:0000:3c:00.0",
+                              "description": "USB controller",
+                              "product": "JHL6540 Thunderbolt 3 USB Controller (C step) [Alpine Ridge 4C 2016]",
+                              "vendor": "Intel Corporation",
+                              "physid": "0",
+                              "businfo": "pci@0000:3c:00.0",
+                              "version": "02",
+                              "width": 32,
+                              "clock": 33000000,
+                              "configuration": {
+                                "driver": "xhci_hcd",
+                                "latency": "0"
+                              },
+                              "capabilities": {
+                                "pm": "Power Management",
+                                "msi": "Message Signalled Interrupts",
+                                "pciexpress": "PCI Express",
+                                "xhci": true,
+                                "bus_master": "bus mastering",
+                                "cap_list": "PCI capabilities listing"
+                              },
+                              "children": [
+                                {
+                                  "id": "usbhost:0",
+                                  "class": "bus",
+                                  "claimed": true,
+                                  "handle": "USB:3:1",
+                                  "product": "xHCI Host Controller",
+                                  "vendor": "Linux 5.4.72-gentoo-x86_64 xhci-hcd",
+                                  "physid": "0",
+                                  "businfo": "usb@3",
+                                  "logicalname": "usb3",
+                                  "version": "5.04",
+                                  "configuration": {
+                                    "driver": "hub",
+                                    "slots": "2",
+                                    "speed": "480Mbit/s"
+                                  },
+                                  "capabilities": {
+                                    "usb-2.00": "USB 2.0"
+                                  },
+                                  "children": [
+                                    {
+                                      "id": "usb",
+                                      "class": "bus",
+                                      "claimed": true,
+                                      "handle": "USB:3:2",
+                                      "description": "USB hub",
+                                      "product": "USB2.0 Hub",
+                                      "vendor": "VIA Labs, Inc.",
+                                      "physid": "2",
+                                      "businfo": "usb@3:2",
+                                      "version": "4.73",
+                                      "configuration": {
+                                        "driver": "hub",
+                                        "slots": "5",
+                                        "speed": "480Mbit/s"
+                                      },
+                                      "capabilities": {
+                                        "usb-2.10": true
+                                      },
+                                      "children": [
+                                        {
+                                          "id": "usb:0",
+                                          "class": "bus",
+                                          "claimed": true,
+                                          "handle": "USB:3:3",
+                                          "description": "USB hub",
+                                          "product": "USB2.0 Hub",
+                                          "vendor": "VIA Labs, Inc.",
+                                          "physid": "1",
+                                          "businfo": "usb@3:2.1",
+                                          "version": "4.73",
+                                          "configuration": {
+                                            "driver": "hub",
+                                            "slots": "5",
+                                            "speed": "480Mbit/s"
+                                          },
+                                          "capabilities": {
+                                            "usb-2.10": true
+                                          },
+                                          "children": [
+                                            {
+                                              "id": "usb:0",
+                                              "class": "input",
+                                              "claimed": true,
+                                              "handle": "USB:3:6",
+                                              "description": "Mouse",
+                                              "product": "Razer Razer DeathAdder V2",
+                                              "vendor": "Razer",
+                                              "physid": "2",
+                                              "businfo": "usb@3:2.1.2",
+                                              "logicalname": [
+                                                "input174",
+                                                "/dev/input/event17",
+                                                "/dev/input/mouse2",
+                                                "input175",
+                                                "/dev/input/event18",
+                                                "input176",
+                                                "/dev/input/event19",
+                                                "input177",
+                                                "/dev/input/event20",
+                                                "input178",
+                                                "/dev/input/event21",
+                                                "input179",
+                                                "/dev/input/event22",
+                                                "input179::capslock",
+                                                "input179::numlock",
+                                                "input179::scrolllock"
+                                              ],
+                                              "version": "2.00",
+                                              "configuration": {
+                                                "driver": "usbhid",
+                                                "maxpower": "100mA",
+                                                "speed": "12Mbit/s"
+                                              },
+                                              "capabilities": {
+                                                "usb-2.00": "USB 2.0",
+                                                "usb": "USB"
+                                              }
+                                            },
+                                            {
+                                              "id": "usb:1",
+                                              "class": "input",
+                                              "claimed": true,
+                                              "handle": "USB:3:8",
+                                              "description": "Keyboard",
+                                              "product": "Razer Razer Huntsman Mini Consumer Control",
+                                              "vendor": "Razer",
+                                              "physid": "3",
+                                              "businfo": "usb@3:2.1.3",
+                                              "logicalname": [
+                                                "input180",
+                                                "/dev/input/event23",
+                                                "input180::capslock",
+                                                "input180::numlock",
+                                                "input180::scrolllock",
+                                                "input181",
+                                                "/dev/input/event24",
+                                                "input181::capslock",
+                                                "input181::numlock",
+                                                "input181::scrolllock",
+                                                "input182",
+                                                "/dev/input/event25",
+                                                "input183",
+                                                "/dev/input/event26",
+                                                "input184",
+                                                "/dev/input/event27",
+                                                "input185",
+                                                "/dev/input/event28",
+                                                "/dev/input/mouse3",
+                                                "input186",
+                                                "/dev/input/event29"
+                                              ],
+                                              "version": "2.00",
+                                              "serial": "00000000001A",
+                                              "configuration": {
+                                                "driver": "usbhid",
+                                                "maxpower": "500mA",
+                                                "speed": "12Mbit/s"
+                                              },
+                                              "capabilities": {
+                                                "usb-2.00": "USB 2.0",
+                                                "usb": "USB"
+                                              }
+                                            },
+                                            {
+                                              "id": "usb:2",
+                                              "class": "generic",
+                                              "handle": "USB:3:9",
+                                              "description": "Generic USB device",
+                                              "product": "USB Billboard Device",
+                                              "vendor": "VIA Labs, Inc.",
+                                              "physid": "5",
+                                              "businfo": "usb@3:2.1.5",
+                                              "version": "0.01",
+                                              "serial": "0000000000000001",
+                                              "configuration": {
+                                                "maxpower": "100mA",
+                                                "speed": "480Mbit/s"
+                                              },
+                                              "capabilities": {
+                                                "usb-2.01": true
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "usb:1",
+                                          "class": "generic",
+                                          "handle": "USB:3:4",
+                                          "description": "Generic USB device",
+                                          "product": "USB 2.0 BILLBOARD",
+                                          "vendor": "VLI Inc.",
+                                          "physid": "3",
+                                          "businfo": "usb@3:2.3",
+                                          "version": "14.24",
+                                          "serial": "0000000000000001",
+                                          "configuration": {
+                                            "speed": "12Mbit/s"
+                                          },
+                                          "capabilities": {
+                                            "usb-2.01": true
+                                          }
+                                        },
+                                        {
+                                          "id": "usb:2",
+                                          "class": "generic",
+                                          "handle": "USB:3:7",
+                                          "description": "Generic USB device",
+                                          "product": "USB Billboard Device",
+                                          "vendor": "VIA Labs, Inc.",
+                                          "physid": "5",
+                                          "businfo": "usb@3:2.5",
+                                          "version": "0.01",
+                                          "serial": "0000000000000001",
+                                          "configuration": {
+                                            "maxpower": "100mA",
+                                            "speed": "480Mbit/s"
+                                          },
+                                          "capabilities": {
+                                            "usb-2.01": true
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "usbhost:1",
+                                  "class": "bus",
+                                  "claimed": true,
+                                  "handle": "USB:4:1",
+                                  "product": "xHCI Host Controller",
+                                  "vendor": "Linux 5.4.72-gentoo-x86_64 xhci-hcd",
+                                  "physid": "1",
+                                  "businfo": "usb@4",
+                                  "logicalname": "usb4",
+                                  "version": "5.04",
+                                  "configuration": {
+                                    "driver": "hub",
+                                    "slots": "2",
+                                    "speed": "10000Mbit/s"
+                                  },
+                                  "capabilities": {
+                                    "usb-3.10": true
+                                  },
+                                  "children": [
+                                    {
+                                      "id": "usb",
+                                      "class": "bus",
+                                      "claimed": true,
+                                      "handle": "USB:4:2",
+                                      "description": "USB hub",
+                                      "product": "USB3.0 Hub",
+                                      "vendor": "VIA Labs, Inc.",
+                                      "physid": "2",
+                                      "businfo": "usb@4:2",
+                                      "version": "4.73",
+                                      "configuration": {
+                                        "driver": "hub",
+                                        "slots": "4",
+                                        "speed": "5000Mbit/s"
+                                      },
+                                      "capabilities": {
+                                        "usb-3.10": true
+                                      },
+                                      "children": [
+                                        {
+                                          "id": "usb:0",
+                                          "class": "bus",
+                                          "claimed": true,
+                                          "handle": "USB:4:3",
+                                          "description": "USB hub",
+                                          "product": "USB3.0 Hub",
+                                          "vendor": "VIA Labs, Inc.",
+                                          "physid": "1",
+                                          "businfo": "usb@4:2.1",
+                                          "version": "4.73",
+                                          "configuration": {
+                                            "driver": "hub",
+                                            "slots": "4",
+                                            "speed": "5000Mbit/s"
+                                          },
+                                          "capabilities": {
+                                            "usb-3.10": true
+                                          }
+                                        },
+                                        {
+                                          "id": "usb:1",
+                                          "class": "storage",
+                                          "claimed": true,
+                                          "handle": "SCSI:00",
+                                          "description": "Mass storage device",
+                                          "product": "Mass Storage Device",
+                                          "vendor": "Generic",
+                                          "physid": "2",
+                                          "businfo": "usb@4:2.2",
+                                          "logicalname": "scsi0",
+                                          "version": "1.00",
+                                          "serial": "058F84688461",
+                                          "configuration": {
+                                            "driver": "usb-storage",
+                                            "maxpower": "800mA",
+                                            "speed": "5000Mbit/s"
+                                          },
+                                          "capabilities": {
+                                            "usb-3.00": true,
+                                            "scsi": "SCSI",
+                                            "emulated": "Emulated device",
+                                            "scsi-host": "SCSI host adapter"
+                                          },
+                                          "children": [
+                                            {
+                                              "id": "disk:0",
+                                              "class": "disk",
+                                              "claimed": true,
+                                              "handle": "SCSI:00:00:00:00",
+                                              "description": "SCSI Disk",
+                                              "product": "SD/MMC",
+                                              "vendor": "Generic-",
+                                              "physid": "0.0.0",
+                                              "businfo": "scsi@0:0.0.0",
+                                              "logicalname": "/dev/sda",
+                                              "dev": "8:0",
+                                              "version": "1.00",
+                                              "serial": "AU8461",
+                                              "configuration": {
+                                                "ansiversion": "6",
+                                                "logicalsectorsize": "512",
+                                                "sectorsize": "512"
+                                              },
+                                              "capabilities": {
+                                                "removable": "support is removable"
+                                              },
+                                              "children": [
+                                                {
+                                                  "id": "medium",
+                                                  "class": "disk",
+                                                  "claimed": true,
+                                                  "physid": "0",
+                                                  "logicalname": "/dev/sda",
+                                                  "dev": "8:0"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "id": "disk:1",
+                                              "class": "disk",
+                                              "claimed": true,
+                                              "handle": "SCSI:00:00:00:01",
+                                              "description": "SCSI Disk",
+                                              "product": "Micro SD/M2",
+                                              "vendor": "Generic-",
+                                              "physid": "0.0.1",
+                                              "businfo": "scsi@0:0.0.1",
+                                              "logicalname": "/dev/sdb",
+                                              "dev": "8:16",
+                                              "version": "1.08",
+                                              "serial": "AU8461",
+                                              "configuration": {
+                                                "ansiversion": "6",
+                                                "logicalsectorsize": "512",
+                                                "sectorsize": "512"
+                                              },
+                                              "capabilities": {
+                                                "removable": "support is removable"
+                                              },
+                                              "children": [
+                                                {
+                                                  "id": "medium",
+                                                  "class": "disk",
+                                                  "claimed": true,
+                                                  "physid": "0",
+                                                  "logicalname": "/dev/sdb",
+                                                  "dev": "8:16"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "usb:2",
+                                          "class": "generic",
+                                          "claimed": true,
+                                          "handle": "USB:4:5",
+                                          "description": "Generic USB device",
+                                          "product": "USB 10/100/1000 LAN",
+                                          "vendor": "Realtek",
+                                          "physid": "4",
+                                          "businfo": "usb@4:2.4",
+                                          "version": "31.00",
+                                          "serial": "001000001",
+                                          "configuration": {
+                                            "driver": "r8152",
+                                            "maxpower": "288mA",
+                                            "speed": "5000Mbit/s"
+                                          },
+                                          "capabilities": {
+                                            "usb-3.00": true
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "pci:3",
+                          "class": "bridge",
+                          "claimed": true,
+                          "handle": "PCIBUS:0000:3d",
+                          "description": "PCI bridge",
+                          "product": "JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]",
+                          "vendor": "Intel Corporation",
+                          "physid": "4",
+                          "businfo": "pci@0000:07:04.0",
+                          "version": "02",
+                          "width": 32,
+                          "clock": 33000000,
+                          "configuration": {
+                            "driver": "pcieport"
+                          },
+                          "capabilities": {
+                            "pci": true,
+                            "pm": "Power Management",
+                            "msi": "Message Signalled Interrupts",
+                            "pciexpress": "PCI Express",
+                            "normal_decode": true,
+                            "bus_master": "bus mastering",
+                            "cap_list": "PCI capabilities listing"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "isa",
+                  "class": "bridge",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:1f.0",
+                  "description": "ISA bridge",
+                  "product": "Sunrise Point-LP LPC Controller",
+                  "vendor": "Intel Corporation",
+                  "physid": "1f",
+                  "businfo": "pci@0000:00:1f.0",
+                  "version": "21",
+                  "width": 32,
+                  "clock": 33000000,
+                  "configuration": {
+                    "latency": "0"
+                  },
+                  "capabilities": {
+                    "isa": true,
+                    "bus_master": "bus mastering"
+                  },
+                  "children": [
+                    {
+                      "id": "pnp00:00",
+                      "class": "system",
+                      "claimed": true,
+                      "product": "Motherboard registers",
+                      "physid": "0",
+                      "configuration": {
+                        "driver": "system"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:01",
+                      "class": "system",
+                      "claimed": true,
+                      "product": "Motherboard registers",
+                      "physid": "1",
+                      "configuration": {
+                        "driver": "system"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:02",
+                      "class": "system",
+                      "claimed": true,
+                      "product": "Motherboard registers",
+                      "physid": "2",
+                      "configuration": {
+                        "driver": "system"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:03",
+                      "class": "system",
+                      "claimed": true,
+                      "product": "AT Real-Time Clock",
+                      "physid": "3",
+                      "configuration": {
+                        "driver": "rtc_cmos"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:04",
+                      "class": "generic",
+                      "claimed": true,
+                      "product": "PnP device INT3f0d",
+                      "physid": "4",
+                      "configuration": {
+                        "driver": "system"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:05",
+                      "class": "generic",
+                      "claimed": true,
+                      "product": "PnP device LEN0071",
+                      "physid": "5",
+                      "configuration": {
+                        "driver": "i8042 kbd"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:06",
+                      "class": "generic",
+                      "claimed": true,
+                      "product": "PnP device LEN0072",
+                      "physid": "6",
+                      "configuration": {
+                        "driver": "i8042 aux"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:07",
+                      "class": "system",
+                      "claimed": true,
+                      "product": "Motherboard registers",
+                      "physid": "7",
+                      "configuration": {
+                        "driver": "system"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:08",
+                      "class": "system",
+                      "claimed": true,
+                      "product": "Motherboard registers",
+                      "physid": "8",
+                      "configuration": {
+                        "driver": "system"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:09",
+                      "class": "system",
+                      "claimed": true,
+                      "product": "Motherboard registers",
+                      "physid": "9",
+                      "configuration": {
+                        "driver": "system"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:0a",
+                      "class": "system",
+                      "claimed": true,
+                      "product": "System Board",
+                      "physid": "a",
+                      "configuration": {
+                        "driver": "system"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "memory",
+                  "class": "memory",
+                  "handle": "PCI:0000:00:1f.2",
+                  "description": "Memory controller",
+                  "product": "Sunrise Point-LP PMC",
+                  "vendor": "Intel Corporation",
+                  "physid": "1f.2",
+                  "businfo": "pci@0000:00:1f.2",
+                  "version": "21",
+                  "width": 32,
+                  "clock": 33000000,
+                  "configuration": {
+                    "latency": "0"
+                  }
+                },
+                {
+                  "id": "multimedia",
+                  "class": "multimedia",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:1f.3",
+                  "description": "Audio device",
+                  "product": "Sunrise Point-LP HD Audio",
+                  "vendor": "Intel Corporation",
+                  "physid": "1f.3",
+                  "businfo": "pci@0000:00:1f.3",
+                  "logicalname": [
+                    "card0",
+                    "/dev/snd/controlC0",
+                    "/dev/snd/hwC0D0",
+                    "/dev/snd/hwC0D2",
+                    "/dev/snd/pcmC0D0c",
+                    "/dev/snd/pcmC0D0p",
+                    "/dev/snd/pcmC0D10p",
+                    "/dev/snd/pcmC0D3p",
+                    "/dev/snd/pcmC0D7p",
+                    "/dev/snd/pcmC0D8p",
+                    "/dev/snd/pcmC0D9p"
+                  ],
+                  "version": "21",
+                  "width": 64,
+                  "clock": 33000000,
+                  "configuration": {
+                    "driver": "snd_hda_intel",
+                    "latency": "64"
+                  },
+                  "capabilities": {
+                    "pm": "Power Management",
+                    "msi": "Message Signalled Interrupts",
+                    "bus_master": "bus mastering",
+                    "cap_list": "PCI capabilities listing"
+                  },
+                  "children": [
+                    {
+                      "id": "input:0",
+                      "class": "input",
+                      "claimed": true,
+                      "product": "HDA Intel PCH Mic",
+                      "physid": "0",
+                      "logicalname": [
+                        "input11",
+                        "/dev/input/event10"
+                      ]
+                    },
+                    {
+                      "id": "input:1",
+                      "class": "input",
+                      "claimed": true,
+                      "product": "HDA Intel PCH Headphone",
+                      "physid": "1",
+                      "logicalname": [
+                        "input12",
+                        "/dev/input/event11"
+                      ]
+                    },
+                    {
+                      "id": "input:2",
+                      "class": "input",
+                      "claimed": true,
+                      "product": "HDA Intel PCH HDMI/DP,pcm=3",
+                      "physid": "2",
+                      "logicalname": [
+                        "input13",
+                        "/dev/input/event12"
+                      ]
+                    },
+                    {
+                      "id": "input:3",
+                      "class": "input",
+                      "claimed": true,
+                      "product": "HDA Intel PCH HDMI/DP,pcm=7",
+                      "physid": "3",
+                      "logicalname": [
+                        "input14",
+                        "/dev/input/event13"
+                      ]
+                    },
+                    {
+                      "id": "input:4",
+                      "class": "input",
+                      "claimed": true,
+                      "product": "HDA Intel PCH HDMI/DP,pcm=8",
+                      "physid": "4",
+                      "logicalname": [
+                        "input15",
+                        "/dev/input/event14"
+                      ]
+                    },
+                    {
+                      "id": "input:5",
+                      "class": "input",
+                      "claimed": true,
+                      "product": "HDA Intel PCH HDMI/DP,pcm=9",
+                      "physid": "5",
+                      "logicalname": [
+                        "input16",
+                        "/dev/input/event15"
+                      ]
+                    },
+                    {
+                      "id": "input:6",
+                      "class": "input",
+                      "claimed": true,
+                      "product": "HDA Intel PCH HDMI/DP,pcm=10",
+                      "physid": "6",
+                      "logicalname": [
+                        "input17",
+                        "/dev/input/event16"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "serial",
+                  "class": "bus",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:1f.4",
+                  "description": "SMBus",
+                  "product": "Sunrise Point-LP SMBus",
+                  "vendor": "Intel Corporation",
+                  "physid": "1f.4",
+                  "businfo": "pci@0000:00:1f.4",
+                  "version": "21",
+                  "width": 64,
+                  "clock": 33000000,
+                  "configuration": {
+                    "driver": "i801_smbus",
+                    "latency": "0"
+                  }
+                },
+                {
+                  "id": "network",
+                  "class": "network",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:1f.6",
+                  "description": "Ethernet interface",
+                  "product": "Ethernet Connection (4) I219-V",
+                  "vendor": "Intel Corporation",
+                  "physid": "1f.6",
+                  "businfo": "pci@0000:00:1f.6",
+                  "logicalname": "enp0s31f6",
+                  "version": "21",
+                  "serial": "54:e1:ad:11:fb:b7",
+                  "units": "bit/s",
+                  "capacity": 1000000000,
+                  "width": 32,
+                  "clock": 33000000,
+                  "configuration": {
+                    "autonegotiation": "on",
+                    "broadcast": "yes",
+                    "driver": "e1000e",
+                    "driverversion": "3.2.6-k",
+                    "firmware": "0.1-4",
+                    "latency": "0",
+                    "link": "no",
+                    "multicast": "yes",
+                    "port": "twisted pair"
+                  },
+                  "capabilities": {
+                    "pm": "Power Management",
+                    "msi": "Message Signalled Interrupts",
+                    "bus_master": "bus mastering",
+                    "cap_list": "PCI capabilities listing",
+                    "ethernet": true,
+                    "physical": "Physical interface",
+                    "tp": "twisted pair",
+                    "10bt": "10Mbit/s",
+                    "10bt-fd": "10Mbit/s (full duplex)",
+                    "100bt": "100Mbit/s",
+                    "100bt-fd": "100Mbit/s (full duplex)",
+                    "1000bt-fd": "1Gbit/s (full duplex)",
+                    "autonegotiation": "Auto-negotiation"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "battery",
+          "class": "power",
+          "claimed": true,
+          "handle": "DMI:0023",
+          "product": "01AV429",
+          "vendor": "LGC",
+          "physid": "1",
+          "slot": "Front",
+          "units": "mWh",
+          "capacity": 57000,
+          "configuration": {
+            "voltage": "11,6V"
+          }
+        },
+        {
+          "id": "input:0",
+          "class": "input",
+          "claimed": true,
+          "product": "Sleep Button",
+          "physid": "2",
+          "logicalname": [
+            "input0",
+            "/dev/input/event0"
+          ],
+          "capabilities": {
+            "platform": true
+          }
+        },
+        {
+          "id": "input:1",
+          "class": "input",
+          "claimed": true,
+          "product": "Lid Switch",
+          "physid": "3",
+          "logicalname": [
+            "input1",
+            "/dev/input/event1"
+          ],
+          "capabilities": {
+            "platform": true
+          }
+        },
+        {
+          "id": "input:2",
+          "class": "input",
+          "claimed": true,
+          "product": "PC Speaker",
+          "physid": "4",
+          "logicalname": [
+            "input10",
+            "/dev/input/event9"
+          ],
+          "capabilities": {
+            "isa": "ISA bus"
+          }
+        },
+        {
+          "id": "input:3",
+          "class": "input",
+          "claimed": true,
+          "product": "Power Button",
+          "physid": "5",
+          "logicalname": [
+            "input2",
+            "/dev/input/event2"
+          ],
+          "capabilities": {
+            "platform": true
+          }
+        },
+        {
+          "id": "input:4",
+          "class": "input",
+          "claimed": true,
+          "product": "AT Translated Set 2 keyboard",
+          "physid": "6",
+          "logicalname": [
+            "input3",
+            "/dev/input/event3",
+            "input3::capslock",
+            "input3::numlock",
+            "input3::scrolllock"
+          ],
+          "capabilities": {
+            "i8042": "i8042 PC AT keyboard controller"
+          }
+        },
+        {
+          "id": "input:5",
+          "class": "input",
+          "claimed": true,
+          "product": "SynPS/2 Synaptics TouchPad",
+          "physid": "7",
+          "logicalname": [
+            "input5",
+            "/dev/input/event4",
+            "/dev/input/mouse0"
+          ],
+          "capabilities": {
+            "i8042": "i8042 PC AT keyboard controller"
+          }
+        },
+        {
+          "id": "input:6",
+          "class": "input",
+          "claimed": true,
+          "product": "TPPS/2 Elan TrackPoint",
+          "physid": "8",
+          "logicalname": [
+            "input6",
+            "/dev/input/event5",
+            "/dev/input/mouse1"
+          ],
+          "capabilities": {
+            "i8042": "i8042 PC AT keyboard controller"
+          }
+        },
+        {
+          "id": "input:7",
+          "class": "input",
+          "claimed": true,
+          "product": "ThinkPad Extra Buttons",
+          "physid": "9",
+          "logicalname": [
+            "input7",
+            "/dev/input/event6"
+          ],
+          "capabilities": {
+            "platform": true
+          }
+        },
+        {
+          "id": "input:8",
+          "class": "input",
+          "claimed": true,
+          "product": "Video Bus",
+          "physid": "a",
+          "logicalname": [
+            "input8",
+            "/dev/input/event7"
+          ],
+          "capabilities": {
+            "platform": true
+          }
+        },
+        {
+          "id": "network",
+          "class": "network",
+          "claimed": true,
+          "description": "Ethernet interface",
+          "physid": "b",
+          "businfo": "usb@4:2.4",
+          "logicalname": "enp60s0u2u4",
+          "serial": "48:65:ee:17:57:1a",
+          "units": "bit/s",
+          "size": 100000000,
+          "capacity": 1000000000,
+          "configuration": {
+            "autonegotiation": "on",
+            "broadcast": "yes",
+            "driver": "r8152",
+            "driverversion": "v1.10.11",
+            "duplex": "full",
+            "ip": "192.168.1.35",
+            "link": "yes",
+            "multicast": "yes",
+            "port": "MII",
+            "speed": "100Mbit/s"
+          },
+          "capabilities": {
+            "ethernet": true,
+            "physical": "Physical interface",
+            "tp": "twisted pair",
+            "mii": "Media Independant Interface",
+            "10bt": "10Mbit/s",
+            "10bt-fd": "10Mbit/s (full duplex)",
+            "100bt": "100Mbit/s",
+            "100bt-fd": "100Mbit/s (full duplex)",
+            "1000bt": "1Gbit/s",
+            "1000bt-fd": "1Gbit/s (full duplex)",
+            "autonegotiation": "Auto-negotiation"
+          }
+        }
+      ]
+    },
+    "dmidecode": "# dmidecode 3.2\nGetting SMBIOS data from sysfs.\nSMBIOS 3.0.0 present.\nTable at 0x4F10E000.\n\nHandle 0x0000, DMI type 222, 16 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\tDE 10 00 00 01 00 99 00 03 10 01 20 02 30 03 00\n\tStrings:\n\t\tMemory Init Complete\n\t\tEnd of DXE Phase\n\t\tBIOS Boot Complete\n\nHandle 0x0001, DMI type 14, 8 bytes\nGroup Associations\n\tName: Intel(R) Silicon View Technology\n\tItems: 1\n\t\t0x0000 (OEM-specific)\n\nHandle 0x0002, DMI type 134, 13 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\t86 0D 02 00 27 04 17 20 00 00 00 00 00\n\nHandle 0x0003, DMI type 16, 23 bytes\nPhysical Memory Array\n\tLocation: System Board Or Motherboard\n\tUse: System Memory\n\tError Correction Type: None\n\tMaximum Capacity: 16 GB\n\tError Information Handle: Not Provided\n\tNumber Of Devices: 2\n\nHandle 0x0004, DMI type 17, 40 bytes\nMemory Device\n\tArray Handle: 0x0003\n\tError Information Handle: Not Provided\n\tTotal Width: 64 bits\n\tData Width: 64 bits\n\tSize: 8192 MB\n\tForm Factor: Row Of Chips\n\tSet: None\n\tLocator: ChannelA-DIMM0\n\tBank Locator: BANK 0\n\tType: LPDDR3\n\tType Detail: Synchronous Unbuffered (Unregistered)\n\tSpeed: 1867 MT/s\n\tManufacturer: Samsung\n\tSerial Number: 00000000\n\tAsset Tag: None\n\tPart Number: K4EBE304EB-EGCF   \n\tRank: 2\n\tConfigured Memory Speed: 1867 MT/s\n\tMinimum Voltage: Unknown\n\tMaximum Voltage: Unknown\n\tConfigured Voltage: 1.2 V\n\nHandle 0x0005, DMI type 17, 40 bytes\nMemory Device\n\tArray Handle: 0x0003\n\tError Information Handle: Not Provided\n\tTotal Width: 64 bits\n\tData Width: 64 bits\n\tSize: 8192 MB\n\tForm Factor: Row Of Chips\n\tSet: None\n\tLocator: ChannelB-DIMM0\n\tBank Locator: BANK 2\n\tType: LPDDR3\n\tType Detail: Synchronous Unbuffered (Unregistered)\n\tSpeed: 1867 MT/s\n\tManufacturer: Samsung\n\tSerial Number: 00000000\n\tAsset Tag: None\n\tPart Number: K4EBE304EB-EGCF   \n\tRank: 2\n\tConfigured Memory Speed: 1867 MT/s\n\tMinimum Voltage: Unknown\n\tMaximum Voltage: Unknown\n\tConfigured Voltage: 1.2 V\n\nHandle 0x0006, DMI type 19, 31 bytes\nMemory Array Mapped Address\n\tStarting Address: 0x00000000000\n\tEnding Address: 0x003FFFFFFFF\n\tRange Size: 16 GB\n\tPhysical Array Handle: 0x0003\n\tPartition Width: 2\n\nHandle 0x0007, DMI type 7, 19 bytes\nCache Information\n\tSocket Designation: L1 Cache\n\tConfiguration: Enabled, Not Socketed, Level 1\n\tOperational Mode: Write Back\n\tLocation: Internal\n\tInstalled Size: 128 kB\n\tMaximum Size: 128 kB\n\tSupported SRAM Types:\n\t\tSynchronous\n\tInstalled SRAM Type: Synchronous\n\tSpeed: Unknown\n\tError Correction Type: Parity\n\tSystem Type: Unified\n\tAssociativity: 8-way Set-associative\n\nHandle 0x0008, DMI type 7, 19 bytes\nCache Information\n\tSocket Designation: L2 Cache\n\tConfiguration: Enabled, Not Socketed, Level 2\n\tOperational Mode: Write Back\n\tLocation: Internal\n\tInstalled Size: 512 kB\n\tMaximum Size: 512 kB\n\tSupported SRAM Types:\n\t\tSynchronous\n\tInstalled SRAM Type: Synchronous\n\tSpeed: Unknown\n\tError Correction Type: Single-bit ECC\n\tSystem Type: Unified\n\tAssociativity: 4-way Set-associative\n\nHandle 0x0009, DMI type 7, 19 bytes\nCache Information\n\tSocket Designation: L3 Cache\n\tConfiguration: Enabled, Not Socketed, Level 3\n\tOperational Mode: Write Back\n\tLocation: Internal\n\tInstalled Size: 4096 kB\n\tMaximum Size: 4096 kB\n\tSupported SRAM Types:\n\t\tSynchronous\n\tInstalled SRAM Type: Synchronous\n\tSpeed: Unknown\n\tError Correction Type: Multi-bit ECC\n\tSystem Type: Unified\n\tAssociativity: 16-way Set-associative\n\nHandle 0x000A, DMI type 4, 48 bytes\nProcessor Information\n\tSocket Designation: U3E1\n\tType: Central Processor\n\tFamily: Core i7\n\tManufacturer: Intel(R) Corporation\n\tID: E9 06 08 00 FF FB EB BF\n\tSignature: Type 0, Family 6, Model 142, Stepping 9\n\tFlags:\n\t\tFPU (Floating-point unit on-chip)\n\t\tVME (Virtual mode extension)\n\t\tDE (Debugging extension)\n\t\tPSE (Page size extension)\n\t\tTSC (Time stamp counter)\n\t\tMSR (Model specific registers)\n\t\tPAE (Physical address extension)\n\t\tMCE (Machine check exception)\n\t\tCX8 (CMPXCHG8 instruction supported)\n\t\tAPIC (On-chip APIC hardware supported)\n\t\tSEP (Fast system call)\n\t\tMTRR (Memory type range registers)\n\t\tPGE (Page global enable)\n\t\tMCA (Machine check architecture)\n\t\tCMOV (Conditional move instruction supported)\n\t\tPAT (Page attribute table)\n\t\tPSE-36 (36-bit page size extension)\n\t\tCLFSH (CLFLUSH instruction supported)\n\t\tDS (Debug store)\n\t\tACPI (ACPI supported)\n\t\tMMX (MMX technology supported)\n\t\tFXSR (FXSAVE and FXSTOR instructions supported)\n\t\tSSE (Streaming SIMD extensions)\n\t\tSSE2 (Streaming SIMD extensions 2)\n\t\tSS (Self-snoop)\n\t\tHTT (Multi-threading)\n\t\tTM (Thermal monitor supported)\n\t\tPBE (Pending break enabled)\n\tVersion: Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz\n\tVoltage: 1.0 V\n\tExternal Clock: 100 MHz\n\tMax Speed: 2900 MHz\n\tCurrent Speed: 2700 MHz\n\tStatus: Populated, Enabled\n\tUpgrade: Other\n\tL1 Cache Handle: 0x0007\n\tL2 Cache Handle: 0x0008\n\tL3 Cache Handle: 0x0009\n\tSerial Number: None\n\tAsset Tag: None\n\tPart Number: None\n\tCore Count: 2\n\tCore Enabled: 2\n\tThread Count: 4\n\tCharacteristics:\n\t\t64-bit capable\n\t\tMulti-Core\n\t\tHardware Thread\n\t\tExecute Protection\n\t\tEnhanced Virtualization\n\t\tPower/Performance Control\n\nHandle 0x000B, DMI type 0, 24 bytes\nBIOS Information\n\tVendor: LENOVO\n\tVersion: N1MET31W (1.16 )\n\tRelease Date: 03/10/2017\n\tAddress: 0xE0000\n\tRuntime Size: 128 kB\n\tROM Size: 16 MB\n\tCharacteristics:\n\t\tPCI is supported\n\t\tPNP is supported\n\t\tBIOS is upgradeable\n\t\tBIOS shadowing is allowed\n\t\tBoot from CD is supported\n\t\tSelectable boot is supported\n\t\tEDD is supported\n\t\t3.5\"/720 kB floppy services are supported (int 13h)\n\t\tPrint screen service is supported (int 5h)\n\t\t8042 keyboard services are supported (int 9h)\n\t\tSerial services are supported (int 14h)\n\t\tPrinter services are supported (int 17h)\n\t\tCGA/mono video services are supported (int 10h)\n\t\tACPI is supported\n\t\tUSB legacy is supported\n\t\tBIOS boot specification is supported\n\t\tTargeted content distribution is supported\n\t\tUEFI is supported\n\tBIOS Revision: 1.16\n\tFirmware Revision: 1.11\n\nHandle 0x000C, DMI type 1, 27 bytes\nSystem Information\n\tManufacturer: LENOVO\n\tProduct Name: 20HRCTO1WW\n\tVersion: ThinkPad X1 Carbon 5th\n\tSerial Number: PF0QMY5N\n\tUUID: 305f33cc-33ca-11b2-a85c-aad0993c0c99\n\tWake-up Type: Power Switch\n\tSKU Number: LENOVO_MT_20HR_BU_Think_FM_ThinkPad X1 Carbon 5th\n\tFamily: ThinkPad X1 Carbon 5th\n\nHandle 0x000D, DMI type 2, 15 bytes\nBase Board Information\n\tManufacturer: LENOVO\n\tProduct Name: 20HRCTO1WW\n\tVersion: SDK0J40709 WIN\n\tSerial Number: L3HF74S00AZ\n\tAsset Tag: Not Available\n\tFeatures:\n\t\tBoard is a hosting board\n\t\tBoard is replaceable\n\tLocation In Chassis: Not Available\n\tChassis Handle: 0x0000\n\tType: Motherboard\n\tContained Object Handles: 0\n\nHandle 0x000E, DMI type 3, 22 bytes\nChassis Information\n\tManufacturer: LENOVO\n\tType: Notebook\n\tLock: Not Present\n\tVersion: None\n\tSerial Number: PF0QMY5N\n\tAsset Tag: No Asset Information\n\tBoot-up State: Unknown\n\tPower Supply State: Unknown\n\tThermal State: Unknown\n\tSecurity Status: Unknown\n\tOEM Information: 0x00000000\n\tHeight: Unspecified\n\tNumber Of Power Cords: Unspecified\n\tContained Elements: 0\n\tSKU Number: Not Specified\n\nHandle 0x000F, DMI type 8, 9 bytes\nPort Connector Information\n\tInternal Reference Designator: Not Available\n\tInternal Connector Type: None\n\tExternal Reference Designator: USB 1\n\tExternal Connector Type: Access Bus (USB)\n\tPort Type: USB\n\nHandle 0x0010, DMI type 8, 9 bytes\nPort Connector Information\n\tInternal Reference Designator: Not Available\n\tInternal Connector Type: None\n\tExternal Reference Designator: USB 2\n\tExternal Connector Type: Access Bus (USB)\n\tPort Type: USB\n\nHandle 0x0011, DMI type 8, 9 bytes\nPort Connector Information\n\tInternal Reference Designator: Not Available\n\tInternal Connector Type: None\n\tExternal Reference Designator: USB 3\n\tExternal Connector Type: Access Bus (USB)\n\tPort Type: USB\n\nHandle 0x0012, DMI type 8, 9 bytes\nPort Connector Information\n\tInternal Reference Designator: Not Available\n\tInternal Connector Type: None\n\tExternal Reference Designator: USB 4\n\tExternal Connector Type: Access Bus (USB)\n\tPort Type: USB\n\nHandle 0x0013, DMI type 126, 9 bytes\nInactive\n\nHandle 0x0014, DMI type 126, 9 bytes\nInactive\n\nHandle 0x0015, DMI type 126, 9 bytes\nInactive\n\nHandle 0x0016, DMI type 126, 9 bytes\nInactive\n\nHandle 0x0017, DMI type 126, 9 bytes\nInactive\n\nHandle 0x0018, DMI type 8, 9 bytes\nPort Connector Information\n\tInternal Reference Designator: Not Available\n\tInternal Connector Type: None\n\tExternal Reference Designator: Ethernet\n\tExternal Connector Type: RJ-45\n\tPort Type: Network Port\n\nHandle 0x0019, DMI type 126, 9 bytes\nInactive\n\nHandle 0x001A, DMI type 8, 9 bytes\nPort Connector Information\n\tInternal Reference Designator: Not Available\n\tInternal Connector Type: None\n\tExternal Reference Designator: Hdmi\n\tExternal Connector Type: Other\n\tPort Type: Video Port\n\nHandle 0x001B, DMI type 126, 9 bytes\nInactive\n\nHandle 0x001C, DMI type 126, 9 bytes\nInactive\n\nHandle 0x001D, DMI type 8, 9 bytes\nPort Connector Information\n\tInternal Reference Designator: Not Available\n\tInternal Connector Type: None\n\tExternal Reference Designator: Headphone/Microphone Combo Jack1\n\tExternal Connector Type: Mini Jack (headphones)\n\tPort Type: Audio Port\n\nHandle 0x001E, DMI type 126, 9 bytes\nInactive\n\nHandle 0x001F, DMI type 9, 17 bytes\nSystem Slot Information\n\tDesignation: Media Card Slot\n\tType: Other\n\tCurrent Usage: Available\n\tLength: Other\n\tCharacteristics:\n\t\tHot-plug devices are supported\n\tBus Address: 0000:00:00.0\n\nHandle 0x0020, DMI type 9, 17 bytes\nSystem Slot Information\n\tDesignation: SimCard Slot\n\tType: Other\n\tCurrent Usage: Available\n\tLength: Other\n\tCharacteristics: None\n\tBus Address: 0000:00:00.0\n\nHandle 0x0021, DMI type 12, 5 bytes\nSystem Configuration Options\n\nHandle 0x0022, DMI type 13, 22 bytes\nBIOS Language Information\n\tLanguage Description Format: Abbreviated\n\tInstallable Languages: 1\n\t\ten-US\n\tCurrently Installed Language: en-US\n\nHandle 0x0023, DMI type 22, 26 bytes\nPortable Battery\n\tLocation: Front\n\tManufacturer: LGC\n\tName: 01AV429\n\tDesign Capacity: 57000 mWh\n\tDesign Voltage: 11580 mV\n\tSBDS Version: 03.01\n\tMaximum Error: Unknown\n\tSBDS Serial Number: 0431\n\tSBDS Manufacture Date: 2017-03-29\n\tSBDS Chemistry: LiP\n\tOEM-specific Information: 0x00000000\n\nHandle 0x0024, DMI type 126, 26 bytes\nInactive\n\nHandle 0x0025, DMI type 133, 5 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\t85 05 25 00 01\n\tStrings:\n\t\tKHOIHGIUCCHHII\n\nHandle 0x0026, DMI type 135, 19 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\t87 13 26 00 54 50 07 02 42 41 59 20 49 2F 4F 20\n\t\t04 00 00\n\nHandle 0x0027, DMI type 130, 20 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\t82 14 27 00 24 41 4D 54 00 00 00 00 00 A5 AF 02\n\t\tC0 00 00 00\n\nHandle 0x0028, DMI type 131, 64 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\t83 40 28 00 31 00 00 00 0B 00 00 00 00 00 0A 00\n\t\tF8 00 58 9D 00 00 00 00 01 00 00 00 06 00 0B 00\n\t\tAC 04 0A 00 00 00 00 00 FE 00 D8 15 00 00 00 00\n\t\t00 00 00 00 22 00 00 00 76 50 72 6F 00 00 00 00\n\nHandle 0x0029, DMI type 221, 26 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\tDD 1A 29 00 03 01 00 01 05 00 00 00 02 00 00 00\n\t\t00 4E 00 03 00 00 05 00 00 00\n\tStrings:\n\t\tReference Code - CPU\n\t\tuCode Version\n\t\tTXT ACM version\n\nHandle 0x002A, DMI type 221, 26 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\tDD 1A 2A 00 03 01 00 01 05 00 00 00 02 00 0B 00\n\t\t00 0A 00 03 04 0B 06 0A AC 04\n\tStrings:\n\t\tReference Code - ME 11.0\n\t\tMEBx version\n\t\tME Firmware Version\n\t\tConsumer SKU\n\nHandle 0x002B, DMI type 221, 75 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\tDD 4B 2B 00 0A 01 00 01 05 00 00 00 02 03 FF FF\n\t\tFF FF FF 04 00 FF FF FF 21 00 05 00 FF FF FF 21\n\t\t00 06 00 02 0A 00 00 00 07 00 3E 00 00 00 00 08\n\t\t00 34 00 00 00 00 09 00 0B 00 00 00 00 0A 00 3E\n\t\t00 00 00 00 0B 00 34 00 00 00 00\n\tStrings:\n\t\tReference Code - SKL PCH\n\t\tPCH-CRID Status\n\t\tDisabled\n\t\tPCH-CRID Original Value\n\t\tPCH-CRID New Value\n\t\tOPROM - RST - RAID\n\t\tSKL PCH H Bx Hsio Version\n\t\tSKL PCH H Dx Hsio Version\n\t\tKBL PCH H Ax Hsio Version\n\t\tSKL PCH LP Bx Hsio Version\n\t\tSKL PCH LP Cx Hsio Version\n\nHandle 0x002C, DMI type 221, 54 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\tDD 36 2C 00 07 01 00 01 05 00 00 00 02 00 01 05\n\t\t00 00 00 03 00 01 05 00 00 00 04 05 FF FF FF FF\n\t\tFF 06 00 FF FF FF 02 00 07 00 FF FF FF 02 00 08\n\t\t00 FF FF FF 04 02\n\tStrings:\n\t\tReference Code - SA - System Agent\n\t\tReference Code - MRC\n\t\tSA - PCIe Version\n\t\tSA-CRID Status\n\t\tEnabled \n\t\tSA-CRID Original Value\n\t\tSA-CRID New Value\n\t\tOPROM - VBIOS\n\nHandle 0x002D, DMI type 15, 31 bytes\nSystem Event Log\n\tArea Length: 34 bytes\n\tHeader Start Offset: 0x0000\n\tHeader Length: 16 bytes\n\tData Start Offset: 0x0010\n\tAccess Method: General-purpose non-volatile data functions\n\tAccess Address: 0x00F0\n\tStatus: Valid, Not Full\n\tChange Token: 0x00000001\n\tHeader Format: Type 1\n\tSupported Log Type Descriptors: 4\n\tDescriptor 1: POST error\n\tData Format 1: POST results bitmap\n\tDescriptor 2: PCI system error\n\tData Format 2: None\n\tDescriptor 3: System reconfigured\n\tData Format 3: None\n\tDescriptor 4: Log area reset/cleared\n\tData Format 4: None\n\nHandle 0x002E, DMI type 24, 5 bytes\nHardware Security\n\tPower-On Password Status: Disabled\n\tKeyboard Password Status: Not Implemented\n\tAdministrator Password Status: Disabled\n\tFront Panel Reset Status: Not Implemented\n\nHandle 0x002F, DMI type 132, 7 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\t84 07 2F 00 01 D8 36\n\nHandle 0x0030, DMI type 18, 23 bytes\n32-bit Memory Error Information\n\tType: OK\n\tGranularity: Unknown\n\tOperation: Unknown\n\tVendor Syndrome: Unknown\n\tMemory Array Address: Unknown\n\tDevice Address: Unknown\n\tResolution: Unknown\n\nHandle 0x0031, DMI type 21, 7 bytes\nBuilt-in Pointing Device\n\tType: Track Point\n\tInterface: PS/2\n\tButtons: 3\n\nHandle 0x0032, DMI type 21, 7 bytes\nBuilt-in Pointing Device\n\tType: Touch Pad\n\tInterface: PS/2\n\tButtons: 2\n\nHandle 0x0033, DMI type 131, 22 bytes\nThinkVantage Technologies\n\tVersion: 1\n\tDiagnostics: No\n\nHandle 0x0034, DMI type 136, 6 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\t88 06 34 00 5A 5A\n\nHandle 0x0035, DMI type 140, 19 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\t8C 13 35 00 4C 45 4E 4F 56 4F 0B 04 01 B2 00 4D\n\t\t53 20 00\n\nHandle 0x0036, DMI type 140, 19 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\t8C 13 36 00 4C 45 4E 4F 56 4F 0B 05 01 05 00 00\n\t\t00 00 00\n\nHandle 0x0037, DMI type 140, 23 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\t8C 17 37 00 4C 45 4E 4F 56 4F 0B 06 01 8A 13 00\n\t\t00 00 00 00 00 00 00\n\nHandle 0x0038, DMI type 14, 8 bytes\nGroup Associations\n\tName: $MEI\n\tItems: 1\n\t\t0x0000 (OEM-specific)\n\nHandle 0x0039, DMI type 219, 81 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\tDB 51 39 00 01 03 01 45 02 00 A0 06 01 00 66 20\n\t\t00 00 00 00 40 08 00 01 1F 00 00 C9 0A 40 44 02\n\t\tFF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF\n\t\tFF FF FF FF FF FF FF FF 03 00 00 00 80 00 00 00\n\t\t00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n\t\t00\n\tStrings:\n\t\tMEI1\n\t\tMEI2\n\t\tMEI3\n\nHandle 0x003A, DMI type 140, 15 bytes\nThinkPad Embedded Controller Program\n\tVersion ID: N1MHT22W\n\tRelease Date: 03/10/2017\n\nHandle 0x003B, DMI type 140, 43 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\t8C 2B 3B 00 4C 45 4E 4F 56 4F 0B 08 01 FF FF FF\n\t\tFF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF\n\t\tFF FF FF FF FF FF FF FF FF FF FF\n\nHandle 0x003C, DMI type 135, 18 bytes\nOEM-specific Type\n\tHeader and Data:\n\t\t87 12 3C 00 54 50 07 01 01 00 01 00 00 00 01 00\n\t\t00 00\n\nHandle 0xFEFF, DMI type 127, 4 bytes\nEnd Of Table\n\n",
+    "hwinfo": "01: None 00.0: 10105 BIOS\n  [Created at bios.186]\n  Unique ID: rdCR.lZF+r4EgHp4\n  Hardware Class: bios\n  BIOS Keyboard LED Status:\n    Scroll Lock: off\n    Num Lock: off\n    Caps Lock: off\n  Base Memory: 628 kB\n  PnP BIOS: @@@0000\n  BIOS32 Service Directory Entry: 0xfd000\n  SMBIOS Version: 3.0\n  Type 222 Record: #0\n    Data 00: de 10 00 00 01 00 99 00 03 10 01 20 02 30 03 00\n    String 1: \"Memory Init Complete\"\n    String 2: \"End of DXE Phase\"\n    String 3: \"BIOS Boot Complete\"\n  Group Associations: #1\n    Group Name: \"Intel(R) Silicon View Technology\"\n    Items: #0\n  Type 134 Record: #2\n    Data 00: 86 0d 02 00 27 04 17 20 00 00 00 00 00\n  Physical Memory Array: #3\n    Use: 0x03 (System memory)\n    Location: 0x03 (Motherboard)\n    Slots: 2\n    Max. Size: 16 GB\n    ECC: 0x03 (None)\n  Memory Device: #4\n    Location: \"ChannelA-DIMM0\"\n    Bank: \"BANK 0\"\n    Manufacturer: \"Samsung\"\n    Serial: \"00000000\"\n    Asset Tag: \"None\"\n    Part Number: \"K4EBE304EB-EGCF\"\n    Memory Array: #3\n    Form Factor: 0x0b (Row of Chips)\n    Type: 0x1d (Other)\n    Type Detail: 0x4080 (Synchronous)\n    Data Width: 64 bits\n    Size: 8 GB\n    Speed: 1867 MHz\n  Memory Device: #5\n    Location: \"ChannelB-DIMM0\"\n    Bank: \"BANK 2\"\n    Manufacturer: \"Samsung\"\n    Serial: \"00000000\"\n    Asset Tag: \"None\"\n    Part Number: \"K4EBE304EB-EGCF\"\n    Memory Array: #3\n    Form Factor: 0x0b (Row of Chips)\n    Type: 0x1d (Other)\n    Type Detail: 0x4080 (Synchronous)\n    Data Width: 64 bits\n    Size: 8 GB\n    Speed: 1867 MHz\n  Memory Array Mapping: #6\n    Memory Array: #3\n    Partition Width: 2\n    Start Address: 0x0000000000000000\n    End Address: 0x0000000400000000\n  Cache Info: #7\n    Designation: \"L1 Cache\"\n    Level: L1\n    State: Enabled\n    Mode: 0x01 (Write Back)\n    Location: 0x00 (Internal, Not Socketed)\n    ECC: 0x04 (Parity)\n    Type: 0x05 (Unified)\n    Associativity: 0x07 (8-way Set-Associative)\n    Max. Size: 128 kB\n    Current Size: 128 kB\n    Supported SRAM Types: 0x0020 (Synchronous)\n    Current SRAM Type: 0x0020 (Synchronous)\n  Cache Info: #8\n    Designation: \"L2 Cache\"\n    Level: L2\n    State: Enabled\n    Mode: 0x01 (Write Back)\n    Location: 0x00 (Internal, Not Socketed)\n    ECC: 0x05 (Single-bit)\n    Type: 0x05 (Unified)\n    Associativity: 0x05 (4-way Set-Associative)\n    Max. Size: 512 kB\n    Current Size: 512 kB\n    Supported SRAM Types: 0x0020 (Synchronous)\n    Current SRAM Type: 0x0020 (Synchronous)\n  Cache Info: #9\n    Designation: \"L3 Cache\"\n    Level: L3\n    State: Enabled\n    Mode: 0x01 (Write Back)\n    Location: 0x00 (Internal, Not Socketed)\n    ECC: 0x06 (Multi-bit)\n    Type: 0x05 (Unified)\n    Associativity: 0x08 (16-way Set-Associative)\n    Max. Size: 4096 kB\n    Current Size: 4096 kB\n    Supported SRAM Types: 0x0020 (Synchronous)\n    Current SRAM Type: 0x0020 (Synchronous)\n  Processor Info: #10\n    Socket: \"U3E1\"\n    Socket Type: 0x01 (Other)\n    Socket Status: Populated\n    Type: 0x03 (CPU)\n    Family: 0xc6 (Other)\n    Manufacturer: \"Intel(R) Corporation\"\n    Version: \"Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz\"\n    Serial: \"None\"\n    Asset Tag: \"None\"\n    Part Number: \"None\"\n    Processor ID: 0xbfebfbff000806e9\n    Status: 0x01 (Enabled)\n    Voltage: 1.0 V\n    External Clock: 100 MHz\n    Max. Speed: 2900 MHz\n    Current Speed: 2700 MHz\n    L1 Cache: #7\n    L2 Cache: #8\n    L3 Cache: #9\n  BIOS Info: #11\n    Vendor: \"LENOVO\"\n    Version: \"N1MET31W (1.16 )\"\n    Date: \"03/10/2017\"\n    Start Address: 0xe0000\n    ROM Size: 16384 kB\n    Features: 0x0d03001200007d099a80\n      PCI supported\n      PnP supported\n      BIOS flashable\n      BIOS shadowing allowed\n      CD boot supported\n      Selectable boot supported\n      EDD spec supported\n      720kB Floppy supported\n      Print Screen supported\n      8042 Keyboard Services supported\n      Serial Services supported\n      Printer Services supported\n      CGA/Mono Video supported\n      ACPI supported\n      USB Legacy supported\n      BIOS Boot Spec supported\n  System Info: #12\n    Manufacturer: \"LENOVO\"\n    Product: \"20HRCTO1WW\"\n    Version: \"ThinkPad X1 Carbon 5th\"\n    Serial: \"PF0QMY5N\"\n    UUID: 305f33cc-33ca-11b2-a85c-aad0993c0c99\n    Wake-up: 0x06 (Power Switch)\n  Board Info: #13\n    Manufacturer: \"LENOVO\"\n    Product: \"20HRCTO1WW\"\n    Version: \"SDK0J40709 WIN\"\n    Serial: \"L3HF74S00AZ\"\n    Asset Tag: \"Not Available\"\n    Type: 0x0a (Motherboard)\n    Features: 0x09\n      Hosting Board\n      Replaceable\n    Location: \"Not Available\"\n  Chassis Info: #14\n    Manufacturer: \"LENOVO\"\n    Version: \"None\"\n    Serial: \"PF0QMY5N\"\n    Asset Tag: \"No Asset Information\"\n    Type: 0x0a (Notebook)\n    Bootup State: 0x02 (Unknown)\n    Power Supply State: 0x02 (Unknown)\n    Thermal State: 0x02 (Unknown)\n    Security Status: 0x02 (Unknown)\n  Port Connector: #15\n    Type: 0x10 (USB)\n    Internal Designator: \"Not Available\"\n    External Designator: \"USB 1\"\n    External Connector: 0x12 (Access Bus [USB])\n  Port Connector: #16\n    Type: 0x10 (USB)\n    Internal Designator: \"Not Available\"\n    External Designator: \"USB 2\"\n    External Connector: 0x12 (Access Bus [USB])\n  Port Connector: #17\n    Type: 0x10 (USB)\n    Internal Designator: \"Not Available\"\n    External Designator: \"USB 3\"\n    External Connector: 0x12 (Access Bus [USB])\n  Port Connector: #18\n    Type: 0x10 (USB)\n    Internal Designator: \"Not Available\"\n    External Designator: \"USB 4\"\n    External Connector: 0x12 (Access Bus [USB])\n  Inactive Record: #19\n    Data 00: 7e 09 13 00 01 00 02 12 10\n    String 1: \"Not Available\"\n    String 2: \"USB 5\"\n  Inactive Record: #20\n    Data 00: 7e 09 14 00 01 00 02 12 10\n    String 1: \"Not Available\"\n    String 2: \"USB 6\"\n  Inactive Record: #21\n    Data 00: 7e 09 15 00 01 00 02 12 10\n    String 1: \"Not Available\"\n    String 2: \"USB 7\"\n  Inactive Record: #22\n    Data 00: 7e 09 16 00 01 00 02 12 10\n    String 1: \"Not Available\"\n    String 2: \"USB 8\"\n  Inactive Record: #23\n    Data 00: 7e 09 17 00 01 00 02 12 10\n    String 1: \"Not Available\"\n    String 2: \"USB 9\"\n  Port Connector: #24\n    Type: 0x1f (Network Port)\n    Internal Designator: \"Not Available\"\n    External Designator: \"Ethernet\"\n    External Connector: 0x0b (RJ-45)\n  Inactive Record: #25\n    Data 00: 7e 09 19 00 01 00 02 07 1c\n    String 1: \"Not Available\"\n    String 2: \"External Monitor\"\n  Port Connector: #26\n    Type: 0x1c (Video Port)\n    Internal Designator: \"Not Available\"\n    External Designator: \"Hdmi\"\n    External Connector: 0xff (Other)\n  Inactive Record: #27\n    Data 00: 7e 09 1b 00 01 00 02 ff 1c\n    String 1: \"Not Available\"\n    String 2: \"DisplayPort/DVI-D\"\n  Inactive Record: #28\n    Data 00: 7e 09 1c 00 01 00 02 ff 1c\n    String 1: \"Not Available\"\n    String 2: \"DisplayPort/HDMI\"\n  Port Connector: #29\n    Type: 0x1d (Audio Port)\n    Internal Designator: \"Not Available\"\n    External Designator: \"Headphone/Microphone Combo Jack1\"\n    External Connector: 0x1f (Mini-jack [headphones])\n  Inactive Record: #30\n    Data 00: 7e 09 1e 00 01 00 02 1f 1d\n    String 1: \"Not Available\"\n    String 2: \"Headphone/Microphone Combo Jack2\"\n  System Slot: #31\n    Designation: \"Media Card Slot\"\n    Type: 0x01 (Other)\n    Bus Width: 0x01 (Other)\n    Status: 0x03 (Available)\n    Length: 0x01 (Other)\n    Slot ID: 0\n    Characteristics: 0x0200 (Hot-Plug)\n  System Slot: #32\n    Designation: \"SimCard Slot\"\n    Type: 0x01 (Other)\n    Bus Width: 0x01 (Other)\n    Status: 0x03 (Available)\n    Length: 0x01 (Other)\n    Slot ID: 0\n  System Config Options (Jumpers & Switches) #33:\n  Language Info: #34\n    Languages: en-US\n    Current: en-US\n  Type 22 Record: #35\n    Data 00: 16 1a 23 00 01 02 00 00 03 02 44 16 3c 2d 04 ff\n    Data 10: 31 04 7d 4a 05 0a 00 00 00 00\n    String 1: \"Front\"\n    String 2: \"LGC\"\n    String 3: \"01AV429\"\n    String 4: \"03.01\"\n    String 5: \"LiP\"\n  Inactive Record: #36\n    Data 00: 7e 1a 24 00 01 02 00 00 03 02 00 00 00 00 04 ff\n    Data 10: 00 00 00 00 05 0a 00 00 00 00\n  Type 133 Record: #37\n    Data 00: 85 05 25 00 01\n    String 1: \"KHOIHGIUCCHHII\"\n  Type 135 Record: #38\n    Data 00: 87 13 26 00 54 50 07 02 42 41 59 20 49 2f 4f 20\n    Data 10: 04 00 00\n  Type 130 Record: #39\n    Data 00: 82 14 27 00 24 41 4d 54 00 00 00 00 00 a5 af 02\n    Data 10: c0 00 00 00\n  Type 131 Record: #40\n    Data 00: 83 40 28 00 31 00 00 00 0b 00 00 00 00 00 0a 00\n    Data 10: f8 00 58 9d 00 00 00 00 01 00 00 00 06 00 0b 00\n    Data 20: ac 04 0a 00 00 00 00 00 fe 00 d8 15 00 00 00 00\n    Data 30: 00 00 00 00 22 00 00 00 76 50 72 6f 00 00 00 00\n  Type 221 Record: #41\n    Data 00: dd 1a 29 00 03 01 00 01 05 00 00 00 02 00 00 00\n    Data 10: 00 4e 00 03 00 00 05 00 00 00\n    String 1: \"Reference Code - CPU\"\n    String 2: \"uCode Version\"\n    String 3: \"TXT ACM version\"\n  Type 221 Record: #42\n    Data 00: dd 1a 2a 00 03 01 00 01 05 00 00 00 02 00 0b 00\n    Data 10: 00 0a 00 03 04 0b 06 0a ac 04\n    String 1: \"Reference Code - ME 11.0\"\n    String 2: \"MEBx version\"\n    String 3: \"ME Firmware Version\"\n    String 4: \"Consumer SKU\"\n  Type 221 Record: #43\n    Data 00: dd 4b 2b 00 0a 01 00 01 05 00 00 00 02 03 ff ff\n    Data 10: ff ff ff 04 00 ff ff ff 21 00 05 00 ff ff ff 21\n    Data 20: 00 06 00 02 0a 00 00 00 07 00 3e 00 00 00 00 08\n    Data 30: 00 34 00 00 00 00 09 00 0b 00 00 00 00 0a 00 3e\n    Data 40: 00 00 00 00 0b 00 34 00 00 00 00\n    String 1: \"Reference Code - SKL PCH\"\n    String 2: \"PCH-CRID Status\"\n    String 3: \"Disabled\"\n    String 4: \"PCH-CRID Original Value\"\n    String 5: \"PCH-CRID New Value\"\n    String 6: \"OPROM - RST - RAID\"\n    String 7: \"SKL PCH H Bx Hsio Version\"\n    String 8: \"SKL PCH H Dx Hsio Version\"\n    String 9: \"KBL PCH H Ax Hsio Version\"\n    String 10: \"SKL PCH LP Bx Hsio Version\"\n    String 11: \"SKL PCH LP Cx Hsio Version\"\n  Type 221 Record: #44\n    Data 00: dd 36 2c 00 07 01 00 01 05 00 00 00 02 00 01 05\n    Data 10: 00 00 00 03 00 01 05 00 00 00 04 05 ff ff ff ff\n    Data 20: ff 06 00 ff ff ff 02 00 07 00 ff ff ff 02 00 08\n    Data 30: 00 ff ff ff 04 02\n    String 1: \"Reference Code - SA - System Agent\"\n    String 2: \"Reference Code - MRC\"\n    String 3: \"SA - PCIe Version\"\n    String 4: \"SA-CRID Status\"\n    String 5: \"Enabled\"\n    String 6: \"SA-CRID Original Value\"\n    String 7: \"SA-CRID New Value\"\n    String 8: \"OPROM - VBIOS\"\n  Type 15 Record: #45\n    Data 00: 0f 1f 2d 00 22 00 00 00 10 00 04 01 01 00 00 00\n    Data 10: f0 00 00 00 01 04 02 08 04 0a 00 14 00 16 00\n  Hardware Security: #46\n    Power-on Password: 0x00 (Disabled)\n    Keyboard Password: 0x02 (Not Implemented)\n    Admin Password: 0x00 (Disabled)\n    Front Panel Reset: 0x02 (Not Implemented)\n  Type 132 Record: #47\n    Data 00: 84 07 2f 00 01 d8 36\n  32bit-Memory Error Info: #48\n    Type: 0x03 (OK)\n    Granularity: 0x02 (Unknown)\n    Operation: 0x02 (Unknown)\n  Pointing Device: #49\n    Type: 0x05 (Track Point)\n    Interface: 0x04 (PS/2)\n    Buttons: 3\n  Pointing Device: #50\n    Type: 0x07 (Touch Pad)\n    Interface: 0x04 (PS/2)\n    Buttons: 2\n  Type 131 Record: #51\n    Data 00: 83 16 33 00 01 00 00 00 00 00 00 00 00 00 00 00\n    Data 10: 00 00 00 00 00 01\n    String 1: \"TVT-Enablement\"\n  Type 136 Record: #52\n    Data 00: 88 06 34 00 5a 5a\n  Type 140 Record: #53\n    Data 00: 8c 13 35 00 4c 45 4e 4f 56 4f 0b 04 01 b2 00 4d\n    Data 10: 53 20 00\n  Type 140 Record: #54\n    Data 00: 8c 13 36 00 4c 45 4e 4f 56 4f 0b 05 01 05 00 00\n    Data 10: 00 00 00\n  Type 140 Record: #55\n    Data 00: 8c 17 37 00 4c 45 4e 4f 56 4f 0b 06 01 8a 13 00\n    Data 10: 00 00 00 00 00 00 00\n  Group Associations: #56\n    Group Name: \"$MEI\"\n    Items: #0\n  Type 219 Record: #57\n    Data 00: db 51 39 00 01 03 01 45 02 00 a0 06 01 00 66 20\n    Data 10: 00 00 00 00 40 08 00 01 1f 00 00 c9 0a 40 44 02\n    Data 20: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff\n    Data 30: ff ff ff ff ff ff ff ff 03 00 00 00 80 00 00 00\n    Data 40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n    Data 50: 00\n    String 1: \"MEI1\"\n    String 2: \"MEI2\"\n    String 3: \"MEI3\"\n  Type 140 Record: #58\n    Data 00: 8c 0f 3a 00 4c 45 4e 4f 56 4f 0b 07 01 01 02\n    String 1: \"N1MHT22W\"\n    String 2: \"03/10/2017\"\n  Type 140 Record: #59\n    Data 00: 8c 2b 3b 00 4c 45 4e 4f 56 4f 0b 08 01 ff ff ff\n    Data 10: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff\n    Data 20: ff ff ff ff ff ff ff ff ff ff ff\n  Type 135 Record: #60\n    Data 00: 87 12 3c 00 54 50 07 01 01 00 01 00 00 00 01 00\n    Data 10: 00 00\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n02: None 00.0: 10107 System\n  [Created at sys.64]\n  Unique ID: rdCR.n_7QNeEnh23\n  Hardware Class: system\n  Model: \"System\"\n  Formfactor: \"laptop\"\n  Driver Info #0:\n    Driver Status: thermal,fan are not active\n    Driver Activation Cmd: \"modprobe thermal; modprobe fan\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n03: None 00.0: 10104 FPU\n  [Created at misc.191]\n  Unique ID: rdCR.EMpH5pjcahD\n  Hardware Class: unknown\n  Model: \"FPU\"\n  I/O Ports: 0xf0-0xff (rw)\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n04: None 00.0: 0801 DMA controller (8237)\n  [Created at misc.205]\n  Unique ID: rdCR.f5u1ucRm+H9\n  Hardware Class: unknown\n  Model: \"DMA controller\"\n  I/O Ports: 0x00-0xcf7 (rw)\n  I/O Ports: 0xc0-0xdf (rw)\n  I/O Ports: 0x80-0x8f (rw)\n  DMA: 4\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n05: None 00.0: 0800 PIC (8259)\n  [Created at misc.218]\n  Unique ID: rdCR.8uRK7LxiIA2\n  Hardware Class: unknown\n  Model: \"PIC\"\n  I/O Ports: 0x20-0x21 (rw)\n  I/O Ports: 0xa0-0xa1 (rw)\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n06: None 00.0: 0900 Keyboard controller\n  [Created at misc.250]\n  Unique ID: rdCR.9N+EecqykME\n  Hardware Class: unknown\n  Model: \"Keyboard controller\"\n  I/O Port: 0x60 (rw)\n  I/O Port: 0x64 (rw)\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n11: None 00.0: 10102 Main Memory\n  [Created at memory.74]\n  Unique ID: rdCR.CxwsZFjVASF\n  Hardware Class: memory\n  Model: \"Main Memory\"\n  Memory Range: 0x00000000-0x3da21bfff (rw)\n  Memory Size: 15 GB\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n12: PCI 1f.2: 0580 Memory controller\n  [Created at pci.386]\n  Unique ID: w7Y8.GTc4jyafHt3\n  SysFS ID: /devices/pci0000:00/0000:00:1f.2\n  SysFS BusID: 0000:00:1f.2\n  Hardware Class: unknown\n  Model: \"Lenovo ThinkPad X1 Carbon 5th Gen\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x9d21 \"Sunrise Point-LP PMC\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \"ThinkPad X1 Carbon 5th Gen\"\n  Revision: 0x21\n  Memory Range: 0xec344000-0xec347fff (rw,non-prefetchable,disabled)\n  Module Alias: \"pci:v00008086d00009D21sv000017AAsd0000224Fbc05sc80i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n13: PCI 1c.0: 0604 PCI bridge (Normal decode)\n  [Created at pci.386]\n  Unique ID: z8Q3.qOtgiL+BYA2\n  SysFS ID: /devices/pci0000:00/0000:00:1c.0\n  SysFS BusID: 0000:00:1c.0\n  Hardware Class: bridge\n  Model: \"Intel Sunrise Point-LP PCI Express Root Port #1\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x9d10 \"Sunrise Point-LP PCI Express Root Port #1\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \n  Revision: 0xf1\n  Driver: \"pcieport\"\n  IRQ: 122 (no events)\n  Module Alias: \"pci:v00008086d00009D10sv000017AAsd0000224Fbc06sc04i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n14: PCI 08.0: 0880 System peripheral\n  [Created at pci.386]\n  Unique ID: RE4e.UOzyR3R8EPE\n  SysFS ID: /devices/pci0000:00/0000:00:08.0\n  SysFS BusID: 0000:00:08.0\n  Hardware Class: unknown\n  Model: \"Lenovo ThinkPad X1 Carbon 5th Gen\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x1911 \"Xeon E3-1200 v5/v6 / E3-1500 v5 / 6th/7th/8th Gen Core Processor Gaussian Mixture Model\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \"ThinkPad X1 Carbon 5th Gen\"\n  Memory Range: 0xec348000-0xec348fff (rw,non-prefetchable,disabled)\n  IRQ: 255 (no events)\n  Module Alias: \"pci:v00008086d00001911sv000017AAsd0000224Fbc08sc80i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n15: PCI 701.0: 0604 PCI bridge (Normal decode)\n  [Created at pci.386]\n  Unique ID: fR8M.a2VhDObw5K1\n  Parent ID: vTuk.a2VhDObw5K1\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:01.0\n  SysFS BusID: 0000:07:01.0\n  Hardware Class: bridge\n  Model: \"Intel JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x15d3 \"JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]\"\n  SubVendor: pci 0x2222 \n  SubDevice: pci 0x1111 \n  Revision: 0x02\n  Driver: \"pcieport\"\n  IRQ: 139 (no events)\n  Module Alias: \"pci:v00008086d000015D3sv00002222sd00001111bc06sc04i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #23 (PCI bridge)\n\n16: PCI 1f.0: 0601 ISA bridge\n  [Created at pci.386]\n  Unique ID: BUZT.9w51+S+DfB4\n  SysFS ID: /devices/pci0000:00/0000:00:1f.0\n  SysFS BusID: 0000:00:1f.0\n  Hardware Class: bridge\n  Model: \"Lenovo ThinkPad X1 Carbon 5th Gen\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x9d58 \"Sunrise Point-LP LPC Controller\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \"ThinkPad X1 Carbon 5th Gen\"\n  Revision: 0x21\n  Module Alias: \"pci:v00008086d00009D58sv000017AAsd0000224Fbc06sc01i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n17: PCI 200.0: ff00 Unclassified device\n  [Created at pci.386]\n  Unique ID: B35A.sRQkqsLaUO8\n  Parent ID: z8Q3.qOtgiL+BYA2\n  SysFS ID: /devices/pci0000:00/0000:00:1c.0/0000:02:00.0\n  SysFS BusID: 0000:02:00.0\n  Hardware Class: unknown\n  Model: \"Lenovo ThinkPad X1 Carbon 5th Gen\"\n  Vendor: pci 0x10ec \"Realtek Semiconductor Co., Ltd.\"\n  Device: pci 0x525a \"RTS525A PCI Express Card Reader\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \"ThinkPad X1 Carbon 5th Gen\"\n  Revision: 0x01\n  Driver: \"rtsx_pci\"\n  Driver Modules: \"rtsx_pci\"\n  Memory Range: 0xec200000-0xec200fff (rw,non-prefetchable)\n  IRQ: 134 (455 events)\n  Module Alias: \"pci:v000010ECd0000525Asv000017AAsd0000224FbcFFsc00i00\"\n  Driver Info #0:\n    Driver Status: rtsx_pci is active\n    Driver Activation Cmd: \"modprobe rtsx_pci\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #13 (PCI bridge)\n\n18: PCI 704.0: 0604 PCI bridge (Normal decode)\n  [Created at pci.386]\n  Unique ID: umHm.a2VhDObw5K1\n  Parent ID: vTuk.a2VhDObw5K1\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:04.0\n  SysFS BusID: 0000:07:04.0\n  Hardware Class: bridge\n  Model: \"Intel JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x15d3 \"JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]\"\n  SubVendor: pci 0x2222 \n  SubDevice: pci 0x1111 \n  Revision: 0x02\n  Driver: \"pcieport\"\n  IRQ: 141 (no events)\n  Module Alias: \"pci:v00008086d000015D3sv00002222sd00001111bc06sc04i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #23 (PCI bridge)\n\n19: PCI 16.0: 0780 Communication controller\n  [Created at pci.386]\n  Unique ID: WnlC.BoJelhg+KQ4\n  SysFS ID: /devices/pci0000:00/0000:00:16.0\n  SysFS BusID: 0000:00:16.0\n  Hardware Class: unknown\n  Model: \"Lenovo ThinkPad X1 Carbon 5th Gen\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x9d3a \"Sunrise Point-LP CSME HECI #1\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \"ThinkPad X1 Carbon 5th Gen\"\n  Revision: 0x21\n  Driver: \"mei_me\"\n  Driver Modules: \"mei_me\"\n  Memory Range: 0xec34a000-0xec34afff (rw,non-prefetchable)\n  IRQ: 127 (39 events)\n  Module Alias: \"pci:v00008086d00009D3Asv000017AAsd0000224Fbc07sc80i00\"\n  Driver Info #0:\n    Driver Status: mei_me is active\n    Driver Activation Cmd: \"modprobe mei_me\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n20: PCI 700.0: 0604 PCI bridge (Normal decode)\n  [Created at pci.386]\n  Unique ID: aK5u.a2VhDObw5K1\n  Parent ID: vTuk.a2VhDObw5K1\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:00.0\n  SysFS BusID: 0000:07:00.0\n  Hardware Class: bridge\n  Model: \"Intel JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x15d3 \"JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]\"\n  SubVendor: pci 0x2222 \n  SubDevice: pci 0x1111 \n  Revision: 0x02\n  Driver: \"pcieport\"\n  IRQ: 138 (no events)\n  Module Alias: \"pci:v00008086d000015D3sv00002222sd00001111bc06sc04i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #23 (PCI bridge)\n\n21: PCI 1f.3: 0403 Audio device\n  [Created at pci.386]\n  Unique ID: nS1_.2kTLVjATLd3\n  SysFS ID: /devices/pci0000:00/0000:00:1f.3\n  SysFS BusID: 0000:00:1f.3\n  Hardware Class: sound\n  Model: \"Lenovo ThinkPad X1 Carbon 5th Gen\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x9d71 \"Sunrise Point-LP HD Audio\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \"ThinkPad X1 Carbon 5th Gen\"\n  Revision: 0x21\n  Driver: \"snd_hda_intel\"\n  Driver Modules: \"snd_hda_intel\"\n  Memory Range: 0xec340000-0xec343fff (rw,non-prefetchable)\n  Memory Range: 0xec330000-0xec33ffff (rw,non-prefetchable)\n  IRQ: 137 (881 events)\n  Module Alias: \"pci:v00008086d00009D71sv000017AAsd0000224Fbc04sc03i00\"\n  Driver Info #0:\n    Driver Status: snd_hda_intel is active\n    Driver Activation Cmd: \"modprobe snd_hda_intel\"\n  Driver Info #1:\n    Driver Status: snd_soc_skl is active\n    Driver Activation Cmd: \"modprobe snd_soc_skl\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n22: PCI 00.0: 0600 Host bridge\n  [Created at pci.386]\n  Unique ID: qLht.nHID6wzEQZB\n  SysFS ID: /devices/pci0000:00/0000:00:00.0\n  SysFS BusID: 0000:00:00.0\n  Hardware Class: bridge\n  Model: \"Lenovo ThinkPad X1 Carbon 5th Gen\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x5904 \"Xeon E3-1200 v6/7th Gen Core Processor Host Bridge/DRAM Registers\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \"ThinkPad X1 Carbon 5th Gen\"\n  Revision: 0x02\n  Driver: \"skl_uncore\"\n  Driver Modules: \"intel_uncore\"\n  Module Alias: \"pci:v00008086d00005904sv000017AAsd0000224Fbc06sc00i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n23: PCI 600.0: 0604 PCI bridge (Normal decode)\n  [Created at pci.386]\n  Unique ID: vTuk.a2VhDObw5K1\n  Parent ID: 1GTX.yiQgYrH3mp3\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0\n  SysFS BusID: 0000:06:00.0\n  Hardware Class: bridge\n  Model: \"Intel JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x15d3 \"JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]\"\n  SubVendor: pci 0x2222 \n  SubDevice: pci 0x1111 \n  Revision: 0x02\n  Driver: \"pcieport\"\n  IRQ: 16 (no events)\n  Module Alias: \"pci:v00008086d000015D3sv00002222sd00001111bc06sc04i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #25 (PCI bridge)\n\n24: PCI 500.0: 0108 Non-Volatile memory controller (NVM Express)\n  [Created at pci.386]\n  Unique ID: Ddhb.6HVdCPE4AT5\n  Parent ID: QSNP.u2fgddT0fi3\n  SysFS ID: /devices/pci0000:00/0000:00:1c.4/0000:05:00.0\n  SysFS BusID: 0000:05:00.0\n  Hardware Class: storage\n  Model: \"Samsung Electronics SM963 2.5\" NVMe PCIe SSD\"\n  Vendor: pci 0x144d \"Samsung Electronics Co Ltd\"\n  Device: pci 0xa804 \"NVMe SSD Controller SM961/PM961/SM963\"\n  SubVendor: pci 0x144d \"Samsung Electronics Co Ltd\"\n  SubDevice: pci 0xa801 \"SM963 2.5\" NVMe PCIe SSD\"\n  Driver: \"nvme\"\n  Driver Modules: \"nvme\"\n  Memory Range: 0xec000000-0xec003fff (rw,non-prefetchable)\n  IRQ: 16 (no events)\n  Module Alias: \"pci:v0000144Dd0000A804sv0000144Dsd0000A801bc01sc08i02\"\n  Driver Info #0:\n    Driver Status: nvme is active\n    Driver Activation Cmd: \"modprobe nvme\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #29 (PCI bridge)\n\n25: PCI 1d.0: 0604 PCI bridge (Normal decode)\n  [Created at pci.386]\n  Unique ID: 1GTX.yiQgYrH3mp3\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0\n  SysFS BusID: 0000:00:1d.0\n  Hardware Class: bridge\n  Model: \"Intel Sunrise Point-LP PCI Express Root Port #9\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x9d18 \"Sunrise Point-LP PCI Express Root Port #9\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \n  Revision: 0xf1\n  Driver: \"pcieport\"\n  IRQ: 125 (no events)\n  Module Alias: \"pci:v00008086d00009D18sv000017AAsd0000224Fbc06sc04i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n26: PCI 702.0: 0604 PCI bridge (Normal decode)\n  [Created at pci.386]\n  Unique ID: kYBq.a2VhDObw5K1\n  Parent ID: vTuk.a2VhDObw5K1\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0\n  SysFS BusID: 0000:07:02.0\n  Hardware Class: bridge\n  Model: \"Intel JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x15d3 \"JHL6540 Thunderbolt 3 Bridge (C step) [Alpine Ridge 4C 2016]\"\n  SubVendor: pci 0x2222 \n  SubDevice: pci 0x1111 \n  Revision: 0x02\n  Driver: \"pcieport\"\n  IRQ: 140 (no events)\n  Module Alias: \"pci:v00008086d000015D3sv00002222sd00001111bc06sc04i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #23 (PCI bridge)\n\n27: PCI 14.2: 1180 Signal processing controller\n  [Created at pci.386]\n  Unique ID: 5Dex.ivM2aMDw+KC\n  SysFS ID: /devices/pci0000:00/0000:00:14.2\n  SysFS BusID: 0000:00:14.2\n  Hardware Class: unknown\n  Model: \"Lenovo ThinkPad X1 Carbon 5th Gen\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x9d31 \"Sunrise Point-LP Thermal subsystem\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \"ThinkPad X1 Carbon 5th Gen\"\n  Revision: 0x21\n  Driver: \"intel_pch_thermal\"\n  Driver Modules: \"intel_pch_thermal\"\n  Memory Range: 0xec349000-0xec349fff (rw,non-prefetchable)\n  IRQ: 18 (no events)\n  Module Alias: \"pci:v00008086d00009D31sv000017AAsd0000224Fbc11sc80i00\"\n  Driver Info #0:\n    Driver Status: intel_pch_thermal is active\n    Driver Activation Cmd: \"modprobe intel_pch_thermal\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n28: PCI 1f.6: 0200 Ethernet controller\n  [Created at pci.386]\n  Unique ID: AhzA.SRCP7pKsA81\n  SysFS ID: /devices/pci0000:00/0000:00:1f.6\n  SysFS BusID: 0000:00:1f.6\n  Hardware Class: network\n  Model: \"Lenovo ThinkPad X1 Carbon 5th Gen\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x15d8 \"Ethernet Connection (4) I219-V\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \"ThinkPad X1 Carbon 5th Gen\"\n  Revision: 0x21\n  Driver: \"e1000e\"\n  Driver Modules: \"e1000e\"\n  Device File: enp0s31f6\n  Memory Range: 0xec300000-0xec31ffff (rw,non-prefetchable)\n  IRQ: 133 (19143 events)\n  HW Address: 54:e1:ad:11:fb:b7\n  Permanent HW Address: 54:e1:ad:11:fb:b7\n  Link detected: no\n  Module Alias: \"pci:v00008086d000015D8sv000017AAsd0000224Fbc02sc00i00\"\n  Driver Info #0:\n    Driver Status: e1000e is active\n    Driver Activation Cmd: \"modprobe e1000e\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n29: PCI 1c.4: 0604 PCI bridge (Normal decode)\n  [Created at pci.386]\n  Unique ID: QSNP.u2fgddT0fi3\n  SysFS ID: /devices/pci0000:00/0000:00:1c.4\n  SysFS BusID: 0000:00:1c.4\n  Hardware Class: bridge\n  Model: \"Intel Sunrise Point-LP PCI Express Root Port #5\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x9d14 \"Sunrise Point-LP PCI Express Root Port #5\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \n  Revision: 0xf1\n  Driver: \"pcieport\"\n  IRQ: 124 (no events)\n  Module Alias: \"pci:v00008086d00009D14sv000017AAsd0000224Fbc06sc04i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n30: PCI 400.0: 0282 WLAN controller\n  [Created at pci.386]\n  Unique ID: YVtp.cbEpR7q1Jd1\n  Parent ID: hoOk.sDmAgUEcbx2\n  SysFS ID: /devices/pci0000:00/0000:00:1c.2/0000:04:00.0\n  SysFS BusID: 0000:04:00.0\n  Hardware Class: network\n  Model: \"Intel Dual Band Wireless-AC 8265\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x24fd \"Wireless 8265 / 8275\"\n  SubVendor: pci 0x8086 \"Intel Corporation\"\n  SubDevice: pci 0x1130 \"Dual Band Wireless-AC 8265\"\n  Revision: 0x88\n  Driver: \"iwlwifi\"\n  Driver Modules: \"iwlwifi\"\n  Device File: wlp4s0\n  Features: WLAN\n  Memory Range: 0xec100000-0xec101fff (rw,non-prefetchable)\n  IRQ: 136 (24360384 events)\n  HW Address: 00:28:f8:a6:d5:7e\n  Permanent HW Address: 00:28:f8:a6:d5:7e\n  Link detected: yes\n  WLAN channels: 1 2 3 4 5 6 7 8 9 10 11 12 13 36 40 44 48 52 56 60 64 100 104 108 112 116 120 124 128 132 136 140\n  WLAN frequencies: 2.412 2.417 2.422 2.427 2.432 2.437 2.442 2.447 2.452 2.457 2.462 2.467 2.472 5.18 5.2 5.22 5.24 5.26 5.28 5.3 5.32 5.5 5.52 5.54 5.56 5.58 5.6 5.62 5.64 5.66 5.68 5.7\n  WLAN encryption modes: WEP40 WEP104 TKIP CCMP\n  WLAN authentication modes: open sharedkey wpa-psk wpa-eap\n  Module Alias: \"pci:v00008086d000024FDsv00008086sd00001130bc02sc80i00\"\n  Driver Info #0:\n    Driver Status: iwlwifi is active\n    Driver Activation Cmd: \"modprobe iwlwifi\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #35 (PCI bridge)\n\n31: PCI 3c00.0: 0c03 USB Controller (XHCI)\n  [Created at pci.386]\n  Unique ID: Hy9f.QAjUSygQ+G7\n  Parent ID: kYBq.a2VhDObw5K1\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0\n  SysFS BusID: 0000:3c:00.0\n  Hardware Class: usb controller\n  Model: \"Intel JHL6540 Thunderbolt 3 USB Controller (C step) [Alpine Ridge 4C 2016]\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x15d4 \"JHL6540 Thunderbolt 3 USB Controller (C step) [Alpine Ridge 4C 2016]\"\n  SubVendor: pci 0x2222 \n  SubDevice: pci 0x1111 \n  Revision: 0x02\n  Driver: \"xhci_hcd\"\n  Driver Modules: \"xhci_pci\"\n  Memory Range: 0xd3f00000-0xd3f0ffff (rw,non-prefetchable)\n  IRQ: 142 (5895716 events)\n  Module Alias: \"pci:v00008086d000015D4sv00002222sd00001111bc0Csc03i30\"\n  Driver Info #0:\n    Driver Status: xhci_pci is active\n    Driver Activation Cmd: \"modprobe xhci_pci\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #26 (PCI bridge)\n\n32: PCI 02.0: 0300 VGA compatible controller (VGA)\n  [Created at pci.386]\n  Unique ID: _Znp.0IdyCMQBatD\n  SysFS ID: /devices/pci0000:00/0000:00:02.0\n  SysFS BusID: 0000:00:02.0\n  Hardware Class: graphics card\n  Model: \"Lenovo ThinkPad X1 Carbon 5th Gen\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x5916 \"HD Graphics 620\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \"ThinkPad X1 Carbon 5th Gen\"\n  Revision: 0x02\n  Driver: \"i915\"\n  Driver Modules: \"i915\"\n  Memory Range: 0xeb000000-0xebffffff (rw,non-prefetchable)\n  Memory Range: 0x60000000-0x6fffffff (ro,non-prefetchable)\n  I/O Ports: 0xe000-0xe03f (rw)\n  Memory Range: 0x000c0000-0x000dffff (rw,non-prefetchable,disabled)\n  IRQ: 135 (619635007 events)\n  Module Alias: \"pci:v00008086d00005916sv000017AAsd0000224Fbc03sc00i00\"\n  Driver Info #0:\n    Driver Status: i915 is active\n    Driver Activation Cmd: \"modprobe i915\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n33: PCI 14.0: 0c03 USB Controller (XHCI)\n  [Created at pci.386]\n  Unique ID: MZfG.uG+UK2yqXF2\n  SysFS ID: /devices/pci0000:00/0000:00:14.0\n  SysFS BusID: 0000:00:14.0\n  Hardware Class: usb controller\n  Model: \"Intel Sunrise Point-LP USB 3.0 xHCI Controller\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x9d2f \"Sunrise Point-LP USB 3.0 xHCI Controller\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \n  Revision: 0x21\n  Driver: \"xhci_hcd\"\n  Driver Modules: \"xhci_pci\"\n  Memory Range: 0xec320000-0xec32ffff (rw,non-prefetchable)\n  IRQ: 126 (89557890 events)\n  Module Alias: \"pci:v00008086d00009D2Fsv000017AAsd0000224Fbc0Csc03i30\"\n  Driver Info #0:\n    Driver Status: xhci_pci is active\n    Driver Activation Cmd: \"modprobe xhci_pci\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n34: PCI 1f.4: 0c05 SMBus\n  [Created at pci.386]\n  Unique ID: fnWp._i9ff7R7CN8\n  SysFS ID: /devices/pci0000:00/0000:00:1f.4\n  SysFS BusID: 0000:00:1f.4\n  Hardware Class: unknown\n  Model: \"Lenovo ThinkPad X1 Carbon 5th Gen\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x9d23 \"Sunrise Point-LP SMBus\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \"ThinkPad X1 Carbon 5th Gen\"\n  Revision: 0x21\n  Driver: \"i801_smbus\"\n  Driver Modules: \"i2c_i801\"\n  Memory Range: 0xec34b000-0xec34b0ff (rw,non-prefetchable)\n  I/O Ports: 0xefa0-0xefbf (rw)\n  IRQ: 16 (no events)\n  Module Alias: \"pci:v00008086d00009D23sv000017AAsd0000224Fbc0Csc05i00\"\n  Driver Info #0:\n    Driver Status: i2c_i801 is active\n    Driver Activation Cmd: \"modprobe i2c_i801\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n35: PCI 1c.2: 0604 PCI bridge (Normal decode)\n  [Created at pci.386]\n  Unique ID: hoOk.sDmAgUEcbx2\n  SysFS ID: /devices/pci0000:00/0000:00:1c.2\n  SysFS BusID: 0000:00:1c.2\n  Hardware Class: bridge\n  Model: \"Intel Sunrise Point-LP PCI Express Root Port #3\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x9d12 \"Sunrise Point-LP PCI Express Root Port #3\"\n  SubVendor: pci 0x17aa \"Lenovo\"\n  SubDevice: pci 0x224f \n  Revision: 0xf1\n  Driver: \"pcieport\"\n  IRQ: 123 (no events)\n  Module Alias: \"pci:v00008086d00009D12sv000017AAsd0000224Fbc06sc04i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n36: None 00.0: 10002 LCD Monitor\n  [Created at monitor.125]\n  Unique ID: rdCR.gDNynEL4dRB\n  Parent ID: _Znp.0IdyCMQBatD\n  Hardware Class: monitor\n  Model: \"AUO LCD Monitor\"\n  Vendor: AUO \"AUO\"\n  Device: eisa 0x313d \n  Resolution: 1920x1080@60Hz\n  Size: 309x174 mm\n  Year of Manufacture: 2016\n  Week of Manufacture: 0\n  Detailed Timings #0:\n     Resolution: 1920x1080\n     Horizontal: 1920 1936 1952 2104 (+16 +32 +184) -hsync\n       Vertical: 1080 1083 1097 1116 (+3 +17 +36) -vsync\n    Frequencies: 141.00 MHz, 67.02 kHz, 60.05 Hz\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #32 (VGA compatible controller)\n\n37: None 01.0: 10002 LCD Monitor\n  [Created at monitor.125]\n  Unique ID: wkFv.3eFRZPYqQnB\n  Parent ID: _Znp.0IdyCMQBatD\n  Hardware Class: monitor\n  Model: \"SAMSUNG LC27T55\"\n  Vendor: SAM \"SAMSUNG\"\n  Device: eisa 0x701e \"LC27T55\"\n  Serial ID: \"HNAR401779\"\n  Resolution: 720x400@70Hz\n  Resolution: 640x480@60Hz\n  Resolution: 640x480@67Hz\n  Resolution: 640x480@72Hz\n  Resolution: 640x480@75Hz\n  Resolution: 800x600@56Hz\n  Resolution: 800x600@60Hz\n  Resolution: 800x600@72Hz\n  Resolution: 800x600@75Hz\n  Resolution: 832x624@75Hz\n  Resolution: 1024x768@60Hz\n  Resolution: 1024x768@70Hz\n  Resolution: 1024x768@75Hz\n  Resolution: 1280x1024@75Hz\n  Resolution: 1280x720@60Hz\n  Resolution: 1280x1024@60Hz\n  Resolution: 1920x1080@60Hz\n  Size: 609x349 mm\n  Year of Manufacture: 2021\n  Week of Manufacture: 17\n  Detailed Timings #0:\n     Resolution: 1920x1080\n     Horizontal: 1920 2008 2052 2200 (+88 +132 +280) +hsync\n       Vertical: 1080 1084 1089 1125 (+4 +9 +45) +vsync\n    Frequencies: 148.50 MHz, 67.50 kHz, 60.00 Hz\n  Driver Info #0:\n    Max. Resolution: 1920x1080\n    Vert. Sync Range: 48-75 Hz\n    Hor. Sync Range: 30-84 kHz\n    Bandwidth: 148 MHz\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #32 (VGA compatible controller)\n\n38: PCI 00.0: 10600 Disk\n  [Created at block.245]\n  Unique ID: wLCS.AfVvhtt5p16\n  Parent ID: Ddhb.6HVdCPE4AT5\n  SysFS ID: /class/block/nvme0n1\n  SysFS BusID: nvme0\n  SysFS Device Link: /devices/pci0000:00/0000:00:1c.4/0000:05:00.0/nvme/nvme0\n  Hardware Class: disk\n  Model: \"Samsung Electronics SM963 2.5\" NVMe PCIe SSD\"\n  Vendor: pci 0x144d \"Samsung Electronics Co Ltd\"\n  Device: pci 0xa804 \"NVMe SSD Controller SM961/PM961/SM963\"\n  SubVendor: pci 0x144d \"Samsung Electronics Co Ltd\"\n  SubDevice: pci 0xa801 \"SM963 2.5\" NVMe PCIe SSD\"\n  Driver: \"nvme\"\n  Driver Modules: \"nvme\"\n  Device File: /dev/nvme0n1\n  Device Number: block 259:0\n  Geometry (Logical): CHS 976762/64/32\n  Size: 2000409264 sectors a 512 bytes\n  Capacity: 953 GB (1024209543168 bytes)\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #24 (Non-Volatile memory controller)\n\n39: None 00.0: 11300 Partition\n  [Created at block.434]\n  Unique ID: cS_q.SE1wIdpsiiC\n  Parent ID: wLCS.AfVvhtt5p16\n  SysFS ID: /class/block/nvme0n1/nvme0n1p1\n  Hardware Class: partition\n  Model: \"Partition\"\n  Device File: /dev/nvme0n1p1\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #38 (Disk)\n\n40: None 00.0: 11300 Partition\n  [Created at block.434]\n  Unique ID: 3eEv.SE1wIdpsiiC\n  Parent ID: wLCS.AfVvhtt5p16\n  SysFS ID: /class/block/nvme0n1/nvme0n1p2\n  Hardware Class: partition\n  Model: \"Partition\"\n  Device File: /dev/nvme0n1p2\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #38 (Disk)\n\n41: None 00.0: 11300 Partition\n  [Created at block.434]\n  Unique ID: XpUz.SE1wIdpsiiC\n  Parent ID: wLCS.AfVvhtt5p16\n  SysFS ID: /class/block/nvme0n1/nvme0n1p3\n  Hardware Class: partition\n  Model: \"Partition\"\n  Device File: /dev/nvme0n1p3\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #38 (Disk)\n\n42: None 00.0: 11300 Partition\n  [Created at block.434]\n  Unique ID: __k1.SE1wIdpsiiC\n  Parent ID: wLCS.AfVvhtt5p16\n  SysFS ID: /class/block/nvme0n1/nvme0n1p4\n  Hardware Class: partition\n  Model: \"Partition\"\n  Device File: /dev/nvme0n1p4\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #38 (Disk)\n\n43: None 00.0: 11300 Partition\n  [Created at block.434]\n  Unique ID: RA+5.SE1wIdpsiiC\n  Parent ID: wLCS.AfVvhtt5p16\n  SysFS ID: /class/block/nvme0n1/nvme0n1p5\n  Hardware Class: partition\n  Model: \"Partition\"\n  Device File: /dev/nvme0n1p5\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #38 (Disk)\n\n44: None 00.0: 11300 Partition\n  [Created at block.434]\n  Unique ID: uLFA.SE1wIdpsiiC\n  Parent ID: wLCS.AfVvhtt5p16\n  SysFS ID: /class/block/nvme0n1/nvme0n1p6\n  Hardware Class: partition\n  Model: \"Partition\"\n  Device File: /dev/nvme0n1p6\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #38 (Disk)\n\n45: SCSI 00.1: 10600 Disk\n  [Created at block.256]\n  Unique ID: JLNk.rd_zLqy6FGE\n  Parent ID: Hy9f.QAjUSygQ+G7\n  SysFS ID: /class/block/sdb\n  SysFS BusID: 0:0:0:1\n  SysFS Device Link: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb4/4-2/4-2.2/4-2.2:1.0/host0/target0:0:0/0:0:0:1\n  Hardware Class: disk\n  Model: \"Generic Micro SD/M2\"\n  Vendor: usb 0x058f \"Generic-\"\n  Device: usb 0x8468 \"Micro SD/M2\"\n  Revision: \"1.08\"\n  Serial ID: \"AU8461\"\n  Driver: \"usb-storage\", \"sd\"\n  Driver Modules: \"usb_storage\", \"sd_mod\"\n  Device File: /dev/sdb (/dev/sg1)\n  Device Number: block 8:16-8:31 (char 21:1)\n  Geometry (Logical): CHS 1024/0/62\n  Module Alias: \"usb:v058Fp8468d0100dc00dsc00dp00ic08isc06ip50in00\"\n  Driver Info #0:\n    Driver Status: uas is active\n    Driver Activation Cmd: \"modprobe uas\"\n  Driver Info #1:\n    Driver Status: usb_storage is active\n    Driver Activation Cmd: \"modprobe usb_storage\"\n  Drive status: no medium\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #31 (USB Controller)\n\n46: SCSI 00.0: 10600 Disk\n  [Created at block.256]\n  Unique ID: R7kM.cEqnUHU+UjE\n  Parent ID: Hy9f.QAjUSygQ+G7\n  SysFS ID: /class/block/sda\n  SysFS BusID: 0:0:0:0\n  SysFS Device Link: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb4/4-2/4-2.2/4-2.2:1.0/host0/target0:0:0/0:0:0:0\n  Hardware Class: disk\n  Model: \"Generic SD/MMC\"\n  Vendor: usb 0x058f \"Generic-\"\n  Device: usb 0x8468 \"SD/MMC\"\n  Revision: \"1.00\"\n  Serial ID: \"AU8461\"\n  Driver: \"usb-storage\", \"sd\"\n  Driver Modules: \"usb_storage\", \"sd_mod\"\n  Device File: /dev/sda (/dev/sg0)\n  Device Number: block 8:0-8:15 (char 21:0)\n  Geometry (Logical): CHS 1024/0/62\n  Drive status: no medium\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #31 (USB Controller)\n\n47: USB 00.3: 0000 Unclassified device\n  [Created at usb.122]\n  Unique ID: zF+l.vQCI4RMGVj7\n  Parent ID: BkVc.g5rjI1SjqE3\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb3/3-2/3-2.1/3-2.1.2/3-2.1.2:1.3\n  SysFS BusID: 3-2.1.2:1.3\n  Hardware Class: unknown\n  Model: \"Razer RZ01-0321 Gaming Mouse [DeathAdder V2]\"\n  Hotplug: USB\n  Vendor: usb 0x1532 \"Razer USA, Ltd\"\n  Device: usb 0x0084 \"RZ01-0321 Gaming Mouse [DeathAdder V2]\"\n  Revision: \"2.00\"\n  Driver: \"usbhid\"\n  Driver Modules: \"usbhid\"\n  Speed: 12 Mbps\n  Module Alias: \"usb:v1532p0084d0200dc00dsc00dp00ic03isc00ip02in03\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #68 (Hub)\n\n48: USB 00.0: 0000 Unclassified device\n  [Created at usb.122]\n  Unique ID: POWV.SKi3BMEP1zB\n  Parent ID: k4bc.2DFUsyrieMD\n  SysFS ID: /devices/pci0000:00/0000:00:14.0/usb1/1-9/1-9:1.0\n  SysFS BusID: 1-9:1.0\n  Hardware Class: unknown\n  Model: \"Validity Sensors Unclassified device\"\n  Hotplug: USB\n  Vendor: usb 0x138a \"Validity Sensors, Inc.\"\n  Device: usb 0x0097 \n  Revision: \"1.64\"\n  Serial ID: \"d6aa80ed14a7\"\n  Speed: 12 Mbps\n  Module Alias: \"usb:v138Ap0097d0164dcFFdsc10dpFFicFFisc00ip00in00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #64 (Hub)\n\n49: USB 00.0: 0000 Unclassified device\n  [Created at usb.122]\n  Unique ID: xJFn.LX0JUh335qA\n  Parent ID: mZxt.g5rjI1SjqE3\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb3/3-2/3-2.3/3-2.3:2.0\n  SysFS BusID: 3-2.3:2.0\n  Hardware Class: unknown\n  Model: \"VIA USB 2.0 BILLBOARD\"\n  Hotplug: USB\n  Vendor: usb 0x2109 \"VIA Labs, Inc.\"\n  Device: usb 0x0103 \"USB 2.0 BILLBOARD\"\n  Revision: \"14.24\"\n  Serial ID: \"0000000000000001\"\n  Speed: 12 Mbps\n  Module Alias: \"usb:v2109p0103d1424dc11dsc00dp00ic11isc00ip00in00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #66 (Hub)\n\n50: USB 00.0: 10a00 Hub\n  [Created at usb.122]\n  Unique ID: rg_L.AneSAPsLcPF\n  Parent ID: zPk0.i7wpDO9tkR0\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb4/4-2/4-2:1.0\n  SysFS BusID: 4-2:1.0\n  Hardware Class: hub\n  Model: \"VIA USB3.0 Hub\"\n  Hotplug: USB\n  Vendor: usb 0x2109 \"VIA Labs, Inc.\"\n  Device: usb 0x0817 \"USB3.0 Hub\"\n  Revision: \"4.73\"\n  Driver: \"hub\"\n  Driver Modules: \"usbcore\"\n  Module Alias: \"usb:v2109p0817d0473dc09dsc00dp03ic09isc00ip00in00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #60 (Hub)\n\n52: USB 00.0: 0200 Ethernet controller\n  [Created at usb.122]\n  Unique ID: Bcd3.pPU9FHDlTRC\n  Parent ID: rg_L.AneSAPsLcPF\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb4/4-2/4-2.4/4-2.4:1.0\n  SysFS BusID: 4-2.4:1.0\n  Hardware Class: network\n  Model: \"Realtek RTL8153 Gigabit Ethernet Adapter\"\n  Hotplug: USB\n  Vendor: usb 0x0bda \"Realtek Semiconductor Corp.\"\n  Device: usb 0x8153 \"RTL8153 Gigabit Ethernet Adapter\"\n  Revision: \"31.00\"\n  Serial ID: \"001000001\"\n  Driver: \"r8152\"\n  Driver Modules: \"r8152\"\n  Device File: enp60s0u2u4\n  HW Address: 48:65:ee:17:57:1a\n  Permanent HW Address: 48:65:ee:17:57:1a\n  Link detected: yes\n  Module Alias: \"usb:v0BDAp8153d3100dc00dsc00dp00icFFiscFFip00in00\"\n  Driver Info #0:\n    Driver Status: r8152 is active\n    Driver Activation Cmd: \"modprobe r8152\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #50 (Hub)\n\n53: USB 00.1: 0000 Unclassified device\n  [Created at usb.122]\n  Unique ID: QR8P.XP6vQjDsZa1\n  Parent ID: k4bc.2DFUsyrieMD\n  SysFS ID: /devices/pci0000:00/0000:00:14.0/usb1/1-8/1-8:1.1\n  SysFS BusID: 1-8:1.1\n  Hardware Class: unknown\n  Model: \"Lite-On Integrated Camera\"\n  Hotplug: USB\n  Vendor: usb 0x04ca \"Lite-On Technology Corp.\"\n  Device: usb 0x7067 \"Integrated Camera\"\n  Revision: \"0.16\"\n  Serial ID: \"200901010001\"\n  Driver: \"uvcvideo\"\n  Driver Modules: \"uvcvideo\"\n  Speed: 480 Mbps\n  Module Alias: \"usb:v04CAp7067d0016dcEFdsc02dp01ic0Eisc02ip00in01\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #64 (Hub)\n\n54: USB 00.0: 10a00 Hub\n  [Created at usb.122]\n  Unique ID: uIhY.pnncnQNBpD7\n  Parent ID: Hy9f.QAjUSygQ+G7\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb3/3-0:1.0\n  SysFS BusID: 3-0:1.0\n  Hardware Class: hub\n  Model: \"Linux Foundation 2.0 root hub\"\n  Hotplug: USB\n  Vendor: usb 0x1d6b \"Linux Foundation\"\n  Device: usb 0x0002 \"2.0 root hub\"\n  Revision: \"5.04\"\n  Serial ID: \"0000:3c:00.0\"\n  Driver: \"hub\"\n  Driver Modules: \"usbcore\"\n  Speed: 480 Mbps\n  Module Alias: \"usb:v1D6Bp0002d0504dc09dsc00dp01ic09isc00ip00in00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #31 (USB Controller)\n\n55: USB 00.3: 0000 Unclassified device\n  [Created at usb.122]\n  Unique ID: POdw.uBlpLnsCFz5\n  Parent ID: BkVc.g5rjI1SjqE3\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb3/3-2/3-2.1/3-2.1.3/3-2.1.3:1.3\n  SysFS BusID: 3-2.1.3:1.3\n  Hardware Class: unknown\n  Model: \"Razer Huntsman Mini\"\n  Hotplug: USB\n  Vendor: usb 0x1532 \"Razer USA, Ltd\"\n  Device: usb 0x0257 \"Razer Huntsman Mini\"\n  Revision: \"2.00\"\n  Serial ID: \"00000000001A\"\n  Driver: \"usbhid\"\n  Driver Modules: \"usbhid\"\n  Device File: /dev/input/event29\n  Device Number: char 13:93\n  Speed: 12 Mbps\n  Module Alias: \"usb:v1532p0257d0200dc00dsc00dp00ic03isc00ip01in03\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #68 (Hub)\n\n57: USB 00.0: 10a00 Hub\n  [Created at usb.122]\n  Unique ID: tClZ.AneSAPsLcPF\n  Parent ID: rg_L.AneSAPsLcPF\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb4/4-2/4-2.1/4-2.1:1.0\n  SysFS BusID: 4-2.1:1.0\n  Hardware Class: hub\n  Model: \"VIA USB3.0 Hub\"\n  Hotplug: USB\n  Vendor: usb 0x2109 \"VIA Labs, Inc.\"\n  Device: usb 0x0817 \"USB3.0 Hub\"\n  Revision: \"4.73\"\n  Driver: \"hub\"\n  Driver Modules: \"usbcore\"\n  Module Alias: \"usb:v2109p0817d0473dc09dsc00dp03ic09isc00ip00in00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #50 (Hub)\n\n58: USB 00.0: 0000 Unclassified device\n  [Created at usb.122]\n  Unique ID: w673.mAuzP6z8zSE\n  Parent ID: BkVc.g5rjI1SjqE3\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb3/3-2/3-2.1/3-2.1.5/3-2.1.5:1.0\n  SysFS BusID: 3-2.1.5:1.0\n  Hardware Class: unknown\n  Model: \"VIA USB Billboard Device\"\n  Hotplug: USB\n  Vendor: usb 0x2109 \"VIA Labs, Inc.\"\n  Device: usb 0x8817 \"USB Billboard Device\"\n  Revision: \"0.01\"\n  Serial ID: \"0000000000000001\"\n  Speed: 480 Mbps\n  Module Alias: \"usb:v2109p8817d0001dcFEdsc00dp00ic11isc00ip00in00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #68 (Hub)\n\n59: USB 00.0: 11500 Bluetooth Device\n  [Created at usb.122]\n  Unique ID: X7GA.GS0ueMFUyi1\n  Parent ID: k4bc.2DFUsyrieMD\n  SysFS ID: /devices/pci0000:00/0000:00:14.0/usb1/1-7/1-7:1.0\n  SysFS BusID: 1-7:1.0\n  Hardware Class: bluetooth\n  Model: \"Intel Bluetooth wireless interface\"\n  Hotplug: USB\n  Vendor: usb 0x8087 \"Intel Corp.\"\n  Device: usb 0x0a2b \"Bluetooth wireless interface\"\n  Revision: \"0.10\"\n  Driver: \"btusb\"\n  Driver Modules: \"btusb\"\n  Speed: 12 Mbps\n  Module Alias: \"usb:v8087p0A2Bd0010dcE0dsc01dp01icE0isc01ip01in00\"\n  Driver Info #0:\n    Driver Status: btusb is active\n    Driver Activation Cmd: \"modprobe btusb\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #64 (Hub)\n\n60: USB 00.0: 10a00 Hub\n  [Created at usb.122]\n  Unique ID: zPk0.i7wpDO9tkR0\n  Parent ID: Hy9f.QAjUSygQ+G7\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb4/4-0:1.0\n  SysFS BusID: 4-0:1.0\n  Hardware Class: hub\n  Model: \"Linux Foundation 3.0 root hub\"\n  Hotplug: USB\n  Vendor: usb 0x1d6b \"Linux Foundation\"\n  Device: usb 0x0003 \"3.0 root hub\"\n  Revision: \"5.04\"\n  Serial ID: \"0000:3c:00.0\"\n  Driver: \"hub\"\n  Driver Modules: \"usbcore\"\n  Module Alias: \"usb:v1D6Bp0003d0504dc09dsc00dp03ic09isc00ip00in00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #31 (USB Controller)\n\n61: USB 00.2: 10800 Keyboard\n  [Created at usb.122]\n  Unique ID: W4lh.AK78juYgagD\n  Parent ID: BkVc.g5rjI1SjqE3\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb3/3-2/3-2.1/3-2.1.2/3-2.1.2:1.2\n  SysFS BusID: 3-2.1.2:1.2\n  Hardware Class: keyboard\n  Model: \"Razer RZ01-0321 Gaming Mouse [DeathAdder V2]\"\n  Hotplug: USB\n  Vendor: usb 0x1532 \"Razer USA, Ltd\"\n  Device: usb 0x0084 \"RZ01-0321 Gaming Mouse [DeathAdder V2]\"\n  Revision: \"2.00\"\n  Driver: \"usbhid\"\n  Driver Modules: \"usbhid\"\n  Device File: /dev/input/event22\n  Device Number: char 13:86\n  Speed: 12 Mbps\n  Module Alias: \"usb:v1532p0084d0200dc00dsc00dp00ic03isc01ip01in02\"\n  Driver Info #0:\n    XkbRules: xfree86\n    XkbModel: pc104\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #68 (Hub)\n\n63: USB 00.0: 10503 USB Mouse\n  [Created at usb.122]\n  Unique ID: cjEZ.v2dnE7+mQmC\n  Parent ID: BkVc.g5rjI1SjqE3\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb3/3-2/3-2.1/3-2.1.2/3-2.1.2:1.0\n  SysFS BusID: 3-2.1.2:1.0\n  Hardware Class: mouse\n  Model: \"Razer RZ01-0321 Gaming Mouse [DeathAdder V2]\"\n  Hotplug: USB\n  Vendor: usb 0x1532 \"Razer USA, Ltd\"\n  Device: usb 0x0084 \"RZ01-0321 Gaming Mouse [DeathAdder V2]\"\n  Revision: \"2.00\"\n  Compatible to: int 0x0210 0x0025\n  Driver: \"usbhid\"\n  Driver Modules: \"usbhid\"\n  Device File: /dev/input/mice (/dev/input/mouse2)\n  Device Files: /dev/input/mice, /dev/input/mouse2, /dev/input/event17\n  Device Number: char 13:63 (char 13:34)\n  Speed: 12 Mbps\n  Module Alias: \"usb:v1532p0084d0200dc00dsc00dp00ic03isc01ip02in00\"\n  Driver Info #0:\n    Buttons: 5\n    Wheels: 2\n    XFree86 Protocol: explorerps/2\n    GPM Protocol: exps2\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #68 (Hub)\n\n64: USB 00.0: 10a00 Hub\n  [Created at usb.122]\n  Unique ID: k4bc.2DFUsyrieMD\n  Parent ID: MZfG.uG+UK2yqXF2\n  SysFS ID: /devices/pci0000:00/0000:00:14.0/usb1/1-0:1.0\n  SysFS BusID: 1-0:1.0\n  Hardware Class: hub\n  Model: \"Linux Foundation 2.0 root hub\"\n  Hotplug: USB\n  Vendor: usb 0x1d6b \"Linux Foundation\"\n  Device: usb 0x0002 \"2.0 root hub\"\n  Revision: \"5.04\"\n  Serial ID: \"0000:00:14.0\"\n  Driver: \"hub\"\n  Driver Modules: \"usbcore\"\n  Speed: 480 Mbps\n  Module Alias: \"usb:v1D6Bp0002d0504dc09dsc00dp01ic09isc00ip00in00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #33 (USB Controller)\n\n66: USB 00.0: 10a00 Hub\n  [Created at usb.122]\n  Unique ID: mZxt.g5rjI1SjqE3\n  Parent ID: uIhY.pnncnQNBpD7\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb3/3-2/3-2:1.0\n  SysFS BusID: 3-2:1.0\n  Hardware Class: hub\n  Model: \"VIA USB2.0 Hub\"\n  Hotplug: USB\n  Vendor: usb 0x2109 \"VIA Labs, Inc.\"\n  Device: usb 0x2817 \"USB2.0 Hub\"\n  Revision: \"4.73\"\n  Driver: \"hub\"\n  Driver Modules: \"usbcore\"\n  Speed: 480 Mbps\n  Module Alias: \"usb:v2109p2817d0473dc09dsc00dp02ic09isc00ip02in00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #54 (Hub)\n\n68: USB 00.0: 10a00 Hub\n  [Created at usb.122]\n  Unique ID: BkVc.g5rjI1SjqE3\n  Parent ID: mZxt.g5rjI1SjqE3\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb3/3-2/3-2.1/3-2.1:1.0\n  SysFS BusID: 3-2.1:1.0\n  Hardware Class: hub\n  Model: \"VIA USB2.0 Hub\"\n  Hotplug: USB\n  Vendor: usb 0x2109 \"VIA Labs, Inc.\"\n  Device: usb 0x2817 \"USB2.0 Hub\"\n  Revision: \"4.73\"\n  Driver: \"hub\"\n  Driver Modules: \"usbcore\"\n  Speed: 480 Mbps\n  Module Alias: \"usb:v2109p2817d0473dc09dsc00dp02ic09isc00ip02in00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #66 (Hub)\n\n69: USB 00.0: 0000 Unclassified device\n  [Created at usb.122]\n  Unique ID: xF0H.mAuzP6z8zSE\n  Parent ID: mZxt.g5rjI1SjqE3\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb3/3-2/3-2.5/3-2.5:1.0\n  SysFS BusID: 3-2.5:1.0\n  Hardware Class: unknown\n  Model: \"VIA USB Billboard Device\"\n  Hotplug: USB\n  Vendor: usb 0x2109 \"VIA Labs, Inc.\"\n  Device: usb 0x8817 \"USB Billboard Device\"\n  Revision: \"0.01\"\n  Serial ID: \"0000000000000001\"\n  Speed: 480 Mbps\n  Module Alias: \"usb:v2109p8817d0001dcFEdsc00dp00ic11isc00ip00in00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #66 (Hub)\n\n70: USB 00.0: 10800 Keyboard\n  [Created at usb.122]\n  Unique ID: 2ssj.XoA0EArn++0\n  Parent ID: BkVc.g5rjI1SjqE3\n  SysFS ID: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb3/3-2/3-2.1/3-2.1.3/3-2.1.3:1.0\n  SysFS BusID: 3-2.1.3:1.0\n  Hardware Class: keyboard\n  Model: \"Razer Huntsman Mini\"\n  Hotplug: USB\n  Vendor: usb 0x1532 \"Razer USA, Ltd\"\n  Device: usb 0x0257 \"Razer Huntsman Mini\"\n  Revision: \"2.00\"\n  Serial ID: \"00000000001A\"\n  Driver: \"usbhid\"\n  Driver Modules: \"usbhid\"\n  Device File: /dev/input/event23\n  Device Number: char 13:87\n  Speed: 12 Mbps\n  Module Alias: \"usb:v1532p0257d0200dc00dsc00dp00ic03isc01ip01in00\"\n  Driver Info #0:\n    XkbRules: xfree86\n    XkbModel: pc104\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #68 (Hub)\n\n72: USB 00.0: 10a00 Hub\n  [Created at usb.122]\n  Unique ID: pBe4.xYNhIwdOaa6\n  Parent ID: MZfG.uG+UK2yqXF2\n  SysFS ID: /devices/pci0000:00/0000:00:14.0/usb2/2-0:1.0\n  SysFS BusID: 2-0:1.0\n  Hardware Class: hub\n  Model: \"Linux Foundation 3.0 root hub\"\n  Hotplug: USB\n  Vendor: usb 0x1d6b \"Linux Foundation\"\n  Device: usb 0x0003 \"3.0 root hub\"\n  Revision: \"5.04\"\n  Serial ID: \"0000:00:14.0\"\n  Driver: \"hub\"\n  Driver Modules: \"usbcore\"\n  Module Alias: \"usb:v1D6Bp0003d0504dc09dsc00dp03ic09isc00ip00in00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #33 (USB Controller)\n\n73: PS/2 00.0: 10800 Keyboard\n  [Created at input.226]\n  Unique ID: 9ui9.+49ps10DtUF\n  Hardware Class: keyboard\n  Model: \"AT Translated Set 2 keyboard\"\n  Vendor: 0x0001 \n  Device: 0x0001 \"AT Translated Set 2 keyboard\"\n  Compatible to: int 0x0211 0x0001\n  Device File: /dev/input/event3\n  Device Number: char 13:67\n  Driver Info #0:\n    XkbRules: xfree86\n    XkbModel: pc104\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n74: PS/2 00.0: 10500 PS/2 Mouse\n  [Created at input.249]\n  Unique ID: AH6Q.Y_f5kDtfqz2\n  Hardware Class: mouse\n  Model: \"SynPS/2 Synaptics TouchPad\"\n  Vendor: 0x0002 \n  Device: 0x0007 \"SynPS/2 Synaptics TouchPad\"\n  Compatible to: int 0x0210 0x0001\n  Device File: /dev/input/mice (/dev/input/mouse0)\n  Device Files: /dev/input/mice, /dev/input/mouse0, /dev/input/event4\n  Device Number: char 13:63 (char 13:32)\n  Driver Info #0:\n    Buttons: 1\n    Wheels: 0\n    XFree86 Protocol: explorerps/2\n    GPM Protocol: exps2\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n75: PS/2 00.0: 10500 PS/2 Mouse\n  [Created at input.249]\n  Unique ID: AH6Q.7qlGUQk7T34\n  Hardware Class: mouse\n  Model: \"TPPS/2 Elan TrackPoint\"\n  Vendor: 0x0002 \n  Device: 0x000a \"TPPS/2 Elan TrackPoint\"\n  Compatible to: int 0x0210 0x0003\n  Device File: /dev/input/mice (/dev/input/mouse1)\n  Device Files: /dev/input/mice, /dev/input/mouse1, /dev/input/event5\n  Device Number: char 13:63 (char 13:33)\n  Driver Info #0:\n    Buttons: 3\n    Wheels: 0\n    XFree86 Protocol: explorerps/2\n    GPM Protocol: exps2\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n76: None 00.0: 10103 CPU\n  [Created at cpu.462]\n  Unique ID: rdCR.j8NaKXDZtZ6\n  Hardware Class: cpu\n  Arch: X86-64\n  Vendor: \"GenuineIntel\"\n  Model: 6.142.9 \"Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz\"\n  Features: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,dts,acpi,mmx,fxsr,sse,sse2,ss,ht,tm,pbe,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,art,arch_perfmon,pebs,bts,rep_good,nopl,xtopology,nonstop_tsc,cpuid,aperfmperf,pni,pclmulqdq,dtes64,monitor,ds_cpl,vmx,est,tm2,ssse3,sdbg,fma,cx16,xtpr,pdcm,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,aes,xsave,avx,f16c,rdrand,lahf_lm,abm,3dnowprefetch,cpuid_fault,epb,invpcid_single,pti,tpr_shadow,vnmi,flexpriority,ept,vpid,ept_ad,fsgsbase,tsc_adjust,bmi1,avx2,smep,bmi2,erms,invpcid,mpx,rdseed,adx,smap,clflushopt,intel_pt,xsaveopt,xsavec,xgetbv1,xsaves,dtherm,ida,arat,pln,pts,hwp,hwp_notify,hwp_act_window,hwp_epp\n  Clock: 3180 MHz\n  BogoMips: 5802.42\n  Cache: 4096 kb\n  Units/Processor: 16\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n77: None 01.0: 10103 CPU\n  [Created at cpu.462]\n  Unique ID: wkFv.j8NaKXDZtZ6\n  Hardware Class: cpu\n  Arch: X86-64\n  Vendor: \"GenuineIntel\"\n  Model: 6.142.9 \"Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz\"\n  Features: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,dts,acpi,mmx,fxsr,sse,sse2,ss,ht,tm,pbe,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,art,arch_perfmon,pebs,bts,rep_good,nopl,xtopology,nonstop_tsc,cpuid,aperfmperf,pni,pclmulqdq,dtes64,monitor,ds_cpl,vmx,est,tm2,ssse3,sdbg,fma,cx16,xtpr,pdcm,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,aes,xsave,avx,f16c,rdrand,lahf_lm,abm,3dnowprefetch,cpuid_fault,epb,invpcid_single,pti,tpr_shadow,vnmi,flexpriority,ept,vpid,ept_ad,fsgsbase,tsc_adjust,bmi1,avx2,smep,bmi2,erms,invpcid,mpx,rdseed,adx,smap,clflushopt,intel_pt,xsaveopt,xsavec,xgetbv1,xsaves,dtherm,ida,arat,pln,pts,hwp,hwp_notify,hwp_act_window,hwp_epp\n  Clock: 2125 MHz\n  BogoMips: 5802.42\n  Cache: 4096 kb\n  Units/Processor: 16\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n78: None 02.0: 10103 CPU\n  [Created at cpu.462]\n  Unique ID: +rIN.j8NaKXDZtZ6\n  Hardware Class: cpu\n  Arch: X86-64\n  Vendor: \"GenuineIntel\"\n  Model: 6.142.9 \"Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz\"\n  Features: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,dts,acpi,mmx,fxsr,sse,sse2,ss,ht,tm,pbe,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,art,arch_perfmon,pebs,bts,rep_good,nopl,xtopology,nonstop_tsc,cpuid,aperfmperf,pni,pclmulqdq,dtes64,monitor,ds_cpl,vmx,est,tm2,ssse3,sdbg,fma,cx16,xtpr,pdcm,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,aes,xsave,avx,f16c,rdrand,lahf_lm,abm,3dnowprefetch,cpuid_fault,epb,invpcid_single,pti,tpr_shadow,vnmi,flexpriority,ept,vpid,ept_ad,fsgsbase,tsc_adjust,bmi1,avx2,smep,bmi2,erms,invpcid,mpx,rdseed,adx,smap,clflushopt,intel_pt,xsaveopt,xsavec,xgetbv1,xsaves,dtherm,ida,arat,pln,pts,hwp,hwp_notify,hwp_act_window,hwp_epp\n  Clock: 2566 MHz\n  BogoMips: 5802.42\n  Cache: 4096 kb\n  Units/Processor: 16\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n79: None 03.0: 10103 CPU\n  [Created at cpu.462]\n  Unique ID: 4zLr.j8NaKXDZtZ6\n  Hardware Class: cpu\n  Arch: X86-64\n  Vendor: \"GenuineIntel\"\n  Model: 6.142.9 \"Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz\"\n  Features: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,dts,acpi,mmx,fxsr,sse,sse2,ss,ht,tm,pbe,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,art,arch_perfmon,pebs,bts,rep_good,nopl,xtopology,nonstop_tsc,cpuid,aperfmperf,pni,pclmulqdq,dtes64,monitor,ds_cpl,vmx,est,tm2,ssse3,sdbg,fma,cx16,xtpr,pdcm,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,aes,xsave,avx,f16c,rdrand,lahf_lm,abm,3dnowprefetch,cpuid_fault,epb,invpcid_single,pti,tpr_shadow,vnmi,flexpriority,ept,vpid,ept_ad,fsgsbase,tsc_adjust,bmi1,avx2,smep,bmi2,erms,invpcid,mpx,rdseed,adx,smap,clflushopt,intel_pt,xsaveopt,xsavec,xgetbv1,xsaves,dtherm,ida,arat,pln,pts,hwp,hwp_notify,hwp_act_window,hwp_epp\n  Clock: 3038 MHz\n  BogoMips: 5802.42\n  Cache: 4096 kb\n  Units/Processor: 16\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n80: None 00.0: 10701 Ethernet\n  [Created at net.126]\n  Unique ID: E98i.ndpeucax6V1\n  Parent ID: YVtp.cbEpR7q1Jd1\n  SysFS ID: /class/net/wlp4s0\n  SysFS Device Link: /devices/pci0000:00/0000:00:1c.2/0000:04:00.0\n  Hardware Class: network interface\n  Model: \"Ethernet network interface\"\n  Driver: \"iwlwifi\"\n  Driver Modules: \"iwlwifi\"\n  Device File: wlp4s0\n  HW Address: 00:28:f8:a6:d5:7e\n  Permanent HW Address: 00:28:f8:a6:d5:7e\n  Link detected: yes\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #30 (WLAN controller)\n\n81: None 00.0: 10700 Loopback\n  [Created at net.126]\n  Unique ID: ZsBS.GQNx7L4uPNA\n  SysFS ID: /class/net/lo\n  Hardware Class: network interface\n  Model: \"Loopback network interface\"\n  Device File: lo\n  Link detected: yes\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n82: None 00.0: 10701 Ethernet\n  [Created at net.126]\n  Unique ID: 23b5.ndpeucax6V1\n  Parent ID: AhzA.SRCP7pKsA81\n  SysFS ID: /class/net/enp0s31f6\n  SysFS Device Link: /devices/pci0000:00/0000:00:1f.6\n  Hardware Class: network interface\n  Model: \"Ethernet network interface\"\n  Driver: \"e1000e\"\n  Driver Modules: \"e1000e\"\n  Device File: enp0s31f6\n  HW Address: 54:e1:ad:11:fb:b7\n  Permanent HW Address: 54:e1:ad:11:fb:b7\n  Link detected: no\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #28 (Ethernet controller)\n\n83: None 00.0: 10701 Ethernet\n  [Created at net.126]\n  Unique ID: WF3Z.ndpeucax6V1\n  Parent ID: Bcd3.pPU9FHDlTRC\n  SysFS ID: /class/net/enp60s0u2u4\n  SysFS Device Link: /devices/pci0000:00/0000:00:1d.0/0000:06:00.0/0000:07:02.0/0000:3c:00.0/usb4/4-2/4-2.4/4-2.4:1.0\n  Hardware Class: network interface\n  Model: \"Ethernet network interface\"\n  Driver: \"r8152\"\n  Driver Modules: \"r8152\"\n  Device File: enp60s0u2u4\n  HW Address: 48:65:ee:17:57:1a\n  Permanent HW Address: 48:65:ee:17:57:1a\n  Link detected: yes\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #52 (Ethernet controller)\n",
+    "smart": [
+      {
+        "device": {
+          "info_name": "/dev/nvme0n1",
+          "name": "/dev/nvme0n1",
+          "protocol": "NVMe",
+          "type": "nvme"
+        },
+        "firmware_version": "6L7QCXY7",
+        "json_format_version": [
+          1,
+          0
+        ],
+        "local_time": {
+          "asctime": "Thu Mar 31 19:47:53 2022 CEST",
+          "time_t": 1648748873
+        },
+        "logical_block_size": 512,
+        "model_name": "SAMSUNG MZVLW1T0HMLH-000L7",
+        "nvme_controller_id": 2,
+        "nvme_ieee_oui_identifier": 9528,
+        "nvme_namespaces": [
+          {
+            "capacity": {
+              "blocks": 2000409264,
+              "blocks_s": "2000409264",
+              "bytes": 1024209543168,
+              "bytes_le": [
+                0,
+                96,
+                165,
+                119,
+                238
+              ],
+              "bytes_s": "1024209543168"
+            },
+            "eui64": {
+              "ext_id": 775001736984,
+              "oui": 9528
+            },
+            "formatted_lba_size": 512,
+            "id": 1,
+            "size": {
+              "blocks": 2000409264,
+              "blocks_s": "2000409264",
+              "bytes": 1024209543168,
+              "bytes_le": [
+                0,
+                96,
+                165,
+                119,
+                238
+              ],
+              "bytes_s": "1024209543168"
+            },
+            "utilization": {
+              "blocks": 1467365608,
+              "blocks_s": "1467365608",
+              "bytes": 751291191296,
+              "bytes_le": [
+                0,
+                208,
+                113,
+                236,
+                174
+              ],
+              "bytes_s": "751291191296"
+            }
+          }
+        ],
+        "nvme_number_of_namespaces": 1,
+        "nvme_pci_vendor": {
+          "id": 5197,
+          "subsystem_id": 5197
+        },
+        "nvme_smart_health_information_log": {
+          "available_spare": 100,
+          "available_spare_threshold": 10,
+          "controller_busy_time": 2377,
+          "controller_busy_time_le": [
+            73,
+            9
+          ],
+          "controller_busy_time_s": "2377",
+          "critical_comp_time": 0,
+          "critical_warning": 0,
+          "data_units_read": 14418200,
+          "data_units_read_le": [
+            24,
+            1,
+            220
+          ],
+          "data_units_read_s": "14418200",
+          "data_units_written": 65181364,
+          "data_units_written_le": [
+            180,
+            150,
+            226,
+            3
+          ],
+          "data_units_written_s": "65181364",
+          "host_reads": 291650797,
+          "host_reads_le": [
+            237,
+            60,
+            98,
+            17
+          ],
+          "host_reads_s": "291650797",
+          "host_writes": 1828049982,
+          "host_writes_le": [
+            62,
+            212,
+            245,
+            108
+          ],
+          "host_writes_s": "1828049982",
+          "media_errors": 0,
+          "media_errors_s": "0",
+          "num_err_log_entries": 2891,
+          "num_err_log_entries_le": [
+            75,
+            11
+          ],
+          "num_err_log_entries_s": "2891",
+          "percentage_used": 2,
+          "power_cycles": 5320,
+          "power_cycles_le": [
+            200,
+            20
+          ],
+          "power_cycles_s": "5320",
+          "power_on_hours": 6032,
+          "power_on_hours_le": [
+            144,
+            23
+          ],
+          "power_on_hours_s": "6032",
+          "temperature": 40,
+          "temperature_sensors": [
+            40,
+            48
+          ],
+          "unsafe_shutdowns": 286,
+          "unsafe_shutdowns_le": [
+            30,
+            1
+          ],
+          "unsafe_shutdowns_s": "286",
+          "warning_temp_time": 0
+        },
+        "nvme_total_capacity": 1024209543168,
+        "nvme_total_capacity_le": [
+          0,
+          96,
+          165,
+          119,
+          238
+        ],
+        "nvme_total_capacity_s": "1024209543168",
+        "nvme_unallocated_capacity": 0,
+        "nvme_unallocated_capacity_s": "0",
+        "nvme_version": {
+          "string": "1.2",
+          "value": 66048
+        },
+        "power_cycle_count": 5320,
+        "power_on_time": {
+          "hours": 6032
+        },
+        "serial_number": "S35ANX0J401001",
+        "smart_status": {
+          "nvme": {
+            "value": 0
+          },
+          "passed": true
+        },
+        "smartctl": {
+          "argv": [
+            "smartctl",
+            "-x",
+            "--json=cosviu",
+            "/dev/nvme0n1"
+          ],
+          "build_info": "(local build)",
+          "exit_status": 0,
+          "output": [
+            "smartctl 7.2 2020-12-30 r5155 [x86_64-linux-5.4.72-gentoo-x86_64] (local build)",
+            "Copyright (C) 2002-20, Bruce Allen, Christian Franke, www.smartmontools.org",
+            "",
+            "=== START OF INFORMATION SECTION ===",
+            "Model Number:                       SAMSUNG MZVLW1T0HMLH-000L7",
+            "Serial Number:                      S35ANX0J401001",
+            "Firmware Version:                   6L7QCXY7",
+            "PCI Vendor/Subsystem ID:            0x144d",
+            "IEEE OUI Identifier:                0x002538",
+            "Total NVM Capacity:                 1.024.209.543.168 [1,02 TB]",
+            "Unallocated NVM Capacity:           0",
+            "Controller ID:                      2",
+            "NVMe Version:                       1.2",
+            "Number of Namespaces:               1",
+            "Namespace 1 Size/Capacity:          1.024.209.543.168 [1,02 TB]",
+            "Namespace 1 Utilization:            751.291.191.296 [751 GB]",
+            "Namespace 1 Formatted LBA Size:     512",
+            "Namespace 1 IEEE EUI-64:            002538 b471b40718",
+            "Local Time is:                      Thu Mar 31 19:47:53 2022 CEST",
+            "Firmware Updates (0x16):            3 Slots, no Reset required",
+            "Optional Admin Commands (0x0017):   Security Format Frmw_DL Self_Test",
+            "Optional NVM Commands (0x001f):     Comp Wr_Unc DS_Mngmt Wr_Zero Sav/Sel_Feat",
+            "Log Page Attributes (0x03):         S/H_per_NS Cmd_Eff_Lg",
+            "Warning  Comp. Temp. Threshold:     69 Celsius",
+            "Critical Comp. Temp. Threshold:     72 Celsius",
+            "",
+            "Supported Power States",
+            "St Op     Max   Active     Idle   RL RT WL WT  Ent_Lat  Ex_Lat",
+            " 0 +     7.60W       -        -    0  0  0  0        0       0",
+            " 1 +     6.00W       -        -    1  1  1  1        0       0",
+            " 2 +     5.10W       -        -    2  2  2  2        0       0",
+            " 3 -   0.0400W       -        -    3  3  3  3      210    1500",
+            " 4 -   0.0050W       -        -    4  4  4  4     2200    6000",
+            "",
+            "Supported LBA Sizes (NSID 0x1)",
+            "Id Fmt  Data  Metadt  Rel_Perf",
+            " 0 +     512       0         0",
+            "",
+            "=== START OF SMART DATA SECTION ===",
+            "SMART overall-health self-assessment test result: PASSED",
+            "",
+            "SMART/Health Information (NVMe Log 0x02)",
+            "Critical Warning:                   0x00",
+            "Temperature:                        40 Celsius",
+            "Available Spare:                    100%",
+            "Available Spare Threshold:          10%",
+            "Percentage Used:                    2%",
+            "Data Units Read:                    14.418.200 [7,38 TB]",
+            "Data Units Written:                 65.181.364 [33,3 TB]",
+            "Host Read Commands:                 291.650.797",
+            "Host Write Commands:                1.828.049.982",
+            "Controller Busy Time:               2.377",
+            "Power Cycles:                       5.320",
+            "Power On Hours:                     6.032",
+            "Unsafe Shutdowns:                   286",
+            "Media and Data Integrity Errors:    0",
+            "Error Information Log Entries:      2.891",
+            "Warning  Comp. Temperature Time:    0",
+            "Critical Comp. Temperature Time:    0",
+            "Temperature Sensor 1:               40 Celsius",
+            "Temperature Sensor 2:               48 Celsius",
+            "",
+            "Error Information (NVMe Log 0x01, 16 of 64 entries)",
+            "Num   ErrCount  SQId   CmdId  Status  PELoc          LBA  NSID    VS",
+            "  0       2891     0  0x1016  0x4004      -            0     0     -",
+            "  1       2890     0  0x0008  0x4004      -            0     0     -",
+            "  2       2889     0  0x0008  0x4004      -            0     0     -",
+            "  3       2888     0  0x0008  0x4004      -            0     0     -",
+            "  4       2887     0  0x0008  0x4004      -            0     0     -",
+            "  5       2886     0  0x0008  0x4004      -            0     0     -",
+            "  6       2885     0  0x0008  0x4004      -            0     0     -",
+            "  7       2884     0  0x0008  0x4004      -            0     0     -",
+            "  8       2883     0  0x0008  0x4004      -            0     0     -",
+            "  9       2882     0  0x0008  0x4004      -            0     0     -",
+            " 10       2881     0  0x0008  0x4004      -            0     0     -",
+            " 11       2880     0  0x0008  0x4004      -            0     0     -",
+            " 12       2879     0  0x0008  0x4004      -            0     0     -",
+            " 13       2878     0  0x0008  0x4004      -            0     0     -",
+            " 14       2877     0  0x0008  0x4004      -            0     0     -",
+            " 15       2876     0  0x0008  0x4004      -            0     0     -",
+            "... (48 entries not read)",
+            ""
+          ],
+          "platform_info": "x86_64-linux-5.4.72-gentoo-x86_64",
+          "svn_revision": "5155",
+          "uint128_precision_bits": 128,
+          "version": [
+            7,
+            2
+          ]
+        },
+        "smartctl_0001_i": "smartctl 7.2 2020-12-30 r5155 [x86_64-linux-5.4.72-gentoo-x86_64] (local build)",
+        "smartctl_0002_i": "Copyright (C) 2002-20, Bruce Allen, Christian Franke, www.smartmontools.org",
+        "smartctl_0004_u": "=== START OF INFORMATION SECTION ===",
+        "smartctl_0005_i": "Model Number:                       SAMSUNG MZVLW1T0HMLH-000L7",
+        "smartctl_0006_i": "Serial Number:                      S35ANX0J401001",
+        "smartctl_0007_i": "Firmware Version:                   6L7QCXY7",
+        "smartctl_0008_i": "PCI Vendor/Subsystem ID:            0x144d",
+        "smartctl_0009_i": "IEEE OUI Identifier:                0x002538",
+        "smartctl_0010_i": "Total NVM Capacity:                 1.024.209.543.168 [1,02 TB]",
+        "smartctl_0011_i": "Unallocated NVM Capacity:           0",
+        "smartctl_0012_i": "Controller ID:                      2",
+        "smartctl_0013_i": "NVMe Version:                       1.2",
+        "smartctl_0014_i": "Number of Namespaces:               1",
+        "smartctl_0015_i": "Namespace 1 Size/Capacity:          1.024.209.543.168 [1,02 TB]",
+        "smartctl_0016_i": "Namespace 1 Utilization:            751.291.191.296 [751 GB]",
+        "smartctl_0017_i": "Namespace 1 Formatted LBA Size:     512",
+        "smartctl_0018_i": "Namespace 1 IEEE EUI-64:            002538 b471b40718",
+        "smartctl_0019_i": "Local Time is:                      Thu Mar 31 19:47:53 2022 CEST",
+        "smartctl_0020_u": "Firmware Updates (0x16):            3 Slots, no Reset required",
+        "smartctl_0021_u": "Optional Admin Commands (0x0017):   Security Format Frmw_DL Self_Test",
+        "smartctl_0022_u": "Optional NVM Commands (0x001f):     Comp Wr_Unc DS_Mngmt Wr_Zero Sav/Sel_Feat",
+        "smartctl_0023_u": "Log Page Attributes (0x03):         S/H_per_NS Cmd_Eff_Lg",
+        "smartctl_0024_u": "Warning  Comp. Temp. Threshold:     69 Celsius",
+        "smartctl_0025_u": "Critical Comp. Temp. Threshold:     72 Celsius",
+        "smartctl_0027_u": "Supported Power States",
+        "smartctl_0028_u": "St Op     Max   Active     Idle   RL RT WL WT  Ent_Lat  Ex_Lat",
+        "smartctl_0029_u": " 0 +     7.60W       -        -    0  0  0  0        0       0",
+        "smartctl_0030_u": " 1 +     6.00W       -        -    1  1  1  1        0       0",
+        "smartctl_0031_u": " 2 +     5.10W       -        -    2  2  2  2        0       0",
+        "smartctl_0032_u": " 3 -   0.0400W       -        -    3  3  3  3      210    1500",
+        "smartctl_0033_u": " 4 -   0.0050W       -        -    4  4  4  4     2200    6000",
+        "smartctl_0035_u": "Supported LBA Sizes (NSID 0x1)",
+        "smartctl_0036_u": "Id Fmt  Data  Metadt  Rel_Perf",
+        "smartctl_0037_u": " 0 +     512       0         0",
+        "smartctl_0039_u": "=== START OF SMART DATA SECTION ===",
+        "smartctl_0040_i": "SMART overall-health self-assessment test result: PASSED",
+        "smartctl_0042_i": "SMART/Health Information (NVMe Log 0x02)",
+        "smartctl_0043_i": "Critical Warning:                   0x00",
+        "smartctl_0044_i": "Temperature:                        40 Celsius",
+        "smartctl_0045_i": "Available Spare:                    100%",
+        "smartctl_0046_i": "Available Spare Threshold:          10%",
+        "smartctl_0047_i": "Percentage Used:                    2%",
+        "smartctl_0048_i": "Data Units Read:                    14.418.200 [7,38 TB]",
+        "smartctl_0049_i": "Data Units Written:                 65.181.364 [33,3 TB]",
+        "smartctl_0050_i": "Host Read Commands:                 291.650.797",
+        "smartctl_0051_i": "Host Write Commands:                1.828.049.982",
+        "smartctl_0052_i": "Controller Busy Time:               2.377",
+        "smartctl_0053_i": "Power Cycles:                       5.320",
+        "smartctl_0054_i": "Power On Hours:                     6.032",
+        "smartctl_0055_i": "Unsafe Shutdowns:                   286",
+        "smartctl_0056_i": "Media and Data Integrity Errors:    0",
+        "smartctl_0057_i": "Error Information Log Entries:      2.891",
+        "smartctl_0058_i": "Warning  Comp. Temperature Time:    0",
+        "smartctl_0059_i": "Critical Comp. Temperature Time:    0",
+        "smartctl_0060_i": "Temperature Sensor 1:               40 Celsius",
+        "smartctl_0061_i": "Temperature Sensor 2:               48 Celsius",
+        "smartctl_0063_u": "Error Information (NVMe Log 0x01, 16 of 64 entries)",
+        "smartctl_0064_u": "Num   ErrCount  SQId   CmdId  Status  PELoc          LBA  NSID    VS",
+        "smartctl_0065_u": "  0       2891     0  0x1016  0x4004      -            0     0     -",
+        "smartctl_0066_u": "  1       2890     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0067_u": "  2       2889     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0068_u": "  3       2888     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0069_u": "  4       2887     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0070_u": "  5       2886     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0071_u": "  6       2885     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0072_u": "  7       2884     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0073_u": "  8       2883     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0074_u": "  9       2882     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0075_u": " 10       2881     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0076_u": " 11       2880     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0077_u": " 12       2879     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0078_u": " 13       2878     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0079_u": " 14       2877     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0080_u": " 15       2876     0  0x0008  0x4004      -            0     0     -",
+        "smartctl_0081_u": "... (48 entries not read)",
+        "temperature": {
+          "current": 40
+        },
+        "user_capacity": {
+          "blocks": 2000409264,
+          "blocks_s": "2000409264",
+          "bytes": 1024209543168,
+          "bytes_le": [
+            0,
+            96,
+            165,
+            119,
+            238
+          ],
+          "bytes_s": "1024209543168"
+        }
+      }
+    ]
+  }
+}

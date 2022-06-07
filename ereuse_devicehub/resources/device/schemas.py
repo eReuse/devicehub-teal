@@ -136,6 +136,7 @@ class Computer(Device):
     owner_id = UUID(data_key='ownerID')
     transfer_state = EnumField(enums.TransferState, description=m.Computer.transfer_state.comment)
     receiver_id = UUID(data_key='receiverID')
+    uuid = UUID(required=False)
 
 
 class Desktop(Computer):

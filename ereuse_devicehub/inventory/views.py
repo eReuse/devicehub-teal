@@ -16,30 +16,34 @@ from ereuse_devicehub.inventory.forms import (
     AdvancedSearchForm,
     AllocateForm,
     DataWipeForm,
+    EditTransferForm,
     FilterForm,
     LotForm,
     NewActionForm,
     NewDeviceForm,
+    NotesForm,
     TagDeviceForm,
     TradeDocumentForm,
     TradeForm,
+    TransferForm,
     UploadSnapshotForm,
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
+from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
-from ereuse_devicehub.views import GenericMixView
+from ereuse_devicehub.views import GenericMixin
 
 devices = Blueprint('inventory', __name__, url_prefix='/inventory')
 
 logger = logging.getLogger(__name__)
 
 
-class DeviceListMix(GenericMixView):
+class DeviceListMixin(GenericMixin):
     template_name = 'inventory/device_list.html'
 
     def get_context(self, lot_id, only_unassigned=True):
@@ -48,16 +52,16 @@ class DeviceListMix(GenericMixView):
         form_filter = FilterForm(lots, lot_id, only_unassigned=only_unassigned)
         devices = form_filter.search()
         lot = None
+        form_transfer = ''
+        form_delivery = ''
+        form_receiver = ''
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
-            form_new_trade = TradeForm(
-                lot=lot.id,
-                user_to=g.user.email,
-                user_from=g.user.email,
-            )
-        else:
-            form_new_trade = ''
+            if not lot.is_temporary and lot.transfer:
+                form_transfer = EditTransferForm(lot_id=lot.id)
+                form_delivery = NotesForm(lot_id=lot.id, type='Delivery')
+                form_receiver = NotesForm(lot_id=lot.id, type='Receiver')
 
         form_new_action = NewActionForm(lot=lot_id)
         self.context.update(
@@ -67,7 +71,9 @@ class DeviceListMix(GenericMixView):
                 'form_new_action': form_new_action,
                 'form_new_allocate': AllocateForm(lot=lot_id),
                 'form_new_datawipe': DataWipeForm(lot=lot_id),
-                'form_new_trade': form_new_trade,
+                'form_transfer': form_transfer,
+                'form_delivery': form_delivery,
+                'form_receiver': form_receiver,
                 'form_filter': form_filter,
                 'form_print_labels': PrintLabelsForm(),
                 'lot': lot,
@@ -94,7 +100,7 @@ class DeviceListMix(GenericMixView):
         return []
 
 
-class DeviceListView(DeviceListMix):
+class DeviceListView(DeviceListMixin):
     def dispatch_request(self, lot_id=None):
         only_unassigned = request.args.get(
             'only_unassigned', default=True, type=strtobool
@@ -103,7 +109,7 @@ class DeviceListView(DeviceListMix):
         return flask.render_template(self.template_name, **self.context)
 
 
-class AdvancedSearchView(DeviceListMix):
+class AdvancedSearchView(DeviceListMixin):
     methods = ['GET', 'POST']
     template_name = 'inventory/search.html'
     title = "Advanced Search"
@@ -116,7 +122,7 @@ class AdvancedSearchView(DeviceListMix):
         return flask.render_template(self.template_name, **self.context)
 
 
-class DeviceDetailView(GenericMixView):
+class DeviceDetailView(GenericMixin):
     decorators = [login_required]
     template_name = 'inventory/device_detail.html'
 
@@ -137,7 +143,7 @@ class DeviceDetailView(GenericMixView):
         return flask.render_template(self.template_name, **self.context)
 
 
-class LotCreateView(GenericMixView):
+class LotCreateView(GenericMixin):
     methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'inventory/lot.html'
@@ -160,7 +166,7 @@ class LotCreateView(GenericMixView):
         return flask.render_template(self.template_name, **self.context)
 
 
-class LotUpdateView(GenericMixView):
+class LotUpdateView(GenericMixin):
     methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'inventory/lot.html'
@@ -201,7 +207,7 @@ class LotDeleteView(View):
         return flask.redirect(next_url)
 
 
-class UploadSnapshotView(GenericMixView):
+class UploadSnapshotView(GenericMixin):
     methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'inventory/upload_snapshot.html'
@@ -217,18 +223,19 @@ class UploadSnapshotView(GenericMixView):
             }
         )
         if form.validate_on_submit():
-            snapshot = form.save(commit=False)
+            snapshot, devices = form.save(commit=False)
             if lot_id:
                 lots = self.context['lots']
                 lot = lots.filter(Lot.id == lot_id).one()
-                lot.devices.add(snapshot.device)
+                for dev in devices:
+                    lot.devices.add(dev)
                 db.session.add(lot)
             db.session.commit()
 
         return flask.render_template(self.template_name, **self.context)
 
 
-class DeviceCreateView(GenericMixView):
+class DeviceCreateView(GenericMixin):
     methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'inventory/device_create.html'
@@ -273,7 +280,7 @@ class TagLinkDeviceView(View):
             return flask.redirect(request.referrer)
 
 
-class TagUnlinkDeviceView(GenericMixView):
+class TagUnlinkDeviceView(GenericMixin):
     methods = ['POST', 'GET']
     decorators = [login_required]
     template_name = 'inventory/tag_unlink_device.html'
@@ -326,7 +333,7 @@ class NewActionView(View):
         return url_for('inventory.devicelist')
 
 
-class NewAllocateView(NewActionView, DeviceListMix):
+class NewAllocateView(DeviceListMixin, NewActionView):
     methods = ['POST']
     form_class = AllocateForm
 
@@ -351,7 +358,7 @@ class NewAllocateView(NewActionView, DeviceListMix):
         return flask.redirect(next_url)
 
 
-class NewDataWipeView(NewActionView, DeviceListMix):
+class NewDataWipeView(DeviceListMixin, NewActionView):
     methods = ['POST']
     form_class = DataWipeForm
 
@@ -372,7 +379,7 @@ class NewDataWipeView(NewActionView, DeviceListMix):
         return flask.redirect(next_url)
 
 
-class NewTradeView(NewActionView, DeviceListMix):
+class NewTradeView(DeviceListMixin, NewActionView):
     methods = ['POST']
     form_class = TradeForm
 
@@ -412,6 +419,52 @@ class NewTradeDocumentView(View):
 
         self.context.update({'form': self.form, 'title': self.title})
         return flask.render_template(self.template_name, **self.context)
+
+
+class NewTransferView(GenericMixin):
+    methods = ['POST', 'GET']
+    template_name = 'inventory/new_transfer.html'
+    form_class = TransferForm
+    title = "Add new transfer"
+
+    def dispatch_request(self, lot_id, type_id):
+        self.form = self.form_class(lot_id=lot_id, type=type_id)
+        self.get_context()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            new_lot_id = lot_id
+            if self.form.newlot.id:
+                new_lot_id = "{}".format(self.form.newlot.id)
+                Lot.query.filter(Lot.id == new_lot_id).one()
+            messages.success('Transfer created successfully!')
+            next_url = url_for('inventory.lotdevicelist', lot_id=str(new_lot_id))
+            return flask.redirect(next_url)
+
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
+
+
+class EditTransferView(GenericMixin):
+    methods = ['POST']
+    form_class = EditTransferForm
+
+    def dispatch_request(self, lot_id):
+        self.get_context()
+        form = self.form_class(request.form, lot_id=lot_id)
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+
+        if form.validate_on_submit():
+            form.save()
+            messages.success('Transfer updated successfully!')
+            return flask.redirect(next_url)
+
+        messages.error('Transfer updated error!')
+        for k, v in form.errors.items():
+            value = ';'.join(v)
+            key = form[k].label.text
+            messages.error('Error {key}: {value}!'.format(key=key, value=value))
+        return flask.redirect(next_url)
 
 
 class ExportsView(View):
@@ -525,6 +578,114 @@ class ExportsView(View):
         return flask.render_template('inventory/erasure.html', **params)
 
 
+class SnapshotListView(GenericMixin):
+    template_name = 'inventory/snapshots_list.html'
+
+    def dispatch_request(self):
+        self.get_context()
+        self.context['page_title'] = "Snapshots Logs"
+        self.context['snapshots_log'] = self.get_snapshots_log()
+
+        return flask.render_template(self.template_name, **self.context)
+
+    def get_snapshots_log(self):
+        snapshots_log = SnapshotsLog.query.filter(
+            SnapshotsLog.owner == g.user
+        ).order_by(SnapshotsLog.created.desc())
+        logs = {}
+        for snap in snapshots_log:
+            if snap.snapshot_uuid not in logs:
+                logs[snap.snapshot_uuid] = {
+                    'sid': snap.sid,
+                    'snapshot_uuid': snap.snapshot_uuid,
+                    'version': snap.version,
+                    'device': snap.get_device(),
+                    'status': snap.get_status(),
+                    'severity': snap.severity,
+                    'created': snap.created,
+                }
+                continue
+
+            if snap.created > logs[snap.snapshot_uuid]['created']:
+                logs[snap.snapshot_uuid]['created'] = snap.created
+
+            if snap.severity > logs[snap.snapshot_uuid]['severity']:
+                logs[snap.snapshot_uuid]['severity'] = snap.severity
+                logs[snap.snapshot_uuid]['status'] = snap.get_status()
+
+        result = sorted(logs.values(), key=lambda d: d['created'])
+        result.reverse()
+
+        return result
+
+
+class SnapshotDetailView(GenericMixin):
+    template_name = 'inventory/snapshot_detail.html'
+
+    def dispatch_request(self, snapshot_uuid):
+        self.snapshot_uuid = snapshot_uuid
+        self.get_context()
+        self.context['page_title'] = "Snapshot Detail"
+        self.context['snapshots_log'] = self.get_snapshots_log()
+        self.context['snapshot_uuid'] = snapshot_uuid
+        self.context['snapshot_sid'] = ''
+        if self.context['snapshots_log'].count():
+            self.context['snapshot_sid'] = self.context['snapshots_log'][0].sid
+
+        return flask.render_template(self.template_name, **self.context)
+
+    def get_snapshots_log(self):
+        return (
+            SnapshotsLog.query.filter(SnapshotsLog.owner == g.user)
+            .filter(SnapshotsLog.snapshot_uuid == self.snapshot_uuid)
+            .order_by(SnapshotsLog.created.desc())
+        )
+
+
+class DeliveryNoteView(GenericMixin):
+    methods = ['POST']
+    form_class = NotesForm
+
+    def dispatch_request(self, lot_id):
+        self.get_context()
+        form = self.form_class(request.form, lot_id=lot_id, type='Delivery')
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+
+        if form.validate_on_submit():
+            form.save()
+            messages.success('Delivery Note updated successfully!')
+            return flask.redirect(next_url)
+
+        messages.error('Delivery Note updated error!')
+        for k, v in form.errors.items():
+            value = ';'.join(v)
+            key = form[k].label.text
+            messages.error('Error {key}: {value}!'.format(key=key, value=value))
+        return flask.redirect(next_url)
+
+
+class ReceiverNoteView(GenericMixin):
+    methods = ['POST']
+    form_class = NotesForm
+
+    def dispatch_request(self, lot_id):
+        self.get_context()
+        form = self.form_class(request.form, lot_id=lot_id, type='Receiver')
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+
+        if form.validate_on_submit():
+            form.save()
+            messages.success('Receiver Note updated successfully!')
+            return flask.redirect(next_url)
+
+        messages.error('Receiver Note updated error!')
+        for k, v in form.errors.items():
+            value = ';'.join(v)
+            key = form[k].label.text
+            messages.error('Error {key}: {value}!'.format(key=key, value=value))
+        return flask.redirect(next_url)
+
+
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/action/trade/add/', view_func=NewTradeView.as_view('trade_add'))
 devices.add_url_rule(
@@ -573,4 +734,25 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/export/<string:export_id>/', view_func=ExportsView.as_view('export')
+)
+devices.add_url_rule('/snapshots/', view_func=SnapshotListView.as_view('snapshotslist'))
+devices.add_url_rule(
+    '/snapshots/<string:snapshot_uuid>/',
+    view_func=SnapshotDetailView.as_view('snapshot_detail'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/transfer/<string:type_id>/',
+    view_func=NewTransferView.as_view('new_transfer'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/transfer/',
+    view_func=EditTransferView.as_view('edit_transfer'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/deliverynote/',
+    view_func=DeliveryNoteView.as_view('delivery_note'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/receivernote/',
+    view_func=ReceiverNoteView.as_view('receiver_note'),
 )

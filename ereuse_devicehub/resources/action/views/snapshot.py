@@ -1,18 +1,20 @@
 """ This is the view for Snapshots """
 
-import os
 import json
+import os
 import shutil
 from datetime import datetime
 
-from flask import current_app as app, g
+from flask import current_app as app
+from flask import g
+from marshmallow import ValidationError
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import RateComputer, Snapshot
+from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.device.models import Computer
-from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
-from ereuse_devicehub.resources.enums import SnapshotSoftware, Severity
+from ereuse_devicehub.resources.device.sync import Sync
+from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
 from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 
 
@@ -59,48 +61,35 @@ def move_json(tmp_snapshots, path_name, user, live=False):
         os.remove(path_name)
 
 
-class SnapshotView():
-    """Performs a Snapshot.
+class SnapshotMixin:
+    sync = Sync()
 
-    See `Snapshot` section in docs for more info.
-    """
-    # Note that if we set the device / components into the snapshot
-    # model object, when we flush them to the db we will flush
-    # snapshot, and we want to wait to flush snapshot at the end
-
-    def __init__(self, snapshot_json: dict, resource_def, schema):
-        self.schema = schema
-        self.resource_def = resource_def
-        self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
-        self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
-        snapshot_json.pop('debug', None)
-        self.snapshot_json = resource_def.schema.load(snapshot_json)
-        self.response = self.build()
-        move_json(self.tmp_snapshots, self.path_snapshot, g.user.email)
-
-    def post(self):
-        return self.response
-
-    def build(self):
-        device = self.snapshot_json.pop('device')  # type: Computer
+    def build(self, snapshot_json=None):  # noqa: C901
+        if not snapshot_json:
+            snapshot_json = self.snapshot_json
+        device = snapshot_json.pop('device')  # type: Computer
         components = None
-        if self.snapshot_json['software'] == (SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid):
-            components = self.snapshot_json.pop('components', None)  # type: List[Component]
+        if snapshot_json['software'] == (
+            SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid
+        ):
+            components = snapshot_json.pop('components', None)  # type: List[Component]
             if isinstance(device, Computer) and device.hid:
                 device.add_mac_to_hid(components_snap=components)
-        snapshot = Snapshot(**self.snapshot_json)
+        snapshot = Snapshot(**snapshot_json)
 
         # Remove new actions from devices so they don't interfere with sync
         actions_device = set(e for e in device.actions_one)
         device.actions_one.clear()
         if components:
-            actions_components = tuple(set(e for e in c.actions_one) for c in components)
+            actions_components = tuple(
+                set(e for e in c.actions_one) for c in components
+            )
             for component in components:
                 component.actions_one.clear()
 
         assert not device.actions_one
         assert all(not c.actions_one for c in components) if components else True
-        db_device, remove_actions = self.resource_def.sync.run(device, components)
+        db_device, remove_actions = self.sync.run(device, components)
 
         del device  # Do not use device anymore
         snapshot.device = db_device
@@ -120,24 +109,63 @@ class SnapshotView():
             # Check ownership of (non-component) device to from current.user
             if db_device.owner_id != g.user.id:
                 raise InsufficientPermission()
-            # Compute ratings
-            try:
-                rate_computer, price = RateComputer.compute(db_device)
-            except CannotRate:
-                pass
-            else:
-                snapshot.actions.add(rate_computer)
-                if price:
-                    snapshot.actions.add(price)
         elif snapshot.software == SnapshotSoftware.WorkbenchAndroid:
             pass  # TODO try except to compute RateMobile
         # Check if HID is null and add Severity:Warning to Snapshot
         if snapshot.device.hid is None:
             snapshot.severity = Severity.Warning
 
+        return snapshot
+
+
+class SnapshotView(SnapshotMixin):
+    """Performs a Snapshot.
+
+    See `Snapshot` section in docs for more info.
+    """
+
+    # Note that if we set the device / components into the snapshot
+    # model object, when we flush them to the db we will flush
+    # snapshot, and we want to wait to flush snapshot at the end
+
+    def __init__(self, snapshot_json: dict, resource_def, schema):
+        from ereuse_devicehub.parser.models import SnapshotsLog
+
+        self.schema = schema
+        self.resource_def = resource_def
+        self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
+        self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
+        snapshot_json.pop('debug', None)
+        try:
+            self.snapshot_json = resource_def.schema.load(snapshot_json)
+            snapshot = self.build()
+        except Exception as err:
+            txt = "{}".format(err)
+            uuid = snapshot_json.get('uuid')
+            version = snapshot_json.get('version')
+            error = SnapshotsLog(
+                description=txt,
+                snapshot_uuid=uuid,
+                severity=Severity.Error,
+                version=str(version),
+            )
+            error.save(commit=True)
+            raise err
+
         db.session.add(snapshot)
+        snap_log = SnapshotsLog(
+            description='Ok',
+            snapshot_uuid=snapshot.uuid,
+            severity=Severity.Info,
+            version=str(snapshot.version),
+            snapshot=snapshot,
+        )
+        snap_log.save()
         db.session().final_flush()
-        ret = self.schema.jsonify(snapshot)  # transform it back
-        ret.status_code = 201
+        self.response = self.schema.jsonify(snapshot)  # transform it back
+        self.response.status_code = 201
         db.session.commit()
-        return ret
+        move_json(self.tmp_snapshots, self.path_snapshot, g.user.email)
+
+    def post(self):
+        return self.response

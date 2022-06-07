@@ -1,0 +1,4 @@
+K = KiB = k = kb = KB
+M = MiB = m = mb = MB
+G = GiB = g = gb = GB
+T = TiB = t = tb = TB

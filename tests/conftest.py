@@ -1,4 +1,5 @@
 import io
+import json
 import uuid
 from contextlib import redirect_stdout
 from datetime import datetime
@@ -13,6 +14,7 @@ from decouple import config
 from psycopg2 import IntegrityError
 from sqlalchemy.exc import ProgrammingError
 
+from ereuse_devicehub.api.views import api
 from ereuse_devicehub.client import Client, UserClient, UserClientFlask
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.db import db
@@ -59,6 +61,7 @@ def _app(config: TestConfig) -> Devicehub:
     app.register_blueprint(core)
     app.register_blueprint(devices)
     app.register_blueprint(labels)
+    app.register_blueprint(api)
     app.register_blueprint(workbench)
     app.config["SQLALCHEMY_RECORD_QUERIES"] = True
     app.config['PROFILE'] = True
@@ -206,6 +209,11 @@ def yaml2json(name: str) -> dict:
 def file(name: str) -> dict:
     """Opens and parses a YAML file from the ``files`` subdir. And decode"""
     return json_encode(yaml2json(name))
+
+
+def file_json(name):
+    with Path(__file__).parent.joinpath('files').joinpath(name).open() as f:
+        return json.loads(f.read())
 
 
 def file_workbench(name: str) -> dict:

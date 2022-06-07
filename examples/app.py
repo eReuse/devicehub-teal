@@ -5,6 +5,7 @@ Use this as a starting point.
 """
 from flask_wtf.csrf import CSRFProtect
 
+from ereuse_devicehub.api.views import api
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.inventory.views import devices
@@ -16,6 +17,7 @@ app = Devicehub(inventory=DevicehubConfig.DB_SCHEMA)
 app.register_blueprint(core)
 app.register_blueprint(devices)
 app.register_blueprint(labels)
+app.register_blueprint(api)
 app.register_blueprint(workbench)
 
 # configure & enable CSRF of Flask-WTF
