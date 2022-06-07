@@ -1,0 +1,1179 @@
+{
+  "timestamp": "2022-04-01 06:28:54.099394",
+  "type": "Snapshot",
+  "uuid": "232b44f3-b139-490e-90c8-2748a4523e80",
+  "sid": "YKPZ27NJ2NMRO4893M4L5NRZV5YJ1",
+  "software": "Workbench",
+  "version": "2022.03.00",
+  "schema_api": "1.0.0",
+  "data": {
+    "lspci": "",
+    "lshw": {
+      "id": "wb",
+      "class": "system",
+      "claimed": true,
+      "handle": "DMI:0100",
+      "description": "Computer",
+      "product": "Standard PC (i440FX + PIIX, 1996)",
+      "vendor": "QEMU",
+      "version": "pc-i440fx-5.2",
+      "width": 64,
+      "configuration": {
+        "boot": "normal"
+      },
+      "capabilities": {
+        "smbios-2.8": "SMBIOS version 2.8",
+        "dmi-2.8": "DMI version 2.8",
+        "vsyscall32": "32-bit processes"
+      },
+      "children": [
+        {
+          "id": "core",
+          "class": "bus",
+          "claimed": true,
+          "description": "Motherboard",
+          "physid": "0",
+          "children": [
+            {
+              "id": "firmware",
+              "class": "memory",
+              "claimed": true,
+              "description": "BIOS",
+              "vendor": "SeaBIOS",
+              "physid": "0",
+              "version": "?-20190711_202441-buildvm-armv7-10.arm.fedoraproject.org-2.fc31",
+              "date": "04/01/2014",
+              "units": "bytes",
+              "size": 98304
+            },
+            {
+              "id": "cpu",
+              "class": "processor",
+              "claimed": true,
+              "handle": "DMI:0400",
+              "description": "CPU",
+              "product": "Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz",
+              "vendor": "Intel Corp.",
+              "physid": "400",
+              "businfo": "cpu@0",
+              "version": "6.142.9",
+              "slot": "CPU 0",
+              "units": "Hz",
+              "size": 2000000000,
+              "capacity": 2000000000,
+              "width": 64,
+              "configuration": {
+                "cores": "1",
+                "enabledcores": "1",
+                "microcode": "1",
+                "threads": "1"
+              },
+              "capabilities": {
+                "fpu": "mathematical co-processor",
+                "fpu_exception": "FPU exceptions reporting",
+                "wp": true,
+                "vme": "virtual mode extensions",
+                "de": "debugging extensions",
+                "pse": "page size extensions",
+                "tsc": "time stamp counter",
+                "msr": "model-specific registers",
+                "pae": "4GB+ memory addressing (Physical Address Extension)",
+                "mce": "machine check exceptions",
+                "cx8": "compare and exchange 8-byte",
+                "apic": "on-chip advanced programmable interrupt controller (APIC)",
+                "sep": "fast system calls",
+                "mtrr": "memory type range registers",
+                "pge": "page global enable",
+                "mca": "machine check architecture",
+                "cmov": "conditional move instruction",
+                "pat": "page attribute table",
+                "pse36": "36-bit page size extensions",
+                "clflush": true,
+                "mmx": "multimedia extensions (MMX)",
+                "fxsr": "fast floating point save/restore",
+                "sse": "streaming SIMD extensions (SSE)",
+                "sse2": "streaming SIMD extensions (SSE2)",
+                "ss": "self-snoop",
+                "syscall": "fast system calls",
+                "nx": "no-execute bit (NX)",
+                "pdpe1gb": true,
+                "rdtscp": true,
+                "x86-64": "64bits extensions (x86-64)",
+                "constant_tsc": true,
+                "arch_perfmon": true,
+                "rep_good": true,
+                "nopl": true,
+                "xtopology": true,
+                "cpuid": true,
+                "tsc_known_freq": true,
+                "pni": true,
+                "pclmulqdq": true,
+                "vmx": true,
+                "ssse3": true,
+                "fma": true,
+                "cx16": true,
+                "pcid": true,
+                "sse4_1": true,
+                "sse4_2": true,
+                "x2apic": true,
+                "movbe": true,
+                "popcnt": true,
+                "tsc_deadline_timer": true,
+                "aes": true,
+                "xsave": true,
+                "avx": true,
+                "f16c": true,
+                "rdrand": true,
+                "hypervisor": true,
+                "lahf_lm": true,
+                "abm": true,
+                "3dnowprefetch": true,
+                "cpuid_fault": true,
+                "invpcid_single": true,
+                "pti": true,
+                "tpr_shadow": true,
+                "vnmi": true,
+                "flexpriority": true,
+                "ept": true,
+                "vpid": true,
+                "ept_ad": true,
+                "fsgsbase": true,
+                "tsc_adjust": true,
+                "bmi1": true,
+                "avx2": true,
+                "smep": true,
+                "bmi2": true,
+                "erms": true,
+                "invpcid": true,
+                "mpx": true,
+                "rdseed": true,
+                "adx": true,
+                "smap": true,
+                "clflushopt": true,
+                "xsaveopt": true,
+                "xsavec": true,
+                "xgetbv1": true,
+                "xsaves": true,
+                "arat": true,
+                "umip": true,
+                "arch_capabilities": true
+              }
+            },
+            {
+              "id": "memory",
+              "class": "memory",
+              "claimed": true,
+              "handle": "DMI:1000",
+              "description": "System Memory",
+              "physid": "1000",
+              "units": "bytes",
+              "size": 4294967296,
+              "configuration": {
+                "errordetection": "multi-bit-ecc"
+              },
+              "capabilities": {
+                "ecc": "Multi-bit error-correcting code (ECC)"
+              },
+              "children": [
+                {
+                  "id": "bank",
+                  "class": "memory",
+                  "claimed": true,
+                  "handle": "DMI:1100",
+                  "description": "DIMM RAM",
+                  "vendor": "QEMU",
+                  "physid": "0",
+                  "slot": "DIMM 0",
+                  "units": "bytes",
+                  "size": 4294967296
+                }
+              ]
+            },
+            {
+              "id": "pci",
+              "class": "bridge",
+              "claimed": true,
+              "handle": "PCIBUS:0000:00",
+              "description": "Host bridge",
+              "product": "440FX - 82441FX PMC [Natoma]",
+              "vendor": "Intel Corporation",
+              "physid": "100",
+              "businfo": "pci@0000:00:00.0",
+              "version": "02",
+              "width": 32,
+              "clock": 33000000,
+              "children": [
+                {
+                  "id": "isa",
+                  "class": "bridge",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:01.0",
+                  "description": "ISA bridge",
+                  "product": "82371SB PIIX3 ISA [Natoma/Triton II]",
+                  "vendor": "Intel Corporation",
+                  "physid": "1",
+                  "businfo": "pci@0000:00:01.0",
+                  "version": "00",
+                  "width": 32,
+                  "clock": 33000000,
+                  "configuration": {
+                    "latency": "0"
+                  },
+                  "capabilities": {
+                    "isa": true
+                  },
+                  "children": [
+                    {
+                      "id": "pnp00:00",
+                      "class": "input",
+                      "claimed": true,
+                      "product": "PnP device PNP0303",
+                      "physid": "0",
+                      "configuration": {
+                        "driver": "i8042 kbd"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:01",
+                      "class": "input",
+                      "claimed": true,
+                      "product": "PnP device PNP0f13",
+                      "physid": "1",
+                      "configuration": {
+                        "driver": "i8042 aux"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:02",
+                      "class": "storage",
+                      "claimed": true,
+                      "product": "PnP device PNP0700",
+                      "physid": "2",
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:03",
+                      "class": "printer",
+                      "claimed": true,
+                      "product": "PnP device PNP0400",
+                      "physid": "3",
+                      "configuration": {
+                        "driver": "parport_pc"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:04",
+                      "class": "communication",
+                      "claimed": true,
+                      "product": "PnP device PNP0501",
+                      "physid": "4",
+                      "configuration": {
+                        "driver": "serial"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    },
+                    {
+                      "id": "pnp00:05",
+                      "class": "system",
+                      "claimed": true,
+                      "product": "PnP device PNP0b00",
+                      "physid": "5",
+                      "configuration": {
+                        "driver": "rtc_cmos"
+                      },
+                      "capabilities": {
+                        "pnp": true
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "ide",
+                  "class": "storage",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:01.1",
+                  "description": "IDE interface",
+                  "product": "82371SB PIIX3 IDE [Natoma/Triton II]",
+                  "vendor": "Intel Corporation",
+                  "physid": "1.1",
+                  "businfo": "pci@0000:00:01.1",
+                  "logicalname": [
+                    "scsi0",
+                    "scsi1"
+                  ],
+                  "version": "00",
+                  "width": 32,
+                  "clock": 33000000,
+                  "configuration": {
+                    "driver": "ata_piix",
+                    "latency": "0"
+                  },
+                  "capabilities": {
+                    "ide": true,
+                    "isa_compat_mode": "ISA compatibility mode",
+                    "bus_master": "bus mastering",
+                    "emulated": "Emulated device"
+                  },
+                  "children": [
+                    {
+                      "id": "disk",
+                      "class": "disk",
+                      "claimed": true,
+                      "handle": "SCSI:00:00:00:00",
+                      "description": "ATA Disk",
+                      "product": "QEMU HARDDISK",
+                      "physid": "0",
+                      "businfo": "scsi@0:0.0.0",
+                      "logicalname": "/dev/sda",
+                      "dev": "8:0",
+                      "version": "2.5+",
+                      "serial": "QM00001",
+                      "units": "bytes",
+                      "size": 42949673472,
+                      "configuration": {
+                        "ansiversion": "5",
+                        "logicalsectorsize": "512",
+                        "sectorsize": "512",
+                        "signature": "c338ebd4"
+                      },
+                      "capabilities": {
+                        "partitioned": "Partitioned disk",
+                        "partitioned:dos": "MS-DOS partition table"
+                      },
+                      "children": [
+                        {
+                          "id": "volume:0",
+                          "class": "volume",
+                          "claimed": true,
+                          "description": "EXT4 volume",
+                          "vendor": "Linux",
+                          "physid": "1",
+                          "businfo": "scsi@0:0.0.0,1",
+                          "logicalname": "/dev/sda1",
+                          "dev": "8:1",
+                          "version": "1.0",
+                          "serial": "666140b3-42b9-4940-8d82-7d894261231f",
+                          "size": 4293918720,
+                          "capacity": 4293918720,
+                          "configuration": {
+                            "created": "2020-09-18 14:01:52",
+                            "filesystem": "ext4",
+                            "lastmountpoint": "/",
+                            "modified": "2022-01-29 15:42:10",
+                            "mounted": "2022-01-29 15:42:10",
+                            "state": "clean"
+                          },
+                          "capabilities": {
+                            "primary": "Primary partition",
+                            "bootable": "Bootable partition (active)",
+                            "journaled": true,
+                            "extended_attributes": "Extended Attributes",
+                            "large_files": "4GB+ files",
+                            "huge_files": "16TB+ files",
+                            "dir_nlink": "directories with 65000+ subdirs",
+                            "recover": "needs recovery",
+                            "64bit": "64bit filesystem",
+                            "extents": "extent-based allocation",
+                            "ext4": true,
+                            "ext2": "EXT2/EXT3",
+                            "initialized": "initialized volume"
+                          }
+                        },
+                        {
+                          "id": "volume:1",
+                          "class": "volume",
+                          "claimed": true,
+                          "description": "Extended partition",
+                          "physid": "2",
+                          "businfo": "scsi@0:0.0.0,2",
+                          "logicalname": "/dev/sda2",
+                          "dev": "8:2",
+                          "size": 38652609536,
+                          "capacity": 38652609536,
+                          "capabilities": {
+                            "primary": "Primary partition",
+                            "extended": "Extended partition",
+                            "partitioned": "Partitioned disk",
+                            "partitioned:extended": "Extended partition"
+                          },
+                          "children": [
+                            {
+                              "id": "logicalvolume:0",
+                              "class": "volume",
+                              "claimed": true,
+                              "description": "Linux swap volume",
+                              "physid": "5",
+                              "logicalname": "/dev/sda5",
+                              "dev": "8:5",
+                              "version": "1",
+                              "serial": "5149082d-e5ab-4ccb-b75d-52a8b4da4fc8",
+                              "size": 4292870144,
+                              "capacity": 4292870144,
+                              "configuration": {
+                                "filesystem": "swap",
+                                "pagesize": "4096"
+                              },
+                              "capabilities": {
+                                "nofs": "No filesystem",
+                                "swap": "Linux swap",
+                                "initialized": "initialized volume"
+                              }
+                            },
+                            {
+                              "id": "logicalvolume:1",
+                              "class": "volume",
+                              "claimed": true,
+                              "description": "EXT4 volume",
+                              "vendor": "Linux",
+                              "physid": "6",
+                              "logicalname": [
+                                "/dev/sda6",
+                                "/"
+                              ],
+                              "dev": "8:6",
+                              "version": "1.0",
+                              "serial": "cc4fd343-e6f4-4376-937e-f5d2fbcb48c7",
+                              "size": 34358689792,
+                              "capacity": 34358689792,
+                              "configuration": {
+                                "created": "2022-04-01 05:25:42",
+                                "filesystem": "ext4",
+                                "lastmountpoint": "/",
+                                "modified": "2022-04-01 05:27:52",
+                                "mount.fstype": "ext4",
+                                "mount.options": "rw,relatime,errors=remount-ro",
+                                "mounted": "2022-04-01 05:27:52",
+                                "state": "mounted"
+                              },
+                              "capabilities": {
+                                "journaled": true,
+                                "extended_attributes": "Extended Attributes",
+                                "large_files": "4GB+ files",
+                                "huge_files": "16TB+ files",
+                                "dir_nlink": "directories with 65000+ subdirs",
+                                "recover": "needs recovery",
+                                "64bit": "64bit filesystem",
+                                "extents": "extent-based allocation",
+                                "ext4": true,
+                                "ext2": "EXT2/EXT3",
+                                "initialized": "initialized volume"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "cdrom",
+                      "class": "disk",
+                      "claimed": true,
+                      "handle": "SCSI:01:00:00:00",
+                      "description": "DVD reader",
+                      "product": "QEMU DVD-ROM",
+                      "vendor": "QEMU",
+                      "physid": "1",
+                      "businfo": "scsi@1:0.0.0",
+                      "logicalname": [
+                        "/dev/cdrom",
+                        "/dev/dvd",
+                        "/dev/sr0"
+                      ],
+                      "dev": "11:0",
+                      "version": "2.5+",
+                      "configuration": {
+                        "ansiversion": "5",
+                        "status": "nodisc"
+                      },
+                      "capabilities": {
+                        "removable": "support is removable",
+                        "audio": "Audio CD playback",
+                        "dvd": "DVD playback"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "bridge",
+                  "class": "bridge",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:01.3",
+                  "description": "Bridge",
+                  "product": "82371AB/EB/MB PIIX4 ACPI",
+                  "vendor": "Intel Corporation",
+                  "physid": "1.3",
+                  "businfo": "pci@0000:00:01.3",
+                  "version": "03",
+                  "width": 32,
+                  "clock": 33000000,
+                  "configuration": {
+                    "driver": "piix4_smbus",
+                    "latency": "0"
+                  },
+                  "capabilities": {
+                    "bridge": true
+                  }
+                },
+                {
+                  "id": "display",
+                  "class": "display",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:02.0",
+                  "description": "VGA compatible controller",
+                  "product": "bochs-drmdrmfb",
+                  "physid": "2",
+                  "businfo": "pci@0000:00:02.0",
+                  "logicalname": "/dev/fb0",
+                  "version": "02",
+                  "width": 32,
+                  "clock": 33000000,
+                  "configuration": {
+                    "depth": "32",
+                    "driver": "bochs-drm",
+                    "latency": "0",
+                    "resolution": "1024,768"
+                  },
+                  "capabilities": {
+                    "vga_controller": true,
+                    "bus_master": "bus mastering",
+                    "rom": "extension ROM",
+                    "fb": "framebuffer"
+                  }
+                },
+                {
+                  "id": "network",
+                  "class": "network",
+                  "claimed": true,
+                  "handle": "PCI:0000:00:03.0",
+                  "description": "Ethernet interface",
+                  "product": "82540EM Gigabit Ethernet Controller",
+                  "vendor": "Intel Corporation",
+                  "physid": "3",
+                  "businfo": "pci@0000:00:03.0",
+                  "logicalname": "ens3",
+                  "version": "03",
+                  "serial": "52:54:00:12:34:56",
+                  "units": "bit/s",
+                  "size": 1000000000,
+                  "capacity": 1000000000,
+                  "width": 32,
+                  "clock": 33000000,
+                  "configuration": {
+                    "autonegotiation": "on",
+                    "broadcast": "yes",
+                    "driver": "e1000",
+                    "driverversion": "5.10.0-13-amd64",
+                    "duplex": "full",
+                    "ip": "10.0.2.15",
+                    "latency": "0",
+                    "link": "yes",
+                    "multicast": "yes",
+                    "port": "twisted pair",
+                    "speed": "1Gbit/s"
+                  },
+                  "capabilities": {
+                    "bus_master": "bus mastering",
+                    "rom": "extension ROM",
+                    "ethernet": true,
+                    "physical": "Physical interface",
+                    "tp": "twisted pair",
+                    "10bt": "10Mbit/s",
+                    "10bt-fd": "10Mbit/s (full duplex)",
+                    "100bt": "100Mbit/s",
+                    "100bt-fd": "100Mbit/s (full duplex)",
+                    "1000bt-fd": "1Gbit/s (full duplex)",
+                    "autonegotiation": "Auto-negotiation"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "input:0",
+          "class": "input",
+          "claimed": true,
+          "product": "AT Translated Set 2 keyboard",
+          "physid": "1",
+          "logicalname": [
+            "input0",
+            "/dev/input/event0",
+            "input0::capslock",
+            "input0::numlock",
+            "input0::scrolllock"
+          ],
+          "capabilities": {
+            "i8042": "i8042 PC AT keyboard controller"
+          }
+        },
+        {
+          "id": "input:1",
+          "class": "input",
+          "claimed": true,
+          "product": "VirtualPS/2 VMware VMMouse",
+          "physid": "2",
+          "logicalname": [
+            "input2",
+            "/dev/input/event2",
+            "/dev/input/mouse1"
+          ],
+          "capabilities": {
+            "i8042": "i8042 PC AT keyboard controller"
+          }
+        },
+        {
+          "id": "input:2",
+          "class": "input",
+          "claimed": true,
+          "product": "VirtualPS/2 VMware VMMouse",
+          "physid": "3",
+          "logicalname": [
+            "input3",
+            "/dev/input/event1",
+            "/dev/input/mouse0"
+          ],
+          "capabilities": {
+            "i8042": "i8042 PC AT keyboard controller"
+          }
+        },
+        {
+          "id": "input:3",
+          "class": "input",
+          "claimed": true,
+          "product": "Power Button",
+          "physid": "4",
+          "logicalname": [
+            "input4",
+            "/dev/input/event3"
+          ],
+          "capabilities": {
+            "platform": true
+          }
+        },
+        {
+          "id": "input:4",
+          "class": "input",
+          "claimed": true,
+          "product": "PC Speaker",
+          "physid": "5",
+          "logicalname": [
+            "input5",
+            "/dev/input/event4"
+          ],
+          "capabilities": {
+            "isa": "ISA bus"
+          }
+        }
+      ]
+    },
+    "dmidecode": "# dmidecode 3.3\nGetting SMBIOS data from sysfs.\nSMBIOS 2.8 present.\n10 structures occupying 462 bytes.\nTable at 0x000F5A90.\n\nHandle 0x0000, DMI type 0, 24 bytes\nBIOS Information\n\tVendor: SeaBIOS\n\tVersion: ?-20190711_202441-buildvm-armv7-10.arm.fedoraproject.org-2.fc31\n\tRelease Date: 04/01/2014\n\tAddress: 0xE8000\n\tRuntime Size: 96 kB\n\tROM Size: 64 kB\n\tCharacteristics:\n\t\tBIOS characteristics not supported\n\t\tTargeted content distribution is supported\n\tBIOS Revision: 0.0\n\nHandle 0x0100, DMI type 1, 27 bytes\nSystem Information\n\tManufacturer: QEMU\n\tProduct Name: Standard PC (i440FX + PIIX, 1996)\n\tVersion: pc-i440fx-5.2\n\tSerial Number: Not Specified\n\tUUID: Not Settable\n\tWake-up Type: Power Switch\n\tSKU Number: Not Specified\n\tFamily: Not Specified\n\nHandle 0x0300, DMI type 3, 22 bytes\nChassis Information\n\tManufacturer: QEMU\n\tType: Other\n\tLock: Not Present\n\tVersion: pc-i440fx-5.2\n\tSerial Number: Not Specified\n\tAsset Tag: Not Specified\n\tBoot-up State: Safe\n\tPower Supply State: Safe\n\tThermal State: Safe\n\tSecurity Status: Unknown\n\tOEM Information: 0x00000000\n\tHeight: Unspecified\n\tNumber Of Power Cords: Unspecified\n\tContained Elements: 0\n\tSKU Number: Not Specified\n\nHandle 0x0400, DMI type 4, 42 bytes\nProcessor Information\n\tSocket Designation: CPU 0\n\tType: Central Processor\n\tFamily: Other\n\tManufacturer: QEMU\n\tID: E9 06 08 00 FF FB 8B 0F\n\tVersion: pc-i440fx-5.2\n\tVoltage: Unknown\n\tExternal Clock: Unknown\n\tMax Speed: 2000 MHz\n\tCurrent Speed: 2000 MHz\n\tStatus: Populated, Enabled\n\tUpgrade: Other\n\tL1 Cache Handle: Not Provided\n\tL2 Cache Handle: Not Provided\n\tL3 Cache Handle: Not Provided\n\tSerial Number: Not Specified\n\tAsset Tag: Not Specified\n\tPart Number: Not Specified\n\tCore Count: 1\n\tCore Enabled: 1\n\tThread Count: 1\n\tCharacteristics: None\n\nHandle 0x1000, DMI type 16, 23 bytes\nPhysical Memory Array\n\tLocation: Other\n\tUse: System Memory\n\tError Correction Type: Multi-bit ECC\n\tMaximum Capacity: 4 GB\n\tError Information Handle: Not Provided\n\tNumber Of Devices: 1\n\nHandle 0x1100, DMI type 17, 40 bytes\nMemory Device\n\tArray Handle: 0x1000\n\tError Information Handle: Not Provided\n\tTotal Width: Unknown\n\tData Width: Unknown\n\tSize: 4 GB\n\tForm Factor: DIMM\n\tSet: None\n\tLocator: DIMM 0\n\tBank Locator: Not Specified\n\tType: RAM\n\tType Detail: Other\n\tSpeed: Unknown\n\tManufacturer: QEMU\n\tSerial Number: Not Specified\n\tAsset Tag: Not Specified\n\tPart Number: Not Specified\n\tRank: Unknown\n\tConfigured Memory Speed: Unknown\n\tMinimum Voltage: Unknown\n\tMaximum Voltage: Unknown\n\tConfigured Voltage: Unknown\n\nHandle 0x1300, DMI type 19, 31 bytes\nMemory Array Mapped Address\n\tStarting Address: 0x00000000000\n\tEnding Address: 0x000BFFFFFFF\n\tRange Size: 3 GB\n\tPhysical Array Handle: 0x1000\n\tPartition Width: 1\n\nHandle 0x1301, DMI type 19, 31 bytes\nMemory Array Mapped Address\n\tStarting Address: 0x00100000000\n\tEnding Address: 0x0013FFFFFFF\n\tRange Size: 1 GB\n\tPhysical Array Handle: 0x1000\n\tPartition Width: 1\n\nHandle 0x2000, DMI type 32, 11 bytes\nSystem Boot Information\n\tStatus: No errors detected\n\nHandle 0x7F00, DMI type 127, 4 bytes\nEnd Of Table\n\n",
+    "hwinfo": "01: None 00.0: 0102 Floppy disk controller\n  [Created at floppy.112]\n  Unique ID: rdCR.3wRL2_g4d2B\n  Hardware Class: storage\n  Model: \"Floppy disk controller\"\n  I/O Port: 0x3f2 (rw)\n  I/O Ports: 0x3f4-0x3f5 (rw)\n  I/O Port: 0x3f7 (rw)\n  DMA: 2\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n02: Floppy 00.0: 10603 Floppy Disk\n  [Created at floppy.127]\n  Unique ID: sPPV.oZ89vuho4Y3\n  Parent ID: rdCR.3wRL2_g4d2B\n  Hardware Class: floppy\n  Model: \"Floppy Disk\"\n  Device File: /dev/fd0\n  Size: 3.5 ''\n  Size: 5760 sectors a 512 bytes\n  Capacity: 0 GB (2949120 bytes)\n  Drive status: no medium\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #1 (Floppy disk controller)\n\n03: None 00.0: 10105 BIOS\n  [Created at bios.186]\n  Unique ID: rdCR.lZF+r4EgHp4\n  Hardware Class: bios\n  BIOS Keyboard LED Status:\n    Scroll Lock: off\n    Num Lock: off\n    Caps Lock: off\n  Serial Port 0: 0x3f8\n  Parallel Port 0: 0x378\n  Base Memory: 639 kB\n  PnP BIOS: @@@0000\n  MP spec rev 1.4 info:\n    OEM id: \"BOCHSCPU\"\n    Product id: \"0.1\"\n    1 CPUs (0 disabled)\n  BIOS32 Service Directory Entry: 0xfd243\n  SMBIOS Version: 2.8\n  BIOS Info: #0\n    Vendor: \"SeaBIOS\"\n    Version: \"?-20190711_202441-buildvm-armv7-10.arm.fedoraproject.org-2.fc31\"\n    Date: \"04/01/2014\"\n    Start Address: 0xe8000\n    ROM Size: 64 kB\n    Features: 0x04000000000000000008\n  System Info: #256\n    Manufacturer: \"QEMU\"\n    Product: \"Standard PC (i440FX + PIIX, 1996)\"\n    Version: \"pc-i440fx-5.2\"\n    UUID: undefined\n    Wake-up: 0x06 (Power Switch)\n  Chassis Info: #768\n    Manufacturer: \"QEMU\"\n    Version: \"pc-i440fx-5.2\"\n    Type: 0x01 (Other)\n    Bootup State: 0x03 (Safe)\n    Power Supply State: 0x03 (Safe)\n    Thermal State: 0x03 (Safe)\n    Security Status: 0x02 (Unknown)\n  Processor Info: #1024\n    Socket: \"CPU 0\"\n    Socket Type: 0x01 (Other)\n    Socket Status: Populated\n    Type: 0x03 (CPU)\n    Family: 0x01 (Other)\n    Manufacturer: \"QEMU\"\n    Version: \"pc-i440fx-5.2\"\n    Processor ID: 0x0f8bfbff000806e9\n    Status: 0x01 (Enabled)\n    Max. Speed: 2000 MHz\n    Current Speed: 2000 MHz\n  Physical Memory Array: #4096\n    Use: 0x03 (System memory)\n    Location: 0x01 (Other)\n    Slots: 1\n    Max. Size: 4 GB\n    ECC: 0x06 (Multi-bit)\n  Memory Device: #4352\n    Location: \"DIMM 0\"\n    Manufacturer: \"QEMU\"\n    Memory Array: #4096\n    Form Factor: 0x09 (DIMM)\n    Type: 0x07 (RAM)\n    Type Detail: 0x0002 (Other)\n    Data Width: 0 bits\n    Size: 4 GB\n  Memory Array Mapping: #4864\n    Memory Array: #4096\n    Partition Width: 1\n    Start Address: 0x00000000\n    End Address: 0xc0000000\n  Memory Array Mapping: #4865\n    Memory Array: #4096\n    Partition Width: 1\n    Start Address: 0x0000000100000000\n    End Address: 0x0000000140000000\n  Type 32 Record: #8192\n    Data 00: 20 0b 00 20 00 00 00 00 00 00 00\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n04: None 00.0: 10107 System\n  [Created at sys.64]\n  Unique ID: rdCR.n_7QNeEnh23\n  Hardware Class: system\n  Model: \"System\"\n  Formfactor: \"desktop\"\n  Driver Info #0:\n    Driver Status: thermal,fan are not active\n    Driver Activation Cmd: \"modprobe thermal; modprobe fan\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n05: None 00.0: 10104 FPU\n  [Created at misc.191]\n  Unique ID: rdCR.EMpH5pjcahD\n  Hardware Class: unknown\n  Model: \"FPU\"\n  I/O Ports: 0xf0-0xff (rw)\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n06: None 00.0: 0801 DMA controller (8237)\n  [Created at misc.205]\n  Unique ID: rdCR.f5u1ucRm+H9\n  Hardware Class: unknown\n  Model: \"DMA controller\"\n  I/O Ports: 0x00-0xcf7 (rw)\n  I/O Ports: 0xc0-0xdf (rw)\n  I/O Ports: 0x80-0x8f (rw)\n  DMA: 4\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n07: None 00.0: 0800 PIC (8259)\n  [Created at misc.218]\n  Unique ID: rdCR.8uRK7LxiIA2\n  Hardware Class: unknown\n  Model: \"PIC\"\n  I/O Ports: 0x20-0x21 (rw)\n  I/O Ports: 0xa0-0xa1 (rw)\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n08: None 00.0: 0900 Keyboard controller\n  [Created at misc.250]\n  Unique ID: rdCR.9N+EecqykME\n  Hardware Class: unknown\n  Model: \"Keyboard controller\"\n  I/O Port: 0x60 (rw)\n  I/O Port: 0x64 (rw)\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n09: None 00.0: 0701 Parallel controller (SPP)\n  [Created at misc.261]\n  Unique ID: YMnp.ecK7NLYWZ5D\n  Hardware Class: unknown\n  Model: \"Parallel controller\"\n  Device File: /dev/lp0\n  I/O Ports: 0x378-0x37a (rw)\n  I/O Ports: 0x37b-0x37f (rw)\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n10: None 00.0: 10400 PS/2 Controller\n  [Created at misc.303]\n  Unique ID: rdCR.DziBbWO85o5\n  Hardware Class: unknown\n  Model: \"PS/2 Controller\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n12: None 00.0: 10102 Main Memory\n  [Created at memory.74]\n  Unique ID: rdCR.CxwsZFjVASF\n  Hardware Class: memory\n  Model: \"Main Memory\"\n  Memory Range: 0x00000000-0xf5b80fff (rw)\n  Memory Size: 3 GB + 768 MB\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n13: PCI 01.0: 0601 ISA bridge\n  [Created at pci.386]\n  Unique ID: vSkL.ucdhKwLeeAA\n  SysFS ID: /devices/pci0000:00/0000:00:01.0\n  SysFS BusID: 0000:00:01.0\n  Hardware Class: bridge\n  Model: \"Red Hat Qemu virtual machine\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x7000 \"82371SB PIIX3 ISA [Natoma/Triton II]\"\n  SubVendor: pci 0x1af4 \"Red Hat, Inc.\"\n  SubDevice: pci 0x1100 \"Qemu virtual machine\"\n  Module Alias: \"pci:v00008086d00007000sv00001AF4sd00001100bc06sc01i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n14: PCI 00.0: 0600 Host bridge\n  [Created at pci.386]\n  Unique ID: qLht.YeL3TKDjrxE\n  SysFS ID: /devices/pci0000:00/0000:00:00.0\n  SysFS BusID: 0000:00:00.0\n  Hardware Class: bridge\n  Model: \"Red Hat Qemu virtual machine\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x1237 \"440FX - 82441FX PMC [Natoma]\"\n  SubVendor: pci 0x1af4 \"Red Hat, Inc.\"\n  SubDevice: pci 0x1100 \"Qemu virtual machine\"\n  Revision: 0x02\n  Module Alias: \"pci:v00008086d00001237sv00001AF4sd00001100bc06sc00i00\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n15: PCI 01.3: 0680 Bridge\n  [Created at pci.386]\n  Unique ID: VRCs.M9Cc8lcQjE2\n  SysFS ID: /devices/pci0000:00/0000:00:01.3\n  SysFS BusID: 0000:00:01.3\n  Hardware Class: bridge\n  Model: \"Red Hat Qemu virtual machine\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x7113 \"82371AB/EB/MB PIIX4 ACPI\"\n  SubVendor: pci 0x1af4 \"Red Hat, Inc.\"\n  SubDevice: pci 0x1100 \"Qemu virtual machine\"\n  Revision: 0x03\n  Driver: \"piix4_smbus\"\n  Driver Modules: \"i2c_piix4\"\n  IRQ: 9 (no events)\n  Module Alias: \"pci:v00008086d00007113sv00001AF4sd00001100bc06sc80i00\"\n  Driver Info #0:\n    Driver Status: i2c_piix4 is active\n    Driver Activation Cmd: \"modprobe i2c_piix4\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n16: PCI 03.0: 0200 Ethernet controller\n  [Created at pci.386]\n  Unique ID: RNcY.amjFVOTKCI8\n  SysFS ID: /devices/pci0000:00/0000:00:03.0\n  SysFS BusID: 0000:00:03.0\n  Hardware Class: network\n  Model: \"Red Hat QEMU Virtual Machine\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x100e \"82540EM Gigabit Ethernet Controller\"\n  SubVendor: pci 0x1af4 \"Red Hat, Inc.\"\n  SubDevice: pci 0x1100 \"QEMU Virtual Machine\"\n  Revision: 0x03\n  Driver: \"e1000\"\n  Driver Modules: \"e1000\"\n  Device File: ens3\n  Memory Range: 0xfebc0000-0xfebdffff (rw,non-prefetchable)\n  I/O Ports: 0xc000-0xc03f (rw)\n  Memory Range: 0xfeb80000-0xfebbffff (ro,non-prefetchable,disabled)\n  IRQ: 11 (81544 events)\n  HW Address: 52:54:00:12:34:56\n  Permanent HW Address: 52:54:00:12:34:56\n  Link detected: yes\n  Module Alias: \"pci:v00008086d0000100Esv00001AF4sd00001100bc02sc00i00\"\n  Driver Info #0:\n    Driver Status: e1000 is active\n    Driver Activation Cmd: \"modprobe e1000\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n17: PCI 01.1: 0101 IDE interface (ISA Compatibility mode-only controller, supports bus mastering)\n  [Created at pci.386]\n  Unique ID: mnDB.3sKqaxiizg6\n  SysFS ID: /devices/pci0000:00/0000:00:01.1\n  SysFS BusID: 0000:00:01.1\n  Hardware Class: storage\n  Model: \"Red Hat Qemu virtual machine\"\n  Vendor: pci 0x8086 \"Intel Corporation\"\n  Device: pci 0x7010 \"82371SB PIIX3 IDE [Natoma/Triton II]\"\n  SubVendor: pci 0x1af4 \"Red Hat, Inc.\"\n  SubDevice: pci 0x1100 \"Qemu virtual machine\"\n  Driver: \"ata_piix\"\n  Driver Modules: \"ata_piix\"\n  I/O Ports: 0x1f0-0x1f7 (rw)\n  I/O Port: 0x3f6 (rw)\n  I/O Ports: 0x170-0x177 (rw)\n  I/O Port: 0x376 (rw)\n  I/O Ports: 0xc040-0xc04f (rw)\n  Module Alias: \"pci:v00008086d00007010sv00001AF4sd00001100bc01sc01i80\"\n  Driver Info #0:\n    Driver Status: ata_piix is active\n    Driver Activation Cmd: \"modprobe ata_piix\"\n  Driver Info #1:\n    Driver Status: ata_generic is active\n    Driver Activation Cmd: \"modprobe ata_generic\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n18: PCI 02.0: 0300 VGA compatible controller (VGA)\n  [Created at pci.386]\n  Unique ID: _Znp.WspiKb87LiA\n  SysFS ID: /devices/pci0000:00/0000:00:02.0\n  SysFS BusID: 0000:00:02.0\n  Hardware Class: graphics card\n  Model: \"VGA compatible controller\"\n  Vendor: pci 0x1234 \n  Device: pci 0x1111 \n  SubVendor: pci 0x1af4 \"Red Hat, Inc.\"\n  SubDevice: pci 0x1100 \n  Revision: 0x02\n  Driver: \"bochs-drm\"\n  Driver Modules: \"bochs_drm\"\n  Memory Range: 0xfd000000-0xfdffffff (ro,non-prefetchable)\n  Memory Range: 0xfebf0000-0xfebf0fff (rw,non-prefetchable)\n  Memory Range: 0x000c0000-0x000dffff (rw,non-prefetchable,disabled)\n  I/O Ports: 0x3c0-0x3df (rw)\n  Module Alias: \"pci:v00001234d00001111sv00001AF4sd00001100bc03sc00i00\"\n  Driver Info #0:\n    Driver Status: bochs_drm is active\n    Driver Activation Cmd: \"modprobe bochs_drm\"\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n19: None 00.0: 10002 LCD Monitor\n  [Created at monitor.125]\n  Unique ID: rdCR.AenZDShaZ_5\n  Parent ID: _Znp.WspiKb87LiA\n  Hardware Class: monitor\n  Model: \"QEMU Monitor\"\n  Vendor: RHT \n  Device: eisa 0x1234 \"QEMU Monitor\"\n  Resolution: 640x480@60Hz\n  Resolution: 800x600@60Hz\n  Resolution: 1024x768@60Hz\n  Resolution: 2048x1152@60Hz\n  Resolution: 1920x1080@60Hz\n  Size: 260x195 mm\n  Year of Manufacture: 2014\n  Week of Manufacture: 42\n  Detailed Timings #0:\n     Resolution: 1024x768\n     Horizontal: 1024 1280 1310 1382 (+256 +286 +358) -hsync\n       Vertical:  768  771  774  794 (+3 +6 +26) -vsync\n    Frequencies: 82.29 MHz, 59.54 kHz, 74.99 Hz\n  Driver Info #0:\n    Max. Resolution: 2048x1152\n    Vert. Sync Range: 50-125 Hz\n    Hor. Sync Range: 30-160 kHz\n    Bandwidth: 82 MHz\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #18 (VGA compatible controller)\n\n20: None 00.0: 0700 Serial controller (16550)\n  [Created at serial.74]\n  Unique ID: S_Uw.3fyvFV+mbWD\n  Hardware Class: unknown\n  Model: \"16550A\"\n  Device: \"16550A\"\n  Device File: /dev/ttyS0\n  I/O Ports: 0x3f8-0x3ff (rw)\n  IRQ: 4 (56 events)\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n21: SCSI 100.0: 10602 CD-ROM (DVD)\n  [Created at block.249]\n  Unique ID: KD9E.53N0UD4ozwD\n  Parent ID: mnDB.3sKqaxiizg6\n  SysFS ID: /class/block/sr0\n  SysFS BusID: 1:0:0:0\n  SysFS Device Link: /devices/pci0000:00/0000:00:01.1/ata2/host1/target1:0:0/1:0:0:0\n  Hardware Class: cdrom\n  Model: \"QEMU DVD-ROM\"\n  Vendor: \"QEMU\"\n  Device: \"QEMU DVD-ROM\"\n  Revision: \"2.5+\"\n  Driver: \"ata_piix\", \"sr\"\n  Driver Modules: \"ata_piix\", \"sr_mod\"\n  Device File: /dev/sr0 (/dev/sg1)\n  Device Files: /dev/sr0, /dev/cdrom, /dev/disk/by-id/ata-QEMU_DVD-ROM_QM00003, /dev/disk/by-path/pci-0000:00:01.1-ata-2, /dev/disk/by-path/pci-0000:00:01.1-ata-2.0, /dev/dvd\n  Device Number: block 11:0 (char 21:1)\n  Features: DVD, MRW, MRW-W\n  Drive status: no medium\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #17 (IDE interface)\n  Drive Speed: 4\n\n22: None 00.0: 10600 Disk\n  [Created at block.245]\n  Unique ID: kwWm.Fxp0d3BezAE\n  SysFS ID: /class/block/fd0\n  SysFS BusID: floppy.0\n  SysFS Device Link: /devices/platform/floppy.0\n  Hardware Class: disk\n  Model: \"Disk\"\n  Driver: \"floppy\"\n  Driver Modules: \"floppy\"\n  Device File: /dev/fd0\n  Device Number: block 2:0\n  Size: 8 sectors a 512 bytes\n  Capacity: 0 GB (4096 bytes)\n  Drive status: no medium\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n23: IDE 00.0: 10600 Disk\n  [Created at block.245]\n  Unique ID: 3OOL.W8iGvCekDp8\n  Parent ID: mnDB.3sKqaxiizg6\n  SysFS ID: /class/block/sda\n  SysFS BusID: 0:0:0:0\n  SysFS Device Link: /devices/pci0000:00/0000:00:01.1/ata1/host0/target0:0:0/0:0:0:0\n  Hardware Class: disk\n  Model: \"QEMU HARDDISK\"\n  Vendor: \"QEMU\"\n  Device: \"HARDDISK\"\n  Revision: \"2.5+\"\n  Serial ID: \"QM00001\"\n  Driver: \"ata_piix\", \"sd\"\n  Driver Modules: \"ata_piix\", \"sd_mod\"\n  Device File: /dev/sda\n  Device Files: /dev/sda, /dev/disk/by-path/pci-0000:00:01.1-ata-1.0, /dev/disk/by-path/pci-0000:00:01.1-ata-1, /dev/disk/by-id/ata-QEMU_HARDDISK_QM00001\n  Device Number: block 8:0-8:15\n  Geometry (Logical): CHS 5221/255/63\n  Size: 83886081 sectors a 512 bytes\n  Capacity: 40 GB (42949673472 bytes)\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #17 (IDE interface)\n\n24: None 00.0: 11300 Partition\n  [Created at block.434]\n  Unique ID: bdUI.SE1wIdpsiiC\n  Parent ID: 3OOL.W8iGvCekDp8\n  SysFS ID: /class/block/sda/sda1\n  Hardware Class: partition\n  Model: \"Partition\"\n  Device File: /dev/sda1\n  Device Files: /dev/sda1, /dev/disk/by-id/ata-QEMU_HARDDISK_QM00001-part1, /dev/disk/by-partuuid/c338ebd4-01, /dev/disk/by-path/pci-0000:00:01.1-ata-1-part1, /dev/disk/by-uuid/666140b3-42b9-4940-8d82-7d894261231f, /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part1\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #23 (Disk)\n\n25: None 00.0: 11300 Partition\n  [Created at block.434]\n  Unique ID: 2pkM.SE1wIdpsiiC\n  Parent ID: 3OOL.W8iGvCekDp8\n  SysFS ID: /class/block/sda/sda2\n  Hardware Class: partition\n  Model: \"Partition\"\n  Device File: /dev/sda2\n  Device Files: /dev/sda2, /dev/disk/by-id/ata-QEMU_HARDDISK_QM00001-part2, /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part2, /dev/disk/by-path/pci-0000:00:01.1-ata-1-part2, /dev/disk/by-partuuid/c338ebd4-02\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #23 (Disk)\n\n26: None 00.0: 11300 Partition\n  [Created at block.434]\n  Unique ID: QLVZ.SE1wIdpsiiC\n  Parent ID: 3OOL.W8iGvCekDp8\n  SysFS ID: /class/block/sda/sda5\n  Hardware Class: partition\n  Model: \"Partition\"\n  Device File: /dev/sda5\n  Device Files: /dev/sda5, /dev/disk/by-partuuid/c338ebd4-05, /dev/disk/by-id/ata-QEMU_HARDDISK_QM00001-part5, /dev/disk/by-path/pci-0000:00:01.1-ata-1-part5, /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part5, /dev/disk/by-uuid/5149082d-e5ab-4ccb-b75d-52a8b4da4fc8\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #23 (Disk)\n\n27: None 00.0: 11300 Partition\n  [Created at block.434]\n  Unique ID: tWld.SE1wIdpsiiC\n  Parent ID: 3OOL.W8iGvCekDp8\n  SysFS ID: /class/block/sda/sda6\n  Hardware Class: partition\n  Model: \"Partition\"\n  Device File: /dev/sda6\n  Device Files: /dev/sda6, /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part6, /dev/disk/by-path/pci-0000:00:01.1-ata-1-part6, /dev/disk/by-partuuid/c338ebd4-06, /dev/disk/by-uuid/cc4fd343-e6f4-4376-937e-f5d2fbcb48c7, /dev/disk/by-id/ata-QEMU_HARDDISK_QM00001-part6\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #23 (Disk)\n\n28: PS/2 00.0: 10800 Keyboard\n  [Created at input.226]\n  Unique ID: nLyy.+49ps10DtUF\n  Hardware Class: keyboard\n  Model: \"AT Translated Set 2 keyboard\"\n  Vendor: 0x0001 \n  Device: 0x0001 \"AT Translated Set 2 keyboard\"\n  Compatible to: int 0x0211 0x0001\n  Device File: /dev/input/event0\n  Device Files: /dev/input/event0, /dev/input/by-path/platform-i8042-serio-0-event-kbd\n  Device Number: char 13:64\n  Driver Info #0:\n    XkbRules: xfree86\n    XkbModel: pc104\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n29: PS/2 00.0: 10500 PS/2 Mouse\n  [Created at input.249]\n  Unique ID: AH6Q.mYF0pYoTCW7\n  Hardware Class: mouse\n  Model: \"VirtualPS/2 VMware VMMouse\"\n  Vendor: 0x0002 \n  Device: 0x0013 \"VirtualPS/2 VMware VMMouse\"\n  Compatible to: int 0x0210 0x0003\n  Device File: /dev/input/mice (/dev/input/mouse0)\n  Device Files: /dev/input/mice, /dev/input/mouse0, /dev/input/event1, /dev/input/by-path/platform-i8042-serio-1-mouse\n  Device Number: char 13:63 (char 13:32)\n  Driver Info #0:\n    Buttons: 3\n    Wheels: 0\n    XFree86 Protocol: explorerps/2\n    GPM Protocol: exps2\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n30: PS/2 00.0: 10500 PS/2 Mouse\n  [Created at input.249]\n  Unique ID: AH6Q.++hSeDccb2F\n  Hardware Class: mouse\n  Model: \"VirtualPS/2 VMware VMMouse\"\n  Vendor: 0x0002 \n  Device: 0x0013 \"VirtualPS/2 VMware VMMouse\"\n  Compatible to: int 0x0210 0x0012\n  Device File: /dev/input/mice (/dev/input/mouse1)\n  Device Files: /dev/input/mice, /dev/input/mouse1, /dev/input/event2, /dev/input/by-path/platform-i8042-serio-1-event-mouse\n  Device Number: char 13:63 (char 13:33)\n  Driver Info #0:\n    Buttons: 2\n    Wheels: 1\n    XFree86 Protocol: explorerps/2\n    GPM Protocol: exps2\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n31: None 00.0: 10103 CPU\n  [Created at cpu.465]\n  Unique ID: rdCR.j8NaKXDZtZ6\n  Hardware Class: cpu\n  Arch: X86-64\n  Vendor: \"GenuineIntel\"\n  Model: 6.142.9 \"Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz\"\n  Features: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,mmx,fxsr,sse,sse2,ss,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,arch_perfmon,rep_good,nopl,xtopology,cpuid,tsc_known_freq,pni,pclmulqdq,vmx,ssse3,fma,cx16,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,tsc_deadline_timer,aes,xsave,avx,f16c,rdrand,hypervisor,lahf_lm,abm,3dnowprefetch,cpuid_fault,invpcid_single,pti,tpr_shadow,vnmi,flexpriority,ept,vpid,ept_ad,fsgsbase,tsc_adjust,bmi1,avx2,smep,bmi2,erms,invpcid,mpx,rdseed,adx,smap,clflushopt,xsaveopt,xsavec,xgetbv1,xsaves,arat,umip,arch_capabilities\n  Clock: 2904 MHz\n  BogoMips: 5808.00\n  Cache: 16384 kb\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n\n32: None 03.0: 10701 Ethernet\n  [Created at net.126]\n  Unique ID: U2Mp.ndpeucax6V1\n  Parent ID: RNcY.amjFVOTKCI8\n  SysFS ID: /class/net/ens3\n  SysFS Device Link: /devices/pci0000:00/0000:00:03.0\n  Hardware Class: network interface\n  Model: \"Ethernet network interface\"\n  Driver: \"e1000\"\n  Driver Modules: \"e1000\"\n  Device File: ens3\n  HW Address: 52:54:00:12:34:56\n  Permanent HW Address: 52:54:00:12:34:56\n  Link detected: yes\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n  Attached to: #16 (Ethernet controller)\n\n33: None 00.0: 10700 Loopback\n  [Created at net.126]\n  Unique ID: ZsBS.GQNx7L4uPNA\n  SysFS ID: /class/net/lo\n  Hardware Class: network interface\n  Model: \"Loopback network interface\"\n  Device File: lo\n  Link detected: yes\n  Config Status: cfg=new, avail=yes, need=no, active=unknown\n",
+    "smart": [
+      {
+        "json_format_version": [
+          1,
+          0
+        ],
+        "smartctl": {
+          "argv": [
+            "smartctl",
+            "-x",
+            "--json=cosviu",
+            "/dev/fd0"
+          ],
+          "build_info": "(local build)",
+          "exit_status": 1,
+          "messages": [
+            {
+              "severity": "error",
+              "string": "/dev/fd0: Unable to detect device type"
+            }
+          ],
+          "output": [
+            "smartctl 7.2 2020-12-30 r5155 [x86_64-linux-5.10.0-13-amd64] (local build)",
+            "Copyright (C) 2002-20, Bruce Allen, Christian Franke, www.smartmontools.org",
+            "",
+            "/dev/fd0: Unable to detect device type",
+            "Please specify device type with the -d option.",
+            "",
+            "Use smartctl -h to get a usage summary",
+            ""
+          ],
+          "platform_info": "x86_64-linux-5.10.0-13-amd64",
+          "svn_revision": "5155",
+          "version": [
+            7,
+            2
+          ]
+        },
+        "smartctl_0001_i": "smartctl 7.2 2020-12-30 r5155 [x86_64-linux-5.10.0-13-amd64] (local build)",
+        "smartctl_0002_i": "Copyright (C) 2002-20, Bruce Allen, Christian Franke, www.smartmontools.org",
+        "smartctl_0004_i": "/dev/fd0: Unable to detect device type",
+        "smartctl_0005_u": "Please specify device type with the -d option.",
+        "smartctl_0007_u": "Use smartctl -h to get a usage summary"
+      },
+      {
+        "ata_smart_attributes": {
+          "revision": 1,
+          "table": [
+            {
+              "flags": {
+                "auto_keep": false,
+                "error_rate": false,
+                "event_count": false,
+                "performance": false,
+                "prefailure": true,
+                "string": "PO---- ",
+                "updated_online": true,
+                "value": 3
+              },
+              "id": 1,
+              "name": "Raw_Read_Error_Rate",
+              "raw": {
+                "string": "0",
+                "value": 0
+              },
+              "thresh": 6,
+              "value": 100,
+              "when_failed": "",
+              "worst": 100
+            },
+            {
+              "flags": {
+                "auto_keep": false,
+                "error_rate": false,
+                "event_count": false,
+                "performance": false,
+                "prefailure": true,
+                "string": "PO---- ",
+                "updated_online": true,
+                "value": 3
+              },
+              "id": 3,
+              "name": "Spin_Up_Time",
+              "raw": {
+                "string": "16",
+                "value": 16
+              },
+              "thresh": 0,
+              "value": 100,
+              "when_failed": "",
+              "worst": 100
+            },
+            {
+              "flags": {
+                "auto_keep": false,
+                "error_rate": false,
+                "event_count": false,
+                "performance": false,
+                "prefailure": false,
+                "string": "-O---- ",
+                "updated_online": true,
+                "value": 2
+              },
+              "id": 4,
+              "name": "Start_Stop_Count",
+              "raw": {
+                "string": "100",
+                "value": 100
+              },
+              "thresh": 20,
+              "value": 100,
+              "when_failed": "",
+              "worst": 100
+            },
+            {
+              "flags": {
+                "auto_keep": false,
+                "error_rate": false,
+                "event_count": false,
+                "performance": false,
+                "prefailure": true,
+                "string": "PO---- ",
+                "updated_online": true,
+                "value": 3
+              },
+              "id": 5,
+              "name": "Reallocated_Sector_Ct",
+              "raw": {
+                "string": "0",
+                "value": 0
+              },
+              "thresh": 36,
+              "value": 100,
+              "when_failed": "",
+              "worst": 100
+            },
+            {
+              "flags": {
+                "auto_keep": false,
+                "error_rate": false,
+                "event_count": false,
+                "performance": false,
+                "prefailure": true,
+                "string": "PO---- ",
+                "updated_online": true,
+                "value": 3
+              },
+              "id": 9,
+              "name": "Power_On_Hours",
+              "raw": {
+                "string": "1",
+                "value": 1
+              },
+              "thresh": 0,
+              "value": 100,
+              "when_failed": "",
+              "worst": 100
+            },
+            {
+              "flags": {
+                "auto_keep": false,
+                "error_rate": false,
+                "event_count": false,
+                "performance": false,
+                "prefailure": true,
+                "string": "PO---- ",
+                "updated_online": true,
+                "value": 3
+              },
+              "id": 12,
+              "name": "Power_Cycle_Count",
+              "raw": {
+                "string": "0",
+                "value": 0
+              },
+              "thresh": 0,
+              "value": 100,
+              "when_failed": "",
+              "worst": 100
+            },
+            {
+              "flags": {
+                "auto_keep": false,
+                "error_rate": false,
+                "event_count": false,
+                "performance": false,
+                "prefailure": true,
+                "string": "PO---- ",
+                "updated_online": true,
+                "value": 3
+              },
+              "id": 190,
+              "name": "Airflow_Temperature_Cel",
+              "raw": {
+                "string": "31 (Min/Max 31/31)",
+                "value": 522125343
+              },
+              "thresh": 50,
+              "value": 69,
+              "when_failed": "",
+              "worst": 69
+            }
+          ]
+        },
+        "ata_smart_data": {
+          "capabilities": {
+            "attribute_autosave_enabled": true,
+            "conveyance_self_test_supported": false,
+            "error_logging_supported": true,
+            "exec_offline_immediate_supported": true,
+            "gp_logging_supported": false,
+            "offline_is_aborted_upon_new_cmd": false,
+            "offline_surface_scan_supported": true,
+            "selective_self_test_supported": false,
+            "self_tests_supported": true,
+            "values": [
+              25,
+              3
+            ]
+          },
+          "offline_data_collection": {
+            "completion_seconds": 288,
+            "status": {
+              "passed": true,
+              "string": "was completed without error",
+              "value": 130
+            }
+          },
+          "self_test": {
+            "polling_minutes": {
+              "extended": 54,
+              "short": 2
+            },
+            "status": {
+              "passed": true,
+              "string": "completed without error",
+              "value": 0
+            }
+          }
+        },
+        "ata_smart_error_log": {
+          "summary": {
+            "count": 0,
+            "revision": 1
+          }
+        },
+        "ata_smart_self_test_log": {
+          "standard": {
+            "count": 0,
+            "revision": 1
+          }
+        },
+        "ata_version": {
+          "major_value": 240,
+          "minor_value": 22,
+          "string": "ATA/ATAPI-7, ATA/ATAPI-5 published, ANSI NCITS 340-2000"
+        },
+        "device": {
+          "info_name": "/dev/sda [SAT]",
+          "name": "/dev/sda",
+          "protocol": "ATA",
+          "type": "sat"
+        },
+        "firmware_version": "2.5+",
+        "in_smartctl_database": false,
+        "json_format_version": [
+          1,
+          0
+        ],
+        "local_time": {
+          "asctime": "Fri Apr  1 06:28:54 2022 EDT",
+          "time_t": 1648808934
+        },
+        "logical_block_size": 512,
+        "model_name": "QEMU HARDDISK",
+        "physical_block_size": 512,
+        "power_cycle_count": 0,
+        "power_on_time": {
+          "hours": 1
+        },
+        "serial_number": "QM00001",
+        "smart_status": {
+          "passed": true
+        },
+        "smartctl": {
+          "argv": [
+            "smartctl",
+            "-x",
+            "--json=cosviu",
+            "/dev/sda"
+          ],
+          "build_info": "(local build)",
+          "exit_status": 4,
+          "output": [
+            "smartctl 7.2 2020-12-30 r5155 [x86_64-linux-5.10.0-13-amd64] (local build)",
+            "Copyright (C) 2002-20, Bruce Allen, Christian Franke, www.smartmontools.org",
+            "",
+            "=== START OF INFORMATION SECTION ===",
+            "Device Model:     QEMU HARDDISK",
+            "Serial Number:    QM00001",
+            "Firmware Version: 2.5+",
+            "User Capacity:    42,949,673,472 bytes [42.9 GB]",
+            "Sector Size:      512 bytes logical/physical",
+            "TRIM Command:     Available, deterministic",
+            "Device is:        Not in smartctl database [for details use: -P showall]",
+            "ATA Version is:   ATA/ATAPI-7, ATA/ATAPI-5 published, ANSI NCITS 340-2000",
+            "Local Time is:    Fri Apr  1 06:28:54 2022 EDT",
+            "SMART support is: Available - device has SMART capability.",
+            "SMART support is: Enabled",
+            "AAM feature is:   Unavailable",
+            "APM feature is:   Unavailable",
+            "Rd look-ahead is: Unavailable",
+            "Write cache is:   Enabled",
+            "DSN feature is:   Unavailable",
+            "ATA Security is:  Unavailable",
+            "Wt Cache Reorder: Unavailable",
+            "",
+            "=== START OF READ SMART DATA SECTION ===",
+            "SMART overall-health self-assessment test result: PASSED",
+            "",
+            "General SMART Values:",
+            "Offline data collection status:  (0x82)\tOffline data collection activity",
+            "\t\t\t\t\twas completed without error.",
+            "\t\t\t\t\tAuto Offline Data Collection: Enabled.",
+            "Self-test execution status:      (   0)\tThe previous self-test routine completed",
+            "\t\t\t\t\twithout error or no self-test has ever ",
+            "\t\t\t\t\tbeen run.",
+            "Total time to complete Offline ",
+            "data collection: \t\t(  288) seconds.",
+            "Offline data collection",
+            "capabilities: \t\t\t (0x19) SMART execute Offline immediate.",
+            "\t\t\t\t\tNo Auto Offline data collection support.",
+            "\t\t\t\t\tSuspend Offline collection upon new",
+            "\t\t\t\t\tcommand.",
+            "\t\t\t\t\tOffline surface scan supported.",
+            "\t\t\t\t\tSelf-test supported.",
+            "\t\t\t\t\tNo Conveyance Self-test supported.",
+            "\t\t\t\t\tNo Selective Self-test supported.",
+            "SMART capabilities:            (0x0003)\tSaves SMART data before entering",
+            "\t\t\t\t\tpower-saving mode.",
+            "\t\t\t\t\tSupports SMART auto save timer.",
+            "Error logging capability:        (0x01)\tError logging supported.",
+            "\t\t\t\t\tNo General Purpose Logging support.",
+            "Short self-test routine ",
+            "recommended polling time: \t (   2) minutes.",
+            "Extended self-test routine",
+            "recommended polling time: \t (  54) minutes.",
+            "",
+            "SMART Attributes Data Structure revision number: 1",
+            "Vendor Specific SMART Attributes with Thresholds:",
+            "ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE",
+            "  1 Raw_Read_Error_Rate     PO----   100   100   006    -    0",
+            "  3 Spin_Up_Time            PO----   100   100   000    -    16",
+            "  4 Start_Stop_Count        -O----   100   100   020    -    100",
+            "  5 Reallocated_Sector_Ct   PO----   100   100   036    -    0",
+            "  9 Power_On_Hours          PO----   100   100   000    -    1",
+            " 12 Power_Cycle_Count       PO----   100   100   000    -    0",
+            "190 Airflow_Temperature_Cel PO----   069   069   050    -    31 (Min/Max 31/31)",
+            "                            ||||||_ K auto-keep",
+            "                            |||||__ C event count",
+            "                            ||||___ R error rate",
+            "                            |||____ S speed/performance",
+            "                            ||_____ O updated online",
+            "                            |______ P prefailure warning",
+            "",
+            "Read SMART Log Directory failed: scsi error badly formed scsi parameters",
+            "",
+            "General Purpose Log Directory not supported",
+            "",
+            "SMART Extended Comprehensive Error Log (GP Log 0x03) not supported",
+            "",
+            "SMART Error Log Version: 1",
+            "No Errors Logged",
+            "",
+            "SMART Extended Self-test Log (GP Log 0x07) not supported",
+            "",
+            "SMART Self-test log structure revision number 1",
+            "No self-tests have been logged.  [To run self-tests, use: smartctl -t]",
+            "",
+            "Selective Self-tests/Logging not supported",
+            "",
+            "SCT Commands not supported",
+            "",
+            "Device Statistics (GP/SMART Log 0x04) not supported",
+            "",
+            "Pending Defects log (GP Log 0x0c) not supported",
+            "",
+            "SATA Phy Event Counters (GP Log 0x11) not supported",
+            ""
+          ],
+          "platform_info": "x86_64-linux-5.10.0-13-amd64",
+          "svn_revision": "5155",
+          "version": [
+            7,
+            2
+          ]
+        },
+        "smartctl_0001_i": "smartctl 7.2 2020-12-30 r5155 [x86_64-linux-5.10.0-13-amd64] (local build)",
+        "smartctl_0002_i": "Copyright (C) 2002-20, Bruce Allen, Christian Franke, www.smartmontools.org",
+        "smartctl_0004_u": "=== START OF INFORMATION SECTION ===",
+        "smartctl_0005_i": "Device Model:     QEMU HARDDISK",
+        "smartctl_0006_i": "Serial Number:    QM00001",
+        "smartctl_0007_i": "Firmware Version: 2.5+",
+        "smartctl_0008_i": "User Capacity:    42,949,673,472 bytes [42.9 GB]",
+        "smartctl_0009_i": "Sector Size:      512 bytes logical/physical",
+        "smartctl_0010_i": "TRIM Command:     Available, deterministic",
+        "smartctl_0011_i": "Device is:        Not in smartctl database [for details use: -P showall]",
+        "smartctl_0012_i": "ATA Version is:   ATA/ATAPI-7, ATA/ATAPI-5 published, ANSI NCITS 340-2000",
+        "smartctl_0013_i": "Local Time is:    Fri Apr  1 06:28:54 2022 EDT",
+        "smartctl_0014_u": "SMART support is: Available - device has SMART capability.",
+        "smartctl_0015_u": "SMART support is: Enabled",
+        "smartctl_0016_u": "AAM feature is:   Unavailable",
+        "smartctl_0017_u": "APM feature is:   Unavailable",
+        "smartctl_0018_u": "Rd look-ahead is: Unavailable",
+        "smartctl_0019_i": "Write cache is:   Enabled",
+        "smartctl_0020_u": "DSN feature is:   Unavailable",
+        "smartctl_0021_u": "ATA Security is:  Unavailable",
+        "smartctl_0022_u": "Wt Cache Reorder: Unavailable",
+        "smartctl_0024_u": "=== START OF READ SMART DATA SECTION ===",
+        "smartctl_0025_i": "SMART overall-health self-assessment test result: PASSED",
+        "smartctl_0027_i": "General SMART Values:",
+        "smartctl_0028_i": "Offline data collection status:  (0x82)\tOffline data collection activity",
+        "smartctl_0029_i": "\t\t\t\t\twas completed without error.",
+        "smartctl_0030_u": "\t\t\t\t\tAuto Offline Data Collection: Enabled.",
+        "smartctl_0031_i": "Self-test execution status:      (   0)\tThe previous self-test routine completed",
+        "smartctl_0032_i": "\t\t\t\t\twithout error or no self-test has ever ",
+        "smartctl_0033_i": "\t\t\t\t\tbeen run.",
+        "smartctl_0034_i": "Total time to complete Offline ",
+        "smartctl_0035_i": "data collection: \t\t(  288) seconds.",
+        "smartctl_0036_i": "Offline data collection",
+        "smartctl_0037_i": "capabilities: \t\t\t (0x19) SMART execute Offline immediate.",
+        "smartctl_0038_u": "\t\t\t\t\tNo Auto Offline data collection support.",
+        "smartctl_0039_i": "\t\t\t\t\tSuspend Offline collection upon new",
+        "smartctl_0040_i": "\t\t\t\t\tcommand.",
+        "smartctl_0041_i": "\t\t\t\t\tOffline surface scan supported.",
+        "smartctl_0042_i": "\t\t\t\t\tSelf-test supported.",
+        "smartctl_0043_i": "\t\t\t\t\tNo Conveyance Self-test supported.",
+        "smartctl_0044_i": "\t\t\t\t\tNo Selective Self-test supported.",
+        "smartctl_0045_i": "SMART capabilities:            (0x0003)\tSaves SMART data before entering",
+        "smartctl_0046_i": "\t\t\t\t\tpower-saving mode.",
+        "smartctl_0047_u": "\t\t\t\t\tSupports SMART auto save timer.",
+        "smartctl_0048_i": "Error logging capability:        (0x01)\tError logging supported.",
+        "smartctl_0049_i": "\t\t\t\t\tNo General Purpose Logging support.",
+        "smartctl_0050_i": "Short self-test routine ",
+        "smartctl_0051_i": "recommended polling time: \t (   2) minutes.",
+        "smartctl_0052_i": "Extended self-test routine",
+        "smartctl_0053_i": "recommended polling time: \t (  54) minutes.",
+        "smartctl_0055_i": "SMART Attributes Data Structure revision number: 1",
+        "smartctl_0056_i": "Vendor Specific SMART Attributes with Thresholds:",
+        "smartctl_0057_i": "ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE",
+        "smartctl_0058_i": "  1 Raw_Read_Error_Rate     PO----   100   100   006    -    0",
+        "smartctl_0059_i": "  3 Spin_Up_Time            PO----   100   100   000    -    16",
+        "smartctl_0060_i": "  4 Start_Stop_Count        -O----   100   100   020    -    100",
+        "smartctl_0061_i": "  5 Reallocated_Sector_Ct   PO----   100   100   036    -    0",
+        "smartctl_0062_i": "  9 Power_On_Hours          PO----   100   100   000    -    1",
+        "smartctl_0063_i": " 12 Power_Cycle_Count       PO----   100   100   000    -    0",
+        "smartctl_0064_i": "190 Airflow_Temperature_Cel PO----   069   069   050    -    31 (Min/Max 31/31)",
+        "smartctl_0065_i": "                            ||||||_ K auto-keep",
+        "smartctl_0066_i": "                            |||||__ C event count",
+        "smartctl_0067_i": "                            ||||___ R error rate",
+        "smartctl_0068_i": "                            |||____ S speed/performance",
+        "smartctl_0069_i": "                            ||_____ O updated online",
+        "smartctl_0070_i": "                            |______ P prefailure warning",
+        "smartctl_0072_u": "Read SMART Log Directory failed: scsi error badly formed scsi parameters",
+        "smartctl_0074_u": "General Purpose Log Directory not supported",
+        "smartctl_0076_u": "SMART Extended Comprehensive Error Log (GP Log 0x03) not supported",
+        "smartctl_0078_i": "SMART Error Log Version: 1",
+        "smartctl_0079_i": "No Errors Logged",
+        "smartctl_0081_u": "SMART Extended Self-test Log (GP Log 0x07) not supported",
+        "smartctl_0083_i": "SMART Self-test log structure revision number 1",
+        "smartctl_0084_i": "No self-tests have been logged.  [To run self-tests, use: smartctl -t]",
+        "smartctl_0086_u": "Selective Self-tests/Logging not supported",
+        "smartctl_0088_u": "SCT Commands not supported",
+        "smartctl_0090_u": "Device Statistics (GP/SMART Log 0x04) not supported",
+        "smartctl_0092_u": "Pending Defects log (GP Log 0x0c) not supported",
+        "smartctl_0094_u": "SATA Phy Event Counters (GP Log 0x11) not supported",
+        "temperature": {
+          "current": 31
+        },
+        "trim": {
+          "deterministic": true,
+          "supported": true,
+          "zeroed": false
+        },
+        "user_capacity": {
+          "blocks": 83886081,
+          "blocks_s": "83886081",
+          "bytes": 42949673472,
+          "bytes_s": "42949673472"
+        },
+        "write_cache": {
+          "enabled": true
+        }
+      }
+    ]
+  }
+}

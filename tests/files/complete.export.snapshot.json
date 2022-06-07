@@ -1,0 +1,273 @@
+{
+  "components": [
+  {
+    "resolutionHeight": 600,
+    "model": "AUO LCD Monitor",
+    "manufacturer": "AUO \"AUO\"",
+    "size": 10.0,
+    "resolutionWidth": 1024,
+    "productionDate": "2009-01-04T00:00:00",
+    "refreshRate": 60,
+    "technology": "LCD",
+    "type": "Display",
+    "serialNumber": null,
+    "actions": []
+  },
+  {
+    "type": "NetworkAdapter",
+    "model": "AR9285 Wireless Network Adapter",
+    "serialNumber": "74:2f:68:8b:fd:c8",
+    "manufacturer": "Qualcomm Atheros",
+    "wireless": true,
+    "actions": []
+  },
+  {
+    "type": "NetworkAdapter",
+    "model": "AR8152 v2.0 Fast Ethernet",
+    "serialNumber": "14:da:e9:42:f6:7c",
+    "manufacturer": "Qualcomm Atheros",
+    "speed": 100,
+    "wireless": false,
+    "actions": []
+  },
+  {
+    "type": "Processor",
+    "cores": 1,
+    "threads": 1,
+    "address": 64,
+    "model": "Intel Atom CPU N455 @ 1.66GHz",
+    "serialNumber": null,
+    "manufacturer": "Intel Corp.",
+    "speed": 1.667,
+    "actions": [
+    {
+      "type": "BenchmarkProcessorSysbench",
+      "rate": 164.0803,
+      "elapsed": 164
+    },
+    {
+      "type": "BenchmarkProcessor",
+      "rate": 6666.24,
+      "elapsed": 0
+    }
+    ]
+  },
+  {
+    "type": "GraphicCard",
+    "model": "Atom Processor D4xx/D5xx/N4xx/N5xx Integrated Graphics Controller",
+    "serialNumber": null,
+    "memory": 256.0,
+    "manufacturer": "Intel Corporation",
+    "actions": []
+  },
+  {
+    "type": "SoundCard",
+    "model": "NM10/ICH7 Family High Definition Audio Controller",
+    "serialNumber": null,
+    "manufacturer": "Intel Corporation",
+    "actions": []
+  },
+  {
+    "type": "SoundCard",
+    "model": "USB 2.0 UVC VGA WebCam",
+    "serialNumber": "0x0001",
+    "manufacturer": "Azurewave",
+    "actions": []
+  },
+  {
+    "type": "RamModule",
+    "format": "DIMM",
+    "model": null,
+    "size": 1024,
+    "interface": "DDR3",
+    "serialNumber": null,
+    "manufacturer": null,
+    "speed": 667.0,
+    "actions": []
+  },
+  {
+    "size": 1024.0,
+    "actions": [],
+    "format": "SODIMM",
+    "model": "48594D503131325336344350362D53362020",
+    "interface": "DDR3",
+    "type": "RamModule",
+    "manufacturer": "Hynix Semiconductor",
+    "serialNumber": "4F43487B",
+    "speed": 667.0
+  },
+  {
+    "type": "HardDrive",
+    "model": "HTS54322",
+    "size": 238475,
+    "interface": "ATA",
+    "serialNumber": "E2024242CV86HJ",
+    "manufacturer": "Hitachi",
+    "actions": [
+    {
+      "type": "BenchmarkDataStorage",
+      "elapsed": 16,
+      "writeSpeed": 21.8,
+      "readSpeed": 66.2
+    },
+    {
+      "type": "TestDataStorage",
+      "length": "Extended",
+      "elapsed": 2,
+      "severity": "Error",
+      "status": "Unspecified Error. Self-test not started."
+    },
+    {
+      "type": "EraseBasic",
+      "steps": [
+      {
+        "type": "StepRandom",
+        "startTime": "2018-07-03T09:15:22.257059+00:00",
+        "severity": "Info",
+        "endTime": "2018-07-03T10:32:11.843190+00:00"
+      }
+      ],
+      "startTime": "2018-07-03T09:15:22.256074+00:00",
+      "severity": "Info",
+      "endTime": "2018-07-03T10:32:11.848455+00:00"
+    }
+    ]
+  },
+  {
+    "size": 160041.88569599998,
+    "variant": "1A01",
+    "actions": [
+      {
+        "type": "EraseBasic",
+        "steps": [
+          {
+            "type": "StepRandom",
+            "endTime": "2019-10-23T08:35:31.400587+00:00",
+            "severity": "Info",
+            "startTime": "2019-10-23T07:49:54.410830+00:00"
+          }
+        ],
+        "endTime": "2019-10-23T08:35:31.400988+00:00",
+        "severity": "Error",
+        "startTime": "2019-10-23T07:49:54.410193+00:00"
+      },
+      {
+        "elapsed": 22,
+        "writeSpeed": 17.3,
+        "readSpeed": 41.6,
+        "type": "BenchmarkDataStorage"
+      },
+      {
+        "status": "Completed without error",
+        "reallocatedSectorCount": 0,
+        "currentPendingSectorCount": 0,
+        "assessment": true,
+        "severity": "Info",
+        "offlineUncorrectable": 0,
+        "lifetime": 4692,
+        "type": "TestDataStorage",
+        "length": "Short",
+        "elapsed": 118,
+        "reportedUncorrectableErrors": 1513,
+        "powerCycleCount": 5293
+      }
+    ],
+    "model": "WDC WD1600BEVT-2",
+    "interface": "ATA",
+    "type": "DataStorage",
+    "manufacturer": "Western Digital",
+    "serialNumber": "WD-WX11A80W7430"
+  },
+  {
+    "actions": [
+      {
+        "writeSpeed": 17.1,
+        "type": "BenchmarkDataStorage",
+        "elapsed": 22,
+        "readSpeed": 41.1
+      },
+      {
+        "type": "EraseSectors",
+        "startTime": "2019-08-19T16:48:19.689794+00:00",
+        "steps": [
+          {
+            "startTime": "2019-08-19T16:48:19.690458+00:00",
+            "type": "StepRandom",
+            "severity": "Info",
+            "endTime": "2019-08-19T17:34:22.930562+00:00"
+          },
+          {
+            "startTime": "2019-08-19T17:34:22.690458+00:00",
+            "type": "StepZero",
+            "severity": "Info",
+            "endTime": "2019-08-19T18:34:22.930562+00:00"
+          }
+        ],
+        "severity": "Info",
+        "endTime": "2019-08-19T18:34:22.930959+00:00"
+      },
+      {
+        "currentPendingSectorCount": 0,
+        "lifetime": 4673,
+        "elapsed": 115,
+        "reallocatedSectorCount": 0,
+        "powerCycleCount": 5231,
+        "status": "Completed without error",
+        "assessment": true,
+        "type": "TestDataStorage",
+        "severity": "Info",
+        "length": "Short",
+        "offlineUncorrectable": 0
+      }
+    ],
+    "model": "WDC WD1600BEVT-2",
+    "manufacturer": "Western Digital",
+    "size": 160042.0,
+    "interface": "ATA",
+    "serialNumber": "WD-WX11A80W7430",
+    "type": "SolidStateDrive",
+    "variant": "1A01"
+  },
+  {
+    "type": "Motherboard",
+    "serial": 1,
+    "firewire": 0,
+    "model": "1001PXD",
+    "slots": 2,
+    "pcmcia": 0,
+    "serialNumber": "Eee0123456789",
+    "usb": 5,
+    "manufacturer": "ASUSTeK Computer INC.",
+    "actions": [
+    {
+      "type": "TestBios",
+      "accessRange": "C"
+    }
+    ]
+  }
+  ],
+  "elapsed": 4875,
+  "uuid": "3fd12a01-c04e-4fd8-9e64-2660c459e725",
+  "version": "11.0b11",
+  "type": "Snapshot",
+  "software": "Workbench",
+  "device": {
+    "type": "Laptop",
+    "model": "1001PXD",
+    "serialNumber": "B8OAAS048287",
+    "manufacturer": "ASUSTeK Computer INC.",
+    "chassis": "Netbook",
+    "actions": [
+    {
+      "type": "BenchmarkRamSysbench",
+      "rate": 15.7188,
+      "elapsed": 16
+    },
+    {
+      "type": "StressTest",
+      "severity": "Info",
+      "elapsed": 60
+    }
+    ]
+  }
+}

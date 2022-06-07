@@ -410,6 +410,7 @@ def test_export_computer_monitor(user: UserClient):
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)
+
     # Open fixture csv and transform to list
     with Path(__file__).parent.joinpath('files').joinpath(
         'computer-monitor.csv'
@@ -501,6 +502,7 @@ def test_report_devices_stock_control(user: UserClient, user2: UserClient):
         accept='text/csv',
         query=[('filter', {'type': ['Computer']})],
     )
+
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)

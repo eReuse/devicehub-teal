@@ -130,6 +130,7 @@ def test_physical_properties():
         'model': 'foo',
         'receiver_id': None,
         'serial_number': 'foo-bar',
+        'uuid': None,
         'transfer_state': TransferState.Initial
     }
 
@@ -480,7 +481,7 @@ def test_get_device_permissions(app: Devicehub, user: UserClient, user2: UserCli
     s, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
     pc, res = user.get(res=d.Device, item=s['device']['devicehubID'])
     assert res.status_code == 200
-    assert len(pc['actions']) == 9
+    assert len(pc['actions']) == 7
 
     html, _ = client.get(res=d.Device, item=s['device']['devicehubID'], accept=ANY)
     assert 'intel atom cpu n270 @ 1.60ghz' in html

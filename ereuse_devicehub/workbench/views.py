@@ -10,12 +10,12 @@ from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import SessionType
 from ereuse_devicehub.resources.user.models import Session
-from ereuse_devicehub.views import GenericMixView
+from ereuse_devicehub.views import GenericMixin
 
 workbench = Blueprint('workbench', __name__, url_prefix='/workbench')
 
 
-class SettingsView(GenericMixView):
+class SettingsView(GenericMixin):
     decorators = [login_required]
     template_name = 'workbench/settings.html'
     page_title = "Workbench Settings"

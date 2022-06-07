@@ -1,0 +1,88 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>Inventory</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item active">Snapshots</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+
+    <div class="col-xl-12">
+
+      <div class="card">
+        <div class="card-body pt-3" style="min-height: 650px;">
+          <!-- Bordered Tabs -->
+          <div class="tab-content pt-5">
+            <div id="devices-list" class="tab-pane fade devices-list active show">
+              <div class="tab-content pt-2">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">SID</th>
+                      <th scope="col">Snapshot id</th>
+                      <th scope="col">Version</th>
+                      <th scope="col">DHID</th>
+                      <th scope="col">Status</th>
+                      <th scope="col" data-type="date" data-format="DD-MM-YYYY">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for snap in snapshots_log %}
+                    <tr>
+                      <td>
+                        {% if snap.sid %}
+                        <a href="{{ url_for('inventory.snapshot_detail', snapshot_uuid=snap.snapshot_uuid) }}">
+                          {{ snap.sid }}
+                        </a>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <a href="{{ url_for('inventory.snapshot_detail', snapshot_uuid=snap.snapshot_uuid) }}">
+                          {{ snap.snapshot_uuid }}
+                        </a>
+                      </td>
+                      <td>
+                          {{ snap.version }}
+                      </td>
+                      <td>
+                        {% if snap.device %}
+                        <a href="{{ url_for('inventory.device_details', id=snap.device) }}">
+                          {{ snap.device }}
+                        </a>
+                        {% endif %}
+                      </td>
+                      <td>
+                          {{ snap.status }}
+                      </td>
+                      <td>{{ snap.created.strftime('%H:%M %d-%m-%Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+
+                </div>
+              </div>
+
+            </div><!-- End Bordered Tabs -->
+          </div>
+        </div>
+      </div>
+
+      <div id="NotificationsContainer" style="position: absolute; bottom: 0; right: 0; margin: 10px; margin-top: 70px; width: calc(100% - 310px);"></div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Custom Code -->
+<script>
+  const table = new simpleDatatables.DataTable("table")
+</script>
+{% endblock main %}

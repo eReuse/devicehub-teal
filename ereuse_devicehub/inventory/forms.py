@@ -4,8 +4,10 @@ import json
 from json.decoder import JSONDecodeError
 
 from boltons.urlutils import URL
+from flask import current_app as app
 from flask import g, request
 from flask_wtf import FlaskForm
+from marshmallow import ValidationError
 from sqlalchemy import or_
 from sqlalchemy.util import OrderedSet
 from wtforms import (
@@ -26,14 +28,20 @@ from wtforms import (
 from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import RateComputer, Snapshot, Trade
-from ereuse_devicehub.resources.action.rate.v1_0 import CannotRate
+from ereuse_devicehub.inventory.models import DeliveryNote, ReceiverNote, Transfer
+from ereuse_devicehub.parser.models import SnapshotsLog
+from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
+from ereuse_devicehub.parser.schemas import Snapshot_lite
+from ereuse_devicehub.resources.action.models import Snapshot, Trade
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
-from ereuse_devicehub.resources.action.views.snapshot import move_json, save_json
+from ereuse_devicehub.resources.action.views.snapshot import (
+    SnapshotMixin,
+    move_json,
+    save_json,
+)
 from ereuse_devicehub.resources.device.models import (
     SAI,
     Cellphone,
-    Computer,
     ComputerMonitor,
     Device,
     Keyboard,
@@ -44,12 +52,11 @@ from ereuse_devicehub.resources.device.models import (
 )
 from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.documents.models import DataWipeDocument
-from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
+from ereuse_devicehub.resources.enums import Severity
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
-from ereuse_devicehub.resources.user.exceptions import InsufficientPermission
 from ereuse_devicehub.resources.user.models import User
 
 DEVICES = {
@@ -76,7 +83,7 @@ DEVICES = {
     ],
 }
 
-COMPUTERS = ['Desktop', 'Laptop', 'Server']
+COMPUTERS = ['Desktop', 'Laptop', 'Server', 'Computer']
 
 MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
 MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
@@ -197,7 +204,7 @@ class LotForm(FlaskForm):
         return self.instance
 
 
-class UploadSnapshotForm(FlaskForm):
+class UploadSnapshotForm(SnapshotMixin, FlaskForm):
     snapshot = MultipleFileField('Select a Snapshot File', [validators.DataRequired()])
 
     def validate(self, extra_validators=None):
@@ -237,20 +244,58 @@ class UploadSnapshotForm(FlaskForm):
 
         return True
 
+    def is_wb_lite_snapshot(self, version: str) -> bool:
+        is_lite = False
+        if version in app.config['SCHEMA_WORKBENCH']:
+            is_lite = True
+
+        return is_lite
+
     def save(self, commit=True):
         if any([x == 'Error' for x in self.result.values()]):
             return
-        # result = []
-        self.sync = Sync()
         schema = SnapshotSchema()
-        # self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
-        # TODO @cayop get correct var config
-        self.tmp_snapshots = '/tmp/'
+        schema_lite = Snapshot_lite()
+        devices = []
+        self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         for filename, snapshot_json in self.snapshots:
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
             snapshot_json.pop('debug', None)
-            snapshot_json = schema.load(snapshot_json)
+            version = snapshot_json.get('schema_api')
+            uuid = snapshot_json.get('uuid')
+            sid = snapshot_json.get('sid')
+            software_version = snapshot_json.get('version')
+            if self.is_wb_lite_snapshot(version):
+                self.snapshot_json = schema_lite.load(snapshot_json)
+                snapshot_json = ParseSnapshotLsHw(self.snapshot_json).snapshot_json
+
+            try:
+                snapshot_json = schema.load(snapshot_json)
+            except ValidationError as err:
+                txt = "{}".format(err)
+                error = SnapshotsLog(
+                    description=txt,
+                    snapshot_uuid=uuid,
+                    severity=Severity.Error,
+                    sid=sid,
+                    version=software_version,
+                )
+                error.save(commit=True)
+                self.result[filename] = 'Error'
+                continue
+
             response = self.build(snapshot_json)
+            db.session.add(response)
+            devices.append(response.device)
+            snap_log = SnapshotsLog(
+                description='Ok',
+                snapshot_uuid=uuid,
+                severity=Severity.Info,
+                sid=sid,
+                version=software_version,
+                snapshot=response,
+            )
+            snap_log.save()
 
             if hasattr(response, 'type'):
                 self.result[filename] = 'Ok'
@@ -261,69 +306,7 @@ class UploadSnapshotForm(FlaskForm):
 
         if commit:
             db.session.commit()
-        return response
-
-    def build(self, snapshot_json):  # noqa: C901
-        # this is a copy adaptated from ereuse_devicehub.resources.action.views.snapshot
-        device = snapshot_json.pop('device')  # type: Computer
-        components = None
-        if snapshot_json['software'] == (
-            SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid
-        ):
-            components = snapshot_json.pop('components', None)
-            if isinstance(device, Computer) and device.hid:
-                device.add_mac_to_hid(components_snap=components)
-        snapshot = Snapshot(**snapshot_json)
-
-        # Remove new actions from devices so they don't interfere with sync
-        actions_device = set(e for e in device.actions_one)
-        device.actions_one.clear()
-        if components:
-            actions_components = tuple(
-                set(e for e in c.actions_one) for c in components
-            )
-            for component in components:
-                component.actions_one.clear()
-
-        assert not device.actions_one
-        assert all(not c.actions_one for c in components) if components else True
-        db_device, remove_actions = self.sync.run(device, components)
-
-        del device  # Do not use device anymore
-        snapshot.device = db_device
-        snapshot.actions |= remove_actions | actions_device  # Set actions to snapshot
-        # commit will change the order of the components by what
-        # the DB wants. Let's get a copy of the list so we preserve order
-        ordered_components = OrderedSet(x for x in snapshot.components)
-
-        # Add the new actions to the db-existing devices and components
-        db_device.actions_one |= actions_device
-        if components:
-            for component, actions in zip(ordered_components, actions_components):
-                component.actions_one |= actions
-                snapshot.actions |= actions
-
-        if snapshot.software == SnapshotSoftware.Workbench:
-            # Check ownership of (non-component) device to from current.user
-            if db_device.owner_id != g.user.id:
-                raise InsufficientPermission()
-            # Compute ratings
-            try:
-                rate_computer, price = RateComputer.compute(db_device)
-            except CannotRate:
-                pass
-            else:
-                snapshot.actions.add(rate_computer)
-                if price:
-                    snapshot.actions.add(price)
-        elif snapshot.software == SnapshotSoftware.WorkbenchAndroid:
-            pass  # TODO try except to compute RateMobile
-        # Check if HID is null and add Severity:Warning to Snapshot
-        if snapshot.device.hid is None:
-            snapshot.severity = Severity.Warning
-
-        db.session.add(snapshot)
-        return snapshot
+        return self.result, devices
 
 
 class NewDeviceForm(FlaskForm):
@@ -559,7 +542,7 @@ class TagDeviceForm(FlaskForm):
         db.session.commit()
 
 
-class ActionFormMix(FlaskForm):
+class ActionFormMixin(FlaskForm):
     name = StringField(
         'Name',
         [validators.length(max=50)],
@@ -640,7 +623,7 @@ class ActionFormMix(FlaskForm):
             return self.type.data
 
 
-class NewActionForm(ActionFormMix):
+class NewActionForm(ActionFormMixin):
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
 
@@ -653,7 +636,7 @@ class NewActionForm(ActionFormMix):
         return True
 
 
-class AllocateForm(ActionFormMix):
+class AllocateForm(ActionFormMixin):
     date = HiddenField('')
     start_time = DateField('Start time')
     end_time = DateField('End time', [validators.Optional()])
@@ -854,7 +837,7 @@ class DataWipeDocumentForm(Form):
         return self._obj
 
 
-class DataWipeForm(ActionFormMix):
+class DataWipeForm(ActionFormMixin):
     document = FormField(DataWipeDocumentForm)
 
     def save(self):
@@ -881,7 +864,7 @@ class DataWipeForm(ActionFormMix):
         return self.instance
 
 
-class TradeForm(ActionFormMix):
+class TradeForm(ActionFormMixin):
     user_from = StringField(
         'Supplier',
         [validators.Optional()],
@@ -1114,6 +1097,211 @@ class TradeDocumentForm(FlaskForm):
         self._obj.file_hash = file_hash
         db.session.add(self._obj)
         self._lot.trade.documents.add(self._obj)
+        if commit:
+            db.session.commit()
+
+        return self._obj
+
+
+class TransferForm(FlaskForm):
+    code = StringField(
+        'Code',
+        [validators.DataRequired()],
+        render_kw={'class': "form-control"},
+        description="You need put a code for transfer the external user",
+    )
+    description = TextAreaField(
+        'Description',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+    )
+    type = HiddenField()
+
+    def __init__(self, *args, **kwargs):
+        self._type = kwargs.get('type')
+        lot_id = kwargs.pop('lot_id', None)
+        self._tmp_lot = Lot.query.filter(Lot.id == lot_id).one()
+        super().__init__(*args, **kwargs)
+        self._obj = None
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+        if not self._tmp_lot:
+            return False
+
+        if self._type and self.type.data not in ['incoming', 'outgoing']:
+            return False
+
+        if self._obj and self.date.data:
+            if self.date.data > datetime.datetime.now().date():
+                return False
+
+        return is_valid
+
+    def save(self, commit=True):
+        self.set_obj()
+        db.session.add(self._obj)
+
+        if commit:
+            db.session.commit()
+
+        return self._obj
+
+    def set_obj(self):
+        self.newlot = Lot(name=self._tmp_lot.name)
+        self.newlot.devices = self._tmp_lot.devices
+        db.session.add(self.newlot)
+
+        self._obj = Transfer(lot=self.newlot)
+
+        self.populate_obj(self._obj)
+
+        if self.type.data == 'incoming':
+            self._obj.user_to = g.user
+        elif self.type.data == 'outgoing':
+            self._obj.user_from = g.user
+
+
+class EditTransferForm(TransferForm):
+    date = DateField(
+        'Date',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="""Date when the transfer is closed""",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        del self.type
+
+        self._obj = self._tmp_lot.transfer
+
+        if not self.data['csrf_token']:
+            self.code.data = self._obj.code
+            self.description.data = self._obj.description
+            self.date.data = self._obj.date
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+        date = self.date.data
+        if date and date > datetime.datetime.now().date():
+            self.date.errors = ["You have to choose a date before today."]
+            is_valid = False
+        return is_valid
+
+    def set_obj(self, commit=True):
+        self.populate_obj(self._obj)
+
+
+class NotesForm(FlaskForm):
+    number = StringField(
+        'Number',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="You can put a number for tracer of receiver or delivery",
+    )
+    date = DateField(
+        'Date',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="""Date when the transfer was do it""",
+    )
+    units = IntegerField(
+        'Units',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="Number of units",
+    )
+    weight = IntegerField(
+        'Weight',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="Weight expressed in Kg",
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.type = kwargs.pop('type', None)
+        lot_id = kwargs.pop('lot_id', None)
+        self._tmp_lot = Lot.query.filter(Lot.id == lot_id).one()
+        self._obj = None
+        super().__init__(*args, **kwargs)
+
+        if self._tmp_lot.transfer:
+            if self.type == 'Delivery':
+                self._obj = self._tmp_lot.transfer.delivery_note
+                if not self._obj:
+                    self._obj = DeliveryNote(transfer_id=self._tmp_lot.transfer.id)
+
+                self.date.description = """Date when the delivery was do it."""
+                self.number.description = (
+                    """You can put a number for tracer of delivery note."""
+                )
+
+            if self.type == 'Receiver':
+                self._obj = self._tmp_lot.transfer.receiver_note
+                if not self._obj:
+                    self._obj = ReceiverNote(transfer_id=self._tmp_lot.transfer.id)
+
+                self.date.description = """Date when the receipt was do it."""
+                self.number.description = (
+                    """You can put a number for tracer of receiber note."""
+                )
+
+            if self.is_editable():
+                self.number.render_kw.pop('disabled', None)
+                self.date.render_kw.pop('disabled', None)
+                self.units.render_kw.pop('disabled', None)
+                self.weight.render_kw.pop('disabled', None)
+            else:
+                disabled = {'disabled': "disabled"}
+                self.number.render_kw.update(disabled)
+                self.date.render_kw.update(disabled)
+                self.units.render_kw.update(disabled)
+                self.weight.render_kw.update(disabled)
+
+        if self._obj and not self.data['csrf_token']:
+            self.number.data = self._obj.number
+            self.date.data = self._obj.date
+            self.units.data = self._obj.units
+            self.weight.data = self._obj.weight
+
+    def is_editable(self):
+        if not self._tmp_lot.transfer:
+            return False
+
+        if self._tmp_lot.transfer.closed:
+            return False
+
+        if self._tmp_lot.transfer.code:
+            return True
+
+        if self._tmp_lot.transfer.user_from == g.user and self.type == 'Receiver':
+            return False
+
+        if self._tmp_lot.transfer.user_to == g.user and self.type == 'Delivery':
+            return False
+
+        return True
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+        date = self.date.data
+        if date and date > datetime.datetime.now().date():
+            self.date.errors = ["You have to choose a date before today."]
+            is_valid = False
+
+        if not self.is_editable():
+            is_valid = False
+
+        return is_valid
+
+    def save(self, commit=True):
+        if self._tmp_lot.transfer.closed:
+            return self._obj
+
+        self.populate_obj(self._obj)
+        db.session.add(self._obj)
+
         if commit:
             db.session.commit()
 

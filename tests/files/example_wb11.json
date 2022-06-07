@@ -1,0 +1,199 @@
+{
+  "closed": true,
+  "components": [
+    {
+      "interface": "ATA",
+      "size": "160042.0 MB",
+      "serialNumber": "WD-WX11A80W7430",
+      "type": "HardDrive",
+      "variant": "1A01",
+      "model": "WDC WD1600BEVT-2",
+      "manufacturer": "Western Digital",
+      "actions": [
+        {
+          "severity": "Info",
+          "steps": [
+            {
+              "severity": "Info",
+              "endTime": "2019-09-10T11:37:07.459534+00:00",
+              "startTime": "2019-09-10T10:51:20.208391+00:00",
+              "type": "StepRandom"
+            }
+          ],
+          "startTime": "2019-09-10T10:51:20.207733+00:00",
+          "endTime": "2019-09-10T11:37:07.459940+00:00",
+          "type": "EraseBasic"
+        },
+        {
+          "type": "BenchmarkDataStorage",
+          "writeSpeed": "17.1 MB / second",
+          "readSpeed": "67.8 MB / second",
+          "elapsed": 20
+        },
+        {
+          "offlineUncorrectable": 0,
+          "lifetime": 4675,
+          "assessment": true,
+          "reallocatedSectorCount": 0,
+          "elapsed": 118,
+          "currentPendingSectorCount": 0,
+          "type": "TestDataStorage",
+          "status": "Completed without error",
+          "severity": "Info",
+          "powerCycleCount": 5238,
+          "length": "Short"
+        }
+      ]
+    },
+    {
+      "interface": "DDR2",
+      "serialNumber": "4F43487B",
+      "speed": "667.0 megahertz",
+      "type": "RamModule",
+      "size": "1024.0 mebibyte",
+      "model": "48594D503131325336344350362D53362020",
+      "format": "SODIMM",
+      "manufacturer": "Hynix Semiconductor",
+      "actions": []
+    },
+    {
+      "address": 64,
+      "serialNumber": null,
+      "actions": [
+        {
+          "type": "BenchmarkProcessor",
+          "rate": 6650.38,
+          "elapsed": 0
+        },
+        {
+          "type": "BenchmarkProcessorSysbench",
+          "rate": 164.4318,
+          "elapsed": 164
+        }
+      ],
+      "speed": "1.0 gigahertz",
+      "type": "Processor",
+      "brand": "Atom",
+      "generation": null,
+      "cores": 1,
+      "manufacturer": "Intel Corp.",
+      "model": "Intel Atom CPU N450 @ 1.66GHz",
+      "threads": 2
+    },
+    {
+      "technology": "LCD",
+      "refreshRate": "60 hertz",
+      "serialNumber": null,
+      "size": "10.0 inch",
+      "resolutionWidth": 1024,
+      "type": "Display",
+      "productionDate": "2009-01-04T00:00:00",
+      "model": "AUO LCD Monitor",
+      "manufacturer": "AUO \"AUO\"",
+      "actions": [],
+      "resolutionHeight": 600
+    },
+    {
+      "wireless": false,
+      "serialNumber": "88:ae:1d:a6:f3:d0",
+      "speed": "100.0 megabit / second",
+      "type": "NetworkAdapter",
+      "variant": "c1",
+      "model": "AR8152 v1.1 Fast Ethernet",
+      "manufacturer": "Qualcomm Atheros",
+      "actions": []
+    },
+    {
+      "wireless": true,
+      "serialNumber": "00:26:c7:8e:cb:8c",
+      "speed": null,
+      "type": "NetworkAdapter",
+      "variant": "00",
+      "model": "Centrino Wireless-N 1000 Condor Peak",
+      "manufacturer": "Intel Corporation",
+      "actions": []
+    },
+    {
+      "technology": "LiIon",
+      "serialNumber": null,
+      "type": "Battery",
+      "size": "2200 hour * milliampere",
+      "model": "AL10A31",
+      "manufacturer": "SANYO",
+      "actions": [
+        {
+          "severity": "Info",
+          "voltage": "12613.0 millivolt",
+          "size": "662.0 hour * milliampere",
+          "cycleCount": null,
+          "type": "MeasureBattery"
+        }
+      ]
+    },
+    {
+      "memory": null,
+      "serialNumber": null,
+      "type": "GraphicCard",
+      "model": "Atom Processor D4xx/D5xx/N4xx/N5xx Integrated Graphics Controller",
+      "manufacturer": "Intel Corporation",
+      "actions": []
+    },
+    {
+      "type": "SoundCard",
+      "model": "NM10/ICH7 Family High Definition Audio Controller",
+      "manufacturer": "Intel Corporation",
+      "serialNumber": null,
+      "actions": []
+    },
+    {
+      "type": "SoundCard",
+      "model": "1.3M WebCam",
+      "manufacturer": "XPA970VW0",
+      "serialNumber": null,
+      "actions": []
+    },
+    {
+      "manufacturer": "Acer",
+      "usb": 5,
+      "type": "Motherboard",
+      "model": "AOHAPPY",
+      "ramMaxSize": 4,
+      "ramSlots": 2,
+      "serialNumber": "Base Board Serial Number",
+      "pcmcia": 0,
+      "slots": 1,
+      "firewire": 0,
+      "serial": 1,
+      "version": "V3.05(DDR2)",
+      "biosDate": "2010-08-12T00:00:00",
+      "actions": []
+    }
+  ],
+  "uuid": "9c169711-3d72-4e6c-aabf-de9b3af56b54",
+  "device": {
+    "serialNumber": "LUSEA0D010038879A01601",
+    "type": "Laptop",
+    "sku": null,
+    "model": "AOHAPPY",
+    "chassis": "Netbook",
+    "manufacturer": "Acer",
+    "actions": [
+      {
+        "type": "BenchmarkRamSysbench",
+        "rate": 19.2586,
+        "elapsed": 19
+      },
+      {
+        "severity": "Info",
+        "elapsed": 60,
+        "type": "StressTest"
+      }
+    ],
+    "version": "V3.05"
+  },
+  "type": "Snapshot",
+  "endTime": "2019-09-10T10:44:41.324414+00:00",
+  "elapsed": 3146,
+  "software": "Workbench",
+  "version": "11.0b9"
+}
