@@ -123,6 +123,23 @@ To see a full list of migrations use
 $ alembic history
 ```
 
+# Upgrade an deployment
+
+For upgrade an instance of devicehub you need to do:
+
+```bash
+$ cd $PATH_TO_DEVIHUBTEAL
+$ source venv/bin/activate
+$ git pull
+$ alembic -x inventory=dbtest upgrade head
+```
+
+If all migrations pass successfully, then it is necessary restart the devicehub.
+Normaly you can use a little script for restart.
+```
+# sh gunicorn_api.sh
+```
+
 ## Generating the docs
 
 
