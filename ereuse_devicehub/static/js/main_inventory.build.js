@@ -251,9 +251,9 @@ function select_shift() {
     }
 
     if (e.shiftKey) {
-      var start = chkboxes.index(this);
-      var end = chkboxes.index(lastChecked);
-      chkboxes.slice(Math.min(start, end), Math.max(start, end) + 1).prop('checked', lastChecked.checked);
+      const start = chkboxes.index(this);
+      const end = chkboxes.index(lastChecked);
+      chkboxes.slice(Math.min(start, end), Math.max(start, end) + 1).prop("checked", lastChecked.checked);
     }
 
     lastChecked = this;
