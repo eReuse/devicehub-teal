@@ -231,8 +231,8 @@ function addTag() {
 }
 
 function select_shift() {
-    const chkboxes = $('.deviceSelect');
-    var lastChecked = null;
+    const chkboxes = $(".deviceSelect");
+    let lastChecked = null;
     chkboxes.click(function(e) {
         if (!lastChecked) {
             lastChecked = this;
