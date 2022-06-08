@@ -35,7 +35,8 @@
                           <div style="padding-top: 55px">
                               <b class="tag" data-serial-number="{{ dev.serial_number or '' }}"
                                   data-manufacturer="{{ dev.manufacturer or '' }}"
-                                  data-model="{{ dev.model or '' }}">{{ dev.devicehub_id }}</b>
+                                  data-model="{{ dev.model or '' }}"
+                                  data-sid="{{ dev.sid or '' }}">{{ dev.devicehub_id }}</b>
                           </div>
                         </div>
                       </div>
@@ -102,6 +103,10 @@
                     <div class="form-switch">
                       <input class="form-check-input" name="dhid" type="checkbox" id="dhidCheck" checked="">
                       <label class="form-check-label" for="dhidCheck">Dhid</label>
+                    </div>
+                    <div class="form-switch">
+                      <input class="form-check-input" name="sid" type="checkbox" id="dhidCheck">
+                      <label class="form-check-label" for="dhidCheck">Sid</label>
                     </div>
                     <div class="form-switch">
                       <input class="form-check-input" name="serial_number" type="checkbox" id="serialNumberCheck">

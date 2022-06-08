@@ -402,6 +402,12 @@ class Device(Thing):
         return history
 
     @property
+    def sid(self):
+        actions = [x for x in self.actions if x.t == 'Snapshot' and x.sid]
+        if actions:
+            return actions[0]
+
+    @property
     def tradings(self):
         return {str(x.id): self.trading(x.lot) for x in self.actions if x.t == 'Trade'}
 
