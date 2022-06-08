@@ -39,6 +39,11 @@
                                   data-sid="{{ dev.sid or '' }}">{{ dev.devicehub_id }}</b>
                           </div>
                         </div>
+                        <div class="col sid" style="display: none">
+                          <div>
+                              <b>{{ dev.sid or '' }}</b>
+                          </div>
+                        </div>
                       </div>
                       <div class="row serial_number" style="display: none">
                         <div class="col">
@@ -105,8 +110,8 @@
                       <label class="form-check-label" for="dhidCheck">Dhid</label>
                     </div>
                     <div class="form-switch">
-                      <input class="form-check-input" name="sid" type="checkbox" id="dhidCheck">
-                      <label class="form-check-label" for="dhidCheck">Sid</label>
+                      <input class="form-check-input" name="sid" type="checkbox" id="sidCheck">
+                      <label class="form-check-label" for="sidCheck">Sid</label>
                     </div>
                     <div class="form-switch">
                       <input class="form-check-input" name="serial_number" type="checkbox" id="serialNumberCheck">
