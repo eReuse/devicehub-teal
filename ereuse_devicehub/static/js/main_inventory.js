@@ -232,7 +232,7 @@ function addTag() {
 
 function select_shift() {
     const chkboxes = $('.deviceSelect');
-    lastChecked = null;
+    var lastChecked = null;
     chkboxes.click(function(e) {
         if (!lastChecked) {
             lastChecked = this;
