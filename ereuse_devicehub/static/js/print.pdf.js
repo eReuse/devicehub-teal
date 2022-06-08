@@ -5,6 +5,9 @@ $(document).ready(function() {
     change_size();
     load_settings();
     change_check();
+    $("#imgInp").change(function(){
+        readURL(this);
+    });
 })
 
 function qr_draw(url, id) {
@@ -18,11 +21,36 @@ function qr_draw(url, id) {
     });
 }
 
+function previewLogo(logo) {
+    const img = "<img style='max-width: 150px' src='"+logo+"' />";
+    $("#logo-preview").html(img);
+    $(".label-logo-dev").html(img);
+}
+
+function readURL(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            previewLogo(e.target.result);
+            $("#logoCheck").prop('disabled', '');
+        }
+
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+
 function save_settings() {
+    var logo = $('#logo-preview img').attr('src');
     var height = $("#height-tag").val();
     var width = $("#width-tag").val();
     var sizePreset = $("#printerType").val();
-    var data = {"height": height, "width": width, "sizePreset": sizePreset};
+    var data = {"height": height, "width": width, "sizePreset": sizePreset, 'logoImg': ''};
+    if (logo) {
+        data['logoImg'] = logo;
+    };
+    data['logo'] = $("#logoCheck").prop('checked');
     data['dhid'] = $("#dhidCheck").prop('checked');
     data['sid'] = $("#sidCheck").prop('checked');
     data['qr'] = $("#qrCheck").prop('checked');
@@ -44,6 +72,13 @@ function load_settings() {
         $("#serialNumberCheck").prop('checked', data.serial_number);
         $("#manufacturerCheck").prop('checked', data.manufacturer);
         $("#modelCheck").prop('checked', data.model);
+        if (data.logo) {
+            $("#logoCheck").prop('checked', data.sid);
+            previewLogo(data.logoImg);
+        } else {
+            $("#logoCheck").prop('checked', false);
+            $("#logoCheck").prop('disabled', 'disabled');
+        }
     };
 }
 
@@ -54,8 +89,10 @@ function reset_settings() {
     $("#dhidCheck").prop('checked', true);
     $("#sidCheck").prop('checked', true);
     $("#serialNumberCheck").prop('checked', false);
+    $("#logoCheck").prop('checked', false);
     $("#manufacturerCheck").prop('checked', false);
     $("#modelCheck").prop('checked', false);
+    $('#logo-preview').html('');
     change_size();
     change_check();
 }
@@ -72,36 +109,54 @@ function change_size() {
 }
 
 function change_check() {
+    if ($('#logo-preview img').attr('src')) {
+        $("#logoCheck").prop('disabled', '');
+    } else {
+        $("#logoCheck").prop('checked', false);
+        $("#logoCheck").prop('disabled', 'disabled');
+    };
+
+    if ($("#logoCheck").prop('checked') && $('#logo-preview img').attr('src')) {
+        $(".label-logo").show();
+    } else {
+        $(".label-logo").hide();
+    };
+
     if ($("#dhidCheck").prop('checked')) {
         $(".dhid").show();
     } else {
         $(".dhid").hide();
-    }
+    };
+
     if ($("#sidCheck").prop('checked')) {
         $(".sid").show();
     } else {
         $(".sid").hide();
-    }
+    };
+
     if ($("#serialNumberCheck").prop('checked')) {
         $(".serial_number").show();
     } else {
         $(".serial_number").hide();
-    }
+    };
+
     if ($("#manufacturerCheck").prop('checked')) {
         $(".manufacturer").show();
     } else {
         $(".manufacturer").hide();
-    }
+    };
+
     if ($("#modelCheck").prop('checked')) {
         $(".model").show();
     } else {
         $(".model").hide();
-    }
+    };
+
     if ($("#qrCheck").prop('checked')) {
         $(".qr").show();
     } else {
         $(".qr").hide();
-    }
+    };
 }
 
 function printpdf() {
