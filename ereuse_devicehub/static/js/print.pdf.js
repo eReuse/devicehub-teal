@@ -24,6 +24,7 @@ function save_settings() {
     var sizePreset = $("#printerType").val();
     var data = {"height": height, "width": width, "sizePreset": sizePreset};
     data['dhid'] = $("#dhidCheck").prop('checked');
+    data['sid'] = $("#sidCheck").prop('checked');
     data['qr'] = $("#qrCheck").prop('checked');
     data['serial_number'] = $("#serialNumberCheck").prop('checked');
     data['manufacturer'] = $("#manufacturerCheck").prop('checked');
@@ -39,6 +40,7 @@ function load_settings() {
         $("#printerType").val(data.sizePreset);
         $("#qrCheck").prop('checked', data.qr);
         $("#dhidCheck").prop('checked', data.dhid);
+        $("#sidCheck").prop('checked', data.sid);
         $("#serialNumberCheck").prop('checked', data.serial_number);
         $("#manufacturerCheck").prop('checked', data.manufacturer);
         $("#modelCheck").prop('checked', data.model);
@@ -50,6 +52,7 @@ function reset_settings() {
     $("#printerType").val('brotherSmall');
     $("#qrCheck").prop('checked', true);
     $("#dhidCheck").prop('checked', true);
+    $("#sidCheck").prop('checked', true);
     $("#serialNumberCheck").prop('checked', false);
     $("#manufacturerCheck").prop('checked', false);
     $("#modelCheck").prop('checked', false);
@@ -73,6 +76,11 @@ function change_check() {
         $(".dhid").show();
     } else {
         $(".dhid").hide();
+    }
+    if ($("#sidCheck").prop('checked')) {
+        $(".sid").show();
+    } else {
+        $(".sid").hide();
     }
     if ($("#serialNumberCheck").prop('checked')) {
         $(".serial_number").show();
@@ -109,6 +117,9 @@ function printpdf() {
     min_tag_side = (Math.min(height, width)/2) + border;
     var last_tag_code = '';
 
+    if ($("#sidCheck").prop('checked')) {
+        height += line;
+    };
     if ($("#serialNumberCheck").prop('checked')) {
         height += line;
     };
@@ -144,6 +155,12 @@ function printpdf() {
                pdf.text(tag, border, space);
                space += line;
            }
+        };
+        if ($("#sidCheck").prop('checked')) {
+            var sn = $(y).data('sid');
+            pdf.setFontSize(15);
+            pdf.text(sn, border, space);
+            space += line;
         };
         if ($("#serialNumberCheck").prop('checked')) {
             var sn = $(y).data('serial-number');
