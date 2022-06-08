@@ -405,7 +405,7 @@ class Device(Thing):
     def sid(self):
         actions = [x for x in self.actions if x.t == 'Snapshot' and x.sid]
         if actions:
-            return actions[0]
+            return actions[0].sid
 
     @property
     def tradings(self):
