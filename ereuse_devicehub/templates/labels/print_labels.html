@@ -27,6 +27,9 @@
                   {% for dev in devices %}
                   <div style="width:256px; min-height:148px; border: solid 1px; padding: 10px;">
                     <div>
+                      <div class="row label-logo" style="display: none">
+                        <div class="col label-logo-dev"></div>
+                      </div>
                       <div class="row">
                         <div class="col qr">
                           <div id="{{ dev.devicehub_id }}"></div>
@@ -73,6 +76,15 @@
                 <div class="col-1">
                 </div>
                 <div class="col label">
+                  <label class="col-form-label col-sm-2">Logo</label>
+
+                  <div class="col-sm-10">
+                    <div class="input-group mb-3" id="logo-preview">
+                    </div>
+                    <div class="input-group mb-3">
+                      <input class="form-control" type='file' id="imgInp" />
+                    </div>
+                  </div>
                   <label class="col-form-label col-sm-2">Size</label>
                   <div class="col-sm-10">
                     <div class="input-group mb-3">
@@ -101,6 +113,10 @@
                     </div>
                   </div>
                   <div class="col-sm-10">
+                    <div class="form-switch">
+                      <input class="form-check-input" name="logoCheck" type="checkbox" id="logoCheck">
+                      <label class="form-check-label" for="logoCheck">Logo</label>
+                    </div>
                     <div class="form-switch">
                       <input class="form-check-input" name="qr" type="checkbox" id="qrCheck" checked="">
                       <label class="form-check-label" for="qrCheck">QR</label>
