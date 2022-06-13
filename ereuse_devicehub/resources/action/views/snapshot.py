@@ -164,10 +164,10 @@ class SnapshotView(SnapshotMixin):
         self.resource_def = resource_def
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
-        self.get_uuid(snapshot_json.pop('debug', None))
         self.version = snapshot_json.get('version')
         self.uuid = snapshot_json.get('uuid')
         self.sid = None
+        self.get_uuid(snapshot_json.pop('debug', None))
 
         try:
             self.snapshot_json = resource_def.schema.load(snapshot_json)
