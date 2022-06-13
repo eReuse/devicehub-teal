@@ -4,10 +4,10 @@ import json
 import os
 import shutil
 from datetime import datetime
+from uuid import UUID
 
 from flask import current_app as app
 from flask import g
-from marshmallow import ValidationError
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
@@ -117,6 +117,36 @@ class SnapshotMixin:
 
         return snapshot
 
+    def get_uuid(self, debug):
+        if not debug:
+            self.errors(txt="There is not uuid")
+            return
+
+        hw_uuid = debug.get('lshw', {}).get('configuration', {}).get('uuid')
+
+        if not hw_uuid:
+            self.errors(txt="There is not uuid")
+            return
+
+        uuid = UUID(hw_uuid)
+        return UUID(bytes_le=uuid.bytes)
+
+    def errors(self, txt=None, severity=Severity.Error, snapshot=None, commit=False):
+        if not txt:
+            return
+
+        from ereuse_devicehub.parser.models import SnapshotsLog
+
+        error = SnapshotsLog(
+            description=txt,
+            snapshot_uuid=self.uuid,
+            severity=severity,
+            sid=self.sid,
+            version=self.version,
+            snapshot=snapshot,
+        )
+        error.save(commit=commit)
+
 
 class SnapshotView(SnapshotMixin):
     """Performs a Snapshot.
@@ -129,38 +159,27 @@ class SnapshotView(SnapshotMixin):
     # snapshot, and we want to wait to flush snapshot at the end
 
     def __init__(self, snapshot_json: dict, resource_def, schema):
-        from ereuse_devicehub.parser.models import SnapshotsLog
 
         self.schema = schema
         self.resource_def = resource_def
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
-        snapshot_json.pop('debug', None)
+        self.get_uuid(snapshot_json.pop('debug', None))
+        self.version = snapshot_json.get('version')
+        self.uuid = snapshot_json.get('uuid')
+        self.sid = None
+
         try:
             self.snapshot_json = resource_def.schema.load(snapshot_json)
             snapshot = self.build()
         except Exception as err:
             txt = "{}".format(err)
-            uuid = snapshot_json.get('uuid')
-            version = snapshot_json.get('version')
-            error = SnapshotsLog(
-                description=txt,
-                snapshot_uuid=uuid,
-                severity=Severity.Error,
-                version=str(version),
-            )
-            error.save(commit=True)
+            self.errors(txt=txt, commit=True)
             raise err
 
         db.session.add(snapshot)
-        snap_log = SnapshotsLog(
-            description='Ok',
-            snapshot_uuid=snapshot.uuid,
-            severity=Severity.Info,
-            version=str(snapshot.version),
-            snapshot=snapshot,
-        )
-        snap_log.save()
+        self.errors(txt="Ok", severity=Severity.Info, snapshot=snapshot, commit=True)
+
         db.session().final_flush()
         self.response = self.schema.jsonify(snapshot)  # transform it back
         self.response.status_code = 201
