@@ -118,7 +118,7 @@ class SnapshotMixin:
         return snapshot
 
     def get_uuid(self, debug):
-        if not debug:
+        if not debug or not isinstance(debug, dict):
             self.errors(txt="There is not uuid")
             return
 
@@ -167,7 +167,9 @@ class SnapshotView(SnapshotMixin):
         self.version = snapshot_json.get('version')
         self.uuid = snapshot_json.get('uuid')
         self.sid = None
-        self.get_uuid(snapshot_json.pop('debug', None))
+        system_uuid = self.get_uuid(snapshot_json.pop('debug', None))
+        if system_uuid:
+            snapshot_json['device']['uuid'] = system_uuid
 
         try:
             self.snapshot_json = resource_def.schema.load(snapshot_json)
