@@ -29,7 +29,6 @@ from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.models import DeliveryNote, ReceiverNote, Transfer
-from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
@@ -271,7 +270,8 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
             else:
                 self.version = snapshot_json.get('version')
                 system_uuid = self.get_uuid(debug)
-                snapshot_json['device']['uuid'] = system_uuid
+                if system_uuid:
+                    snapshot_json['device']['uuid'] = system_uuid
 
             try:
                 snapshot_json = schema.load(snapshot_json)
