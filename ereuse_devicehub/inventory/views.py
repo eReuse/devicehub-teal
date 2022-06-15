@@ -594,12 +594,18 @@ class SnapshotListView(GenericMixin):
         ).order_by(SnapshotsLog.created.desc())
         logs = {}
         for snap in snapshots_log:
+            try:
+                system_uuid = snap.snapshot.device.system_uuid or ''
+            except AttributeError:
+                system_uuid = ''
+
             if snap.snapshot_uuid not in logs:
                 logs[snap.snapshot_uuid] = {
                     'sid': snap.sid,
                     'snapshot_uuid': snap.snapshot_uuid,
                     'version': snap.version,
                     'device': snap.get_device(),
+                    'system_uuid': system_uuid,
                     'status': snap.get_status(),
                     'severity': snap.severity,
                     'created': snap.created,
