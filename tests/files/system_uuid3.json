@@ -1,0 +1,172 @@
+{
+  "components": [
+    {
+      "size": 10.030411318500475,
+      "technology": "LCD",
+      "resolutionWidth": 1024,
+      "model": "AUO LCD Monitor",
+      "actions": [],
+      "type": "Display",
+      "refreshRate": 60,
+      "productionDate": "2009-01-04T00:00:00",
+      "manufacturer": "AUO \"AUO\"",
+      "serialNumber": null,
+      "resolutionHeight": 600
+    },
+    {
+      "generation": null,
+      "actions": [
+        {
+          "rate": 164.4981,
+          "type": "BenchmarkProcessorSysbench",
+          "elapsed": 165
+        },
+        {
+          "rate": 6650.48,
+          "type": "BenchmarkProcessor",
+          "elapsed": 0
+        }
+      ],
+      "speed": 1.0,
+      "cores": 1,
+      "model": "Intel Atom CPU N450 @ 1.66GHz",
+      "address": 64,
+      "type": "Processor",
+      "threads": 2,
+      "manufacturer": "Intel Corp.",
+      "serialNumber": null,
+      "brand": "Atom"
+    },
+    {
+      "memory": null,
+      "model": "Atom Processor D4xx/D5xx/N4xx/N5xx Integrated Graphics Controller",
+      "actions": [],
+      "type": "GraphicCard",
+      "manufacturer": "Intel Corporation",
+      "serialNumber": null
+    },
+    {
+      "type": "SoundCard",
+      "actions": [],
+      "manufacturer": "Intel Corporation",
+      "serialNumber": null,
+      "model": "NM10/ICH7 Family High Definition Audio Controller"
+    },
+    {
+      "type": "SoundCard",
+      "actions": [],
+      "manufacturer": "XPA970VW0",
+      "serialNumber": null,
+      "model": "1.3M WebCam"
+    },
+    {
+      "size": 1024.0,
+      "actions": [],
+      "format": "SODIMM",
+      "model": "48594D503131325336344350362D53362020",
+      "interface": "DDR2",
+      "type": "RamModule",
+      "manufacturer": "Hynix Semiconductor",
+      "serialNumber": "4F43487B",
+      "speed": 667.0
+    },
+    {
+      "size": 160041.88569599998,
+      "variant": "1A01",
+      "actions": [
+        {
+          "type": "EraseBasic",
+          "steps": [
+            {
+              "type": "StepRandom",
+              "endTime": "2019-10-23T08:35:31.400587+00:00",
+              "severity": "Info",
+              "startTime": "2019-10-23T07:49:54.410830+00:00"
+            }
+          ],
+          "endTime": "2019-10-23T08:35:31.400988+00:00",
+          "severity": "Info",
+          "startTime": "2019-10-23T07:49:54.410193+00:00"
+        },
+        {
+          "elapsed": 22,
+          "writeSpeed": 17.3,
+          "readSpeed": 41.6,
+          "type": "BenchmarkDataStorage"
+        },
+        {
+          "status": "Completed without error",
+          "reallocatedSectorCount": 0,
+          "currentPendingSectorCount": 0,
+          "assessment": true,
+          "severity": "Info",
+          "offlineUncorrectable": 0,
+          "lifetime": 4692,
+          "type": "TestDataStorage",
+          "length": "Short",
+          "elapsed": 118,
+          "powerCycleCount": 5293
+        }
+      ],
+      "model": "WDC WD1600BEVT-2",
+      "interface": "ATA",
+      "type": "HardDrive",
+      "manufacturer": "Western Digital",
+      "serialNumber": "WD-WX11A80W7430"
+    },
+    {
+      "variant": "c1",
+      "actions": [],
+      "speed": 100.0,
+      "model": "AR8152 v1.1 Fast Ethernet",
+      "wireless": false,
+      "type": "NetworkAdapter",
+      "serialNumber": "88:ae:1d:a6:f3:d0",
+      "manufacturer": "Qualcomm Atheros"
+    },
+    {
+      "ramMaxSize": 4,
+      "slots": 1,
+      "model": "AOHAPPY",
+      "pcmcia": 0,
+      "type": "Motherboard",
+      "version": "V3.05(DDR2)",
+      "ramSlots": 2,
+      "serialNumber": "Base Board Serial Number",
+      "manufacturer": "Acer",
+      "serial": 1,
+      "actions": [],
+      "biosDate": "2010-08-12T00:00:00",
+      "firewire": 0,
+      "usb": 5
+    }
+  ],
+  "software": "Workbench",
+  "device": {
+    "sku": null,
+    "chassis": "Netbook",
+    "actions": [
+      {
+        "type": "StressTest",
+        "elapsed": 60,
+        "severity": "Info"
+      },
+      {
+        "rate": 19.2726,
+        "type": "BenchmarkRamSysbench",
+        "elapsed": 19
+      }
+    ],
+    "model": "AOHAPPY",
+    "type": "Laptop",
+    "version": "V3.05",
+    "manufacturer": "Acer",
+    "serialNumber": "LUSEA0D010038879A01601"
+  },
+  "uuid": "0973fda0-589a-11eb-ae93-0242ac130002",
+  "type": "Snapshot",
+  "version": "11.0b9",
+  "endTime": "2019-10-23T07:43:13.625104+00:00",
+  "elapsed": 3138,
+  "closed": true
+}
