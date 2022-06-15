@@ -169,7 +169,7 @@ class SnapshotView(SnapshotMixin):
         self.sid = None
         system_uuid = self.get_uuid(snapshot_json.pop('debug', None))
         if system_uuid:
-            snapshot_json['device']['uuid'] = system_uuid
+            snapshot_json['device']['system_uuid'] = system_uuid
 
         try:
             self.snapshot_json = resource_def.schema.load(snapshot_json)

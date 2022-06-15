@@ -271,7 +271,7 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
                 self.version = snapshot_json.get('version')
                 system_uuid = self.get_uuid(debug)
                 if system_uuid:
-                    snapshot_json['device']['uuid'] = system_uuid
+                    snapshot_json['device']['system_uuid'] = system_uuid
 
             try:
                 snapshot_json = schema.load(snapshot_json)

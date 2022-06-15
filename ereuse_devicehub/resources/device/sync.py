@@ -177,12 +177,15 @@ class Sync:
             inspect(tag).transient for tag in device.tags
         ), 'Tags cannot be synced from DB'
         db_device = None
-        if isinstance(db_device, Computer):
-            if db_device.uuid:
-                db_device = Computer.query.filter_by(
-                    uuid=device.uuid, owner_id=g.user.id, active=True
-                ).one()
-            elif device.hid:
+        if isinstance(device, Computer):
+            # first search by uuid
+            if device.system_uuid:
+                with suppress(ResourceNotFound):
+                    db_device = Computer.query.filter_by(
+                        system_uuid=device.system_uuid, owner_id=g.user.id, active=True
+                    ).one()
+            # if no there are any Computer by uuid search by hid
+            if not db_device and device.hid:
                 with suppress(ResourceNotFound):
                     db_device = Device.query.filter_by(
                         hid=device.hid, owner_id=g.user.id, active=True
