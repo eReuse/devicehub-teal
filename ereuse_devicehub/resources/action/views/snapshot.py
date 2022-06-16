@@ -117,9 +117,22 @@ class SnapshotMixin:
 
         return snapshot
 
+    def get_old_smbios_version(self, debug):
+        capabilities = debug.get('lshw', {}).get('capabilities', {})
+        for x in capabilities.values():
+            if "SMBIOS version" in x:
+                e = x.split("SMBIOS version ")[1].split(".")
+                if int(e[0]) < 3 and int(e[1]) < 6:
+                    self.errors(txt=x)
+                    return True
+        return False
+
     def get_uuid(self, debug):
         if not debug or not isinstance(debug, dict):
             self.errors(txt="There is not uuid")
+            return
+
+        if self.get_old_smbios_version(debug):
             return
 
         hw_uuid = debug.get('lshw', {}).get('configuration', {}).get('uuid')
