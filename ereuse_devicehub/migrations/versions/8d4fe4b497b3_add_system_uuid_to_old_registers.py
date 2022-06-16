@@ -47,7 +47,13 @@ def upgrade():
     system_uuids_file = 'system_uuids.csv'
     if os.path.exists(system_uuids_file):
         with open(system_uuids_file) as f:
-            uuids = [x.split(';') for x in f.read().split('\n')]
+            for x in f.read().split('\n'):
+                z = x.split(';')
+                if len(z) != 2:
+                    continue
+
+                x, y = z
+                uuids.append([x.strip(), y.strip()])
 
     con = op.get_bind()
     for u in uuids[1:]:
