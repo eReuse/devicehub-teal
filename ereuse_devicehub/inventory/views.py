@@ -33,6 +33,7 @@ from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
+from ereuse_devicehub.resources.enums import SnapshotSoftware
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tag.model import Tag
@@ -476,6 +477,7 @@ class ExportsView(View):
             'metrics': self.metrics,
             'devices': self.devices_list,
             'certificates': self.erasure,
+            'lots': self.lots_export,
         }
 
         if export_id not in export_ids:
@@ -576,6 +578,84 @@ class ExportsView(View):
             'url_pdf': '',
         }
         return flask.render_template('inventory/erasure.html', **params)
+
+    def lots_export(self):
+        data = StringIO()
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+
+        cw.writerow(
+            [
+                'Lot Id',
+                'Lot Name',
+                'Lot Type',
+                'Transfer Status',
+                'Transfer Code',
+                'Transfer Date',
+                'Transfer Creation Date',
+                'Transfer Update Date',
+                'Transfer Description',
+                'Devices Number',
+                'Devices Snapshots',
+                'Devices Placeholders',
+                'Delivery Note Number',
+                'Delivery Note Date',
+                'Delivery Note Units',
+                'Delivery Note Weight',
+                'Receiver Note Number',
+                'Receiver Note Date',
+                'Receiver Note Units',
+                'Receiver Note Weight',
+            ]
+        )
+
+        for lot in Lot.query.filter_by(owner=g.user):
+            delivery_note = lot.transfer and lot.transfer.delivery_note or ''
+            receiver_note = lot.transfer and lot.transfer.receiver_note or ''
+            wb_devs = 0
+            placeholders = 0
+            type_transfer = ''
+            if lot.transfer:
+                if lot.transfer.user_from == g.user:
+                    type_transfer = 'Outgoing'
+                if lot.transfer.user_to == g.user:
+                    type_transfer = 'Incoming'
+            else:
+                type_transfer = 'Temporary'
+
+            for dev in lot.devices:
+                snapshots = [e for e in dev.actions if e.type == 'Snapshot']
+                if not snapshots or snapshots[-1].software not in [
+                    SnapshotSoftware.Workbench
+                ]:
+                    placeholders += 1
+                elif snapshots[-1].software in [SnapshotSoftware.Workbench]:
+                    wb_devs += 1
+
+            row = [
+                lot.id,
+                lot.name,
+                type_transfer,
+                lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
+                lot.transfer and lot.transfer.code or '',
+                lot.transfer and lot.transfer.date or '',
+                lot.transfer and lot.transfer.created or '',
+                lot.transfer and lot.transfer.updated or '',
+                lot.transfer and lot.transfer.description or '',
+                len(lot.devices),
+                wb_devs,
+                placeholders,
+                delivery_note and delivery_note.number or '',
+                delivery_note and delivery_note.date or '',
+                delivery_note and delivery_note.units or '',
+                delivery_note and delivery_note.weight or '',
+                receiver_note and receiver_note.number or '',
+                receiver_note and receiver_note.date or '',
+                receiver_note and receiver_note.units or '',
+                receiver_note and receiver_note.weight or '',
+            ]
+            cw.writerow(row)
+
+        return self.response_csv(data, "lots_export.csv")
 
 
 class SnapshotListView(GenericMixin):
