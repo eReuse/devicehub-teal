@@ -193,7 +193,7 @@ class SnapshotView(SnapshotMixin):
             raise err
 
         db.session.add(snapshot)
-        self.errors(txt="Ok", severity=Severity.Info, snapshot=snapshot, commit=True)
+        self.errors(txt="Ok", severity=Severity.Info, snapshot=snapshot, commit=False)
 
         db.session().final_flush()
         self.response = self.schema.jsonify(snapshot)  # transform it back
