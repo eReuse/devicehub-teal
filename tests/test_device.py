@@ -130,7 +130,7 @@ def test_physical_properties():
         'model': 'foo',
         'receiver_id': None,
         'serial_number': 'foo-bar',
-        'uuid': None,
+        'system_uuid': None,
         'transfer_state': TransferState.Initial
     }
 
