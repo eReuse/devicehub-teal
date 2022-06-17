@@ -530,3 +530,77 @@ def test_wb11_to_wb11_duplicity_form(user3: UserClientFlask):
     for c in Computer.query.all():
         assert 'laptop-acer-aohappy-lusea0d010038879a01601' in c.hid
         assert c.system_uuid is None
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_wb11_smbios_2_5_api(user: UserClient):
+
+    # insert computer with wb11 with hid and without uuid, (old version)
+    snapshot_11 = conftest.file_json('system_uuid4.json')
+    user.post(snapshot_11, res=Snapshot)
+    assert Computer.query.count() == 1
+    device = Computer.query.one()
+    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+    assert device.system_uuid is None
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_wb11_smbios_2_5_form(user3: UserClientFlask):
+
+    uri = '/inventory/upload-snapshot/'
+    user3.get(uri)
+
+    file_name = 'system_uuid4.json'
+    snapshot_11 = conftest.file_json(file_name)
+    b_snapshot = bytes(json.dumps(snapshot_11), 'utf-8')
+    file_snap = (BytesIO(b_snapshot), file_name)
+
+    data = {
+        'snapshot': file_snap,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data, content_type="multipart/form-data")
+    assert Computer.query.count() == 1
+    device = Computer.query.one()
+    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+    assert device.system_uuid is None
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_wblite_smbios_2_5_api(user: UserClient):
+
+    # insert computer with wb11 with hid and without uuid, (old version)
+    snapshot_lite = conftest.file_json('system_uuid2.json')
+    snapshot_lite['data']['lshw']['capabilities']['smbios-3.0'] = 'SMBIOS version 2.5'
+    user.post(snapshot_lite, uri="/api/inventory/")
+    assert Computer.query.count() == 1
+    device = Computer.query.one()
+    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_wblite_smbios_2_5_form(user3: UserClientFlask):
+
+    uri = '/inventory/upload-snapshot/'
+    user3.get(uri)
+
+    file_name = 'system_uuid2.json'
+    snapshot_lite = conftest.file_json(file_name)
+    snapshot_lite['data']['lshw']['capabilities']['smbios-3.0'] = 'SMBIOS version 2.5'
+    b_snapshot = bytes(json.dumps(snapshot_lite), 'utf-8')
+    file_snap = (BytesIO(b_snapshot), file_name)
+
+    data = {
+        'snapshot': file_snap,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data, content_type="multipart/form-data")
+    assert Computer.query.count() == 1
+    device = Computer.query.one()
+    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
