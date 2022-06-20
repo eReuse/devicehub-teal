@@ -478,6 +478,7 @@ class ExportsView(View):
             'devices': self.devices_list,
             'certificates': self.erasure,
             'lots': self.lots_export,
+            'devices_lots': self.devices_lots_export,
         }
 
         if export_id not in export_ids:
@@ -613,14 +614,6 @@ class ExportsView(View):
             receiver_note = lot.transfer and lot.transfer.receiver_note or ''
             wb_devs = 0
             placeholders = 0
-            type_transfer = ''
-            if lot.transfer:
-                if lot.transfer.user_from == g.user:
-                    type_transfer = 'Outgoing'
-                if lot.transfer.user_to == g.user:
-                    type_transfer = 'Incoming'
-            else:
-                type_transfer = 'Temporary'
 
             for dev in lot.devices:
                 snapshots = [e for e in dev.actions if e.type == 'Snapshot']
@@ -634,7 +627,7 @@ class ExportsView(View):
             row = [
                 lot.id,
                 lot.name,
-                type_transfer,
+                lot.type_transfer(),
                 lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
                 lot.transfer and lot.transfer.code or '',
                 lot.transfer and lot.transfer.date or '',
@@ -656,6 +649,43 @@ class ExportsView(View):
             cw.writerow(row)
 
         return self.response_csv(data, "lots_export.csv")
+
+    def devices_lots_export(self):
+        data = StringIO()
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        head = [
+            'DHID',
+            'Lot Id',
+            'Lot Name',
+            'Lot Type',
+            'Transfer Status',
+            'Transfer Code',
+            'Transfer Date',
+            'Transfer Creation Date',
+            'Transfer Update Date'
+        ]
+        cw.writerow(head)
+
+        for dev in self.find_devices():
+            for lot in dev.lots:
+                type_transfer = lot.type_transfer()
+                if type_transfer in ['Temporary', '']:
+                    continue
+
+                row = [
+                    dev.devicehub_id,
+                    lot.id,
+                    lot.name,
+                    type_transfer,
+                    lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
+                    lot.transfer and lot.transfer.code or '',
+                    lot.transfer and lot.transfer.date or '',
+                    lot.transfer and lot.transfer.created or '',
+                    lot.transfer and lot.transfer.updated or '',
+                ]
+                cw.writerow(row)
+
+        return self.response_csv(data, "Devices_Incoming_and_Outgoing_Lots_Spreadsheet.csv")
 
 
 class SnapshotListView(GenericMixin):
