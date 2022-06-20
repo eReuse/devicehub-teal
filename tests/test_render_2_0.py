@@ -3,16 +3,20 @@ import datetime
 import json
 from io import BytesIO
 from pathlib import Path
+from uuid import UUID
 
 import pytest
+from flask import g
 from flask.testing import FlaskClient
 from flask_wtf.csrf import generate_csrf
 
 from ereuse_devicehub.client import UserClient, UserClientFlask
+from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.user.models import User
 from tests import conftest
 
 
@@ -1309,3 +1313,76 @@ def test_edit_notes_with_closed_transfer(user3: UserClientFlask):
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
     assert 'Receiver Note updated error!' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_export_devices_lots(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+
+    device = snap.device
+    g.user = User.query.one()
+    device.lots.update({lot})
+    db.session.commit()
+
+    uri = "/inventory/export/devices_lots/?ids={id}".format(id=snap.device.devicehub_id)
+
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+
+    export_csv = [line.split(";") for line in body.split("\n")]
+    # import pdb; pdb.set_trace()
+
+    with Path(__file__).parent.joinpath('files').joinpath(
+        'devices_lots.csv'
+    ).open() as csv_file:
+        obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
+        fixture_csv = list(obj_csv)
+
+    assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
+    assert fixture_csv[1][2:] == export_csv[1][2:], 'Computer information are not equal'
+    UUID(export_csv[1][1])
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_export_lots(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+
+    device = snap.device
+    g.user = User.query.one()
+    device.lots.update({lot})
+    db.session.commit()
+
+    uri = "/inventory/export/lots/"
+
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+
+    export_csv = [line.split(";") for line in body.split("\n")]
+
+    with Path(__file__).parent.joinpath('files').joinpath(
+        'lots.csv'
+    ).open() as csv_file:
+        obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
+        fixture_csv = list(obj_csv)
+
+    assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
+    assert fixture_csv[1][1:] == export_csv[1][1:], 'Computer information are not equal'
+    UUID(export_csv[1][0])
