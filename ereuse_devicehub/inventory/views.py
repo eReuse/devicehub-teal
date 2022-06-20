@@ -668,15 +668,11 @@ class ExportsView(View):
 
         for dev in self.find_devices():
             for lot in dev.lots:
-                type_transfer = lot.type_transfer()
-                if type_transfer in ['Temporary', '']:
-                    continue
-
                 row = [
                     dev.devicehub_id,
                     lot.id,
                     lot.name,
-                    type_transfer,
+                    lot.type_transfer(),
                     lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
                     lot.transfer and lot.transfer.code or '',
                     lot.transfer and lot.transfer.date or '',
