@@ -662,7 +662,7 @@ class ExportsView(View):
             'Transfer Code',
             'Transfer Date',
             'Transfer Creation Date',
-            'Transfer Update Date'
+            'Transfer Update Date',
         ]
         cw.writerow(head)
 
@@ -685,7 +685,9 @@ class ExportsView(View):
                 ]
                 cw.writerow(row)
 
-        return self.response_csv(data, "Devices_Incoming_and_Outgoing_Lots_Spreadsheet.csv")
+        return self.response_csv(
+            data, "Devices_Incoming_and_Outgoing_Lots_Spreadsheet.csv"
+        )
 
 
 class SnapshotListView(GenericMixin):
