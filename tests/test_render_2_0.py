@@ -1339,7 +1339,6 @@ def test_export_devices_lots(user3: UserClientFlask):
     assert status == '200 OK'
 
     export_csv = [line.split(";") for line in body.split("\n")]
-    # import pdb; pdb.set_trace()
 
     with Path(__file__).parent.joinpath('files').joinpath(
         'devices_lots.csv'
