@@ -127,9 +127,7 @@ class LotView(View):
                 continue
             for _lot in lots_dump:
                 if _lot['id'] == str(lot.id):
-                    name = _lot['name']
-                    type_transfer = lot.type_transfer()
-                    _lot['name'] = f'{name} - ({type_transfer})'
+                    _lot['transfer'] = lot.type_transfer()
                     break
         return lots_dump
 
