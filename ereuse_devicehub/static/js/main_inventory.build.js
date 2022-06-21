@@ -707,6 +707,6 @@ function appendMenu(lots, listHTML, templateLot, selectedDevices, actions, title
   lotsList.push(lots.filter(lot => lot.state == "false").sort((a, b) => a.name.localeCompare(b.name)));
   lotsList = lotsList.flat(); // flat array
 
-  listHTML.append("<li style=\"color: black; text-align: center\">" + title + "<hr /></li>");
+  listHTML.append(`<li style="color: black; text-align: center">${  title  }<hr /></li>`);
   lotsList.forEach(lot => templateLot(lot, selectedDevices, listHTML, actions));
 }
