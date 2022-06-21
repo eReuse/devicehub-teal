@@ -111,7 +111,7 @@ class LotView(View):
                 query = query.filter(Lot.name.ilike(args['search'] + '%'))
             lots = query.paginate(per_page=6 if args['search'] else query.count())
             return things_response(
-                self.schema.dump(lots.items, many=True, nested=2),
+                self.get_lots_dump(lots),
                 lots.page,
                 lots.per_page,
                 lots.total,
@@ -119,6 +119,19 @@ class LotView(View):
                 lots.next_num,
             )
         return jsonify(ret)
+
+    def get_lots_dump(self, lots):
+        lots_dump = self.schema.dump(lots.items, many=True, nested=2)
+        for lot in lots.items:
+            if not lot.transfer:
+                continue
+            for _lot in lots_dump:
+                if _lot['id'] == str(lot.id):
+                    name = _lot['name']
+                    type_transfer = lot.type_transfer()
+                    _lot['name'] = f'{name} - ({type_transfer})'
+                    break
+        return lots_dump
 
     def visibility_filter(self, query):
         query = (
@@ -142,10 +155,7 @@ class LotView(View):
         # temporary
         if lot_type == "temporary":
             return query.filter(Lot.trade == None).filter(
-                or_(
-                    Lot.transfer == None,
-                    Transfer.date == None
-                )
+                or_(Lot.transfer == None, Transfer.date == None)
             )
 
         if lot_type == "incoming":
