@@ -647,14 +647,14 @@ async function processSelectedDevices() {
         })
 
         listHTML.html("");
-        let lot_temporary = lots.filter(lot => !lot.transfer);
-        appendMenu(lot_temporary, listHTML, templateLot, selectedDevices, actions, 'Temporary');
+        const lot_temporary = lots.filter(lot => !lot.transfer);
+        appendMenu(lot_temporary, listHTML, templateLot, selectedDevices, actions, "Temporary");
 
-        let lot_incoming = lots.filter(lot => lot.transfer && lot.transfer == 'Incoming');
-        appendMenu(lot_incoming, listHTML, templateLot, selectedDevices, actions, 'Incoming');
+        const lot_incoming = lots.filter(lot => lot.transfer && lot.transfer == "Incoming");
+        appendMenu(lot_incoming, listHTML, templateLot, selectedDevices, actions, "Incoming");
 
-        let lot_outgoing = lots.filter(lot => lot.transfer && lot.transfer == 'Outgoing');
-        appendMenu(lot_outgoing, listHTML, templateLot, selectedDevices, actions, 'Outgoing');
+        const lot_outgoing = lots.filter(lot => lot.transfer && lot.transfer == "Outgoing");
+        appendMenu(lot_outgoing, listHTML, templateLot, selectedDevices, actions, "Outgoing");
 
         lotsSearcher.enable();
     } catch (error) {
@@ -670,6 +670,6 @@ function appendMenu(lots, listHTML, templateLot, selectedDevices, actions, title
     lotsList.push(lots.filter(lot => lot.state == "false").sort((a, b) => a.name.localeCompare(b.name)));
     lotsList = lotsList.flat(); // flat array
 
-    listHTML.append("<li style=\"color: black; text-align: center\">" + title + "<hr /></li>");
+    listHTML.append(`<li style="color: black; text-align: center">${  title  }<hr /></li>`);
     lotsList.forEach(lot => templateLot(lot, selectedDevices, listHTML, actions));
 }
