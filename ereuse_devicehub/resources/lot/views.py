@@ -141,7 +141,12 @@ class LotView(View):
 
         # temporary
         if lot_type == "temporary":
-            return query.filter(Lot.trade == None).filter(Lot.transfer == None)
+            return query.filter(Lot.trade == None).filter(
+                or_(
+                    Lot.transfer == None,
+                    Transfer.date == None
+                )
+            )
 
         if lot_type == "incoming":
             return query.filter(
