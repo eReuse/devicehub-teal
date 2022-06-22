@@ -8,6 +8,9 @@ ml).
 ## master
 
 ## testing
+- [added] #299 Multy select with Shift.
+- [added] #300 Add Sid in label.
+- [added] #301 Add logo in label.
 - [added] #303 Add export Lots.
 - [added] #303 Add export relating lots with devices.
 - [added] #303 To do possible add and remove one device in one lot transfer.
