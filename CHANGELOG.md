@@ -8,6 +8,8 @@ ml).
 ## master
 
 ## testing
+
+## [2.2.0 rc2] - 2022-06-22
 - [added] #299 Multy select with Shift.
 - [added] #300 Add Sid in label.
 - [added] #301 Add logo in label.
