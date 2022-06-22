@@ -8,6 +8,9 @@ ml).
 ## master
 
 ## testing
+- [added] #303 Add export Lots.
+- [added] #303 Add export relating lots with devices.
+- [added] #303 To do possible add and remove one device in one lot transfer.
 
 ## [2.2.0 rc1] - 2022-06-07
 - [added] #212 Server side render parser Workbench Snapshots.

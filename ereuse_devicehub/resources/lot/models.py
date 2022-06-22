@@ -151,6 +151,16 @@ class Lot(Thing):
         """Gets the lots that are not under any other lot."""
         return cls.query.join(cls.paths).filter(db.func.nlevel(Path.path) == 1)
 
+    def type_transfer(self):
+        # Used in reports lots_export.csv
+        if not self.transfer:
+            return 'Temporary'
+        if self.transfer.user_from == g.user:
+            return 'Outgoing'
+        if self.transfer.user_to == g.user:
+            return 'Incoming'
+        return ''
+
     def add_children(self, *children):
         """Add children lots to this lot.
 
