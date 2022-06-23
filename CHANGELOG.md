@@ -8,6 +8,7 @@ ml).
 ## master
 
 ## testing
+- [changed] #304 change anchor of link devices lots.
 
 ## [2.2.0 rc2] - 2022-06-22
 - [added] #299 Multy select with Shift.
