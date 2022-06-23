@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from citext import CIText
+from flask import g
 from sqlalchemy import Column, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
@@ -42,6 +43,15 @@ class Transfer(Thing):
             return True
 
         return False
+
+    def type_transfer(self):
+        if self.user_from == g.user:
+            return 'Outgoing'
+
+        if self.user_to == g.user:
+            return 'Incoming'
+
+        return 'Temporary'
 
 
 class DeliveryNote(Thing):

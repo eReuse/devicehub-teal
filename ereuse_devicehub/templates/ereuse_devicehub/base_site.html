@@ -47,6 +47,29 @@
       <li class="nav-item dropdown pe-3">
 
         <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+          <span class="d-none d-md-block dropdown-toggle ps-2 pb-3 pt-3">Reports</span>
+        </a><!-- End Profile Iamge Icon -->
+
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header">
+            <h6>Exports</h6>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="{{ url_for('inventory.export', export_id='lots') }}">
+              <i class="bi bi-file-spreadsheet"></i>
+              <span>Lots Spreadsheet</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="nav-item dropdown pe-3">
+
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
           <i class="bi bi-person-circle" style="font-size: 36px;"></i>
           <span class="d-none d-md-block dropdown-toggle ps-2">{{ current_user.email }}</span>
         </a><!-- End Profile Iamge Icon -->

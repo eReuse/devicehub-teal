@@ -681,17 +681,32 @@ async function processSelectedDevices() {
 
       return lot;
     });
-    let lotsList = [];
-    lotsList.push(lots.filter(lot => lot.state == "true").sort((a, b) => a.name.localeCompare(b.name)));
-    lotsList.push(lots.filter(lot => lot.state == "indetermined").sort((a, b) => a.name.localeCompare(b.name)));
-    lotsList.push(lots.filter(lot => lot.state == "false").sort((a, b) => a.name.localeCompare(b.name)));
-    lotsList = lotsList.flat(); // flat array
 
     listHTML.html("");
-    lotsList.forEach(lot => templateLot(lot, selectedDevices, listHTML, actions));
+    const lot_temporary = lots.filter(lot => !lot.transfer);
+    appendMenu(lot_temporary, listHTML, templateLot, selectedDevices, actions, "Temporary");
+
+    const lot_incoming = lots.filter(lot => lot.transfer && lot.transfer == "Incoming");
+    appendMenu(lot_incoming, listHTML, templateLot, selectedDevices, actions, "Incoming");
+
+    const lot_outgoing = lots.filter(lot => lot.transfer && lot.transfer == "Outgoing");
+    appendMenu(lot_outgoing, listHTML, templateLot, selectedDevices, actions, "Outgoing");
+
     lotsSearcher.enable();
+
   } catch (error) {
     console.log(error);
     listHTML.html("<li style=\"color: red; text-align: center\">Error feching devices and lots<br>(see console for more details)</li>");
   }
+}
+
+function appendMenu(lots, listHTML, templateLot, selectedDevices, actions, title) {
+  let lotsList = [];
+  lotsList.push(lots.filter(lot => lot.state == "true").sort((a, b) => a.name.localeCompare(b.name)));
+  lotsList.push(lots.filter(lot => lot.state == "indetermined").sort((a, b) => a.name.localeCompare(b.name)));
+  lotsList.push(lots.filter(lot => lot.state == "false").sort((a, b) => a.name.localeCompare(b.name)));
+  lotsList = lotsList.flat(); // flat array
+
+  listHTML.append(`<li style="color: black; text-align: center">${  title  }<hr /></li>`);
+  lotsList.forEach(lot => templateLot(lot, selectedDevices, listHTML, actions));
 }
