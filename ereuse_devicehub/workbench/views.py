@@ -1,3 +1,4 @@
+import os
 import time
 
 import flask
@@ -22,6 +23,7 @@ class SettingsView(GenericMixin):
 
     def dispatch_request(self):
         self.get_context()
+        self.get_iso()
         self.context.update(
             {
                 'page_title': self.page_title,
@@ -33,6 +35,20 @@ class SettingsView(GenericMixin):
             return self.download()
 
         return flask.render_template(self.template_name, **self.context)
+
+    def get_iso(self):
+        files = [
+            f
+            for f in os.listdir('ereuse_devicehub/static/iso/')
+            if f[-3:].lower() == 'iso'
+        ]
+
+        self.context['iso'] = ''
+        self.context['iso_sha'] = ''
+
+        if files:
+            self.context['iso'] = files[0]
+            self.context['iso_sha'] = 'aaa'
 
     def download(self):
         url = "https://{}/api/inventory/".format(app.config['HOST'])
