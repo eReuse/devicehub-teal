@@ -191,6 +191,7 @@ class Device(Thing):
         'image',
         'allocated',
         'devicehub_id',
+        'system_uuid',
         'active',
     }
 
