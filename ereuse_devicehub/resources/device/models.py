@@ -790,6 +790,43 @@ class DisplayMixin:
         return v
 
 
+class Placeholder(Thing):
+    id = Column(BigInteger, Sequence('placeholder_seq'), primary_key=True)
+    phid = Column(Unicode(), check_lower('phid'), unique=False)
+    pallet = Column(BigInteger, nullable=True)
+    pallet.comment = "used for identification where from where is this placeholders"
+    info = db.Column(CIText())
+    info.comment = "more info of placeholders"
+    id_device_supplier = db.Column(CIText())
+    id_device_supplier.comment = (
+        "Identification used for one supplier of one placeholders"
+    )
+
+    placeholder_id = db.Column(
+        BigInteger,
+        db.ForeignKey(Device.id),
+        nullable=False,
+    )
+    placeholder = db.relationship(
+        Device,
+        backref=backref('placeholder', lazy=True),
+        primaryjoin=placeholder_id == Device.id,
+    )
+    placeholder_id.comment = "datas of the placeholder"
+
+    device_id = db.Column(
+        BigInteger,
+        db.ForeignKey(Device.id),
+        nullable=True,
+    )
+    device = db.relationship(
+        Device,
+        backref=backref('binding', lazy=True),
+        primaryjoin=placeholder_id == Device.id,
+    )
+    device_id.comment = "device with snapshots than is linked to the placeholder"
+
+
 class Computer(Device):
     """A chassis with components inside that can be processed
     automatically with Workbench Computer.
