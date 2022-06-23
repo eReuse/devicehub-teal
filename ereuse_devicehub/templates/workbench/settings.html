@@ -28,6 +28,20 @@
                 <p class="small">Download the settings only for register devices.</p>
               </div>
             </div>
+            {% if iso %}
+            <div class="row pt-3">
+              <div class="col-5">
+                <a href="/static/iso/{{ iso }}" class="btn btn-primary">{{ iso }}</a>
+              </div>
+              <div class="col">
+                <p class="small">Download ISO workbench and burn it one one usb stick.</p>
+                <p class="small">
+                  Download Checksum: <a style="color: #993365;" href="/static/iso/SHA512SUMS">SHA512SUMS</a> |
+                  <a style="color: #993365;" href="/static/iso/SHA512SUMS.sign">Signature</a>
+                </p>
+              </div>
+            </div>
+            {% endif %}
           </div>
 
         </div>
