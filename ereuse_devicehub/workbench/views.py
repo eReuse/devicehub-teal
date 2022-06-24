@@ -1,5 +1,6 @@
 import os
 import time
+from pathlib import Path
 
 import flask
 from flask import Blueprint
@@ -37,10 +38,9 @@ class SettingsView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
     def get_iso(self):
+        path = Path(__file__).parent.parent
         files = [
-            f
-            for f in os.listdir('ereuse_devicehub/static/iso/')
-            if f[-3:].lower() == 'iso'
+            f for f in os.listdir(f'{path}/static/iso/') if f[-3:].lower() == 'iso'
         ]
 
         self.context['iso'] = ''
