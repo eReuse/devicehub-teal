@@ -1,11 +1,15 @@
 import csv
 import logging
+import os
 from distutils.util import strtobool
 from io import StringIO
+from pathlib import Path
 
 import flask
 import flask_weasyprint
-from flask import Blueprint, g, make_response, request, url_for
+from flask import Blueprint
+from flask import current_app as app
+from flask import g, make_response, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
 from werkzeug.exceptions import NotFound
@@ -479,6 +483,7 @@ class ExportsView(View):
             'certificates': self.erasure,
             'lots': self.lots_export,
             'devices_lots': self.devices_lots_export,
+            'snapshot': self.snapshot,
         }
 
         if export_id not in export_ids:
@@ -684,6 +689,33 @@ class ExportsView(View):
         return self.response_csv(
             data, "Devices_Incoming_and_Outgoing_Lots_Spreadsheet.csv"
         )
+
+    def snapshot(self):
+        uuid = request.args.get('id')
+        if not uuid:
+            messages.error('Snapshot not exist!')
+            return flask.redirect(request.referrer)
+
+        user = g.user.email
+        name_file = f"*_{user}_{uuid}.json"
+        tmp_snapshots = app.config['TMP_SNAPSHOTS']
+        path_dir_base = os.path.join(tmp_snapshots, user)
+
+        for _file in Path(path_dir_base).glob(name_file):
+            with open(_file) as file_snapshot:
+                snapshot = file_snapshot.read()
+            data = StringIO()
+            data.write(snapshot)
+            bfile = data.getvalue().encode('utf-8')
+            output = make_response(bfile)
+            output.headers['Content-Disposition'] = 'attachment; filename={}'.format(
+                name_file
+            )
+            output.headers['Content-type'] = 'text/json'
+            return output
+
+        messages.error('Snapshot not exist!')
+        return flask.redirect(request.referrer)
 
 
 class SnapshotListView(GenericMixin):
