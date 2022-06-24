@@ -9,6 +9,8 @@ ml).
 
 ## testing
 - [changed] #302 add system uuid for check the identity of one device.
+
+## [2.2.0] - 2022-06-24
 - [changed] #304 change anchor of link devices lots.
 
 ## [2.2.0 rc2] - 2022-06-22
@@ -18,7 +20,6 @@ ml).
 - [added] #303 Add export Lots.
 - [added] #303 Add export relating lots with devices.
 - [added] #303 To do possible add and remove one device in one lot transfer.
->>>>>>> testing
 
 ## [2.2.0 rc1] - 2022-06-07
 - [added] #212 Server side render parser Workbench Snapshots.
