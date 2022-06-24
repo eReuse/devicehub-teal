@@ -8,6 +8,8 @@ ml).
 ## master
 
 ## testing
+
+## [2.2.0] - 2022-06-24
 - [changed] #304 change anchor of link devices lots.
 
 ## [2.2.0 rc2] - 2022-06-22
