@@ -197,6 +197,7 @@ class Sync:
                 ).one()
         if db_device and db_device.allocated:
             raise ResourceNotFound('device is actually allocated {}'.format(device))
+
         try:
             tags = {
                 Tag.from_an_id(tag.id).one() for tag in device.tags
@@ -263,6 +264,13 @@ class Sync:
         for field_name, value in device.physical_properties.items():
             if value is not None:
                 setattr(db_device, field_name, value)
+
+        # if device.system_uuid and db_device.system_uuid and device.system_uuid != db_device.system_uuid:
+        # TODO @cayop send error to sentry.io
+        # there are 2 computers duplicate get db_device for hid
+
+        if hasattr(device, 'system_uuid') and device.system_uuid:
+            db_device.system_uuid = device.system_uuid
 
     @staticmethod
     def add_remove(device: Computer, components: Set[Component]) -> OrderedSet:

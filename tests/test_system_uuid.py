@@ -102,6 +102,10 @@ def test_wb11_to_wb11_with_uuid_api(user: UserClient):
     snapshot_11['uuid'] = '0973fda0-589a-11eb-ae93-0242ac130003'
     user.post(snapshot_11, res=Snapshot)
 
+    assert (
+        snapshot_11['debug']['lshw']['configuration']['uuid']
+        == '364ee69c-9c82-9cb1-2111-88ae1da6f3d0'
+    )
     assert Computer.query.count() == 1
     device = Computer.query.one()
     assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
