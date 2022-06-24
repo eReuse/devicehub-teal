@@ -8,6 +8,7 @@ ml).
 ## master
 
 ## testing
+- [changed] #302 add system uuid for check the identity of one device.
 
 ## [2.2.0] - 2022-06-24
 - [changed] #304 change anchor of link devices lots.

@@ -29,6 +29,7 @@
                       <th scope="col">Snapshot id</th>
                       <th scope="col">Version</th>
                       <th scope="col">DHID</th>
+                      <th scope="col">System UUID</th>
                       <th scope="col">Status</th>
                       <th scope="col" data-type="date" data-format="DD-MM-YYYY">Time</th>
                     </tr>
@@ -59,6 +60,9 @@
                           {{ snap.device }}
                         </a>
                         {% endif %}
+                      </td>
+                      <td>
+                          {{ snap.system_uuid }}
                       </td>
                       <td>
                           {{ snap.status }}

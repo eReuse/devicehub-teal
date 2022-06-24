@@ -29,7 +29,6 @@ from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.models import DeliveryNote, ReceiverNote, Transfer
-from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
@@ -260,45 +259,35 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         for filename, snapshot_json in self.snapshots:
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
-            snapshot_json.pop('debug', None)
-            version = snapshot_json.get('schema_api')
-            uuid = snapshot_json.get('uuid')
-            sid = snapshot_json.get('sid')
-            software_version = snapshot_json.get('version')
-            if self.is_wb_lite_snapshot(version):
+            debug = snapshot_json.pop('debug', None)
+            self.version = snapshot_json.get('schema_api')
+            self.uuid = snapshot_json.get('uuid')
+            self.sid = snapshot_json.get('sid')
+
+            if self.is_wb_lite_snapshot(self.version):
                 self.snapshot_json = schema_lite.load(snapshot_json)
                 snapshot_json = ParseSnapshotLsHw(self.snapshot_json).snapshot_json
+            else:
+                self.version = snapshot_json.get('version')
+                system_uuid = self.get_uuid(debug)
+                if system_uuid:
+                    snapshot_json['device']['system_uuid'] = system_uuid
 
             try:
                 snapshot_json = schema.load(snapshot_json)
             except ValidationError as err:
                 txt = "{}".format(err)
-                error = SnapshotsLog(
-                    description=txt,
-                    snapshot_uuid=uuid,
-                    severity=Severity.Error,
-                    sid=sid,
-                    version=software_version,
-                )
-                error.save(commit=True)
+                self.errors(txt=txt)
                 self.result[filename] = 'Error'
                 continue
 
             response = self.build(snapshot_json)
             db.session.add(response)
             devices.append(response.device)
-            snap_log = SnapshotsLog(
-                description='Ok',
-                snapshot_uuid=uuid,
-                severity=Severity.Info,
-                sid=sid,
-                version=software_version,
-                snapshot=response,
-            )
-            snap_log.save()
 
             if hasattr(response, 'type'):
                 self.result[filename] = 'Ok'
+                self.errors(txt="Ok", severity=Severity.Info, snapshot=response)
             else:
                 self.result[filename] = 'Error'
 
