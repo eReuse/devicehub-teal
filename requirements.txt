@@ -45,3 +45,4 @@ python-dotenv==0.14.0
 pyjwt==2.4.0
 pint==0.9
 py-dmidecode==0.1.0
+sentry_sdk==1.6.0
