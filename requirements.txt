@@ -46,3 +46,4 @@ pyjwt==2.4.0
 pint==0.9
 py-dmidecode==0.1.0
 sentry_sdk==1.6.0
+blinker==1.4

@@ -9,7 +9,8 @@ ml).
 
 ## testing
 - [add] #305 add button download iso Workbench.
-- [add] #306 add link for download json snapshot
+- [add] #306 add link for download json snapshot.
+- [add] #308 add sentry.
 - [changed] #302 add system uuid for check the identity of one device.
 
 ## [2.2.0] - 2022-06-24
