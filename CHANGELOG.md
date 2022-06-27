@@ -8,6 +8,12 @@ ml).
 ## master
 
 ## testing
+- [add] #305 add button download iso Workbench.
+- [add] #306 add link for download json snapshot
+- [changed] #302 add system uuid for check the identity of one device.
+
+## [2.2.0] - 2022-06-24
+- [changed] #304 change anchor of link devices lots.
 
 ## [2.2.0 rc2] - 2022-06-22
 - [added] #299 Multy select with Shift.

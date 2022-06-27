@@ -52,7 +52,7 @@ class ParseSnapshot:
         self.device['type'] = self.get_type()
         self.device['sku'] = self.get_sku()
         self.device['version'] = self.get_version()
-        self.device['uuid'] = self.get_uuid()
+        self.device['system_uuid'] = self.get_uuid()
 
     def set_components(self):
         self.get_cpu()
@@ -379,7 +379,7 @@ class ParseSnapshotLsHw:
             raise ValidationError(txt)
 
         self.device = pc
-        self.device['uuid'] = self.get_uuid()
+        self.device['system_uuid'] = self.get_uuid()
 
     def set_components(self):
         memory = None

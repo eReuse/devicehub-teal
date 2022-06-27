@@ -29,8 +29,10 @@
                       <th scope="col">Snapshot id</th>
                       <th scope="col">Version</th>
                       <th scope="col">DHID</th>
+                      <th scope="col">System UUID</th>
                       <th scope="col">Status</th>
                       <th scope="col" data-type="date" data-format="DD-MM-YYYY">Time</th>
+                      <th scope="col"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -61,9 +63,19 @@
                         {% endif %}
                       </td>
                       <td>
+                          {{ snap.system_uuid }}
+                      </td>
+                      <td>
                           {{ snap.status }}
                       </td>
                       <td>{{ snap.created.strftime('%H:%M %d-%m-%Y') }}</td>
+                      <td>
+                        {% if snap.snapshot_uuid %}
+                        <a href="{{ url_for('inventory.export', export_id='snapshot') }}?id={{ snap.snapshot_uuid }}" target="_blank">
+                          <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                        {% endif %}
+                      </td>
                     </tr>
                     {% endfor %}
                   </tbody>

@@ -191,6 +191,7 @@ class Device(Thing):
         'image',
         'allocated',
         'devicehub_id',
+        'system_uuid',
         'active',
     }
 
@@ -855,7 +856,7 @@ class Computer(Device):
     transfer_state.comment = TransferState.__doc__
     receiver_id = db.Column(UUID(as_uuid=True), db.ForeignKey(User.id), nullable=True)
     receiver = db.relationship(User, primaryjoin=receiver_id == User.id)
-    uuid = db.Column(UUID(as_uuid=True), nullable=True)
+    system_uuid = db.Column(UUID(as_uuid=True), nullable=True)
 
     def __init__(self, *args, **kwargs) -> None:
         if args:

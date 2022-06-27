@@ -1,4 +1,6 @@
+import os
 import time
+from pathlib import Path
 
 import flask
 from flask import Blueprint
@@ -22,6 +24,7 @@ class SettingsView(GenericMixin):
 
     def dispatch_request(self):
         self.get_context()
+        self.get_iso()
         self.context.update(
             {
                 'page_title': self.page_title,
@@ -33,6 +36,19 @@ class SettingsView(GenericMixin):
             return self.download()
 
         return flask.render_template(self.template_name, **self.context)
+
+    def get_iso(self):
+        path = Path(__file__).parent.parent
+        files = [
+            f for f in os.listdir(f'{path}/static/iso/') if f[-3:].lower() == 'iso'
+        ]
+
+        self.context['iso'] = ''
+        self.context['iso_sha'] = ''
+
+        if files:
+            self.context['iso'] = files[0]
+            self.context['iso_sha'] = 'aaa'
 
     def download(self):
         url = "https://{}/api/inventory/".format(app.config['HOST'])
