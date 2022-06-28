@@ -46,6 +46,7 @@ from ereuse_devicehub.resources.device.models import (
     Keyboard,
     MemoryCardReader,
     Mouse,
+    Placeholder,
     Smartphone,
     Tablet,
 )
@@ -300,19 +301,27 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
 
 class NewDeviceForm(FlaskForm):
     type = StringField('Type', [validators.DataRequired()])
-    label = StringField('Label')
-    serial_number = StringField('Seria Number', [validators.DataRequired()])
-    model = StringField('Model', [validators.DataRequired()])
-    manufacturer = StringField('Manufacturer', [validators.DataRequired()])
+    amount = IntegerField(
+        'Amount',
+        [validators.DataRequired(), validators.NumberRange(min=1, max=100)],
+        default=1,
+    )
+    id_device_supplier = StringField('Id Supplier', [validators.Optional()])
+    phid = StringField('Placeholder Hardware identity (Phid)', [validators.Optional()])
+    pallet = StringField('Identity of pallet', [validators.Optional()])
+    info = TextAreaField('Info', [validators.Optional()])
+    serial_number = StringField('Seria Number', [validators.Optional()])
+    model = StringField('Model', [validators.Optional()])
+    manufacturer = StringField('Manufacturer', [validators.Optional()])
     appearance = StringField('Appearance', [validators.Optional()])
     functionality = StringField('Functionality', [validators.Optional()])
     brand = StringField('Brand')
     generation = IntegerField('Generation')
     version = StringField('Version')
-    weight = FloatField('Weight', [validators.DataRequired()])
-    width = FloatField('Width', [validators.DataRequired()])
-    height = FloatField('Height', [validators.DataRequired()])
-    depth = FloatField('Depth', [validators.DataRequired()])
+    weight = FloatField('Weight', [validators.Optional()])
+    width = FloatField('Width', [validators.Optional()])
+    height = FloatField('Height', [validators.Optional()])
+    depth = FloatField('Depth', [validators.Optional()])
     variant = StringField('Variant', [validators.Optional()])
     sku = StringField('SKU', [validators.Optional()])
     image = StringField('Image', [validators.Optional(), validators.URL()])
@@ -451,6 +460,17 @@ class NewDeviceForm(FlaskForm):
             snapshot_json['device'].imei = self.imei.data
             snapshot_json['device'].meid = self.meid.data
 
+        snapshot_json['device'].placeholder = self.get_placeholder()
+
+        _hid = self.phid.data
+        if not _hid:
+            _hid = Placeholder.query.order_by(Placeholder.id.desc()).first()
+            if not _hid:
+                _hid = '1'
+            _hid = str(_hid.id + 1)
+
+        snapshot_json['device'].hid = _hid
+
         snapshot = upload_form.build(snapshot_json)
 
         move_json(self.tmp_snapshots, path_snapshot, g.user.email)
@@ -461,6 +481,16 @@ class NewDeviceForm(FlaskForm):
         if commit:
             db.session.commit()
         return snapshot
+
+    def get_placeholder(self):
+        self.placeholder = Placeholder(
+            **{
+                'id_device_supplier': self.id_device_supplier.data,
+                'info': self.info.data,
+                'pallet': self.pallet.data,
+            }
+        )
+        return self.placeholder
 
 
 class TagDeviceForm(FlaskForm):
