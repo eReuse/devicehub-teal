@@ -70,12 +70,64 @@
                     </div>
 
                     <div class="form-group mb-2">
-                      <label for="label" class="form-label">Label</label>
-                      {{ form.label(class_="form-control") }}
-                      <small class="text-muted form-text">Label that you want link to this device</small>
-                      {% if form.label.errors %}
+                      <label for="label" class="form-label">{{ form.amount.label }} *</label>
+                      {{ form.amount(class_="form-control") }}
+                      <small class="text-muted form-text">Number of devices you want to create of this type</small>
+                      {% if form.amount.errors %}
                       <p class="text-danger">
-                        {% for error in form.label.errors %}
+                        {% for error in form.amount.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <label for="label" class="form-label">{{ form.phid.label }}</label>
+                      {{ form.phid(class_="form-control") }}
+                      <small class="text-muted form-text">Label that you want link to this device</small>
+                      {% if form.phid.errors %}
+                      <p class="text-danger">
+                        {% for error in form.phid.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <label for="label" class="form-label">{{ form.id_device_supplier.label }}</label>
+                      {{ form.id_device_supplier(class_="form-control") }}
+                      <small class="text-muted form-text">Identity of device for the Supplier</small>
+                      {% if form.id_device_supplier.errors %}
+                      <p class="text-danger">
+                        {% for error in form.id_device_supplier.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <label for="label" class="form-label">{{ form.pallet.label }}</label>
+                      {{ form.pallet(class_="form-control") }}
+                      <small class="text-muted form-text">Identity of pallet</small>
+                      {% if form.pallet.errors %}
+                      <p class="text-danger">
+                        {% for error in form.pallet.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <label for="label" class="form-label">{{ form.info.label }}</label>
+                      {{ form.info(class_="form-control") }}
+                      <small class="text-muted form-text">Info extra</small>
+                      {% if form.info.errors %}
+                      <p class="text-danger">
+                        {% for error in form.info.errors %}
                           {{ error }}<br/>
                         {% endfor %}
                       </p>
@@ -83,7 +135,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="serialNumber" class="form-label">{{ form.serial_number.label }} *</label>
+                      <label for="serialNumber" class="form-label">{{ form.serial_number.label }}</label>
                       {{ form.serial_number(class_="form-control") }}
                       <small class="text-muted form-text">Serial number of this device</small>
                       {% if form.serial_number.errors %}
@@ -96,7 +148,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.model.label }} *</label>
+                      <label for="model" class="form-label">{{ form.model.label }}</label>
                       {{ form.model(class_="form-control") }}
                       <small class="text-muted form-text">Name of model</small>
                       {% if form.model.errors %}
@@ -109,7 +161,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.manufacturer.label }} *</label>
+                      <label for="model" class="form-label">{{ form.manufacturer.label }}</label>
                       {{ form.manufacturer(class_="form-control") }}
                       <small class="text-muted form-text">Name of manufacturer</small>
                       {% if form.manufacturer.errors %}
@@ -199,7 +251,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.generation.label }} *</label>
+                      <label for="model" class="form-label">{{ form.generation.label }}</label>
                       {{ form.generation(class_="form-control") }}
                       <small class="text-muted form-text">The generation of the device.</small>
                       {% if form.generation.errors %}
@@ -225,7 +277,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.weight.label }} *</label>
+                      <label for="model" class="form-label">{{ form.weight.label }}</label>
                       {{ form.weight(class_="form-control") }}
                       <small class="text-muted form-text">The weight of the device in Kg.</small>
                       {% if form.weight.errors %}
@@ -238,7 +290,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.width.label }} *</label>
+                      <label for="model" class="form-label">{{ form.width.label }}</label>
                       {{ form.width(class_="form-control") }}
                       <small class="text-muted form-text">The width of the device in meters.</small>
                       {% if form.width.errors %}
@@ -251,7 +303,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.height.label }} *</label>
+                      <label for="model" class="form-label">{{ form.height.label }}</label>
                       {{ form.height(class_="form-control") }}
                       <small class="text-muted form-text">The height of the device in meters.</small>
                       {% if form.height.errors %}
@@ -264,7 +316,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.depth.label }} *</label>
+                      <label for="model" class="form-label">{{ form.depth.label }}</label>
                       {{ form.depth(class_="form-control") }}
                       <small class="text-muted form-text">The depth of the device in meters.</small>
                       {% if form.depth.errors %}
