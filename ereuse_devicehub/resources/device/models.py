@@ -793,8 +793,7 @@ class DisplayMixin:
 
 class Placeholder(Thing):
     id = Column(BigInteger, Sequence('placeholder_seq'), primary_key=True)
-    phid = Column(Unicode(), check_lower('phid'), unique=False)
-    pallet = Column(BigInteger, nullable=True)
+    pallet = Column(Unicode(), nullable=True)
     pallet.comment = "used for identification where from where is this placeholders"
     info = db.Column(CIText())
     info.comment = "more info of placeholders"
@@ -803,29 +802,29 @@ class Placeholder(Thing):
         "Identification used for one supplier of one placeholders"
     )
 
-    placeholder_id = db.Column(
+    device_id = db.Column(
         BigInteger,
         db.ForeignKey(Device.id),
         nullable=False,
     )
-    placeholder = db.relationship(
+    device = db.relationship(
         Device,
-        backref=backref('placeholder', lazy=True),
-        primaryjoin=placeholder_id == Device.id,
+        backref=backref('placeholder', lazy=True, uselist=False),
+        primaryjoin=device_id == Device.id,
     )
-    placeholder_id.comment = "datas of the placeholder"
+    device_id.comment = "datas of the placeholder"
 
-    device_id = db.Column(
+    binding_id = db.Column(
         BigInteger,
         db.ForeignKey(Device.id),
         nullable=True,
     )
-    device = db.relationship(
+    binding = db.relationship(
         Device,
-        backref=backref('binding', lazy=True),
-        primaryjoin=placeholder_id == Device.id,
+        backref=backref('binding', lazy=True, uselist=False),
+        primaryjoin=binding_id == Device.id,
     )
-    device_id.comment = "device with snapshots than is linked to the placeholder"
+    binding_id.comment = "device with snapshots than is linked to the placeholder"
 
 
 class Computer(Device):
