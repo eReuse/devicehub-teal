@@ -42,11 +42,14 @@ from ereuse_devicehub.resources.device.models import (
     SAI,
     Cellphone,
     ComputerMonitor,
+    Desktop,
     Device,
     Keyboard,
+    Laptop,
     MemoryCardReader,
     Mouse,
     Placeholder,
+    Server,
     Smartphone,
     Tablet,
 )
@@ -333,6 +336,9 @@ class NewDeviceForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.devices = {
+            "Laptop": Laptop,
+            "Desktop": Desktop,
+            "Server": Server,
             "Smartphone": Smartphone,
             "Tablet": Tablet,
             "Cellphone": Cellphone,
@@ -395,6 +401,15 @@ class NewDeviceForm(FlaskForm):
                 int(meid, 16)
             except ValueError:
                 self.meid.errors = error
+                is_valid = False
+
+        if self.phid.data:
+            dev = Device.query.filter_by(
+                hid=self.phid.data, owner=g.user, active=True
+            ).first()
+            if dev and not dev.placeholder:
+                msg = "Sorry, exist one snapshot device with this HID"
+                self.phid.errors = [msg]
                 is_valid = False
 
         if not is_valid:
@@ -465,11 +480,12 @@ class NewDeviceForm(FlaskForm):
         _hid = self.phid.data
         if not _hid:
             _hid = Placeholder.query.order_by(Placeholder.id.desc()).first()
-            if not _hid:
+            if _hid:
+                _hid = str(_hid.id + 1)
+            else:
                 _hid = '1'
-            _hid = str(_hid.id + 1)
 
-        snapshot_json['device'].hid = _hid
+        snapshot_json['device'].hid = _hid.lower()
 
         snapshot = upload_form.build(snapshot_json)
 
