@@ -627,7 +627,7 @@ def test_add_with_ammount_laptops(user3: UserClientFlask):
     assert 'Device &#34;Laptop&#34; created successfully!' in body
     for dev in Device.query.all():
         assert dev.type == 'Laptop'
-        assert dev.placeholder.id_device_supplier == "b2"
+        assert dev.placeholder.id_device_supplier is None
         assert dev.hid in [str(x) for x in range(1, num + 1)]
     assert Device.query.count() == num
 

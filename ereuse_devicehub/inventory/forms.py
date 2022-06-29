@@ -424,27 +424,11 @@ class NewDeviceForm(FlaskForm):
         if self.serial_number.data:
             self.serial_number.data = self.serial_number.data.lower()
 
-        if not self.phid.data:
-            _hid = Placeholder.query.order_by(Placeholder.id.desc()).first()
-            if _hid:
-                _hid = str(_hid.id + 1)
-            else:
-                _hid = '1'
-            self.phid.data = _hid.lower()
-        self.phid.data = self.phid.data.lower()
-
-        if self.amount.data > 1:
-            self.phid.data = None
-            self.id_device_supplier.data = None
-            self.serial_number.data = None
-            self.sku.data = None
-            self.imei.data = None
-            self.meid.data = None
-
         return True
 
     def save(self, commit=True):
         for n in range(self.amount.data):
+            self.reset_ids()
             self.create_device()
 
         if commit:
@@ -500,6 +484,8 @@ class NewDeviceForm(FlaskForm):
             snapshot_json['device'].meid = self.meid.data
 
         snapshot_json['device'].placeholder = self.get_placeholder()
+        snapshot_json['device'].hid = self.phid.data
+
         snapshot = upload_form.build(snapshot_json)
         move_json(self.tmp_snapshots, path_snapshot, g.user.email)
 
@@ -508,6 +494,27 @@ class NewDeviceForm(FlaskForm):
             snapshot.device.screen = self.screen.data
 
         return snapshot
+
+    def get_phid(self):
+        _hid = self.phid.data
+        if not _hid:
+            _hid = Placeholder.query.order_by(Placeholder.id.desc()).first()
+            if _hid:
+                _hid = str(_hid.id + 1)
+            else:
+                _hid = '1'
+
+        self.phid.data = _hid.lower()
+
+    def reset_ids(self):
+        if self.amount.data > 1:
+            self.phid.data = None
+            self.id_device_supplier.data = None
+            self.serial_number.data = None
+            self.sku.data = None
+            self.imei.data = None
+            self.meid.data = None
+        self.get_phid()
 
     def get_placeholder(self):
         self.placeholder = Placeholder(
