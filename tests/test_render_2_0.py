@@ -445,12 +445,188 @@ def test_add_monitor(user3: UserClientFlask):
         'weight': 0.1,
         'height': 0.1,
         'depth': 0.1,
+        'id_device_supplier': "b2",
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
     assert 'Device &#34;Monitor&#34; created successfully!' in body
     dev = Device.query.one()
     assert dev.type == 'Monitor'
+    assert dev.placeholder.id_device_supplier == "b2"
+    assert dev.hid == '1'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_update_monitor(user3: UserClientFlask):
+    uri = '/inventory/device/add/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "New Device" in body
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Monitor",
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+        'pallet': "l34",
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Device &#34;Monitor&#34; created successfully!' in body
+    dev = Device.query.one()
+    assert dev.type == 'Monitor'
+    assert dev.placeholder.id_device_supplier == "b2"
+    assert dev.hid == '1'
+    assert dev.model == 'lc27t55'
+    assert dev.depth == 0.1
+    assert dev.placeholder.pallet == "l34"
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Monitor",
+        'phid': '1',
+        'serial_number': "AAAAB",
+        'model': "LCD 43 b",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.2,
+        'id_device_supplier': "b3",
+        'pallet': "l20",
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Device &#34;Monitor&#34; created successfully!' in body
+    dev = Device.query.one()
+    assert dev.type == 'Monitor'
+    assert dev.placeholder.id_device_supplier == "b3"
+    assert dev.hid == '1'
+    assert dev.model == 'lcd 43 b'
+    assert dev.depth == 0.2
+    assert dev.placeholder.pallet == "l20"
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_2_monitor(user3: UserClientFlask):
+    uri = '/inventory/device/add/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "New Device" in body
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Monitor",
+        'phid': "AAB",
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b1",
+        'pallet': "l34",
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Device &#34;Monitor&#34; created successfully!' in body
+    dev = Device.query.one()
+    assert dev.type == 'Monitor'
+    assert dev.placeholder.id_device_supplier == "b1"
+    assert dev.hid == 'aab'
+    assert dev.model == 'lc27t55'
+    assert dev.placeholder.pallet == "l34"
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Monitor",
+        'serial_number': "AAAAB",
+        'model': "LCD 43 b",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.2,
+        'id_device_supplier': "b2",
+        'pallet': "l20",
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Device &#34;Monitor&#34; created successfully!' in body
+    dev = Device.query.all()[-1]
+    assert dev.type == 'Monitor'
+    assert dev.placeholder.id_device_supplier == "b2"
+    assert dev.hid == '2'
+    assert dev.model == 'lcd 43 b'
+    assert dev.placeholder.pallet == "l20"
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_laptop(user3: UserClientFlask):
+    uri = '/inventory/device/add/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "New Device" in body
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Device &#34;Laptop&#34; created successfully!' in body
+    dev = Device.query.one()
+    assert dev.type == 'Laptop'
+    assert dev.placeholder.id_device_supplier == "b2"
+    assert dev.hid == '1'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_laptop_duplicate(user3: UserClientFlask):
+    file_name = 'real-eee-1001pxd.snapshot.12.json'
+    create_device(user3, file_name)
+
+    uri = '/inventory/device/add/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "New Device" in body
+    assert Device.query.count() == 10
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'phid': 'laptop-asustek_computer_inc-1001pxd-b8oaas048285-14:da:e9:42:f6:7b',
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Sorry, exist one snapshot device with this HID' in body
+    assert Device.query.count() == 10
 
 
 @pytest.mark.mvp
