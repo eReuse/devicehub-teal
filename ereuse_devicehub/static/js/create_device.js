@@ -1,6 +1,8 @@
 $(document).ready(() => {
    $("#type").on("change", deviceInputs);
+   $("#amount").on("change", amountInputs);
    deviceInputs();
+   amountInputs();
 })
 
 function deviceInputs() {
@@ -19,5 +21,14 @@ function deviceInputs() {
         $("#resolution").hide();
         $("#imei").hide();
         $("#meid").hide();
-    }
+    };
+    amountInputs();
+}
+
+function amountInputs() {
+    if ($("#amount").val() > 1) {
+        $("#Phid").hide();
+    } else {
+        $("#Phid").show();
+    };
 }

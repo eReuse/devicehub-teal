@@ -403,7 +403,7 @@ class NewDeviceForm(FlaskForm):
                 self.meid.errors = error
                 is_valid = False
 
-        if self.phid.data:
+        if self.phid.data and self.amount.data == 1:
             dev = Device.query.filter_by(
                 hid=self.phid.data, owner=g.user, active=True
             ).first()
@@ -427,6 +427,16 @@ class NewDeviceForm(FlaskForm):
         return True
 
     def save(self, commit=True):
+        if self.amount.data > 1:
+            self.phid.data = None
+
+        for n in range(self.amount.data):
+            self.create_device()
+
+        if commit:
+            db.session.commit()
+
+    def create_device(self):
 
         json_snapshot = {
             'type': 'Snapshot',
@@ -494,8 +504,6 @@ class NewDeviceForm(FlaskForm):
             snapshot.device.resolution = self.resolution.data
             snapshot.device.screen = self.screen.data
 
-        if commit:
-            db.session.commit()
         return snapshot
 
     def get_placeholder(self):
