@@ -601,6 +601,39 @@ def test_add_laptop(user3: UserClientFlask):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_with_ammount_laptops(user3: UserClientFlask):
+    uri = '/inventory/device/add/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "New Device" in body
+
+    num = 3
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'amount': num,
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Device &#34;Laptop&#34; created successfully!' in body
+    for dev in Device.query.all():
+        assert dev.type == 'Laptop'
+        assert dev.placeholder.id_device_supplier == "b2"
+        assert dev.hid in [str(x) for x in range(1, num+1)]
+    assert Device.query.count() == num
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_add_laptop_duplicate(user3: UserClientFlask):
     file_name = 'real-eee-1001pxd.snapshot.12.json'
     create_device(user3, file_name)
