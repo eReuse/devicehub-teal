@@ -504,14 +504,14 @@ def test_update_monitor(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert 'Device &#34;Monitor&#34; created successfully!' in body
+    assert 'Sorry, exist one snapshot device with this HID' in body
     dev = Device.query.one()
     assert dev.type == 'Monitor'
-    assert dev.placeholder.id_device_supplier == "b3"
+    assert dev.placeholder.id_device_supplier == "b2"
     assert dev.hid == '1'
-    assert dev.model == 'lcd 43 b'
-    assert dev.depth == 0.2
-    assert dev.placeholder.pallet == "l20"
+    assert dev.model == 'lc27t55'
+    assert dev.depth == 0.1
+    assert dev.placeholder.pallet == "l34"
 
 
 @pytest.mark.mvp
@@ -628,7 +628,7 @@ def test_add_with_ammount_laptops(user3: UserClientFlask):
     for dev in Device.query.all():
         assert dev.type == 'Laptop'
         assert dev.placeholder.id_device_supplier == "b2"
-        assert dev.hid in [str(x) for x in range(1, num+1)]
+        assert dev.hid in [str(x) for x in range(1, num + 1)]
     assert Device.query.count() == num
 
 

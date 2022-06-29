@@ -103,7 +103,7 @@
                       {% endif %}
                     </div>
 
-                    <div class="form-group mb-2">
+                    <div class="form-group mb-2" id="Id_device_supplier">
                       <label for="label" class="form-label">{{ form.id_device_supplier.label }}</label>
                       {{ form.id_device_supplier(class_="form-control") }}
                       <small class="text-muted form-text">Identity of device for the Supplier</small>
@@ -142,7 +142,7 @@
                       {% endif %}
                     </div>
 
-                    <div class="from-group has-validation mb-2">
+                    <div class="from-group has-validation mb-2" id="Serial_number">
                       <label for="serialNumber" class="form-label">{{ form.serial_number.label }}</label>
                       {{ form.serial_number(class_="form-control") }}
                       <small class="text-muted form-text">Serial number of this device</small>
@@ -349,7 +349,7 @@
                       {% endif %}
                     </div>
 
-                    <div class="from-group has-validation mb-2">
+                    <div class="from-group has-validation mb-2" id="Sku">
                       <label for="model" class="form-label">{{ form.sku.label }}</label>
                       {{ form.sku(class_="form-control") }}
                       <small class="text-muted form-text">The Stock Keeping Unit (SKU), i.e. a merchant-specific identifier for a product or service.</small>

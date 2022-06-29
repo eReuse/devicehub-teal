@@ -388,12 +388,12 @@ class NewDeviceForm(FlaskForm):
             self.depth.errors = error
             is_valid = False
 
-        if self.imei.data:
+        if self.imei.data and self.amount.data == 1:
             if not 13 < len(str(self.imei.data)) < 17:
                 self.imei.errors = error
                 is_valid = False
 
-        if self.meid.data:
+        if self.meid.data and self.amount.data == 1:
             meid = self.meid.data
             if not 13 < len(meid) < 17:
                 is_valid = False
@@ -407,7 +407,7 @@ class NewDeviceForm(FlaskForm):
             dev = Device.query.filter_by(
                 hid=self.phid.data, owner=g.user, active=True
             ).first()
-            if dev and not dev.placeholder:
+            if dev:
                 msg = "Sorry, exist one snapshot device with this HID"
                 self.phid.errors = [msg]
                 is_valid = False
@@ -424,12 +424,26 @@ class NewDeviceForm(FlaskForm):
         if self.serial_number.data:
             self.serial_number.data = self.serial_number.data.lower()
 
+        if not self.phid.data:
+            _hid = Placeholder.query.order_by(Placeholder.id.desc()).first()
+            if _hid:
+                _hid = str(_hid.id + 1)
+            else:
+                _hid = '1'
+            self.phid.data = _hid.lower()
+        self.phid.data = self.phid.data.lower()
+
+        if self.amount.data > 1:
+            self.phid.data = None
+            self.id_device_supplier.data = None
+            self.serial_number.data = None
+            self.sku.data = None
+            self.imei.data = None
+            self.meid.data = None
+
         return True
 
     def save(self, commit=True):
-        if self.amount.data > 1:
-            self.phid.data = None
-
         for n in range(self.amount.data):
             self.create_device()
 
@@ -486,20 +500,9 @@ class NewDeviceForm(FlaskForm):
             snapshot_json['device'].meid = self.meid.data
 
         snapshot_json['device'].placeholder = self.get_placeholder()
-
-        _hid = self.phid.data
-        if not _hid:
-            _hid = Placeholder.query.order_by(Placeholder.id.desc()).first()
-            if _hid:
-                _hid = str(_hid.id + 1)
-            else:
-                _hid = '1'
-
-        snapshot_json['device'].hid = _hid.lower()
-
         snapshot = upload_form.build(snapshot_json)
-
         move_json(self.tmp_snapshots, path_snapshot, g.user.email)
+
         if self.type.data == 'ComputerMonitor':
             snapshot.device.resolution = self.resolution.data
             snapshot.device.screen = self.screen.data
