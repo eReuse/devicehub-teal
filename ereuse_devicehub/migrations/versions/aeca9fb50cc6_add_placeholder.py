@@ -25,9 +25,6 @@ def get_inv():
 
 def upgrade():
     # creating placeholder table
-    # con = op.get_bind()
-    # sql = f"CREATE SEQUENCE {get_inv()}.placeholder_id_seq START 1;"
-    # con.execute(sql)
 
     op.create_table(
         'placeholder',
@@ -44,13 +41,12 @@ def upgrade():
             nullable=False,
         ),
         sa.Column('id', sa.BigInteger(), nullable=False),
+        sa.Column('phid', sa.Unicode(), nullable=False),
         sa.Column('id_device_supplier', sa.Unicode(), nullable=True),
         sa.Column('pallet', sa.Unicode(), nullable=True),
         sa.Column('info', citext.CIText(), nullable=True),
         sa.Column('device_id', sa.BigInteger(), nullable=False),
-        sa.Column('binding_id', sa.BigInteger(), nullable=True),
         sa.ForeignKeyConstraint(['device_id'], [f'{get_inv()}.device.id']),
-        sa.ForeignKeyConstraint(['binding_id'], [f'{get_inv()}.device.id']),
         sa.PrimaryKeyConstraint('id'),
         schema=f'{get_inv()}',
     )

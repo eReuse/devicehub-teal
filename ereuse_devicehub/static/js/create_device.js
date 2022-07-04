@@ -38,7 +38,6 @@ function amountInputs() {
         $("#Id_device_supplier").show();
         $("#Serial_number").show();
         $("#Sku").show();
-        $("#imei").show();
-        $("#meid").show();
+        deviceInputs();
     };
 }

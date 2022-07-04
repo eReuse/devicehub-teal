@@ -75,6 +75,13 @@ def create_code(context):
     return hashcode.encode(_id)
 
 
+def create_phid(context):
+    _hid = Placeholder.query.order_by(Placeholder.id.desc()).first()
+    if _hid:
+        return str(_hid.id + 1)
+    return '1'
+
+
 class Device(Thing):
     """Base class for any type of physical object that can be identified.
 
@@ -794,6 +801,7 @@ class DisplayMixin:
 class Placeholder(Thing):
     id = Column(BigInteger, Sequence('placeholder_seq'), primary_key=True)
     pallet = Column(Unicode(), nullable=True)
+    phid = Column(Unicode(), nullable=False, default=create_phid)
     pallet.comment = "used for identification where from where is this placeholders"
     info = db.Column(CIText())
     info.comment = "more info of placeholders"
@@ -813,18 +821,6 @@ class Placeholder(Thing):
         primaryjoin=device_id == Device.id,
     )
     device_id.comment = "datas of the placeholder"
-
-    binding_id = db.Column(
-        BigInteger,
-        db.ForeignKey(Device.id),
-        nullable=True,
-    )
-    binding = db.relationship(
-        Device,
-        backref=backref('binding', lazy=True, uselist=False),
-        primaryjoin=binding_id == Device.id,
-    )
-    binding_id.comment = "device with snapshots than is linked to the placeholder"
 
 
 class Computer(Device):

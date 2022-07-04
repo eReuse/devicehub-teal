@@ -453,7 +453,8 @@ def test_add_monitor(user3: UserClientFlask):
     dev = Device.query.one()
     assert dev.type == 'Monitor'
     assert dev.placeholder.id_device_supplier == "b2"
-    assert dev.hid == '1'
+    assert dev.hid == 'monitor-samsung-lc27t55-aaaab'
+    assert dev.placeholder.phid == '1'
 
 
 @pytest.mark.mvp
@@ -483,7 +484,8 @@ def test_update_monitor(user3: UserClientFlask):
     dev = Device.query.one()
     assert dev.type == 'Monitor'
     assert dev.placeholder.id_device_supplier == "b2"
-    assert dev.hid == '1'
+    assert dev.hid == 'monitor-samsung-lc27t55-aaaab'
+    assert dev.placeholder.phid == '1'
     assert dev.model == 'lc27t55'
     assert dev.depth == 0.1
     assert dev.placeholder.pallet == "l34"
@@ -508,7 +510,8 @@ def test_update_monitor(user3: UserClientFlask):
     dev = Device.query.one()
     assert dev.type == 'Monitor'
     assert dev.placeholder.id_device_supplier == "b2"
-    assert dev.hid == '1'
+    assert dev.hid == 'monitor-samsung-lc27t55-aaaab'
+    assert dev.placeholder.phid == '1'
     assert dev.model == 'lc27t55'
     assert dev.depth == 0.1
     assert dev.placeholder.pallet == "l34"
@@ -542,7 +545,8 @@ def test_add_2_monitor(user3: UserClientFlask):
     dev = Device.query.one()
     assert dev.type == 'Monitor'
     assert dev.placeholder.id_device_supplier == "b1"
-    assert dev.hid == 'aab'
+    assert dev.hid == 'monitor-samsung-lc27t55-aaaab'
+    assert dev.placeholder.phid == 'AAB'
     assert dev.model == 'lc27t55'
     assert dev.placeholder.pallet == "l34"
 
@@ -565,7 +569,8 @@ def test_add_2_monitor(user3: UserClientFlask):
     dev = Device.query.all()[-1]
     assert dev.type == 'Monitor'
     assert dev.placeholder.id_device_supplier == "b2"
-    assert dev.hid == '2'
+    assert dev.hid == 'monitor-samsung-lcd_43_b-aaaab'
+    assert dev.placeholder.phid == '2'
     assert dev.model == 'lcd 43 b'
     assert dev.placeholder.pallet == "l20"
 
@@ -596,7 +601,8 @@ def test_add_laptop(user3: UserClientFlask):
     dev = Device.query.one()
     assert dev.type == 'Laptop'
     assert dev.placeholder.id_device_supplier == "b2"
-    assert dev.hid == '1'
+    assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
+    assert dev.placeholder.phid == '1'
 
 
 @pytest.mark.mvp
@@ -628,21 +634,19 @@ def test_add_with_ammount_laptops(user3: UserClientFlask):
     for dev in Device.query.all():
         assert dev.type == 'Laptop'
         assert dev.placeholder.id_device_supplier is None
-        assert dev.hid in [str(x) for x in range(1, num + 1)]
+        assert dev.hid is None
+        assert dev.placeholder.phid in [str(x) for x in range(1, num + 1)]
     assert Device.query.count() == num
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_add_laptop_duplicate(user3: UserClientFlask):
-    file_name = 'real-eee-1001pxd.snapshot.12.json'
-    create_device(user3, file_name)
 
     uri = '/inventory/device/add/'
     body, status = user3.get(uri)
     assert status == '200 OK'
     assert "New Device" in body
-    assert Device.query.count() == 10
 
     data = {
         'csrf_token': generate_csrf(),
@@ -658,8 +662,10 @@ def test_add_laptop_duplicate(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
+    assert Device.query.count() == 1
+    body, status = user3.post(uri, data=data)
     assert 'Sorry, exist one snapshot device with this HID' in body
-    assert Device.query.count() == 10
+    assert Device.query.count() == 1
 
 
 @pytest.mark.mvp
@@ -1609,3 +1615,29 @@ def test_export_snapshot_json(user3: UserClientFlask):
     body, status = user3.get(uri)
     assert status == '200 OK'
     assert body == snapshot
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_placeholder_excel(user3: UserClientFlask):
+
+    uri = '/inventory/upload-placeholder/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "Upload Placeholder" in body
+
+    file_path = Path(__file__).parent.joinpath('files').joinpath('placeholder_test.xls')
+    with open(file_path, 'rb') as excel:
+        data = {
+            'csrf_token': generate_csrf(),
+            'type': "Laptop",
+            'placeholder_file': excel,
+        }
+        user3.post(uri, data=data, content_type="multipart/form-data")
+    assert Device.query.count() == 1
+    dev = Device.query.first()
+    assert dev.hid == 'laptop-sony-vaio-12345678'
+    assert dev.placeholder.phid == 'a123'
+    assert dev.placeholder.info == 'Good conditions'
+    assert dev.placeholder.pallet == '24A'
+    assert dev.placeholder.id_device_supplier == 'TTT'

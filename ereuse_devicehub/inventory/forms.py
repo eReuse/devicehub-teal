@@ -3,6 +3,7 @@ import datetime
 import json
 from json.decoder import JSONDecodeError
 
+import pandas as pd
 from boltons.urlutils import URL
 from flask import current_app as app
 from flask import g, request
@@ -53,7 +54,6 @@ from ereuse_devicehub.resources.device.models import (
     Smartphone,
     Tablet,
 )
-from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.documents.models import DataWipeDocument
 from ereuse_devicehub.resources.enums import Severity
 from ereuse_devicehub.resources.hash_reports import insert_hash
@@ -404,8 +404,8 @@ class NewDeviceForm(FlaskForm):
                 is_valid = False
 
         if self.phid.data and self.amount.data == 1:
-            dev = Device.query.filter_by(
-                hid=self.phid.data, owner=g.user, active=True
+            dev = Placeholder.query.filter(
+                Placeholder.phid == self.phid.data, Device.owner == g.user
             ).first()
             if dev:
                 msg = "Sorry, exist one snapshot device with this HID"
@@ -435,7 +435,7 @@ class NewDeviceForm(FlaskForm):
             db.session.commit()
 
     def create_device(self):
-
+        schema = SnapshotSchema()
         json_snapshot = {
             'type': 'Snapshot',
             'software': 'Web',
@@ -466,45 +466,20 @@ class NewDeviceForm(FlaskForm):
                     'functionalityRange': self.functionality.data,
                 }
             ]
-
-        upload_form = UploadSnapshotForm()
-        upload_form.sync = Sync()
-
-        schema = SnapshotSchema()
-        self.tmp_snapshots = '/tmp/'
-        path_snapshot = save_json(json_snapshot, self.tmp_snapshots, g.user.email)
+        # import pdb; pdb.set_trace()
         snapshot_json = schema.load(json_snapshot)
+        device = snapshot_json['device']
 
         if self.type.data == 'ComputerMonitor':
-            snapshot_json['device'].resolution_width = self.resolution.data
-            snapshot_json['device'].size = self.screen.data
+            device.resolution_width = self.resolution.data
+            device.size = self.screen.data
 
         if self.type.data in ['Smartphone', 'Tablet', 'Cellphone']:
-            snapshot_json['device'].imei = self.imei.data
-            snapshot_json['device'].meid = self.meid.data
+            device.imei = self.imei.data
+            device.meid = self.meid.data
 
-        snapshot_json['device'].placeholder = self.get_placeholder()
-        snapshot_json['device'].hid = self.phid.data
-
-        snapshot = upload_form.build(snapshot_json)
-        move_json(self.tmp_snapshots, path_snapshot, g.user.email)
-
-        if self.type.data == 'ComputerMonitor':
-            snapshot.device.resolution = self.resolution.data
-            snapshot.device.screen = self.screen.data
-
-        return snapshot
-
-    def get_phid(self):
-        _hid = self.phid.data
-        if not _hid:
-            _hid = Placeholder.query.order_by(Placeholder.id.desc()).first()
-            if _hid:
-                _hid = str(_hid.id + 1)
-            else:
-                _hid = '1'
-
-        self.phid.data = _hid.lower()
+        device.placeholder = self.get_placeholder()
+        db.session.add(device)
 
     def reset_ids(self):
         if self.amount.data > 1:
@@ -514,11 +489,11 @@ class NewDeviceForm(FlaskForm):
             self.sku.data = None
             self.imei.data = None
             self.meid.data = None
-        self.get_phid()
 
     def get_placeholder(self):
         self.placeholder = Placeholder(
             **{
+                'phid': self.phid.data or None,
                 'id_device_supplier': self.id_device_supplier.data,
                 'info': self.info.data,
                 'pallet': self.pallet.data,
@@ -1359,3 +1334,97 @@ class NotesForm(FlaskForm):
             db.session.commit()
 
         return self._obj
+
+
+class UploadPlaceholderForm(FlaskForm):
+    type = StringField('Type', [validators.DataRequired()])
+    placeholder_file = FileField(
+        'Select a Placeholder File', [validators.DataRequired()]
+    )
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+        files = request.files.getlist(self.placeholder_file.name)
+
+        if not files:
+            return False
+
+        data = pd.read_excel(files[0]).to_dict()
+        header = [
+            'Phid',
+            'Model',
+            'Manufacturer',
+            'Serial Number',
+            'Id device Supplier',
+            'Pallet',
+            'Info',
+        ]
+
+        for k in header:
+            if k not in data.keys():
+                self.placeholder_file.errors = ["Missing required fields in the file"]
+                return False
+
+        self.placeholders = []
+        schema = SnapshotSchema()
+        self.path_snapshots = {}
+        for i in data['Phid'].keys():
+            placeholder = None
+            if data['Phid'][i]:
+                placeholder = Placeholder.query.filter_by(phid=data['Phid'][i]).first()
+
+            # update one
+            if placeholder:
+                device = placeholder.device
+                device.model = "{}".format(data['Model'][i]).lower()
+                device.manufacturer = "{}".format(data['Manufacturer'][i]).lower()
+                device.serial_number = "{}".format(data['Serial Number'][i]).lower()
+                placeholder.id_device_supplier = "{}".format(
+                    data['Id device Supplier'][i]
+                )
+                placeholder.pallet = "{}".format(data['Pallet'][i])
+                placeholder.info = "{}".format(data['Info'][i])
+
+                self.placeholders.append(device)
+                continue
+
+            # create a new one
+            json_snapshot = {
+                'type': 'Snapshot',
+                'software': 'Web',
+                'version': '11.0',
+                'device': {
+                    'type': self.type.data,
+                    'model': "{}".format(data['Model'][i]),
+                    'manufacturer': "{}".format(data['Manufacturer'][i]),
+                    'serialNumber': "{}".format(data['Serial Number'][i]),
+                },
+            }
+            json_placeholder = {
+                'phid': data['Phid'][i] or None,
+                'id_device_supplier': data['Id device Supplier'][i],
+                'pallet': data['Pallet'][i],
+                'info': data['Info'][i],
+            }
+
+            snapshot_json = schema.load(json_snapshot)
+            device = snapshot_json['device']
+            device.placeholder = Placeholder(**json_placeholder)
+
+            self.placeholders.append(device)
+
+        return True
+
+    def save(self, commit=True):
+
+        for device in self.placeholders:
+            db.session.add(device)
+
+        if commit:
+            db.session.commit()
+
+        return self.placeholders

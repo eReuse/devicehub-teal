@@ -30,6 +30,7 @@ from ereuse_devicehub.inventory.forms import (
     TradeDocumentForm,
     TradeForm,
     TransferForm,
+    UploadPlaceholderForm,
     UploadSnapshotForm,
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
@@ -832,6 +833,34 @@ class ReceiverNoteView(GenericMixin):
         return flask.redirect(next_url)
 
 
+class UploadPlaceholderView(GenericMixin):
+    methods = ['GET', 'POST']
+    decorators = [login_required]
+    template_name = 'inventory/upload_placeholder.html'
+
+    def dispatch_request(self, lot_id=None):
+        self.get_context()
+        form = UploadPlaceholderForm()
+        self.context.update(
+            {
+                'page_title': 'Upload Placeholder',
+                'form': form,
+                'lot_id': lot_id,
+            }
+        )
+        if form.validate_on_submit():
+            snapshots = form.save(commit=False)
+            if lot_id:
+                lots = self.context['lots']
+                lot = lots.filter(Lot.id == lot_id).one()
+                for snap in snapshots:
+                    lot.devices.add(snap.device)
+                db.session.add(lot)
+            db.session.commit()
+
+        return flask.render_template(self.template_name, **self.context)
+
+
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/action/trade/add/', view_func=NewTradeView.as_view('trade_add'))
 devices.add_url_rule(
@@ -901,4 +930,12 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/lot/<string:lot_id>/receivernote/',
     view_func=ReceiverNoteView.as_view('receiver_note'),
+)
+devices.add_url_rule(
+    '/upload-placeholder/',
+    view_func=UploadPlaceholderView.as_view('upload_placeholder'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/upload-placeholder/',
+    view_func=UploadPlaceholderView.as_view('lot_upload_placeholder'),
 )

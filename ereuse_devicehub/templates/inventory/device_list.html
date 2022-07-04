@@ -330,9 +330,9 @@
                   </li>
                   <li>
                     {% if lot %}
-                    <a href="{{ url_for('inventory.lot_upload_snapshot', lot_id=lot.id) }}" class="dropdown-item">
+                    <a href="{{ url_for('inventory.lot_upload_placeholder', lot_id=lot.id) }}" class="dropdown-item">
                     {% else %}
-                    <a href="{{ url_for('inventory.upload_snapshot') }}" class="dropdown-item">
+                    <a href="{{ url_for('inventory.upload_placeholder') }}" class="dropdown-item">
                     {% endif %}
                       <i class="bi bi-upload"></i>
                       Upload Placeholder Spreadsheet
