@@ -69,6 +69,7 @@ class GenericMixin(View):
     def get_context(self):
         self.context = {
             'lots': self.get_lots(),
+            'all_lots': self.get_lots().all(),
             'version': __version__,
         }
 
