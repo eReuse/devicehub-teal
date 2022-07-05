@@ -179,7 +179,7 @@
           {% else %}
           <ul id="incoming-lots-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
             {% endif %}
-            {% for lot in all_lots %}
+            {% for lot in lots %}
             {% if lot.is_incoming %}
             <li>
               <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}">
@@ -204,7 +204,7 @@
           {% else %}
           <ul id="outgoing-lots-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
             {% endif %}
-            {% for lot in all_lots %}
+            {% for lot in lots %}
             {% if lot.is_outgoing %}
             <li>
               <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}">
@@ -235,7 +235,7 @@
                 <i class="bi bi-plus" style="font-size: larger;"></i><span>New temporary lot</span>
               </a>
             </li>
-            {% for lot in all_lots %}
+            {% for lot in lots %}
             {% if lot.is_temporary %}
             <li>
               <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}">
