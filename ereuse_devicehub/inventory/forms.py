@@ -1458,7 +1458,11 @@ class UploadPlaceholderForm(FlaskForm):
                     for k, v in x.items():
                         data[head[i]][k] = v[i]
         else:
-            data = pd.read_excel(_file).to_dict()
+            try:
+                data = pd.read_excel(_file).to_dict()
+            except ValueError:
+                self.placeholder_file.errors = ["File don't have a correct format"]
+                return False
 
         return data
 
@@ -1472,6 +1476,8 @@ class UploadPlaceholderForm(FlaskForm):
             return False
 
         data = self.get_data_file()
+        if not data:
+            return False
 
         header = [
             'Phid',
