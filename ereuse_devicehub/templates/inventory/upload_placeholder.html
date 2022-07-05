@@ -92,6 +92,13 @@
                     <div class="input-group has-validation">
                       {{ form.placeholder_file }}
                     </div>
+                    {% if form.placeholder_file.errors %}
+                    <p class="text-danger">
+                      {% for error in form.placeholder_file.errors %}
+                        {{ error }}<br/>
+                      {% endfor %}
+                    </p>
+                    {% endif %}
                   </div>
 
                   <div>

@@ -601,6 +601,34 @@ class Device(Thing):
             args[POLYMORPHIC_ON] = cls.type
         return args
 
+    def appearance(self):
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        with suppress(LookupError, ValueError, StopIteration):
+            action = next(e for e in reversed(actions) if e.type == 'VisualTest')
+            return action.appearance_range
+
+    def functionality(self):
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        with suppress(LookupError, ValueError, StopIteration):
+            action = next(e for e in reversed(actions) if e.type == 'VisualTest')
+            return action.functionality_range
+
+    def set_appearance(self, value):
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        with suppress(LookupError, ValueError, StopIteration):
+            action = next(e for e in reversed(actions) if e.type == 'VisualTest')
+            action.appearance_range = value
+
+    def set_functionality(self, value):
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        with suppress(LookupError, ValueError, StopIteration):
+            action = next(e for e in reversed(actions) if e.type == 'VisualTest')
+            action.functionality_range = value
+
     def is_status(self, action):
         from ereuse_devicehub.resources.device import states
 

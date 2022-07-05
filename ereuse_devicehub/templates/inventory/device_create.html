@@ -34,7 +34,7 @@
                   <div>
                     <div class="form-group has-validation mb-2">
                       <label for="name" class="form-label">Type *</label>
-                      <select id="type" class="form-control" name="type" required="">
+                      <select id="type" class="form-control" name="type" required="" {% if form.type.render_kw.disabled %}disabled="disabled"{% endif %}>
                         <option value="">Select one Type</option>
                         <optgroup label="Computer">
                           <option value="Laptop"
@@ -184,27 +184,33 @@
                     <div class="from-group has-validation mb-2">
                       <label for="model" class="form-label">{{ form.appearance.label }}</label>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="appearance" value="Z">
+                        <input class="form-check-input" type="radio" name="appearance" value="Z"
+                        {% if form.appearance.data == 'Z' %}checked="cheked"{% endif %}>
                         <label class="form-check-label">0. The device is new.</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="appearance" value="A">
+                        <input class="form-check-input" type="radio" name="appearance" value="A"
+                        {% if form.appearance.data == 'A' %}checked="checked"{% endif %}>
                         <label class="form-check-label">A. Like new (no visual damage))</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="appearance" value="B">
+                        <input class="form-check-input" type="radio" name="appearance" value="B"
+                        {% if form.appearance.data == 'B' %}checked="checked"{% endif %}>
                         <label class="form-check-label">B. In very good condition (small visual damage to hard-to-detect parts)</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="appearance" value="C">
+                        <input class="form-check-input" type="radio" name="appearance" value="C"
+                        {% if form.appearance.data == 'C' %}checked="checked"{% endif %}>
                         <label class="form-check-label">C. In good condition (small visual damage to easy-to-detect parts, not the screen))</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="appearance" value="D">
+                        <input class="form-check-input" type="radio" name="appearance" value="D"
+                        {% if form.appearance.data == 'D' %}checked="checked"{% endif %}>
                         <label class="form-check-label">D. It is acceptable (visual damage to visible parts, not on the screen)</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="appearance" value="E">
+                        <input class="form-check-input" type="radio" name="appearance" value="E"
+                        {% if form.appearance.data == 'E' %}checked="checked"{% endif %}>
                         <label class="form-check-label">E. It is unacceptable (substantial visual damage that may affect use)</label>
                       </div>
                       <small class="text-muted form-text">Rate the imperfections that affect the device aesthetically, but not its use.</small>
@@ -220,19 +226,23 @@
                     <div class="from-group has-validation mb-2">
                       <label for="model" class="form-label">{{ form.functionality.label }}</label>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="functionality" value="A">
+                        <input class="form-check-input" type="radio" name="functionality" value="A"
+                        {% if form.functionality.data == 'A' %}checked="checked"{% endif %}>
                         <label class="form-check-label">A. Everything works perfectly (buttons, and no scratches on the screen)</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="functionality" value="B">
+                        <input class="form-check-input" type="radio" name="functionality" value="B"
+                        {% if form.functionality.data == 'B' %}checked="checked"{% endif %}>
                         <label class="form-check-label">B. There is a hard to press button or small scratches on the corners of the screen</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="functionality" value="C">
+                        <input class="form-check-input" type="radio" name="functionality" value="C"
+                        {% if form.functionality.data == 'C' %}checked="checked"{% endif %}>
                         <label class="form-check-label">C. A non-essential button does not work; the screen has multiple scratches on the corners</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="functionality" value="D">
+                        <input class="form-check-input" type="radio" name="functionality" value="D"
+                        {% if form.functionality.data == 'D' %}checked="checked"{% endif %}>
                         <label class="form-check-label">D. Multiple buttons do not work properly; the screen has severe damage that may affect use</label>
                       </div>
                       <small class="text-muted form-text">It qualifies the defects of a device that affect its use.</small>

@@ -273,10 +273,37 @@ class DeviceCreateView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
 
+class DeviceEditView(GenericMixin):
+    methods = ['GET', 'POST']
+    decorators = [login_required]
+    template_name = 'inventory/device_create.html'
+
+    def dispatch_request(self, id):
+        self.get_context()
+        device = (
+            Device.query.filter(Device.owner_id == current_user.id)
+            .filter(Device.devicehub_id == id)
+            .one()
+        )
+        form = NewDeviceForm(_obj=device)
+        self.context.update(
+            {
+                'page_title': 'Edit Device',
+                'form': form,
+            }
+        )
+        if form.validate_on_submit():
+            next_url = url_for('inventory.device_details', id=id)
+            form.save(commit=True)
+            messages.success('Device "{}" edited successfully!'.format(form.type.data))
+            return flask.redirect(next_url)
+
+        return flask.render_template(self.template_name, **self.context)
+
+
 class TagLinkDeviceView(View):
     methods = ['POST']
     decorators = [login_required]
-    # template_name = 'inventory/device_list.html'
 
     def dispatch_request(self):
         form = TagDeviceForm()
@@ -853,10 +880,11 @@ class UploadPlaceholderView(GenericMixin):
             if lot_id:
                 lots = self.context['lots']
                 lot = lots.filter(Lot.id == lot_id).one()
-                for snap in snapshots:
-                    lot.devices.add(snap.device)
+                for device in snapshots:
+                    lot.devices.add(device)
                 db.session.add(lot)
             db.session.commit()
+            messages.success('Placeholders uploaded successfully!')
 
         return flask.render_template(self.template_name, **self.context)
 
@@ -899,6 +927,9 @@ devices.add_url_rule('/device/add/', view_func=DeviceCreateView.as_view('device_
 devices.add_url_rule(
     '/lot/<string:lot_id>/device/add/',
     view_func=DeviceCreateView.as_view('lot_device_add'),
+)
+devices.add_url_rule(
+    '/device/edit/<string:id>/', view_func=DeviceEditView.as_view('device_edit')
 )
 devices.add_url_rule(
     '/tag/devices/add/', view_func=TagLinkDeviceView.as_view('tag_devices_add')
