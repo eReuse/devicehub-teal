@@ -827,6 +827,7 @@ class DisplayMixin:
 
 
 class Placeholder(Thing):
+    __table_args__ = {'schema': ''}
     id = Column(BigInteger, Sequence('placeholder_seq'), primary_key=True)
     pallet = Column(Unicode(), nullable=True)
     phid = Column(Unicode(), nullable=False, default=create_phid)
