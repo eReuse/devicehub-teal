@@ -49,7 +49,7 @@ def upgrade():
         sa.Column('owner_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.ForeignKeyConstraint(
             ['placeholder_id'],
-            [f'{get_inv()}.placeholder.id'],
+            ['placeholder.id'],
         ),
         sa.ForeignKeyConstraint(
             ['owner_id'],
