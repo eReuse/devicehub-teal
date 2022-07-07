@@ -50,7 +50,9 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         schema=f'{get_inv()}',
     )
+    op.execute("CREATE SEQUENCE placeholder_seq START 1;")
 
 
 def downgrade():
     op.drop_table('placeholder', schema=f'{get_inv()}')
+    op.execute("DROP SEQUENCE placeholder_log_seq;")

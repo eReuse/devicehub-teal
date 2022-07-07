@@ -56,9 +56,10 @@ def upgrade():
             ['common.user.id'],
         ),
         sa.PrimaryKeyConstraint('id'),
-        schema=f'{get_inv()}',
     )
+    op.execute("CREATE SEQUENCE placeholders_log_seq START 1;")
 
 
 def downgrade():
     op.drop_table('placeholders_log')
+    op.execute("DROP SEQUENCE placeholders_log_seq;")

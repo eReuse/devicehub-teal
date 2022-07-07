@@ -49,7 +49,8 @@ class SnapshotsLog(Thing):
 class PlaceholdersLog(Thing):
     """A Placeholder log."""
 
-    id = Column(BigInteger, Sequence('snapshots_log_seq'), primary_key=True)
+    __table_args__ = {'schema': ''}
+    id = Column(BigInteger, Sequence('placeholders_log_seq'), primary_key=True)
     source = Column(CIText(), default='', nullable=True)
     type = Column(CIText(), default='', nullable=True)
     severity = Column(SmallInteger, default=Severity.Info, nullable=False)
