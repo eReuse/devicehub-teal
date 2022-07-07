@@ -1,0 +1,80 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>{{ page_title }}</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item active">Placeholders</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+
+    <div class="col-xl-12">
+
+      <div class="card">
+        <div class="card-body pt-3" style="min-height: 650px;">
+          <!-- Bordered Tabs -->
+          <div class="tab-content pt-5">
+            <div id="devices-list" class="tab-pane fade devices-list active show">
+              <div class="tab-content pt-2">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">PHID</th>
+                      <th scope="col">Placeholder source</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">DHID</th>
+                      <th scope="col">Status</th>
+                      <th scope="col" data-type="date" data-format="DD-MM-YYYY">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for log in placeholders_log %}
+                    <tr>
+                      <td>
+                          {{ log.phid }}
+                      </td>
+                      <td>
+                          {{ log.source }}
+                      </td>
+                      <td>
+                          {{ log.type }}
+                      </td>
+                      <td>
+                          {% if log.dhid %}
+                          <a href="{{ url_for('inventory.device_details', id=log.dhid)}}">{{ log.dhid }}</a>
+                          {% endif %}
+                      </td>
+                      <td>
+                          {{ log.get_status() }}
+                      </td>
+                      <td>{{ log.created.strftime('%H:%M %d-%m-%Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+
+                </div>
+              </div>
+
+            </div><!-- End Bordered Tabs -->
+          </div>
+        </div>
+      </div>
+
+      <div id="NotificationsContainer" style="position: absolute; bottom: 0; right: 0; margin: 10px; margin-top: 70px; width: calc(100% - 310px);"></div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Custom Code -->
+<script>
+  const table = new simpleDatatables.DataTable("table")
+</script>
+{% endblock main %}

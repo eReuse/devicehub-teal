@@ -34,7 +34,7 @@ from ereuse_devicehub.inventory.forms import (
     UploadSnapshotForm,
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
-from ereuse_devicehub.parser.models import SnapshotsLog
+from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
 from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
@@ -880,13 +880,31 @@ class UploadPlaceholderView(GenericMixin):
             if lot_id:
                 lots = self.context['lots']
                 lot = lots.filter(Lot.id == lot_id).one()
-                for device in snapshots:
+                for device, p in snapshots:
                     lot.devices.add(device)
                 db.session.add(lot)
             db.session.commit()
             messages.success('Placeholders uploaded successfully!')
 
         return flask.render_template(self.template_name, **self.context)
+
+
+class PlaceholderLogListView(GenericMixin):
+    template_name = 'inventory/placeholder_log_list.html'
+
+    def dispatch_request(self):
+        self.get_context()
+        self.context['page_title'] = "Placeholder Logs"
+        self.context['placeholders_log'] = self.get_placeholders_log()
+
+        return flask.render_template(self.template_name, **self.context)
+
+    def get_placeholders_log(self):
+        placeholder_log = PlaceholdersLog.query.filter(
+            PlaceholdersLog.owner == g.user
+        ).order_by(PlaceholdersLog.created.desc())
+
+        return placeholder_log
 
 
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
@@ -969,4 +987,7 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/lot/<string:lot_id>/upload-placeholder/',
     view_func=UploadPlaceholderView.as_view('lot_upload_placeholder'),
+)
+devices.add_url_rule(
+    '/placeholder-logs/', view_func=PlaceholderLogListView.as_view('placeholder_logs')
 )

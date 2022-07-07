@@ -52,13 +52,11 @@ class PlaceholdersLog(Thing):
     id = Column(BigInteger, Sequence('snapshots_log_seq'), primary_key=True)
     source = Column(CIText(), default='', nullable=True)
     type = Column(CIText(), default='', nullable=True)
-    status = Column(CIText(), default='', nullable=True)
+    severity = Column(SmallInteger, default=Severity.Info, nullable=False)
 
-    placeholder_id = Column(
-        UUID(as_uuid=True), db.ForeignKey(Snapshot.id), nullable=True
-    )
+    placeholder_id = Column(BigInteger, db.ForeignKey(Placeholder.id), nullable=True)
     placeholder = db.relationship(
-        Snapshot, primaryjoin=placeholder_id == Placeholder.id
+        Placeholder, primaryjoin=placeholder_id == Placeholder.id
     )
     owner_id = db.Column(
         UUID(as_uuid=True),
@@ -84,6 +82,9 @@ class PlaceholdersLog(Thing):
     @property
     def dhid(self):
         if self.placeholder:
-            return self.placeholder.device.dhid
+            return self.placeholder.device.devicehub_id
 
         return ''
+
+    def get_status(self):
+        return Severity(self.severity)

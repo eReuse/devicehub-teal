@@ -44,7 +44,7 @@ def upgrade():
         sa.Column('id', sa.BigInteger(), nullable=False),
         sa.Column('source', citext.CIText(), nullable=True),
         sa.Column('type', citext.CIText(), nullable=True),
-        sa.Column('status', sa.SmallInteger(), nullable=True),
+        sa.Column('severity', sa.SmallInteger(), nullable=False),
         sa.Column('placeholder_id', sa.BigInteger(), nullable=True),
         sa.Column('owner_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.ForeignKeyConstraint(
@@ -56,6 +56,7 @@ def upgrade():
             ['common.user.id'],
         ),
         sa.PrimaryKeyConstraint('id'),
+        schema=f'{get_inv()}',
     )
 
 
