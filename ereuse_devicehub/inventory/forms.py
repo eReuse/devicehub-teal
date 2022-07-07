@@ -30,6 +30,7 @@ from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.models import DeliveryNote, ReceiverNote, Transfer
+from ereuse_devicehub.parser.models import PlaceholdersLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
@@ -540,6 +541,11 @@ class NewDeviceForm(FlaskForm):
         device.placeholder = self.get_placeholder()
         db.session.add(device)
 
+        placeholder_log = PlaceholdersLog(
+            type="New device", source='Web form', placeholder=device.placeholder
+        )
+        db.session.add(placeholder_log)
+
     def reset_ids(self):
         if self.amount.data > 1:
             self.phid.data = None
@@ -595,6 +601,10 @@ class NewDeviceForm(FlaskForm):
             and self.functionality.data != self._obj.functionality().name
         ):
             self._obj.set_functionality(self.functionality.data)
+        placeholder_log = PlaceholdersLog(
+            type="Update", source='Web form', placeholder=self._obj.placeholder
+        )
+        db.session.add(placeholder_log)
 
 
 class TagDeviceForm(FlaskForm):
@@ -1445,6 +1455,7 @@ class UploadPlaceholderForm(FlaskForm):
 
         _file = files[0]
         if _file.content_type == 'text/csv':
+            self.source = "CSV File: {}".format(_file.filename)
             delimiter = ';'
             data = pd.read_csv(_file).to_dict()
             head = list(data.keys())[0].split(delimiter)
@@ -1458,6 +1469,7 @@ class UploadPlaceholderForm(FlaskForm):
                     for k, v in x.items():
                         data[head[i]][k] = v[i]
         else:
+            self.source = "Excel File: {}".format(_file.filename)
             try:
                 data = pd.read_excel(_file).to_dict()
             except ValueError:
@@ -1514,7 +1526,10 @@ class UploadPlaceholderForm(FlaskForm):
                 placeholder.pallet = "{}".format(data['Pallet'][i])
                 placeholder.info = "{}".format(data['Info'][i])
 
-                self.placeholders.append(device)
+                placeholder_log = PlaceholdersLog(
+                    type="Update", source=self.source, placeholder=device.placeholder
+                )
+                self.placeholders.append((device, placeholder_log))
                 continue
 
             # create a new one
@@ -1540,14 +1555,18 @@ class UploadPlaceholderForm(FlaskForm):
             device = snapshot_json['device']
             device.placeholder = Placeholder(**json_placeholder)
 
-            self.placeholders.append(device)
+            placeholder_log = PlaceholdersLog(
+                type="New device", source=self.source, placeholder=device.placeholder
+            )
+            self.placeholders.append((device, placeholder_log))
 
         return True
 
     def save(self, commit=True):
 
-        for device in self.placeholders:
+        for device, placeholder_log in self.placeholders:
             db.session.add(device)
+            db.session.add(placeholder_log)
 
         if commit:
             db.session.commit()

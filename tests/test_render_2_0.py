@@ -1781,3 +1781,160 @@ def test_edit_laptop(user3: UserClientFlask):
     assert dev.placeholder.id_device_supplier == 'a2'
     assert dev.serial_number == 'aaaac'
     assert dev.model == 'lc27t56'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_placeholder_log_manual_new(user3: UserClientFlask):
+    uri = '/inventory/device/add/'
+    user3.get(uri)
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'phid': 'ace',
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+    }
+    user3.post(uri, data=data)
+
+    uri = '/inventory/placeholder-logs/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "Placeholder Logs" in body
+    assert "Web form" in body
+    assert "ace" in body
+    assert "New device" in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_placeholder_log_manual_edit(user3: UserClientFlask):
+    uri = '/inventory/device/add/'
+    user3.get(uri)
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'phid': 'ace',
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+    }
+    user3.post(uri, data=data)
+    dev = Device.query.one()
+
+    uri = '/inventory/device/edit/{}/'.format(dev.devicehub_id)
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'serial_number': "AAAAC",
+        'model': "LC27T56",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "a2",
+    }
+    user3.post(uri, data=data)
+
+    uri = '/inventory/placeholder-logs/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "Placeholder Logs" in body
+    assert "Web form" in body
+    assert "ace" in body
+    assert "Update" in body
+    assert dev.devicehub_id in body
+    assert "✓" in body
+    assert "CSV" not in body
+    assert "Excel" not in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_placeholder_log_excel_new(user3: UserClientFlask):
+
+    uri = '/inventory/upload-placeholder/'
+    body, status = user3.get(uri)
+
+    file_path = Path(__file__).parent.joinpath('files').joinpath('placeholder_test.xls')
+    with open(file_path, 'rb') as excel:
+        data = {
+            'csrf_token': generate_csrf(),
+            'type': "Laptop",
+            'placeholder_file': excel,
+        }
+        user3.post(uri, data=data, content_type="multipart/form-data")
+    dev = Device.query.first()
+    assert dev.placeholder.phid == 'a123'
+
+    uri = '/inventory/placeholder-logs/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "Placeholder Logs" in body
+    assert dev.placeholder.phid in body
+    assert dev.devicehub_id in body
+    assert "Web form" not in body
+    assert "Update" not in body
+    assert "New device" in body
+    assert "✓" in body
+    assert "CSV" not in body
+    assert "Excel" in body
+    assert "placeholder_test.xls" in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_placeholder_log_excel_update(user3: UserClientFlask):
+
+    uri = '/inventory/upload-placeholder/'
+    body, status = user3.get(uri)
+
+    file_path = Path(__file__).parent.joinpath('files').joinpath('placeholder_test.xls')
+    with open(file_path, 'rb') as excel:
+        data = {
+            'csrf_token': generate_csrf(),
+            'type': "Laptop",
+            'placeholder_file': excel,
+        }
+        user3.post(uri, data=data, content_type="multipart/form-data")
+
+    file_path = Path(__file__).parent.joinpath('files').joinpath('placeholder_test.csv')
+    with open(file_path, 'rb') as excel:
+        data = {
+            'csrf_token': generate_csrf(),
+            'type': "Laptop",
+            'placeholder_file': excel,
+        }
+        user3.post(uri, data=data, content_type="multipart/form-data")
+
+    dev = Device.query.first()
+    assert dev.placeholder.phid == 'a123'
+
+    uri = '/inventory/placeholder-logs/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "Placeholder Logs" in body
+    assert dev.placeholder.phid in body
+    assert dev.devicehub_id in body
+    assert "Web form" not in body
+    assert "Update" in body
+    assert "New device" in body
+    assert "✓" in body
+    assert "CSV" in body
+    assert "Excel" in body
+    assert "placeholder_test.xls" in body
+    assert "placeholder_test.csv" in body
