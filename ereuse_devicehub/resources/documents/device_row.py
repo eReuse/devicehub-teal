@@ -1,13 +1,18 @@
 """ This file frame a correct row for csv report """
 
 from collections import OrderedDict
+
 from flask import url_for
 
-from ereuse_devicehub.resources.enums import Severity
-from ereuse_devicehub.resources.device import models as d, states
 from ereuse_devicehub.resources.action import models as da
-from ereuse_devicehub.resources.action.models import (BenchmarkDataStorage, RateComputer,
-                                                      TestDataStorage)
+from ereuse_devicehub.resources.action.models import (
+    BenchmarkDataStorage,
+    RateComputer,
+    TestDataStorage,
+)
+from ereuse_devicehub.resources.device import models as d
+from ereuse_devicehub.resources.device import states
+from ereuse_devicehub.resources.enums import Severity
 
 
 class DeviceRow(OrderedDict):
@@ -40,20 +45,20 @@ class DeviceRow(OrderedDict):
         software = ''
         if snapshot:
             software = "{software} {version}".format(
-                software=snapshot.software.name, version=snapshot.version)
+                software=snapshot.software.name, version=snapshot.version
+            )
         # General information about device
         self['DHID'] = device.devicehub_id
         self['DocumentID'] = self.document_id
         self['Public Link'] = '{url}{id}'.format(
-            url=url_for('Device.main', _external=True),
-            id=device.devicehub_id)
+            url=url_for('Device.main', _external=True), id=device.devicehub_id
+        )
         self['Lots'] = ', '.join([x.name for x in self.device.lots])
         self['Tag 1 Type'] = self['Tag 1 ID'] = self['Tag 1 Organization'] = ''
         self['Tag 2 Type'] = self['Tag 2 ID'] = self['Tag 2 Organization'] = ''
         self['Tag 3 Type'] = self['Tag 3 ID'] = self['Tag 3 Organization'] = ''
         for i, tag in zip(range(1, 3), device.tags):
-            self['Tag {} Type'.format(
-                i)] = 'unamed' if tag.provider else 'named'
+            self['Tag {} Type'.format(i)] = 'unamed' if tag.provider else 'named'
             self['Tag {} ID'.format(i)] = tag.id
             self['Tag {} Organization'.format(i)] = tag.org.name
 
@@ -79,8 +84,7 @@ class DeviceRow(OrderedDict):
             self['Allocate state'] = device.allocated_status.type
 
         try:
-            self['Lifecycle state'] = device.last_action_of(
-                *states.Trading.actions()).t
+            self['Lifecycle state'] = device.last_action_of(*states.Status.actions()).t
         except LookupError:
             self['Lifecycle state'] = ''
         if isinstance(device, d.Computer):
@@ -155,10 +159,12 @@ class DeviceRow(OrderedDict):
             self['{} {} Serial Number'.format(ctype, i)] = ''
         else:
             self['{} {} Manufacturer'.format(ctype, i)] = none2str(
-                component.manufacturer)
+                component.manufacturer
+            )
             self['{} {} Model'.format(ctype, i)] = none2str(component.model)
             self['{} {} Serial Number'.format(ctype, i)] = none2str(
-                component.serial_number)
+                component.serial_number
+            )
 
         if ctype == d.Processor.t:
             self.get_processor(ctype, i, component)
@@ -178,12 +184,10 @@ class DeviceRow(OrderedDict):
             self['{} {} Number of cores'.format(ctype, i)] = ''
             self['{} {} Speed (GHz)'.format(ctype, i)] = ''
             self['Benchmark {} {} (points)'.format(ctype, i)] = ''
-            self['Benchmark ProcessorSysbench {} {} (points)'.format(
-                ctype, i)] = ''
+            self['Benchmark ProcessorSysbench {} {} (points)'.format(ctype, i)] = ''
             return
 
-        self['{} {} Number of cores'.format(
-            ctype, i)] = none2str(component.cores)
+        self['{} {} Number of cores'.format(ctype, i)] = none2str(component.cores)
         self['{} {} Speed (GHz)'.format(ctype, i)] = none2str(component.speed)
 
         benchmark = get_action(component, 'BenchmarkProcessor')
@@ -194,11 +198,11 @@ class DeviceRow(OrderedDict):
 
         sysbench = get_action(component, 'BenchmarkProcessorSysbench')
         if not sysbench:
-            self['Benchmark ProcessorSysbench {} {} (points)'.format(
-                ctype, i)] = ''
+            self['Benchmark ProcessorSysbench {} {} (points)'.format(ctype, i)] = ''
             return
-        self['Benchmark ProcessorSysbench {} {} (points)'.format(
-            ctype, i)] = sysbench.rate
+        self[
+            'Benchmark ProcessorSysbench {} {} (points)'.format(ctype, i)
+        ] = sysbench.rate
 
     def get_ram(self, ctype, i, component):
         """Particular fields for component Ram Module."""
@@ -212,7 +216,7 @@ class DeviceRow(OrderedDict):
 
     def get_datastorage(self, ctype, i, component):
         """Particular fields for component DataStorage.
-           A DataStorage can be HardDrive or SolidStateDrive.
+        A DataStorage can be HardDrive or SolidStateDrive.
         """
 
         if component is None:
@@ -244,21 +248,23 @@ class DeviceRow(OrderedDict):
         software = ''
         if snapshot:
             software = "{software} {version}".format(
-                software=snapshot.software.name, version=snapshot.version)
+                software=snapshot.software.name, version=snapshot.version
+            )
 
         self['{} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
 
         component_actions = sorted(component.actions, key=lambda x: x.created)
-        erasures = [a for a in component_actions if a.type in [
-            'EraseBasic', 'EraseSectors', 'DataWipe']]
+        erasures = [
+            a
+            for a in component_actions
+            if a.type in ['EraseBasic', 'EraseSectors', 'DataWipe']
+        ]
         erasure = erasures[-1] if erasures else None
         if not erasure:
             self['Erasure {} {}'.format(ctype, i)] = none2str(component.hid)
             serial_number = none2str(component.serial_number)
-            self['Erasure {} {} Serial Number'.format(
-                ctype, i)] = serial_number
-            self['Erasure {} {} Size (MB)'.format(
-                ctype, i)] = none2str(component.size)
+            self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
+            self['Erasure {} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
             self['Erasure {} {} Software'.format(ctype, i)] = ''
             self['Erasure {} {} Result'.format(ctype, i)] = ''
             self['Erasure {} {} Certificate URL'.format(ctype, i)] = ''
@@ -272,15 +278,13 @@ class DeviceRow(OrderedDict):
         elif hasattr(erasure, 'type') and erasure.type == 'DataWipe':
             self['Erasure {} {}'.format(ctype, i)] = none2str(component.hid)
             serial_number = none2str(component.serial_number)
-            self['Erasure {} {} Serial Number'.format(
-                ctype, i)] = serial_number
-            self['Erasure {} {} Size (MB)'.format(
-                ctype, i)] = none2str(component.size)
-            self['Erasure {} {} Software'.format(
-                ctype, i)] = erasure.document.software
+            self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
+            self['Erasure {} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
+            self['Erasure {} {} Software'.format(ctype, i)] = erasure.document.software
             self['Erasure {} {} Result'.format(ctype, i)] = get_result(erasure)
-            self['Erasure {} {} Certificate URL'.format(
-                ctype, i)] = erasure.document.url and erasure.document.url.to_text() or ''
+            self['Erasure {} {} Certificate URL'.format(ctype, i)] = (
+                erasure.document.url and erasure.document.url.to_text() or ''
+            )
             self['Erasure {} {} Type'.format(ctype, i)] = ''
             self['Erasure {} {} Method'.format(ctype, i)] = ''
             self['Erasure {} {} Elapsed (hours)'.format(ctype, i)] = ''
@@ -291,10 +295,8 @@ class DeviceRow(OrderedDict):
         else:
             self['Erasure {} {}'.format(ctype, i)] = none2str(component.hid)
             serial_number = none2str(component.serial_number)
-            self['Erasure {} {} Serial Number'.format(
-                ctype, i)] = serial_number
-            self['Erasure {} {} Size (MB)'.format(
-                ctype, i)] = none2str(component.size)
+            self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
+            self['Erasure {} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
             self['Erasure {} {} Software'.format(ctype, i)] = software
 
             result = get_result(erasure)
@@ -302,20 +304,16 @@ class DeviceRow(OrderedDict):
             self['Erasure {} {} Certificate URL'.format(ctype, i)] = ''
             self['Erasure {} {} Type'.format(ctype, i)] = erasure.type
             self['Erasure {} {} Method'.format(ctype, i)] = erasure.method
-            self['Erasure {} {} Elapsed (hours)'.format(
-                ctype, i)] = format(erasure.elapsed)
-            self['Erasure {} {} Date'.format(
-                ctype, i)] = format(erasure.created)
+            self['Erasure {} {} Elapsed (hours)'.format(ctype, i)] = format(
+                erasure.elapsed
+            )
+            self['Erasure {} {} Date'.format(ctype, i)] = format(erasure.created)
             steps = ','.join((format(x) for x in erasure.steps))
             self['Erasure {} {} Steps'.format(ctype, i)] = steps
-            steps_start_time = ','.join(
-                (format(x.start_time) for x in erasure.steps))
-            self['Erasure {} {} Steps Start Time'.format(
-                ctype, i)] = steps_start_time
-            steps_end_time = ','.join((format(x.end_time)
-                                       for x in erasure.steps))
-            self['Erasure {} {} Steps End Time'.format(
-                ctype, i)] = steps_end_time
+            steps_start_time = ','.join((format(x.start_time) for x in erasure.steps))
+            self['Erasure {} {} Steps Start Time'.format(ctype, i)] = steps_start_time
+            steps_end_time = ','.join((format(x.end_time) for x in erasure.steps))
+            self['Erasure {} {} Steps End Time'.format(ctype, i)] = steps_end_time
 
         benchmark = get_action(component, 'BenchmarkDataStorage')
         if not benchmark:
@@ -323,9 +321,11 @@ class DeviceRow(OrderedDict):
             self['Benchmark {} {} Writing speed (MB/s)'.format(ctype, i)] = ''
         else:
             self['Benchmark {} {} Read Speed (MB/s)'.format(ctype, i)] = none2str(
-                benchmark.read_speed)
+                benchmark.read_speed
+            )
             self['Benchmark {} {} Writing speed (MB/s)'.format(ctype, i)] = none2str(
-                benchmark.write_speed)
+                benchmark.write_speed
+            )
 
         test_storage = get_action(component, 'TestDataStorage')
         if not test_storage:
@@ -339,14 +339,16 @@ class DeviceRow(OrderedDict):
 
         self['Test {} {} Software'.format(ctype, i)] = software
         self['Test {} {} Type'.format(ctype, i)] = test_storage.length.value
-        self['Test {} {} Result'.format(ctype, i)] = get_result(
-            test_storage)
+        self['Test {} {} Result'.format(ctype, i)] = get_result(test_storage)
         self['Test {} {} Power cycle count'.format(ctype, i)] = none2str(
-            test_storage.power_cycle_count)
+            test_storage.power_cycle_count
+        )
         self['Test {} {} Lifetime (days)'.format(ctype, i)] = none2str(
-            test_storage.lifetime)
+            test_storage.lifetime
+        )
         self['Test {} {} Power on hours'.format(ctype, i)] = none2str(
-            test_storage.power_on_hours)
+            test_storage.power_on_hours
+        )
 
     def get_graphic_card(self, ctype, i, component):
         """Particular fields for component GraphicCard."""
@@ -400,39 +402,36 @@ class StockRow(OrderedDict):
 
 
 def get_result(erasure):
-    """ For the csv is necessary simplify the message of results """
+    """For the csv is necessary simplify the message of results"""
     if hasattr(erasure, 'type') and erasure.type == 'DataWipe':
         if erasure.document.success:
             return 'Success'
         return 'Failure'
 
-
     type_of_results = {
         Severity.Error: 'Failure',
         Severity.Warning: 'Success with Warnings',
         Severity.Notice: 'Success',
-        Severity.Info: 'Success'
-        }
+        Severity.Info: 'Success',
+    }
     return type_of_results[erasure.severity]
 
 
 def none2str(string):
-    """ convert none to empty str """
+    """convert none to empty str"""
     if string is None:
         return ''
     return format(string)
 
 
-
 def get_action(component, action):
-    """ Filter one action from a component or return None """
+    """Filter one action from a component or return None"""
     result = [a for a in component.actions if a.type == action]
     return result[-1] if result else None
 
 
 class ActionRow(OrderedDict):
-
-    def __init__(self, allocate): 
+    def __init__(self, allocate):
         super().__init__()
         # General information about allocates, deallocate and lives
         self['DHID'] = allocate['devicehubID']
@@ -459,7 +458,6 @@ class ActionRow(OrderedDict):
 
 
 class InternalStatsRow(OrderedDict):
-
     def __init__(self, user, create, actions):
         super().__init__()
         # General information about all internal stats
@@ -488,13 +486,7 @@ class InternalStatsRow(OrderedDict):
 
     def count_actions(self):
         for ac in self.actions:
-            self.is_snapshot(
-                self.is_deallocate(
-                    self.is_live(
-                        self.is_allocate(ac)
-                    )
-                )
-            )
+            self.is_snapshot(self.is_deallocate(self.is_live(self.is_allocate(ac))))
 
     def is_allocate(self, ac):
         if ac.type == 'Allocate':
@@ -531,9 +523,18 @@ class InternalStatsRow(OrderedDict):
             self['Snapshot (Registers)'] += 1
 
     def quarter(self, month):
-        q = {1: 'Q1', 2: 'Q1', 3: 'Q1',
-             4: 'Q2', 5: 'Q2', 6: 'Q2',
-             7: 'Q3', 8: 'Q3', 9: 'Q3',
-             10: 'Q4', 11: 'Q4', 12: 'Q4',
-             }
+        q = {
+            1: 'Q1',
+            2: 'Q1',
+            3: 'Q1',
+            4: 'Q2',
+            5: 'Q2',
+            6: 'Q2',
+            7: 'Q3',
+            8: 'Q3',
+            9: 'Q3',
+            10: 'Q4',
+            11: 'Q4',
+            12: 'Q4',
+        }
         return q[int(month)]
