@@ -20,7 +20,6 @@ class TestSelenium:
         self.driver.quit()
 
     def test_selenium(self):
-        # import pdb; pdb.set_trace()
         # setup
         self.driver.get("http://localhost:5000/login/")
         self.driver.set_window_size(1920, 1063)
