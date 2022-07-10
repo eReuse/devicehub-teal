@@ -8,6 +8,7 @@ ml).
 ## master
 
 ## testing
+- [add] #281 add selenium test.
 - [add] #305 add button download iso Workbench.
 - [add] #306 add link for download json snapshot.
 - [add] #308 add sentry.
