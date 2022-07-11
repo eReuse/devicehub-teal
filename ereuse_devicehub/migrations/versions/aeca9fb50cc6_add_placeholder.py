@@ -46,12 +46,15 @@ def upgrade():
         sa.Column('pallet', sa.Unicode(), nullable=True),
         sa.Column('info', citext.CIText(), nullable=True),
         sa.Column('device_id', sa.BigInteger(), nullable=False),
+        sa.Column('binding_id', sa.BigInteger(), nullable=True),
         sa.ForeignKeyConstraint(['device_id'], [f'{get_inv()}.device.id']),
+        sa.ForeignKeyConstraint(['binding_id'], [f'{get_inv()}.device.id']),
         sa.PrimaryKeyConstraint('id'),
+        schema=f'{get_inv()}',
     )
     op.execute("CREATE SEQUENCE placeholder_seq START 1;")
 
 
 def downgrade():
-    op.drop_table('placeholder')
+    op.drop_table('placeholder', schema=f'{get_inv()}')
     op.execute("DROP SEQUENCE placeholder_seq;")
