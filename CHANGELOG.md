@@ -170,7 +170,7 @@ For to do the deployment you need to do run the script extract_uuids.sh before t
 This is the correct secuence if the schema of you proyect is *dbtest*
 ```
 git pull
-sh examples/extract_uuids.sh
+sh scripts/extract_uuids.sh
 alembic -x inventory=dbtest upgrade head
 ```
 If you forget to run this script the migration is do it but not modify any device data.
