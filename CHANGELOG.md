@@ -8,9 +8,12 @@ ml).
 ## master
 
 ## testing
+- [add] #281 add selenium test.
 - [add] #305 add button download iso Workbench.
-- [add] #306 add link for download json snapshot
+- [add] #306 add link for download json snapshot.
+- [add] #308 add sentry.
 - [changed] #302 add system uuid for check the identity of one device.
+- [fixed] #309 column lifecycle status is always empty.
 
 ## [2.2.0] - 2022-06-24
 - [changed] #304 change anchor of link devices lots.
@@ -157,3 +160,17 @@ First server render HTML version. Completely rewrites views of angular JS client
 - [added] #83 add owner_id in all kind of device
 - [fixed] #89 save json on disk only for shapshots
 - [fixed] #91 The most old time allow is 1970-01-01
+
+
+# Release notes
+
+## [2.2.1]
+The pr #302 involves some changes in the deployment process
+For to do the deployment you need to do run the script extract_uuids.sh before to run alembic.
+This is the correct secuence if the schema of you proyect is *dbtest*
+```
+git pull
+sh examples/extract_uuids.sh
+alembic -x inventory=dbtest upgrade head
+```
+If you forget to run this script the migration is do it but not modify any device data.
