@@ -1,3 +1,4 @@
+import copy
 import difflib
 from contextlib import suppress
 from itertools import groupby
@@ -234,6 +235,7 @@ class Sync:
         else:  # Device is new and tags are not linked to a device
             device.tags.clear()  # We don't want to add the transient dummy tags
             db.session.add(device)
+            self.create_placeholder(device)
             db_device = device
         db_device.tags |= (
             tags  # Union of tags the device had plus the (potentially) new ones
@@ -278,22 +280,25 @@ class Sync:
         if hasattr(device, 'system_uuid') and device.system_uuid:
             db_device.system_uuid = device.system_uuid
 
-        if device.placeholder and db_device.placeholder:
-            db_device.placeholder.pallet = device.placeholder.pallet
-            db_device.placeholder.info = device.placeholder.info
-            db_device.placeholder.id_device_supplier = (
-                device.placeholder.id_device_supplier
-            )
-            db_device.sku = device.sku
-            db_device.image = device.image
-            db_device.brand = device.brand
-            db_device.generation = device.generation
-            db_device.variant = device.variant
-            db_device.version = device.version
-            db_device.width = device.width
-            db_device.height = device.height
-            db_device.depth = device.depth
-            db_device.weight = device.weight
+    @staticmethod
+    def create_placeholder(device: Device):
+        """If the device is new, we need create automaticaly a new placeholder"""
+        # import pdb; pdb.set_trace()
+        dict_device = copy.copy(device.__dict__)
+        dict_device.pop('_sa_instance_state')
+        dev_placeholder = device.__class__(**dict_device)
+        for c in device.components:
+            c_dict = copy.copy(c.__dict__)
+            c_dict.pop('_sa_instance_state')
+            c_placeholder = c.__class__(**c_dict)
+            c_placeholder.parent = dev_placeholder
+            component_placeholder = Placeholder(device=c_placeholder, binding=c)
+            db.session.add(c_placeholder)
+            db.session.add(component_placeholder)
+
+        placeholder = Placeholder(device=dev_placeholder, binding=device)
+        db.session.add(dev_placeholder)
+        db.session.add(placeholder)
 
     @staticmethod
     def add_remove(device: Computer, components: Set[Component]) -> OrderedSet:

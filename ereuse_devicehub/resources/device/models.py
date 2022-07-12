@@ -858,7 +858,7 @@ class Placeholder(Thing):
     binding = db.relationship(
         Device,
         backref=backref('binding', lazy=True, uselist=False),
-        primaryjoin=device_id == Device.id,
+        primaryjoin=binding_id == Device.id,
     )
     binding_id.comment = "binding placeholder with workbench device"
 
