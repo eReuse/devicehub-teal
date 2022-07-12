@@ -41,10 +41,10 @@ app.register_blueprint(workbench)
 # configure & enable CSRF of Flask-WTF
 # NOTE: enable by blueprint to exclude API views
 # TODO(@slamora: enable by default & exclude API views when decouple of Teal is completed
-csrf = CSRFProtect(app)
+# csrf = CSRFProtect(app)
 # csrf.protect(core)
 # csrf.protect(devices)
-app.config["SQLALCHEMY_RECORD_QUERIES"] = True
-app.config['PROFILE'] = True
-app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
-app.run(debug=True)
+# app.config["SQLALCHEMY_RECORD_QUERIES"] = True
+# app.config['PROFILE'] = True
+# app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
+# app.run(debug=True)

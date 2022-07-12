@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## testing
+- [added] #312 Placeholder: new, edit, update. (manually and with excel).
 
 ## [2.3.0] - 2022-07-12
 - [added] #281 Add selenium test.
