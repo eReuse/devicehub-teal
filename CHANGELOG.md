@@ -5,21 +5,33 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.ht
 ml).
 
-## master
-
 ## testing
-- [add] #281 add selenium test.
-- [add] #305 add button download iso Workbench.
-- [add] #306 add link for download json snapshot.
-- [add] #308 add sentry.
-- [changed] #302 add system uuid for check the identity of one device.
-- [fixed] #309 column lifecycle status is always empty.
+- [added] #312 Placeholder: new, edit, update. (manually and with excel).
+
+## [2.3.0] - 2022-07-12
+- [added] #281 Add selenium test.
+- [added] #305 Add button to download ISO Workbench.
+- [added] #306 Add link to download JSON snapshot.
+- [added] #308 Add sentry.
+- [changed] #302 Add system uuid to check the identity of one device.
+- [fixed] #309 Column lifecycle status is always empty.
+
+**IMPORTANT**: PR #302 involves some changes in the deployment process:
+```bash
+# First, run script `extract_uuids.sh` before applying alembic migrations (e.g. with schema `dbtest`)
+sh scripts/extract_uuids.sh
+
+# Then, apply alembic migrations
+alembic -x inventory=dbtest upgrade head
+```
+
+**NOTE**: If you forget (or don't need) to run this script before applying new migration it will work but any device will be updated.
 
 ## [2.2.0] - 2022-06-24
 - [changed] #304 change anchor of link devices lots.
 
 ## [2.2.0 rc2] - 2022-06-22
-- [added] #299 Multy select with Shift.
+- [added] #299 Multiselect with Shift.
 - [added] #300 Add Sid in label.
 - [added] #301 Add logo in label.
 - [added] #303 Add export Lots.
@@ -160,17 +172,3 @@ First server render HTML version. Completely rewrites views of angular JS client
 - [added] #83 add owner_id in all kind of device
 - [fixed] #89 save json on disk only for shapshots
 - [fixed] #91 The most old time allow is 1970-01-01
-
-
-# Release notes
-
-## [2.2.1]
-The pr #302 involves some changes in the deployment process
-For to do the deployment you need to do run the script extract_uuids.sh before to run alembic.
-This is the correct secuence if the schema of you proyect is *dbtest*
-```
-git pull
-sh examples/extract_uuids.sh
-alembic -x inventory=dbtest upgrade head
-```
-If you forget to run this script the migration is do it but not modify any device data.

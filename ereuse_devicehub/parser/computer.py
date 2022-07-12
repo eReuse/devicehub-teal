@@ -94,7 +94,7 @@ class Processor(Component):
         assert not hasattr(self, 'cores') or 1 <= self.cores <= 16
 
     @staticmethod  # noqa: C901
-    def processor_brand_generation(model: str):
+    def processor_brand_generation(model: str):  # noqa: C901
         """Generates the ``brand`` and ``generation`` fields for the given model.
 
         This returns a tuple with:
