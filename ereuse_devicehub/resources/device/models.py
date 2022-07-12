@@ -75,6 +75,13 @@ def create_code(context):
     return hashcode.encode(_id)
 
 
+def create_phid(context):
+    _hid = Placeholder.query.order_by(Placeholder.id.desc()).first()
+    if _hid:
+        return str(_hid.id + 1)
+    return '1'
+
+
 class Device(Thing):
     """Base class for any type of physical object that can be identified.
 
@@ -594,6 +601,34 @@ class Device(Thing):
             args[POLYMORPHIC_ON] = cls.type
         return args
 
+    def appearance(self):
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        with suppress(LookupError, ValueError, StopIteration):
+            action = next(e for e in reversed(actions) if e.type == 'VisualTest')
+            return action.appearance_range
+
+    def functionality(self):
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        with suppress(LookupError, ValueError, StopIteration):
+            action = next(e for e in reversed(actions) if e.type == 'VisualTest')
+            return action.functionality_range
+
+    def set_appearance(self, value):
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        with suppress(LookupError, ValueError, StopIteration):
+            action = next(e for e in reversed(actions) if e.type == 'VisualTest')
+            action.appearance_range = value
+
+    def set_functionality(self, value):
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        with suppress(LookupError, ValueError, StopIteration):
+            action = next(e for e in reversed(actions) if e.type == 'VisualTest')
+            action.functionality_range = value
+
     def is_status(self, action):
         from ereuse_devicehub.resources.device import states
 
@@ -789,6 +824,43 @@ class DisplayMixin:
             else:
                 v += '– 0in ({0.aspect_ratio}) {0.technology}'.format(self)
         return v
+
+
+class Placeholder(Thing):
+    id = Column(BigInteger, Sequence('placeholder_seq'), primary_key=True)
+    pallet = Column(Unicode(), nullable=True)
+    phid = Column(Unicode(), nullable=False, default=create_phid)
+    pallet.comment = "used for identification where from where is this placeholders"
+    info = db.Column(CIText())
+    info.comment = "more info of placeholders"
+    id_device_supplier = db.Column(CIText())
+    id_device_supplier.comment = (
+        "Identification used for one supplier of one placeholders"
+    )
+
+    device_id = db.Column(
+        BigInteger,
+        db.ForeignKey(Device.id),
+        nullable=False,
+    )
+    device = db.relationship(
+        Device,
+        backref=backref('placeholder', lazy=True, uselist=False),
+        primaryjoin=device_id == Device.id,
+    )
+    device_id.comment = "datas of the placeholder"
+
+    binding_id = db.Column(
+        BigInteger,
+        db.ForeignKey(Device.id),
+        nullable=True,
+    )
+    binding = db.relationship(
+        Device,
+        backref=backref('binding', lazy=True, uselist=False),
+        primaryjoin=binding_id == Device.id,
+    )
+    binding_id.comment = "binding placeholder with workbench device"
 
 
 class Computer(Device):

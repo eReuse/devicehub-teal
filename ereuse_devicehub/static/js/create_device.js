@@ -1,6 +1,8 @@
 $(document).ready(() => {
    $("#type").on("change", deviceInputs);
+   $("#amount").on("change", amountInputs);
    deviceInputs();
+   amountInputs();
 })
 
 function deviceInputs() {
@@ -19,5 +21,23 @@ function deviceInputs() {
         $("#resolution").hide();
         $("#imei").hide();
         $("#meid").hide();
-    }
+    };
+    amountInputs();
+}
+
+function amountInputs() {
+    if ($("#amount").val() > 1) {
+        $("#Phid").hide();
+        $("#Id_device_supplier").hide();
+        $("#Serial_number").hide();
+        $("#Sku").hide();
+        $("#imei").hide();
+        $("#meid").hide();
+    } else {
+        $("#Phid").show();
+        $("#Id_device_supplier").show();
+        $("#Serial_number").show();
+        $("#Sku").show();
+        deviceInputs();
+    };
 }

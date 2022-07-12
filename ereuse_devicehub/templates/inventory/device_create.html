@@ -34,8 +34,16 @@
                   <div>
                     <div class="form-group has-validation mb-2">
                       <label for="name" class="form-label">Type *</label>
-                      <select id="type" class="form-control" name="type" required="">
+                      <select id="type" class="form-control" name="type" required="" {% if form.type.render_kw.disabled %}disabled="disabled"{% endif %}>
                         <option value="">Select one Type</option>
+                        <optgroup label="Computer">
+                          <option value="Laptop"
+                          {% if form.type.data == 'Laptop' %} selected="selected"{% endif %}>Laptop</option>
+                          <option value="Desktop"
+                          {% if form.type.data == 'Desktop' %} selected="selected"{% endif %}>Desktop</option>
+                          <option value="Server"
+                          {% if form.type.data == 'Server' %} selected="selected"{% endif %}>Server</option>
+                        </optgroup>
                         <optgroup label="Monitor">
                           <option value="ComputerMonitor"
                           {% if form.type.data == 'Monitor' %} selected="selected"{% endif %}>Computer Monitor</option>
@@ -70,20 +78,72 @@
                     </div>
 
                     <div class="form-group mb-2">
-                      <label for="label" class="form-label">Label</label>
-                      {{ form.label(class_="form-control") }}
-                      <small class="text-muted form-text">Label that you want link to this device</small>
-                      {% if form.label.errors %}
+                      <label for="label" class="form-label">{{ form.amount.label }} *</label>
+                      {{ form.amount(class_="form-control") }}
+                      <small class="text-muted form-text">Number of devices you want to create of this type</small>
+                      {% if form.amount.errors %}
                       <p class="text-danger">
-                        {% for error in form.label.errors %}
+                        {% for error in form.amount.errors %}
                           {{ error }}<br/>
                         {% endfor %}
                       </p>
                       {% endif %}
                     </div>
 
-                    <div class="from-group has-validation mb-2">
-                      <label for="serialNumber" class="form-label">{{ form.serial_number.label }} *</label>
+                    <div class="form-group mb-2" id="Phid">
+                      <label for="label" class="form-label">{{ form.phid.label }}</label>
+                      {{ form.phid(class_="form-control") }}
+                      <small class="text-muted form-text">Label that you want link to this device</small>
+                      {% if form.phid.errors %}
+                      <p class="text-danger">
+                        {% for error in form.phid.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
+                    </div>
+
+                    <div class="form-group mb-2" id="Id_device_supplier">
+                      <label for="label" class="form-label">{{ form.id_device_supplier.label }}</label>
+                      {{ form.id_device_supplier(class_="form-control") }}
+                      <small class="text-muted form-text">Identity of device for the Supplier</small>
+                      {% if form.id_device_supplier.errors %}
+                      <p class="text-danger">
+                        {% for error in form.id_device_supplier.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <label for="label" class="form-label">{{ form.pallet.label }}</label>
+                      {{ form.pallet(class_="form-control") }}
+                      <small class="text-muted form-text">Identity of pallet</small>
+                      {% if form.pallet.errors %}
+                      <p class="text-danger">
+                        {% for error in form.pallet.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <label for="label" class="form-label">{{ form.info.label }}</label>
+                      {{ form.info(class_="form-control") }}
+                      <small class="text-muted form-text">Info extra</small>
+                      {% if form.info.errors %}
+                      <p class="text-danger">
+                        {% for error in form.info.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
+                    </div>
+
+                    <div class="from-group has-validation mb-2" id="Serial_number">
+                      <label for="serialNumber" class="form-label">{{ form.serial_number.label }}</label>
                       {{ form.serial_number(class_="form-control") }}
                       <small class="text-muted form-text">Serial number of this device</small>
                       {% if form.serial_number.errors %}
@@ -96,7 +156,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.model.label }} *</label>
+                      <label for="model" class="form-label">{{ form.model.label }}</label>
                       {{ form.model(class_="form-control") }}
                       <small class="text-muted form-text">Name of model</small>
                       {% if form.model.errors %}
@@ -109,7 +169,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.manufacturer.label }} *</label>
+                      <label for="model" class="form-label">{{ form.manufacturer.label }}</label>
                       {{ form.manufacturer(class_="form-control") }}
                       <small class="text-muted form-text">Name of manufacturer</small>
                       {% if form.manufacturer.errors %}
@@ -124,27 +184,33 @@
                     <div class="from-group has-validation mb-2">
                       <label for="model" class="form-label">{{ form.appearance.label }}</label>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="appearance" value="Z">
+                        <input class="form-check-input" type="radio" name="appearance" value="Z"
+                        {% if form.appearance.data == 'Z' %}checked="cheked"{% endif %}>
                         <label class="form-check-label">0. The device is new.</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="appearance" value="A">
+                        <input class="form-check-input" type="radio" name="appearance" value="A"
+                        {% if form.appearance.data == 'A' %}checked="checked"{% endif %}>
                         <label class="form-check-label">A. Like new (no visual damage))</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="appearance" value="B">
+                        <input class="form-check-input" type="radio" name="appearance" value="B"
+                        {% if form.appearance.data == 'B' %}checked="checked"{% endif %}>
                         <label class="form-check-label">B. In very good condition (small visual damage to hard-to-detect parts)</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="appearance" value="C">
+                        <input class="form-check-input" type="radio" name="appearance" value="C"
+                        {% if form.appearance.data == 'C' %}checked="checked"{% endif %}>
                         <label class="form-check-label">C. In good condition (small visual damage to easy-to-detect parts, not the screen))</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="appearance" value="D">
+                        <input class="form-check-input" type="radio" name="appearance" value="D"
+                        {% if form.appearance.data == 'D' %}checked="checked"{% endif %}>
                         <label class="form-check-label">D. It is acceptable (visual damage to visible parts, not on the screen)</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="appearance" value="E">
+                        <input class="form-check-input" type="radio" name="appearance" value="E"
+                        {% if form.appearance.data == 'E' %}checked="checked"{% endif %}>
                         <label class="form-check-label">E. It is unacceptable (substantial visual damage that may affect use)</label>
                       </div>
                       <small class="text-muted form-text">Rate the imperfections that affect the device aesthetically, but not its use.</small>
@@ -160,19 +226,23 @@
                     <div class="from-group has-validation mb-2">
                       <label for="model" class="form-label">{{ form.functionality.label }}</label>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="functionality" value="A">
+                        <input class="form-check-input" type="radio" name="functionality" value="A"
+                        {% if form.functionality.data == 'A' %}checked="checked"{% endif %}>
                         <label class="form-check-label">A. Everything works perfectly (buttons, and no scratches on the screen)</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="functionality" value="B">
+                        <input class="form-check-input" type="radio" name="functionality" value="B"
+                        {% if form.functionality.data == 'B' %}checked="checked"{% endif %}>
                         <label class="form-check-label">B. There is a hard to press button or small scratches on the corners of the screen</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="functionality" value="C">
+                        <input class="form-check-input" type="radio" name="functionality" value="C"
+                        {% if form.functionality.data == 'C' %}checked="checked"{% endif %}>
                         <label class="form-check-label">C. A non-essential button does not work; the screen has multiple scratches on the corners</label>
                       </div>
                       <div class="form-check">
-                        <input class="form-check-input" type="radio" name="functionality" value="D">
+                        <input class="form-check-input" type="radio" name="functionality" value="D"
+                        {% if form.functionality.data == 'D' %}checked="checked"{% endif %}>
                         <label class="form-check-label">D. Multiple buttons do not work properly; the screen has severe damage that may affect use</label>
                       </div>
                       <small class="text-muted form-text">It qualifies the defects of a device that affect its use.</small>
@@ -199,7 +269,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.generation.label }} *</label>
+                      <label for="model" class="form-label">{{ form.generation.label }}</label>
                       {{ form.generation(class_="form-control") }}
                       <small class="text-muted form-text">The generation of the device.</small>
                       {% if form.generation.errors %}
@@ -225,7 +295,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.weight.label }} *</label>
+                      <label for="model" class="form-label">{{ form.weight.label }}</label>
                       {{ form.weight(class_="form-control") }}
                       <small class="text-muted form-text">The weight of the device in Kg.</small>
                       {% if form.weight.errors %}
@@ -238,7 +308,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.width.label }} *</label>
+                      <label for="model" class="form-label">{{ form.width.label }}</label>
                       {{ form.width(class_="form-control") }}
                       <small class="text-muted form-text">The width of the device in meters.</small>
                       {% if form.width.errors %}
@@ -251,7 +321,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.height.label }} *</label>
+                      <label for="model" class="form-label">{{ form.height.label }}</label>
                       {{ form.height(class_="form-control") }}
                       <small class="text-muted form-text">The height of the device in meters.</small>
                       {% if form.height.errors %}
@@ -264,7 +334,7 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.depth.label }} *</label>
+                      <label for="model" class="form-label">{{ form.depth.label }}</label>
                       {{ form.depth(class_="form-control") }}
                       <small class="text-muted form-text">The depth of the device in meters.</small>
                       {% if form.depth.errors %}
@@ -289,7 +359,7 @@
                       {% endif %}
                     </div>
 
-                    <div class="from-group has-validation mb-2">
+                    <div class="from-group has-validation mb-2" id="Sku">
                       <label for="model" class="form-label">{{ form.sku.label }}</label>
                       {{ form.sku(class_="form-control") }}
                       <small class="text-muted form-text">The Stock Keeping Unit (SKU), i.e. a merchant-specific identifier for a product or service.</small>

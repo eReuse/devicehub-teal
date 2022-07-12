@@ -315,7 +315,7 @@
               <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-laptop"></i>
-                    New Device
+                    New Devices
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
                   <li>
@@ -325,7 +325,17 @@
                     <a href="{{ url_for('inventory.upload_snapshot') }}" class="dropdown-item">
                     {% endif %}
                       <i class="bi bi-upload"></i>
-                      Upload a new Snapshot
+                      Upload Snapshot files
+                    </a>
+                  </li>
+                  <li>
+                    {% if lot %}
+                    <a href="{{ url_for('inventory.lot_upload_placeholder', lot_id=lot.id) }}" class="dropdown-item">
+                    {% else %}
+                    <a href="{{ url_for('inventory.upload_placeholder') }}" class="dropdown-item">
+                    {% endif %}
+                      <i class="bi bi-upload"></i>
+                      Upload Placeholder Spreadsheet
                     </a>
                   </li>
                   <li>
@@ -335,7 +345,7 @@
                     <a href="{{ url_for('inventory.device_add') }}" class="dropdown-item">
                     {% endif %}
                       <i class="bi bi-plus"></i>
-                      Create a new Device
+                      Create a new Placeholder
                     </a>
                   </li>
                 </ul>

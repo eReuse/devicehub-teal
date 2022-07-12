@@ -3,6 +3,7 @@ import datetime
 import json
 from json.decoder import JSONDecodeError
 
+import pandas as pd
 from boltons.urlutils import URL
 from flask import current_app as app
 from flask import g, request
@@ -29,6 +30,7 @@ from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.models import DeliveryNote, ReceiverNote, Transfer
+from ereuse_devicehub.parser.models import PlaceholdersLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
@@ -42,14 +44,17 @@ from ereuse_devicehub.resources.device.models import (
     SAI,
     Cellphone,
     ComputerMonitor,
+    Desktop,
     Device,
     Keyboard,
+    Laptop,
     MemoryCardReader,
     Mouse,
+    Placeholder,
+    Server,
     Smartphone,
     Tablet,
 )
-from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.documents.models import DataWipeDocument
 from ereuse_devicehub.resources.enums import Severity
 from ereuse_devicehub.resources.hash_reports import insert_hash
@@ -300,19 +305,27 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
 
 class NewDeviceForm(FlaskForm):
     type = StringField('Type', [validators.DataRequired()])
-    label = StringField('Label')
-    serial_number = StringField('Seria Number', [validators.DataRequired()])
-    model = StringField('Model', [validators.DataRequired()])
-    manufacturer = StringField('Manufacturer', [validators.DataRequired()])
+    amount = IntegerField(
+        'Amount',
+        [validators.DataRequired(), validators.NumberRange(min=1, max=100)],
+        default=1,
+    )
+    id_device_supplier = StringField('Id Supplier', [validators.Optional()])
+    phid = StringField('Placeholder Hardware identity (Phid)', [validators.Optional()])
+    pallet = StringField('Identity of pallet', [validators.Optional()])
+    info = TextAreaField('Info', [validators.Optional()])
+    serial_number = StringField('Seria Number', [validators.Optional()])
+    model = StringField('Model', [validators.Optional()])
+    manufacturer = StringField('Manufacturer', [validators.Optional()])
     appearance = StringField('Appearance', [validators.Optional()])
     functionality = StringField('Functionality', [validators.Optional()])
     brand = StringField('Brand')
     generation = IntegerField('Generation')
     version = StringField('Version')
-    weight = FloatField('Weight', [validators.DataRequired()])
-    width = FloatField('Width', [validators.DataRequired()])
-    height = FloatField('Height', [validators.DataRequired()])
-    depth = FloatField('Depth', [validators.DataRequired()])
+    weight = FloatField('Weight', [validators.Optional()])
+    width = FloatField('Width', [validators.Optional()])
+    height = FloatField('Height', [validators.Optional()])
+    depth = FloatField('Depth', [validators.Optional()])
     variant = StringField('Variant', [validators.Optional()])
     sku = StringField('SKU', [validators.Optional()])
     image = StringField('Image', [validators.Optional(), validators.URL()])
@@ -322,8 +335,16 @@ class NewDeviceForm(FlaskForm):
     screen = FloatField('Screen size', [validators.Optional()])
 
     def __init__(self, *args, **kwargs):
+        self._obj = kwargs.pop('_obj', None)
         super().__init__(*args, **kwargs)
+        if self._obj:
+            self.type.data = self._obj.type
+        if not request.form:
+            self.reset_from_obj()
         self.devices = {
+            "Laptop": Laptop,
+            "Desktop": Desktop,
+            "Server": Server,
             "Smartphone": Smartphone,
             "Tablet": Tablet,
             "Cellphone": Cellphone,
@@ -349,6 +370,45 @@ class NewDeviceForm(FlaskForm):
         if not self.depth.data:
             self.depth.data = 0.1
 
+    def reset_from_obj(self):
+        if not self._obj:
+            return
+        disabled = {'disabled': "disabled"}
+        appearance = self._obj.appearance()
+        functionality = self._obj.functionality()
+        if appearance:
+            appearance = appearance.name
+        if functionality:
+            functionality = functionality.name
+        self.type.render_kw = disabled
+        self.type.data = self._obj.type
+        self.amount.render_kw = disabled
+        self.id_device_supplier.data = self._obj.placeholder.id_device_supplier
+        self.phid.data = self._obj.placeholder.phid
+        self.pallet.data = self._obj.placeholder.pallet
+        self.info.data = self._obj.placeholder.info
+        self.serial_number.data = self._obj.serial_number
+        self.model.data = self._obj.model
+        self.manufacturer.data = self._obj.manufacturer
+        self.appearance.data = appearance
+        self.functionality.data = functionality
+        self.brand.data = self._obj.brand
+        self.generation.data = self._obj.generation
+        self.version.data = self._obj.version
+        self.weight.data = self._obj.weight
+        self.width.data = self._obj.width
+        self.height.data = self._obj.height
+        self.depth.data = self._obj.depth
+        self.variant.data = self._obj.variant
+        self.sku.data = self._obj.sku
+        self.image.data = self._obj.image
+        if self._obj.type in ['Smartphone', 'Tablet', 'Cellphone']:
+            self.imei.data = self._obj.imei
+            self.meid.data = self._obj.meid
+        if self._obj.type == 'ComputerMonitor':
+            self.resolution.data = self._obj.resolution_width
+            self.screen.data = self._obj.size
+
     def validate(self, extra_validators=None):  # noqa: C901
         error = ["Not a correct value"]
         is_valid = super().validate(extra_validators)
@@ -373,12 +433,12 @@ class NewDeviceForm(FlaskForm):
             self.depth.errors = error
             is_valid = False
 
-        if self.imei.data:
+        if self.imei.data and self.amount.data == 1:
             if not 13 < len(str(self.imei.data)) < 17:
                 self.imei.errors = error
                 is_valid = False
 
-        if self.meid.data:
+        if self.meid.data and self.amount.data == 1:
             meid = self.meid.data
             if not 13 < len(meid) < 17:
                 is_valid = False
@@ -386,6 +446,28 @@ class NewDeviceForm(FlaskForm):
                 int(meid, 16)
             except ValueError:
                 self.meid.errors = error
+                is_valid = False
+
+        if self.phid.data and self.amount.data == 1 and not self._obj:
+            dev = Placeholder.query.filter(
+                Placeholder.phid == self.phid.data, Device.owner == g.user
+            ).first()
+            if dev:
+                msg = "Sorry, exist one snapshot device with this HID"
+                self.phid.errors = [msg]
+                is_valid = False
+
+        if (
+            self.phid.data
+            and self._obj
+            and self.phid.data != self._obj.placeholder.phid
+        ):
+            dev = Placeholder.query.filter(
+                Placeholder.phid == self.phid.data, Device.owner == g.user
+            ).first()
+            if dev:
+                msg = "Sorry, exist one snapshot device with this HID"
+                self.phid.errors = [msg]
                 is_valid = False
 
         if not is_valid:
@@ -403,7 +485,18 @@ class NewDeviceForm(FlaskForm):
         return True
 
     def save(self, commit=True):
+        if self._obj:
+            self.edit_device()
+        else:
+            for n in range(self.amount.data):
+                self.reset_ids()
+                self.create_device()
 
+        if commit:
+            db.session.commit()
+
+    def create_device(self):
+        schema = SnapshotSchema()
         json_snapshot = {
             'type': 'Snapshot',
             'software': 'Web',
@@ -434,33 +527,84 @@ class NewDeviceForm(FlaskForm):
                     'functionalityRange': self.functionality.data,
                 }
             ]
-
-        upload_form = UploadSnapshotForm()
-        upload_form.sync = Sync()
-
-        schema = SnapshotSchema()
-        self.tmp_snapshots = '/tmp/'
-        path_snapshot = save_json(json_snapshot, self.tmp_snapshots, g.user.email)
         snapshot_json = schema.load(json_snapshot)
+        device = snapshot_json['device']
 
         if self.type.data == 'ComputerMonitor':
-            snapshot_json['device'].resolution_width = self.resolution.data
-            snapshot_json['device'].size = self.screen.data
+            device.resolution_width = self.resolution.data
+            device.size = self.screen.data
 
         if self.type.data in ['Smartphone', 'Tablet', 'Cellphone']:
-            snapshot_json['device'].imei = self.imei.data
-            snapshot_json['device'].meid = self.meid.data
+            device.imei = self.imei.data
+            device.meid = self.meid.data
 
-        snapshot = upload_form.build(snapshot_json)
+        device.placeholder = self.get_placeholder()
+        db.session.add(device)
 
-        move_json(self.tmp_snapshots, path_snapshot, g.user.email)
-        if self.type.data == 'ComputerMonitor':
-            snapshot.device.resolution = self.resolution.data
-            snapshot.device.screen = self.screen.data
+        placeholder_log = PlaceholdersLog(
+            type="New device", source='Web form', placeholder=device.placeholder
+        )
+        db.session.add(placeholder_log)
 
-        if commit:
-            db.session.commit()
-        return snapshot
+    def reset_ids(self):
+        if self.amount.data > 1:
+            self.phid.data = None
+            self.id_device_supplier.data = None
+            self.serial_number.data = None
+            self.sku.data = None
+            self.imei.data = None
+            self.meid.data = None
+
+    def get_placeholder(self):
+        self.placeholder = Placeholder(
+            **{
+                'phid': self.phid.data or None,
+                'id_device_supplier': self.id_device_supplier.data,
+                'info': self.info.data,
+                'pallet': self.pallet.data,
+            }
+        )
+        return self.placeholder
+
+    def edit_device(self):
+        self._obj.placeholder.phid = self.phid.data or self._obj.placeholder.phid
+        self._obj.placeholder.id_device_supplier = self.id_device_supplier.data or None
+        self._obj.placeholder.info = self.info.data or None
+        self._obj.placeholder.pallet = self.pallet.data or None
+        self._obj.model = self.model.data
+        self._obj.manufacturer = self.manufacturer.data
+        self._obj.serial_number = self.serial_number.data
+        self._obj.brand = self.brand.data
+        self._obj.version = self.version.data
+        self._obj.generation = self.generation.data
+        self._obj.sku = self.sku.data
+        self._obj.weight = self.weight.data
+        self._obj.width = self.width.data
+        self._obj.height = self.height.data
+        self._obj.depth = self.depth.data
+        self._obj.variant = self.variant.data
+        self._obj.image = self.image.data
+
+        if self._obj.type == 'ComputerMonitor':
+            self._obj.resolution_width = self.resolution.data
+            self._obj.size = self.screen.data
+
+        if self._obj.type in ['Smartphone', 'Tablet', 'Cellphone']:
+            self._obj.imei = self.imei.data
+            self._obj.meid = self.meid.data
+
+        if self.appearance.data and self.appearance.data != self._obj.appearance().name:
+            self._obj.set_appearance(self.appearance.data)
+
+        if (
+            self.functionality.data
+            and self.functionality.data != self._obj.functionality().name
+        ):
+            self._obj.set_functionality(self.functionality.data)
+        placeholder_log = PlaceholdersLog(
+            type="Update", source='Web form', placeholder=self._obj.placeholder
+        )
+        db.session.add(placeholder_log)
 
 
 class TagDeviceForm(FlaskForm):
@@ -1295,3 +1439,164 @@ class NotesForm(FlaskForm):
             db.session.commit()
 
         return self._obj
+
+
+class UploadPlaceholderForm(FlaskForm):
+    type = StringField('Type', [validators.DataRequired()])
+    placeholder_file = FileField(
+        'Select a Placeholder File', [validators.DataRequired()]
+    )
+
+    def get_data_file(self):
+        files = request.files.getlist(self.placeholder_file.name)
+
+        if not files:
+            return False
+
+        _file = files[0]
+        if _file.content_type == 'text/csv':
+            self.source = "CSV File: {}".format(_file.filename)
+            delimiter = ';'
+            data = pd.read_csv(_file).to_dict()
+            head = list(data.keys())[0].split(delimiter)
+            values = [
+                {k: v.split(delimiter)} for x in data.values() for k, v in x.items()
+            ]
+            data = {}
+            for i in range(len(head)):
+                data[head[i]] = {}
+                for x in values:
+                    for k, v in x.items():
+                        data[head[i]][k] = v[i]
+        else:
+            self.source = "Excel File: {}".format(_file.filename)
+            try:
+                data = pd.read_excel(_file).to_dict()
+            except ValueError:
+                self.placeholder_file.errors = ["File don't have a correct format"]
+                return False
+
+        return data
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+        if not request.files.getlist(self.placeholder_file.name):
+            return False
+
+        data = self.get_data_file()
+        if not data:
+            return False
+
+        header = [
+            'Phid',
+            'Model',
+            'Manufacturer',
+            'Serial Number',
+            'Id device Supplier',
+            'Pallet',
+            'Info',
+        ]
+
+        for k in header:
+            if k not in data.keys():
+                self.placeholder_file.errors = ["Missing required fields in the file"]
+                return False
+
+        self.placeholders = []
+        schema = SnapshotSchema()
+        self.path_snapshots = {}
+        for i in data['Phid'].keys():
+            placeholder = None
+            if data['Phid'][i]:
+                placeholder = Placeholder.query.filter_by(phid=data['Phid'][i]).first()
+
+            # update one
+            if placeholder:
+                device = placeholder.device
+                device.model = "{}".format(data['Model'][i]).lower()
+                device.manufacturer = "{}".format(data['Manufacturer'][i]).lower()
+                device.serial_number = "{}".format(data['Serial Number'][i]).lower()
+                placeholder.id_device_supplier = "{}".format(
+                    data['Id device Supplier'][i]
+                )
+                placeholder.pallet = "{}".format(data['Pallet'][i])
+                placeholder.info = "{}".format(data['Info'][i])
+
+                placeholder_log = PlaceholdersLog(
+                    type="Update", source=self.source, placeholder=device.placeholder
+                )
+                self.placeholders.append((device, placeholder_log))
+                continue
+
+            # create a new one
+            json_snapshot = {
+                'type': 'Snapshot',
+                'software': 'Web',
+                'version': '11.0',
+                'device': {
+                    'type': self.type.data,
+                    'model': "{}".format(data['Model'][i]),
+                    'manufacturer': "{}".format(data['Manufacturer'][i]),
+                    'serialNumber': "{}".format(data['Serial Number'][i]),
+                },
+            }
+            json_placeholder = {
+                'phid': data['Phid'][i] or None,
+                'id_device_supplier': data['Id device Supplier'][i],
+                'pallet': data['Pallet'][i],
+                'info': data['Info'][i],
+            }
+
+            snapshot_json = schema.load(json_snapshot)
+            device = snapshot_json['device']
+            device.placeholder = Placeholder(**json_placeholder)
+
+            placeholder_log = PlaceholdersLog(
+                type="New device", source=self.source, placeholder=device.placeholder
+            )
+            self.placeholders.append((device, placeholder_log))
+
+        return True
+
+    def save(self, commit=True):
+
+        for device, placeholder_log in self.placeholders:
+            db.session.add(device)
+            db.session.add(placeholder_log)
+
+        if commit:
+            db.session.commit()
+
+        return self.placeholders
+
+
+class EditPlaceholderForm(FlaskForm):
+    manufacturer = StringField('Manufacturer', [validators.Optional()])
+    model = StringField('Model', [validators.Optional()])
+    serial_number = StringField('Serial Number', [validators.Optional()])
+    id_device_supplier = StringField('Id Supplier', [validators.Optional()])
+    phid = StringField('Phid', [validators.DataRequired()])
+    pallet = StringField('Pallet', [validators.Optional()])
+    info = StringField('Info', [validators.Optional()])
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+        return True
+
+    def save(self, commit=True):
+
+        for device in self.placeholders:
+            db.session.add(device)
+
+        if commit:
+            db.session.commit()
+
+        return self.placeholders

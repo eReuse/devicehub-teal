@@ -5,9 +5,9 @@ Use this as a starting point.
 """
 import sentry_sdk
 from decouple import config
-from flask_wtf.csrf import CSRFProtect
+
+# from flask_wtf.csrf import CSRFProtect
 from sentry_sdk.integrations.flask import FlaskIntegration
-from werkzeug.contrib.profiler import ProfilerMiddleware
 
 from ereuse_devicehub.api.views import api
 from ereuse_devicehub.config import DevicehubConfig
@@ -16,6 +16,9 @@ from ereuse_devicehub.inventory.views import devices
 from ereuse_devicehub.labels.views import labels
 from ereuse_devicehub.views import core
 from ereuse_devicehub.workbench.views import workbench
+
+# from werkzeug.contrib.profiler import ProfilerMiddleware
+
 
 SENTRY_DSN = config('SENTRY_DSN', None)
 if SENTRY_DSN:
@@ -41,10 +44,10 @@ app.register_blueprint(workbench)
 # configure & enable CSRF of Flask-WTF
 # NOTE: enable by blueprint to exclude API views
 # TODO(@slamora: enable by default & exclude API views when decouple of Teal is completed
-csrf = CSRFProtect(app)
+# csrf = CSRFProtect(app)
 # csrf.protect(core)
 # csrf.protect(devices)
-app.config["SQLALCHEMY_RECORD_QUERIES"] = True
-app.config['PROFILE'] = True
-app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
-app.run(debug=True)
+# app.config["SQLALCHEMY_RECORD_QUERIES"] = True
+# app.config['PROFILE'] = True
+# app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
+# app.run(debug=True)

@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import Snapshot
+from ereuse_devicehub.resources.device.models import Placeholder
 from ereuse_devicehub.resources.enums import Severity
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
@@ -43,3 +44,47 @@ class SnapshotsLog(Thing):
             return self.snapshot.device.devicehub_id
 
         return ''
+
+
+class PlaceholdersLog(Thing):
+    """A Placeholder log."""
+
+    id = Column(BigInteger, Sequence('placeholders_log_seq'), primary_key=True)
+    source = Column(CIText(), default='', nullable=True)
+    type = Column(CIText(), default='', nullable=True)
+    severity = Column(SmallInteger, default=Severity.Info, nullable=False)
+
+    placeholder_id = Column(BigInteger, db.ForeignKey(Placeholder.id), nullable=True)
+    placeholder = db.relationship(
+        Placeholder, primaryjoin=placeholder_id == Placeholder.id
+    )
+    owner_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
+    owner = db.relationship(User, primaryjoin=owner_id == User.id)
+
+    def save(self, commit=False):
+        db.session.add(self)
+
+        if commit:
+            db.session.commit()
+
+    @property
+    def phid(self):
+        if self.placeholder:
+            return self.placeholder.phid
+
+        return ''
+
+    @property
+    def dhid(self):
+        if self.placeholder:
+            return self.placeholder.device.devicehub_id
+
+        return ''
+
+    def get_status(self):
+        return Severity(self.severity)

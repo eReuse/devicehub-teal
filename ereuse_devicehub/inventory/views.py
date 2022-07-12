@@ -30,10 +30,11 @@ from ereuse_devicehub.inventory.forms import (
     TradeDocumentForm,
     TradeForm,
     TransferForm,
+    UploadPlaceholderForm,
     UploadSnapshotForm,
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
-from ereuse_devicehub.parser.models import SnapshotsLog
+from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
 from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
@@ -272,10 +273,37 @@ class DeviceCreateView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
 
+class DeviceEditView(GenericMixin):
+    methods = ['GET', 'POST']
+    decorators = [login_required]
+    template_name = 'inventory/device_create.html'
+
+    def dispatch_request(self, id):
+        self.get_context()
+        device = (
+            Device.query.filter(Device.owner_id == current_user.id)
+            .filter(Device.devicehub_id == id)
+            .one()
+        )
+        form = NewDeviceForm(_obj=device)
+        self.context.update(
+            {
+                'page_title': 'Edit Device',
+                'form': form,
+            }
+        )
+        if form.validate_on_submit():
+            next_url = url_for('inventory.device_details', id=id)
+            form.save(commit=True)
+            messages.success('Device "{}" edited successfully!'.format(form.type.data))
+            return flask.redirect(next_url)
+
+        return flask.render_template(self.template_name, **self.context)
+
+
 class TagLinkDeviceView(View):
     methods = ['POST']
     decorators = [login_required]
-    # template_name = 'inventory/device_list.html'
 
     def dispatch_request(self):
         form = TagDeviceForm()
@@ -832,6 +860,53 @@ class ReceiverNoteView(GenericMixin):
         return flask.redirect(next_url)
 
 
+class UploadPlaceholderView(GenericMixin):
+    methods = ['GET', 'POST']
+    decorators = [login_required]
+    template_name = 'inventory/upload_placeholder.html'
+
+    def dispatch_request(self, lot_id=None):
+        self.get_context()
+        form = UploadPlaceholderForm()
+        self.context.update(
+            {
+                'page_title': 'Upload Placeholder',
+                'form': form,
+                'lot_id': lot_id,
+            }
+        )
+        if form.validate_on_submit():
+            snapshots = form.save(commit=False)
+            if lot_id:
+                lots = self.context['lots']
+                lot = lots.filter(Lot.id == lot_id).one()
+                for device, p in snapshots:
+                    lot.devices.add(device)
+                db.session.add(lot)
+            db.session.commit()
+            messages.success('Placeholders uploaded successfully!')
+
+        return flask.render_template(self.template_name, **self.context)
+
+
+class PlaceholderLogListView(GenericMixin):
+    template_name = 'inventory/placeholder_log_list.html'
+
+    def dispatch_request(self):
+        self.get_context()
+        self.context['page_title'] = "Placeholder Logs"
+        self.context['placeholders_log'] = self.get_placeholders_log()
+
+        return flask.render_template(self.template_name, **self.context)
+
+    def get_placeholders_log(self):
+        placeholder_log = PlaceholdersLog.query.filter(
+            PlaceholdersLog.owner == g.user
+        ).order_by(PlaceholdersLog.created.desc())
+
+        return placeholder_log
+
+
 devices.add_url_rule('/action/add/', view_func=NewActionView.as_view('action_add'))
 devices.add_url_rule('/action/trade/add/', view_func=NewTradeView.as_view('trade_add'))
 devices.add_url_rule(
@@ -872,6 +947,9 @@ devices.add_url_rule(
     view_func=DeviceCreateView.as_view('lot_device_add'),
 )
 devices.add_url_rule(
+    '/device/edit/<string:id>/', view_func=DeviceEditView.as_view('device_edit')
+)
+devices.add_url_rule(
     '/tag/devices/add/', view_func=TagLinkDeviceView.as_view('tag_devices_add')
 )
 devices.add_url_rule(
@@ -901,4 +979,15 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/lot/<string:lot_id>/receivernote/',
     view_func=ReceiverNoteView.as_view('receiver_note'),
+)
+devices.add_url_rule(
+    '/upload-placeholder/',
+    view_func=UploadPlaceholderView.as_view('upload_placeholder'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/upload-placeholder/',
+    view_func=UploadPlaceholderView.as_view('lot_upload_placeholder'),
+)
+devices.add_url_rule(
+    '/placeholder-logs/', view_func=PlaceholderLogListView.as_view('placeholder_logs')
 )
