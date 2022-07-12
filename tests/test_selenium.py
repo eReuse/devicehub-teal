@@ -42,10 +42,12 @@ class TestSelenium:
         lot_id = self.driver.current_url.split("/")[5]
 
         # go to unassigned
-        self.driver.find_element(By.CSS_SELECTOR, ".nav-item:nth-child(5) span").click()
+        # self.driver.find_element(By.CSS_SELECTOR, ".nav-item:nth-child(5) span").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".nav-item:nth-child(7) span").click()
         self.driver.implicitly_wait(3)
 
         # select the first device
+
         self.driver.find_element(
             By.CSS_SELECTOR, "tr:nth-child(1) .deviceSelect"
         ).click()
@@ -95,10 +97,14 @@ class TestSelenium:
         self.driver.find_element(By.ID, "SaveAllActions").click()
         time.sleep(3)
 
-        self.driver.find_element(By.CSS_SELECTOR, ".nav-item:nth-child(5) span").click()
+        # self.driver.find_element(By.CSS_SELECTOR, ".nav-item:nth-child(5) span").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".nav-item:nth-child(7) span").click()
         self.driver.implicitly_wait(3)
 
         # logout
+        # self.driver.find_element(By.CSS_SELECTOR, ".d-md-block:nth-child(2)").click()
         self.driver.find_element(By.CSS_SELECTOR, ".d-md-block:nth-child(2)").click()
-        self.driver.implicitly_wait(3)
-        self.driver.find_element(By.LINK_TEXT, "Sign Out").click()
+        self.driver.find_element(By.CSS_SELECTOR, "li:nth-child(9) > .dropdown-item > span").click()
+        # self.driver.find_element(By.CSS_SELECTOR, ".d-md-block").click()
+        # self.driver.implicitly_wait(3)
+        # self.driver.find_element(By.LINK_TEXT, "Sign Out").click()
