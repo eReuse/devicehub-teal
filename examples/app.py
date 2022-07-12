@@ -5,9 +5,9 @@ Use this as a starting point.
 """
 import sentry_sdk
 from decouple import config
-from flask_wtf.csrf import CSRFProtect
+
+# from flask_wtf.csrf import CSRFProtect
 from sentry_sdk.integrations.flask import FlaskIntegration
-from werkzeug.contrib.profiler import ProfilerMiddleware
 
 from ereuse_devicehub.api.views import api
 from ereuse_devicehub.config import DevicehubConfig
@@ -16,6 +16,9 @@ from ereuse_devicehub.inventory.views import devices
 from ereuse_devicehub.labels.views import labels
 from ereuse_devicehub.views import core
 from ereuse_devicehub.workbench.views import workbench
+
+# from werkzeug.contrib.profiler import ProfilerMiddleware
+
 
 SENTRY_DSN = config('SENTRY_DSN', None)
 if SENTRY_DSN:
