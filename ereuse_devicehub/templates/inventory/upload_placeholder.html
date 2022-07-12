@@ -1,0 +1,124 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>Inventory</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item active">{{ page_title }}</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+    <div class="col-xl-8">
+
+      <div class="card">
+              <div class="card-body">
+
+                <div class="pt-4 pb-2">
+                  <h5 class="card-title text-center pb-0 fs-4">Upload Placeholder</h5>
+                  <p class="text-center small">Please select a Placeholders CSV file.</p>
+                  {% if form.form_errors %}
+                  <p class="text-danger">
+                    {% for error in form.form_errors %}
+                      {{ error }}<br/>
+                    {% endfor %}
+                  </p>
+                  {% endif %}
+                </div>
+                <div class="pt-4 pb-2 mb-3">
+                  Use the following template to register or update placeholders.<br />
+                  Choose the type of device.<br />
+                  The following considerations are important:<br />
+                  1. Do not rename columns or add new columns.<br />
+                  2. Accepted file types are ods, xlsx and csv.<br />
+                  3. A new Placeholder will be registered if the PHID value does not exist in the system or is empty.<br />
+                  4. A Placeholder will be updated if the PHID value exists in the system
+                </div>
+
+                <form method="post" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
+                  {{ form.csrf_token }}
+
+                  <div class="form-group has-validation mb-2">
+                    <label for="name" class="form-label">Type *</label>
+                    <select id="type" class="form-control" name="type" required="">
+                      <option value="">Select one Type</option>
+                      <optgroup label="Computer">
+                        <option value="Laptop"
+                        {% if form.type.data == 'Laptop' %} selected="selected"{% endif %}>Laptop</option>
+                        <option value="Desktop"
+                        {% if form.type.data == 'Desktop' %} selected="selected"{% endif %}>Desktop</option>
+                        <option value="Server"
+                        {% if form.type.data == 'Server' %} selected="selected"{% endif %}>Server</option>
+                      </optgroup>
+                      <optgroup label="Monitor">
+                        <option value="ComputerMonitor"
+                        {% if form.type.data == 'Monitor' %} selected="selected"{% endif %}>Computer Monitor</option>
+                      </optgroup>
+                      <optgroup label="Mobile">
+                        <option value="Smartphone"
+                        {% if form.type.data == 'Smartphone' %} selected="selected"{% endif %}>Smartphone</option>
+                        <option value="Tablet"
+                        {% if form.type.data == 'Tablet' %} selected="selected"{% endif %}>Tablet</option>
+                        <option value="Cellphone"
+                        {% if form.type.data == 'Cellphone' %} selected="selected"{% endif %}>Cellphone</option>
+                      </optgroup>
+                      <optgroup label="Computer Accessory">
+                        <option value="Mouse"
+                        {% if form.type.data == 'Mouse' %} selected="selected"{% endif %}>Mouse</option>
+                        <option value="MemoryCardReader"
+                        {% if form.type.data == 'MemoryCardReader' %} selected="selected"{% endif %}>Memory card reader</option>
+                        <option value="SAI"
+                        {% if form.type.data == 'SAI' %} selected="selected"{% endif %}>SAI</option>
+                        <option value="Keyboard"
+                        {% if form.type.data == 'Keyboard' %} selected="selected"{% endif %}>Keyboard</option>
+                      </optgroup>
+                    </select>
+                    <small class="text-muted form-text">Type of devices</small>
+                    {% if form.type.errors %}
+                    <p class="text-danger">
+                      {% for error in form.type.errors %}
+                        {{ error }}<br/>
+                      {% endfor %}
+                    </p>
+                    {% endif %}
+                  </div>
+
+                  <div>
+                    <label for="name" class="form-label">Select a Placeholders CSV file *</label>
+                    <div class="input-group has-validation">
+                      {{ form.placeholder_file }}
+                    </div>
+                    {% if form.placeholder_file.errors %}
+                    <p class="text-danger">
+                      {% for error in form.placeholder_file.errors %}
+                        {{ error }}<br/>
+                      {% endfor %}
+                    </p>
+                    {% endif %}
+                  </div>
+
+                  <div>
+                    {% if lot_id %}
+                    <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot_id) }}" class="btn btn-danger">Cancel</a>
+                    {% else %}
+                    <a href="{{ url_for('inventory.devicelist') }}" class="btn btn-danger">Cancel</a>
+                    {% endif %}
+                    <button class="btn btn-primary" type="submit">Send</button>
+                  </div>
+                </form>
+
+              </div>
+
+      </div>
+
+    </div>
+
+    <div class="col-xl-8">
+    </div>
+  </div>
+</section>
+{% endblock main %}

@@ -54,7 +54,8 @@
           <div class="tab-content pt-2">
 
             <div class="tab-pane fade show active" id="type">
-              <h5 class="card-title">Type Details</h5>
+              <h5 class="card-title">Details</h5>
+              {% if device.placeholder %}(<a href="{{ url_for('inventory.device_edit', id=device.devicehub_id)}}">edit</a>){% endif %}
 
               <div class="row">
                 <div class="col-lg-3 col-md-4 label ">Type</div>

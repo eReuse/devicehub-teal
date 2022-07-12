@@ -18,6 +18,7 @@ from ereuse_devicehub.resources.device.models import (
     Computer,
     DataStorage,
     Device,
+    Placeholder,
 )
 from ereuse_devicehub.resources.tag.model import Tag
 
@@ -195,6 +196,7 @@ class Sync:
                 db_device = Device.query.filter_by(
                     hid=device.hid, owner_id=g.user.id, active=True
                 ).one()
+
         if db_device and db_device.allocated:
             raise ResourceNotFound('device is actually allocated {}'.format(device))
 
@@ -226,6 +228,7 @@ class Sync:
                         device.physical_properties,
                     )
                 db_device = sample_tag.device
+
         if db_device:  # Device from hid or tags
             self.merge(device, db_device)
         else:  # Device is new and tags are not linked to a device
@@ -261,6 +264,9 @@ class Sync:
         if db_device.owner_id != g.user.id:
             return
 
+        if device.placeholder and not db_device.placeholder:
+            return
+
         for field_name, value in device.physical_properties.items():
             if value is not None:
                 setattr(db_device, field_name, value)
@@ -271,6 +277,23 @@ class Sync:
 
         if hasattr(device, 'system_uuid') and device.system_uuid:
             db_device.system_uuid = device.system_uuid
+
+        if device.placeholder and db_device.placeholder:
+            db_device.placeholder.pallet = device.placeholder.pallet
+            db_device.placeholder.info = device.placeholder.info
+            db_device.placeholder.id_device_supplier = (
+                device.placeholder.id_device_supplier
+            )
+            db_device.sku = device.sku
+            db_device.image = device.image
+            db_device.brand = device.brand
+            db_device.generation = device.generation
+            db_device.variant = device.variant
+            db_device.version = device.version
+            db_device.width = device.width
+            db_device.height = device.height
+            db_device.depth = device.depth
+            db_device.weight = device.weight
 
     @staticmethod
     def add_remove(device: Computer, components: Set[Component]) -> OrderedSet:
