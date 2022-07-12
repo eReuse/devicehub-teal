@@ -49,17 +49,18 @@ def upgrade():
         sa.Column('owner_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.ForeignKeyConstraint(
             ['placeholder_id'],
-            ['placeholder.id'],
+            [f'{get_inv()}.placeholder.id'],
         ),
         sa.ForeignKeyConstraint(
             ['owner_id'],
             ['common.user.id'],
         ),
         sa.PrimaryKeyConstraint('id'),
+        schema=f'{get_inv()}',
     )
     op.execute("CREATE SEQUENCE placeholders_log_seq START 1;")
 
 
 def downgrade():
-    op.drop_table('placeholders_log')
+    op.drop_table('placeholders_log', schema=f'{get_inv()}')
     op.execute("DROP SEQUENCE placeholders_log_seq;")

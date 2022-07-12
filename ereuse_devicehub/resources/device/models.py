@@ -827,7 +827,6 @@ class DisplayMixin:
 
 
 class Placeholder(Thing):
-    __table_args__ = {'schema': ''}
     id = Column(BigInteger, Sequence('placeholder_seq'), primary_key=True)
     pallet = Column(Unicode(), nullable=True)
     phid = Column(Unicode(), nullable=False, default=create_phid)
@@ -850,6 +849,18 @@ class Placeholder(Thing):
         primaryjoin=device_id == Device.id,
     )
     device_id.comment = "datas of the placeholder"
+
+    binding_id = db.Column(
+        BigInteger,
+        db.ForeignKey(Device.id),
+        nullable=True,
+    )
+    binding = db.relationship(
+        Device,
+        backref=backref('binding', lazy=True, uselist=False),
+        primaryjoin=binding_id == Device.id,
+    )
+    binding_id.comment = "binding placeholder with workbench device"
 
 
 class Computer(Device):
