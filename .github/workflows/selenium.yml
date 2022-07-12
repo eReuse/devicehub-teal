@@ -1,4 +1,4 @@
-name: Flask CI
+name: Selenium
 
 on:
   push:
@@ -49,6 +49,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest coverage
         pip install -r requirements.txt
+        pip install -e .
+        mkdir bin
+        wget https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz
+        tar xf geckodriver-v0.30.0-linux64.tar.gz -C bin/
 
     - name: Prepare database
       env:
@@ -62,25 +66,13 @@ jobs:
         psql -h "localhost" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION citext SCHEMA public;"
         psql -h "localhost" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION pg_trgm SCHEMA public;"
 
-    - name: Lint with flake8
+    - name: Selenium tests
+      env:
+        SECRET_KEY: 'f00046306835001b55c230092e3a7990485beda0bc3bf732088d1ba1b5b74110e22e3f9ec3a24890272554b37d4'
+        DB_DATABASE: dh_test
+        FLASK_APP: examples/app.py
+        dhi: dbtest
       run: |
-        # stop the build if:
-        # - E9,F63,F7,F82: Python syntax errors or undefined names
-        # - E501: line longer than 120 characters
-        # - C901: complexity greater than 10
-        # - F401: modules imported but unused
-        # See: https://flake8.pycqa.org/en/latest/user/error-codes.html
-        flake8 . --select=E9,F63,F7,F82,E501,C901,F401
-        flake8 . --exit-zero
-
-    - name: Run Tests
-      run: |
-        export SECRET_KEY=`python3 -c 'import secrets; print(secrets.token_hex())'`
-        coverage run --source='ereuse_devicehub' -m pytest -m mvp --maxfail=5 tests/
-        coverage report --include='ereuse_devicehub/*'
-        coverage xml
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+        alembic -x inventory=dbtest upgrade head
+        dh dummy --yes
+        flask run & pytest tests/test_selenium.py

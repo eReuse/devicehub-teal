@@ -1385,3 +1385,18 @@ def test_export_lots(user3: UserClientFlask):
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert fixture_csv[1][1:] == export_csv[1][1:], 'Computer information are not equal'
     UUID(export_csv[1][0])
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_export_snapshot_json(user3: UserClientFlask):
+    file_name = 'real-eee-1001pxd.snapshot.12.json'
+    snap = create_device(user3, file_name)
+
+    snapshot = conftest.yaml2json(file_name.split(".json")[0])
+    snapshot = json.dumps(snapshot)
+
+    uri = "/inventory/export/snapshot/?id={}".format(snap.uuid)
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert body == snapshot

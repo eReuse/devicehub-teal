@@ -5,15 +5,32 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.ht
 ml).
 
-## master
-
 ## testing
+
+## [2.3.0] - 2022-07-12
+- [added] #281 Add selenium test.
+- [added] #305 Add button to download ISO Workbench.
+- [added] #306 Add link to download JSON snapshot.
+- [added] #308 Add sentry.
+- [changed] #302 Add system uuid to check the identity of one device.
+- [fixed] #309 Column lifecycle status is always empty.
+
+**IMPORTANT**: PR #302 involves some changes in the deployment process:
+```bash
+# First, run script `extract_uuids.sh` before applying alembic migrations (e.g. with schema `dbtest`)
+sh scripts/extract_uuids.sh
+
+# Then, apply alembic migrations
+alembic -x inventory=dbtest upgrade head
+```
+
+**NOTE**: If you forget (or don't need) to run this script before applying new migration it will work but any device will be updated.
 
 ## [2.2.0] - 2022-06-24
 - [changed] #304 change anchor of link devices lots.
 
 ## [2.2.0 rc2] - 2022-06-22
-- [added] #299 Multy select with Shift.
+- [added] #299 Multiselect with Shift.
 - [added] #300 Add Sid in label.
 - [added] #301 Add logo in label.
 - [added] #303 Add export Lots.

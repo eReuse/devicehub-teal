@@ -190,10 +190,12 @@ def test_snapshot_power_on_hours(user: UserClient):
     )
 
     errors = SnapshotsLog.query.filter().all()
-    snap_log = errors[0]
-    assert str(snap_log.snapshot.uuid) == snap['uuid']
-    assert len(errors) == 1
-    assert errors[0].description == 'Ok'
+    snap_log = errors[1]
+    assert len(errors) == 2
+    assert str(errors[0].snapshot_uuid) == snap['uuid']
+    assert str(errors[1].snapshot.uuid) == snap['uuid']
+    assert errors[0].description == 'There is not uuid'
+    assert errors[1].description == 'Ok'
 
 
 @pytest.mark.mvp
@@ -784,11 +786,13 @@ def test_backup_snapshot_with_errors(app: Devicehub, user: UserClient):
         response = user.post(res=Snapshot, data=json_encode(snapshot_no_hid))
 
     errors = SnapshotsLog.query.filter().all()
-    snap_log = errors[0]
+    snap_log = errors[1]
     assert snap_log.description == "'BenchmarkProcessorr'"
+    assert errors[0].description == 'There is not uuid'
     assert snap_log.version == "11.0b9"
     assert str(snap_log.snapshot_uuid) == '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
-    assert len(errors) == 1
+    assert str(errors[0].snapshot_uuid) == '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
+    assert len(errors) == 2
 
     files = [x for x in os.listdir(path_dir_base) if uuid in x]
     if files:
