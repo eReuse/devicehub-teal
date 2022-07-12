@@ -6,12 +6,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## testing
+
+## [2.3.0] - 2022-07-12
 - [added] #281 Add selenium test.
 - [added] #305 Add button to download ISO Workbench.
 - [added] #306 Add link to download JSON snapshot.
 - [added] #308 Add sentry.
 - [changed] #302 Add system uuid to check the identity of one device.
 - [fixed] #309 Column lifecycle status is always empty.
+
+**IMPORTANT**: PR #302 involves some changes in the deployment process:
+```bash
+# First, run script `extract_uuids.sh` before applying alembic migrations (e.g. with schema `dbtest`)
+sh scripts/extract_uuids.sh
+
+# Then, apply alembic migrations
+alembic -x inventory=dbtest upgrade head
+```
+
+**NOTE**: If you forget (or don't need) to run this script before applying new migration it will work but any device will be updated.
 
 ## [2.2.0] - 2022-06-24
 - [changed] #304 change anchor of link devices lots.
@@ -158,17 +171,3 @@ First server render HTML version. Completely rewrites views of angular JS client
 - [added] #83 add owner_id in all kind of device
 - [fixed] #89 save json on disk only for shapshots
 - [fixed] #91 The most old time allow is 1970-01-01
-
-
-# Release notes
-
-## [2.2.1]
-The pr #302 involves some changes in the deployment process
-For to do the deployment you need to do run the script extract_uuids.sh before to run alembic.
-This is the correct secuence if the schema of you proyect is *dbtest*
-```
-git pull
-sh scripts/extract_uuids.sh
-alembic -x inventory=dbtest upgrade head
-```
-If you forget to run this script the migration is do it but not modify any device data.
