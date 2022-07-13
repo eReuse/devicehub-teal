@@ -1311,5 +1311,42 @@ def test_snapshot_check_tests_lite(user: UserClient):
 
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
     assert res.status_code == 201
-    SnapshotsLog.query.all()
+    assert SnapshotsLog.query.count() == 1
+    m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
+
+
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_placeholder(user: UserClient):
+    """This check the structure of one placeholder generated automatically by a snapshot"""
+    snapshot_lite = file_json(
+        'test_lite/2022-4-13-19-5_user@dhub.com_b27dbf43-b88a-4505-ae27-10de5a95919e.json'
+    )
+
+    bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
+    assert res.status_code == 201
     dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
+    assert dev.placeholder is None
+    assert dev.binding.phid == '12'
+    assert len(dev.binding.device.components) == 11
+    assert len(dev.components) == 11
+    assert dev.binding.device.placeholder == dev.binding
+    assert dev.components != dev.binding.device.components
+    assert dev.binding.device.actions == []
+
+
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_placeholder_actions(user: UserClient):
+    """This test the actions of a placeholder of one snapshot"""
+    s = yaml2json('erase-sectors.snapshot')
+    snap1, _ = user.post(s, res=Snapshot)
+
+    dev = m.Device.query.filter_by(id=snap1['device']['id']).one()
+    assert dev.placeholder is None
+    assert dev.binding.phid == '4'
+    assert len(dev.binding.device.components) == 3
+    assert len(dev.components) == 3
+    assert dev.binding.device.placeholder == dev.binding
+    assert dev.components != dev.binding.device.components
+    assert dev.binding.device.actions == []
+    assert len(dev.components[0].actions) == 3
+    assert len(dev.binding.device.components[0].actions) == 0
