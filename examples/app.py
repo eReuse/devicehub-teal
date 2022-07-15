@@ -3,11 +3,8 @@ Example app with minimal configuration.
 
 Use this as a starting point.
 """
-import sentry_sdk
-from decouple import config
 
-# from flask_wtf.csrf import CSRFProtect
-from sentry_sdk.integrations.flask import FlaskIntegration
+from decouple import config
 
 from ereuse_devicehub.api.views import api
 from ereuse_devicehub.config import DevicehubConfig
@@ -17,11 +14,17 @@ from ereuse_devicehub.labels.views import labels
 from ereuse_devicehub.views import core
 from ereuse_devicehub.workbench.views import workbench
 
+# from flask_wtf.csrf import CSRFProtect
+
+
 # from werkzeug.contrib.profiler import ProfilerMiddleware
 
 
 SENTRY_DSN = config('SENTRY_DSN', None)
 if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.flask import FlaskIntegration
+
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         integrations=[
