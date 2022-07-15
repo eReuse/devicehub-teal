@@ -1481,7 +1481,7 @@ def create_code_tag(mapper, connection, device):
     """
     from ereuse_devicehub.resources.tag.model import Tag
 
-    if isinstance(device, Computer):
+    if isinstance(device, Computer) and not device.placeholder:
         tag = Tag(device_id=device.id, id=device.devicehub_id)
         db.session.add(tag)
 
