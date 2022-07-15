@@ -18,6 +18,7 @@ from ereuse_devicehub.resources.action.models import (
     Use,
 )
 from ereuse_devicehub.resources.device.models import Computer, Placeholder
+from ereuse_devicehub.resources.lot.models import LotDevice
 
 app = Devicehub(inventory=DevicehubConfig.DB_SCHEMA)
 app.app_context().push()
@@ -63,9 +64,11 @@ def clone_device(device):
 
     lots = [x for x in device.lots]
     for lot in lots:
-        set_devices = lot.devices - {device}
-        set_devices.add(new_device)
-        lot.devices.update(set_devices)
+        for rel_lot in LotDevice.query.filter_by(lot_id=lot.id, device=device):
+            rel_lot.device = new_device
+        # set_devices = lot.devices - {device}
+        # set_devices.add(new_device)
+        # lot.devices.update(set_devices)
     return new_device
 
 
