@@ -60,6 +60,12 @@ def clone_device(device):
     tags = [x for x in device.tags]
     for tag in tags:
         tag.device = new_device
+
+    lots = [x for x in device.lots]
+    for lot in lots:
+        set_devices = lot.devices - {device}
+        set_devices.add(new_device)
+        lot.devices.update(set_devices)
     return new_device
 
 
