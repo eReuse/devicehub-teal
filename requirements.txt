@@ -52,5 +52,3 @@ odfpy==1.4.1   # pandas dependency
 xlrd==2.0.1   # pandas dependency
 openpyxl==3.0.10   # pandas dependency
 et_xmlfile==1.1.0   # pandas dependency
-sentry_sdk==1.6.0
-blinker==1.4
