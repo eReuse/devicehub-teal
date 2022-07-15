@@ -143,6 +143,7 @@ class DeviceDetailView(GenericMixin):
         self.context.update(
             {
                 'device': device,
+                'placeholder': device.binding or device.placeholder,
                 'page_title': 'Device {}'.format(device.devicehub_id),
             }
         )

@@ -23,8 +23,14 @@
           <ul class="nav nav-tabs nav-tabs-bordered">
 
             <li class="nav-item">
-              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#type">Type</button>
+              <a class="nav-link" href="{{ url_for('inventory.device_details', id=placeholder.device.devicehub_id) }}">Placeholder device</a>
             </li>
+
+            {% if placeholder.binding %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('inventory.device_details', id=placeholder.binding.devicehub_id) }}">Workbench device</a>
+            </li>
+            {% endif %}
 
             <li class="nav-item">
               <a class="nav-link" href="{{ device.public_link }}" target="_blank">Web</a>
