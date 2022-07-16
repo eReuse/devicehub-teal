@@ -3,6 +3,7 @@ import copy
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.inventory.models import Transfer
 from ereuse_devicehub.resources.action.models import (
     ActionDevice,
     Allocate,
@@ -85,6 +86,7 @@ def manual_actions():
         DataWipe,
         ToRepair,
         Ready,
+        Transfer,
     )
 
     for action in MANUAL_ACTIONS:
@@ -93,7 +95,6 @@ def manual_actions():
 
 def change_device(action):
     for ac in action.query.all():
-        # import pdb; pdb.set_trace()
         if hasattr(ac, 'device'):
             if not ac.device.binding:
                 continue
