@@ -257,15 +257,14 @@ class DeviceCreateView(GenericMixin):
             }
         )
         if form.validate_on_submit():
-            snapshot = form.save(commit=False)
+            form.save(commit=False)
             next_url = url_for('inventory.devicelist')
             if lot_id:
                 next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
-                if snapshot and snapshot.device:
+                if form.objs:
                     lots = self.context['lots']
                     lot = lots.filter(Lot.id == lot_id).one()
-                    lot.devices.add(snapshot.device)
-                    db.session.add(lot)
+                    lot.devices = lot.devices.union(form.objs)
                 else:
                     messages.error('Sorry, the device could not be created')
 
