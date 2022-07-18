@@ -22,9 +22,15 @@
           <!-- Bordered Tabs -->
           <ul class="nav nav-tabs nav-tabs-bordered">
 
+            {% if placeholder %}
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('inventory.device_details', id=placeholder.device.devicehub_id) }}">Placeholder device</a>
             </li>
+            {% else %}
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#type">General details</button>
+            </li>
+            {% endif %}
 
             {% if placeholder.binding %}
             <li class="nav-item">
