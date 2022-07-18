@@ -1938,3 +1938,76 @@ def test_placeholder_log_excel_update(user3: UserClientFlask):
     assert "Excel" in body
     assert "placeholder_test.xls" in body
     assert "placeholder_test.csv" in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_placeholder_excel_from_lot(user3: UserClientFlask):
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+    lot_id = lot.id
+
+    uri = f'/inventory/lot/{lot_id}/upload-placeholder/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "Upload Placeholder" in body
+
+    file_path = Path(__file__).parent.joinpath('files').joinpath('placeholder_test.xls')
+    with open(file_path, 'rb') as excel:
+        data = {
+            'csrf_token': generate_csrf(),
+            'type': "Laptop",
+            'placeholder_file': excel,
+        }
+        user3.post(uri, data=data, content_type="multipart/form-data")
+    assert Device.query.count() == 3
+    dev = Device.query.first()
+    assert dev.hid == 'laptop-sony-vaio-12345678'
+    assert dev.placeholder.phid == 'a123'
+    assert dev.placeholder.info == 'Good conditions'
+    assert dev.placeholder.pallet == '24A'
+    assert dev.placeholder.id_device_supplier == 'TTT'
+    assert len(lot.devices) == 3
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_new_placeholder_from_lot(user3: UserClientFlask):
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+    assert len(lot.devices) == 0
+    lot_id = lot.id
+
+    uri = f'/inventory/lot/{lot_id}/device/add/'
+
+    user3.get(uri)
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'phid': 'ace',
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+    }
+    user3.post(uri, data=data)
+    dev = Device.query.one()
+    assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
+    assert dev.placeholder.phid == 'ace'
+    assert len(lot.devices) == 1
