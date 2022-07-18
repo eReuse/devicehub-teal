@@ -200,9 +200,9 @@ class Dummy:
         assert len(inventory['items'])
 
         i, _ = user1.get(res=Device, query=[('search', 'intel')])
-        assert 12 == len(i['items'])
-        i, _ = user1.get(res=Device, query=[('search', 'pc')])
         assert 14 == len(i['items'])
+        i, _ = user1.get(res=Device, query=[('search', 'pc')])
+        assert 17 == len(i['items'])
 
         # Let's create a set of actions for the pc device
         # Make device Ready
