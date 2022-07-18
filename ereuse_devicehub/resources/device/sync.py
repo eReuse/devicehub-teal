@@ -115,6 +115,7 @@ class Sync:
                  - A flag stating if the device is new or it already
                    existed in the DB.
         """
+        # if device.serial_number == 'b8oaas048286':
         assert inspect(component).transient, 'Component should not be synced from DB'
         # if not is a DataStorage, then need build a new one
         if component.t in DEVICES_ALLOW_DUPLICITY:
@@ -126,7 +127,7 @@ class Sync:
         try:
             if component.hid:
                 db_component = Device.query.filter_by(
-                    hid=component.hid, owner_id=g.user.id
+                    hid=component.hid, owner_id=g.user.id, placeholder=None
                 ).one()
                 assert isinstance(
                     db_component, Device
@@ -185,18 +186,24 @@ class Sync:
             if device.system_uuid:
                 with suppress(ResourceNotFound):
                     db_device = Computer.query.filter_by(
-                        system_uuid=device.system_uuid, owner_id=g.user.id, active=True
+                        system_uuid=device.system_uuid,
+                        owner_id=g.user.id,
+                        active=True,
+                        placeholder=None,
                     ).one()
             # if no there are any Computer by uuid search by hid
             if not db_device and device.hid:
                 with suppress(ResourceNotFound):
                     db_device = Device.query.filter_by(
-                        hid=device.hid, owner_id=g.user.id, active=True
+                        hid=device.hid,
+                        owner_id=g.user.id,
+                        active=True,
+                        placeholder=None,
                     ).one()
         elif device.hid:
             with suppress(ResourceNotFound):
                 db_device = Device.query.filter_by(
-                    hid=device.hid, owner_id=g.user.id, active=True
+                    hid=device.hid, owner_id=g.user.id, active=True, placeholder=None
                 ).one()
 
         if db_device and db_device.allocated:
