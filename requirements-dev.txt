@@ -1,4 +1,7 @@
 black
+coverage
 isort
 flake8
 pre-commit
+pytest
+selenium==4.1.5

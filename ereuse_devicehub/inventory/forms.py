@@ -339,6 +339,7 @@ class NewDeviceForm(FlaskForm):
     screen = FloatField('Screen size', [validators.Optional()])
 
     def __init__(self, *args, **kwargs):
+        self.objs = set()
         self._obj = kwargs.pop('_obj', None)
         super().__init__(*args, **kwargs)
         if self._obj:
@@ -549,6 +550,7 @@ class NewDeviceForm(FlaskForm):
             type="New device", source='Web form', placeholder=device.placeholder
         )
         db.session.add(placeholder_log)
+        self.objs.add(device)
 
     def reset_ids(self):
         if self.amount.data > 1:

@@ -29,6 +29,7 @@ alembic -x inventory=dbtest upgrade head
 
 ## [2.2.0] - 2022-06-24
 - [changed] #304 change anchor of link devices lots.
+- [fixed] #315 create in a lot a new placeholder.
 
 ## [2.2.0 rc2] - 2022-06-22
 - [added] #299 Multiselect with Shift.
