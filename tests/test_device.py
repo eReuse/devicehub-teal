@@ -580,7 +580,7 @@ def test_manufacturer_enforced():
 def test_device_properties_format(app: Devicehub, user: UserClient):
     user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
     with app.app_context():
-        pc = d.Laptop.query.one()  # type: d.Laptop
+        pc = d.Laptop.query.filter_by(placeholder=None).one()  # type: d.Laptop
         assert format(pc) == 'Laptop 3: model 1000h, S/N 94oaaq021116'
         assert format(pc, 't') == 'Netbook 1000h'
         assert format(pc, 's') == '(asustek computer inc.) S/N 94OAAQ021116'
@@ -589,12 +589,12 @@ def test_device_properties_format(app: Devicehub, user: UserClient):
         assert pc.graphic_card_model == 'mobile 945gse express integrated graphics controller'
         assert pc.processor_model == 'intel atom cpu n270 @ 1.60ghz'
         net = next(c for c in pc.components if isinstance(c, d.NetworkAdapter))
-        assert format(net) == 'NetworkAdapter 4: model ar8121/ar8113/ar8114 ' \
+        assert format(net) == 'NetworkAdapter 5: model ar8121/ar8113/ar8114 ' \
                               'gigabit or fast ethernet, S/N 00:24:8c:7f:cf:2d'
         assert format(net, 't') == 'NetworkAdapter ar8121/ar8113/ar8114 gigabit or fast ethernet'
         assert format(net, 's') == 'qualcomm atheros 00:24:8C:7F:CF:2D – 100 Mbps'
         hdd = next(c for c in pc.components if isinstance(c, d.DataStorage))
-        assert format(hdd) == 'HardDrive 9: model st9160310as, S/N 5sv4tqa6'
+        assert format(hdd) == 'HardDrive 10: model st9160310as, S/N 5sv4tqa6'
         assert format(hdd, 't') == 'HardDrive st9160310as'
         assert format(hdd, 's') == 'seagate 5SV4TQA6 – 152 GB'
 
