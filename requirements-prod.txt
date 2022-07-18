@@ -1,0 +1,2 @@
+sentry_sdk==1.6.0
+blinker==1.4
