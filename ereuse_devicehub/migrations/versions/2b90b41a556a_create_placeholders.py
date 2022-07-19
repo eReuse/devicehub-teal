@@ -7,6 +7,8 @@ Create Date: 2022-07-19 12:17:16.690865
 """
 import copy
 
+from alembic import context, op
+
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
@@ -34,6 +36,13 @@ revision = '2b90b41a556a'
 down_revision = '3e3a67f62972'
 branch_labels = None
 depends_on = None
+
+
+def get_inv():
+    INV = context.get_x_argument(as_dictionary=True).get('inventory')
+    if not INV:
+        raise ValueError("Inventory value is not specified")
+    return INV
 
 
 def init_app():
@@ -207,6 +216,11 @@ def remove_placeholders():
 
 
 def upgrade():
+    con = op.get_bind()
+    devices = con.execute(f'select * from {get_inv()}.device')
+    if not list(devices):
+        return
+
     init_app()
     clone_computers()
     manual_actions()
@@ -214,6 +228,11 @@ def upgrade():
 
 
 def downgrade():
+    con = op.get_bind()
+    devices = con.execute(f'select * from {get_inv()}.device')
+    if not list(devices):
+        return
+
     init_app()
     remove_manual_actions()
     change_lot()
