@@ -1188,7 +1188,6 @@ def test_action_toprepare(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_action_prepare(user3: UserClientFlask):
-    # ???
     snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
     dev = snap.device
     uri = '/inventory/device/'
@@ -1198,15 +1197,15 @@ def test_action_prepare(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Prepare",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'Prepare'
+    assert dev.binding.device.actions[-1].type == 'Prepare'
     assert 'Action &#34;Prepare&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -1221,15 +1220,15 @@ def test_action_torepair(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "ToRepair",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'ToRepair'
+    assert dev.binding.device.actions[-1].type == 'ToRepair'
     assert 'Action &#34;ToRepair&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -1244,15 +1243,15 @@ def test_action_ready(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Ready",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'Ready'
+    assert dev.binding.device.actions[-1].type == 'Ready'
     assert 'Action &#34;Ready&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -1271,16 +1270,16 @@ def test_action_datawipe(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "DataWipe",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'document-file_name': file_upload,
     }
 
     uri = '/inventory/action/datawipe/add/'
     body, status = user3.post(uri, data=data, content_type="multipart/form-data")
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'DataWipe'
+    assert dev.binding.device.actions[-1].type == 'DataWipe'
     assert 'Action &#34;DataWipe&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -1621,7 +1620,6 @@ def test_export_snapshot_json(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_add_placeholder_excel(user3: UserClientFlask):
-
     uri = '/inventory/upload-placeholder/'
     body, status = user3.get(uri)
     assert status == '200 OK'
