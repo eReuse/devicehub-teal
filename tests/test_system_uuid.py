@@ -92,7 +92,7 @@ def test_wb11_to_wb11_with_uuid_api(user: UserClient):
 
     db_snapthot = Snapshot.query.one()
     device = db_snapthot.device
-    assert Computer.query.count() == 1
+    assert Computer.query.count() == 2
     assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
     assert device.system_uuid is None
 
@@ -106,10 +106,14 @@ def test_wb11_to_wb11_with_uuid_api(user: UserClient):
         snapshot_11['debug']['lshw']['configuration']['uuid']
         == '364ee69c-9c82-9cb1-2111-88ae1da6f3d0'
     )
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
 
 @pytest.mark.mvp
@@ -123,20 +127,28 @@ def test_wb11_with_uuid_to_wb11_api(user: UserClient):
     snapshot_11['uuid'] = '0973fda0-589a-11eb-ae93-0242ac130003'
     user.post(snapshot_11, res=Snapshot)
 
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
     # insert the same computer with wb11 with hid and with uuid, (new version)
     snapshot_11 = conftest.file_json('system_uuid3.json')
     assert 'debug' not in snapshot_11
     user.post(snapshot_11, res=Snapshot)
 
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
 
 @pytest.mark.mvp
@@ -150,10 +162,14 @@ def test_wb11_with_uuid_to_wb11_without_hid_api(user: UserClient):
     snapshot_11['uuid'] = '0973fda0-589a-11eb-ae93-0242ac130003'
     user.post(snapshot_11, res=Snapshot)
 
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
     # insert the same computer with wb11 with hid and with uuid, (new version)
     snapshot_11 = conftest.file_json('system_uuid3.json')
@@ -162,7 +178,7 @@ def test_wb11_with_uuid_to_wb11_without_hid_api(user: UserClient):
     snapshot_11['debug'] = {'lshw': snapshot_lite['data']['lshw']}
     user.post(snapshot_11, res=Snapshot)
 
-    assert Computer.query.count() == 1
+    assert Computer.query.count() == 2
 
 
 @pytest.mark.mvp
@@ -186,7 +202,7 @@ def test_wb11_to_wb11_with_uuid_form(user3: UserClientFlask):
 
     db_snapthot = Snapshot.query.one()
     device = db_snapthot.device
-    assert Computer.query.count() == 1
+    assert Computer.query.count() == 2
     assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
     assert device.system_uuid is None
 
@@ -203,10 +219,14 @@ def test_wb11_to_wb11_with_uuid_form(user3: UserClientFlask):
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
 
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
 
 @pytest.mark.mvp
@@ -231,10 +251,14 @@ def test_wb11_with_uuid_to_wb11_form(user3: UserClientFlask):
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
 
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
     # insert the same computer with wb11 with hid and with uuid, (new version)
     snapshot = conftest.file_json('system_uuid3.json')
@@ -248,10 +272,14 @@ def test_wb11_with_uuid_to_wb11_form(user3: UserClientFlask):
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
 
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
 
 @pytest.mark.mvp
@@ -276,10 +304,14 @@ def test_wb11_with_uuid_to_wb11_without_hid_form(user3: UserClientFlask):
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
 
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
     # insert the same computer with wb11 with hid and with uuid, (new version)
     snapshot_11 = conftest.file_json('system_uuid3.json')
@@ -295,7 +327,7 @@ def test_wb11_with_uuid_to_wb11_without_hid_form(user3: UserClientFlask):
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
 
-    assert Computer.query.count() == 1
+    assert Computer.query.count() == 2
 
 
 @pytest.mark.mvp
@@ -305,17 +337,25 @@ def test_wb11_to_wblite_api(user: UserClient):
     # insert computer with wb11 with hid and without uuid, (old version)
     snapshot_11 = conftest.file_json('system_uuid3.json')
     user.post(snapshot_11, res=Snapshot)
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert device.system_uuid is None
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert device.system_uuid is None
 
     snapshot_lite = conftest.file_json('system_uuid2.json')
     user.post(snapshot_lite, uri="/api/inventory/")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
 
 @pytest.mark.mvp
@@ -324,17 +364,25 @@ def test_wblite_to_wb11_api(user: UserClient):
 
     snapshot_lite = conftest.file_json('system_uuid2.json')
     user.post(snapshot_lite, uri="/api/inventory/")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
     snapshot_11 = conftest.file_json('system_uuid3.json')
     user.post(snapshot_11, res=Snapshot)
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
 
 @pytest.mark.mvp
@@ -354,10 +402,14 @@ def test_wb11_to_wblite_form(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert device.system_uuid is None
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert device.system_uuid is None
 
     file_name = 'system_uuid2.json'
     snapshot_lite = conftest.file_json(file_name)
@@ -369,10 +421,14 @@ def test_wb11_to_wblite_form(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
 
 @pytest.mark.mvp
@@ -392,10 +448,14 @@ def test_wblite_to_wb11_form(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
     file_name = 'system_uuid3.json'
     snapshot_11 = conftest.file_json(file_name)
@@ -407,10 +467,14 @@ def test_wblite_to_wb11_form(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
 
 @pytest.mark.mvp
@@ -419,18 +483,26 @@ def test_wblite_to_wblite_api(user: UserClient):
 
     snapshot_lite = conftest.file_json('system_uuid2.json')
     user.post(snapshot_lite, uri="/api/inventory/")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
     snapshot_lite = conftest.file_json('system_uuid2.json')
     snapshot_lite['uuid'] = '0973fda0-589a-11eb-ae93-0242ac130003'
     user.post(snapshot_lite, uri="/api/inventory/")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
 
 @pytest.mark.mvp
@@ -450,10 +522,14 @@ def test_wblite_to_wblite_form(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
     file_name = 'system_uuid2.json'
     snapshot_lite = conftest.file_json(file_name)
@@ -466,10 +542,14 @@ def test_wblite_to_wblite_form(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
 
 @pytest.mark.mvp
@@ -479,17 +559,21 @@ def test_wb11_to_wb11_duplicity_api(user: UserClient):
     # insert computer with wb11 with hid and without uuid, (old version)
     snapshot_11 = conftest.file_json('system_uuid3.json')
     user.post(snapshot_11, res=Snapshot)
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert device.system_uuid is None
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert device.system_uuid is None
 
     snapshot_11 = conftest.file_json('system_uuid3.json')
     snapshot_11['uuid'] = '0973fda0-589a-11eb-ae93-0242ac130003'
     components = [x for x in snapshot_11['components'] if x['type'] != 'NetworkAdapter']
     snapshot_11['components'] = components
     user.post(snapshot_11, res=Snapshot)
-    assert Computer.query.count() == 2
+    assert Computer.query.count() == 4
     for c in Computer.query.all():
         assert 'laptop-acer-aohappy-lusea0d010038879a01601' in c.hid
         assert c.system_uuid is None
@@ -512,10 +596,14 @@ def test_wb11_to_wb11_duplicity_form(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert device.system_uuid is None
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert device.system_uuid is None
 
     snapshot_11 = conftest.file_json('system_uuid3.json')
     snapshot_11['uuid'] = '0973fda0-589a-11eb-ae93-0242ac130003'
@@ -530,10 +618,12 @@ def test_wb11_to_wb11_duplicity_form(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
-    assert Computer.query.count() == 2
-    for c in Computer.query.all():
-        assert 'laptop-acer-aohappy-lusea0d010038879a01601' in c.hid
-        assert c.system_uuid is None
+
+    assert Computer.query.count() == 4
+    for device in Computer.query.all():
+        if device.binding:
+            assert 'laptop-acer-aohappy-lusea0d010038879a01601' in device.hid
+            assert device.system_uuid is None
 
 
 @pytest.mark.mvp
@@ -543,10 +633,14 @@ def test_wb11_smbios_2_5_api(user: UserClient):
     # insert computer with wb11 with hid and without uuid, (old version)
     snapshot_11 = conftest.file_json('system_uuid4.json')
     user.post(snapshot_11, res=Snapshot)
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert device.system_uuid is None
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert device.system_uuid is None
 
 
 @pytest.mark.mvp
@@ -566,10 +660,14 @@ def test_wb11_smbios_2_5_form(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert device.system_uuid is None
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+            assert device.system_uuid is None
 
 
 @pytest.mark.mvp
@@ -580,10 +678,14 @@ def test_wblite_smbios_2_5_api(user: UserClient):
     snapshot_lite = conftest.file_json('system_uuid2.json')
     snapshot_lite['data']['lshw']['capabilities']['smbios-3.0'] = 'SMBIOS version 2.5'
     user.post(snapshot_lite, uri="/api/inventory/")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+        assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
 
 
 @pytest.mark.mvp
@@ -604,7 +706,11 @@ def test_wblite_smbios_2_5_form(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
-    assert Computer.query.count() == 1
-    device = Computer.query.one()
-    assert device.hid == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
-    assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'
+    assert Computer.query.count() == 2
+    for device in Computer.query.all():
+        if device.binding:
+            assert (
+                device.hid
+                == 'laptop-acer-aohappy-lusea0d010038879a01601-88:ae:1d:a6:f3:d0'
+            )
+        assert str(device.system_uuid) == '9ce64e36-829c-b19c-2111-88ae1da6f3d0'

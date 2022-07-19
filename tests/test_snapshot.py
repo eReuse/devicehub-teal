@@ -368,18 +368,6 @@ def test_snapshot_mismatch_id():
 
 
 @pytest.mark.mvp
-def test_snapshot_tag_inner_tag(user: UserClient, tag_id: str, app: Devicehub):
-    """Tests a posting Snapshot with a local tag."""
-    b = yaml2json('basic.snapshot')
-    b['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]
-
-    snapshot_and_check(user, b, action_types=(BenchmarkProcessor.t, VisualTest.t))
-    with app.app_context():
-        tag = Tag.query.all()[0]  # type: Tag
-        assert tag.device_id == 3, 'Tag should be linked to the first device'
-
-
-@pytest.mark.mvp
 def test_snapshot_tag_inner_tag_mismatch_between_tags_and_hid(
     user: UserClient, tag_id: str
 ):
