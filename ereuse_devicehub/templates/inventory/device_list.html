@@ -247,10 +247,17 @@
                     </a>
                   </li>
                   <li>
+                    {% if unassigned_devices %}
+                    <span class="dropdown-item" style="color: #999ea4;">
+                      <i class="bi bi-file-spreadsheet"></i>
+                      Devices Lots Spreadsheet
+                    </span>
+                    {% else %}
                     <a href="javascript:export_file('devices_lots')" class="dropdown-item">
                       <i class="bi bi-file-spreadsheet"></i>
                       Devices Lots Spreadsheet
                     </a>
+                    {% endif %}
                   </li>
                   <li>
                     <a href="javascript:export_file('certificates')" class="dropdown-item">
