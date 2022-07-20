@@ -1486,4 +1486,4 @@ def create_code_tag(mapper, connection, device):
         db.session.add(tag)
 
 
-event.listen(Device, 'after_insert', create_code_tag, propagate=True)
+# event.listen(Device, 'after_insert', create_code_tag, propagate=True)
