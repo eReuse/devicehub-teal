@@ -15,6 +15,7 @@ ml).
 - [added] #308 Add sentry.
 - [changed] #302 Add system uuid to check the identity of one device.
 - [fixed] #309 Column lifecycle status is always empty.
+- [fixed] #317 bugs about exports placeholders.
 
 **IMPORTANT**: PR #302 involves some changes in the deployment process:
 ```bash
