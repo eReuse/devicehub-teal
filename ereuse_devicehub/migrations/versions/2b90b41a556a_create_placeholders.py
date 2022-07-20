@@ -46,7 +46,7 @@ def get_inv():
 
 
 def init_app():
-    app = Devicehub(inventory=DevicehubConfig.DB_SCHEMA)
+    app = Devicehub(inventory=f'{get_inv()}')
     app.app_context().push()
 
 
