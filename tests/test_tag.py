@@ -368,18 +368,18 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
     desktop = Device.query.filter_by(
         devicehub_id=snapshot['device']['devicehubID']
     ).one()
-    assert ['O48N2'] == [x['id'] for x in device['tags']]
+    assert [] == [x['id'] for x in device['tags']]
     assert 'foo' in [x.id for x in desktop.binding.device.tags]
     assert 'bar' in [x.secondary for x in desktop.binding.device.tags]
 
     r, _ = user.get(
         res=Device, query=[('search', 'foo'), ('filter', {'type': ['Computer']})]
     )
-    assert len(r['items']) == 0
+    assert len(r['items']) == 1
     r, _ = user.get(
         res=Device, query=[('search', 'bar'), ('filter', {'type': ['Computer']})]
     )
-    assert len(r['items']) == 0
+    assert len(r['items']) == 1
 
 
 @pytest.mark.mvp
@@ -491,5 +491,5 @@ def test_get_tag_permissions(app: Devicehub, user: UserClient, user2: UserClient
     computer2, res2 = user2.get(url, None)
     assert res.status_code == 200
     assert res2.status_code == 200
-    assert len(computer['items']) == 2
+    assert len(computer['items']) == 1
     assert len(computer2['items']) == 0

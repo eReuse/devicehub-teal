@@ -179,7 +179,6 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     """Checks the values of the device, components,
     actions and their relationships of a real pc.
     """
-    # import pdb; pdb.set_trace()
     s = file('real-eee-1001pxd.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     pc, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
@@ -192,7 +191,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
         pc['hid']
         == 'laptop-asustek_computer_inc-1001pxd-b8oaas048286-14:da:e9:42:f6:7c'
     )
-    assert len(pc['tags']) == 1
+    assert len(pc['tags']) == 0
     assert pc['networkSpeeds'] == [
         100,
         0,

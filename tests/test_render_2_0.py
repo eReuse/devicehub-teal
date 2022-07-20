@@ -311,7 +311,7 @@ def test_label_details(user3: UserClientFlask):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_link_tag_to_device(user3: UserClientFlask):
     snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
-    dev = snap.device
+    dev = snap.device.binding.device
     uri = '/labels/add/'
     user3.get(uri)
 
@@ -332,7 +332,7 @@ def test_link_tag_to_device(user3: UserClientFlask):
 
     uri = '/inventory/tag/devices/add/'
     user3.post(uri, data=data)
-    assert len(list(dev.tags)) == 2
+    assert len(list(dev.tags)) == 1
     tags = [tag.id for tag in dev.tags]
     assert "tag1" in tags
 
@@ -342,7 +342,7 @@ def test_link_tag_to_device(user3: UserClientFlask):
 def test_unlink_tag_to_device(user3: UserClientFlask):
     # create device
     snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
-    dev = snap.device
+    dev = snap.device.binding.device
 
     # create tag
     uri = '/labels/add/'
@@ -380,9 +380,7 @@ def test_unlink_tag_to_device(user3: UserClientFlask):
     }
 
     user3.post(uri, data=data)
-    assert len(list(dev.tags)) == 1
-    tag = list(dev.tags)[0]
-    assert not tag.id == "tag1"
+    assert len(list(dev.tags)) == 0
 
 
 @pytest.mark.mvp
@@ -390,7 +388,7 @@ def test_unlink_tag_to_device(user3: UserClientFlask):
 def test_print_labels(user3: UserClientFlask):
     # create device
     snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
-    dev = snap.device
+    dev = snap.device.binding.device
 
     # create tag
     uri = '/labels/add/'
@@ -412,7 +410,7 @@ def test_print_labels(user3: UserClientFlask):
     uri = '/inventory/tag/devices/add/'
     user3.post(uri, data=data)
 
-    assert len(list(dev.tags)) == 2
+    assert len(list(dev.tags)) == 1
 
     uri = '/labels/print'
     data = {

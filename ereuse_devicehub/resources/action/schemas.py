@@ -76,7 +76,10 @@ class Action(Thing):
         if 'end_time' in data and data['end_time'].replace(tzinfo=tzutc()) < unix_time:
             data['end_time'] = unix_time
 
-        if 'start_time' in data and data['start_time'].replace(tzinfo=tzutc()) < unix_time:
+        if (
+            'start_time' in data
+            and data['start_time'].replace(tzinfo=tzutc()) < unix_time
+        ):
             data['start_time'] = unix_time
 
         if data.get('end_time') and data.get('start_time'):

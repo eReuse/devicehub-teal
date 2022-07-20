@@ -347,7 +347,7 @@ def test_sync_execute_register_tag_linked_same_device():
     pc.tags.add(Tag(id='foo'))
     db_pc = Sync().execute_register(pc)
     assert db_pc.id == orig_pc.id
-    assert len(db_pc.tags) == 2
+    assert len(db_pc.tags) == 1
     for tag in db_pc.tags:
         assert tag.id in ['foo', db_pc.devicehub_id]
 
@@ -501,7 +501,7 @@ def test_get_devices_permissions(app: Devicehub, user: UserClient, user2: UserCl
     devices2, res2 = user2.get(url, None)
     assert res.status_code == 200
     assert res2.status_code == 200
-    assert len(devices['items']) == 1
+    assert len(devices['items']) == 2
     assert len(devices2['items']) == 0
 
 
@@ -515,13 +515,13 @@ def test_get_devices_unassigned(user: UserClient):
 
     devices, res = user.get(url, None)
     assert res.status_code == 200
-    assert len(devices['items']) == 1
+    assert len(devices['items']) == 2
 
     url = '/devices/?filter={"type":["Computer"]}&unassign=1'
 
     devices, res = user.get(url, None)
     assert res.status_code == 200
-    assert len(devices['items']) == 1
+    assert len(devices['items']) == 2
 
     from ereuse_devicehub.resources.lot.models import Lot
     device_id = devices['items'][0]['id']
@@ -537,13 +537,13 @@ def test_get_devices_unassigned(user: UserClient):
 
     devices, res = user.get(url, None)
     assert res.status_code == 200
-    assert len(devices['items']) == 1
+    assert len(devices['items']) == 2
 
     url = '/devices/?filter={"type":["Computer"]}&unassign=1'
 
     devices, res = user.get(url, None)
     assert res.status_code == 200
-    assert len(devices['items']) == 0
+    assert len(devices['items']) == 1
 
 
 @pytest.mark.mvp
@@ -702,7 +702,7 @@ def test_hid_with_2networkadapters(app: Devicehub, user: UserClient):
 
     laptop = devices['items'][0]
     assert laptop['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
-    assert len([c for c in devices['items'] if c['type'] == 'Laptop']) == 1
+    assert len([c for c in devices['items'] if c['type'] == 'Laptop']) == 2
 
 
 @pytest.mark.mvp
@@ -723,7 +723,7 @@ def test_hid_with_2network_and_drop_no_mac_in_hid(app: Devicehub, user: UserClie
     devices, _ = user.get(res=d.Device)
     laptop = devices['items'][0]
     assert laptop['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
-    assert len([c for c in devices['items'] if c['type'] == 'Laptop']) == 1
+    assert len([c for c in devices['items'] if c['type'] == 'Laptop']) == 2
     assert len([c for c in laptop['components'] if c['type'] == 'NetworkAdapter']) == 1
 
 
@@ -746,22 +746,21 @@ def test_hid_with_2network_and_drop_mac_in_hid(app: Devicehub, user: UserClient)
     user.post(json_encode(snapshot), res=m.Snapshot)
     devices, _ = user.get(res=d.Device)
     laptops = [c for c in devices['items'] if c['type'] == 'Laptop']
-    assert len(laptops) == 2
-    hids = [h['hid'] for h in laptops]
+    assert len(laptops) == 4
+    hids = [laptops[0]['hid'], laptops[2]['hid']]
     proof_hid = ['laptop-asustek_computer_inc-1000h-94oaaq021116-a0:24:8c:7f:cf:2d',
                  'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d']
     assert all([h in proof_hid for h in hids])
 
     # we drop all network cards
     snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abc'
-    snapshot['components'] = [c for c in snapshot['components'] if not c in [network, network2]]
+    snapshot['components'] = [c for c in snapshot['components'] if c not in [network, network2]]
     user.post(json_encode(snapshot), res=m.Snapshot)
     devices, _ = user.get(res=d.Device)
     laptops = [c for c in devices['items'] if c['type'] == 'Laptop']
-    assert len(laptops) == 3
-    hids = [h['hid'] for h in laptops]
+    assert len(laptops) == 4
+    hids = [laptops[0]['hid'], laptops[2]['hid']]
     proof_hid = ['laptop-asustek_computer_inc-1000h-94oaaq021116-a0:24:8c:7f:cf:2d',
                  'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d',
                  'laptop-asustek_computer_inc-1000h-94oaaq021116']
     assert all([h in proof_hid for h in hids])
-

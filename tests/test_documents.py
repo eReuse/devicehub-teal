@@ -515,12 +515,14 @@ def test_report_devices_stock_control(user: UserClient, user2: UserClient):
         fixture_csv = list(obj_csv)
 
     assert user.user['id'] != user2.user['id']
-    assert len(export_csv) == 2
+    assert len(export_csv) == 3
 
     export_csv[0] = export_csv[0][0].split(';')
     export_csv[1] = export_csv[1][0].split(';')
+    export_csv[2] = export_csv[2][0].split(';')
     fixture_csv[0] = fixture_csv[0][0].split(';')
     fixture_csv[1] = fixture_csv[1][0].split(';')
+    fixture_csv[2] = fixture_csv[2][0].split(';')
 
     assert isinstance(
         datetime.strptime(export_csv[1][5], '%c'), datetime
@@ -529,9 +531,12 @@ def test_report_devices_stock_control(user: UserClient, user2: UserClient):
     # Pop dates fields from csv lists to compare them
     fixture_csv[1] = fixture_csv[1][:5] + fixture_csv[1][6:]
     export_csv[1] = export_csv[1][:5] + export_csv[1][6:]
+    fixture_csv[2] = fixture_csv[2][:5] + fixture_csv[2][6:]
+    export_csv[2] = export_csv[2][:5] + export_csv[2][6:]
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert fixture_csv[1] == export_csv[1], 'Computer information are not equal'
+    assert fixture_csv[2] == export_csv[2], 'Computer information are not equal'
     assert fixture_csv == export_csv
 
 
