@@ -7,6 +7,9 @@ ml).
 
 ## testing
 - [added] #312 Placeholder: new, edit, update. (manually and with excel).
+- [fixed] #313 Bump numpy from 1.21.6 to 1.22.0.
+- [fixed] #314 bugs create placeholder from lot.
+- [fixed] #317 bugs about exports placeholders.
 
 ## [2.3.0] - 2022-07-12
 - [added] #281 Add selenium test.
@@ -15,7 +18,6 @@ ml).
 - [added] #308 Add sentry.
 - [changed] #302 Add system uuid to check the identity of one device.
 - [fixed] #309 Column lifecycle status is always empty.
-- [fixed] #317 bugs about exports placeholders.
 
 **IMPORTANT**: PR #302 involves some changes in the deployment process:
 ```bash
