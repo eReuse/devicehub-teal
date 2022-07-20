@@ -479,6 +479,7 @@ def test_export_multiple_different_devices(user: UserClient):
         query=[('filter', {'type': ['Computer', 'Keyboard', 'Monitor']})],
         accept='text/csv',
     )
+
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)
@@ -491,7 +492,6 @@ def test_export_multiple_different_devices(user: UserClient):
 
 @pytest.mark.mvp
 def test_report_devices_stock_control(user: UserClient, user2: UserClient):
-    # TODO
     """Test export device information in a csv file."""
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
     snapshot2, _ = user2.post(file('basic.snapshot2'), res=Snapshot)

@@ -65,7 +65,7 @@ class DeviceRow(OrderedDict):
         self['Device Hardware ID'] = device.hid
         self['Device Type'] = device.t
         self['Device Chassis'] = ''
-        if isinstance(device, d.Computer):
+        if isinstance(device, d.Computer) and not device.placeholder:
             self['Device Chassis'] = device.chassis.name
         self['Device Serial Number'] = none2str(device.serial_number)
         self['Device Model'] = none2str(device.model)
@@ -118,8 +118,6 @@ class DeviceRow(OrderedDict):
             self['RAM Range'] = ''
             self['Data Storage Rate'] = ''
             self['Data Storage Range'] = ''
-
-        self['Price'] = none2str(device.price)
 
         benchram = get_action(device, 'BenchmarkRamSysbench')
         if benchram:
@@ -384,7 +382,6 @@ class StockRow(OrderedDict):
             self['Lifecycle state'] = device.last_action_of(*states.Trading.actions()).t
         except LookupError:
             self['Lifecycle state'] = ''
-            self['Price'] = none2str(device.price)
             self['Processor'] = none2str(device.processor_model)
             self['RAM (MB)'] = none2str(device.ram_size)
             self['Data Storage Size (MB)'] = none2str(device.data_storage_size)
