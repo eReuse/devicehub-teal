@@ -111,7 +111,7 @@ class DeviceView(View):
 
     def patch(self, id):
         dev = Device.query.filter_by(
-            id=id, owner_id=g.user.id, active=True, placeholder=None
+            id=id, owner_id=g.user.id, active=True
         ).one()
         if isinstance(dev, Computer):
             resource_def = app.resources['Computer']
@@ -139,14 +139,14 @@ class DeviceView(View):
 
     def one_public(self, id: int):
         device = Device.query.filter_by(
-            devicehub_id=id, active=True, placeholder=None
+            devicehub_id=id, active=True
         ).one()
         return render_template('devices/layout.html', device=device, states=states)
 
     @auth.Auth.requires_auth
     def one_private(self, id: str):
         device = Device.query.filter_by(
-            devicehub_id=id, owner_id=g.user.id, active=True, placeholder=None
+            devicehub_id=id, owner_id=g.user.id, active=True
         ).first()
         if not device:
             return self.one_public(id)
@@ -176,7 +176,7 @@ class DeviceView(View):
         trades_dev_ids = {d.id for t in trades for d in t.devices}
 
         query = (
-            Device.query.filter(Device.active == True, Device.placeholder == None)
+            Device.query.filter(Device.active == True)
             .filter((Device.owner_id == g.user.id) | (Device.id.in_(trades_dev_ids)))
             .distinct()
         )
