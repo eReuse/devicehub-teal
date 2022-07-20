@@ -930,6 +930,10 @@ class Delete(ActionWithMultipleDevicesCheckingOwner):
         for dev in data['devices']:
             if dev.last_action_trading is None:
                 dev.active = False
+                if dev.binding:
+                    dev.binding.device.active = False
+                if dev.placeholder:
+                    dev.placeholder.device.active = False
 
 
 class Migrate(ActionWithMultipleDevices):
