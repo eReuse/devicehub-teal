@@ -411,7 +411,16 @@ class Device(Thing):
 
     @property
     def sid(self):
-        actions = [x for x in self.actions if x.t == 'Snapshot' and x.sid]
+        actions = []
+        if self.placeholder and self.placeholder.binding:
+            actions = [
+                x
+                for x in self.placeholder.binding.actions
+                if x.t == 'Snapshot' and x.sid
+            ]
+        else:
+            actions = [x for x in self.actions if x.t == 'Snapshot' and x.sid]
+
         if actions:
             return actions[0].sid
 
@@ -600,6 +609,16 @@ class Device(Thing):
         if cls.t == 'Device':
             args[POLYMORPHIC_ON] = cls.type
         return args
+
+    def phid(self):
+        if self.placeholder:
+            return self.placeholder.phid
+        if self.binding:
+            return self.binding.phid
+        return ''
+
+    def list_tags(self):
+        return ', '.join([t.id for t in self.tags])
 
     def appearance(self):
         actions = copy.copy(self.actions)
