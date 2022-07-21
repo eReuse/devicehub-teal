@@ -207,7 +207,7 @@ function removeLot() {
 
 function removeTag() {
     const devices = TableController.getSelectedDevices();
-    const devices_id = devices.map(dev => dev.data);
+    const devices_id = devices.map(dev => $(dev).attr('data'));
     if (devices_id.length == 1) {
         const url = `/inventory/tag/devices/${devices_id[0]}/del/`;
         window.location.href = url;
@@ -218,7 +218,7 @@ function removeTag() {
 
 function addTag() {
     const devices = TableController.getSelectedDevices();
-    const devices_id = devices.map(dev => dev.data);
+    const devices_id = devices.map(dev => $(dev).attr('data'));
     if (devices_id.length == 1) {
         $("#addingTagModal .pol").hide();
         $("#addingTagModal .btn-primary").show();
