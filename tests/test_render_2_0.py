@@ -422,7 +422,7 @@ def test_print_labels(user3: UserClientFlask):
     assert status == '200 OK'
     path = "/inventory/device/{}/".format(dev.devicehub_id)
     assert path in body
-    assert "tag1" not in body
+    assert "tag1" in body
 
 
 @pytest.mark.mvp
