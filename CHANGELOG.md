@@ -10,6 +10,7 @@ ml).
 - [fixed] #313 Bump numpy from 1.21.6 to 1.22.0.
 - [fixed] #314 bugs create placeholder from lot.
 - [fixed] #317 bugs about exports placeholders.
+- [fixed] #318 bugs about unlink tag of device.
 
 ## [2.3.0] - 2022-07-12
 - [added] #281 Add selenium test.
