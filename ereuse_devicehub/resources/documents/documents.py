@@ -1,9 +1,9 @@
 import csv
-import json
-import enum
-import uuid
-import time
 import datetime
+import enum
+import json
+import time
+import uuid
 from collections import OrderedDict
 from io import StringIO
 from typing import Callable, Iterable, Tuple
@@ -13,27 +13,31 @@ import flask
 import flask_weasyprint
 import teal.marshmallow
 from boltons import urlutils
-from flask import make_response, g, request
 from flask import current_app as app
+from flask import g, make_response, request
 from flask.json import jsonify
 from teal.cache import cache
 from teal.resource import Resource, View
 
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.enums import SessionType
-from ereuse_devicehub.resources.user.models import Session
 from ereuse_devicehub.resources.action import models as evs
-from ereuse_devicehub.resources.device import models as devs
+from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.deliverynote.models import Deliverynote
+from ereuse_devicehub.resources.device import models as devs
+from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.device.views import DeviceView
-from ereuse_devicehub.resources.documents.device_row import (DeviceRow, StockRow, ActionRow,
-                                                             InternalStatsRow)
+from ereuse_devicehub.resources.documents.device_row import (
+    ActionRow,
+    DeviceRow,
+    InternalStatsRow,
+    StockRow,
+)
+from ereuse_devicehub.resources.enums import SessionType
+from ereuse_devicehub.resources.hash_reports import ReportHash, insert_hash, verify_hash
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
-from ereuse_devicehub.resources.action.models import Trade
-from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.resources.hash_reports import insert_hash, ReportHash, verify_hash
+from ereuse_devicehub.resources.user.models import Session
 
 
 class Format(enum.Enum):
@@ -469,11 +473,11 @@ class DocumentDef(Resource):
         stamps_view = StampsView.as_view('StampsView', definition=self, auth=app.auth)
         self.add_url_rule('/stamps/', defaults={}, view_func=stamps_view, methods={'GET', 'POST'})
 
-        internalstats_view = InternalStatsView.as_view(
-            'InternalStatsView', definition=self, auth=app.auth)
-        internalstats_view = app.auth.requires_auth(internalstats_view)
-        self.add_url_rule('/internalstats/', defaults=d, view_func=internalstats_view,
-                          methods=get)
+        # internalstats_view = InternalStatsView.as_view(
+        #     'InternalStatsView', definition=self, auth=app.auth)
+        # internalstats_view = app.auth.requires_auth(internalstats_view)
+        # self.add_url_rule('/internalstats/', defaults=d, view_func=internalstats_view,
+        #                   methods=get)
 
         actions_view = ActionsDocumentView.as_view('ActionsDocumentView',
                                                    definition=self,

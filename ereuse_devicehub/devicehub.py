@@ -15,6 +15,7 @@ from teal.teal import Teal
 
 from ereuse_devicehub.auth import Auth
 from ereuse_devicehub.client import Client, UserClient
+from ereuse_devicehub.commands.reports import Report
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.db import db
 from ereuse_devicehub.dummy.dummy import Dummy
@@ -27,6 +28,7 @@ from ereuse_devicehub.templating import Environment
 class Devicehub(Teal):
     test_client_class = Client
     Dummy = Dummy
+    Report = Report
     jinja_environment = Environment
 
     def __init__(
@@ -67,6 +69,7 @@ class Devicehub(Teal):
         self.id = inventory
         """The Inventory ID of this instance. In Teal is the app.schema."""
         self.dummy = Dummy(self)
+        self.report = Report(self)
 
         @self.cli.group(
             short_help='Inventory management.',
