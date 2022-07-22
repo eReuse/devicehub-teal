@@ -1,12 +1,13 @@
 import csv
 
-# import click
 # import click_spinner
 # import ereuse_utils.cli
 from io import StringIO
 
 from ereuse_devicehub.resources.action import models as evs
 from ereuse_devicehub.resources.documents.device_row import InternalStatsRow
+
+# import click
 
 
 class Report:
