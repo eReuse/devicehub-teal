@@ -234,9 +234,9 @@ function printpdf() {
             if ($("#qrCheck").prop('checked')) {
                 var h = hspace + border - img_side/2;
                 var w = border*2 + img_side;
-                pdf.text(tag, w, h);
+                pdf.text(String(tag), w, h);
             } else {
-                pdf.text(tag, border, hspace);
+                pdf.text(String(tag), border, hspace);
             }
             hspace += line;
         };
@@ -244,26 +244,26 @@ function printpdf() {
             var sn = $(y).data('sid');
             pdf.setFontSize(12);
             if (sn) {
-                pdf.text(sn, border, hspace);
+                pdf.text(String(sn), border, hspace);
                 hspace += line;
             }
         };
         if ($("#serialNumberCheck").prop('checked')) {
             var sn = $(y).data('serial-number');
             pdf.setFontSize(12);
-            pdf.text(sn, border, hspace);
+            pdf.text(String(sn), border, hspace);
             hspace += line;
         };
         if ($("#manufacturerCheck").prop('checked')) {
             var sn = $(y).data('manufacturer');
             pdf.setFontSize(12);
-            pdf.text(sn, border, hspace);
+            pdf.text(String(sn), border, hspace);
             hspace += line;
         };
         if ($("#modelCheck").prop('checked')) {
             var sn = $(y).data('model');
             pdf.setFontSize(8);
-            pdf.text(sn, border, hspace);
+            pdf.text(String(sn), border, hspace);
             hspace += line;
         };
     });
