@@ -761,7 +761,6 @@ def test_verify_stamp_erasure_certificate(user: UserClient, client: Client):
     assert "alert alert-info" in response
 
 
-@pytest.mark.mvp
 def test_get_document_internal_stats(user: UserClient, user2: UserClient):
     """Tests for get the internal stats."""
 

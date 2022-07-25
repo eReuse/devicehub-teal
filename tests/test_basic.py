@@ -41,7 +41,6 @@ def test_api_docs(client: Client):
         '/documents/check/',
         '/documents/devices/',
         '/documents/erasures/',
-        '/documents/internalstats/',
         '/documents/lots/',
         '/inventory/search/',
         '/documents/stamps/',

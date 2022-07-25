@@ -258,9 +258,9 @@ function printpdf() {
             if ($("#qrCheck").prop('checked')) {
                 var h = hspace + border - img_side/2;
                 var w = border*2 + img_side;
-                pdf.text(tag, w, h);
+                pdf.text(String(tag), w, h);
             } else {
-                pdf.text(tag, border, hspace);
+                pdf.text(String(tag), border, hspace);
             }
             hspace += line;
         };
