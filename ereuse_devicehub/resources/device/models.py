@@ -852,6 +852,7 @@ class Placeholder(Thing):
     pallet.comment = "used for identification where from where is this placeholders"
     info = db.Column(CIText())
     info.comment = "more info of placeholders"
+    is_abstract = db.Column(Boolean, default=False)
     id_device_supplier = db.Column(CIText())
     id_device_supplier.comment = (
         "Identification used for one supplier of one placeholders"
@@ -880,6 +881,13 @@ class Placeholder(Thing):
         primaryjoin=binding_id == Device.id,
     )
     binding_id.comment = "binding placeholder with workbench device"
+    owner_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
+    owner = db.relationship(User, primaryjoin=owner_id == User.id)
 
 
 class Computer(Device):

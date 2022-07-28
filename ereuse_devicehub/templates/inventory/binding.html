@@ -1,0 +1,185 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>{{ title }}</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <!-- TODO@slamora replace with lot list URL when exists -->
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+    <div class="col-xl-12">
+
+      <div class="card">
+              <div class="card-body">
+
+                <div class="pt-4 pb-2">
+                  <h5 class="card-title text-center pb-0 fs-4">{{ title }}</h5>
+                  <p class="text-center">Please check that the information is correct.</p>
+                </div>
+
+                  <table class="table table-hover">
+                      <thead>
+                          <tr class="text-center">
+                              <th scope="col">Basic Data</th>
+                              <th scope="col">Info to be Entered</th>
+                              <th scope="col">Info to be Decoupled</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr>
+                              <th scope="row">PHID:</th>
+                              <td class="table-success text-right">{{ placeholder.phid or '' }}</td>
+                              <td class="table-danger">{{ device.placeholder.phid or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Manufacturer:</th>
+                              <td class="table-success text-right">{{ placeholder.device.manufacturer or '' }}</td>
+                              <td class="table-danger">{{ device.manufacturer or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Model:</th>
+                              <td class="table-success">{{ placeholder.device.model or '' }}</td>
+                              <td class="table-danger">{{ device.model or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Serial Number:</th>
+                              <td class="table-success">{{ placeholder.device.serial_number or '' }}</td>
+                              <td class="table-danger">{{ device.serial_number or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Brand:</th>
+                              <td class="table-success">{{ placeholder.device.brand or '' }}</td>
+                              <td class="table-danger">{{ device.brand or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Sku:</th>
+                              <td class="table-success">{{ placeholder.device.sku or '' }}</td>
+                              <td class="table-danger">{{ device.sku or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Generation:</th>
+                              <td class="table-success">{{ placeholder.device.generation or '' }}</td>
+                              <td class="table-danger">{{ device.generation or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Version:</th>
+                              <td class="table-success">{{ placeholder.device.version or '' }}</td>
+                              <td class="table-danger">{{ device.version or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Weight:</th>
+                              <td class="table-success">{{ placeholder.device.weight or '' }}</td>
+                              <td class="table-danger">{{ device.weight or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Width:</th>
+                              <td class="table-success">{{ placeholder.device.width or '' }}</td>
+                              <td class="table-danger">{{ device.width or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Height:</th>
+                              <td class="table-success">{{ placeholder.device.height or '' }}</td>
+                              <td class="table-danger">{{ device.height or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Depth:</th>
+                              <td class="table-success">{{ placeholder.device.depth or '' }}</td>
+                              <td class="table-danger">{{ device.depth or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Color:</th>
+                              <td class="table-success">{{ placeholder.device.color or '' }}</td>
+                              <td class="table-danger">{{ device.color or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Production date:</th>
+                              <td class="table-success">{{ placeholder.device.production_date or '' }}</td>
+                              <td class="table-danger">{{ device.production_date or '' }}</td>
+                          </tr>
+                          <tr>
+                              <th scope="row">Variant:</th>
+                              <td class="table-success">{{ placeholder.device.variant or '' }}</td>
+                              <td class="table-danger">{{ device.variant or '' }}</td>
+                          </tr>
+                      </tbody>
+                  </table>
+
+                  <br />
+
+                  {% if placeholder.device.components or device.components %}
+                  <h2>Components</h2>
+                  <table class="table table-hover">
+                      <thead>
+                          <tr class="text-center">
+                              <th scope="col">Info to be Entered</th>
+                              <th scope="col">Info to be Decoupled</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr>
+                              <td class="table-success text-right">
+                                  {% for c in placeholder.device.components %}
+                                  * {{ c.verbose_name }}<br />
+                                  {% endfor %}
+                              </td>
+                              <td class="table-danger">
+                                  {% for c in device.components %}
+                                  * {{ c.verbose_name }}<br />
+                                  {% endfor %}
+                              </td>
+                          </tr>
+                      </tbody>
+                  </table>
+                  {% endif %}
+
+                  <br />
+
+                  {% if placeholder.device.actions or device.actions %}
+                  <h2>Actions</h2>
+                  <table class="table table-hover">
+                      <thead>
+                          <tr class="text-center">
+                              <th scope="col">Info to be Entered</th>
+                              <th scope="col">Info to be Decoupled</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr>
+                              <td class="table-success text-right">
+                                  {% for a in placeholder.device.actions %}
+                                  * {{ a.t }}<br />
+                                  {% endfor %}
+                              </td>
+                              <td class="table-danger">
+                                  {% for a in device.actions %}
+                                  * {{ a.t }}<br />
+                                  {% endfor %}
+                              </td>
+                          </tr>
+                      </tbody>
+                  </table>
+                  {% endif %}
+
+                  <div>
+                    <form method="post">
+                      <a href="{{ url_for('inventory.device_details', id=device.placeholder.binding.devicehub_id) }}" class="btn btn-danger">Cancel</a>
+                      <button class="btn btn-primary" type="submit">Confirm</button>
+                    </form>
+                  </div>
+
+              </div>
+
+      </div>
+
+    </div>
+
+    <div class="col-xl-8">
+    </div>
+  </div>
+</section>
+{% endblock main %}

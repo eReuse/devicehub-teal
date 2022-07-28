@@ -310,11 +310,15 @@ class Sync:
             c_placeholder = c.__class__(**c_dict)
             c_placeholder.parent = dev_placeholder
             c.parent = device
-            component_placeholder = Placeholder(device=c_placeholder, binding=c)
+            component_placeholder = Placeholder(
+                device=c_placeholder, binding=c, is_abstract=True
+            )
             db.session.add(c_placeholder)
             db.session.add(component_placeholder)
 
-        placeholder = Placeholder(device=dev_placeholder, binding=device)
+        placeholder = Placeholder(
+            device=dev_placeholder, binding=device, is_abstract=True
+        )
         db.session.add(dev_placeholder)
         db.session.add(placeholder)
 
