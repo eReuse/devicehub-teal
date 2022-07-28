@@ -291,7 +291,8 @@ class Mobile(Device):
     @pre_load
     def convert_check_imei(self, data):
         if data.get('imei', None):
-            data['imei'] = int(imei.validate(data['imei']))
+            # data['imei'] = int(imei.validate(data['imei']))
+            data['imei'] = int(data['imei'])
         return data
 
     @pre_load
