@@ -1,4 +1,5 @@
 import csv
+import copy
 import logging
 import os
 from distutils.util import strtobool
@@ -215,6 +216,72 @@ class BindingView(GenericMixin):
         )
 
         return flask.render_template(self.template_name, **self.context)
+
+
+class UnBindingView(GenericMixin):
+    methods = ['GET', 'POST']
+    decorators = [login_required]
+    template_name = 'inventory/unbinding.html'
+
+    def dispatch_request(self, phid):
+        placeholder = (
+            Placeholder.query.filter(Placeholder.owner_id == g.user.id)
+            .filter(Placeholder.phid == phid)
+            .one()
+        )
+        if not placeholder.binding:
+            next_url = url_for('inventory.device_details', id=placeholder.device.devicehub_id)
+            return flask.redirect(next_url)
+
+        device = placeholder.binding
+
+        self.get_context()
+
+        if request.method == 'POST':
+            self.clone_device(device)
+            next_url = url_for('inventory.device_details', id=placeholder.device.devicehub_id)
+            messages.success(
+                'Device "{}" unbind successfully!'.format(phid)
+            )
+            return flask.redirect(next_url)
+
+        self.context.update(
+            {
+                'device': device,
+                'placeholder': placeholder,
+                'page_title': 'Unbinding confirm',
+            }
+        )
+
+        return flask.render_template(self.template_name, **self.context)
+
+    def clone_device(self, device):
+        if device.binding.is_abstract:
+            return
+        # import pdb; pdb.set_trace()
+
+        dict_device = copy.copy(device.__dict__)
+        dict_device.pop('_sa_instance_state')
+        dict_device.pop('id', None)
+        dict_device.pop('devicehub_id', None)
+        dict_device.pop('actions_multiple', None)
+        dict_device.pop('actions_one', None)
+        dict_device.pop('components', None)
+        dict_device.pop('tags', None)
+        dict_device.pop('system_uuid', None)
+        new_device = device.__class__(**dict_device)
+        db.session.add(new_device)
+
+        if hasattr(device, 'components'):
+            for c in device.components:
+                if c.binding:
+                    c.binding.device.parent = new_device
+
+        placeholder = Placeholder(device=new_device, binding=device, is_abstract=True)
+        db.session.add(placeholder)
+        db.session.commit()
+
+        return new_device
 
 
 class LotCreateView(GenericMixin):
@@ -1063,4 +1130,7 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/binding/<string:dhid>/<string:phid>/', view_func=BindingView.as_view('binding')
+)
+devices.add_url_rule(
+    '/unbinding/<string:phid>/', view_func=UnBindingView.as_view('unbinding')
 )

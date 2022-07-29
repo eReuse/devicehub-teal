@@ -216,6 +216,24 @@ class Device(Thing):
         return reversed(self.actions)
 
     @property
+    def manual_actions(self) -> list:
+        mactions = [
+            'ActionDevice',
+            'Allocate',
+            'DataWipe',
+            'Deallocate',
+            'Management',
+            'Prepare',
+            'Ready',
+            'Recycling',
+            'Refurbish',
+            'ToPrepare',
+            'ToRepair',
+            'Use',
+        ]
+        return [a for a in self.actions if a in mactions]
+
+    @property
     def actions(self) -> list:
         """All the actions where the device participated, including:
 

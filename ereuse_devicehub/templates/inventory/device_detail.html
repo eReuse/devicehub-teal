@@ -68,6 +68,12 @@
             </li>
             {% endif %}
 
+           {% if device.placeholder and placeholder.binding %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('inventory.unbinding', phid=placeholder.phid) }}">Unbinding</a>
+            </li>
+            {% endif %}
+
           </ul>
           <div class="tab-content pt-2">
 
