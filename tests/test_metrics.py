@@ -135,8 +135,8 @@ def test_metrics_action_status(user: UserClient, user2: UserClient):
                           item='actions/',
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer'], 'ids': [device_id]})])
-    head = 'DHID;Hid;Document-Name;Action-Type;Action-User-LastOwner-Supplier;Action-User-LastOwner-Receiver;Action-Create-By;Trade-Confirmed;Status-Created-By-Supplier-About-Reciber;Status-Receiver;Status Supplier – Created Date;Status Receiver – Created Date;Trade-Weight;Action-Create;Allocate-Start;Allocate-User-Code;Allocate-NumUsers;UsageTimeAllocate;Type;LiveCreate;UsageTimeHdd\n'
-    body = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Status;;foo@foo.com;Receiver;;;Use;;'
+    head = '"DHID";"Hid";"Document-Name";"Action-Type";"Action-User-LastOwner-Supplier";"Action-User-LastOwner-Receiver";"Action-Create-By";"Trade-Confirmed";"Status-Created-By-Supplier-About-Reciber";"Status-Receiver";"Status Supplier – Created Date";"Status Receiver – Created Date";"Trade-Weight";"Action-Create";"Allocate-Start";"Allocate-User-Code";"Allocate-NumUsers";"UsageTimeAllocate";"Type";"LiveCreate";"UsageTimeHdd"\n'
+    body = '"O48N2";"desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10";"";"Status";"";"foo@foo.com";"Receiver";"";"";"Use";"";"'
     assert head in csv_str
     assert body in csv_str
 
@@ -184,13 +184,13 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer'], 'ids': devices_id})])
 
-    body1_lenovo = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Trade;foo@foo.com;'
-    body1_lenovo += 'foo2@foo.com;Supplier;NeedConfirmation;Use;;'
-    body2_lenovo = ';;0;0;Trade;0;0\n'
+    body1_lenovo = '"O48N2";"desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10";"";"Trade";"foo@foo.com";'
+    body1_lenovo += '"foo2@foo.com";"Supplier";"NeedConfirmation";"Use";"";'
+    body2_lenovo = ';"";"0";"0";"Trade";"0";"0"\n'
 
-    body1_acer = 'J2MA2;laptop-acer-aohappy-lusea0d010038879a01601-00:26:c7:8e:cb:8c;;Trade;'
-    body1_acer += 'foo@foo.com;foo2@foo.com;Supplier;NeedConfirmation;;;;;0;'
-    body2_acer = ';;0;0;Trade;0;4692.0\n'
+    body1_acer = '"J2MA2";"laptop-acer-aohappy-lusea0d010038879a01601-00:26:c7:8e:cb:8c";"";"Trade";'
+    body1_acer += '"foo@foo.com";"foo2@foo.com";"Supplier";"NeedConfirmation";"";"";"";"";"0";'
+    body2_acer = ';"";"0";"0";"Trade";"0";"4692.0"\n'
 
     assert body1_lenovo in csv_str
     assert body2_lenovo in csv_str
@@ -205,10 +205,10 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer'], 'ids': devices_id})])
 
-    body1_lenovo = 'O48N2;desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10;;Trade;foo@foo.com;'
-    body1_lenovo += 'foo2@foo.com;Supplier;NeedConfirmation;Use;Use;'
-    body2_lenovo = ';;0;0;Trade;0;0\n'
-    body2_acer = ';;0;0;Trade;0;4692.0\n'
+    body1_lenovo = '"O48N2";"desktop-lenovo-9644w8n-0169622-00:1a:6b:5e:7f:10";"";"Trade";"foo@foo.com";'
+    body1_lenovo += '"foo2@foo.com";"Supplier";"NeedConfirmation";"Use";"Use";'
+    body2_lenovo = ';"";"0";"0";"Trade";"0";"0"\n'
+    body2_acer = ';"";"0";"0";"Trade";"0";"4692.0"\n'
 
     assert body1_lenovo in csv_str
     assert body2_lenovo in csv_str
@@ -262,9 +262,10 @@ def test_metrics_action_status_for_containers(user: UserClient, user2: UserClien
                           accept='text/csv',
                           query=[('filter', {'type': ['Computer']}), ('lot', lot['id'])])
 
-    body1 = ';bbbbbbbb;test.pdf;Trade-Container;foo@foo.com;foo2@foo.com;Supplier;False;Recycling;;'
-    body2 = ';;150.0;'
-    body3 = ';;0;0;Trade-Container;0;0'
+    body1 = ';"bbbbbbbb";"test.pdf";"Trade-Container";"foo@foo.com";"foo2@foo.com";"Supplier";"False";"Recycling";"";'
+    body2 = ';"";"150.0";'
+    body3 = ';"";"0";"0";"Trade-Container";"0";"0"'
+
     assert len(csv_str.split('\n')) == 3
     assert body1 in csv_str.split('\n')[-2]
     assert body2 in csv_str.split('\n')[-2]
@@ -326,7 +327,7 @@ def test_visual_metrics_for_old_owners(user: UserClient, user2: UserClient):
                                item='actions/',
                                accept='text/csv',
                                query=[('filter', {'type': ['Computer'], 'ids': [device_id]})])
-    body = ';;0;0;Trade;0;0\n'
+    body = ';"";"0";"0";"Trade";"0";"0"\n'
 
     assert body in csv_receiver
     assert body in csv_supplier
@@ -373,8 +374,8 @@ def test_bug_trade_confirmed(user: UserClient, user2: UserClient):
                                  accept='text/csv',
                                  query=[('filter', {'type': ['Computer'], 'ids': [device_id]})])
 
-    body_not_confirmed = "Trade;foo2@foo.com;foo@foo.com;Receiver;NeedConfirmation;"
-    body_confirmed = "Trade;foo2@foo.com;foo@foo.com;Receiver;TradeConfirmed;"
+    body_not_confirmed = '"Trade";"foo2@foo.com";"foo@foo.com";"Receiver";"NeedConfirmation";'
+    body_confirmed = '"Trade";"foo2@foo.com";"foo@foo.com";"Receiver";"TradeConfirmed";'
 
     assert body_not_confirmed in csv_not_confirmed
     assert body_confirmed in csv_confirmed
