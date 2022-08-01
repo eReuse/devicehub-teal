@@ -399,6 +399,7 @@ def test_export_computer_monitor(user: UserClient):
         accept='text/csv',
         query=[('filter', {'type': ['ComputerMonitor']})],
     )
+
     f = StringIO(csv_str)
     obj_csv = csv.reader(f, f)
     export_csv = list(obj_csv)
