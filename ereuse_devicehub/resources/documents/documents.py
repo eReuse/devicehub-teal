@@ -159,7 +159,7 @@ class DevicesDocumentView(DeviceView):
     def generate_post_csv(self, query):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
         first = True
         document_ids = self.get_documents_id()
         for device in query:
@@ -193,7 +193,7 @@ class ActionsDocumentView(DeviceView):
     def generate_post_csv(self, query):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
         first = True
         devs_id = []
         for device in query:
@@ -277,7 +277,7 @@ class StockDocumentView(DeviceView):
     def generate_post_csv(self, query):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
         first = True
         for device in query:
             d = StockRow(device)
