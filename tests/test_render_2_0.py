@@ -220,8 +220,7 @@ def test_export_devices(user3: UserClientFlask):
     with Path(__file__).parent.joinpath('files').joinpath(
         'export_devices.csv'
     ).open() as csv_file:
-        obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
-        fixture_csv = list(obj_csv)
+        fixture_csv = [line.split(";") for line in csv_file.read().split("\n")]
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert (
