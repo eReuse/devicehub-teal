@@ -267,10 +267,6 @@ def test_export_basic_snapshot(user: UserClient):
         obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
         fixture_csv = list(obj_csv)
 
-    assert isinstance(
-        datetime.strptime(export_csv[1][19], '%c'), datetime
-    ), 'Register in field is not a datetime'
-
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert (
         fixture_csv[1][:19] == export_csv[1][:19]
@@ -340,10 +336,6 @@ def test_export_extended(app: Devicehub, user: UserClient):
     ).open() as csv_file:
         obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
         fixture_csv = list(obj_csv)
-
-    assert isinstance(
-        datetime.strptime(export_csv[1][19], '%c'), datetime
-    ), 'Register in field is not a datetime'
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert (
@@ -522,9 +514,9 @@ def test_report_devices_stock_control(user: UserClient, user2: UserClient):
     fixture_csv[0] = fixture_csv[0][0].split(';')
     fixture_csv[1] = fixture_csv[1][0].split(';')
 
-    assert isinstance(
-        datetime.strptime(export_csv[1][5], '%c'), datetime
-    ), 'Register in field is not a datetime'
+    # assert isinstance(
+    #     datetime.strptime(export_csv[1][5], '%c'), datetime
+    # ), 'Register in field is not a datetime'
 
     # Pop dates fields from csv lists to compare them
     fixture_csv[1] = fixture_csv[1][:5] + fixture_csv[1][6:]
