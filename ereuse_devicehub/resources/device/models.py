@@ -33,6 +33,7 @@ from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
 from teal.db import (
     CASCADE_DEL,
+    CASCADE_OWN,
     POLYMORPHIC_ID,
     POLYMORPHIC_ON,
     URL,
@@ -883,7 +884,7 @@ class Placeholder(Thing):
     )
     device = db.relationship(
         Device,
-        backref=backref('placeholder', lazy=True, uselist=False),
+        backref=backref('placeholder', lazy=True, cascade="all, delete-orphan", uselist=False),
         primaryjoin=device_id == Device.id,
     )
     device_id.comment = "datas of the placeholder"

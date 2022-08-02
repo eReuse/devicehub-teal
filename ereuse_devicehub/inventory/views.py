@@ -1,5 +1,5 @@
-import csv
 import copy
+import csv
 import logging
 import os
 from distutils.util import strtobool
@@ -193,12 +193,14 @@ class BindingView(GenericMixin):
 
         if request.method == 'POST':
             old_placeholder = device.binding
+            old_device_placeholder = old_placeholder.device
             if old_placeholder.is_abstract:
                 for plog in PlaceholdersLog.query.filter_by(
                     placeholder_id=old_placeholder.id
                 ):
                     db.session.delete(plog)
-                db.session.delete(old_placeholder)
+                db.session.delete(old_device_placeholder)
+
             device.binding = placeholder
             db.session.commit()
             next_url = url_for('inventory.device_details', id=dhid)
@@ -230,7 +232,9 @@ class UnBindingView(GenericMixin):
             .one()
         )
         if not placeholder.binding:
-            next_url = url_for('inventory.device_details', id=placeholder.device.devicehub_id)
+            next_url = url_for(
+                'inventory.device_details', id=placeholder.device.devicehub_id
+            )
             return flask.redirect(next_url)
 
         device = placeholder.binding
@@ -239,10 +243,10 @@ class UnBindingView(GenericMixin):
 
         if request.method == 'POST':
             self.clone_device(device)
-            next_url = url_for('inventory.device_details', id=placeholder.device.devicehub_id)
-            messages.success(
-                'Device "{}" unbind successfully!'.format(phid)
+            next_url = url_for(
+                'inventory.device_details', id=placeholder.device.devicehub_id
             )
+            messages.success('Device "{}" unbind successfully!'.format(phid))
             return flask.redirect(next_url)
 
         self.context.update(
@@ -258,7 +262,6 @@ class UnBindingView(GenericMixin):
     def clone_device(self, device):
         if device.binding.is_abstract:
             return
-        # import pdb; pdb.set_trace()
 
         dict_device = copy.copy(device.__dict__)
         dict_device.pop('_sa_instance_state')
@@ -269,6 +272,8 @@ class UnBindingView(GenericMixin):
         dict_device.pop('components', None)
         dict_device.pop('tags', None)
         dict_device.pop('system_uuid', None)
+        dict_device.pop('binding', None)
+        dict_device.pop('placeholder', None)
         new_device = device.__class__(**dict_device)
         db.session.add(new_device)
 
