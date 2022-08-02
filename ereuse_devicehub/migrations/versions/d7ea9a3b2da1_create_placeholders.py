@@ -32,8 +32,8 @@ from ereuse_devicehub.resources.device.models import Computer, Device, Placehold
 from ereuse_devicehub.resources.lot.models import LotDevice
 
 # revision identifiers, used by Alembic.
-revision = '2b90b41a556a'
-down_revision = '3e3a67f62972'
+revision = 'd7ea9a3b2da1'
+down_revision = '2b90b41a556a'
 branch_labels = None
 depends_on = None
 
@@ -76,7 +76,7 @@ def clone_device(device):
             new_c = clone_device(c)
             new_c.parent = new_device
 
-    placeholder = Placeholder(device=new_device, binding=device)
+    placeholder = Placeholder(device=new_device, binding=device, is_abstract=True, owner_id=device.owner_id)
     db.session.add(placeholder)
 
     tags = [x for x in device.tags]
