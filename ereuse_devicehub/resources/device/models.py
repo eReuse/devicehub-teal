@@ -33,7 +33,6 @@ from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
 from teal.db import (
     CASCADE_DEL,
-    CASCADE_OWN,
     POLYMORPHIC_ID,
     POLYMORPHIC_ON,
     URL,
