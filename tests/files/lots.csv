@@ -1,2 +1,2 @@
-Lot Id;Lot Name;Lot Type;Transfer Status;Transfer Code;Transfer Date;Transfer Creation Date;Transfer Update Date;Transfer Description;Devices Number;Devices Snapshots;Devices Placeholders;Delivery Note Number;Delivery Note Date;Delivery Note Units;Delivery Note Weight;Receiver Note Number;Receiver Note Date;Receiver Note Units;Receiver Note Weight
-cca691c4-b221-4882-924c-30cd545c0182;lot1;Temporary;;;;;;;1;1;0;;;;;;;;
+"Lot Id";"Lot Name";"Lot Type";"Transfer Status";"Transfer Code";"Transfer Date";"Transfer Creation Date";"Transfer Update Date";"Transfer Description";"Devices Number";"Devices Snapshots";"Devices Placeholders";"Delivery Note Number";"Delivery Note Date";"Delivery Note Units";"Delivery Note Weight";"Receiver Note Number";"Receiver Note Date";"Receiver Note Units";"Receiver Note Weight"
+"d992faea-5411-4a47-9388-073d67e9ee2d";"lot1";"Temporary";"";"";"";"";"";"";"1";"1";"0";"";"";"";"";"";"";"";""

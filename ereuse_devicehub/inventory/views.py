@@ -678,7 +678,7 @@ class ExportsView(View):
     def devices_list(self):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
         first = True
 
         for device in self.find_devices():
@@ -693,7 +693,7 @@ class ExportsView(View):
     def metrics(self):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
         first = True
         devs_id = []
         # Get the allocate info
@@ -757,7 +757,7 @@ class ExportsView(View):
 
     def lots_export(self):
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
 
         cw.writerow(
             [
@@ -827,7 +827,7 @@ class ExportsView(View):
 
     def devices_lots_export(self):
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
+        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
         head = [
             'DHID',
             'Lot Id',

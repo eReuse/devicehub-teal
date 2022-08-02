@@ -220,8 +220,7 @@ def test_export_devices(user3: UserClientFlask):
     with Path(__file__).parent.joinpath('files').joinpath(
         'export_devices.csv'
     ).open() as csv_file:
-        obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
-        fixture_csv = list(obj_csv)
+        fixture_csv = [line.split(";") for line in csv_file.read().split("\n")]
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert (
@@ -1556,12 +1555,11 @@ def test_export_devices_lots(user3: UserClientFlask):
     with Path(__file__).parent.joinpath('files').joinpath(
         'devices_lots.csv'
     ).open() as csv_file:
-        obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
-        fixture_csv = list(obj_csv)
+        fixture_csv = [line.split(";") for line in csv_file.read().split("\n")]
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert fixture_csv[1][2:] == export_csv[1][2:], 'Computer information are not equal'
-    UUID(export_csv[1][1])
+    UUID(export_csv[1][1].replace('"', ''))
 
 
 @pytest.mark.mvp
@@ -1592,12 +1590,12 @@ def test_export_lots(user3: UserClientFlask):
     with Path(__file__).parent.joinpath('files').joinpath(
         'lots.csv'
     ).open() as csv_file:
-        obj_csv = csv.reader(csv_file, delimiter=';', quotechar='"')
-        fixture_csv = list(obj_csv)
+        fixture_csv = [line.split(";") for line in csv_file.read().split("\n")]
+
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert fixture_csv[1][1:] == export_csv[1][1:], 'Computer information are not equal'
-    UUID(export_csv[1][0])
+    UUID(export_csv[1][0].replace('"', ''))
 
 
 @pytest.mark.mvp
