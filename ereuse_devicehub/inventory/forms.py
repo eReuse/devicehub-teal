@@ -137,11 +137,11 @@ class FilterForm(FlaskForm):
             self.lot = self.lots.filter(Lot.id == self.lot_id).one()
             device_ids = (d.id for d in self.lot.devices)
             self.devices = Device.query.filter(Device.id.in_(device_ids)).filter(
-                Device.binding == None
+                Device.binding==None
             )
         else:
             self.devices = Device.query.filter(Device.owner_id == g.user.id).filter(
-                Device.binding == None
+                Device.binding==None
             )
             if self.only_unassigned:
                 self.devices = self.devices.filter_by(lots=None)
@@ -1643,7 +1643,8 @@ class BindingForm(FlaskForm):
             return False
 
         if self.placeholder.binding:
-            txt = "This placeholder have a binding with other device. Before you need to do an unbinding with this other device."
+            txt = "This placeholder have a binding with other device. "
+            txt += "Before you need to do an unbinding with this other device."
             self.phid.errors = [txt]
             return False
 
