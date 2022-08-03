@@ -78,7 +78,9 @@ def clone_device(device):
             new_c = clone_device(c)
             new_c.parent = new_device
 
-    placeholder = Placeholder(device=new_device, binding=device, is_abstract=True, owner_id=device.owner_id)
+    placeholder = Placeholder(
+        device=new_device, binding=device, is_abstract=True, owner_id=device.owner_id
+    )
     db.session.add(placeholder)
 
     tags = [x for x in device.tags]
