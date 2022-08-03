@@ -1,3 +1,4 @@
+import copy
 import csv
 import logging
 import os
@@ -19,6 +20,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.forms import (
     AdvancedSearchForm,
     AllocateForm,
+    BindingForm,
     DataWipeForm,
     EditTransferForm,
     FilterForm,
@@ -36,7 +38,12 @@ from ereuse_devicehub.inventory.forms import (
 from ereuse_devicehub.labels.forms import PrintLabelsForm
 from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
 from ereuse_devicehub.resources.action.models import Trade
-from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
+from ereuse_devicehub.resources.device.models import (
+    Computer,
+    DataStorage,
+    Device,
+    Placeholder,
+)
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
 from ereuse_devicehub.resources.enums import SnapshotSoftware
 from ereuse_devicehub.resources.hash_reports import insert_hash
@@ -129,6 +136,7 @@ class AdvancedSearchView(DeviceListMixin):
 
 
 class DeviceDetailView(GenericMixin):
+    methods = ['GET', 'POST']
     decorators = [login_required]
     template_name = 'inventory/device_detail.html'
 
@@ -140,13 +148,145 @@ class DeviceDetailView(GenericMixin):
             .one()
         )
 
+        form_binding = BindingForm(device=device)
+
         self.context.update(
             {
                 'device': device,
+                'placeholder': device.binding or device.placeholder,
                 'page_title': 'Device {}'.format(device.devicehub_id),
+                'form_binding': form_binding,
+                'active_binding': False,
             }
         )
+
+        if form_binding.validate_on_submit():
+            next_url = url_for(
+                'inventory.binding',
+                dhid=form_binding.device.devicehub_id,
+                phid=form_binding.placeholder.phid,
+            )
+            return flask.redirect(next_url)
+        elif form_binding.phid.data:
+            self.context['active_binding'] = True
+
         return flask.render_template(self.template_name, **self.context)
+
+
+class BindingView(GenericMixin):
+    methods = ['GET', 'POST']
+    decorators = [login_required]
+    template_name = 'inventory/binding.html'
+
+    def dispatch_request(self, dhid, phid):
+        self.get_context()
+        device = (
+            Device.query.filter(Device.owner_id == g.user.id)
+            .filter(Device.devicehub_id == dhid)
+            .one()
+        )
+        placeholder = (
+            Placeholder.query.filter(Placeholder.owner_id == g.user.id)
+            .filter(Placeholder.phid == phid)
+            .one()
+        )
+
+        if request.method == 'POST':
+            old_placeholder = device.binding
+            old_device_placeholder = old_placeholder.device
+            if old_placeholder.is_abstract:
+                for plog in PlaceholdersLog.query.filter_by(
+                    placeholder_id=old_placeholder.id
+                ):
+                    db.session.delete(plog)
+                db.session.delete(old_device_placeholder)
+
+            device.binding = placeholder
+            db.session.commit()
+            next_url = url_for('inventory.device_details', id=dhid)
+            messages.success(
+                'Device "{}" bind successfully with {}!'.format(dhid, phid)
+            )
+            return flask.redirect(next_url)
+
+        self.context.update(
+            {
+                'device': device.binding.device,
+                'placeholder': placeholder,
+                'page_title': 'Binding confirm',
+            }
+        )
+
+        return flask.render_template(self.template_name, **self.context)
+
+
+class UnBindingView(GenericMixin):
+    methods = ['GET', 'POST']
+    decorators = [login_required]
+    template_name = 'inventory/unbinding.html'
+
+    def dispatch_request(self, phid):
+        placeholder = (
+            Placeholder.query.filter(Placeholder.owner_id == g.user.id)
+            .filter(Placeholder.phid == phid)
+            .one()
+        )
+        if not placeholder.binding:
+            next_url = url_for(
+                'inventory.device_details', id=placeholder.device.devicehub_id
+            )
+            return flask.redirect(next_url)
+
+        device = placeholder.binding
+
+        self.get_context()
+
+        if request.method == 'POST':
+            self.clone_device(device)
+            next_url = url_for(
+                'inventory.device_details', id=placeholder.device.devicehub_id
+            )
+            messages.success('Device "{}" unbind successfully!'.format(phid))
+            return flask.redirect(next_url)
+
+        self.context.update(
+            {
+                'device': device,
+                'placeholder': placeholder,
+                'page_title': 'Unbinding confirm',
+            }
+        )
+
+        return flask.render_template(self.template_name, **self.context)
+
+    def clone_device(self, device):
+        if device.binding.is_abstract:
+            return
+
+        dict_device = copy.copy(device.__dict__)
+        dict_device.pop('_sa_instance_state')
+        dict_device.pop('id', None)
+        dict_device.pop('devicehub_id', None)
+        dict_device.pop('actions_multiple', None)
+        dict_device.pop('actions_one', None)
+        dict_device.pop('components', None)
+        dict_device.pop('tags', None)
+        dict_device.pop('system_uuid', None)
+        dict_device.pop('binding', None)
+        dict_device.pop('placeholder', None)
+        new_device = device.__class__(**dict_device)
+        db.session.add(new_device)
+
+        if hasattr(device, 'components'):
+            for c in device.components:
+                if c.binding:
+                    c.binding.device.parent = new_device
+
+        placeholder = Placeholder(device=new_device, binding=device, is_abstract=True)
+        db.session.add(placeholder)
+        db.session.commit()
+
+        return new_device
 
 
 class LotCreateView(GenericMixin):
@@ -992,4 +1132,10 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/placeholder-logs/', view_func=PlaceholderLogListView.as_view('placeholder_logs')
+)
+devices.add_url_rule(
+    '/binding/<string:dhid>/<string:phid>/', view_func=BindingView.as_view('binding')
+)
+devices.add_url_rule(
+    '/unbinding/<string:phid>/', view_func=UnBindingView.as_view('unbinding')
 )

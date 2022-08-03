@@ -1,3 +1,4 @@
+import copy
 import difflib
 from contextlib import suppress
 from itertools import groupby
@@ -87,6 +88,7 @@ class Sync:
             # We only want to perform Add/Remove to not new components
             actions = self.add_remove(db_device, not_new_components)
             db_device.components = db_components
+            self.create_placeholder(db_device)
         return db_device, actions
 
     def execute_register_component(
@@ -113,6 +115,7 @@ class Sync:
                  - A flag stating if the device is new or it already
                    existed in the DB.
         """
+        # if device.serial_number == 'b8oaas048286':
         assert inspect(component).transient, 'Component should not be synced from DB'
         # if not is a DataStorage, then need build a new one
         if component.t in DEVICES_ALLOW_DUPLICITY:
@@ -124,7 +127,7 @@ class Sync:
         try:
             if component.hid:
                 db_component = Device.query.filter_by(
-                    hid=component.hid, owner_id=g.user.id
+                    hid=component.hid, owner_id=g.user.id, placeholder=None
                 ).one()
                 assert isinstance(
                     db_component, Device
@@ -183,18 +186,24 @@ class Sync:
             if device.system_uuid:
                 with suppress(ResourceNotFound):
                     db_device = Computer.query.filter_by(
-                        system_uuid=device.system_uuid, owner_id=g.user.id, active=True
+                        system_uuid=device.system_uuid,
+                        owner_id=g.user.id,
+                        active=True,
+                        placeholder=None,
                     ).one()
             # if no there are any Computer by uuid search by hid
             if not db_device and device.hid:
                 with suppress(ResourceNotFound):
                     db_device = Device.query.filter_by(
-                        hid=device.hid, owner_id=g.user.id, active=True
+                        hid=device.hid,
+                        owner_id=g.user.id,
+                        active=True,
+                        placeholder=None,
                     ).one()
         elif device.hid:
             with suppress(ResourceNotFound):
                 db_device = Device.query.filter_by(
-                    hid=device.hid, owner_id=g.user.id, active=True
+                    hid=device.hid, owner_id=g.user.id, active=True, placeholder=None
                 ).one()
 
         if db_device and db_device.allocated:
@@ -278,22 +287,40 @@ class Sync:
         if hasattr(device, 'system_uuid') and device.system_uuid:
             db_device.system_uuid = device.system_uuid
 
-        if device.placeholder and db_device.placeholder:
-            db_device.placeholder.pallet = device.placeholder.pallet
-            db_device.placeholder.info = device.placeholder.info
-            db_device.placeholder.id_device_supplier = (
-                device.placeholder.id_device_supplier
+    @staticmethod
+    def create_placeholder(device: Device):
+        """If the device is new, we need create automaticaly a new placeholder"""
+        if device.binding:
+            return
+        dict_device = copy.copy(device.__dict__)
+        dict_device.pop('_sa_instance_state')
+        dict_device.pop('id', None)
+        dict_device.pop('devicehub_id', None)
+        dict_device.pop('actions_multiple', None)
+        dict_device.pop('actions_one', None)
+        dict_device.pop('components', None)
+        dev_placeholder = device.__class__(**dict_device)
+        for c in device.components:
+            c_dict = copy.copy(c.__dict__)
+            c_dict.pop('_sa_instance_state')
+            c_dict.pop('id', None)
+            c_dict.pop('devicehub_id', None)
+            c_dict.pop('actions_multiple', None)
+            c_dict.pop('actions_one', None)
+            c_placeholder = c.__class__(**c_dict)
+            c_placeholder.parent = dev_placeholder
+            c.parent = device
+            component_placeholder = Placeholder(
+                device=c_placeholder, binding=c, is_abstract=True
             )
-            db_device.sku = device.sku
-            db_device.image = device.image
-            db_device.brand = device.brand
-            db_device.generation = device.generation
-            db_device.variant = device.variant
-            db_device.version = device.version
-            db_device.width = device.width
-            db_device.height = device.height
-            db_device.depth = device.depth
-            db_device.weight = device.weight
+            db.session.add(c_placeholder)
+            db.session.add(component_placeholder)
+
+        placeholder = Placeholder(
+            device=dev_placeholder, binding=device, is_abstract=True
+        )
+        db.session.add(dev_placeholder)
+        db.session.add(placeholder)
 
     @staticmethod
     def add_remove(device: Computer, components: Set[Component]) -> OrderedSet:

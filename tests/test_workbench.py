@@ -1,17 +1,21 @@
 """Tests that emulates the behaviour of a WorkbenchServer."""
 import json
+import math
 import pathlib
 
-import math
 import pytest
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.resources.action import models as em
-from ereuse_devicehub.resources.action.models import RateComputer, BenchmarkProcessor, BenchmarkRamSysbench
+from ereuse_devicehub.resources.action.models import (
+    BenchmarkProcessor,
+    BenchmarkRamSysbench,
+    RateComputer,
+)
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag.model import Tag
-from tests.conftest import file, file_workbench, yaml2json, json_encode
+from tests.conftest import file, file_workbench, json_encode, yaml2json
 
 
 @pytest.mark.mvp
@@ -22,10 +26,9 @@ def test_workbench_server_condensed(user: UserClient):
     """
     s = yaml2json('workbench-server-1.snapshot')
     s['device']['actions'].append(yaml2json('workbench-server-2.stress-test'))
-    s['components'][4]['actions'].extend((
-        yaml2json('workbench-server-3.erase'),
-        yaml2json('workbench-server-4.install')
-    ))
+    s['components'][4]['actions'].extend(
+        (yaml2json('workbench-server-3.erase'), yaml2json('workbench-server-4.install'))
+    )
     s['components'][5]['actions'].append(yaml2json('workbench-server-3.erase'))
     # Create tags
     for t in s['device']['tags']:
@@ -34,7 +37,7 @@ def test_workbench_server_condensed(user: UserClient):
     snapshot, _ = user.post(res=em.Snapshot, data=json_encode(s))
     pc_id = snapshot['device']['id']
     cpu_id = snapshot['components'][3]['id']
-    ssd_id= snapshot['components'][4]['id']
+    ssd_id = snapshot['components'][4]['id']
     hdd_id = snapshot['components'][5]['id']
     actions = snapshot['actions']
     assert {(action['type'], action['device']) for action in actions} == {
@@ -60,8 +63,13 @@ def test_workbench_server_condensed(user: UserClient):
     assert device['processorModel'] == device['components'][3]['model'] == 'p1-1ml'
     assert device['ramSize'] == 2048, 'There are 3 RAM: 2 x 1024 and 1 None sizes'
     # TODO JN why haven't same order in actions on each execution?
-    assert any([ac['type'] in [BenchmarkProcessor.t, BenchmarkRamSysbench.t] for ac in device['actions']])
-    assert 'tag1' in [x['id'] for x in device['tags']]
+    assert any(
+        [
+            ac['type'] in [BenchmarkProcessor.t, BenchmarkRamSysbench.t]
+            for ac in device['actions']
+        ]
+    )
+    assert 'tag1' not in [x['id'] for x in device['tags']]
 
 
 @pytest.mark.xfail(reason='Functionality not yet developed.')
@@ -136,7 +144,10 @@ def test_real_hp_11(user: UserClient):
     s = file('real-hp.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     pc = snapshot['device']
-    assert pc['hid'] == 'desktop-hewlett-packard-hp_compaq_8100_elite_sff-czc0408yjg-6c:62:6d:81:22:9f'
+    assert (
+        pc['hid']
+        == 'desktop-hewlett-packard-hp_compaq_8100_elite_sff-czc0408yjg-6c:62:6d:81:22:9f'
+    )
     assert pc['chassis'] == 'Tower'
     assert set(e['type'] for e in snapshot['actions']) == {
         'BenchmarkDataStorage',
@@ -146,7 +157,7 @@ def test_real_hp_11(user: UserClient):
         'BenchmarkRamSysbench',
         'StressTest',
         'TestBios',
-        'VisualTest'
+        'VisualTest',
     }
 
     assert len(list(e['type'] for e in snapshot['actions'])) == 8
@@ -168,7 +179,6 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     """Checks the values of the device, components,
     actions and their relationships of a real pc.
     """
-    # import pdb; pdb.set_trace()
     s = file('real-eee-1001pxd.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     pc, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
@@ -177,22 +187,32 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert pc['model'] == '1001pxd'
     assert pc['serialNumber'] == 'b8oaas048286'
     assert pc['manufacturer'] == 'asustek computer inc.'
-    assert pc['hid'] == 'laptop-asustek_computer_inc-1001pxd-b8oaas048286-14:da:e9:42:f6:7c'
-    assert len(pc['tags']) == 1
-    assert pc['networkSpeeds'] == [100, 0], 'Although it has WiFi we do not know the speed'
+    assert (
+        pc['hid']
+        == 'laptop-asustek_computer_inc-1001pxd-b8oaas048286-14:da:e9:42:f6:7c'
+    )
+    assert len(pc['tags']) == 0
+    assert pc['networkSpeeds'] == [
+        100,
+        0,
+    ], 'Although it has WiFi we do not know the speed'
     # assert pc['actions'][0]['appearanceRange'] == 'A'
     # assert pc['actions'][0]['functionalityRange'] == 'B'
     # TODO add appearance and functionality Range in device[rate]
 
     components = snapshot['components']
     wifi = components[0]
-    assert wifi['hid'] == 'networkadapter-qualcomm_atheros-' \
-                          'ar9285_wireless_network_adapter-74_2f_68_8b_fd_c8'
+    assert (
+        wifi['hid'] == 'networkadapter-qualcomm_atheros-'
+        'ar9285_wireless_network_adapter-74_2f_68_8b_fd_c8'
+    )
     assert wifi['serialNumber'] == '74:2f:68:8b:fd:c8'
     assert wifi['wireless']
     eth = components[1]
-    assert eth['hid'] == 'networkadapter-qualcomm_atheros-' \
-                         'ar8152_v2_0_fast_ethernet-14_da_e9_42_f6_7c'
+    assert (
+        eth['hid'] == 'networkadapter-qualcomm_atheros-'
+        'ar8152_v2_0_fast_ethernet-14_da_e9_42_f6_7c'
+    )
     assert eth['speed'] == 100
     assert not eth['wireless']
     cpu = components[2]
@@ -219,7 +239,10 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert em.Snapshot.t in action_types
     assert len(actions) == 6
     gpu = components[3]
-    assert gpu['model'] == 'atom processor d4xx/d5xx/n4xx/n5xx integrated graphics controller'
+    assert (
+        gpu['model']
+        == 'atom processor d4xx/d5xx/n4xx/n5xx integrated graphics controller'
+    )
     assert gpu['manufacturer'] == 'intel corporation'
     assert gpu['memory'] == 256
     gpu, _ = user.get(res=Device, item=gpu['devicehubID'])
@@ -285,25 +308,26 @@ SNAPSHOTS_NEED_ID = {
     'nox.snapshot.json',
     'ecs-computers.snapshot.json',
     'custom.snapshot.json',
-    'ecs-2.snapshot.json'
+    'ecs-2.snapshot.json',
 }
 """Snapshots that do not generate HID requiring a custom ID."""
 
 
 @pytest.mark.mvp
-@pytest.mark.parametrize('file',
-                         (pytest.param(f, id=f.name)
-                          for f in pathlib.Path(__file__).parent.joinpath('workbench_files').iterdir())
-                         )
+@pytest.mark.parametrize(
+    'file',
+    (
+        pytest.param(f, id=f.name)
+        for f in pathlib.Path(__file__).parent.joinpath('workbench_files').iterdir()
+    ),
+)
 def test_workbench_fixtures(file: pathlib.Path, user: UserClient):
     """Uploads the Snapshot files Workbench tests generate.
 
     Keep this files up to date with the Workbench version.
     """
     s = json.load(file.open())
-    user.post(res=em.Snapshot,
-              data=json_encode(s),
-              status=201)
+    user.post(res=em.Snapshot, data=json_encode(s), status=201)
 
 
 @pytest.mark.mvp

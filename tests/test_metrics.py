@@ -188,7 +188,7 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
     body1_lenovo += '"foo2@foo.com";"Supplier";"NeedConfirmation";"Use";"";'
     body2_lenovo = ';"";"0";"0";"Trade";"0";"0"\n'
 
-    body1_acer = '"J2MA2";"laptop-acer-aohappy-lusea0d010038879a01601-00:26:c7:8e:cb:8c";"";"Trade";'
+    body1_acer = '"K3XW2";"laptop-acer-aohappy-lusea0d010038879a01601-00:26:c7:8e:cb:8c";"";"Trade";'
     body1_acer += '"foo@foo.com";"foo2@foo.com";"Supplier";"NeedConfirmation";"";"";"";"";"0";'
     body2_acer = ';"";"0";"0";"Trade";"0";"4692.0"\n'
 

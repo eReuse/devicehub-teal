@@ -75,6 +75,8 @@ def test_api_docs(client: Client):
         '/inventory/upload-placeholder/',
         '/inventory/lot/{lot_id}/upload-placeholder/',
         '/inventory/placeholder-logs/',
+        '/inventory/unbinding/{phid}/',
+        '/inventory/binding/{dhid}/{phid}/',
         '/labels/',
         '/labels/add/',
         '/labels/print',

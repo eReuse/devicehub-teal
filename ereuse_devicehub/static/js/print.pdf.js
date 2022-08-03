@@ -53,6 +53,8 @@ function save_settings() {
     data['logo'] = $("#logoCheck").prop('checked');
     data['dhid'] = $("#dhidCheck").prop('checked');
     data['sid'] = $("#sidCheck").prop('checked');
+    data['phid'] = $("#phidCheck").prop('checked');
+    data['tags'] = $("#tagsCheck").prop('checked');
     data['qr'] = $("#qrCheck").prop('checked');
     data['serial_number'] = $("#serialNumberCheck").prop('checked');
     data['manufacturer'] = $("#manufacturerCheck").prop('checked');
@@ -69,11 +71,13 @@ function load_settings() {
         $("#qrCheck").prop('checked', data.qr);
         $("#dhidCheck").prop('checked', data.dhid);
         $("#sidCheck").prop('checked', data.sid);
+        $("#phidCheck").prop('checked', data.phid);
+        $("#tagsCheck").prop('checked', data.tags);
         $("#serialNumberCheck").prop('checked', data.serial_number);
         $("#manufacturerCheck").prop('checked', data.manufacturer);
         $("#modelCheck").prop('checked', data.model);
         if (data.logo) {
-            $("#logoCheck").prop('checked', data.sid);
+            // $("#logoCheck").prop('checked', data.sid);
             previewLogo(data.logoImg);
             $("#logoCheck").prop('checked', data.logo);
         } else {
@@ -89,6 +93,8 @@ function reset_settings() {
     $("#qrCheck").prop('checked', true);
     $("#dhidCheck").prop('checked', true);
     $("#sidCheck").prop('checked', true);
+    $("#phidCheck").prop('checked', true);
+    $("#tagsCheck").prop('checked', false);
     $("#serialNumberCheck").prop('checked', false);
     $("#logoCheck").prop('checked', false);
     $("#manufacturerCheck").prop('checked', false);
@@ -133,6 +139,18 @@ function change_check() {
         $(".sid").show();
     } else {
         $(".sid").hide();
+    };
+
+    if ($("#phidCheck").prop('checked')) {
+        $(".phid").show();
+    } else {
+        $(".phid").hide();
+    };
+
+    if ($("#tagsCheck").prop('checked')) {
+        $(".tags").show();
+    } else {
+        $(".tags").hide();
     };
 
     if ($("#serialNumberCheck").prop('checked')) {
@@ -190,6 +208,12 @@ function printpdf() {
     if ($("#sidCheck").prop('checked')) {
         height_need += line;
     };
+    if ($("#phidCheck").prop('checked')) {
+        height_need += line;
+    };
+    if ($("#tagsCheck").prop('checked')) {
+        height_need += line;
+    };
     if ($("#serialNumberCheck").prop('checked')) {
         height_need += line;
     };
@@ -242,6 +266,22 @@ function printpdf() {
         };
         if ($("#sidCheck").prop('checked')) {
             var sn = $(y).data('sid');
+            pdf.setFontSize(12);
+            if (sn) {
+                pdf.text(String(sn), border, hspace);
+                hspace += line;
+            }
+        };
+        if ($("#phidCheck").prop('checked')) {
+            var sn = $(y).data('phid');
+            pdf.setFontSize(12);
+            if (sn) {
+                pdf.text(String(sn), border, hspace);
+                hspace += line;
+            }
+        };
+        if ($("#tagsCheck").prop('checked')) {
+            var sn = $(y).data('tags');
             pdf.setFontSize(12);
             if (sn) {
                 pdf.text(String(sn), border, hspace);

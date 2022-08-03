@@ -216,6 +216,24 @@ class Device(Thing):
         return reversed(self.actions)
 
     @property
+    def manual_actions(self) -> list:
+        mactions = [
+            'ActionDevice',
+            'Allocate',
+            'DataWipe',
+            'Deallocate',
+            'Management',
+            'Prepare',
+            'Ready',
+            'Recycling',
+            'Refurbish',
+            'ToPrepare',
+            'ToRepair',
+            'Use',
+        ]
+        return [a for a in self.actions if a in mactions]
+
+    @property
     def actions(self) -> list:
         """All the actions where the device participated, including:
 
@@ -411,7 +429,16 @@ class Device(Thing):
 
     @property
     def sid(self):
-        actions = [x for x in self.actions if x.t == 'Snapshot' and x.sid]
+        actions = []
+        if self.placeholder and self.placeholder.binding:
+            actions = [
+                x
+                for x in self.placeholder.binding.actions
+                if x.t == 'Snapshot' and x.sid
+            ]
+        else:
+            actions = [x for x in self.actions if x.t == 'Snapshot' and x.sid]
+
         if actions:
             return actions[0].sid
 
@@ -600,6 +627,16 @@ class Device(Thing):
         if cls.t == 'Device':
             args[POLYMORPHIC_ON] = cls.type
         return args
+
+    def phid(self):
+        if self.placeholder:
+            return self.placeholder.phid
+        if self.binding:
+            return self.binding.phid
+        return ''
+
+    def list_tags(self):
+        return ', '.join([t.id for t in self.tags])
 
     def appearance(self):
         actions = copy.copy(self.actions)
@@ -833,6 +870,7 @@ class Placeholder(Thing):
     pallet.comment = "used for identification where from where is this placeholders"
     info = db.Column(CIText())
     info.comment = "more info of placeholders"
+    is_abstract = db.Column(Boolean, default=False)
     id_device_supplier = db.Column(CIText())
     id_device_supplier.comment = (
         "Identification used for one supplier of one placeholders"
@@ -845,7 +883,7 @@ class Placeholder(Thing):
     )
     device = db.relationship(
         Device,
-        backref=backref('placeholder', lazy=True, uselist=False),
+        backref=backref('placeholder', lazy=True, cascade="all, delete-orphan", uselist=False),
         primaryjoin=device_id == Device.id,
     )
     device_id.comment = "datas of the placeholder"
@@ -861,6 +899,13 @@ class Placeholder(Thing):
         primaryjoin=binding_id == Device.id,
     )
     binding_id.comment = "binding placeholder with workbench device"
+    owner_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
+    owner = db.relationship(User, primaryjoin=owner_id == User.id)
 
 
 class Computer(Device):
@@ -1481,9 +1526,9 @@ def create_code_tag(mapper, connection, device):
     """
     from ereuse_devicehub.resources.tag.model import Tag
 
-    if isinstance(device, Computer):
+    if isinstance(device, Computer) and not device.placeholder:
         tag = Tag(device_id=device.id, id=device.devicehub_id)
         db.session.add(tag)
 
 
-event.listen(Device, 'after_insert', create_code_tag, propagate=True)
+# event.listen(Device, 'after_insert', create_code_tag, propagate=True)

@@ -7,6 +7,7 @@ from citext import CIText
 from flask import g
 from sqlalchemy import TEXT
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
 from teal.db import CASCADE_OWN, IntEnum, UUIDLtree, check_range
@@ -243,6 +244,10 @@ class LotDevice(db.Model):
     )
     author = db.relationship(User, primaryjoin=author_id == User.id)
     author_id.comment = """The user that put the device in the lot."""
+    device = relationship(
+        'Device',
+        primaryjoin='Device.id == LotDevice.device_id',
+    )
 
 
 class Path(db.Model):

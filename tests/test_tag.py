@@ -2,26 +2,29 @@ import pathlib
 
 import pytest
 import requests_mock
-from flask import g
 from boltons.urlutils import URL
 from ereuse_utils.session import DevicehubClient
+from flask import g
 from pytest import raises
-from teal.db import MultipleResourcesFound, ResourceNotFound, UniqueViolation, DBError
+from teal.db import DBError, MultipleResourcesFound, ResourceNotFound, UniqueViolation
 from teal.marshmallow import ValidationError
 
-from ereuse_devicehub.client import UserClient, Client
+from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
-from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Desktop, Device
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.tag import Tag
-from ereuse_devicehub.resources.tag.view import CannotCreateETag, LinkedToAnotherDevice, \
-    TagNotLinked
+from ereuse_devicehub.resources.tag.view import (
+    CannotCreateETag,
+    LinkedToAnotherDevice,
+    TagNotLinked,
+)
+from ereuse_devicehub.resources.user.models import User
 from tests import conftest
-from tests.conftest import yaml2json, json_encode
+from tests.conftest import json_encode, yaml2json
 
 
 @pytest.mark.mvp
@@ -29,7 +32,9 @@ from tests.conftest import yaml2json, json_encode
 def test_create_tag(user: UserClient):
     """Creates a tag specifying a custom organization."""
     org = Organization(name='bar', tax_id='bartax')
-    tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id'])
+    tag = Tag(
+        id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id']
+    )
     db.session.add(tag)
     db.session.commit()
     tag = Tag.query.one()
@@ -44,7 +49,9 @@ def test_create_tag(user: UserClient):
 def test_create_tag_with_device(user: UserClient):
     """Creates a tag specifying linked with one device."""
     g.user = User.query.one()
-    pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
+    pc = Desktop(
+        serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id']
+    )
     db.session.add(pc)
     db.session.commit()
     tag = Tag(id='bar', owner_id=user.user['id'])
@@ -64,7 +71,9 @@ def test_delete_tags(user: UserClient, client: Client):
     """Delete a named tag."""
     # Delete Tag Named
     g.user = User.query.one()
-    pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
+    pc = Desktop(
+        serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id']
+    )
     db.session.add(pc)
     db.session.commit()
     tag = Tag(id='bar', owner_id=user.user['id'], device_id=pc.id)
@@ -89,7 +98,9 @@ def test_delete_tags(user: UserClient, client: Client):
 
     # Delete Tag UnNamed
     org = Organization(name='bar', tax_id='bartax')
-    tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id'])
+    tag = Tag(
+        id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id']
+    )
     db.session.add(tag)
     db.session.commit()
     tag = Tag.query.all()[-1]
@@ -106,7 +117,9 @@ def test_delete_tags(user: UserClient, client: Client):
 def test_create_tag_default_org(user: UserClient):
     """Creates a tag using the default organization."""
     tag = Tag(id='foo-1', owner_id=user.user['id'])
-    assert not tag.org_id, 'org-id is set as default value so it should only load on flush'
+    assert (
+        not tag.org_id
+    ), 'org-id is set as default value so it should only load on flush'
     # We don't want the organization to load, or it would make this
     # object, from transient to new (added to session)
     assert 'org' not in vars(tag), 'Organization should not have been loaded'
@@ -188,7 +201,9 @@ def test_tag_get_device_from_tag_endpoint(app: Devicehub, user: UserClient):
         # Create a pc with a tag
         g.user = User.query.one()
         tag = Tag(id='foo-bar', owner_id=user.user['id'])
-        pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
+        pc = Desktop(
+            serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id']
+        )
         pc.tags.add(tag)
         db.session.add(pc)
         db.session.commit()
@@ -213,7 +228,9 @@ def test_tag_get_device_from_tag_endpoint_no_tag(user: UserClient):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: UserClient, user2: UserClient, client: Client):
+def test_tag_get_device_from_tag_endpoint_multiple_tags(
+    app: Devicehub, user: UserClient, user2: UserClient, client: Client
+):
     """As above, but when there are two tags with the secondary ID, the
     system should not return any of both (to be deterministic) so
     it should raise an exception.
@@ -232,8 +249,12 @@ def test_tag_get_device_from_tag_endpoint_multiple_tags(app: Devicehub, user: Us
 
     tag1 = Tag.from_an_id('foo').filter_by(owner_id=user.user['id']).one()
     tag2 = Tag.from_an_id('foo').filter_by(owner_id=user2.user['id']).one()
-    pc1 = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
-    pc2 = Desktop(serial_number='sn2', chassis=ComputerChassis.Tower, owner_id=user2.user['id'])
+    pc1 = Desktop(
+        serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id']
+    )
+    pc2 = Desktop(
+        serial_number='sn2', chassis=ComputerChassis.Tower, owner_id=user2.user['id']
+    )
     pc1.tags.add(tag1)
     pc2.tags.add(tag2)
     db.session.add(pc1)
@@ -266,7 +287,17 @@ def test_tag_create_etags_cli(app: Devicehub, user: UserClient):
     # todo what happens to organization?
     owner_id = user.user['id']
     runner = app.test_cli_runner()
-    args = ('tag', 'add', '-p', 'https://t.ereuse.org', '-s', 'foo', 'DT-BARBAR', '-u', owner_id)
+    args = (
+        'tag',
+        'add',
+        '-p',
+        'https://t.ereuse.org',
+        '-s',
+        'foo',
+        'DT-BARBAR',
+        '-u',
+        owner_id,
+    )
     runner.invoke(*args)
     with app.app_context():
         tag = Tag.query.one()  # type: Tag
@@ -284,7 +315,11 @@ def test_tag_manual_link_search(app: Devicehub, user: UserClient):
     with app.app_context():
         g.user = User.query.one()
         db.session.add(Tag('foo-bar', secondary='foo-sec', owner_id=user.user['id']))
-        desktop = Desktop(serial_number='foo', chassis=ComputerChassis.AllInOne, owner_id=user.user['id'])
+        desktop = Desktop(
+            serial_number='foo',
+            chassis=ComputerChassis.AllInOne,
+            owner_id=user.user['id'],
+        )
         db.session.add(desktop)
         db.session.commit()
         desktop_id = desktop.id
@@ -330,12 +365,20 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
     s['device']['tags'] = [{'id': 'foo', 'secondary': 'bar', 'type': 'Tag'}]
     snapshot, _ = user.post(json_encode(s), res=Snapshot)
     device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
-    assert 'foo' in [x['id'] for x in device['tags']]
-    assert 'bar' in [x.get('secondary') for x in device['tags']]
+    desktop = Device.query.filter_by(
+        devicehub_id=snapshot['device']['devicehubID']
+    ).one()
+    assert [] == [x['id'] for x in device['tags']]
+    assert 'foo' in [x.id for x in desktop.binding.device.tags]
+    assert 'bar' in [x.secondary for x in desktop.binding.device.tags]
 
-    r, _ = user.get(res=Device, query=[('search', 'foo'), ('filter', {'type': ['Computer']})])
+    r, _ = user.get(
+        res=Device, query=[('search', 'foo'), ('filter', {'type': ['Computer']})]
+    )
     assert len(r['items']) == 1
-    r, _ = user.get(res=Device, query=[('search', 'bar'), ('filter', {'type': ['Computer']})])
+    r, _ = user.get(
+        res=Device, query=[('search', 'bar'), ('filter', {'type': ['Computer']})]
+    )
     assert len(r['items']) == 1
 
 
@@ -359,19 +402,24 @@ def test_tag_multiple_secondary_org(user: UserClient):
 
 
 @pytest.mark.mvp
-def test_create_num_regular_tags(user: UserClient, requests_mock: requests_mock.mocker.Mocker):
+def test_create_num_regular_tags(
+    user: UserClient, requests_mock: requests_mock.mocker.Mocker
+):
     """Create regular tags. This is done using a tag provider that
     returns IDs. These tags are printable.
     """
-    requests_mock.post('https://example.com/',
-                       # request
-                       request_headers={
-                           'Authorization': 'Basic {}'.format(DevicehubClient.encode_token(
-                               '52dacef0-6bcb-4919-bfed-f10d2c96ecee'))
-                       },
-                       # response
-                       json=['tag1id', 'tag2id'],
-                       status_code=201)
+    requests_mock.post(
+        'https://example.com/',
+        # request
+        request_headers={
+            'Authorization': 'Basic {}'.format(
+                DevicehubClient.encode_token('52dacef0-6bcb-4919-bfed-f10d2c96ecee')
+            )
+        },
+        # response
+        json=['tag1id', 'tag2id'],
+        status_code=201,
+    )
     data, _ = user.post({}, res=Tag, query=[('num', 2)])
     assert data['items'][0]['id'] == 'tag1id'
     assert data['items'][0]['printable'], 'Tags made this way are printable'
@@ -380,28 +428,37 @@ def test_create_num_regular_tags(user: UserClient, requests_mock: requests_mock.
 
 
 @pytest.mark.mvp
-def test_get_tags_endpoint(user: UserClient, app: Devicehub,
-                           requests_mock: requests_mock.mocker.Mocker):
+def test_get_tags_endpoint(
+    user: UserClient, app: Devicehub, requests_mock: requests_mock.mocker.Mocker
+):
     """Performs GET /tags after creating 3 tags, 2 printable and one
     not. Only the printable ones are returned.
     """
     # Prepare test
     with app.app_context():
         org = Organization(name='bar', tax_id='bartax')
-        tag = Tag(id='bar-1', org=org, provider=URL('http://foo.bar'), owner_id=user.user['id'])
+        tag = Tag(
+            id='bar-1',
+            org=org,
+            provider=URL('http://foo.bar'),
+            owner_id=user.user['id'],
+        )
         db.session.add(tag)
         db.session.commit()
         assert not tag.printable
 
-    requests_mock.post('https://example.com/',
-                       # request
-                       request_headers={
-                           'Authorization': 'Basic {}'.format(DevicehubClient.encode_token(
-                               '52dacef0-6bcb-4919-bfed-f10d2c96ecee'))
-                       },
-                       # response
-                       json=['tag1id', 'tag2id'],
-                       status_code=201)
+    requests_mock.post(
+        'https://example.com/',
+        # request
+        request_headers={
+            'Authorization': 'Basic {}'.format(
+                DevicehubClient.encode_token('52dacef0-6bcb-4919-bfed-f10d2c96ecee')
+            )
+        },
+        # response
+        json=['tag1id', 'tag2id'],
+        status_code=201,
+    )
     user.post({}, res=Tag, query=[('num', 2)])
 
     # Test itself
@@ -421,7 +478,9 @@ def test_get_tag_permissions(app: Devicehub, user: UserClient, user2: UserClient
         # Create a pc with a tag
         g.user = User.query.all()[0]
         tag = Tag(id='foo-bar', owner_id=user.user['id'])
-        pc = Desktop(serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id'])
+        pc = Desktop(
+            serial_number='sn1', chassis=ComputerChassis.Tower, owner_id=user.user['id']
+        )
         pc.tags.add(tag)
         db.session.add(pc)
         db.session.commit()
@@ -432,5 +491,5 @@ def test_get_tag_permissions(app: Devicehub, user: UserClient, user2: UserClient
     computer2, res2 = user2.get(url, None)
     assert res.status_code == 200
     assert res2.status_code == 200
-    assert len(computer['items']) == 2
+    assert len(computer['items']) == 1
     assert len(computer2['items']) == 0

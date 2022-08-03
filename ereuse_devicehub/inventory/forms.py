@@ -136,9 +136,13 @@ class FilterForm(FlaskForm):
         if self.lot_id:
             self.lot = self.lots.filter(Lot.id == self.lot_id).one()
             device_ids = (d.id for d in self.lot.devices)
-            self.devices = Device.query.filter(Device.id.in_(device_ids))
+            self.devices = Device.query.filter(Device.id.in_(device_ids)).filter(
+                Device.binding == None
+            )
         else:
-            self.devices = Device.query.filter(Device.owner_id == g.user.id)
+            self.devices = Device.query.filter(Device.owner_id == g.user.id).filter(
+                Device.binding == None
+            )
             if self.only_unassigned:
                 self.devices = self.devices.filter_by(lots=None)
 
@@ -451,7 +455,7 @@ class NewDeviceForm(FlaskForm):
 
         if self.phid.data and self.amount.data == 1 and not self._obj:
             dev = Placeholder.query.filter(
-                Placeholder.phid == self.phid.data, Device.owner == g.user
+                Placeholder.phid == self.phid.data, Placeholder.owner == g.user
             ).first()
             if dev:
                 msg = "Sorry, exist one snapshot device with this HID"
@@ -564,6 +568,7 @@ class NewDeviceForm(FlaskForm):
                 'id_device_supplier': self.id_device_supplier.data,
                 'info': self.info.data,
                 'pallet': self.pallet.data,
+                'is_abstract': False,
             }
         )
         return self.placeholder
@@ -573,6 +578,7 @@ class NewDeviceForm(FlaskForm):
         self._obj.placeholder.id_device_supplier = self.id_device_supplier.data or None
         self._obj.placeholder.info = self.info.data or None
         self._obj.placeholder.pallet = self.pallet.data or None
+        self._obj.placeholder.is_abstract = False
         self._obj.model = self.model.data
         self._obj.manufacturer = self.manufacturer.data
         self._obj.serial_number = self.serial_number.data
@@ -1551,6 +1557,7 @@ class UploadPlaceholderForm(FlaskForm):
                 'id_device_supplier': data['Id device Supplier'][i],
                 'pallet': data['Pallet'][i],
                 'info': data['Info'][i],
+                'is_abstract': False,
             }
 
             snapshot_json = schema.load(json_snapshot)
@@ -1602,3 +1609,43 @@ class EditPlaceholderForm(FlaskForm):
             db.session.commit()
 
         return self.placeholders
+
+
+class BindingForm(FlaskForm):
+    phid = StringField('Phid', [validators.DataRequired()])
+
+    def __init__(self, *args, **kwargs):
+        self.device = kwargs.pop('device', None)
+        self.placeholder = kwargs.pop('placeholder', None)
+        super().__init__(*args, **kwargs)
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            txt = "This placeholder not exist."
+            self.phid.errors = [txt]
+            return False
+
+        if self.device.placeholder:
+            txt = "This is not a device Workbench."
+            self.phid.errors = [txt]
+            return False
+
+        if not self.placeholder:
+            self.placeholder = Placeholder.query.filter(
+                Placeholder.phid == self.phid.data, Placeholder.owner == g.user
+            ).first()
+
+        if not self.placeholder:
+            txt = "This placeholder not exist."
+            self.phid.errors = [txt]
+            return False
+
+        if self.placeholder.binding:
+            txt = "This placeholder have a binding with other device. "
+            txt += "Before you need to do an unbinding with this other device."
+            self.phid.errors = [txt]
+            return False
+
+        return True

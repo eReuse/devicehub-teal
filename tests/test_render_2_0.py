@@ -14,7 +14,7 @@ from ereuse_devicehub.client import UserClient, UserClientFlask
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.action.models import Snapshot
-from ereuse_devicehub.resources.device.models import Device
+from ereuse_devicehub.resources.device.models import Device, Placeholder
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.user.models import User
 from tests import conftest
@@ -190,7 +190,7 @@ def test_inventory_with_device(user3: UserClientFlask):
 
     assert status == '200 OK'
     assert "Unassigned" in body
-    assert db_snapthot.device.devicehub_id in body
+    assert db_snapthot.device.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -203,7 +203,7 @@ def test_inventory_filter(user3: UserClientFlask):
 
     assert status == '200 OK'
     assert "Unassigned" in body
-    assert db_snapthot.device.devicehub_id in body
+    assert db_snapthot.device.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -310,7 +310,7 @@ def test_label_details(user3: UserClientFlask):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_link_tag_to_device(user3: UserClientFlask):
     snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
-    dev = snap.device
+    dev = snap.device.binding.device
     uri = '/labels/add/'
     user3.get(uri)
 
@@ -331,7 +331,7 @@ def test_link_tag_to_device(user3: UserClientFlask):
 
     uri = '/inventory/tag/devices/add/'
     user3.post(uri, data=data)
-    assert len(list(dev.tags)) == 2
+    assert len(list(dev.tags)) == 1
     tags = [tag.id for tag in dev.tags]
     assert "tag1" in tags
 
@@ -341,7 +341,7 @@ def test_link_tag_to_device(user3: UserClientFlask):
 def test_unlink_tag_to_device(user3: UserClientFlask):
     # create device
     snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
-    dev = snap.device
+    dev = snap.device.binding.device
 
     # create tag
     uri = '/labels/add/'
@@ -379,9 +379,7 @@ def test_unlink_tag_to_device(user3: UserClientFlask):
     }
 
     user3.post(uri, data=data)
-    assert len(list(dev.tags)) == 1
-    tag = list(dev.tags)[0]
-    assert not tag.id == "tag1"
+    assert len(list(dev.tags)) == 0
 
 
 @pytest.mark.mvp
@@ -389,7 +387,7 @@ def test_unlink_tag_to_device(user3: UserClientFlask):
 def test_print_labels(user3: UserClientFlask):
     # create device
     snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
-    dev = snap.device
+    dev = snap.device.binding.device
 
     # create tag
     uri = '/labels/add/'
@@ -411,7 +409,7 @@ def test_print_labels(user3: UserClientFlask):
     uri = '/inventory/tag/devices/add/'
     user3.post(uri, data=data)
 
-    assert len(list(dev.tags)) == 2
+    assert len(list(dev.tags)) == 1
 
     uri = '/labels/print'
     data = {
@@ -423,7 +421,7 @@ def test_print_labels(user3: UserClientFlask):
     assert status == '200 OK'
     path = "/inventory/device/{}/".format(dev.devicehub_id)
     assert path in body
-    assert "tag1" not in body
+    assert "tag1" in body
 
 
 @pytest.mark.mvp
@@ -708,7 +706,7 @@ def test_action_recycling(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Allocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/add/'
@@ -721,15 +719,15 @@ def test_action_recycling(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Recycling",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'Recycling'
+    assert dev.binding.device.actions[-1].type == 'Recycling'
     assert 'Action &#34;Recycling&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -763,15 +761,15 @@ def test_action_use(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Use",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'Use'
+    assert dev.binding.device.actions[-1].type == 'Use'
     assert 'Action &#34;Use&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -786,15 +784,15 @@ def test_action_refurbish(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Refurbish",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'Refurbish'
+    assert dev.binding.device.actions[-1].type == 'Refurbish'
     assert 'Action &#34;Refurbish&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -809,15 +807,15 @@ def test_action_management(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Management",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'Management'
+    assert dev.binding.device.actions[-1].type == 'Management'
     assert 'Action &#34;Management&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -832,7 +830,7 @@ def test_action_allocate(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Allocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-01-01',
         'end_time': '2000-06-01',
         'end_users': 2,
@@ -841,9 +839,9 @@ def test_action_allocate(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'Allocate'
+    assert dev.binding.device.actions[-1].type == 'Allocate'
     assert 'Action &#34;Allocate&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -858,18 +856,18 @@ def test_action_allocate_error_required(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Trade",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/allocate/add/'
     body, status = user3.post(uri, data=data)
-    assert dev.actions[-1].type != 'Allocate'
+    assert 'Allocate' not in [x.type for x in dev.binding.device.actions]
 
     data = {
         'csrf_token': generate_csrf(),
         'type': "Allocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/allocate/add/'
@@ -891,7 +889,7 @@ def test_action_allocate_error_dates(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Allocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-06-01',
         'end_time': '2000-01-01',
         'end_users': 2,
@@ -902,7 +900,7 @@ def test_action_allocate_error_dates(user3: UserClientFlask):
     assert status == '200 OK'
     assert 'Action Allocate error' in body
     assert 'The action cannot finish before it starts.' in body
-    assert dev.actions[-1].type != 'Allocate'
+    assert 'Allocate' not in [x.type for x in dev.binding.device.actions]
 
 
 @pytest.mark.mvp
@@ -919,7 +917,7 @@ def test_action_allocate_error_future_dates(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Allocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': start_time,
         'end_time': end_time,
         'end_users': 2,
@@ -930,7 +928,7 @@ def test_action_allocate_error_future_dates(user3: UserClientFlask):
     assert status == '200 OK'
     assert 'Action Allocate error' in body
     assert 'Not a valid date value.!' in body
-    assert dev.actions[-1].type != 'Allocate'
+    assert 'Allocate' not in [x.type for x in dev.binding.device.actions]
 
 
 @pytest.mark.mvp
@@ -945,7 +943,7 @@ def test_action_deallocate(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Allocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-01-01',
         'end_time': '2000-06-01',
         'end_users': 2,
@@ -954,22 +952,22 @@ def test_action_deallocate(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert dev.allocated_status.type == 'Allocate'
+    assert dev.binding.device.allocated_status.type == 'Allocate'
 
     data = {
         'csrf_token': generate_csrf(),
         'type': "Deallocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-01-01',
         'end_time': '2000-06-01',
         'end_users': 2,
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.allocated_status.type == 'Deallocate'
+    assert dev.binding.device.allocated_status.type == 'Deallocate'
     assert 'Action &#34;Deallocate&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -984,7 +982,7 @@ def test_action_deallocate_error(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Allocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-05-01',
         'end_time': '2000-06-01',
         'end_users': 2,
@@ -993,20 +991,20 @@ def test_action_deallocate_error(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert dev.allocated_status.type == 'Allocate'
+    assert dev.binding.device.allocated_status.type == 'Allocate'
 
     data = {
         'csrf_token': generate_csrf(),
         'type': "Deallocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-01-01',
         'end_time': '2000-02-01',
         'end_users': 2,
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.allocated_status.type != 'Deallocate'
+    assert dev.binding.device.allocated_status.type != 'Deallocate'
     assert 'Action Deallocate error!' in body
     assert 'Sorry some of this devices are actually deallocate' in body
 
@@ -1023,7 +1021,7 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Allocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-01-01',
         'end_time': '2000-01-01',
         'end_users': 2,
@@ -1032,36 +1030,36 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert dev.allocated_status.type == 'Allocate'
-    assert len(dev.actions) == 11
+    assert dev.binding.device.allocated_status.type == 'Allocate'
+    assert len(dev.binding.device.actions) == 1
 
     data = {
         'csrf_token': generate_csrf(),
         'type': "Deallocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-02-01',
         'end_time': '2000-02-01',
         'end_users': 2,
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.allocated_status.type == 'Deallocate'
-    assert len(dev.actions) == 12
+    assert dev.binding.device.allocated_status.type == 'Deallocate'
+    assert len(dev.binding.device.actions) == 2
 
     # is not possible to do an allocate between an allocate and an deallocate
     data = {
         'csrf_token': generate_csrf(),
         'type': "Allocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-01-15',
         'end_time': '2000-01-15',
         'end_users': 2,
     }
 
     user3.post(uri, data=data)
-    assert dev.allocated_status.type == 'Deallocate'
+    assert dev.binding.device.allocated_status.type == 'Deallocate'
     # assert 'Action Deallocate error!' in body
     # assert 'Sorry some of this devices are actually deallocate' in body
     #
@@ -1069,14 +1067,14 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Deallocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-01-15',
         'end_time': '2000-01-15',
         'end_users': 2,
     }
 
     user3.post(uri, data=data)
-    assert len(dev.actions) == 12
+    assert len(dev.binding.device.actions) == 2
 
 
 @pytest.mark.mvp
@@ -1091,7 +1089,7 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Allocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-01-10',
         'end_users': 2,
     }
@@ -1099,25 +1097,25 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert len(dev.actions) == 11
+    assert len(dev.binding.device.actions) == 1
 
     data = {
         'csrf_token': generate_csrf(),
         'type': "Deallocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-01-20',
         'end_users': 2,
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert len(dev.actions) == 12
+    assert len(dev.binding.device.actions) == 2
 
     data = {
         'csrf_token': generate_csrf(),
         'type': "Allocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-02-10',
         'end_users': 2,
     }
@@ -1125,40 +1123,40 @@ def test_action_allocate_deallocate_error2(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert len(dev.actions) == 13
+    assert len(dev.binding.device.actions) == 3
 
     data = {
         'csrf_token': generate_csrf(),
         'type': "Deallocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-02-20',
         'end_users': 2,
     }
     user3.post(uri, data=data)
-    assert len(dev.actions) == 14
+    assert len(dev.binding.device.actions) == 4
 
     data = {
         'csrf_token': generate_csrf(),
         'type': "Allocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-01-25',
         'end_users': 2,
     }
     user3.post(uri, data=data)
-    assert len(dev.actions) == 15
+    assert len(dev.binding.device.actions) == 5
 
     data = {
         'csrf_token': generate_csrf(),
         'type': "Deallocate",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'start_time': '2000-01-27',
         'end_users': 2,
     }
     user3.post(uri, data=data)
-    assert len(dev.actions) == 16
+    assert len(dev.binding.device.actions) == 6
 
 
 @pytest.mark.mvp
@@ -1173,15 +1171,15 @@ def test_action_toprepare(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "ToPrepare",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'ToPrepare'
+    assert dev.binding.device.actions[-1].type == 'ToPrepare'
     assert 'Action &#34;ToPrepare&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -1196,15 +1194,15 @@ def test_action_prepare(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Prepare",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'Prepare'
+    assert dev.binding.device.actions[-1].type == 'Prepare'
     assert 'Action &#34;Prepare&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -1219,15 +1217,15 @@ def test_action_torepair(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "ToRepair",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'ToRepair'
+    assert dev.binding.device.actions[-1].type == 'ToRepair'
     assert 'Action &#34;ToRepair&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -1242,15 +1240,15 @@ def test_action_ready(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "Ready",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
     }
 
     uri = '/inventory/action/add/'
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'Ready'
+    assert dev.binding.device.actions[-1].type == 'Ready'
     assert 'Action &#34;Ready&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -1269,16 +1267,16 @@ def test_action_datawipe(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'type': "DataWipe",
         'severity': "Info",
-        'devices': "{}".format(dev.id),
+        'devices': "{}".format(dev.binding.device.id),
         'document-file_name': file_upload,
     }
 
     uri = '/inventory/action/datawipe/add/'
     body, status = user3.post(uri, data=data, content_type="multipart/form-data")
     assert status == '200 OK'
-    assert dev.actions[-1].type == 'DataWipe'
+    assert dev.binding.device.actions[-1].type == 'DataWipe'
     assert 'Action &#34;DataWipe&#34; created successfully!' in body
-    assert dev.devicehub_id in body
+    assert dev.binding.device.devicehub_id in body
 
 
 @pytest.mark.mvp
@@ -1618,7 +1616,6 @@ def test_export_snapshot_json(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_add_placeholder_excel(user3: UserClientFlask):
-
     uri = '/inventory/upload-placeholder/'
     body, status = user3.get(uri)
     assert status == '200 OK'
@@ -2009,3 +2006,191 @@ def test_add_new_placeholder_from_lot(user3: UserClientFlask):
     assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
     assert dev.placeholder.phid == 'ace'
     assert len(lot.devices) == 1
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_manual_binding(user3: UserClientFlask):
+    # create placeholder manual
+    uri = '/inventory/device/add/'
+
+    user3.get(uri)
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'phid': 'sid',
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+    }
+    user3.post(uri, data=data)
+    dev = Device.query.one()
+    assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
+    assert dev.placeholder.phid == 'sid'
+    assert dev.placeholder.is_abstract is False
+
+    # add device from wb
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev_wb = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    assert dev_wb.binding.is_abstract is True
+    assert dev_wb.hid == 'laptop-asustek_computer_inc-1001pxd-b8oaas048285-14:da:e9:42:f6:7b'
+    assert dev_wb.binding.phid == '11'
+    old_placeholder = dev_wb.binding
+
+    # page binding
+    dhid = dev_wb.devicehub_id
+    uri = f'/inventory/binding/{dhid}/sid/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert 'sid' in body
+    assert 'Confirm' in body
+
+    # action binding
+    body, status = user3.post(uri, data={})
+    assert status == '200 OK'
+    assert f"Device &#34;{dhid}&#34; bind successfully with sid!" in body
+
+    # check new structure
+    assert dev_wb.binding.phid == 'sid'
+    assert dev_wb.binding.device == dev
+    assert Placeholder.query.filter_by(id=old_placeholder.id).first() is None
+    assert Device.query.filter_by(id=old_placeholder.device.id).first() is None
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_edit_and_binding(user3: UserClientFlask):
+    uri = '/inventory/device/add/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+    }
+    user3.post(uri, data=data)
+
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev_wb = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    uri = '/inventory/device/edit/{}/'.format(dev_wb.binding.device.devicehub_id)
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "Edit Device" in body
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'serial_number': "AAAAC",
+        'model': "LC27T56",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "a2",
+    }
+    assert dev_wb.binding.is_abstract is True
+    user3.post(uri, data=data)
+    assert dev_wb.binding.is_abstract is False
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_unbinding(user3: UserClientFlask):
+    # create placeholder manual
+    uri = '/inventory/device/add/'
+
+    user3.get(uri)
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'phid': 'sid',
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+    }
+    user3.post(uri, data=data)
+    dev = Device.query.one()
+
+    # add device from wb
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev_wb = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    old_placeholder = dev_wb.binding
+
+    # page binding
+    dhid = dev_wb.devicehub_id
+    uri = f'/inventory/binding/{dhid}/sid/'
+    user3.get(uri)
+
+    # action binding
+    assert dev.placeholder.binding is None
+    user3.post(uri, data={})
+    assert dev.placeholder.binding == dev_wb
+
+    # action unbinding
+    uri = '/inventory/unbinding/sid/'
+    body, status = user3.post(uri, data={})
+    assert status == '200 OK'
+    assert 'Device &#34;sid&#34; unbind successfully!' in body
+
+    # check new structure
+
+    assert dev.placeholder.binding is None
+    assert dev_wb.binding.phid == '2'
+    assert old_placeholder.device.model == dev_wb.binding.device.model
+    assert old_placeholder.device != dev_wb.binding.device
+    assert Placeholder.query.filter_by(id=old_placeholder.id).first() is None
+    assert Device.query.filter_by(id=old_placeholder.device.id).first() is None
+    assert Placeholder.query.filter_by(id=dev_wb.binding.id).first()
+    assert Device.query.filter_by(id=dev_wb.binding.device.id).first()
+    assert Device.query.filter_by(id=dev.id).first()
+    assert Placeholder.query.filter_by(id=dev.placeholder.id).first()
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_unbindingnot_used(user3: UserClientFlask):
+    # add device from wb
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev_wb = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    old_placeholder = dev_wb.binding
+
+    # action unbinding
+    uri = '/inventory/unbinding/{}/'.format(dev_wb.binding.phid)
+    body, status = user3.post(uri, data={})
+    assert status == '200 OK'
+
+    # check new structure
+    assert dev_wb.binding == old_placeholder
+    assert Placeholder.query.filter_by(id=old_placeholder.id).first()
+    assert Device.query.filter_by(id=old_placeholder.device.id).first()
+    assert Device.query.filter_by(id=dev_wb.id).first()
