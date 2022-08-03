@@ -52,6 +52,8 @@ def init_app():
 
 def clone_computers():
     for computer in Computer.query.all():
+        if computer.placeholder:
+            continue
         clone_device(computer)
 
 
@@ -200,22 +202,22 @@ def remove_placeholders():
     for placeholder in Placeholder.query.all():
         device = placeholder.device
         binding = placeholder.binding
-        if not device or not binding:
+        if not binding:
             continue
         devices.append(placeholder.device.id)
 
     for dev in Device.query.filter(Device.id.in_(devices)):
         db.session.delete(dev)
 
-    for placeholder in Placeholder.query.all():
-        device = placeholder.device
-        binding = placeholder.binding
-        if not device or not binding:
-            continue
-        for plog in PlaceholdersLog.query.filter_by(placeholder=placeholder).all():
-            db.session.delete(plog)
+    # for placeholder in Placeholder.query.all():
+    #     device = placeholder.device
+    #     binding = placeholder.binding
+    #     if not device or not binding:
+    #         continue
+    #     for plog in PlaceholdersLog.query.filter_by(placeholder=placeholder).all():
+    #         db.session.delete(plog)
 
-        db.session.delete(placeholder)
+    #     db.session.delete(placeholder)
     db.session.commit()
 
 
