@@ -14,7 +14,7 @@ from ereuse_devicehub.client import UserClient, UserClientFlask
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.action.models import Snapshot
-from ereuse_devicehub.resources.device.models import Device
+from ereuse_devicehub.resources.device.models import Device, Placeholder
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.user.models import User
 from tests import conftest
@@ -2006,3 +2006,191 @@ def test_add_new_placeholder_from_lot(user3: UserClientFlask):
     assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
     assert dev.placeholder.phid == 'ace'
     assert len(lot.devices) == 1
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_manual_binding(user3: UserClientFlask):
+    # create placeholder manual
+    uri = '/inventory/device/add/'
+
+    user3.get(uri)
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'phid': 'sid',
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+    }
+    user3.post(uri, data=data)
+    dev = Device.query.one()
+    assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
+    assert dev.placeholder.phid == 'sid'
+    assert dev.placeholder.is_abstract is False
+
+    # add device from wb
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev_wb = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    assert dev_wb.binding.is_abstract is True
+    assert dev_wb.hid == 'laptop-asustek_computer_inc-1001pxd-b8oaas048285-14:da:e9:42:f6:7b'
+    assert dev_wb.binding.phid == '11'
+    old_placeholder = dev_wb.binding
+
+    # page binding
+    dhid = dev_wb.devicehub_id
+    uri = f'/inventory/binding/{dhid}/sid/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert 'sid' in body
+    assert 'Confirm' in body
+
+    # action binding
+    body, status = user3.post(uri, data={})
+    assert status == '200 OK'
+    assert f"Device &#34;{dhid}&#34; bind successfully with sid!" in body
+
+    # check new structure
+    assert dev_wb.binding.phid == 'sid'
+    assert dev_wb.binding.device == dev
+    assert Placeholder.query.filter_by(id=old_placeholder.id).first() is None
+    assert Device.query.filter_by(id=old_placeholder.device.id).first() is None
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_edit_and_binding(user3: UserClientFlask):
+    uri = '/inventory/device/add/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+    }
+    user3.post(uri, data=data)
+
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev_wb = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    uri = '/inventory/device/edit/{}/'.format(dev_wb.binding.device.devicehub_id)
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "Edit Device" in body
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'serial_number': "AAAAC",
+        'model': "LC27T56",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "a2",
+    }
+    assert dev_wb.binding.is_abstract is True
+    user3.post(uri, data=data)
+    assert dev_wb.binding.is_abstract is False
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_unbinding(user3: UserClientFlask):
+    # create placeholder manual
+    uri = '/inventory/device/add/'
+
+    user3.get(uri)
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'phid': 'sid',
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+    }
+    user3.post(uri, data=data)
+    dev = Device.query.one()
+
+    # add device from wb
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev_wb = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    old_placeholder = dev_wb.binding
+
+    # page binding
+    dhid = dev_wb.devicehub_id
+    uri = f'/inventory/binding/{dhid}/sid/'
+    user3.get(uri)
+
+    # action binding
+    assert dev.placeholder.binding is None
+    user3.post(uri, data={})
+    assert dev.placeholder.binding == dev_wb
+
+    # action unbinding
+    uri = '/inventory/unbinding/sid/'
+    body, status = user3.post(uri, data={})
+    assert status == '200 OK'
+    assert 'Device &#34;sid&#34; unbind successfully!' in body
+
+    # check new structure
+
+    assert dev.placeholder.binding is None
+    assert dev_wb.binding.phid == '2'
+    assert old_placeholder.device.model == dev_wb.binding.device.model
+    assert old_placeholder.device != dev_wb.binding.device
+    assert Placeholder.query.filter_by(id=old_placeholder.id).first() is None
+    assert Device.query.filter_by(id=old_placeholder.device.id).first() is None
+    assert Placeholder.query.filter_by(id=dev_wb.binding.id).first()
+    assert Device.query.filter_by(id=dev_wb.binding.device.id).first()
+    assert Device.query.filter_by(id=dev.id).first()
+    assert Placeholder.query.filter_by(id=dev.placeholder.id).first()
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_unbindingnot_used(user3: UserClientFlask):
+    # add device from wb
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev_wb = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    old_placeholder = dev_wb.binding
+
+    # action unbinding
+    uri = '/inventory/unbinding/{}/'.format(dev_wb.binding.phid)
+    body, status = user3.post(uri, data={})
+    assert status == '200 OK'
+
+    # check new structure
+    assert dev_wb.binding == old_placeholder
+    assert Placeholder.query.filter_by(id=old_placeholder.id).first()
+    assert Device.query.filter_by(id=old_placeholder.device.id).first()
+    assert Device.query.filter_by(id=dev_wb.id).first()

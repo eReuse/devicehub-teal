@@ -137,11 +137,11 @@ class FilterForm(FlaskForm):
             self.lot = self.lots.filter(Lot.id == self.lot_id).one()
             device_ids = (d.id for d in self.lot.devices)
             self.devices = Device.query.filter(Device.id.in_(device_ids)).filter(
-                Device.binding==None
+                Device.binding == None
             )
         else:
             self.devices = Device.query.filter(Device.owner_id == g.user.id).filter(
-                Device.binding==None
+                Device.binding == None
             )
             if self.only_unassigned:
                 self.devices = self.devices.filter_by(lots=None)
