@@ -59,6 +59,8 @@ def clone_device(device):
     if device.binding:
         return
 
+    if device.type == "Battery":
+        device.size
     dict_device = copy.copy(device.__dict__)
     dict_device.pop('_sa_instance_state')
     dict_device.pop('id', None)
