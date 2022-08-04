@@ -81,6 +81,7 @@ class DevicehubConfig(Config):
 
     """Admin email"""
     EMAIL_ADMIN = config('EMAIL_ADMIN', '')
+    EMAIL_DEMO = config('EMAIL_DEMO', 'hello@usody.com')
 
     """Definition of path where save the documents of customers"""
     PATH_DOCUMENTS_STORAGE = config('PATH_DOCUMENTS_STORAGE', '/tmp/')
