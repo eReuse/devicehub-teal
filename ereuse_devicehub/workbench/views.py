@@ -24,12 +24,13 @@ class SettingsView(GenericMixin):
 
     def dispatch_request(self):
         self.get_context()
-        self.get_iso()
         self.context.update(
             {
                 'page_title': self.page_title,
+                'demo': g.user.email == app.config['EMAIL_DEMO'],
             }
         )
+        self.get_iso()
 
         self.opt = request.values.get('opt')
         if self.opt in ['register']:
@@ -39,8 +40,12 @@ class SettingsView(GenericMixin):
 
     def get_iso(self):
         path = Path(__file__).parent.parent
+        uri = f'{path}/static/iso/'
+        if self.context.get('demo'):
+            uri = f'{path}/static/iso/demo/'
+
         files = [
-            f for f in os.listdir(f'{path}/static/iso/') if f[-3:].lower() == 'iso'
+            f for f in os.listdir(uri) if f[-3:].lower() == 'iso'
         ]
 
         self.context['iso'] = ''
