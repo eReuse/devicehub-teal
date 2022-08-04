@@ -20,7 +20,7 @@ workbench = Blueprint('workbench', __name__, url_prefix='/workbench')
 class SettingsView(GenericMixin):
     decorators = [login_required]
     template_name = 'workbench/settings.html'
-    page_title = "Workbench Settings"
+    page_title = "Workbench"
 
     def dispatch_request(self):
         self.get_context()
@@ -43,8 +43,8 @@ class SettingsView(GenericMixin):
             f for f in os.listdir(f'{path}/static/iso/') if f[-3:].lower() == 'iso'
         ]
 
-        self.context['iso'] = ''
-        self.context['iso_sha'] = ''
+        self.context['2022_iso'] = ''
+        self.context['2022_iso_sha'] = ''
 
         if files:
             self.context['iso'] = files[0]
@@ -89,4 +89,4 @@ class SettingsView(GenericMixin):
         return token
 
 
-workbench.add_url_rule('/settings/', view_func=SettingsView.as_view('settings'))
+workbench.add_url_rule('/', view_func=SettingsView.as_view('settings'))

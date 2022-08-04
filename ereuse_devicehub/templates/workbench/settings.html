@@ -18,26 +18,22 @@
         <div class="card-body">
 
           <div class="pt-6 pb-2">
-            <h5 class="card-title text-center pb-0 fs-4">Download your settings for Workbench</h5>
-            <p class="text-center small">Please select one of this options</p>
+            <h5 class="card-title text-center pb-0 fs-4">Workbench 2022</h5>
             <div class="row pt-3">
               <div class="col-5">
-                <a href="{{ url_for('workbench.settings') }}?opt=register" class="btn btn-primary">Register devices</a>
+                <a href="{{ url_for('workbench.settings') }}?opt=register" class="btn btn-primary">Get settings for register devices</a>
               </div>
               <div class="col">
-                <p class="small">Download the settings only for register devices.</p>
               </div>
             </div>
-            {% if iso %}
+            {% if 2022_iso %}
             <div class="row pt-3">
               <div class="col-5">
-                <a href="/static/iso/{{ iso }}" class="btn btn-primary">{{ iso }}</a>
+                <a href="/static/iso/2022/{{ 2022_iso }}" class="btn btn-primary">Get {{ 2022_iso }}</a>
               </div>
               <div class="col">
-                <p class="small">Download ISO workbench and burn it one one usb stick.</p>
                 <p class="small">
-                  Download Checksum: <a style="color: #993365;" href="/static/iso/SHA512SUMS">SHA512SUMS</a> |
-                  <a style="color: #993365;" href="/static/iso/SHA512SUMS.sign">Signature</a>
+                  Download Checksum: <a style="color: #993365;" href="/static/iso/2022/SHA512SUMS">SHA512SUMS</a> |
                 </p>
               </div>
             </div>
