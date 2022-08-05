@@ -1519,6 +1519,7 @@ class UploadPlaceholderForm(FlaskForm):
         self.path_snapshots = {}
         for i in data['Phid'].keys():
             placeholder = None
+            data['Phid'][i] = str(data['Phid'][i])
             if data['Phid'][i]:
                 placeholder = Placeholder.query.filter_by(phid=data['Phid'][i]).first()
 
