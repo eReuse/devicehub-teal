@@ -11,6 +11,7 @@
 </div><!-- End Page Title -->
 
 <section class="section profile">
+  {% if demo %}
   <div class="row">
     <div class="col-xl-6">
 
@@ -19,29 +20,6 @@
 
           <div class="pt-6 pb-2">
             <h5 class="card-title text-center pb-0 fs-4">Workbench 2022</h5>
-            {% if not demo %}
-            <div class="row pt-3">
-              <div class="col-5">
-                <a href="{{ url_for('workbench.settings') }}?opt=register" class="btn btn-primary">Get settings for register devices</a>
-              </div>
-              <div class="col">
-              </div>
-            </div>
-            {% if 2022_iso %}
-            <div class="row pt-3">
-              <div class="col-5">
-                <a href="/static/iso/2022/{{ 2022_iso }}" class="btn btn-primary">Get {{ 2022_iso }}</a>
-              </div>
-              <div class="col">
-                <p class="small">
-                  Download Checksum: <a style="color: #993365;" href="/static/iso/2022/SHA512SUMS">SHA512SUMS</a> |
-                </p>
-              </div>
-            </div>
-            {% endif %}
-
-            {% else %}
-
             {% if iso %}
             <div class="row pt-3">
               <div class="col-5">
@@ -53,18 +31,80 @@
                 </p>
               </div>
             </div>
-            {% endif %}
-            {% endif %}
           </div>
-
         </div>
 
       </div>
 
     </div>
-
     <div class="col-xl-8">
     </div>
   </div>
+  {% endif %}
+
+  {% else %}
+  {% for d, v in iso.items() %}
+  {% if d != 'demo' %}
+  <div class="row">
+    <div class="col-xl-6">
+
+      <div class="card">
+        <div class="card-body">
+
+          <div class="pt-6 pb-2">
+            <h5 class="card-title text-center pb-0 fs-4">Workbench {{ d }}</h5>
+            <h4>Settings</h4>
+            {% if d == 'v14' %}
+            <div class="row">
+              <div class="col-5">
+                <a href="{{ url_for('workbench.settings') }}?opt=erease_basic" class="btn btn-primary">Get settings for basic erease</a>
+              </div>
+              <div class="col">
+              </div>
+            </div>
+            <div class="row pt-2">
+              <div class="col-5">
+                <a href="{{ url_for('workbench.settings') }}?opt=erease_sectors" class="btn btn-primary">Get settings for erease by sectors</a>
+              </div>
+              <div class="col">
+              </div>
+            </div>
+            {% else %}
+            <div class="row">
+              <div class="col-5">
+                <a href="{{ url_for('workbench.settings') }}?opt=register" class="btn btn-primary">Get settings for register devices</a>
+              </div>
+              <div class="col">
+              </div>
+            </div>
+            {% endif %}
+            {% if iso %}
+            <h4 class="pt-3">iso</h4>
+            <div class="row">
+              <div class="col-5">
+                <a href="/static/iso/{{ d }}/{{ v }}" class="btn btn-primary">Get {{ v }}</a>
+              </div>
+              <div class="col">
+                <p class="small">
+                  Download Checksum: <a style="color: #993365;" href="/static/iso/{{ d }}/SHA512SUMS">SHA512SUMS</a> |
+                </p>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+    <div class="col-xl-8">
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  {% endif %}
+
+
 </section>
 {% endblock main %}
