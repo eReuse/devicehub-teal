@@ -42,6 +42,8 @@ class SnapshotsLog(Thing):
 
     def get_device(self):
         if self.snapshot:
+            if self.snapshot.device.binding:
+                return self.snapshot.device.binding.device.devicehub_id
             return self.snapshot.device.devicehub_id
 
         return ''
