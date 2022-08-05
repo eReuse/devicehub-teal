@@ -2,6 +2,7 @@ from citext import CIText
 from flask import g
 from sqlalchemy import BigInteger, Column, Sequence, SmallInteger
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import backref
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import Snapshot
@@ -56,7 +57,11 @@ class PlaceholdersLog(Thing):
 
     placeholder_id = Column(BigInteger, db.ForeignKey(Placeholder.id), nullable=True)
     placeholder = db.relationship(
-        Placeholder, primaryjoin=placeholder_id == Placeholder.id
+        Placeholder,
+        backref=backref(
+            'placeholder_logs', lazy=True, cascade="all, delete-orphan", uselist=True
+        ),
+        primaryjoin=placeholder_id == Placeholder.id,
     )
     owner_id = db.Column(
         UUID(as_uuid=True),

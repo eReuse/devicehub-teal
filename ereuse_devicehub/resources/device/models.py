@@ -666,6 +666,15 @@ class Device(Thing):
             action = next(e for e in reversed(actions) if e.type == 'VisualTest')
             action.functionality_range = value
 
+    def is_abstract(self):
+        if not self.placeholder:
+            return ''
+        if self.placeholder.is_abstract:
+            return 'Abstract'
+        if self.placeholder.binding:
+            return 'Twin'
+        return 'Real'
+
     def is_status(self, action):
         from ereuse_devicehub.resources.device import states
 
@@ -883,7 +892,9 @@ class Placeholder(Thing):
     )
     device = db.relationship(
         Device,
-        backref=backref('placeholder', lazy=True, cascade="all, delete-orphan", uselist=False),
+        backref=backref(
+            'placeholder', lazy=True, cascade="all, delete-orphan", uselist=False
+        ),
         primaryjoin=device_id == Device.id,
     )
     device_id.comment = "datas of the placeholder"

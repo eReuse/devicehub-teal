@@ -448,7 +448,7 @@
                           {{ dev.binding and dev.binding.phid or dev.placeholder and dev.placeholder.phid  or '' }}
                       </td>
                       <td>
-                          {{ dev.binding and dev.binding.is_abstract and '✓' or dev.placeholder and dev.placeholder.is_abstract and '✓' or '' }}
+                          {{ dev.is_abstract() }}
                       </td>
                       <td>
                         {% for t in dev.tags | sort(attribute="id") %}
