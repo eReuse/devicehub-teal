@@ -37,7 +37,7 @@ from ereuse_devicehub.inventory.forms import (
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
 from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
-from ereuse_devicehub.resources.action.models import Trade
+from ereuse_devicehub.resources.action.models import ActionDevice, Trade
 from ereuse_devicehub.resources.device.models import (
     Computer,
     DataStorage,
@@ -194,12 +194,23 @@ class BindingView(GenericMixin):
         if request.method == 'POST':
             old_placeholder = device.binding
             old_device_placeholder = old_placeholder.device
+
             if old_placeholder.is_abstract:
                 for plog in PlaceholdersLog.query.filter_by(
                     placeholder_id=old_placeholder.id
                 ):
                     db.session.delete(plog)
+
+                for ac in old_device_placeholder.actions:
+                    ac.devices.add(placeholder.device)
+                    ac.devices.remove(old_device_placeholder)
+                    for act in ac.actions_device:
+                        if act.device == old_device_placeholder:
+                            db.session.delete(act)
+
                 db.session.delete(old_device_placeholder)
+                for tag in list(old_device_placeholder.tags):
+                    tag.device = placeholder.device
 
             device.binding = placeholder
             db.session.commit()
@@ -209,11 +220,16 @@ class BindingView(GenericMixin):
             )
             return flask.redirect(next_url)
 
+        # import pdb; pdb.set_trace()
         self.context.update(
             {
                 'device': device.binding.device,
                 'placeholder': placeholder,
                 'page_title': 'Binding confirm',
+                'actions': list(device.binding.device.actions)
+                + list(placeholder.device.actions),
+                'tags': list(device.binding.device.tags)
+                + list(placeholder.device.tags),
             }
         )
 
@@ -242,10 +258,8 @@ class UnBindingView(GenericMixin):
         self.get_context()
 
         if request.method == 'POST':
-            self.clone_device(device)
-            next_url = url_for(
-                'inventory.device_details', id=placeholder.device.devicehub_id
-            )
+            new_device = self.clone_device(device)
+            next_url = url_for('inventory.device_details', id=new_device.devicehub_id)
             messages.success('Device "{}" unbind successfully!'.format(phid))
             return flask.redirect(next_url)
 
@@ -678,7 +692,13 @@ class ExportsView(View):
     def devices_list(self):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
+        cw = csv.writer(
+            data,
+            delimiter=';',
+            lineterminator="\n",
+            quotechar='"',
+            quoting=csv.QUOTE_ALL,
+        )
         first = True
 
         for device in self.find_devices():
@@ -693,7 +713,13 @@ class ExportsView(View):
     def metrics(self):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
+        cw = csv.writer(
+            data,
+            delimiter=';',
+            lineterminator="\n",
+            quotechar='"',
+            quoting=csv.QUOTE_ALL,
+        )
         first = True
         devs_id = []
         # Get the allocate info
@@ -757,7 +783,13 @@ class ExportsView(View):
 
     def lots_export(self):
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
+        cw = csv.writer(
+            data,
+            delimiter=';',
+            lineterminator="\n",
+            quotechar='"',
+            quoting=csv.QUOTE_ALL,
+        )
 
         cw.writerow(
             [
@@ -827,7 +859,13 @@ class ExportsView(View):
 
     def devices_lots_export(self):
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
+        cw = csv.writer(
+            data,
+            delimiter=';',
+            lineterminator="\n",
+            quotechar='"',
+            quoting=csv.QUOTE_ALL,
+        )
         head = [
             'DHID',
             'Lot Id',

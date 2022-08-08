@@ -1669,7 +1669,7 @@ class BindingForm(FlaskForm):
 
         if not self.placeholder:
             self.placeholder = Placeholder.query.filter(
-                Placeholder.phid == self.phid.data, Placeholder.owner == g.user
+                Placeholder.phid == self.phid.data.strip(), Placeholder.owner == g.user
             ).first()
 
         if not self.placeholder:

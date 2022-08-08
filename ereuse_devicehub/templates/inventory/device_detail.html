@@ -68,7 +68,7 @@
             </li>
             {% endif %}
 
-           {% if device.placeholder and placeholder.binding %}
+           {% if device.placeholder and placeholder.binding and device.is_abstract() != 'Abstract'%}
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('inventory.unbinding', phid=placeholder.phid) }}">Unbinding</a>
             </li>
@@ -79,7 +79,21 @@
 
             <div class="tab-pane fade {% if active_binding %}profile-overview{% else %}show active{% endif %}" id="type">
               <h5 class="card-title">Details</h5>
-              {% if device.placeholder %}(<a href="{{ url_for('inventory.device_edit', id=device.devicehub_id)}}">edit</a>){% endif %}
+              {% if device.placeholder %}
+              <div class="row mb-3">
+                <div class="col-lg-3 col-md-4 label ">
+                  (<a href="{{ url_for('inventory.device_edit', id=device.devicehub_id)}}">Edit Device</a>)
+                </div>
+                <div class="col-lg-9 col-md-8">{{ device.is_abstract() }}</div>
+              </div>
+              {% endif %}
+
+              {% if device.placeholder %}
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label ">Phid</div>
+                <div class="col-lg-9 col-md-8">{{ device.placeholder.phid }}</div>
+              </div>
+              {% endif %}
 
               <div class="row">
                 <div class="col-lg-3 col-md-4 label ">Type</div>
