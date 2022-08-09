@@ -317,6 +317,7 @@ class NewDeviceForm(FlaskForm):
     id_device_supplier = StringField('Id Supplier', [validators.Optional()])
     phid = StringField('Placeholder Hardware identity (Phid)', [validators.Optional()])
     pallet = StringField('Identity of pallet', [validators.Optional()])
+    components = TextAreaField('Components', [validators.Optional()])
     info = TextAreaField('Info', [validators.Optional()])
     serial_number = StringField('Seria Number', [validators.Optional()])
     model = StringField('Model', [validators.Optional()])
@@ -392,6 +393,7 @@ class NewDeviceForm(FlaskForm):
         self.phid.data = self._obj.placeholder.phid
         self.pallet.data = self._obj.placeholder.pallet
         self.info.data = self._obj.placeholder.info
+        self.components.data = self._obj.placeholder.components
         self.serial_number.data = self._obj.serial_number
         self.model.data = self._obj.model
         self.manufacturer.data = self._obj.manufacturer
@@ -420,6 +422,7 @@ class NewDeviceForm(FlaskForm):
             self.id_device_supplier.render_kw = disabled
             self.pallet.render_kw = disabled
             self.info.render_kw = disabled
+            self.components.render_kw = disabled
             self.serial_number.render_kw = disabled
             self.model.render_kw = disabled
             self.manufacturer.render_kw = disabled
@@ -595,6 +598,7 @@ class NewDeviceForm(FlaskForm):
                 'phid': self.phid.data or None,
                 'id_device_supplier': self.id_device_supplier.data,
                 'info': self.info.data,
+                'components': self.components.data,
                 'pallet': self.pallet.data,
                 'is_abstract': False,
             }
@@ -608,6 +612,7 @@ class NewDeviceForm(FlaskForm):
                 self.id_device_supplier.data or None
             )
             self._obj.placeholder.info = self.info.data or None
+            self._obj.placeholder.components = self.components.data or None
             self._obj.placeholder.pallet = self.pallet.data or None
             self._obj.model = self.model.data
             self._obj.manufacturer = self.manufacturer.data
@@ -1662,8 +1667,8 @@ class BindingForm(FlaskForm):
             self.phid.errors = [txt]
             return False
 
-        if self.device.placeholder:
-            txt = "This is not a device Workbench."
+        if self.device.is_abstract() != 'Abstract':
+            txt = "This is not a abstract device."
             self.phid.errors = [txt]
             return False
 

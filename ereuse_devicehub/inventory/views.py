@@ -191,6 +191,14 @@ class BindingView(GenericMixin):
             .one()
         )
 
+        if device.is_abstract() != 'Abstract':
+            next_url = url_for('inventory.device_details', id=dhid)
+            messages.error('Device "{}" not is a Abstract device!'.format(dhid))
+            return flask.redirect(next_url)
+
+        if device.placeholder:
+            device = device.placeholder.binding
+
         if request.method == 'POST':
             old_placeholder = device.binding
             old_device_placeholder = old_placeholder.device

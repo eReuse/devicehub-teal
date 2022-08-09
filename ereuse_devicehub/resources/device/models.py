@@ -667,13 +667,18 @@ class Device(Thing):
             action.functionality_range = value
 
     def is_abstract(self):
-        if not self.placeholder:
-            return ''
-        if self.placeholder.is_abstract:
-            return 'Abstract'
-        if self.placeholder.binding:
+        if self.placeholder:
+            if self.placeholder.is_abstract:
+                return 'Abstract'
+            if self.placeholder.binding:
+                return 'Twin'
+            return 'Real'
+        if self.binding:
+            if self.binding.is_abstract:
+                return 'Abstract'
             return 'Twin'
-        return 'Real'
+
+        return ''
 
     def is_status(self, action):
         from ereuse_devicehub.resources.device import states
@@ -878,6 +883,7 @@ class Placeholder(Thing):
     phid = Column(Unicode(), nullable=False, default=create_phid)
     pallet.comment = "used for identification where from where is this placeholders"
     info = db.Column(CIText())
+    components = Column(CIText())
     info.comment = "more info of placeholders"
     is_abstract = db.Column(Boolean, default=False)
     id_device_supplier = db.Column(CIText())
