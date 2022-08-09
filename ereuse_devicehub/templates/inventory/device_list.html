@@ -402,7 +402,7 @@
                       <th scope="col">Title</th>
                       <th scope="col">DHID</th>
                       <th scope="col">PHID</th>
-                      <th scope="col">Is Abstract</th>
+                      <th scope="col">Type</th>
                       <th scope="col">Unique Identifiers</th>
                       <th scope="col">Lifecycle Status</th>
                       <th scope="col">Allocated Status</th>
@@ -448,7 +448,7 @@
                           {{ dev.binding and dev.binding.phid or dev.placeholder and dev.placeholder.phid  or '' }}
                       </td>
                       <td>
-                          {{ dev.binding and dev.binding.is_abstract and '✓' or dev.placeholder and dev.placeholder.is_abstract and '✓' or '' }}
+                          {{ dev.is_abstract() }}
                       </td>
                       <td>
                         {% for t in dev.tags | sort(attribute="id") %}

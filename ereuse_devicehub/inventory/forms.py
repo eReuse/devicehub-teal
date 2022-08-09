@@ -317,6 +317,7 @@ class NewDeviceForm(FlaskForm):
     id_device_supplier = StringField('Id Supplier', [validators.Optional()])
     phid = StringField('Placeholder Hardware identity (Phid)', [validators.Optional()])
     pallet = StringField('Identity of pallet', [validators.Optional()])
+    components = TextAreaField('Components', [validators.Optional()])
     info = TextAreaField('Info', [validators.Optional()])
     serial_number = StringField('Seria Number', [validators.Optional()])
     model = StringField('Model', [validators.Optional()])
@@ -392,6 +393,7 @@ class NewDeviceForm(FlaskForm):
         self.phid.data = self._obj.placeholder.phid
         self.pallet.data = self._obj.placeholder.pallet
         self.info.data = self._obj.placeholder.info
+        self.components.data = self._obj.placeholder.components
         self.serial_number.data = self._obj.serial_number
         self.model.data = self._obj.model
         self.manufacturer.data = self._obj.manufacturer
@@ -413,6 +415,35 @@ class NewDeviceForm(FlaskForm):
         if self._obj.type == 'ComputerMonitor':
             self.resolution.data = self._obj.resolution_width
             self.screen.data = self._obj.size
+
+        if self._obj.placeholder.is_abstract:
+            self.type.render_kw = disabled
+            self.amount.render_kw = disabled
+            self.id_device_supplier.render_kw = disabled
+            self.pallet.render_kw = disabled
+            self.info.render_kw = disabled
+            self.components.render_kw = disabled
+            self.serial_number.render_kw = disabled
+            self.model.render_kw = disabled
+            self.manufacturer.render_kw = disabled
+            self.appearance.render_kw = disabled
+            self.functionality.render_kw = disabled
+            self.brand.render_kw = disabled
+            self.generation.render_kw = disabled
+            self.version.render_kw = disabled
+            self.weight.render_kw = disabled
+            self.width.render_kw = disabled
+            self.height.render_kw = disabled
+            self.depth.render_kw = disabled
+            self.variant.render_kw = disabled
+            self.sku.render_kw = disabled
+            self.image.render_kw = disabled
+            if self._obj.type in ['Smartphone', 'Tablet', 'Cellphone']:
+                self.imei.render_kw = disabled
+                self.meid.render_kw = disabled
+            if self._obj.type == 'ComputerMonitor':
+                self.resolution.render_kw = disabled
+                self.screen.render_kw = disabled
 
     def validate(self, extra_validators=None):  # noqa: C901
         error = ["Not a correct value"]
@@ -567,6 +598,7 @@ class NewDeviceForm(FlaskForm):
                 'phid': self.phid.data or None,
                 'id_device_supplier': self.id_device_supplier.data,
                 'info': self.info.data,
+                'components': self.components.data,
                 'pallet': self.pallet.data,
                 'is_abstract': False,
             }
@@ -575,40 +607,47 @@ class NewDeviceForm(FlaskForm):
 
     def edit_device(self):
         self._obj.placeholder.phid = self.phid.data or self._obj.placeholder.phid
-        self._obj.placeholder.id_device_supplier = self.id_device_supplier.data or None
-        self._obj.placeholder.info = self.info.data or None
-        self._obj.placeholder.pallet = self.pallet.data or None
-        self._obj.placeholder.is_abstract = False
-        self._obj.model = self.model.data
-        self._obj.manufacturer = self.manufacturer.data
-        self._obj.serial_number = self.serial_number.data
-        self._obj.brand = self.brand.data
-        self._obj.version = self.version.data
-        self._obj.generation = self.generation.data
-        self._obj.sku = self.sku.data
-        self._obj.weight = self.weight.data
-        self._obj.width = self.width.data
-        self._obj.height = self.height.data
-        self._obj.depth = self.depth.data
-        self._obj.variant = self.variant.data
-        self._obj.image = self.image.data
+        if not self._obj.placeholder.is_abstract:
+            self._obj.placeholder.id_device_supplier = (
+                self.id_device_supplier.data or None
+            )
+            self._obj.placeholder.info = self.info.data or None
+            self._obj.placeholder.components = self.components.data or None
+            self._obj.placeholder.pallet = self.pallet.data or None
+            self._obj.model = self.model.data
+            self._obj.manufacturer = self.manufacturer.data
+            self._obj.serial_number = self.serial_number.data
+            self._obj.brand = self.brand.data
+            self._obj.version = self.version.data
+            self._obj.generation = self.generation.data
+            self._obj.sku = self.sku.data
+            self._obj.weight = self.weight.data
+            self._obj.width = self.width.data
+            self._obj.height = self.height.data
+            self._obj.depth = self.depth.data
+            self._obj.variant = self.variant.data
+            self._obj.image = self.image.data
 
-        if self._obj.type == 'ComputerMonitor':
-            self._obj.resolution_width = self.resolution.data
-            self._obj.size = self.screen.data
+            if self._obj.type == 'ComputerMonitor':
+                self._obj.resolution_width = self.resolution.data
+                self._obj.size = self.screen.data
 
-        if self._obj.type in ['Smartphone', 'Tablet', 'Cellphone']:
-            self._obj.imei = self.imei.data
-            self._obj.meid = self.meid.data
+            if self._obj.type in ['Smartphone', 'Tablet', 'Cellphone']:
+                self._obj.imei = self.imei.data
+                self._obj.meid = self.meid.data
 
-        if self.appearance.data and self.appearance.data != self._obj.appearance().name:
-            self._obj.set_appearance(self.appearance.data)
+            if (
+                self.appearance.data
+                and self.appearance.data != self._obj.appearance().name
+            ):
+                self._obj.set_appearance(self.appearance.data)
 
-        if (
-            self.functionality.data
-            and self.functionality.data != self._obj.functionality().name
-        ):
-            self._obj.set_functionality(self.functionality.data)
+            if (
+                self.functionality.data
+                and self.functionality.data != self._obj.functionality().name
+            ):
+                self._obj.set_functionality(self.functionality.data)
+
         placeholder_log = PlaceholdersLog(
             type="Update", source='Web form', placeholder=self._obj.placeholder
         )
@@ -1519,6 +1558,7 @@ class UploadPlaceholderForm(FlaskForm):
         self.path_snapshots = {}
         for i in data['Phid'].keys():
             placeholder = None
+            data['Phid'][i] = str(data['Phid'][i])
             if data['Phid'][i]:
                 placeholder = Placeholder.query.filter_by(phid=data['Phid'][i]).first()
 
@@ -1627,14 +1667,14 @@ class BindingForm(FlaskForm):
             self.phid.errors = [txt]
             return False
 
-        if self.device.placeholder:
-            txt = "This is not a device Workbench."
+        if self.device.is_abstract() != 'Abstract':
+            txt = "This is not a abstract device."
             self.phid.errors = [txt]
             return False
 
         if not self.placeholder:
             self.placeholder = Placeholder.query.filter(
-                Placeholder.phid == self.phid.data, Placeholder.owner == g.user
+                Placeholder.phid == self.phid.data.strip(), Placeholder.owner == g.user
             ).first()
 
         if not self.placeholder:

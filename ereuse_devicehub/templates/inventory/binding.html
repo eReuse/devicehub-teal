@@ -139,7 +139,7 @@
 
                   <br />
 
-                  {% if placeholder.device.actions or device.actions %}
+                  {% if actions %}
                   <h2>Actions</h2>
                   <table class="table table-hover">
                       <thead>
@@ -151,14 +151,36 @@
                       <tbody>
                           <tr>
                               <td class="table-success text-right">
-                                  {% for a in placeholder.device.actions %}
+                                  {% for a in actions %}
                                   * {{ a.t }}<br />
                                   {% endfor %}
                               </td>
                               <td class="table-danger">
-                                  {% for a in device.actions %}
-                                  * {{ a.t }}<br />
+                              </td>
+                          </tr>
+                      </tbody>
+                  </table>
+                  {% endif %}
+
+                  <br />
+
+                  {% if tags %}
+                  <h2>Tags</h2>
+                  <table class="table table-hover">
+                      <thead>
+                          <tr class="text-center">
+                              <th scope="col">Info to be Entered</th>
+                              <th scope="col">Info to be Decoupled</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr>
+                              <td class="table-success text-right">
+                                  {% for tag in tags %}
+                                  * {{ tag.id }}<br />
                                   {% endfor %}
+                              </td>
+                              <td class="table-danger">
                               </td>
                           </tr>
                       </tbody>

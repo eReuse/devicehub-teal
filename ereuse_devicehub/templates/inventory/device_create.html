@@ -142,6 +142,19 @@
                       {% endif %}
                     </div>
 
+                    <div class="form-group mb-2">
+                      <label for="label" class="form-label">{{ form.components.label }}</label>
+                      {{ form.components(class_="form-control") }}
+                      <small class="text-muted form-text">Description of components</small>
+                      {% if form.components.errors %}
+                      <p class="text-danger">
+                        {% for error in form.components.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
+                    </div>
+
                     <div class="from-group has-validation mb-2" id="Serial_number">
                       <label for="serialNumber" class="form-label">{{ form.serial_number.label }}</label>
                       {{ form.serial_number(class_="form-control") }}
