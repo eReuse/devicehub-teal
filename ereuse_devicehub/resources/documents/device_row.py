@@ -181,7 +181,6 @@ class BaseDeviceRow(OrderedDict):
         self['Test DataStorage 3 Power cycle count'] = ''
         self['Test DataStorage 3 Lifetime (days)'] = ''
         self['Test DataStorage 3 Power on hours'] = ''
-        self['DHID'] = ''
         self['DataStorage 4'] = ''
         self['DataStorage 4 Manufacturer'] = ''
         self['DataStorage 4 Model'] = ''
@@ -251,12 +250,24 @@ class BaseDeviceRow(OrderedDict):
         self['Data Storage Rate'] = ''
         self['Data Storage Range'] = ''
         self['Benchmark RamSysbench (points)'] = ''
+        # Placeholder
+        self['PHID'] = ''
+        self['Is Abstract'] = ''
+        self['Pallet'] = ''
+        self['id Supplier'] = ''
+        self['Real Info'] = ''
+        self['Real Components'] = ''
+        self['Real Type'] = ''
+        self['Real Serial Number'] = ''
+        self['Real Model'] = ''
+        self['Real Manufacturer'] = ''
 
 
 class DeviceRow(BaseDeviceRow):
     def __init__(self, device: d.Device, document_ids: dict) -> None:
         super().__init__()
-        self.device = device
+        self.placeholder = device.binding or device.placeholder
+        self.device = self.placeholder.binding or self.placeholder.device
         self.document_id = document_ids.get(device.id, '')
         snapshot = get_action(device, 'Snapshot')
         software = ''
@@ -324,6 +335,8 @@ class DeviceRow(BaseDeviceRow):
         benchram = get_action(device, 'BenchmarkRamSysbench')
         if benchram:
             self['Benchmark RamSysbench (points)'] = none2str(benchram.rate)
+
+        self.get_placeholder_datas()
 
     def components(self):
         """Function to get all components information of a device."""
@@ -488,6 +501,19 @@ class DeviceRow(BaseDeviceRow):
         """Particular fields for component GraphicCard."""
         if component:
             self['{} {} Memory (MB)'.format(ctype, i)] = none2str(component.memory)
+
+    def get_placeholder_datas(self):
+        # Placeholder
+        self['PHID'] = none2str(self.placeholder.phid)
+        self['Is Abstract'] = none2str(self.device.is_abstract())
+        self['Pallet'] = none2str(self.placeholder.pallet)
+        self['id Supplier'] = none2str(self.placeholder.id_device_supplier)
+        self['Real Info'] = none2str(self.placeholder.info)
+        self['Real Components'] = none2str(self.placeholder.components)
+        self['Real Type'] = none2str(self.placeholder.device.type)
+        self['Real Manufacturer'] = none2str(self.placeholder.device.manufacturer)
+        self['Real Model'] = none2str(self.placeholder.device.model)
+        self['Real Serial Number'] = none2str(self.placeholder.device.serial_number)
 
 
 class StockRow(OrderedDict):
