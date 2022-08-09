@@ -1592,7 +1592,6 @@ def test_export_lots(user3: UserClientFlask):
     ).open() as csv_file:
         fixture_csv = [line.split(";") for line in csv_file.read().split("\n")]
 
-
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert fixture_csv[1][1:] == export_csv[1][1:], 'Computer information are not equal'
     UUID(export_csv[1][0].replace('"', ''))
@@ -2041,7 +2040,10 @@ def test_manual_binding(user3: UserClientFlask):
     user3.get(uri)
 
     assert dev_wb.binding.is_abstract is True
-    assert dev_wb.hid == 'laptop-asustek_computer_inc-1001pxd-b8oaas048285-14:da:e9:42:f6:7b'
+    assert (
+        dev_wb.hid
+        == 'laptop-asustek_computer_inc-1001pxd-b8oaas048285-14:da:e9:42:f6:7b'
+    )
     assert dev_wb.binding.phid == '11'
     old_placeholder = dev_wb.binding
 
@@ -2109,7 +2111,7 @@ def test_edit_and_binding(user3: UserClientFlask):
     }
     assert dev_wb.binding.is_abstract is True
     user3.post(uri, data=data)
-    assert dev_wb.binding.is_abstract is False
+    assert dev_wb.binding.is_abstract is True
 
 
 @pytest.mark.mvp
