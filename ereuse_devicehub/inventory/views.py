@@ -198,6 +198,7 @@ class BindingView(GenericMixin):
 
         if device.placeholder:
             device = device.placeholder.binding
+            dhid = device.devicehub_id
 
         if request.method == 'POST':
             old_placeholder = device.binding
@@ -216,9 +217,10 @@ class BindingView(GenericMixin):
                         if act.device == old_device_placeholder:
                             db.session.delete(act)
 
-                db.session.delete(old_device_placeholder)
                 for tag in list(old_device_placeholder.tags):
                     tag.device = placeholder.device
+
+                db.session.delete(old_device_placeholder)
 
             device.binding = placeholder
             db.session.commit()
