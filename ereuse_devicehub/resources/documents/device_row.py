@@ -4,12 +4,7 @@ from collections import OrderedDict
 
 from flask import url_for
 
-from ereuse_devicehub.resources.action import models as da
-from ereuse_devicehub.resources.action.models import (
-    BenchmarkDataStorage,
-    RateComputer,
-    TestDataStorage,
-)
+from ereuse_devicehub.resources.action.models import RateComputer
 from ereuse_devicehub.resources.device import models as d
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.enums import Severity
