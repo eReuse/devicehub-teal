@@ -37,7 +37,7 @@ from ereuse_devicehub.inventory.forms import (
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
 from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
-from ereuse_devicehub.resources.action.models import ActionDevice, Trade
+from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.device.models import (
     Computer,
     DataStorage,
