@@ -265,6 +265,12 @@ class UnBindingView(GenericMixin):
 
         device = placeholder.binding
 
+        if device.is_abstract() != 'Twin':
+            dhid = device.devicehub_id
+            next_url = url_for('inventory.device_details', id=dhid)
+            messages.error('Device "{}" not is a Abstract device!'.format(dhid))
+            return flask.redirect(next_url)
+
         self.get_context()
 
         if request.method == 'POST':
