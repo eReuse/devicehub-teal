@@ -5,6 +5,7 @@ Revises: 2b90b41a556a
 Create Date: 2022-07-27 14:40:15.513820
 
 """
+import citext
 import sqlalchemy as sa
 from alembic import context, op
 from sqlalchemy.dialects import postgresql
@@ -43,6 +44,11 @@ def upgrade():
     )
     op.add_column(
         'placeholder',
+        sa.Column('components', citext.CIText(), nullable=True),
+        schema=f'{get_inv()}',
+    )
+    op.add_column(
+        'placeholder',
         sa.Column('owner_id', postgresql.UUID(), nullable=True),
         schema=f'{get_inv()}',
     )
@@ -69,3 +75,4 @@ def downgrade():
     )
     op.drop_column('placeholder', 'owner_id', schema=f'{get_inv()}')
     op.drop_column('placeholder', 'is_abstract', schema=f'{get_inv()}')
+    op.drop_column('placeholder', 'components', schema=f'{get_inv()}')
