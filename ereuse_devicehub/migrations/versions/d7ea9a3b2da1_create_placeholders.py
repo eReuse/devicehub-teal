@@ -63,6 +63,9 @@ def clone_device(device):
 
     if device.type == "Battery":
         device.size
+
+    old_devicehub_id = device.devicehub_id
+
     dict_device = copy.copy(device.__dict__)
     dict_device.pop('_sa_instance_state')
     dict_device.pop('id', None)
@@ -73,6 +76,8 @@ def clone_device(device):
     dict_device.pop('tags', None)
     dict_device.pop('system_uuid', None)
     new_device = device.__class__(**dict_device)
+    new_device.devicehub_id = old_devicehub_id
+    device.devicehub_id = None
     db.session.add(new_device)
 
     if hasattr(device, 'components'):
