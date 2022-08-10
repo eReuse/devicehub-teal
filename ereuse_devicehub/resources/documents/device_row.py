@@ -4,18 +4,13 @@ from collections import OrderedDict
 
 from flask import url_for
 
-from ereuse_devicehub.resources.action import models as da
-from ereuse_devicehub.resources.action.models import (
-    BenchmarkDataStorage,
-    RateComputer,
-    TestDataStorage,
-)
+from ereuse_devicehub.resources.action.models import RateComputer
 from ereuse_devicehub.resources.device import models as d
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.enums import Severity
 
 
-class DeviceRow(OrderedDict):
+class BaseDeviceRow(OrderedDict):
     NUMS = {
         d.Display.t: 1,
         d.Processor.t: 2,
@@ -37,9 +32,242 @@ class DeviceRow(OrderedDict):
         d.SoundCard.t,
     ]
 
+    def __init__(self) -> None:
+        super().__init__()
+        self['DHID'] = ''
+        self['DocumentID'] = ''
+        self['Public Link'] = ''
+        self['Lots'] = ''
+        self['Tag 1 Type'] = ''
+        self['Tag 1 ID'] = ''
+        self['Tag 1 Organization'] = ''
+        self['Tag 2 Type'] = ''
+        self['Tag 2 ID'] = ''
+        self['Tag 2 Organization'] = ''
+        self['Tag 3 Type'] = ''
+        self['Tag 3 ID'] = ''
+        self['Tag 3 Organization'] = ''
+        self['Device Hardware ID'] = ''
+        self['Device Type'] = ''
+        self['Device Chassis'] = ''
+        self['Device Serial Number'] = ''
+        self['Device Model'] = ''
+        self['Device Manufacturer'] = ''
+        self['Registered in'] = ''
+        self['Registered (process)'] = ''
+        self['Updated in (software)'] = ''
+        self['Updated in (web)'] = ''
+        self['Physical state'] = ''
+        self['Allocate state'] = ''
+        self['Lifecycle state'] = ''
+        self['Processor'] = ''
+        self['RAM (MB)'] = ''
+        self['Data Storage Size (MB)'] = ''
+        self['Processor 1'] = ''
+        self['Processor 1 Manufacturer'] = ''
+        self['Processor 1 Model'] = ''
+        self['Processor 1 Serial Number'] = ''
+        self['Processor 1 Number of cores'] = ''
+        self['Processor 1 Speed (GHz)'] = ''
+        self['Benchmark Processor 1 (points)'] = ''
+        self['Benchmark ProcessorSysbench Processor 1 (points)'] = ''
+        self['Processor 2'] = ''
+        self['Processor 2 Manufacturer'] = ''
+        self['Processor 2 Model'] = ''
+        self['Processor 2 Serial Number'] = ''
+        self['Processor 2 Number of cores'] = ''
+        self['Processor 2 Speed (GHz)'] = ''
+        self['Benchmark Processor 2 (points)'] = ''
+        self['Benchmark ProcessorSysbench Processor 2 (points)'] = ''
+        self['RamModule 1'] = ''
+        self['RamModule 1 Manufacturer'] = ''
+        self['RamModule 1 Model'] = ''
+        self['RamModule 1 Serial Number'] = ''
+        self['RamModule 1 Size (MB)'] = ''
+        self['RamModule 1 Speed (MHz)'] = ''
+        self['RamModule 2'] = ''
+        self['RamModule 2 Manufacturer'] = ''
+        self['RamModule 2 Model'] = ''
+        self['RamModule 2 Serial Number'] = ''
+        self['RamModule 2 Size (MB)'] = ''
+        self['RamModule 2 Speed (MHz)'] = ''
+        self['RamModule 3'] = ''
+        self['RamModule 3 Manufacturer'] = ''
+        self['RamModule 3 Model'] = ''
+        self['RamModule 3 Serial Number'] = ''
+        self['RamModule 3 Size (MB)'] = ''
+        self['RamModule 3 Speed (MHz)'] = ''
+        self['RamModule 4'] = ''
+        self['RamModule 4 Manufacturer'] = ''
+        self['RamModule 4 Model'] = ''
+        self['RamModule 4 Serial Number'] = ''
+        self['RamModule 4 Size (MB)'] = ''
+        self['RamModule 4 Speed (MHz)'] = ''
+        self['DataStorage 1'] = ''
+        self['DataStorage 1 Manufacturer'] = ''
+        self['DataStorage 1 Model'] = ''
+        self['DataStorage 1 Serial Number'] = ''
+        self['DataStorage 1 Size (MB)'] = ''
+        self['Erasure DataStorage 1'] = ''
+        self['Erasure DataStorage 1 Serial Number'] = ''
+        self['Erasure DataStorage 1 Size (MB)'] = ''
+        self['Erasure DataStorage 1 Software'] = ''
+        self['Erasure DataStorage 1 Result'] = ''
+        self['Erasure DataStorage 1 Certificate URL'] = ''
+        self['Erasure DataStorage 1 Type'] = ''
+        self['Erasure DataStorage 1 Method'] = ''
+        self['Erasure DataStorage 1 Elapsed (hours)'] = ''
+        self['Erasure DataStorage 1 Date'] = ''
+        self['Erasure DataStorage 1 Steps'] = ''
+        self['Erasure DataStorage 1 Steps Start Time'] = ''
+        self['Erasure DataStorage 1 Steps End Time'] = ''
+        self['Benchmark DataStorage 1 Read Speed (MB/s)'] = ''
+        self['Benchmark DataStorage 1 Writing speed (MB/s)'] = ''
+        self['Test DataStorage 1 Software'] = ''
+        self['Test DataStorage 1 Type'] = ''
+        self['Test DataStorage 1 Result'] = ''
+        self['Test DataStorage 1 Power cycle count'] = ''
+        self['Test DataStorage 1 Lifetime (days)'] = ''
+        self['Test DataStorage 1 Power on hours'] = ''
+        self['DataStorage 2'] = ''
+        self['DataStorage 2 Manufacturer'] = ''
+        self['DataStorage 2 Model'] = ''
+        self['DataStorage 2 Serial Number'] = ''
+        self['DataStorage 2 Size (MB)'] = ''
+        self['Erasure DataStorage 2'] = ''
+        self['Erasure DataStorage 2 Serial Number'] = ''
+        self['Erasure DataStorage 2 Size (MB)'] = ''
+        self['Erasure DataStorage 2 Software'] = ''
+        self['Erasure DataStorage 2 Result'] = ''
+        self['Erasure DataStorage 2 Certificate URL'] = ''
+        self['Erasure DataStorage 2 Type'] = ''
+        self['Erasure DataStorage 2 Method'] = ''
+        self['Erasure DataStorage 2 Elapsed (hours)'] = ''
+        self['Erasure DataStorage 2 Date'] = ''
+        self['Erasure DataStorage 2 Steps'] = ''
+        self['Erasure DataStorage 2 Steps Start Time'] = ''
+        self['Erasure DataStorage 2 Steps End Time'] = ''
+        self['Benchmark DataStorage 2 Read Speed (MB/s)'] = ''
+        self['Benchmark DataStorage 2 Writing speed (MB/s)'] = ''
+        self['Test DataStorage 2 Software'] = ''
+        self['Test DataStorage 2 Type'] = ''
+        self['Test DataStorage 2 Result'] = ''
+        self['Test DataStorage 2 Power cycle count'] = ''
+        self['Test DataStorage 2 Lifetime (days)'] = ''
+        self['Test DataStorage 2 Power on hours'] = ''
+        self['DataStorage 3'] = ''
+        self['DataStorage 3 Manufacturer'] = ''
+        self['DataStorage 3 Model'] = ''
+        self['DataStorage 3 Serial Number'] = ''
+        self['DataStorage 3 Size (MB)'] = ''
+        self['Erasure DataStorage 3'] = ''
+        self['Erasure DataStorage 3 Serial Number'] = ''
+        self['Erasure DataStorage 3 Size (MB)'] = ''
+        self['Erasure DataStorage 3 Software'] = ''
+        self['Erasure DataStorage 3 Result'] = ''
+        self['Erasure DataStorage 3 Certificate URL'] = ''
+        self['Erasure DataStorage 3 Type'] = ''
+        self['Erasure DataStorage 3 Method'] = ''
+        self['Erasure DataStorage 3 Elapsed (hours)'] = ''
+        self['Erasure DataStorage 3 Date'] = ''
+        self['Erasure DataStorage 3 Steps'] = ''
+        self['Erasure DataStorage 3 Steps Start Time'] = ''
+        self['Erasure DataStorage 3 Steps End Time'] = ''
+        self['Benchmark DataStorage 3 Read Speed (MB/s)'] = ''
+        self['Benchmark DataStorage 3 Writing speed (MB/s)'] = ''
+        self['Test DataStorage 3 Software'] = ''
+        self['Test DataStorage 3 Type'] = ''
+        self['Test DataStorage 3 Result'] = ''
+        self['Test DataStorage 3 Power cycle count'] = ''
+        self['Test DataStorage 3 Lifetime (days)'] = ''
+        self['Test DataStorage 3 Power on hours'] = ''
+        self['DataStorage 4'] = ''
+        self['DataStorage 4 Manufacturer'] = ''
+        self['DataStorage 4 Model'] = ''
+        self['DataStorage 4 Serial Number'] = ''
+        self['DataStorage 4 Size (MB)'] = ''
+        self['Erasure DataStorage 4'] = ''
+        self['Erasure DataStorage 4 Serial Number'] = ''
+        self['Erasure DataStorage 4 Size (MB)'] = ''
+        self['Erasure DataStorage 4 Software'] = ''
+        self['Erasure DataStorage 4 Result'] = ''
+        self['Erasure DataStorage 4 Certificate URL'] = ''
+        self['Erasure DataStorage 4 Type'] = ''
+        self['Erasure DataStorage 4 Method'] = ''
+        self['Erasure DataStorage 4 Elapsed (hours)'] = ''
+        self['Erasure DataStorage 4 Date'] = ''
+        self['Erasure DataStorage 4 Steps'] = ''
+        self['Erasure DataStorage 4 Steps Start Time'] = ''
+        self['Erasure DataStorage 4 Steps End Time'] = ''
+        self['Benchmark DataStorage 4 Read Speed (MB/s)'] = ''
+        self['Benchmark DataStorage 4 Writing speed (MB/s)'] = ''
+        self['Test DataStorage 4 Software'] = ''
+        self['Test DataStorage 4 Type'] = ''
+        self['Test DataStorage 4 Result'] = ''
+        self['Test DataStorage 4 Power cycle count'] = ''
+        self['Test DataStorage 4 Lifetime (days)'] = ''
+        self['Test DataStorage 4 Power on hours'] = ''
+        self['Motherboard 1'] = ''
+        self['Motherboard 1 Manufacturer'] = ''
+        self['Motherboard 1 Model'] = ''
+        self['Motherboard 1 Serial Number'] = ''
+        self['Display 1'] = ''
+        self['Display 1 Manufacturer'] = ''
+        self['Display 1 Model'] = ''
+        self['Display 1 Serial Number'] = ''
+        self['GraphicCard 1'] = ''
+        self['GraphicCard 1 Manufacturer'] = ''
+        self['GraphicCard 1 Model'] = ''
+        self['GraphicCard 1 Serial Number'] = ''
+        self['GraphicCard 1 Memory (MB)'] = ''
+        self['GraphicCard 2'] = ''
+        self['GraphicCard 2 Manufacturer'] = ''
+        self['GraphicCard 2 Model'] = ''
+        self['GraphicCard 2 Serial Number'] = ''
+        self['GraphicCard 2 Memory (MB)'] = ''
+        self['NetworkAdapter 1'] = ''
+        self['NetworkAdapter 1 Manufacturer'] = ''
+        self['NetworkAdapter 1 Model'] = ''
+        self['NetworkAdapter 1 Serial Number'] = ''
+        self['NetworkAdapter 2'] = ''
+        self['NetworkAdapter 2 Manufacturer'] = ''
+        self['NetworkAdapter 2 Model'] = ''
+        self['NetworkAdapter 2 Serial Number'] = ''
+        self['SoundCard 1'] = ''
+        self['SoundCard 1 Manufacturer'] = ''
+        self['SoundCard 1 Model'] = ''
+        self['SoundCard 1 Serial Number'] = ''
+        self['SoundCard 2'] = ''
+        self['SoundCard 2 Manufacturer'] = ''
+        self['SoundCard 2 Model'] = ''
+        self['SoundCard 2 Serial Number'] = ''
+        self['Device Rate'] = ''
+        self['Device Range'] = ''
+        self['Processor Rate'] = ''
+        self['Processor Range'] = ''
+        self['RAM Rate'] = ''
+        self['RAM Range'] = ''
+        self['Data Storage Rate'] = ''
+        self['Data Storage Range'] = ''
+        self['Benchmark RamSysbench (points)'] = ''
+        # Placeholder
+        self['PHID'] = ''
+        self['Is Abstract'] = ''
+        self['Pallet'] = ''
+        self['id Supplier'] = ''
+        self['Real Info'] = ''
+        self['Real Components'] = ''
+        self['Real Type'] = ''
+        self['Real Serial Number'] = ''
+        self['Real Model'] = ''
+        self['Real Manufacturer'] = ''
+
+
+class DeviceRow(BaseDeviceRow):
     def __init__(self, device: d.Device, document_ids: dict) -> None:
         super().__init__()
-        self.device = device
+        self.placeholder = device.binding or device.placeholder
+        self.device = self.placeholder.binding or self.placeholder.device
         self.document_id = document_ids.get(device.id, '')
         snapshot = get_action(device, 'Snapshot')
         software = ''
@@ -54,9 +282,6 @@ class DeviceRow(OrderedDict):
             url=url_for('Device.main', _external=True), id=device.devicehub_id
         )
         self['Lots'] = ', '.join([x.name for x in self.device.lots])
-        self['Tag 1 Type'] = self['Tag 1 ID'] = self['Tag 1 Organization'] = ''
-        self['Tag 2 Type'] = self['Tag 2 ID'] = self['Tag 2 Organization'] = ''
-        self['Tag 3 Type'] = self['Tag 3 ID'] = self['Tag 3 Organization'] = ''
         for i, tag in zip(range(1, 3), device.tags):
             self['Tag {} Type'.format(i)] = 'unamed' if tag.provider else 'named'
             self['Tag {} ID'.format(i)] = tag.id
@@ -64,7 +289,6 @@ class DeviceRow(OrderedDict):
 
         self['Device Hardware ID'] = device.hid
         self['Device Type'] = device.t
-        self['Device Chassis'] = ''
         if isinstance(device, d.Computer) and not device.placeholder:
             self['Device Chassis'] = device.chassis.name
         self['Device Serial Number'] = none2str(device.serial_number)
@@ -73,20 +297,18 @@ class DeviceRow(OrderedDict):
         self['Registered in'] = format(device.created, '%c')
         self['Registered (process)'] = software
         self['Updated in (software)'] = device.updated
-        self['Updated in (web)'] = ''
 
-        self['Physical state'] = ''
         if device.physical_status:
             self['Physical state'] = device.physical_status.type
 
-        self['Allocate state'] = ''
         if device.allocated_status:
             self['Allocate state'] = device.allocated_status.type
 
         try:
             self['Lifecycle state'] = device.last_action_of(*states.Status.actions()).t
         except LookupError:
-            self['Lifecycle state'] = ''
+            pass
+
         if isinstance(device, d.Computer):
             self['Processor'] = none2str(device.processor_model)
             self['RAM (MB)'] = none2str(device.ram_size)
@@ -109,21 +331,12 @@ class DeviceRow(OrderedDict):
             self['RAM Range'] = rate.ram_range.name
             self['Data Storage Rate'] = rate.data_storage
             self['Data Storage Range'] = rate.data_storage_range.name
-        else:
-            self['Device Rate'] = ''
-            self['Device Range'] = ''
-            self['Processor Rate'] = ''
-            self['Processor Range'] = ''
-            self['RAM Rate'] = ''
-            self['RAM Range'] = ''
-            self['Data Storage Rate'] = ''
-            self['Data Storage Range'] = ''
 
         benchram = get_action(device, 'BenchmarkRamSysbench')
         if benchram:
             self['Benchmark RamSysbench (points)'] = none2str(benchram.rate)
-        else:
-            self['Benchmark RamSysbench (points)'] = ''
+
+        self.get_placeholder_datas()
 
     def components(self):
         """Function to get all components information of a device."""
@@ -151,11 +364,7 @@ class DeviceRow(OrderedDict):
         """
         # Basic fields for all components
         self['{} {}'.format(ctype, i)] = format(component) if component else ''
-        if component is None:
-            self['{} {} Manufacturer'.format(ctype, i)] = ''
-            self['{} {} Model'.format(ctype, i)] = ''
-            self['{} {} Serial Number'.format(ctype, i)] = ''
-        else:
+        if component:
             self['{} {} Manufacturer'.format(ctype, i)] = none2str(
                 component.manufacturer
             )
@@ -179,34 +388,24 @@ class DeviceRow(OrderedDict):
     def get_processor(self, ctype, i, component):
         """Particular fields for component Processor."""
         if component is None:
-            self['{} {} Number of cores'.format(ctype, i)] = ''
-            self['{} {} Speed (GHz)'.format(ctype, i)] = ''
-            self['Benchmark {} {} (points)'.format(ctype, i)] = ''
-            self['Benchmark ProcessorSysbench {} {} (points)'.format(ctype, i)] = ''
             return
 
         self['{} {} Number of cores'.format(ctype, i)] = none2str(component.cores)
         self['{} {} Speed (GHz)'.format(ctype, i)] = none2str(component.speed)
 
         benchmark = get_action(component, 'BenchmarkProcessor')
-        if not benchmark:
-            self['Benchmark {} {} (points)'.format(ctype, i)] = ''
-        else:
+        if benchmark:
             self['Benchmark {} {} (points)'.format(ctype, i)] = benchmark.rate
 
         sysbench = get_action(component, 'BenchmarkProcessorSysbench')
-        if not sysbench:
-            self['Benchmark ProcessorSysbench {} {} (points)'.format(ctype, i)] = ''
-            return
-        self[
-            'Benchmark ProcessorSysbench {} {} (points)'.format(ctype, i)
-        ] = sysbench.rate
+        if sysbench:
+            self[
+                'Benchmark ProcessorSysbench {} {} (points)'.format(ctype, i)
+            ] = sysbench.rate
 
     def get_ram(self, ctype, i, component):
         """Particular fields for component Ram Module."""
         if component is None:
-            self['{} {} Size (MB)'.format(ctype, i)] = ''
-            self['{} {} Speed (MHz)'.format(ctype, i)] = ''
             return
 
         self['{} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
@@ -218,32 +417,9 @@ class DeviceRow(OrderedDict):
         """
 
         if component is None:
-            self['{} {} Size (MB)'.format(ctype, i)] = ''
-            self['Erasure {} {}'.format(ctype, i)] = ''
-            self['Erasure {} {} Serial Number'.format(ctype, i)] = ''
-            self['Erasure {} {} Size (MB)'.format(ctype, i)] = ''
-            self['Erasure {} {} Software'.format(ctype, i)] = ''
-            self['Erasure {} {} Result'.format(ctype, i)] = ''
-            self['Erasure {} {} Certificate URL'.format(ctype, i)] = ''
-            self['Erasure {} {} Type'.format(ctype, i)] = ''
-            self['Erasure {} {} Method'.format(ctype, i)] = ''
-            self['Erasure {} {} Elapsed (hours)'.format(ctype, i)] = ''
-            self['Erasure {} {} Date'.format(ctype, i)] = ''
-            self['Erasure {} {} Steps'.format(ctype, i)] = ''
-            self['Erasure {} {} Steps Start Time'.format(ctype, i)] = ''
-            self['Erasure {} {} Steps End Time'.format(ctype, i)] = ''
-            self['Benchmark {} {} Read Speed (MB/s)'.format(ctype, i)] = ''
-            self['Benchmark {} {} Writing speed (MB/s)'.format(ctype, i)] = ''
-            self['Test {} {} Software'.format(ctype, i)] = ''
-            self['Test {} {} Type'.format(ctype, i)] = ''
-            self['Test {} {} Result'.format(ctype, i)] = ''
-            self['Test {} {} Power cycle count'.format(ctype, i)] = ''
-            self['Test {} {} Lifetime (days)'.format(ctype, i)] = ''
-            self['Test {} {} Power on hours'.format(ctype, i)] = ''
             return
 
         snapshot = get_action(component, 'Snapshot')
-        software = ''
         if snapshot:
             software = "{software} {version}".format(
                 software=snapshot.software.name, version=snapshot.version
@@ -263,16 +439,6 @@ class DeviceRow(OrderedDict):
             serial_number = none2str(component.serial_number)
             self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
             self['Erasure {} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
-            self['Erasure {} {} Software'.format(ctype, i)] = ''
-            self['Erasure {} {} Result'.format(ctype, i)] = ''
-            self['Erasure {} {} Certificate URL'.format(ctype, i)] = ''
-            self['Erasure {} {} Type'.format(ctype, i)] = ''
-            self['Erasure {} {} Method'.format(ctype, i)] = ''
-            self['Erasure {} {} Elapsed (hours)'.format(ctype, i)] = ''
-            self['Erasure {} {} Date'.format(ctype, i)] = ''
-            self['Erasure {} {} Steps'.format(ctype, i)] = ''
-            self['Erasure {} {} Steps Start Time'.format(ctype, i)] = ''
-            self['Erasure {} {} Steps End Time'.format(ctype, i)] = ''
         elif hasattr(erasure, 'type') and erasure.type == 'DataWipe':
             self['Erasure {} {}'.format(ctype, i)] = none2str(component.hid)
             serial_number = none2str(component.serial_number)
@@ -283,13 +449,6 @@ class DeviceRow(OrderedDict):
             self['Erasure {} {} Certificate URL'.format(ctype, i)] = (
                 erasure.document.url and erasure.document.url.to_text() or ''
             )
-            self['Erasure {} {} Type'.format(ctype, i)] = ''
-            self['Erasure {} {} Method'.format(ctype, i)] = ''
-            self['Erasure {} {} Elapsed (hours)'.format(ctype, i)] = ''
-            self['Erasure {} {} Date'.format(ctype, i)] = ''
-            self['Erasure {} {} Steps'.format(ctype, i)] = ''
-            self['Erasure {} {} Steps Start Time'.format(ctype, i)] = ''
-            self['Erasure {} {} Steps End Time'.format(ctype, i)] = ''
         else:
             self['Erasure {} {}'.format(ctype, i)] = none2str(component.hid)
             serial_number = none2str(component.serial_number)
@@ -299,7 +458,6 @@ class DeviceRow(OrderedDict):
 
             result = get_result(erasure)
             self['Erasure {} {} Result'.format(ctype, i)] = result
-            self['Erasure {} {} Certificate URL'.format(ctype, i)] = ''
             self['Erasure {} {} Type'.format(ctype, i)] = erasure.type
             self['Erasure {} {} Method'.format(ctype, i)] = erasure.method
             self['Erasure {} {} Elapsed (hours)'.format(ctype, i)] = format(
@@ -314,10 +472,7 @@ class DeviceRow(OrderedDict):
             self['Erasure {} {} Steps End Time'.format(ctype, i)] = steps_end_time
 
         benchmark = get_action(component, 'BenchmarkDataStorage')
-        if not benchmark:
-            self['Benchmark {} {} Read Speed (MB/s)'.format(ctype, i)] = ''
-            self['Benchmark {} {} Writing speed (MB/s)'.format(ctype, i)] = ''
-        else:
+        if benchmark:
             self['Benchmark {} {} Read Speed (MB/s)'.format(ctype, i)] = none2str(
                 benchmark.read_speed
             )
@@ -327,12 +482,6 @@ class DeviceRow(OrderedDict):
 
         test_storage = get_action(component, 'TestDataStorage')
         if not test_storage:
-            self['Test {} {} Software'.format(ctype, i)] = ''
-            self['Test {} {} Type'.format(ctype, i)] = ''
-            self['Test {} {} Result'.format(ctype, i)] = ''
-            self['Test {} {} Power cycle count'.format(ctype, i)] = ''
-            self['Test {} {} Lifetime (days)'.format(ctype, i)] = ''
-            self['Test {} {} Power on hours'.format(ctype, i)] = ''
             return
 
         self['Test {} {} Software'.format(ctype, i)] = software
@@ -350,11 +499,21 @@ class DeviceRow(OrderedDict):
 
     def get_graphic_card(self, ctype, i, component):
         """Particular fields for component GraphicCard."""
-        if component is None:
-            self['{} {} Memory (MB)'.format(ctype, i)] = ''
-            return
+        if component:
+            self['{} {} Memory (MB)'.format(ctype, i)] = none2str(component.memory)
 
-        self['{} {} Memory (MB)'.format(ctype, i)] = none2str(component.memory)
+    def get_placeholder_datas(self):
+        # Placeholder
+        self['PHID'] = none2str(self.placeholder.phid)
+        self['Is Abstract'] = none2str(self.device.is_abstract())
+        self['Pallet'] = none2str(self.placeholder.pallet)
+        self['id Supplier'] = none2str(self.placeholder.id_device_supplier)
+        self['Real Info'] = none2str(self.placeholder.info)
+        self['Real Components'] = none2str(self.placeholder.components)
+        self['Real Type'] = none2str(self.placeholder.device.type)
+        self['Real Manufacturer'] = none2str(self.placeholder.device.manufacturer)
+        self['Real Model'] = none2str(self.placeholder.device.model)
+        self['Real Serial Number'] = none2str(self.placeholder.device.serial_number)
 
 
 class StockRow(OrderedDict):
@@ -535,4 +694,3 @@ class InternalStatsRow(OrderedDict):
             12: 'Q4',
         }
         return q[int(month)]
-
