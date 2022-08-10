@@ -230,7 +230,6 @@ class BindingView(GenericMixin):
             )
             return flask.redirect(next_url)
 
-        # import pdb; pdb.set_trace()
         self.context.update(
             {
                 'device': device.binding.device,
