@@ -1667,8 +1667,8 @@ class BindingForm(FlaskForm):
             self.phid.errors = [txt]
             return False
 
-        if self.device.is_abstract() != 'Abstract':
-            txt = "This is not a abstract device."
+        if self.device.is_abstract() not in ['Abstract', 'Real']:
+            txt = "This is not a Abstract or Real device."
             self.phid.errors = [txt]
             return False
 
@@ -1682,7 +1682,7 @@ class BindingForm(FlaskForm):
             self.phid.errors = [txt]
             return False
 
-        if self.placeholder.binding:
+        if self.placeholder.status not in ['Abstract', 'Real']:
             txt = "This placeholder have a binding with other device. "
             txt += "Before you need to do an unbinding with this other device."
             self.phid.errors = [txt]

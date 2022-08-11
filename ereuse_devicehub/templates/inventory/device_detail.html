@@ -46,7 +46,7 @@
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#components">Components</button>
             </li>
 
-           {% if placeholder.status == 'Abstract' %}
+           {% if placeholder.status in ['Abstract', 'Real'] %}
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#binding">Binding</button>
             </li>
