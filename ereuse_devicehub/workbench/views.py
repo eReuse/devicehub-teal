@@ -72,6 +72,8 @@ class SettingsView(GenericMixin):
         if 'erease' in self.opt:
             url = "https://{}/actions/".format(app.config['HOST'])
             self.wbContext['url'] = url
+            self.wbContext['host'] = app.config['HOST']
+            self.wbContext['schema'] = app.config['SCHEMA']
             if self.opt == 'erease_basic':
                 self.wbContext['erease_basic'] = True
             if self.opt == 'erease_sectors':
