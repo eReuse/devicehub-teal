@@ -924,6 +924,17 @@ class Placeholder(Thing):
     )
     owner = db.relationship(User, primaryjoin=owner_id == User.id)
 
+    @property
+    def actions(self):
+        actions = list(self.device.actions) or []
+
+        if self.binding:
+            actions.extend(list(self.binding.actions))
+
+        actions = sorted(actions, key=lambda x: x.created)
+        actions.reverse()
+        return actions
+
 
 class Computer(Device):
     """A chassis with components inside that can be processed
