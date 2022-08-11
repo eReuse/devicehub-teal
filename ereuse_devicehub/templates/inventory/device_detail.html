@@ -46,13 +46,13 @@
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#components">Components</button>
             </li>
 
-           {% if device.is_abstract() == 'Abstract' %}
+           {% if placeholder.status == 'Abstract' %}
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#binding">Binding</button>
             </li>
             {% endif %}
 
-           {% if device.is_abstract() == 'Twin' %}
+           {% if placeholder.status == 'Twin' %}
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('inventory.unbinding', phid=placeholder.phid) }}">Unbinding</a>
             </li>
@@ -67,7 +67,7 @@
                 <div class="col-lg-3 col-md-4 label ">
                   (<a href="{{ url_for('inventory.device_edit', id=placeholder.device.devicehub_id)}}">Edit Device</a>)
                 </div>
-                <div class="col-lg-9 col-md-8">{{ placeholder.device.is_abstract() }}</div>
+                <div class="col-lg-9 col-md-8">{{ placeholder.status }}</div>
               </div>
 
               <div class="row">
@@ -95,6 +95,7 @@
                 <div class="col-lg-9 col-md-8">{{ placeholder.device.serial_number or ''}}</div>
               </div>
 
+              {% if placeholder.binding %}
               <h5 class="card-title">Details Abstract parth</h5>
               <div class="row">
                 <div class="col-lg-3 col-md-4 label ">Type</div>
@@ -115,6 +116,7 @@
                 <div class="col-lg-3 col-md-4 label">Serial Number</div>
                 <div class="col-lg-9 col-md-8">{{ placeholder.binding.serial_number or ''}}</div>
               </div>
+              {% endif %}
             </div>
 
             <div class="tab-pane fade profile-overview" id="lots">
@@ -202,10 +204,15 @@
             </div>
 
             <div class="tab-pane fade profile-overview" id="components">
-              <h5 class="card-title">Components Details</h5>
-              {% if device.binding %}
+              <h5 class="card-title">Components Real parth</h5>
               <div class="list-group col-6">
-                {% for component in device.components|sort(attribute='type') %}
+                  {{ placeholder.components  or '' }}
+              </div>
+
+              {% if placeholder.binding %}
+              <h5 class="card-title">Components Abstract parth</h5>
+              <div class="list-group col-6">
+                {% for component in placeholder.binding.components|sort(attribute='type') %}
                 <div class="list-group-item">
                   <div class="d-flex w-100 justify-content-between">
                     <h5 class="mb-1">{{ component.type }}</h5>
@@ -223,13 +230,9 @@
                 </div>
                 {% endfor %}
               </div>
-              {% else %}
-              <div class="col-6">
-                  {{ device.placeholder.components or '' }}
-              </div>
               {% endif %}
             </div>
-            {% if device.is_abstract() %}
+            {% if placeholder.status %}
             <div class="tab-pane fade {% if active_binding %}show active{% else %}profile-overview{% endif %}" id="binding">
               <h5 class="card-title">Binding</h5>
               <div class="list-group col-6">

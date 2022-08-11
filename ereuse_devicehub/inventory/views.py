@@ -180,65 +180,66 @@ class BindingView(GenericMixin):
 
     def dispatch_request(self, dhid, phid):
         self.get_context()
-        device = (
+        old_device = (
             Device.query.filter(Device.owner_id == g.user.id)
             .filter(Device.devicehub_id == dhid)
-            .one()
+            .first()
         )
-        placeholder = (
+        new_placeholder = (
             Placeholder.query.filter(Placeholder.owner_id == g.user.id)
             .filter(Placeholder.phid == phid)
-            .one()
+            .first()
         )
 
-        if device.is_abstract() != 'Abstract':
+        if not old_device or old_device.placeholder.status != 'Abstract':
             next_url = url_for('inventory.device_details', id=dhid)
-            messages.error('Device "{}" not is a Abstract device!'.format(dhid))
+            messages.error('Device Dhid: "{}" not is a Abstract device!'.format(dhid))
             return flask.redirect(next_url)
 
-        if device.placeholder:
-            device = device.placeholder.binding
-            dhid = device.devicehub_id
+        if not new_placeholder or new_placeholder.status != 'Real':
+            next_url = url_for('inventory.device_details', id=dhid)
+            messages.error('Device Phid: "{}" not is a Abstract device!'.format(phid))
+            return flask.redirect(next_url)
+
+        old_placeholder = old_device.placeholder
+        new_device = new_placeholder.device
+        abstract_device = old_placeholder.binding
+        new_dhid = new_device.devicehub_id
 
         if request.method == 'POST':
-            old_placeholder = device.binding
-            old_device_placeholder = old_placeholder.device
 
-            if old_placeholder.is_abstract:
-                for plog in PlaceholdersLog.query.filter_by(
-                    placeholder_id=old_placeholder.id
-                ):
-                    db.session.delete(plog)
+            for plog in PlaceholdersLog.query.filter_by(
+                placeholder_id=old_placeholder.id
+            ):
+                db.session.delete(plog)
 
-                for ac in old_device_placeholder.actions:
-                    ac.devices.add(placeholder.device)
-                    ac.devices.remove(old_device_placeholder)
-                    for act in ac.actions_device:
-                        if act.device == old_device_placeholder:
-                            db.session.delete(act)
+            for ac in old_device.actions:
+                ac.devices.add(new_device)
+                ac.devices.remove(old_device)
+                for act in ac.actions_device:
+                    if act.device == old_device:
+                        db.session.delete(act)
 
-                for tag in list(old_device_placeholder.tags):
-                    tag.device = placeholder.device
+            for tag in list(old_device.tags):
+                tag.device = new_device
 
-                db.session.delete(old_device_placeholder)
-
-            device.binding = placeholder
+            db.session.delete(old_device)
+            abstract_device.binding = new_placeholder
             db.session.commit()
-            next_url = url_for('inventory.device_details', id=dhid)
+
+            next_url = url_for('inventory.device_details', id=new_dhid)
             messages.success(
-                'Device "{}" bind successfully with {}!'.format(dhid, phid)
+                'Device Dhid: "{}" bind successfully with Phid: {}!'.format(dhid, phid)
             )
             return flask.redirect(next_url)
 
         self.context.update(
             {
-                'device': device.binding.device,
-                'placeholder': placeholder,
+                'new_placeholder': new_placeholder,
+                'old_placeholder': old_placeholder,
                 'page_title': 'Binding confirm',
-                'actions': list(device.binding.device.actions)
-                + list(placeholder.device.actions),
-                'tags': list(device.binding.device.tags)
-                + list(placeholder.device.tags),
+                'actions': list(old_device.actions) + list(new_device.actions),
+                'tags': list(old_device.tags) + list(new_device.tags),
             }
         )
 
@@ -256,31 +257,29 @@ class UnBindingView(GenericMixin):
             .filter(Placeholder.phid == phid)
             .one()
         )
-        if not placeholder.binding:
+        if not placeholder.binding or placeholder.status != 'Twin':
             next_url = url_for(
                 'inventory.device_details', id=placeholder.device.devicehub_id
             )
             return flask.redirect(next_url)
 
-        device = placeholder.binding
-
-        if device.is_abstract() != 'Twin':
-            dhid = device.devicehub_id
+        if placeholder.status != 'Twin':
+            dhid = placeholder.device.devicehub_id
             next_url = url_for('inventory.device_details', id=dhid)
-            messages.error('Device "{}" not is a Twin device!'.format(dhid))
+            messages.error('Device Dhid: "{}" not is a Twin device!'.format(dhid))
             return flask.redirect(next_url)
 
         self.get_context()
 
         if request.method == 'POST':
-            new_device = self.clone_device(device)
-            next_url = url_for('inventory.device_details', id=new_device.devicehub_id)
-            messages.success('Device "{}" unbind successfully!'.format(phid))
+            new_device = self.clone_device(placeholder.binding)
+            new_dhid = new_device.devicehub_id
+            next_url = url_for('inventory.device_details', id=new_dhid)
+            messages.success('Device Phid: "{}" unbind successfully!'.format(phid))
             return flask.redirect(next_url)
 
         self.context.update(
             {
-                'device': device,
                 'placeholder': placeholder,
                 'page_title': 'Unbinding confirm',
             }

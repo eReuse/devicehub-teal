@@ -935,6 +935,14 @@ class Placeholder(Thing):
         actions.reverse()
         return actions
 
+    @property
+    def status(self):
+        if self.is_abstract:
+            return 'Abstract'
+        if self.binding:
+            return 'Twin'
+        return 'Real'
+
 
 class Computer(Device):
     """A chassis with components inside that can be processed
