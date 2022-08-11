@@ -18,25 +18,13 @@
 
       <div class="card">
         <div class="card-body pt-3">
-          <h3>{{ device.devicehub_id }}</h3>
+          <h3>{{ placeholder.device.devicehub_id }}</h3>
           <!-- Bordered Tabs -->
           <ul class="nav nav-tabs nav-tabs-bordered">
 
-            {% if placeholder %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('inventory.device_details', id=placeholder.device.devicehub_id) }}">Placeholder device</a>
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#details">General details</button>
             </li>
-            {% else %}
-            <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#type">General details</button>
-            </li>
-            {% endif %}
-
-            {% if placeholder.binding %}
-            <li class="nav-item">
-              <a class="nav-link" href="{# url_for('inventory.device_details', id=placeholder.binding.devicehub_id) #}">Workbench device</a>
-            </li>
-            {% endif %}
 
             <li class="nav-item">
               <a class="nav-link" href="{{ device.public_link }}" target="_blank">Web</a>
@@ -48,10 +36,6 @@
 
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#status">Status</button>
-            </li>
-
-            <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#rate">Rate</button>
             </li>
 
             <li class="nav-item">
@@ -77,42 +61,59 @@
           </ul>
           <div class="tab-content pt-2">
 
-            <div class="tab-pane fade {% if active_binding %}profile-overview{% else %}show active{% endif %}" id="type">
-              <h5 class="card-title">Details</h5>
-              {% if device.placeholder %}
+            <div class="tab-pane fade {% if active_binding %}profile-overview{% else %}show active{% endif %}" id="details">
+              <h5 class="card-title">Details Real parth</h5>
               <div class="row mb-3">
                 <div class="col-lg-3 col-md-4 label ">
-                  (<a href="{{ url_for('inventory.device_edit', id=device.devicehub_id)}}">Edit Device</a>)
+                  (<a href="{{ url_for('inventory.device_edit', id=placeholder.device.devicehub_id)}}">Edit Device</a>)
                 </div>
-                <div class="col-lg-9 col-md-8">{{ device.is_abstract() }}</div>
+                <div class="col-lg-9 col-md-8">{{ placeholder.device.is_abstract() }}</div>
               </div>
-              {% endif %}
 
-              {% if device.placeholder %}
               <div class="row">
                 <div class="col-lg-3 col-md-4 label ">Phid</div>
-                <div class="col-lg-9 col-md-8">{{ device.placeholder.phid }}</div>
+                <div class="col-lg-9 col-md-8">{{ placeholder.phid }}</div>
               </div>
-              {% endif %}
 
               <div class="row">
                 <div class="col-lg-3 col-md-4 label ">Type</div>
-                <div class="col-lg-9 col-md-8">{{ device.type }}</div>
+                <div class="col-lg-9 col-md-8">{{ placeholder.device.type }}</div>
               </div>
 
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Manufacturer</div>
-                <div class="col-lg-9 col-md-8">{{ device.manufacturer or ''}}</div>
+                <div class="col-lg-9 col-md-8">{{ placeholder.device.manufacturer or ''}}</div>
               </div>
 
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Model</div>
-                <div class="col-lg-9 col-md-8">{{ device.model or ''}}</div>
+                <div class="col-lg-9 col-md-8">{{ placeholder.device.model or ''}}</div>
               </div>
 
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Serial Number</div>
-                <div class="col-lg-9 col-md-8">{{ device.serial_number or ''}}</div>
+                <div class="col-lg-9 col-md-8">{{ placeholder.device.serial_number or ''}}</div>
+              </div>
+
+              <h5 class="card-title">Details Abstract parth</h5>
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label ">Type</div>
+                <div class="col-lg-9 col-md-8">{{ placeholder.binding.type }}</div>
+              </div>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Manufacturer</div>
+                <div class="col-lg-9 col-md-8">{{ placeholder.binding.manufacturer or ''}}</div>
+              </div>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Model</div>
+                <div class="col-lg-9 col-md-8">{{ placeholder.binding.model or ''}}</div>
+              </div>
+
+              <div class="row">
+                <div class="col-lg-3 col-md-4 label">Serial Number</div>
+                <div class="col-lg-9 col-md-8">{{ placeholder.binding.serial_number or ''}}</div>
               </div>
             </div>
 
@@ -120,7 +121,7 @@
               <h5 class="card-title">Incoming Lots</h5>
 
               <div class="row">
-              {% for lot in device.lots %}
+              {% for lot in placeholder.device.lots %}
                 {% if lot.is_incoming %}
                 <div class="col">
                   <a class="ms-3" href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}">
@@ -134,7 +135,7 @@
               <h5 class="card-title">Outgoing Lots</h5>
 
               <div class="row">
-              {% for lot in device.lots %}
+              {% for lot in placeholder.device.lots %}
                 {% if lot.is_outgoing %}
                 <div class="col">
                   <a class="ms-3" href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}">
@@ -148,7 +149,7 @@
               <h5 class="card-title">Temporary Lots</h5>
 
               <div class="row">
-              {% for lot in device.lots %}
+              {% for lot in placeholder.device.lots %}
                 {% if lot.is_temporary %}
                 <div class="col">
                   <a class="ms-3" href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}">
@@ -165,53 +166,33 @@
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Physical State</div>
                 <div class="col-lg-9 col-md-8">
-                    {% if device.physical_status %}
-                    {{ device.physical_status.type }}
+                    {% if placeholder.device.physical_status %}
+                    {{ placeholder.device.physical_status.type }}
                     {% endif %}
                 </div>
               </div>
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Lifecycle State</div>
                 <div class="col-lg-9 col-md-8">
-                    {% if device.status %}
-                    {{ device.status.type }}
+                    {% if placeholder.device.status %}
+                    {{ placeholder.device.status.type }}
                     {% endif %}
                 </div>
               </div>
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Allocated State</div>
                 <div class="col-lg-9 col-md-8">
-                    {% if device.allocated_status %}
-                    {{ device.allocated_status.type }}
+                    {% if placeholder.device.allocated_status %}
+                    {{ placeholder.device.allocated_status.type }}
                     {% endif %}
                 </div>
-              </div>
-            </div>
-
-            <div class="tab-pane fade profile-overview" id="rate">
-              <h5 class="card-title">Rate Details</h5>
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Rating</div>
-                <div class="col-lg-9 col-md-8">{{ device.rate or '' }}</div>
-              </div>
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Processor</div>
-                <div class="col-lg-9 col-md-8">{{ device.rate.processor or '' }}</div>
-              </div>
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">RAM</div>
-                <div class="col-lg-9 col-md-8">{{ device.rate.ram or '' }}</div>
-              </div>
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Data storage</div>
-                <div class="col-lg-9 col-md-8">{{ device.rate.data_storage or '' }}</div>
               </div>
             </div>
 
             <div class="tab-pane fade profile-overview" id="traceability">
               <h5 class="card-title">Traceability log Details</h5>
               <div class="list-group col-6">
-                {% for action in device.reverse_actions %}
+                {% for action in placeholder.actions %}
                 <div class="list-group-item d-flex justify-content-between align-items-center">
                   {{ action.type }} {{ action.severity }}
                   <small class="text-muted">{{ action.created.strftime('%H:%M %d-%m-%Y') }}</small>
@@ -258,7 +239,7 @@
                 </p>
               </div>
               <div class="list-group col-6">
-                  <form action="{{ url_for('inventory.device_details', id=device.devicehub_id) }}" method="post">
+                  <form action="{{ url_for('inventory.device_details', id=placeholder.device.devicehub_id) }}" method="post">
                   {{ form_binding.csrf_token }}
                   {% for field in form_binding %}
                   {% if field != form_binding.csrf_token %}
