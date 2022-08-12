@@ -46,6 +46,9 @@ class SettingsView(GenericMixin):
 
         self.context['iso'] = {}
 
+        if not os.path.exists(uri):
+            return
+
         versions = os.listdir(f'{path}/static/iso/')
         versions.sort()
 
