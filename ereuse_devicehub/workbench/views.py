@@ -20,7 +20,7 @@ workbench = Blueprint('workbench', __name__, url_prefix='/workbench')
 class SettingsView(GenericMixin):
     decorators = [login_required]
     template_name = 'workbench/settings.html'
-    page_title = "Workbench Settings"
+    page_title = "Workbench"
 
     def dispatch_request(self):
         self.get_context()
@@ -33,7 +33,7 @@ class SettingsView(GenericMixin):
         self.get_iso()
 
         self.opt = request.values.get('opt')
-        if self.opt in ['register']:
+        if self.opt in ['register', 'erease_basic', 'erease_sectors']:
             return self.download()
 
         return flask.render_template(self.template_name, **self.context)
@@ -44,27 +44,44 @@ class SettingsView(GenericMixin):
         if self.context.get('demo'):
             uri = f'{path}/static/iso/demo/'
 
-        files = [
-            f for f in os.listdir(uri) if f[-3:].lower() == 'iso'
-        ]
+        self.context['iso'] = {}
 
-        self.context['iso'] = ''
-        self.context['iso_sha'] = ''
+        if not os.path.exists(uri):
+            return
 
-        if files:
-            self.context['iso'] = files[0]
-            self.context['iso_sha'] = 'aaa'
+        versions = os.listdir(f'{path}/static/iso/')
+        versions.sort()
+
+        for d in versions:
+            dir_iso = f'{uri}/{d}'
+            if not os.path.isdir(dir_iso):
+                continue
+
+            files = [f for f in os.listdir(dir_iso) if f[-3:].lower() == 'iso']
+
+            if files:
+                self.context['iso'][f'{d}'] = files[0]
 
     def download(self):
         url = "https://{}/api/inventory/".format(app.config['HOST'])
         self.wbContext = {
             'token': self.get_token(),
             'url': url,
+            'erease_basic': None,
+            'erease_sectors': None,
         }
-        options = {"register": self.register}
-        return options[self.opt]()
+        # if is a v14 version
+        # TODO when not use more v14, we can remove this if
+        if 'erease' in self.opt:
+            url = "https://{}/actions/".format(app.config['HOST'])
+            self.wbContext['url'] = url
+            self.wbContext['host'] = app.config['HOST']
+            self.wbContext['schema'] = app.config['SCHEMA']
+            if self.opt == 'erease_basic':
+                self.wbContext['erease_basic'] = True
+            if self.opt == 'erease_sectors':
+                self.wbContext['erease_sectors'] = True
 
-    def register(self):
         data = flask.render_template('workbench/wbSettings.ini', **self.wbContext)
         return self.response_download(data)
 
@@ -94,4 +111,4 @@ class SettingsView(GenericMixin):
         return token
 
 
-workbench.add_url_rule('/settings/', view_func=SettingsView.as_view('settings'))
+workbench.add_url_rule('/', view_func=SettingsView.as_view('settings'))

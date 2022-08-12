@@ -18,31 +18,32 @@
         <div class="card-body">
 
           <div class="pt-6 pb-2">
-            <h5 class="card-title text-center pb-0 fs-4">Download your settings for Workbench</h5>
-            {% if not demo %}
             <div class="row pt-3">
-              <div class="col-5">
-                <a href="{{ url_for('workbench.settings') }}?opt=register" class="btn btn-primary">Register devices</a>
-              </div>
               <div class="col">
-                <p class="small">Download the settings only for register devices.</p>
+                  <p>Please download the ISO file and the settings file of the
+                  version you want and follow these steps
+                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
               </div>
             </div>
-            {% if iso %}
-            <div class="row pt-3">
-              <div class="col-5">
-                <a href="/static/iso/{{ iso }}" class="btn btn-primary">{{ iso }}</a>
-              </div>
-              <div class="col">
-                <p class="small">
-                  Download Checksum: <a style="color: #993365;" href="/static/iso/SHA512SUMS">SHA512SUMS</a>
-                </p>
-              </div>
-            </div>
-            {% endif %}
+          </div>
+        </div>
 
-            {% else %}
+      </div>
 
+    </div>
+    <div class="col-xl-8">
+    </div>
+  </div>
+
+  {% if demo %}
+  <div class="row">
+    <div class="col-xl-6">
+
+      <div class="card">
+        <div class="card-body">
+
+          <div class="pt-6 pb-2">
+            <h5 class="card-title text-center pb-0 fs-4">Workbench 2022</h5>
             {% if iso %}
             <div class="row pt-3">
               <div class="col-5">
@@ -50,22 +51,88 @@
               </div>
               <div class="col">
                 <p class="small">
-                  Download Checksum: <a style="color: #993365;" href="/static/iso/demo/SHA512SUMS">SHA512SUMS</a>
+                  Download Checksum: <a class="help" href="/static/iso/demo/SHA512SUMS">SHA512SUMS</a>
                 </p>
               </div>
             </div>
             {% endif %}
-            {% endif %}
           </div>
-
         </div>
 
       </div>
 
     </div>
-
     <div class="col-xl-8">
     </div>
   </div>
+
+  {% else %}
+  {% for d, v in iso.items() %}
+  {% if d != 'demo' %}
+  <div class="row">
+    <div class="col-xl-6">
+
+      <div class="card">
+        <div class="card-body">
+
+          <div class="pt-6 pb-2">
+            <h5 class="card-title text-center pb-0 fs-4">Workbench {{ d }}</h5>
+            <h4>Settings</h4>
+            {% if d == 'v14' %}
+            <div class="row">
+              <div class="col-5">
+                <a href="{{ url_for('workbench.settings') }}?opt=erease_basic" class="btn btn-primary">Get settings for basic erease</a>
+              </div>
+              <div class="col">
+                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
+              </div>
+            </div>
+            <div class="row pt-2">
+              <div class="col-5">
+                <a href="{{ url_for('workbench.settings') }}?opt=erease_sectors" class="btn btn-primary">Get settings for erease by sectors</a>
+              </div>
+              <div class="col">
+                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
+              </div>
+            </div>
+            {% else %}
+            <div class="row">
+              <div class="col-5">
+                <a href="{{ url_for('workbench.settings') }}?opt=register" class="btn btn-primary">Get settings for register devices</a>
+              </div>
+              <div class="col">
+                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
+              </div>
+            </div>
+            {% endif %}
+            {% if iso %}
+            <h4 class="pt-3">iso</h4>
+            <div class="row">
+              <div class="col-5">
+                <a href="/static/iso/{{ d }}/{{ v }}" class="btn btn-primary">Get {{ v }}</a>
+              </div>
+              <div class="col">
+                <p class="small">
+                  Download Checksum: <a class="help" href="/static/iso/{{ d }}/SHA512SUMS">SHA512SUMS</a> |
+                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
+                </p>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+    <div class="col-xl-8">
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  {% endif %}
+
+
 </section>
 {% endblock main %}
