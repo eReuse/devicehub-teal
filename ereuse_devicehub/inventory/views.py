@@ -176,16 +176,18 @@ class BindingSearchView(GenericMixin):
 
         self.context.update(
             {
-                'page_title': 'Search a Device for to do a binding from {}'.format(device.devicehub_id),
+                'page_title': 'Search a Device for to do a binding from {}'.format(
+                    device.devicehub_id
+                ),
                 'form_binding': form_binding,
-                'device': device
+                'device': device,
             }
         )
 
         if form_binding.validate_on_submit():
             next_url = url_for(
                 'inventory.binding',
-                dhid=id,
+                dhid=dhid,
                 phid=form_binding.placeholder.phid,
             )
             return flask.redirect(next_url)
@@ -1248,5 +1250,6 @@ devices.add_url_rule(
     '/unbinding/<string:phid>/', view_func=UnBindingView.as_view('unbinding')
 )
 devices.add_url_rule(
-    '/<string:dhid>/binding/', view_func=BindingSearchView.as_view('binding_search')
+    '/device/<string:dhid>/binding/',
+    view_func=BindingSearchView.as_view('binding_search'),
 )
