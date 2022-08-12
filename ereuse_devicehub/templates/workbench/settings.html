@@ -22,7 +22,7 @@
               <div class="col">
                   <p>Please download the ISO file and the settings file of the
                   version you want and follow these steps
-                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
+                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">steps</a></p>
               </div>
             </div>
           </div>
@@ -51,7 +51,8 @@
               </div>
               <div class="col">
                 <p class="small">
-                  Download Checksum: <a class="help" href="/static/iso/demo/SHA512SUMS">SHA512SUMS</a>
+                  Download Checksum: <a class="help" href="/static/iso/demo/SHA512SUMS">SHA512SUMS</a> |
+                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
                 </p>
               </div>
             </div>
@@ -77,41 +78,49 @@
 
           <div class="pt-6 pb-2">
             <h5 class="card-title text-center pb-0 fs-4">Workbench {{ d }}</h5>
-            <h4>Settings</h4>
             {% if d == 'v14' %}
             <div class="row">
               <div class="col-5">
-                <a href="{{ url_for('workbench.settings') }}?opt=erease_basic" class="btn btn-primary">Get settings for basic erease</a>
+                <a href="{{ url_for('workbench.settings') }}?opt=erease_basic" class="btn btn-primary" style="width: 200px;">Get settings file!</a>
               </div>
               <div class="col">
-                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
+                <p class="small">
+                  Settings for basic erease | <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a>
+                </p>
               </div>
             </div>
             <div class="row pt-2">
               <div class="col-5">
-                <a href="{{ url_for('workbench.settings') }}?opt=erease_sectors" class="btn btn-primary">Get settings for erease by sectors</a>
+                <a href="{{ url_for('workbench.settings') }}?opt=erease_sectors" class="btn btn-primary" style="width: 200px;">Get settings file!</a>
               </div>
               <div class="col">
-                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
+                <p class="small">
+                  Settings for erease by sectors | <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a>
+                </p>
               </div>
             </div>
             {% else %}
             <div class="row">
               <div class="col-5">
-                <a href="{{ url_for('workbench.settings') }}?opt=register" class="btn btn-primary">Get settings for register devices</a>
+                <a href="{{ url_for('workbench.settings') }}?opt=register" class="btn btn-primary" style="width: 200px;">Get settings file!</a>
               </div>
               <div class="col">
-                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
+                <p class="small">
+                  Settings for register devices
+                </p>
               </div>
             </div>
             {% endif %}
             {% if iso %}
-            <h4 class="pt-3">iso</h4>
+            <br />
             <div class="row">
               <div class="col-5">
-                <a href="/static/iso/{{ d }}/{{ v }}" class="btn btn-primary">Get {{ v }}</a>
+                <a href="/static/iso/{{ d }}/{{ v }}" class="btn btn-primary" style="width: 200px;">Get ISO file</a>
               </div>
               <div class="col">
+                <p class="small">
+                  {{ v }}
+                </p>
                 <p class="small">
                   Download Checksum: <a class="help" href="/static/iso/{{ d }}/SHA512SUMS">SHA512SUMS</a> |
                   <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
