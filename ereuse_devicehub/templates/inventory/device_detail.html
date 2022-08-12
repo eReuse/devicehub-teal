@@ -19,6 +19,18 @@
       <div class="card">
         <div class="card-body pt-3">
           <h3>{{ placeholder.device.devicehub_id }}</h3>
+          <div class="tab-pane active show mb-5">
+              {% if placeholder.status in ['Abstract', 'Real'] %}
+              <a type="button" href="{{ url_for('inventory.unbinding', phid=placeholder.phid) }}" class="btn btn-primary" style="float: right; margin-right: 15px;">
+                Binding
+              </a>
+              {% elif placeholder.status == 'Twin' %}
+              <a type="button" href="{{ url_for('inventory.unbinding', phid=placeholder.phid) }}" class="btn btn-primary" style="float: right; margin-right: 15px;">
+                Unbinding
+              </a>
+              {% endif %}
+              <div style="display: block;"></div>
+          </div>
           <!-- Bordered Tabs -->
           <ul class="nav nav-tabs nav-tabs-bordered">
 
@@ -45,18 +57,6 @@
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#components">Components</button>
             </li>
-
-           {% if placeholder.status in ['Abstract', 'Real'] %}
-            <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#binding">Binding</button>
-            </li>
-            {% endif %}
-
-           {% if placeholder.status == 'Twin' %}
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('inventory.unbinding', phid=placeholder.phid) }}">Unbinding</a>
-            </li>
-            {% endif %}
 
           </ul>
           <div class="tab-content pt-2">
