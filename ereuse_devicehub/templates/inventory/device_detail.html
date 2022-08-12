@@ -21,7 +21,7 @@
           <h3>{{ placeholder.device.devicehub_id }}</h3>
           <div class="tab-pane active show mb-5">
               {% if placeholder.status in ['Abstract', 'Real'] %}
-              <a type="button" href="{{ url_for('inventory.unbinding', phid=placeholder.phid) }}" class="btn btn-primary" style="float: right; margin-right: 15px;">
+              <a type="button" href="{{ url_for('inventory.binding_search', dhid=placeholder.device.devicehub_id) }}" class="btn btn-primary" style="float: right; margin-right: 15px;">
                 Binding
               </a>
               {% elif placeholder.status == 'Twin' %}
@@ -61,7 +61,7 @@
           </ul>
           <div class="tab-content pt-2">
 
-            <div class="tab-pane fade {% if active_binding %}profile-overview{% else %}show active{% endif %}" id="details">
+            <div class="tab-pane fade show active" id="details">
               <h5 class="card-title">Details Real parth</h5>
               <div class="row mb-3">
                 <div class="col-lg-3 col-md-4 label ">
@@ -232,43 +232,6 @@
               </div>
               {% endif %}
             </div>
-            {% if placeholder.status %}
-            <div class="tab-pane fade {% if active_binding %}show active{% else %}profile-overview{% endif %}" id="binding">
-              <h5 class="card-title">Binding</h5>
-              <div class="list-group col-6">
-                <p>
-                  Be careful, binding implies changes in the data of a device that affect its
-                  traceability.
-                </p>
-              </div>
-              <div class="list-group col-6">
-                  <form action="{{ url_for('inventory.device_details', id=placeholder.device.devicehub_id) }}" method="post">
-                  {{ form_binding.csrf_token }}
-                  {% for field in form_binding %}
-                  {% if field != form_binding.csrf_token %}
-
-                  <div class="col-12">
-                      {{ field.label(class_="form-label") }}:
-                      {{ field }}
-                      {% if field.errors %}
-                      <p class="text-danger">
-                        {% for error in field.errors %}
-                          {{ error }}<br/>
-                        {% endfor %}
-                      </p>
-                      {% endif %}
-                  </div>
-
-                  {% endif %}
-                  {% endfor %}
-                  <div class="col-12 mt-2">
-                      <input type="submit" class="btn btn-primary" value="Search" />
-                  </div>
-                  </form>
-              </div>
-            </div>
-            {% endif %}
-
         </div>
       </div>
     </div>

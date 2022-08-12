@@ -148,15 +148,37 @@ class DeviceDetailView(GenericMixin):
             .one()
         )
 
-        form_binding = BindingForm(device=device)
-
         self.context.update(
             {
                 'device': device,
                 'placeholder': device.binding or device.placeholder,
                 'page_title': 'Device {}'.format(device.devicehub_id),
+            }
+        )
+
+        return flask.render_template(self.template_name, **self.context)
+
+
+class BindingSearchView(GenericMixin):
+    methods = ['GET', 'POST']
+    decorators = [login_required]
+    template_name = 'inventory/binding_search.html'
+
+    def dispatch_request(self, dhid):
+        self.get_context()
+        device = (
+            Device.query.filter(Device.owner_id == current_user.id)
+            .filter(Device.devicehub_id == dhid)
+            .one()
+        )
+
+        form_binding = BindingForm(device=device)
+
+        self.context.update(
+            {
+                'page_title': 'Search a Device for to do a binding from {}'.format(device.devicehub_id),
                 'form_binding': form_binding,
-                'active_binding': False,
+                'device': device
             }
         )
 
@@ -167,8 +189,6 @@ class DeviceDetailView(GenericMixin):
                 phid=form_binding.placeholder.phid,
             )
             return flask.redirect(next_url)
-        elif form_binding.phid.data:
-            self.context['active_binding'] = True
 
         return flask.render_template(self.template_name, **self.context)
 
@@ -1226,4 +1246,7 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/unbinding/<string:phid>/', view_func=UnBindingView.as_view('unbinding')
+)
+devices.add_url_rule(
+    '/<string:dhid>/binding/', view_func=BindingSearchView.as_view('binding_search')
 )
