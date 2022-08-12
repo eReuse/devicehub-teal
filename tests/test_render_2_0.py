@@ -1282,18 +1282,17 @@ def test_action_datawipe(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_wb_settings(user3: UserClientFlask):
-    uri = '/workbench/settings/'
+    uri = '/workbench/'
     body, status = user3.get(uri)
 
     assert status == '200 OK'
-    assert "Download your settings for Workbench" in body
-    assert "Workbench Settings" in body
+    assert "Please download the ISO file and the settings file of the" in body
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_wb_settings_register(user3: UserClientFlask):
-    uri = '/workbench/settings/?opt=register'
+    uri = '/workbench/?opt=register'
     body, status = user3.get(uri)
 
     assert status == '200 OK'
