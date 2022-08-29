@@ -110,9 +110,7 @@ class DeviceView(View):
         return super().get(id)
 
     def patch(self, id):
-        dev = Device.query.filter_by(
-            id=id, owner_id=g.user.id, active=True
-        ).one()
+        dev = Device.query.filter_by(id=id, owner_id=g.user.id, active=True).one()
         if isinstance(dev, Computer):
             resource_def = app.resources['Computer']
             # TODO check how to handle the 'actions_one'
@@ -138,13 +136,13 @@ class DeviceView(View):
             return self.one_private(id)
 
     def one_public(self, id: int):
-        device = Device.query.filter_by(
-            devicehub_id=id, active=True
-        ).one()
+        device = Device.query.filter_by(devicehub_id=id, active=True).one()
         abstract = None
         if device.is_abstract() == 'Twin':
             abstract = device.placeholder.binding
-        return render_template('devices/layout.html', device=device, states=states, abstract=abstract)
+        return render_template(
+            'devices/layout.html', device=device, states=states, abstract=abstract
+        )
 
     @auth.Auth.requires_auth
     def one_private(self, id: str):
