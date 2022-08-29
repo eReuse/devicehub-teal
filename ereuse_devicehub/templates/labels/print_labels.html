@@ -193,7 +193,7 @@
 <script src="{{ url_for('static', filename='js/print.pdf.js') }}"></script>
 <script type="text/javascript">
 {% for dev in devices %}
-qr_draw("{{ url_for('inventory.device_details', id=dev.devicehub_id, _external=True) }}", "#{{ dev.devicehub_id }}")
+qr_draw("{{ dev.public_link }}", "#{{ dev.devicehub_id }}")
 {% endfor %}
 </script>
 {% endblock main %}
