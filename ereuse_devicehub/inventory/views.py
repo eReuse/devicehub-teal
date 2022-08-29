@@ -273,7 +273,10 @@ class BindingView(GenericMixin):
             self.new_placeholder = self.new_device.placeholder
 
         self.abstract_device = self.old_placeholder.binding
-        self.new_dhid = self.new_device.devicehub_id
+        self.real_dhid = self.new_device.devicehub_id
+        self.real_phid = self.new_placeholder.phid
+        self.abstract_dhid = self.old_device.devicehub_id
+        self.abstract_phid = self.old_placeholder.phid
 
     def post(self):
         for plog in PlaceholdersLog.query.filter_by(
@@ -295,10 +298,15 @@ class BindingView(GenericMixin):
         self.abstract_device.binding = self.new_placeholder
         db.session.commit()
 
-        next_url = url_for('inventory.device_details', id=self.new_dhid)
+        next_url = url_for('inventory.device_details', id=self.real_dhid)
+        txt = 'Device real with PHID: {} and DHID: {} bind successfully with '
+        txt += 'device abstract PHID: {} DHID: {}.'
         messages.success(
-            'Device Dhid: "{}" bind successfully with Phid: {}!'.format(
-                self.dhid, self.phid
+            txt.format(
+                self.real_phid,
+                self.real_dhid,
+                self.abstract_phid,
+                self.abstract_dhid
             )
         )
         return flask.redirect(next_url)
@@ -333,7 +341,7 @@ class UnBindingView(GenericMixin):
             dhid = placeholder.device.devicehub_id
             self.clone_device(placeholder.binding)
             next_url = url_for('inventory.device_details', id=dhid)
-            messages.success('Device Phid: "{}" unbind successfully!'.format(phid))
+            messages.success('Device with PHID:"{}" and DHID: {} unbind successfully!'.format(phid, dhid))
             return flask.redirect(next_url)
 
         self.context.update(
