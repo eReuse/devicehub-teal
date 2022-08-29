@@ -31,6 +31,11 @@
                           {% endif %}
                       </ul>
                   </p>
+                  <p>The DHID and PHID information of the abstract will be lost.</p>
+                  <p>The information in <span class="text-danger">red colour</span> will be losted and replaced by the information in <span class="text-success">green colour</span>.<br />
+                     The information in <span class="text-warning">orange</span> will be replaced by the information in <span class="text-success">green</span> and you always can recover
+                     it by doing an unbinding action or find this information into device details web.
+                  </p>
                 </div>
 
                   <table class="table table-hover">
@@ -45,72 +50,72 @@
                           <tr>
                               <th scope="row">Manufacturer:</th>
                               <td class="table-success text-right">{{ new_placeholder.device.manufacturer or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.manufacturer or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.manufacturer or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Model:</th>
                               <td class="table-success">{{ new_placeholder.device.model or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.model or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.model or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Serial Number:</th>
                               <td class="table-success">{{ new_placeholder.device.serial_number or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.serial_number or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.serial_number or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Brand:</th>
                               <td class="table-success">{{ new_placeholder.device.brand or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.brand or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.brand or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Sku:</th>
                               <td class="table-success">{{ new_placeholder.device.sku or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.sku or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.sku or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Generation:</th>
                               <td class="table-success">{{ new_placeholder.device.generation or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.generation or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.generation or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Version:</th>
                               <td class="table-success">{{ new_placeholder.device.version or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.version or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.version or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Weight:</th>
                               <td class="table-success">{{ new_placeholder.device.weight or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.weight or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.weight or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Width:</th>
                               <td class="table-success">{{ new_placeholder.device.width or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.width or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.width or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Height:</th>
                               <td class="table-success">{{ new_placeholder.device.height or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.height or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.height or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Depth:</th>
                               <td class="table-success">{{ new_placeholder.device.depth or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.depth or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.depth or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Color:</th>
                               <td class="table-success">{{ new_placeholder.device.color or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.color or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.color or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Production date:</th>
                               <td class="table-success">{{ new_placeholder.device.production_date or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.production_date or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.production_date or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Variant:</th>
                               <td class="table-success">{{ new_placeholder.device.variant or '' }}</td>
-                              <td class="table-danger">{{ old_placeholder.device.variant or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.variant or '' }}</td>
                           </tr>
                       </tbody>
                   </table>
@@ -133,7 +138,7 @@
                                   * {{ c.verbose_name }}<br />
                                   {% endfor %}
                               </td>
-                              <td class="table-danger">
+                              <td class="table-warning">
                                   {% for c in old_placeholder.device.components %}
                                   * {{ c.verbose_name }}<br />
                                   {% endfor %}
@@ -147,6 +152,9 @@
 
                   {% if actions %}
                   <h2>Actions</h2>
+                  <p>
+                      The actions will become real device and will no longer be in the abstract
+                  </p>
                   <table class="table table-hover">
                       <thead>
                           <tr class="text-center">
@@ -162,6 +170,9 @@
                                   {% endfor %}
                               </td>
                               <td class="table-danger">
+                                  {% for a in actions %}
+                                  * {{ a.t }}<br />
+                                  {% endfor %}
                               </td>
                           </tr>
                       </tbody>
@@ -172,6 +183,9 @@
 
                   {% if tags %}
                   <h2>Tags</h2>
+                  <p>
+                      The tags will become real device and will no longer be in the abstract
+                  </p>
                   <table class="table table-hover">
                       <thead>
                           <tr class="text-center">
@@ -187,6 +201,9 @@
                                   {% endfor %}
                               </td>
                               <td class="table-danger">
+                                  {% for tag in tags %}
+                                  * {{ tag.id }}<br />
+                                  {% endfor %}
                               </td>
                           </tr>
                       </tbody>
