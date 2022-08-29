@@ -141,7 +141,10 @@ class DeviceView(View):
         device = Device.query.filter_by(
             devicehub_id=id, active=True
         ).one()
-        return render_template('devices/layout.html', device=device, states=states)
+        abstract = None
+        if device.is_abstract() == 'Twin':
+            abstract = device.placeholder.binding
+        return render_template('devices/layout.html', device=device, states=states, abstract=abstract)
 
     @auth.Auth.requires_auth
     def one_private(self, id: str):
