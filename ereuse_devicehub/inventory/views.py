@@ -303,10 +303,7 @@ class BindingView(GenericMixin):
         txt += 'device abstract PHID: {} DHID: {}.'
         messages.success(
             txt.format(
-                self.real_phid,
-                self.real_dhid,
-                self.abstract_phid,
-                self.abstract_dhid
+                self.real_phid, self.real_dhid, self.abstract_phid, self.abstract_dhid
             )
         )
         return flask.redirect(next_url)
@@ -341,7 +338,11 @@ class UnBindingView(GenericMixin):
             dhid = placeholder.device.devicehub_id
             self.clone_device(placeholder.binding)
             next_url = url_for('inventory.device_details', id=dhid)
-            messages.success('Device with PHID:"{}" and DHID: {} unbind successfully!'.format(phid, dhid))
+            messages.success(
+                'Device with PHID:"{}" and DHID: {} unbind successfully!'.format(
+                    phid, dhid
+                )
+            )
             return flask.redirect(next_url)
 
         self.context.update(
