@@ -20,6 +20,17 @@
                 <div class="pt-4 pb-2">
                   <h5 class="card-title text-center pb-0 fs-4">{{ title }}</h5>
                   <p class="text-center">Please check that the information is correct.</p>
+                  <p>This is a binding between:&nbsp;
+                      <ul>
+                          {% if new_placeholder.is_abstract %}
+                          <li>1. Device abstract with DHID:<b>{{ new_placeholder.device.devicehub_id }}</b> and PHID: <b>{{ new_placeholder.phid }}</b></li>
+                          <li>2. Device real with DHID: <b>{{ old_placeholder.device.devicehub_id }}</b> and PHID:<b>{{ old_placeholder.phid }}</b></li>
+                          {% else %}
+                          <li>1. Device abstract with DHID:<b>{{ old_placeholder.device.devicehub_id }}</b> and PHID: <b>{{ old_placeholder.phid }}</b></li>
+                          <li>2. Device real with DHID: <b>{{ new_placeholder.device.devicehub_id }}</b> and PHID:<b>{{ new_placeholder.phid }}</b></li>
+                          {% endif %}
+                      </ul>
+                  </p>
                 </div>
 
                   <table class="table table-hover">
