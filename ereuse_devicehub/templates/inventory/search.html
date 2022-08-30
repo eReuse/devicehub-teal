@@ -28,7 +28,7 @@
           </div>
         </div>
       </div>
-      {% if devices %}
+      {% if devices.count() %}
       <div class="card">
         <div class="card-body pt-3" style="min-height: 650px;">
           <!-- Bordered Tabs -->
@@ -179,41 +179,10 @@
               </div>
 
               <div class="btn-group dropdown m-1" uib-dropdown="">
-                <button id="btnUniqueID" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-tag"></i>
-                    Unique Identifiers (Tags)
-                </button>
-                <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
-                <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
-                <ul class="dropdown-menu" aria-labelledby="btnUniqueID">
-                  <li>
-                    <a href="javascript:addTag()" class="dropdown-item">
-                      <i class="bi bi-plus"></i>
-                      Add Unique Identifier to selected Device
-                    </a>
-                  </li>
-                  <li>
-                    <a href="javascript:removeTag()" class="dropdown-item">
-                      <i class="bi bi-x"></i>
-                      Remove Unique Identifier from selected Device
-                    </a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('labels.label_list')}}">
-                      <i class="bi bi-tools"></i>
-                      Unique Identifier Management
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnTags" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-tag"></i>
                     Labels
                 </button>
-                <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
-                <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
                 <ul class="dropdown-menu" aria-labelledby="btnTags">
                   <li>
                     <form id="print_labels" method="post" action="{{ url_for('labels.print_labels') }}">
@@ -287,6 +256,8 @@
                       <th scope="col">Select</th>
                       <th scope="col">Title</th>
                       <th scope="col">DHID</th>
+                      <th scope="col">PHID</th>
+                      <th scope="col">Type</th>
                       <th scope="col">Unique Identifiers</th>
                       <th scope="col">Lifecycle Status</th>
                       <th scope="col">Allocated Status</th>
@@ -327,6 +298,12 @@
                         <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
                           {{ dev.devicehub_id }}
                         </a>
+                      </td>
+                      <td>
+                          {{ dev.binding and dev.binding.phid or dev.placeholder and dev.placeholder.phid  or '' }}
+                      </td>
+                      <td>
+                          {{ dev.is_abstract() }}
                       </td>
                       <td>
                         {% for t in dev.tags | sort(attribute="id") %}
@@ -392,14 +369,12 @@
     </div>
   </div>
 </section>
-{% include "inventory/addDevicestag.html" %}
 {% include "inventory/lot_delete_modal.html" %}
 {% include "inventory/actions.html" %}
 {% include "inventory/allocate.html" %}
 {% include "inventory/data_wipe.html" %}
 {% include "inventory/trade.html" %}
 {% include "inventory/alert_export_error.html" %}
-{% include "inventory/alert_unlink_tag_error.html" %}
 {% include "inventory/alert_lots_changes.html" %}
 
 <!-- Custom Code -->

@@ -110,7 +110,13 @@ class AdvancedSearchForm(FlaskForm):
             self.search(dhids)
 
     def search(self, dhids):
-        self.devices = Device.query.filter(Device.devicehub_id.in_(dhids))
+        query = Device.query.filter(Device.owner_id == g.user.id)
+        self.devices = query.join(Device.placeholder).filter(
+            or_(
+                Device.devicehub_id.in_(dhids),
+                Placeholder.phid.in_(dhids),
+            )
+        )
 
 
 class FilterForm(FlaskForm):
