@@ -20,6 +20,28 @@
         <div class="card-body pt-3">
           <h3>{{ placeholder.device.devicehub_id }}</h3>
           <div class="tab-pane active show mb-5">
+              <div class="btn-group dropdown" uib-dropdown="" style="float: right; margin-right: 15px;">
+                <button id="btnUniqueID" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-tag"></i>
+                    Unique Identifiers (Tags)
+                </button>
+                <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
+                <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
+                <ul class="dropdown-menu" aria-labelledby="btnUniqueID">
+                  <li>
+                    <a href="javascript:addTag()" class="dropdown-item">
+                      <i class="bi bi-plus"></i>
+                      Add Unique Identifier
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{{ url_for('inventory.tag_devices_del', dhid=placeholder.device.devicehub_id) }}" class="dropdown-item">
+                      <i class="bi bi-x"></i>
+                      Remove Unique Identifier
+                    </a>
+                  </li>
+                </ul>
+              </div>
               {% if placeholder.status in ['Abstract', 'Real'] %}
               <a type="button" href="{{ url_for('inventory.binding_search', dhid=placeholder.device.devicehub_id) }}" class="btn btn-primary" style="float: right; margin-right: 15px;">
                 Binding
@@ -30,6 +52,7 @@
               </a>
               {% endif %}
               <div style="display: block;"></div>
+
           </div>
           <!-- Bordered Tabs -->
           <ul class="nav nav-tabs nav-tabs-bordered">
@@ -237,4 +260,20 @@
     </div>
   </div>
 </section>
+
+<script>
+function addTag() {
+    const devices_id = [{{ placeholder.device.id }}];
+    if (devices_id.length == 1) {
+        $("#addingTagModal .pol").hide();
+        $("#addingTagModal .btn-primary").show();
+    } else {
+        $("#addingTagModal .pol").show();
+        $("#addingTagModal .btn-primary").hide();
+    }
+
+    $("#addTagAlertModal").click();
+}
+</script>
+{% include "inventory/addDevicestag.html" %}
 {% endblock main %}

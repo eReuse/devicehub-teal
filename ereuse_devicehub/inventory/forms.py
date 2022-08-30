@@ -137,11 +137,11 @@ class FilterForm(FlaskForm):
             self.lot = self.lots.filter(Lot.id == self.lot_id).one()
             device_ids = (d.id for d in self.lot.devices)
             self.devices = Device.query.filter(Device.id.in_(device_ids)).filter(
-                Device.binding == None
+                Device.binding == None  # noqa: E711
             )
         else:
             self.devices = Device.query.filter(Device.owner_id == g.user.id).filter(
-                Device.binding == None
+                Device.binding == None  # noqa: E711
             )
             if self.only_unassigned:
                 self.devices = self.devices.filter_by(lots=None)
@@ -655,19 +655,30 @@ class NewDeviceForm(FlaskForm):
 
 
 class TagDeviceForm(FlaskForm):
-    tag = SelectField('Tag', choices=[])
-    device = StringField('Device', [validators.Optional()])
+    tag = SelectField(
+        'Tag',
+        choices=[],
+        render_kw={
+            'class': 'form-control selectpicker',
+            'data-live-search': 'true',
+        },
+    )
 
     def __init__(self, *args, **kwargs):
         self.delete = kwargs.pop('delete', None)
-        self.device_id = kwargs.pop('device', None)
+        self.dhid = kwargs.pop('dhid', None)
+        self._device = (
+            Device.query.filter(Device.devicehub_id == self.dhid)
+            .filter(Device.owner_id == g.user.id)
+            .one()
+        )
 
         super().__init__(*args, **kwargs)
 
         if self.delete:
             tags = (
                 Tag.query.filter(Tag.owner_id == g.user.id)
-                .filter_by(device_id=self.device_id)
+                .filter_by(device_id=self._device.id)
                 .order_by(Tag.id)
             )
         else:
@@ -694,20 +705,6 @@ class TagDeviceForm(FlaskForm):
         if not self.delete and self._tag.device_id:
             self.tag.errors = [("This tag is actualy in use.")]
             return False
-
-        if self.device.data:
-            try:
-                self.device.data = int(self.device.data.split(',')[-1])
-            except:  # noqa: E722
-                self.device.data = None
-
-        if self.device_id or self.device.data:
-            self.device_id = self.device_id or self.device.data
-            self._device = (
-                Device.query.filter(Device.id == self.device_id)
-                .filter(Device.owner_id == g.user.id)
-                .one()
-            )
 
         return True
 

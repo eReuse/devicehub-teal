@@ -80,7 +80,6 @@ class DeviceListMixin(GenericMixin):
         self.context.update(
             {
                 'devices': devices,
-                'form_tag_device': TagDeviceForm(),
                 'form_new_action': form_new_action,
                 'form_new_allocate': AllocateForm(lot=lot_id),
                 'form_new_datawipe': DataWipeForm(lot=lot_id),
@@ -148,11 +147,13 @@ class DeviceDetailView(GenericMixin):
             .one()
         )
 
+        form_tags = TagDeviceForm(dhid=id)
         self.context.update(
             {
                 'device': device,
                 'placeholder': device.binding or device.placeholder,
                 'page_title': 'Device {}'.format(device.devicehub_id),
+                'form_tag_device': form_tags,
             }
         )
 
@@ -542,12 +543,15 @@ class TagLinkDeviceView(View):
     methods = ['POST']
     decorators = [login_required]
 
-    def dispatch_request(self):
-        form = TagDeviceForm()
+    def dispatch_request(self, dhid):
+        form = TagDeviceForm(dhid=dhid)
         if form.validate_on_submit():
+            tag = form.tag.data
             form.save()
 
-            return flask.redirect(request.referrer)
+            next_url = url_for('inventory.device_details', id=dhid)
+            messages.success('Tag {} was linked successfully!'.format(tag))
+            return flask.redirect(next_url)
 
 
 class TagUnlinkDeviceView(GenericMixin):
@@ -555,19 +559,20 @@ class TagUnlinkDeviceView(GenericMixin):
     decorators = [login_required]
     template_name = 'inventory/tag_unlink_device.html'
 
-    def dispatch_request(self, id):
+    def dispatch_request(self, dhid):
         self.get_context()
-        form = TagDeviceForm(delete=True, device=id)
+        form = TagDeviceForm(delete=True, dhid=dhid)
         if form.validate_on_submit():
             form.remove()
 
-            next_url = url_for('inventory.devicelist')
+            next_url = url_for('inventory.device_details', id=dhid)
+            messages.success('Tag {} was unlinked successfully!'.format(form.tag.data))
             return flask.redirect(next_url)
 
         self.context.update(
             {
                 'form': form,
-                'referrer': request.referrer,
+                'dhid': dhid,
             }
         )
 
@@ -1211,10 +1216,11 @@ devices.add_url_rule(
     '/device/edit/<string:id>/', view_func=DeviceEditView.as_view('device_edit')
 )
 devices.add_url_rule(
-    '/tag/devices/add/', view_func=TagLinkDeviceView.as_view('tag_devices_add')
+    '/tag/devices/<string:dhid>/add/',
+    view_func=TagLinkDeviceView.as_view('tag_devices_add'),
 )
 devices.add_url_rule(
-    '/tag/devices/<int:id>/del/',
+    '/tag/devices/<string:dhid>/del/',
     view_func=TagUnlinkDeviceView.as_view('tag_devices_del'),
 )
 devices.add_url_rule(
