@@ -324,6 +324,9 @@ class Device(Thing):
 
     @property
     def public_link(self) -> str:
+        if self.binding:
+            return self.binding.device.public_link
+
         host_url = request.host_url.strip('/')
         return "{}{}".format(host_url, self.url.to_text())
 

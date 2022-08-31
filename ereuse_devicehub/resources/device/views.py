@@ -2,6 +2,7 @@ import datetime
 import uuid
 from itertools import filterfalse
 
+import flask
 import marshmallow
 from flask import Response
 from flask import current_app as app
@@ -138,8 +139,12 @@ class DeviceView(View):
     def one_public(self, id: int):
         device = Device.query.filter_by(devicehub_id=id, active=True).one()
         abstract = None
+        if device.binding:
+            return flask.redirect(device.public_link)
+
         if device.is_abstract() == 'Twin':
             abstract = device.placeholder.binding
+
         return render_template(
             'devices/layout.html', device=device, states=states, abstract=abstract
         )
