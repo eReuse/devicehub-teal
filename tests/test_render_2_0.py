@@ -320,16 +320,16 @@ def test_link_tag_to_device(user3: UserClientFlask):
     }
     user3.post(uri, data=data)
 
-    body, status = user3.get('/inventory/device/')
+    body, status = user3.get('/inventory/device/{}/'.format(dev.dhid))
     assert "tag1" in body
 
     data = {
         'tag': "tag1",
-        'device': dev.id,
+        'device': dev.dhid,
         'csrf_token': generate_csrf(),
     }
 
-    uri = '/inventory/tag/devices/add/'
+    uri = '/inventory/tag/devices/{}/add/'.format(dev.dhid)
     user3.post(uri, data=data)
     assert len(list(dev.tags)) == 1
     tags = [tag.id for tag in dev.tags]
@@ -406,7 +406,7 @@ def test_print_labels(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
     }
 
-    uri = '/inventory/tag/devices/add/'
+    uri = '/inventory/tag/devices/{}/add/'.format(dev.dhid)
     user3.post(uri, data=data)
 
     assert len(list(dev.tags)) == 1
@@ -419,7 +419,7 @@ def test_print_labels(user3: UserClientFlask):
     body, status = user3.post(uri, data=data)
 
     assert status == '200 OK'
-    path = "/devices/{}".format(dev.devicehub_id)
+    path = "/devices/{}".format(dev.dhid)
     assert path in body
     assert "tag1" in body
 
@@ -2021,7 +2021,6 @@ def test_manual_binding(user3: UserClientFlask):
         'model': "LC27T55",
         'manufacturer': "Samsung",
         'generation': 1,
-        'weight': 0.1,
         'height': 0.1,
         'depth': 0.1,
         'id_device_supplier': "b2",
@@ -2047,17 +2046,24 @@ def test_manual_binding(user3: UserClientFlask):
     old_placeholder = dev_wb.binding
 
     # page binding
-    dhid = dev_wb.devicehub_id
+    dhid = dev_wb.dhid
     uri = f'/inventory/binding/{dhid}/sid/'
     body, status = user3.get(uri)
     assert status == '200 OK'
     assert 'sid' in body
     assert 'Confirm' in body
 
+    phid_real = dev.placeholder.phid
+    phid_abstract = dev_wb.binding.phid
+    dhid_real = dev.dhid
+    dhid_abstract = dev_wb.dhid
+
     # action binding
     body, status = user3.post(uri, data={})
     assert status == '200 OK'
-    assert f"Device &#34;{dhid}&#34; bind successfully with sid!" in body
+    txt = f"Device real with PHID: {phid_real} and DHID: {dhid_real} "
+    txt += f"bind successfully with device abstract PHID: {phid_abstract} DHID: {dhid_abstract}."
+    assert txt in body
 
     # check new structure
     assert dev_wb.binding.phid == 'sid'
@@ -2145,7 +2151,7 @@ def test_unbinding(user3: UserClientFlask):
     old_placeholder = dev_wb.binding
 
     # page binding
-    dhid = dev_wb.devicehub_id
+    dhid = dev_wb.dhid
     uri = f'/inventory/binding/{dhid}/sid/'
     user3.get(uri)
 
@@ -2154,11 +2160,14 @@ def test_unbinding(user3: UserClientFlask):
     user3.post(uri, data={})
     assert dev.placeholder.binding == dev_wb
 
+    dhid = dev.dhid
     # action unbinding
     uri = '/inventory/unbinding/sid/'
     body, status = user3.post(uri, data={})
     assert status == '200 OK'
-    assert 'Device &#34;sid&#34; unbind successfully!' in body
+    txt = f'Device with PHID:&#34;sid&#34; and DHID: {dhid} unbind successfully!'
+    assert txt in body
+    # assert 'Device &#34;sid&#34; unbind successfully!' in body
 
     # check new structure
 
