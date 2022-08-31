@@ -370,18 +370,6 @@ class NewDeviceForm(FlaskForm):
         if not self.generation.data:
             self.generation.data = 1
 
-        if not self.weight.data:
-            self.weight.data = 0.1
-
-        if not self.height.data:
-            self.height.data = 0.1
-
-        if not self.width.data:
-            self.width.data = 0.1
-
-        if not self.depth.data:
-            self.depth.data = 0.1
-
     def reset_from_obj(self):
         if not self._obj:
             return
@@ -455,24 +443,28 @@ class NewDeviceForm(FlaskForm):
         error = ["Not a correct value"]
         is_valid = super().validate(extra_validators)
 
-        if self.generation.data < 1:
+        if self.generation.data and self.generation.data < 1:
             self.generation.errors = error
             is_valid = False
 
-        if self.weight.data < 0.1:
-            self.weight.errors = error
+        if self.weight.data and not (0.1 <= self.weight.data <= 5):
+            txt = ["Supported values between 0.1 and 5"]
+            self.weight.errors = txt
             is_valid = False
 
-        if self.height.data < 0.1:
-            self.height.errors = error
+        if self.height.data and not (0.1 <= self.height.data <= 5):
+            txt = ["Supported values between 0.1 and 5"]
+            self.height.errors = txt
             is_valid = False
 
-        if self.width.data < 0.1:
-            self.width.errors = error
+        if self.width.data and not (0.1 <= self.width.data <= 5):
+            txt = ["Supported values between 0.1 and 5"]
+            self.width.errors = txt
             is_valid = False
 
-        if self.depth.data < 0.1:
-            self.depth.errors = error
+        if self.depth.data and not (0.1 <= self.depth.data <= 5):
+            txt = ["Supported values between 0.1 and 5"]
+            self.depth.errors = txt
             is_valid = False
 
         if self.imei.data and self.amount.data == 1:
