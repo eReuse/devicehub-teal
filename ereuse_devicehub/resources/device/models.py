@@ -324,16 +324,13 @@ class Device(Thing):
 
     @property
     def public_link(self) -> str:
-        if self.binding:
-            return self.binding.device.public_link
-
         host_url = request.host_url.strip('/')
         return "{}{}".format(host_url, self.url.to_text())
 
     @property
     def url(self) -> urlutils.URL:
         """The URL where to GET this device."""
-        return urlutils.URL(url_for_resource(Device, item_id=self.devicehub_id))
+        return urlutils.URL(url_for_resource(Device, item_id=self.dhid))
 
     @property
     def rate(self):
@@ -617,6 +614,14 @@ class Device(Thing):
         manufacturer = self.manufacturer or ''
         model = self.model or ''
         return f'{type} {manufacturer} {model}'
+
+    @property
+    def dhid(self):
+        if self.placeholder:
+            return self.placeholder.device.devicehub_id
+        if self.binding:
+            return self.binding.device.devicehub_id
+        return self.devicehub_id
 
     @declared_attr
     def __mapper_args__(cls):
