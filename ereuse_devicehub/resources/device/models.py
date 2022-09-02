@@ -1049,10 +1049,14 @@ class Computer(Device):
         """Returns the privacy of all ``DataStorage`` components when
         it is not None.
         """
+        components = self.components
+        if self.placeholder and self.placeholder.binding:
+            components = self.placeholder.binding.components
+
         return set(
             privacy
             for privacy in (
-                hdd.privacy for hdd in self.components if isinstance(hdd, DataStorage)
+                hdd.privacy for hdd in components if isinstance(hdd, DataStorage)
             )
             if privacy
         )
