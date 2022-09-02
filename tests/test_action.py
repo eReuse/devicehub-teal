@@ -251,6 +251,7 @@ def test_update_parent():
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 @pytest.mark.parametrize(
     'action_model_state',
     (
@@ -264,15 +265,18 @@ def test_update_parent():
     ),
 )
 def test_generic_action(
-    action_model_state: Tuple[models.Action, states.Trading], user: UserClient
+    action_model_state: Tuple[models.ToPrepare, states.Trading], user2: UserClient
 ):
     """Tests POSTing all generic actions."""
+    user = user2
     action_model, state = action_model_state
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    action = {'type': action_model.t, 'devices': [snapshot['device']['id']]}
+    abstract = Device.query.filter(Device.id == snapshot['device']['id']).one()
+    real = abstract.binding.device
+    action = {'type': action_model.t, 'devices': [real.id]}
     action, _ = user.post(action, res=models.Action)
-    assert action['devices'][0]['id'] == snapshot['device']['id']
-    device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
+    assert action['devices'][0]['id'] == real.id
+    device, _ = user.get(res=Device, item=real.dhid)
     assert device['actions'][-1]['id'] == action['id']
     assert device['physical'] == state.name
     # Check if the update of device is changed
@@ -280,6 +284,7 @@ def test_generic_action(
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 @pytest.mark.parametrize(
     'action_model',
     (
@@ -288,14 +293,17 @@ def test_generic_action(
     ),
 )
 def test_simple_status_actions(
-    action_model: models.Action, user: UserClient, user2: UserClient
+    action_model: models.Action, user2: UserClient
 ):
     """Simple test of status action."""
+    user = user2
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
+    abstract = Device.query.filter(Device.id == snap['device']['id']).one()
+    real = abstract.binding.device
 
-    action = {'type': action_model.t, 'devices': [snap['device']['id']]}
+    action = {'type': action_model.t, 'devices': [real.id]}
     action, _ = user.post(action, res=models.Action)
-    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+    device, _ = user.get(res=Device, item=real.dhid)
     assert device['actions'][-1]['id'] == action['id']
     assert action['author']['id'] == user.user['id']
     assert action['rol_user']['id'] == user.user['id']
@@ -518,6 +526,7 @@ def test_recycling_container(user: UserClient):
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 @pytest.mark.parametrize(
     'action_model',
     (
@@ -528,13 +537,16 @@ def test_recycling_container(user: UserClient):
 def test_status_without_lot(action_model: models.Action, user: UserClient):
     """Test of status actions for devices without lot."""
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    action = {'type': action_model.t, 'devices': [snap['device']['id']]}
+    abstract = Device.query.filter_by(id=snap['device']['id']).first()
+    device_id = abstract.binding.device.id
+    action = {'type': action_model.t, 'devices': [device_id]}
     action, _ = user.post(action, res=models.Action)
-    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+    device, _ = user.get(res=Device, item=abstract.dhid)
     assert device['actions'][-1]['id'] == action['id']
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 @pytest.mark.parametrize(
     'action_model',
     (
@@ -542,17 +554,18 @@ def test_status_without_lot(action_model: models.Action, user: UserClient):
         for ams in [models.Recycling, models.Use, models.Refurbish, models.Management]
     ),
 )
-def test_status_in_temporary_lot(action_model: models.Action, user: UserClient):
+def test_status_in_temporary_lot(action_model: models.Action, user: UserClient, app: Devicehub):
     """Test of status actions for devices in a temporary lot."""
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    device_id = snap['device']['id']
+    abstract = Device.query.filter_by(id=snap['device']['id']).first()
+    device_id = abstract.binding.device.id
     lot, _ = user.post({'name': 'MyLotOut'}, res=Lot)
     lot, _ = user.post(
         {}, res=Lot, item='{}/devices'.format(lot['id']), query=[('id', device_id)]
     )
     action = {'type': action_model.t, 'devices': [device_id]}
     action, _ = user.post(action, res=models.Action)
-    device, _ = user.get(res=Device, item=snap['device']['devicehubID'])
+    device, _ = user.get(res=Device, item=abstract.dhid)
     assert device['actions'][-1]['id'] == action['id']
 
 
@@ -991,8 +1004,9 @@ def test_licences(client: Client):
 def test_allocate(user: UserClient):
     """Tests allocate"""
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    device_id = snapshot['device']['id']
-    devicehub_id = snapshot['device']['devicehubID']
+    abstract = Device.query.filter_by(id=snapshot['device']['id']).one()
+    device_id = abstract.binding.device.id
+    devicehub_id = abstract.dhid
     post_request = {
         "transaction": "ccc",
         "finalUserCode": "aabbcc",
@@ -1060,8 +1074,9 @@ def test_allocate_bad_dates(user: UserClient):
 def test_deallocate(user: UserClient):
     """Tests deallocate"""
     snapshot, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
-    device_id = snapshot['device']['id']
-    devicehub_id = snapshot['device']['devicehubID']
+    abstract = Device.query.filter_by(id=snapshot['device']['id']).one()
+    device_id = abstract.binding.device.id
+    devicehub_id = abstract.dhid
     post_deallocate = {
         "startTime": "2020-11-01T02:00:00+00:00",
         "transaction": "ccc",
@@ -1391,27 +1406,6 @@ def test_price_custom():
 
     c, _ = client.get(res=Device, item=computer.devicehub_id)
     assert c['price']['id'] == p['id']
-
-
-@pytest.mark.mvp
-def test_price_custom_client(user: UserClient):
-    """As test_price_custom but creating the price through the API."""
-    s = file('basic.snapshot')
-    snapshot, _ = user.post(s, res=models.Snapshot)
-    price, _ = user.post(
-        {
-            'type': 'Price',
-            'price': 25,
-            'currency': Currency.EUR.name,
-            'device': snapshot['device']['id'],
-        },
-        res=models.Action,
-    )
-    assert 25 == price['price']
-    assert Currency.EUR.name == price['currency']
-
-    device, _ = user.get(res=Device, item=price['device']['devicehubID'])
-    assert 25 == device['price']['price']
 
 
 @pytest.mark.mvp

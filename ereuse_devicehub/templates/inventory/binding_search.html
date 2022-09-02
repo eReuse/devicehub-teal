@@ -1,0 +1,74 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>Inventory</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item active">{{ page_title }}</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+
+    <div class="col-xl-12">
+
+      <div class="card">
+        <div class="card-body pt-3">
+          <h3>{{ device.devicehub_id }}</h3>
+          <!-- Bordered Tabs -->
+          <div class="tab-content pt-2">
+
+            <div class="tab-pane fade show active">
+              <h5 class="card-title">Binding</h5>
+              {% if device.is_abstract() == 'Twin' or not device.placeholder %}
+              <div class="list-group col-6">
+                <p>
+                  Device with Dhid: {{ device.devicehub_id }} is a Twin device.<br />
+                  If you want to do a binding with this device, you need todo an Unbinding first.<br />
+                  You can to do this in <a href="{{ url_for('inventory.unbinding', phid=device.placeholder.phid) }}" class="help">here</a>.
+                </p>
+              </div>
+              {% else %}
+              <div class="list-group col-6">
+                <p>
+                  Be careful, binding implies changes in the data of a device that affect its traceability.
+                </p>
+              </div>
+              <div class="list-group col-6">
+                  <form action="{{ url_for('inventory.binding_search', dhid=device.devicehub_id) }}" method="post">
+                  {{ form_binding.csrf_token }}
+                  {% for field in form_binding %}
+                  {% if field != form_binding.csrf_token %}
+
+                  <div class="col-12">
+                      {{ field.label(class_="form-label") }}:
+                      {{ field }}
+                      {% if field.errors %}
+                      <p class="text-danger">
+                        {% for error in field.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
+                  </div>
+
+                  {% endif %}
+                  {% endfor %}
+                  <div class="col-12 mt-2">
+                      <input type="submit" class="btn btn-primary" value="Search" />
+                  </div>
+                  </form>
+              </div>
+              {% endif %}
+            </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock main %}

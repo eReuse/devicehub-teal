@@ -276,10 +276,10 @@ class DeviceRow(BaseDeviceRow):
                 software=snapshot.software.name, version=snapshot.version
             )
         # General information about device
-        self['DHID'] = device.devicehub_id
+        self['DHID'] = self.placeholder.device.dhid
         self['DocumentID'] = self.document_id
         self['Public Link'] = '{url}{id}'.format(
-            url=url_for('Device.main', _external=True), id=device.devicehub_id
+            url=url_for('Device.main', _external=True), id=device.dhid
         )
         self['Lots'] = ', '.join([x.name for x in self.device.lots])
         for i, tag in zip(range(1, 3), device.tags):

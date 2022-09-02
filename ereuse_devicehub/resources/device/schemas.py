@@ -114,7 +114,7 @@ class Device(Thing):
     sku = SanitizedStr(description=m.Device.sku.comment)
     image = URL(description=m.Device.image.comment)
     allocated = Boolean(description=m.Device.allocated.comment)
-    devicehub_id = SanitizedStr(
+    dhid = SanitizedStr(
         data_key='devicehubID', description=m.Device.devicehub_id.comment
     )
 

@@ -163,9 +163,6 @@ function deviceSelect() {
         $("#removeLotModal .pol").show();
         $("#removeLotModal .btn-primary").hide();
 
-        $("#addingTagModal .pol").show();
-        $("#addingTagModal .btn-primary").hide();
-
         $("#actionModal .pol").show();
         $("#actionModal .btn-primary").hide();
 
@@ -189,9 +186,6 @@ function deviceSelect() {
 
         $("#datawipeModal .pol").hide();
         $("#datawipeModal .btn-primary").show();
-
-        $("#addingTagModal .pol").hide();
-        $("#addingTagModal .btn-primary").show();
     }
 }
 
@@ -203,31 +197,6 @@ function removeLot() {
         $("#btnRemoveLots .text-danger").hide();
     }
     $("#activeRemoveLotModal").click();
-}
-
-function removeTag() {
-    const devices = TableController.getSelectedDevices();
-    const devices_id = devices.map(dev => $(dev).attr("data"));
-    if (devices_id.length == 1) {
-        const url = `/inventory/tag/devices/${devices_id[0]}/del/`;
-        window.location.href = url;
-    } else {
-        $("#unlinkTagAlertModal").click();
-    }
-}
-
-function addTag() {
-    const devices = TableController.getSelectedDevices();
-    const devices_id = devices.map(dev => $(dev).attr("data"));
-    if (devices_id.length == 1) {
-        $("#addingTagModal .pol").hide();
-        $("#addingTagModal .btn-primary").show();
-    } else {
-        $("#addingTagModal .pol").show();
-        $("#addingTagModal .btn-primary").hide();
-    }
-
-    $("#addTagAlertModal").click();
 }
 
 function select_shift() {

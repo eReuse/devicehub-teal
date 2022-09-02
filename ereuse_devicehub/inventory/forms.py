@@ -110,7 +110,13 @@ class AdvancedSearchForm(FlaskForm):
             self.search(dhids)
 
     def search(self, dhids):
-        self.devices = Device.query.filter(Device.devicehub_id.in_(dhids))
+        query = Device.query.filter(Device.owner_id == g.user.id)
+        self.devices = query.join(Device.placeholder).filter(
+            or_(
+                Device.devicehub_id.in_(dhids),
+                Placeholder.phid.in_(dhids),
+            )
+        )
 
 
 class FilterForm(FlaskForm):
@@ -137,11 +143,11 @@ class FilterForm(FlaskForm):
             self.lot = self.lots.filter(Lot.id == self.lot_id).one()
             device_ids = (d.id for d in self.lot.devices)
             self.devices = Device.query.filter(Device.id.in_(device_ids)).filter(
-                Device.binding == None
+                Device.binding == None  # noqa: E711
             )
         else:
             self.devices = Device.query.filter(Device.owner_id == g.user.id).filter(
-                Device.binding == None
+                Device.binding == None  # noqa: E711
             )
             if self.only_unassigned:
                 self.devices = self.devices.filter_by(lots=None)
@@ -364,18 +370,6 @@ class NewDeviceForm(FlaskForm):
         if not self.generation.data:
             self.generation.data = 1
 
-        if not self.weight.data:
-            self.weight.data = 0.1
-
-        if not self.height.data:
-            self.height.data = 0.1
-
-        if not self.width.data:
-            self.width.data = 0.1
-
-        if not self.depth.data:
-            self.depth.data = 0.1
-
     def reset_from_obj(self):
         if not self._obj:
             return
@@ -449,24 +443,28 @@ class NewDeviceForm(FlaskForm):
         error = ["Not a correct value"]
         is_valid = super().validate(extra_validators)
 
-        if self.generation.data < 1:
+        if self.generation.data and self.generation.data < 1:
             self.generation.errors = error
             is_valid = False
 
-        if self.weight.data < 0.1:
-            self.weight.errors = error
+        if self.weight.data and not (0.1 <= self.weight.data <= 5):
+            txt = ["Supported values between 0.1 and 5"]
+            self.weight.errors = txt
             is_valid = False
 
-        if self.height.data < 0.1:
-            self.height.errors = error
+        if self.height.data and not (0.1 <= self.height.data <= 5):
+            txt = ["Supported values between 0.1 and 5"]
+            self.height.errors = txt
             is_valid = False
 
-        if self.width.data < 0.1:
-            self.width.errors = error
+        if self.width.data and not (0.1 <= self.width.data <= 5):
+            txt = ["Supported values between 0.1 and 5"]
+            self.width.errors = txt
             is_valid = False
 
-        if self.depth.data < 0.1:
-            self.depth.errors = error
+        if self.depth.data and not (0.1 <= self.depth.data <= 5):
+            txt = ["Supported values between 0.1 and 5"]
+            self.depth.errors = txt
             is_valid = False
 
         if self.imei.data and self.amount.data == 1:
@@ -655,19 +653,30 @@ class NewDeviceForm(FlaskForm):
 
 
 class TagDeviceForm(FlaskForm):
-    tag = SelectField('Tag', choices=[])
-    device = StringField('Device', [validators.Optional()])
+    tag = SelectField(
+        'Tag',
+        choices=[],
+        render_kw={
+            'class': 'form-control selectpicker',
+            'data-live-search': 'true',
+        },
+    )
 
     def __init__(self, *args, **kwargs):
         self.delete = kwargs.pop('delete', None)
-        self.device_id = kwargs.pop('device', None)
+        self.dhid = kwargs.pop('dhid', None)
+        self._device = (
+            Device.query.filter(Device.devicehub_id == self.dhid)
+            .filter(Device.owner_id == g.user.id)
+            .one()
+        )
 
         super().__init__(*args, **kwargs)
 
         if self.delete:
             tags = (
                 Tag.query.filter(Tag.owner_id == g.user.id)
-                .filter_by(device_id=self.device_id)
+                .filter_by(device_id=self._device.id)
                 .order_by(Tag.id)
             )
         else:
@@ -694,20 +703,6 @@ class TagDeviceForm(FlaskForm):
         if not self.delete and self._tag.device_id:
             self.tag.errors = [("This tag is actualy in use.")]
             return False
-
-        if self.device.data:
-            try:
-                self.device.data = int(self.device.data.split(',')[-1])
-            except:  # noqa: E722
-                self.device.data = None
-
-        if self.device_id or self.device.data:
-            self.device_id = self.device_id or self.device.data
-            self._device = (
-                Device.query.filter(Device.id == self.device_id)
-                .filter(Device.owner_id == g.user.id)
-                .one()
-            )
 
         return True
 
@@ -1667,8 +1662,8 @@ class BindingForm(FlaskForm):
             self.phid.errors = [txt]
             return False
 
-        if self.device.is_abstract() != 'Abstract':
-            txt = "This is not a abstract device."
+        if self.device.is_abstract() not in ['Abstract', 'Real']:
+            txt = "This is not a Abstract or Real device."
             self.phid.errors = [txt]
             return False
 
@@ -1682,7 +1677,7 @@ class BindingForm(FlaskForm):
             self.phid.errors = [txt]
             return False
 
-        if self.placeholder.binding:
+        if self.placeholder.status not in ['Abstract', 'Real']:
             txt = "This placeholder have a binding with other device. "
             txt += "Before you need to do an unbinding with this other device."
             self.phid.errors = [txt]

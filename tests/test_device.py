@@ -473,14 +473,17 @@ def test_get_devices(app: Devicehub, user: UserClient):
 
 
 @pytest.mark.mvp
-def test_get_device_permissions(app: Devicehub, user: UserClient, user2: UserClient, 
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_get_device_permissions(app: Devicehub, user: UserClient, user2: UserClient,
         client: Client):
     """Checks GETting a d.Desktop with its components."""
 
     s, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
     pc, res = user.get(res=d.Device, item=s['device']['devicehubID'])
     assert res.status_code == 200
-    assert len(pc['actions']) == 7
+    assert len(pc['actions']) == 0
+    pc = d.Device.query.filter_by(devicehub_id=s['device']['devicehubID']).one()
+    assert len(pc.placeholder.binding.actions) == 7
 
     html, _ = client.get(res=d.Device, item=s['device']['devicehubID'], accept=ANY)
     assert 'intel atom cpu n270 @ 1.60ghz' in html
@@ -660,12 +663,15 @@ def test_cooking_mixer_api(user: UserClient):
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_hid_with_mac(app: Devicehub, user: UserClient):
     """Checks hid with mac."""
     snapshot = file('asus-eee-1000h.snapshot.11')
     snap, _ = user.post(snapshot, res=m.Snapshot)
     pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
-    assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
+    pc = d.Device.query.filter_by(devicehub_id=snap['device']['devicehubID']).one()
+    assert pc.placeholder.binding.hid == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
 
 
 @pytest.mark.mvp
@@ -706,6 +712,7 @@ def test_hid_with_2networkadapters(app: Devicehub, user: UserClient):
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_hid_with_2network_and_drop_no_mac_in_hid(app: Devicehub, user: UserClient):
     """Checks hid with 2 networks adapters and next drop the network is not used in hid"""
     snapshot = yaml2json('asus-eee-1000h.snapshot.11')
@@ -715,19 +722,22 @@ def test_hid_with_2network_and_drop_no_mac_in_hid(app: Devicehub, user: UserClie
     network['serialNumber'] = 'a0:24:8c:7f:cf:2d'
     snap, _ = user.post(json_encode(snapshot), res=m.Snapshot)
     pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
-    assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
+    pc = d.Device.query.filter_by(devicehub_id=snap['device']['devicehubID']).one()
+    assert pc.placeholder.binding.hid == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
 
     snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abb'
     snapshot['components'] = [c for c in snapshot['components'] if c != network]
     user.post(json_encode(snapshot), res=m.Snapshot)
     devices, _ = user.get(res=d.Device)
     laptop = devices['items'][0]
-    assert laptop['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    assert pc.placeholder.binding.hid == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
     assert len([c for c in devices['items'] if c['type'] == 'Laptop']) == 2
     assert len([c for c in laptop['components'] if c['type'] == 'NetworkAdapter']) == 1
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_hid_with_2network_and_drop_mac_in_hid(app: Devicehub, user: UserClient):
     """Checks hid with 2 networks adapters and next drop the network is used in hid"""
     # One tipical snapshot with 2 network cards
@@ -738,7 +748,9 @@ def test_hid_with_2network_and_drop_mac_in_hid(app: Devicehub, user: UserClient)
     network['serialNumber'] = 'a0:24:8c:7f:cf:2d'
     snap, _ = user.post(json_encode(snapshot), res=m.Snapshot)
     pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
-    assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
+    pc = d.Device.query.filter_by(devicehub_id=snap['device']['devicehubID']).one()
+    assert pc.placeholder.binding.hid == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
 
     # we drop the network card then is used for to build the hid
     snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abb'

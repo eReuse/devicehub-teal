@@ -42,13 +42,13 @@
 
                     <dt>Computer where was erase:</dt>
 		    <dd>Title: {{ erasure.parent.__format__('ts') }}</dd>
-		    <dd>DevicehubID: {{ erasure.parent.devicehub_id }}</dd>
+		    <dd>DevicehubID: {{ erasure.parent.dhid }}</dd>
 		    <dd>Hid: {{ erasure.parent.hid }}</dd>
 		    <dd>Tags: {{ erasure.parent.tags }}</dd>
-		    
+
                     <dt>Computer where it resides:</dt>
 		    <dd>Title: {{ erasure.device.parent.__format__('ts') }}</dd>
-		    <dd>DevicehubID: {{ erasure.device.parent.devicehub_id }}</dd>
+		    <dd>DevicehubID: {{ erasure.device.parent.dhid }}</dd>
 		    <dd>Hid: {{ erasure.device.parent.hid }}</dd>
 		    <dd>Tags: {{ erasure.device.parent.tags }}</dd>
 

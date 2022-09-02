@@ -75,7 +75,7 @@ class InventoryView(LoginMixin, SnapshotMixin):
         self.response = jsonify(
             {
                 'url': snapshot.device.url.to_text(),
-                'dhid': snapshot.device.devicehub_id,
+                'dhid': snapshot.device.dhid,
                 'sid': snapshot.sid,
             }
         )
