@@ -279,6 +279,11 @@ class BindingView(GenericMixin):
         self.abstract_dhid = self.old_device.devicehub_id
         self.abstract_phid = self.old_placeholder.phid
 
+        # to do a backup of abstract_dhid and abstract_phid in
+        # workbench device
+        self.abstract_device.dhid_bk = self.abstract_dhid
+        self.abstract_device.phid_bk = self.abstract_phid
+
     def post(self):
         for plog in PlaceholdersLog.query.filter_by(
             placeholder_id=self.old_placeholder.id
@@ -379,6 +384,17 @@ class UnBindingView(GenericMixin):
                     c.binding.device.parent = new_device
 
         placeholder = Placeholder(device=new_device, binding=device, is_abstract=True)
+        if (
+            device.dhid_bk
+            and not Device.query.filter_by(devicehub_id=device.dhid_bk).first()
+        ):
+            new_device.devicehub_id = device.dhid_bk
+        if (
+            device.phid_bk
+            and not Placeholder.query.filter_by(phid=device.phid_bk).first()
+        ):
+            placeholder.phid = device.phid_bk
+
         db.session.add(placeholder)
         db.session.commit()
 

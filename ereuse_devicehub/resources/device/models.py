@@ -173,6 +173,8 @@ class Device(Thing):
         db.CIText(), nullable=True, unique=True, default=create_code
     )
     devicehub_id.comment = "device have a unique code."
+    dhid_bk = db.Column(db.CIText(), nullable=True, unique=False)
+    phid_bk = db.Column(db.CIText(), nullable=True, unique=False)
     active = db.Column(Boolean, default=True)
 
     _NON_PHYSICAL_PROPS = {
