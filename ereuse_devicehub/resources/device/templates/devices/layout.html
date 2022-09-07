@@ -41,8 +41,8 @@
 <div class="container-fluid">
     <div class="row">
         <div class="page-header col-md-6 col-md-offset-3">
-            <h1>{{ device.__format__('t') }}<br>
-                <small>{{ device.__format__('s') }}</small>
+            <h1>{% if abstract %}Real device {% endif %}{{ device.__format__('t')  or '' }}<br>
+                <small>{{ device.__format__('s') or '' }}</small>
             </h1>
         </div>
     </div>
@@ -52,7 +52,7 @@
         <div class="col-md-6">
             <ul>
                 {% for key, value in device.public_properties.items() %}
-		    <li>{{ key }}: {{ value }}</li>
+		    <li>{{ key }}: {{ value or '' }}</li>
                 {% endfor %}
             </ul>
             {% if isinstance(device, d.Computer) %}
@@ -140,17 +140,6 @@
                                 <td></td>
                             </tr>
                         {% endif %}
-                        {% if device.rate %}
-                            <tr class="active">
-                                <td class="text-right">
-                                    Total rate
-                                </td>
-                                <td>
-                                    {{ device.rate.rating_range }}
-                                    ({{ device.rate.rating }})
-                                </td>
-                            </tr>
-                        {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -222,6 +211,181 @@
             {% endif %}
         </div>
     </div>
+    {% if abstract %}
+    <div class="row">
+        <div class="page-header col-md-6 col-md-offset-3">
+            <hr />
+            <h1>Abstract device {{ abstract.__format__('t')  or '' }}<br>
+                <small>{{ abstract.__format__('s') or '' }}</small>
+            </h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+        </div>
+        <div class="col-md-6">
+            <ul>
+                {% for key, value in abstract.public_properties.items() %}
+		    <li>{{ key }}: {{ value or '' }}</li>
+                {% endfor %}
+            </ul>
+            {% if isinstance(abstract, d.Computer) %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>Range</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% if abstract.processor_model %}
+                            <tr>
+                                <td>
+                                    CPU – {{ abstract.processor_model }}
+                                </td>
+                                <td>
+                                    Processor Rate = {% if abstract.rate %}
+                                    {{ abstract.rate.processor_range }}
+                                    ({{ abstract.rate.processor }})
+                                {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        {% if abstract.ram_size %}
+                            <tr>
+                                <td>
+                                    RAM – {{ abstract.ram_size // 1000 }} GB
+                                    {{ macros.component_type(abstract.components, 'RamModule') }}
+                                </td>
+                                <td>
+                                    RAM Rate = {% if abstract.rate %}
+                                    {{ abstract.rate.ram_range }}
+                                    ({{ abstract.rate.ram }})
+                                {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        {% if abstract.data_storage_size %}
+                            <tr>
+                                <td>
+                                    Data Storage – {{ abstract.data_storage_size // 1000 }} GB
+                                    {{ macros.component_type(abstract.components, 'SolidStateDrive') }}
+                                    {{ macros.component_type(abstract.components, 'HardDrive') }}
+                                </td>
+                                <td>
+                                    Data Storage Rate = {% if abstract.rate %}
+                                    {{ abstract.rate.data_storage_range }}
+                                    ({{ abstract.rate.data_storage }})
+                                {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        {% if abstract.graphic_card_model %}
+                            <tr>
+                                <td>
+                                    Graphics – {{ abstract.graphic_card_model }}
+                                    {{ macros.component_type(abstract.components, 'GraphicCard') }}
+                                </td>
+                                <td></td>
+                            </tr>
+                        {% endif %}
+                        {% if abstract.network_speeds %}
+                            <tr>
+                                <td>
+                                    Network –
+                                    {% if abstract.network_speeds[0] %}
+                                        Ethernet
+                                        {% if abstract.network_speeds[0] != None %}
+                                            max. {{ abstract.network_speeds[0] }} Mbps
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if abstract.network_speeds[0] and abstract.network_speeds[1] %}
+                                        +
+                                    {% endif %}
+                                    {% if abstract.network_speeds[1] %}
+                                        WiFi
+                                        {% if abstract.network_speeds[1] != None %}
+                                            max. {{ abstract.network_speeds[1] }} Mbps
+                                        {% endif %}
+                                    {% endif %}
+                                    {{ macros.component_type(abstract.components, 'NetworkAdapter') }}
+                                </td>
+                                <td></td>
+                            </tr>
+                        {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                <h4>Actual Status</h4>
+                <ol>
+                    <li>
+                        <strong>
+                            Lifecycle Status
+                        </strong>
+                        —
+                        {% if abstract.status %}
+                        {{ abstract.status.type }}
+                        {% endif %}
+                    </li>
+                    <li>
+                        <strong>
+                            Allocate Status
+                        </strong>
+                        —
+                        {% if abstract.allocated_status %}
+                        {{ abstract.allocated_status.type }}
+                        {% endif %}
+                    </li>
+                    <li>
+                        <strong>
+                            Physical Status
+                        </strong>
+                        —
+                        {% if abstract.physical_status %}
+                        {{ abstract.physical_status.type }}
+                        {% endif %}
+                    </li>
+                </ol>
+
+                <h4>Public traceability log of the abstract</h4>
+                <div class="text-right">
+                    <small>Latest one.</small>
+                </div>
+                <ol>
+                    {% for action in abstract.public_actions %}
+                        <li>
+                            <strong>
+                                {{ abstract.is_status(action) }}
+                                {% if not abstract.is_status(action) %}
+                                  {{ action.type }}
+                                {% endif %}
+                            </strong>
+                            —
+                            {% if abstract.is_status(action) %}
+                              {{ action }} {{ action.type }}
+                            {% else %}
+                              {{ action }}
+                            {% endif %}
+                            <br>
+                            <div class="text-muted">
+                                <small>
+                                    {{ action._date_str }}
+                                </small>
+                            </div>
+                            {% if action.certificate %}
+                                <a href="{{ action.certificate.to_text() }}">See the certificate</a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ol>
+                <div class="text-right">
+                    <small>Oldest one.</small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 <footer class="container-fluid footer">
     <div class="row">

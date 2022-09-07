@@ -16,9 +16,11 @@ from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag.model import Tag
 from tests.conftest import file, file_workbench, json_encode, yaml2json
+from tests import conftest
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_workbench_server_condensed(user: UserClient):
     """As :def:`.test_workbench_server_phases` but all the actions
     condensed in only one big ``Snapshot`` file, as described
@@ -54,7 +56,8 @@ def test_workbench_server_condensed(user: UserClient):
     }
     assert snapshot['closed']
     assert snapshot['severity'] == 'Info'
-    device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
+    db_dev = Device.query.filter_by(id=snapshot['device']['id']).one()
+    device, _ = user.get(res=Device, item=db_dev.devicehub_id)
     assert device['dataStorageSize'] == 1100
     assert device['chassis'] == 'Tower'
     assert device['hid'] == 'desktop-d1mr-d1ml-d1s-na1-s'
@@ -175,13 +178,15 @@ def test_real_toshiba_11(user: UserClient):
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     """Checks the values of the device, components,
     actions and their relationships of a real pc.
     """
     s = file('real-eee-1001pxd.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
-    pc, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
+    dev = Device.query.filter_by(id=snapshot['device']['id']).one()
+    pc, _ = user.get(res=Device, item=dev.devicehub_id)
     assert pc['type'] == 'Laptop'
     assert pc['chassis'] == 'Netbook'
     assert pc['model'] == '1001pxd'
@@ -222,7 +227,8 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert cpu['speed'] == 1.667
     assert 'hid' not in cpu
     assert pc['processorModel'] == cpu['model'] == 'intel atom cpu n455 @ 1.66ghz'
-    cpu, _ = user.get(res=Device, item=cpu['devicehubID'])
+    db_cpu = Device.query.filter_by(id=cpu['id']).one()
+    cpu, _ = user.get(res=Device, item=db_cpu.devicehub_id)
     actions = cpu['actions']
     sysbench = next(e for e in actions if e['type'] == em.BenchmarkProcessorSysbench.t)
     assert sysbench['elapsed'] == 164
@@ -245,7 +251,8 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     )
     assert gpu['manufacturer'] == 'intel corporation'
     assert gpu['memory'] == 256
-    gpu, _ = user.get(res=Device, item=gpu['devicehubID'])
+    db_gpu = Device.query.filter_by(id=gpu['id']).one()
+    gpu, _ = user.get(res=Device, item=db_gpu.devicehub_id)
     action_types = tuple(e['type'] for e in gpu['actions'])
     assert em.BenchmarkRamSysbench.t in action_types
     assert em.StressTest.t in action_types
@@ -264,7 +271,8 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert hdd['hid'] == 'harddrive-hitachi-hts54322-e2024242cv86hj'
     assert hdd['interface'] == 'ATA'
     assert hdd['size'] == 238475
-    hdd, _ = user.get(res=Device, item=hdd['devicehubID'])
+    db_hdd = Device.query.filter_by(id=hdd['id']).one()
+    hdd, _ = user.get(res=Device, item=db_hdd.devicehub_id)
     action_types = tuple(e['type'] for e in hdd['actions'])
     assert em.BenchmarkRamSysbench.t in action_types
     assert em.StressTest.t in action_types

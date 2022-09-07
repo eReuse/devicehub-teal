@@ -49,7 +49,7 @@
                   <input class="devicesList" type="hidden" name="device" />
 
                   <div>
-                    <a href="{{ referrer }}" class="btn btn-danger">Cancel</a>
+                    <a href="{{ url_for('inventory.device_details', id=dhid) }}" class="btn btn-danger">Cancel</a>
                     <button class="btn btn-primary" type="submit">Unlink</button>
                   </div>
                 </form>

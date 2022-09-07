@@ -238,18 +238,22 @@ def test_device_search_regenerate_table(app: DeviceSearch, user: UserClient):
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_device_query_search(user: UserClient):
     # todo improve
     snapshot, _ = user.post(file('basic.snapshot'), res=Snapshot)
+    dev = Device.query.filter_by(id=snapshot['device']['id']).one()
     user.post(file('computer-monitor.snapshot'), res=Snapshot)
     user.post(file('real-eee-1001pxd.snapshot.11'), res=Snapshot)
     i, _ = user.get(res=Device, query=[('search', 'desktop')])
-    assert i['items'][0]['id'] == snapshot['device']['id']
+    assert i['items'][0]['id'] == dev.id
     i, _ = user.get(res=Device, query=[('search', 'intel')])
     assert len(i['items']) == 1
-    i, _ = user.get(res=Device, query=[('search', i['items'][0]['devicehubID'])])
+    dev1 = Device.query.filter_by(id=i['items'][0]['id']).one()
+    i, _ = user.get(res=Device, query=[('search', dev1.devicehub_id)])
     assert len(i['items']) == 1
-    i, _ = user.get(res=Device, query=[('search', snapshot['device']['id'])])
+    dev2 = Device.query.filter_by(id=i['items'][0]['id']).one()
+    i, _ = user.get(res=Device, query=[('search', dev2.devicehub_id)])
     assert len(i['items']) == 1
 
 

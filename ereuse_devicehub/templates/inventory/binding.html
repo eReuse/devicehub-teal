@@ -20,115 +20,126 @@
                 <div class="pt-4 pb-2">
                   <h5 class="card-title text-center pb-0 fs-4">{{ title }}</h5>
                   <p class="text-center">Please check that the information is correct.</p>
+                  <p>This is a binding between:&nbsp;
+                      <ul>
+                          {% if new_placeholder.is_abstract %}
+                          <li>1. Device abstract with DHID:<b>{{ new_placeholder.device.devicehub_id }}</b> and PHID: <b>{{ new_placeholder.phid }}</b></li>
+                          <li>2. Device real with DHID: <b>{{ old_placeholder.device.devicehub_id }}</b> and PHID:<b>{{ old_placeholder.phid }}</b></li>
+                          {% else %}
+                          <li>1. Device abstract with DHID:<b>{{ old_placeholder.device.devicehub_id }}</b> and PHID: <b>{{ old_placeholder.phid }}</b></li>
+                          <li>2. Device real with DHID: <b>{{ new_placeholder.device.devicehub_id }}</b> and PHID:<b>{{ new_placeholder.phid }}</b></li>
+                          {% endif %}
+                      </ul>
+                  </p>
+                  <p>The DHID and PHID information of the abstract will be lost.</p>
+                  <p>The information in <span class="text-danger">red colour</span> will be losted and replaced by the information in <span class="text-success">green colour</span>.<br />
+                     The information in <span class="text-warning">orange</span> will be replaced by the information in <span class="text-success">green</span> and you always can recover
+                     it by doing an unbinding action or find this information into device details web.
+                  </p>
                 </div>
 
                   <table class="table table-hover">
                       <thead>
                           <tr class="text-center">
                               <th scope="col">Basic Data</th>
-                              <th scope="col">Info to be Entered</th>
-                              <th scope="col">Info to be Decoupled</th>
+                              <th scope="col">Info Twin device</th>
+                              <th scope="col">Info Abstract device</th>
                           </tr>
                       </thead>
                       <tbody>
                           <tr>
-                              <th scope="row">PHID:</th>
-                              <td class="table-success text-right">{{ placeholder.phid or '' }}</td>
-                              <td class="table-danger">{{ device.placeholder.phid or '' }}</td>
-                          </tr>
-                          <tr>
                               <th scope="row">Manufacturer:</th>
-                              <td class="table-success text-right">{{ placeholder.device.manufacturer or '' }}</td>
-                              <td class="table-danger">{{ device.manufacturer or '' }}</td>
+                              <td class="table-success text-right">{{ new_placeholder.device.manufacturer or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.manufacturer or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Model:</th>
-                              <td class="table-success">{{ placeholder.device.model or '' }}</td>
-                              <td class="table-danger">{{ device.model or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.model or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.model or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Serial Number:</th>
-                              <td class="table-success">{{ placeholder.device.serial_number or '' }}</td>
-                              <td class="table-danger">{{ device.serial_number or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.serial_number or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.serial_number or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Brand:</th>
-                              <td class="table-success">{{ placeholder.device.brand or '' }}</td>
-                              <td class="table-danger">{{ device.brand or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.brand or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.brand or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Sku:</th>
-                              <td class="table-success">{{ placeholder.device.sku or '' }}</td>
-                              <td class="table-danger">{{ device.sku or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.sku or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.sku or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Generation:</th>
-                              <td class="table-success">{{ placeholder.device.generation or '' }}</td>
-                              <td class="table-danger">{{ device.generation or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.generation or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.generation or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Version:</th>
-                              <td class="table-success">{{ placeholder.device.version or '' }}</td>
-                              <td class="table-danger">{{ device.version or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.version or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.version or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Weight:</th>
-                              <td class="table-success">{{ placeholder.device.weight or '' }}</td>
-                              <td class="table-danger">{{ device.weight or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.weight or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.weight or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Width:</th>
-                              <td class="table-success">{{ placeholder.device.width or '' }}</td>
-                              <td class="table-danger">{{ device.width or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.width or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.width or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Height:</th>
-                              <td class="table-success">{{ placeholder.device.height or '' }}</td>
-                              <td class="table-danger">{{ device.height or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.height or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.height or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Depth:</th>
-                              <td class="table-success">{{ placeholder.device.depth or '' }}</td>
-                              <td class="table-danger">{{ device.depth or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.depth or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.depth or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Color:</th>
-                              <td class="table-success">{{ placeholder.device.color or '' }}</td>
-                              <td class="table-danger">{{ device.color or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.color or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.color or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Production date:</th>
-                              <td class="table-success">{{ placeholder.device.production_date or '' }}</td>
-                              <td class="table-danger">{{ device.production_date or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.production_date or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.production_date or '' }}</td>
                           </tr>
                           <tr>
                               <th scope="row">Variant:</th>
-                              <td class="table-success">{{ placeholder.device.variant or '' }}</td>
-                              <td class="table-danger">{{ device.variant or '' }}</td>
+                              <td class="table-success">{{ new_placeholder.device.variant or '' }}</td>
+                              <td class="table-warning">{{ old_placeholder.device.variant or '' }}</td>
                           </tr>
                       </tbody>
                   </table>
 
                   <br />
 
-                  {% if placeholder.device.components or device.components %}
+                  {% if new_placeholder.device.components or old_placeholder.device.components %}
                   <h2>Components</h2>
                   <table class="table table-hover">
                       <thead>
                           <tr class="text-center">
-                              <th scope="col">Info to be Entered</th>
-                              <th scope="col">Info to be Decoupled</th>
+                              <th scope="col">Info Twin device</th>
+                              <th scope="col">Info Abstract device</th>
                           </tr>
                       </thead>
                       <tbody>
                           <tr>
                               <td class="table-success text-right">
-                                  {% for c in placeholder.device.components %}
+                                  {% for c in new_placeholder.device.components %}
                                   * {{ c.verbose_name }}<br />
                                   {% endfor %}
                               </td>
-                              <td class="table-danger">
-                                  {% for c in device.components %}
+                              <td class="table-warning">
+                                  {% for c in old_placeholder.device.components %}
                                   * {{ c.verbose_name }}<br />
                                   {% endfor %}
                               </td>
@@ -141,11 +152,14 @@
 
                   {% if actions %}
                   <h2>Actions</h2>
+                  <p>
+                      The actions will become real device and will no longer be in the abstract
+                  </p>
                   <table class="table table-hover">
                       <thead>
                           <tr class="text-center">
-                              <th scope="col">Info to be Entered</th>
-                              <th scope="col">Info to be Decoupled</th>
+                              <th scope="col">Info Twin device</th>
+                              <th scope="col">Info Abstract device</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -166,11 +180,14 @@
 
                   {% if tags %}
                   <h2>Tags</h2>
+                  <p>
+                      The tags will become real device and will no longer be in the abstract
+                  </p>
                   <table class="table table-hover">
                       <thead>
                           <tr class="text-center">
-                              <th scope="col">Info to be Entered</th>
-                              <th scope="col">Info to be Decoupled</th>
+                              <th scope="col">Info Twin device</th>
+                              <th scope="col">Info Abstract device</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -189,7 +206,7 @@
 
                   <div>
                     <form method="post">
-                      <a href="{{ url_for('inventory.device_details', id=device.placeholder.binding.devicehub_id) }}" class="btn btn-danger">Cancel</a>
+                      <a href="{{ url_for('inventory.device_details', id=dhid) }}" class="btn btn-danger">Cancel</a>
                       <button class="btn btn-primary" type="submit">Confirm</button>
                     </form>
                   </div>

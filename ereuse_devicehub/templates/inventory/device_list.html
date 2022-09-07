@@ -269,41 +269,10 @@
               </div>
 
               <div class="btn-group dropdown m-1" uib-dropdown="">
-                <button id="btnUniqueID" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-tag"></i>
-                    Unique Identifiers (Tags)
-                </button>
-                <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
-                <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
-                <ul class="dropdown-menu" aria-labelledby="btnUniqueID">
-                  <li>
-                    <a href="javascript:addTag()" class="dropdown-item">
-                      <i class="bi bi-plus"></i>
-                      Add Unique Identifier to selected Device
-                    </a>
-                  </li>
-                  <li>
-                    <a href="javascript:removeTag()" class="dropdown-item">
-                      <i class="bi bi-x"></i>
-                      Remove Unique Identifier from selected Device
-                    </a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('labels.label_list')}}">
-                      <i class="bi bi-tools"></i>
-                      Unique Identifier Management
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnTags" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-tag"></i>
                     Labels
                 </button>
-                <span class="d-none" id="unlinkTagAlertModal" data-bs-toggle="modal" data-bs-target="#unlinkTagErrorModal"></span>
-                <span class="d-none" id="addTagAlertModal" data-bs-toggle="modal" data-bs-target="#addingTagModal"></span>
                 <ul class="dropdown-menu" aria-labelledby="btnTags">
                   <li>
                     <form id="print_labels" method="post" action="{{ url_for('labels.print_labels') }}">
@@ -322,19 +291,9 @@
               <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-laptop"></i>
-                    New Devices
+                    New Devices Real
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
-                  <li>
-                    {% if lot %}
-                    <a href="{{ url_for('inventory.lot_upload_snapshot', lot_id=lot.id) }}" class="dropdown-item">
-                    {% else %}
-                    <a href="{{ url_for('inventory.upload_snapshot') }}" class="dropdown-item">
-                    {% endif %}
-                      <i class="bi bi-upload"></i>
-                      Upload Snapshot files
-                    </a>
-                  </li>
                   <li>
                     {% if lot %}
                     <a href="{{ url_for('inventory.lot_upload_placeholder', lot_id=lot.id) }}" class="dropdown-item">
@@ -353,6 +312,25 @@
                     {% endif %}
                       <i class="bi bi-plus"></i>
                       Create a new Placeholder
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="btn-group dropdown m-1" uib-dropdown="">
+                <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-laptop"></i>
+                    New Devices Abstract
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
+                  <li>
+                    {% if lot %}
+                    <a href="{{ url_for('inventory.lot_upload_snapshot', lot_id=lot.id) }}" class="dropdown-item">
+                    {% else %}
+                    <a href="{{ url_for('inventory.upload_snapshot') }}" class="dropdown-item">
+                    {% endif %}
+                      <i class="bi bi-upload"></i>
+                      Upload Snapshot files
                     </a>
                   </li>
                 </ul>
@@ -610,14 +588,12 @@
     </div>
   </div>
 </section>
-{% include "inventory/addDevicestag.html" %}
 {% include "inventory/lot_delete_modal.html" %}
 {% include "inventory/actions.html" %}
 {% include "inventory/allocate.html" %}
 {% include "inventory/data_wipe.html" %}
 {% include "inventory/trade.html" %}
 {% include "inventory/alert_export_error.html" %}
-{% include "inventory/alert_unlink_tag_error.html" %}
 {% include "inventory/alert_lots_changes.html" %}
 
 <!-- Custom Code -->

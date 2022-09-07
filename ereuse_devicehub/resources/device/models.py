@@ -330,7 +330,7 @@ class Device(Thing):
     @property
     def url(self) -> urlutils.URL:
         """The URL where to GET this device."""
-        return urlutils.URL(url_for_resource(Device, item_id=self.devicehub_id))
+        return urlutils.URL(url_for_resource(Device, item_id=self.dhid))
 
     @property
     def rate(self):
@@ -614,6 +614,14 @@ class Device(Thing):
         manufacturer = self.manufacturer or ''
         model = self.model or ''
         return f'{type} {manufacturer} {model}'
+
+    @property
+    def dhid(self):
+        if self.placeholder:
+            return self.placeholder.device.devicehub_id
+        if self.binding:
+            return self.binding.device.devicehub_id
+        return self.devicehub_id
 
     @declared_attr
     def __mapper_args__(cls):
@@ -924,6 +932,25 @@ class Placeholder(Thing):
     )
     owner = db.relationship(User, primaryjoin=owner_id == User.id)
 
+    @property
+    def actions(self):
+        actions = list(self.device.actions) or []
+
+        if self.binding:
+            actions.extend(list(self.binding.actions))
+
+        actions = sorted(actions, key=lambda x: x.created)
+        actions.reverse()
+        return actions
+
+    @property
+    def status(self):
+        if self.is_abstract:
+            return 'Abstract'
+        if self.binding:
+            return 'Twin'
+        return 'Real'
+
 
 class Computer(Device):
     """A chassis with components inside that can be processed
@@ -1022,10 +1049,14 @@ class Computer(Device):
         """Returns the privacy of all ``DataStorage`` components when
         it is not None.
         """
+        components = self.components
+        if self.placeholder and self.placeholder.binding:
+            components = self.placeholder.binding.components
+
         return set(
             privacy
             for privacy in (
-                hdd.privacy for hdd in self.components if isinstance(hdd, DataStorage)
+                hdd.privacy for hdd in components if isinstance(hdd, DataStorage)
             )
             if privacy
         )

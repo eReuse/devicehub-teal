@@ -364,13 +364,12 @@ def test_tag_secondary_workbench_link_find(user: UserClient):
     s = yaml2json('basic.snapshot')
     s['device']['tags'] = [{'id': 'foo', 'secondary': 'bar', 'type': 'Tag'}]
     snapshot, _ = user.post(json_encode(s), res=Snapshot)
-    device, _ = user.get(res=Device, item=snapshot['device']['devicehubID'])
-    desktop = Device.query.filter_by(
-        devicehub_id=snapshot['device']['devicehubID']
-    ).one()
+    dev = Device.query.filter_by(id=snapshot['device']['id']).one()
+    device, _ = user.get(res=Device, item=dev.devicehub_id)
+    desktop = dev.binding.device
     assert [] == [x['id'] for x in device['tags']]
-    assert 'foo' in [x.id for x in desktop.binding.device.tags]
-    assert 'bar' in [x.secondary for x in desktop.binding.device.tags]
+    assert 'foo' in [x.id for x in desktop.tags]
+    assert 'bar' in [x.secondary for x in desktop.tags]
 
     r, _ = user.get(
         res=Device, query=[('search', 'foo'), ('filter', {'type': ['Computer']})]
