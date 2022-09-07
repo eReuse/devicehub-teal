@@ -1,4 +1,3 @@
-import csv
 import datetime
 import json
 from io import BytesIO
@@ -419,7 +418,7 @@ def test_print_labels(user3: UserClientFlask):
     body, status = user3.post(uri, data=data)
 
     assert status == '200 OK'
-    path = "/inventory/device/{}/".format(dev.devicehub_id)
+    path = "/devices/{}".format(dev.devicehub_id)
     assert path in body
     assert "tag1" in body
 
