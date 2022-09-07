@@ -2148,6 +2148,8 @@ def test_unbinding(user3: UserClientFlask):
     user3.get(uri)
 
     old_placeholder = dev_wb.binding
+    old_phid = old_placeholder.phid
+    old_dhid = dev_wb.dhid
 
     # page binding
     dhid = dev_wb.dhid
@@ -2171,7 +2173,8 @@ def test_unbinding(user3: UserClientFlask):
     # check new structure
 
     assert dev.placeholder.binding is None
-    assert dev_wb.binding.phid == '2'
+    assert dev_wb.binding.phid == old_phid
+    assert dev_wb.dhid == old_dhid
     assert old_placeholder.device.model == dev_wb.binding.device.model
     assert old_placeholder.device != dev_wb.binding.device
     assert Placeholder.query.filter_by(id=old_placeholder.id).first() is None

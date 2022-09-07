@@ -202,6 +202,8 @@ class Device(Thing):
         'devicehub_id',
         'system_uuid',
         'active',
+        'phid_bk',
+        'dhid_bk',
     }
 
     __table_args__ = (
