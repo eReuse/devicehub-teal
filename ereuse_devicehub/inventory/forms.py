@@ -1499,7 +1499,7 @@ class UploadPlaceholderForm(FlaskForm):
         if _file.content_type == 'text/csv':
             self.source = "CSV File: {}".format(_file.filename)
             delimiter = ';'
-            data = pd.read_csv(_file).to_dict()
+            data = pd.read_csv(_file).fillna('').to_dict()
             head = list(data.keys())[0].split(delimiter)
             values = [
                 {k: v.split(delimiter)} for x in data.values() for k, v in x.items()
@@ -1513,7 +1513,7 @@ class UploadPlaceholderForm(FlaskForm):
         else:
             self.source = "Excel File: {}".format(_file.filename)
             try:
-                data = pd.read_excel(_file).to_dict()
+                data = pd.read_excel(_file).fillna('').to_dict()
             except ValueError:
                 self.placeholder_file.errors = ["File don't have a correct format"]
                 return False

@@ -33,7 +33,7 @@ from ereuse_devicehub.resources.action.models import (
 from ereuse_devicehub.resources.action.views.snapshot import save_json
 from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device.exceptions import NeedsId
-from ereuse_devicehub.resources.device.models import SolidStateDrive, Device
+from ereuse_devicehub.resources.device.models import Device, SolidStateDrive
 from ereuse_devicehub.resources.device.sync import (
     MismatchBetweenProperties,
     MismatchBetweenTagsAndHid,
@@ -114,7 +114,9 @@ def test_snapshot_post(user: UserClient):
     key = itemgetter('serialNumber')
     snapshot['components'].sort(key=key)
     device['components'].sort(key=key)
-    assert {(x['id'], x['type']) for x in device['components']} == {(x['id'], x['type']) for x in snapshot['components']}
+    assert {(x['id'], x['type']) for x in device['components']} == {
+        (x['id'], x['type']) for x in snapshot['components']
+    }
 
     assert {c['type'] for c in snapshot['components']} == {
         m.GraphicCard.t,
@@ -228,11 +230,15 @@ def test_snapshot_component_add_remove(user: UserClient):
     pc1, _ = user.get(res=m.Device, item=pc1_devicehub_id)
     update1_pc1 = pc1['updated']
     # Parent contains components
-    assert tuple(c['serialNumber'] for c in pc1['components']) == (
-        'p1c1s',
-        'p1c2s',
-        'p1c3s',
-    ) == tuple(x.serial_number for x in pc1_dev.binding.device.components)
+    assert (
+        tuple(c['serialNumber'] for c in pc1['components'])
+        == (
+            'p1c1s',
+            'p1c2s',
+            'p1c3s',
+        )
+        == tuple(x.serial_number for x in pc1_dev.binding.device.components)
+    )
     # Components contain parent
     assert all(c['parent'] == pc1_id for c in pc1['components'])
     # pc has three actions: Snapshot, BenchmarkProcessor and RateComputer
@@ -579,7 +585,6 @@ def test_erase_privacy_standards_endtime_sort(user: UserClient):
     assert storage['privacy']['type'] == 'EraseSectors'
     dev = m.Device.query.filter_by(id=snapshot['device']['id']).one()
     pc, _ = user.get(res=m.Device, item=dev.devicehub_id)
-    # import pdb; pdb.set_trace()
     assert pc['privacy'] == [storage['privacy']]
 
 
