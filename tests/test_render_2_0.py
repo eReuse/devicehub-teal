@@ -2206,3 +2206,35 @@ def test_unbindingnot_used(user3: UserClientFlask):
     assert Placeholder.query.filter_by(id=old_placeholder.id).first()
     assert Device.query.filter_by(id=old_placeholder.device.id).first()
     assert Device.query.filter_by(id=dev_wb.id).first()
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_upload_snapshot_smartphone(user3: UserClientFlask):
+    uri = '/inventory/upload-snapshot/'
+    file_name = 'smartphone.snapshot.json'
+    body, status = user3.get(uri)
+
+    assert status == '200 OK'
+    assert "Select a Snapshot file" in body
+
+    snapshot = conftest.yaml2json(file_name.split(".json")[0])
+    b_snapshot = bytes(json.dumps(snapshot), 'utf-8')
+    file_snap = (BytesIO(b_snapshot), file_name)
+
+    data = {
+        'snapshot': file_snap,
+        'csrf_token': generate_csrf(),
+    }
+    body, status = user3.post(uri, data=data, content_type="multipart/form-data")
+
+    txt = f"{file_name}: Ok"
+    assert status == '200 OK'
+    assert txt in body
+    db_snapthot = Snapshot.query.one()
+    dev = db_snapthot.device
+    assert dev.type == 'Smartphone'
+    assert dev.serial_number == 'abcdef'
+    assert dev.binding.device.serial_number == 'abcdef'
+    assert dev.placeholder is None
+    assert len(dev.actions) == 2

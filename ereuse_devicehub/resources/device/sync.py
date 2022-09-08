@@ -88,7 +88,8 @@ class Sync:
             # We only want to perform Add/Remove to not new components
             actions = self.add_remove(db_device, not_new_components)
             db_device.components = db_components
-            self.create_placeholder(db_device)
+
+        self.create_placeholder(db_device)
         return db_device, actions
 
     def execute_register_component(
@@ -300,21 +301,22 @@ class Sync:
         dict_device.pop('actions_one', None)
         dict_device.pop('components', None)
         dev_placeholder = device.__class__(**dict_device)
-        for c in device.components:
-            c_dict = copy.copy(c.__dict__)
-            c_dict.pop('_sa_instance_state')
-            c_dict.pop('id', None)
-            c_dict.pop('devicehub_id', None)
-            c_dict.pop('actions_multiple', None)
-            c_dict.pop('actions_one', None)
-            c_placeholder = c.__class__(**c_dict)
-            c_placeholder.parent = dev_placeholder
-            c.parent = device
-            component_placeholder = Placeholder(
-                device=c_placeholder, binding=c, is_abstract=True
-            )
-            db.session.add(c_placeholder)
-            db.session.add(component_placeholder)
+        if hasattr(device, 'components'):
+            for c in device.components:
+                c_dict = copy.copy(c.__dict__)
+                c_dict.pop('_sa_instance_state')
+                c_dict.pop('id', None)
+                c_dict.pop('devicehub_id', None)
+                c_dict.pop('actions_multiple', None)
+                c_dict.pop('actions_one', None)
+                c_placeholder = c.__class__(**c_dict)
+                c_placeholder.parent = dev_placeholder
+                c.parent = device
+                component_placeholder = Placeholder(
+                    device=c_placeholder, binding=c, is_abstract=True
+                )
+                db.session.add(c_placeholder)
+                db.session.add(component_placeholder)
 
         placeholder = Placeholder(
             device=dev_placeholder, binding=device, is_abstract=True
