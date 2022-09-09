@@ -125,10 +125,10 @@ class FilterForm(FlaskForm):
     )
 
     def __init__(self, lots, lot_id, *args, **kwargs):
+        self.all_devices = kwargs.pop('all_devices', False)
         super().__init__(*args, **kwargs)
         self.lots = lots
         self.lot_id = lot_id
-        self.only_unassigned = kwargs.pop('only_unassigned', True)
         self._get_types()
 
     def _get_types(self):
@@ -149,7 +149,7 @@ class FilterForm(FlaskForm):
             self.devices = Device.query.filter(Device.owner_id == g.user.id).filter(
                 Device.binding == None  # noqa: E711
             )
-            if self.only_unassigned:
+            if not self.all_devices:
                 self.devices = self.devices.filter_by(lots=None)
 
     def search(self):
