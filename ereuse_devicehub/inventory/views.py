@@ -2,7 +2,6 @@ import copy
 import csv
 import logging
 import os
-from distutils.util import strtobool
 from io import StringIO
 from pathlib import Path
 
@@ -59,10 +58,11 @@ logger = logging.getLogger(__name__)
 class DeviceListMixin(GenericMixin):
     template_name = 'inventory/device_list.html'
 
-    def get_context(self, lot_id, only_unassigned=True):
+    def get_context(self, lot_id=None, all_devices=False):
         super().get_context()
+
         lots = self.context['lots']
-        form_filter = FilterForm(lots, lot_id, only_unassigned=only_unassigned)
+        form_filter = FilterForm(lots, lot_id, all_devices=all_devices)
         devices = form_filter.search()
         lot = None
         form_transfer = ''
@@ -91,7 +91,7 @@ class DeviceListMixin(GenericMixin):
                 'lot': lot,
                 'tags': self.get_user_tags(),
                 'list_devices': self.get_selected_devices(form_new_action),
-                'unassigned_devices': only_unassigned,
+                'all_devices': all_devices,
             }
         )
 
@@ -114,10 +114,13 @@ class DeviceListMixin(GenericMixin):
 
 class DeviceListView(DeviceListMixin):
     def dispatch_request(self, lot_id=None):
-        only_unassigned = request.args.get(
-            'only_unassigned', default=True, type=strtobool
-        )
-        self.get_context(lot_id, only_unassigned)
+        self.get_context(lot_id)
+        return flask.render_template(self.template_name, **self.context)
+
+
+class AllDeviceListView(DeviceListMixin):
+    def dispatch_request(self):
+        self.get_context(all_devices=True)
         return flask.render_template(self.template_name, **self.context)
 
 
@@ -128,7 +131,7 @@ class AdvancedSearchView(DeviceListMixin):
 
     def dispatch_request(self):
         query = request.args.get('q', '')
-        self.get_context(None)
+        self.get_context()
         form = AdvancedSearchForm(q=query)
         self.context.update({'devices': form.devices, 'advanced_form': form})
         return flask.render_template(self.template_name, **self.context)
@@ -1202,6 +1205,9 @@ devices.add_url_rule(
     view_func=NewTradeDocumentView.as_view('trade_document_add'),
 )
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
+devices.add_url_rule(
+    '/all/device/', view_func=AllDeviceListView.as_view('alldevicelist')
+)
 devices.add_url_rule(
     '/search/', view_func=AdvancedSearchView.as_view('advanced_search')
 )
