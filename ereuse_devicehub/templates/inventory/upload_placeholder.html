@@ -20,7 +20,7 @@
 
                 <div class="pt-4 pb-2">
                   <h5 class="card-title text-center pb-0 fs-4">Upload Placeholder</h5>
-                  <p class="text-center small">Please select a Placeholders CSV file.</p>
+                  <p class="text-center small">Follow these steps to register or update placeholders using a spreadsheet.</p>
                   {% if form.form_errors %}
                   <p class="text-danger">
                     {% for error in form.form_errors %}
@@ -29,21 +29,11 @@
                   </p>
                   {% endif %}
                 </div>
-                <div class="pt-4 pb-2 mb-3">
-                  Use the following template to register or update placeholders.<br />
-                  Choose the type of device.<br />
-                  The following considerations are important:<br />
-                  1. Do not rename columns or add new columns.<br />
-                  2. Accepted file types are ods, xlsx and csv.<br />
-                  3. A new Placeholder will be registered if the PHID value does not exist in the system or is empty.<br />
-                  4. A Placeholder will be updated if the PHID value exists in the system
-                </div>
-
                 <form method="post" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
                   {{ form.csrf_token }}
 
                   <div class="form-group has-validation mb-2">
-                    <label for="name" class="form-label">Type *</label>
+                    <label for="name" class="form-label">1 - Select the type of placeholders *</label>
                     <select id="type" class="form-control" name="type" required="">
                       <option value="">Select one Type</option>
                       <optgroup label="Computer">
@@ -88,7 +78,31 @@
                   </div>
 
                   <div>
-                    <label for="name" class="form-label">Select a Placeholders CSV file *</label>
+                    <label for="name" class="form-label">
+                      2 - Download a template accordinng to the format you want to work with.
+                    </label>
+                    <ul>
+                      <li>Template in <a href="{{ url_for('static', filename='docs/template-upload-placeholder-spreadsheet-devicehub-2.3.0.xlsx') }}">xlsx</a> format.</li>
+                      <li>Template in <a href="{{ url_for('static', filename='docs/template-upload-placeholder-spreadsheet-devicehub-2.3.0.ods') }}">ods</a> format.</li>
+                      <li>Template in <a href="{{ url_for('static', filename='docs/template-upload-placeholder-spreadsheet-devicehub-2.3.0.csv') }}">csv</a> format.</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <label for="name" class="form-label">
+                      3 - Fill in the template to create a placeholders spreadsheet, each row is a placeholder. Considerations:
+                    </label>
+                    <ul>
+                      <li>Do not rename columns or add new columns.</li>
+                      <li>Accepted file types are ods, xlsx and csv.</li>
+                      <li>A new Placeholder will be registered if the PHID value does not exist in the system or is empty.</li>
+                      <li>A Placeholder will be updated if the PHID value exist in the system.</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <label for="name" class="form-label">
+                      4 - Select a Placeholders Spreadsheet file *
+                    </label>
+
                     <div class="input-group has-validation">
                       {{ form.placeholder_file }}
                     </div>
