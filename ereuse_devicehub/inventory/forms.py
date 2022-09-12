@@ -326,7 +326,7 @@ class NewDeviceForm(FlaskForm):
     pallet = StringField('Identity of pallet', [validators.Optional()])
     components = TextAreaField('Components', [validators.Optional()])
     info = TextAreaField('Info', [validators.Optional()])
-    serial_number = StringField('Seria Number', [validators.Optional()])
+    serial_number = StringField('Serial Number', [validators.Optional()])
     model = StringField('Model', [validators.Optional()])
     manufacturer = StringField('Manufacturer', [validators.Optional()])
     appearance = StringField('Appearance', [validators.Optional()])
