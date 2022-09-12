@@ -1,4 +1,5 @@
 import copy
+import csv
 import datetime
 import json
 from json.decoder import JSONDecodeError
@@ -1498,24 +1499,18 @@ class UploadPlaceholderForm(FlaskForm):
         _file = files[0]
         if _file.content_type == 'text/csv':
             self.source = "CSV File: {}".format(_file.filename)
-            delimiter = ';'
-            data = pd.read_csv(_file).fillna('').to_dict()
-            head = list(data.keys())[0].split(delimiter)
-            values = [
-                {k: v.split(delimiter)} for x in data.values() for k, v in x.items()
-            ]
-            data = {}
-            for i in range(len(head)):
-                data[head[i]] = {}
-                for x in values:
-                    for k, v in x.items():
-                        data[head[i]][k] = v[i]
+            data = pd.read_csv(
+                _file, delimiter=';', quotechar='"', quoting=csv.QUOTE_ALL
+            )
+            data = data.fillna('').to_dict()
+            return data
         else:
             self.source = "Excel File: {}".format(_file.filename)
             try:
                 data = pd.read_excel(_file).fillna('').to_dict()
             except ValueError:
-                self.placeholder_file.errors = ["File don't have a correct format"]
+                txt = ["File don't have a correct format"]
+                self.placeholder_file.errors = txt
                 return False
 
         return data
@@ -1545,7 +1540,8 @@ class UploadPlaceholderForm(FlaskForm):
 
         for k in header:
             if k not in data.keys():
-                self.placeholder_file.errors = ["Missing required fields in the file"]
+                txt = ["Missing required fields in the file"]
+                self.placeholder_file.errors = txt
                 return False
 
         self.placeholders = []
