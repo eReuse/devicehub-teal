@@ -1490,6 +1490,11 @@ class UploadPlaceholderForm(FlaskForm):
         'Select a Placeholder File', [validators.DataRequired()]
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dev_new = 0
+        self.dev_update = 0
+
     def get_data_file(self):
         files = request.files.getlist(self.placeholder_file.name)
 
@@ -1555,6 +1560,7 @@ class UploadPlaceholderForm(FlaskForm):
 
             # update one
             if placeholder:
+                self.dev_update += 1
                 device = placeholder.device
                 device.model = "{}".format(data['Model'][i]).lower()
                 device.manufacturer = "{}".format(data['Manufacturer'][i]).lower()
@@ -1594,9 +1600,11 @@ class UploadPlaceholderForm(FlaskForm):
             snapshot_json = schema.load(json_snapshot)
             device = snapshot_json['device']
             device.placeholder = Placeholder(**json_placeholder)
+            self.dev_new += 1
 
+            typ = 'New device'
             placeholder_log = PlaceholdersLog(
-                type="New device", source=self.source, placeholder=device.placeholder
+                type=typ, source=self.source, placeholder=device.placeholder
             )
             self.placeholders.append((device, placeholder_log))
 
