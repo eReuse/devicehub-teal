@@ -1169,7 +1169,27 @@ class UploadPlaceholderView(GenericMixin):
                     lot.devices.add(device)
                 db.session.add(lot)
             db.session.commit()
-            messages.success('Placeholders uploaded successfully!')
+            dev_new = form.dev_new
+            dev_update = form.dev_update
+            total = dev_new + dev_update
+            txt = 'Placeholders uploaded successfully!'
+
+            if dev_update == 0:
+                txt = f'A total of {total} Placeholders have been successfully'
+                txt += ' uploaded. All of them have been new registrations in'
+                txt += ' the system.'
+
+            if dev_new == 0:
+                txt = f'A total of {total} Placeholders have been successfully'
+                txt += ' uploaded. All of them are updates.'
+
+            if dev_new and dev_update:
+                txt = f'A total of {total} Placeholders have been successfully'
+                txt += f' uploaded. Among these {dev_new} are registered for '
+                txt += ' the first time in the system and another'
+                txt += f' {dev_update} have been updated.'
+
+            messages.success(txt)
 
         return flask.render_template(self.template_name, **self.context)
 
