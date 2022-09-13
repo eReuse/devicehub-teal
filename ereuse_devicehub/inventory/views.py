@@ -524,7 +524,16 @@ class DeviceCreateView(GenericMixin):
                     messages.error('Sorry, the device could not be created')
 
             db.session.commit()
-            messages.success('Device "{}" created successfully!'.format(form.type.data))
+
+            amount = form.amount.data
+            tpy = form.type.data
+            txt = f'{amount} real Device "{tpy}" created successfully.'
+            if amount == 1:
+                phid = form.placeholder.phid
+                dhid = form.placeholder.device.devicehub_id
+                txt = f'Device "{tpy}" real with PHID {phid} and DHID {dhid} '
+                txt += 'created successfully'
+            messages.success(txt)
             return flask.redirect(next_url)
 
         return flask.render_template(self.template_name, **self.context)

@@ -445,12 +445,21 @@ def test_add_monitor(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert 'Device &#34;Monitor&#34; created successfully!' in body
+
     dev = Device.query.one()
-    assert dev.type == 'Monitor'
+    typ = dev.type
+    dhid = dev.dhid
+    phid = dev.phid()
+
+    assert typ == 'Monitor'
     assert dev.placeholder.id_device_supplier == "b2"
     assert dev.hid == 'monitor-samsung-lc27t55-aaaab'
-    assert dev.placeholder.phid == '1'
+    assert phid == '1'
+    assert dhid == 'O48N2'
+
+    txt = f'Device &#34;{typ}&#34; real with PHID {phid} and DHID {dhid} '
+    txt += 'created successfully'
+    assert txt in body
 
 
 @pytest.mark.mvp
@@ -476,15 +485,24 @@ def test_update_monitor(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert 'Device &#34;Monitor&#34; created successfully!' in body
+
     dev = Device.query.one()
-    assert dev.type == 'Monitor'
+    typ = dev.type
+    dhid = dev.dhid
+    phid = dev.phid()
+
+    assert typ == 'Monitor'
     assert dev.placeholder.id_device_supplier == "b2"
     assert dev.hid == 'monitor-samsung-lc27t55-aaaab'
-    assert dev.placeholder.phid == '1'
+    assert phid == '1'
+    assert dhid == 'O48N2'
     assert dev.model == 'lc27t55'
     assert dev.depth == 0.1
     assert dev.placeholder.pallet == "l34"
+
+    txt = f'Device &#34;{typ}&#34; real with PHID {phid} and DHID {dhid} '
+    txt += 'created successfully'
+    assert txt in body
 
     data = {
         'csrf_token': generate_csrf(),
@@ -537,14 +555,23 @@ def test_add_2_monitor(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert 'Device &#34;Monitor&#34; created successfully!' in body
+
     dev = Device.query.one()
-    assert dev.type == 'Monitor'
+    typ = dev.type
+    dhid = dev.dhid
+    phid = dev.phid()
+
+    assert typ == 'Monitor'
     assert dev.placeholder.id_device_supplier == "b1"
     assert dev.hid == 'monitor-samsung-lc27t55-aaaab'
-    assert dev.placeholder.phid == 'AAB'
+    assert phid == 'AAB'
+    assert dhid == 'O48N2'
     assert dev.model == 'lc27t55'
     assert dev.placeholder.pallet == "l34"
+
+    txt = f'Device &#34;{typ}&#34; real with PHID {phid} and DHID {dhid} '
+    txt += 'created successfully'
+    assert txt in body
 
     data = {
         'csrf_token': generate_csrf(),
@@ -561,14 +588,24 @@ def test_add_2_monitor(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert 'Device &#34;Monitor&#34; created successfully!' in body
+
     dev = Device.query.all()[-1]
-    assert dev.type == 'Monitor'
+    typ = dev.type
+    dhid = dev.dhid
+    phid = dev.phid()
+
+    assert typ == 'Monitor'
     assert dev.placeholder.id_device_supplier == "b2"
     assert dev.hid == 'monitor-samsung-lcd_43_b-aaaab'
-    assert dev.placeholder.phid == '2'
+    assert phid == '2'
     assert dev.model == 'lcd 43 b'
     assert dev.placeholder.pallet == "l20"
+
+    assert dhid == 'E39W3'
+
+    txt = f'Device &#34;{typ}&#34; real with PHID {phid} and DHID {dhid} '
+    txt += 'created successfully'
+    assert txt in body
 
 
 @pytest.mark.mvp
@@ -593,12 +630,21 @@ def test_add_laptop(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert 'Device &#34;Laptop&#34; created successfully!' in body
+
     dev = Device.query.one()
-    assert dev.type == 'Laptop'
+    typ = dev.type
+    dhid = dev.dhid
+    phid = dev.phid()
+
+    assert typ == 'Laptop'
     assert dev.placeholder.id_device_supplier == "b2"
     assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
-    assert dev.placeholder.phid == '1'
+    assert phid == '1'
+    assert dhid == 'O48N2'
+
+    txt = f'Device &#34;{typ}&#34; real with PHID {phid} and DHID {dhid} '
+    txt += 'created successfully'
+    assert txt in body
 
 
 @pytest.mark.mvp
@@ -626,7 +672,8 @@ def test_add_with_ammount_laptops(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert 'Device &#34;Laptop&#34; created successfully!' in body
+    assert f'{num} real Device &#34;Laptop&#34; created successfully.' in body
+
     for dev in Device.query.all():
         assert dev.type == 'Laptop'
         assert dev.placeholder.id_device_supplier is None
@@ -1737,14 +1784,23 @@ def test_edit_laptop(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert 'Device &#34;Laptop&#34; created successfully!' in body
+
     dev = Device.query.one()
-    assert dev.type == 'Laptop'
+    typ = dev.type
+    dhid = dev.dhid
+    phid = dev.phid()
+
+    assert typ == 'Laptop'
+    assert dev.placeholder.id_device_supplier == "b2"
     assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
-    assert dev.placeholder.phid == '1'
-    assert dev.placeholder.id_device_supplier == 'b2'
     assert dev.serial_number == 'aaaab'
     assert dev.model == 'lc27t55'
+    assert phid == '1'
+    assert dhid == 'O48N2'
+
+    txt = f'Device &#34;{typ}&#34; real with PHID {phid} and DHID {dhid} '
+    txt += 'created successfully'
+    assert txt in body
 
     uri = '/inventory/device/edit/{}/'.format(dev.devicehub_id)
     body, status = user3.get(uri)
