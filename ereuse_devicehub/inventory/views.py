@@ -528,9 +528,14 @@ class DeviceCreateView(GenericMixin):
             amount = form.amount.data
             tpy = form.type.data
             txt = f'{amount} real Device "{tpy}" created successfully.'
-            if amount == 1:
-                phid = form.placeholder.phid
-                dhid = form.placeholder.device.devicehub_id
+            placeholder = (
+                Placeholder.query.filter_by(owner=g.user)
+                .order_by(Placeholder.id.desc())
+                .first()
+            )
+            if amount == 1 and placeholder:
+                phid = placeholder.phid
+                dhid = placeholder.device.devicehub_id
                 txt = f'Device "{tpy}" real with PHID {phid} and DHID {dhid} '
                 txt += 'created successfully'
             messages.success(txt)

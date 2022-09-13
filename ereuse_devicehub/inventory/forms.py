@@ -326,9 +326,10 @@ class NewDeviceForm(FlaskForm):
     pallet = StringField('Identity of pallet', [validators.Optional()])
     components = TextAreaField('Components', [validators.Optional()])
     info = TextAreaField('Info', [validators.Optional()])
-    serial_number = StringField('Serial Number', [validators.Optional()])
     model = StringField('Model', [validators.Optional()])
     manufacturer = StringField('Manufacturer', [validators.Optional()])
+    part_number = StringField('Part Number', [validators.Optional()])
+    serial_number = StringField('Serial Number', [validators.Optional()])
     appearance = StringField('Appearance', [validators.Optional()])
     functionality = StringField('Functionality', [validators.Optional()])
     brand = StringField('Brand')
@@ -390,6 +391,7 @@ class NewDeviceForm(FlaskForm):
         self.info.data = self._obj.placeholder.info
         self.components.data = self._obj.placeholder.components
         self.serial_number.data = self._obj.serial_number
+        self.part_number.data = self._obj.part_number
         self.model.data = self._obj.model
         self.manufacturer.data = self._obj.manufacturer
         self.appearance.data = appearance
@@ -419,6 +421,7 @@ class NewDeviceForm(FlaskForm):
             self.info.render_kw = disabled
             self.components.render_kw = disabled
             self.serial_number.render_kw = disabled
+            self.part_number.render_kw = disabled
             self.model.render_kw = disabled
             self.manufacturer.render_kw = disabled
             self.appearance.render_kw = disabled
@@ -516,6 +519,8 @@ class NewDeviceForm(FlaskForm):
             self.model.data = self.model.data.lower()
         if self.serial_number.data:
             self.serial_number.data = self.serial_number.data.lower()
+        if self.part_number.data:
+            self.part_number.data = self.part_number.data.lower()
 
         return True
 
@@ -541,6 +546,7 @@ class NewDeviceForm(FlaskForm):
                 'model': self.model.data,
                 'manufacturer': self.manufacturer.data,
                 'serialNumber': self.serial_number.data,
+                'partNumber': self.part_number.data,
                 'brand': self.brand.data,
                 'version': self.version.data,
                 'generation': self.generation.data,
@@ -587,6 +593,7 @@ class NewDeviceForm(FlaskForm):
             self.phid.data = None
             self.id_device_supplier.data = None
             self.serial_number.data = None
+            self.part_number.data = None
             self.sku.data = None
             self.imei.data = None
             self.meid.data = None
@@ -616,6 +623,7 @@ class NewDeviceForm(FlaskForm):
             self._obj.model = self.model.data
             self._obj.manufacturer = self.manufacturer.data
             self._obj.serial_number = self.serial_number.data
+            self._obj.part_number = self.part_number.data
             self._obj.brand = self.brand.data
             self._obj.version = self.version.data
             self._obj.generation = self.generation.data
@@ -1538,6 +1546,7 @@ class UploadPlaceholderForm(FlaskForm):
             'Model',
             'Manufacturer',
             'Serial Number',
+            'Part Number',
             'Id device Supplier',
             'Pallet',
             'Info',
@@ -1565,6 +1574,7 @@ class UploadPlaceholderForm(FlaskForm):
                 device.model = "{}".format(data['Model'][i]).lower()
                 device.manufacturer = "{}".format(data['Manufacturer'][i]).lower()
                 device.serial_number = "{}".format(data['Serial Number'][i]).lower()
+                device.part_number = "{}".format(data['Part Number'][i]).lower()
                 placeholder.id_device_supplier = "{}".format(
                     data['Id device Supplier'][i]
                 )
@@ -1587,6 +1597,7 @@ class UploadPlaceholderForm(FlaskForm):
                     'model': "{}".format(data['Model'][i]),
                     'manufacturer': "{}".format(data['Manufacturer'][i]),
                     'serialNumber': "{}".format(data['Serial Number'][i]),
+                    'partNumber': "{}".format(data['Part Number'][i]),
                 },
             }
             json_placeholder = {
@@ -1626,6 +1637,7 @@ class EditPlaceholderForm(FlaskForm):
     manufacturer = StringField('Manufacturer', [validators.Optional()])
     model = StringField('Model', [validators.Optional()])
     serial_number = StringField('Serial Number', [validators.Optional()])
+    part_number = StringField('Part Number', [validators.Optional()])
     id_device_supplier = StringField('Id Supplier', [validators.Optional()])
     phid = StringField('Phid', [validators.DataRequired()])
     pallet = StringField('Pallet', [validators.Optional()])

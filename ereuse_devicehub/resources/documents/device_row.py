@@ -259,6 +259,7 @@ class BaseDeviceRow(OrderedDict):
         self['Real Components'] = ''
         self['Real Type'] = ''
         self['Real Serial Number'] = ''
+        self['Real Part Number'] = ''
         self['Real Model'] = ''
         self['Real Manufacturer'] = ''
 
@@ -513,6 +514,7 @@ class DeviceRow(BaseDeviceRow):
         self['Real Type'] = none2str(self.placeholder.device.type)
         self['Real Manufacturer'] = none2str(self.placeholder.device.manufacturer)
         self['Real Model'] = none2str(self.placeholder.device.model)
+        self['Real Part Number'] = none2str(self.placeholder.device.part_number)
         self['Real Serial Number'] = none2str(self.placeholder.device.serial_number)
 
 
