@@ -113,6 +113,7 @@ def test_physical_properties():
     assert c.physical_properties == {
         'usb': 3,
         'serial_number': 'sn',
+        'part_number': None,
         'pcmcia': None,
         'model': 'ml',
         'slots': 2,
@@ -130,6 +131,7 @@ def test_physical_properties():
         'model': 'foo',
         'receiver_id': None,
         'serial_number': 'foo-bar',
+        'part_number': None,
         'transfer_state': TransferState.Initial
     }
 
