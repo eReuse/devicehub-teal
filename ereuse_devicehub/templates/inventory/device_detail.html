@@ -85,7 +85,7 @@
           <div class="tab-content pt-2">
 
             <div class="tab-pane fade show active" id="details">
-              <h5 class="card-title">Details Real part</h5>
+              <h5 class="card-title">Editable details</h5>
               <div class="row mb-3">
                 <div class="col-lg-3 col-md-4 label ">
                   (<a href="{{ url_for('inventory.device_edit', id=placeholder.device.devicehub_id)}}">Edit Device</a>)
@@ -124,7 +124,7 @@
               </div>
 
               {% if placeholder.binding %}
-              <h5 class="card-title">Details Abstract part</h5>
+              <h5 class="card-title">Fixed details</h5>
               <div class="row">
                 <div class="col-lg-3 col-md-4 label ">Type</div>
                 <div class="col-lg-9 col-md-8">{{ placeholder.binding.type }}</div>
