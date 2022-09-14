@@ -1518,7 +1518,10 @@ class UploadPlaceholderForm(FlaskForm):
             data = data.fillna('').to_dict()
             return data
         else:
-            self.source = "Excel File: {}".format(_file.filename)
+            if _file.content_type == 'application/vnd.oasis.opendocument.spreadsheet':
+                self.source = "Ods File: {}".format(_file.filename)
+            else:
+                self.source = "Excel File: {}".format(_file.filename)
             try:
                 data = pd.read_excel(_file).fillna('').to_dict()
             except ValueError:
