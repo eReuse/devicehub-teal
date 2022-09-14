@@ -44,11 +44,11 @@
               </div>
               {% if placeholder.status in ['Abstract', 'Real'] %}
               <a type="button" href="{{ url_for('inventory.binding_search', dhid=placeholder.device.devicehub_id) }}" class="btn btn-primary" style="float: right; margin-right: 15px;">
-                Binding
+                New Twin
               </a>
               {% elif placeholder.status == 'Twin' %}
               <a type="button" href="{{ url_for('inventory.unbinding', phid=placeholder.phid) }}" class="btn btn-primary" style="float: right; margin-right: 15px;">
-                Unbinding
+                Delete Twin
               </a>
               {% endif %}
               <div style="display: block;"></div>
