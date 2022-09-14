@@ -333,7 +333,6 @@ class NewDeviceForm(FlaskForm):
     appearance = StringField('Appearance', [validators.Optional()])
     functionality = StringField('Functionality', [validators.Optional()])
     brand = StringField('Brand')
-    generation = IntegerField('Generation')
     version = StringField('Version')
     weight = FloatField('Weight', [validators.Optional()])
     width = FloatField('Width', [validators.Optional()])
@@ -369,9 +368,6 @@ class NewDeviceForm(FlaskForm):
             "MemoryCardReader": MemoryCardReader,
         }
 
-        if not self.generation.data:
-            self.generation.data = 1
-
     def reset_from_obj(self):
         if not self._obj:
             return
@@ -397,7 +393,6 @@ class NewDeviceForm(FlaskForm):
         self.appearance.data = appearance
         self.functionality.data = functionality
         self.brand.data = self._obj.brand
-        self.generation.data = self._obj.generation
         self.version.data = self._obj.version
         self.weight.data = self._obj.weight
         self.width.data = self._obj.width
@@ -427,7 +422,6 @@ class NewDeviceForm(FlaskForm):
             self.appearance.render_kw = disabled
             self.functionality.render_kw = disabled
             self.brand.render_kw = disabled
-            self.generation.render_kw = disabled
             self.version.render_kw = disabled
             self.weight.render_kw = disabled
             self.width.render_kw = disabled
@@ -446,10 +440,6 @@ class NewDeviceForm(FlaskForm):
     def validate(self, extra_validators=None):  # noqa: C901
         error = ["Not a correct value"]
         is_valid = super().validate(extra_validators)
-
-        if self.generation.data and self.generation.data < 1:
-            self.generation.errors = error
-            is_valid = False
 
         if self.weight.data and not (0.1 <= self.weight.data <= 5):
             txt = ["Supported values between 0.1 and 5"]
@@ -549,7 +539,6 @@ class NewDeviceForm(FlaskForm):
                 'partNumber': self.part_number.data,
                 'brand': self.brand.data,
                 'version': self.version.data,
-                'generation': self.generation.data,
                 'sku': self.sku.data,
                 'weight': self.weight.data,
                 'width': self.width.data,
@@ -626,7 +615,6 @@ class NewDeviceForm(FlaskForm):
             self._obj.part_number = self.part_number.data
             self._obj.brand = self.brand.data
             self._obj.version = self.version.data
-            self._obj.generation = self.generation.data
             self._obj.sku = self.sku.data
             self._obj.weight = self.weight.data
             self._obj.width = self.width.data

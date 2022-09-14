@@ -295,19 +295,6 @@
                     </div>
 
                     <div class="from-group has-validation mb-2">
-                      <label for="model" class="form-label">{{ form.generation.label }}</label>
-                      {{ form.generation(class_="form-control") }}
-                      <small class="text-muted form-text">The generation of the device.</small>
-                      {% if form.generation.errors %}
-                      <p class="text-danger">
-                        {% for error in form.generation.errors %}
-                          {{ error }}<br/>
-                        {% endfor %}
-                      </p>
-                      {% endif %}
-                    </div>
-
-                    <div class="from-group has-validation mb-2">
                       <label for="model" class="form-label">{{ form.version.label }}</label>
                       {{ form.version(class_="form-control") }}
                       <small class="text-muted form-text">The version code o fthis device, like 'v1' or 'A001'.</small>
