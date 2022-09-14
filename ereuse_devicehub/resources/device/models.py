@@ -128,6 +128,8 @@ class Device(Thing):
     """
     serial_number = Column(Unicode(), check_lower('serial_number'))
     serial_number.comment = """The serial number of the device in lower case."""
+    part_number = Column(Unicode(), check_lower('part_number'))
+    part_number.comment = """The part number of the device in lower case."""
     brand = db.Column(CIText())
     brand.comment = """A naming for consumers. This field can represent
     several models, so it can be ambiguous, and it is not used to

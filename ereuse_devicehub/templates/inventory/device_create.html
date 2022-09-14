@@ -155,6 +155,19 @@
                       {% endif %}
                     </div>
 
+                    <div class="from-group has-validation mb-2" id="Part_number">
+                      <label for="partNumber" class="form-label">{{ form.part_number.label }}</label>
+                      {{ form.part_number(class_="form-control") }}
+                      <small class="text-muted form-text">Part number of this device</small>
+                      {% if form.part_number.errors %}
+                      <p class="text-danger">
+                        {% for error in form.part_number.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
+                    </div>
+
                     <div class="from-group has-validation mb-2" id="Serial_number">
                       <label for="serialNumber" class="form-label">{{ form.serial_number.label }}</label>
                       {{ form.serial_number(class_="form-control") }}

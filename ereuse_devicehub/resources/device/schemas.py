@@ -52,6 +52,9 @@ class Device(Thing):
     serial_number = SanitizedStr(
         lower=True, validate=Length(max=STR_BIG_SIZE), data_key='serialNumber'
     )
+    part_number = SanitizedStr(
+        lower=True, validate=Length(max=STR_BIG_SIZE), data_key='partNumber'
+    )
     brand = SanitizedStr(
         validate=Length(max=STR_BIG_SIZE), description=m.Device.brand.comment
     )
