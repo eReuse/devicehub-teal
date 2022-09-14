@@ -1520,7 +1520,9 @@ class UploadPlaceholderForm(FlaskForm):
         else:
             self.source = "Excel File: {}".format(_file.filename)
             try:
-                data = pd.read_excel(_file).fillna('').to_dict()
+                data = (
+                    pd.read_excel(_file, converters={'Phid': str}).fillna('').to_dict()
+                )
             except ValueError:
                 txt = ["File don't have a correct format"]
                 self.placeholder_file.errors = txt
