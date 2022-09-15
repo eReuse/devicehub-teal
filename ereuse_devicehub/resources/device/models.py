@@ -683,13 +683,13 @@ class Device(Thing):
     def is_abstract(self):
         if self.placeholder:
             if self.placeholder.is_abstract:
-                return 'Abstract'
+                return 'Snapshot'
             if self.placeholder.binding:
                 return 'Twin'
-            return 'Real'
+            return 'Placeholder'
         if self.binding:
             if self.binding.is_abstract:
-                return 'Abstract'
+                return 'Snapshot'
             return 'Twin'
 
         return ''
@@ -952,10 +952,10 @@ class Placeholder(Thing):
     @property
     def status(self):
         if self.is_abstract:
-            return 'Abstract'
+            return 'Snapshot'
         if self.binding:
             return 'Twin'
-        return 'Real'
+        return 'Placeholder'
 
 
 class Computer(Device):

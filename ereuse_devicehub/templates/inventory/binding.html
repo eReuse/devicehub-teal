@@ -23,15 +23,15 @@
                   <p>This is a binding between:&nbsp;
                       <ul>
                           {% if new_placeholder.is_abstract %}
-                          <li>1. Device abstract with DHID:<b>{{ new_placeholder.device.devicehub_id }}</b> and PHID: <b>{{ new_placeholder.phid }}</b></li>
-                          <li>2. Device real with DHID: <b>{{ old_placeholder.device.devicehub_id }}</b> and PHID:<b>{{ old_placeholder.phid }}</b></li>
+                          <li>1. Device snapshot with DHID:<b>{{ new_placeholder.device.devicehub_id }}</b> and PHID: <b>{{ new_placeholder.phid }}</b></li>
+                          <li>2. Device placeholder with DHID: <b>{{ old_placeholder.device.devicehub_id }}</b> and PHID:<b>{{ old_placeholder.phid }}</b></li>
                           {% else %}
-                          <li>1. Device abstract with DHID:<b>{{ old_placeholder.device.devicehub_id }}</b> and PHID: <b>{{ old_placeholder.phid }}</b></li>
-                          <li>2. Device real with DHID: <b>{{ new_placeholder.device.devicehub_id }}</b> and PHID:<b>{{ new_placeholder.phid }}</b></li>
+                          <li>1. Device snapshot with DHID:<b>{{ old_placeholder.device.devicehub_id }}</b> and PHID: <b>{{ old_placeholder.phid }}</b></li>
+                          <li>2. Device placeholder with DHID: <b>{{ new_placeholder.device.devicehub_id }}</b> and PHID:<b>{{ new_placeholder.phid }}</b></li>
                           {% endif %}
                       </ul>
                   </p>
-                  <p>The DHID and PHID information of the abstract will be lost.</p>
+                  <p>The DHID and PHID information of the snapshot will be lost.</p>
                   <p>The information in <span class="text-danger">red colour</span> will be losted and replaced by the information in <span class="text-success">green colour</span>.<br />
                      The information in <span class="text-warning">orange</span> will be replaced by the information in <span class="text-success">green</span> and you always can recover
                      it by doing an unbinding action or find this information into device details web.
@@ -43,7 +43,7 @@
                           <tr class="text-center">
                               <th scope="col">Basic Data</th>
                               <th scope="col">Info Twin device</th>
-                              <th scope="col">Info Abstract device</th>
+                              <th scope="col">Info Snapshot device</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -128,7 +128,7 @@
                       <thead>
                           <tr class="text-center">
                               <th scope="col">Info Twin device</th>
-                              <th scope="col">Info Abstract device</th>
+                              <th scope="col">Info Snapshot device</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -153,13 +153,13 @@
                   {% if actions %}
                   <h2>Actions</h2>
                   <p>
-                      The actions will become real device and will no longer be in the abstract
+                      The actions will become placeholder device and will no longer be in the snapshot
                   </p>
                   <table class="table table-hover">
                       <thead>
                           <tr class="text-center">
                               <th scope="col">Info Twin device</th>
-                              <th scope="col">Info Abstract device</th>
+                              <th scope="col">Info Snapshot device</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -181,13 +181,13 @@
                   {% if tags %}
                   <h2>Tags</h2>
                   <p>
-                      The tags will become real device and will no longer be in the abstract
+                      The tags will become placeholder device and will no longer be in the snapshot
                   </p>
                   <table class="table table-hover">
                       <thead>
                           <tr class="text-center">
                               <th scope="col">Info Twin device</th>
-                              <th scope="col">Info Abstract device</th>
+                              <th scope="col">Info Snapshot device</th>
                           </tr>
                       </thead>
                       <tbody>

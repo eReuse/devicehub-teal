@@ -235,9 +235,9 @@ class BindingView(GenericMixin):
             messages.error('Device Phid: "{}" not exist!'.format(self.phid))
             return True
 
-        if self.old_device.placeholder.status != 'Abstract':
+        if self.old_device.placeholder.status != 'Snapshot':
             messages.error(
-                'Device Dhid: "{}" is not a Abstract device!'.format(self.dhid)
+                'Device Dhid: "{}" is not a Snapshot device!'.format(self.dhid)
             )
             return True
 
@@ -267,10 +267,10 @@ class BindingView(GenericMixin):
         if not self.new_placeholder:
             return
 
-        if self.old_device.placeholder.status == 'Abstract':
+        if self.old_device.placeholder.status == 'Snapshot':
             self.new_device = self.new_placeholder.device
             self.old_placeholder = self.old_device.placeholder
-        elif self.old_device.placeholder.status == 'Real':
+        elif self.old_device.placeholder.status == 'Placeholder':
             self.new_device = self.old_device
             self.old_placeholder = self.new_placeholder
             self.old_device = self.old_placeholder.device
@@ -308,8 +308,8 @@ class BindingView(GenericMixin):
         db.session.commit()
 
         next_url = url_for('inventory.device_details', id=self.real_dhid)
-        txt = 'Device real with PHID: {} and DHID: {} bind successfully with '
-        txt += 'device abstract PHID: {} DHID: {}.'
+        txt = 'Device placeholder with PHID: {} and DHID: {} bind successfully with '
+        txt += 'device snapshot PHID: {} DHID: {}.'
         messages.success(
             txt.format(
                 self.real_phid, self.real_dhid, self.abstract_phid, self.abstract_dhid
@@ -527,7 +527,7 @@ class DeviceCreateView(GenericMixin):
 
             amount = form.amount.data
             tpy = form.type.data
-            txt = f'{amount} real Device "{tpy}" created successfully.'
+            txt = f'{amount} placeholders Device "{tpy}" created successfully.'
             placeholder = (
                 Placeholder.query.filter_by(owner=g.user)
                 .order_by(Placeholder.id.desc())
@@ -536,7 +536,7 @@ class DeviceCreateView(GenericMixin):
             if amount == 1 and placeholder:
                 phid = placeholder.phid
                 dhid = placeholder.device.devicehub_id
-                txt = f'Device "{tpy}" real with PHID {phid} and DHID {dhid} '
+                txt = f'Device "{tpy}" placeholder with PHID {phid} and DHID {dhid} '
                 txt += 'created successfully'
             messages.success(txt)
             return flask.redirect(next_url)
