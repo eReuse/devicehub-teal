@@ -457,7 +457,7 @@ def test_add_monitor(user3: UserClientFlask):
     assert phid == '1'
     assert dhid == 'O48N2'
 
-    txt = f'Device &#34;{typ}&#34; real with PHID {phid} and DHID {dhid} '
+    txt = f'Device &#34;{typ}&#34; placeholder with PHID {phid} and DHID {dhid} '
     txt += 'created successfully'
     assert txt in body
 
@@ -500,7 +500,7 @@ def test_update_monitor(user3: UserClientFlask):
     assert dev.depth == 0.1
     assert dev.placeholder.pallet == "l34"
 
-    txt = f'Device &#34;{typ}&#34; real with PHID {phid} and DHID {dhid} '
+    txt = f'Device &#34;{typ}&#34; placeholder with PHID {phid} and DHID {dhid} '
     txt += 'created successfully'
     assert txt in body
 
@@ -569,7 +569,7 @@ def test_add_2_monitor(user3: UserClientFlask):
     assert dev.model == 'lc27t55'
     assert dev.placeholder.pallet == "l34"
 
-    txt = f'Device &#34;{typ}&#34; real with PHID {phid} and DHID {dhid} '
+    txt = f'Device &#34;{typ}&#34; placeholder with PHID {phid} and DHID {dhid} '
     txt += 'created successfully'
     assert txt in body
 
@@ -603,7 +603,7 @@ def test_add_2_monitor(user3: UserClientFlask):
 
     assert dhid == 'E39W3'
 
-    txt = f'Device &#34;{typ}&#34; real with PHID {phid} and DHID {dhid} '
+    txt = f'Device &#34;{typ}&#34; placeholder with PHID {phid} and DHID {dhid} '
     txt += 'created successfully'
     assert txt in body
 
@@ -642,7 +642,7 @@ def test_add_laptop(user3: UserClientFlask):
     assert phid == '1'
     assert dhid == 'O48N2'
 
-    txt = f'Device &#34;{typ}&#34; real with PHID {phid} and DHID {dhid} '
+    txt = f'Device &#34;{typ}&#34; placeholder with PHID {phid} and DHID {dhid} '
     txt += 'created successfully'
     assert txt in body
 
@@ -672,7 +672,7 @@ def test_add_with_ammount_laptops(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert f'{num} real Device &#34;Laptop&#34; created successfully.' in body
+    assert f'{num} placeholders Device &#34;Laptop&#34; created successfully.' in body
 
     for dev in Device.query.all():
         assert dev.type == 'Laptop'
@@ -1798,7 +1798,7 @@ def test_edit_laptop(user3: UserClientFlask):
     assert phid == '1'
     assert dhid == 'O48N2'
 
-    txt = f'Device &#34;{typ}&#34; real with PHID {phid} and DHID {dhid} '
+    txt = f'Device &#34;{typ}&#34; placeholder with PHID {phid} and DHID {dhid} '
     txt += 'created successfully'
     assert txt in body
 
@@ -2116,8 +2116,8 @@ def test_manual_binding(user3: UserClientFlask):
     # action binding
     body, status = user3.post(uri, data={})
     assert status == '200 OK'
-    txt = f"Device real with PHID: {phid_real} and DHID: {dhid_real} "
-    txt += f"bind successfully with device abstract PHID: {phid_abstract} DHID: {dhid_abstract}."
+    txt = f"Device placeholder with PHID: {phid_real} and DHID: {dhid_real} "
+    txt += f"bind successfully with device snapshot PHID: {phid_abstract} DHID: {dhid_abstract}."
     assert txt in body
 
     # check new structure

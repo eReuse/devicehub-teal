@@ -252,16 +252,16 @@ class BaseDeviceRow(OrderedDict):
         self['Benchmark RamSysbench (points)'] = ''
         # Placeholder
         self['PHID'] = ''
-        self['Is Abstract'] = ''
+        self['Is Snapshot'] = ''
         self['Pallet'] = ''
         self['id Supplier'] = ''
-        self['Real Info'] = ''
-        self['Real Components'] = ''
-        self['Real Type'] = ''
-        self['Real Serial Number'] = ''
-        self['Real Part Number'] = ''
-        self['Real Model'] = ''
-        self['Real Manufacturer'] = ''
+        self['Placeholder Info'] = ''
+        self['Placeholder Components'] = ''
+        self['Placeholder Type'] = ''
+        self['Placeholder Serial Number'] = ''
+        self['Placeholder Part Number'] = ''
+        self['Placeholder Model'] = ''
+        self['Placeholder Manufacturer'] = ''
 
 
 class DeviceRow(BaseDeviceRow):
@@ -506,16 +506,20 @@ class DeviceRow(BaseDeviceRow):
     def get_placeholder_datas(self):
         # Placeholder
         self['PHID'] = none2str(self.placeholder.phid)
-        self['Is Abstract'] = none2str(self.device.is_abstract())
+        self['Is Snapshot'] = none2str(self.device.is_abstract())
         self['Pallet'] = none2str(self.placeholder.pallet)
         self['id Supplier'] = none2str(self.placeholder.id_device_supplier)
-        self['Real Info'] = none2str(self.placeholder.info)
-        self['Real Components'] = none2str(self.placeholder.components)
-        self['Real Type'] = none2str(self.placeholder.device.type)
-        self['Real Manufacturer'] = none2str(self.placeholder.device.manufacturer)
-        self['Real Model'] = none2str(self.placeholder.device.model)
-        self['Real Part Number'] = none2str(self.placeholder.device.part_number)
-        self['Real Serial Number'] = none2str(self.placeholder.device.serial_number)
+        self['Placeholder Info'] = none2str(self.placeholder.info)
+        self['Placeholder Components'] = none2str(self.placeholder.components)
+        self['Placeholder Type'] = none2str(self.placeholder.device.type)
+        self['Placeholder Manufacturer'] = none2str(
+            self.placeholder.device.manufacturer
+        )
+        self['Placeholder Model'] = none2str(self.placeholder.device.model)
+        self['Placeholder Part Number'] = none2str(self.placeholder.device.part_number)
+        self['Placeholder Serial Number'] = none2str(
+            self.placeholder.device.serial_number
+        )
 
 
 class StockRow(OrderedDict):

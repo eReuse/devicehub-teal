@@ -42,7 +42,7 @@
                   </li>
                 </ul>
               </div>
-              {% if placeholder.status in ['Abstract', 'Real'] %}
+              {% if placeholder.status in ['Snapshot', 'Placeholder'] %}
               <a type="button" href="{{ url_for('inventory.binding_search', dhid=placeholder.device.devicehub_id) }}" class="btn btn-primary" style="float: right; margin-right: 15px;">
                 New Twin
               </a>
@@ -232,13 +232,13 @@
             </div>
 
             <div class="tab-pane fade profile-overview" id="components">
-              <h5 class="card-title">Components Real part</h5>
+              <h5 class="card-title">Components Placeholder</h5>
               <div class="list-group col-6">
                   {{ placeholder.components  or '' }}
               </div>
 
               {% if placeholder.binding %}
-              <h5 class="card-title">Components Abstract part</h5>
+              <h5 class="card-title">Components Snapshot</h5>
               <div class="list-group col-6">
                 {% for component in placeholder.binding.components|sort(attribute='type') %}
                 <div class="list-group-item">
