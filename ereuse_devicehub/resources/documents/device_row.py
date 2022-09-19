@@ -620,7 +620,7 @@ class ActionRow(OrderedDict):
 
 
 class InternalStatsRow(OrderedDict):
-    def __init__(self, user, create, actions):
+    def __init__(self, user, create, actions, disks):
         super().__init__()
         # General information about all internal stats
         # user, quart, month, year:
@@ -628,13 +628,14 @@ class InternalStatsRow(OrderedDict):
         #    Snapshots (Update)
         #    Snapshots (All)
         #    Drives Erasure
+        #    Drives Erasure Uniques
         #    Placeholders
         #    Allocate
         #    Deallocate
         #    Live
         self.actions = actions
         year, month = create.split('-')
-        self.disks = []
+        self.disks = disks
 
         self['User'] = user
         self['Year'] = year
@@ -644,6 +645,7 @@ class InternalStatsRow(OrderedDict):
         self['Snapshot (Update)'] = 0
         self['Snapshot (All)'] = 0
         self['Drives Erasure'] = 0
+        self['Drives Erasure Uniques'] = 0
         self['Placeholders'] = 0
         self['Allocates'] = 0
         self['Deallocates'] = 0
@@ -664,9 +666,10 @@ class InternalStatsRow(OrderedDict):
 
     def is_erase(self, ac):
         if ac.type in ['EraseBasic', 'EraseSectors']:
+            self['Drives Erasure'] += 1
             if ac.device in self.disks:
                 return ac
-            self['Drives Erasure'] += 1
+            self['Drives Erasure Uniques'] += 1
             self.disks.append(ac.device)
         return ac
 

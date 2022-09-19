@@ -42,7 +42,7 @@ class InternalStatsView:
     def generate_post_csv(self, query):
         data = StringIO()
         cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"')
-        cw.writerow(InternalStatsRow('', "2000-1", []).keys())
+        cw.writerow(InternalStatsRow('', "2000-1", [], []).keys())
 
         for row in self.get_rows(query):
             cw.writerow(row)
@@ -52,6 +52,7 @@ class InternalStatsView:
     def get_rows(self, query):
         d = {}
         dd = {}
+        disks = []
         for ac in query:
             create = '{}-{}'.format(ac.created.year, ac.created.month)
             user = ac.author.email
@@ -66,7 +67,7 @@ class InternalStatsView:
 
         for user, createds in d.items():
             for create, actions in createds.items():
-                r = InternalStatsRow(user, create, actions)
+                r = InternalStatsRow(user, create, actions, disks)
                 dd[user][create] = r
 
         return self.get_placeholders(dd)
@@ -84,7 +85,7 @@ class InternalStatsView:
                 dd[user][create] = None
 
             if not dd[user][create]:
-                dd[user][create] = InternalStatsRow(user, create, [])
+                dd[user][create] = InternalStatsRow(user, create, [], [])
 
             dd[user][create]['Placeholders'] += 1
 
