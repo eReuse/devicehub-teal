@@ -1,6 +1,7 @@
 """ This file frame a correct row for csv report """
 
 from collections import OrderedDict
+
 from flask import url_for
 
 from ereuse_devicehub.resources.action.models import RateComputer
@@ -633,6 +634,7 @@ class InternalStatsRow(OrderedDict):
         #    Live
         self.actions = actions
         year, month = create.split('-')
+        self.disks = []
 
         self['User'] = user
         self['Year'] = year
@@ -662,7 +664,10 @@ class InternalStatsRow(OrderedDict):
 
     def is_erase(self, ac):
         if ac.type in ['EraseBasic', 'EraseSectors']:
+            if ac.device in self.disks:
+                return ac
             self['Drives Erasure'] += 1
+            self.disks.append(ac.device)
         return ac
 
     def is_live(self, ac):
