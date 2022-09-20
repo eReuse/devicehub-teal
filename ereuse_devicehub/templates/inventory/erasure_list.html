@@ -75,8 +75,8 @@
                         </a>
                       </td>
                       <td>
-                        <a href="{{ url_for('inventory.export', export_id='snapshot') }}?id={{ ac.snapshot.id }}">
-                          {{ ac.snapshot.id }}
+                        <a href="{{ url_for('inventory.export', export_id='snapshot') }}?id={{ ac.snapshot.uuid }}">
+                          {{ ac.snapshot.uuid }}
                         </a>
                       </td>
                       <td>
@@ -92,7 +92,7 @@
                       </td>
                       <td>{{ ac.created.strftime('%Y-%m-%d %H:%M:%S')}}</td>
                       <td>
-                        <a href="{{ url_for('inventory.export', export_id='snapshot') }}?id={{ ac.snapshot.id }}">
+                        <a href="{{ url_for('inventory.export', export_id='snapshot') }}?id={{ ac.snapshot.uuid }}">
                           <i class="bi bi-box-arrow-up-right"></i>
                         </a>
                       </td>
