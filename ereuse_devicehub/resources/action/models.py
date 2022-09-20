@@ -475,6 +475,12 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         # todo will this url_for_resource work for other resources?
         return urlutils.URL(url_for_resource('Document', item_id=self.id))
 
+    def get_phid(self):
+        if self.device and self.device.parent:
+            if hasattr(self.device.parent, 'phid'):
+                return self.device.parent.phid()
+        return ''
+
     def __str__(self) -> str:
         return '{} on {}.'.format(self.severity, self.date_str)
 
