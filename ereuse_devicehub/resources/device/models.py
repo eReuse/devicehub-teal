@@ -629,6 +629,14 @@ class Device(Thing):
             return self.binding.device.devicehub_id
         return self.devicehub_id
 
+    @property
+    def get_updated(self):
+        if self.placeholder and self.placeholder.binding:
+            return max([self.updated, self.placeholder.binding.updated])
+        if self.binding:
+            return max([self.updated, self.binding.device.updated])
+        return self.updated
+
     @declared_attr
     def __mapper_args__(cls):
         """Defines inheritance.
