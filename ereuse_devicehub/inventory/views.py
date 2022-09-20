@@ -121,13 +121,9 @@ class ErasureListView(DeviceListMixin):
         return flask.render_template(self.template_name, **self.context)
 
     def get_devices(self):
-        erasure = EraseBasic.query.filter_by(author=g.user)
-        # ids = [ac.device.id for ac in actions]
-        # devices = Device.query.filter(Device.owner_id == g.user.id).filter(
-        #     Device.id.in_(ids)
-        #     # Device.binding == None  # noqa: E711
-        # )
-        # self.context['devices'] = devices
+        erasure = EraseBasic.query.filter_by(author=g.user).order_by(
+            EraseBasic.created.desc()
+        )
         self.context['erasure'] = erasure
 
 

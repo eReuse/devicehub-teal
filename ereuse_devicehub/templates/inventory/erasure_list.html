@@ -90,7 +90,7 @@
                       <td>
                           {{ ac.severity }}
                       </td>
-                      <td>{{ ac.date_str }}</td>
+                      <td>{{ ac.created.strftime('%Y-%m-%d %H:%M:%S')}}</td>
                       <td>
                         <a href="{{ url_for('inventory.export', export_id='snapshot') }}?id={{ ac.snapshot.id }}">
                           <i class="bi bi-box-arrow-up-right"></i>

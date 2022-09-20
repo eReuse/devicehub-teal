@@ -1,9 +1,9 @@
 {
   "version": "11.0a3",
   "device": {
-    "serialNumber": 'foo',
-    "manufacturer": 'bar',
-    "model": 'baz',
+    "serialNumber": "foo",
+    "manufacturer": "bar",
+    "model": "baz",
     "type": "Desktop",
     "actions": [],
     "chassis": "Tower"

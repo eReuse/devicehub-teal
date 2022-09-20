@@ -2295,3 +2295,32 @@ def test_upload_snapshot_smartphone(user3: UserClientFlask):
     assert dev.binding.device.serial_number == 'abcdef'
     assert dev.placeholder is None
     assert len(dev.actions) == 2
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_list_erasures(user3: UserClientFlask):
+    uri = '/inventory/upload-snapshot/'
+    file_name = 'erase-sectors-2-hdd.snapshot.yaml'
+    body, status = user3.get(uri)
+
+    assert status == '200 OK'
+    assert "Select a Snapshot file" in body
+
+    snapshot = conftest.yaml2json(file_name.split(".yaml")[0])
+    b_snapshot = bytes(json.dumps(snapshot), 'utf-8')
+    file_snap = (BytesIO(b_snapshot), file_name)
+
+    data = {
+        'snapshot': file_snap,
+        'csrf_token': generate_csrf(),
+    }
+
+    user3.post(uri, data=data, content_type="multipart/form-data")
+
+    uri = '/inventory/device/erasure/'
+    body, status = user3.get(uri)
+
+    txt = "WD-WCAV27984668"
+    assert status == '200 OK'
+    assert txt in body
