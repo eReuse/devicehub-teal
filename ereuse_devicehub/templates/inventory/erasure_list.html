@@ -63,7 +63,7 @@
                       <td>
                           <input type="checkbox" class="deviceSelect" data="{{ ac.device.id }}"
                                data-device-type="{{ ac.device.type }}" data-device-manufacturer="{{ ac.device.manufacturer }}"
-                               data-device-dhid="{{ ac.device.devicehub_id }}" data-device-vname="{{ ac.device.verbose_name }}"
+                               data-device-dhid="{{ ac.device.dhid }}" data-device-vname="{{ ac.device.verbose_name }}"
                                {% if form_new_allocate.type.data and ac.device.id in list_devices %}
                                  checked="checked"
                                {% endif %}
