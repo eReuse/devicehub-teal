@@ -901,6 +901,8 @@ class ExportsView(View):
     def build_erasure_certificate(self):
         erasures = []
         for device in self.find_devices():
+            if device.placeholder and device.placeholder.binding:
+                device = device.placeholder.binding
             if isinstance(device, Computer):
                 for privacy in device.privacy:
                     erasures.append(privacy)
