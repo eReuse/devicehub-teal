@@ -84,7 +84,7 @@
                       </td>
                       <td>
                         <a href="{{ url_for('inventory.device_details', id=ac.device.parent.dhid) }}">
-                          {{ ac.device.parent.phid() }}
+                          {{ ac.get_phid() }}
                         </a>
                       </td>                     
                       <td>
