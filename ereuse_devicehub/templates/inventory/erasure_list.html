@@ -1,0 +1,265 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>Inventory</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item active">Erasures disks</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+
+    <div class="col-xl-12">
+
+      <div class="card">
+        <div class="card-body pt-3" style="min-height: 650px;">
+          <div class="tab-content pt-1">
+            <div id="devices-list" class="tab-pane fade devices-list active show">
+              <label class="btn btn-primary " for="SelectAllBTN"><input type="checkbox" id="SelectAllBTN" autocomplete="off"></label>
+              <div class="btn-group dropdown m-1" uib-dropdown="">
+                <button id="btnExport" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-reply"></i>
+                    Exports
+                </button>
+                <span class="d-none" id="exportAlertModal" data-bs-toggle="modal" data-bs-target="#exportErrorModal"></span>
+                <ul class="dropdown-menu" aria-labelledby="btnExport">
+                  <li>
+                    <a href="javascript:export_file('devices')" class="dropdown-item">
+                      <i class="bi bi-file-spreadsheet"></i>
+                      Data Sotrage Spreadsheet
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:export_file('certificates')" class="dropdown-item">
+                      <i class="bi bi-eraser-fill"></i>
+                      Erasure Certificate
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="tab-content pt-2">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Select</th>
+                      <th scope="col">Data Storage Serial</th>
+                      <th scope="col">Snapshot ID</th>
+                      <th scope="col">Type of erasure</th>
+                      <th scope="col">Phid erasure host</th>
+                      <th scope="col">Reult</th>
+                      <th scope="col" data-type="date" data-format="YYYY-MM-DD hh:mm:ss">Time</th>
+                      <th scope="col"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for ac in erasure %}
+                    <tr>
+                      <td>
+                          <input type="checkbox" class="deviceSelect" data="{{ ac.device.id }}"
+                               data-device-type="{{ ac.device.type }}" data-device-manufacturer="{{ ac.device.manufacturer }}"
+                               data-device-dhid="{{ ac.device.devicehub_id }}" data-device-vname="{{ ac.device.verbose_name }}"
+                               {% if form_new_allocate.type.data and ac.device.id in list_devices %}
+                                 checked="checked"
+                               {% endif %}
+                               />
+                      </td>
+                      <td>
+                        <a href="{{ url_for('inventory.device_details', id=ac.device.dhid)}}">
+                          {{ ac.device.serial_number.upper() }}
+                        </a>
+                      </td>
+                      <td>
+                        <a href="{{ url_for('inventory.export', export_id='snapshot') }}?id={{ ac.snapshot.id }}">
+                          {{ ac.snapshot.id }}
+                        </a>
+                      </td>
+                      <td>
+                          {{ ac.type  or '' }}
+                      </td>
+                      <td>
+                        <a href="{{ url_for('inventory.device_details', id=ac.device.parent.dhid) }}">
+                          {{ ac.device.parent.phid() }}
+                        </a>
+                      </td>                     
+                      <td>
+                          {{ ac.severity }}
+                      </td>
+                      <td>{{ ac.date_str }}</td>
+                      <td>
+                        <a href="{{ url_for('inventory.export', export_id='snapshot') }}?id={{ ac.snapshot.id }}">
+                          <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+
+                </div>
+              </div>
+              {% if lot and not lot.is_temporary %}
+              <div id="trade-documents-list" class="tab-pane fade trade-documents-list">
+                <h5 class="card-title">Documents</h5>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">File</th>
+                      <th scope="col" data-type="date" data-format="DD-MM-YYYY">Uploaded on</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for doc in lot.trade.documents %}
+                    <tr>
+                      <td>
+                        {% if doc.url %}
+                          <a href="{{ doc.url.to_text() }}" target="_blank">{{ doc.file_name}}</a>
+                        {% else %}
+                          {{ doc.file_name}}
+                        {% endif %}
+                      </td>
+                      <td>
+                          {{ doc.created.strftime('%H:%M %d-%m-%Y')}}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <div id="edit-transfer" class="tab-pane fade edit-transfer">
+                <h5 class="card-title">Transfer</h5>
+                <form method="post" action="{{ url_for('inventory.edit_transfer', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
+                  {{ form_transfer.csrf_token }}
+
+                  {% for field in form_transfer %}
+                    {% if field != form_transfer.csrf_token %}
+                      <div class="col-12">
+                      {% if field != form_transfer.type %}
+                        {{ field.label(class_="form-label") }}
+                        {% if field == form_transfer.code %}
+                        <span class="text-danger">*</span>
+                        {% endif %}
+                        {{ field }}
+                        <small class="text-muted">{{ field.description }}</small>
+                        {% if field.errors %}
+                          <p class="text-danger">
+                            {% for error in field.errors %}
+                              {{ error }}<br/>
+                            {% endfor %}
+                          </p>
+                        {% endif %}
+                      {% endif %}
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+
+                  <div>
+                    <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}" class="btn btn-danger">Cancel</a>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                  </div>
+                </form>
+              </div>
+              <div id="edit-delivery-note" class="tab-pane fade edit-delivery-note">
+                <h5 class="card-title">Delivery Note</h5>
+                <form method="post" action="{{ url_for('inventory.delivery_note', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
+                  {{ form_delivery.csrf_token }}
+
+                  {% for field in form_delivery %}
+                    {% if field != form_delivery.csrf_token %}
+                      <div class="col-12">
+                      {% if field != form_delivery.type %}
+                        {{ field.label(class_="form-label") }}
+                        {{ field }}
+                        <small class="text-muted">{{ field.description }}</small>
+                        {% if field.errors %}
+                          <p class="text-danger">
+                            {% for error in field.errors %}
+                              {{ error }}<br/>
+                            {% endfor %}
+                          </p>
+                        {% endif %}
+                      {% endif %}
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+
+                  {% if lot.transfer and form_receiver.is_editable() %}
+                  <div>
+                    <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}" class="btn btn-danger">Cancel</a>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                  </div>
+                  {% endif %}
+                </form>
+              </div>
+              <div id="edit-receiver-note" class="tab-pane fade edit-receiver-note">
+                <h5 class="card-title">Receiver Note</h5>
+                <form method="post" action="{{ url_for('inventory.receiver_note', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
+                  {{ form_receiver.csrf_token }}
+
+                  {% for field in form_receiver %}
+                    {% if field != form_receiver.csrf_token %}
+                      <div class="col-12">
+                      {% if field != form_receiver.type %}
+                        {{ field.label(class_="form-label") }}
+                        {{ field }}
+                        <small class="text-muted">{{ field.description }}</small>
+                        {% if field.errors %}
+                          <p class="text-danger">
+                            {% for error in field.errors %}
+                              {{ error }}<br/>
+                            {% endfor %}
+                          </p>
+                        {% endif %}
+                      {% endif %}
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+
+                  {% if lot.transfer and form_receiver.is_editable() %}
+                  <div>
+                    <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}" class="btn btn-danger">Cancel</a>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                  </div>
+                  {% endif %}
+                </form>
+              </div>
+              {% endif %}
+
+            </div><!-- End Bordered Tabs -->
+          </div>
+        </div>
+      </div>
+
+      <div id="NotificationsContainer" style="position: absolute; bottom: 0; right: 0; margin: 10px; margin-top: 70px; width: calc(100% - 310px);"></div>
+
+    </div>
+  </div>
+</section>
+{% include "inventory/lot_delete_modal.html" %}
+{% include "inventory/actions.html" %}
+{% include "inventory/allocate.html" %}
+{% include "inventory/data_wipe.html" %}
+{% include "inventory/trade.html" %}
+{% include "inventory/alert_export_error.html" %}
+{% include "inventory/alert_lots_changes.html" %}
+
+<!-- Custom Code -->
+<script>
+  let table = new simpleDatatables.DataTable("table", {
+    perPageSelect: [5, 10, 15, 20, 25, 50, 100],
+    perPage: 20
+  })
+</script>
+{% if config['DEBUG'] %}
+  <script src="{{ url_for('static', filename='js/main_inventory.js') }}"></script>
+{% else %}
+  <script src="{{ url_for('static', filename='js/main_inventory.build.js') }}"></script>
+{% endif %}
+
+
+{% endblock main %}
