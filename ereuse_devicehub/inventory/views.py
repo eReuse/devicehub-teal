@@ -36,7 +36,7 @@ from ereuse_devicehub.inventory.forms import (
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
 from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
-from ereuse_devicehub.resources.action.models import Trade
+from ereuse_devicehub.resources.action.models import EraseBasic, Trade
 from ereuse_devicehub.resources.device.models import (
     Computer,
     DataStorage,
@@ -110,6 +110,21 @@ class DeviceListMixin(GenericMixin):
         if action_devices:
             return [int(x) for x in action_devices.split(",")]
         return []
+
+
+class ErasureListView(DeviceListMixin):
+    template_name = 'inventory/erasure_list.html'
+
+    def dispatch_request(self):
+        self.get_context()
+        self.get_devices()
+        return flask.render_template(self.template_name, **self.context)
+
+    def get_devices(self):
+        erasure = EraseBasic.query.filter_by(author=g.user).order_by(
+            EraseBasic.created.desc()
+        )
+        self.context['erasure'] = erasure
 
 
 class DeviceListView(DeviceListMixin):
@@ -1323,4 +1338,7 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/device/<string:dhid>/binding/',
     view_func=BindingSearchView.as_view('binding_search'),
+)
+devices.add_url_rule(
+    '/device/erasure/', view_func=ErasureListView.as_view('device_erasure_list')
 )
