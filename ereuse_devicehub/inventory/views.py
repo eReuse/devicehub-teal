@@ -922,6 +922,7 @@ class ExportsView(View):
 
         args = request.args.get('ids')
         ids = args.split(',') if args else []
+        ids = [id.strip() for id in ids]
 
         query = EraseBasic.query.filter_by(author=g.user)
         query = query.filter(EraseBasic.id.in_(ids))
