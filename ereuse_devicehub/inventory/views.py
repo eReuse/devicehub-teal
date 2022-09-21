@@ -798,6 +798,7 @@ class ExportsView(View):
         export_ids = {
             'metrics': self.metrics,
             'devices': self.devices_list,
+            'actions_erasures': self.actions_erasures,
             'certificates': self.erasure,
             'lots': self.lots_export,
             'devices_lots': self.devices_lots_export,
@@ -897,6 +898,10 @@ class ExportsView(View):
         )
         insert_hash(res.data)
         return res
+
+    def actions_erasures(self):
+        data = StringIO()
+        return self.response_csv(data, "Erasures.csv")
 
     def build_erasure_certificate(self):
         erasures = []
