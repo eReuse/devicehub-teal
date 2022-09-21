@@ -29,7 +29,7 @@
                 <span class="d-none" id="exportAlertModal" data-bs-toggle="modal" data-bs-target="#exportErrorModal"></span>
                 <ul class="dropdown-menu" aria-labelledby="btnExport">
                   <li>
-                    <a href="javascript:export_file('actions_erasures')" class="dropdown-item">
+                    <a href="javascript:export_actions_erasure('actions_erasures')" class="dropdown-item">
                       <i class="bi bi-file-spreadsheet"></i>
                       Data Storage Spreadsheet
                     </a>
@@ -64,6 +64,7 @@
                           <input type="checkbox" class="deviceSelect" data="{{ ac.device.id }}"
                                data-device-type="{{ ac.device.type }}" data-device-manufacturer="{{ ac.device.manufacturer }}"
                                data-device-dhid="{{ ac.device.dhid }}" data-device-vname="{{ ac.device.verbose_name }}"
+                               data-action-erasure="{{ ac.id }}"
                                {% if form_new_allocate.type.data and ac.device.id in list_devices %}
                                  checked="checked"
                                {% endif %}
@@ -90,7 +91,7 @@
                       <td>
                           {{ ac.severity }}
                       </td>
-                      <td>{{ ac.created.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                      <td>{{ ac.created.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                       <td>
                         <a href="{{ url_for('inventory.export', export_id='snapshot') }}?id={{ ac.snapshot.uuid }}">
                           <i class="bi bi-box-arrow-up-right"></i>
