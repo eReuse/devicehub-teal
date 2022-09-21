@@ -34,10 +34,20 @@ class BaseDeviceRow(OrderedDict):
 
     def __init__(self) -> None:
         super().__init__()
+        self['PHID'] = ''
         self['DHID'] = ''
+        self['Type'] = ''
+        self['Placeholder Palet'] = ''
+        self['Placeholder Id Supplier'] = ''
+        self['Placeholder Info'] = ''
+        self['Placeholder Components'] = ''
+        self['Placeholder Type'] = ''
+        self['Placeholder Serial Number'] = ''
+        self['Placeholder Part Number'] = ''
+        self['Placeholder Model'] = ''
+        self['Placeholder Manufacturer'] = ''
         self['DocumentID'] = ''
         self['Public Link'] = ''
-        self['Lots'] = ''
         self['Tag 1 Type'] = ''
         self['Tag 1 ID'] = ''
         self['Tag 1 Organization'] = ''
@@ -250,18 +260,6 @@ class BaseDeviceRow(OrderedDict):
         self['Data Storage Rate'] = ''
         self['Data Storage Range'] = ''
         self['Benchmark RamSysbench (points)'] = ''
-        # Placeholder
-        self['PHID'] = ''
-        self['Is Snapshot'] = ''
-        self['Pallet'] = ''
-        self['id Supplier'] = ''
-        self['Placeholder Info'] = ''
-        self['Placeholder Components'] = ''
-        self['Placeholder Type'] = ''
-        self['Placeholder Serial Number'] = ''
-        self['Placeholder Part Number'] = ''
-        self['Placeholder Model'] = ''
-        self['Placeholder Manufacturer'] = ''
 
 
 class DeviceRow(BaseDeviceRow):
@@ -282,7 +280,6 @@ class DeviceRow(BaseDeviceRow):
         self['Public Link'] = '{url}{id}'.format(
             url=url_for('Device.main', _external=True), id=device.dhid
         )
-        self['Lots'] = ', '.join([x.name for x in self.device.lots])
         for i, tag in zip(range(1, 3), device.tags):
             self['Tag {} Type'.format(i)] = 'unamed' if tag.provider else 'named'
             self['Tag {} ID'.format(i)] = tag.id
@@ -506,9 +503,9 @@ class DeviceRow(BaseDeviceRow):
     def get_placeholder_datas(self):
         # Placeholder
         self['PHID'] = none2str(self.placeholder.phid)
-        self['Is Snapshot'] = none2str(self.device.is_abstract())
-        self['Pallet'] = none2str(self.placeholder.pallet)
-        self['id Supplier'] = none2str(self.placeholder.id_device_supplier)
+        self['Type'] = none2str(self.device.is_abstract())
+        self['Placeholder Palet'] = none2str(self.placeholder.pallet)
+        self['Placeholder Id Supplier'] = none2str(self.placeholder.id_device_supplier)
         self['Placeholder Info'] = none2str(self.placeholder.info)
         self['Placeholder Components'] = none2str(self.placeholder.components)
         self['Placeholder Type'] = none2str(self.placeholder.device.type)
