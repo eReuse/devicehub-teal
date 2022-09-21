@@ -223,16 +223,17 @@ def test_export_devices(user3: UserClientFlask):
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert (
-        fixture_csv[1][:19] == export_csv[1][:19]
+        fixture_csv[1][:29] == export_csv[1][:29]
     ), 'Computer information are not equal'
-    assert fixture_csv[1][20] == export_csv[1][20], 'Computer information are not equal'
+    assert fixture_csv[1][30] == export_csv[1][30], 'Computer information are not equal'
+    # import pdb; pdb.set_trace()
     assert (
-        fixture_csv[1][22:83] == export_csv[1][22:83]
+        fixture_csv[1][32:93] == export_csv[1][32:93]
     ), 'Computer information are not equal'
 
-    assert fixture_csv[1][84] == export_csv[1][84], 'Computer information are not equal'
+    assert fixture_csv[1][94] == export_csv[1][94], 'Computer information are not equal'
     assert (
-        fixture_csv[1][88:] == export_csv[1][88:]
+        fixture_csv[1][98:] == export_csv[1][98:]
     ), 'Computer information are not equal'
 
 
@@ -1660,7 +1661,7 @@ def test_export_lots(user3: UserClientFlask):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_export_snapshot_json(user3: UserClientFlask):
 
-    file_name = 'real-eee-1001pxd.snapshot.12.json'
+    file_name = 'real-eee-1001pxd.snapshot.13.json'
     snap = create_device(user3, file_name)
 
     snapshot = conftest.yaml2json(file_name.split(".json")[0])
