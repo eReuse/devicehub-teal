@@ -798,6 +798,7 @@ class ExportsView(View):
         export_ids = {
             'metrics': self.metrics,
             'devices': self.devices_list,
+            'actions_erasures': self.actions_erasures,
             'certificates': self.erasure,
             'lots': self.lots_export,
             'devices_lots': self.devices_lots_export,
@@ -897,6 +898,48 @@ class ExportsView(View):
         )
         insert_hash(res.data)
         return res
+
+    def actions_erasures(self):
+        data = StringIO()
+        cw = csv.writer(
+            data,
+            delimiter=';',
+            lineterminator="\n",
+            quotechar='"',
+            quoting=csv.QUOTE_ALL,
+        )
+
+        cw.writerow(
+            [
+                'Data Storage Serial',
+                'Snapshot ID',
+                'Type of Erasure',
+                'PHID Erasure Host',
+                'Result',
+                'Time',
+            ]
+        )
+
+        args = request.args.get('ids')
+        ids = args.split(',') if args else []
+        ids = [id.strip() for id in ids]
+
+        query = EraseBasic.query.filter_by(author=g.user)
+        query = query.filter(EraseBasic.id.in_(ids))
+        query = query.order_by(EraseBasic.created.desc())
+
+        for ac in query:
+            row = [
+                ac.device.serial_number.upper(),
+                ac.snapshot.uuid,
+                ac.type,
+                ac.get_phid(),
+                ac.severity,
+                ac.created.strftime('%Y-%m-%d %H:%M:%S'),
+            ]
+            cw.writerow(row)
+
+        return self.response_csv(data, "Erasures.csv")
 
     def build_erasure_certificate(self):
         erasures = []

@@ -262,6 +262,20 @@ def test_export_certificates(user3: UserClientFlask):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_export_actions_erasure(user3: UserClientFlask):
+    snap = create_device(user3, 'erase-sectors-2-hdd.snapshot')
+    ids = [str(ac.id) for ac in snap.actions if ac.type == 'EraseBasic']
+    ids = ",".join(ids)
+    uri = "/inventory/export/actions_erasures/?ids={id}".format(id=ids)
+
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "WD-WCAV27984668" in body
+    assert "WD-WCAV29008961" in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_labels(user3: UserClientFlask):
     body, status = user3.get('/labels/')
 

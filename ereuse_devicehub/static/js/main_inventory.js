@@ -308,6 +308,17 @@ function export_file(type_file) {
     }
 }
 
+function export_actions_erasure(type_file) {
+    const actions = TableController.getSelectedDevices();
+    const actions_id = $.map(actions, (x) => $(x).attr("data-action-erasure")).join(",");
+    if (actions_id) {
+        const url = `/inventory/export/${type_file}/?ids=${actions_id}`;
+        window.location.href = url;
+    } else {
+        $("#exportAlertModal").click();
+    }
+}
+
 class lotsSearcher {
     static lots = [];
 
