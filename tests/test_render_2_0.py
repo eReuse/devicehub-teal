@@ -2339,3 +2339,32 @@ def test_list_erasures(user3: UserClientFlask):
     txt = "WD-WCAV27984668"
     assert status == '200 OK'
     assert txt in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_bug_3821_binding(user3: UserClientFlask):
+    uri = '/inventory/device/add/'
+    user3.get(uri)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "Laptop",
+        'phid': 'sid',
+        'serial_number': "AAAAB",
+        'model': "LC27T55",
+        'manufacturer': "Samsung",
+        'generation': 1,
+        'weight': 0.1,
+        'height': 0.1,
+        'depth': 0.1,
+        'id_device_supplier': "b2",
+    }
+    user3.post(uri, data=data)
+    dev = Device.query.one()
+    dhid = dev.dhid
+    assert dev.phid() == 'sid'
+    uri = f'/inventory/binding/{dhid}/sid/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert 'is not a Snapshot device!' in body
