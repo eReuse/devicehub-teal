@@ -31,6 +31,9 @@
                       <th scope="col">DHID</th>
                       <th scope="col">System UUID</th>
                       <th scope="col">Status</th>
+                      <th scope="col">Type Upload</th>
+                      <th scope="col">Type Device</th>
+                      <th scope="col">Original DHID</th>
                       <th scope="col" data-type="date" data-format="DD-MM-YYYY">Time</th>
                       <th scope="col"></th>
                     </tr>
@@ -67,6 +70,15 @@
                       </td>
                       <td>
                           {{ snap.status }}
+                      </td>
+                      <td>
+                          {{ snap.new_device }}
+                      </td>
+                      <td>
+                          {{ snap.type_device }}
+                      </td>
+                      <td>
+                          {{ snap.original_dhid }}
                       </td>
                       <td>{{ snap.created.strftime('%H:%M %d-%m-%Y') }}</td>
                       <td>

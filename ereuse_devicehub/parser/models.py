@@ -48,6 +48,36 @@ class SnapshotsLog(Thing):
 
         return ''
 
+    def get_original_dhid(self):
+        if self.snapshot:
+            dev = self.snapshot.device
+            if dev.dhid_bk:
+                return dev.dhid_bk
+
+        return self.get_device()
+
+    def get_type_device(self):
+        if self.snapshot:
+            if self.snapshot.device.binding:
+                return self.snapshot.device.binding.status
+
+        return ''
+
+    def get_new_device(self):
+        if not self.snapshot:
+            return ''
+
+        if not self.snapshot.device:
+            return ''
+
+        snapshots = []
+        for s in self.snapshot.device.actions:
+            if s == self.snapshot:
+                continue
+            if s.type == self.snapshot.type:
+                snapshots.append(s)
+        return snapshots and 'Update' or 'New Device'
+
 
 class PlaceholdersLog(Thing):
     """A Placeholder log."""

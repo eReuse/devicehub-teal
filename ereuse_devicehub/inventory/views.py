@@ -724,7 +724,7 @@ class NewTradeView(DeviceListMixin, NewActionView):
         return flask.redirect(next_url)
 
 
-class NewTradeDocumentView(View):
+class NewTradeDocumentView(GenericMixin):
     methods = ['POST', 'GET']
     decorators = [login_required]
     template_name = 'inventory/trade_document.html'
@@ -1137,6 +1137,9 @@ class SnapshotListView(GenericMixin):
                     'status': snap.get_status(),
                     'severity': snap.severity,
                     'created': snap.created,
+                    'type_device': snap.get_type_device(),
+                    'original_dhid': snap.get_original_dhid(),
+                    'new_device': snap.get_new_device(),
                 }
                 continue
 
