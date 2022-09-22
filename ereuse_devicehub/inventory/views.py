@@ -299,8 +299,9 @@ class BindingView(GenericMixin):
 
         # to do a backup of abstract_dhid and abstract_phid in
         # workbench device
-        self.abstract_device.dhid_bk = self.abstract_dhid
-        self.abstract_device.phid_bk = self.abstract_phid
+        if self.abstract_device:
+            self.abstract_device.dhid_bk = self.abstract_dhid
+            self.abstract_device.phid_bk = self.abstract_phid
 
     def post(self):
         for plog in PlaceholdersLog.query.filter_by(
