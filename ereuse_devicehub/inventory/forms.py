@@ -481,7 +481,7 @@ class NewDeviceForm(FlaskForm):
                 Placeholder.phid == self.phid.data, Placeholder.owner == g.user
             ).first()
             if dev:
-                msg = "Sorry, exist one snapshot device with this HID"
+                msg = "Error, exist one Placeholder device with this PHID"
                 self.phid.errors = [msg]
                 is_valid = False
 
@@ -494,7 +494,7 @@ class NewDeviceForm(FlaskForm):
                 Placeholder.phid == self.phid.data, Device.owner == g.user
             ).first()
             if dev:
-                msg = "Sorry, exist one snapshot device with this HID"
+                msg = "Error, exist one Placeholder device with this PHID"
                 self.phid.errors = [msg]
                 is_valid = False
 
@@ -908,7 +908,7 @@ class AllocateForm(ActionFormMixin):
         return True
 
     def check_deallocate(self):
-        txt = "Sorry some of this devices are actually deallocate"
+        txt = "Error, some of this devices are actually deallocate"
         for device in self._devices:
             allocates = [
                 ac for ac in device.actions if ac.type in ['Allocate', 'Deallocate']
