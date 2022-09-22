@@ -268,7 +268,6 @@ def test_export_devices(user3: UserClientFlask):
         fixture_csv[1][:29] == export_csv[1][:29]
     ), 'Computer information are not equal'
     assert fixture_csv[1][30] == export_csv[1][30], 'Computer information are not equal'
-    # import pdb; pdb.set_trace()
     assert (
         fixture_csv[1][32:93] == export_csv[1][32:93]
     ), 'Computer information are not equal'
@@ -577,7 +576,7 @@ def test_update_monitor(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert 'Sorry, exist one snapshot device with this HID' in body
+    assert 'Error, exist one Placeholder device with this PHID' in body
     dev = Device.query.one()
     assert dev.type == 'Monitor'
     assert dev.placeholder.id_device_supplier == "b2"
@@ -764,7 +763,7 @@ def test_add_laptop_duplicate(user3: UserClientFlask):
     assert status == '200 OK'
     assert Device.query.count() == 1
     body, status = user3.post(uri, data=data)
-    assert 'Sorry, exist one snapshot device with this HID' in body
+    assert 'Error, exist one Placeholder device with this PHID' in body
     assert Device.query.count() == 1
 
 
@@ -1109,7 +1108,7 @@ def test_action_deallocate_error(user3: UserClientFlask):
     assert status == '200 OK'
     assert dev.binding.device.allocated_status.type != 'Deallocate'
     assert 'Action Deallocate error!' in body
-    assert 'Sorry some of this devices are actually deallocate' in body
+    assert 'Error, some of this devices are actually deallocate' in body
 
 
 @pytest.mark.mvp
@@ -1163,9 +1162,7 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
 
     user3.post(uri, data=data)
     assert dev.binding.device.allocated_status.type == 'Deallocate'
-    # assert 'Action Deallocate error!' in body
-    # assert 'Sorry some of this devices are actually deallocate' in body
-    #
+
     data = {
         'csrf_token': generate_csrf(),
         'type': "Deallocate",
