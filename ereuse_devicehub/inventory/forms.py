@@ -299,7 +299,7 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
 
             response = self.build(snapshot_json)
             db.session.add(response)
-            devices.append(response.device)
+            devices.append(response.device.binding.device)
 
             if hasattr(response, 'type'):
                 self.result[filename] = 'Ok'

@@ -183,6 +183,48 @@ def test_upload_snapshot(user3: UserClientFlask):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_upload_snapshot_to_lot(user3: UserClientFlask):
+    # TODO
+    user3.get('/inventory/lot/add/')
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post('/inventory/lot/add/', data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+
+    lot_id = lot.id
+    uri = f'/inventory/lot/{lot_id}/upload-snapshot/'
+    file_name = 'real-eee-1001pxd.snapshot.12.json'
+    user3.get(uri)
+
+    snapshot = conftest.yaml2json(file_name.split(".json")[0])
+    b_snapshot = bytes(json.dumps(snapshot), 'utf-8')
+    file_snap = (BytesIO(b_snapshot), file_name)
+
+    data = {
+        'snapshot': file_snap,
+        'csrf_token': generate_csrf(),
+    }
+    body, status = user3.post(uri, data=data, content_type="multipart/form-data")
+
+    txt = f"{file_name}: Ok"
+    assert status == '200 OK'
+    assert txt in body
+    db_snapthot = Snapshot.query.one()
+    dev = db_snapthot.device
+    assert dev not in lot.devices
+    assert dev.binding.device in lot.devices
+
+    uri = f'/inventory/lot/{lot_id}/device/'
+    body, status = user3.get(uri)
+    assert dev.binding.device.devicehub_id in body
+    assert dev.binding.phid in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_inventory_with_device(user3: UserClientFlask):
     db_snapthot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
     body, status = user3.get('/inventory/device/')
