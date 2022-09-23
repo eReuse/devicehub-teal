@@ -724,7 +724,7 @@ class NewTradeView(DeviceListMixin, NewActionView):
         return flask.redirect(next_url)
 
 
-class NewTradeDocumentView(GenericMixin):
+class NewTradeDocumentView(View):
     methods = ['POST', 'GET']
     decorators = [login_required]
     template_name = 'inventory/trade_document.html'
