@@ -184,7 +184,6 @@ def test_upload_snapshot(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_upload_snapshot_to_lot(user3: UserClientFlask):
-    # TODO
     user3.get('/inventory/lot/add/')
     lot_name = 'lot1'
     data = {
@@ -2406,3 +2405,55 @@ def test_bug_3821_binding(user3: UserClientFlask):
     body, status = user3.get(uri)
     assert status == '200 OK'
     assert 'is not a Snapshot device!' in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_bug_3831_documents(user3: UserClientFlask):
+    uri = '/inventory/lot/add/'
+    user3.get(uri)
+    lot_name = 'lot1'
+    data = {
+        'name': lot_name,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data)
+    lot = Lot.query.filter_by(name=lot_name).one()
+
+    lot_id = lot.id
+    uri = f'/inventory/lot/{lot_id}/trade-document/add/'
+    body, status = user3.get(uri)
+    txt = 'Error, this lot is not a transfer lot.'
+
+    assert status == '200 OK'
+    assert txt in body
+
+    uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
+    user3.get(uri)
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert 'Transfer created successfully!' in body
+    assert 'Delete Lot' in body
+    assert 'Incoming Lot' in body
+
+    uri = f'/inventory/lot/{lot_id}/trade-document/add/'
+    body, status = user3.get(uri)
+
+    b_file = b'1234567890'
+    file_name = "my_file.doc"
+    file_upload = (BytesIO(b_file), file_name)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'url': "",
+        'description': "",
+        'document_id': "",
+        'date': "",
+        'file': file_upload,
+    }
+
+    uri = f'/inventory/lot/{lot_id}/trade-document/add/'
+    # body, status = user3.post(uri, data=data, content_type="multipart/form-data")
+    # assert status == '200 OK'
