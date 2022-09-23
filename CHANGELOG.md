@@ -6,12 +6,53 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## testing
+
+## [2.4.0] - 2022-09-23
 - [added] #312 Placeholder: new, edit, update. (manually and with excel).
 - [added] #316 Placeholder: binding/unbinding. (manually).
+- [added] #319 Add command report cli.
+- [added] #326 settings for user demo.
+- [added] #327 add Binding.
+- [added] #328 export placeholders.
+- [added] #330 workbench page.
+- [added] #334 backup dhid and phid.
+- [added] #340 add parth number for placeholders.
+- [added] #349 add a new columns in report.
+- [added] #356 new export hdds.
+- [added] #362 add new columns in a snapshot log.
+- [changed] #329 update Binding.
+- [changed] #331 update workbench page.
+- [changed] #338 change labels when add a new device.
+- [changed] #339 change description upload placeholders page.
+- [changed] #342 change concepts for binding, (Twin).
+- [changed] #344 add "Ods File" as description in Placeholders Logs.
+- [changed] #345 remove generation concept of device.
+- [changed] #346 change editable device page.
+- [changed] #347 change snapshot instead of abstract and placeholder instead of real.
+- [changed] #348 change buttons new device.
+- [changed] #355 changes links.
+- [changed] #357 change button "New Actions".
+- [changed] #358 change report device.
+- [changed] #360 add placeholder device in lot instead of devices.
+- [changed] #361 change message in form add device.
 - [fixed] #313 Bump numpy from 1.21.6 to 1.22.0.
 - [fixed] #314 bugs create placeholder from lot.
 - [fixed] #317 bugs about exports placeholders.
 - [fixed] #318 bugs about unlink tag of device.
+- [fixed] #321 bugs in labels of serial number.
+- [fixed] #322 validation imei for mobil.
+- [fixed] #323 bug export devices.
+- [fixed] #335 bugs in excel phid with nan.
+- [fixed] #336 bugs Unassigned is visualized in all device view.
+- [fixed] #337 bugs upload csv placeholders.
+- [fixed] #343 forze Phid to by a string.
+- [fixed] #350 bugs in certificates.
+- [fixed] #351 bugs devices without phid.
+- [fixed] #352 export certificate for placeholders.
+- [fixed] #353 get the last update of the one device twin.
+- [fixed] #354 titles of table.
+- [fixed] #359 fix backup dhid.
+- [fixed] #363 problems with render add documents in a transfer lot.
 
 ## [2.3.0] - 2022-07-12
 - [added] #281 Add selenium test.
