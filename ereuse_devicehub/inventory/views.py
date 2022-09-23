@@ -1137,6 +1137,9 @@ class SnapshotListView(GenericMixin):
                     'status': snap.get_status(),
                     'severity': snap.severity,
                     'created': snap.created,
+                    'type_device': snap.get_type_device(),
+                    'original_dhid': snap.get_original_dhid(),
+                    'new_device': snap.get_new_device(),
                 }
                 continue
 
