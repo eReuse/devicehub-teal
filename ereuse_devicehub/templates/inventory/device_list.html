@@ -462,10 +462,24 @@
                     </tr>
                   </thead>
                   <tbody>
+                    {% for doc in lot.documents %}
+                    <tr>
+                      <td>
+                        {% if doc.url.to_text() %}
+                          <a href="{{ doc.url.to_text() }}" target="_blank">{{ doc.file_name}}</a>
+                        {% else %}
+                          {{ doc.file_name}}
+                        {% endif %}
+                      </td>
+                      <td>
+                          {{ doc.created.strftime('%H:%M %d-%m-%Y')}}
+                      </td>
+                    </tr>
+                    {% endfor %}
                     {% for doc in lot.trade.documents %}
                     <tr>
                       <td>
-                        {% if doc.url %}
+                        {% if doc.url.to_text() %}
                           <a href="{{ doc.url.to_text() }}" target="_blank">{{ doc.file_name}}</a>
                         {% else %}
                           {{ doc.file_name}}

@@ -1247,10 +1247,13 @@ class TradeDocumentForm(FlaskForm):
         super().__init__(*args, **kwargs)
         self._lot = Lot.query.filter(Lot.id == lot_id).one()
 
+        if not self._lot.transfer:
+            self.form_errors = ['Error, this lot is not a transfer lot.']
+
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
 
-        if g.user not in [self._lot.trade.user_from, self._lot.trade.user_to]:
+        if g.user not in [self._lot.transfer.user_from, self._lot.transfer.user_to]:
             is_valid = False
 
         return is_valid
@@ -1268,7 +1271,7 @@ class TradeDocumentForm(FlaskForm):
         self._obj.file_name = file_name
         self._obj.file_hash = file_hash
         db.session.add(self._obj)
-        self._lot.trade.documents.add(self._obj)
+        self._lot.documents.add(self._obj)
         if commit:
             db.session.commit()
 
