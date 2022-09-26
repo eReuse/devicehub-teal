@@ -1,25 +1,24 @@
 import copy
 from contextlib import suppress
+
 from citext import CIText
 from flask import g
-
-from sqlalchemy.dialects.postgresql import UUID
-from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.user.models import User
 from sortedcontainers import SortedSet
-from ereuse_devicehub.resources.models import Thing
-
 from sqlalchemy import BigInteger, Column, Sequence
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref
 from teal.db import CASCADE_OWN, URL
 
+from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import Severity
-
+from ereuse_devicehub.resources.models import Thing
+from ereuse_devicehub.resources.user.models import User
 
 _sorted_documents = {
     'order_by': lambda: TradeDocument.created,
-    'collection_class': SortedSet
+    'collection_class': SortedSet,
 }
+
 
 class TradeDocument(Thing):
     """This represent a document involved in a trade action.
@@ -48,23 +47,26 @@ class TradeDocument(Thing):
     date.comment = """The date of document, some documents need to have one date
     """
     id_document = Column(CIText())
-    id_document.comment = """The id of one document like invoice so they can be linked."""
+    id_document.comment = (
+        """The id of one document like invoice so they can be linked."""
+    )
     description = Column(db.CIText())
     description.comment = """A description of document."""
-    owner_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey(User.id),
-                         nullable=False,
-                         default=lambda: g.user.id)
+    owner_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
     owner = db.relationship(User, primaryjoin=owner_id == User.id)
-    lot_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey('lot.id'),
-                         nullable=False)
-    lot = db.relationship('Lot',
-                          backref=backref('documents',
-                                          lazy=True,
-                                          cascade=CASCADE_OWN,
-                                          **_sorted_documents),
-                            primaryjoin='TradeDocument.lot_id == Lot.id')
+    lot_id = db.Column(UUID(as_uuid=True), db.ForeignKey('lot.id'), nullable=False)
+    lot = db.relationship(
+        'Lot',
+        backref=backref(
+            'documents', lazy=True, cascade=CASCADE_OWN, **_sorted_documents
+        ),
+        primaryjoin='TradeDocument.lot_id == Lot.id',
+    )
     lot.comment = """Lot to which the document is associated"""
     file_name = Column(db.CIText())
     file_name.comment = """This is the name of the file when user up the document."""
@@ -73,7 +75,9 @@ class TradeDocument(Thing):
     url = db.Column(URL())
     url.comment = """This is the url where resides the document."""
     weight = db.Column(db.Float())
-    weight.comment = """This is the weight of one container than this document express."""
+    weight.comment = (
+        """This is the weight of one container than this document express."""
+    )
 
     __table_args__ = (
         db.Index('document_id', id, postgresql_using='hash'),
@@ -106,7 +110,6 @@ class TradeDocument(Thing):
         ac = self.last_action_trading()
         if not ac:
             return
-
 
         if ac.type == 'ConfirmRevokeDocument':
             # can to do revoke_confirmed
@@ -145,16 +148,23 @@ class TradeDocument(Thing):
 
         return weight
 
+    def get_url(self) -> str:
+        if self.url:
+            return self.url.to_text()
+        return ''
+
     def last_action_trading(self):
         """which is the last action trading"""
         with suppress(StopIteration, ValueError):
             actions = copy.copy(self.actions)
             actions.sort(key=lambda x: x.created)
-            t_trades = ['Trade',
-                        'Confirm',
-                        'ConfirmRevokeDocument',
-                        'RevokeDocument',
-                        'ConfirmDocument']
+            t_trades = [
+                'Trade',
+                'Confirm',
+                'ConfirmRevokeDocument',
+                'RevokeDocument',
+                'ConfirmDocument',
+            ]
             return next(e for e in reversed(actions) if e.t in t_trades)
 
     def _warning_actions(self, actions):

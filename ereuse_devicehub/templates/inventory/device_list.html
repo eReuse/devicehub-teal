@@ -465,8 +465,8 @@
                     {% for doc in lot.documents %}
                     <tr>
                       <td>
-                        {% if doc.url.to_text() %}
-                          <a href="{{ doc.url.to_text() }}" target="_blank">{{ doc.file_name}}</a>
+                        {% if doc.get_url() %}
+                          <a href="{{ doc.get_url() }}" target="_blank">{{ doc.file_name}}</a>
                         {% else %}
                           {{ doc.file_name}}
                         {% endif %}
@@ -479,8 +479,8 @@
                     {% for doc in lot.trade.documents %}
                     <tr>
                       <td>
-                        {% if doc.url.to_text() %}
-                          <a href="{{ doc.url.to_text() }}" target="_blank">{{ doc.file_name}}</a>
+                        {% if doc.get_url() %}
+                          <a href="{{ doc.get_url() }}" target="_blank">{{ doc.file_name}}</a>
                         {% else %}
                           {{ doc.file_name}}
                         {% endif %}
