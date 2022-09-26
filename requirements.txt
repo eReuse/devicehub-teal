@@ -8,7 +8,7 @@ alembic==1.4.2
     # via -r requirements.in
 anytree==2.4.3
     # via teal
-apispec[yaml]==0.39.0
+apispec==0.39.0
     # via
     #   apispec-webframeworks
     #   teal
