@@ -726,7 +726,7 @@ def test_live_without_TestDataStorage(user: UserClient, client: Client, app: Dev
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=device_id).one()
+
     post_request = {
         "transaction": "ccc",
         "name": "John",
@@ -766,7 +766,7 @@ def test_live_without_hdd_1(user: UserClient, client: Client, app: Devicehub):
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=device_id).one()
+
     post_request = {
         "transaction": "ccc",
         "name": "John",
@@ -802,7 +802,7 @@ def test_live_without_hdd_2(user: UserClient, client: Client, app: Devicehub):
     acer['components'] = components
     snapshot, _ = user.post(json_encode(acer), res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=device_id).one()
+
     post_request = {
         "transaction": "ccc",
         "name": "John",
@@ -837,7 +837,7 @@ def test_live_without_hdd_3(user: UserClient, client: Client, app: Devicehub):
     acer['components'] = components
     snapshot, _ = user.post(json_encode(acer), res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=device_id).one()
+
     post_request = {
         "transaction": "ccc",
         "name": "John",
@@ -874,7 +874,7 @@ def test_live_with_hdd_with_old_time(user: UserClient, client: Client, app: Devi
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=device_id).one()
+
     post_request = {
         "transaction": "ccc",
         "name": "John",
@@ -2952,7 +2952,6 @@ def test_delete_devices_permitions(user: UserClient, user2: UserClient):
 
     file_snap = file('1-device-with-components.snapshot')
     snap, _ = user.post(file_snap, res=models.Snapshot)
-    device = Device.query.filter_by(id=snap['device']['id']).one()
 
     request = {
         'type': 'Delete',
@@ -3013,8 +3012,7 @@ def test_moveOnDocument_bug168(user: UserClient, user2: UserClient):
         'container_to': id_hash,
         'description': description,
     }
-    doc, _ = user.post(res=models.Action, data=request_moveOn)
-    trade = models.Trade.query.one()
+    user.post(res=models.Action, data=request_moveOn)
     trade_document1 = TradeDocument.query.filter_by(id=tradedocument_from['id']).one()
     trade_document2 = TradeDocument.query.filter_by(id=tradedocument_to['id']).one()
     assert trade_document1.total_weight == 150.0
