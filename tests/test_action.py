@@ -1777,12 +1777,12 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
     assert device_10 in trade.devices
     assert len(trade.devices) == 10
 
-    # the SCRAP confirms the revoke action
-    request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device_10.actions[-2].id,
-        'devices': [snap10['device']['id']],
-    }
+    # TODO??? the SCRAP confirms the revoke action
+    # request_confirm_revoke = {
+    #     'type': 'ConfirmRevoke',
+    #     'action': device_10.actions[-2].id,
+    #     'devices': [snap10['device']['id']],
+    # }
 
     # check validation error
     # user2.post(res=models.Action, data=request_confirm_revoke, status=422)
@@ -2804,7 +2804,7 @@ def test_moveOnDocument(user: UserClient, user2: UserClient):
     lotIn, _ = user.post({'name': 'MyLotIn'}, res=Lot)
     lotOut, _ = user.post({'name': 'MyLotOut'}, res=Lot)
     url = (
-        'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
+        'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaap',
     )
     request_post1 = {
         'filename': 'test.pdf',
@@ -2971,7 +2971,7 @@ def test_moveOnDocument_bug168(user: UserClient, user2: UserClient):
     lotIn, _ = user.post({'name': 'MyLotIn'}, res=Lot)
     lotOut, _ = user.post({'name': 'MyLotOut'}, res=Lot)
     url = (
-        'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
+        'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaap',
     )
     request_post1 = {
         'filename': 'test.pdf',
