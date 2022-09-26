@@ -1021,7 +1021,7 @@ def test_allocate(user: UserClient):
     allocate, _ = user.post(res=models.Allocate, data=post_request)
     # Normal allocate
     device, _ = user.get(res=Device, item=devicehub_id)
-    assert device['allocated'] == True
+    assert device['allocated'] is True
     action = [a for a in device['actions'] if a['type'] == 'Allocate'][0]
     assert action['transaction'] == allocate['transaction']
     assert action['finalUserCode'] == allocate['finalUserCode']
@@ -1096,11 +1096,11 @@ def test_deallocate(user: UserClient):
 
     user.post(res=models.Allocate, data=post_allocate)
     device, _ = user.get(res=Device, item=devicehub_id)
-    assert device['allocated'] == True
+    assert device['allocated'] is True
     deallocate, _ = user.post(res=models.Deallocate, data=post_deallocate)
     assert deallocate['startTime'] == post_deallocate['startTime']
     assert deallocate['devices'][0]['id'] == device_id
-    assert deallocate['devices'][0]['allocated'] == False
+    assert deallocate['devices'][0]['allocated'] is False
     res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
     assert res['code'] == 422
     assert res['type'] == 'ValidationError'
@@ -1203,8 +1203,8 @@ def test_offer_without_to(user: UserClient):
     users = [ac.user for ac in trade.acceptances]
     assert trade.user_to == device.owner
     assert request_post['code'].lower() in device.owner.email
-    assert device.owner.active == False
-    assert device.owner.phantom == True
+    assert device.owner.active is False
+    assert device.owner.phantom is True
     assert trade.user_to in users
     assert trade.user_from in users
     assert device.owner.email != user.email
@@ -1282,8 +1282,8 @@ def test_offer_without_from(user: UserClient, user2: UserClient):
 
     phantom_user = trade.user_from
     assert request_post['code'].lower() in phantom_user.email
-    assert phantom_user.active == False
-    assert phantom_user.phantom == True
+    assert phantom_user.active is False
+    assert phantom_user.phantom is True
     # assert trade.confirm_transfer
 
     users = [ac.user for ac in trade.acceptances]
@@ -2886,7 +2886,7 @@ def test_delete_devices(user: UserClient):
 
     assert action_delete.t == 'Delete'
     assert str(action_delete.id) == action['id']
-    assert db_device.active == False
+    assert db_device.active is False
 
     # Check use of filter from frontend
     url = '/devices/?filter={"type":["Computer"]}'
