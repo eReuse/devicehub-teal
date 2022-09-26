@@ -139,6 +139,7 @@ def test_physical_properties():
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_component_similar_one():
+    # TODO
     user = User.query.filter().first()
     snapshot = yaml2json('pc-components.db')
     pc = snapshot['device']
@@ -488,7 +489,7 @@ def test_get_device_permissions(app: Devicehub, user: UserClient, user2: UserCli
     assert len(pc.placeholder.binding.actions) == 7
 
     html, _ = client.get(res=d.Device, item=s['device']['devicehubID'], accept=ANY)
-    assert 'intel atom cpu n270 @ 1.60ghz' in html
+    assert 'Intel Atom CPU N270 @ 1.60GHz' in html
     assert '00:24:8C:7F:CF:2D – 100 Mbps' in html
     pc2, res2 = user2.get(res=d.Device, item=s['device']['devicehubID'], accept=ANY)
     assert res2.status_code == 200
@@ -586,26 +587,35 @@ def test_device_properties_format(app: Devicehub, user: UserClient):
     user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
     with app.app_context():
         pc = d.Laptop.query.filter_by(placeholder=None).one()  # type: d.Laptop
-        assert format(pc) == 'Laptop 3: model 1000h, S/N 94oaaq021116'
-        assert format(pc, 't') == 'Netbook 1000h'
-        assert format(pc, 's') == '(asustek computer inc.) S/N 94OAAQ021116'
+        pc_hid = 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+        assert pc.hid == pc_hid
+        assert format(pc) == 'Laptop 3: model 1000H, S/N 94OAAQ021116'
+        assert format(pc, 't') == 'Netbook 1000H'
+        assert format(pc, 's') == '(ASUSTeK Computer INC.) S/N 94OAAQ021116'
         assert pc.ram_size == 1024
         assert pc.data_storage_size == 152627
-        assert pc.graphic_card_model == 'mobile 945gse express integrated graphics controller'
-        assert pc.processor_model == 'intel atom cpu n270 @ 1.60ghz'
+        assert pc.graphic_card_model == 'Mobile 945GSE Express Integrated Graphics Controller'
+        assert pc.processor_model == 'Intel Atom CPU N270 @ 1.60GHz'
         net = next(c for c in pc.components if isinstance(c, d.NetworkAdapter))
-        assert format(net) == 'NetworkAdapter 5: model ar8121/ar8113/ar8114 ' \
-                              'gigabit or fast ethernet, S/N 00:24:8c:7f:cf:2d'
-        assert format(net, 't') == 'NetworkAdapter ar8121/ar8113/ar8114 gigabit or fast ethernet'
-        assert format(net, 's') == 'qualcomm atheros 00:24:8C:7F:CF:2D – 100 Mbps'
+        net_hid = 'networkadapter-qualcomm_atheros-ar8121_ar8113_ar8114_gigabit' \
+                  '_or_fast_ethernet-00_24_8c_7f_cf_2d'
+        assert net.hid == net_hid
+        assert format(net) == 'NetworkAdapter 5: model AR8121/AR8113/AR8114 ' \
+                              'Gigabit or Fast Ethernet, S/N 00:24:8c:7f:cf:2d'
+        assert format(net, 't') == 'NetworkAdapter AR8121/AR8113/AR8114 Gigabit or Fast Ethernet'
+        assert format(net, 's') == 'Qualcomm Atheros 00:24:8C:7F:CF:2D – 100 Mbps'
         hdd = next(c for c in pc.components if isinstance(c, d.DataStorage))
-        assert format(hdd) == 'HardDrive 10: model st9160310as, S/N 5sv4tqa6'
-        assert format(hdd, 't') == 'HardDrive st9160310as'
-        assert format(hdd, 's') == 'seagate 5SV4TQA6 – 152 GB'
+        hdd_hid = 'harddrive-seagate-st9160310as-5sv4tqa6'
+        assert hdd.hid == hdd_hid
+        assert format(hdd) == 'HardDrive 10: model ST9160310AS, S/N 5SV4TQA6'
+        assert format(hdd, 't') == 'HardDrive ST9160310AS'
+        assert format(hdd, 's') == 'Seagate 5SV4TQA6 – 152 GB'
 
 
 @pytest.mark.mvp
 def test_device_public(user: UserClient, client: Client):
+    # TODO
+    # import pdb; pdb.set_trace()
     s, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
     html, _ = client.get(res=d.Device, item=s['device']['devicehubID'], accept=ANY)
     assert 'intel atom cpu n270 @ 1.60ghz' in html
