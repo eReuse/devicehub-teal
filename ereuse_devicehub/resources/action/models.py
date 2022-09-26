@@ -476,9 +476,12 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         return urlutils.URL(url_for_resource('Document', item_id=self.id))
 
     def get_phid(self):
-        if self.device and self.device.parent:
-            if hasattr(self.device.parent, 'phid'):
-                return self.device.parent.phid()
+        """This method is used for get the phid of the computer when the action
+        was created. Usefull for get the phid of the computer were a hdd was
+        Ereased
+        """
+        if self.snapshot:
+            return self.snapshot.device.phid()
         return ''
 
     def __str__(self) -> str:
