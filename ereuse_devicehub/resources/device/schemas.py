@@ -40,21 +40,17 @@ class Device(Thing):
         description='A set of tags that identify the device.',
     )
     model = SanitizedStr(
-        lower=True,
         validate=Length(max=STR_BIG_SIZE),
         description=m.Device.model.comment,
     )
     manufacturer = SanitizedStr(
-        lower=True,
         validate=Length(max=STR_SIZE),
         description=m.Device.manufacturer.comment,
     )
     serial_number = SanitizedStr(
-        lower=True, validate=Length(max=STR_BIG_SIZE), data_key='serialNumber'
+        validate=Length(max=STR_BIG_SIZE), data_key='serialNumber'
     )
-    part_number = SanitizedStr(
-        lower=True, validate=Length(max=STR_BIG_SIZE), data_key='partNumber'
-    )
+    part_number = SanitizedStr(validate=Length(max=STR_BIG_SIZE), data_key='partNumber')
     brand = SanitizedStr(
         validate=Length(max=STR_BIG_SIZE), description=m.Device.brand.comment
     )

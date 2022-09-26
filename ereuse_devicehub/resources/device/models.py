@@ -111,14 +111,14 @@ class Device(Thing):
     """
         + HID_CONVERSION_DOC
     )
-    model = Column(Unicode(), check_lower('model'))
+    model = Column(Unicode())
     model.comment = """The model of the device in lower case.
 
     The model is the unambiguous, as technical as possible, denomination
     for the product. This field, among others, is used to identify
     the product.
     """
-    manufacturer = Column(Unicode(), check_lower('manufacturer'))
+    manufacturer = Column(Unicode())
     manufacturer.comment = """The normalized name of the manufacturer,
     in lower case.
 
@@ -126,9 +126,9 @@ class Device(Thing):
     users can choose a list of normalized manufacturer names
     from the own ``/manufacturers`` REST endpoint.
     """
-    serial_number = Column(Unicode(), check_lower('serial_number'))
+    serial_number = Column(Unicode())
     serial_number.comment = """The serial number of the device in lower case."""
-    part_number = Column(Unicode(), check_lower('part_number'))
+    part_number = Column(Unicode())
     part_number.comment = """The part number of the device in lower case."""
     brand = db.Column(CIText())
     brand.comment = """A naming for consumers. This field can represent
@@ -718,9 +718,11 @@ class Device(Thing):
 
     def set_hid(self):
         with suppress(TypeError):
-            self.hid = Naming.hid(
-                self.type, self.manufacturer, self.model, self.serial_number
-            )
+            t = self.type.lower() if self.type else ''
+            manufacturer = self.manufacturer.lower() if self.manufacturer else ''
+            model = self.model.lower() if self.model else ''
+            sn = self.serial_number.lower() if self.serial_number else ''
+            self.hid = Naming.hid(t, manufacturer, model, sn)
 
     def last_action_of(self, *types):
         """Gets the last action of the given types.
@@ -1103,7 +1105,7 @@ class Computer(Device):
             return
         components = self.components if components_snap is None else components_snap
         macs_network = [
-            c.serial_number
+            c.serial_number.lower()
             for c in components
             if c.type == 'NetworkAdapter' and c.serial_number is not None
         ]
