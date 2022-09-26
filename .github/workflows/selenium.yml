@@ -1,10 +1,8 @@
 name: Selenium
 
 on:
-  push:
-    branches: [master, testing]
   pull_request:
-    branches: [master, testing]
+    types: [ready_for_review, review_requested]
 
 jobs:
   build:
