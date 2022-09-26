@@ -8,10 +8,12 @@ alembic==1.4.2
     # via -r requirements.in
 anytree==2.4.3
     # via teal
-apispec==0.39.0
+apispec==4.5.0
     # via
     #   apispec-webframeworks
     #   teal
+apispec-webframeworks==0.5.2
+    # via teal
 atomicwrites==1.4.0
     # via -r requirements.in
 boltons==18.0.1
