@@ -2795,7 +2795,7 @@ def test_action_web_erase(user: UserClient, client: Client):
     )
     assert "alert alert-info" in response
     assert "100% coincidence." in response
-    assert not "alert alert-danger" in response
+    assert "alert alert-danger" not in response
 
 
 @pytest.mark.mvp
@@ -3018,6 +3018,6 @@ def test_moveOnDocument_bug168(user: UserClient, user2: UserClient):
     assert trade_document1.total_weight == 150.0
     assert trade_document2.total_weight == 4.0
     assert trade_document1.trading == 'Confirm'
-    assert trade_document2.trading == None
+    assert trade_document2.trading is None
 
     tradedocument, _ = user.delete(res=TradeDocument, item=tradedocument_to['id'])
