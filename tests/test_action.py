@@ -1,5 +1,4 @@
 import copy
-import ipaddress
 import json
 import os
 import shutil
@@ -7,7 +6,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from io import BytesIO
 from json.decoder import JSONDecodeError
-from typing import Tuple, Type
+from typing import Tuple
 
 import pytest
 from dateutil.tz import tzutc
@@ -15,7 +14,7 @@ from flask import current_app as app
 from flask import g
 from pytest import raises
 from sqlalchemy.util import OrderedSet
-from teal.enums import Currency, Subdivision
+from teal.enums import Currency
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
@@ -82,17 +81,17 @@ def test_erase_basic():
 def test_validate_device_data_storage():
     """Checks the validation for data-storage-only actions works."""
     # We can't set a GraphicCard
-    with pytest.raises(
-        TypeError,
-        message='EraseBasic.device must be a DataStorage '
-        'but you passed <GraphicCard None model=\'foo-bar\' S/N=\'foo\'>',
-    ):
+    with pytest.raises(TypeError):
         models.EraseBasic(
             device=GraphicCard(
                 serial_number='foo', manufacturer='bar', model='foo-bar'
             ),
             clean_with_zeros=True,
             **conftest.T,
+        )
+        pytest.fail(
+            'EraseBasic.device must be a DataStorage '
+            'but you passed <GraphicCard None model=\'foo-bar\' S/N=\'foo\'>'
         )
 
 
@@ -292,9 +291,7 @@ def test_generic_action(
         for ams in [models.Recycling, models.Use, models.Refurbish, models.Management]
     ),
 )
-def test_simple_status_actions(
-    action_model: models.Action, user2: UserClient
-):
+def test_simple_status_actions(action_model: models.Action, user2: UserClient):
     """Simple test of status action."""
     user = user2
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
@@ -554,7 +551,9 @@ def test_status_without_lot(action_model: models.Action, user: UserClient):
         for ams in [models.Recycling, models.Use, models.Refurbish, models.Management]
     ),
 )
-def test_status_in_temporary_lot(action_model: models.Action, user: UserClient, app: Devicehub):
+def test_status_in_temporary_lot(
+    action_model: models.Action, user: UserClient, app: Devicehub
+):
     """Test of status actions for devices in a temporary lot."""
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     abstract = Device.query.filter_by(id=snap['device']['id']).first()
