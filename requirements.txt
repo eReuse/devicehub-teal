@@ -108,7 +108,9 @@ markupsafe==2.1.1
     #   jinja2
     #   mako
     #   wtforms
-marshmallow==3.0.0
+# TODO fix https://github.com/marshmallow-code/marshmallow/issues/1040
+# A ValueError is raised when the missing parameter is passed for required fields (#1040).
+marshmallow==3.0.0rc1
     # via
     #   marshmallow-enum
     #   teal
