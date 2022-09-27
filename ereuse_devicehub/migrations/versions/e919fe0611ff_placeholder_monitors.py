@@ -5,7 +5,7 @@ Revises: bcfda54aaf2f
 Create Date: 2022-09-27 10:55:00.859262
 
 """
-from alembic import context
+from alembic import context, op
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
@@ -74,13 +74,22 @@ def remove_device(device):
 
 
 def upgrade():
+    con = op.get_bind()
+    devices = con.execute(f'select * from {get_inv()}.device')
+    if not list(devices):
+        return
+
     init_app()
     clone_monitors()
     db.session.commit()
 
 
 def downgrade():
-    pass
+    con = op.get_bind()
+    devices = con.execute(f'select * from {get_inv()}.device')
+    if not list(devices):
+        return
+
     # init_app()
     # remove_placeholders()
     # db.session.commit()
