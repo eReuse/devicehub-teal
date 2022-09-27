@@ -654,7 +654,7 @@ class NewActionView(View):
         if lot_id:
             return url_for('inventory.lotdevicelist', lot_id=lot_id)
 
-        if url_for('inventory.alldevicelist') in request.referrer:
+        if url_for('inventory.alldevicelist') in (request.referrer or ''):
             return url_for('inventory.alldevicelist')
         return url_for('inventory.devicelist')
 
