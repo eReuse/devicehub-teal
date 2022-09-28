@@ -6,7 +6,7 @@ from sqlalchemy import or_
 
 from ereuse_devicehub import __version__, messages
 from ereuse_devicehub.db import db
-from ereuse_devicehub.forms import LoginForm, PasswordForm
+from ereuse_devicehub.forms import LoginForm, PasswordForm, UserNewRegisterForm
 from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.user.models import User
@@ -108,7 +108,25 @@ class UserPasswordView(View):
         return flask.redirect(flask.url_for('core.user-profile'))
 
 
+class UserRegistrationView(View):
+    methods = ['GET', 'POST']
+    template_name = 'ereuse_devicehub/user_registration.html'
+
+    def dispatch_request(self):
+        form = UserNewRegisterForm()
+        if form.validate_on_submit():
+
+            next_url = flask.request.args.get('next')
+            if not is_safe_url(flask.request, next_url):
+                return flask.abort(400)
+
+            return flask.redirect(next_url or flask.url_for('core.login'))
+        context = {'form': form, 'version': __version__}
+        return flask.render_template(self.template_name, **context)
+
+
 core.add_url_rule('/login/', view_func=LoginView.as_view('login'))
 core.add_url_rule('/logout/', view_func=LogoutView.as_view('logout'))
 core.add_url_rule('/profile/', view_func=UserProfileView.as_view('user-profile'))
+core.add_url_rule('/new_register/', view_func=UserRegistrationView.as_view('user-registration'))
 core.add_url_rule('/set_password/', view_func=UserPasswordView.as_view('set-password'))

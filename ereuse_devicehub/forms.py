@@ -101,3 +101,50 @@ class PasswordForm(FlaskForm):
         if commit:
             db.session.commit()
         return
+
+
+class UserNewRegisterForm(FlaskForm):
+    email = EmailField('Email Address', [
+        validators.DataRequired(),
+        validators.Length(min=6, max=35)
+    ])
+    password = PasswordField('Password', [validators.DataRequired()])
+    password2 = PasswordField('Password', [validators.DataRequired()])
+
+    error_messages = {
+        'invalid_login': (
+            "Please enter a correct email and password. Note that both "
+            "fields may be case-sensitive."
+        ),
+        'inactive': "This account is inactive.",
+    }
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+        email = self.email.data
+        password = self.password.data
+        password2 = self.password2.data
+        if password != password2:
+            self.form_errors.append('The passwords are not equal.')
+
+        txt = 'This email are in use.'
+        email = self.email.data
+        if User.query.filter_by(email=email).first():
+            self.form_errors.append(txt)
+
+    # def authenticate(self, email, password):
+    #     if email is None or password is None:
+    #         return
+    #     user = User.query.filter_by(email=email).first()
+    #     if user is None:
+    #         # Run the default password hasher once to reduce the timing
+    #         # difference between an existing and a nonexistent user (#20760).
+    #         generate_password_hash(password)
+    #     else:
+    #         if user.check_password(password):
+    #             return user
+

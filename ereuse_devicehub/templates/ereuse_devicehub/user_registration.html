@@ -22,8 +22,8 @@
               <div class="card-body">
 
                 <div class="pt-4 pb-2">
-                  <h5 class="card-title text-center pb-0 fs-4">Login to Your Account</h5>
-                  <p class="text-center small">Enter your username & password to login</p>
+                  <h5 class="card-title text-center pb-0 fs-4">Register as a new User</h5>
+                  <p class="text-center small">Enter an Email & password for to do a new register.</p>
                   {% if form.form_errors %}
                   <p class="text-danger">
                     {% for error in form.form_errors %}
@@ -43,24 +43,22 @@
                   </div>
 
                   <div class="col-12">
-                    <label for="yourPassword" class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" id="yourPassword" required>
-                    <div class="invalid-feedback">Please enter your password!</div>
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" id="password" required>
+                    <div class="invalid-feedback">Please enter a password!</div>
                   </div>
 
-                  <!-- TODO(@slamora): hidde until it is implemented
                   <div class="col-12">
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox" name="remember" {% if form.remember.data %}checked{% endif %} id="rememberMe">
-                      <label class="form-check-label" for="rememberMe">Remember me</label>
-                    </div>
+                    <label for="password2" class="form-label">Password</label>
+                    <input type="password" name="password2" class="form-control" id="password2" required>
+                    <div class="invalid-feedback">Please enter a password again!</div>
                   </div>
-                  -->
+
                   <div class="col-12">
                     <button class="btn btn-primary w-100" type="submit">Login</button>
                   </div>
                   <div class="col-12">
-                    <p class="small mb-0">Don't have account? <a href="{{ url_for('core.user-registration') }}">Create an account</a></p>
+                    <p class="small mb-0">Don't have account? <a href="#TODO" onclick="$('#exampleModal').modal('show')" data-toggle="modal" data-target="#exampleModal">Create an account</a></p>
                   </div>
                 </form>
 
@@ -68,10 +66,6 @@
             </div>
 
             <div class="credits">
-              <!-- All the links in the footer should remain intact. -->
-              <!-- You can delete the links only if you purchased the pro version. -->
-              <!-- Licensing information: https://bootstrapmade.com/license/ -->
-              <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/ -->
               Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
             </div>
 
