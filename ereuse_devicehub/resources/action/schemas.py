@@ -302,7 +302,7 @@ class TestDataStorage(Test):
             return
 
         if data.get('remaining_lifetime_percentage') > 100:
-            data['remaining_lifetime_percentage'] = 100
+            data['remaining_lifetime_percentage'] = None
 
 
 class StressTest(Test):
