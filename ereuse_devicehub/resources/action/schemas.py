@@ -296,6 +296,14 @@ class TestDataStorage(Test):
     offline_uncorrectable = Integer(data_key='offlineUncorrectable')
     remaining_lifetime_percentage = Integer(data_key='remainingLifetimePercentage')
 
+    @post_load
+    def default_remaining_lifetime_percentage(self, data):
+        if not data.get('remaining_lifetime_percentage'):
+            return
+
+        if data.get('remaining_lifetime_percentage') > 100:
+            data['remaining_lifetime_percentage'] = 100
+
 
 class StressTest(Test):
     __doc__ = m.StressTest.__doc__
