@@ -1,9 +1,17 @@
 from flask import g
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import BooleanField, EmailField, PasswordField, validators
+from wtforms import (
+    BooleanField,
+    EmailField,
+    PasswordField,
+    StringField,
+    TelField,
+    validators,
+)
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.user.models import User
 
 
@@ -104,12 +112,15 @@ class PasswordForm(FlaskForm):
 
 
 class UserNewRegisterForm(FlaskForm):
-    email = EmailField('Email Address', [
-        validators.DataRequired(),
-        validators.Length(min=6, max=35)
-    ])
+    email = EmailField(
+        'Email Address', [validators.DataRequired(), validators.Length(min=6, max=35)]
+    )
     password = PasswordField('Password', [validators.DataRequired()])
     password2 = PasswordField('Password', [validators.DataRequired()])
+    name = StringField(
+        'Name', [validators.DataRequired(), validators.Length(min=3, max=35)]
+    )
+    telephone = TelField('Telephone', [validators.DataRequired()])
 
     error_messages = {
         'invalid_login': (
@@ -130,21 +141,22 @@ class UserNewRegisterForm(FlaskForm):
         password2 = self.password2.data
         if password != password2:
             self.form_errors.append('The passwords are not equal.')
+            return False
 
         txt = 'This email are in use.'
         email = self.email.data
         if User.query.filter_by(email=email).first():
             self.form_errors.append(txt)
+            return False
 
-    # def authenticate(self, email, password):
-    #     if email is None or password is None:
-    #         return
-    #     user = User.query.filter_by(email=email).first()
-    #     if user is None:
-    #         # Run the default password hasher once to reduce the timing
-    #         # difference between an existing and a nonexistent user (#20760).
-    #         generate_password_hash(password)
-    #     else:
-    #         if user.check_password(password):
-    #             return user
+        return True
 
+    def save(self, commit=True):
+        user = User(email=self.email.data, password=self.password.data)
+        person = Person(
+            email=self.email.data, name=self.name.data, telephone=self.telephone.data
+        )
+        user.individuals.add(person)
+        db.session.add(user)
+        if commit:
+            db.session.commit()

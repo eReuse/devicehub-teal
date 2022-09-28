@@ -115,12 +115,9 @@ class UserRegistrationView(View):
     def dispatch_request(self):
         form = UserNewRegisterForm()
         if form.validate_on_submit():
-
-            next_url = flask.request.args.get('next')
-            if not is_safe_url(flask.request, next_url):
-                return flask.abort(400)
-
-            return flask.redirect(next_url or flask.url_for('core.login'))
+            form.save()
+            messages.success('User created successfully!')
+            return flask.redirect(flask.url_for('core.login'))
         context = {'form': form, 'version': __version__}
         return flask.render_template(self.template_name, **context)
 
@@ -128,5 +125,7 @@ class UserRegistrationView(View):
 core.add_url_rule('/login/', view_func=LoginView.as_view('login'))
 core.add_url_rule('/logout/', view_func=LogoutView.as_view('logout'))
 core.add_url_rule('/profile/', view_func=UserProfileView.as_view('user-profile'))
-core.add_url_rule('/new_register/', view_func=UserRegistrationView.as_view('user-registration'))
+core.add_url_rule(
+    '/new_register/', view_func=UserRegistrationView.as_view('user-registration')
+)
 core.add_url_rule('/set_password/', view_func=UserPasswordView.as_view('set-password'))
