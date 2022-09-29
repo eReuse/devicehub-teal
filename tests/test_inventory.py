@@ -21,10 +21,12 @@ from tests.conftest import TestConfig
 class NoExcCliRunner(click.testing.CliRunner):
     """Runner that interfaces with the Devicehub CLI."""
 
-    def invoke(self, *args, input=None, env=None, catch_exceptions=False, color=False,
-               **extra):
-        r = super().invoke(ereuse_devicehub.cli.cli,
-                           args, input, env, catch_exceptions, color, **extra)
+    def invoke(
+        self, *args, input=None, env=None, catch_exceptions=False, color=False, **extra
+    ):
+        r = super().invoke(
+            ereuse_devicehub.cli.cli, args, input, env, catch_exceptions, color, **extra
+        )
         assert r.exit_code == 0, 'CLI code {}: {}'.format(r.exit_code, r.output)
         return r
 
@@ -69,16 +71,26 @@ def test_inventory_create_delete_user(cli, tdb1, tdb2):
     """
     # Create first DB
     cli.inv('tdb1')
-    cli.invoke('inv', 'add',
-               '-n', 'Test DB1',
-               '-on', 'ACME DB1',
-               '-oi', 'acme-id',
-               '-tu', 'https://example.com',
-               '-tt', '3c66a6ad-22de-4db6-ac46-d8982522ec40',
-               '--common')
+    cli.invoke(
+        'inv',
+        'add',
+        '-n',
+        'Test DB1',
+        '-on',
+        'ACME DB1',
+        '-oi',
+        'acme-id',
+        '-tu',
+        'https://example.com',
+        '-tt',
+        '3c66a6ad-22de-4db6-ac46-d8982522ec40',
+        '--common',
+    )
 
     # Create an user for first DB
-    cli.invoke('user', 'add', 'foo@foo.com', '-a', 'Foo', '-c', 'ES', '-p', 'Such password')
+    cli.invoke(
+        'user', 'add', 'foo@foo.com', '-a', 'Foo', '-c', 'ES', '-p', 'Such password'
+    )
 
     with tdb1.app_context():
         # There is a row for the inventory
@@ -98,12 +110,20 @@ def test_inventory_create_delete_user(cli, tdb1, tdb2):
     cli.inv('tdb2')
     # Create a second DB
     # Note how we don't create common anymore
-    cli.invoke('inv', 'add',
-               '-n', 'Test DB2',
-               '-on', 'ACME DB2',
-               '-oi', 'acme-id-2',
-               '-tu', 'https://example.com',
-               '-tt', 'fbad1c08-ffdc-4a61-be49-464962c186a8')
+    cli.invoke(
+        'inv',
+        'add',
+        '-n',
+        'Test DB2',
+        '-on',
+        'ACME DB2',
+        '-oi',
+        'acme-id-2',
+        '-tu',
+        'https://example.com',
+        '-tt',
+        'fbad1c08-ffdc-4a61-be49-464962c186a8',
+    )
     # Create an user for with access for both DB
     cli.invoke('user', 'add', 'bar@bar.com', '-a', 'Bar', '-p', 'Wow password')
 
@@ -144,5 +164,6 @@ def test_create_existing_inventory(cli, tdb1):
     cli.invoke('inv', 'add', '--common')
     with tdb1.app_context():
         assert db.has_schema('tdb1')
-    with pytest.raises(AssertionError, message='Schema tdb1 already exists.'):
+    with pytest.raises(AssertionError):
         cli.invoke('inv', 'add', '--common')
+        pytest.fail('Schema tdb1 already exists.')

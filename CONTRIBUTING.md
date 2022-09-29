@@ -30,3 +30,29 @@ pre-commit install
   Do this: `device_detail.html`
 
   Don't do this: `DeviceDetail.html`, `Device-detail.html`
+
+
+## Adding a new dependency to the project
+This project tracks its packages using pip-tools, it could be installed by running:
+```
+pip install pip-tools
+```
+
+Whenever you need to install a new package using pip install <package-name>:
+1. Put the package name into `requirements.in` instead.
+```
+# requirements.in
+...
+new_package
+```
+
+2. Compile the requirements
+```
+pip-compile requirements.in --output-file=requirements.txt
+
+```
+
+3. Then install upgraded dependencies:
+```
+pip install -U -r requirements.txt
+```

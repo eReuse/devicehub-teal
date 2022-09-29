@@ -1,5 +1,4 @@
 import copy
-import ipaddress
 import json
 import os
 import shutil
@@ -7,7 +6,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from io import BytesIO
 from json.decoder import JSONDecodeError
-from typing import Tuple, Type
+from typing import Tuple
 
 import pytest
 from dateutil.tz import tzutc
@@ -15,7 +14,7 @@ from flask import current_app as app
 from flask import g
 from pytest import raises
 from sqlalchemy.util import OrderedSet
-from teal.enums import Currency, Subdivision
+from teal.enums import Currency
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
@@ -82,17 +81,17 @@ def test_erase_basic():
 def test_validate_device_data_storage():
     """Checks the validation for data-storage-only actions works."""
     # We can't set a GraphicCard
-    with pytest.raises(
-        TypeError,
-        message='EraseBasic.device must be a DataStorage '
-        'but you passed <GraphicCard None model=\'foo-bar\' S/N=\'foo\'>',
-    ):
+    with pytest.raises(TypeError):
         models.EraseBasic(
             device=GraphicCard(
                 serial_number='foo', manufacturer='bar', model='foo-bar'
             ),
             clean_with_zeros=True,
             **conftest.T,
+        )
+        pytest.fail(
+            'EraseBasic.device must be a DataStorage '
+            'but you passed <GraphicCard None model=\'foo-bar\' S/N=\'foo\'>'
         )
 
 
@@ -292,9 +291,7 @@ def test_generic_action(
         for ams in [models.Recycling, models.Use, models.Refurbish, models.Management]
     ),
 )
-def test_simple_status_actions(
-    action_model: models.Action, user2: UserClient
-):
+def test_simple_status_actions(action_model: models.Action, user2: UserClient):
     """Simple test of status action."""
     user = user2
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
@@ -554,7 +551,9 @@ def test_status_without_lot(action_model: models.Action, user: UserClient):
         for ams in [models.Recycling, models.Use, models.Refurbish, models.Management]
     ),
 )
-def test_status_in_temporary_lot(action_model: models.Action, user: UserClient, app: Devicehub):
+def test_status_in_temporary_lot(
+    action_model: models.Action, user: UserClient, app: Devicehub
+):
     """Test of status actions for devices in a temporary lot."""
     snap, _ = user.post(file('basic.snapshot'), res=models.Snapshot)
     abstract = Device.query.filter_by(id=snap['device']['id']).first()
@@ -727,7 +726,7 @@ def test_live_without_TestDataStorage(user: UserClient, client: Client, app: Dev
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=device_id).one()
+
     post_request = {
         "transaction": "ccc",
         "name": "John",
@@ -767,7 +766,7 @@ def test_live_without_hdd_1(user: UserClient, client: Client, app: Devicehub):
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=device_id).one()
+
     post_request = {
         "transaction": "ccc",
         "name": "John",
@@ -803,7 +802,7 @@ def test_live_without_hdd_2(user: UserClient, client: Client, app: Devicehub):
     acer['components'] = components
     snapshot, _ = user.post(json_encode(acer), res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=device_id).one()
+
     post_request = {
         "transaction": "ccc",
         "name": "John",
@@ -838,7 +837,7 @@ def test_live_without_hdd_3(user: UserClient, client: Client, app: Devicehub):
     acer['components'] = components
     snapshot, _ = user.post(json_encode(acer), res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=device_id).one()
+
     post_request = {
         "transaction": "ccc",
         "name": "John",
@@ -875,7 +874,7 @@ def test_live_with_hdd_with_old_time(user: UserClient, client: Client, app: Devi
     acer = file('acer.happy.battery.snapshot')
     snapshot, _ = user.post(acer, res=models.Snapshot)
     device_id = snapshot['device']['id']
-    db_device = Device.query.filter_by(id=device_id).one()
+
     post_request = {
         "transaction": "ccc",
         "name": "John",
@@ -1022,7 +1021,7 @@ def test_allocate(user: UserClient):
     allocate, _ = user.post(res=models.Allocate, data=post_request)
     # Normal allocate
     device, _ = user.get(res=Device, item=devicehub_id)
-    assert device['allocated'] == True
+    assert device['allocated'] is True
     action = [a for a in device['actions'] if a['type'] == 'Allocate'][0]
     assert action['transaction'] == allocate['transaction']
     assert action['finalUserCode'] == allocate['finalUserCode']
@@ -1097,11 +1096,11 @@ def test_deallocate(user: UserClient):
 
     user.post(res=models.Allocate, data=post_allocate)
     device, _ = user.get(res=Device, item=devicehub_id)
-    assert device['allocated'] == True
+    assert device['allocated'] is True
     deallocate, _ = user.post(res=models.Deallocate, data=post_deallocate)
     assert deallocate['startTime'] == post_deallocate['startTime']
     assert deallocate['devices'][0]['id'] == device_id
-    assert deallocate['devices'][0]['allocated'] == False
+    assert deallocate['devices'][0]['allocated'] is False
     res, _ = user.post(res=models.Deallocate, data=post_deallocate, status=422)
     assert res['code'] == 422
     assert res['type'] == 'ValidationError'
@@ -1204,8 +1203,8 @@ def test_offer_without_to(user: UserClient):
     users = [ac.user for ac in trade.acceptances]
     assert trade.user_to == device.owner
     assert request_post['code'].lower() in device.owner.email
-    assert device.owner.active == False
-    assert device.owner.phantom == True
+    assert device.owner.active is False
+    assert device.owner.phantom is True
     assert trade.user_to in users
     assert trade.user_from in users
     assert device.owner.email != user.email
@@ -1283,8 +1282,8 @@ def test_offer_without_from(user: UserClient, user2: UserClient):
 
     phantom_user = trade.user_from
     assert request_post['code'].lower() in phantom_user.email
-    assert phantom_user.active == False
-    assert phantom_user.phantom == True
+    assert phantom_user.active is False
+    assert phantom_user.phantom is True
     # assert trade.confirm_transfer
 
     users = [ac.user for ac in trade.acceptances]
@@ -1778,12 +1777,12 @@ def test_confirmRevoke(user: UserClient, user2: UserClient):
     assert device_10 in trade.devices
     assert len(trade.devices) == 10
 
-    # the SCRAP confirms the revoke action
-    request_confirm_revoke = {
-        'type': 'ConfirmRevoke',
-        'action': device_10.actions[-2].id,
-        'devices': [snap10['device']['id']],
-    }
+    # TODO??? the SCRAP confirms the revoke action
+    # request_confirm_revoke = {
+    #     'type': 'ConfirmRevoke',
+    #     'action': device_10.actions[-2].id,
+    #     'devices': [snap10['device']['id']],
+    # }
 
     # check validation error
     # user2.post(res=models.Action, data=request_confirm_revoke, status=422)
@@ -2796,7 +2795,7 @@ def test_action_web_erase(user: UserClient, client: Client):
     )
     assert "alert alert-info" in response
     assert "100% coincidence." in response
-    assert not "alert alert-danger" in response
+    assert "alert alert-danger" not in response
 
 
 @pytest.mark.mvp
@@ -2805,7 +2804,7 @@ def test_moveOnDocument(user: UserClient, user2: UserClient):
     lotIn, _ = user.post({'name': 'MyLotIn'}, res=Lot)
     lotOut, _ = user.post({'name': 'MyLotOut'}, res=Lot)
     url = (
-        'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
+        'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaap',
     )
     request_post1 = {
         'filename': 'test.pdf',
@@ -2887,7 +2886,7 @@ def test_delete_devices(user: UserClient):
 
     assert action_delete.t == 'Delete'
     assert str(action_delete.id) == action['id']
-    assert db_device.active == False
+    assert db_device.active is False
 
     # Check use of filter from frontend
     url = '/devices/?filter={"type":["Computer"]}'
@@ -2953,7 +2952,6 @@ def test_delete_devices_permitions(user: UserClient, user2: UserClient):
 
     file_snap = file('1-device-with-components.snapshot')
     snap, _ = user.post(file_snap, res=models.Snapshot)
-    device = Device.query.filter_by(id=snap['device']['id']).one()
 
     request = {
         'type': 'Delete',
@@ -2973,7 +2971,7 @@ def test_moveOnDocument_bug168(user: UserClient, user2: UserClient):
     lotIn, _ = user.post({'name': 'MyLotIn'}, res=Lot)
     lotOut, _ = user.post({'name': 'MyLotOut'}, res=Lot)
     url = (
-        'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapaaaa',
+        'http://www.ereuse.org/apapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaapaapapaapaapaapaapaapaapaapaap',
     )
     request_post1 = {
         'filename': 'test.pdf',
@@ -3014,13 +3012,12 @@ def test_moveOnDocument_bug168(user: UserClient, user2: UserClient):
         'container_to': id_hash,
         'description': description,
     }
-    doc, _ = user.post(res=models.Action, data=request_moveOn)
-    trade = models.Trade.query.one()
+    user.post(res=models.Action, data=request_moveOn)
     trade_document1 = TradeDocument.query.filter_by(id=tradedocument_from['id']).one()
     trade_document2 = TradeDocument.query.filter_by(id=tradedocument_to['id']).one()
     assert trade_document1.total_weight == 150.0
     assert trade_document2.total_weight == 4.0
     assert trade_document1.trading == 'Confirm'
-    assert trade_document2.trading == None
+    assert trade_document2.trading is None
 
     tradedocument, _ = user.delete(res=TradeDocument, item=tradedocument_to['id'])
