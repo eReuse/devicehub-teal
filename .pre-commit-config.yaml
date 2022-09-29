@@ -19,5 +19,9 @@ repos:
     hooks:
     -   id: build-js
         name: build-js
+        # pre-commit pass as parameters files included on the commit
+        # so babel command should be wrapped to ignore these files on
+        # package.json script
         entry: npm run babel
         language: node
+        files: ^ereuse_devicehub/static/js/main_inventory.js

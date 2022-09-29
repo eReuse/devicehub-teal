@@ -21,7 +21,7 @@
   "scripts": {
     "lint:report": "eslint ereuse_devicehub --ext .js --output-file eslint_report.json --format json",
     "lint:fix": "eslint ereuse_devicehub --ext .js --fix",
-    "babel": "babel ereuse_devicehub/static/js/main_inventory.js --out-file ereuse_devicehub/static/js/main_inventory.build.js"
+    "babel": "babel ereuse_devicehub/static/js/main_inventory.js --out-file ereuse_devicehub/static/js/main_inventory.build.js && echo 'Ignoring parameters: '"
   },
   "keywords": [],
   "author": "",
