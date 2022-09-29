@@ -25,3 +25,7 @@ repos:
         entry: npm run babel
         language: node
         files: ^ereuse_devicehub/static/js/main_inventory.js
+  - repo: https://github.com/jazzband/pip-tools
+    rev: 6.8.0
+    hooks:
+      - id: pip-compile
