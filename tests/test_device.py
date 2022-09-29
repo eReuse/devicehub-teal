@@ -1,6 +1,7 @@
 import copy
 import datetime
 import pytest
+import pytz
 
 from uuid import UUID
 from flask import g
@@ -570,7 +571,7 @@ def test_manufacturer(user: UserClient):
     m, r = user.get(res='Manufacturer', query=[('search', 'asus')])
     assert m == {'items': [{'name': 'Asus', 'url': 'https://en.wikipedia.org/wiki/Asus'}]}
     assert r.cache_control.public
-    assert r.expires > datetime.datetime.now()
+    assert r.expires.timestamp() > datetime.datetime.now().timestamp()
 
 
 @pytest.mark.mvp
