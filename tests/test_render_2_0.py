@@ -356,7 +356,6 @@ def test_label_details(user3: UserClientFlask):
     user3.post(uri, data=data)
 
     body, status = user3.get('/labels/tag1/')
-    assert "tag1" in body
     assert "Print Label" in body
 
 
