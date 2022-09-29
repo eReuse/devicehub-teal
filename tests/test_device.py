@@ -1,14 +1,12 @@
 import copy
 import datetime
-import pytest
-import pytz
-
 from uuid import UUID
-from flask import g
 
+import pytest
 from colour import Color
 from ereuse_utils.naming import Naming
 from ereuse_utils.test import ANY
+from flask import g
 from pytest import raises
 from sqlalchemy.util import OrderedSet
 from teal.db import ResourceNotFound
@@ -21,26 +19,35 @@ from ereuse_devicehub.resources.action import models as m
 from ereuse_devicehub.resources.action.models import Remove, TestConnectivity
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.device import models as d
-from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.schemas import Device as DeviceS
-from ereuse_devicehub.resources.device.sync import MismatchBetweenTags, MismatchBetweenTagsAndHid, \
-    Sync
-from ereuse_devicehub.resources.enums import ComputerChassis, DisplayTech, Severity, \
-    SnapshotSoftware, TransferState
+from ereuse_devicehub.resources.device.sync import (
+    MismatchBetweenTags,
+    MismatchBetweenTagsAndHid,
+    Sync,
+)
+from ereuse_devicehub.resources.enums import (
+    ComputerChassis,
+    DisplayTech,
+    Severity,
+    SnapshotSoftware,
+    TransferState,
+)
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
 from tests import conftest
-from tests.conftest import file, yaml2json, json_encode
+from tests.conftest import file, json_encode, yaml2json
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_device_model():
     """Tests that the correctness of the device model and its relationships."""
-    pc = d.Desktop(model='p1mo',
-                   manufacturer='p1ma',
-                   serial_number='p1s',
-                   chassis=ComputerChassis.Tower)
+    pc = d.Desktop(
+        model='p1mo',
+        manufacturer='p1ma',
+        serial_number='p1s',
+        chassis=ComputerChassis.Tower,
+    )
     net = d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s')
     graphic = d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500)
     pc.components.add(net)
@@ -56,7 +63,9 @@ def test_device_model():
     # Removing a component from pc doesn't delete the component
     pc.components.remove(net)
     db.session.commit()
-    pc = d.Device.query.filter_by(id=pc.id).first()  # this is the same as querying for d.Desktop directly
+    pc = d.Device.query.filter_by(
+        id=pc.id
+    ).first()  # this is the same as querying for d.Desktop directly
     assert pc.components == {graphic}
     network_adapter = d.NetworkAdapter.query.one()
     assert network_adapter not in pc.components
@@ -73,7 +82,9 @@ def test_device_model():
     assert network_adapter.id == 4
     assert d.NetworkAdapter.query.first() is not None, 'We removed the network adaptor'
     assert gcard.id == 5, 'We should still hold a reference to a zombie graphic card'
-    assert d.GraphicCard.query.first() is None, 'We should have deleted it –it was inside the pc'
+    assert (
+        d.GraphicCard.query.first() is None
+    ), 'We should have deleted it –it was inside the pc'
 
 
 @pytest.mark.xfail(reason='Test not developed')
@@ -93,21 +104,25 @@ def test_device_schema():
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_physical_properties():
-    c = d.Motherboard(slots=2,
-                      usb=3,
-                      serial_number='sn',
-                      model='ml',
-                      manufacturer='mr',
-                      width=2.0,
-                      color=Color())
-    pc = d.Desktop(chassis=ComputerChassis.Tower,
-                   model='foo',
-                   manufacturer='bar',
-                   serial_number='foo-bar',
-                   weight=2.8,
-                   width=1.4,
-                   height=2.1,
-                   color=Color('LightSeaGreen'))
+    c = d.Motherboard(
+        slots=2,
+        usb=3,
+        serial_number='sn',
+        model='ml',
+        manufacturer='mr',
+        width=2.0,
+        color=Color(),
+    )
+    pc = d.Desktop(
+        chassis=ComputerChassis.Tower,
+        model='foo',
+        manufacturer='bar',
+        serial_number='foo-bar',
+        weight=2.8,
+        width=1.4,
+        height=2.1,
+        color=Color('LightSeaGreen'),
+    )
     pc.components.add(c)
     db.session.add(pc)
     db.session.commit()
@@ -123,7 +138,7 @@ def test_physical_properties():
         'manufacturer': 'mr',
         'bios_date': None,
         'ram_max_size': None,
-        'ram_slots': None
+        'ram_slots': None,
     }
     assert pc.physical_properties == {
         'chassis': ComputerChassis.Tower,
@@ -133,7 +148,7 @@ def test_physical_properties():
         'receiver_id': None,
         'serial_number': 'foo-bar',
         'part_number': None,
-        'transfer_state': TransferState.Initial
+        'transfer_state': TransferState.Initial,
     }
 
 
@@ -143,14 +158,19 @@ def test_component_similar_one():
     user = User.query.filter().first()
     snapshot = yaml2json('pc-components.db')
     pc = snapshot['device']
-    snapshot['components'][0]['serial_number'] = snapshot['components'][1]['serial_number'] = None
-    pc = d.Desktop(**pc, components=OrderedSet(d.Component(**c) for c in snapshot['components']))
+    snapshot['components'][0]['serial_number'] = snapshot['components'][1][
+        'serial_number'
+    ] = None
+    pc = d.Desktop(
+        **pc, components=OrderedSet(d.Component(**c) for c in snapshot['components'])
+    )
     component1, component2 = pc.components  # type: d.Component
     db.session.add(pc)
     db.session.flush()
     # Let's create a new component named 'A' similar to 1
-    componentA = d.Component(model=component1.model, manufacturer=component1.manufacturer,
-                             owner_id=user.id)
+    componentA = d.Component(
+        model=component1.model, manufacturer=component1.manufacturer, owner_id=user.id
+    )
     similar_to_a = componentA.similar_one(pc, set())
     assert similar_to_a == component1
     # d.Component B does not have the same model
@@ -176,9 +196,11 @@ def test_add_remove():
     pc = d.Desktop(**pc, components=OrderedSet([c1, c2]))
     db.session.add(pc)
     c3 = d.Component(serial_number='nc1', owner_id=user.id)
-    pc2 = d.Desktop(serial_number='s2',
-                    components=OrderedSet([c3]),
-                    chassis=ComputerChassis.Microtower)
+    pc2 = d.Desktop(
+        serial_number='s2',
+        components=OrderedSet([c3]),
+        chassis=ComputerChassis.Microtower,
+    )
     c4 = d.Component(serial_number='c4s', owner_id=user.id)
     db.session.add(pc2)
     db.session.add(c4)
@@ -202,7 +224,9 @@ def test_sync_run_components_empty():
     remove all the components from the device.
     """
     s = yaml2json('pc-components.db')
-    pc = d.Desktop(**s['device'], components=OrderedSet(d.Component(**c) for c in s['components']))
+    pc = d.Desktop(
+        **s['device'], components=OrderedSet(d.Component(**c) for c in s['components'])
+    )
     db.session.add(pc)
     db.session.commit()
 
@@ -220,7 +244,9 @@ def test_sync_run_components_none():
     keep all the components from the device.
     """
     s = yaml2json('pc-components.db')
-    pc = d.Desktop(**s['device'], components=OrderedSet(d.Component(**c) for c in s['components']))
+    pc = d.Desktop(
+        **s['device'], components=OrderedSet(d.Component(**c) for c in s['components'])
+    )
     db.session.add(pc)
     db.session.commit()
 
@@ -250,7 +276,8 @@ def test_sync_execute_register_desktop_existing_no_tag():
     db.session.commit()
 
     pc = d.Desktop(
-        **yaml2json('pc-components.db')['device'])  # Create a new transient non-db object
+        **yaml2json('pc-components.db')['device']
+    )  # Create a new transient non-db object
     # 1: device exists on DB
     db_pc = Sync().execute_register(pc)
     pc.amount = 0
@@ -286,7 +313,9 @@ def test_sync_execute_register_desktop_tag_not_linked():
     db.session.commit()
 
     # Create a new transient non-db object
-    pc = d.Desktop(**yaml2json('pc-components.db')['device'], tags=OrderedSet([Tag(id='foo')]))
+    pc = d.Desktop(
+        **yaml2json('pc-components.db')['device'], tags=OrderedSet([Tag(id='foo')])
+    )
     returned_pc = Sync().execute_register(pc)
     assert returned_pc == pc
     assert tag.device == pc, 'Tag has to be linked'
@@ -327,7 +356,9 @@ def test_sync_execute_register_tag_does_not_exist():
     Tags have to be created before trying to link them through a Snapshot.
     """
     user = User.query.filter().first()
-    pc = d.Desktop(**yaml2json('pc-components.db')['device'], tags=OrderedSet([Tag('foo')]))
+    pc = d.Desktop(
+        **yaml2json('pc-components.db')['device'], tags=OrderedSet([Tag('foo')])
+    )
     pc.owner_id = user.id
     with raises(ResourceNotFound):
         Sync().execute_register(pc)
@@ -346,7 +377,8 @@ def test_sync_execute_register_tag_linked_same_device():
     db.session.commit()
 
     pc = d.Desktop(
-        **yaml2json('pc-components.db')['device'])  # Create a new transient non-db object
+        **yaml2json('pc-components.db')['device']
+    )  # Create a new transient non-db object
     pc.tags.add(Tag(id='foo'))
     db_pc = Sync().execute_register(pc)
     assert db_pc.id == orig_pc.id
@@ -370,7 +402,8 @@ def test_sync_execute_register_tag_linked_other_device_mismatch_between_tags():
     db.session.commit()
 
     pc1 = d.Desktop(
-        **yaml2json('pc-components.db')['device'])  # Create a new transient non-db object
+        **yaml2json('pc-components.db')['device']
+    )  # Create a new transient non-db object
     pc1.tags.add(Tag(id='foo-1'))
     pc1.tags.add(Tag(id='foo-2'))
     with raises(MismatchBetweenTags):
@@ -394,7 +427,8 @@ def test_sync_execute_register_mismatch_between_tags_and_hid():
     db.session.commit()
 
     pc1 = d.Desktop(
-        **yaml2json('pc-components.db')['device'])  # Create a new transient non-db object
+        **yaml2json('pc-components.db')['device']
+    )  # Create a new transient non-db object
     pc1.tags.add(Tag(id='foo-2'))
     with raises(MismatchBetweenTagsAndHid):
         Sync().execute_register(pc1)
@@ -405,22 +439,36 @@ def test_sync_execute_register_mismatch_between_tags_and_hid():
 def test_get_device(user: UserClient):
     """Checks GETting a d.Desktop with its components."""
     g.user = User.query.one()
-    pc = d.Desktop(model='p1mo',
-                   manufacturer='p1ma',
-                   serial_number='p1s',
-                   chassis=ComputerChassis.Tower,
-                   owner_id=user.user['id'])
-    pc.components = OrderedSet([
-        d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s',
-            owner_id=user.user['id']),
-        d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500, owner_id=user.user['id'])
-    ])
+    pc = d.Desktop(
+        model='p1mo',
+        manufacturer='p1ma',
+        serial_number='p1s',
+        chassis=ComputerChassis.Tower,
+        owner_id=user.user['id'],
+    )
+    pc.components = OrderedSet(
+        [
+            d.NetworkAdapter(
+                model='c1mo',
+                manufacturer='c1ma',
+                serial_number='c1s',
+                owner_id=user.user['id'],
+            ),
+            d.GraphicCard(
+                model='c2mo', manufacturer='c2ma', memory=1500, owner_id=user.user['id']
+            ),
+        ]
+    )
     db.session.add(pc)
     # todo test is an abstract class. replace with another one
-    db.session.add(TestConnectivity(device=pc,
-                                    severity=Severity.Info,
-                                    agent=Person(name='Timmy'),
-                                    author=User(email='bar@bar.com')))
+    db.session.add(
+        TestConnectivity(
+            device=pc,
+            severity=Severity.Info,
+            agent=Person(name='Timmy'),
+            author=User(email='bar@bar.com'),
+        )
+    )
     db.session.commit()
     pc_api, _ = user.get(res=d.Device, item=pc.devicehub_id)
     assert len(pc_api['actions']) == 1
@@ -428,10 +476,14 @@ def test_get_device(user: UserClient):
     assert pc_api['actions'][0]['device'] == pc.id
     assert pc_api['actions'][0]['severity'] == 'Info'
     assert UUID(pc_api['actions'][0]['author'])
-    assert 'actions_components' not in pc_api, 'actions_components are internal use only'
+    assert (
+        'actions_components' not in pc_api
+    ), 'actions_components are internal use only'
     assert 'actions_one' not in pc_api, 'they are internal use only'
     assert 'author' not in pc_api
-    assert tuple(c['id'] for c in pc_api['components']) == tuple(c.id for c in pc.components)
+    assert tuple(c['id'] for c in pc_api['components']) == tuple(
+        c.id for c in pc.components
+    )
     assert pc_api['hid'] == 'desktop-p1ma-p1mo-p1s'
     assert pc_api['model'] == 'p1mo'
     assert pc_api['manufacturer'] == 'p1ma'
@@ -444,41 +496,59 @@ def test_get_device(user: UserClient):
 def test_get_devices(app: Devicehub, user: UserClient):
     """Checks GETting multiple devices."""
     g.user = User.query.one()
-    pc = d.Desktop(model='p1mo',
-                   manufacturer='p1ma',
-                   serial_number='p1s',
-                   chassis=ComputerChassis.Tower,
-                   owner_id=user.user['id'])
-    pc.components = OrderedSet([
-        d.NetworkAdapter(model='c1mo', manufacturer='c1ma', serial_number='c1s',
-            owner_id=user.user['id']),
-        d.GraphicCard(model='c2mo', manufacturer='c2ma', memory=1500,
-            owner_id=user.user['id'])
-    ])
-    pc1 = d.Desktop(model='p2mo',
-                    manufacturer='p2ma',
-                    serial_number='p2s',
-                    chassis=ComputerChassis.Tower,
-                    owner_id=user.user['id'])
-    pc2 = d.Laptop(model='p3mo',
-                   manufacturer='p3ma',
-                   serial_number='p3s',
-                   chassis=ComputerChassis.Netbook,
-                   owner_id=user.user['id'])
+    pc = d.Desktop(
+        model='p1mo',
+        manufacturer='p1ma',
+        serial_number='p1s',
+        chassis=ComputerChassis.Tower,
+        owner_id=user.user['id'],
+    )
+    pc.components = OrderedSet(
+        [
+            d.NetworkAdapter(
+                model='c1mo',
+                manufacturer='c1ma',
+                serial_number='c1s',
+                owner_id=user.user['id'],
+            ),
+            d.GraphicCard(
+                model='c2mo', manufacturer='c2ma', memory=1500, owner_id=user.user['id']
+            ),
+        ]
+    )
+    pc1 = d.Desktop(
+        model='p2mo',
+        manufacturer='p2ma',
+        serial_number='p2s',
+        chassis=ComputerChassis.Tower,
+        owner_id=user.user['id'],
+    )
+    pc2 = d.Laptop(
+        model='p3mo',
+        manufacturer='p3ma',
+        serial_number='p3s',
+        chassis=ComputerChassis.Netbook,
+        owner_id=user.user['id'],
+    )
     db.session.add_all((pc, pc1, pc2))
     db.session.commit()
     devices, _ = user.get(res=d.Device)
     ids = (pc.id, pc1.id, pc2.id, pc.components[0].id, pc.components[1].id)
     assert tuple(dev['id'] for dev in devices['items']) == ids
     assert tuple(dev['type'] for dev in devices['items']) == (
-        d.Desktop.t, d.Desktop.t, d.Laptop.t, d.NetworkAdapter.t, d.GraphicCard.t
+        d.Desktop.t,
+        d.Desktop.t,
+        d.Laptop.t,
+        d.NetworkAdapter.t,
+        d.GraphicCard.t,
     )
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_get_device_permissions(app: Devicehub, user: UserClient, user2: UserClient,
-        client: Client):
+def test_get_device_permissions(
+    app: Devicehub, user: UserClient, user2: UserClient, client: Client
+):
     """Checks GETting a d.Desktop with its components."""
 
     s, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
@@ -530,12 +600,12 @@ def test_get_devices_unassigned(user: UserClient):
     assert len(devices['items']) == 2
 
     from ereuse_devicehub.resources.lot.models import Lot
+
     device_id = devices['items'][0]['id']
     my_lot, _ = user.post(({'name': 'My_lot'}), res=Lot)
-    lot, _ = user.post({},
-                       res=Lot,
-                       item='{}/devices'.format(my_lot['id']),
-                       query=[('id', device_id)])
+    lot, _ = user.post(
+        {}, res=Lot, item='{}/devices'.format(my_lot['id']), query=[('id', device_id)]
+    )
     lot = Lot.query.filter_by(id=lot['id']).one()
     assert next(iter(lot.devices)).id == device_id
 
@@ -555,13 +625,15 @@ def test_get_devices_unassigned(user: UserClient):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.auth_app_context.__name__)
 def test_computer_monitor():
-    m = d.ComputerMonitor(technology=DisplayTech.LCD,
-                          manufacturer='foo',
-                          model='bar',
-                          serial_number='foo-bar',
-                          resolution_width=1920,
-                          resolution_height=1080,
-                          size=14.5)
+    m = d.ComputerMonitor(
+        technology=DisplayTech.LCD,
+        manufacturer='foo',
+        model='bar',
+        serial_number='foo-bar',
+        resolution_width=1920,
+        resolution_height=1080,
+        size=14.5,
+    )
     db.session.add(m)
     db.session.commit()
 
@@ -569,7 +641,9 @@ def test_computer_monitor():
 @pytest.mark.mvp
 def test_manufacturer(user: UserClient):
     m, r = user.get(res='Manufacturer', query=[('search', 'asus')])
-    assert m == {'items': [{'name': 'Asus', 'url': 'https://en.wikipedia.org/wiki/Asus'}]}
+    assert m == {
+        'items': [{'name': 'Asus', 'url': 'https://en.wikipedia.org/wiki/Asus'}]
+    }
     assert r.cache_control.public
     assert r.expires.timestamp() > datetime.datetime.now().timestamp()
 
@@ -592,12 +666,20 @@ def test_device_properties_format(app: Devicehub, user: UserClient):
         assert format(pc, 's') == '(asustek computer inc.) S/N 94OAAQ021116'
         assert pc.ram_size == 1024
         assert pc.data_storage_size == 152627
-        assert pc.graphic_card_model == 'mobile 945gse express integrated graphics controller'
+        assert (
+            pc.graphic_card_model
+            == 'mobile 945gse express integrated graphics controller'
+        )
         assert pc.processor_model == 'intel atom cpu n270 @ 1.60ghz'
         net = next(c for c in pc.components if isinstance(c, d.NetworkAdapter))
-        assert format(net) == 'NetworkAdapter 5: model ar8121/ar8113/ar8114 ' \
-                              'gigabit or fast ethernet, S/N 00:24:8c:7f:cf:2d'
-        assert format(net, 't') == 'NetworkAdapter ar8121/ar8113/ar8114 gigabit or fast ethernet'
+        assert (
+            format(net) == 'NetworkAdapter 5: model ar8121/ar8113/ar8114 '
+            'gigabit or fast ethernet, S/N 00:24:8c:7f:cf:2d'
+        )
+        assert (
+            format(net, 't')
+            == 'NetworkAdapter ar8121/ar8113/ar8114 gigabit or fast ethernet'
+        )
         assert format(net, 's') == 'qualcomm atheros 00:24:8C:7F:CF:2D – 100 Mbps'
         hdd = next(c for c in pc.components if isinstance(c, d.DataStorage))
         assert format(hdd) == 'HardDrive 10: model st9160310as, S/N 5sv4tqa6'
@@ -639,8 +721,12 @@ def test_networking_model(user: UserClient):
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_cooking_mixer(user: UserClient):
-    mixer = d.Mixer(serial_number='foo', model='bar', manufacturer='foobar',
-                    owner_id=user.user['id'])
+    mixer = d.Mixer(
+        serial_number='foo',
+        model='bar',
+        manufacturer='foobar',
+        owner_id=user.user['id'],
+    )
     db.session.add(mixer)
     db.session.commit()
 
@@ -653,12 +739,12 @@ def test_cooking_mixer_api(user: UserClient):
                 'serialNumber': 'foo',
                 'model': 'bar',
                 'manufacturer': 'foobar',
-                'type': 'Mixer'
+                'type': 'Mixer',
             },
             'version': '11.0',
-            'software': SnapshotSoftware.Web.name
+            'software': SnapshotSoftware.Web.name,
         },
-        res=m.Snapshot
+        res=m.Snapshot,
     )
     mixer, _ = user.get(res=d.Device, item=snapshot['device']['id'])
     assert mixer['type'] == 'Mixer'
@@ -674,14 +760,19 @@ def test_hid_with_mac(app: Devicehub, user: UserClient):
     pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
     pc = d.Device.query.filter_by(devicehub_id=snap['device']['devicehubID']).one()
-    assert pc.placeholder.binding.hid == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    assert (
+        pc.placeholder.binding.hid
+        == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    )
 
 
 @pytest.mark.mvp
 def test_hid_without_mac(app: Devicehub, user: UserClient):
     """Checks hid without mac."""
     snapshot = yaml2json('asus-eee-1000h.snapshot.11')
-    snapshot['components'] = [c for c in snapshot['components'] if c['type'] != 'NetworkAdapter']
+    snapshot['components'] = [
+        c for c in snapshot['components'] if c['type'] != 'NetworkAdapter'
+    ]
     snap, _ = user.post(json_encode(snapshot), res=m.Snapshot)
     pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
@@ -710,7 +801,10 @@ def test_hid_with_2networkadapters(app: Devicehub, user: UserClient):
     devices, _ = user.get(res=d.Device)
 
     laptop = devices['items'][0]
-    assert laptop['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    assert (
+        laptop['hid']
+        == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    )
     assert len([c for c in devices['items'] if c['type'] == 'Laptop']) == 2
 
 
@@ -727,14 +821,20 @@ def test_hid_with_2network_and_drop_no_mac_in_hid(app: Devicehub, user: UserClie
     pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
     pc = d.Device.query.filter_by(devicehub_id=snap['device']['devicehubID']).one()
-    assert pc.placeholder.binding.hid == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    assert (
+        pc.placeholder.binding.hid
+        == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    )
 
     snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abb'
     snapshot['components'] = [c for c in snapshot['components'] if c != network]
     user.post(json_encode(snapshot), res=m.Snapshot)
     devices, _ = user.get(res=d.Device)
     laptop = devices['items'][0]
-    assert pc.placeholder.binding.hid == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    assert (
+        pc.placeholder.binding.hid
+        == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    )
     assert len([c for c in devices['items'] if c['type'] == 'Laptop']) == 2
     assert len([c for c in laptop['components'] if c['type'] == 'NetworkAdapter']) == 1
 
@@ -753,7 +853,10 @@ def test_hid_with_2network_and_drop_mac_in_hid(app: Devicehub, user: UserClient)
     pc, _ = user.get(res=d.Device, item=snap['device']['devicehubID'])
     assert pc['hid'] == 'laptop-asustek_computer_inc-1000h-94oaaq021116'
     pc = d.Device.query.filter_by(devicehub_id=snap['device']['devicehubID']).one()
-    assert pc.placeholder.binding.hid == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    assert (
+        pc.placeholder.binding.hid
+        == 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d'
+    )
 
     # we drop the network card then is used for to build the hid
     snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abb'
@@ -763,19 +866,25 @@ def test_hid_with_2network_and_drop_mac_in_hid(app: Devicehub, user: UserClient)
     laptops = [c for c in devices['items'] if c['type'] == 'Laptop']
     assert len(laptops) == 4
     hids = [laptops[0]['hid'], laptops[2]['hid']]
-    proof_hid = ['laptop-asustek_computer_inc-1000h-94oaaq021116-a0:24:8c:7f:cf:2d',
-                 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d']
+    proof_hid = [
+        'laptop-asustek_computer_inc-1000h-94oaaq021116-a0:24:8c:7f:cf:2d',
+        'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d',
+    ]
     assert all([h in proof_hid for h in hids])
 
     # we drop all network cards
     snapshot['uuid'] = 'd1b70cb8-8929-4f36-99b7-fe052cec0abc'
-    snapshot['components'] = [c for c in snapshot['components'] if c not in [network, network2]]
+    snapshot['components'] = [
+        c for c in snapshot['components'] if c not in [network, network2]
+    ]
     user.post(json_encode(snapshot), res=m.Snapshot)
     devices, _ = user.get(res=d.Device)
     laptops = [c for c in devices['items'] if c['type'] == 'Laptop']
     assert len(laptops) == 4
     hids = [laptops[0]['hid'], laptops[2]['hid']]
-    proof_hid = ['laptop-asustek_computer_inc-1000h-94oaaq021116-a0:24:8c:7f:cf:2d',
-                 'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d',
-                 'laptop-asustek_computer_inc-1000h-94oaaq021116']
+    proof_hid = [
+        'laptop-asustek_computer_inc-1000h-94oaaq021116-a0:24:8c:7f:cf:2d',
+        'laptop-asustek_computer_inc-1000h-94oaaq021116-00:24:8c:7f:cf:2d',
+        'laptop-asustek_computer_inc-1000h-94oaaq021116',
+    ]
     assert all([h in proof_hid for h in hids])
