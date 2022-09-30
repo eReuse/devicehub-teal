@@ -116,8 +116,6 @@ class UserRegistrationView(View):
         form = UserNewRegisterForm()
         if form.validate_on_submit():
             form.save()
-            messages.success('User created successfully!')
-            return flask.redirect(flask.url_for('core.login'))
         context = {'form': form, 'version': __version__}
         return flask.render_template(self.template_name, **context)
 

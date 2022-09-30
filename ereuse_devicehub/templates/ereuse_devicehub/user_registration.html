@@ -23,6 +23,7 @@
 
                 <div class="pt-4 pb-2">
                   <h5 class="card-title text-center pb-0 fs-4">Register as a new User</h5>
+                  {% if not form._token %}
                   <p class="text-center small">Enter an Email & password for to do a new register.</p>
                   {% if form.form_errors %}
                   <p class="text-danger">
@@ -71,6 +72,14 @@
                     <p class="small mb-0">Don't have account? <a href="#TODO" onclick="$('#exampleModal').modal('show')" data-toggle="modal" data-target="#exampleModal">Create an account</a></p>
                   </div>
                 </form>
+                {% else %}
+                  <div class="col-12">
+                    We have sent you a validation email. Please check your email.
+                  </div>
+                  <div class="col-12">
+                    {{ form._token }}
+                  </div>
+                {% endif %}
 
               </div>
             </div>

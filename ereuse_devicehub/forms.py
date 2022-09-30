@@ -12,7 +12,7 @@ from wtforms import (
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Person
-from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.user.models import User, UserValidation
 
 
 class LoginForm(FlaskForm):
@@ -152,11 +152,20 @@ class UserNewRegisterForm(FlaskForm):
         return True
 
     def save(self, commit=True):
-        user = User(email=self.email.data, password=self.password.data)
+        user = User(email=self.email.data, password=self.password.data, active=False)
+
         person = Person(
             email=self.email.data, name=self.name.data, telephone=self.telephone.data
         )
+
         user.individuals.add(person)
         db.session.add(user)
+
+        user_validation = UserValidation(
+            user=user,
+        )
+        self._token = user_validation.token
+        db.session.add(user_validation)
+
         if commit:
             db.session.commit()
