@@ -86,3 +86,9 @@ class DevicehubConfig(Config):
     """Definition of path where save the documents of customers"""
     PATH_DOCUMENTS_STORAGE = config('PATH_DOCUMENTS_STORAGE', '/tmp/')
     JWT_PASS = config('JWT_PASS', '')
+
+    MAIL_SERVER = config('MAIL_SERVER', '')
+    MAIL_USERNAME = config('MAIL_USERNAME', '')
+    MAIL_PASSWORD = config('MAIL_PASSWORD', '')
+    MAIL_PORT = config('MAIL_PORT', 587)
+    MAIL_USE_TLS = config('MAIL_USE_TLS', True)
