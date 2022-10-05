@@ -10,7 +10,6 @@ from boltons import urlutils
 from citext import CIText
 from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
 from flask import g, request
-from flask_sqlalchemy import event
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column
 from sqlalchemy import Enum as DBEnum
@@ -905,7 +904,7 @@ class DisplayMixin:
 
 class Placeholder(Thing):
     id = Column(BigInteger, Sequence('placeholder_seq'), primary_key=True)
-    phid = Column(nullable=False, default=create_phid)
+    phid = Column(Unicode(), nullable=False, default=create_phid)
     pallet = Column(Unicode(), nullable=True)
     pallet.comment = "used for identification where from where is this placeholders"
     info = db.Column(CIText())
@@ -1599,4 +1598,5 @@ def create_code_tag(mapper, connection, device):
         db.session.add(tag)
 
 
+# from flask_sqlalchemy import event
 # event.listen(Device, 'after_insert', create_code_tag, propagate=True)
