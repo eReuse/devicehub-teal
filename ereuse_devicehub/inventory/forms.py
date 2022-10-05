@@ -549,7 +549,6 @@ class NewDeviceForm(FlaskForm):
 
     def reset_ids(self):
         if self.amount.data > 1:
-            # self.phid.data = None
             self.id_device_supplier.data = None
             self.id_device_internal.data = None
             self.serial_number.data = None
@@ -561,7 +560,6 @@ class NewDeviceForm(FlaskForm):
     def get_placeholder(self):
         self.placeholder = Placeholder(
             **{
-                # 'phid': self.phid.data or None,
                 'id_device_supplier': self.id_device_supplier.data,
                 'id_device_internal': self.id_device_internal.data,
                 'info': self.info.data,
@@ -1488,9 +1486,7 @@ class UploadPlaceholderForm(FlaskForm):
             else:
                 self.source = "Excel File: {}".format(_file.filename)
             try:
-                data = (
-                    pd.read_excel(_file, converters={'Phid': str}).fillna('').to_dict()
-                )
+                data = pd.read_excel(_file).fillna('').to_dict()
             except ValueError:
                 txt = ["File don't have a correct format"]
                 self.placeholder_file.errors = txt
@@ -1512,12 +1508,12 @@ class UploadPlaceholderForm(FlaskForm):
             return False
 
         header = [
-            'Phid',
             'Model',
             'Manufacturer',
             'Serial Number',
             'Part Number',
             'Id device Supplier',
+            'Id device Internal',
             'Pallet',
             'Info',
         ]
@@ -1531,32 +1527,7 @@ class UploadPlaceholderForm(FlaskForm):
         self.placeholders = []
         schema = SnapshotSchema()
         self.path_snapshots = {}
-        for i in data['Phid'].keys():
-            placeholder = None
-            data['Phid'][i] = str(data['Phid'][i])
-            if data['Phid'][i]:
-                placeholder = Placeholder.query.filter_by(phid=data['Phid'][i]).first()
-
-            # update one
-            if placeholder:
-                self.dev_update += 1
-                device = placeholder.device
-                device.model = "{}".format(data['Model'][i])
-                device.manufacturer = "{}".format(data['Manufacturer'][i])
-                device.serial_number = "{}".format(data['Serial Number'][i])
-                device.part_number = "{}".format(data['Part Number'][i])
-                placeholder.id_device_supplier = "{}".format(
-                    data['Id device Supplier'][i]
-                )
-                placeholder.pallet = "{}".format(data['Pallet'][i])
-                placeholder.info = "{}".format(data['Info'][i])
-
-                placeholder_log = PlaceholdersLog(
-                    type="Update", source=self.source, placeholder=device.placeholder
-                )
-                self.placeholders.append((device, placeholder_log))
-                continue
-
+        for i in data['Model'].keys():
             # create a new one
             json_snapshot = {
                 'type': 'Snapshot',
@@ -1571,8 +1542,8 @@ class UploadPlaceholderForm(FlaskForm):
                 },
             }
             json_placeholder = {
-                'phid': data['Phid'][i] or None,
                 'id_device_supplier': data['Id device Supplier'][i],
+                'id_device_internal': data['Id device Internal'][i],
                 'pallet': data['Pallet'][i],
                 'info': data['Info'][i],
                 'is_abstract': False,
@@ -1609,7 +1580,6 @@ class EditPlaceholderForm(FlaskForm):
     serial_number = StringField('Serial Number', [validators.Optional()])
     part_number = StringField('Part Number', [validators.Optional()])
     id_device_supplier = StringField('Id Supplier', [validators.Optional()])
-    phid = StringField('Phid', [validators.DataRequired()])
     pallet = StringField('Pallet', [validators.Optional()])
     info = StringField('Info', [validators.Optional()])
 
