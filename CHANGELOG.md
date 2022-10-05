@@ -7,6 +7,15 @@ ml).
 
 ## testing
 
+## [2.4.1] - 2022-10-05
+- [added] #365 Manage dependencies using pip-tools.
+- [added] #368 add migrations of monitors and mobiles.
+- [changed]] #371 changes about phid, incremental per user.
+- [fixed] #364 bad redirect to all devices.
+- [fixed] #367 column PHID Erasure host.
+- [fixed] #369 bug in test data storage.
+- [fixed] #370 print label in details of the label.
+
 ## [2.4.0] - 2022-09-23
 - [added] #312 Placeholder: new, edit, update. (manually and with excel).
 - [added] #316 Placeholder: binding/unbinding. (manually).
