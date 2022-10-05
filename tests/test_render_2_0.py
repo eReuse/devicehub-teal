@@ -561,7 +561,6 @@ def test_update_monitor(user3: UserClientFlask):
     data = {
         'csrf_token': generate_csrf(),
         'type': "Monitor",
-        'phid': '1',
         'serial_number': "AAAAB",
         'model': "LCD 43 b",
         'manufacturer': "Samsung",
@@ -574,8 +573,9 @@ def test_update_monitor(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert 'Error, exist one Placeholder device with this PHID' in body
-    dev = Device.query.one()
+    # assert 'Error, exist one Placeholder device with this PHID' in body
+    dev = Device.query.all()[0]
+    assert Device.query.count() == 2
     assert dev.type == 'Monitor'
     assert dev.placeholder.id_device_supplier == "b2"
     assert dev.hid == 'monitor-samsung-lc27t55-aaaab'
@@ -596,7 +596,6 @@ def test_add_2_monitor(user3: UserClientFlask):
     data = {
         'csrf_token': generate_csrf(),
         'type': "Monitor",
-        'phid': "AAB",
         'serial_number': "AAAAB",
         'model': "LC27T55",
         'manufacturer': "Samsung",
@@ -618,7 +617,7 @@ def test_add_2_monitor(user3: UserClientFlask):
     assert typ == 'Monitor'
     assert dev.placeholder.id_device_supplier == "b1"
     assert dev.hid == 'monitor-samsung-lc27t55-aaaab'
-    assert phid == 'AAB'
+    assert phid == '1'
     assert dhid == 'O48N2'
     assert dev.model == 'lc27t55'
     assert dev.placeholder.pallet == "l34"
@@ -734,35 +733,6 @@ def test_add_with_ammount_laptops(user3: UserClientFlask):
         assert dev.hid is None
         assert dev.placeholder.phid in [str(x) for x in range(1, num + 1)]
     assert Device.query.count() == num
-
-
-@pytest.mark.mvp
-@pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_add_laptop_duplicate(user3: UserClientFlask):
-
-    uri = '/inventory/device/add/'
-    body, status = user3.get(uri)
-    assert status == '200 OK'
-    assert "New Device" in body
-
-    data = {
-        'csrf_token': generate_csrf(),
-        'type': "Laptop",
-        'phid': 'laptop-asustek_computer_inc-1001pxd-b8oaas048285-14:da:e9:42:f6:7b',
-        'serial_number': "AAAAB",
-        'model': "LC27T55",
-        'manufacturer': "Samsung",
-        'generation': 1,
-        'weight': 0.1,
-        'height': 0.1,
-        'depth': 0.1,
-    }
-    body, status = user3.post(uri, data=data)
-    assert status == '200 OK'
-    assert Device.query.count() == 1
-    body, status = user3.post(uri, data=data)
-    assert 'Error, exist one Placeholder device with this PHID' in body
-    assert Device.query.count() == 1
 
 
 @pytest.mark.mvp
@@ -1728,7 +1698,7 @@ def test_add_placeholder_excel(user3: UserClientFlask):
     assert Device.query.count() == 3
     dev = Device.query.first()
     assert dev.hid == 'laptop-sony-vaio-12345678'
-    assert dev.placeholder.phid == 'a123'
+    assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
     assert dev.placeholder.pallet == '24A'
     assert dev.placeholder.id_device_supplier == 'TTT'
@@ -1754,7 +1724,7 @@ def test_add_placeholder_csv(user3: UserClientFlask):
     assert Device.query.count() == 3
     dev = Device.query.first()
     assert dev.hid == 'laptop-sony-vaio-12345678'
-    assert dev.placeholder.phid == 'a123'
+    assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
     assert dev.placeholder.pallet == '24A'
     assert dev.placeholder.id_device_supplier == 'TTT'
@@ -1780,7 +1750,7 @@ def test_add_placeholder_ods(user3: UserClientFlask):
     assert Device.query.count() == 3
     dev = Device.query.first()
     assert dev.hid == 'laptop-sony-vaio-12345678'
-    assert dev.placeholder.phid == 'a123'
+    assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
     assert dev.placeholder.pallet == '24A'
     assert dev.placeholder.id_device_supplier == 'TTT'
@@ -1808,10 +1778,11 @@ def test_add_placeholder_office_open_xml(user3: UserClientFlask):
     assert Device.query.count() == 3
     dev = Device.query.first()
     assert dev.hid == 'laptop-sony-vaio-12345678'
-    assert dev.placeholder.phid == 'a123'
+    assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
     assert dev.placeholder.pallet == '24A'
     assert dev.placeholder.id_device_supplier == 'TTT'
+    assert dev.placeholder.id_device_internal == 'AA'
 
 
 @pytest.mark.mvp
@@ -1920,8 +1891,8 @@ def test_placeholder_log_manual_edit(user3: UserClientFlask):
     data = {
         'csrf_token': generate_csrf(),
         'type': "Laptop",
-        'phid': 'ace',
         'serial_number': "AAAAB",
+        'part_number': "AAAAB",
         'model': "LC27T55",
         'manufacturer': "Samsung",
         'generation': 1,
@@ -1929,9 +1900,13 @@ def test_placeholder_log_manual_edit(user3: UserClientFlask):
         'height': 0.1,
         'depth': 0.1,
         'id_device_supplier': "b2",
+        'id_device_internal': "b2i",
     }
     user3.post(uri, data=data)
     dev = Device.query.one()
+    plz = Placeholder.query.first()
+    assert plz.id_device_supplier == "b2"
+    assert plz.id_device_internal == "b2i"
 
     uri = '/inventory/device/edit/{}/'.format(dev.devicehub_id)
     user3.get(uri)
@@ -1947,16 +1922,20 @@ def test_placeholder_log_manual_edit(user3: UserClientFlask):
         'height': 0.1,
         'depth': 0.1,
         'id_device_supplier': "a2",
+        'id_device_internal': "a2i",
     }
     user3.post(uri, data=data)
+    plz = Placeholder.query.first()
+    assert plz.id_device_supplier == "a2"
+    assert plz.id_device_internal == "a2i"
 
     uri = '/inventory/placeholder-logs/'
     body, status = user3.get(uri)
     assert status == '200 OK'
     assert "Placeholder Logs" in body
-    assert "Web form" in body
-    assert "ace" in body
     assert "Update" in body
+    assert "Web form" in body
+    assert "1" in body
     assert dev.devicehub_id in body
     assert "✓" in body
     assert "CSV" not in body
@@ -1979,7 +1958,7 @@ def test_placeholder_log_excel_new(user3: UserClientFlask):
         }
         user3.post(uri, data=data, content_type="multipart/form-data")
     dev = Device.query.first()
-    assert dev.placeholder.phid == 'a123'
+    assert dev.placeholder.phid == '1'
 
     uri = '/inventory/placeholder-logs/'
     body, status = user3.get(uri)
@@ -1988,7 +1967,6 @@ def test_placeholder_log_excel_new(user3: UserClientFlask):
     assert dev.placeholder.phid in body
     assert dev.devicehub_id in body
     assert "Web form" not in body
-    assert "Update" not in body
     assert "New device" in body
     assert "✓" in body
     assert "CSV" not in body
@@ -2022,7 +2000,7 @@ def test_placeholder_log_excel_update(user3: UserClientFlask):
         user3.post(uri, data=data, content_type="multipart/form-data")
 
     dev = Device.query.first()
-    assert dev.placeholder.phid == 'a123'
+    assert dev.placeholder.phid == '1'
 
     uri = '/inventory/placeholder-logs/'
     body, status = user3.get(uri)
@@ -2031,7 +2009,6 @@ def test_placeholder_log_excel_update(user3: UserClientFlask):
     assert dev.placeholder.phid in body
     assert dev.devicehub_id in body
     assert "Web form" not in body
-    assert "Update" in body
     assert "New device" in body
     assert "✓" in body
     assert "CSV" in body
@@ -2069,7 +2046,7 @@ def test_add_placeholder_excel_from_lot(user3: UserClientFlask):
     assert Device.query.count() == 3
     dev = Device.query.first()
     assert dev.hid == 'laptop-sony-vaio-12345678'
-    assert dev.placeholder.phid == 'a123'
+    assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
     assert dev.placeholder.pallet == '24A'
     assert dev.placeholder.id_device_supplier == 'TTT'
@@ -2096,7 +2073,6 @@ def test_add_new_placeholder_from_lot(user3: UserClientFlask):
     data = {
         'csrf_token': generate_csrf(),
         'type': "Laptop",
-        'phid': 'ace',
         'serial_number': "AAAAB",
         'model': "LC27T55",
         'manufacturer': "Samsung",
@@ -2109,7 +2085,7 @@ def test_add_new_placeholder_from_lot(user3: UserClientFlask):
     user3.post(uri, data=data)
     dev = Device.query.one()
     assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
-    assert dev.placeholder.phid == 'ace'
+    assert dev.placeholder.phid == '1'
     assert len(lot.devices) == 1
 
 
@@ -2123,7 +2099,6 @@ def test_manual_binding(user3: UserClientFlask):
     data = {
         'csrf_token': generate_csrf(),
         'type': "Laptop",
-        'phid': 'sid',
         'serial_number': "AAAAB",
         'model': "LC27T55",
         'manufacturer': "Samsung",
@@ -2135,7 +2110,7 @@ def test_manual_binding(user3: UserClientFlask):
     user3.post(uri, data=data)
     dev = Device.query.one()
     assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
-    assert dev.placeholder.phid == 'sid'
+    assert dev.placeholder.phid == '1'
     assert dev.placeholder.is_abstract is False
 
     # add device from wb
@@ -2154,7 +2129,7 @@ def test_manual_binding(user3: UserClientFlask):
 
     # page binding
     dhid = dev_wb.dhid
-    uri = f'/inventory/binding/{dhid}/sid/'
+    uri = f'/inventory/binding/{dhid}/1/'
     body, status = user3.get(uri)
     assert status == '200 OK'
     assert 'sid' in body
@@ -2173,7 +2148,7 @@ def test_manual_binding(user3: UserClientFlask):
     assert txt in body
 
     # check new structure
-    assert dev_wb.binding.phid == 'sid'
+    assert dev_wb.binding.phid == '1'
     assert dev_wb.binding.device == dev
     assert Placeholder.query.filter_by(id=old_placeholder.id).first() is None
     assert Device.query.filter_by(id=old_placeholder.device.id).first() is None
@@ -2236,7 +2211,6 @@ def test_unbinding(user3: UserClientFlask):
     data = {
         'csrf_token': generate_csrf(),
         'type': "Laptop",
-        'phid': 'sid',
         'serial_number': "AAAAB",
         'model': "LC27T55",
         'manufacturer': "Samsung",
@@ -2261,7 +2235,7 @@ def test_unbinding(user3: UserClientFlask):
 
     # page binding
     dhid = dev_wb.dhid
-    uri = f'/inventory/binding/{dhid}/sid/'
+    uri = f'/inventory/binding/{dhid}/1/'
     user3.get(uri)
 
     # action binding
@@ -2271,10 +2245,10 @@ def test_unbinding(user3: UserClientFlask):
 
     dhid = dev.dhid
     # action unbinding
-    uri = '/inventory/unbinding/sid/'
+    uri = '/inventory/unbinding/1/'
     body, status = user3.post(uri, data={})
     assert status == '200 OK'
-    txt = f'Device with PHID:&#34;sid&#34; and DHID: {dhid} unbind successfully!'
+    txt = f'Device with PHID:&#34;1&#34; and DHID: {dhid} unbind successfully!'
     assert txt in body
     # assert 'Device &#34;sid&#34; unbind successfully!' in body
 
@@ -2399,8 +2373,8 @@ def test_bug_3821_binding(user3: UserClientFlask):
     user3.post(uri, data=data)
     dev = Device.query.one()
     dhid = dev.dhid
-    assert dev.phid() == 'sid'
-    uri = f'/inventory/binding/{dhid}/sid/'
+    assert dev.phid() == '1'
+    uri = f'/inventory/binding/{dhid}/1/'
     body, status = user3.get(uri)
     assert status == '200 OK'
     assert 'is not a Snapshot device!' in body

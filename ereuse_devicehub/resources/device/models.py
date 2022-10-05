@@ -10,7 +10,6 @@ from boltons import urlutils
 from citext import CIText
 from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
 from flask import g, request
-from flask_sqlalchemy import event
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column
 from sqlalchemy import Enum as DBEnum
@@ -75,11 +74,15 @@ def create_code(context):
     return hashcode.encode(_id)
 
 
-def create_phid(context):
-    _hid = Placeholder.query.order_by(Placeholder.id.desc()).first()
-    if _hid:
-        return str(_hid.id + 1)
-    return '1'
+def create_phid(context, count=1):
+    phid = str(Placeholder.query.filter(Placeholder.owner == g.user).count() + count)
+    if (
+        Placeholder.query.filter(Placeholder.owner == g.user)
+        .filter(Placeholder.phid == phid)
+        .count()
+    ):
+        return create_phid(context, count=count + 1)
+    return phid
 
 
 class Device(Thing):
@@ -901,8 +904,8 @@ class DisplayMixin:
 
 class Placeholder(Thing):
     id = Column(BigInteger, Sequence('placeholder_seq'), primary_key=True)
-    pallet = Column(Unicode(), nullable=True)
     phid = Column(Unicode(), nullable=False, default=create_phid)
+    pallet = Column(Unicode(), nullable=True)
     pallet.comment = "used for identification where from where is this placeholders"
     info = db.Column(CIText())
     components = Column(CIText())
@@ -912,6 +915,8 @@ class Placeholder(Thing):
     id_device_supplier.comment = (
         "Identification used for one supplier of one placeholders"
     )
+    id_device_internal = db.Column(CIText())
+    id_device_internal.comment = "Identification used internaly for the user"
 
     device_id = db.Column(
         BigInteger,
@@ -1593,4 +1598,5 @@ def create_code_tag(mapper, connection, device):
         db.session.add(tag)
 
 
+# from flask_sqlalchemy import event
 # event.listen(Device, 'after_insert', create_code_tag, propagate=True)

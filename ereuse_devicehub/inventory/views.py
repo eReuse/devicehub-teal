@@ -545,7 +545,7 @@ class DeviceCreateView(GenericMixin):
             tpy = form.type.data
             txt = f'{amount} placeholders Device "{tpy}" created successfully.'
             placeholder = (
-                Placeholder.query.filter_by(owner=g.user)
+                Placeholder.query.filter(Placeholder.owner == g.user)
                 .order_by(Placeholder.id.desc())
                 .first()
             )

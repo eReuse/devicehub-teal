@@ -29,14 +29,18 @@ function amountInputs() {
     if ($("#amount").val() > 1) {
         $("#Phid").hide();
         $("#Id_device_supplier").hide();
+        $("#Id_device_internal").hide();
         $("#Serial_number").hide();
+        $("#Part_number").hide();
         $("#Sku").hide();
         $("#imei").hide();
         $("#meid").hide();
     } else {
         $("#Phid").show();
         $("#Id_device_supplier").show();
+        $("#Id_device_internal").show();
         $("#Serial_number").show();
+        $("#Part_number").show();
         $("#Sku").show();
         deviceInputs();
     };
