@@ -481,6 +481,14 @@ class NewDeviceForm(FlaskForm):
 
         if self.image.data == '':
             self.image.data = None
+        if self.manufacturer.data:
+            self.manufacturer.data = self.manufacturer.data.lower()
+        if self.model.data:
+            self.model.data = self.model.data.lower()
+        if self.serial_number.data:
+            self.serial_number.data = self.serial_number.data.lower()
+        if self.part_number.data:
+            self.part_number.data = self.part_number.data.lower()
 
         return True
 
