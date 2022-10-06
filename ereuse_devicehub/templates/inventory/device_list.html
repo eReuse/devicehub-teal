@@ -376,8 +376,8 @@
                         </a>
                         {% if dev.lots | length > 0 %}
                         <h6 class="d-inline">
-                          {% for lot in dev.lots %}
-                            <span class="badge rounded-pill bg-light text-dark">{{ lot.name }}</span>
+                          {% for lot in dev.get_lots_for_template() %}
+                            <span class="badge rounded-pill bg-light text-dark">{{ lot }}</span>
                           {% endfor %}
                         </h6>
                         {% endif %}
