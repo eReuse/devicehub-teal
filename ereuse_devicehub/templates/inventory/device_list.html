@@ -47,10 +47,10 @@
               {% if lot.is_temporary or not lot.transfer.closed %}
 
                 {% if lot and lot.is_temporary %}
-                    <a type="button" href="{{ url_for('inventory.new_transfer', lot_id=lot.id, type_id='outgoing') }}" class="btn btn-primary doTransfer" >
+                    <a type="button" href="{{ url_for('inventory.lot_new_transfer', lot_id=lot.id, type_id='outgoing') }}" class="btn btn-primary doTransfer" >
                       Create Outgoing Lot
                     </a>
-                    <a type="button" href="{{ url_for('inventory.new_transfer', lot_id=lot.id, type_id='incoming') }}" class="btn btn-primary doTransfer">
+                    <a type="button" href="{{ url_for('inventory.lot_new_transfer', lot_id=lot.id, type_id='incoming') }}" class="btn btn-primary doTransfer">
                       Create Incoming Lot
                     </a>
                 {% endif %}

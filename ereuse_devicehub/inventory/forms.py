@@ -1275,14 +1275,14 @@ class TransferForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         self._type = kwargs.get('type')
         lot_id = kwargs.pop('lot_id', None)
-        self._tmp_lot = Lot.query.filter(Lot.id == lot_id).one()
+        self._tmp_lot = None
+        if lot_id:
+            self._tmp_lot = Lot.query.filter(Lot.id == lot_id).one()
         super().__init__(*args, **kwargs)
         self._obj = None
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
-        if not self._tmp_lot:
-            return False
 
         if self._type and self.type.data not in ['incoming', 'outgoing']:
             return False
@@ -1303,8 +1303,12 @@ class TransferForm(FlaskForm):
         return self._obj
 
     def set_obj(self):
-        self.newlot = Lot(name=self._tmp_lot.name)
-        self.newlot.devices = self._tmp_lot.devices
+        name = self.code.data
+        if self._tmp_lot:
+            name = self._tmp_lot.name
+        self.newlot = Lot(name=name)
+        if self._tmp_lot:
+            self.newlot.devices = self._tmp_lot.devices
         db.session.add(self.newlot)
 
         self._obj = Transfer(lot=self.newlot)
