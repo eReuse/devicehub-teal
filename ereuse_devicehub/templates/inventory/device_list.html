@@ -319,24 +319,6 @@
                 </ul>
               </div>
 
-              {% if lot and not lot.is_temporary %}
-              <div class="btn-group dropdown ml-1" uib-dropdown="">
-                <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-book"></i>
-                    Documents
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
-                  <li>
-                    <a href="{{ url_for('inventory.trade_document_add', lot_id=lot.id)}}" class="dropdown-item">
-                      <i class="bi bi-plus"></i>
-                      Add new document
-                      <span class="caret"></span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              {% endif %}
-
               <div id="select-devices-info" class="alert alert-info mb-0 mt-3 d-none" role="alert">
                 If this text is showing is because there are an error
               </div>
@@ -436,6 +418,14 @@
               </div>
               {% if lot and not lot.is_temporary %}
               <div id="trade-documents-list" class="tab-pane fade trade-documents-list">
+              <div class="btn-group dropdown ml-1 mt-1" uib-dropdown="">
+                <a href="{{ url_for('inventory.trade_document_add', lot_id=lot.id)}}" class="btn btn-primary">
+                  <i class="bi bi-plus"></i>
+                  Add new document
+                  <span class="caret"></span>
+                </a>
+              </div>
+
                 <h5 class="card-title">Documents</h5>
                 <table class="table">
                   <thead>
