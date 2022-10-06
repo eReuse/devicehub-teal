@@ -31,8 +31,8 @@
 
     <div class="col-xl-12">
 
-      {% if lot %}
       <div class="card">
+      {% if lot %}
         <div class="card-body pt-3">
           <!-- Bordered Tabs -->
 
@@ -41,25 +41,19 @@
               <h3>
                 <a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a>
               </h3>
-              {% if lot.transfer.code and lot.transfer.user_to and not lot.transfer.user_to.phantom %}
-                <span>{{ lot.transfer.code }} <i class="bi bi-arrow-right"></i> {{ lot.transfer.user_to.email }}</span>
-              {% elif lot.transfer.code and lot.transfer.user_from and not lot.transfer.user_from.phantom %}
-                <span>{{ lot.transfer.user_from.email }} <i class="bi bi-arrow-right"></i> {{ lot.transfer.code }}</span>
-              {% endif %}
             </div>
 
             <div class="col-sm-12 col-md-7 d-md-flex justify-content-md-end"><!-- lot actions -->
               {% if lot.is_temporary or not lot.transfer.closed %}
 
-                {% if 1 == 2 %}{# <!-- TODO (@slamora) Don't render Trade buttons until implementation is finished --> #}
-                <a class="me-2" href="javascript:newTrade('user_from')">
-                  <i class="bi bi-arrow-down-right"></i> Add supplier
-                </a>
-                <a class="me-2" href="javascript:newTrade('user_to')">
-                  <i class="bi bi-arrow-up-right"></i> Add receiver
-                </a>
-                {% endif %}{# <!-- /end TODO --> #}
-
+                {% if lot and lot.is_temporary %}
+                    <a type="button" href="{{ url_for('inventory.new_transfer', lot_id=lot.id, type_id='outgoing') }}" class="btn btn-primary doTransfer" >
+                      Create Outgoing Lot
+                    </a>
+                    <a type="button" href="{{ url_for('inventory.new_transfer', lot_id=lot.id, type_id='incoming') }}" class="btn btn-primary doTransfer">
+                      Create Incoming Lot
+                    </a>
+                {% endif %}
                 <a class="text-danger" href="javascript:removeLot()">
                   <i class="bi bi-trash"></i> Delete Lot
                 </a>
@@ -68,18 +62,17 @@
             </div>
           </div>
         </div>
-      </div>
       {% endif %}
-      <div class="card">
         <div class="card-body pt-3" style="min-height: 650px;">
           <!-- Bordered Tabs -->
-          {% if lot and not lot.is_temporary %}
+          {% if lot %}
           <ul class="nav nav-tabs nav-tabs-bordered">
 
             <li class="nav-item">
               <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#devices-list">Devices</button>
             </li>
 
+            {% if lot and not lot.is_temporary %}
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#trade-documents-list">Documents</button>
             </li>
@@ -101,21 +94,11 @@
               </button>
             </li>
             {% endif %}
+            {% endif %}
 
           </ul>
           {% endif %}
           <div class="tab-content pt-1">
-            {% if lot and lot.is_temporary %}
-            <div class="tab-pane active show mb-5">
-                <a type="button" href="{{ url_for('inventory.new_transfer', lot_id=lot.id, type_id='outgoing') }}" class="btn btn-primary" style="float: right;">
-                  Outgoing Transfer
-                </a>
-                <a type="button" href="{{ url_for('inventory.new_transfer', lot_id=lot.id, type_id='incoming') }}" class="btn btn-primary" style="float: right; margin-right: 15px;">
-                  Incoming Transfer
-                </a>
-                <div style="display: block;"></div>
-            </div>
-            {% endif %}
             <div id="devices-list" class="tab-pane fade devices-list active show">
               <label class="btn btn-primary " for="SelectAllBTN"><input type="checkbox" id="SelectAllBTN" autocomplete="off"></label>
               <div class="btn-group dropdown ml-1">
@@ -336,24 +319,6 @@
                 </ul>
               </div>
 
-              {% if lot and not lot.is_temporary %}
-              <div class="btn-group dropdown ml-1" uib-dropdown="">
-                <button id="btnSnapshot" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-book"></i>
-                    Documents
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
-                  <li>
-                    <a href="{{ url_for('inventory.trade_document_add', lot_id=lot.id)}}" class="dropdown-item">
-                      <i class="bi bi-plus"></i>
-                      Add new document
-                      <span class="caret"></span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              {% endif %}
-
               <div id="select-devices-info" class="alert alert-info mb-0 mt-3 d-none" role="alert">
                 If this text is showing is because there are an error
               </div>
@@ -453,6 +418,14 @@
               </div>
               {% if lot and not lot.is_temporary %}
               <div id="trade-documents-list" class="tab-pane fade trade-documents-list">
+              <div class="btn-group dropdown ml-1 mt-1" uib-dropdown="">
+                <a href="{{ url_for('inventory.trade_document_add', lot_id=lot.id)}}" class="btn btn-primary">
+                  <i class="bi bi-plus"></i>
+                  Add new document
+                  <span class="caret"></span>
+                </a>
+              </div>
+
                 <h5 class="card-title">Documents</h5>
                 <table class="table">
                   <thead>
