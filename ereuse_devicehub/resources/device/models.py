@@ -653,6 +653,21 @@ class Device(Thing):
             args[POLYMORPHIC_ON] = cls.type
         return args
 
+    def get_lots_for_template(self):
+        lots = []
+        for lot in self.lots:
+            if lot.is_incoming:
+                name = "IN - " + lot.name
+                lots.append(name)
+            if lot.is_outgoing:
+                name = "OUT - " + lot.name
+                lots.append(name)
+            if lot.is_temporary:
+                name = "TEMP - " + lot.name
+                lots.append(name)
+        lots.sort()
+        return lots
+
     def phid(self):
         if self.placeholder:
             return self.placeholder.phid
