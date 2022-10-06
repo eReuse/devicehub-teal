@@ -194,6 +194,11 @@
           {% else %}
           <ul id="incoming-lots-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
             {% endif %}
+            <li>
+              <a href="{{ url_for('inventory.new_transfer', type_id='incoming') }}">
+                <i class="bi bi-plus" style="font-size: larger;"></i><span>New Incoming lot</span>
+              </a>
+            </li>
             {% for lot in lots %}
             {% if lot.is_incoming %}
             <li>
@@ -219,6 +224,11 @@
           {% else %}
           <ul id="outgoing-lots-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
             {% endif %}
+            <li>
+              <a href="{{ url_for('inventory.new_transfer', type_id='outgoing') }}">
+                <i class="bi bi-plus" style="font-size: larger;"></i><span>New Outgoing lot</span>
+              </a>
+            </li>
             {% for lot in lots %}
             {% if lot.is_outgoing %}
             <li>

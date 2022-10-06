@@ -753,7 +753,7 @@ class NewTransferView(GenericMixin):
     form_class = TransferForm
     title = "Add new transfer"
 
-    def dispatch_request(self, lot_id, type_id):
+    def dispatch_request(self, type_id, lot_id=None):
         self.form = self.form_class(lot_id=lot_id, type=type_id)
         self.get_context()
 
@@ -1355,6 +1355,10 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/lot/<string:lot_id>/transfer/<string:type_id>/',
+    view_func=NewTransferView.as_view('lot_new_transfer'),
+)
+devices.add_url_rule(
+    '/lot/transfer/<string:type_id>/',
     view_func=NewTransferView.as_view('new_transfer'),
 )
 devices.add_url_rule(
