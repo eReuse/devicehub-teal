@@ -47,7 +47,7 @@
                       <th scope="col">Type</th>
                       <th scope="col">Provider</th>
                       <th scope="col">Device</th>
-                      <th scope="col">Created</th>
+                      <th scope="col" data-type="date" data-format="YYYY-MM-DD hh:mm">Created</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -63,7 +63,7 @@
                         </a>
                         {% endif %}
                       </td>
-                      <td>{{ tag.created.strftime('%H:%M %d-%m-%Y') }}</td>
+                      <td>{{ tag.created.strftime('%Y-%m-%d %H:%M') }}</td>
                     </tr>
                     {% endfor %}
                   </tbody>

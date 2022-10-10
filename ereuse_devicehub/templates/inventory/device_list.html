@@ -431,7 +431,7 @@
                   <thead>
                     <tr>
                       <th scope="col">File</th>
-                      <th scope="col" data-type="date" data-format="DD-MM-YYYY">Uploaded on</th>
+                      <th scope="col" data-type="date" data-format="YYYY-MM-DD hh:mm">Uploaded on</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -445,7 +445,7 @@
                         {% endif %}
                       </td>
                       <td>
-                          {{ doc.created.strftime('%H:%M %d-%m-%Y')}}
+                          {{ doc.created.strftime('%Y-%m-%d %H:%M')}}
                       </td>
                     </tr>
                     {% endfor %}
@@ -459,7 +459,7 @@
                         {% endif %}
                       </td>
                       <td>
-                          {{ doc.created.strftime('%H:%M %d-%m-%Y')}}
+                          {{ doc.created.strftime('%Y-%m-%d %H:%M')}}
                       </td>
                     </tr>
                     {% endfor %}
