@@ -1259,6 +1259,12 @@ class TradeDocumentForm(FlaskForm):
 
 
 class TransferForm(FlaskForm):
+    lot_name = StringField(
+        'Lot Name',
+        [validators.DataRequired()],
+        render_kw={'class': "form-control"},
+        description="You need put a lot name",
+    )
     code = StringField(
         'Code',
         [validators.DataRequired()],
@@ -1303,9 +1309,7 @@ class TransferForm(FlaskForm):
         return self._obj
 
     def set_obj(self):
-        name = self.code.data
-        if self._tmp_lot:
-            name = self._tmp_lot.name
+        name = self.lot_name.data
         self.newlot = Lot(name=name)
         if self._tmp_lot:
             self.newlot.devices = self._tmp_lot.devices
@@ -1339,6 +1343,7 @@ class EditTransferForm(TransferForm):
             self.code.data = self._obj.code
             self.description.data = self._obj.description
             self.date.data = self._obj.date
+            self.lot_name.data = self._obj.lot.name
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
@@ -1350,6 +1355,7 @@ class EditTransferForm(TransferForm):
 
     def set_obj(self, commit=True):
         self.populate_obj(self._obj)
+        self._obj.lot.name = self.lot_name.data
 
 
 class NotesForm(FlaskForm):

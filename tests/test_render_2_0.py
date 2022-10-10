@@ -1374,6 +1374,7 @@ def test_wb_settings_register(user3: UserClientFlask):
 def test_create_transfer(user3: UserClientFlask):
     user3.get('/inventory/lot/add/')
     lot_name = 'lot1'
+    lot_name2 = 'lot2'
     data = {
         'name': lot_name,
         'csrf_token': generate_csrf(),
@@ -1390,13 +1391,14 @@ def test_create_transfer(user3: UserClientFlask):
     assert 'Description' in body
     assert 'Save' in body
 
-    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA', 'lot_name': lot_name2}
 
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
     assert 'Transfer created successfully!' in body
     assert 'Delete Lot' in body
     assert 'Incoming Lot' in body
+    assert lot_name2 in body
 
 
 @pytest.mark.mvp
@@ -1405,6 +1407,8 @@ def test_edit_transfer(user3: UserClientFlask):
     # create lot
     user3.get('/inventory/lot/add/')
     lot_name = 'lot1'
+    lot_name2 = 'lot2'
+    lot_name3 = 'lot3'
     data = {
         'name': lot_name,
         'csrf_token': generate_csrf(),
@@ -1422,12 +1426,13 @@ def test_edit_transfer(user3: UserClientFlask):
 
     # create new incoming lot
     uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
-    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA', 'lot_name': lot_name2}
     body, status = user3.post(uri, data=data)
     assert 'Transfer (<span class="text-success">Open</span>)' in body
     assert '<i class="bi bi-trash"></i> Delete Lot' in body
     lot = Lot.query.filter()[1]
     assert lot.transfer is not None
+    assert lot_name2 in body
 
     # edit transfer with errors
     lot_id = lot.id
@@ -1436,6 +1441,7 @@ def test_edit_transfer(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'code': 'AAA',
         'description': 'one one one',
+        'lot_name': lot_name3,
         'date': datetime.datetime.now().date() + datetime.timedelta(15),
     }
     body, status = user3.post(uri, data=data)
@@ -1450,6 +1456,7 @@ def test_edit_transfer(user3: UserClientFlask):
         'csrf_token': generate_csrf(),
         'code': 'AAA',
         'description': 'one one one',
+        'lot_name': lot_name3,
         'date': datetime.datetime.now().date() - datetime.timedelta(15),
     }
     body, status = user3.post(uri, data=data)
@@ -1458,6 +1465,7 @@ def test_edit_transfer(user3: UserClientFlask):
     assert 'one one one' in body
     assert '<i class="bi bi-trash"></i> Delete Lot' not in body
     assert 'Transfer (<span class="text-danger">Closed</span>)' in body
+    assert lot_name3 in body
 
 
 @pytest.mark.mvp
@@ -1476,7 +1484,7 @@ def test_edit_deliverynote(user3: UserClientFlask):
 
     # create new incoming lot
     uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
-    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA', 'lot_name': lot_name}
     user3.post(uri, data=data)
     lot = Lot.query.filter()[1]
     lot_id = lot.id
@@ -1517,7 +1525,7 @@ def test_edit_receivernote(user3: UserClientFlask):
 
     # create new incoming lot
     uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
-    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA', 'lot_name': lot_name}
     user3.post(uri, data=data)
     lot = Lot.query.filter()[1]
     lot_id = lot.id
@@ -1558,7 +1566,7 @@ def test_edit_notes_with_closed_transfer(user3: UserClientFlask):
 
     # create new incoming lot
     uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
-    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA', 'lot_name': lot_name}
     user3.post(uri, data=data)
     lot = Lot.query.filter()[1]
     lot_id = lot.id
@@ -2403,7 +2411,7 @@ def test_bug_3831_documents(user3: UserClientFlask):
 
     uri = f'/inventory/lot/{lot_id}/transfer/incoming/'
     user3.get(uri)
-    data = {'csrf_token': generate_csrf(), 'code': 'AAA'}
+    data = {'csrf_token': generate_csrf(), 'code': 'AAA', 'lot_name': lot_name}
 
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
