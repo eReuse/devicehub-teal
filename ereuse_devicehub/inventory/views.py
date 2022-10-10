@@ -756,6 +756,8 @@ class NewTransferView(GenericMixin):
     def dispatch_request(self, type_id, lot_id=None):
         self.form = self.form_class(lot_id=lot_id, type=type_id)
         self.get_context()
+        referrer = request.referrer or url_for('inventory.devicelist')
+        self.context.update({'referrer': referrer})
 
         if self.form.validate_on_submit():
             self.form.save()
@@ -767,7 +769,12 @@ class NewTransferView(GenericMixin):
             next_url = url_for('inventory.lotdevicelist', lot_id=str(new_lot_id))
             return flask.redirect(next_url)
 
-        self.context.update({'form': self.form, 'title': self.title})
+        self.context.update(
+            {
+                'form': self.form,
+                'title': self.title,
+            }
+        )
         return flask.render_template(self.template_name, **self.context)
 
 
