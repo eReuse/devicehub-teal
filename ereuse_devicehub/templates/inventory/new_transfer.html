@@ -55,7 +55,7 @@
                   {% endfor %}
 
                   <div>
-                    <a href="{{ url_for('inventory.lotdevicelist', lot_id=form._tmp_lot.id) }}" class="btn btn-danger">Cancel</a>
+                    <a href="{{ referrer }}" class="btn btn-danger">Cancel</a>
                     <button class="btn btn-primary" type="submit">Save</button>
                   </div>
                 </form>
