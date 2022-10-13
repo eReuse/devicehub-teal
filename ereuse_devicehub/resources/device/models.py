@@ -932,6 +932,7 @@ class Placeholder(Thing):
     )
     id_device_internal = db.Column(CIText())
     id_device_internal.comment = "Identification used internaly for the user"
+    kangaroo = db.Column(Boolean, default=False, nullable=True)
 
     device_id = db.Column(
         BigInteger,
