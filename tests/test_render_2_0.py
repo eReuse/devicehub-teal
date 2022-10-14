@@ -2438,3 +2438,99 @@ def test_bug_3831_documents(user3: UserClientFlask):
     uri = f'/inventory/lot/{lot_id}/trade-document/add/'
     # body, status = user3.post(uri, data=data, content_type="multipart/form-data")
     # assert status == '200 OK'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_hdd_filter(user3: UserClientFlask):
+    create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+
+    hdds = Device.query.filter_by(type='HardDrive').all()
+    for hdd in hdds:
+        hdd.parent = None
+    db.session.commit()
+
+    csrf = generate_csrf()
+    uri = f'/inventory/device/?filter=All+DataStorage&csrf_token={csrf}'
+    body, status = user3.get(uri)
+
+    assert status == '200 OK'
+    for hdd in hdds:
+        assert hdd.dhid in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_kangaroo(user3: UserClientFlask):
+    create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+
+    body, status = user3.get('/workbench/')
+
+    assert status == '200 OK'
+
+    pc = Device.query.filter_by(type='Laptop').first()
+    data = {
+        'csrf_token': generate_csrf(),
+        'phid': pc.phid(),
+    }
+
+    body, status = user3.post('/workbench/', data=data)
+    assert status == '200 OK'
+    assert pc.phid() in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_drop_kangaroo(user3: UserClientFlask):
+    create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    pc = Device.query.filter_by(type='Laptop').first()
+    phid = 'AAA'
+    pc.placeholder.phid = phid
+    db.session.commit()
+
+    body, status = user3.get('/workbench/')
+    assert phid not in body
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'phid': phid,
+    }
+
+    body, status = user3.post('/workbench/', data=data)
+    assert status == '200 OK'
+    assert phid in body
+
+    placeholder_id = pc.placeholder.id
+    uri = f'/workbench/erasure_host/{placeholder_id}/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert phid not in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_filter_hdd_in_kangaroo(user3: UserClientFlask):
+    create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    csrf = generate_csrf()
+    uri = f'/inventory/device/?filter=All+DataStorage&csrf_token={csrf}'
+    body, status = user3.get(uri)
+
+    assert status == '200 OK'
+    for hdd in Device.query.filter_by(type='HardDrive').all():
+        assert hdd.dhid not in body
+
+    user3.get('/workbench/')
+    pc = Device.query.filter_by(type='Laptop').first()
+    data = {
+        'csrf_token': generate_csrf(),
+        'phid': pc.phid(),
+    }
+    user3.post('/workbench/', data=data)
+
+    csrf = generate_csrf()
+    uri = f'/inventory/device/?filter=All+DataStorage&csrf_token={csrf}'
+    body, status = user3.get(uri)
+
+    assert status == '200 OK'
+    for hdd in Device.query.filter_by(type='HardDrive').all():
+        assert hdd.dhid in body
