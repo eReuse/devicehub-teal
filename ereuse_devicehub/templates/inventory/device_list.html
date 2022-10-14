@@ -357,6 +357,7 @@
                   </thead>
                   <tbody>
                     {% for dev in devices %}
+                    {% if not dev.parent_id or dev.parent.placeholder.kangaroo %}
                     <tr>
                       <td>
                           <input type="checkbox" class="deviceSelect" data="{{ dev.id }}"
@@ -410,6 +411,7 @@
                         </a>
                       </td>
                     </tr>
+                    {% endif %}
                     {% endfor %}
                   </tbody>
                 </table>

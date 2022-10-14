@@ -86,12 +86,18 @@ DEVICES = {
         "Smartphone",
         "Cellphone",
     ],
+    "Drives & Storage": [
+        "All DataStorage",
+        "HardDrives",
+        "SolidStageDrive",
+    ],
 }
 
 COMPUTERS = ['Desktop', 'Laptop', 'Server', 'Computer']
 
 MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
 MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
+STORAGE = ["HardDrive", "SolidStateDrive"]
 
 
 class AdvancedSearchForm(FlaskForm):
@@ -175,8 +181,15 @@ class FilterForm(FlaskForm):
         elif "All Mobile" == self.device_type:
             filter_type = MOBILE
 
+        elif "All DataStorage" == self.device_type:
+            filter_type = STORAGE
+
         if filter_type:
             self.devices = self.devices.filter(Device.type.in_(filter_type))
+
+        # if self.device_type in STORAGE + ["All DataStorage"]:
+        # import pdb; pdb.set_trace()
+        # self.devices = self.devices.filter(Component.parent_id.is_(None))
 
         return self.devices.order_by(Device.updated.desc())
 
