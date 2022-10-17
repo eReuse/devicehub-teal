@@ -96,6 +96,10 @@
 
           <div class="pt-6 pb-2">
             <h5 class="card-title pb-0 fs-4">Usody Metadata Snapshots</h5>
+            <p class="mb-5">
+              A certified collection of hardware details and testing reports<br />
+              <small>Desktops, Servers and Laptops</small>
+            </p>
 
             <div class="row">
               <div class="col-2">
@@ -115,8 +119,8 @@
             <div class="row mt-3">
               <div class="col-3">
                 <div class="border mr-2 p-2">
-                  <h5>Hardware Capture</h5>
-                  <p>HW Metadata Capture and Smart test</p>
+                  <h5>Basic Metadata</h5>
+                  <p>Settings for basic hardware metadata collection and hard drive smart Test reports.</p>
                   <a href="{{ url_for('workbench.settings') }}?opt=register" class="btn btn-primary" style="width: 100%">Download settings file</a>
                 </div>
               </div>
@@ -136,6 +140,10 @@
 
           <div class="pt-8 pb-2">
             <h5 class="card-title pb-0 fs-4">Usody Erasure Snapshots</h5>
+            <p class="mb-5">
+              A certified data erasure software to irreversibly removing data sored on hard drives.<br />
+              <small>Desktops, Servers and Laptops</small>
+            </p>
 
             <div class="row">
               <div class="col-2">
@@ -161,7 +169,8 @@
                     A software-based fast non-100%-secured way of erasing data storage.
                   </p>              
                   <p>
-                    Performs 1 pass overwriting one round using all zeros. Compliant with NIST SP-800-88
+                    Performs <strong>1</strong> pass overwriting one round using all zeros. 
+                    Compliant with <strong>NIST SP-800-88</strong>
                   </p>
                   <a href="{{ url_for('workbench.settings') }}?opt=erease_basic" 
                   class="btn btn-primary" 
@@ -179,8 +188,8 @@
                     A secured-way of erasing data storages, erase hidden areas, checking the erase sector by sector.
                   </p>  
                   <p>
-                    Performs 1 pass overwriting each sector with zeros and a final verification.
-                    Compliant with HMG Infosec Standard 5 Baseline.
+                    Performs <strong>1</strong> pass overwriting each sector with zeros and a final verification.
+                    Compliant with <strong>HMG Infosec Standard 5 Baseline</strong>.
                   </p>              
                   <a href="{{ url_for('workbench.settings') }}?opt=erease_sectors" 
                   class="btn btn-primary" 
@@ -198,14 +207,14 @@
                     A secured-way of erasing data storages, erase hidden areas, checking the erase sector by sector.
                   </p>
                   <p>
-                    Performs 3 passes overwriting every sector with zeros and ones, and final verification.
-                    Compliant with HMG Infosec Standard 5 Enhanced.
+                    Performs <strong>3</strong> passes overwriting every sector with zeros and ones, and final verification.
+                    Compliant with <strong>HMG Infosec Standard 5 Enhanced</strong>.
                   </p>           
-                  <a href="{{ url_for('workbench.settings') }}?opt=erease_sectors" 
-                  class="btn btn-primary" 
+                  <span 
+                  class="btn btn-secondary" 
                   style="width: 100%;">
                   Download settings file
-                  </a>
+                  </span>
                 </div>
               </div>
             </div>
