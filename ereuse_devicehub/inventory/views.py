@@ -296,6 +296,8 @@ class BindingView(GenericMixin):
         self.real_phid = self.new_placeholder.phid
         self.abstract_dhid = self.old_device.devicehub_id
         self.abstract_phid = self.old_placeholder.phid
+        if self.old_placeholder.kangaroo:
+            self.new_placeholder.kangaroo = True
 
         # to do a backup of abstract_dhid and abstract_phid in
         # workbench device
@@ -383,6 +385,9 @@ class UnBindingView(GenericMixin):
         if device.binding.is_abstract:
             return
 
+        kangaroo = device.binding.kangaroo
+        device.binding.kangaroo = False
+
         dict_device = copy.copy(device.__dict__)
         dict_device.pop('_sa_instance_state')
         dict_device.pop('id', None)
@@ -402,7 +407,10 @@ class UnBindingView(GenericMixin):
                 if c.binding:
                     c.binding.device.parent = new_device
 
-        placeholder = Placeholder(device=new_device, binding=device, is_abstract=True)
+        placeholder = Placeholder(
+            device=new_device, binding=device, is_abstract=True, kangaroo=kangaroo
+        )
+
         if (
             device.dhid_bk
             and not Device.query.filter_by(devicehub_id=device.dhid_bk).first()
@@ -756,6 +764,8 @@ class NewTransferView(GenericMixin):
     def dispatch_request(self, type_id, lot_id=None):
         self.form = self.form_class(lot_id=lot_id, type=type_id)
         self.get_context()
+        referrer = request.referrer or url_for('inventory.devicelist')
+        self.context.update({'referrer': referrer})
 
         if self.form.validate_on_submit():
             self.form.save()
@@ -767,7 +777,12 @@ class NewTransferView(GenericMixin):
             next_url = url_for('inventory.lotdevicelist', lot_id=str(new_lot_id))
             return flask.redirect(next_url)
 
-        self.context.update({'form': self.form, 'title': self.title})
+        self.context.update(
+            {
+                'form': self.form,
+                'title': self.title,
+            }
+        )
         return flask.render_template(self.template_name, **self.context)
 
 

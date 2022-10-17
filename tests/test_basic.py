@@ -105,6 +105,7 @@ def test_api_docs(client: Client):
         '/users/logout/',
         '/versions/',
         '/workbench/',
+        '/workbench/erasure_host/{id}/',
     }
     assert docs['info'] == {'title': 'Devicehub', 'version': '0.2'}
     assert docs['components']['securitySchemes']['bearerAuth'] == {

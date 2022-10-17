@@ -20,6 +20,62 @@
           <div class="pt-6 pb-2">
             <div class="row pt-3">
               <div class="col">
+                <form method="post">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th scope="col">PHID</th>
+                      <th scope="col" class="text-center">Erasure Host</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for host in form.kangaroos %}
+                  <tr>
+                    <td>{{ host.phid }}</td>
+                    <td class="text-center">
+                      <a href="{{ url_for('workbench.erasure_host', id=host.id) }}"><i class="bi bi-x-lg"></i></a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                  <tr>
+                    <td>
+                      {% for f in form %}
+                        {{ f }}
+                        {% if f == form.phid and f.errors %}
+                          <p class="text-danger">
+                            {% for error in f.errors %}
+                              {{ error }}<br/>
+                            {% endfor %}
+                          </p>
+                        {% endif %}
+                      {% endfor %}
+                    </td>
+                    <td class="text-center">
+                      <input type="submit" class="btn btn-primary" value="Add new host" />
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+                </form>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-6">
+
+      <div class="card">
+        <div class="card-body">
+
+          <div class="pt-6 pb-2">
+            <div class="row pt-3">
+              <div class="col">
                   <p>Please download the ISO file and the settings file of the
                   version you want and follow these steps
                   <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">steps</a></p>

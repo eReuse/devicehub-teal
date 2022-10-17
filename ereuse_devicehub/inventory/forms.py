@@ -86,12 +86,18 @@ DEVICES = {
         "Smartphone",
         "Cellphone",
     ],
+    "Drives & Storage": [
+        "All DataStorage",
+        "HardDrives",
+        "SolidStageDrive",
+    ],
 }
 
 COMPUTERS = ['Desktop', 'Laptop', 'Server', 'Computer']
 
 MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
 MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
+STORAGE = ["HardDrive", "SolidStateDrive"]
 
 
 class AdvancedSearchForm(FlaskForm):
@@ -175,8 +181,15 @@ class FilterForm(FlaskForm):
         elif "All Mobile" == self.device_type:
             filter_type = MOBILE
 
+        elif "All DataStorage" == self.device_type:
+            filter_type = STORAGE
+
         if filter_type:
             self.devices = self.devices.filter(Device.type.in_(filter_type))
+
+        # if self.device_type in STORAGE + ["All DataStorage"]:
+        # import pdb; pdb.set_trace()
+        # self.devices = self.devices.filter(Component.parent_id.is_(None))
 
         return self.devices.order_by(Device.updated.desc())
 
@@ -1259,6 +1272,12 @@ class TradeDocumentForm(FlaskForm):
 
 
 class TransferForm(FlaskForm):
+    lot_name = StringField(
+        'Lot Name',
+        [validators.DataRequired()],
+        render_kw={'class': "form-control"},
+        description="You need put a lot name",
+    )
     code = StringField(
         'Code',
         [validators.DataRequired()],
@@ -1303,9 +1322,7 @@ class TransferForm(FlaskForm):
         return self._obj
 
     def set_obj(self):
-        name = self.code.data
-        if self._tmp_lot:
-            name = self._tmp_lot.name
+        name = self.lot_name.data
         self.newlot = Lot(name=name)
         if self._tmp_lot:
             self.newlot.devices = self._tmp_lot.devices
@@ -1339,6 +1356,7 @@ class EditTransferForm(TransferForm):
             self.code.data = self._obj.code
             self.description.data = self._obj.description
             self.date.data = self._obj.date
+            self.lot_name.data = self._obj.lot.name
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
@@ -1350,6 +1368,7 @@ class EditTransferForm(TransferForm):
 
     def set_obj(self, commit=True):
         self.populate_obj(self._obj)
+        self._obj.lot.name = self.lot_name.data
 
 
 class NotesForm(FlaskForm):
