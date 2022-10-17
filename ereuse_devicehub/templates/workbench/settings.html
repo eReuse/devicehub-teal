@@ -68,7 +68,7 @@
   </div>
 
   <div class="row">
-    <div class="col-xl-6">
+    <div class="col">
 
       <div class="card">
         <div class="card-body">
@@ -82,122 +82,13 @@
               </div>
             </div>
           </div>
-        </div>
 
+        </div>
       </div>
 
     </div>
-    <div class="col-xl-8">
-    </div>
   </div>
-
-  {% if demo %}
   <div class="row">
-    <div class="col-xl-6">
-
-      <div class="card">
-        <div class="card-body">
-
-          <div class="pt-6 pb-2">
-            <h5 class="card-title text-center pb-0 fs-4">Usody Metadata Snapshots</h5>
-            <div class="row pt-3">
-              <div class="col-5">
-                <a href="{{ iso.demo.url }}{{ iso.demo.iso }}" class="btn btn-primary">{{ iso.demo.iso }}</a>
-              </div>
-              <div class="col">
-                <p class="small">
-                  Download Checksum: <a class="help" href="{{ iso.demo.url }}SHA512SUM">SHA512SUM</a> |
-                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-    <div class="col-xl-8">
-    </div>
-  </div>
-
-  {% else %}
-  {% for d, v in iso.items() %}
-  {% if d != 'demo' %}
-  <div class="row">
-    <div class="col-xl-6">
-
-      <div class="card">
-        <div class="card-body">
-
-          <div class="pt-6 pb-2">
-            <h5 class="card-title text-center pb-0 fs-4">Workbench {{ d }}</h5>
-            {% if d == 'v14' %}
-            <div class="row">
-              <div class="col-5">
-                <a href="{{ url_for('workbench.settings') }}?opt=erease_basic" class="btn btn-primary" style="width: 200px;">Get settings file!</a>
-              </div>
-              <div class="col">
-                <p class="small">
-                  Settings for basic data erasure. | <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a>
-                </p>
-              </div>
-            </div>
-            <div class="row pt-2">
-              <div class="col-5">
-                <a href="{{ url_for('workbench.settings') }}?opt=erease_sectors" class="btn btn-primary" style="width: 200px;">Get settings file!</a>
-              </div>
-              <div class="col">
-                <p class="small">
-                  Settings for advanced data erasure through sectors and hidden areas. Guarantee of data removal. | <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a>
-                </p>
-              </div>
-            </div>
-            {% else %}
-            <div class="row">
-              <div class="col-5">
-                <a href="{{ url_for('workbench.settings') }}?opt=register" class="btn btn-primary" style="width: 200px;">Get settings file!</a>
-              </div>
-              <div class="col">
-                <p class="small">
-                  Settings for register devices.
-                </p>
-              </div>
-            </div>
-            {% endif %}
-            {% if iso %}
-            <br />
-            <div class="row">
-              <div class="col-5">
-                <a href="{{ v.url }}{{ v.iso }}" class="btn btn-primary" style="width: 200px;">Get ISO file</a>
-              </div>
-              <div class="col">
-                <p class="small">
-                  {{ v.iso }}
-                </p>
-                <p class="small">
-                  Download Checksum: <a class="help" href="{{ v.url }}SHA512SUM">SHA512SUM</a> |
-                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
-                </p>
-              </div>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-    <div class="col-xl-8">
-    </div>
-  </div>
-  {% endif %}
-  {% endfor %}
-
-  {% endif %}
-
-
-
     <div class="col">
 
       <div class="card">
@@ -208,12 +99,14 @@
 
             <div class="row">
               <div class="col-2">
-                <a href="" class="btn btn-primary" style="width: 200px;">Download ISO</a>
+                <a href="{{ iso_register.url }}{{ iso_register.iso }}" class="btn btn-primary" style="max-width: 200px;">
+                  Download ISO
+                </a>
               </div>
               <div class="col-3">
                 <p class="small">
-                  Download Checksum: <a class="help" href="SHA512SUM">SHA512SUM</a> |
-                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
+                  Download Checksum: <a class="help" href="{{ iso_register.url }}SHA512SUM">SHA512SUM</a> |
+                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a>
                 </p>
               </div>
               <div class="col"></div>
@@ -222,16 +115,22 @@
             <div class="row mt-3">
               <div class="col-3">
                 <div class="border mr-2 p-2">
-                  <p>HW and Smart test</p>
-                  <a href="{{ url_for('workbench.settings') }}?opt=erease_sectors" class="btn btn-primary" style="width: 100%">Download settings file</a>
+                  <h5>Hardware Capture</h5>
+                  <p>HW Metadata Capture and Smart test</p>
+                  <a href="{{ url_for('workbench.settings') }}?opt=register" class="btn btn-primary" style="width: 100%">Download settings file</a>
                 </div>
               </div>
             </div>
 
           </div>
-
         </div>
       </div>
+
+    </div>
+  </div>
+  {% if not demo %}
+  <div class="row">
+    <div class="col">
       <div class="card">
         <div class="card-body">
 
@@ -240,12 +139,14 @@
 
             <div class="row">
               <div class="col-2">
-                <a href="" class="btn btn-primary" style="width: 200px;">Download ISO</a>
+                <a href="{{ iso_erease.url }}{{ iso_erease.iso }}" class="btn btn-primary" style="max-width: 200px;">
+                  Download ISO
+                </a>
               </div>
               <div class="col-3">
                 <p class="small">
-                  Download Checksum: <a class="help" href="SHA512SUM">SHA512SUM</a> |
-                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a></p>
+                  Download Checksum: <a class="help" href="{{ iso_erease.url }}SHA512SUM">SHA512SUM</a> |
+                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a>
                 </p>
               </div>
               <div class="col"></div>
@@ -254,14 +155,14 @@
             <div class="row mt-3">
               <div class="col-3">
                 <div class="border mr-2 p-2">
+                  <h5>Basic Erasure</h5>
                   <p>
-                    Settings for basic data erasure using shred fast non-100% secured way of erasing data storage.
-                  </p>
-                  <p>
-                    One overwriting round using a randomn pattern.
-                    Compliant with British HMG Infosec Standard 5,
-                    Baseline Standard
+                    Settings for basic data erasure using shred Linux command.
+                    A software-based fast non-100%-secured way of erasing data storage.
                   </p>              
+                  <p>
+                    Performs 1 pass overwriting one round using all zeros. Compliant with NIST SP-800-88
+                  </p>
                   <a href="{{ url_for('workbench.settings') }}?opt=erease_basic" 
                   class="btn btn-primary" 
                   style="width: 100%;">
@@ -269,20 +170,42 @@
                   </a>
                 </div>
               </div>
+
               <div class="col-3">
                 <div class="border mr-2 p-2">
+                  <h5>Baseline Secure Erasure</h5>
                   <p>
-                    Settings for basic data erasure using shred fast non-100% secured way of erasing data storage.
+                    Settings for advanced data erasure using badblocks Linux software.
+                    A secured-way of erasing data storages, erase hidden areas, checking the erase sector by sector.
                   </p>  
                   <p>
-                    Settings for basic data erasure using shred fast non-100% secured way of erasing data storage.
+                    Performs 1 pass overwriting each sector with zeros and a final verification.
+                    Compliant with HMG Infosec Standard 5 Baseline.
+                  </p>              
+                  <a href="{{ url_for('workbench.settings') }}?opt=erease_sectors" 
+                  class="btn btn-primary" 
+                  style="width: 100%;">
+                  Download settings file
+                  </a>
+                </div>
+              </div>
+
+              <div class="col-3">
+                <div class="border mr-2 p-2">
+                  <h5>Enhanced Secure Erasure</h5>
+                  <p>
+                    Settings for advanced data erasure using badblocks Linux software.
+                    A secured-way of erasing data storages, erase hidden areas, checking the erase sector by sector.
                   </p>
                   <p>
-                    One overwriting round using a randomn pattern.
-                    Compliant with British HMG Infosec Standard 5,
-                    Baseline Standard
-                  </p>
-                  <a href="{{ url_for('workbench.settings') }}?opt=erease_basic" class="align-bottom btn btn-primary" style="width: 100%">Download settings file</a>
+                    Performs 3 passes overwriting every sector with zeros and ones, and final verification.
+                    Compliant with HMG Infosec Standard 5 Enhanced.
+                  </p>           
+                  <a href="{{ url_for('workbench.settings') }}?opt=erease_sectors" 
+                  class="btn btn-primary" 
+                  style="width: 100%;">
+                  Download settings file
+                  </a>
                 </div>
               </div>
             </div>
@@ -291,11 +214,9 @@
 
         </div>
       </div>
-
-    </div>
-    <div class="col-xl-8">
     </div>
   </div>
+  {% endif %}
 
 </section>
 {% endblock main %}
