@@ -2534,3 +2534,36 @@ def test_filter_hdd_in_kangaroo(user3: UserClientFlask):
     assert status == '200 OK'
     for hdd in Device.query.filter_by(type='HardDrive').all():
         assert hdd.dhid in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_snapshot_is_server_erase(user3: UserClientFlask):
+    snapshot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+
+    user3.get('/workbench/')
+    data = {
+        'csrf_token': generate_csrf(),
+        'phid': snapshot.device.phid(),
+    }
+    user3.post('/workbench/', data=data)
+
+    uri = '/inventory/upload-snapshot/'
+    file_name = 'real-eee-1001pxd.snapshot.12'
+    snapshot_json = conftest.yaml2json(file_name)
+    snapshot_json['uuid'] = 'c058e8d2-fb92-47cb-a4b7-522b75561136'
+    b_snapshot = bytes(json.dumps(snapshot_json), 'utf-8')
+    file_snap = (BytesIO(b_snapshot), file_name)
+    user3.get(uri)
+
+    data = {
+        'snapshot': file_snap,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data, content_type="multipart/form-data")
+    snapshot2 = Snapshot.query.filter_by(uuid=snapshot_json['uuid']).one()
+
+    assert not snapshot.is_server_erase
+    assert snapshot2.is_server_erase
+    assert snapshot in snapshot.device.actions
+    assert snapshot2 in snapshot.device.actions

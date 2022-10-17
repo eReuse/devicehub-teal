@@ -23,7 +23,7 @@ class SettingsView(GenericMixin):
     decorators = [login_required]
     methods = ['GET', 'POST']
     template_name = 'workbench/settings.html'
-    page_title = "Workbench"
+    page_title = "Snapshots"
 
     def dispatch_request(self):
         self.get_context()
@@ -32,7 +32,9 @@ class SettingsView(GenericMixin):
             {
                 'page_title': self.page_title,
                 'demo': g.user.email == app.config['EMAIL_DEMO'],
-                'iso': isos,
+                'iso_demo': isos['demo'],
+                'iso_register': isos['register'],
+                'iso_erease': isos['erease'],
                 'form': form_kangaroo,
             }
         )
