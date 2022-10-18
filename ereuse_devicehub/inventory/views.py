@@ -382,11 +382,13 @@ class UnBindingView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
     def clone_device(self, device):
-        if device.binding.is_abstract:
+        if device.binding and device.binding.is_abstract:
             return
 
-        kangaroo = device.binding.kangaroo
-        device.binding.kangaroo = False
+        kangaroo = False
+        if device.binding:
+            kangaroo = device.binding.kangaroo
+            device.binding.kangaroo = False
 
         dict_device = copy.copy(device.__dict__)
         dict_device.pop('_sa_instance_state')
@@ -406,6 +408,9 @@ class UnBindingView(GenericMixin):
             for c in device.components:
                 if c.binding:
                     c.binding.device.parent = new_device
+                else:
+                    new_c = self.clone_device(c)
+                    new_c.parent = new_device
 
         placeholder = Placeholder(
             device=new_device, binding=device, is_abstract=True, kangaroo=kangaroo

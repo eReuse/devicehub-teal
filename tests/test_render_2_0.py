@@ -2255,9 +2255,11 @@ def test_unbinding(user3: UserClientFlask):
     user3.get(uri)
 
     # action binding
+    assert Placeholder.query.count() == 11
     assert dev.placeholder.binding is None
     user3.post(uri, data={})
     assert dev.placeholder.binding == dev_wb
+    assert Placeholder.query.count() == 1
 
     dhid = dev.dhid
     # action unbinding
@@ -2281,6 +2283,7 @@ def test_unbinding(user3: UserClientFlask):
     assert Device.query.filter_by(id=dev_wb.binding.device.id).first()
     assert Device.query.filter_by(id=dev.id).first()
     assert Placeholder.query.filter_by(id=dev.placeholder.id).first()
+    assert Placeholder.query.count() == 11
 
 
 @pytest.mark.mvp
