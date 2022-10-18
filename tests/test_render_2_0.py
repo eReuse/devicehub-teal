@@ -1675,6 +1675,7 @@ def test_export_lots(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_export_snapshot_json(user3: UserClientFlask):
+    # ??
     file_name = 'real-eee-1001pxd.snapshot.13.json'
     snap = create_device(user3, file_name)
 
@@ -2158,8 +2159,15 @@ def test_manual_binding(user3: UserClientFlask):
     # check new structure
     assert dev_wb.binding.phid == '1'
     assert dev_wb.binding.device == dev
+    assert dev_wb.phid() == dev.phid()
+    assert dev_wb.is_abstract() == dev.is_abstract() == 'Twin'
+    # assert dev_wb.
     assert Placeholder.query.filter_by(id=old_placeholder.id).first() is None
     assert Device.query.filter_by(id=old_placeholder.device.id).first() is None
+
+    body_real, status = user3.get(f'/devices/{dhid_real}')
+    body_abstract, status = user3.get(f'/devices/{dhid_abstract}')
+    assert body_real == body_abstract
 
 
 @pytest.mark.mvp

@@ -137,7 +137,10 @@ class DeviceView(View):
             return self.one_private(id)
 
     def one_public(self, id: int):
-        device = Device.query.filter_by(devicehub_id=id, active=True).one()
+        devices = Device.query.filter_by(devicehub_id=id, active=True).all()
+        if not devices:
+            devices = [Device.query.filter_by(dhid_bk=id, active=True).one()]
+        device = devices[0]
         abstract = None
         if device.binding:
             return flask.redirect(device.public_link)
