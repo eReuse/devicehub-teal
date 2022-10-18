@@ -3,11 +3,7 @@
 {% block body %}
 <!-- ======= Header ======= -->
 <header id="header" class="header fixed-top d-flex align-items-center">
-
   <div class="d-flex align-items-center justify-content-between">
-    <a href="{{ url_for('inventory.devicelist')}}" class="logo d-flex align-items-center">
-      <img src="{{ url_for('static', filename='img/logo_usody_clock.png') }}" alt="">
-    </a>
     <i class="bi bi-list toggle-sidebar-btn"></i>
   </div><!-- End Logo -->
 
@@ -43,6 +39,11 @@
           <i class="bi bi-search"></i>
         </a>
       </li><!-- End Search Icon-->
+      <li class="nav-item dropdown pe-3">
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="{{ url_for('labels.label_list') }}">
+          <span class="d-none d-md-block ps-2 pb-3 pt-3">Identifiers</span>
+        </a>
+      </li>
 
       <li class="nav-item dropdown pe-3">
 
@@ -62,6 +63,11 @@
             <a class="dropdown-item d-flex align-items-center" href="{{ url_for('inventory.export', export_id='lots') }}">
               <i class="bi bi-file-spreadsheet"></i>
               <span>Lots Spreadsheet</span>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="{{ url_for('inventory.device_erasure_list') }}">
+              <i class="bi bi-tag"></i><span>Data Storage Erasures</span>
             </a>
           </li>
         </ul>
@@ -188,6 +194,11 @@
           {% else %}
           <ul id="incoming-lots-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
             {% endif %}
+            <li>
+              <a href="{{ url_for('inventory.new_transfer', type_id='incoming') }}">
+                <i class="bi bi-plus" style="font-size: larger;"></i><span>New Incoming lot</span>
+              </a>
+            </li>
             {% for lot in lots %}
             {% if lot.is_incoming %}
             <li>
@@ -213,6 +224,11 @@
           {% else %}
           <ul id="outgoing-lots-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
             {% endif %}
+            <li>
+              <a href="{{ url_for('inventory.new_transfer', type_id='outgoing') }}">
+                <i class="bi bi-plus" style="font-size: larger;"></i><span>New Outgoing lot</span>
+              </a>
+            </li>
             {% for lot in lots %}
             {% if lot.is_outgoing %}
             <li>
@@ -255,22 +271,6 @@
             {% endfor %}
           </ul>
     </li><!-- End Temporal Lots Nav -->
-
-    <li class="nav-heading">Others views</li>
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="{{ url_for('inventory.device_erasure_list') }}">
-        <i class="bi bi-tag"></i><span>Data Storage Erasures</span>
-      </a>
-    </li><!-- End Other views -->
-
-    <li class="nav-heading">Unique Identifiers (Tags)</li>
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="{{ url_for('labels.label_list') }}">
-        <i class="bi bi-tag"></i><span>UI Management</span>
-      </a>
-    </li><!-- End Unique Identifiers -->
 
   </ul>
 

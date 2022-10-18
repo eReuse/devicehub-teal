@@ -296,6 +296,8 @@ class BindingView(GenericMixin):
         self.real_phid = self.new_placeholder.phid
         self.abstract_dhid = self.old_device.devicehub_id
         self.abstract_phid = self.old_placeholder.phid
+        if self.old_placeholder.kangaroo:
+            self.new_placeholder.kangaroo = True
 
         # to do a backup of abstract_dhid and abstract_phid in
         # workbench device
@@ -380,8 +382,13 @@ class UnBindingView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
     def clone_device(self, device):
-        if device.binding.is_abstract:
+        if device.binding and device.binding.is_abstract:
             return
+
+        kangaroo = False
+        if device.binding:
+            kangaroo = device.binding.kangaroo
+            device.binding.kangaroo = False
 
         dict_device = copy.copy(device.__dict__)
         dict_device.pop('_sa_instance_state')
@@ -401,8 +408,14 @@ class UnBindingView(GenericMixin):
             for c in device.components:
                 if c.binding:
                     c.binding.device.parent = new_device
+                else:
+                    new_c = self.clone_device(c)
+                    new_c.parent = new_device
 
-        placeholder = Placeholder(device=new_device, binding=device, is_abstract=True)
+        placeholder = Placeholder(
+            device=new_device, binding=device, is_abstract=True, kangaroo=kangaroo
+        )
+
         if (
             device.dhid_bk
             and not Device.query.filter_by(devicehub_id=device.dhid_bk).first()
@@ -545,7 +558,7 @@ class DeviceCreateView(GenericMixin):
             tpy = form.type.data
             txt = f'{amount} placeholders Device "{tpy}" created successfully.'
             placeholder = (
-                Placeholder.query.filter_by(owner=g.user)
+                Placeholder.query.filter(Placeholder.owner == g.user)
                 .order_by(Placeholder.id.desc())
                 .first()
             )
@@ -753,9 +766,11 @@ class NewTransferView(GenericMixin):
     form_class = TransferForm
     title = "Add new transfer"
 
-    def dispatch_request(self, lot_id, type_id):
+    def dispatch_request(self, type_id, lot_id=None):
         self.form = self.form_class(lot_id=lot_id, type=type_id)
         self.get_context()
+        referrer = request.referrer or url_for('inventory.devicelist')
+        self.context.update({'referrer': referrer})
 
         if self.form.validate_on_submit():
             self.form.save()
@@ -767,7 +782,12 @@ class NewTransferView(GenericMixin):
             next_url = url_for('inventory.lotdevicelist', lot_id=str(new_lot_id))
             return flask.redirect(next_url)
 
-        self.context.update({'form': self.form, 'title': self.title})
+        self.context.update(
+            {
+                'form': self.form,
+                'title': self.title,
+            }
+        )
         return flask.render_template(self.template_name, **self.context)
 
 
@@ -1355,6 +1375,10 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/lot/<string:lot_id>/transfer/<string:type_id>/',
+    view_func=NewTransferView.as_view('lot_new_transfer'),
+)
+devices.add_url_rule(
+    '/lot/transfer/<string:type_id>/',
     view_func=NewTransferView.as_view('new_transfer'),
 )
 devices.add_url_rule(

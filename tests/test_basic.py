@@ -68,6 +68,7 @@ def test_api_docs(client: Client):
         '/inventory/lot/{lot_id}/trade-document/add/',
         '/inventory/lot/{lot_id}/transfer/{type_id}/',
         '/inventory/lot/{lot_id}/transfer/',
+        '/inventory/lot/transfer/{type_id}/',
         '/inventory/lot/{lot_id}/upload-snapshot/',
         '/inventory/snapshots/{snapshot_uuid}/',
         '/inventory/snapshots/',
@@ -104,6 +105,7 @@ def test_api_docs(client: Client):
         '/users/logout/',
         '/versions/',
         '/workbench/',
+        '/workbench/erasure_host/{id}/',
     }
     assert docs['info'] == {'title': 'Devicehub', 'version': '0.2'}
     assert docs['components']['securitySchemes']['bearerAuth'] == {

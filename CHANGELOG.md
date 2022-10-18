@@ -7,6 +7,31 @@ ml).
 
 ## testing
 
+## [2.4.2] - 2022-10-18
+- [added] #373 Enhancement - UX Lots.
+- [added] #377 add prefix in lots in device list.
+- [added] #378 add new button transfer.
+- [added] #381 add servers erase and show storage disk in list of device.
+- [added] #383 new setup page and add server_erase in placeholder.
+- [added] #384 add redirect snapshot to twin public page.
+- [changed] #371 changes phid.
+- [changed] #372 remove logo.
+- [changed] #374 changes links UI management and Data Storage Erasure.
+- [changed] #375 changes columns in snapshot logs.
+- [changed] #379 changes representation date times.
+- [fixed] #380 fix layout print label.
+- [fixed] #382 fix template device list.
+- [fixed] #385 components in unbinding process.
+
+## [2.4.1] - 2022-10-05
+- [added] #365 Manage dependencies using pip-tools.
+- [added] #368 add migrations of monitors and mobiles.
+- [changed]] #371 changes about phid, incremental per user.
+- [fixed] #364 bad redirect to all devices.
+- [fixed] #367 column PHID Erasure host.
+- [fixed] #369 bug in test data storage.
+- [fixed] #370 print label in details of the label.
+
 ## [2.4.0] - 2022-09-23
 - [added] #312 Placeholder: new, edit, update. (manually and with excel).
 - [added] #316 Placeholder: binding/unbinding. (manually).

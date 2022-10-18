@@ -27,10 +27,10 @@
                     <tr>
                       <th scope="col">PHID</th>
                       <th scope="col">Placeholder source</th>
-                      <th scope="col">Type</th>
+                      <th scope="col">Type Upload</th>
                       <th scope="col">DHID</th>
                       <th scope="col">Status</th>
-                      <th scope="col" data-type="date" data-format="DD-MM-YYYY">Time</th>
+                      <th scope="col" data-type="date" data-format="YYYY-MM-DD hh:mm">Time</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -53,7 +53,7 @@
                       <td>
                           {{ log.get_status() }}
                       </td>
-                      <td>{{ log.created.strftime('%H:%M %d-%m-%Y') }}</td>
+                      <td>{{ log.created.strftime('%Y-%m-%d %H:%M') }}</td>
                     </tr>
                     {% endfor %}
                   </tbody>

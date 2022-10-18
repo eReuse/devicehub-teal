@@ -17,7 +17,7 @@ from ereuse_devicehub.workbench.views import workbench
 # from flask_wtf.csrf import CSRFProtect
 
 
-# from werkzeug.contrib.profiler import ProfilerMiddleware
+# from werkzeug.middleware.profiler import ProfilerMiddleware
 
 
 SENTRY_DSN = config('SENTRY_DSN', None)

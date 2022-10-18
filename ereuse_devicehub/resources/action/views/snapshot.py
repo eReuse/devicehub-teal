@@ -115,7 +115,14 @@ class SnapshotMixin:
         if snapshot.device.hid is None:
             snapshot.severity = Severity.Warning
 
+        self.is_server_erase(snapshot)
+
         return snapshot
+
+    def is_server_erase(self, snapshot):
+        if snapshot.device.binding:
+            if snapshot.device.binding.kangaroo:
+                snapshot.is_server_erase = True
 
     def get_old_smbios_version(self, debug):
         capabilities = debug.get('lshw', {}).get('capabilities', {})

@@ -114,21 +114,35 @@ class PrintLabelsView(View):
 
 
 class LabelDetailView(View):
+    """This View is used to print labels from multiple devices"""
+
+    methods = ['POST', 'GET']
     decorators = [login_required]
-    template_name = 'labels/label_detail.html'
+    template_name = 'labels/print_labels.html'
+    title = 'Design and implementation of labels'
 
     def dispatch_request(self, id):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
         tag = (
             Tag.query.filter(Tag.owner_id == current_user.id).filter(Tag.id == id).one()
         )
-
         context = {
             'lots': lots,
-            'tag': tag,
-            'page_title': '{} Tag'.format(tag.code),
+            'page_title': self.title,
             'version': __version__,
+            'referrer': request.referrer,
         }
+
+        devices = []
+        if tag.device:
+            form = PrintLabelsForm(devices=str(tag.device.id))
+            devices = [tag.device]
+        else:
+            form = PrintLabelsForm()
+
+        form._devices = devices
+        context['form'] = form
+        context['devices'] = devices
         return flask.render_template(self.template_name, **context)
 
 

@@ -21,14 +21,22 @@ def test_authenticate_success(app: Devicehub):
 def test_authenticate_error(app: Devicehub):
     """Tests the authenticate method with wrong token values."""
     with app.app_context():
-        MESSAGE = 'Provide a suitable token.'
         create_user()
         # Token doesn't exist
-        with pytest.raises(Unauthorized, message=MESSAGE):
+        with pytest.raises(Unauthorized):
             app.auth.authenticate(token=str(uuid4()))
+            pytest.fail('Provide a suitable token.')
+
+
+@pytest.mark.mvp
+def test_authenticate_error_malformed_token(app: Devicehub):
+    """Tests the authenticate method with malformed token."""
+    with app.app_context():
+        create_user()
         # Wrong token format
-        with pytest.raises(Unauthorized, message=MESSAGE):
+        with pytest.raises(Unauthorized):
             app.auth.authenticate(token='this is a wrong uuid')
+            pytest.fail('Provide a suitable token.')
 
 
 @pytest.mark.mvp
@@ -36,4 +44,6 @@ def test_auth_view(user: UserClient, client: Client):
     """Tests authentication at endpoint / view."""
     user.get(res='User', item=user.user['id'], status=200)
     client.get(res='User', item=user.user['id'], status=Unauthorized)
-    client.get(res='User', item=user.user['id'], token='wrong token', status=Unauthorized)
+    client.get(
+        res='User', item=user.user['id'], token='wrong token', status=Unauthorized
+    )
