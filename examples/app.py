@@ -6,12 +6,12 @@ Use this as a starting point.
 
 from decouple import config
 
-from ereuse_devicehub.mail.flask_mail import Mail
 from ereuse_devicehub.api.views import api
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.inventory.views import devices
 from ereuse_devicehub.labels.views import labels
+from ereuse_devicehub.mail.flask_mail import Mail
 from ereuse_devicehub.views import core
 from ereuse_devicehub.workbench.views import workbench
 

@@ -41,6 +41,13 @@
                     <label for="yourEmail" class="form-label">Email</label>
                     <input type="email" name="email" class="form-control" id="yourEmail" required value="{{ form.email.data|default('', true) }}">
                     <div class="invalid-feedback">Please enter your email.</div>
+                    {% if form.email.errors %}
+                    <p class="text-danger">
+                      {% for error in form.email.errors %}
+                        {{ error }}<br/>
+                      {% endfor %}
+                    </p>
+                    {% endif %}
                   </div>
 
                   <div class="col-12">
@@ -58,27 +65,42 @@
                   <div class="col-12">
                     <label for="name" class="form-label">Name</label>
                     <input name="name" class="form-control" id="name" required>
+                    {% if form.name.errors %}
+                    <p class="text-danger">
+                      {% for error in form.name.errors %}
+                        {{ error }}<br/>
+                      {% endfor %}
+                    </p>
+                    {% endif %}
                   </div>
 
                   <div class="col-12">
                     <label for="telephone" class="form-label">Telephone</label>
                     <input type="tel" name="telephone" class="form-control" id="telephone" required>
+                    {% if form.telephone.errors %}
+                    <p class="text-danger">
+                      {% for error in form.telephone.errors %}
+                        {{ error }}<br/>
+                      {% endfor %}
+                    </p>
+                    {% endif %}
                   </div>
 
                   <div class="col-12">
                     <button class="btn btn-primary w-100" type="submit">Register</button>
                   </div>
                   <div class="col-12">
-                    <p class="small mb-0">Don't have account? <a href="#TODO" onclick="$('#exampleModal').modal('show')" data-toggle="modal" data-target="#exampleModal">Create an account</a></p>
+                    <p class="small mb-0">
+                      You have account? <a href="{{ url_for('core.login') }}">Create an account</a>
+                    </p>
                   </div>
                 </form>
                 {% else %}
-                  <div class="col-12">
-                    We have sent you a validation email. Please check your email.
-                  </div>
-                  <div class="col-12">
-                    {{ form._token }}
-                  </div>
+                </div>
+                <div class="col-12 p-4">
+                  We have sent you a validation email.<br />
+                  Please check your email.
+                </div>
                 {% endif %}
 
               </div>
@@ -96,18 +118,4 @@
 
   </div>
 </main><!-- End #main -->
-
-<!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog  modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Do you want to try USOdy tools?</h5>
-      </div>
-      <div class="modal-body">
-        Just write an email to <a href="mali:hello@usody.com">hello@usody.com</a>
-      </div>
-    </div>
-  </div>
-</div> <!-- End register modal -->
 {% endblock body %}

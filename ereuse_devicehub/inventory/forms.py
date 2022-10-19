@@ -187,10 +187,6 @@ class FilterForm(FlaskForm):
         if filter_type:
             self.devices = self.devices.filter(Device.type.in_(filter_type))
 
-        # if self.device_type in STORAGE + ["All DataStorage"]:
-        # import pdb; pdb.set_trace()
-        # self.devices = self.devices.filter(Component.parent_id.is_(None))
-
         return self.devices.order_by(Device.updated.desc())
 
 

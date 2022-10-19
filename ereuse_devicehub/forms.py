@@ -1,5 +1,5 @@
-from flask import g
 from flask import current_app as app
+from flask import g
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
 from wtforms import (
@@ -115,17 +115,16 @@ class PasswordForm(FlaskForm):
 
 class UserNewRegisterForm(FlaskForm):
     email = EmailField(
-        'Email Address', [
-            validators.DataRequired(),
-            validators.Length(min=6, max=35)
-        ]
+        'Email Address', [validators.DataRequired(), validators.Length(min=6, max=35)]
     )
     password = PasswordField('Password', [validators.DataRequired()])
     password2 = PasswordField('Password', [validators.DataRequired()])
     name = StringField(
         'Name', [validators.DataRequired(), validators.Length(min=3, max=35)]
     )
-    telephone = TelField('Telephone', [validators.DataRequired()])
+    telephone = TelField(
+        'Telephone', [validators.DataRequired(), validators.Length(min=9, max=35)]
+    )
 
     error_messages = {
         'invalid_login': (
@@ -160,16 +159,19 @@ class UserNewRegisterForm(FlaskForm):
         return True
 
     def save(self, commit=True):
-        user = User(
-            email=self.email.data,
-            password=self.password.data,
-            active=False
-        )
+        user_validation = self.new_user()
+        if commit:
+            db.session.commit()
+
+        self._token = user_validation.token
+        self.send_mail()
+        self.send_mail_admin(user_validation.user)
+
+    def new_user(self):
+        user = User(email=self.email.data, password=self.password.data, active=False)
 
         person = Person(
-            email=self.email.data,
-            name=self.name.data,
-            telephone=self.telephone.data
+            email=self.email.data, name=self.name.data, telephone=self.telephone.data
         )
 
         user.individuals.add(person)
@@ -180,19 +182,33 @@ class UserNewRegisterForm(FlaskForm):
         )
         db.session.add(user_validation)
 
-        if commit:
-            db.session.commit()
-
-        self._token = user_validation.token
-        self.send_mail()
+        return user_validation
 
     def send_mail(self):
         host = app.config.get('HOST')
-        token =  self._token
-        url = f'https://{ host }/validate/{ token }'
-        message = """Hello, you are register in Usody.com
+        token = self._token
+        url = f'https://{ host }/validate_user/{ token }'
+        message = """
+            Hello, you are register in Usody.com
             Please for activate your account click in the next address: """
         message += url
         subject = "Validate email for register in Usody.com"
 
         send_email(subject, [self.email.data], message)
+
+    def send_mail_admin(self, user):
+        person = next(iter(user.individuals))
+        email = person.email
+        name = person.name
+        telephone = person.telephone
+
+        message = f"""A new user has been registered. These are your data"
+            Name: {name}
+            Telephone: {telephone}
+            Email: {email}
+        """
+        subject = "New Register"
+
+        email_admin = app.config.get("EMAIL_ADMIN")
+        if email_admin:
+            send_email(subject, [email_admin], message)
