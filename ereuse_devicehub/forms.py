@@ -1,4 +1,5 @@
 from flask import g
+from flask import current_app as app
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
 from wtforms import (
@@ -11,6 +12,7 @@ from wtforms import (
 )
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.mail.sender import send_email
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.user.models import User, UserValidation
 
@@ -113,7 +115,10 @@ class PasswordForm(FlaskForm):
 
 class UserNewRegisterForm(FlaskForm):
     email = EmailField(
-        'Email Address', [validators.DataRequired(), validators.Length(min=6, max=35)]
+        'Email Address', [
+            validators.DataRequired(),
+            validators.Length(min=6, max=35)
+        ]
     )
     password = PasswordField('Password', [validators.DataRequired()])
     password2 = PasswordField('Password', [validators.DataRequired()])
@@ -149,13 +154,22 @@ class UserNewRegisterForm(FlaskForm):
             self.form_errors.append(txt)
             return False
 
+        self.email.data = self.email.data.strip()
+        self.password.data = self.password.data.strip()
+
         return True
 
     def save(self, commit=True):
-        user = User(email=self.email.data, password=self.password.data, active=False)
+        user = User(
+            email=self.email.data,
+            password=self.password.data,
+            active=False
+        )
 
         person = Person(
-            email=self.email.data, name=self.name.data, telephone=self.telephone.data
+            email=self.email.data,
+            name=self.name.data,
+            telephone=self.telephone.data
         )
 
         user.individuals.add(person)
@@ -164,8 +178,21 @@ class UserNewRegisterForm(FlaskForm):
         user_validation = UserValidation(
             user=user,
         )
-        self._token = user_validation.token
         db.session.add(user_validation)
 
         if commit:
             db.session.commit()
+
+        self._token = user_validation.token
+        self.send_mail()
+
+    def send_mail(self):
+        host = app.config.get('HOST')
+        token =  self._token
+        url = f'https://{ host }/validate/{ token }'
+        message = """Hello, you are register in Usody.com
+            Please for activate your account click in the next address: """
+        message += url
+        subject = "Validate email for register in Usody.com"
+
+        send_email(subject, [self.email.data], message)

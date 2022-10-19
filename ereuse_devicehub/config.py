@@ -92,3 +92,4 @@ class DevicehubConfig(Config):
     MAIL_PASSWORD = config('MAIL_PASSWORD', '')
     MAIL_PORT = config('MAIL_PORT', 587)
     MAIL_USE_TLS = config('MAIL_USE_TLS', True)
+    MAIL_DEFAULT_SENDER = config('MAIL_DEFAULT_SENDER', '')
