@@ -1,5 +1,5 @@
 from flask import current_app as app
-from flask import g
+from flask import g, render_template
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
 from wtforms import (
@@ -188,25 +188,21 @@ class UserNewRegisterForm(FlaskForm):
         host = app.config.get('HOST')
         token = self._token
         url = f'https://{ host }/validate_user/{ token }'
-        message = """
-            Hello, you are register in Usody.com
-            Please for activate your account click in the next address: """
-        message += url
+        template = 'ereuse_devicehub/email_validation.txt'
+        message = render_template(template, url=url)
         subject = "Validate email for register in Usody.com"
 
         send_email(subject, [self.email.data], message)
 
     def send_mail_admin(self, user):
         person = next(iter(user.individuals))
-        email = person.email
-        name = person.name
-        telephone = person.telephone
-
-        message = f"""A new user has been registered. These are your data"
-            Name: {name}
-            Telephone: {telephone}
-            Email: {email}
-        """
+        context = {
+            'email': person.email,
+            'name': person.name,
+            'telephone': person.telephone,
+        }
+        template = 'ereuse_devicehub/email_admin_new_user.txt'
+        message = render_template(template, **context)
         subject = "New Register"
 
         email_admin = app.config.get("EMAIL_ADMIN")

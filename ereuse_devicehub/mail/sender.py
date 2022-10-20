@@ -28,7 +28,4 @@ def send_email(
     if html_body:
         msg.html = html_body
 
-    Thread(
-    target=_send_async_email,
-    args=(app._get_current_object(), msg)
-    ).start()
+    Thread(target=_send_async_email, args=(app._get_current_object(), msg)).start()

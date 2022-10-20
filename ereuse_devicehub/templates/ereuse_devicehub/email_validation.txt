@@ -1,0 +1,2 @@
+Hello, you are register in Usody.com
+Please for activate your account click in the next address: {{ url }}
