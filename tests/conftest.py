@@ -21,6 +21,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.inventory.views import devices
 from ereuse_devicehub.labels.views import labels
+from ereuse_devicehub.mail.flask_mail import Mail
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.enums import SessionType
 from ereuse_devicehub.resources.tag import Tag
@@ -46,6 +47,7 @@ class TestConfig(DevicehubConfig):
     EMAIL_ADMIN = 'foo@foo.com'
     PATH_DOCUMENTS_STORAGE = '/tmp/trade_documents'
     JWT_PASS = config('JWT_PASS', '')
+    MAIL_SUPPRESS_SEND = True
 
 
 @pytest.fixture(scope='session')
@@ -66,6 +68,8 @@ def _app(config: TestConfig) -> Devicehub:
     app.config["SQLALCHEMY_RECORD_QUERIES"] = True
     app.config['PROFILE'] = True
     # app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
+    mail = Mail(app)
+    app.mail = mail
     return app
 
 

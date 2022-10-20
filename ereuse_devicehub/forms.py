@@ -1,10 +1,20 @@
-from flask import g
+from flask import current_app as app
+from flask import g, render_template
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import BooleanField, EmailField, PasswordField, validators
+from wtforms import (
+    BooleanField,
+    EmailField,
+    PasswordField,
+    StringField,
+    TelField,
+    validators,
+)
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.mail.sender import send_email
+from ereuse_devicehub.resources.agent.models import Person
+from ereuse_devicehub.resources.user.models import User, UserValidation
 
 
 class LoginForm(FlaskForm):
@@ -101,3 +111,100 @@ class PasswordForm(FlaskForm):
         if commit:
             db.session.commit()
         return
+
+
+class UserNewRegisterForm(FlaskForm):
+    email = EmailField(
+        'Email Address', [validators.DataRequired(), validators.Length(min=6, max=35)]
+    )
+    password = PasswordField('Password', [validators.DataRequired()])
+    password2 = PasswordField('Password', [validators.DataRequired()])
+    name = StringField(
+        'Name', [validators.DataRequired(), validators.Length(min=3, max=35)]
+    )
+    telephone = TelField(
+        'Telephone', [validators.DataRequired(), validators.Length(min=9, max=35)]
+    )
+
+    error_messages = {
+        'invalid_login': (
+            "Please enter a correct email and password. Note that both "
+            "fields may be case-sensitive."
+        ),
+        'inactive': "This account is inactive.",
+    }
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            return False
+
+        email = self.email.data
+        password = self.password.data
+        password2 = self.password2.data
+        if password != password2:
+            self.form_errors.append('The passwords are not equal.')
+            return False
+
+        txt = 'This email are in use.'
+        email = self.email.data
+        if User.query.filter_by(email=email).first():
+            self.form_errors.append(txt)
+            return False
+
+        self.email.data = self.email.data.strip()
+        self.password.data = self.password.data.strip()
+
+        return True
+
+    def save(self, commit=True):
+        user_validation = self.new_user()
+        if commit:
+            db.session.commit()
+
+        self._token = user_validation.token
+        self.send_mail()
+        self.send_mail_admin(user_validation.user)
+
+    def new_user(self):
+        user = User(email=self.email.data, password=self.password.data, active=False)
+
+        person = Person(
+            email=self.email.data, name=self.name.data, telephone=self.telephone.data
+        )
+
+        user.individuals.add(person)
+        db.session.add(user)
+
+        user_validation = UserValidation(
+            user=user,
+        )
+        db.session.add(user_validation)
+
+        return user_validation
+
+    def send_mail(self):
+        host = app.config.get('HOST')
+        token = self._token
+        url = f'https://{ host }/validate_user/{ token }'
+        template = 'ereuse_devicehub/email_validation.txt'
+        message = render_template(template, url=url)
+        subject = "Validate email for register in Usody.com"
+
+        send_email(subject, [self.email.data], message)
+
+    def send_mail_admin(self, user):
+        person = next(iter(user.individuals))
+        context = {
+            'email': person.email,
+            'name': person.name,
+            'telephone': person.telephone,
+        }
+        template = 'ereuse_devicehub/email_admin_new_user.txt'
+        message = render_template(template, **context)
+        subject = "New Register"
+
+        email_admin = app.config.get("EMAIL_ADMIN")
+        if email_admin:
+            send_email(subject, [email_admin], message)

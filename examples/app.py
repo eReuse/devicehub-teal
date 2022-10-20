@@ -11,6 +11,7 @@ from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.inventory.views import devices
 from ereuse_devicehub.labels.views import labels
+from ereuse_devicehub.mail.flask_mail import Mail
 from ereuse_devicehub.views import core
 from ereuse_devicehub.workbench.views import workbench
 
@@ -43,6 +44,9 @@ app.register_blueprint(devices)
 app.register_blueprint(labels)
 app.register_blueprint(api)
 app.register_blueprint(workbench)
+
+mail = Mail(app)
+app.mail = mail
 
 # configure & enable CSRF of Flask-WTF
 # NOTE: enable by blueprint to exclude API views
