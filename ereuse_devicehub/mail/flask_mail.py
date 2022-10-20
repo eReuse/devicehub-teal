@@ -34,6 +34,9 @@ PY3 = sys.version_info[0] == 3
 
 PY34 = PY3 and sys.version_info[1] >= 4
 
+basestring = str
+unicode = str
+
 if PY3:
     string_types = (str,)
     text_type = str
@@ -65,6 +68,7 @@ def force_text(s, encoding='utf-8', errors='strict'):
 
     If strings_only is True, don't convert (some) non-string-like objects.
     """
+    strings_only = True
     if isinstance(s, text_type):
         return s
 
@@ -316,7 +320,7 @@ class Message(object):
         charset = self.charset or 'utf-8'
         return MIMEText(text, _subtype=subtype, _charset=charset)
 
-    def _message(self):
+    def _message(self):  # noqa: C901
         """Creates the email"""
         ascii_attachments = current_app.extensions['mail'].ascii_attachments
         encoding = self.charset or 'utf-8'
