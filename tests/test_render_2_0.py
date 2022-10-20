@@ -15,7 +15,7 @@ from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.device.models import Device, Placeholder
 from ereuse_devicehub.resources.lot.models import Lot
-from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.resources.user.models import User, UserValidation
 from tests import conftest
 
 
@@ -2578,3 +2578,30 @@ def test_snapshot_is_server_erase(user3: UserClientFlask):
     assert snapshot2.is_server_erase
     assert snapshot in snapshot.device.actions
     assert snapshot2 in snapshot.device.actions
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_new_register(user3: UserClientFlask, app: Devicehub):
+    uri = '/new_register/'
+    user3.get(uri)
+    data = {
+        'csrf_token': generate_csrf(),
+        'email': "foo@bar.cxm",
+        'password': "1234",
+        'password2': "1234",
+        'name': "booBar",
+        'telephone': "555555555",
+    }
+    body, status = user3.post(uri, data=data)
+    assert status == '200 OK'
+    assert "Please check your email." in body
+
+    user_valid = UserValidation.query.one()
+    assert user_valid.user.active is False
+
+    uri = '/validate_user/' + str(user_valid.token)
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert "Your new user is activate" in body
+    assert user_valid.user.active
