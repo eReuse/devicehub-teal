@@ -39,3 +39,6 @@ et_xmlfile==1.1.0 # pandas dependency
 
 # manual dependency
 marshmallow-enum==1.4.1
+
+# flask_mail dependency
+blinker==1.5
