@@ -77,8 +77,8 @@
             <div class="row pt-3">
               <div class="col">
                   <p>Please download the ISO file and the settings file of the
-                  version you want and follow these steps
-                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">steps</a></p>
+                  version you want and follow these 
+                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">steps</a>.</p>
               </div>
             </div>
           </div>
@@ -97,8 +97,8 @@
           <div class="pt-6 pb-2">
             <h5 class="card-title pb-0 fs-4">Usody Hardware Metadata 2022</h5>
             <p class="mb-5">
-              A certified collection of hardware details and testing reports<br />
-              <small>Desktops, Servers and Laptops</small>
+              A certified collection of hardware details and testing reports.<br />
+              <small>Desktops, Servers and Laptops.</small>
             </p>
 
             <div class="row">
@@ -142,7 +142,7 @@
             <h5 class="card-title pb-0 fs-4">Usody Data Erasure v14</h5>
             <p class="mb-5">
               A certified data erasure software to irreversibly removing data sored on hard drives.<br />
-              <small>Desktops, Servers and Laptops</small>
+              <small>Desktops, Servers and Laptops.</small>
             </p>
 
             <div class="row">
@@ -170,7 +170,7 @@
                   </p>              
                   <p>
                     Performs <strong>1</strong> pass overwriting one round using all zeros. 
-                    Compliant with <strong>NIST SP-800-88</strong>
+                    Compliant with <strong>NIST SP-800-88</strong>.
                   </p>
                   <a href="{{ url_for('workbench.settings') }}?opt=erease_basic" 
                   class="btn btn-primary" 
@@ -191,7 +191,7 @@
                     Performs <strong>1</strong> pass overwriting each sector with zeros and a final verification.
                     Compliant with <strong>HMG Infosec Standard 5 Baseline</strong>.
                   </p>              
-                  <a href="{{ url_for('workbench.settings') }}?opt=erease_sectors" 
+                  <a href="{{ url_for('workbench.settings') }}?opt=baseline_erease"
                   class="btn btn-primary" 
                   style="width: 100%;">
                   Download settings file
@@ -210,11 +210,11 @@
                     Performs <strong>3</strong> passes overwriting every sector with zeros and ones, and final verification.
                     Compliant with <strong>HMG Infosec Standard 5 Enhanced</strong>.
                   </p>           
-                  <span 
-                  class="btn btn-secondary" 
+                  <a href="{{ url_for('workbench.settings') }}?opt=enhanced_erease"
+                  class="btn btn-primary" 
                   style="width: 100%;">
                   Download settings file
-                  </span>
+                  </a>
                 </div>
               </div>
             </div>

@@ -43,7 +43,13 @@ class SettingsView(GenericMixin):
             form_kangaroo.save()
 
         self.opt = request.values.get('opt')
-        if self.opt in ['register', 'erease_basic', 'erease_sectors']:
+        options = [
+            'register',
+            'erease_basic',
+            'baseline_erease',
+            'enhanced_erease',
+        ]
+        if self.opt in options:
             return self.download()
 
         return flask.render_template(self.template_name, **self.context)
@@ -54,7 +60,7 @@ class SettingsView(GenericMixin):
             'token': self.get_token(),
             'url': url,
             'erease_basic': None,
-            'erease_sectors': None,
+            'baseline_erease': None,
         }
         # if is a v14 version
         # TODO when not use more v14, we can remove this if
@@ -63,10 +69,14 @@ class SettingsView(GenericMixin):
             self.wbContext['url'] = url
             self.wbContext['host'] = app.config['HOST']
             self.wbContext['schema'] = app.config['SCHEMA']
+
             if self.opt == 'erease_basic':
                 self.wbContext['erease_basic'] = True
-            if self.opt == 'erease_sectors':
-                self.wbContext['erease_sectors'] = True
+            if self.opt in ['baseline_erease', 'enhanced_erease']:
+                self.wbContext['baseline_erease'] = True
+                self.wbContext['erase_steps'] = 1
+            if self.opt == 'enhanced_erease':
+                self.wbContext['erase_steps'] = 3
 
         data = flask.render_template('workbench/wbSettings.ini', **self.wbContext)
         return self.response_download(data)
