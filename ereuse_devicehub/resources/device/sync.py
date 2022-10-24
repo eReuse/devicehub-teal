@@ -35,9 +35,10 @@ DEVICES_ALLOW_DUPLICITY = [
 err_motherboard = "Error: We have detected that a there is a device"
 err_motherboard += " in your inventory with this system UUID. "
 err_motherboard += "We proceed to block this snapshot to prevent its"
-err_motherboard += " its information from being updated incorrectly."
+err_motherboard += " information from being updated incorrectly."
 err_motherboard += " The solution we offer you to inventory this device "
 err_motherboard += "is to do it by creating a placeholder."
+
 
 class Sync:
     """Synchronizes the device and components with the database."""
