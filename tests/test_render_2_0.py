@@ -12,6 +12,7 @@ from flask_wtf.csrf import generate_csrf
 from ereuse_devicehub.client import UserClient, UserClientFlask
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.device.models import Device, Placeholder
 from ereuse_devicehub.resources.lot.models import Lot
@@ -2578,3 +2579,37 @@ def test_snapshot_is_server_erase(user3: UserClientFlask):
     assert snapshot2.is_server_erase
     assert snapshot in snapshot.device.actions
     assert snapshot2 in snapshot.device.actions
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_system_uuid_motherboard(user3: UserClientFlask):
+    # we want to do an snapshot log when there are the same system-uuid for
+    # 2 computers with diferent motherboard
+    snapshot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    device = snapshot.device
+
+    uri = '/inventory/upload-snapshot/'
+    file_name = 'real-eee-1001pxd.snapshot.12'
+    snapshot_json = conftest.yaml2json(file_name)
+    snapshot_json['uuid'] = 'c058e8d2-fb92-47cb-a4b7-522b75561136'
+    for c in snapshot_json['components']:
+        if c['type'] == 'Motherboard':
+            c['serialNumber'] = 'ABee0123456720'
+    b_snapshot = bytes(json.dumps(snapshot_json), 'utf-8')
+    file_snap = (BytesIO(b_snapshot), file_name)
+    user3.get(uri)
+
+    data = {
+        'snapshot': file_snap,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data, content_type="multipart/form-data")
+    snapshot2 = Snapshot.query.filter_by(uuid=snapshot_json['uuid']).first()
+    assert snapshot2 is None
+    for c in snapshot.device.components:
+        if c.type == 'Motherboard':
+            assert c.serial_number == 'eee0123456720'
+
+    txt = "We have detected that a there is a device in your inventory"
+    assert txt in SnapshotsLog.query.all()[-1].description
