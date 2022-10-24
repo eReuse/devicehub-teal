@@ -300,13 +300,13 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
 
             try:
                 snapshot_json = schema.load(snapshot_json)
+                response = self.build(snapshot_json)
             except ValidationError as err:
                 txt = "{}".format(err)
                 self.errors(txt=txt)
                 self.result[filename] = 'Error'
                 continue
 
-            response = self.build(snapshot_json)
             db.session.add(response)
             devices.append(response.device.binding.device)
 
