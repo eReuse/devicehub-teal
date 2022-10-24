@@ -1365,3 +1365,18 @@ def test_placeholder_actions(user: UserClient):
     assert dev.binding.device.actions == []
     assert len(dev.components[0].actions) == 3
     assert len(dev.binding.device.components[0].actions) == 0
+
+
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_system_uuid_motherboard(user: UserClient):
+    """This test the actions of a placeholder of one snapshot"""
+    s = yaml2json('real-eee-1001pxd.snapshot.12')
+    snap1, _ = user.post(s, res=Snapshot)
+
+    for c in s['components']:
+        if c['type'] == 'Motherboard':
+            c['serialNumber'] = 'ABee0123456720'
+
+    snap2, _ = user.post(s, res=Snapshot, status=422)
+    txt = "We have detected that a there is a device in your inventory"
+    assert txt in snap2['message'][0]
