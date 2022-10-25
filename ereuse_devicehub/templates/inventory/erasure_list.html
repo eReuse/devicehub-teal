@@ -71,9 +71,13 @@
                                />
                       </td>
                       <td>
+                        {% if ac.device.phid() %}
                         <a href="{{ url_for('inventory.device_details', id=ac.device.dhid)}}">
                           {{ ac.device.serial_number.upper() }}
                         </a>
+                        {% else %}
+                        {{ ac.device.serial_number.upper() }}
+                        {% endif %}
                       </td>
                       <td>
                         <a href="{{ url_for('inventory.export', export_id='snapshot') }}?id={{ ac.snapshot.uuid }}">
