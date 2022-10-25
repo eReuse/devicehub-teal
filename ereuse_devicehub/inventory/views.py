@@ -166,10 +166,14 @@ class DeviceDetailView(GenericMixin):
         )
 
         form_tags = TagDeviceForm(dhid=id)
+        placeholder = device.binding or device.placeholder
+        if not placeholder:
+            return NotFound()
+
         self.context.update(
             {
                 'device': device,
-                'placeholder': device.binding or device.placeholder,
+                'placeholder': placeholder,
                 'page_title': 'Device {}'.format(device.devicehub_id),
                 'form_tag_device': form_tags,
             }
