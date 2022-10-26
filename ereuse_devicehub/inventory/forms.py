@@ -353,7 +353,7 @@ class NewDeviceForm(FlaskForm):
     depth = FloatField('Depth', [validators.Optional()])
     variant = StringField('Variant', [validators.Optional()])
     sku = StringField('SKU', [validators.Optional()])
-    image = StringField('Image', [validators.Optional(), validators.URL()])
+    image = URLField('Image', [validators.Optional(), validators.URL()])
     imei = IntegerField('IMEI', [validators.Optional()])
     meid = StringField('MEID', [validators.Optional()])
     resolution = IntegerField('Resolution width', [validators.Optional()])
@@ -413,7 +413,8 @@ class NewDeviceForm(FlaskForm):
         self.depth.data = self._obj.depth
         self.variant.data = self._obj.variant
         self.sku.data = self._obj.sku
-        self.image.data = self._obj.image
+        if self._obj.image:
+            self.image.data = self._obj.image.to_text()
         if self._obj.type in ['Smartphone', 'Tablet', 'Cellphone']:
             self.imei.data = self._obj.imei
             self.meid.data = self._obj.meid
@@ -559,6 +560,8 @@ class NewDeviceForm(FlaskForm):
             device.imei = self.imei.data
             device.meid = self.meid.data
 
+        device.image = URL(self.image.data)
+
         device.placeholder = self.get_placeholder()
         db.session.add(device)
 
@@ -614,7 +617,7 @@ class NewDeviceForm(FlaskForm):
             self._obj.height = self.height.data
             self._obj.depth = self.depth.data
             self._obj.variant = self.variant.data
-            self._obj.image = self.image.data
+            self._obj.image = URL(self.image.data)
 
             if self._obj.type == 'ComputerMonitor':
                 self._obj.resolution_width = self.resolution.data
