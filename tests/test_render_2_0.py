@@ -2174,6 +2174,7 @@ def test_manual_binding(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_edit_and_binding(user3: UserClientFlask):
+    # TODO
     uri = '/inventory/device/add/'
     user3.get(uri)
 
@@ -2587,7 +2588,7 @@ def test_system_uuid_motherboard(user3: UserClientFlask):
     # we want to do an snapshot log when there are the same system-uuid for
     # 2 computers with diferent motherboard
     snapshot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
-    device = snapshot.device
+    # device = snapshot.device
 
     uri = '/inventory/upload-snapshot/'
     file_name = 'real-eee-1001pxd.snapshot.12'

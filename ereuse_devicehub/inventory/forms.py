@@ -413,7 +413,8 @@ class NewDeviceForm(FlaskForm):
         self.depth.data = self._obj.depth
         self.variant.data = self._obj.variant
         self.sku.data = self._obj.sku
-        self.image.data = self._obj.image.to_text()
+        if self._obj.image:
+            self.image.data = self._obj.image.to_text()
         if self._obj.type in ['Smartphone', 'Tablet', 'Cellphone']:
             self.imei.data = self._obj.imei
             self.meid.data = self._obj.meid
@@ -558,6 +559,8 @@ class NewDeviceForm(FlaskForm):
         if self.type.data in ['Smartphone', 'Tablet', 'Cellphone']:
             device.imei = self.imei.data
             device.meid = self.meid.data
+
+        device.image = URL(self.image.data)
 
         device.placeholder = self.get_placeholder()
         db.session.add(device)
