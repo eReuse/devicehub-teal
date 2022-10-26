@@ -16,7 +16,7 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.models import Transfer
 from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import Confirm, Revoke, Trade
-from ereuse_devicehub.resources.device.models import Computer, Device
+from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.lot.models import Lot, Path
 
 
@@ -302,6 +302,13 @@ class LotDeviceView(LotBaseChildrenView):
         devices = set(
             Device.query.filter(Device.id.in_(ids)).filter(Device.owner == g.user)
         )
+        devices = set()
+        dev_qry = Device.query.filter(Device.id.in_(ids)).filter(Device.owner == g.user)
+
+        for dev in dev_qry:
+            if isinstance(dev, DataStorage) and dev.parent:
+                continue
+            devices.add(dev)
 
         lot.devices.update(devices)
 

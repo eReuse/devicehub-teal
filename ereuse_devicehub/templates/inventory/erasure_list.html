@@ -49,6 +49,7 @@
                     <tr>
                       <th scope="col">Select</th>
                       <th scope="col">Data Storage Serial</th>
+                      <th scope="col">DHID</th>
                       <th scope="col">Snapshot ID</th>
                       <th scope="col">Type of Erasure</th>
                       <th scope="col">PHID Erasure Host</th>
@@ -77,6 +78,15 @@
                         </a>
                         {% else %}
                         {{ ac.device.serial_number.upper() }}
+                        {% endif %}
+                      </td>                      
+                      <td>
+                        {% if ac.device.phid() %}
+                        <a href="{{ url_for('inventory.device_details', id=ac.device.dhid)}}">
+                          {{ ac.device.dhid }}
+                        </a>
+                        {% else %}
+                        {{ ac.device.dhid }}
                         {% endif %}
                       </td>
                       <td>

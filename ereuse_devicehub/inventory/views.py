@@ -939,6 +939,7 @@ class ExportsView(View):
         cw.writerow(
             [
                 'Data Storage Serial',
+                'DHID',
                 'Snapshot ID',
                 'Type of Erasure',
                 'PHID Erasure Host',
@@ -958,6 +959,7 @@ class ExportsView(View):
         for ac in query:
             row = [
                 ac.device.serial_number.upper(),
+                ac.device.dhid,
                 ac.snapshot.uuid,
                 ac.type,
                 ac.get_phid(),
