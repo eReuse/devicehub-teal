@@ -46,7 +46,7 @@ def test_login(user: UserClient, app: Devicehub):
     body, status, headers = client.get('/login/')
     body = next(body).decode("utf-8")
     assert status == '200 OK'
-    assert "Login to Your Account" in body
+    assert "Sign in" in body
 
     data = {
         'email': user.email,
