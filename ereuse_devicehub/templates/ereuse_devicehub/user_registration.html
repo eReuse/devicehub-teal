@@ -1,6 +1,6 @@
 {% extends "ereuse_devicehub/base.html" %}
 
-{% block page_title %}Login{% endblock %}
+{% block page_title %}Create your account{% endblock %}
 
 {% block body %}
 <main>
@@ -12,8 +12,8 @@
           <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
 
             <div class="d-flex justify-content-center py-4">
-              <a href="{{ url_for('core.login') }}" class="logo d-flex align-items-center w-auto">
-                <img src="{{ url_for('static', filename='img/logo_usody_clock.png') }}" alt="">
+              <a href="{{ url_for('core.login') }}" class="d-flex align-items-center w-auto">
+                <img src="{{ url_for('static', filename='img/usody_logo_transparent_noicon-y-purple-120x41.png') }}" alt="">
               </a>
             </div><!-- End Logo -->
 
@@ -22,9 +22,8 @@
               <div class="card-body">
 
                 <div class="pt-4 pb-2">
-                  <h5 class="card-title text-center pb-0 fs-4">Register as a new User</h5>
+                  <h5 class="card-title text-center pb-0 fs-4 help">Create your account</h5>
                   {% if not form._token %}
-                  <p class="text-center small">Enter an Email & password for to do a new register.</p>
                   {% if form.form_errors %}
                   <p class="text-danger">
                     {% for error in form.form_errors %}
@@ -38,8 +37,18 @@
                   {{ form.csrf_token }}
 
                   <div class="col-12">
-                    <label for="yourEmail" class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" id="yourEmail" required value="{{ form.email.data|default('', true) }}">
+                    <input name="name" class="form-control" placeholder="Name *" id="name" required>
+                    {% if form.name.errors %}
+                    <p class="text-danger">
+                      {% for error in form.name.errors %}
+                        {{ error }}<br/>
+                      {% endfor %}
+                    </p>
+                    {% endif %}
+                  </div>
+
+                  <div class="col-12">
+                    <input type="email" name="email" placeholder="Email *" class="form-control" id="email" required value="{{ form.email.data|default('', true) }}">
                     <div class="invalid-feedback">Please enter your email.</div>
                     {% if form.email.errors %}
                     <p class="text-danger">
@@ -51,23 +60,29 @@
                   </div>
 
                   <div class="col-12">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" id="password" required>
+                    <div class="input-group">
+                      <input type="password" name="password" placeholder="Password *" class="form-control" id="password" required>
+                      <i class="input-group-text bi bi-eye" id="togglePassword" style="cursor: pointer"></i>
+                    </div>
                     <div class="invalid-feedback">Please enter a password!</div>
+                    {% if form.password.errors %}
+                    <p class="text-danger">
+                      {% for error in form.password.errors %}
+                        {{ error }}<br/>
+                      {% endfor %}
+                    </p>
+                    {% endif %}
                   </div>
 
                   <div class="col-12">
-                    <label for="password2" class="form-label">Password</label>
-                    <input type="password" name="password2" class="form-control" id="password2" required>
+                    <div class="input-group">
+                      <input type="password" name="password2" placeholder="Password *" class="form-control" id="password2" required>
+                      <i class="input-group-text bi bi-eye" id="togglePassword2" style="cursor: pointer"></i>
+                    </div>
                     <div class="invalid-feedback">Please enter a password again!</div>
-                  </div>
-
-                  <div class="col-12">
-                    <label for="name" class="form-label">Name</label>
-                    <input name="name" class="form-control" id="name" required>
-                    {% if form.name.errors %}
+                    {% if form.password2.errors %}
                     <p class="text-danger">
-                      {% for error in form.name.errors %}
+                      {% for error in form.password2.errors %}
                         {{ error }}<br/>
                       {% endfor %}
                     </p>
@@ -75,29 +90,29 @@
                   </div>
 
                   <div class="col-12">
-                    <label for="telephone" class="form-label">Telephone</label>
-                    <input type="tel" name="telephone" class="form-control" id="telephone" required>
-                    {% if form.telephone.errors %}
-                    <p class="text-danger">
-                      {% for error in form.telephone.errors %}
-                        {{ error }}<br/>
-                      {% endfor %}
-                    </p>
-                    {% endif %}
+                    <small><i class="bi bi-info-circle"></i> Password must be at least 6 characters.</small>
                   </div>
 
                   <div class="col-12">
-                    <button class="btn btn-primary w-100" type="submit">Register</button>
+                    <input type="checkbox" name="policy" class="form-check-input" id="policy" required>
+                    <span>I accept the 
+                      <a href="https://pangea.org/aviso-legal/" target="_blank">terms</a> and 
+                      <a href="https://pangea.org/es/politica-de-privacidad/" target="_blank">privacy policy</a>
+                    </span>
+                  </div>
+
+                  <div class="col-12">
+                    <button class="btn btn-primary w-100" type="submit">Next</button>
                   </div>
                   <div class="col-12">
                     <p class="small mb-0">
-                      You have account? <a href="{{ url_for('core.login') }}">do Login</a>
+                      Already have an account? <a href="{{ url_for('core.login') }}">Sign in</a>
                     </p>
                   </div>
                 </form>
                 {% else %}
                 </div>
-                <div class="col-12 p-4">
+                <div class="col-12 p-4 text-center">
                   We have sent you a validation email.<br />
                   Please check your email.
                 </div>
@@ -107,7 +122,9 @@
             </div>
 
             <div class="credits">
-              Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+              <a href="https://help.usody.com/en/getting-started/introduction/" target="_blank">Help</a> | 
+              <a href="https://pangea.org/es/politica-de-privacidad/" target="_blank">Privacy</a> | 
+              <a href="https://pangea.org/aviso-legal/" target="_blank">Terms</a>
             </div>
 
           </div>
@@ -118,4 +135,38 @@
 
   </div>
 </main><!-- End #main -->
-{% endblock body %}
+<script>
+const togglePassword = document.querySelector('#togglePassword');
+const password = document.querySelector('#password');
+
+togglePassword.addEventListener('click', function (e) {
+    // toggle the type attribute
+    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+    // toggle the eye slash icon
+    if(type == "password"){
+    this.classList.remove('bi-eye-slash');
+    this.classList.add('bi-eye');
+    } else if(type == "text"){
+    this.classList.remove('bi-eye');
+    this.classList.add('bi-eye-slash');
+    }
+    password.setAttribute('type', type);
+});
+
+const togglePassword2 = document.querySelector('#togglePassword2');
+const password2 = document.querySelector('#password2');
+
+togglePassword2.addEventListener('click', function (e) {
+    // toggle the type attribute
+    const type = password2.getAttribute('type') === 'password' ? 'text' : 'password';
+    // toggle the eye slash icon
+    if(type == "password"){
+    this.classList.remove('bi-eye-slash');
+    this.classList.add('bi-eye');
+    } else if(type == "text"){
+    this.classList.remove('bi-eye');
+    this.classList.add('bi-eye-slash');
+    }
+    password2.setAttribute('type', type);
+});
+</script>{% endblock body %}

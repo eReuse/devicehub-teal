@@ -12,8 +12,8 @@
           <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
 
             <div class="d-flex justify-content-center py-4">
-              <a href="{{ url_for('core.login') }}" class="logo d-flex align-items-center w-auto">
-                <img src="{{ url_for('static', filename='img/logo_usody_clock.png') }}" alt="">
+              <a href="{{ url_for('core.login') }}" class="d-flex align-items-center w-auto">
+                <img src="{{ url_for('static', filename='img/usody_logo_transparent_noicon-y-purple-120x41.png') }}" alt="">
               </a>
             </div><!-- End Logo -->
 
@@ -25,9 +25,9 @@
                 <div class="pt-4 pb-2">
                   <h5 class="card-title text-center pb-0 fs-4">User is valid</h5>
 
-                  <div class="col-12">
-                    Your new user is activate.</br />
-                    Now you can do <a style="color: #cc0066;" href="{{ url_for('core.login') }}">Login</a> and entry.
+                  <div class="col-12 text-center">
+                    You have successfully activated your account!<br />
+                    <a style="color: #cc0066;" href="{{ url_for('core.login') }}">Sign in</a>.
                   </div>
                 </div>
                 {% else %}
@@ -51,7 +51,9 @@
             </div>
 
             <div class="credits">
-              Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+              <a href="https://help.usody.com/en/getting-started/introduction/" target="_blank">Help</a> | 
+              <a href="https://pangea.org/es/politica-de-privacidad/" target="_blank">Privacy</a> | 
+              <a href="https://pangea.org/aviso-legal/" target="_blank">Terms</a>
             </div>
 
           </div>

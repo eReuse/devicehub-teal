@@ -2,14 +2,7 @@ from flask import current_app as app
 from flask import g, render_template
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import (
-    BooleanField,
-    EmailField,
-    PasswordField,
-    StringField,
-    TelField,
-    validators,
-)
+from wtforms import BooleanField, EmailField, PasswordField, StringField, validators
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.mail.sender import send_email
@@ -117,13 +110,14 @@ class UserNewRegisterForm(FlaskForm):
     email = EmailField(
         'Email Address', [validators.DataRequired(), validators.Length(min=6, max=35)]
     )
-    password = PasswordField('Password', [validators.DataRequired()])
-    password2 = PasswordField('Password', [validators.DataRequired()])
+    password = PasswordField(
+        'Password', [validators.DataRequired(), validators.Length(min=6, max=35)]
+    )
+    password2 = PasswordField(
+        'Password', [validators.DataRequired(), validators.Length(min=6, max=35)]
+    )
     name = StringField(
         'Name', [validators.DataRequired(), validators.Length(min=3, max=35)]
-    )
-    telephone = TelField(
-        'Telephone', [validators.DataRequired(), validators.Length(min=9, max=35)]
     )
 
     error_messages = {
@@ -171,7 +165,8 @@ class UserNewRegisterForm(FlaskForm):
         user = User(email=self.email.data, password=self.password.data, active=False)
 
         person = Person(
-            email=self.email.data, name=self.name.data, telephone=self.telephone.data
+            email=self.email.data,
+            name=self.name.data,
         )
 
         user.individuals.add(person)
@@ -189,17 +184,23 @@ class UserNewRegisterForm(FlaskForm):
         token = self._token
         url = f'https://{ host }/validate_user/{ token }'
         template = 'ereuse_devicehub/email_validation.txt'
-        message = render_template(template, url=url)
-        subject = "Validate email for register in Usody.com"
+        template_html = 'ereuse_devicehub/email_validation.html'
+        context = {
+            'name': self.name.data,
+            'host': host,
+            'url': url,
+        }
+        subject = "Please activate your Usody account"
+        message = render_template(template, **context)
+        message_html = render_template(template_html, **context)
 
-        send_email(subject, [self.email.data], message)
+        send_email(subject, [self.email.data], message, html_body=message_html)
 
     def send_mail_admin(self, user):
         person = next(iter(user.individuals))
         context = {
             'email': person.email,
             'name': person.name,
-            'telephone': person.telephone,
         }
         template = 'ereuse_devicehub/email_admin_new_user.txt'
         message = render_template(template, **context)
