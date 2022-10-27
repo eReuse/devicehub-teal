@@ -23,6 +23,8 @@ class BillingIndexView(View):
 
     def dispatch_request(self):
         # TODO (@slamora): replace hardcoded and get current time
+        # https://dateutil.readthedocs.io/en/stable/_modules/dateutil/tz/tz.html?highlight=now()
+        #        datetime.now(tzutc())
         year = 2022
         month = 9
         snapshot_register, snapshot_update = self.count_snapshot(year, month)
@@ -32,6 +34,7 @@ class BillingIndexView(View):
             "month": month,
             "snapshot_register": snapshot_register,
             "snapshot_update": snapshot_update,
+            # TODO (@slamora): data erasure count
         }
         context = {
             "current_month_usage": current_month_usage,
