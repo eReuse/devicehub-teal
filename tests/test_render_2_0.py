@@ -2586,14 +2586,15 @@ def test_snapshot_is_server_erase(user3: UserClientFlask):
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_new_register(user3: UserClientFlask, app: Devicehub):
     uri = '/new_register/'
-    user3.get(uri)
+    body, status = user3.get(uri)
+    assert "Create your account" in body
+
     data = {
         'csrf_token': generate_csrf(),
         'email': "foo@bar.cxm",
-        'password': "1234",
-        'password2': "1234",
+        'password': "123456",
+        'password2': "123456",
         'name': "booBar",
-        'telephone': "555555555",
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
@@ -2605,7 +2606,7 @@ def test_new_register(user3: UserClientFlask, app: Devicehub):
     uri = '/validate_user/' + str(user_valid.token)
     body, status = user3.get(uri)
     assert status == '200 OK'
-    assert "Your new user is activate" in body
+    assert "You have successfully activated your account!" in body
     assert user_valid.user.active
 
 
