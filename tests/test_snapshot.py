@@ -1001,7 +1001,7 @@ def test_snapshot_wb_lite(user: UserClient):
     ssd = [x for x in dev.components if x.type == 'SolidStateDrive'][0]
 
     assert dev.manufacturer == 'lenovo'
-    assert body['sid'] == "MLKO1Y0R55XZM051WQ5KJM01RY44Q"
+    assert dev.dhid in body['public_url']
     assert ssd.serial_number == 's35anx0j401001'
     assert res.status == '201 CREATED'
     assert '00:28:f8:a6:d5:7e' in dev.hid
@@ -1020,11 +1020,11 @@ def test_snapshot_wb_lite_qemu(user: UserClient):
     snapshot = file_json("qemu-cc9927a9-55ad-4937-b36b-7185147d9fa9.json")
     body, res = user.post(snapshot, uri="/api/inventory/")
 
-    assert body['sid'] == "VL0L5"
     assert res.status == '201 CREATED'
 
     dev = m.Device.query.filter_by(devicehub_id=body['dhid']).one()
     dev = dev.placeholder.binding
+    assert dev.dhid in body['public_url']
     assert dev.manufacturer == 'qemu'
     assert dev.model == 'standard'
     assert dev.serial_number is None
@@ -1170,7 +1170,8 @@ def test_snapshot_lite_minimum(user: UserClient):
         },
     }
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
-    assert bodyLite['sid'] == 'MLKO1'
+    dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
+    assert dev.dhid in bodyLite['public_url']
     assert res.status_code == 201
 
 
@@ -1197,10 +1198,10 @@ def test_snapshot_lite_error_in_components(user: UserClient):
         },
     }
     bodyLite, res = user.post(snapshot_lite, uri="/api/inventory/")
-    assert bodyLite['sid'] == 'MLKO1'
     assert res.status_code == 201
 
     dev = m.Device.query.filter_by(devicehub_id=bodyLite['dhid']).one()
+    assert dev.dhid in bodyLite['public_url']
     assert 'Motherboard' not in [x.type for x in dev.components]
     error = SnapshotsLog.query.all()
     assert 'StopIteration' in error[0].description
