@@ -72,11 +72,13 @@ class InventoryView(LoginMixin, SnapshotMixin):
 
         db.session().final_flush()
         db.session.commit()
+        url = "https://{}/".format(app.config['HOST'])
+        public_url = "{}{}".format(url.strip("/"), snapshot.device.url.to_text())
         self.response = jsonify(
             {
-                'url': snapshot.device.url.to_text(),
                 'dhid': snapshot.device.dhid,
-                'sid': snapshot.sid,
+                'url': url,
+                'public_url': public_url,
             }
         )
         self.response.status_code = 201
