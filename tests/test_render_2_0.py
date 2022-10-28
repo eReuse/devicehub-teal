@@ -1366,8 +1366,9 @@ def test_wb_settings_register(user3: UserClientFlask):
 
     assert status == '200 OK'
     assert "TOKEN = " in body
-    assert "URL = https://" in body
+    assert 'URL = https://' in body
     assert "/api/inventory/" in body
+    assert "Basic Metadata" in body
 
 
 @pytest.mark.mvp

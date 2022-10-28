@@ -61,6 +61,7 @@ class SettingsView(GenericMixin):
             'url': url,
             'erease_basic': None,
             'baseline_erease': None,
+            'version': "Basic Metadata",
         }
         # if is a v14 version
         # TODO when not use more v14, we can remove this if
@@ -72,11 +73,14 @@ class SettingsView(GenericMixin):
 
             if self.opt == 'erease_basic':
                 self.wbContext['erease_basic'] = True
+                self.wbContext['version'] = "Basic Erasure"
             if self.opt in ['baseline_erease', 'enhanced_erease']:
                 self.wbContext['baseline_erease'] = True
                 self.wbContext['erase_steps'] = 1
+                self.wbContext['version'] = "Baseline Secure Erasure"
             if self.opt == 'enhanced_erease':
                 self.wbContext['erase_steps'] = 3
+                self.wbContext['version'] = "Enhanced Secure Erasure"
 
         data = flask.render_template('workbench/wbSettings.ini', **self.wbContext)
         return self.response_download(data)
