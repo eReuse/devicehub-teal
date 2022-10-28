@@ -1,15 +1,17 @@
 import flask
-from flask import Blueprint, g
+from flask import Blueprint
+from flask import current_app as app
+from flask import g
 from flask.views import View
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import or_
 
 from ereuse_devicehub import __version__, messages
 from ereuse_devicehub.db import db
-from ereuse_devicehub.forms import LoginForm, PasswordForm, UserNewRegisterForm
+from ereuse_devicehub.forms import LoginForm, PasswordForm
 from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.lot.models import Lot
-from ereuse_devicehub.resources.user.models import User, UserValidation
+from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.utils import is_safe_url
 
 core = Blueprint('core', __name__)
@@ -39,8 +41,14 @@ class LoginView(View):
                 return flask.abort(400)
 
             return flask.redirect(next_url or flask.url_for('inventory.devicelist'))
-        context = {'form': form, 'version': __version__}
-        return flask.render_template('ereuse_devicehub/user_login.html', **context)
+
+        url_register = "#"
+        if 'register' in app.blueprints.keys():
+            url_register = flask.url_for('register.user-registration')
+
+        context = {'form': form, 'version': __version__, 'url_register': url_register}
+
+        return flask.render_template(self.template_name, **context)
 
 
 class LogoutView(View):
@@ -108,44 +116,7 @@ class UserPasswordView(View):
         return flask.redirect(flask.url_for('core.user-profile'))
 
 
-class UserRegistrationView(View):
-    methods = ['GET', 'POST']
-    template_name = 'ereuse_devicehub/user_registration.html'
-
-    def dispatch_request(self):
-        form = UserNewRegisterForm()
-        if form.validate_on_submit():
-            form.save()
-        context = {'form': form, 'version': __version__}
-        return flask.render_template(self.template_name, **context)
-
-
-class UserValidationView(View):
-    methods = ['GET']
-    template_name = 'ereuse_devicehub/user_validation.html'
-
-    def dispatch_request(self, token):
-        context = {'is_valid': self.is_valid(token), 'version': __version__}
-        return flask.render_template(self.template_name, **context)
-
-    def is_valid(self, token):
-        user_valid = UserValidation.query.filter_by(token=token).first()
-        if not user_valid:
-            return False
-        user = user_valid.user
-        user.active = True
-        db.session.commit()
-        return True
-
-
 core.add_url_rule('/login/', view_func=LoginView.as_view('login'))
 core.add_url_rule('/logout/', view_func=LogoutView.as_view('logout'))
 core.add_url_rule('/profile/', view_func=UserProfileView.as_view('user-profile'))
-core.add_url_rule(
-    '/new_register/', view_func=UserRegistrationView.as_view('user-registration')
-)
-core.add_url_rule(
-    '/validate_user/<uuid:token>',
-    view_func=UserValidationView.as_view('user-validation'),
-)
 core.add_url_rule('/set_password/', view_func=UserPasswordView.as_view('set-password'))

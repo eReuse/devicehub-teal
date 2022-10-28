@@ -1,4 +1,0 @@
-A new user has been registered. These are your data
-Name: {{ name }}
-Telephone: {{ telephone }}
-Email: {{ email }}

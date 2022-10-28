@@ -22,6 +22,7 @@ from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.inventory.views import devices
 from ereuse_devicehub.labels.views import labels
 from ereuse_devicehub.mail.flask_mail import Mail
+from ereuse_devicehub.register.views import register
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.enums import SessionType
 from ereuse_devicehub.resources.tag import Tag
@@ -65,6 +66,7 @@ def _app(config: TestConfig) -> Devicehub:
     app.register_blueprint(labels)
     app.register_blueprint(api)
     app.register_blueprint(workbench)
+    app.register_blueprint(register)
     app.config["SQLALCHEMY_RECORD_QUERIES"] = True
     app.config['PROFILE'] = True
     # app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
