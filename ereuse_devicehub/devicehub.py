@@ -15,6 +15,7 @@ from teal.teal import Teal
 
 from ereuse_devicehub.auth import Auth
 from ereuse_devicehub.client import Client, UserClient
+
 # from ereuse_devicehub.commands.reports import Report
 from ereuse_devicehub.commands.users import GetToken
 from ereuse_devicehub.config import DevicehubConfig

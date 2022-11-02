@@ -61,9 +61,9 @@ class DocumentView(DeviceView):
           200:
             description: Return the collection or the specific one.
         """
-        args = self.QUERY_PARSER.parse(self.find_args,
-                                       flask.request,
-                                       locations=('querystring',))
+        args = self.QUERY_PARSER.parse(
+            self.find_args, flask.request, locations=('querystring',)
+        )
         ids = []
         if 'filter' in request.args:
             filters = json.loads(request.args.get('filter', {}))
@@ -112,7 +112,8 @@ class DocumentView(DeviceView):
             template = self.erasure(query)
         if args.get('format') == Format.PDF:
             res = flask_weasyprint.render_pdf(
-                flask_weasyprint.HTML(string=template), download_filename='{}.pdf'.format(type)
+                flask_weasyprint.HTML(string=template),
+                download_filename='{}.pdf'.format(type),
             )
             insert_hash(res.data)
         else:
@@ -139,7 +140,7 @@ class DocumentView(DeviceView):
         params = {
             'title': 'Erasure Certificate',
             'erasures': tuple(erasures()),
-            'url_pdf': url_pdf.to_text()
+            'url_pdf': url_pdf.to_text(),
         }
         return flask.render_template('documents/erasure.html', **params)
 
@@ -158,7 +159,13 @@ class DevicesDocumentView(DeviceView):
     def generate_post_csv(self, query):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
+        cw = csv.writer(
+            data,
+            delimiter=';',
+            lineterminator="\n",
+            quotechar='"',
+            quoting=csv.QUOTE_ALL,
+        )
         first = True
         document_ids = self.get_documents_id()
         for device in query:
@@ -192,7 +199,13 @@ class ActionsDocumentView(DeviceView):
     def generate_post_csv(self, query):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
+        cw = csv.writer(
+            data,
+            delimiter=';',
+            lineterminator="\n",
+            quotechar='"',
+            quoting=csv.QUOTE_ALL,
+        )
         first = True
         devs_id = []
         for device in query:
@@ -203,7 +216,9 @@ class ActionsDocumentView(DeviceView):
                     cw.writerow(d.keys())
                     first = False
                 cw.writerow(d.values())
-        query_trade = Trade.query.filter(Trade.devices.any(Device.id.in_(devs_id))).all()
+        query_trade = Trade.query.filter(
+            Trade.devices.any(Device.id.in_(devs_id))
+        ).all()
 
         lot_id = request.args.get('lot')
         if lot_id and not query_trade:
@@ -224,7 +239,9 @@ class ActionsDocumentView(DeviceView):
         bfile = data.getvalue().encode('utf-8')
         output = make_response(bfile)
         insert_hash(bfile)
-        output.headers['Content-Disposition'] = 'attachment; filename=actions_export.csv'
+        output.headers[
+            'Content-Disposition'
+        ] = 'attachment; filename=actions_export.csv'
         output.headers['Content-type'] = 'text/csv'
         return output
 
@@ -276,7 +293,13 @@ class StockDocumentView(DeviceView):
     def generate_post_csv(self, query):
         """Get device query and put information in csv format."""
         data = StringIO()
-        cw = csv.writer(data, delimiter=';', lineterminator="\n", quotechar='"', quoting=csv.QUOTE_ALL)
+        cw = csv.writer(
+            data,
+            delimiter=';',
+            lineterminator="\n",
+            quotechar='"',
+            quoting=csv.QUOTE_ALL,
+        )
         first = True
         for device in query:
             d = StockRow(device)
@@ -310,6 +333,7 @@ class StampsView(View):
     This view render one public ans static page for see the links for to do the check
     of one csv file
     """
+
     def get_url_path(self):
         url = urlutils.URL(request.url)
         url.normalize()
@@ -318,8 +342,9 @@ class StampsView(View):
 
     def get(self):
         result = ('', '')
-        return flask.render_template('documents/stamp.html', rq_url=self.get_url_path(),
-                result=result)
+        return flask.render_template(
+            'documents/stamp.html', rq_url=self.get_url_path(), result=result
+        )
 
     def post(self):
         result = ('', '')
@@ -330,18 +355,26 @@ class StampsView(View):
             ok = '100% coincidence. The attached file contains data 100% existing in \
                   to our backend'
             result = ('Bad', bad)
-            mime = ['text/csv', 'application/pdf', 'text/plain', 'text/markdown',
-                    'image/jpeg', 'image/png', 'text/html',
-                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'application/vnd.oasis.opendocument.spreadsheet',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    'application/msword']
+            mime = [
+                'text/csv',
+                'application/pdf',
+                'text/plain',
+                'text/markdown',
+                'image/jpeg',
+                'image/png',
+                'text/html',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.oasis.opendocument.spreadsheet',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/msword',
+            ]
             if file_check.mimetype in mime:
                 if verify_hash(file_check):
                     result = ('Ok', ok)
 
-        return flask.render_template('documents/stamp.html', rq_url=self.get_url_path(),
-                result=result)
+        return flask.render_template(
+            'documents/stamp.html', rq_url=self.get_url_path(), result=result
+        )
 
 
 class WbConfDocumentView(DeviceView):
@@ -349,10 +382,11 @@ class WbConfDocumentView(DeviceView):
         if not wbtype.lower() in ['usodyrate', 'usodywipe']:
             return jsonify('')
 
-        data = {'token': self.get_token(),
-                'host': app.config['HOST'],
-                'inventory': app.config['SCHEMA']
-                }
+        data = {
+            'token': self.get_token(),
+            'host': app.config['HOST'],
+            'inventory': app.config['SCHEMA'],
+        }
         data['erase'] = False
         # data['erase'] = True if wbtype == 'usodywipe' else False
 
@@ -387,18 +421,31 @@ class DocumentDef(Resource):
     VIEW = None  # We do not want to create default / documents endpoint
     AUTH = False
 
-    def __init__(self, app,
-                 import_name=__name__,
-                 static_folder='static',
-                 static_url_path=None,
-                 template_folder='templates',
-                 url_prefix=None,
-                 subdomain=None,
-                 url_defaults=None,
-                 root_path=None,
-                 cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder='static',
+        static_url_path=None,
+        template_folder='templates',
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
         d = {'id': None}
         get = {'GET'}
 
@@ -409,12 +456,15 @@ class DocumentDef(Resource):
             view = app.auth.requires_auth(view)
 
         self.add_url_rule('/erasures/', defaults=d, view_func=view, methods=get)
-        self.add_url_rule('/erasures/<{}:{}>'.format(self.ID_CONVERTER.value, self.ID_NAME),
-                          view_func=view, methods=get)
+        self.add_url_rule(
+            '/erasures/<{}:{}>'.format(self.ID_CONVERTER.value, self.ID_NAME),
+            view_func=view,
+            methods=get,
+        )
 
-        devices_view = DevicesDocumentView.as_view('devicesDocumentView',
-                                                   definition=self,
-                                                   auth=app.auth)
+        devices_view = DevicesDocumentView.as_view(
+            'devicesDocumentView', definition=self, auth=app.auth
+        )
         devices_view = app.auth.requires_auth(devices_view)
 
         stock_view = StockDocumentView.as_view('stockDocumentView', definition=self)
@@ -426,7 +476,9 @@ class DocumentDef(Resource):
         lots_view = app.auth.requires_auth(lots_view)
         self.add_url_rule('/lots/', defaults=d, view_func=lots_view, methods=get)
 
-        stock_view = StockDocumentView.as_view('stockDocumentView', definition=self, auth=app.auth)
+        stock_view = StockDocumentView.as_view(
+            'stockDocumentView', definition=self, auth=app.auth
+        )
         stock_view = app.auth.requires_auth(stock_view)
         self.add_url_rule('/stock/', defaults=d, view_func=stock_view, methods=get)
 
@@ -434,16 +486,18 @@ class DocumentDef(Resource):
         self.add_url_rule('/check/', defaults={}, view_func=check_view, methods=get)
 
         stamps_view = StampsView.as_view('StampsView', definition=self, auth=app.auth)
-        self.add_url_rule('/stamps/', defaults={}, view_func=stamps_view, methods={'GET', 'POST'})
+        self.add_url_rule(
+            '/stamps/', defaults={}, view_func=stamps_view, methods={'GET', 'POST'}
+        )
 
-        actions_view = ActionsDocumentView.as_view('ActionsDocumentView',
-                                                   definition=self,
-                                                   auth=app.auth)
+        actions_view = ActionsDocumentView.as_view(
+            'ActionsDocumentView', definition=self, auth=app.auth
+        )
         actions_view = app.auth.requires_auth(actions_view)
         self.add_url_rule('/actions/', defaults=d, view_func=actions_view, methods=get)
 
-        wbconf_view = WbConfDocumentView.as_view('WbConfDocumentView',
-                                                  definition=self,
-                                                  auth=app.auth)
+        wbconf_view = WbConfDocumentView.as_view(
+            'WbConfDocumentView', definition=self, auth=app.auth
+        )
         wbconf_view = app.auth.requires_auth(wbconf_view)
         self.add_url_rule('/wbconf/<string:wbtype>', view_func=wbconf_view, methods=get)
