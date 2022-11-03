@@ -310,7 +310,25 @@ class Sync:
     def create_placeholder(device: Device):
         """If the device is new, we need create automaticaly a new placeholder"""
         if device.binding:
+            for c in device.components:
+                if c.phid():
+                    continue
+                c_dict = copy.copy(c.__dict__)
+                c_dict.pop('_sa_instance_state')
+                c_dict.pop('id', None)
+                c_dict.pop('devicehub_id', None)
+                c_dict.pop('actions_multiple', None)
+                c_dict.pop('actions_one', None)
+                c_placeholder = c.__class__(**c_dict)
+                c_placeholder.parent = c.parent.binding.device
+                c.parent = device
+                component_placeholder = Placeholder(
+                    device=c_placeholder, binding=c, is_abstract=True
+                )
+                db.session.add(c_placeholder)
+                db.session.add(component_placeholder)
             return
+
         dict_device = copy.copy(device.__dict__)
         dict_device.pop('_sa_instance_state')
         dict_device.pop('id', None)
