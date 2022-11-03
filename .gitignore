@@ -127,3 +127,8 @@ yarn.lock
 # ESLint Report
 eslint_report.json
 
+modules/
+tmp/
+.env*
+bin/
+env*

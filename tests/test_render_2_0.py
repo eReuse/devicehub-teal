@@ -1,10 +1,11 @@
 import datetime
+import pytest
 import json
+
 from io import BytesIO
 from pathlib import Path
 from uuid import UUID
 
-import pytest
 from flask import g
 from flask.testing import FlaskClient
 from flask_wtf.csrf import generate_csrf
