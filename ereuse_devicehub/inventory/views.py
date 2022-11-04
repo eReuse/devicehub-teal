@@ -829,6 +829,7 @@ class ExportsView(View):
             'certificates': self.erasure,
             'lots': self.lots_export,
             'devices_lots': self.devices_lots_export,
+            'obada_standard': self.obada_standard_export,
             'snapshot': self.snapshot,
         }
 
@@ -871,6 +872,34 @@ class ExportsView(View):
             cw.writerow(d.values())
 
         return self.response_csv(data, "export.csv")
+
+    def obada_standard_export(self):
+        """Get device information for Obada Standard."""
+        data = StringIO()
+        cw = csv.writer(
+            data,
+            delimiter=';',
+            lineterminator="\n",
+            quotechar='"',
+            quoting=csv.QUOTE_ALL,
+        )
+
+        cw.writerow(['Manufacturer', 'Model', 'Serial Number'])
+
+        for device in self.find_devices():
+            if device.placeholder:
+                if not device.placeholder.binding:
+                    continue
+                device = device.placeholder.binding
+
+            d = [
+                device.manufacturer,
+                device.model,
+                device.serial_number,
+            ]
+            cw.writerow(d)
+
+        return self.response_csv(data, "obada_standard.csv")
 
     def metrics(self):
         """Get device query and put information in csv format."""

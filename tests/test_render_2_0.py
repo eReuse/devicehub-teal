@@ -1,11 +1,10 @@
 import datetime
-import pytest
 import json
-
 from io import BytesIO
 from pathlib import Path
 from uuid import UUID
 
+import pytest
 from flask import g
 from flask.testing import FlaskClient
 from flask_wtf.csrf import generate_csrf
@@ -277,6 +276,28 @@ def test_export_devices(user3: UserClientFlask):
     assert (
         fixture_csv[1][98:] == export_csv[1][98:]
     ), 'Computer information are not equal'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_export_obada_standard(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    uri = "/inventory/export/obada_standard/?ids={id}".format(
+        id=snap.device.devicehub_id
+    )
+
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+
+    export_csv = [line.split(";") for line in body.split("\n")]
+
+    with Path(__file__).parent.joinpath('files').joinpath(
+        'export_obada_standard.csv'
+    ).open() as csv_file:
+        fixture_csv = [line.split(";") for line in csv_file.read().split("\n")]
+
+    assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
+    assert fixture_csv[1] == export_csv[1], 'body are not equal'
 
 
 @pytest.mark.mvp
