@@ -30,6 +30,9 @@ def clone_device(device):
     new_device.devicehub_id = old_devicehub_id
     device.devicehub_id = None
     new_device.owner = device.owner
+    if device.parent and device.parent.binding:
+        new_device.parent = device.parent.binding.device
+
     db.session.add(new_device)
 
     placeholder = Placeholder(
