@@ -55,7 +55,7 @@ class SettingsView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
     def download(self):
-        url = "https://{}/api/inventory/".format(app.config['HOST'])
+        url = "https://{}/api/inventory/".format(app.config['API_HOST'])
         self.wbContext = {
             'token': self.get_token(),
             'url': url,
@@ -65,7 +65,7 @@ class SettingsView(GenericMixin):
         # if is a v14 version
         # TODO when not use more v14, we can remove this if
         if 'erease' in self.opt:
-            url = "https://{}/actions/".format(app.config['HOST'])
+            url = "https://{}/actions/".format(app.config['API_HOST'])
             self.wbContext['url'] = url
             self.wbContext['host'] = app.config['HOST']
             self.wbContext['schema'] = app.config['SCHEMA']
