@@ -68,6 +68,7 @@ class SettingsView(GenericMixin):
             url = "https://{}/actions/".format(app.config['API_HOST'])
             self.wbContext['url'] = url
             self.wbContext['host'] = app.config['HOST']
+            self.wbContext['api_host'] = app.config['API_HOST']
             self.wbContext['schema'] = app.config['SCHEMA']
 
             if self.opt == 'erease_basic':
