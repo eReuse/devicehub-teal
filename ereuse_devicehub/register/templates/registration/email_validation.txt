@@ -1,7 +1,0 @@
-Welcome to Usody.com, {{ name }}!
-
-Please confirm your account by clicking on the following link: {{ url }}
-
---
-Plaça Eusebi Güell 6-7, Edifici Vèrtex (UPC), planta 0, Barcelona 08034, Spain    
-Associació Pangea – Coordinadora Comunicació per a la Cooperació  - NIF: G-60437761
