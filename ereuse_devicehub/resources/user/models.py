@@ -119,19 +119,3 @@ class Session(Thing):
 
     def __str__(self) -> str:
         return '{0.token}'.format(self)
-
-
-class UserValidation(Thing):
-    id = Column(BigInteger, Sequence('user_validation_seq'), primary_key=True)
-    expired = Column(BigInteger, default=0)
-    joined_at = db.Column(db.DateTime())
-    token = Column(UUID(as_uuid=True), default=uuid4, unique=True, nullable=False)
-    user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(User.id))
-    user = db.relationship(
-        User,
-        backref=db.backref('user_validation', lazy=True, collection_class=set),
-        collection_class=set,
-    )
-
-    def __str__(self) -> str:
-        return '{0.token}'.format(self)
