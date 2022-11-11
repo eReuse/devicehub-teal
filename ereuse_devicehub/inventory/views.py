@@ -878,10 +878,10 @@ class ExportsView(View):
         data = StringIO()
         cw = csv.writer(
             data,
-            delimiter=';',
+            delimiter=',',
             lineterminator="\n",
-            quotechar='"',
-            quoting=csv.QUOTE_ALL,
+            quotechar='',
+            quoting=csv.QUOTE_NONE,
         )
 
         cw.writerow(['Manufacturer', 'Model', 'Serial Number'])
