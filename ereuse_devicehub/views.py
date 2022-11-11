@@ -43,10 +43,20 @@ class LoginView(View):
             return flask.redirect(next_url or flask.url_for('inventory.devicelist'))
 
         url_register = "#"
+        url_reset_password = "#"
+
         if 'register' in app.blueprints.keys():
             url_register = flask.url_for('register.user-registration')
 
-        context = {'form': form, 'version': __version__, 'url_register': url_register}
+        if 'reset_password' in app.blueprints.keys():
+            url_reset_password = flask.url_for('reset_password.reset-password')
+
+        context = {
+            'form': form,
+            'version': __version__,
+            'url_register': url_register,
+            'url_reset_password': url_reset_password,
+        }
 
         return flask.render_template(self.template_name, **context)
 
