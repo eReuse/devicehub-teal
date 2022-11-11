@@ -21,7 +21,7 @@
 
               <div class="card-body">
 
-                <div class="pt-4 pb-2">
+                <div class="pt-2 pb-3">
                   <h5 class="card-title text-center pb-0 fs-4 help">Sign in</h5>
                   {% if form.form_errors %}
                   <p class="text-danger">
@@ -62,6 +62,7 @@
                   </div>
                   <div class="col-12">
                     <p class="small mb-0">Don't have account? <a href="{{ url_register }}">Create an account</a></p>
+                    <p class="small mb-0">Forgot password? <a href="{{ url_reset_password }}">Reset your password</a></p>
                   </div>
                 </form>
 
