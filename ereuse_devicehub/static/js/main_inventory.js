@@ -21,7 +21,7 @@ $(document).ready(() => {
 class TableController {
     static #tableRows = () => table.activeRows.length > 0 ? table.activeRows : [];
 
-    static #tableRowsPage = () => table.pages[table.rows().dt.currentPage - 1];
+    static #tableRowsPage = () => table.pages[table.rows.dt.currentPage - 1];
 
     /**
      * @returns Selected inputs from device list
