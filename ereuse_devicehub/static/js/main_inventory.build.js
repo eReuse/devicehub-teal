@@ -97,7 +97,7 @@ var _tableRows = {
 };
 var _tableRowsPage = {
   writable: true,
-  value: () => table.pages[table.rows().dt.currentPage - 1]
+  value: () => table.pages[table.rows.dt.currentPage - 1]
 };
 
 const selectorController = action => {
