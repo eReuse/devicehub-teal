@@ -133,7 +133,7 @@ phonenumbers==8.9.11
     # via
     #   -r requirements.in
     #   sqlalchemy-utils
-pillow==9.2.0
+pillow==9.3.0
     # via cairosvg
 pint==0.9
     # via -r requirements.in
