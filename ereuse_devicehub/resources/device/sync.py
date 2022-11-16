@@ -86,6 +86,7 @@ class Sync:
         if motherboard:
             for c in db_device.components:
                 if c.type == "Motherboard" and motherboard.hid != c.hid:
+                    # import pdb; pdb.set_trace()
                     raise ValidationError(err_motherboard)
 
         db_components, actions = OrderedSet(), OrderedSet()

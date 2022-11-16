@@ -219,6 +219,8 @@ class SnapshotView(SnapshotMixin):
         try:
             self.snapshot_json = resource_def.schema.load(snapshot_json)
             snapshot = self.build()
+            snapshot.device.set_hid()
+            snapshot.device.binding.device.set_hid()
         except Exception as err:
             txt = "{}".format(err)
             self.errors(txt=txt, commit=True)

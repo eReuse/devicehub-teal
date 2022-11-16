@@ -58,6 +58,8 @@ class InventoryView(LoginMixin, SnapshotMixin):
         self.snapshot_json = ParseSnapshotLsHw(snapshot_json).get_snapshot()
 
         snapshot = self.build()
+        snapshot.device.set_hid()
+        snapshot.device.binding.device.set_hid()
         db.session.add(snapshot)
 
         snap_log = SnapshotsLog(
