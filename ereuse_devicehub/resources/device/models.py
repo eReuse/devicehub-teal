@@ -802,6 +802,12 @@ class Device(Thing):
         if self.hid:
             return hashlib.sha3_512(self.hid.encode()).hexdigest()
 
+    def set_old_hid(self):
+        with suppress(TypeError):
+            self.hid = Naming.hid(
+                self.type, self.manufacturer, self.model, self.serial_number
+            )
+
     def last_action_of(self, *types):
         """Gets the last action of the given types.
 
@@ -1181,7 +1187,6 @@ class Computer(Device):
         """Returns the Naming.hid with the first mac of network adapter,
         following an alphabetical order.
         """
-        return
         self.set_hid()
         if not self.hid:
             return
