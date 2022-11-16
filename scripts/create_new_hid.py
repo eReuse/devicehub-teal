@@ -39,6 +39,14 @@ def main():
         return
     device.family = family
     device.set_hid()
+    for c in device.components:
+        c.set_hid()
+
+    if device.binding:
+        device.binding.device.family = family
+        device.binding.device.set_hid()
+        for c in device.binding.device.components:
+            c.set_hid()
     db.session.commit()
 
 
