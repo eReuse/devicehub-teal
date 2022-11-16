@@ -297,10 +297,13 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
                 system_uuid = self.get_uuid(debug)
                 if system_uuid:
                     snapshot_json['device']['system_uuid'] = system_uuid
+                self.get_fields_extra(debug, snapshot_json)
 
             try:
                 snapshot_json = schema.load(snapshot_json)
                 response = self.build(snapshot_json)
+                response.device.set_hid()
+                response.device.binding.device.set_hid()
             except ValidationError as err:
                 txt = "{}".format(err)
                 self.errors(txt=txt)

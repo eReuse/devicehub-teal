@@ -120,6 +120,7 @@ class Device(Thing):
     dhid = SanitizedStr(
         data_key='devicehubID', description=m.Device.devicehub_id.comment
     )
+    family = SanitizedStr(validate=Length(max=STR_BIG_SIZE))
 
     @pre_load
     def from_actions_to_actions_one(self, data: dict):

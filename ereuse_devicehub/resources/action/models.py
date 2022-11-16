@@ -2008,7 +2008,7 @@ def update_components_action_one(target: ActionWithOneDevice, device: Device, __
         if isinstance(device, Computer):
             target.components |= device.components
     elif isinstance(device, Computer):
-        device.add_mac_to_hid()
+        device.set_hid()
 
 
 @event.listens_for(

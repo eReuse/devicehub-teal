@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import pathlib
 from contextlib import suppress
 from fractions import Fraction
@@ -181,6 +182,7 @@ class Device(Thing):
     dhid_bk = db.Column(db.CIText(), nullable=True, unique=False)
     phid_bk = db.Column(db.CIText(), nullable=True, unique=False)
     active = db.Column(Boolean, default=True)
+    family = db.Column(db.CIText())
 
     _NON_PHYSICAL_PROPS = {
         'id',
@@ -201,6 +203,7 @@ class Device(Thing):
         'production_date',
         'variant',
         'version',
+        'family',
         'sku',
         'image',
         'allocated',
@@ -735,10 +738,69 @@ class Device(Thing):
         return ""
 
     def set_hid(self):
+        """
+        # product_vendor,
+        # product_family,
+        # product_chassis,
+        # product_number,
+        # product_version,
+        # product_sku,
+        # product_serial,
+        # product_uuid,
+        # board_vendor,
+        # board_number,
+        # board_serial,
+        # board_version
+        """
         with suppress(TypeError):
-            self.hid = Naming.hid(
-                self.type, self.manufacturer, self.model, self.serial_number
-            )
+            family = (self.family or '').replace(' ', '_')
+            chassis = self.type
+            if hasattr(self, 'chassis'):
+                chassis = self.chassis and self.chassis.name or ''
+            version = (self.version or '').replace(' ', '_')
+            sku = (self.sku or '').replace(' ', '_')
+            system_uuid = ''
+            if hasattr(self, 'system_uuid'):
+                system_uuid = str(self.system_uuid or '')
+
+            board = None
+            board_serial_number = ''
+            board_version = ''
+            board_manufacturer = ''
+            board_model = ''
+
+            if hasattr(self, 'components'):
+                for c in self.components:
+                    if c.type == 'Motherboard':
+                        board = c
+                        break
+
+            if board:
+                board_manufacturer = (board.manufacturer or '').replace(' ', '_')
+                board_model = (board.model or '').replace(' ', '_')
+                board_serial_number = (board.serial_number or '').replace(' ', '_')
+                board_version = (board.version or '').replace(' ', '_')
+
+            self.hid = '-'.join(
+                [
+                    (self.manufacturer or '').replace(' ', '_'),
+                    family,
+                    chassis,
+                    (self.model or '').replace(' ', '_'),
+                    version,
+                    sku,
+                    self.serial_number,
+                    system_uuid,
+                    board_manufacturer,
+                    board_model,
+                    board_serial_number,
+                    board_version,
+                ]
+            ).lower()
+
+    def get_hid(self):
+        if self.hid:
+            return hashlib.sha3_512(self.hid.encode()).hexdigest()
 
     def last_action_of(self, *types):
         """Gets the last action of the given types.
@@ -1119,6 +1181,7 @@ class Computer(Device):
         """Returns the Naming.hid with the first mac of network adapter,
         following an alphabetical order.
         """
+        return
         self.set_hid()
         if not self.hid:
             return

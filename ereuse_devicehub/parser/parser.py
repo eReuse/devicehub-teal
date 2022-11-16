@@ -547,6 +547,12 @@ class ParseSnapshotLsHw:
 
         return action
 
+    def get_hid_datas(self):
+        self.device.family = self.get_family()
+
+    def get_family(self):
+        return self.dmi.get("System", [{}])[0].get("Family", '')
+
     def errors(self, txt=None, severity=Severity.Error):
         if not txt:
             return self._errors

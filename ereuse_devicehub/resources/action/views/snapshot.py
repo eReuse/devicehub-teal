@@ -72,9 +72,7 @@ class SnapshotMixin:
         if snapshot_json['software'] == (
             SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid
         ):
-            components = snapshot_json.pop('components', None)  # type: List[Component]
-            if isinstance(device, Computer) and device.hid:
-                device.add_mac_to_hid(components_snap=components)
+            components = snapshot_json.pop('components', None)
         snapshot = Snapshot(**snapshot_json)
 
         # Remove new actions from devices so they don't interfere with sync
@@ -151,6 +149,30 @@ class SnapshotMixin:
         uuid = UUID(hw_uuid)
         return UUID(bytes_le=uuid.bytes)
 
+    def get_fields_extra(self, debug, snapshot_json):
+        if not debug or not isinstance(debug, dict):
+            return
+
+        lshw = debug.get('lshw', {})
+
+        family = lshw.get('configuration', {}).get('family', '')
+
+        snapshot_json['device']['family'] = family
+
+        # lshw_mothers = []
+        # for mt in lshw.get('children', []):
+        #     if mt.get('description') == "Motherboard":
+        #         lshw_mothers.append(mt)
+
+        # for comp in snapshot_json.get('components', []):
+        #     if comp.get('type') != 'Motherboard':
+        #         continue
+        #     for mt in lshw_mothers:
+        #         if comp['serialNumber'] == mt.get('serial', ''):
+        #             comp['vendor'] = mt.get('vendor', '')
+        #             comp['product'] = mt.get('product', '')
+        #             comp['version'] = mt.get('version', '')
+
     def errors(self, txt=None, severity=Severity.Error, snapshot=None, commit=False):
         if not txt:
             return
@@ -187,9 +209,12 @@ class SnapshotView(SnapshotMixin):
         self.version = snapshot_json.get('version')
         self.uuid = snapshot_json.get('uuid')
         self.sid = None
-        system_uuid = self.get_uuid(snapshot_json.pop('debug', None))
+        self.debug = snapshot_json.pop('debug', {})
+        system_uuid = self.get_uuid(self.debug)
         if system_uuid:
             snapshot_json['device']['system_uuid'] = system_uuid
+
+        self.get_fields_extra(self.debug, snapshot_json)
 
         try:
             self.snapshot_json = resource_def.schema.load(snapshot_json)
