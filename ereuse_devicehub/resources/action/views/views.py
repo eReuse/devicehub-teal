@@ -142,11 +142,14 @@ class LiveView(View):
             return hid
         if macs:
             mac = "-{mac}".format(mac=macs[0])
-        hid += mac
+        # hid += mac
         return hid
 
     def live(self, snapshot):
         """If the device.allocated == True, then this snapshot create an action live."""
+        for c in snapshot['components']:
+            c.parent = snapshot['device']
+        snapshot['device'].set_hid()
         hid = self.get_hid(snapshot)
         if not hid or not Device.query.filter(Device.hid == hid).count():
             raise ValidationError('Device not exist.')
