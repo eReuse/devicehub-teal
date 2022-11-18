@@ -7,6 +7,24 @@ ml).
 
 ## testing
 
+## [2.4.3] - 2022-11-18
+- [added] #386 add registration module.
+- [added] #387 add template settings for Secure Erasure.
+- [added] #397 add obada standard export.
+- [added] #402 add reset password module.
+- [changed] #391 add dhid in table and export of Erasure section.
+- [changed] #395 change response for the new api to workbench.
+- [changed] #396 modularize commands.
+- [fixed] #388 lock update different motherboard with the same id.
+- [fixed] #389 some datastorage without placeholder.
+- [fixed] #390 fix image in form edit device.
+- [fixed] #398 placeholder in new components.
+- [fixed] #399 add api_host in config.
+- [fixed] #401 db_host need to be api address.
+- [fixed] #403 change delimiter in obada export.
+- [fixed] #404 javascript select all devices.
+- [fixed] #405 update pillow.
+
 ## [2.4.2] - 2022-10-18
 - [added] #373 Enhancement - UX Lots.
 - [added] #377 add prefix in lots in device list.
