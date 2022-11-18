@@ -18,7 +18,34 @@
 
       <div class="card">
         <div class="card-body pt-3" style="min-height: 650px;">
-          <div class="tab-content pt-1">
+          <ul class="nav nav-tabs nav-tabs-bordered">
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#details">General details</button>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="{{ device.public_link }}" target="_blank">Web</a>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#lots">Lots</button>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#status">Status</button>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#traceability">Traceability log</button>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#components">Components</button>
+            </li>
+
+          </ul>
+          <div class="tab-content pt-2">
             <div id="devices-list" class="tab-pane fade devices-list active show">
               <label class="btn btn-primary " for="SelectAllBTN"><input type="checkbox" id="SelectAllBTN" autocomplete="off"></label>
               <div class="btn-group dropdown m-1" uib-dropdown="">
