@@ -56,6 +56,7 @@ def test_api_docs(client: Client):
         '/inventory/device/{id}/',
         '/inventory/device/{dhid}/binding/',
         '/inventory/device/erasure/',
+        '/inventory/device/erasure/{orphans}/',
         '/inventory/all/device/',
         '/inventory/export/{export_id}/',
         '/inventory/lot/add/',
