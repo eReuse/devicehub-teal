@@ -140,10 +140,23 @@
                       <td>
                         {% if ac.device.phid() %}
                         <a href="{{ url_for('inventory.device_details', id=ac.device.dhid)}}">
+                          {% if ac.device.get_type_logo() %}
+                          <i class="{{ ac.device.get_type_logo() }}" title="{{ ac.device.type }}"></i>
+                          {% endif %}
                           {{ ac.device.serial_number.upper() }}
                         </a>
                         {% else %}
+                        {% if ac.device.get_type_logo() %}
+                        <i class="{{ ac.device.get_type_logo() }}" title="{{ ac.device.type }}"></i>
+                        {% endif %}
                         {{ ac.device.serial_number.upper() }}
+                        {% endif %}
+                        {% if ac.device.lots | length > 0 %}
+                        <h6 class="d-inline">
+                          {% for lot in ac.device.get_lots_for_template() %}
+                            <span class="badge rounded-pill bg-light text-dark">{{ lot }}</span>
+                          {% endfor %}
+                        </h6>
                         {% endif %}
                       </td>                      
                       <td>
