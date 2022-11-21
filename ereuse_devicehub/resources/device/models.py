@@ -1326,6 +1326,19 @@ class DataStorage(JoinedComponentTableMixin, Component):
         except LookupError:
             return None
 
+    @property
+    def orphan(self):
+        if not self.parent:
+            return True
+
+        if self.parent.placeholder and self.parent.placeholder.kangaroo:
+            return True
+
+        if self.parent.binding and self.parent.binding.kangaroo:
+            return True
+
+        return False
+
 
 class HardDrive(DataStorage):
     pass
