@@ -32,7 +32,7 @@
                       </div>
                       <div class="row">
                         <div class="col qr">
-                          <div id="{{ dev.devicehub_id }}"></div>
+                          <div id="{{ dev.dhid }}"></div>
                         </div>
                         <div class="col dhid">
                           <div style="padding-top: 55px">
@@ -41,7 +41,7 @@
                                   data-model="{{ dev.model or '' }}"
                                   data-tags="{{ dev.list_tags() }}"
                                   data-phid="{{ dev.phid() }}"
-                                  data-sid="{{ dev.sid or '' }}">{{ dev.devicehub_id }}</b>
+                                  data-sid="{{ dev.sid or '' }}">{{ dev.dhid }}</b>
                           </div>
                         </div>
                       </div>
@@ -192,7 +192,7 @@
 <script src="{{ url_for('static', filename='js/print.pdf.js') }}"></script>
 <script type="text/javascript">
 {% for dev in devices %}
-qr_draw("{{ dev.public_link }}", "#{{ dev.devicehub_id }}")
+qr_draw("{{ dev.public_link }}", "#{{ dev.dhid }}")
 {% endfor %}
 </script>
 {% endblock main %}

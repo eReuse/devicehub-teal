@@ -12,6 +12,7 @@ ml).
 - [added] #387 add template settings for Secure Erasure.
 - [added] #397 add obada standard export.
 - [added] #402 add reset password module.
+- [added] #406 add orphans disks page.
 - [changed] #391 add dhid in table and export of Erasure section.
 - [changed] #395 change response for the new api to workbench.
 - [changed] #396 modularize commands.

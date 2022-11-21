@@ -18,9 +18,54 @@
 
       <div class="card">
         <div class="card-body pt-3" style="min-height: 650px;">
-          <div class="tab-content pt-1">
+          <ul class="nav nav-tabs nav-tabs-bordered">
+
+            <li class="nav-item">
+              <a href="{{ url_for('inventory.device_erasure_list') }}" class="nav-link{% if not orphans %} active{% endif %}">
+                All hard drivers
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a href="{{ url_for('inventory.device_erasure_list_orphans', orphans=1) }}" class="nav-link{% if orphans %} active{% endif %}">
+                Hard drives without device
+              </a>
+            </li>
+
+          </ul>
+          <div class="tab-content pt-2">
             <div id="devices-list" class="tab-pane fade devices-list active show">
               <label class="btn btn-primary " for="SelectAllBTN"><input type="checkbox" id="SelectAllBTN" autocomplete="off"></label>
+              {% if orphans %}
+              <div class="btn-group dropdown ml-1">
+                <button id="btnLots" type="button" onclick="processSelectedDevices()" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-folder2"></i>
+                  Lots
+                  <span class="caret"></span>
+                </button>
+                <span class="d-none" id="activeTradeModal" data-bs-toggle="modal" data-bs-target="#tradeLotModal"></span>
+
+                <ul class="dropdown-menu" aria-labelledby="btnLots" id="dropDownLotsSelector">
+                  <div class="row w-100">
+                    <div class="input-group mb-3 mx-2">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1"><i class="bi bi-search"></i></span>
+                      </div>
+                      <input type="text" class="form-control" id="lots-search" placeholder="search" aria-label="search" aria-describedby="basic-addon1">
+                    </div>
+                  </div>
+                  <h6 class="dropdown-header">Select lots where to store the selected devices</h6>
+                  <ul class="mx-3" id="LotsSelector"></ul>
+                  <li><hr /></li>
+                  <li>
+                    <a href="#" class="dropdown-item" id="ApplyDeviceLots">
+                      <i class="bi bi-check"></i>
+                      Apply
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              {% endif %}
               <div class="btn-group dropdown m-1" uib-dropdown="">
                 <button id="btnExport" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-reply"></i>
@@ -42,6 +87,27 @@
                   </li>
                 </ul>
               </div>
+              {% if orphans %}
+              <div class="btn-group dropdown m-1" uib-dropdown="">
+                <button id="btnTags" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-tag"></i>
+                    Labels
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="btnTags">
+                  <li>
+                    <form id="print_labels" method="post" action="{{ url_for('labels.print_labels') }}">
+                      {% for f in form_print_labels %}
+                        {{ f }}
+                      {% endfor %}
+                      <a href="javascript:$('#print_labels').submit()" class="dropdown-item">
+                        <i class="bi bi-printer"></i>
+                        Print labels
+                      </a>
+                    </form>
+                  </li>
+                </ul>
+              </div>
+              {% endif %}
 
               <div class="tab-content pt-2">
                 <table class="table">
@@ -74,10 +140,23 @@
                       <td>
                         {% if ac.device.phid() %}
                         <a href="{{ url_for('inventory.device_details', id=ac.device.dhid)}}">
+                          {% if ac.device.get_type_logo() %}
+                          <i class="{{ ac.device.get_type_logo() }}" title="{{ ac.device.type }}"></i>
+                          {% endif %}
                           {{ ac.device.serial_number.upper() }}
                         </a>
                         {% else %}
+                        {% if ac.device.get_type_logo() %}
+                        <i class="{{ ac.device.get_type_logo() }}" title="{{ ac.device.type }}"></i>
+                        {% endif %}
                         {{ ac.device.serial_number.upper() }}
+                        {% endif %}
+                        {% if ac.device.lots | length > 0 %}
+                        <h6 class="d-inline">
+                          {% for lot in ac.device.get_lots_for_template() %}
+                            <span class="badge rounded-pill bg-light text-dark">{{ lot }}</span>
+                          {% endfor %}
+                        </h6>
                         {% endif %}
                       </td>                      
                       <td>

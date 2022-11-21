@@ -115,15 +115,19 @@ class DeviceListMixin(GenericMixin):
 class ErasureListView(DeviceListMixin):
     template_name = 'inventory/erasure_list.html'
 
-    def dispatch_request(self):
+    def dispatch_request(self, orphans=0):
         self.get_context()
-        self.get_devices()
+        self.get_devices(orphans)
+        if orphans:
+            self.context['orphans'] = True
         return flask.render_template(self.template_name, **self.context)
 
-    def get_devices(self):
+    def get_devices(self, orphans):
         erasure = EraseBasic.query.filter_by(author=g.user).order_by(
             EraseBasic.created.desc()
         )
+        if orphans:
+            erasure = [e for e in erasure if e.device.orphan]
         self.context['erasure'] = erasure
 
 
@@ -1451,4 +1455,8 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/device/erasure/', view_func=ErasureListView.as_view('device_erasure_list')
+)
+devices.add_url_rule(
+    '/device/erasure/<int:orphans>/',
+    view_func=ErasureListView.as_view('device_erasure_list_orphans'),
 )

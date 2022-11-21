@@ -2393,6 +2393,19 @@ def test_list_erasures(user3: UserClientFlask):
     assert status == '200 OK'
     assert txt in body
 
+    uri = '/inventory/device/erasure/1/'
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert txt not in body
+
+    dev = Device.query.first()
+    dev.binding.kangaroo = True
+    db.session.commit()
+
+    body, status = user3.get(uri)
+    assert status == '200 OK'
+    assert txt in body
+
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
