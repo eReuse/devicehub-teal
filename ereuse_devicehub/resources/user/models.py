@@ -1,5 +1,7 @@
+import json
 from uuid import uuid4
 
+from citext import CIText
 from flask import current_app as app
 from flask_login import UserMixin
 from sqlalchemy import BigInteger, Boolean, Column, Sequence
@@ -28,6 +30,7 @@ class User(UserMixin, Thing):
     token = Column(UUID(as_uuid=True), default=uuid4, unique=True, nullable=False)
     active = Column(Boolean, default=True, nullable=False)
     phantom = Column(Boolean, default=False, nullable=False)
+    api_keys_dlt = Column(CIText(), nullable=True)
     inventories = db.relationship(
         Inventory,
         backref=db.backref('users', lazy=True, collection_class=set),
@@ -92,6 +95,37 @@ class User(UserMixin, Thing):
     def check_password(self, password):
         # take advantage of SQL Alchemy PasswordType to verify password
         return self.password == password
+
+    def set_new_dlt_keys(self, password):
+        if 'trublo' not in app.blueprints.keys():
+            return
+
+        from ereuseapi.methods import register_user
+
+        from modules.trublo.utils import encrypt
+
+        api_dlt = app.config.get('API_DLT')
+        data = register_user(api_dlt)
+        data = json.dumps(data)
+        self.api_keys_dlt = encrypt(password, data)
+
+    def get_dlt_keys(self, password):
+        if 'trublo' not in app.blueprints.keys():
+            return {}
+
+        from modules.trublo.utils import decrypt
+
+        data = decrypt(password, self.api_keys_dlt)
+        return json.loads(data)
+
+    def reset_dlt_keys(self, password, data):
+        if 'trublo' not in app.blueprints.keys():
+            return
+
+        from modules.trublo.utils import encrypt
+
+        data = json.dumps(data)
+        self.api_keys_dlt = encrypt(password, data)
 
 
 class UserInventory(db.Model):

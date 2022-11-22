@@ -1,4 +1,5 @@
-from flask import g
+from flask import current_app as app
+from flask import g, session
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
 from wtforms import BooleanField, EmailField, PasswordField, validators
@@ -60,6 +61,12 @@ class LoginForm(FlaskForm):
         if not user.is_active:
             self.form_errors.append(self.error_messages['inactive'])
 
+        if 'trublo' not in app.blueprints.keys():
+            token_dlt = (
+                user.get_dlt_keys(self.password.data).get('data', {}).get('api_token')
+            )
+            session['token_dlt'] = token_dlt
+
         return user.is_active
 
 
@@ -95,6 +102,15 @@ class PasswordForm(FlaskForm):
         return True
 
     def save(self, commit=True):
+        if 'trublo' not in app.blueprints.keys():
+            keys_dlt = g.user.get_dlt_keys(self.password.data)
+            g.user.reset_dlt_keys(self.newpassword.data, keys_dlt)
+
+            token_dlt = (
+                user.get_dlt_keys(self.password.data).get('data', {}).get('api_token')
+            )
+            session['token_dlt'] = token_dlt
+
         g.user.password = self.newpassword.data
 
         db.session.add(g.user)

@@ -1,7 +1,7 @@
 import flask
 from flask import Blueprint
 from flask import current_app as app
-from flask import g
+from flask import g, session
 from flask.views import View
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import or_
