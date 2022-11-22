@@ -4,7 +4,11 @@ from teal.resource import Converters, Resource
 
 from ereuse_devicehub.resources.device import schemas
 from ereuse_devicehub.resources.device.models import Manufacturer
-from ereuse_devicehub.resources.device.views import DeviceView, DeviceMergeView, ManufacturerView
+from ereuse_devicehub.resources.device.views import (
+    DeviceMergeView,
+    DeviceView,
+    ManufacturerView,
+)
 
 
 class DeviceDef(Resource):
@@ -13,25 +17,42 @@ class DeviceDef(Resource):
     ID_CONVERTER = Converters.string
     AUTH = False  # We manage this at each view
 
-    def __init__(self, app,
-                 import_name=__name__,
-                 static_folder='static',
-                 static_url_path=None,
-                 template_folder='templates',
-                 url_prefix=None,
-                 subdomain=None,
-                 url_defaults=None,
-                 root_path=None,
-                 cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder='static',
+        static_url_path=None,
+        template_folder='templates',
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
-        device_merge = DeviceMergeView.as_view('merge-devices', definition=self, auth=app.auth)
+        device_merge = DeviceMergeView.as_view(
+            'merge-devices', definition=self, auth=app.auth
+        )
 
         if self.AUTH:
             device_merge = app.auth.requires_auth(device_merge)
 
-        path = '/<{value}:dev1_id>/merge/<{value}:dev2_id>'.format(value=self.ID_CONVERTER.value)
+        path = '/<{value}:dev1_id>/merge/<{value}:dev2_id>'.format(
+            value=self.ID_CONVERTER.value
+        )
 
         # self.add_url_rule(path, view_func=device_merge, methods={'POST'})
 
@@ -40,11 +61,31 @@ class ComputerDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Computer
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class DesktopDef(ComputerDef):
@@ -66,11 +107,31 @@ class MonitorDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Monitor
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class ComputerMonitorDef(MonitorDef):
@@ -83,15 +144,40 @@ class TelevisionSetDef(MonitorDef):
     SCHEMA = schemas.TelevisionSet
 
 
+class ProjectorDef(MonitorDef):
+    VIEW = None
+    SCHEMA = schemas.Projector
+
+
 class MobileDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Mobile
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class SmartphoneDef(MobileDef):
@@ -113,11 +199,31 @@ class ComponentDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Component
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class GraphicCardDef(ComponentDef):
@@ -184,11 +290,31 @@ class ComputerAccessoryDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.ComputerAccessory
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class MouseDef(ComputerAccessoryDef):
@@ -215,11 +341,31 @@ class NetworkingDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Networking
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class RouterDef(NetworkingDef):
@@ -246,11 +392,31 @@ class PrinterDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Printer
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class LabelPrinterDef(PrinterDef):
@@ -262,11 +428,31 @@ class SoundDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Sound
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class MicrophoneDef(SoundDef):
@@ -278,11 +464,31 @@ class VideoDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Video
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class VideoScalerDef(VideoDef):
@@ -299,11 +505,31 @@ class CookingDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Cooking
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class Mixer(CookingDef):
@@ -315,11 +541,31 @@ class DIYAndGardeningDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.DIYAndGardening
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class DrillDef(DIYAndGardeningDef):
@@ -331,22 +577,62 @@ class PackOfScrewdriversDef(DIYAndGardeningDef):
     VIEW = None
     SCHEMA = schemas.PackOfScrewdrivers
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class HomeDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Home
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class DehumidifierDef(HomeDef):
@@ -363,11 +649,31 @@ class RecreationDef(DeviceDef):
     VIEW = None
     SCHEMA = schemas.Recreation
 
-    def __init__(self, app, import_name=__name__, static_folder=None, static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
 
 class BikeDef(RecreationDef):
