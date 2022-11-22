@@ -633,6 +633,14 @@ class Device(Thing):
         return self.devicehub_id
 
     @property
+    def my_partner(self):
+        if self.placeholder and self.placeholder.binding:
+            return self.placeholder.binding
+        if self.binding:
+            return self.binding.device
+        return self
+
+    @property
     def get_updated(self):
         if self.placeholder and self.placeholder.binding:
             return max([self.updated, self.placeholder.binding.updated])
