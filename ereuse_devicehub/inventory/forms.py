@@ -88,7 +88,7 @@ DEVICES = {
     ],
     "Drives & Storage": [
         "All DataStorage",
-        "HardDrives",
+        "HardDrive",
         "SolidStageDrive",
     ],
 }

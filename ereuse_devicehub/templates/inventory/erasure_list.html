@@ -128,7 +128,7 @@
                     {% for ac in erasure %}
                     <tr>
                       <td>
-                          <input type="checkbox" class="deviceSelect" data="{{ ac.device.id }}"
+                          <input type="checkbox" class="deviceSelect" data="{{ ac.device.my_partner.id }}"
                                data-device-type="{{ ac.device.type }}" data-device-manufacturer="{{ ac.device.manufacturer }}"
                                data-device-dhid="{{ ac.device.dhid }}" data-device-vname="{{ ac.device.verbose_name }}"
                                data-action-erasure="{{ ac.id }}"
@@ -151,9 +151,9 @@
                         {% endif %}
                         {{ ac.device.serial_number.upper() }}
                         {% endif %}
-                        {% if ac.device.lots | length > 0 %}
+                        {% if ac.device.my_partner.lots | length > 0 %}
                         <h6 class="d-inline">
-                          {% for lot in ac.device.get_lots_for_template() %}
+                          {% for lot in ac.device.my_partner.get_lots_for_template() %}
                             <span class="badge rounded-pill bg-light text-dark">{{ lot }}</span>
                           {% endfor %}
                         </h6>
