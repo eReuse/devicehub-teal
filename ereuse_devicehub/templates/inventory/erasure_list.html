@@ -109,8 +109,12 @@
               </div>
               {% endif %}
 
+              <div id="select-devices-info" class="alert alert-info mb-0 mt-3 d-none" role="alert">
+                If this text is showing is because there are an error
+              </div>
+
               <div class="tab-content pt-2">
-                <div class="dataTable-top">
+                <div class="dataTable-top" style="float: left;">
                   <div class="dataTable-dropdown">
                     <label>
                       <select class="dataTable-selector">
@@ -227,8 +231,6 @@
                   </tbody>
                 </table>
                 </div>
-
-                </div>
                 <div class="dataTable-bottom">
                   <div class="dataTable-info">
                     Showing {{ erasure.first }} to {{ erasure.last }} of {{ erasure.total }} entries
@@ -237,7 +239,11 @@
                     <ul class="dataTable-pagination-list">
                       {% if erasure.has_prev %}
                         <li class="pager">
+                          {% if orphans %}
+                          <a href="{{ url_for('inventory.device_erasure_list_orphans', orphans=1, page=erasure.prev_num, per_page=erasure.per_page) }}">‹</a>
+                          {% else %}
                           <a href="{{ url_for('inventory.device_erasure_list', page=erasure.prev_num, per_page=erasure.per_page) }}">‹</a>
+                          {% endif %}
                         </li>
                       {% endif %}
                       {% for page in erasure.iter_pages() %}
@@ -246,51 +252,32 @@
                             <li class="active"><a href="javascript:void()">{{ page }}</a></li>
                           {% else %}
                             <li class="">
+                              {% if orphans %}
+                              <a href="{{ url_for('inventory.device_erasure_list_orphans', orphans=1, page=page, per_page=erasure.per_page) }}">
+                                {{ page }}
+                              </a>
+                              {% else %}
                               <a href="{{ url_for('inventory.device_erasure_list', page=page, per_page=erasure.per_page) }}">
                                 {{ page }}
                               </a>
+                              {% endif %}
                             </li>
                           {% endif %}
                         {% endif %}
                       {% endfor %}
                       {% if erasure.has_next %}
                         <li class="pager">
+                          {% if orphans %}
+                          <a href="{{ url_for('inventory.device_erasure_list_orphans', orphans=1, page=erasure.next_num, per_page=erasure.per_page) }}">›</a>
+                          {% else %}
                           <a href="{{ url_for('inventory.device_erasure_list', page=erasure.next_num, per_page=erasure.per_page) }}">›</a>
+                          {% endif %}
                         </li>
                       {% endif %}
                     </ul>
                   </nav>
                 </div>
               </div>
-              {% if lot and not lot.is_temporary %}
-              <div id="trade-documents-list" class="tab-pane fade trade-documents-list">
-                <h5 class="card-title">Documents</h5>
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th scope="col">File</th>
-                      <th scope="col" data-type="date" data-format="DD-MM-YYYY">Uploaded on</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for doc in lot.trade.documents %}
-                    <tr>
-                      <td>
-                        {% if doc.url %}
-                          <a href="{{ doc.url.to_text() }}" target="_blank">{{ doc.file_name}}</a>
-                        {% else %}
-                          {{ doc.file_name}}
-                        {% endif %}
-                      </td>
-                      <td>
-                          {{ doc.created.strftime('%H:%M %d-%m-%Y')}}
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-              {% endif %}
 
             </div><!-- End Bordered Tabs -->
           </div>
@@ -302,11 +289,6 @@
     </div>
   </div>
 </section>
-{% include "inventory/lot_delete_modal.html" %}
-{% include "inventory/actions.html" %}
-{% include "inventory/allocate.html" %}
-{% include "inventory/data_wipe.html" %}
-{% include "inventory/trade.html" %}
 {% include "inventory/alert_export_error.html" %}
 {% include "inventory/alert_lots_changes.html" %}
 
@@ -315,14 +297,21 @@
   $(document).ready(() => {
     $(".dataTable-selector").on("change", function() {
         const per_page = $('.dataTable-selector').val();
+        {% if orphans %}
+        window.location.href = "{{ url_for('inventory.device_erasure_list_orphans', orphans=1, page=1) }}&per_page="+per_page;
+        {% else %}
         window.location.href = "{{ url_for('inventory.device_erasure_list', page=1) }}&per_page="+per_page;
+        {% endif %}
     });
   });
 </script>
 <script>
   let table = new simpleDatatables.DataTable("table", {
-    perPageSelect: [5, 10, 15, 20, 25, 50, 100],
-    perPage: 20
+    //perPageSelect: [5, 10, 15, 20, 25, 50, 100],
+    //perPage: 20,
+    footer: false,
+    paging: false,
+    
   })
 </script>
 
