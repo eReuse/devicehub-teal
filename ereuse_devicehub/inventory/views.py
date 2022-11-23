@@ -128,6 +128,13 @@ class ErasureListView(DeviceListMixin):
         )
         if orphans:
             erasure = [e for e in erasure if e.device.orphan]
+
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 5))
+
+        erasure = erasure.paginate(page=page, per_page=per_page)
+        erasure.first = per_page * erasure.page - per_page + 1
+        erasure.last = len(erasure.items) + erasure.first - 1
         self.context['erasure'] = erasure
 
 
