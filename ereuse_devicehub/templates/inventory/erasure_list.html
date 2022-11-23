@@ -141,6 +141,7 @@
                   <div class="dataTable-search">
                   </div>
                 </div>
+                <div class="dataTable-container">
                 <table class="table">
                   <thead>
                     <tr>
@@ -225,6 +226,7 @@
                     {% endfor %}
                   </tbody>
                 </table>
+                </div>
 
                 </div>
                 <div class="dataTable-bottom">
@@ -316,6 +318,12 @@
         window.location.href = "{{ url_for('inventory.device_erasure_list', page=1) }}&per_page="+per_page;
     });
   });
+</script>
+<script>
+  let table = new simpleDatatables.DataTable("table", {
+    perPageSelect: [5, 10, 15, 20, 25, 50, 100],
+    perPage: 20
+  })
 </script>
 
 {% if config['DEBUG'] %}
