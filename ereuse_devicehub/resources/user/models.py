@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from citext import CIText
 from flask import current_app as app
+from flask import session
 from flask_login import UserMixin
 from sqlalchemy import BigInteger, Boolean, Column, Sequence
 from sqlalchemy.dialects.postgresql import UUID
@@ -126,6 +127,22 @@ class User(UserMixin, Thing):
 
         data = json.dumps(data)
         self.api_keys_dlt = encrypt(password, data)
+
+    def allow_permitions(self, password):
+        if 'trublo' not in app.blueprints.keys():
+            return
+
+        from ereuseapi.methods import API
+
+        target_user = session.get('token_dlt', '.').split(".")[0]
+        keyUser1 = app.config.get('KEYUSER1')
+        api_dlt = app.config.get('API_DLT')
+        if not keyUser1 or api_dlt:
+            return
+
+        apiUser1 = API(api_dlt, keyUser1, "ethereum")
+
+        apiUser1.issue_credential("Operator", target_user)
 
 
 class UserInventory(db.Model):

@@ -95,3 +95,4 @@ class DevicehubConfig(Config):
     MAIL_USE_TLS = config('MAIL_USE_TLS', True)
     MAIL_DEFAULT_SENDER = config('MAIL_DEFAULT_SENDER', '')
     API_DLT = config('API_DLT', None)
+    KEYUSER1 = config('KEYUSER1', None)
