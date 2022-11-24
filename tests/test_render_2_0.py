@@ -2368,6 +2368,9 @@ def test_upload_snapshot_smartphone(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_list_erasures(user3: UserClientFlask):
+    from flask import current_app as app
+
+    app.config['SCHEMA'] = 'test'
     uri = '/inventory/upload-snapshot/'
     file_name = 'erase-sectors-2-hdd.snapshot.yaml'
     body, status = user3.get(uri)
