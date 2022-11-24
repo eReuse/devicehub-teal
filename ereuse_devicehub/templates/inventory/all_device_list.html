@@ -5,9 +5,9 @@
   <h1>Inventory</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{ url_for('inventory.devicelist')}}">Inventory</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('inventory.alldevicelist')}}">Inventory</a></li>
       {% if not lot %}
-        <li class="breadcrumb-item active">Unassigned</li>
+        <li class="breadcrumb-item active">All devices</li>
       {% elif lot.is_temporary %}
       <li class="breadcrumb-item active">Temporary Lot</li>
       <li class="breadcrumb-item active">{{ lot.name }}</li>
@@ -226,10 +226,10 @@
                     </a>
                   </li>
                   <li>
-                    <span class="dropdown-item" style="color: #999ea4;">
+                    <a href="javascript:export_file('devices_lots')" class="dropdown-item">
                       <i class="bi bi-file-spreadsheet"></i>
                       Devices Lots Spreadsheet
-                    </span>
+                    </a>
                   </li>
                   <li>
                     <a href="javascript:export_file('obada_standard')" class="dropdown-item">
@@ -333,6 +333,38 @@
                   <em>{{ form_filter.filter.data or "Computer" }}</em>
                 </p>
 
+                <div class="dataTable-top" style="float: left;">
+                  <div class="dataTable-dropdown">
+                    <label>
+                      <select class="dataTable-selector">
+                        <option value="5"{% if devices.per_page == 5 %} selected="selected"{% endif %}>
+                          5
+                        </option>
+                        <option value="10"{% if devices.per_page == 10 %} selected="selected"{% endif %}>
+                          10
+                        </option>
+                        <option value="15"{% if devices.per_page == 15 %} selected="selected"{% endif %}>
+                          15
+                        </option>
+                        <option value="20"{% if devices.per_page == 20 %} selected="selected"{% endif %}>
+                          20
+                        </option>
+                        <option value="25"{% if devices.per_page == 25 %} selected="selected"{% endif %}>
+                          25
+                        </option>
+                        <option value="50"{% if devices.per_page == 50 %} selected="selected"{% endif %}>
+                          50
+                        </option>
+                        <option value="100"{% if devices.per_page == 100 %} selected="selected"{% endif %}>
+                          100
+                        </option>
+                      </select> entries per page
+                    </label>
+                  </div>
+                  <div class="dataTable-search">
+                  </div>
+                </div>
+                <div class="dataTable-container">
                 <table class="table">
                   <thead>
                     <tr>
@@ -351,7 +383,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for dev in devices %}
+                    {% for dev in devices.items %}
                     {% if dev.placeholder and (not dev.parent_id or dev.parent.placeholder.kangaroo) %}
                     <tr>
                       <td>
@@ -410,6 +442,39 @@
                     {% endfor %}
                   </tbody>
                 </table>
+                <div class="dataTable-bottom">
+                  <div class="dataTable-info">
+                    Showing {{ devices.first }} to {{ devices.last }} of {{ devices.total }} entries
+                  </div>
+                  <nav class="dataTable-pagination">
+                    <ul class="dataTable-pagination-list">
+                      {% if devices.has_prev %}
+                        <li class="pager">
+                          <a href="{{ url_for('inventory.alldevicelist', page=devices.prev_num, per_page=devices.per_page) }}">‹</a>
+                        </li>
+                      {% endif %}
+                      {% for page in devices.iter_pages() %}
+                        {% if page %}
+                          {% if page == devices.page %}
+                            <li class="active"><a href="javascript:void()">{{ page }}</a></li>
+                          {% else %}
+                            <li class="">
+                              <a href="{{ url_for('inventory.alldevicelist', page=page, per_page=devices.per_page) }}">
+                                {{ page }}
+                              </a>
+                            </li>
+                          {% endif %}
+                        {% endif %}
+                      {% endfor %}
+                      {% if devices.has_next %}
+                        <li class="pager">
+                          <a href="{{ url_for('inventory.alldevicelist', page=devices.next_num, per_page=devices.per_page) }}">›</a>
+                        </li>
+                      {% endif %}
+                    </ul>
+                  </nav>
+                </div>
+              </div>
 
                 </div>
               </div>
@@ -582,9 +647,18 @@
 
 <!-- Custom Code -->
 <script>
+  $(document).ready(() => {
+    $(".dataTable-selector").on("change", function() {
+        const per_page = $('.dataTable-selector').val();
+        window.location.href = "{{ url_for('inventory.alldevicelist', page=1) }}&per_page="+per_page;
+    });
+  });
+</script>
+<script>
   let table = new simpleDatatables.DataTable("table", {
-    perPageSelect: [5, 10, 15, 20, 25, 50, 100],
-    perPage: 20
+    footer: false,
+    paging: false,
+    
   })
 </script>
 {% if config['DEBUG'] %}

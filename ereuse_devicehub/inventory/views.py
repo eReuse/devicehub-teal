@@ -144,7 +144,6 @@ class ErasureListView(DeviceListMixin):
                 EraseBasic.created.desc()
             )
             self.context['orphans'] = True
-            # import pdb; pdb.set_trace()
 
         erasure = erasure.paginate(page=page, per_page=per_page)
         erasure.first = per_page * erasure.page - per_page + 1
@@ -159,8 +158,17 @@ class DeviceListView(DeviceListMixin):
 
 
 class AllDeviceListView(DeviceListMixin):
+    template_name = 'inventory/all_device_list.html'
+
     def dispatch_request(self):
         self.get_context(all_devices=True)
+        # import pdb; pdb.set_trace()
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 5))
+        devices = self.context['devices'].paginate(page=page, per_page=per_page)
+        devices.first = per_page * devices.page - per_page + 1
+        devices.last = len(devices.items) + devices.first - 1
+        self.context['devices'] = devices
         return flask.render_template(self.template_name, **self.context)
 
 
