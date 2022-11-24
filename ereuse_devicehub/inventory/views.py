@@ -118,16 +118,36 @@ class ErasureListView(DeviceListMixin):
     def dispatch_request(self, orphans=0):
         self.get_context()
         self.get_devices(orphans)
-        if orphans:
-            self.context['orphans'] = True
         return flask.render_template(self.template_name, **self.context)
 
     def get_devices(self, orphans):
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 5))
+
         erasure = EraseBasic.query.filter_by(author=g.user).order_by(
             EraseBasic.created.desc()
         )
         if orphans:
-            erasure = [e for e in erasure if e.device.orphan]
+            schema = app.config.get('SCHEMA')
+            sql = f"""
+                select action.id from {schema}.action as action
+                    inner join {schema}.erase_basic as erase
+                        on action.id=erase.id
+                    inner join {schema}.device as device
+                        on device.id=action.parent_id
+                    inner join {schema}.placeholder as placeholder
+                        on placeholder.binding_id=device.id
+                    where action.parent_id is null or placeholder.kangaroo=true
+            """
+            ids = (e[0] for e in db.session.execute(sql))
+            erasure = EraseBasic.query.filter(EraseBasic.id.in_(ids)).order_by(
+                EraseBasic.created.desc()
+            )
+            self.context['orphans'] = True
+
+        erasure = erasure.paginate(page=page, per_page=per_page)
+        erasure.first = per_page * erasure.page - per_page + 1
+        erasure.last = len(erasure.items) + erasure.first - 1
         self.context['erasure'] = erasure
 
 
@@ -138,8 +158,17 @@ class DeviceListView(DeviceListMixin):
 
 
 class AllDeviceListView(DeviceListMixin):
+    template_name = 'inventory/all_device_list.html'
+
     def dispatch_request(self):
         self.get_context(all_devices=True)
+        # import pdb; pdb.set_trace()
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 5))
+        devices = self.context['devices'].paginate(page=page, per_page=per_page)
+        devices.first = per_page * devices.page - per_page + 1
+        devices.last = len(devices.items) + devices.first - 1
+        self.context['devices'] = devices
         return flask.render_template(self.template_name, **self.context)
 
 

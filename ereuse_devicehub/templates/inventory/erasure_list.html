@@ -109,7 +109,43 @@
               </div>
               {% endif %}
 
+              <div id="select-devices-info" class="alert alert-info mb-0 mt-3 d-none" role="alert">
+                If this text is showing is because there are an error
+              </div>
+
               <div class="tab-content pt-2">
+                <div class="dataTable-top" style="float: left;">
+                  <div class="dataTable-dropdown">
+                    <label>
+                      <select class="dataTable-selector">
+                        <option value="5"{% if erasure.per_page == 5 %} selected="selected"{% endif %}>
+                          5
+                        </option>
+                        <option value="10"{% if erasure.per_page == 10 %} selected="selected"{% endif %}>
+                          10
+                        </option>
+                        <option value="15"{% if erasure.per_page == 15 %} selected="selected"{% endif %}>
+                          15
+                        </option>
+                        <option value="20"{% if erasure.per_page == 20 %} selected="selected"{% endif %}>
+                          20
+                        </option>
+                        <option value="25"{% if erasure.per_page == 25 %} selected="selected"{% endif %}>
+                          25
+                        </option>
+                        <option value="50"{% if erasure.per_page == 50 %} selected="selected"{% endif %}>
+                          50
+                        </option>
+                        <option value="100"{% if erasure.per_page == 100 %} selected="selected"{% endif %}>
+                          100
+                        </option>
+                      </select> entries per page
+                    </label>
+                  </div>
+                  <div class="dataTable-search">
+                  </div>
+                </div>
+                <div class="dataTable-container">
                 <table class="table">
                   <thead>
                     <tr>
@@ -125,7 +161,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for ac in erasure %}
+                    {% for ac in erasure.items %}
                     <tr>
                       <td>
                           <input type="checkbox" class="deviceSelect" data="{{ ac.device.my_partner.id }}"
@@ -170,7 +206,7 @@
                       </td>
                       <td>
                         <a href="{{ url_for('inventory.export', export_id='snapshot') }}?id={{ ac.snapshot.uuid }}">
-                          {{ ac.snapshot.uuid }}
+                         {{ ac.snapshot.uuid }}
                         </a>
                       </td>
                       <td>
@@ -194,135 +230,54 @@
                     {% endfor %}
                   </tbody>
                 </table>
-
+                </div>
+                <div class="dataTable-bottom">
+                  <div class="dataTable-info">
+                    Showing {{ erasure.first }} to {{ erasure.last }} of {{ erasure.total }} entries
+                  </div>
+                  <nav class="dataTable-pagination">
+                    <ul class="dataTable-pagination-list">
+                      {% if erasure.has_prev %}
+                        <li class="pager">
+                          {% if orphans %}
+                          <a href="{{ url_for('inventory.device_erasure_list_orphans', orphans=1, page=erasure.prev_num, per_page=erasure.per_page) }}">‹</a>
+                          {% else %}
+                          <a href="{{ url_for('inventory.device_erasure_list', page=erasure.prev_num, per_page=erasure.per_page) }}">‹</a>
+                          {% endif %}
+                        </li>
+                      {% endif %}
+                      {% for page in erasure.iter_pages() %}
+                        {% if page %}
+                          {% if page == erasure.page %}
+                            <li class="active"><a href="javascript:void()">{{ page }}</a></li>
+                          {% else %}
+                            <li class="">
+                              {% if orphans %}
+                              <a href="{{ url_for('inventory.device_erasure_list_orphans', orphans=1, page=page, per_page=erasure.per_page) }}">
+                                {{ page }}
+                              </a>
+                              {% else %}
+                              <a href="{{ url_for('inventory.device_erasure_list', page=page, per_page=erasure.per_page) }}">
+                                {{ page }}
+                              </a>
+                              {% endif %}
+                            </li>
+                          {% endif %}
+                        {% endif %}
+                      {% endfor %}
+                      {% if erasure.has_next %}
+                        <li class="pager">
+                          {% if orphans %}
+                          <a href="{{ url_for('inventory.device_erasure_list_orphans', orphans=1, page=erasure.next_num, per_page=erasure.per_page) }}">›</a>
+                          {% else %}
+                          <a href="{{ url_for('inventory.device_erasure_list', page=erasure.next_num, per_page=erasure.per_page) }}">›</a>
+                          {% endif %}
+                        </li>
+                      {% endif %}
+                    </ul>
+                  </nav>
                 </div>
               </div>
-              {% if lot and not lot.is_temporary %}
-              <div id="trade-documents-list" class="tab-pane fade trade-documents-list">
-                <h5 class="card-title">Documents</h5>
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th scope="col">File</th>
-                      <th scope="col" data-type="date" data-format="DD-MM-YYYY">Uploaded on</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for doc in lot.trade.documents %}
-                    <tr>
-                      <td>
-                        {% if doc.url %}
-                          <a href="{{ doc.url.to_text() }}" target="_blank">{{ doc.file_name}}</a>
-                        {% else %}
-                          {{ doc.file_name}}
-                        {% endif %}
-                      </td>
-                      <td>
-                          {{ doc.created.strftime('%H:%M %d-%m-%Y')}}
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-              <div id="edit-transfer" class="tab-pane fade edit-transfer">
-                <h5 class="card-title">Transfer</h5>
-                <form method="post" action="{{ url_for('inventory.edit_transfer', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
-                  {{ form_transfer.csrf_token }}
-
-                  {% for field in form_transfer %}
-                    {% if field != form_transfer.csrf_token %}
-                      <div class="col-12">
-                      {% if field != form_transfer.type %}
-                        {{ field.label(class_="form-label") }}
-                        {% if field == form_transfer.code %}
-                        <span class="text-danger">*</span>
-                        {% endif %}
-                        {{ field }}
-                        <small class="text-muted">{{ field.description }}</small>
-                        {% if field.errors %}
-                          <p class="text-danger">
-                            {% for error in field.errors %}
-                              {{ error }}<br/>
-                            {% endfor %}
-                          </p>
-                        {% endif %}
-                      {% endif %}
-                      </div>
-                    {% endif %}
-                  {% endfor %}
-
-                  <div>
-                    <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}" class="btn btn-danger">Cancel</a>
-                    <button class="btn btn-primary" type="submit">Save</button>
-                  </div>
-                </form>
-              </div>
-              <div id="edit-delivery-note" class="tab-pane fade edit-delivery-note">
-                <h5 class="card-title">Delivery Note</h5>
-                <form method="post" action="{{ url_for('inventory.delivery_note', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
-                  {{ form_delivery.csrf_token }}
-
-                  {% for field in form_delivery %}
-                    {% if field != form_delivery.csrf_token %}
-                      <div class="col-12">
-                      {% if field != form_delivery.type %}
-                        {{ field.label(class_="form-label") }}
-                        {{ field }}
-                        <small class="text-muted">{{ field.description }}</small>
-                        {% if field.errors %}
-                          <p class="text-danger">
-                            {% for error in field.errors %}
-                              {{ error }}<br/>
-                            {% endfor %}
-                          </p>
-                        {% endif %}
-                      {% endif %}
-                      </div>
-                    {% endif %}
-                  {% endfor %}
-
-                  {% if lot.transfer and form_receiver.is_editable() %}
-                  <div>
-                    <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}" class="btn btn-danger">Cancel</a>
-                    <button class="btn btn-primary" type="submit">Save</button>
-                  </div>
-                  {% endif %}
-                </form>
-              </div>
-              <div id="edit-receiver-note" class="tab-pane fade edit-receiver-note">
-                <h5 class="card-title">Receiver Note</h5>
-                <form method="post" action="{{ url_for('inventory.receiver_note', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
-                  {{ form_receiver.csrf_token }}
-
-                  {% for field in form_receiver %}
-                    {% if field != form_receiver.csrf_token %}
-                      <div class="col-12">
-                      {% if field != form_receiver.type %}
-                        {{ field.label(class_="form-label") }}
-                        {{ field }}
-                        <small class="text-muted">{{ field.description }}</small>
-                        {% if field.errors %}
-                          <p class="text-danger">
-                            {% for error in field.errors %}
-                              {{ error }}<br/>
-                            {% endfor %}
-                          </p>
-                        {% endif %}
-                      {% endif %}
-                      </div>
-                    {% endif %}
-                  {% endfor %}
-
-                  {% if lot.transfer and form_receiver.is_editable() %}
-                  <div>
-                    <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}" class="btn btn-danger">Cancel</a>
-                    <button class="btn btn-primary" type="submit">Save</button>
-                  </div>
-                  {% endif %}
-                </form>
-              </div>
-              {% endif %}
 
             </div><!-- End Bordered Tabs -->
           </div>
@@ -334,21 +289,32 @@
     </div>
   </div>
 </section>
-{% include "inventory/lot_delete_modal.html" %}
-{% include "inventory/actions.html" %}
-{% include "inventory/allocate.html" %}
-{% include "inventory/data_wipe.html" %}
-{% include "inventory/trade.html" %}
 {% include "inventory/alert_export_error.html" %}
 {% include "inventory/alert_lots_changes.html" %}
 
 <!-- Custom Code -->
 <script>
+  $(document).ready(() => {
+    $(".dataTable-selector").on("change", function() {
+        const per_page = $('.dataTable-selector').val();
+        {% if orphans %}
+        window.location.href = "{{ url_for('inventory.device_erasure_list_orphans', orphans=1, page=1) }}&per_page="+per_page;
+        {% else %}
+        window.location.href = "{{ url_for('inventory.device_erasure_list', page=1) }}&per_page="+per_page;
+        {% endif %}
+    });
+  });
+</script>
+<script>
   let table = new simpleDatatables.DataTable("table", {
-    perPageSelect: [5, 10, 15, 20, 25, 50, 100],
-    perPage: 20
+    //perPageSelect: [5, 10, 15, 20, 25, 50, 100],
+    //perPage: 20,
+    footer: false,
+    paging: false,
+    
   })
 </script>
+
 {% if config['DEBUG'] %}
   <script src="{{ url_for('static', filename='js/main_inventory.js') }}"></script>
 {% else %}
