@@ -30,7 +30,6 @@ from teal.enums import Country, Currency, Layouts, Subdivision
 from teal.marshmallow import EnumField
 
 from ereuse_devicehub.marshmallow import NestedOn
-from ereuse_devicehub.resources.schemas import Thing
 
 project = 'Devicehub'
 copyright = '2020, eReuse.org team'
@@ -56,7 +55,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinxcontrib.plantuml',
     'sphinx.ext.autosectionlabel',
-    'sphinx.ext.autodoc'
+    'sphinx.ext.autodoc',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -126,15 +125,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -144,18 +140,20 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Devicehub.tex', 'Devicehub Documentation',
-     'eReuse.org team', 'manual'),
+    (
+        master_doc,
+        'Devicehub.tex',
+        'Devicehub Documentation',
+        'eReuse.org team',
+        'manual',
+    ),
 ]
 
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'devicehub', 'Devicehub Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, 'devicehub', 'Devicehub Documentation', [author], 1)]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -163,9 +161,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Devicehub', 'Devicehub Documentation',
-     author, 'Devicehub', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        'Devicehub',
+        'Devicehub Documentation',
+        author,
+        'Devicehub',
+        'One line description of project.',
+        'Miscellaneous',
+    ),
 ]
 
 # -- Extension configuration -------------------------------------------------
@@ -199,6 +203,7 @@ class DhlistDirective(Directive):
     This requires :py:class:`ereuse_devicehub.resources.schemas.SchemaMeta`.
     You will find in that module more information.
     """
+
     has_content = False
 
     # Definition of passed-in options
@@ -216,7 +221,7 @@ class DhlistDirective(Directive):
 
         sections = []
         sections.append(self.links(things))  # Make index
-        for thng in things:  # type: Thing
+        for thng in things:
             # Generate a section for each class, with a title,
             # fields description and a paragraph
             section = n.section(ids=[self._id(thng)])
@@ -228,7 +233,9 @@ class DhlistDirective(Directive):
             for key, f in thng._own:
                 name = n.field_name(text=f.data_key or key)
                 body = [
-                    self.parse('{} {}'.format(self.type(f), f.metadata.get('description', '')))
+                    self.parse(
+                        '{} {}'.format(self.type(f), f.metadata.get('description', ''))
+                    )
                 ]
                 if isinstance(f, EnumField):
                     body.append(self._parse_enum_field(f))
@@ -244,6 +251,7 @@ class DhlistDirective(Directive):
 
     def _parse_enum_field(self, f):
         from ereuse_devicehub.resources.device import states
+
         if issubclass(f.enum, (Subdivision, Currency, Country, Layouts, states.State)):
             return self.parse(f.enum.__doc__)
         else:
@@ -298,7 +306,7 @@ class DhlistDirective(Directive):
 
     def parse(self, text) -> n.container:
         """Parses text possibly containing ReST stuff and adds it in
-         a node."""
+        a node."""
         p = n.container('')
         self.state.nested_parse(StringList(string2lines(inspect.cleandoc(text))), 0, p)
         return p
