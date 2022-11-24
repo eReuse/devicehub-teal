@@ -109,6 +109,7 @@ class User(UserMixin, Thing):
         data = register_user(api_dlt)
         data = json.dumps(data)
         self.api_keys_dlt = encrypt(password, data)
+        return data.get('data', {}).get('api_token')
 
     def get_dlt_keys(self, password):
         if 'trublo' not in app.blueprints.keys():
@@ -128,13 +129,15 @@ class User(UserMixin, Thing):
         data = json.dumps(data)
         self.api_keys_dlt = encrypt(password, data)
 
-    def allow_permitions(self, password):
+    def allow_permitions(self, api_token=None):
         if 'trublo' not in app.blueprints.keys():
             return
 
         from ereuseapi.methods import API
 
-        target_user = session.get('token_dlt', '.').split(".")[0]
+        if not api_token:
+            api_token = session.get('token_dlt', '.')
+        target_user = api_token.split(".")[0]
         keyUser1 = app.config.get('KEYUSER1')
         api_dlt = app.config.get('API_DLT')
         if not keyUser1 or api_dlt:
