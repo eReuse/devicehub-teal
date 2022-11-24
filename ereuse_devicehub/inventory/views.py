@@ -55,6 +55,9 @@ devices = Blueprint('inventory', __name__, url_prefix='/inventory')
 logger = logging.getLogger(__name__)
 
 
+PER_PAGE = 20
+
+
 class DeviceListMixin(GenericMixin):
     template_name = 'inventory/device_list.html'
 
@@ -122,7 +125,7 @@ class ErasureListView(DeviceListMixin):
 
     def get_devices(self, orphans):
         page = int(request.args.get('page', 1))
-        per_page = int(request.args.get('per_page', 5))
+        per_page = int(request.args.get('per_page', PER_PAGE))
 
         erasure = EraseBasic.query.filter_by(author=g.user).order_by(
             EraseBasic.created.desc()
@@ -164,7 +167,7 @@ class AllDeviceListView(DeviceListMixin):
         self.get_context(all_devices=True)
         # import pdb; pdb.set_trace()
         page = int(request.args.get('page', 1))
-        per_page = int(request.args.get('per_page', 5))
+        per_page = int(request.args.get('per_page', PER_PAGE))
         devices = self.context['devices'].paginate(page=page, per_page=per_page)
         devices.first = per_page * devices.page - per_page + 1
         devices.last = len(devices.items) + devices.first - 1
