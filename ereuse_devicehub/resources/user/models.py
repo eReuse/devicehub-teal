@@ -117,6 +117,9 @@ class User(UserMixin, Thing):
 
         from modules.trublo.utils import decrypt
 
+        if not self.api_keys_dlt:
+            return {}
+
         data = decrypt(password, self.api_keys_dlt)
         return json.loads(data)
 

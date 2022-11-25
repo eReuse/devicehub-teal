@@ -61,7 +61,7 @@ class LoginForm(FlaskForm):
         if not user.is_active:
             self.form_errors.append(self.error_messages['inactive'])
 
-        if 'trublo' not in app.blueprints.keys():
+        if 'trublo' in app.blueprints.keys():
             token_dlt = (
                 user.get_dlt_keys(self.password.data).get('data', {}).get('api_token')
             )

@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import pathlib
 from contextlib import suppress
 from fractions import Fraction
@@ -9,7 +10,9 @@ from typing import Dict, List, Set
 from boltons import urlutils
 from citext import CIText
 from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
-from flask import g, request
+from ereuseapi.methods import API
+from flask import current_app as app
+from flask import g, request, session
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column
 from sqlalchemy import Enum as DBEnum
@@ -815,6 +818,20 @@ class Device(Thing):
             "SolidStateDrive": "bi bi-hdd",
         }
         return types.get(self.type, '')
+
+    def register_dlt(self):
+        if 'trublo' not in app.blueprints.keys() or not self.hid:
+            return
+
+        chid = hashlib.sha3_256(self.hid.encode('utf-8')).hexdigest()
+        token_dlt = session.get('token_dlt', ".").split(".")[1]
+        api_dlt = app.config.get('API_DLT')
+        if not token_dlt or not api_dlt:
+            return
+
+        api = API(api_dlt, token_dlt, "ethereum")
+
+        result = api.register_device(chid)
 
     def __lt__(self, other):
         return self.id < other.id
