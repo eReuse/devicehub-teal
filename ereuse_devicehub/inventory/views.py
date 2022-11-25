@@ -64,9 +64,17 @@ class DeviceListMixin(GenericMixin):
     def get_context(self, lot_id=None, all_devices=False):
         super().get_context()
 
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', PER_PAGE))
+        filter = request.args.get('filter', "All+Computers")
+        # import pdb; pdb.set_trace()
+
         lots = self.context['lots']
         form_filter = FilterForm(lots, lot_id, all_devices=all_devices)
-        devices = form_filter.search()
+        devices = form_filter.search().paginate(page=page, per_page=per_page)
+        devices.first = per_page * devices.page - per_page + 1
+        devices.last = len(devices.items) + devices.first - 1
+
         lot = None
         form_transfer = ''
         form_delivery = ''
@@ -95,6 +103,7 @@ class DeviceListMixin(GenericMixin):
                 'tags': self.get_user_tags(),
                 'list_devices': self.get_selected_devices(form_new_action),
                 'all_devices': all_devices,
+                'filter': filter,
             }
         )
 
@@ -161,17 +170,8 @@ class DeviceListView(DeviceListMixin):
 
 
 class AllDeviceListView(DeviceListMixin):
-    template_name = 'inventory/all_device_list.html'
-
     def dispatch_request(self):
         self.get_context(all_devices=True)
-        # import pdb; pdb.set_trace()
-        page = int(request.args.get('page', 1))
-        per_page = int(request.args.get('per_page', PER_PAGE))
-        devices = self.context['devices'].paginate(page=page, per_page=per_page)
-        devices.first = per_page * devices.page - per_page + 1
-        devices.last = len(devices.items) + devices.first - 1
-        self.context['devices'] = devices
         return flask.render_template(self.template_name, **self.context)
 
 
