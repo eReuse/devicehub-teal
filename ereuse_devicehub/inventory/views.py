@@ -1222,41 +1222,6 @@ class SnapshotListView(GenericMixin):
         snapshots_log.last = len(snapshots_log.items) + snapshots_log.first - 1
         return snapshots_log
 
-        logs = {}
-        for snap in snapshots_log:
-            try:
-                system_uuid = snap.snapshot.device.system_uuid or ''
-            except AttributeError:
-                system_uuid = ''
-
-            if snap.snapshot_uuid not in logs:
-                logs[snap.snapshot_uuid] = {
-                    'sid': snap.sid,
-                    'snapshot_uuid': snap.snapshot_uuid,
-                    'version': snap.version,
-                    'device': snap.get_device(),
-                    'system_uuid': system_uuid,
-                    'status': snap.get_status(),
-                    'severity': snap.severity,
-                    'created': snap.created,
-                    'type_device': snap.get_type_device(),
-                    'original_dhid': snap.get_original_dhid(),
-                    'new_device': snap.get_new_device(),
-                }
-                continue
-
-            if snap.created > logs[snap.snapshot_uuid]['created']:
-                logs[snap.snapshot_uuid]['created'] = snap.created
-
-            if snap.severity > logs[snap.snapshot_uuid]['severity']:
-                logs[snap.snapshot_uuid]['severity'] = snap.severity
-                logs[snap.snapshot_uuid]['status'] = snap.get_status()
-
-        result = sorted(logs.values(), key=lambda d: d['created'])
-        result.reverse()
-
-        return result
-
 
 class SnapshotDetailView(GenericMixin):
     template_name = 'inventory/snapshot_detail.html'
@@ -1385,9 +1350,16 @@ class PlaceholderLogListView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
     def get_placeholders_log(self):
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', PER_PAGE))
+
         placeholder_log = PlaceholdersLog.query.filter(
             PlaceholdersLog.owner == g.user
         ).order_by(PlaceholdersLog.created.desc())
+
+        placeholder_log = placeholder_log.paginate(page=page, per_page=per_page)
+        placeholder_log.first = per_page * placeholder_log.page - per_page + 1
+        placeholder_log.last = len(placeholder_log.items) + placeholder_log.first - 1
 
         return placeholder_log
 
