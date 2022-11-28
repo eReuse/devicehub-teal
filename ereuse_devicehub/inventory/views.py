@@ -1210,9 +1210,18 @@ class SnapshotListView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
     def get_snapshots_log(self):
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', PER_PAGE))
+
         snapshots_log = SnapshotsLog.query.filter(
             SnapshotsLog.owner == g.user
         ).order_by(SnapshotsLog.created.desc())
+
+        snapshots_log = snapshots_log.paginate(page=page, per_page=per_page)
+        snapshots_log.first = per_page * snapshots_log.page - per_page + 1
+        snapshots_log.last = len(snapshots_log.items) + snapshots_log.first - 1
+        return snapshots_log
+
         logs = {}
         for snap in snapshots_log:
             try:

@@ -22,6 +22,38 @@
           <div class="tab-content pt-5">
             <div id="devices-list" class="tab-pane fade devices-list active show">
               <div class="tab-content pt-2">
+                <div class="dataTable-top" style="float: left;">
+                  <div class="dataTable-dropdown">
+                    <label>
+                      <select class="dataTable-selector">
+                        <option value="5"{% if snapshots_log.per_page == 5 %} selected="selected"{% endif %}>
+                          5
+                        </option>
+                        <option value="10"{% if snapshots_log.per_page == 10 %} selected="selected"{% endif %}>
+                          10
+                        </option>
+                        <option value="15"{% if snapshots_log.per_page == 15 %} selected="selected"{% endif %}>
+                          15
+                        </option>
+                        <option value="20"{% if snapshots_log.per_page == 20 %} selected="selected"{% endif %}>
+                          20
+                        </option>
+                        <option value="25"{% if snapshots_log.per_page == 25 %} selected="selected"{% endif %}>
+                          25
+                        </option>
+                        <option value="50"{% if snapshots_log.per_page == 50 %} selected="selected"{% endif %}>
+                          50
+                        </option>
+                        <option value="100"{% if snapshots_log.per_page == 100 %} selected="selected"{% endif %}>
+                          100
+                        </option>
+                      </select> entries per page
+                    </label>
+                  </div>
+                  <div class="dataTable-search">
+                  </div>
+                </div>
+                <div class="dataTable-container">
                 <table class="table">
                   <thead>
                     <tr>
@@ -39,7 +71,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for snap in snapshots_log %}
+                    {% for snap in snapshots_log.items %}
                     <tr>
                       <td>
                         {% if snap.sid and snap.snapshot_uuid %}
@@ -59,26 +91,26 @@
                           {{ snap.version }}
                       </td>
                       <td>
-                        {% if snap.device %}
+                        {% if snap.get_device() %}
                         <a href="{{ url_for('inventory.device_details', id=snap.device) }}">
-                          {{ snap.device }}
+                          {{ snap.get_device() }}
                         </a>
                         {% endif %}
                       </td>
                       <td>
-                          {{ snap.system_uuid }}
+                          {{ snap.get_system_uuid() }}
                       </td>
                       <td>
-                          {{ snap.status }}
+                          {{ snap.get_status() }}
                       </td>
                       <td>
-                          {{ snap.new_device }}
+                          {{ snap.get_new_device() }}
                       </td>
                       <td>
-                          {{ snap.type_device }}
+                          {{ snap.get_type_device() }}
                       </td>
                       <td>
-                          {{ snap.original_dhid }}
+                          {{ snap.get_original_dhid() }}
                       </td>
                       <td>{{ snap.created.strftime('%Y-%m-%d %H:%M') }}</td>
                       <td>
@@ -93,6 +125,38 @@
                   </tbody>
                 </table>
 
+                <div class="dataTable-bottom">
+                  <div class="dataTable-info">
+                    Showing {{ snapshots_log.first }} to {{ snapshots_log.last }} of {{ snapshots_log.total }} entries
+                  </div>
+                  <nav class="dataTable-pagination">
+                    <ul class="dataTable-pagination-list">
+                      {% if snapshots_log.has_prev %}
+                        <li class="pager">
+                            <a href="{{ url_for('inventory.snapshotslist', page=snapshots_log.prev_num, per_page=snapshots_log.per_page) }}">‹</a>
+                        </li>
+                      {% endif %}
+                      {% for page in snapshots_log.iter_pages() %}
+                        {% if page %}
+                          {% if page == snapshots_log.page %}
+                            <li class="active"><a href="javascript:void()">{{ page }}</a></li>
+                          {% else %}
+                            <li class="">
+                              <a href="{{ url_for('inventory.snapshotslist', page=page, per_page=snapshots_log.per_page) }}">
+                                {{ page }}
+                              </a>
+                            </li>
+                          {% endif %}
+                        {% endif %}
+                      {% endfor %}
+                      {% if snapshots_log.has_next %}
+                        <li class="pager">
+                          <a href="{{ url_for('inventory.snapshotslist', page=snapshots_log.next_num, per_page=snapshots_log.per_page) }}">›</a>
+                        </li>
+                      {% endif %}
+                    </ul>
+                  </nav>
+                </div>
                 </div>
               </div>
 
@@ -109,6 +173,18 @@
 
 <!-- Custom Code -->
 <script>
-  const table = new simpleDatatables.DataTable("table")
+  $(document).ready(() => {
+    $(".dataTable-selector").on("change", function() {
+        const per_page = $('.dataTable-selector').val();
+        window.location.href = "{{ url_for('inventory.snapshotslist', page=1) }}&per_page="+per_page;
+    });
+  });
+</script>
+<script>
+  let table = new simpleDatatables.DataTable("table", {
+    footer: false,
+    paging: false,
+    
+  })
 </script>
 {% endblock main %}
