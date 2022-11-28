@@ -64,9 +64,17 @@ class DeviceListMixin(GenericMixin):
     def get_context(self, lot_id=None, all_devices=False):
         super().get_context()
 
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', PER_PAGE))
+        filter = request.args.get('filter', "All+Computers")
+        # import pdb; pdb.set_trace()
+
         lots = self.context['lots']
         form_filter = FilterForm(lots, lot_id, all_devices=all_devices)
-        devices = form_filter.search()
+        devices = form_filter.search().paginate(page=page, per_page=per_page)
+        devices.first = per_page * devices.page - per_page + 1
+        devices.last = len(devices.items) + devices.first - 1
+
         lot = None
         form_transfer = ''
         form_delivery = ''
@@ -95,6 +103,7 @@ class DeviceListMixin(GenericMixin):
                 'tags': self.get_user_tags(),
                 'list_devices': self.get_selected_devices(form_new_action),
                 'all_devices': all_devices,
+                'filter': filter,
             }
         )
 
@@ -161,17 +170,8 @@ class DeviceListView(DeviceListMixin):
 
 
 class AllDeviceListView(DeviceListMixin):
-    template_name = 'inventory/all_device_list.html'
-
     def dispatch_request(self):
         self.get_context(all_devices=True)
-        # import pdb; pdb.set_trace()
-        page = int(request.args.get('page', 1))
-        per_page = int(request.args.get('per_page', PER_PAGE))
-        devices = self.context['devices'].paginate(page=page, per_page=per_page)
-        devices.first = per_page * devices.page - per_page + 1
-        devices.last = len(devices.items) + devices.first - 1
-        self.context['devices'] = devices
         return flask.render_template(self.template_name, **self.context)
 
 
@@ -1210,43 +1210,17 @@ class SnapshotListView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
     def get_snapshots_log(self):
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', PER_PAGE))
+
         snapshots_log = SnapshotsLog.query.filter(
             SnapshotsLog.owner == g.user
         ).order_by(SnapshotsLog.created.desc())
-        logs = {}
-        for snap in snapshots_log:
-            try:
-                system_uuid = snap.snapshot.device.system_uuid or ''
-            except AttributeError:
-                system_uuid = ''
 
-            if snap.snapshot_uuid not in logs:
-                logs[snap.snapshot_uuid] = {
-                    'sid': snap.sid,
-                    'snapshot_uuid': snap.snapshot_uuid,
-                    'version': snap.version,
-                    'device': snap.get_device(),
-                    'system_uuid': system_uuid,
-                    'status': snap.get_status(),
-                    'severity': snap.severity,
-                    'created': snap.created,
-                    'type_device': snap.get_type_device(),
-                    'original_dhid': snap.get_original_dhid(),
-                    'new_device': snap.get_new_device(),
-                }
-                continue
-
-            if snap.created > logs[snap.snapshot_uuid]['created']:
-                logs[snap.snapshot_uuid]['created'] = snap.created
-
-            if snap.severity > logs[snap.snapshot_uuid]['severity']:
-                logs[snap.snapshot_uuid]['severity'] = snap.severity
-                logs[snap.snapshot_uuid]['status'] = snap.get_status()
-
-        result = sorted(logs.values(), key=lambda d: d['created'])
-        result.reverse()
-
-        return result
+        snapshots_log = snapshots_log.paginate(page=page, per_page=per_page)
+        snapshots_log.first = per_page * snapshots_log.page - per_page + 1
+        snapshots_log.last = len(snapshots_log.items) + snapshots_log.first - 1
+        return snapshots_log
 
 
 class SnapshotDetailView(GenericMixin):
@@ -1376,9 +1350,16 @@ class PlaceholderLogListView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
     def get_placeholders_log(self):
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', PER_PAGE))
+
         placeholder_log = PlaceholdersLog.query.filter(
             PlaceholdersLog.owner == g.user
         ).order_by(PlaceholdersLog.created.desc())
+
+        placeholder_log = placeholder_log.paginate(page=page, per_page=per_page)
+        placeholder_log.first = per_page * placeholder_log.page - per_page + 1
+        placeholder_log.last = len(placeholder_log.items) + placeholder_log.first - 1
 
         return placeholder_log
 

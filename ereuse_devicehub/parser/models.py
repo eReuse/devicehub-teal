@@ -78,6 +78,12 @@ class SnapshotsLog(Thing):
                 snapshots.append(s)
         return snapshots and 'Update' or 'New Device'
 
+    def get_system_uuid(self):
+        try:
+            return self.snapshot.device.system_uuid or ''
+        except AttributeError:
+            return ''
+
 
 class PlaceholdersLog(Thing):
     """A Placeholder log."""
