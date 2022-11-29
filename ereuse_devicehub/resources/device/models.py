@@ -1637,3 +1637,11 @@ def create_code_tag(mapper, connection, device):
 
 # from flask_sqlalchemy import event
 # event.listen(Device, 'after_insert', create_code_tag, propagate=True)
+
+
+class Other(Device):
+    """
+    Used for put in there all devices than not have actualy a class
+    """
+
+    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)

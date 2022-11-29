@@ -46,7 +46,13 @@
                         </optgroup>
                         <optgroup label="Monitor">
                           <option value="ComputerMonitor"
-                          {% if form.type.data == 'Monitor' %} selected="selected"{% endif %}>Computer Monitor</option>
+                          {% if form.type.data == 'ComputerMonitor' %} selected="selected"{% endif %}>Computer Monitor</option>
+                          <option value="Monitor"
+                          {% if form.type.data == 'Monitor' %} selected="selected"{% endif %}>Monitor</option>
+                          <option value="TelevisionSet"
+                          {% if form.type.data == 'TelevisionSet' %} selected="selected"{% endif %}>TelevisionSet</option>
+                          <option value="Projector"
+                          {% if form.type.data == 'Projector' %} selected="selected"{% endif %}>Projector</option>
                         </optgroup>
                         <optgroup label="Mobile">
                           <option value="Smartphone"
@@ -65,6 +71,10 @@
                           {% if form.type.data == 'SAI' %} selected="selected"{% endif %}>SAI</option>
                           <option value="Keyboard"
                           {% if form.type.data == 'Keyboard' %} selected="selected"{% endif %}>Keyboard</option>
+                        </optgroup>
+                        <optgroup label="Other Type of Device">
+                          <option value="Other"
+                          {% if form.type.data == 'Other' %} selected="selected"{% endif %}>Other</option>
                         </optgroup>
                       </select>
                       <small class="text-muted form-text">Type of devices</small>
