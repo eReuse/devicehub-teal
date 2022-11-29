@@ -269,6 +269,10 @@ class TelevisionSet(Monitor):
     __doc__ = m.TelevisionSet.__doc__
 
 
+class Projector(Monitor):
+    __doc__ = m.Projector.__doc__
+
+
 class Mobile(Device):
     __doc__ = m.Mobile.__doc__
 
@@ -576,4 +580,8 @@ class Bike(Recreation):
 
 
 class Racket(Recreation):
+    pass
+
+
+class Other(Device):
     pass
