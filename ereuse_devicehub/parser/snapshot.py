@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
-from typing import List
 
-from ereuse_workbench.computer import Component, Computer, DataStorage
+from ereuse_workbench.computer import Computer, DataStorage
 from ereuse_workbench.utils import Dumpeable
 
 
@@ -24,8 +23,8 @@ class Snapshot(Dumpeable):
         self.endTime = datetime.now(timezone.utc)
         self.closed = False
         self.elapsed = None
-        self.device = None  # type: Computer
-        self.components = None  # type: List[Component]
+        self.device = None
+        self.components = None
         self._storages = None
 
     def computer(self):

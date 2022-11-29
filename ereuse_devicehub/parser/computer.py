@@ -4,7 +4,7 @@ from contextlib import suppress
 from datetime import datetime
 from fractions import Fraction
 from math import hypot
-from typing import Iterator, List, Optional, Type, TypeVar
+from typing import Iterator, List, Optional, TypeVar
 
 import dateutil.parser
 from ereuse_utils import getter, text
@@ -404,7 +404,7 @@ class Computer(Device):
     chassis value.
     """
 
-    COMPONENTS = list(Component.__subclasses__())  # type: List[Type[Component]]
+    COMPONENTS = list(Component.__subclasses__())
     COMPONENTS.remove(Motherboard)
 
     def __init__(self, node: dict) -> None:

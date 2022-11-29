@@ -1,7 +1,6 @@
 import itertools
 import json
 from pathlib import Path
-from typing import Set
 
 import click
 import click_spinner
@@ -109,7 +108,7 @@ class Dummy:
         files = tuple(Path(__file__).parent.joinpath('files').iterdir())
         print('done.')
         sample_pc = None  # We treat this one as a special sample for demonstrations
-        pcs = set()  # type: Set[int]
+        pcs = set()
         with click.progressbar(files, label='Creating devices...'.ljust(28)) as bar:
             for path in bar:
                 with path.open() as f:

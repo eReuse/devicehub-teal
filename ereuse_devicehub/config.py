@@ -1,6 +1,5 @@
 from distutils.version import StrictVersion
 from itertools import chain
-from typing import Set
 
 from decouple import config
 from teal.auth import TokenAuth
@@ -44,7 +43,7 @@ class DevicehubConfig(Config):
             import_resource(metric_def),
         ),
     )
-    PASSWORD_SCHEMES = {'pbkdf2_sha256'}  # type: Set[str]
+    PASSWORD_SCHEMES = {'pbkdf2_sha256'}
     SECRET_KEY = config('SECRET_KEY')
     DB_USER = config('DB_USER', 'dhub')
     DB_PASSWORD = config('DB_PASSWORD', 'ereuse')
