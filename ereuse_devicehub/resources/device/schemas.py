@@ -581,3 +581,7 @@ class Bike(Recreation):
 
 class Racket(Recreation):
     pass
+
+
+class Other(Device):
+    pass

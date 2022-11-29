@@ -52,6 +52,7 @@ from ereuse_devicehub.resources.device.models import (
     MemoryCardReader,
     Monitor,
     Mouse,
+    Other,
     Placeholder,
     Projector,
     Server,
@@ -84,7 +85,6 @@ DEVICES = {
     ],
     "Mobile, tablet & smartphone": [
         "All Mobile",
-        "Mobile",
         "Tablet",
         "Smartphone",
         "Cellphone",
@@ -101,6 +101,7 @@ DEVICES = {
         "SAI",
         "Keyboard",
     ],
+    "Other Devices": ["Other"],
 }
 
 COMPUTERS = ['Desktop', 'Laptop', 'Server', 'Computer']
@@ -109,6 +110,7 @@ MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
 MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
 STORAGE = ["HardDrive", "SolidStateDrive"]
 ACCESSORIES = ["Mouse", "MemoryCardReader", "SAI", "Keyboard"]
+OTHERS = ["Other"]
 
 
 class AdvancedSearchForm(FlaskForm):
@@ -181,7 +183,7 @@ class FilterForm(FlaskForm):
 
         # Generic Filters
         if "All Devices" == self.device_type:
-            filter_type = COMPUTERS + MONITORS + MOBILE
+            filter_type = COMPUTERS + MONITORS + MOBILE + OTHERS
 
         elif "All Computers" == self.device_type:
             filter_type = COMPUTERS
@@ -392,6 +394,7 @@ class NewDeviceForm(FlaskForm):
             "Keyboard": Keyboard,
             "SAI": SAI,
             "MemoryCardReader": MemoryCardReader,
+            "Other": Other,
         }
 
     def reset_from_obj(self):

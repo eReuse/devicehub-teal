@@ -72,6 +72,10 @@
                           <option value="Keyboard"
                           {% if form.type.data == 'Keyboard' %} selected="selected"{% endif %}>Keyboard</option>
                         </optgroup>
+                        <optgroup label="Other Type of Device">
+                          <option value="Other"
+                          {% if form.type.data == 'Other' %} selected="selected"{% endif %}>Other</option>
+                        </optgroup>
                       </select>
                       <small class="text-muted form-text">Type of devices</small>
                       {% if form.type.errors %}

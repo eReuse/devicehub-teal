@@ -695,3 +695,8 @@ class ManufacturerDef(Resource):
         """Loads the manufacturers to the database."""
         if exclude_schema != 'common':
             Manufacturer.add_all_to_session(db.session)
+
+
+class OtherDef(DeviceDef):
+    VIEW = None
+    SCHEMA = schemas.Other
