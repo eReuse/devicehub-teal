@@ -61,7 +61,6 @@
                       <th scope="col">Snapshot UUID</th>
                       <th scope="col">Version</th>
                       <th scope="col">DHID</th>
-                      <th scope="col">System UUID</th>
                       <th scope="col">Status</th>
                       <th scope="col">Type Upload</th>
                       <th scope="col">Type Device</th>
@@ -96,9 +95,6 @@
                           {{ snap.get_device() }}
                         </a>
                         {% endif %}
-                      </td>
-                      <td>
-                          {{ snap.get_system_uuid() }}
                       </td>
                       <td>
                           {{ snap.get_status() }}
