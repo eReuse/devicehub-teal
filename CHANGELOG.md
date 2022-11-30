@@ -14,6 +14,7 @@ ml).
 - [changed] #410 change teh top search for advanced search.
 - [fixed] #412 show in snapshots log, type upload correctly.
 - [fixed] #413 put order in documents.
+- [fixed] #415 put prefix of lot in result of search.
 
 ## [2.4.3] - 2022-11-18
 - [added] #386 add registration module.
