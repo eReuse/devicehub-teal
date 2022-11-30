@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## testing
+- [added] #414 add new vars in the settings file for wb.
 
 ## [2.5.0] - 2022-11-30
 - [added] #407 erasure section with tabs in top.

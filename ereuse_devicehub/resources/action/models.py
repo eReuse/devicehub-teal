@@ -676,6 +676,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     of time it took to complete.
     """
     sid = Column(CIText(), nullable=True)
+    settings_version = Column(CIText(), nullable=True)
     is_server_erase = Column(Boolean(), nullable=True)
 
     def get_last_lifetimes(self):
