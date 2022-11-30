@@ -172,7 +172,9 @@ class TradeDocument(Thing):
         return sorted(ev for ev in actions if ev.severity >= Severity.Warning)
 
     def __lt__(self, other):
-        return self.id < other.id
+        if self.id and other.id:
+            return self.id < other.id
+        return False
 
     def __str__(self) -> str:
         return '{0.file_name}'.format(self)
