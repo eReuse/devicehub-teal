@@ -73,7 +73,7 @@ class SnapshotsLog(Thing):
         snapshots = []
         for s in self.snapshot.device.actions:
             if s == self.snapshot:
-                continue
+                break
             if s.type == self.snapshot.type:
                 snapshots.append(s)
         return snapshots and 'Update' or 'New Device'

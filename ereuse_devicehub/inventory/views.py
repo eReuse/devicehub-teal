@@ -141,6 +141,7 @@ class ErasureListView(DeviceListMixin):
         )
         if orphans:
             schema = app.config.get('SCHEMA')
+            _user = g.user.id
             sql = f"""
                 select action.id from {schema}.action as action
                     inner join {schema}.erase_basic as erase
@@ -149,11 +150,14 @@ class ErasureListView(DeviceListMixin):
                         on device.id=action.parent_id
                     inner join {schema}.placeholder as placeholder
                         on placeholder.binding_id=device.id
-                    where action.parent_id is null or placeholder.kangaroo=true
+                    where (action.parent_id is null or placeholder.kangaroo=true)
+                    and action.author_id='{_user}'
             """
             ids = (e[0] for e in db.session.execute(sql))
-            erasure = EraseBasic.query.filter(EraseBasic.id.in_(ids)).order_by(
-                EraseBasic.created.desc()
+            erasure = (
+                EraseBasic.query.filter(EraseBasic.id.in_(ids))
+                .filter_by(author=g.user)
+                .order_by(EraseBasic.created.desc())
             )
             self.context['orphans'] = True
 
