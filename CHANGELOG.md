@@ -6,6 +6,35 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## testing
+- [added] #414 add new vars in the settings file for wb.
+
+## [2.5.0] - 2022-11-30
+- [added] #407 erasure section with tabs in top.
+- [added] #411 add new generic device as Other.
+- [changed] #409 add backend pagination instead of javascript.
+- [changed] #410 change teh top search for advanced search.
+- [fixed] #412 show in snapshots log, type upload correctly.
+- [fixed] #413 put order in documents.
+- [fixed] #415 put prefix of lot in result of search.
+
+## [2.4.3] - 2022-11-18
+- [added] #386 add registration module.
+- [added] #387 add template settings for Secure Erasure.
+- [added] #397 add obada standard export.
+- [added] #402 add reset password module.
+- [added] #406 add orphans disks page.
+- [changed] #391 add dhid in table and export of Erasure section.
+- [changed] #395 change response for the new api to workbench.
+- [changed] #396 modularize commands.
+- [fixed] #388 lock update different motherboard with the same id.
+- [fixed] #389 some datastorage without placeholder.
+- [fixed] #390 fix image in form edit device.
+- [fixed] #398 placeholder in new components.
+- [fixed] #399 add api_host in config.
+- [fixed] #401 db_host need to be api address.
+- [fixed] #403 change delimiter in obada export.
+- [fixed] #404 javascript select all devices.
+- [fixed] #405 update pillow.
 
 ## [2.4.2] - 2022-10-18
 - [added] #373 Enhancement - UX Lots.

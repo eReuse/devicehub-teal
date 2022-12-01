@@ -16,7 +16,7 @@
 
     <div class="col-xl-12">
 
-      <div class="card">
+      <div class="card d-none">
         <div class="tab-content pt-2">
           <div class="flex mt-4 mb-4">
             <form method="get" class="ms-4">
@@ -307,8 +307,8 @@
                         </a>
                         {% if dev.lots | length > 0 %}
                         <h6 class="d-inline">
-                          {% for lot in dev.lots %}
-                            <span class="badge rounded-pill bg-light text-dark">{{ lot.name }}</span>
+                          {% for lot in dev.get_lots_for_template() %}
+                            <span class="badge rounded-pill bg-light text-dark">{{ lot }}</span>
                           {% endfor %}
                         </h6>
                         {% endif %}

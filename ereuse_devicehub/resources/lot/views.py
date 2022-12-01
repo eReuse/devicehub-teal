@@ -306,7 +306,7 @@ class LotDeviceView(LotBaseChildrenView):
         dev_qry = Device.query.filter(Device.id.in_(ids)).filter(Device.owner == g.user)
 
         for dev in dev_qry:
-            if isinstance(dev, DataStorage) and dev.parent:
+            if isinstance(dev, DataStorage) and not dev.orphan:
                 continue
             devices.add(dev)
 
