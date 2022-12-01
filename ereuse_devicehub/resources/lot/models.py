@@ -51,6 +51,7 @@ class Lot(Thing):
         primaryjoin=lambda: Lot.id == LotParent.child_id,
         secondaryjoin=lambda: LotParent.parent_id == Lot.id,
         cascade='refresh-expire',  # propagate changes outside ORM
+        sync_backref=False,
         backref=db.backref(
             'children',
             viewonly=True,

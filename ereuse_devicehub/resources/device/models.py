@@ -831,15 +831,19 @@ class Device(Thing):
         if 'trublo' not in app.blueprints.keys() or not self.hid:
             return
 
+        if not session.get('token_dlt'):
+            return
+
         chid = hashlib.sha3_256(self.hid.encode('utf-8')).hexdigest()
-        token_dlt = session.get('token_dlt', ".").split(".")[1]
+        token_dlt = session.get('token_dlt').split(".")[1]
         api_dlt = app.config.get('API_DLT')
         if not token_dlt or not api_dlt:
             return
 
         api = API(api_dlt, token_dlt, "ethereum")
 
-        result = api.register_device(chid)
+        api.register_device(chid)
+        # result = api.register_device(chid)
 
     def __lt__(self, other):
         return self.id < other.id

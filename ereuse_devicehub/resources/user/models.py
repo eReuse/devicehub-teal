@@ -105,17 +105,21 @@ class User(UserMixin, Thing):
 
         from modules.trublo.utils import encrypt
 
+        # import pdb; pdb.set_trace()
         api_dlt = app.config.get('API_DLT')
         data = register_user(api_dlt)
+        api_token = data.get('data', {}).get('api_token')
         data = json.dumps(data)
         self.api_keys_dlt = encrypt(password, data)
-        return data.get('data', {}).get('api_token')
+        return api_token
 
     def get_dlt_keys(self, password):
         if 'trublo' not in app.blueprints.keys():
             return {}
 
         from modules.trublo.utils import decrypt
+
+        # import pdb; pdb.set_trace()
 
         if not self.api_keys_dlt:
             return {}
