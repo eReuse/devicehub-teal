@@ -73,10 +73,24 @@ class SnapshotsLog(Thing):
         snapshots = []
         for s in self.snapshot.device.actions:
             if s == self.snapshot:
-                continue
+                break
             if s.type == self.snapshot.type:
                 snapshots.append(s)
         return snapshots and 'Update' or 'New Device'
+
+    def get_system_uuid(self):
+        try:
+            return self.snapshot.device.system_uuid or ''
+        except AttributeError:
+            return ''
+
+    def get_version(self):
+        if not self.snapshot:
+            return self.version
+        settings_version = self.snapshot.settings_version or ''
+        settings_version = "".join([x[0] for x in settings_version.split(' ') if x])
+
+        return "{} ({})".format(self.version, settings_version)
 
 
 class PlaceholdersLog(Thing):

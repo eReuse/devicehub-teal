@@ -636,6 +636,14 @@ class Device(Thing):
         return self.devicehub_id
 
     @property
+    def my_partner(self):
+        if self.placeholder and self.placeholder.binding:
+            return self.placeholder.binding
+        if self.binding:
+            return self.binding.device
+        return self
+
+    @property
     def get_updated(self):
         if self.placeholder and self.placeholder.binding:
             return max([self.updated, self.placeholder.binding.updated])
@@ -1646,3 +1654,11 @@ def create_code_tag(mapper, connection, device):
 
 # from flask_sqlalchemy import event
 # event.listen(Device, 'after_insert', create_code_tag, propagate=True)
+
+
+class Other(Device):
+    """
+    Used for put in there all devices than not have actualy a class
+    """
+
+    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)

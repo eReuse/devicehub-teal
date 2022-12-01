@@ -55,15 +55,26 @@ devices = Blueprint('inventory', __name__, url_prefix='/inventory')
 logger = logging.getLogger(__name__)
 
 
+PER_PAGE = 20
+
+
 class DeviceListMixin(GenericMixin):
     template_name = 'inventory/device_list.html'
 
     def get_context(self, lot_id=None, all_devices=False):
         super().get_context()
 
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', PER_PAGE))
+        filter = request.args.get('filter', "All+Computers")
+        # import pdb; pdb.set_trace()
+
         lots = self.context['lots']
         form_filter = FilterForm(lots, lot_id, all_devices=all_devices)
-        devices = form_filter.search()
+        devices = form_filter.search().paginate(page=page, per_page=per_page)
+        devices.first = per_page * devices.page - per_page + 1
+        devices.last = len(devices.items) + devices.first - 1
+
         lot = None
         form_transfer = ''
         form_delivery = ''
@@ -92,6 +103,7 @@ class DeviceListMixin(GenericMixin):
                 'tags': self.get_user_tags(),
                 'list_devices': self.get_selected_devices(form_new_action),
                 'all_devices': all_devices,
+                'filter': filter,
             }
         )
 
@@ -118,16 +130,40 @@ class ErasureListView(DeviceListMixin):
     def dispatch_request(self, orphans=0):
         self.get_context()
         self.get_devices(orphans)
-        if orphans:
-            self.context['orphans'] = True
         return flask.render_template(self.template_name, **self.context)
 
     def get_devices(self, orphans):
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', PER_PAGE))
+
         erasure = EraseBasic.query.filter_by(author=g.user).order_by(
             EraseBasic.created.desc()
         )
         if orphans:
-            erasure = [e for e in erasure if e.device.orphan]
+            schema = app.config.get('SCHEMA')
+            _user = g.user.id
+            sql = f"""
+                select action.id from {schema}.action as action
+                    inner join {schema}.erase_basic as erase
+                        on action.id=erase.id
+                    inner join {schema}.device as device
+                        on device.id=action.parent_id
+                    inner join {schema}.placeholder as placeholder
+                        on placeholder.binding_id=device.id
+                    where (action.parent_id is null or placeholder.kangaroo=true)
+                    and action.author_id='{_user}'
+            """
+            ids = (e[0] for e in db.session.execute(sql))
+            erasure = (
+                EraseBasic.query.filter(EraseBasic.id.in_(ids))
+                .filter_by(author=g.user)
+                .order_by(EraseBasic.created.desc())
+            )
+            self.context['orphans'] = True
+
+        erasure = erasure.paginate(page=page, per_page=per_page)
+        erasure.first = per_page * erasure.page - per_page + 1
+        erasure.last = len(erasure.items) + erasure.first - 1
         self.context['erasure'] = erasure
 
 
@@ -1178,43 +1214,17 @@ class SnapshotListView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
     def get_snapshots_log(self):
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', PER_PAGE))
+
         snapshots_log = SnapshotsLog.query.filter(
             SnapshotsLog.owner == g.user
         ).order_by(SnapshotsLog.created.desc())
-        logs = {}
-        for snap in snapshots_log:
-            try:
-                system_uuid = snap.snapshot.device.system_uuid or ''
-            except AttributeError:
-                system_uuid = ''
 
-            if snap.snapshot_uuid not in logs:
-                logs[snap.snapshot_uuid] = {
-                    'sid': snap.sid,
-                    'snapshot_uuid': snap.snapshot_uuid,
-                    'version': snap.version,
-                    'device': snap.get_device(),
-                    'system_uuid': system_uuid,
-                    'status': snap.get_status(),
-                    'severity': snap.severity,
-                    'created': snap.created,
-                    'type_device': snap.get_type_device(),
-                    'original_dhid': snap.get_original_dhid(),
-                    'new_device': snap.get_new_device(),
-                }
-                continue
-
-            if snap.created > logs[snap.snapshot_uuid]['created']:
-                logs[snap.snapshot_uuid]['created'] = snap.created
-
-            if snap.severity > logs[snap.snapshot_uuid]['severity']:
-                logs[snap.snapshot_uuid]['severity'] = snap.severity
-                logs[snap.snapshot_uuid]['status'] = snap.get_status()
-
-        result = sorted(logs.values(), key=lambda d: d['created'])
-        result.reverse()
-
-        return result
+        snapshots_log = snapshots_log.paginate(page=page, per_page=per_page)
+        snapshots_log.first = per_page * snapshots_log.page - per_page + 1
+        snapshots_log.last = len(snapshots_log.items) + snapshots_log.first - 1
+        return snapshots_log
 
 
 class SnapshotDetailView(GenericMixin):
@@ -1344,9 +1354,16 @@ class PlaceholderLogListView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
     def get_placeholders_log(self):
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', PER_PAGE))
+
         placeholder_log = PlaceholdersLog.query.filter(
             PlaceholdersLog.owner == g.user
         ).order_by(PlaceholdersLog.created.desc())
+
+        placeholder_log = placeholder_log.paginate(page=page, per_page=per_page)
+        placeholder_log.first = per_page * placeholder_log.page - per_page + 1
+        placeholder_log.last = len(placeholder_log.items) + placeholder_log.first - 1
 
         return placeholder_log
 

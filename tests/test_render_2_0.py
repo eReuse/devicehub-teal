@@ -2368,6 +2368,9 @@ def test_upload_snapshot_smartphone(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_list_erasures(user3: UserClientFlask):
+    from flask import current_app as app
+
+    app.config['SCHEMA'] = 'test'
     uri = '/inventory/upload-snapshot/'
     file_name = 'erase-sectors-2-hdd.snapshot.yaml'
     body, status = user3.get(uri)
@@ -2467,6 +2470,7 @@ def test_bug_3831_documents(user3: UserClientFlask):
     assert 'Delete Lot' in body
     assert 'Incoming Lot' in body
 
+    lot_id = Lot.query.all()[1].id
     uri = f'/inventory/lot/{lot_id}/trade-document/add/'
     body, status = user3.get(uri)
 
@@ -2484,8 +2488,16 @@ def test_bug_3831_documents(user3: UserClientFlask):
     }
 
     uri = f'/inventory/lot/{lot_id}/trade-document/add/'
-    # body, status = user3.post(uri, data=data, content_type="multipart/form-data")
-    # assert status == '200 OK'
+    body, status = user3.post(uri, data=data, content_type="multipart/form-data")
+    assert status == '200 OK'
+
+    # Second document
+    uri = f'/inventory/lot/{lot_id}/trade-document/add/'
+    file_upload = (BytesIO(b_file), file_name)
+    data['file'] = file_upload
+    data['csrf_token'] = generate_csrf()
+    body, status = user3.post(uri, data=data, content_type="multipart/form-data")
+    assert status == '200 OK'
 
 
 @pytest.mark.mvp

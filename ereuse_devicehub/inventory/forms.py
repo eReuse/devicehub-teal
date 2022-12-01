@@ -50,11 +50,15 @@ from ereuse_devicehub.resources.device.models import (
     Keyboard,
     Laptop,
     MemoryCardReader,
+    Monitor,
     Mouse,
+    Other,
     Placeholder,
+    Projector,
     Server,
     Smartphone,
     Tablet,
+    TelevisionSet,
 )
 from ereuse_devicehub.resources.documents.models import DataWipeDocument
 from ereuse_devicehub.resources.enums import Severity
@@ -81,16 +85,23 @@ DEVICES = {
     ],
     "Mobile, tablet & smartphone": [
         "All Mobile",
-        "Mobile",
         "Tablet",
         "Smartphone",
         "Cellphone",
     ],
     "Drives & Storage": [
         "All DataStorage",
-        "HardDrives",
+        "HardDrive",
         "SolidStageDrive",
     ],
+    "Accessories": [
+        "All Accessories",
+        "Mouse",
+        "MemoryCardReader",
+        "SAI",
+        "Keyboard",
+    ],
+    "Other Devices": ["Other"],
 }
 
 COMPUTERS = ['Desktop', 'Laptop', 'Server', 'Computer']
@@ -98,6 +109,8 @@ COMPUTERS = ['Desktop', 'Laptop', 'Server', 'Computer']
 MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
 MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
 STORAGE = ["HardDrive", "SolidStateDrive"]
+ACCESSORIES = ["Mouse", "MemoryCardReader", "SAI", "Keyboard"]
+OTHERS = ["Other"]
 
 
 class AdvancedSearchForm(FlaskForm):
@@ -170,7 +183,7 @@ class FilterForm(FlaskForm):
 
         # Generic Filters
         if "All Devices" == self.device_type:
-            filter_type = COMPUTERS + MONITORS + MOBILE
+            filter_type = COMPUTERS + MONITORS + MOBILE + OTHERS
 
         elif "All Computers" == self.device_type:
             filter_type = COMPUTERS
@@ -183,6 +196,9 @@ class FilterForm(FlaskForm):
 
         elif "All DataStorage" == self.device_type:
             filter_type = STORAGE
+
+        elif "All Accessories" == self.device_type:
+            filter_type = ACCESSORIES
 
         if filter_type:
             self.devices = self.devices.filter(Device.type.in_(filter_type))
@@ -371,10 +387,14 @@ class NewDeviceForm(FlaskForm):
             "Tablet": Tablet,
             "Cellphone": Cellphone,
             "ComputerMonitor": ComputerMonitor,
+            "Monitor": Monitor,
+            "TelevisionSet": TelevisionSet,
+            "Projector": Projector,
             "Mouse": Mouse,
             "Keyboard": Keyboard,
             "SAI": SAI,
             "MemoryCardReader": MemoryCardReader,
+            "Other": Other,
         }
 
     def reset_from_obj(self):

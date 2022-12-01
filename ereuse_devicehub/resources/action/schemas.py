@@ -453,6 +453,7 @@ class Snapshot(ActionWithOneDevice):
         'Order is preserved, so the component num 0 when'
         'submitting is the component num 0 when returning it back.',
     )
+    settings_version = String(required=False)
 
     @validates_schema
     def validate_workbench_version(self, data: dict):
