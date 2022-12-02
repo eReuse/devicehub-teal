@@ -747,13 +747,13 @@ class Device(Thing):
 
     def set_hid(self):
         """
-        # product_vendor,
-        # product_family,
-        # product_chassis,
-        # product_number,
+        # product_vendor, is a manufacturer
+        # product_family, is a model but from dmidecode
+        # product_chassis, is a type of chassis
+        # product_number, is a ??
         # product_version,
         # product_sku,
-        # product_serial,
+        # product_serial, is a serial number
         # product_uuid,
         # board_vendor,
         # board_number,
@@ -762,6 +762,8 @@ class Device(Thing):
         """
         with suppress(TypeError):
             family = (self.family or '').replace(' ', '_')
+            model = ((self.model or '').replace(' ', '_'),)
+            model = model or family
             chassis = self.type
             if hasattr(self, 'chassis'):
                 chassis = self.chassis and self.chassis.name or ''
@@ -792,12 +794,11 @@ class Device(Thing):
             self.hid = '-'.join(
                 [
                     (self.manufacturer or '').replace(' ', '_'),
-                    family,
+                    model,
                     chassis,
-                    (self.model or '').replace(' ', '_'),
+                    self.serial_number,
                     version,
                     sku,
-                    self.serial_number,
                     system_uuid,
                     board_manufacturer,
                     board_model,
