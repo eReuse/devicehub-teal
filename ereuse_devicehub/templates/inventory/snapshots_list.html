@@ -92,7 +92,7 @@
                       </td>
                       <td>
                         {% if snap.get_device() %}
-                        <a href="{{ url_for('inventory.device_details', id=snap.device) }}">
+                        <a href="{{ url_for('inventory.device_details', id=snap.get_device()) }}">
                           {{ snap.get_device() }}
                         </a>
                         {% endif %}
