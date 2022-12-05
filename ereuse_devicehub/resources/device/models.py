@@ -748,9 +748,9 @@ class Device(Thing):
     def set_hid(self):
         """
         # product_vendor, is a manufacturer
-        # product_family, is a model but from dmidecode
+        # product_family, is a new field of lshw
         # product_chassis, is a type of chassis
-        # product_number, is a ??
+        # product_number, is a model
         # product_version,
         # product_sku,
         # product_serial, is a serial number
@@ -763,7 +763,6 @@ class Device(Thing):
         with suppress(TypeError):
             family = (self.family or '').replace(' ', '_')
             model = ((self.model or '').replace(' ', '_'),)
-            model = model or family
             chassis = self.type
             if hasattr(self, 'chassis'):
                 chassis = self.chassis and self.chassis.name or ''
