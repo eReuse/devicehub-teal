@@ -747,6 +747,7 @@ class Device(Thing):
 
     def set_hid(self):
         """
+        The order is important
         # product_vendor, is a manufacturer
         # product_family, is a new field of lshw
         # product_chassis, is a type of chassis
@@ -793,11 +794,12 @@ class Device(Thing):
             self.hid = '-'.join(
                 [
                     (self.manufacturer or '').replace(' ', '_'),
-                    model,
+                    family,
                     chassis,
-                    self.serial_number,
+                    model,
                     version,
                     sku,
+                    self.serial_number,
                     system_uuid,
                     board_manufacturer,
                     board_model,
