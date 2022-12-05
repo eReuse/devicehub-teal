@@ -213,9 +213,9 @@ class Computer(Device):
         """Validates than exist model manufacturer and system_uuid."""
 
         minimum = [
-            data['manufacturer'],
-            data['model'],
-            data['system_uuid'],
+            data.get('manufacturer'),
+            data.get('model'),
+            data.get('system_uuid'),
         ]
 
         if not all(minimum):

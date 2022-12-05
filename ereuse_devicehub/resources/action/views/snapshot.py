@@ -8,7 +8,6 @@ from uuid import UUID
 
 from flask import current_app as app
 from flask import g
-from marshmallow import ValidationError
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
@@ -118,10 +117,6 @@ class SnapshotMixin:
 
         snapshot.device.set_hid()
         snapshot.device.binding.device.set_hid()
-        if not snapshot.device.hid:
-            txt = "Not exist the basic fields for to do an device. "
-            txt += "Please do one placeholder instead of one snapshot"
-            raise ValidationError(txt)
 
         return snapshot
 
