@@ -8,6 +8,7 @@ from uuid import UUID
 
 from flask import current_app as app
 from flask import g
+from marshmallow import ValidationError
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
@@ -115,6 +116,13 @@ class SnapshotMixin:
 
         self.is_server_erase(snapshot)
 
+        snapshot.device.set_hid()
+        snapshot.device.binding.device.set_hid()
+        if not snapshot.device.hid:
+            txt = "Not exist the basic fields for to do an device. "
+            txt += "Please do one placeholder instead of one snapshot"
+            raise ValidationError(txt)
+
         return snapshot
 
     def is_server_erase(self, snapshot):
@@ -219,8 +227,6 @@ class SnapshotView(SnapshotMixin):
         try:
             self.snapshot_json = resource_def.schema.load(snapshot_json)
             snapshot = self.build()
-            snapshot.device.set_hid()
-            snapshot.device.binding.device.set_hid()
         except Exception as err:
             txt = "{}".format(err)
             self.errors(txt=txt, commit=True)

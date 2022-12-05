@@ -772,6 +772,8 @@ class Device(Thing):
             system_uuid = ''
             if hasattr(self, 'system_uuid'):
                 system_uuid = str(self.system_uuid or '')
+                if not system_uuid or not self.manufacturer:
+                    return ''
 
             board = None
             board_serial_number = ''

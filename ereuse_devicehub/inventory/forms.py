@@ -318,8 +318,6 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
             try:
                 snapshot_json = schema.load(snapshot_json)
                 response = self.build(snapshot_json)
-                response.device.set_hid()
-                response.device.binding.device.set_hid()
             except ValidationError as err:
                 txt = "{}".format(err)
                 self.errors(txt=txt)
