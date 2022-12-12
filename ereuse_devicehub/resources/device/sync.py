@@ -212,19 +212,10 @@ class Sync:
                         placeholder=None,
                     ).one()
             # if no there are any Computer by uuid search by hid
-            if not db_device and device.hid:
-                with suppress(ResourceNotFound):
-                    db_device = Device.query.filter_by(
-                        hid=device.hid,
-                        owner_id=g.user.id,
-                        active=True,
-                        placeholder=None,
-                    ).one()
+            if not db_device:
+                db_device = device.get_from_db()
         elif device.hid:
-            with suppress(ResourceNotFound):
-                db_device = Device.query.filter_by(
-                    hid=device.hid, owner_id=g.user.id, active=True, placeholder=None
-                ).one()
+            db_device = device.get_from_db()
 
         if db_device and db_device.allocated:
             raise ResourceNotFound('device is actually allocated {}'.format(device))

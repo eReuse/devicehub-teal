@@ -745,7 +745,7 @@ class Device(Thing):
 
         return ""
 
-    def set_hid(self):
+    def set_new_hid(self):
         """
         The order is important
         # product_vendor, is a manufacturer
@@ -814,7 +814,18 @@ class Device(Thing):
         if self.hid:
             return hashlib.sha3_512(self.hid.encode()).hexdigest()
 
-    def set_old_hid(self):
+    def get_from_db(self):
+        if not self.hid:
+            return
+
+        return Device.query.filter_by(
+            hid=self.hid,
+            owner_id=g.user.id,
+            active=True,
+            placeholder=None,
+        ).first()
+
+    def set_hid(self):
         with suppress(TypeError):
             self.hid = Naming.hid(
                 self.type, self.manufacturer, self.model, self.serial_number

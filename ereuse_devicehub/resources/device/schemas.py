@@ -208,21 +208,6 @@ class Computer(Device):
     receiver_id = UUID(data_key='receiverID')
     system_uuid = UUID(required=False)
 
-    @post_load
-    def validate_hid(self, data):
-        """Validates than exist model manufacturer and system_uuid."""
-
-        minimum = [
-            data.get('manufacturer'),
-            data.get('model'),
-            data.get('system_uuid'),
-        ]
-
-        if not all(minimum):
-            txt = 'You can not register one device with out minimum datas, '
-            txt += 'you can to do one placeholder.'
-            raise ValidationError(txt)
-
 
 class Desktop(Computer):
     __doc__ = m.Desktop.__doc__
