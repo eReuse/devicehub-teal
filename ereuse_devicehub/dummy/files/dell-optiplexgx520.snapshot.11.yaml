@@ -148,6 +148,7 @@
     "model": "0UG982"
   }
   ],
+  "debug": {"lshw": {"configuration": {"uuid": "5dcdd380-5a54-48bc-99bf-aff6019e8491"}}},
   "version": "11.0a3",
   "closed": false,
   "elapsed": 1512,

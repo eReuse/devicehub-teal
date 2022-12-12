@@ -119,6 +119,7 @@
     "manufacturer": "ASUSTeK Computer INC."
   }
   ],
+  "debug": {"lshw": {"configuration": {"uuid": "645f00bf-1ec0-4fdb-9608-b5ac73e285f6"}}},
   "version": "11.0a4",
   "elapsed": 6,
   "endTime": "2016-11-03T17:17:17.266543+00:00"

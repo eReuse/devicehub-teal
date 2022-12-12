@@ -146,6 +146,7 @@
     "pcmcia": 0
   }
   ],
+  "debug": {"lshw": {"configuration": {"uuid": "fcaf784e-5e57-43a2-b03f-8c56dabd0415"}}},
   "uuid": "a01eacdb-db01-43ec-b6fb-a9b8cd21492d",
   "type": "Snapshot",
   "version": "11.0a4",
