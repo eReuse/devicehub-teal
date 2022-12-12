@@ -1421,7 +1421,7 @@ def test_settings_version(user: UserClient):
     """Tests when we have one computer and then we change the disk, then
     the new disk need to have placeholder too."""
     s = yaml2json('real-eee-1001pxd.snapshot.12')
-    s['settings_version']= 'Basic Metadata (BM)'
+    s['settings_version'] = 'Basic Metadata (BM)'
     snap1, _ = user.post(s, res=Snapshot)
     dev1 = m.Device.query.filter_by(id=snap1['device']['id']).one()
     assert m.Placeholder.query.count() * 2 == m.Device.query.count()
