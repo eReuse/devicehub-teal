@@ -1,6 +1,5 @@
 import copy
 import difflib
-from contextlib import suppress
 from itertools import groupby
 from typing import Iterable, Set
 
@@ -16,12 +15,17 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import Remove
 from ereuse_devicehub.resources.device.models import (
     Component,
-    Computer,
     DataStorage,
     Device,
     Placeholder,
 )
 from ereuse_devicehub.resources.tag.model import Tag
+
+try:
+    from modules.device.models import Computer
+except:
+    from ereuse_devicehub.resources.device.models import Computer
+
 
 DEVICES_ALLOW_DUPLICITY = [
     'RamModule',
@@ -200,22 +204,7 @@ class Sync:
         assert all(
             inspect(tag).transient for tag in device.tags
         ), 'Tags cannot be synced from DB'
-        db_device = None
-        if isinstance(device, Computer):
-            # first search by uuid
-            if device.system_uuid:
-                with suppress(ResourceNotFound):
-                    db_device = Computer.query.filter_by(
-                        system_uuid=device.system_uuid,
-                        owner_id=g.user.id,
-                        active=True,
-                        placeholder=None,
-                    ).one()
-            # if no there are any Computer by uuid search by hid
-            if not db_device:
-                db_device = device.get_from_db()
-        elif device.hid:
-            db_device = device.get_from_db()
+        db_device = device.get_from_db()
 
         if db_device and db_device.allocated:
             raise ResourceNotFound('device is actually allocated {}'.format(device))
