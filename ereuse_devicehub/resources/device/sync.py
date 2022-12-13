@@ -15,17 +15,11 @@ from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action.models import Remove
 from ereuse_devicehub.resources.device.models import (
     Component,
-    DataStorage,
+    Computer,
     Device,
     Placeholder,
 )
 from ereuse_devicehub.resources.tag.model import Tag
-
-try:
-    from modules.device.models import Computer
-except:
-    from ereuse_devicehub.resources.device.models import Computer
-
 
 DEVICES_ALLOW_DUPLICITY = [
     'RamModule',
