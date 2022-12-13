@@ -770,6 +770,7 @@ class Device(Thing):
             from modules.device.utils import set_hid
 
             self.hid = set_hid(self)
+            self.set_chid()
             return
         except Exception:
             pass
@@ -778,6 +779,7 @@ class Device(Thing):
             self.hid = Naming.hid(
                 self.type, self.manufacturer, self.model, self.serial_number
             )
+        self.set_chid()
 
     def set_chid(self):
         if self.hid:
