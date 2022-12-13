@@ -5,11 +5,11 @@ Revises: 564952310b17
 Create Date: 2022-12-13 10:14:45.500087
 
 """
-from alembic import context, op
-import sqlalchemy as sa
-import citext
 import hashlib
 
+import citext
+import sqlalchemy as sa
+from alembic import context, op
 
 # revision identifiers, used by Alembic.
 revision = '93daff872771'
@@ -54,12 +54,7 @@ def upgrade():
 
     upgrade_data()
 
-    op.alter_column(
-        'computer',
-        'user_trusts',
-        nullable=False,
-        schema=f'{get_inv()}'
-    )
+    op.alter_column('computer', 'user_trusts', nullable=False, schema=f'{get_inv()}')
 
 
 def downgrade():
