@@ -67,9 +67,10 @@ class Sync:
                     of the passed-in components.
                  2. A list of Add / Remove (not yet added to session).
         """
-        device.components = OrderedSet(components)
-        device.set_hid()
-        device.components = OrderedSet()
+        if components:
+            device.components = OrderedSet(components)
+            device.set_hid()
+            device.components = OrderedSet()
         db_device = self.execute_register(device)
 
         db_components, actions = OrderedSet(), OrderedSet()
@@ -113,7 +114,6 @@ class Sync:
                  - A flag stating if the device is new or it already
                    existed in the DB.
         """
-        # if device.serial_number == 'b8oaas048286':
         assert inspect(component).transient, 'Component should not be synced from DB'
         # if not is a DataStorage, then need build a new one
         if component.t in DEVICES_ALLOW_DUPLICITY:
@@ -121,15 +121,14 @@ class Sync:
             is_new = True
             return component, is_new
 
+        db_component = None
+
         if component.hid:
             db_component = Device.query.filter_by(
                 hid=component.hid, owner_id=g.user.id, placeholder=None
             ).first()
-            assert isinstance(db_component, Device), '{} must be a component'.format(
-                db_component
-            )
             is_new = False
-        else:
+        if not db_component:
             db.session.add(component)
             db_component = component
             is_new = True
@@ -177,7 +176,7 @@ class Sync:
             # Manage 'one tag per organization' unique constraint
             if 'One tag per organization' in e.args[0]:
                 # todo test for this
-                id = int(e.args[0][135 : e.args[0].index(',', 135)])
+                id = int(e.args[0][135 : e.args[0].index(',', 135)])  # noqa: E203
                 raise ValidationError(
                     'The device is already linked to tag {} '
                     'from the same organization.'.format(id),
