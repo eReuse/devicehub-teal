@@ -285,7 +285,7 @@ class DeviceRow(BaseDeviceRow):
             self['Tag {} ID'.format(i)] = tag.id
             self['Tag {} Organization'.format(i)] = tag.org.name
 
-        self['Device Hardware ID'] = device.hid
+        self['Device Hardware ID'] = device.chid
         self['Device Type'] = device.t
         if isinstance(device, d.Computer) and not device.placeholder:
             self['Device Chassis'] = device.chassis.name
@@ -433,12 +433,12 @@ class DeviceRow(BaseDeviceRow):
         ]
         erasure = erasures[-1] if erasures else None
         if not erasure:
-            self['Erasure {} {}'.format(ctype, i)] = none2str(component.hid)
+            self['Erasure {} {}'.format(ctype, i)] = none2str(component.chid)
             serial_number = none2str(component.serial_number)
             self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
             self['Erasure {} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
         elif hasattr(erasure, 'type') and erasure.type == 'DataWipe':
-            self['Erasure {} {}'.format(ctype, i)] = none2str(component.hid)
+            self['Erasure {} {}'.format(ctype, i)] = none2str(component.chid)
             serial_number = none2str(component.serial_number)
             self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
             self['Erasure {} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
@@ -448,7 +448,7 @@ class DeviceRow(BaseDeviceRow):
                 erasure.document.url and erasure.document.url.to_text() or ''
             )
         else:
-            self['Erasure {} {}'.format(ctype, i)] = none2str(component.hid)
+            self['Erasure {} {}'.format(ctype, i)] = none2str(component.chid)
             serial_number = none2str(component.serial_number)
             self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
             self['Erasure {} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
@@ -594,7 +594,7 @@ class ActionRow(OrderedDict):
         super().__init__()
         # General information about allocates, deallocate and lives
         self['DHID'] = allocate['devicehubID']
-        self['Hid'] = allocate['hid']
+        self['Hid'] = allocate['chid']
         self['Document-Name'] = allocate['document_name']
         self['Action-Type'] = allocate['action_type']
         self['Action-User-LastOwner-Supplier'] = allocate['trade_supplier']
