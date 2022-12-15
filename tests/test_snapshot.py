@@ -1420,29 +1420,11 @@ def test_bug_4028_components(user: UserClient):
 def test_settings_version(user: UserClient):
     """Tests when we have one computer and then we change the disk, then
     the new disk need to have placeholder too."""
-    s = yaml2json('real-eee-1001pxd.snapshot.12')
-    s['settings_version'] = 'Basic Metadata (BM)'
-    snap1, _ = user.post(s, res=Snapshot)
-    dev1 = m.Device.query.filter_by(id=snap1['device']['id']).one()
-    assert m.Placeholder.query.count() * 2 == m.Device.query.count()
-    components1 = [c for c in dev1.components]
-    for c in s['components']:
-        if c['type'] == 'HardDrive':
-            c['serialNumber'] = 'E2024242CV86MF'
+    s = file_json("2022-03-31_17h18m51s_ZQMPKKX51K67R68VO2X9RNZL08JPL_snapshot.json")
+    body, res = user.post(s, uri="/api/inventory/")
+    assert m.Computer.query.first().dhid == body['dhid']
+    snapshot = Snapshot.query.first()
+    log = SnapshotsLog.query.first()
 
-    s['uuid'] = str(uuid4())
-    snap2, _ = user.post(s, res=Snapshot)
-    dev2 = m.Device.query.filter_by(id=snap2['device']['id']).one()
-    components2 = [c for c in dev2.components]
-
-    assert '' not in [c.phid() for c in components1]
-    assert '' not in [c.phid() for c in components2]
-    assert len(components1) == len(components2)
-    assert m.Placeholder.query.count() == 16
-    assert m.Placeholder.query.count() * 2 == m.Device.query.count()
-    for c in m.Placeholder.query.filter():
-        assert c.binding
-        assert c.device
-
-    for c in m.Device.query.filter():
-        assert c.binding or c.placeholder
+    assert log.get_version() == "14.0 (BM)"
+    assert snapshot.settings_version == "Basic Metadata"

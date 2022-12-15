@@ -22,6 +22,7 @@ class Snapshot_lite(Thing):
     sid = String(required=True)
     type = String(required=True)
     timestamp = String(required=True)
+    settings_version = String(required=False)
     data = Nested(Snapshot_lite_data, required=True)
 
     @validates_schema
