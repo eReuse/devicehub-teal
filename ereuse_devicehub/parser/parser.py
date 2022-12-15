@@ -343,6 +343,7 @@ class ParseSnapshotLsHw:
             "components": self.components,
             "uuid": snapshot['uuid'],
             "version": "14.0.0",
+            "settings_version": snapshot.get("settings_version"),
             "endTime": snapshot["timestamp"],
             "elapsed": 1,
             "sid": snapshot["sid"],
