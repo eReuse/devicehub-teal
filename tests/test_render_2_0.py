@@ -714,7 +714,7 @@ def test_add_laptop(user3: UserClientFlask):
     assert typ == 'Laptop'
     assert dev.placeholder.id_device_supplier == "b2"
     assert (
-        dev.chid == '69c57a32166b146c27a37ea74632f167d9a83fcbb23f11f93cc55cb9e6878e2b'
+        dev.chid == '274f05421e4d394c5b3cd10266fed6f0500029b104b5db3521689bda589e3150'
     )
     assert phid == '1'
     assert dhid == 'O48N2'
@@ -754,9 +754,10 @@ def test_add_with_ammount_laptops(user3: UserClientFlask):
     for dev in Device.query.all():
         assert dev.type == 'Laptop'
         assert dev.placeholder.id_device_supplier is None
+        assert dev.hid == 'laptop-samsung-lc27t55-'
         assert (
             dev.chid
-            == 'ab606f8b822dcd9276a6c492161fe592047ea98816387d149b2ccfbb5a7ebd30'
+            == 'ff8e7794d33ed22046b8d94b8bba4d8d1507f0fee535150835cac28faabbcda1'
         )
         assert dev.placeholder.phid in [str(x) for x in range(1, num + 1)]
     assert Device.query.count() == num
@@ -1702,7 +1703,6 @@ def test_export_lots(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_export_snapshot_json(user3: UserClientFlask):
-    # ??
     file_name = 'real-eee-1001pxd.snapshot.13.json'
     snap = create_device(user3, file_name)
 
@@ -1712,7 +1712,10 @@ def test_export_snapshot_json(user3: UserClientFlask):
     uri = "/inventory/export/snapshot/?id={}".format(snap.uuid)
     body, status = user3.get(uri)
     assert status == '200 OK'
-    assert body == snapshot
+    body = json.loads(body)
+    snapshot = json.loads(snapshot)
+    assert body['device'] == snapshot['device']
+    assert body['components'] == snapshot['components']
 
 
 @pytest.mark.mvp
@@ -1733,7 +1736,7 @@ def test_add_placeholder_excel(user3: UserClientFlask):
         user3.post(uri, data=data, content_type="multipart/form-data")
     assert Device.query.count() == 3
     dev = Device.query.first()
-    chid = 'fa7eb51fad01a46b7bbe92fee9d4067e698f6cee9896beece3ace48e15c67652'
+    chid = 'f28ae12ffd513f5ed8fb6714a344a2326c48a7196fb140435065ab96ffda1a71'
     assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
@@ -1760,7 +1763,7 @@ def test_add_placeholder_csv(user3: UserClientFlask):
         user3.post(uri, data=data, content_type="multipart/form-data")
     assert Device.query.count() == 3
     dev = Device.query.first()
-    chid = 'fa7eb51fad01a46b7bbe92fee9d4067e698f6cee9896beece3ace48e15c67652'
+    chid = 'f28ae12ffd513f5ed8fb6714a344a2326c48a7196fb140435065ab96ffda1a71'
     assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
@@ -1787,7 +1790,7 @@ def test_add_placeholder_ods(user3: UserClientFlask):
         user3.post(uri, data=data, content_type="multipart/form-data")
     assert Device.query.count() == 3
     dev = Device.query.first()
-    chid = 'fa7eb51fad01a46b7bbe92fee9d4067e698f6cee9896beece3ace48e15c67652'
+    chid = 'f28ae12ffd513f5ed8fb6714a344a2326c48a7196fb140435065ab96ffda1a71'
     assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
@@ -1816,7 +1819,7 @@ def test_add_placeholder_office_open_xml(user3: UserClientFlask):
         user3.post(uri, data=data, content_type="multipart/form-data")
     assert Device.query.count() == 3
     dev = Device.query.first()
-    chid = 'fa7eb51fad01a46b7bbe92fee9d4067e698f6cee9896beece3ace48e15c67652'
+    chid = 'f28ae12ffd513f5ed8fb6714a344a2326c48a7196fb140435065ab96ffda1a71'
     assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
@@ -1855,7 +1858,7 @@ def test_edit_laptop(user3: UserClientFlask):
 
     assert typ == 'Laptop'
     assert dev.placeholder.id_device_supplier == "b2"
-    chid = '69c57a32166b146c27a37ea74632f167d9a83fcbb23f11f93cc55cb9e6878e2b'
+    chid = '274f05421e4d394c5b3cd10266fed6f0500029b104b5db3521689bda589e3150'
     assert dev.chid == chid
     assert dev.serial_number == 'aaaab'
     assert dev.model == 'lc27t55'
@@ -2086,7 +2089,7 @@ def test_add_placeholder_excel_from_lot(user3: UserClientFlask):
         user3.post(uri, data=data, content_type="multipart/form-data")
     assert Device.query.count() == 3
     dev = Device.query.first()
-    chid = 'fa7eb51fad01a46b7bbe92fee9d4067e698f6cee9896beece3ace48e15c67652'
+    chid = 'f28ae12ffd513f5ed8fb6714a344a2326c48a7196fb140435065ab96ffda1a71'
     assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
@@ -2126,7 +2129,7 @@ def test_add_new_placeholder_from_lot(user3: UserClientFlask):
     }
     user3.post(uri, data=data)
     dev = Device.query.one()
-    chid = '69c57a32166b146c27a37ea74632f167d9a83fcbb23f11f93cc55cb9e6878e2b'
+    chid = '274f05421e4d394c5b3cd10266fed6f0500029b104b5db3521689bda589e3150'
     assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert len(lot.devices) == 1
@@ -2152,7 +2155,7 @@ def test_manual_binding(user3: UserClientFlask):
     }
     user3.post(uri, data=data)
     dev = Device.query.one()
-    chid = '69c57a32166b146c27a37ea74632f167d9a83fcbb23f11f93cc55cb9e6878e2b'
+    chid = '274f05421e4d394c5b3cd10266fed6f0500029b104b5db3521689bda589e3150'
     assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.is_abstract is False
@@ -2166,7 +2169,7 @@ def test_manual_binding(user3: UserClientFlask):
     assert dev_wb.binding.is_abstract is True
     assert (
         dev_wb.chid
-        == '49b3920735c11693c43cef6199af95798ac00dbd61cc3224eae5e9f04d3313fb'
+        == '83cb9066430a8ea7def04af61d521d6517193a486c02ea3bc914c9eaeb2b718b'
     )
     assert dev_wb.binding.phid == '11'
     old_placeholder = dev_wb.binding
@@ -2665,7 +2668,7 @@ def test_system_uuid_motherboard(user3: UserClientFlask):
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
     snapshot2 = Snapshot.query.filter_by(uuid=snapshot_json['uuid']).first()
-    assert snapshot2.device != snapshot.device
+    assert snapshot2.device == snapshot.device
     for c in snapshot.device.components:
         if c.type == 'Motherboard':
-            assert c.serial_number == 'eee0123456720'
+            assert c.serial_number == 'abee0123456720'

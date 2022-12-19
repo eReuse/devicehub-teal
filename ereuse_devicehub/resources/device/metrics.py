@@ -21,27 +21,29 @@ class MetricsMix:
         """
         This is a template of a row.
         """
-        return {'type': '',
-                'action_type': 'Status',
-                'document_name': '',
-                'status_receiver': self.status_receiver,
-                'status_supplier': self.status_supplier,
-                'status_receiver_created': '',
-                'status_supplier_created': '',
-                'trade_supplier': '',
-                'trade_receiver': self.act.author.email,
-                'trade_confirmed': '',
-                'trade_weight': 0,
-                'action_create_by': self.action_create_by,
-                'devicehubID': self.devicehub_id,
-                'hid': self.hid,
-                'finalUserCode': '',
-                'numEndUsers': 0,
-                'liveCreate': 0,
-                'usageTimeHdd': self.lifetime,
-                'created': self.act.created,
-                'start': '',
-                'usageTimeAllocate': 0}
+        return {
+            'type': '',
+            'action_type': 'Status',
+            'document_name': '',
+            'status_receiver': self.status_receiver,
+            'status_supplier': self.status_supplier,
+            'status_receiver_created': '',
+            'status_supplier_created': '',
+            'trade_supplier': '',
+            'trade_receiver': self.act.author.email,
+            'trade_confirmed': '',
+            'trade_weight': 0,
+            'action_create_by': self.action_create_by,
+            'devicehubID': self.devicehub_id,
+            'hid': self.hid,
+            'finalUserCode': '',
+            'numEndUsers': 0,
+            'liveCreate': 0,
+            'usageTimeHdd': self.lifetime,
+            'created': self.act.created,
+            'start': '',
+            'usageTimeAllocate': 0,
+        }
 
     def get_metrics(self):
         """
@@ -57,7 +59,7 @@ class Metrics(MetricsMix):
         self.device = kwargs.pop('device')
         self.actions = copy.copy(self.device.actions)
         super().__init__(*args, **kwargs)
-        self.hid = self.device.hid
+        self.hid = self.device.chid
         self.devicehub_id = self.device.devicehub_id
 
     def get_action_status(self):

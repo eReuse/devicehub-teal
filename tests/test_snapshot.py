@@ -368,7 +368,7 @@ def test_snapshot_post_without_hid(user: UserClient):
     assert response_snapshot['uuid'] == '9a3e7485-fdd0-47ce-bcc7-65c55226b598'
     assert response_snapshot['elapsed'] == 4
     assert response_snapshot['author']['id'] == user.user['id']
-    assert response_snapshot['severity'] == 'Warning'
+    assert response_snapshot['severity'] == 'Info'
     assert response_status.status_code == 201
 
 
@@ -391,7 +391,7 @@ def test_snapshot_tag_inner_tag_mismatch_between_tags_and_hid(
     pc2 = yaml2json('1-device-with-components.snapshot')
     user.post(json_encode(pc2), res=Snapshot)  # PC2 uploads well
     pc2['device']['tags'] = [{'type': 'Tag', 'id': tag_id}]  # Set tag from pc1 to pc2
-    user.post(json_encode(pc2), res=Snapshot, status=MismatchBetweenTagsAndHid)
+    user.post(json_encode(pc2), res=Snapshot, status=400)
 
 
 @pytest.mark.mvp
@@ -411,7 +411,7 @@ def test_snapshot_different_properties_same_tags(user: UserClient, tag_id: str):
     pc2['device']['tags'] = pc1['device']['tags']
     # pc2 model is unknown but pc1 model is set = different property
     del pc2['device']['model']
-    user.post(json_encode(pc2), res=Snapshot, status=MismatchBetweenProperties)
+    user.post(json_encode(pc2), res=Snapshot, status=201)
 
 
 @pytest.mark.mvp
@@ -684,7 +684,8 @@ def test_erase_changing_hdd_between_pcs(user: UserClient):
     tag2 = Tag(id='dev2', device=dev2)
     db.session.commit()
 
-    assert dev2.components[1].actions[2].parent == dev1
+    assert dev2.components[2].parent == dev2
+    assert dev2.components[2].actions[-1].device == dev1
     doc1, response = user.get(
         res=documents.DocumentDef.t, item='erasures/{}'.format(dev1.id), accept=ANY
     )
@@ -1004,7 +1005,8 @@ def test_snapshot_wb_lite(user: UserClient):
     assert dev.dhid in body['public_url']
     assert ssd.serial_number == 's35anx0j401001'
     assert res.status == '201 CREATED'
-    assert '00:28:f8:a6:d5:7e' in dev.hid
+    chid = '7619bf5dfa630c8bd6d431c56777f6334d5c1e2e55d90c0dc4d1e99f80f031c1'
+    assert dev.chid == chid
 
     assert dev.actions[0].power_on_hours == 6032
     errors = SnapshotsLog.query.filter().all()
@@ -1028,7 +1030,7 @@ def test_snapshot_wb_lite_qemu(user: UserClient):
     assert dev.manufacturer == 'qemu'
     assert dev.model == 'standard'
     assert dev.serial_number is None
-    assert dev.hid is None
+    assert dev.hid == 'computer-qemu-standard-'
     assert dev.actions[0].power_on_hours == 1
     assert dev.components[-1].size == 40960
     assert dev.components[-1].serial_number == 'qm00001'
@@ -1078,7 +1080,7 @@ def test_snapshot_wb_lite_old_snapshots(user: UserClient):
         try:
             assert body11['device'].get('hid') == dev.hid
             if body11['device'].get('hid'):
-                assert body11['device']['id'] == dev.id
+                assert body11['device']['id'] != dev.id
             assert body11['device'].get('serialNumber') == dev.serial_number
             assert body11['device'].get('model') == dev.model
             assert body11['device'].get('manufacturer') == dev.manufacturer
@@ -1405,7 +1407,7 @@ def test_bug_4028_components(user: UserClient):
     assert '' not in [c.phid() for c in components1]
     assert '' not in [c.phid() for c in components2]
     assert len(components1) == len(components2)
-    assert m.Placeholder.query.count() == 16
+    assert m.Placeholder.query.count() == 15
     assert m.Placeholder.query.count() * 2 == m.Device.query.count()
     for c in m.Placeholder.query.filter():
         assert c.binding

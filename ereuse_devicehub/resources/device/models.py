@@ -214,6 +214,10 @@ class Device(Thing):
         'phid_bk',
         'dhid_bk',
         'chid',
+        'user_trusts',
+        'chassis',
+        'transfer_state',
+        'receiver_id',
     }
 
     __table_args__ = (
@@ -775,11 +779,18 @@ class Device(Thing):
         except Exception:
             pass
 
-        with suppress(TypeError):
-            self.hid = Naming.hid(
-                self.type, self.manufacturer, self.model, self.serial_number
-            )
+        self.hid = "{}-{}-{}-{}".format(
+            self._clean_string(self.type),
+            self._clean_string(self.manufacturer),
+            self._clean_string(self.model),
+            self._clean_string(self.serial_number),
+        ).lower()
         self.set_chid()
+
+    def _clean_string(self, s):
+        if not s:
+            return ''
+        return s.replace(' ', '_')
 
     def set_chid(self):
         if self.hid:

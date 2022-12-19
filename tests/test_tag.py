@@ -349,39 +349,6 @@ def test_tag_manual_link_search(app: Devicehub, user: UserClient):
 
 
 @pytest.mark.mvp
-@pytest.mark.usefixtures(conftest.app_context.__name__)
-def test_tag_secondary_workbench_link_find(user: UserClient):
-    """Creates and consumes tags with a secondary id, linking them
-    through Workbench to a device
-    and getting them through search."""
-    t = Tag('foo', secondary='bar', owner_id=user.user['id'])
-    db.session.add(t)
-    db.session.flush()
-    assert Tag.from_an_id('bar').one() == Tag.from_an_id('foo').one()
-    with pytest.raises(ResourceNotFound):
-        Tag.from_an_id('nope').one()
-
-    s = yaml2json('basic.snapshot')
-    s['device']['tags'] = [{'id': 'foo', 'secondary': 'bar', 'type': 'Tag'}]
-    snapshot, _ = user.post(json_encode(s), res=Snapshot)
-    dev = Device.query.filter_by(id=snapshot['device']['id']).one()
-    device, _ = user.get(res=Device, item=dev.devicehub_id)
-    desktop = dev.binding.device
-    assert [] == [x['id'] for x in device['tags']]
-    assert 'foo' in [x.id for x in desktop.tags]
-    assert 'bar' in [x.secondary for x in desktop.tags]
-
-    r, _ = user.get(
-        res=Device, query=[('search', 'foo'), ('filter', {'type': ['Computer']})]
-    )
-    assert len(r['items']) == 1
-    r, _ = user.get(
-        res=Device, query=[('search', 'bar'), ('filter', {'type': ['Computer']})]
-    )
-    assert len(r['items']) == 1
-
-
-@pytest.mark.mvp
 def test_tag_create_tags_cli_csv(app: Devicehub, user: UserClient):
     """Checks creating tags with the CLI endpoint using a CSV."""
     owner_id = user.user['id']

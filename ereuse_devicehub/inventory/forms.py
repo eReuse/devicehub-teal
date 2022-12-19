@@ -580,6 +580,7 @@ class NewDeviceForm(FlaskForm):
         device.image = URL(self.image.data)
 
         device.placeholder = self.get_placeholder()
+        device.set_hid()
         db.session.add(device)
 
         placeholder_log = PlaceholdersLog(

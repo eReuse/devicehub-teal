@@ -594,7 +594,7 @@ class ActionRow(OrderedDict):
         super().__init__()
         # General information about allocates, deallocate and lives
         self['DHID'] = allocate['devicehubID']
-        self['Hid'] = allocate['chid']
+        self['Hid'] = allocate['hid']
         self['Document-Name'] = allocate['document_name']
         self['Action-Type'] = allocate['action_type']
         self['Action-User-LastOwner-Supplier'] = allocate['trade_supplier']
