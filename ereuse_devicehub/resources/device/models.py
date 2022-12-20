@@ -9,7 +9,8 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
-from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
+from ereuse_utils.naming import HID_CONVERSION_DOC
+from flask import current_app as app
 from flask import g, request
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column
@@ -770,14 +771,15 @@ class Device(Thing):
         ).first()
 
     def set_hid(self):
-        try:
-            from modules.device.utils import set_hid
+        if 'property_hid' not in app.blueprints.keys():
+            try:
+                from modules.device.utils import set_hid
 
-            self.hid = set_hid(self)
-            self.set_chid()
-            return
-        except Exception:
-            pass
+                self.hid = set_hid(self)
+                self.set_chid()
+                return
+            except Exception:
+                pass
 
         self.hid = "{}-{}-{}-{}".format(
             self._clean_string(self.type),
