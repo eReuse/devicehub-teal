@@ -753,12 +753,13 @@ class Device(Thing):
         return ""
 
     def get_from_db(self):
-        try:
-            from modules.device.utils import get_from_db
+        if 'property_hid' in app.blueprints.keys():
+            try:
+                from modules.device.utils import get_from_db
 
-            return get_from_db(self)
-        except Exception:
-            pass
+                return get_from_db(self)
+            except Exception:
+                pass
 
         if not self.hid:
             return
@@ -771,7 +772,7 @@ class Device(Thing):
         ).first()
 
     def set_hid(self):
-        if 'property_hid' not in app.blueprints.keys():
+        if 'property_hid' in app.blueprints.keys():
             try:
                 from modules.device.utils import set_hid
 
