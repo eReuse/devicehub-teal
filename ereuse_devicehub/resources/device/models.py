@@ -264,16 +264,18 @@ class Device(Thing):
         """
         actions_multiple = copy.copy(self.actions_multiple)
         actions_one = copy.copy(self.actions_one)
+        actions = []
 
         for ac in actions_multiple:
             ac.real_created = ac.actions_device[0].created
+            actions.append(ac)
 
         for ac in actions_one:
             ac.real_created = ac.created
+            if ac.type != 'Snapshot' or ac.active:
+                actions.append(ac)
 
-        return sorted(
-            chain(actions_multiple, actions_one), key=lambda x: x.real_created
-        )
+        return sorted(actions, key=lambda x: x.real_created)
 
     @property
     def problems(self):
