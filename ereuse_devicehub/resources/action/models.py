@@ -701,6 +701,19 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
         return hdds
 
+    def get_new_device(self):
+
+        if not self.device:
+            return ''
+
+        snapshots = []
+        for s in self.device.actions:
+            if s == self:
+                break
+            if s.type == self.type:
+                snapshots.append(s)
+        return snapshots and 'update' or 'new_device'
+
     def __str__(self) -> str:
         return '{}. {} version {}.'.format(self.severity, self.software, self.version)
 

@@ -1692,3 +1692,81 @@ class BindingForm(FlaskForm):
             return False
 
         return True
+
+
+class UserTrustsForm(FlaskForm):
+    snapshot_type = SelectField(
+        '',
+        [validators.DataRequired()],
+        choices=[("new_device", "New Device"), ("update", "Update")],
+        default="new_device",
+        render_kw={'class': "form-select"},
+    )
+
+    def __init__(self, snapshot_uuid, *args, **kwargs):
+        self.snapshot = Snapshot.query.filter_by(uuid=snapshot_uuid).first()
+        self.device = self.snapshot.device if self.snapshot.device else None
+        self.snapshot_type.kwargs['default'] = self.snapshot.get_new_device()
+        super().__init__(*args, **kwargs)
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            txt = ""
+            self.snapthot_type.errors = [txt]
+            return False
+
+        return True
+
+    def unic(self):
+        try:
+            return self._unic
+        except Exception:
+            self._unic = (
+                Device.query.filter_by(
+                    hid=self.device.hid, owner=g.user, placeholder=None
+                ).count()
+                < 2
+            )
+
+            return self._unic
+
+    def show(self):
+        if not self.snapshot or not self.device:
+            return False
+
+        if not hasattr(self.device, 'system_uuid'):
+            return False
+
+        if not self.device.system_uuid:
+            return False
+
+        if self.snapshot.get_new_device() == 'update':
+            # To do Split
+            return True
+
+        if not self.unic():
+            # To do merge
+            return True
+
+        return False
+
+    def save(self, commit=True):
+        # import pdb; pdb.set_trace()
+        if not self.show():
+            return
+
+        if self.snapshot_type.data == self.snapshot.get_new_device():
+            return
+
+        if self.snapshot_type.data == 'update' and not self.unic():
+            self.device.merge()
+
+        if self.snapshot_type.data == 'new_device' and self.unic():
+            self.device.split()
+
+        if commit:
+            db.session.commit()
+
+        return self.snapshot

@@ -875,6 +875,14 @@ class Device(Thing):
         }
         return types.get(self.type, '')
 
+    def split(self):
+        self.user_trusts = False
+        return
+
+    def merge(self):
+        self.user_trusts = True
+        return
+
     def __lt__(self, other):
         return self.id < other.id
 

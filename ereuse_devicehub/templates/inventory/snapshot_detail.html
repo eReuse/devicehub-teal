@@ -20,9 +20,44 @@
         <div class="card-body pt-3">
           <h3>{{ snapshot_sid }} | {{ snapshot_uuid }}</h3>
           <!-- Bordered Tabs -->
+          {% if form.show() %}
+          <ul class="nav nav-tabs nav-tabs-bordered">
+
+            <li class="nav-item">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#log">Log</button>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#change-type">Change type updated</button>
+            </li>
+
+          </ul>
+          {% endif %}
           <div class="tab-content pt-2">
 
-            <div class="tab-pane fade show active">
+            {% if form.show() %}
+            <div class="tab-pane fade" id="change-type">
+              <h5 class="card-title">Change Snapshot Type Upload</h5>
+              <div class="list-group col-6">
+                <div class="list-group-item">
+                  <form method="post" class="row g-3 needs-validation">
+                    {{ form.csrf_token }}
+                    {% for f in form %}
+                      {% if f != form.csrf_token %}
+                      <p class="mb-1">
+                        {{ f }}
+                      </p>
+                      {% endif %}
+                    {% endfor %}
+                      <p class="mb-1">
+                        <button class="btn btn-primary" type="submit">Save</button>
+                      </p>
+                  </form>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            <div class="tab-pane fade show active" id="log">
               <h5 class="card-title">Traceability log Details</h5>
               <div class="list-group col-6">
                 {% for log in snapshots_log %}
