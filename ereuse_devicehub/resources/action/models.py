@@ -678,6 +678,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     sid = Column(CIText(), nullable=True)
     settings_version = Column(CIText(), nullable=True)
     is_server_erase = Column(Boolean(), nullable=True)
+    active = Column(Boolean(), nullable=True)
 
     def get_last_lifetimes(self):
         """We get the lifetime and serial_number of the first disk"""
