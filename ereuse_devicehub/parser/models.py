@@ -38,10 +38,15 @@ class SnapshotsLog(Thing):
             db.session.commit()
 
     def get_status(self):
-        return Severity(self.severity)
+        if self.snapshot:
+            if not self.snapshot.active:
+                return Severity(2)
+            return Severity(self.severity)
+
+        return ''
 
     def get_device(self):
-        if self.snapshot:
+        if self.snapshot and self.snapshot.active:
             if self.snapshot.device.binding:
                 return self.snapshot.device.binding.device.devicehub_id
             return self.snapshot.device.devicehub_id
@@ -65,6 +70,9 @@ class SnapshotsLog(Thing):
 
     def get_new_device(self):
         if not self.snapshot:
+            return ''
+
+        if not self.snapshot.active:
             return ''
 
         if not self.snapshot.device:

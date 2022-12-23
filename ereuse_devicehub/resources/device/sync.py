@@ -125,7 +125,7 @@ class Sync:
 
         if component.hid:
             db_component = Device.query.filter_by(
-                hid=component.hid, owner_id=g.user.id, placeholder=None
+                hid=component.hid, owner_id=g.user.id, placeholder=None, active=True
             ).first()
             is_new = False
         if not db_component:

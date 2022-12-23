@@ -203,7 +203,9 @@ class FilterForm(FlaskForm):
         if filter_type:
             self.devices = self.devices.filter(Device.type.in_(filter_type))
 
-        return self.devices.order_by(Device.updated.desc())
+        return self.devices.filter(Device.active == True).order_by(
+            Device.updated.desc()
+        )
 
 
 class LotForm(FlaskForm):
@@ -1704,8 +1706,11 @@ class UserTrustsForm(FlaskForm):
     )
 
     def __init__(self, snapshot_uuid, *args, **kwargs):
-        self.snapshot = Snapshot.query.filter_by(uuid=snapshot_uuid).first()
-        self.device = self.snapshot.device if self.snapshot.device else None
+        self.snapshot = Snapshot.query.filter_by(uuid=snapshot_uuid).one()
+        self.device = None
+        if self.snapshot.device:
+            self.device = self.snapshot.device
+
         self.snapshot_type.kwargs['default'] = self.snapshot.get_new_device()
         super().__init__(*args, **kwargs)
 
@@ -1725,7 +1730,7 @@ class UserTrustsForm(FlaskForm):
         except Exception:
             self._unic = (
                 Device.query.filter_by(
-                    hid=self.device.hid, owner=g.user, placeholder=None
+                    hid=self.device.hid, owner=g.user, placeholder=None, active=True
                 ).count()
                 < 2
             )
@@ -1734,6 +1739,9 @@ class UserTrustsForm(FlaskForm):
 
     def show(self):
         if not self.snapshot or not self.device:
+            return False
+
+        if not self.snapshot.active:
             return False
 
         if not hasattr(self.device, 'system_uuid'):
@@ -1761,10 +1769,10 @@ class UserTrustsForm(FlaskForm):
             return
 
         if self.snapshot_type.data == 'update' and not self.unic():
-            self.device.merge()
+            self.device.reliable()
 
         if self.snapshot_type.data == 'new_device' and self.unic():
-            self.device.split()
+            self.device.unreliable()
 
         if commit:
             db.session.commit()

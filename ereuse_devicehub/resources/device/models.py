@@ -877,13 +877,76 @@ class Device(Thing):
         }
         return types.get(self.type, '')
 
-    def split(self):
+    def unreliable(self):
         self.user_trusts = False
+        i = 0
+        snapshot1 = None
+
+        for ac in self.actions:
+            if ac.type == 'Snapshot':
+                if i == 0:
+                    snapshot1 = ac
+                if i > 0:
+                    ac.active = False
+                i += 1
+
+        if not snapshot1:
+            return
+
+        self.reset_components(snapshot1)
+
         return
 
-    def merge(self):
-        self.user_trusts = True
+    def reliable(self):
+        # self.user_trusts = True
+        computers = Computer.query.filter_by(
+            hid=self.hid,
+            owner_id=g.user.id,
+            active=True,
+            placeholder=None,
+        ).order_by(Device.created.asc())
+
+        i = 0
+        computer1 = None
+        for d in computers:
+            if i == 0:
+                d.user_trusts = True
+                computer1 = d
+                i += 1
+                continue
+
+            d.user_trusts = True
+            d.active = False
+            d.binding.device.active = False
+            for ac in d.actions:
+                if ac.type == 'Snapshot':
+                    ac.active = False
+
+            for c in d.components:
+                c.parent = None
+
+        if not computer1:
+            return
+
+        snapshot1 = None
+        for ac in computer1.actions_one:
+            if ac.type == 'Snapshot':
+                snapshot1 = ac
+                break
+
+        if not snapshot1:
+            return
+
+        self.reset_components(snapshot1)
+
         return
+
+    def reset_components(self, snapshot):
+        for c in snapshot.components:
+            if c.parent is None:
+                c.parent = snapshot.device
+
+        snapshot.device.components = snapshot.components
 
     def __lt__(self, other):
         return self.id < other.id
