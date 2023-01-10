@@ -31,7 +31,7 @@ from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.models import DeliveryNote, ReceiverNote, Transfer
-from ereuse_devicehub.parser.models import PlaceholdersLog
+from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
@@ -1761,7 +1761,6 @@ class UserTrustsForm(FlaskForm):
         return False
 
     def save(self, commit=True):
-        # import pdb; pdb.set_trace()
         if not self.show():
             return
 
@@ -1770,11 +1769,34 @@ class UserTrustsForm(FlaskForm):
 
         if self.snapshot_type.data == 'update' and not self.unic():
             self.device.reliable()
+            txt = "This devices is assigned as reliable for the user."
+            self.error_log(txt)
 
         if self.snapshot_type.data == 'new_device' and self.unic():
             self.device.unreliable()
+            txt = "This devices is assigned as unreliable for the user "
+            txt += "and never is possible to do an update of this device."
+            self.error_log(txt)
 
         if commit:
             db.session.commit()
 
         return self.snapshot
+
+    def error_log(self, txt):
+        snapshot = self.get_first_snapshot()
+        error = SnapshotsLog(
+            description=txt,
+            snapshot=snapshot,
+            snapshot_uuid=snapshot.uuid,
+            severity=Severity.Error,
+            sid=snapshot.sid,
+            version="{}".format(snapshot.version),
+        )
+        db.session.add(error)
+
+    def get_first_snapshot(self):
+        device = self.snapshot.device
+        for ac in device.actions:
+            if ac.type == 'Snapshot':
+                return ac
