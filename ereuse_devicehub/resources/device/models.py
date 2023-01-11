@@ -879,6 +879,7 @@ class Device(Thing):
 
     def unreliable(self):
         self.user_trusts = False
+        tmp_snapshots = app.config['TMP_SNAPSHOTS']
         i = 0
         snapshot1 = None
 
