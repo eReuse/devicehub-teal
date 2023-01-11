@@ -1,6 +1,9 @@
 import copy
 import hashlib
+import json
+import os
 import pathlib
+import uuid
 from contextlib import suppress
 from fractions import Fraction
 from itertools import chain
@@ -879,24 +882,53 @@ class Device(Thing):
 
     def unreliable(self):
         self.user_trusts = False
-        tmp_snapshots = app.config['TMP_SNAPSHOTS']
         i = 0
         snapshot1 = None
+        snapshots = {}
 
         for ac in self.actions:
             if ac.type == 'Snapshot':
                 if i == 0:
                     snapshot1 = ac
                 if i > 0:
-                    ac.active = False
+                    snapshots[ac] = self.get_snapshot_file(ac)
+                    # ac.active = False
                 i += 1
 
         if not snapshot1:
             return
 
+        self.create_new_device(snapshots.values())
+        # [self.remove_snapshot(ac) for ac in snapshots.keys()]
         self.reset_components(snapshot1)
 
         return
+
+    def get_snapshot_file(self, action):
+        uuid = action.uuid
+        user = g.user.email
+        name_file = f"*_{user}_{uuid}.json"
+        tmp_snapshots = app.config['TMP_SNAPSHOTS']
+        path_dir_base = os.path.join(tmp_snapshots, user)
+
+        for _file in pathlib.Path(path_dir_base).glob(name_file):
+            with open(_file) as file_snapshot:
+                snapshot = file_snapshot.read()
+                return json.loads(snapshot)
+
+    def create_new_device(self, snapshots):
+        from ereuse_devicehub.inventory.forms import UploadSnapshotForm
+
+        new_snapshots = []
+        for snapshot in snapshots:
+            snapshot['uuid'] = str(uuid.uuid4())
+            filename = "{}.json".format(snapshot['uuid'])
+            new_snapshots.append((filename, snapshot))
+
+        form = UploadSnapshotForm()
+        form.result = {}
+        form.snapshots = new_snapshots
+        form.save(commit=False)
 
     def reliable(self):
         # self.user_trusts = True
