@@ -778,6 +778,8 @@ class Device(Thing):
 
     def change_owner(self, new_user):
         """util for change the owner one device"""
+        if not new_user:
+            return
         self.owner = new_user
         if hasattr(self, 'components'):
             for c in self.components:
