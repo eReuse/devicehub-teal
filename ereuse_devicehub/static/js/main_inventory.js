@@ -627,7 +627,7 @@ async function processSelectedDevices() {
         })
 
         listHTML.html("");
-        const lot_temporary = lots.filter(lot => !lot.transfer);
+        const lot_temporary = lots.filter(lot => !lot.transfer && !lot.trade);
         appendMenu(lot_temporary, listHTML, templateLot, selectedDevices, actions, "Temporary");
 
         const lot_incoming = lots.filter(lot => lot.transfer && lot.transfer == "Incoming");
