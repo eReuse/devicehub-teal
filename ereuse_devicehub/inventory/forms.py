@@ -2,6 +2,7 @@ import copy
 import csv
 import datetime
 import json
+import uuid
 from json.decoder import JSONDecodeError
 
 import pandas as pd
@@ -249,6 +250,10 @@ class LotForm(FlaskForm):
 class UploadSnapshotForm(SnapshotMixin, FlaskForm):
     snapshot = MultipleFileField('Select a Snapshot File', [validators.DataRequired()])
 
+    def __init__(self, *args, **kwargs):
+        self.create_new_devices = kwargs.pop('create_new_devices', False)
+        super().__init__(*args, **kwargs)
+
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
 
@@ -319,7 +324,9 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
 
             try:
                 snapshot_json = schema.load(snapshot_json)
-                response = self.build(snapshot_json)
+                response = self.build(
+                    snapshot_json, create_new_device=self.create_new_devices
+                )
             except ValidationError as err:
                 txt = "{}".format(err)
                 self.errors(txt=txt)
@@ -1769,8 +1776,6 @@ class UserTrustsForm(FlaskForm):
 
         if self.snapshot_type.data == 'update' and not self.unic():
             self.device.reliable()
-            txt = "This devices is assigned as reliable for the user."
-            self.error_log(txt)
 
         if self.snapshot_type.data == 'new_device' and self.unic():
             self.device.unreliable()

@@ -894,15 +894,13 @@ class Device(Thing):
                     snapshot1 = ac
                 if i > 0:
                     snapshots[ac] = self.get_snapshot_file(ac)
-                    # ac.active = False
                 i += 1
 
         if not snapshot1:
             return
 
         self.create_new_device(snapshots.values())
-        # [self.remove_snapshot(ac) for ac in snapshots.keys()]
-        self.reset_components(snapshot1)
+        self.remove_snapshot(snapshots.keys())
 
         return
 
@@ -930,10 +928,42 @@ class Device(Thing):
         form = UploadSnapshotForm()
         form.result = {}
         form.snapshots = new_snapshots
+        form.create_new_devices = True
         form.save(commit=False)
 
+    def remove_snapshot(self, snapshots):
+        from ereuse_devicehub.parser.models import SnapshotsLog
+
+        for ac in snapshots:
+            for slog in SnapshotsLog.query.filter_by(snapshot=ac):
+                slog.snapshot_id = None
+                slog.snapshot_uuid = None
+            db.session.delete(ac)
+
+    def remove_devices(self, devices):
+        from ereuse_devicehub.parser.models import SnapshotsLog
+
+        for dev in devices:
+            for ac in dev.actions:
+                if ac.type != 'Snapshot':
+                    continue
+                for slog in SnapshotsLog.query.filter_by(snapshot=ac):
+                    slog.snapshot_id = None
+                    slog.snapshot_uuid = None
+
+            for c in dev.components:
+                c.parent_id = None
+
+            for tag in dev.tags:
+                tag.device_id = None
+
+            placeholder = dev.binding or dev.placeholder
+            if placeholder:
+                db.session.delete(placeholder.binding)
+                db.session.delete(placeholder.device)
+                db.session.delete(placeholder)
+
     def reliable(self):
-        # self.user_trusts = True
         computers = Computer.query.filter_by(
             hid=self.hid,
             owner_id=g.user.id,
@@ -943,6 +973,7 @@ class Device(Thing):
 
         i = 0
         computer1 = None
+        computers_to_remove = []
         for d in computers:
             if i == 0:
                 d.user_trusts = True
@@ -950,16 +981,9 @@ class Device(Thing):
                 i += 1
                 continue
 
-            d.user_trusts = True
-            d.active = False
-            d.binding.device.active = False
-            for ac in d.actions:
-                if ac.type == 'Snapshot':
-                    ac.active = False
+            computers_to_remove.append(d)
 
-            for c in d.components:
-                c.parent = None
-
+        self.remove_devices(computers_to_remove)
         if not computer1:
             return
 
@@ -980,8 +1004,6 @@ class Device(Thing):
         for c in snapshot.components:
             if c.parent is None:
                 c.parent = snapshot.device
-
-        snapshot.device.components = snapshot.components
 
     def __lt__(self, other):
         return self.id < other.id

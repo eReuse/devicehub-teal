@@ -35,7 +35,10 @@ class Sync:
     """Synchronizes the device and components with the database."""
 
     def run(
-        self, device: Device, components: Iterable[Component] or None
+        self,
+        device: Device,
+        components: Iterable[Component] or None,
+        create_new_device=False,
     ) -> (Device, OrderedSet):
         """Synchronizes the device and components with the database.
 
@@ -71,7 +74,7 @@ class Sync:
             device.components = OrderedSet(components)
             device.set_hid()
             device.components = OrderedSet()
-        db_device = self.execute_register(device)
+        db_device = self.execute_register(device, create_new_device)
 
         db_components, actions = OrderedSet(), OrderedSet()
         if components is not None:  # We have component info (see above)
@@ -134,7 +137,7 @@ class Sync:
             is_new = True
         return db_component, is_new
 
-    def execute_register(self, device: Device) -> Device:
+    def execute_register(self, device: Device, create_new_device=False) -> Device:
         """Synchronizes one device to the DB.
 
         This method tries to get an existing device using the HID
@@ -166,7 +169,7 @@ class Sync:
         if db_device and db_device.allocated:
             raise ResourceNotFound('device is actually allocated {}'.format(device))
 
-        if not db_device:
+        if not db_device or create_new_device:
             device.tags.clear()  # We don't want to add the transient dummy tags
             db.session.add(device)
             db_device = device

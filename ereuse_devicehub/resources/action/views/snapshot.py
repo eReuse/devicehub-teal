@@ -64,7 +64,8 @@ def move_json(tmp_snapshots, path_name, user, live=False):
 class SnapshotMixin:
     sync = Sync()
 
-    def build(self, snapshot_json=None):  # noqa: C901
+    def build(self, snapshot_json=None, create_new_device=False):  # noqa: C901
+        self.create_new_device = create_new_device
         if not snapshot_json:
             snapshot_json = self.snapshot_json
         device = snapshot_json.pop('device')  # type: Computer
@@ -87,7 +88,9 @@ class SnapshotMixin:
 
         assert not device.actions_one
         assert all(not c.actions_one for c in components) if components else True
-        db_device, remove_actions = self.sync.run(device, components)
+        db_device, remove_actions = self.sync.run(
+            device, components, self.create_new_device
+        )
 
         del device  # Do not use device anymore
         snapshot.device = db_device

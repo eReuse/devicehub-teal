@@ -2672,3 +2672,42 @@ def test_system_uuid_motherboard(user3: UserClientFlask):
     for c in snapshot.device.components:
         if c.type == 'Motherboard':
             assert c.serial_number == 'abee0123456720'
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_unreliable_device(user3: UserClientFlask):
+    snapshot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+
+    uri = '/inventory/upload-snapshot/'
+    file_name = 'real-eee-1001pxd.snapshot.12'
+    snapshot_json = conftest.yaml2json(file_name)
+    snapshot_json['uuid'] = 'c058e8d2-fb92-47cb-a4b7-522b75561136'
+    b_snapshot = bytes(json.dumps(snapshot_json), 'utf-8')
+    file_snap = (BytesIO(b_snapshot), file_name)
+    user3.get(uri)
+
+    data = {
+        'snapshot': file_snap,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data, content_type="multipart/form-data")
+    snapshot2 = Snapshot.query.filter_by(uuid=snapshot_json['uuid']).first()
+    assert snapshot2.device == snapshot.device
+
+    uuid2 = snapshot2.uuid
+    uri = f"/inventory/snapshots/{uuid2}/"
+    user3.get(uri)
+
+    data = {
+        'snapshot_type': "new_device",
+        'csrf_token': generate_csrf(),
+    }
+    assert Device.query.filter_by(hid=snapshot.device.hid).count() == 2
+    user3.post(uri, data=data)
+    assert Device.query.filter_by(hid=snapshot.device.hid).count() == 4
+    assert Snapshot.query.count() == 3
+
+    import pdb
+
+    pdb.set_trace()
