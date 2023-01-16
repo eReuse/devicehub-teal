@@ -2677,8 +2677,10 @@ def test_system_uuid_motherboard(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_unreliable_device(user3: UserClientFlask):
+    # Create device
     snapshot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
 
+    # Update device
     uri = '/inventory/upload-snapshot/'
     file_name = 'real-eee-1001pxd.snapshot.12'
     snapshot_json = conftest.yaml2json(file_name)
@@ -2694,7 +2696,13 @@ def test_unreliable_device(user3: UserClientFlask):
     user3.post(uri, data=data, content_type="multipart/form-data")
     snapshot2 = Snapshot.query.filter_by(uuid=snapshot_json['uuid']).first()
     assert snapshot2.device == snapshot.device
+    assert Snapshot.query.count() == 2
+    snapshots = Snapshot.query.all()
+    assert snapshots[0].device == snapshots[1].device
+    assert len(snapshots[0].device.components)
+    assert snapshot2 in snapshots
 
+    # Change update for new device
     uuid2 = snapshot2.uuid
     uri = f"/inventory/snapshots/{uuid2}/"
     user3.get(uri)
@@ -2706,8 +2714,63 @@ def test_unreliable_device(user3: UserClientFlask):
     assert Device.query.filter_by(hid=snapshot.device.hid).count() == 2
     user3.post(uri, data=data)
     assert Device.query.filter_by(hid=snapshot.device.hid).count() == 4
-    assert Snapshot.query.count() == 3
+    assert Snapshot.query.count() == 2
+    snapshots = Snapshot.query.all()
+    assert snapshot2 not in snapshots
+    assert snapshots[0].device != snapshots[1].device
+    assert len(snapshots[0].device.components) == 4
+    assert len(snapshots[1].device.components) == 9
+    assert len(snapshots[0].device.actions) == 11
+    assert len(snapshots[1].device.actions) == 10
 
-    import pdb
 
-    pdb.set_trace()
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_reliable_device(user3: UserClientFlask):
+    # Create device
+    snapshot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+
+    # Update device
+    uri = '/inventory/upload-snapshot/'
+    file_name = 'real-eee-1001pxd.snapshot.12'
+    snapshot_json = conftest.yaml2json(file_name)
+    snapshot_json['uuid'] = 'c058e8d2-fb92-47cb-a4b7-522b75561136'
+    b_snapshot = bytes(json.dumps(snapshot_json), 'utf-8')
+    file_snap = (BytesIO(b_snapshot), file_name)
+    user3.get(uri)
+
+    data = {
+        'snapshot': file_snap,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data, content_type="multipart/form-data")
+    snapshot2 = Snapshot.query.filter_by(uuid=snapshot_json['uuid']).first()
+
+    # Change update for new device
+    uuid2 = snapshot2.uuid
+    uri = f"/inventory/snapshots/{uuid2}/"
+    user3.get(uri)
+
+    data = {
+        'snapshot_type': "new_device",
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data)
+
+    # Change update for update
+    snapshot3 = Snapshot.query.all()[-1]
+    uuid3 = snapshot3.uuid
+    uri = f"/inventory/snapshots/{uuid3}/"
+    user3.get(uri)
+
+    data = {
+        'snapshot_type': "update",
+        'csrf_token': generate_csrf(),
+    }
+    assert Device.query.filter_by(hid=snapshot.device.hid).count() == 4
+    user3.post(uri, data=data)
+    assert Device.query.filter_by(hid=snapshot.device.hid).count() == 2
+    assert Snapshot.query.count() == 1
+    assert Snapshot.query.first() == snapshot
+    assert len(snapshot.device.components) == 4
+    assert len(snapshot.device.actions) == 4

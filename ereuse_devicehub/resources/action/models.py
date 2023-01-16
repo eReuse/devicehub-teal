@@ -48,17 +48,14 @@ from sqlalchemy.util import OrderedSet
 from teal.db import (
     CASCADE_OWN,
     INHERIT_COND,
-    IP,
     POLYMORPHIC_ID,
     POLYMORPHIC_ON,
     URL,
-    ResourceNotFound,
     StrictVersionType,
     check_lower,
     check_range,
 )
-from teal.enums import Country, Currency, Subdivision
-from teal.marshmallow import ValidationError
+from teal.enums import Currency
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
@@ -678,7 +675,6 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     sid = Column(CIText(), nullable=True)
     settings_version = Column(CIText(), nullable=True)
     is_server_erase = Column(Boolean(), nullable=True)
-    active = Column(Boolean(), default=True, nullable=False)
 
     def get_last_lifetimes(self):
         """We get the lifetime and serial_number of the first disk"""

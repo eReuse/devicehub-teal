@@ -2,7 +2,6 @@ import copy
 import csv
 import datetime
 import json
-import uuid
 from json.decoder import JSONDecodeError
 
 import pandas as pd
@@ -204,7 +203,7 @@ class FilterForm(FlaskForm):
         if filter_type:
             self.devices = self.devices.filter(Device.type.in_(filter_type))
 
-        return self.devices.filter(Device.active == True).order_by(
+        return self.devices.filter(Device.active.is_(False)).order_by(
             Device.updated.desc()
         )
 
@@ -1735,20 +1734,19 @@ class UserTrustsForm(FlaskForm):
         try:
             return self._unic
         except Exception:
-            self._unic = (
+            self._devices = (
                 Device.query.filter_by(
                     hid=self.device.hid, owner=g.user, placeholder=None, active=True
-                ).count()
-                < 2
+                )
+                .order_by(Device.updated.asc())
+                .all()
             )
 
+            self._unic = len(self._devices) < 2
             return self._unic
 
     def show(self):
         if not self.snapshot or not self.device:
-            return False
-
-        if not self.snapshot.active:
             return False
 
         if not hasattr(self.device, 'system_uuid'):
@@ -1762,6 +1760,8 @@ class UserTrustsForm(FlaskForm):
             return True
 
         if not self.unic():
+            if self.device == self._devices[0]:
+                return False
             # To do merge
             return True
 

@@ -39,8 +39,6 @@ class SnapshotsLog(Thing):
 
     def get_status(self):
         if self.snapshot:
-            if not self.snapshot.active:
-                return Severity(2)
             return Severity(self.severity)
 
         return ''
@@ -70,9 +68,6 @@ class SnapshotsLog(Thing):
 
     def get_new_device(self):
         if not self.snapshot:
-            return ''
-
-        if not self.snapshot.active:
             return ''
 
         if not self.snapshot.device:

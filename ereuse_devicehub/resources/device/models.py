@@ -275,8 +275,7 @@ class Device(Thing):
 
         for ac in actions_one:
             ac.real_created = ac.created
-            if ac.type != 'Snapshot' or ac.active:
-                actions.append(ac)
+            actions.append(ac)
 
         return sorted(actions, key=lambda x: x.real_created)
 
@@ -996,14 +995,7 @@ class Device(Thing):
         if not snapshot1:
             return
 
-        self.reset_components(snapshot1)
-
         return
-
-    def reset_components(self, snapshot):
-        for c in snapshot.components:
-            if c.parent is None:
-                c.parent = snapshot.device
 
     def __lt__(self, other):
         return self.id < other.id

@@ -39,7 +39,6 @@ def upgrade_data():
         sql = f"update {get_inv()}.device set chid='{chid}' where id={dev_id};"
         con.execute(sql)
 
-    sql = f"update {get_inv()}.snapshot set active=true;"
     con.execute(sql)
 
 
@@ -56,19 +55,11 @@ def upgrade():
         schema=f'{get_inv()}',
     )
 
-    op.add_column(
-        'snapshot',
-        sa.Column('active', sa.Boolean(), default=True, nullable=True),
-        schema=f'{get_inv()}',
-    )
-
     upgrade_data()
 
     op.alter_column('computer', 'user_trusts', nullable=False, schema=f'{get_inv()}')
-    op.alter_column('snapshot', 'active', nullable=False, schema=f'{get_inv()}')
 
 
 def downgrade():
     op.drop_column('computer', 'user_trusts', schema=f'{get_inv()}')
     op.drop_column('device', 'chid', schema=f'{get_inv()}')
-    op.drop_column('snapshot', 'active', schema=f'{get_inv()}')
