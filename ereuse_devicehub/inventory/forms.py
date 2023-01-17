@@ -203,7 +203,7 @@ class FilterForm(FlaskForm):
         if filter_type:
             self.devices = self.devices.filter(Device.type.in_(filter_type))
 
-        return self.devices.filter(Device.active.is_(False)).order_by(
+        return self.devices.filter(Device.active.is_(True)).order_by(
             Device.updated.desc()
         )
 
