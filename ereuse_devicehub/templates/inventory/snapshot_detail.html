@@ -40,7 +40,7 @@
               <h5 class="card-title">Change Snapshot Type Upload</h5>
               <div class="list-group col-6">
                 <div class="list-group-item">
-                  <form method="post" class="row g-3 needs-validation">
+                  <form method="post" class="row g-3 needs-validation" id="form_change_updated">
                     {{ form.csrf_token }}
                     {% for f in form %}
                       {% if f != form.csrf_token %}
@@ -114,7 +114,7 @@
 
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary-outline" data-bs-dismiss="modal">Cancel</button>
-        <a href="javascript:void()" type="button" class="btn btn-danger">
+        <a href="javascript:send_form_change_updated()" type="button" class="btn btn-danger">
           Confirm Save!
         </a>
       </div>
@@ -124,11 +124,17 @@
 </div>
 <script>
 function change_updated() {
-  const stype = $("#snapshot_type").val();
   $("#update").attr('class', 'd-none');
   $("#new_device").attr('class', 'd-none');
+
+  const stype = $("#snapshot_type").val();
   $("#"+stype).attr('class', 'd-block');
+
   $("#activeChangeUpdatedModal").click();
+}
+
+function send_form_change_updated() {
+  $("#form_change_updated").trigger('submit');
 }
 </script>
 
