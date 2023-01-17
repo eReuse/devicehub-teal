@@ -50,7 +50,9 @@
                       {% endif %}
                     {% endfor %}
                       <p class="mb-1">
-                        <button class="btn btn-primary" type="submit">Save</button>
+                        <!-- <button class="btn btn-primary" type="submit">Save</button> -->
+                        <a href="javascript:change_updated()" type="button" class="btn btn-primary">Save</a>
+                        <span class="d-none" id="activeChangeUpdatedModal" data-bs-toggle="modal" data-bs-target="#btnChangeStatus"></span>
                       </p>
                   </form>
                 </div>
@@ -86,4 +88,49 @@
     </div>
   </div>
 </section>
+<div class="modal fade" id="btnChangeStatus" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Change type updated</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="new_device" class="d-none">
+          Are you sure that you want to Change to <strong>New device</strong>?
+          <p class="text-danger">
+            This action cannot be undone.
+          </p>
+        </div>
+        <div id="update" class="d-none">
+          Are you sure that you want to Change to <strong>Update</strong>?
+          <p class="text-danger">
+            This action cannot be undone.
+          </p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary-outline" data-bs-dismiss="modal">Cancel</button>
+        <a href="javascript:void()" type="button" class="btn btn-danger">
+          Confirm Save!
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+function change_updated() {
+  const stype = $("#snapshot_type").val();
+  $("#update").attr('class', 'd-none');
+  $("#new_device").attr('class', 'd-none');
+  $("#"+stype).attr('class', 'd-block');
+  $("#activeChangeUpdatedModal").click();
+}
+</script>
+
 {% endblock main %}
+
