@@ -100,14 +100,21 @@
       <div class="modal-body">
         <div id="new_device" class="d-none">
           Are you sure that you want to Change to <strong>New device</strong>?
-          <p class="text-danger">
-            This action cannot be undone.
+          <p class="text-danger mt-3">
+            Please be certain, once you confirm this step there is no going back.<br />
+            <br />
+            All the updates that have the {{ form.device.dhid }} device will become new devices and 
+            you will not be able to do any update over these devices.
           </p>
         </div>
         <div id="update" class="d-none">
           Are you sure that you want to Change to <strong>Update</strong>?
-          <p class="text-danger">
-            This action cannot be undone.
+          <p class="text-danger mt-3">
+            Please be certain, once you confirm there is no going back.<br />
+            <br />
+            All the devices {{ form.dhids_all_devices() }}
+            will be deleted and the device {{ form.dhid_base() }} will be set as the device base.<br />
+            After this change you will be able to update this device.
           </p>
         </div>
       </div>

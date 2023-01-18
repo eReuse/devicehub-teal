@@ -1745,6 +1745,16 @@ class UserTrustsForm(FlaskForm):
             self._unic = len(self._devices) < 2
             return self._unic
 
+    def dhids_all_devices(self):
+        self.unic()
+        return ", ".join([x.dhid for x in self._devices][1:])
+
+    def dhid_base(self):
+        self.unic()
+        if not self._devices:
+            return ''
+        return self._devices[0].dhid
+
     def show(self):
         if not self.snapshot or not self.device:
             return False
