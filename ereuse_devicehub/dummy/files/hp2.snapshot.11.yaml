@@ -170,5 +170,6 @@
   },
   "software": "Workbench",
   "endTime": "2018-07-11T10:30:22.395958+00:00",
+  "debug": {"lshw": {"configuration": {"uuid": "75dcb454-ae80-4a87-a192-185d3b0250c0"}}},
   "elapsed": 2766
 }

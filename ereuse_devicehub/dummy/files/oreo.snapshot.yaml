@@ -136,8 +136,8 @@
   ],
   "elapsed": 203,
   "device": {
-    "manufacturer": null,
-    "model": null,
+    "manufacturer": "Asus",
+    "model": "P7P55D",
     "chassis": "Tower",
     "type": "Desktop",
     "serialNumber": null,
@@ -158,7 +158,7 @@
     ]
   },
   "version": "11.0a6",
-
+  "debug": {"lshw": {"configuration": {"uuid": "59ca9a2a-65bd-4802-89bb-315156a9352b"}}},
   "type": "Snapshot",
   "closed": true,
   "software": "Workbench"

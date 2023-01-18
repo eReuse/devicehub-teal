@@ -148,6 +148,7 @@
     "slots": 4
   }
   ],
+  "debug": {"lshw": {"configuration": {"uuid": "077cad5d-ae1b-4156-a9a1-98bca6fa5c35"}}},
   "version": "11.0a3",
   "endTime": "2018-07-11T10:28:55.879745+00:00",
   "type": "Snapshot",

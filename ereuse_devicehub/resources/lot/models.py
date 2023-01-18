@@ -93,6 +93,10 @@ class Lot(Thing):
     )
     receiver = db.relationship(User, primaryjoin=receiver_address == User.email)
 
+    # __table_args__ = (
+    #     {'schema': 'dbtest'},
+    # )
+
     def __init__(
         self, name: str, closed: bool = closed.default.arg, description: str = None
     ) -> None:

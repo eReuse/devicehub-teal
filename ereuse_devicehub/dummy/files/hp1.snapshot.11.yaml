@@ -132,5 +132,6 @@
     "model": "HP Compaq 8100 Elite SFF",
     "manufacturer": "Hewlett-Packard"
   },
+  "debug": {"lshw": {"configuration": {"uuid": "f6cfe48a-93d5-4e94-ab7b-3ee371e4d048"}}},
   "version": "11.0a3"
 }

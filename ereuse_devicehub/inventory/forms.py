@@ -31,7 +31,7 @@ from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.models import DeliveryNote, ReceiverNote, Transfer
-from ereuse_devicehub.parser.models import PlaceholdersLog
+from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
@@ -203,7 +203,9 @@ class FilterForm(FlaskForm):
         if filter_type:
             self.devices = self.devices.filter(Device.type.in_(filter_type))
 
-        return self.devices.order_by(Device.updated.desc())
+        return self.devices.filter(Device.active.is_(True)).order_by(
+            Device.updated.desc()
+        )
 
 
 class LotForm(FlaskForm):
@@ -246,6 +248,10 @@ class LotForm(FlaskForm):
 
 class UploadSnapshotForm(SnapshotMixin, FlaskForm):
     snapshot = MultipleFileField('Select a Snapshot File', [validators.DataRequired()])
+
+    def __init__(self, *args, **kwargs):
+        self.create_new_devices = kwargs.pop('create_new_devices', False)
+        super().__init__(*args, **kwargs)
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
@@ -313,10 +319,13 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
                 system_uuid = self.get_uuid(debug)
                 if system_uuid:
                     snapshot_json['device']['system_uuid'] = system_uuid
+                self.get_fields_extra(debug, snapshot_json)
 
             try:
                 snapshot_json = schema.load(snapshot_json)
-                response = self.build(snapshot_json)
+                response = self.build(
+                    snapshot_json, create_new_device=self.create_new_devices
+                )
             except ValidationError as err:
                 txt = "{}".format(err)
                 self.errors(txt=txt)
@@ -579,6 +588,7 @@ class NewDeviceForm(FlaskForm):
         device.image = URL(self.image.data)
 
         device.placeholder = self.get_placeholder()
+        device.set_hid()
         db.session.add(device)
 
         placeholder_log = PlaceholdersLog(
@@ -1690,3 +1700,118 @@ class BindingForm(FlaskForm):
             return False
 
         return True
+
+
+class UserTrustsForm(FlaskForm):
+    snapshot_type = SelectField(
+        '',
+        [validators.DataRequired()],
+        choices=[("new_device", "New Device"), ("update", "Update")],
+        default="new_device",
+        render_kw={'class': "form-select"},
+    )
+
+    def __init__(self, snapshot_uuid, *args, **kwargs):
+        self.snapshot = Snapshot.query.filter_by(uuid=snapshot_uuid).one()
+        self.device = None
+        if self.snapshot.device:
+            self.device = self.snapshot.device
+
+        self.snapshot_type.kwargs['default'] = self.snapshot.get_new_device()
+        super().__init__(*args, **kwargs)
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if not is_valid:
+            txt = ""
+            self.snapthot_type.errors = [txt]
+            return False
+
+        return True
+
+    def unic(self):
+        try:
+            return self._unic
+        except Exception:
+            self._devices = (
+                Device.query.filter_by(
+                    hid=self.device.hid, owner=g.user, placeholder=None, active=True
+                )
+                .order_by(Device.updated.asc())
+                .all()
+            )
+
+            self._unic = len(self._devices) < 2
+            return self._unic
+
+    def dhids_all_devices(self):
+        self.unic()
+        return ", ".join([x.dhid for x in self._devices][1:])
+
+    def dhid_base(self):
+        self.unic()
+        if not self._devices:
+            return ''
+        return self._devices[0].dhid
+
+    def show(self):
+        if not self.snapshot or not self.device:
+            return False
+
+        if not hasattr(self.device, 'system_uuid'):
+            return False
+
+        if not self.device.system_uuid:
+            return False
+
+        if self.snapshot.get_new_device() == 'update':
+            # To do Split
+            return True
+
+        if not self.unic():
+            if self.device == self._devices[0]:
+                return False
+            # To do merge
+            return True
+
+        return False
+
+    def save(self, commit=True):
+        if not self.show():
+            return
+
+        if self.snapshot_type.data == self.snapshot.get_new_device():
+            return
+
+        if self.snapshot_type.data == 'update' and not self.unic():
+            self.device.reliable()
+
+        if self.snapshot_type.data == 'new_device' and self.unic():
+            self.device.unreliable()
+            txt = "This devices is assigned as unreliable for the user "
+            txt += "and never is possible to do an update of this device."
+            self.error_log(txt)
+
+        if commit:
+            db.session.commit()
+
+        return self.snapshot
+
+    def error_log(self, txt):
+        snapshot = self.get_first_snapshot()
+        error = SnapshotsLog(
+            description=txt,
+            snapshot=snapshot,
+            snapshot_uuid=snapshot.uuid,
+            severity=Severity.Error,
+            sid=snapshot.sid,
+            version="{}".format(snapshot.version),
+        )
+        db.session.add(error)
+
+    def get_first_snapshot(self):
+        device = self.snapshot.device
+        for ac in device.actions:
+            if ac.type == 'Snapshot':
+                return ac

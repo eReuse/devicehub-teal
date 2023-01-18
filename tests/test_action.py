@@ -2941,7 +2941,7 @@ def test_delete_devices_check_sync(user: UserClient):
                 in [y.device.id for y in x.actions if hasattr(y, 'device')]
             ]
         )
-        == 1
+        == 2
     )
 
 

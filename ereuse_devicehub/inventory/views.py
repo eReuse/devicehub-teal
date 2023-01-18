@@ -33,6 +33,7 @@ from ereuse_devicehub.inventory.forms import (
     TransferForm,
     UploadPlaceholderForm,
     UploadSnapshotForm,
+    UserTrustsForm,
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
 from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
@@ -67,7 +68,6 @@ class DeviceListMixin(GenericMixin):
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', PER_PAGE))
         filter = request.args.get('filter', "All+Computers")
-        # import pdb; pdb.set_trace()
 
         lots = self.context['lots']
         form_filter = FilterForm(lots, lot_id, all_devices=all_devices)
@@ -1229,9 +1229,12 @@ class SnapshotListView(GenericMixin):
 
 class SnapshotDetailView(GenericMixin):
     template_name = 'inventory/snapshot_detail.html'
+    methods = ['GET', 'POST']
+    form_class = UserTrustsForm
 
     def dispatch_request(self, snapshot_uuid):
         self.snapshot_uuid = snapshot_uuid
+        form = self.form_class(snapshot_uuid)
         self.get_context()
         self.context['page_title'] = "Snapshot Detail"
         self.context['snapshots_log'] = self.get_snapshots_log()
@@ -1239,6 +1242,10 @@ class SnapshotDetailView(GenericMixin):
         self.context['snapshot_sid'] = ''
         if self.context['snapshots_log'].count():
             self.context['snapshot_sid'] = self.context['snapshots_log'][0].sid
+        self.context['form'] = form
+
+        if form.validate_on_submit():
+            form.save()
 
         return flask.render_template(self.template_name, **self.context)
 
