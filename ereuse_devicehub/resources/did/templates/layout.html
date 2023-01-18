@@ -1,0 +1,26 @@
+{% import 'devices/macros.html' as macros %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="https://stackpath.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-+ENW/yibaokMnme+vBLnHMphUYxHs34h9lpdbSLuAwGkOKFRl4C34WkjazBtb7eT"
+          crossorigin="anonymous">
+    <link rel="stylesheet"
+          type="text/css"
+          href="{{ url_for('Document.static', filename='print.css') }}">
+    <title>USOdy | {{ title }}</title>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <header class="page-header">
+            <h1> {{ title }}</h1>
+        </header>
+    </div>
+    {% block body %}{% endblock %}
+</div>
+</body>
+</html>

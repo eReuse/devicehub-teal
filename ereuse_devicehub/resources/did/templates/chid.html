@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="https://stackpath.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-+ENW/yibaokMnme+vBLnHMphUYxHs34h9lpdbSLuAwGkOKFRl4C34WkjazBtb7eT"
+          crossorigin="anonymous">
+    <script src="https://use.fontawesome.com/7553aecc27.js"></script>
+    <title>Devicehub | Stamp create and Stamp verify</title>
+    <style>
+        /*Sticky footer*/
+        html {
+            position: relative;
+            min-height: 100%;
+        }
+
+        body {
+            margin-bottom: 60px; /* Margin bottom by footer height */
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 6em;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-default" style="background-color: gainsboro; margin: 0 !important">
+    <div class="container-fluid">
+        <a href="https://www.usody.com/" target="_blank">
+            <h1 align="center">Usody</h1>
+        </a>
+    </div>
+</nav>
+<div class="container-fluid">
+    <div class="row">
+      <div class="page-header col-md-6 col-md-offset-3">
+          This is the info for chid: {{result.dpp}}
+      </div>
+      <div class="col-md-6 col-md-offset-3">
+          {% for dpp in result.result.data %}
+          <h5>Digital Passport</h5>
+          {{ dpp.dpp }}
+          <h5>Hardware</h5>
+          <ul>
+              <li>Device</li>
+                <ul>
+                    <li>Chassis: {{ dpp.hardware.device.chassis }}</li>
+                    <li>Manufacturer: {{ dpp.hardware.device.manufacturer }}</li>
+                    <li>Model: {{ dpp.hardware.device.model }}</li>
+                    <li>SerialNumber: {{ dpp.hardware.device.serialNumber }}</li>
+                    <li>Sku: {{ dpp.hardware.device.sku }}</li>
+                    <li>Type: {{ dpp.hardware.device.type }}</li>
+                    <li>Version: {{ dpp.hardware.device.version }}</li>
+                </ul>
+              <li>Components</li>
+                <ul>
+                    {% for component in dpp.hardware.components %}
+                    <li>{{ component }}</li>
+                    {% endfor %}
+                </ul>
+          </ul>
+          <hr />
+          {% endfor %}
+      </div>
+    </div>
+</div>
+</body>
+</html>
