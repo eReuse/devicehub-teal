@@ -1,9 +1,9 @@
 import csv
-import json
-import enum
-import uuid
-import time
 import datetime
+import enum
+import json
+import time
+import uuid
 from collections import OrderedDict
 from io import StringIO
 from typing import Callable, Iterable, Tuple
@@ -13,8 +13,8 @@ import flask
 import flask_weasyprint
 import teal.marshmallow
 from boltons import urlutils
-from flask import make_response, g, request
 from flask import current_app as app
+from flask import g, make_response, request
 from flask.json import jsonify
 from teal.cache import cache
 from teal.resource import Resource, View
@@ -30,6 +30,7 @@ class DidView(View):
     This view render one public ans static page for see the links for to do the check
     of one csv file
     """
+
     def get_url_path(self):
         url = urlutils.URL(request.url)
         url.normalize()
@@ -47,8 +48,11 @@ class DidView(View):
 
         if 'json' not in request.headers['Accept']:
             result = self.get_result(result, template)
-            return flask.render_template(template, rq_url=self.get_url_path(),
-                    result={"dpp": dpp, "result": result})
+            return flask.render_template(
+                template,
+                rq_url=self.get_url_path(),
+                result={"dpp": dpp, "result": result},
+            )
 
         return jsonify(self.get_result(result, template))
 
@@ -77,7 +81,9 @@ class DidView(View):
         return {'data': dpps}
 
     def get_last_dpp(self, dpp):
-        dpps = [act.dpp[0] for act in dpp.device.actions if act.t == 'Snapshot' and act.dpp]
+        dpps = [
+            act.dpp[0] for act in dpp.device.actions if act.t == 'Snapshot' and act.dpp
+        ]
         last_dpp = ''
         for d in dpps:
             if d.key == dpp.key:
@@ -93,18 +99,31 @@ class DidDef(Resource):
     VIEW = None  # We do not want to create default / documents endpoint
     AUTH = False
 
-    def __init__(self, app,
-                 import_name=__name__,
-                 static_folder='static',
-                 static_url_path=None,
-                 template_folder='templates',
-                 url_prefix=None,
-                 subdomain=None,
-                 url_defaults=None,
-                 root_path=None,
-                 cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder='static',
+        static_url_path=None,
+        template_folder='templates',
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
         view = DidView.as_view('main', definition=self, auth=app.auth)
 
@@ -112,4 +131,6 @@ class DidDef(Resource):
         #     view = app.auth.requires_auth(view)
 
         did_view = DidView.as_view('DidView', definition=self, auth=app.auth)
-        self.add_url_rule('/<string:dpp>', defaults={}, view_func=did_view, methods={'GET'})
+        self.add_url_rule(
+            '/<string:dpp>', defaults={}, view_func=did_view, methods={'GET'}
+        )

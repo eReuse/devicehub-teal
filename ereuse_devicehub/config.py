@@ -17,8 +17,8 @@ from ereuse_devicehub.resources import (
     user,
 )
 from ereuse_devicehub.resources.device import definitions
-from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.did import did
+from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import PriceSoftware
 from ereuse_devicehub.resources.licences import licences
 from ereuse_devicehub.resources.metric import definitions as metric_def
