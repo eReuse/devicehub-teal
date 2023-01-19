@@ -11,6 +11,7 @@ Within the above general classes are subclasses in A order.
 """
 
 import copy
+import json
 from collections import Iterable
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
@@ -678,6 +679,45 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     sid = Column(CIText(), nullable=True)
     settings_version = Column(CIText(), nullable=True)
     is_server_erase = Column(Boolean(), nullable=True)
+    json_wb = Column(CIText(), nullable=False)
+    json_wb.comment = "original json of the workbench"
+    json_hw = Column(CIText(), nullable=False)
+    json_hw.comment = (
+        "json with alphabetic ordered of the hardware than exist in json_wb"
+    )
+    phid_dpp = Column(CIText(), nullable=False)
+    phid_dpp.comment = "hash of json_hw this with the chid if the device conform the DPP, (Digital PassPort)"
+
+    def create_json_hw(self, json_wb):
+        """
+        Create a json with the hardware without actions of the original json, (json_wb).
+        This json need have an alphabetic order.
+        Next is necessary create a hash of this json and put it intu phid field.
+        And last save in text the correct json_wb and json_hw in the respective fields
+        """
+        if not json_wb:
+            return
+
+        json_hw = {}
+        for k, v in json_wb.items():
+            if k == 'device':
+                json_hw['device'] = copy.copy(v)
+                json_hw['device'].pop('actions', None)
+                json_hw['device'].pop('actions_one', None)
+            if k == 'components':
+                components = []
+                for component in v:
+                    c = component
+                    c.pop('actions', None)
+                    c.pop('actions_one', None)
+                    components.append(c)
+                # if 'manufacturer', 'model', 'serialNumber' key filter broken'
+                # key_filter = itemgetter('type', 'manufacturer', 'model', 'serialNumber')
+                key_filter = itemgetter('type')
+                json_hw['components'] = sorted(components, key=key_filter)
+        self.json_wb = json.dumps(json_wb)
+        self.json_hw = json.dumps(json_hw)
+        self.phid_dpp = hashlib.sha3_256(self.json_hw.encode('utf-8')).hexdigest()
 
     def get_last_lifetimes(self):
         """We get the lifetime and serial_number of the first disk"""

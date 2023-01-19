@@ -5,11 +5,10 @@ Revises: 4b7f77f121bf
 Create Date: 2023-01-19 12:01:54.102326
 
 """
-from alembic import op, context
-import sqlalchemy as sa
 import citext
+import sqlalchemy as sa
+from alembic import context, op
 from sqlalchemy.dialects import postgresql
-
 
 # revision identifiers, used by Alembic.
 revision = '8334535d56fa'
@@ -26,53 +25,107 @@ def get_inv():
 
 
 def upgrade():
-    op.create_table('proof',
-                    sa.Column('updated', sa.TIMESTAMP(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'),
-                              nullable=False,
-                              comment='The last time Devicehub recorded a change for \n    this thing.\n    '),
-                    sa.Column('created', sa.TIMESTAMP(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'),
-                              nullable=False, comment='When Devicehub created this.'),
-                    sa.Column('id', sa.BigInteger(), nullable=False),
-                    sa.Column('type', sa.Unicode(), nullable=False),
-                    sa.Column('documentId', citext.CIText(), nullable=True),
-                    sa.Column('documentSignature', citext.CIText(), nullable=True),
-                    sa.Column('timestamp', sa.BigInteger(), nullable=False),
-                    sa.Column('device_id', sa.BigInteger(), nullable=False),
-                    sa.Column('snapshot_id', postgresql.UUID(as_uuid=True), nullable=False),
-                    sa.Column('issuer_id', postgresql.UUID(as_uuid=True), nullable=False),
-                    sa.ForeignKeyConstraint(['snapshot_id'], [f'{get_inv()}.snapshot.id'], ),
-                    sa.ForeignKeyConstraint(['device_id'], [f'{get_inv()}.device.id'], ),
-                    sa.ForeignKeyConstraint(['issuer_id'], [f'common.user.id'], ),
-                    sa.PrimaryKeyConstraint('id'),
-                    schema=f'{get_inv()}'
-                    )
+    op.create_table(
+        'proof',
+        sa.Column(
+            'updated',
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text('CURRENT_TIMESTAMP'),
+            nullable=False,
+            comment='The last time Devicehub recorded a change for \n    this thing.\n    ',
+        ),
+        sa.Column(
+            'created',
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text('CURRENT_TIMESTAMP'),
+            nullable=False,
+            comment='When Devicehub created this.',
+        ),
+        sa.Column('id', sa.BigInteger(), nullable=False),
+        sa.Column('type', sa.Unicode(), nullable=False),
+        sa.Column('documentId', citext.CIText(), nullable=True),
+        sa.Column('documentSignature', citext.CIText(), nullable=True),
+        sa.Column('timestamp', sa.BigInteger(), nullable=False),
+        sa.Column('device_id', sa.BigInteger(), nullable=False),
+        sa.Column('snapshot_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('issuer_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.ForeignKeyConstraint(
+            ['snapshot_id'],
+            [f'{get_inv()}.snapshot.id'],
+        ),
+        sa.ForeignKeyConstraint(
+            ['device_id'],
+            [f'{get_inv()}.device.id'],
+        ),
+        sa.ForeignKeyConstraint(
+            ['issuer_id'],
+            [f'common.user.id'],
+        ),
+        sa.PrimaryKeyConstraint('id'),
+        schema=f'{get_inv()}',
+    )
     # op.create_index(op.f('ix_proof_created'), 'proof', ['created'], unique=False, schema=f'{get_inv()}')
     # op.create_index(op.f('ix_proof_timestamp'), 'proof', ['timestamp'], unique=False, schema=f'{get_inv()}')
-    op.add_column('device', sa.Column('chid_dpp', citext.CIText(), nullable=True), schema=f'{get_inv()}')
-    op.add_column('snapshot', sa.Column('phid_dpp', citext.CIText(), nullable=True), schema=f'{get_inv()}')
-    op.add_column('snapshot', sa.Column('json_wb', citext.CIText(), nullable=True), schema=f'{get_inv()}')
-    op.add_column('snapshot', sa.Column('json_hw', citext.CIText(), nullable=True), schema=f'{get_inv()}')
+    op.add_column(
+        'device',
+        sa.Column('chid_dpp', citext.CIText(), nullable=True),
+        schema=f'{get_inv()}',
+    )
+    op.add_column(
+        'snapshot',
+        sa.Column('phid_dpp', citext.CIText(), nullable=True),
+        schema=f'{get_inv()}',
+    )
+    op.add_column(
+        'snapshot',
+        sa.Column('json_wb', citext.CIText(), nullable=True),
+        schema=f'{get_inv()}',
+    )
+    op.add_column(
+        'snapshot',
+        sa.Column('json_hw', citext.CIText(), nullable=True),
+        schema=f'{get_inv()}',
+    )
 
-    op.create_table('dpp',
-                    sa.Column('updated', sa.TIMESTAMP(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'),
-                              nullable=False,
-                              comment='The last time Devicehub recorded a change for \n    this thing.\n    '),
-                    sa.Column('created', sa.TIMESTAMP(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'),
-                              nullable=False, comment='When Devicehub created this.'),
-                    sa.Column('id', sa.BigInteger(), nullable=False),
-                    sa.Column('documentId', citext.CIText(), nullable=True),
-                    sa.Column('documentSignature', citext.CIText(), nullable=True),
-                    sa.Column('timestamp', sa.BigInteger(), nullable=False),
-                    sa.Column('device_id', sa.BigInteger(), nullable=False),
-                    sa.Column('snapshot_id', postgresql.UUID(as_uuid=True), nullable=False),
-                    sa.Column('issuer_id', postgresql.UUID(as_uuid=True), nullable=False),
-                    sa.ForeignKeyConstraint(['snapshot_id'], [f'{get_inv()}.snapshot.id'], ),
-                    sa.ForeignKeyConstraint(['device_id'], [f'{get_inv()}.device.id'], ),
-                    sa.ForeignKeyConstraint(['issuer_id'], [f'common.user.id'], ),
-                    sa.Column('key', sa.Unicode(), nullable=False),
-                    sa.PrimaryKeyConstraint('id'),
-                    schema=f'{get_inv()}'
-                    )
+    op.create_table(
+        'dpp',
+        sa.Column(
+            'updated',
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text('CURRENT_TIMESTAMP'),
+            nullable=False,
+            comment='The last time Devicehub recorded a change for \n    this thing.\n    ',
+        ),
+        sa.Column(
+            'created',
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text('CURRENT_TIMESTAMP'),
+            nullable=False,
+            comment='When Devicehub created this.',
+        ),
+        sa.Column('id', sa.BigInteger(), nullable=False),
+        sa.Column('documentId', citext.CIText(), nullable=True),
+        sa.Column('documentSignature', citext.CIText(), nullable=True),
+        sa.Column('timestamp', sa.BigInteger(), nullable=False),
+        sa.Column('device_id', sa.BigInteger(), nullable=False),
+        sa.Column('snapshot_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('issuer_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.ForeignKeyConstraint(
+            ['snapshot_id'],
+            [f'{get_inv()}.snapshot.id'],
+        ),
+        sa.ForeignKeyConstraint(
+            ['device_id'],
+            [f'{get_inv()}.device.id'],
+        ),
+        sa.ForeignKeyConstraint(
+            ['issuer_id'],
+            [f'common.user.id'],
+        ),
+        sa.Column('key', sa.Unicode(), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        schema=f'{get_inv()}',
+    )
 
 
 def downgrade():

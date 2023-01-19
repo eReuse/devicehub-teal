@@ -117,6 +117,8 @@ class Device(Thing):
     """
         + HID_CONVERSION_DOC
     )
+    chid_dpp = Column(Unicode(), check_lower('chid'), unique=False)
+    chid_dpp.comment = "Chid for identify one device front the DLT"
     model = Column(Unicode(), check_lower('model'))
     model.comment = """The model of the device in lower case.
 
@@ -212,6 +214,7 @@ class Device(Thing):
         'active',
         'phid_bk',
         'dhid_bk',
+        'chid_dpp',
     }
 
     __table_args__ = (
@@ -750,6 +753,7 @@ class Device(Thing):
             self.hid = Naming.hid(
                 self.type, self.manufacturer, self.model, self.serial_number
             )
+            self.chid_dpp = hashlib.sha3_256(self.hid.encode('utf-8')).hexdigest()
 
     def last_action_of(self, *types):
         """Gets the last action of the given types.
