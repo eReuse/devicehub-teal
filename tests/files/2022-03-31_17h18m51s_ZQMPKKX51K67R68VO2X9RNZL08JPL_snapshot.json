@@ -6,6 +6,7 @@
   "software": "Workbench",
   "version": "2022.03.00",
   "schema_api": "1.0.0",
+  "settings_version": "Basic Metadata",
   "data": {
     "lspci": "",
     "lshw": {

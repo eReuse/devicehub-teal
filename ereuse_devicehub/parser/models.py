@@ -90,7 +90,9 @@ class SnapshotsLog(Thing):
         settings_version = self.snapshot.settings_version or ''
         settings_version = "".join([x[0] for x in settings_version.split(' ') if x])
 
-        return "{} ({})".format(self.version, settings_version)
+        if settings_version:
+            return "{} ({})".format(self.version, settings_version)
+        return "{}".format(self.version)
 
 
 class PlaceholdersLog(Thing):

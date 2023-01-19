@@ -1413,3 +1413,18 @@ def test_bug_4028_components(user: UserClient):
 
     for c in m.Device.query.filter():
         assert c.binding or c.placeholder
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_settings_version(user: UserClient):
+    """Tests when we have one computer and then we change the disk, then
+    the new disk need to have placeholder too."""
+    s = file_json("2022-03-31_17h18m51s_ZQMPKKX51K67R68VO2X9RNZL08JPL_snapshot.json")
+    body, res = user.post(s, uri="/api/inventory/")
+    assert m.Computer.query.first().dhid == body['dhid']
+    snapshot = Snapshot.query.first()
+    log = SnapshotsLog.query.first()
+
+    assert log.get_version() == "14.0 (BM)"
+    assert snapshot.settings_version == "Basic Metadata"
