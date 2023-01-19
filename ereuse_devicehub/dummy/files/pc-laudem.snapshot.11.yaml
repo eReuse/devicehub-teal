@@ -142,7 +142,7 @@
   },
   "elapsed": 238,
   "endTime": "2018-10-15T13:59:37.431309+00:00",
-
+  "debug": {"lshw": {"configuration": {"uuid": "43686b8e-e1ae-4e4e-bc51-f98f51e97c2d"}}},
   "software": "Workbench",
   "type": "Snapshot",
   "uuid": "ec23c11b-80b6-42cd-ac5c-73ba7acddbc4",

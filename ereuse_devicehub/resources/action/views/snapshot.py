@@ -64,7 +64,8 @@ def move_json(tmp_snapshots, path_name, user, live=False):
 class SnapshotMixin:
     sync = Sync()
 
-    def build(self, snapshot_json=None):  # noqa: C901
+    def build(self, snapshot_json=None, create_new_device=False):  # noqa: C901
+        self.create_new_device = create_new_device
         if not snapshot_json:
             snapshot_json = self.snapshot_json
         device = snapshot_json.pop('device')  # type: Computer
@@ -72,9 +73,7 @@ class SnapshotMixin:
         if snapshot_json['software'] == (
             SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid
         ):
-            components = snapshot_json.pop('components', None)  # type: List[Component]
-            if isinstance(device, Computer) and device.hid:
-                device.add_mac_to_hid(components_snap=components)
+            components = snapshot_json.pop('components', None)
         snapshot = Snapshot(**snapshot_json)
 
         # Remove new actions from devices so they don't interfere with sync
@@ -89,7 +88,9 @@ class SnapshotMixin:
 
         assert not device.actions_one
         assert all(not c.actions_one for c in components) if components else True
-        db_device, remove_actions = self.sync.run(device, components)
+        db_device, remove_actions = self.sync.run(
+            device, components, self.create_new_device
+        )
 
         del device  # Do not use device anymore
         snapshot.device = db_device
@@ -117,6 +118,9 @@ class SnapshotMixin:
 
         self.is_server_erase(snapshot)
         snapshot.device.register_dlt()
+
+        snapshot.device.set_hid()
+        snapshot.device.binding.device.set_hid()
 
         return snapshot
 
@@ -151,6 +155,30 @@ class SnapshotMixin:
 
         uuid = UUID(hw_uuid)
         return UUID(bytes_le=uuid.bytes)
+
+    def get_fields_extra(self, debug, snapshot_json):
+        if not debug or not isinstance(debug, dict):
+            return
+
+        lshw = debug.get('lshw', {})
+
+        family = lshw.get('configuration', {}).get('family', '')
+
+        snapshot_json['device']['family'] = family
+
+        # lshw_mothers = []
+        # for mt in lshw.get('children', []):
+        #     if mt.get('description') == "Motherboard":
+        #         lshw_mothers.append(mt)
+
+        # for comp in snapshot_json.get('components', []):
+        #     if comp.get('type') != 'Motherboard':
+        #         continue
+        #     for mt in lshw_mothers:
+        #         if comp['serialNumber'] == mt.get('serial', ''):
+        #             comp['vendor'] = mt.get('vendor', '')
+        #             comp['product'] = mt.get('product', '')
+        #             comp['version'] = mt.get('version', '')
 
     def errors(self, txt=None, severity=Severity.Error, snapshot=None, commit=False):
         if not txt:
@@ -188,9 +216,12 @@ class SnapshotView(SnapshotMixin):
         self.version = snapshot_json.get('version')
         self.uuid = snapshot_json.get('uuid')
         self.sid = None
-        system_uuid = self.get_uuid(snapshot_json.pop('debug', None))
+        self.debug = snapshot_json.pop('debug', {})
+        system_uuid = self.get_uuid(self.debug)
         if system_uuid:
             snapshot_json['device']['system_uuid'] = system_uuid
+
+        self.get_fields_extra(self.debug, snapshot_json)
 
         try:
             self.snapshot_json = resource_def.schema.load(snapshot_json)

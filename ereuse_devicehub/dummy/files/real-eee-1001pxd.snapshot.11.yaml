@@ -158,5 +158,6 @@
     }
     ]
   },
+  "debug": {"lshw": {"configuration": {"uuid": "a0cef731-9a78-4087-889c-dfb6ba5c2e9b"}}},
   "closed": false
 }

@@ -20,9 +20,46 @@
         <div class="card-body pt-3">
           <h3>{{ snapshot_sid }} | {{ snapshot_uuid }}</h3>
           <!-- Bordered Tabs -->
+          {% if form.show() %}
+          <ul class="nav nav-tabs nav-tabs-bordered">
+
+            <li class="nav-item">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#log">Log</button>
+            </li>
+
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#change-type">Change type updated</button>
+            </li>
+
+          </ul>
+          {% endif %}
           <div class="tab-content pt-2">
 
-            <div class="tab-pane fade show active">
+            {% if form.show() %}
+            <div class="tab-pane fade" id="change-type">
+              <h5 class="card-title">Change Snapshot Type Upload</h5>
+              <div class="list-group col-6">
+                <div class="list-group-item">
+                  <form method="post" class="row g-3 needs-validation" id="form_change_updated">
+                    {{ form.csrf_token }}
+                    {% for f in form %}
+                      {% if f != form.csrf_token %}
+                      <p class="mb-1">
+                        {{ f }}
+                      </p>
+                      {% endif %}
+                    {% endfor %}
+                      <p class="mb-1">
+                        <!-- <button class="btn btn-primary" type="submit">Save</button> -->
+                        <a href="javascript:change_updated()" type="button" class="btn btn-primary">Save</a>
+                        <span class="d-none" id="activeChangeUpdatedModal" data-bs-toggle="modal" data-bs-target="#btnChangeStatus"></span>
+                      </p>
+                  </form>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            <div class="tab-pane fade show active" id="log">
               <h5 class="card-title">Traceability log Details</h5>
               <div class="list-group col-6">
                 {% for log in snapshots_log %}
@@ -51,4 +88,62 @@
     </div>
   </div>
 </section>
+<div class="modal fade" id="btnChangeStatus" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Change type updated</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="new_device" class="d-none">
+          Are you sure that you want to Change to <strong>New device</strong>?
+          <p class="text-danger mt-3">
+            Please be certain, once you confirm this step there is no going back.<br />
+            <br />
+            All the updates that have the {{ form.device.dhid }} device will become new devices and 
+            you will not be able to do any update over these devices.
+          </p>
+        </div>
+        <div id="update" class="d-none">
+          Are you sure that you want to Change to <strong>Update</strong>?
+          <p class="text-danger mt-3">
+            Please be certain, once you confirm there is no going back.<br />
+            <br />
+            All the devices {{ form.dhids_all_devices() }}
+            will be deleted and the device {{ form.dhid_base() }} will be set as the device base.<br />
+            After this change you will be able to update this device.
+          </p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary-outline" data-bs-dismiss="modal">Cancel</button>
+        <a href="javascript:send_form_change_updated()" type="button" class="btn btn-danger">
+          Confirm Save!
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+function change_updated() {
+  $("#update").attr('class', 'd-none');
+  $("#new_device").attr('class', 'd-none');
+
+  const stype = $("#snapshot_type").val();
+  $("#"+stype).attr('class', 'd-block');
+
+  $("#activeChangeUpdatedModal").click();
+}
+
+function send_form_change_updated() {
+  $("#form_change_updated").trigger('submit');
+}
+</script>
+
 {% endblock main %}
+

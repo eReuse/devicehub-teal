@@ -1,6 +1,7 @@
 {
   "closed": false,
   "uuid": "f9e5e587-baee-44e1-9a94-255d216bbda9",
+  "debug": {"lshw": {"configuration": {"uuid": "4d21dd26-aa45-4902-a5f2-8a06e364cf25"}}},
   "components": [
   {
     "actions": [],

@@ -114,6 +114,7 @@
   }
   ],
   "version": "11.0a3",
+  "debug": {"lshw": {"configuration": {"uuid": "f2c50acd-501a-4f0b-b07c-58254b2ab8c9"}}},
   "device": {
     "type": "Desktop",
     "model": "HP Compaq 8000 Elite SFF",

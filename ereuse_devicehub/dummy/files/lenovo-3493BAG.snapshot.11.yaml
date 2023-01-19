@@ -4,6 +4,7 @@
   "closed": false,
   "endTime": "2018-07-11T13:26:29.365504+00:00",
   "type": "Snapshot",
+  "debug": {"lshw": {"configuration": {"uuid": "4f256440-e43f-429a-a2c6-1e8f3365de56"}}},
   "device": {
     "serialNumber": "PB357N0",
     "actions": [

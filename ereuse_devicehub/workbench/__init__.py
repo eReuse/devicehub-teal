@@ -4,7 +4,7 @@ isos = {
         'url': 'https://releases.usody.com/demo/',
     },
     "register": {
-        'iso': "USODY_2022.12.1-beta.iso",
+        'iso': "USODY_2022.12.2-beta.iso",
         'url': 'https://releases.usody.com/2022/',
     },
     "erease": {

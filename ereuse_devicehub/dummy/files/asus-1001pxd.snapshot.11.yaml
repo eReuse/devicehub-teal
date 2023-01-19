@@ -178,6 +178,7 @@
     ],
     "type": "Laptop"
   },
+  "debug": {"lshw": {"configuration": {"uuid": "79c5098f-bc44-4834-8a59-9ea61d956c31"}}},
   "elapsed": 14725,
   "endTime": "2018-11-24T18:06:37.611704+00:00",
   "software": "Workbench",
