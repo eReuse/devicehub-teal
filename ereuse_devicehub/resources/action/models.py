@@ -11,11 +11,13 @@ Within the above general classes are subclasses in A order.
 """
 
 import copy
+import hashlib
 import json
 from collections import Iterable
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 from decimal import ROUND_HALF_EVEN, ROUND_UP, Decimal
+from operator import itemgetter
 from typing import Optional, Set, Union
 from uuid import uuid4
 
@@ -24,8 +26,9 @@ import teal.db
 from boltons import urlutils
 from citext import CIText
 from dateutil.tz import tzutc
+from ereuseapi.methods import API
 from flask import current_app as app
-from flask import g
+from flask import g, session
 from sortedcontainers import SortedSet
 from sqlalchemy import JSON, BigInteger, Boolean, CheckConstraint, Column
 from sqlalchemy import Enum as DBEnum
@@ -750,6 +753,78 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             if s.type == self.type:
                 snapshots.append(s)
         return snapshots and 'update' or 'new_device'
+
+    def register_passport_dlt(self):
+        if 'trublo' not in app.blueprints.keys() or not self.hid:
+            return
+
+        if not session.get('token_dlt'):
+            return
+
+        token_dlt = session.get('token_dlt').split(".")[1]
+        api_dlt = app.config.get('API_DLT')
+        if not token_dlt or not api_dlt:
+            return
+
+        api = API(api_dlt, token_dlt, "ethereum")
+        dpp = "{chid}:{phid}".format(chid=self.device.chid, phid=self.phid)
+        docSig = hashlib.sha3_256(self.json_wb.encode('utf-8')).hexdigest()
+        docID = "{}".format(self.uuid or '')
+        issuerID = "dh1:{user}".format(user=g.user.id)
+        api.issue_passport(dpp, docID, docSig, issuerID)
+
+    # def register_dlt(self):
+    #     from ereuse_devicehub.resources.did.models import PROOF_ENUM, Dpp, Proof
+
+    #     # Register device
+    #     response = requests.post(
+    #         "http://dlt.ereuse.org:3005/registerDevice",
+    #         data={"DeviceCHID": self.device.chid},
+    #     )
+
+    #     resp = json.loads(response.text)
+    #     if 'Success' in resp['status']:
+    #         timestamp = resp['data'].get('timestamp', time.time())
+    #         d = {
+    #             "type": PROOF_ENUM['Register'],
+    #             "device_id": self.device.id,
+    #             "snapshot": self,
+    #             "timestamp": timestamp,
+    #             "issuer_id": g.user.id,
+    #         }
+    #         proof = Proof(**d)
+    #         db.session.add(proof)
+
+    #     # Register a new Passport
+    #     dpp = "{chid}:{phid}".format(chid=self.device.chid, phid=self.phid)
+    #     if Dpp.query.filter_by(key=dpp).all():
+    #         return
+
+    #     issuerID = "dh1:{user}".format(user=g.user.id)
+    #     documentId = hashlib.sha3_256(self.json_wb.encode('utf-8')).hexdigest()
+    #     data = {
+    #         "DeviceDPP": dpp,
+    #         "IssuerID": issuerID,
+    #         "DocumentID": documentId,
+    #         "DocumentSignature": "",
+    #     }
+    #     response = requests.post("http://dlt.ereuse.org:3005/issuePassport", data=data)
+    #     if not response.status_code == 201:
+    #         return
+    #     resp = json.loads(response.text)
+    #     if 'Success' not in resp['status']:
+    #         return
+    #     timestamp = resp['data'].get('timestamp', time.time())
+    #     d_issue = {
+    #         "device_id": self.device.id,
+    #         "snapshot": self,
+    #         "timestamp": timestamp,
+    #         "issuer_id": g.user.id,
+    #         "documentId": documentId,
+    #         "key": dpp,
+    #     }
+    #     dpp_issue = Dpp(**d_issue)
+    #     db.session.add(dpp_issue)
 
     def __str__(self) -> str:
         return '{}. {} version {}.'.format(self.severity, self.software, self.version)

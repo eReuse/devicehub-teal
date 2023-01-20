@@ -1,7 +1,7 @@
 """add digital passport dpp
 
 Revision ID: 8334535d56fa
-Revises: 4b7f77f121bf
+Revises: 93daff872771
 Create Date: 2023-01-19 12:01:54.102326
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '8334535d56fa'
-down_revision = '4b7f77f121bf'
+down_revision = '93daff872771'
 branch_labels = None
 depends_on = None
 
@@ -59,18 +59,13 @@ def upgrade():
         ),
         sa.ForeignKeyConstraint(
             ['issuer_id'],
-            [f'common.user.id'],
+            ['common.user.id'],
         ),
         sa.PrimaryKeyConstraint('id'),
         schema=f'{get_inv()}',
     )
     # op.create_index(op.f('ix_proof_created'), 'proof', ['created'], unique=False, schema=f'{get_inv()}')
     # op.create_index(op.f('ix_proof_timestamp'), 'proof', ['timestamp'], unique=False, schema=f'{get_inv()}')
-    op.add_column(
-        'device',
-        sa.Column('chid_dpp', citext.CIText(), nullable=True),
-        schema=f'{get_inv()}',
-    )
     op.add_column(
         'snapshot',
         sa.Column('phid_dpp', citext.CIText(), nullable=True),
@@ -120,7 +115,7 @@ def upgrade():
         ),
         sa.ForeignKeyConstraint(
             ['issuer_id'],
-            [f'common.user.id'],
+            ['common.user.id'],
         ),
         sa.Column('key', sa.Unicode(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
@@ -133,7 +128,6 @@ def downgrade():
     op.drop_table('proof', schema=f'{get_inv()}')
     # op.drop_index(op.f('ix_proof_created'), table_name='proof', schema=f'{get_inv()}')
     # op.drop_index(op.f('ix_proof_timestamp'), table_name='proof', schema=f'{get_inv()}')
-    op.drop_column('device', 'chid_dpp', schema=f'{get_inv()}')
     op.drop_column('snapshot', 'phid_dpp', schema=f'{get_inv()}')
     op.drop_column('snapshot', 'json_wb', schema=f'{get_inv()}')
     op.drop_column('snapshot', 'json_hw', schema=f'{get_inv()}')
