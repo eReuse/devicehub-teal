@@ -1,5 +1,6 @@
 """ This is the view for Snapshots """
 
+import copy
 import json
 import os
 import shutil
@@ -121,6 +122,7 @@ class SnapshotMixin:
         snapshot.device.set_hid()
         snapshot.device.binding.device.set_hid()
 
+        snapshot.create_json_hw(self.json_wb)
         snapshot.device.register_dlt()
         snapshot.register_passport_dlt()
 
@@ -214,6 +216,7 @@ class SnapshotView(SnapshotMixin):
         self.schema = schema
         self.resource_def = resource_def
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
+        self.json_wb = copy.copy(snapshot_json)
         self.path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
         self.version = snapshot_json.get('version')
         self.uuid = snapshot_json.get('uuid')

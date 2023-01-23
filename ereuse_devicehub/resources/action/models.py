@@ -699,6 +699,12 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             return
 
         json_hw = {}
+        json_wb = copy.copy(json_wb)
+
+        if json_wb.get('device', {}).get('system_uuid'):
+            system_uuid = str(json_wb['device']['system_uuid'])
+            json_wb['device']['system_uuid'] = system_uuid
+
         for k, v in json_wb.items():
             if k == 'device':
                 json_hw['device'] = copy.copy(v)
@@ -755,8 +761,10 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         return snapshots and 'update' or 'new_device'
 
     def register_passport_dlt(self):
-        import pdb; pdb.set_trace()
-        if 'trublo' not in app.blueprints.keys() or not self.hid:
+        import pdb
+
+        pdb.set_trace()
+        if 'trublo' not in app.blueprints.keys() or not self.device.hid:
             return
 
         if not session.get('token_dlt'):

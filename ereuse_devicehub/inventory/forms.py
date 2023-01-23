@@ -305,6 +305,7 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
         devices = []
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         for filename, snapshot_json in self.snapshots:
+            self.json_wb = copy.copy(snapshot_json)
             path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
             debug = snapshot_json.pop('debug', None)
             self.version = snapshot_json.get('schema_api')

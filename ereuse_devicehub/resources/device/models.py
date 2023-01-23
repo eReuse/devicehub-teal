@@ -777,10 +777,6 @@ class Device(Thing):
         ).first()
 
     def set_hid(self):
-        with suppress(TypeError):
-            self.hid = Naming.hid(
-                self.type, self.manufacturer, self.model, self.serial_number
-            )
         if 'property_hid' in app.blueprints.keys():
             try:
                 from modules.device.utils import set_hid
@@ -887,7 +883,9 @@ class Device(Thing):
         return types.get(self.type, '')
 
     def register_dlt(self):
-        import pdb; pdb.set_trace()
+        import pdb
+
+        pdb.set_trace()
         if 'trublo' not in app.blueprints.keys() or not self.hid:
             return
 
