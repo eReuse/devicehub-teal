@@ -887,6 +887,7 @@ class Device(Thing):
         return types.get(self.type, '')
 
     def register_dlt(self):
+        import pdb; pdb.set_trace()
         if 'trublo' not in app.blueprints.keys() or not self.hid:
             return
 

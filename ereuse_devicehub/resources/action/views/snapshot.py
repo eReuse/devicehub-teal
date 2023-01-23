@@ -117,10 +117,12 @@ class SnapshotMixin:
             snapshot.severity = Severity.Warning
 
         self.is_server_erase(snapshot)
-        snapshot.device.register_dlt()
 
         snapshot.device.set_hid()
         snapshot.device.binding.device.set_hid()
+
+        snapshot.device.register_dlt()
+        snapshot.register_passport_dlt()
 
         return snapshot
 

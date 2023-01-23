@@ -755,6 +755,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         return snapshots and 'update' or 'new_device'
 
     def register_passport_dlt(self):
+        import pdb; pdb.set_trace()
         if 'trublo' not in app.blueprints.keys() or not self.hid:
             return
 
