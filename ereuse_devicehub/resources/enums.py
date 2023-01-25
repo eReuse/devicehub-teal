@@ -359,16 +359,16 @@ class ErasureStandards(Enum):
     """Software erasure standards."""
 
     HMG_IS5 = 'British HMG Infosec Standard 5 (HMG IS5)'
-    """`British HMG Infosec Standard 5 (HMG IS5) 
-    <https://en.wikipedia.org/wiki/Infosec_Standard_5>`_.
-    
+    """`British HMG Infosec Standard 5 (HMG IS5)
+    <https://en.wikipedia.org/wiki/Infosec_Standard_5>`.
+
     In order to follow this standard, an erasure must have the
     following steps:
-    
+
     1. A first step writing zeroes to the data-storage units.
     2. A second step erasing with random data, verifying the erasure
        success in each hard-drive sector.
-    
+
     And be an :class:`ereuse_devicehub.resources.action.models.EraseSectors`.
     """
 
@@ -429,6 +429,16 @@ class SessionType(IntEnum):
     Internal = 0
     External = 1
     Session = 2
+
+    def __str__(self):
+        return self.name
+
+
+class StatusCode(IntEnum):
+    """The code of the status response of api dlt."""
+
+    Success = 201
+    NotWork = 400
 
     def __str__(self):
         return self.name

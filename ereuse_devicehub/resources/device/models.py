@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import pathlib
+import time
 import uuid
 from contextlib import suppress
 from fractions import Fraction
@@ -883,24 +884,35 @@ class Device(Thing):
         return types.get(self.type, '')
 
     def register_dlt(self):
-        import pdb
-
-        pdb.set_trace()
         if 'trublo' not in app.blueprints.keys() or not self.hid:
             return
 
         if not session.get('token_dlt'):
             return
 
-        token_dlt = session.get('token_dlt').split(".")[1]
+        token_dlt = session.get('token_dlt')
         api_dlt = app.config.get('API_DLT')
         if not token_dlt or not api_dlt:
             return
 
         api = API(api_dlt, token_dlt, "ethereum")
 
-        api.register_device(self.chid)
-        # result = api.register_device(chid)
+        result = api.register_device(self.chid)
+        # import pdb; pdb.set_trace()
+        from ereuse_devicehub.resources.did.models import PROOF_ENUM, Proof
+        from ereuse_devicehub.resources.enums import StatusCode
+
+        if result['Status'] == StatusCode.Success:
+            timestamp = result['Data'].get('data', {}).get('timestamp', time.time())
+            d = {
+                "type": PROOF_ENUM['Register'],
+                "device_id": self.device.id,
+                "snapshot": self,
+                "timestamp": timestamp,
+                "issuer_id": g.user.id,
+            }
+            proof = Proof(**d)
+            db.session.add(proof)
 
     def unreliable(self):
         self.user_trusts = False
@@ -1193,7 +1205,7 @@ class Computer(Device):
     """A chassis with components inside that can be processed
     automatically with Workbench Computer.
 
-    Computer is broadly extended by ``Desktop``, ``Laptop``, and
+    Computer is broa extended by ``Desktop``, ``Laptop``, and
     ``Server``. The property ``chassis`` defines it more granularly.
     """
 

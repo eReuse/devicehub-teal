@@ -105,7 +105,6 @@ class User(UserMixin, Thing):
 
         from modules.trublo.utils import encrypt
 
-        # import pdb; pdb.set_trace()
         api_dlt = app.config.get('API_DLT')
         data = register_user(api_dlt)
         api_token = data.get('data', {}).get('api_token')
@@ -118,8 +117,6 @@ class User(UserMixin, Thing):
             return {}
 
         from modules.trublo.utils import decrypt
-
-        # import pdb; pdb.set_trace()
 
         if not self.api_keys_dlt:
             return {}
@@ -145,14 +142,15 @@ class User(UserMixin, Thing):
         if not api_token:
             api_token = session.get('token_dlt', '.')
         target_user = api_token.split(".")[0]
-        keyUser1 = app.config.get('KEYUSER1')
+        keyUser1 = app.config.get('API_DLT_TOKEN')
         api_dlt = app.config.get('API_DLT')
-        if not keyUser1 or api_dlt:
+        if not keyUser1 or not api_dlt:
             return
 
         apiUser1 = API(api_dlt, keyUser1, "ethereum")
 
-        apiUser1.issue_credential("Operator", target_user)
+        result = apiUser1.issue_credential("Operator", target_user)
+        return result
 
 
 class UserInventory(db.Model):

@@ -13,6 +13,7 @@ Within the above general classes are subclasses in A order.
 import copy
 import hashlib
 import json
+import time
 from collections import Iterable
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
@@ -87,6 +88,7 @@ from ereuse_devicehub.resources.enums import (
     RatingRange,
     Severity,
     SnapshotSoftware,
+    StatusCode,
     TestDataStorageLength,
 )
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
@@ -761,26 +763,40 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         return snapshots and 'update' or 'new_device'
 
     def register_passport_dlt(self):
-        import pdb
-
-        pdb.set_trace()
         if 'trublo' not in app.blueprints.keys() or not self.device.hid:
             return
 
         if not session.get('token_dlt'):
             return
 
-        token_dlt = session.get('token_dlt').split(".")[1]
+        token_dlt = session.get('token_dlt')
         api_dlt = app.config.get('API_DLT')
         if not token_dlt or not api_dlt:
             return
 
         api = API(api_dlt, token_dlt, "ethereum")
-        dpp = "{chid}:{phid}".format(chid=self.device.chid, phid=self.phid)
+        dpp = "{chid}:{phid}".format(chid=self.device.chid, phid=self.phid_dpp)
         docSig = hashlib.sha3_256(self.json_wb.encode('utf-8')).hexdigest()
         docID = "{}".format(self.uuid or '')
         issuerID = "dh1:{user}".format(user=g.user.id)
-        api.issue_passport(dpp, docID, docSig, issuerID)
+        result = api.issue_passport(dpp, docID, docSig, issuerID)
+        # import pdb;pdb.set_trace()
+        if result['Status'] is not StatusCode.Success:
+            return
+        timestamp = result['Data'].get('timestamp', time.time())
+        from ereuse_devicehub.resources.did.models import Dpp
+
+        timestamp = result['Data'].get('data', {}).get('timestamp', time.time())
+        d_issue = {
+            "device_id": self.device.id,
+            "snapshot": self,
+            "timestamp": timestamp,
+            "issuer_id": g.user.id,
+            "documentId": docID,
+            "key": dpp,
+        }
+        dpp_issue = Dpp(**d_issue)
+        db.session.add(dpp_issue)
 
     # def register_dlt(self):
     #     from ereuse_devicehub.resources.did.models import PROOF_ENUM, Dpp, Proof
