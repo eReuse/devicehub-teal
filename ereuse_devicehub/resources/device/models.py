@@ -756,6 +756,24 @@ class Device(Thing):
 
         return ""
 
+    def get_exist_untrusted_device(self):
+        if isinstance(self, Computer):
+            if not self.system_uuid:
+                return True
+
+            return (
+                Computer.query.filter_by(
+                    hid=self.hid,
+                    user_trusts=False,
+                    owner_id=g.user.id,
+                    active=True,
+                    placeholder=None,
+                ).first()
+                or False
+            )
+
+        return False
+
     def get_from_db(self):
         if 'property_hid' in app.blueprints.keys():
             try:

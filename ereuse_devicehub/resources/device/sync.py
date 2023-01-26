@@ -171,6 +171,8 @@ class Sync:
 
         if not db_device or create_new_device:
             device.tags.clear()  # We don't want to add the transient dummy tags
+            if create_new_device or device.get_exist_untrusted_device():
+                device.user_trusts = False
             db.session.add(device)
             db_device = device
         try:

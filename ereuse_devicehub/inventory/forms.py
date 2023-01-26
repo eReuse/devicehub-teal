@@ -44,6 +44,7 @@ from ereuse_devicehub.resources.action.views.snapshot import (
 from ereuse_devicehub.resources.device.models import (
     SAI,
     Cellphone,
+    Computer,
     ComputerMonitor,
     Desktop,
     Device,
@@ -332,8 +333,8 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
                 self.result[filename] = 'Error'
                 continue
 
-            import pdb; pdb.set_trace()
-            response.device.user_trusts = user_trusts
+            if isinstance(response.device, Computer):
+                response.device.user_trusts = user_trusts
             db.session.add(response)
             devices.append(response.device.binding.device)
 
