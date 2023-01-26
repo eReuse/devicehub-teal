@@ -44,6 +44,7 @@ from ereuse_devicehub.resources.action.views.snapshot import (
 from ereuse_devicehub.resources.device.models import (
     SAI,
     Cellphone,
+    Computer,
     ComputerMonitor,
     Desktop,
     Device,
@@ -297,7 +298,7 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
 
         return is_lite
 
-    def save(self, commit=True):
+    def save(self, commit=True, user_trusts=True):
         if any([x == 'Error' for x in self.result.values()]):
             return
         schema = SnapshotSchema()
@@ -332,6 +333,8 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
                 self.result[filename] = 'Error'
                 continue
 
+            if isinstance(response.device, Computer):
+                response.device.user_trusts = user_trusts
             db.session.add(response)
             devices.append(response.device.binding.device)
 

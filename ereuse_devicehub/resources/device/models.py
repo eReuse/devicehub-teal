@@ -756,6 +756,24 @@ class Device(Thing):
 
         return ""
 
+    def get_exist_untrusted_device(self):
+        if isinstance(self, Computer):
+            if not self.system_uuid:
+                return True
+
+            return (
+                Computer.query.filter_by(
+                    hid=self.hid,
+                    user_trusts=False,
+                    owner_id=g.user.id,
+                    active=True,
+                    placeholder=None,
+                ).first()
+                or False
+            )
+
+        return False
+
     def get_from_db(self):
         if 'property_hid' in app.blueprints.keys():
             try:
@@ -898,7 +916,7 @@ class Device(Thing):
         if not snapshot1:
             return
 
-        self.create_new_device(snapshots.values())
+        self.create_new_device(snapshots.values(), user_trusts=self.user_trusts)
         self.remove_snapshot(snapshots.keys())
 
         return
@@ -915,7 +933,7 @@ class Device(Thing):
                 snapshot = file_snapshot.read()
                 return json.loads(snapshot)
 
-    def create_new_device(self, snapshots):
+    def create_new_device(self, snapshots, user_trusts=True):
         from ereuse_devicehub.inventory.forms import UploadSnapshotForm
 
         new_snapshots = []
@@ -928,7 +946,7 @@ class Device(Thing):
         form.result = {}
         form.snapshots = new_snapshots
         form.create_new_devices = True
-        form.save(commit=False)
+        form.save(commit=False, user_trusts=user_trusts)
 
     def remove_snapshot(self, snapshots):
         from ereuse_devicehub.parser.models import SnapshotsLog
