@@ -898,7 +898,7 @@ class Device(Thing):
         if not snapshot1:
             return
 
-        self.create_new_device(snapshots.values())
+        self.create_new_device(snapshots.values(), user_trusts=self.user_trusts)
         self.remove_snapshot(snapshots.keys())
 
         return
@@ -915,7 +915,7 @@ class Device(Thing):
                 snapshot = file_snapshot.read()
                 return json.loads(snapshot)
 
-    def create_new_device(self, snapshots):
+    def create_new_device(self, snapshots, user_trusts=True):
         from ereuse_devicehub.inventory.forms import UploadSnapshotForm
 
         new_snapshots = []
@@ -928,7 +928,7 @@ class Device(Thing):
         form.result = {}
         form.snapshots = new_snapshots
         form.create_new_devices = True
-        form.save(commit=False)
+        form.save(commit=False, user_trusts=user_trusts)
 
     def remove_snapshot(self, snapshots):
         from ereuse_devicehub.parser.models import SnapshotsLog
