@@ -67,7 +67,6 @@ class DeviceListMixin(GenericMixin):
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', PER_PAGE))
         filter = request.args.get('filter', "All+Computers")
-        # import pdb; pdb.set_trace()
 
         lots = self.context['lots']
         form_filter = FilterForm(lots, lot_id, all_devices=all_devices)
