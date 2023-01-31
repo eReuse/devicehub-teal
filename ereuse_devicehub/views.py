@@ -1,4 +1,5 @@
 import flask
+from decouple import config
 from flask import Blueprint
 from flask import current_app as app
 from flask import g
@@ -46,7 +47,7 @@ class LoginView(View):
         url_reset_password = "#"
 
         if 'register' in app.blueprints.keys():
-            url_register = flask.url_for('register.user-registration')
+            url_register = config("PRICES_PAGE", "#")
 
         if 'reset_password' in app.blueprints.keys():
             url_reset_password = flask.url_for('reset_password.reset-password')
