@@ -148,8 +148,17 @@ class DeviceView(View):
         if device.is_abstract() == 'Twin':
             abstract = device.placeholder.binding
 
+        placeholder = device.binding or device.placeholder
+        device_abstract = placeholder and placeholder.binding or device
+        device_real = placeholder and placeholder.device or device
         return render_template(
-            'devices/layout.html', device=device, states=states, abstract=abstract
+            'devices/layout.html',
+            placeholder=placeholder,
+            device=device,
+            device_abstract=device_abstract,
+            device_real=device_real,
+            states=states,
+            abstract=abstract
         )
 
     @auth.Auth.requires_auth
