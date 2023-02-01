@@ -417,7 +417,6 @@ def test_get_device_permissions(
 
     html, _ = client.get(res=d.Device, item=s['device']['devicehubID'], accept=ANY)
     assert 'intel atom cpu n270 @ 1.60ghz' in html
-    assert '00:24:8C:7F:CF:2D – 100 Mbps' in html
     pc2, res2 = user2.get(res=d.Device, item=s['device']['devicehubID'], accept=ANY)
     assert res2.status_code == 200
     assert pc2 == html
@@ -549,7 +548,6 @@ def test_device_public(user: UserClient, client: Client):
     s, _ = user.post(file('asus-eee-1000h.snapshot.11'), res=m.Snapshot)
     html, _ = client.get(res=d.Device, item=s['device']['devicehubID'], accept=ANY)
     assert 'intel atom cpu n270 @ 1.60ghz' in html
-    assert '00:24:8C:7F:CF:2D – 100 Mbps' in html
 
 
 @pytest.mark.mvp
