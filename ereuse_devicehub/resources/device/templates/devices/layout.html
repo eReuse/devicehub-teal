@@ -116,8 +116,8 @@
                           <small class="text-muted">{{ component.created.strftime('%H:%M %d-%m-%Y') }}</small>
                         </div>
                         <p class="mb-1">
-                          {{ component.manufacturer }}<br />
-                          {{ component.model }}<br />
+                          {{ component.manufacturer or '- not detected -' }}<br />
+                          {{ component.model or '- not detected -' }}<br />
                         </p>
                         <small class="text-muted">
                           {% if component.type in ['RamModule', 'HardDrive', 'SolidStateDrive'] %}
