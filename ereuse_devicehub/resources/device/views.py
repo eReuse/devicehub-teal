@@ -158,7 +158,7 @@ class DeviceView(View):
             device_abstract=device_abstract,
             device_real=device_real,
             states=states,
-            abstract=abstract
+            abstract=abstract,
         )
 
     @auth.Auth.requires_auth
