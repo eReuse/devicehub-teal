@@ -1,7 +1,44 @@
-{% extends "ereuse_devicehub/base.html" %}
-{% block page_title %}Device {{ device.dhid }}{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block body %}
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Device {{ device_real.dhid }} - Usody</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="{{ url_for('static', filename='img/favicon.png') }}" rel="icon">
+  <link href="{{ url_for('static', filename='img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- JS Files -->
+  <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+
+  <!-- Vendor CSS Files -->
+  <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+
+
+  <!-- Template Main CSS File -->
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/devicehub.css') }}" rel="stylesheet">
+
+  <!-- =======================================================
+  * Template Name: NiceAdmin - v2.2.0
+  * Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+</head>
+
+<body>
+
 <main>
 
 <section class="container mt-3">
@@ -159,23 +196,25 @@
 
 </main>
 <!-- ======= Footer ======= -->
-  <div class="container">
-<div class="row">
-  <div class="col">
-    <footer class="footer">
-      <div class="copyright">
-        &copy; Copyright <strong><span>Usody</span></strong>. All Rights Reserved
-      </div>
-      <div class="credits">
-        <a href="https://help.usody.com/en/" target="_blank">Help</a> | 
-        <a href="https://pangea.org/es/politica-de-privacidad/" target="_blank">Privacy</a> | 
-        <a href="https://pangea.org/aviso-legal/" target="_blank">Terms</a>
-      </div>
-      <div class="credits">
-        DeviceHub
-      </div>
-    </footer><!-- End Footer -->
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <footer class="footer">
+        <div class="copyright">
+          &copy; Copyright <strong><span>Usody</span></strong>. All Rights Reserved
+        </div>
+        <div class="credits">
+          <a href="https://help.usody.com/en/" target="_blank">Help</a> | 
+          <a href="https://www.usody.com/legal/privacy-policy" target="_blank">Privacy</a> | 
+          <a href="https://www.usody.com/legal/terms" target="_blank">Terms</a>
+        </div>
+        <div class="credits">
+          DeviceHub
+        </div>
+      </footer><!-- End Footer -->
+    </div>
   </div>
 </div>
-    </div>
-{% endblock body%}
+</body>
+
+</html>
