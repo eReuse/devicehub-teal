@@ -1,7 +1,7 @@
 """add api_keys_dlt to user
 
 Revision ID: 4b7f77f121bf
-Revises: 8334535d56fa
+Revises: af038a8a388c
 Create Date: 2022-12-01 10:35:36.795035
 
 """
@@ -11,7 +11,7 @@ from alembic import context, op
 
 # revision identifiers, used by Alembic.
 revision = '4b7f77f121bf'
-down_revision = '8334535d56fa'
+down_revision = 'af038a8a388c'
 branch_labels = None
 depends_on = None
 
