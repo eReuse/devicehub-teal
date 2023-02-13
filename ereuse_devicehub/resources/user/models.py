@@ -119,3 +119,20 @@ class Session(Thing):
 
     def __str__(self) -> str:
         return '{0.token}'.format(self)
+
+
+class SanitizationEntity(Thing):
+    id = Column(BigInteger, primary_key=True)
+    company_name = Column(db.String, nullable=True)
+    location = Column(db.String, nullable=True)
+    logo = Column(db.String, nullable=True)
+    responsable_person = Column(db.String, nullable=True)
+    user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(User.id))
+    user = db.relationship(
+        User,
+        backref=db.backref('sanitization_entity', lazy=True, collection_class=set),
+        collection_class=set,
+    )
+
+    def __str__(self) -> str:
+        return '{0.company_name}'.format(self)
