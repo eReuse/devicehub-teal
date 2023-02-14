@@ -20,6 +20,7 @@ from ereuse_devicehub.inventory.forms import (
     AdvancedSearchForm,
     AllocateForm,
     BindingForm,
+    CustomerDetailsForm,
     DataWipeForm,
     EditTransferForm,
     FilterForm,
@@ -79,6 +80,7 @@ class DeviceListMixin(GenericMixin):
         form_transfer = ''
         form_delivery = ''
         form_receiver = ''
+        form_customer_details = ''
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
@@ -86,6 +88,7 @@ class DeviceListMixin(GenericMixin):
                 form_transfer = EditTransferForm(lot_id=lot.id)
                 form_delivery = NotesForm(lot_id=lot.id, type='Delivery')
                 form_receiver = NotesForm(lot_id=lot.id, type='Receiver')
+                form_customer_details = CustomerDetailsForm(lot_id=lot.id)
 
         form_new_action = NewActionForm(lot=lot_id)
         self.context.update(
@@ -97,6 +100,7 @@ class DeviceListMixin(GenericMixin):
                 'form_transfer': form_transfer,
                 'form_delivery': form_delivery,
                 'form_receiver': form_receiver,
+                'form_customer_details': form_customer_details,
                 'form_filter': form_filter,
                 'form_print_labels': PrintLabelsForm(),
                 'lot': lot,
@@ -1257,6 +1261,28 @@ class SnapshotDetailView(GenericMixin):
         )
 
 
+class CustomerDetailsView(GenericMixin):
+    methods = ['POST']
+    form_class = CustomerDetailsForm
+
+    def dispatch_request(self, lot_id):
+        self.get_context()
+        form = self.form_class(request.form, lot_id=lot_id)
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+
+        if form.validate_on_submit():
+            form.save()
+            messages.success('Customer details updated successfully!')
+            return flask.redirect(next_url)
+
+        messages.error('Customer details updated error!')
+        for k, v in form.errors.items():
+            value = ';'.join(v)
+            key = form[k].label.text
+            messages.error('Error {key}: {value}!'.format(key=key, value=value))
+        return flask.redirect(next_url)
+
+
 class DeliveryNoteView(GenericMixin):
     methods = ['POST']
     form_class = NotesForm
@@ -1447,6 +1473,10 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/lot/<string:lot_id>/transfer/',
     view_func=EditTransferView.as_view('edit_transfer'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/customerdetails/',
+    view_func=CustomerDetailsView.as_view('customer_details'),
 )
 devices.add_url_rule(
     '/lot/<string:lot_id>/deliverynote/',

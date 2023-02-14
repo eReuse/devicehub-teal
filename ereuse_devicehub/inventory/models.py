@@ -5,7 +5,7 @@ from flask import g
 from sqlalchemy import Column, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
-from teal.db import CASCADE_OWN
+from teal.db import CASCADE_OWN, URL
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.models import Thing
@@ -89,4 +89,24 @@ class ReceiverNote(Thing):
         'Transfer',
         backref=backref('receiver_note', lazy=True, uselist=False, cascade=CASCADE_OWN),
         primaryjoin='ReceiverNote.transfer_id == Transfer.id',
+    )
+
+
+class TransferCustomerDetails(Thing):
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    company_name = Column(CIText(), nullable=True)
+    location = Column(CIText(), nullable=True)
+    logo = Column(URL(), nullable=True)
+
+    transfer_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey('transfer.id'),
+        nullable=False,
+    )
+    transfer = relationship(
+        'Transfer',
+        backref=backref(
+            'customer_details', lazy=True, uselist=False, cascade=CASCADE_OWN
+        ),
+        primaryjoin='TransferCustomerDetails.transfer_id == Transfer.id',
     )

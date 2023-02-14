@@ -5,6 +5,7 @@ Revises: 93daff872771
 Create Date: 2023-02-13 18:01:00.092527
 
 """
+import citext
 import sqlalchemy as sa
 import teal
 from alembic import context, op
@@ -54,6 +55,31 @@ def upgrade():
         schema=f'{get_inv()}',
     )
 
+    op.create_table(
+        'transfer_customer_details',
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column(
+            'updated',
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text('CURRENT_TIMESTAMP'),
+            nullable=False,
+        ),
+        sa.Column(
+            'created',
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text('CURRENT_TIMESTAMP'),
+            nullable=False,
+        ),
+        sa.Column('company_name', citext.CIText(), nullable=True),
+        sa.Column('logo', teal.db.URL(), nullable=True),
+        sa.Column('location', citext.CIText(), nullable=True),
+        sa.Column('transfer_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.ForeignKeyConstraint(['transfer_id'], [f'{get_inv()}.transfer.id']),
+        sa.PrimaryKeyConstraint('id'),
+        schema=f'{get_inv()}',
+    )
+
 
 def downgrade():
     op.drop_table('sanitization_entity', schema=f'{get_inv()}')
+    op.drop_table('transfer_customer_details', schema=f'{get_inv()}')

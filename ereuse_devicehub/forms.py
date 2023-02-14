@@ -129,7 +129,6 @@ class SanitizationEntityForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # import pdb; pdb.set_trace()
         if isinstance(self.logo.data, URL):
             self.logo.data = self.logo.data.to_text()
 
