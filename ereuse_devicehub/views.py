@@ -103,7 +103,7 @@ class UserProfileView(GenericMixin):
         sanitization_form = SanitizationEntityForm()
         if g.user.sanitization_entity:
             sanitization = list(g.user.sanitization_entity)[0]
-            sanitization_form = SanitizationEntityForm(initial=sanitization)
+            sanitization_form = SanitizationEntityForm(obj=sanitization)
         self.context.update(
             {
                 'current_user': current_user,

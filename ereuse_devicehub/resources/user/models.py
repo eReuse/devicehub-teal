@@ -5,7 +5,7 @@ from flask_login import UserMixin
 from sqlalchemy import BigInteger, Boolean, Column, Sequence
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import EmailType, PasswordType
-from teal.db import IntEnum
+from teal.db import URL, IntEnum
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import SessionType
@@ -126,7 +126,9 @@ class SanitizationEntity(Thing):
     company_name = Column(db.String, nullable=True)
     location = Column(db.String, nullable=True)
     logo = Column(db.String, nullable=True)
+    logo = Column(URL(), nullable=True)
     responsable_person = Column(db.String, nullable=True)
+    supervisor_person = Column(db.String, nullable=True)
     user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(User.id))
     user = db.relationship(
         User,

@@ -1,7 +1,15 @@
+from boltons.urlutils import URL
 from flask import g
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
-from wtforms import BooleanField, EmailField, PasswordField, StringField, validators
+from wtforms import (
+    BooleanField,
+    EmailField,
+    PasswordField,
+    StringField,
+    URLField,
+    validators,
+)
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.user.models import SanitizationEntity, User
@@ -105,12 +113,25 @@ class PasswordForm(FlaskForm):
 
 class SanitizationEntityForm(FlaskForm):
 
-    logo = StringField('Logo', render_kw={'class': "form-control"})
+    logo = URLField(
+        'Logo',
+        [validators.Optional(), validators.URL()],
+        render_kw={'class': "form-control"},
+    )
     company_name = StringField('Company Name', render_kw={'class': "form-control"})
     location = StringField('Location', render_kw={'class': "form-control"})
     responsable_person = StringField(
         'Responsable person', render_kw={'class': "form-control"}
     )
+    supervisor_person = StringField(
+        'Supervisor person', render_kw={'class': "form-control"}
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # import pdb; pdb.set_trace()
+        if isinstance(self.logo.data, URL):
+            self.logo.data = self.logo.data.to_text()
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
@@ -122,10 +143,11 @@ class SanitizationEntityForm(FlaskForm):
 
     def save(self, commit=True):
         sanitation_data = SanitizationEntity(
-            logo=self.logo.data,
+            logo=URL(self.logo.data),
             company_name=self.company_name.data,
             location=self.location.data,
             responsable_person=self.responsable_person.data,
+            supervisor_person=self.supervisor_person.data,
             user=g.user,
         )
         db.session.add(sanitation_data)

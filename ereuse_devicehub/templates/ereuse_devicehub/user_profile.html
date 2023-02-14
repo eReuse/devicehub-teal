@@ -72,7 +72,7 @@
 
             <div class="tab-pane fade pt-3" id="profile-sanitization-entity">
               <!-- Sanitization Entity datas Form -->
-              <form action="{{ url_for('core.set-password') }}" method="post">
+              <form action="{{ url_for('core.set-sanitization') }}" method="post">
               {% for  f in sanitization_form %}
                 {% if f == sanitization_form.csrf_token %}
                   {{ f }}

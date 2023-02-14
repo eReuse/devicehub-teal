@@ -6,6 +6,7 @@ Create Date: 2023-02-13 18:01:00.092527
 
 """
 import sqlalchemy as sa
+import teal
 from alembic import context, op
 from sqlalchemy.dialects import postgresql
 
@@ -40,8 +41,9 @@ def upgrade():
             nullable=False,
         ),
         sa.Column('company_name', sa.String(), nullable=True),
-        sa.Column('logo', sa.String(), nullable=True),
+        sa.Column('logo', teal.db.URL(), nullable=True),
         sa.Column('responsable_person', sa.String(), nullable=True),
+        sa.Column('supervisor_person', sa.String(), nullable=True),
         sa.Column('location', sa.String(), nullable=True),
         sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.PrimaryKeyConstraint('id'),
