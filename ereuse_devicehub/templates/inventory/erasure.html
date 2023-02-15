@@ -1,80 +1,431 @@
-{% extends "documents/layout.html" %}
-{% block body %}
-    <div>
-        <h2>Summary</h2>
-        <table class="table table-bordered">
-            <thead>
-            <tr>
-                <th>S/N Data Storage</th>
-                <th>Type of erasure</th>
-                <th>Result</th>
-                <th>Date</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for erasure in erasures %}
-                <tr>
-                    <td>
-                        {{ erasure.device.serial_number.upper() }}
-                    </td>
-                    <td>
-                        {{ erasure.type }}
-                    </td>
-                    <td>
-                        {{ erasure.severity }}
-                    </td>
-                    <td>
-                        {{ erasure.date_str }}
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div class="page-break row">
-        <h2>Details</h2>
-        {% for erasure in erasures %}
-            <div class="col-md-6 no-page-break">
-                <h4>{{ erasure.device.__format__('t') }}</h4>
-                <dl>
-                    <dt>Data storage:</dt>
-                    <dd>{{ erasure.device.__format__('ts') }}</dd>
+<html>
+<head>
+<title>Data Sanitization Certificate</title>
+<meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+<style type="text/css" media="all">
+  @page {
+    size: A4 portrait; /* can use also 'landscape' for orientation */
+    margin: 100px 1cm 150px 1cm;
 
-                    <dt>Erasure:</dt>
-                    <dd>{{ erasure.__format__('ts') }}</dd>
-                    {% if erasure.steps %}
-                        <dt>Erasure steps:</dt>
-                        <dd>
-                            <ol>
-                                {% for step in erasure.steps %}
-                                    <li>{{ step.__format__('') }}</li>
-                                {% endfor %}
-                            </ol>
-                        </dd>
-                    {% endif %}
-                </dl>
-            </div>
-        {% endfor %}
+    @top-left{
+      content: element(header);
+    }
+
+    @bottom-left{
+      content: element(footer);
+    }
+
+  }
+
+
+  header {
+    position: running(header); 
+    /*height: 100px;*/
+  }
+
+  footer {
+    position: running(footer);
+    /*height: 150px;*/
+  }
+
+  img {max-height: 150px; width: auto;}
+  .company-logo {float: left;}
+  .customer-logo {float: right;}
+  .signature {margin-top: 100px;}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="row gx-0 mb-5">
+      <div class="col pt-3" style="background-color: #d5a6bd;">
+        <p style="margin-left: 10px;">2022-12-26 16:51:32 (+0100), USODY DRIVE ERASURE 2022</p>
+      </div>
     </div>
-    <div class="no-page-break">
-        <h2>Glossary</h2>
-        <dl>
-            <dt>Erase Basic</dt>
-            <dd>
-                A software-based fast non-100%-secured way of erasing data storage,
-                using <a href="https://en.wikipedia.org/wiki/Shred_(Unix)">shred</a>.
-            </dd>
-            <dt>Erase Sectors</dt>
-            <dd>
-                A secured-way of erasing data storages, checking sector-by-sector
-                the erasure, using <a href="https://en.wikipedia.org/wiki/Badblocks">badblocks</a>.
-            </dd>
-        </dl>
+  </header>
+
+  <div class="row">
+    <div class="col">
+      <img class="company-logo" src="https://ksr-ugc.imgix.net/assets/003/488/267/210c162995de80609124abf81047bca7_original.png?ixlib=rb-4.0.2&w=700&fit=max&v=1427136681&auto=format&frame=1&q=92&s=eb4411c5e9d3557ffa64598ac3b238a6" />
     </div>
-    <div class="no-print">
-        <a href="{{ url_pdf }}">Click here to download the PDF.</a>
+    <div class="col">
+      <img class="customer-logo" src="https://e7.pngegg.com/pngimages/243/790/png-clipart-your-company-logo-doing-business-as-company-logo-name-creative-company-logo-free-logo-design-template-text.png" />
     </div>
-    <div class="print-only">
-        <a href="{{ url_for('Document.StampsView', _external=True) }}">Verify on-line the integrity of this document</a>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col">
+      <h1>Data Sanitization Certificate</h1>
     </div>
-{% endblock %}
+  </div>
+
+  <div class="row mt-3">
+    <div class="col">
+      <strong>Entity Information</strong>
+      <div class="row">
+        <div class="col-2">
+          <span>Name:</span>
+        </div>
+        <div class="col">
+          <span>ACME</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Location:</span>
+        </div>
+        <div class="col">
+          <span>Paseo de Gracia, 2,  08007 Barcelona, España</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="row mt-3">
+    <div class="col">
+      <strong>Responsible Sanitization Entity</strong>
+      <div class="row">
+        <div class="col-2">
+          <span>Name:</span>
+        </div>
+        <div class="col">
+          <span>Your company</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Responsible Person</span>
+        </div>
+        <div class="col">
+          <span>John Data</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Location:</span>
+        </div>
+        <div class="col">
+          <span>Madrid, Gran Via 8, 28040 Madrid, España</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="row mt-3">
+    <div class="col">
+      <strong>Summary</strong>
+      <div class="row">
+        <div class="col-2">
+          <span>N&deg; of devices:</span>
+        </div>
+        <div class="col">
+          <span>16</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>N&deg; of data storage unit(s):</span>
+        </div>
+        <div class="col">
+          <span>16</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Sanitization result:</span>
+        </div>
+        <div class="col">
+          <span>Failed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="row mt-3">
+    <div class="col">
+      <strong>Report Details</strong>
+      <div class="row">
+        <div class="col-2">
+          <span>Report UUID:</span>
+        </div>
+        <div class="col">
+          <span>8bcef704-ba04-4320-8056-c8a5c401dbe3</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Report Date:</span>
+        </div>
+        <div class="col">
+          <span>2022-12-26 11:26:24</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Software Version:</span>
+        </div>
+        <div class="col">
+          <span>Usody Drive Erasure 2022.03.0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="row mt-5">
+    <div class="col">
+      <p>
+        I hereby declare that the data erasure process has been carried 
+        out in accordance with the instructions received.
+      </p>
+    </div>
+  </div>
+
+
+  <div class="row border-top border-dark signature">
+    <div class="col d-flex justify-content-center">
+      <span>Data Responsable</span>
+    </div>
+    <div class="col d-flex justify-content-center">
+      <span>Data Supervisor</span>
+    </div>
+  </div>
+</div>
+
+<p style="break-before: page;"></p>
+
+<div class="container mb-5">
+  <div class="row mt-3">
+    <div class="col">
+      <h1>Devices Summary</h1>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <table class="table text-center">
+        <thead class="border-bottom border-dark">
+          <tr>
+            <th scope="col">SN Device</th>
+            <th scope="col">SN Storage</th>
+            <th scope="col">Tag Customer</th>
+            <th scope="col">Method</th>
+            <th scope="col">Result</th>
+            <th scope="col">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>S1...</td>
+            <td>S2...</td>
+            <td>ACME1</td>
+            <td>Basic</td>
+            <td>Failed</td>
+            <td>2022-12-20 11:26:24</td>
+          </tr>
+          <tr>
+            <td>S1...</td>
+            <td>1927E18B43F4</td>
+            <td>ACME1</td>
+            <td>Basic</td>
+            <td>Failed</td>
+            <td>2022-12-20 11:26:24</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<p style="break-before: page;"></p>
+<div class="container mb-5">
+  <div class="row mt-3">
+    <div class="col">
+      <h1>1927E18B43F4</h1>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col-2">
+      <span>Result</span>
+    </div>
+    <div class="col">
+      <span>Failed</span>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <strong>Storage Drive</strong>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <div class="row">
+        <div class="col-2">
+          <span>Manufacturer:</span>
+        </div>
+        <div class="col">
+          <span>Crucial</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Model:</span>
+        </div>
+        <div class="col">
+          <span>CT240BX500ssd1</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>SN:</span>
+        </div>
+        <div class="col">
+          <span>1927E18B43F4</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Storage Medium:</span>
+        </div>
+        <div class="col">
+          <span>SSD</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Connector:</span>
+        </div>
+        <div class="col">
+          <span>SAS</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Size:</span>
+        </div>
+        <div class="col">
+          <span>240GB</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <strong>Method</strong>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <div class="row">
+        <div class="col-2">
+          <span>Name:</span>
+        </div>
+        <div class="col">
+          <span>Baseline</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Standard:</span>
+        </div>
+        <div class="col">
+          <span>NIST SP-800-88</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Removal process:</span>
+        </div>
+        <div class="col">
+          <span>Overwriting</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Program:</span>
+        </div>
+        <div class="col">
+          <span>Shred</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Verification status:</span>
+        </div>
+        <div class="col">
+          <span>No</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Detected bad sectors:</span>
+        </div>
+        <div class="col">
+          <span>-</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Hidden areas:</span>
+        </div>
+        <div class="col">
+          <span>No</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Warnings:</span>
+        </div>
+        <div class="col">
+          <span>No</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <strong>Overwriting steps</strong>
+        </div>
+        <div class="col">
+          <span>1 (0)</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Step:</span>
+        </div>
+        <div class="col">
+          <span>1</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Date Init:</span>
+        </div>
+        <div class="col">
+          <span>2022-12-20 11:00:24</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Date End:</span>
+        </div>
+        <div class="col">
+          <span>2022-12-20 11:26:24</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-2">
+          <span>Duration:</span>
+        </div>
+        <div class="col">
+          <span>0:26:00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
