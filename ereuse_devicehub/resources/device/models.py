@@ -898,15 +898,15 @@ class Device(Thing):
         api = API(api_dlt, token_dlt, "ethereum")
 
         result = api.register_device(self.chid)
-        # import pdb; pdb.set_trace()
         from ereuse_devicehub.resources.did.models import PROOF_ENUM, Proof
         from ereuse_devicehub.resources.enums import StatusCode
 
+        # import pdb; pdb.set_trace()
         if result['Status'] == StatusCode.Success:
             timestamp = result['Data'].get('data', {}).get('timestamp', time.time())
             d = {
                 "type": PROOF_ENUM['Register'],
-                "device_id": self.device.id,
+                "device_id": self.id,
                 "snapshot": self,
                 "timestamp": timestamp,
                 "issuer_id": g.user.id,
