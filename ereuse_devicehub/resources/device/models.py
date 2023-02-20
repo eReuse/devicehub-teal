@@ -915,6 +915,13 @@ class Device(Thing):
             proof = Proof(**d)
             db.session.add(proof)
 
+        if not hasattr(self, 'components'):
+            return
+
+        for c in self.components:
+            if isinstance(c, DataStorage):
+                c.register_dlt()
+
     def unreliable(self):
         self.user_trusts = False
         i = 0

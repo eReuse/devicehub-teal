@@ -487,6 +487,46 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             return self.snapshot.device.phid()
         return ''
 
+    def register_proof(self):
+        """This method is used for register a proof of erasure en dlt"""
+
+        if 'trublo' not in app.blueprints.keys() or not self.snapshot:
+            return
+
+        if not session.get('token_dlt'):
+            return
+
+        token_dlt = session.get('token_dlt')
+        api_dlt = app.config.get('API_DLT')
+        if not token_dlt or not api_dlt:
+            return
+
+        api = API(api_dlt, token_dlt, "ethereum")
+
+        from ereuse_devicehub.resources.did.models import PROOF_ENUM, Proof
+
+        deviceCHID = self.device.chid
+        docSig = hashlib.sha3_256(self.snapshot.json_wb.encode('utf-8')).hexdigest()
+        docID = "{}".format(self.snapshot.uuid or '')
+        issuerID = "dh1:{user}".format(user=g.user.id)
+        proof_type = PROOF_ENUM['Erase']
+        result = api.generate_proof(deviceCHID, docID, docSig, issuerID, proof_type)
+        from ereuse_devicehub.resources.enums import StatusCode
+
+        if result['Status'] == StatusCode.Success:
+            timestamp = (
+                result.get('Data', {}).get('data', {}).get('timestamp', time.time())
+            )
+            d = {
+                "type": PROOF_ENUM['Register'],
+                "device": self.device,
+                "snapshot": self.snapshot,
+                "timestamp": timestamp,
+                "issuer_id": g.user.id,
+            }
+            proof = Proof(**d)
+            db.session.add(proof)
+
     def __str__(self) -> str:
         return '{} on {}.'.format(self.severity, self.date_str)
 
@@ -780,7 +820,6 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         docID = "{}".format(self.uuid or '')
         issuerID = "dh1:{user}".format(user=g.user.id)
         result = api.issue_passport(dpp, docID, docSig, issuerID)
-        # import pdb;pdb.set_trace()
         if result['Status'] is not StatusCode.Success:
             return
         timestamp = result['Data'].get('timestamp', time.time())

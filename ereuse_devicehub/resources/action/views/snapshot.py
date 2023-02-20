@@ -12,7 +12,7 @@ from flask import g
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.resources.action.models import Snapshot
+from ereuse_devicehub.resources.action.models import EraseBasic, Snapshot
 from ereuse_devicehub.resources.device.models import Computer
 from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
@@ -125,6 +125,11 @@ class SnapshotMixin:
         snapshot.create_json_hw(self.json_wb)
         snapshot.device.register_dlt()
         snapshot.register_passport_dlt()
+
+        for ac in snapshot.actions:
+            if not isinstance(ac, EraseBasic):
+                continue
+            ac.register_proof()
 
         return snapshot
 

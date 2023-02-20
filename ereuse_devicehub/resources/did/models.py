@@ -15,6 +15,7 @@ PROOF_ENUM = {
     'Register': 'Register',
     'IssueDPP': 'IssueDPP',
     'proof_of_recycling': 'proof_of_recycling',
+    'Erase': 'Erase',
 }
 
 _sorted_proofs = {'order_by': lambda: Proof.created, 'collection_class': SortedSet}
