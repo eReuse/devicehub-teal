@@ -901,13 +901,14 @@ class Device(Thing):
         from ereuse_devicehub.resources.did.models import PROOF_ENUM, Proof
         from ereuse_devicehub.resources.enums import StatusCode
 
-        # import pdb; pdb.set_trace()
         if result['Status'] == StatusCode.Success:
-            timestamp = result['Data'].get('data', {}).get('timestamp', time.time())
+            timestamp = (
+                result.get('Data', {}).get('data', {}).get('timestamp', time.time())
+            )
             d = {
                 "type": PROOF_ENUM['Register'],
-                "device_id": self.id,
-                "snapshot": self,
+                "device": self,
+                "snapshot": [x for x in self.actions if x.t == 'Snapshot'][0],
                 "timestamp": timestamp,
                 "issuer_id": g.user.id,
             }
