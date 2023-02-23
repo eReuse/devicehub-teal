@@ -34,8 +34,13 @@
   }
 
   header {
-    position: running(header); 
+    position: running(header);
     /*height: 100px;*/
+    font-size: 12px;
+    /* color: #000; */
+    font-family: Arial;
+    width: 100%;
+    /* position: relative;*/
   }
 
   footer {
@@ -150,7 +155,7 @@
         <tbody>
           <tr style="padding-top:5px;">
             <td style="width:20%;">
-              <span>N&deg; of devices:</span>
+              <span>N&deg; of computers:</span>
             </td>
             <td style="width:80%;">
               <span>16</span>
@@ -245,34 +250,32 @@
   </div>
   <div class="row mt-3">
     <div class="col">
-      <table class="table text-center">
-        <thead class="border-bottom border-dark">
+      <table class="table" style="width: 100%; text-align: center;">
+        <thead style="border-bottom: 1px solid #000;">
           <tr>
-            <th scope="col">SN Device</th>
             <th scope="col">SN Storage</th>
-            <th scope="col">Tag Customer</th>
             <th scope="col">Method</th>
             <th scope="col">Result</th>
             <th scope="col">Date</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>S1...</td>
-            <td>S2...</td>
-            <td>ACME1</td>
-            <td>Basic</td>
-            <td>Failed</td>
-            <td>2022-12-20 11:26:24</td>
+          {% for erasure in erasures %}
+          <tr style="border-bottom: 1px dashed #000;">
+            <td>
+              {{ erasure.device.serial_number.upper() }}
+            </td>
+            <td>
+              {{ erasure.type }}
+            </td>
+            <td>
+              {{ erasure.severity }}
+            </td>
+            <td>
+              {{ erasure.date_str }}
+            </td>
           </tr>
-          <tr>
-            <td>S1...</td>
-            <td>1927E18B43F4</td>
-            <td>ACME1</td>
-            <td>Basic</td>
-            <td>Failed</td>
-            <td>2022-12-20 11:26:24</td>
-          </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
