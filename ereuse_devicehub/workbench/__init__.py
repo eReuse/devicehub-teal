@@ -8,7 +8,7 @@ isos = {
         'url': 'https://releases.usody.com/2022/',
     },
     "erease": {
-        'iso': "USODY_14.1.0.iso",
+        'iso': "USODY_14.2.0.iso",
         'url': 'https://releases.usody.com/v14/',
     },
 }
