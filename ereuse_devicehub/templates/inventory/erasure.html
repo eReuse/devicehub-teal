@@ -12,6 +12,7 @@
   @page {
     size: A4 portrait; /* can use also 'landscape' for orientation */
     margin: 1.0cm 1.5cm 3.5cm 1.5cm;
+    font-family: "Source Sans Pro", Calibri, Candra, Sans serif;
 
     @top {
       content: element(header);
@@ -58,6 +59,10 @@
   img {max-height: 150px; width: auto;}
   .company-logo {float: left;}
   .customer-logo {float: right;}
+  .page-break:not(section:first-of-type) {
+    page-break-before: always
+  }
+}
 </style>
 </head>
 <body>
@@ -241,9 +246,7 @@
     </div>
   </div>
 
-  <p style="break-before: page;"></p>
-
-  <div class="row mt-3">
+  <div class="row mt-3 page-break">
     <div class="col">
       <h1>Devices Summary</h1>
     </div>
@@ -281,191 +284,39 @@
     </div>
   </div>
 </div>
-<p style="break-before: page;"></p>
-<div class="container mb-5">
-  <div class="row mt-3">
-    <div class="col">
-      <h1>1927E18B43F4</h1>
-    </div>
-  </div>
-  <div class="row mt-3">
-    <div class="col-2">
-      <span>Result</span>
-    </div>
-    <div class="col">
-      <span>Failed</span>
-    </div>
-  </div>
-  <div class="row mt-3">
-    <div class="col">
-      <strong>Storage Drive</strong>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col">
-      <div class="row">
-        <div class="col-2">
-          <span>Manufacturer:</span>
-        </div>
-        <div class="col">
-          <span>Crucial</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Model:</span>
-        </div>
-        <div class="col">
-          <span>CT240BX500ssd1</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>SN:</span>
-        </div>
-        <div class="col">
-          <span>1927E18B43F4</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Storage Medium:</span>
-        </div>
-        <div class="col">
-          <span>SSD</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Connector:</span>
-        </div>
-        <div class="col">
-          <span>SAS</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Size:</span>
-        </div>
-        <div class="col">
-          <span>240GB</span>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="row mt-3">
-    <div class="col">
-      <strong>Method</strong>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col">
-      <div class="row">
-        <div class="col-2">
-          <span>Name:</span>
-        </div>
-        <div class="col">
-          <span>Baseline</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Standard:</span>
-        </div>
-        <div class="col">
-          <span>NIST SP-800-88</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Removal process:</span>
-        </div>
-        <div class="col">
-          <span>Overwriting</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Program:</span>
-        </div>
-        <div class="col">
-          <span>Shred</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Verification status:</span>
-        </div>
-        <div class="col">
-          <span>No</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Detected bad sectors:</span>
-        </div>
-        <div class="col">
-          <span>-</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Hidden areas:</span>
-        </div>
-        <div class="col">
-          <span>No</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Warnings:</span>
-        </div>
-        <div class="col">
-          <span>No</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <strong>Overwriting steps</strong>
-        </div>
-        <div class="col">
-          <span>1 (0)</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Step:</span>
-        </div>
-        <div class="col">
-          <span>1</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Date Init:</span>
-        </div>
-        <div class="col">
-          <span>2022-12-20 11:00:24</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Date End:</span>
-        </div>
-        <div class="col">
-          <span>2022-12-20 11:26:24</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2">
-          <span>Duration:</span>
-        </div>
-        <div class="col">
-          <span>0:26:00</span>
-        </div>
-      </div>
-    </div>
-  </div>
+{% for erasure in erasures %}
+<div class="container mb-5 page-break">
+   <h4>{{ erasure.device.__format__('t') }}</h4>
+   <dl>
+     <dt>Data storage:</dt>
+     <dd>{{ erasure.device.__format__('ts') }}</dd>
+
+     <dt>Computer where was erase:</dt>
+  <dd>Title: {{ erasure.parent.__format__('ts') }}</dd>
+  <dd>DevicehubID: {{ erasure.parent.dhid }}</dd>
+  <dd>Hid: {{ erasure.parent.hid }}</dd>
+  <dd>Tags: {{ erasure.parent.tags }}</dd>
+
+  <dt>Computer where it resides:</dt>
+  <dd>Title: {{ erasure.device.parent.__format__('ts') }}</dd>
+  <dd>DevicehubID: {{ erasure.device.parent.dhid }}</dd>
+  <dd>Hid: {{ erasure.device.parent.hid }}</dd>
+  <dd>Tags: {{ erasure.device.parent.tags }}</dd>
+
+  <dt>Erasure:</dt>
+  <dd>{{ erasure.__format__('ts') }}</dd>
+  {% if erasure.steps %}
+  <dt>Erasure steps:</dt>
+   <dd>
+                      <ol>
+                          {% for step in erasure.steps %}
+                              <li>{{ step.__format__('') }}</li>
+                          {% endfor %}
+                      </ol>
+                  </dd>
+              {% endif %}
+          </dl>
 </div>
+{% endfor %}
 </body>
 </html>
