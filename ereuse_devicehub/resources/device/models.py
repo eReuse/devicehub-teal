@@ -1047,16 +1047,18 @@ class Computer(Device):
     @property
     def ram_size(self) -> int:
         """The total of RAM memory the computer has."""
-        return sum(
-            ram.size or 0 for ram in self.components if isinstance(ram, RamModule)
-        )
+        components = self.components
+        if self.placeholder and self.placeholder.binding:
+            components = self.placeholder.binding.components
+        return sum(ram.size or 0 for ram in components if isinstance(ram, RamModule))
 
     @property
     def data_storage_size(self) -> int:
         """The total of data storage the computer has."""
-        return sum(
-            ds.size or 0 for ds in self.components if isinstance(ds, DataStorage)
-        )
+        components = self.components
+        if self.placeholder and self.placeholder.binding:
+            components = self.placeholder.binding.components
+        return sum(ds.size or 0 for ds in components if isinstance(ds, DataStorage))
 
     @property
     def processor_model(self) -> str:
