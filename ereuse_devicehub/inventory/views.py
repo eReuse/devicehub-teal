@@ -1058,20 +1058,20 @@ class ExportsView(View):
                     erasures.append(device.privacy)
         return erasures
 
-    def get_custum_details(self):
+    def get_costum_details(self):
         my_data = None
         customer_details = None
         if hasattr(g.user, 'sanitization_entity'):
             if g.user.sanitization_entity:
                 my_data = list(g.user.sanitization_entity)[0]
 
-        if len(request.referrer.split('/lot/')) > 1:
-            try:
+        try:
+            if len(request.referrer.split('/lot/')) > 1:
                 lot_id = request.referrer.split('/lot/')[-1].split('/')[0]
                 lot = Lot.query.filter_by(owner=g.user).filter_by(id=lot_id).first()
                 customer_details = lot.transfer.customer_details
-            except Exception:
-                pass
+        except Exception:
+            pass
         return my_data, customer_details
 
     def get_server_erasure_hosts(self, erasures):
@@ -1094,7 +1094,7 @@ class ExportsView(View):
                 erasures[0].snapshot.version,
             )
 
-        my_data, customer_details = self.get_custum_details()
+        my_data, customer_details = self.get_costum_details()
 
         a, b = self.get_server_erasure_hosts(erasures)
         erasures_host, erasures_on_server = a, b

@@ -320,7 +320,7 @@ def test_export_certificates(user3: UserClientFlask):
     body = str(next(body))
     assert status == '200 OK'
     assert "PDF-1.5" in body
-    assert 'hts54322' in body
+    assert 'e2024242cv86mm'.upper() in body
 
 
 @pytest.mark.mvp
