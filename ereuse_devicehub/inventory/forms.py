@@ -30,7 +30,12 @@ from wtforms import (
 from wtforms.fields import FormField
 
 from ereuse_devicehub.db import db
-from ereuse_devicehub.inventory.models import DeliveryNote, ReceiverNote, Transfer
+from ereuse_devicehub.inventory.models import (
+    DeliveryNote,
+    ReceiverNote,
+    Transfer,
+    TransferCustomerDetails,
+)
 from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
@@ -1510,6 +1515,54 @@ class NotesForm(FlaskForm):
             return self._obj
 
         self.populate_obj(self._obj)
+        db.session.add(self._obj)
+
+        if commit:
+            db.session.commit()
+
+        return self._obj
+
+
+class CustomerDetailsForm(FlaskForm):
+    company_name = StringField(
+        'Company name',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="Name of the company",
+    )
+    location = StringField(
+        'Location',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="""Location where is the company""",
+    )
+    logo = URLField(
+        'Logo',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="Url where is the logo",
+    )
+
+    def __init__(self, *args, **kwargs):
+        lot_id = kwargs.pop('lot_id', None)
+        self._tmp_lot = Lot.query.filter(Lot.id == lot_id).one()
+        self._obj = self._tmp_lot.transfer.customer_details
+        if self._obj:
+            kwargs['obj'] = self._obj
+        if not self._obj:
+            self._obj = TransferCustomerDetails(transfer_id=self._tmp_lot.transfer.id)
+
+        super().__init__(*args, **kwargs)
+        if isinstance(self.logo.data, URL):
+            self.logo.data = URL(self.logo.data).to_text()
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+        return is_valid
+
+    def save(self, commit=True):
+        self.populate_obj(self._obj)
+        self._obj.logo = URL(self._obj.logo)
         db.session.add(self._obj)
 
         if commit:

@@ -93,6 +93,11 @@
                 Receiver Note
               </button>
             </li>
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#edit-customer-details">
+                Customer Details
+              </button>
+            </li>
             {% endif %}
             {% endif %}
 
@@ -654,6 +659,37 @@
                     <button class="btn btn-primary" type="submit">Save</button>
                   </div>
                   {% endif %}
+                </form>
+              </div>
+
+              <div id="edit-customer-details" class="tab-pane fade edit-customer-details">
+                <h5 class="card-title">Customer Details</h5>
+                <form method="post" action="{{ url_for('inventory.customer_details', lot_id=lot.id) }}" class="row g-3 needs-validation" novalidate>
+                  {{ form_customer_details.csrf_token }}
+
+                  {% for field in form_customer_details %}
+                    {% if field != form_customer_details.csrf_token %}
+                      <div class="col-12">
+                      {% if field != form_customer_details.type %}
+                        {{ field.label(class_="form-label") }}
+                        {{ field }}
+                        <small class="text-muted">{{ field.description }}</small>
+                        {% if field.errors %}
+                          <p class="text-danger">
+                            {% for error in field.errors %}
+                              {{ error }}<br/>
+                            {% endfor %}
+                          </p>
+                        {% endif %}
+                      {% endif %}
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+
+                  <div>
+                    <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.id) }}" class="btn btn-danger">Cancel</a>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                  </div>
                 </form>
               </div>
               {% endif %}

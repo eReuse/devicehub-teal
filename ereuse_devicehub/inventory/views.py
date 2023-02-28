@@ -1,7 +1,9 @@
 import copy
 import csv
+import datetime
 import logging
 import os
+import uuid
 from io import StringIO
 from pathlib import Path
 
@@ -20,6 +22,7 @@ from ereuse_devicehub.inventory.forms import (
     AdvancedSearchForm,
     AllocateForm,
     BindingForm,
+    CustomerDetailsForm,
     DataWipeForm,
     EditTransferForm,
     FilterForm,
@@ -79,6 +82,7 @@ class DeviceListMixin(GenericMixin):
         form_transfer = ''
         form_delivery = ''
         form_receiver = ''
+        form_customer_details = ''
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
@@ -86,6 +90,7 @@ class DeviceListMixin(GenericMixin):
                 form_transfer = EditTransferForm(lot_id=lot.id)
                 form_delivery = NotesForm(lot_id=lot.id, type='Delivery')
                 form_receiver = NotesForm(lot_id=lot.id, type='Receiver')
+                form_customer_details = CustomerDetailsForm(lot_id=lot.id)
 
         form_new_action = NewActionForm(lot=lot_id)
         self.context.update(
@@ -97,6 +102,7 @@ class DeviceListMixin(GenericMixin):
                 'form_transfer': form_transfer,
                 'form_delivery': form_delivery,
                 'form_receiver': form_receiver,
+                'form_customer_details': form_customer_details,
                 'form_filter': form_filter,
                 'form_print_labels': PrintLabelsForm(),
                 'lot': lot,
@@ -1039,7 +1045,7 @@ class ExportsView(View):
 
         return self.response_csv(data, "Erasures.csv")
 
-    def build_erasure_certificate(self):
+    def get_datastorages(self):
         erasures = []
         for device in self.find_devices():
             if device.placeholder and device.placeholder.binding:
@@ -1050,11 +1056,66 @@ class ExportsView(View):
             elif isinstance(device, DataStorage):
                 if device.privacy:
                     erasures.append(device.privacy)
+        return erasures
+
+    def get_costum_details(self):
+        my_data = None
+        customer_details = None
+        if hasattr(g.user, 'sanitization_entity'):
+            if g.user.sanitization_entity:
+                my_data = list(g.user.sanitization_entity)[0]
+
+        try:
+            if len(request.referrer.split('/lot/')) > 1:
+                lot_id = request.referrer.split('/lot/')[-1].split('/')[0]
+                lot = Lot.query.filter_by(owner=g.user).filter_by(id=lot_id).first()
+                customer_details = lot.transfer.customer_details
+        except Exception:
+            pass
+        return my_data, customer_details
+
+    def get_server_erasure_hosts(self, erasures):
+        erasures_host = []
+        erasures_on_server = []
+        for erase in erasures:
+            try:
+                if erase.parent.binding.kangaroo:
+                    erasures_host.append(erase.parent)
+                    erasures_on_server.append(erase)
+            except Exception:
+                pass
+        return erasures_host, erasures_on_server
+
+    def build_erasure_certificate(self):
+        erasures = self.get_datastorages()
+        software = 'USODY DRIVE ERASURE'
+        if erasures and erasures[0].snapshot:
+            software += ' {}'.format(
+                erasures[0].snapshot.version,
+            )
+
+        my_data, customer_details = self.get_costum_details()
+
+        a, b = self.get_server_erasure_hosts(erasures)
+        erasures_host, erasures_on_server = a, b
+
+        result = 'Success'
+        if "Failed" in [e.severity.get_public_name() for e in erasures]:
+            result = 'Failed'
 
         params = {
             'title': 'Erasure Certificate',
             'erasures': tuple(erasures),
             'url_pdf': '',
+            'date_report': '{:%c}'.format(datetime.datetime.now()),
+            'uuid_report': '{}'.format(uuid.uuid4()),
+            'software': software,
+            'my_data': my_data,
+            'n_computers': len(set([x.parent for x in erasures])),
+            'result': result,
+            'customer_details': customer_details,
+            'erasure_hosts': erasures_host,
+            'erasures_normal': list(set(erasures) - set(erasures_on_server)),
         }
         return flask.render_template('inventory/erasure.html', **params)
 
@@ -1257,6 +1318,28 @@ class SnapshotDetailView(GenericMixin):
         )
 
 
+class CustomerDetailsView(GenericMixin):
+    methods = ['POST']
+    form_class = CustomerDetailsForm
+
+    def dispatch_request(self, lot_id):
+        self.get_context()
+        form = self.form_class(request.form, lot_id=lot_id)
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+
+        if form.validate_on_submit():
+            form.save()
+            messages.success('Customer details updated successfully!')
+            return flask.redirect(next_url)
+
+        messages.error('Customer details updated error!')
+        for k, v in form.errors.items():
+            value = ';'.join(v)
+            key = form[k].label.text
+            messages.error('Error {key}: {value}!'.format(key=key, value=value))
+        return flask.redirect(next_url)
+
+
 class DeliveryNoteView(GenericMixin):
     methods = ['POST']
     form_class = NotesForm
@@ -1447,6 +1530,10 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/lot/<string:lot_id>/transfer/',
     view_func=EditTransferView.as_view('edit_transfer'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/customerdetails/',
+    view_func=CustomerDetailsView.as_view('customer_details'),
 )
 devices.add_url_rule(
     '/lot/<string:lot_id>/deliverynote/',
