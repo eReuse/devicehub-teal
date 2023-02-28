@@ -514,7 +514,6 @@ class EraseSectors(EraseBasic):
     method = 'Badblocks'
 
     def get_public_name(self):
-        # import pdb; pdb.set_trace()
         steps_random = 0
         steps_zeros = 0
         for s in self.steps:
