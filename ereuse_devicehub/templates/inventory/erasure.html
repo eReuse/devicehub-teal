@@ -68,16 +68,16 @@
 <body>
   <header class="page-header">
     <div class="col" style="background-color: #d5a6bd;">
-      <p style="margin-left: 10px;">2022-12-26 16:51:32 (+0100), USODY DRIVE ERASURE 2022</p>
+      <p style="margin-left: 10px;">{{ date_report }}, {{ software }}</p>
     </div>
   </header>
 <div class="container">
   <div class="row">
     <div class="col-6">
-      <img class="company-logo" src="https://ksr-ugc.imgix.net/assets/003/488/267/210c162995de80609124abf81047bca7_original.png?ixlib=rb-4.0.2&w=700&fit=max&v=1427136681&auto=format&frame=1&q=92&s=eb4411c5e9d3557ffa64598ac3b238a6" />
+      <img class="company-logo" src="{{ customer_details and customer_details.logo.to_text() or '' }}" />
     </div>
     <div class="col-6">
-      <img class="customer-logo" src="https://e7.pngegg.com/pngimages/243/790/png-clipart-your-company-logo-doing-business-as-company-logo-name-creative-company-logo-free-logo-design-template-text.png" />
+      <img class="customer-logo" src="{{ my_data and my_data.logo.to_text() }}" />
     </div>
   </div>
 </div>
@@ -101,7 +101,7 @@
               Name:
             </td>
             <td style="width:80%;">
-              ACME
+              <span>{{ ustomer_details and customer_details.company_name or ''}}</span>
             </td>
           </tr>
           <tr style="padding-top:5px;">
@@ -109,7 +109,7 @@
               Location:
             </td>
             <td style="width:80%;">
-              <span>Paseo de Gracia, 2, 08007 Barcelona, España</span>
+              <span>{{ customer_details and customer_details.location or '' }}</span>
             </td>
           </tr>
       </table>
@@ -128,7 +128,7 @@
               <span>Name:</span>
             </td>
             <td style="width:80%;">
-              <span>Your company</span>
+              <span>{{ my_data and my_data.company_name or '' }}</span>
             </td>
           </tr>
           <tr style="padding-top:5px;">
@@ -136,7 +136,7 @@
               <span>Responsible Person</span>
             </td>
             <td style="width:80%;">
-              <span>John Data</span>
+              <span>{{ my_data and my_data.responsable_person or '' }}</span>
             </td>
           </tr>
           <tr style="padding-top:5px;">
@@ -144,7 +144,7 @@
               <span>Location:</span>
             </td>
             <td style="width:80%;">
-              <span>Madrid, Gran Via 8, 28040 Madrid, España</span>
+              <span>{{ my_data and my_data.location or '' }}</span>
             </td>
           </tr>
       </table>
@@ -158,20 +158,35 @@
     <div class="col-12">
       <table class="body_content">
         <tbody>
+          {% if erasure_hosts %}
+          {% for e in erasure_hosts %}
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              <span>N&deg; of sanitization server ({{ loop.index }}/{{ erasure_hosts|length }}):</span>
+            </td>
+            <td style="width:80%;">
+              {% if e.serial_number %}
+              <span>{{ e.serial_number.upper() }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% else %}
           <tr style="padding-top:5px;">
             <td style="width:20%;">
               <span>N&deg; of computers:</span>
             </td>
             <td style="width:80%;">
-              <span>16</span>
+              <span>{{ n_computers }}</span>
             </td>
           </tr>
+          {% endif %}
           <tr style="padding-top:5px;">
             <td style="width:20%;">
               <span>N&deg; of data storage unit(s):</span>
             </td>
             <td style="width:80%;">
-              <span>16</span>
+              <span>{{ erasures | length }}</span>
             </td>
           </tr>
           <tr style="padding-top:5px;">
@@ -179,7 +194,7 @@
               <span>Sanitization result:</span>
             </td>
             <td style="width:80%;">
-              <span>Failed</span>
+              <span>{{ result }}</span>
             </td>
           </tr>
       </table>
@@ -198,7 +213,7 @@
               <span>Report UUID:</span>
             </td>
             <td style="width:80%;">
-              <span>8bcef704-ba04-4320-8056-c8a5c401dbe3</span>
+              <span>{{ uuid_report }}</span>
             </td>
           </tr>
           <tr style="padding-top:5px;">
@@ -206,7 +221,7 @@
               <span>Report Date:</span>
             </td>
             <td style="width:80%;">
-              <span>2022-12-26 11:26:24</span>
+              <span>{{ date_report }}</span>
             </td>
           </tr>
           <tr style="padding-top:5px;">
@@ -214,7 +229,7 @@
               <span>Software Version:</span>
             </td>
             <td style="width:80%;">
-              <span>Usody Drive Erasure 2022.03.0</span>
+              <span>{{ software }}</span>
             </td>
           </tr>
       </table>
@@ -237,15 +252,67 @@
           <tr style="padding-top:5px;">
             <td style="width:50%; text-align: center;">
               <span>Data Responsable</span>
+              <br />
+              <span>{{ my_data and my_data.responsable_person or '' }}</span>
             </td>
             <td style="width:50%; text-align: center;">
               <span>Data Supervisor</span>
+              <br />
+              <span>{{ my_data and my_data.supervisor_person or '' }}</span>
             </td>
           </tr>
       </table>
     </div>
   </div>
 
+{% if erasures %}
+  {% if erasure_hosts %}
+  {% for server in erasure_hosts %}
+  <div class="row mt-3 page-break">
+    <div class="col">
+      <h1>Server Summary</h1>
+    </div>
+    <div class="col">
+      <h4>SN Server {{ server.serial_number and server.serial_number.upper() }}</h4>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <table class="table" style="width: 100%; text-align: center;">
+        <thead style="border-bottom: 1px solid #000;">
+          <tr>
+            <th scope="col" style="text-align: center;">SN Storage</th>
+            <th scope="col" style="text-align: center;">Method</th>
+            <th scope="col" style="text-align: center;">Result</th>
+            <th scope="col" style="text-align: center;">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for erasure in erasures %}
+          {% if erasure.parent == server %}
+          <tr style="border-bottom: 1px dashed #000;">
+            <td>
+              {{ erasure.device.serial_number.upper() }}
+            </td>
+            <td>
+              {{ erasure.get_public_name() }}
+            </td>
+            <td>
+              {{ erasure.severity.get_public_name() }}
+            </td>
+            <td>
+              {{ erasure.date_str }}
+            </td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% if erasures_normal %}
   <div class="row mt-3 page-break">
     <div class="col">
       <h1>Devices Summary</h1>
@@ -256,23 +323,23 @@
       <table class="table" style="width: 100%; text-align: center;">
         <thead style="border-bottom: 1px solid #000;">
           <tr>
-            <th scope="col">SN Storage</th>
-            <th scope="col">Method</th>
-            <th scope="col">Result</th>
-            <th scope="col">Date</th>
+            <th scope="col" style="text-align: center;">SN Storage</th>
+            <th scope="col" style="text-align: center;">Method</th>
+            <th scope="col" style="text-align: center;">Result</th>
+            <th scope="col" style="text-align: center;">Date</th>
           </tr>
         </thead>
         <tbody>
-          {% for erasure in erasures %}
+          {% for erasure in erasures_normal %}
           <tr style="border-bottom: 1px dashed #000;">
             <td>
               {{ erasure.device.serial_number.upper() }}
             </td>
             <td>
-              {{ erasure.type }}
+              {{ erasure.get_public_name() }}
             </td>
             <td>
-              {{ erasure.severity }}
+              {{ erasure.severity.get_public_name() }}
             </td>
             <td>
               {{ erasure.date_str }}
@@ -283,10 +350,11 @@
       </table>
     </div>
   </div>
+  {% endif %}
 </div>
 {% for erasure in erasures %}
 <div class="container mb-5 page-break">
-   <h4>{{ erasure.device.__format__('t') }}</h4>
+   <h4>{{ erasure.device.serial_number.upper() }}</h4>
    <dl>
      <dt>Data storage:</dt>
      <dd>{{ erasure.device.__format__('ts') }}</dd>
@@ -308,15 +376,21 @@
   {% if erasure.steps %}
   <dt>Erasure steps:</dt>
    <dd>
-                      <ol>
-                          {% for step in erasure.steps %}
-                              <li>{{ step.__format__('') }}</li>
-                          {% endfor %}
-                      </ol>
-                  </dd>
-              {% endif %}
-          </dl>
+     <ol>
+       {% for step in erasure.steps %}
+         <li>{{ step.__format__('') }}</li>
+       {% endfor %}
+      </ol>
+    </dd>
+    {% endif %}
+  </dl>
 </div>
 {% endfor %}
+{% endif %}
+<footer class="page-header">
+<div>
+  <a href="{{ url_for('Document.StampsView', _external=True) }}">Verify on-line the integrity of this document</a>
+</div>
+</footer>
 </body>
 </html>

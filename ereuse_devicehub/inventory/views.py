@@ -1,7 +1,9 @@
 import copy
 import csv
+import datetime
 import logging
 import os
+import uuid
 from io import StringIO
 from pathlib import Path
 
@@ -1043,7 +1045,7 @@ class ExportsView(View):
 
         return self.response_csv(data, "Erasures.csv")
 
-    def build_erasure_certificate(self):
+    def get_datastorages(self):
         erasures = []
         for device in self.find_devices():
             if device.placeholder and device.placeholder.binding:
@@ -1054,11 +1056,66 @@ class ExportsView(View):
             elif isinstance(device, DataStorage):
                 if device.privacy:
                     erasures.append(device.privacy)
+        return erasures
+
+    def get_custum_details(self):
+        my_data = None
+        customer_details = None
+        if hasattr(g.user, 'sanitization_entity'):
+            if g.user.sanitization_entity:
+                my_data = list(g.user.sanitization_entity)[0]
+
+        if len(request.referrer.split('/lot/')) > 1:
+            try:
+                lot_id = request.referrer.split('/lot/')[-1].split('/')[0]
+                lot = Lot.query.filter_by(owner=g.user).filter_by(id=lot_id).first()
+                customer_details = lot.transfer.customer_details
+            except Exception:
+                pass
+        return my_data, customer_details
+
+    def get_server_erasure_hosts(self, erasures):
+        erasures_host = []
+        erasures_on_server = []
+        for erase in erasures:
+            try:
+                if erase.parent.binding.kangaroo:
+                    erasures_host.append(erase.parent)
+                    erasures_on_server.append(erase)
+            except Exception:
+                pass
+        return erasures_host, erasures_on_server
+
+    def build_erasure_certificate(self):
+        erasures = self.get_datastorages()
+        software = 'USODY DRIVE ERASURE'
+        if erasures and erasures[0].snapshot:
+            software += ' {}'.format(
+                erasures[0].snapshot.version,
+            )
+
+        my_data, customer_details = self.get_custum_details()
+
+        a, b = self.get_server_erasure_hosts(erasures)
+        erasures_host, erasures_on_server = a, b
+
+        result = 'Success'
+        if "Failed" in [e.severity.get_public_name() for e in erasures]:
+            result = 'Failed'
 
         params = {
             'title': 'Erasure Certificate',
             'erasures': tuple(erasures),
             'url_pdf': '',
+            'date_report': '{:%c}'.format(datetime.datetime.now()),
+            'uuid_report': '{}'.format(uuid.uuid4()),
+            'software': software,
+            'my_data': my_data,
+            'n_computers': len(set([x.parent for x in erasures])),
+            'result': result,
+            'customer_details': customer_details,
+            'erasure_hosts': erasures_host,
+            'erasures_normal': list(set(erasures) - set(erasures_on_server)),
         }
         return flask.render_template('inventory/erasure.html', **params)
 
