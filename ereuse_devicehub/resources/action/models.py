@@ -806,6 +806,12 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         if 'trublo' not in app.blueprints.keys() or not self.device.hid:
             return
 
+        from ereuse_devicehub.resources.did.models import Dpp
+
+        dpp = "{chid}:{phid}".format(chid=self.device.chid, phid=self.phid_dpp)
+        if Dpp.query.filter_by(key=dpp).all():
+            return
+
         if not session.get('token_dlt'):
             return
 
@@ -815,15 +821,15 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             return
 
         api = API(api_dlt, token_dlt, "ethereum")
-        dpp = "{chid}:{phid}".format(chid=self.device.chid, phid=self.phid_dpp)
         docSig = hashlib.sha3_256(self.json_wb.encode('utf-8')).hexdigest()
         docID = "{}".format(self.uuid or '')
         issuerID = "dh1:{user}".format(user=g.user.id)
+
         result = api.issue_passport(dpp, docID, docSig, issuerID)
-        if result['Status'] is not StatusCode.Success:
+
+        if result['Status'] is not StatusCode.Success.value:
             return
-        timestamp = result['Data'].get('timestamp', time.time())
-        from ereuse_devicehub.resources.did.models import Dpp
+        # timestamp = result['Data'].get('timestamp', time.time())
 
         timestamp = result['Data'].get('data', {}).get('timestamp', time.time())
         d_issue = {
