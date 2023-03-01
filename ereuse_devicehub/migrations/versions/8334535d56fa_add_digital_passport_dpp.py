@@ -117,7 +117,7 @@ def upgrade():
             ['issuer_id'],
             ['common.user.id'],
         ),
-        sa.Column('key', sa.Unicode(), nullable=False),
+        sa.Column('key', citext.CIText(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         schema=f'{get_inv()}',
     )

@@ -1,3 +1,4 @@
+from citext import CIText
 from flask import g
 from sortedcontainers import SortedSet
 from sqlalchemy import BigInteger, Column, ForeignKey, Sequence, Unicode
@@ -25,9 +26,9 @@ class Proof(Thing):
     id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
     id.comment = """The identifier of the device for this database. Used only
                     internally for software; users should not use this."""
-    documentId = Column(Unicode(STR_SM_SIZE), nullable=True)
+    documentId = Column(CIText(), nullable=True)
     documentId.comment = "is the hash of snapshot.json_wb"
-    documentSignature = Column(Unicode(STR_SM_SIZE), nullable=True)
+    documentSignature = Column(CIText(), nullable=True)
     documentSignature.comment = "is the snapshot.json_wb with the signature of the user"
     timestamp = Column(BigInteger, nullable=False)
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
@@ -78,11 +79,11 @@ class Dpp(Thing):
     """
 
     id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
-    key = Column(Unicode(STR_SM_SIZE), nullable=False)
+    key = Column(CIText(), nullable=False)
     key.comment = "chid:phid, (chid it's in device and phid it's in the snapshot)"
-    documentId = Column(Unicode(STR_SM_SIZE), nullable=True)
+    documentId = Column(CIText(), nullable=True)
     documentId.comment = "is the hash of snapshot.json_wb"
-    documentSignature = Column(Unicode(STR_SM_SIZE), nullable=True)
+    documentSignature = Column(CIText(), nullable=True)
     documentSignature.comment = "is the snapshot.json_wb with the signature of the user"
     timestamp = Column(BigInteger, nullable=False)
 
