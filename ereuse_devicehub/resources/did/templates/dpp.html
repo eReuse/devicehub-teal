@@ -1,83 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link href="https://stackpath.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-+ENW/yibaokMnme+vBLnHMphUYxHs34h9lpdbSLuAwGkOKFRl4C34WkjazBtb7eT"
-          crossorigin="anonymous">
-    <script src="https://use.fontawesome.com/7553aecc27.js"></script>
-    <title>Devicehub | Stamp create and Stamp verify</title>
-    <style>
-        /*Sticky footer*/
-        html {
-            position: relative;
-            min-height: 100%;
-        }
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-        body {
-            margin-bottom: 60px; /* Margin bottom by footer height */
-        }
+  <title>Device {{ result.result.data.hardware.device.dhid }} - Usody</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
 
-        .footer {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 6em;
-        }
-    </style>
+  <!-- Favicons -->
+  <link href="{{ url_for('static', filename='img/favicon.png') }}" rel="icon">
+  <link href="{{ url_for('static', filename='img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- JS Files -->
+  <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+
+  <!-- Vendor CSS Files -->
+  <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+
+
+  <!-- Template Main CSS File -->
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/devicehub.css') }}" rel="stylesheet">
+
+  <!-- =======================================================
+  * Template Name: NiceAdmin - v2.2.0
+  * Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
 </head>
+
 <body>
-<nav class="navbar navbar-default" style="background-color: gainsboro; margin: 0 !important">
-    <div class="container-fluid">
-        <a href="https://www.usody.com/" target="_blank">
-            <h1 align="center">Usody</h1>
-        </a>
-    </div>
-</nav>
-<div class="container-fluid">
-    <div class="row">
-      <div class="page-header col-md-6 col-md-offset-3">
-          This is the info for Digital Passport: {{result.dpp}}
-      </div>
-      <div class="col-md-6 col-md-offset-3">
-          <h5>Hardware</h5>
-          <ul>
-              <li>Device</li>
-                <ul>
-                    <li>Chassis: {{ result.result.data.hardware.device.chassis }}</li>
-                    <li>Manufacturer: {{ result.result.data.hardware.device.manufacturer }}</li>
-                    <li>Model: {{ result.result.data.hardware.device.model }}</li>
-                    <li>SerialNumber: {{ result.result.data.hardware.device.serialNumber }}</li>
-                    <li>Sku: {{ result.result.data.hardware.device.sku }}</li>
-                    <li>Type: {{ result.result.data.hardware.device.type }}</li>
-                    <li>Version: {{ result.result.data.hardware.device.version }}</li>
-                </ul>
-              <li>Components</li>
-                <ul>
-                    {% for component in result.result.data.hardware.components %}
-                    <li>{{ component }}</li>
+
+<main>
+
+<section class="container mt-3">
+  <div class="row">
+
+      <div class="col">
+        <div class="col-xl-12">
+
+          <div class="card">
+            <div class="card-body">
+              <h3 class="nav-link mt-5" style="color: #993365">
+                {{ result.result.data.hardware.device.type }} - 
+                {{ result.result.data.hardware.device.manufacturer }} 
+                {{ result.result.data.hardware.device.model }}
+              </h3>
+              <div class="row">
+                <div class="col-12">
+                    This is the info for Digital Passport:<br />
+                    {{ result.result.data.dpp }}
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-12">
+                  <h5 class="card-title">Device</h5>
+                  {% for key, value in result.result.data.hardware.device.items() %}
+                  <div class="row">
+                    <div class="col">
+                      {{ key }}
+                    </div>
+                    <div class="col">
+                      {{ value or '' }}
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-12">
+                  <h5 class="card-title">Components</h5>
+                  {% for component in result.result.data.hardware.components %}
+                    {% for key, value in component.items() %}
+                    <div class="row">
+                      <div class="col">
+                        {{ key }}
+                      </div>
+                      <div class="col">
+                        {{ value or '' }}
+                      </div>
+                    </div>
                     {% endfor %}
-                </ul>
-          </ul>
+                  {% endfor %}
+                </div>
+              </div>
 
-          {% if result.result.data.url_last %}
-          <h5>Last Digital passport</h5>
-          <a href="{{ result.result.data.url_last }}">{{ result.result.data.url_last }}</a>
-          {% endif %}
+              {% if result.result.data.url_last %}
+              <div class="row">
+                <div class="col-12">
+                  <h5 class="card-title">Last Dpp</h5>
+                  <div class="row">
+                    <div class="col-12">
+                      <a href="{{ result.result.data.url_last }}">Last Dpp</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
 
-          {% if result.result.data.digitalPassports %}
-          <h5>Digital Passports</h5>
-            <ul>
-            {% for dpp in result.result.data.digitalPassports %}
-              <li>{{ dpp }}</li>
-            {% endfor %}
-            </ul>
-          {% endif %}
-          <br />
+            </div>
+          </div>
+        </div>
       </div>
+  </div>
+</section>
+
+</main>
+<!-- ======= Footer ======= -->
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <footer class="footer">
+        <div class="copyright">
+          &copy; Copyright <strong><span>Usody</span></strong>. All Rights Reserved
+        </div>
+        <div class="credits">
+          <a href="https://help.usody.com/en/" target="_blank">Help</a> | 
+          <a href="https://www.usody.com/legal/privacy-policy" target="_blank">Privacy</a> | 
+          <a href="https://www.usody.com/legal/terms" target="_blank">Terms</a>
+        </div>
+        <div class="credits">
+          DeviceHub
+        </div>
+      </footer><!-- End Footer -->
     </div>
+  </div>
 </div>
 </body>
+
 </html>
