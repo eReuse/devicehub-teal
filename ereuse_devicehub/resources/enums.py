@@ -334,6 +334,12 @@ class Severity(IntEnum):
     def __format__(self, format_spec):
         return str(self)
 
+    def get_public_name(self):
+        if self.value == 3:
+            return "Failed"
+
+        return "Success"
+
 
 class PhysicalErasureMethod(Enum):
     """Methods of physically erasing the data-storage, usually

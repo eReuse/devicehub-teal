@@ -320,7 +320,7 @@ def test_export_certificates(user3: UserClientFlask):
     body = str(next(body))
     assert status == '200 OK'
     assert "PDF-1.5" in body
-    assert 'hts54322' in body
+    assert 'e2024242cv86mm'.upper() in body
 
 
 @pytest.mark.mvp
@@ -2718,7 +2718,7 @@ def test_unreliable_device(user3: UserClientFlask):
     snapshots = Snapshot.query.all()
     assert snapshot2 not in snapshots
     assert snapshots[0].device != snapshots[1].device
-    assert len(snapshots[0].device.components) == 4
+    assert len(snapshots[0].device.components) == 8
     assert len(snapshots[1].device.components) == 9
     assert len(snapshots[0].device.actions) == 11
     assert len(snapshots[1].device.actions) == 10
@@ -2772,5 +2772,5 @@ def test_reliable_device(user3: UserClientFlask):
     assert Device.query.filter_by(hid=snapshot.device.hid).count() == 2
     assert Snapshot.query.count() == 1
     assert Snapshot.query.first() == snapshot
-    assert len(snapshot.device.components) == 4
-    assert len(snapshot.device.actions) == 4
+    assert len(snapshot.device.components) == 8
+    assert len(snapshot.device.actions) == 7

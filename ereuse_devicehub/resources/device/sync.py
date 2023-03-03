@@ -16,19 +16,20 @@ from ereuse_devicehub.resources.action.models import Remove
 from ereuse_devicehub.resources.device.models import (
     Component,
     Computer,
+    DataStorage,
     Device,
     Placeholder,
 )
 from ereuse_devicehub.resources.tag.model import Tag
 
-DEVICES_ALLOW_DUPLICITY = [
-    'RamModule',
-    'Display',
-    'SoundCard',
-    'Battery',
-    'Camera',
-    'GraphicCard',
-]
+# DEVICES_ALLOW_DUPLICITY = [
+#     'RamModule',
+#     'Display',
+#     'SoundCard',
+#     'Battery',
+#     'Camera',
+#     'GraphicCard',
+# ]
 
 
 class Sync:
@@ -119,7 +120,7 @@ class Sync:
         """
         assert inspect(component).transient, 'Component should not be synced from DB'
         # if not is a DataStorage, then need build a new one
-        if component.t in DEVICES_ALLOW_DUPLICITY:
+        if not isinstance(component, DataStorage):
             db.session.add(component)
             is_new = True
             return component, is_new
@@ -171,6 +172,8 @@ class Sync:
 
         if not db_device or create_new_device:
             device.tags.clear()  # We don't want to add the transient dummy tags
+            if create_new_device or device.get_exist_untrusted_device():
+                device.user_trusts = False
             db.session.add(device)
             db_device = device
         try:

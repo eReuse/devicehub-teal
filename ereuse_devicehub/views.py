@@ -1,14 +1,15 @@
 import flask
+from decouple import config
 from flask import Blueprint
 from flask import current_app as app
-from flask import g, session
+from flask import g
 from flask.views import View
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import or_
 
 from ereuse_devicehub import __version__, messages
 from ereuse_devicehub.db import db
-from ereuse_devicehub.forms import LoginForm, PasswordForm
+from ereuse_devicehub.forms import LoginForm, PasswordForm, SanitizationEntityForm
 from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.user.models import User
@@ -46,7 +47,7 @@ class LoginView(View):
         url_reset_password = "#"
 
         if 'register' in app.blueprints.keys():
-            url_register = flask.url_for('register.user-registration')
+            url_register = config("PRICES_PAGE", "#")
 
         if 'reset_password' in app.blueprints.keys():
             url_reset_password = flask.url_for('reset_password.reset-password')
@@ -99,10 +100,15 @@ class UserProfileView(GenericMixin):
 
     def dispatch_request(self):
         self.get_context()
+        sanitization_form = SanitizationEntityForm()
+        if g.user.sanitization_entity:
+            sanitization = list(g.user.sanitization_entity)[0]
+            sanitization_form = SanitizationEntityForm(obj=sanitization)
         self.context.update(
             {
                 'current_user': current_user,
                 'password_form': PasswordForm(),
+                'sanitization_form': sanitization_form,
             }
         )
 
@@ -126,7 +132,27 @@ class UserPasswordView(View):
         return flask.redirect(flask.url_for('core.user-profile'))
 
 
+class SanitizationEntityView(View):
+    methods = ['POST']
+    decorators = [login_required]
+
+    def dispatch_request(self):
+        form = SanitizationEntityForm()
+        db.session.commit()
+        if form.validate_on_submit():
+            form.save(commit=False)
+            messages.success('Sanitization datas updated successfully!')
+        else:
+            messages.error('Error modifying Sanitization datas!')
+
+        db.session.commit()
+        return flask.redirect(flask.url_for('core.user-profile'))
+
+
 core.add_url_rule('/login/', view_func=LoginView.as_view('login'))
 core.add_url_rule('/logout/', view_func=LogoutView.as_view('logout'))
 core.add_url_rule('/profile/', view_func=UserProfileView.as_view('user-profile'))
 core.add_url_rule('/set_password/', view_func=UserPasswordView.as_view('set-password'))
+core.add_url_rule(
+    '/set_sanitization/', view_func=SanitizationEntityView.as_view('set-sanitization')
+)

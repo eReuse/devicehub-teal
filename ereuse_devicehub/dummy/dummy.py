@@ -230,7 +230,7 @@ class Dummy:
         user1.get(res=Device, item=sample_pc_devicehub_id)  # Test
         anonymous = self.app.test_client()
         html, _ = anonymous.get(res=Device, item=sample_pc_devicehub_id, accept=ANY)
-        assert 'intel core2 duo cpu' in html
+        assert 'hewlett-packard' in html
 
         # For netbook: to preapre -> torepair -> to dispose -> disposed
         print('⭐ Done.')

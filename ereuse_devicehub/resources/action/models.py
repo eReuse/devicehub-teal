@@ -527,6 +527,9 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             proof = Proof(**d)
             db.session.add(proof)
 
+    def get_public_name(self):
+        return "Basic"
+
     def __str__(self) -> str:
         return '{} on {}.'.format(self.severity, self.date_str)
 
@@ -556,11 +559,31 @@ class EraseSectors(EraseBasic):
 
     method = 'Badblocks'
 
+    def get_public_name(self):
+        steps_random = 0
+        steps_zeros = 0
+        for s in self.steps:
+            if s.type == 'StepRandom':
+                steps_random += 1
+            if s.type == 'StepZero':
+                steps_zeros += 1
+        if steps_zeros < 1:
+            return "Basic"
+        if 0 < steps_random < 3:
+            return "Baseline"
+        if steps_random > 2:
+            return "Enhanced"
+
+        return "Basic"
+
 
 class ErasePhysical(EraseBasic):
     """The act of physically destroying a data storage unit."""
 
     method = Column(DBEnum(PhysicalErasureMethod))
+
+    def get_public_name(self):
+        return "Physical"
 
 
 class Step(db.Model):
