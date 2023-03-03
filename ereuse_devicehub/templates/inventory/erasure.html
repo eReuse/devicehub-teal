@@ -359,6 +359,7 @@
      <dt>Data storage:</dt>
      <dd>{{ erasure.device.__format__('ts') }}</dd>
 
+     {% if erasure.parent %}
      <dt>Computer where was erase:</dt>
   <dd>Title: {{ erasure.parent.__format__('ts') }}</dd>
   <dd>DevicehubID: {{ erasure.parent.dhid }}</dd>
@@ -370,6 +371,7 @@
   <dd>DevicehubID: {{ erasure.device.parent.dhid }}</dd>
   <dd>Hid: {{ erasure.device.parent.hid }}</dd>
   <dd>Tags: {{ erasure.device.parent.tags }}</dd>
+    {% endif %}
 
   <dt>Erasure:</dt>
   <dd>{{ erasure.__format__('ts') }}</dd>
