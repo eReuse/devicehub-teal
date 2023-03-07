@@ -102,7 +102,7 @@ class UserProfileView(GenericMixin):
         self.get_context()
         sanitization_form = SanitizationEntityForm()
         if g.user.sanitization_entity:
-            sanitization = list(g.user.sanitization_entity)[0]
+            sanitization = g.user.sanitization_entity
             sanitization_form = SanitizationEntityForm(obj=sanitization)
         self.context.update(
             {
@@ -138,14 +138,13 @@ class SanitizationEntityView(View):
 
     def dispatch_request(self):
         form = SanitizationEntityForm()
-        db.session.commit()
         if form.validate_on_submit():
-            form.save(commit=False)
+            form.save()
             messages.success('Sanitization datas updated successfully!')
         else:
             messages.error('Error modifying Sanitization datas!')
 
-        db.session.commit()
+        # db.session.commit()
         return flask.redirect(flask.url_for('core.user-profile'))
 
 
