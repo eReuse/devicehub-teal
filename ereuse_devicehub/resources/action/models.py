@@ -518,7 +518,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
                 result.get('Data', {}).get('data', {}).get('timestamp', time.time())
             )
             d = {
-                "type": PROOF_ENUM['Register'],
+                "type": PROOF_ENUM['Erase'],
                 "device": self.device,
                 "snapshot": self.snapshot,
                 "timestamp": timestamp,
@@ -852,7 +852,6 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
         if result['Status'] is not StatusCode.Success.value:
             return
-        # timestamp = result['Data'].get('timestamp', time.time())
 
         timestamp = result['Data'].get('data', {}).get('timestamp', time.time())
         d_issue = {
@@ -865,59 +864,6 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         }
         dpp_issue = Dpp(**d_issue)
         db.session.add(dpp_issue)
-
-    # def register_dlt(self):
-    #     from ereuse_devicehub.resources.did.models import PROOF_ENUM, Dpp, Proof
-
-    #     # Register device
-    #     response = requests.post(
-    #         "http://dlt.ereuse.org:3005/registerDevice",
-    #         data={"DeviceCHID": self.device.chid},
-    #     )
-
-    #     resp = json.loads(response.text)
-    #     if 'Success' in resp['status']:
-    #         timestamp = resp['data'].get('timestamp', time.time())
-    #         d = {
-    #             "type": PROOF_ENUM['Register'],
-    #             "device_id": self.device.id,
-    #             "snapshot": self,
-    #             "timestamp": timestamp,
-    #             "issuer_id": g.user.id,
-    #         }
-    #         proof = Proof(**d)
-    #         db.session.add(proof)
-
-    #     # Register a new Passport
-    #     dpp = "{chid}:{phid}".format(chid=self.device.chid, phid=self.phid)
-    #     if Dpp.query.filter_by(key=dpp).all():
-    #         return
-
-    #     issuerID = "dh1:{user}".format(user=g.user.id)
-    #     documentId = hashlib.sha3_256(self.json_wb.encode('utf-8')).hexdigest()
-    #     data = {
-    #         "DeviceDPP": dpp,
-    #         "IssuerID": issuerID,
-    #         "DocumentID": documentId,
-    #         "DocumentSignature": "",
-    #     }
-    #     response = requests.post("http://dlt.ereuse.org:3005/issuePassport", data=data)
-    #     if not response.status_code == 201:
-    #         return
-    #     resp = json.loads(response.text)
-    #     if 'Success' not in resp['status']:
-    #         return
-    #     timestamp = resp['data'].get('timestamp', time.time())
-    #     d_issue = {
-    #         "device_id": self.device.id,
-    #         "snapshot": self,
-    #         "timestamp": timestamp,
-    #         "issuer_id": g.user.id,
-    #         "documentId": documentId,
-    #         "key": dpp,
-    #     }
-    #     dpp_issue = Dpp(**d_issue)
-    #     db.session.add(dpp_issue)
 
     def __str__(self) -> str:
         return '{}. {} version {}.'.format(self.severity, self.software, self.version)
