@@ -116,7 +116,10 @@ class SanitizationEntityForm(FlaskForm):
     logo = URLField(
         'Logo',
         [validators.Optional(), validators.URL()],
-        render_kw={'class': "form-control"},
+        render_kw={
+            'class': "form-control",
+            "placeholder": "Url where is the logo - acceptd only .png, .jpg, .gif, svg",
+        },
     )
     company_name = StringField('Company Name', render_kw={'class': "form-control"})
     location = StringField('Location', render_kw={'class': "form-control"})
@@ -141,15 +144,17 @@ class SanitizationEntityForm(FlaskForm):
         return True
 
     def save(self, commit=True):
-        sanitation_data = SanitizationEntity(
-            logo=URL(self.logo.data),
-            company_name=self.company_name.data,
-            location=self.location.data,
-            responsable_person=self.responsable_person.data,
-            supervisor_person=self.supervisor_person.data,
-            user=g.user,
-        )
-        db.session.add(sanitation_data)
+        if isinstance(self.logo.data, str):
+            self.logo.data = URL(self.logo.data)
+
+        sanitation_data = SanitizationEntity.query.filter_by(user_id=g.user.id).first()
+
+        if not sanitation_data:
+            sanitation_data = SanitizationEntity(user_id=g.user.id)
+            self.populate_obj(sanitation_data)
+            db.session.add(sanitation_data)
+        else:
+            self.populate_obj(sanitation_data)
 
         if commit:
             db.session.commit()

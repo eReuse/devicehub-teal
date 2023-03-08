@@ -1062,8 +1062,7 @@ class ExportsView(View):
         my_data = None
         customer_details = None
         if hasattr(g.user, 'sanitization_entity'):
-            if g.user.sanitization_entity:
-                my_data = list(g.user.sanitization_entity)[0]
+            my_data = g.user.sanitization_entity
 
         try:
             if len(request.referrer.split('/lot/')) > 1:
@@ -1103,6 +1102,12 @@ class ExportsView(View):
         if "Failed" in [e.severity.get_public_name() for e in erasures]:
             result = 'Failed'
 
+        erasures = sorted(erasures, key=lambda x: x.end_time)
+        erasures_on_server = sorted(erasures_on_server, key=lambda x: x.end_time)
+        erasures_host = sorted(erasures_host, key=lambda x: x.end_time)
+        erasures_normal = list(set(erasures) - set(erasures_on_server))
+        erasures_normal = sorted(erasures_normal, key=lambda x: x.end_time)
+
         params = {
             'title': 'Erasure Certificate',
             'erasures': tuple(erasures),
@@ -1115,7 +1120,7 @@ class ExportsView(View):
             'result': result,
             'customer_details': customer_details,
             'erasure_hosts': erasures_host,
-            'erasures_normal': list(set(erasures) - set(erasures_on_server)),
+            'erasures_normal': erasures_normal,
         }
         return flask.render_template('inventory/erasure.html', **params)
 
