@@ -116,7 +116,10 @@ class SanitizationEntityForm(FlaskForm):
     logo = URLField(
         'Logo',
         [validators.Optional(), validators.URL()],
-        render_kw={'class': "form-control"},
+        render_kw={
+            'class': "form-control",
+            "placeholder": "Url where is the logo - acceptd only .png, .jpg, .gif, svg",
+        },
     )
     company_name = StringField('Company Name', render_kw={'class': "form-control"})
     location = StringField('Location', render_kw={'class': "form-control"})
