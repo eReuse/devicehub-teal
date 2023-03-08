@@ -1062,8 +1062,7 @@ class ExportsView(View):
         my_data = None
         customer_details = None
         if hasattr(g.user, 'sanitization_entity'):
-            if g.user.sanitization_entity:
-                my_data = list(g.user.sanitization_entity)[0]
+            my_data = g.user.sanitization_entity
 
         try:
             if len(request.referrer.split('/lot/')) > 1:
