@@ -676,6 +676,12 @@ class Device(Thing):
         return args
 
     def get_lots_for_template(self):
+        if self.binding:
+            return self.binding.device.get_lots_for_template()
+
+        if not self.lots and hasattr(self, 'parent') and self.parent:
+            return self.parent.get_lots_for_template()
+
         lots = []
         for lot in self.lots:
             if lot.is_incoming:
