@@ -366,12 +366,14 @@
   <dd>Hid: {{ erasure.parent.hid }}</dd>
   <dd>Tags: {{ erasure.parent.tags }}</dd>
 
+  {% if erasure.device.parent %}
   <dt>Computer where it resides:</dt>
   <dd>Title: {{ erasure.device.parent.__format__('ts') }}</dd>
   <dd>DevicehubID: {{ erasure.device.parent.dhid }}</dd>
   <dd>Hid: {{ erasure.device.parent.hid }}</dd>
   <dd>Tags: {{ erasure.device.parent.tags }}</dd>
-    {% endif %}
+  {% endif %}
+  {% endif %}
 
   <dt>Erasure:</dt>
   <dd>{{ erasure.__format__('ts') }}</dd>

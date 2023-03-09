@@ -1097,6 +1097,7 @@ class ExportsView(View):
 
         a, b = self.get_server_erasure_hosts(erasures)
         erasures_host, erasures_on_server = a, b
+        erasures_host = set(erasures_host)
 
         result = 'Success'
         if "Failed" in [e.severity.get_public_name() for e in erasures]:
@@ -1104,7 +1105,7 @@ class ExportsView(View):
 
         erasures = sorted(erasures, key=lambda x: x.end_time)
         erasures_on_server = sorted(erasures_on_server, key=lambda x: x.end_time)
-        erasures_host = sorted(erasures_host, key=lambda x: x.end_time)
+        # import pdb; pdb.set_trace()
         erasures_normal = list(set(erasures) - set(erasures_on_server))
         erasures_normal = sorted(erasures_normal, key=lambda x: x.end_time)
 
