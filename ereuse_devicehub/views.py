@@ -143,8 +143,11 @@ class SanitizationEntityView(View):
             messages.success('Sanitization data updated successfully!')
         else:
             messages.error('Error modifying Sanitization data!')
+            if form.errors:
+                for k in form.errors.keys():
+                    txt = "{}: {}".format(k, form.errors[k])
+                    messages.error(txt)
 
-        # db.session.commit()
         return flask.redirect(flask.url_for('core.user-profile'))
 
 
