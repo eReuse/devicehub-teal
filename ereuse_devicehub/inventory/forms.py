@@ -1539,7 +1539,10 @@ class CustomerDetailsForm(FlaskForm):
     logo = URLField(
         'Logo',
         [validators.Optional()],
-        render_kw={'class': "form-control"},
+        render_kw={
+            'class': "form-control",
+            "placeholder": "Url where is the logo - acceptd only .png, .jpg, .gif, svg",
+        },
         description="Url where is the logo",
     )
 
