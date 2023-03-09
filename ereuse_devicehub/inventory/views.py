@@ -1105,9 +1105,9 @@ class ExportsView(View):
 
         erasures = sorted(erasures, key=lambda x: x.end_time)
         erasures_on_server = sorted(erasures_on_server, key=lambda x: x.end_time)
-        # import pdb; pdb.set_trace()
         erasures_normal = list(set(erasures) - set(erasures_on_server))
         erasures_normal = sorted(erasures_normal, key=lambda x: x.end_time)
+        n_computers = len({x.parent for x in erasures} - erasures_host)
 
         params = {
             'title': 'Erasure Certificate',
@@ -1117,7 +1117,7 @@ class ExportsView(View):
             'uuid_report': '{}'.format(uuid.uuid4()),
             'software': software,
             'my_data': my_data,
-            'n_computers': len(set([x.parent for x in erasures])),
+            'n_computers': n_computers,
             'result': result,
             'customer_details': customer_details,
             'erasure_hosts': erasures_host,

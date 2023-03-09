@@ -159,19 +159,20 @@
       <table class="body_content">
         <tbody>
           {% if erasure_hosts %}
-          {% for e in erasure_hosts %}
           <tr style="padding-top:5px;">
             <td style="width:20%;">
-              <span>N&deg; of sanitization server ({{ loop.index }}/{{ erasure_hosts|length }}):</span>
+              <span>N&deg; of sanitization server {{ erasure_hosts|length }}:</span>
             </td>
             <td style="width:80%;">
+            {% for e in erasure_hosts %}
               {% if e.serial_number %}
-              <span>{{ e.serial_number.upper() }}</span>
+              <span>{{ e.serial_number.upper() }}</span>{% if not loop.last %},{% endif %}
               {% endif %}
+              {% endfor %}
             </td>
           </tr>
-          {% endfor %}
-          {% else %}
+          {% endif %}
+          {% if n_computers %}
           <tr style="padding-top:5px;">
             <td style="width:20%;">
               <span>N&deg; of computers:</span>
@@ -245,7 +246,7 @@
     </div>
   </div>
 
-  <div class="row" style="margin-top:225px;">
+  <div class="row" style="margin-top:200px;">
     <div class="col-12">
       <table class="body_content" style="border-top: 1px solid #000;">
         <tbody>
