@@ -1091,10 +1091,10 @@ class ExportsView(View):
         return my_data, customer_details
 
     def get_customer_details_from_request(self):
-        if len(request.referrer.split('/lot/')) < 2:
-            return
-
         try:
+            if len(request.referrer.split('/lot/')) < 2:
+                return
+
             lot_id = request.referrer.split('/lot/')[-1].split('/')[0]
             lot = Lot.query.filter_by(owner=g.user).filter_by(id=lot_id).first()
             return lot.transfer.customer_details
