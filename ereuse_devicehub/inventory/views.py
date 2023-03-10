@@ -1058,20 +1058,48 @@ class ExportsView(View):
                     erasures.append(device.privacy)
         return erasures
 
-    def get_costum_details(self):
+    def get_costum_details(self, erasures):
         my_data = None
         customer_details = None
+        lot = None
+
         if hasattr(g.user, 'sanitization_entity'):
             my_data = g.user.sanitization_entity
 
-        try:
-            if len(request.referrer.split('/lot/')) > 1:
-                lot_id = request.referrer.split('/lot/')[-1].split('/')[0]
-                lot = Lot.query.filter_by(owner=g.user).filter_by(id=lot_id).first()
+        customer_details = self.get_customer_details_from_request()
+
+        if not erasures or customer_details:
+            return my_data, customer_details
+
+        init = erasures[0].device.get_set_lots()
+        for e in erasures:
+            init = init.intersection(e.device.get_set_lots())
+
+        if not len(init):
+            return my_data, customer_details
+
+        lots = sorted(list(init), key=lambda x: x.created)
+        lots.reverse()
+        for lot in lots:
+            try:
                 customer_details = lot.transfer.customer_details
+                if customer_details:
+                    return my_data, customer_details
+            except Exception:
+                continue
+
+        return my_data, customer_details
+
+    def get_customer_details_from_request(self):
+        try:
+            if len(request.referrer.split('/lot/')) < 2:
+                return
+
+            lot_id = request.referrer.split('/lot/')[-1].split('/')[0]
+            lot = Lot.query.filter_by(owner=g.user).filter_by(id=lot_id).first()
+            return lot.transfer.customer_details
         except Exception:
             pass
-        return my_data, customer_details
 
     def get_server_erasure_hosts(self, erasures):
         erasures_host = []
@@ -1093,10 +1121,11 @@ class ExportsView(View):
                 erasures[0].snapshot.version,
             )
 
-        my_data, customer_details = self.get_costum_details()
+        my_data, customer_details = self.get_costum_details(erasures)
 
         a, b = self.get_server_erasure_hosts(erasures)
         erasures_host, erasures_on_server = a, b
+        erasures_host = set(erasures_host)
 
         result = 'Success'
         if "Failed" in [e.severity.get_public_name() for e in erasures]:
@@ -1104,9 +1133,9 @@ class ExportsView(View):
 
         erasures = sorted(erasures, key=lambda x: x.end_time)
         erasures_on_server = sorted(erasures_on_server, key=lambda x: x.end_time)
-        erasures_host = sorted(erasures_host, key=lambda x: x.end_time)
         erasures_normal = list(set(erasures) - set(erasures_on_server))
         erasures_normal = sorted(erasures_normal, key=lambda x: x.end_time)
+        n_computers = len({x.parent for x in erasures} - erasures_host)
 
         params = {
             'title': 'Erasure Certificate',
@@ -1116,7 +1145,7 @@ class ExportsView(View):
             'uuid_report': '{}'.format(uuid.uuid4()),
             'software': software,
             'my_data': my_data,
-            'n_computers': len(set([x.parent for x in erasures])),
+            'n_computers': n_computers,
             'result': result,
             'customer_details': customer_details,
             'erasure_hosts': erasures_host,
