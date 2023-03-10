@@ -1062,34 +1062,44 @@ class ExportsView(View):
         my_data = None
         customer_details = None
         lot = None
+
         if hasattr(g.user, 'sanitization_entity'):
             my_data = g.user.sanitization_entity
 
-        try:
-            if len(request.referrer.split('/lot/')) > 1:
-                lot_id = request.referrer.split('/lot/')[-1].split('/')[0]
-                lot = Lot.query.filter_by(owner=g.user).filter_by(id=lot_id).first()
-                customer_details = lot.transfer.customer_details
-        except Exception:
-            pass
+        customer_details = self.get_customer_details_from_request()
 
-        if lot or not erasures:
+        if not erasures or customer_details:
             return my_data, customer_details
 
         init = erasures[0].device.get_set_lots()
         for e in erasures:
             init = init.intersection(e.device.get_set_lots())
 
-        if len(init) != 1:
+        if not len(init):
             return my_data, customer_details
 
-        lot = init.pop()
-        try:
-            customer_details = lot.transfer.customer_details
-        except Exception:
-            pass
+        lots = sorted(list(init), key=lambda x: x.created)
+        lots.reverse()
+        for lot in lots:
+            try:
+                customer_details = lot.transfer.customer_details
+                if customer_details:
+                    return my_data, customer_details
+            except Exception:
+                continue
 
         return my_data, customer_details
+
+    def get_customer_details_from_request(self):
+        if len(request.referrer.split('/lot/')) < 2:
+            return
+
+        try:
+            lot_id = request.referrer.split('/lot/')[-1].split('/')[0]
+            lot = Lot.query.filter_by(owner=g.user).filter_by(id=lot_id).first()
+            return lot.transfer.customer_details
+        except Exception:
+            pass
 
     def get_server_erasure_hosts(self, erasures):
         erasures_host = []
