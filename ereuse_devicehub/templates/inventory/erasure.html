@@ -161,7 +161,7 @@
           {% if erasure_hosts %}
           <tr style="padding-top:5px;">
             <td style="width:20%;">
-              <span>N&deg; of sanitization server {{ erasure_hosts|length }}:</span>
+              <span>SNs; of sanitization server {{ erasure_hosts|length }}:</span>
             </td>
             <td style="width:80%;">
             {% for e in erasure_hosts %}
@@ -267,14 +267,9 @@
   </div>
 
 {% if erasures %}
-  {% if erasure_hosts %}
-  {% for server in erasure_hosts %}
   <div class="row mt-3 page-break">
     <div class="col">
-      <h1>Server Summary</h1>
-    </div>
-    <div class="col">
-      <h4>SN Server {{ server.serial_number and server.serial_number.upper() }}</h4>
+      <h1>Summary</h1>
     </div>
   </div>
   <div class="row mt-3">
@@ -283,6 +278,7 @@
         <thead style="border-bottom: 1px solid #000;">
           <tr>
             <th scope="col" style="text-align: center;">SN Storage</th>
+            <th scope="col" style="text-align: center;">SN Host</th>
             <th scope="col" style="text-align: center;">Method</th>
             <th scope="col" style="text-align: center;">Result</th>
             <th scope="col" style="text-align: center;">Date</th>
@@ -290,51 +286,12 @@
         </thead>
         <tbody>
           {% for erasure in erasures %}
-          {% if erasure.parent == server %}
           <tr style="border-bottom: 1px dashed #000;">
             <td>
               {{ erasure.device.serial_number.upper() }}
             </td>
             <td>
-              {{ erasure.get_public_name() }}
-            </td>
-            <td>
-              {{ erasure.severity.get_public_name() }}
-            </td>
-            <td>
-              {{ erasure.date_str }}
-            </td>
-          </tr>
-          {% endif %}
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% endfor %}
-  {% endif %}
-  {% if erasures_normal %}
-  <div class="row mt-3 page-break">
-    <div class="col">
-      <h1>Devices Summary</h1>
-    </div>
-  </div>
-  <div class="row mt-3">
-    <div class="col">
-      <table class="table" style="width: 100%; text-align: center;">
-        <thead style="border-bottom: 1px solid #000;">
-          <tr>
-            <th scope="col" style="text-align: center;">SN Storage</th>
-            <th scope="col" style="text-align: center;">Method</th>
-            <th scope="col" style="text-align: center;">Result</th>
-            <th scope="col" style="text-align: center;">Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for erasure in erasures_normal %}
-          <tr style="border-bottom: 1px dashed #000;">
-            <td>
-              {{ erasure.device.serial_number.upper() }}
+              {{ erasure.parent.serial_number.upper() }}
             </td>
             <td>
               {{ erasure.get_public_name() }}
@@ -351,7 +308,6 @@
       </table>
     </div>
   </div>
-  {% endif %}
 </div>
 {% for erasure in erasures %}
 <div class="container mb-5 page-break">
