@@ -1058,9 +1058,10 @@ class ExportsView(View):
                     erasures.append(device.privacy)
         return erasures
 
-    def get_costum_details(self):
+    def get_costum_details(self, erasures):
         my_data = None
         customer_details = None
+        lot = None
         if hasattr(g.user, 'sanitization_entity'):
             my_data = g.user.sanitization_entity
 
@@ -1071,6 +1072,23 @@ class ExportsView(View):
                 customer_details = lot.transfer.customer_details
         except Exception:
             pass
+
+        if lot or not erasures:
+            return my_data, customer_details
+
+        init = erasures[0].device.get_set_lots()
+        for e in erasures:
+            init = init.intersection(e.device.get_set_lots())
+
+        if len(init) != 1:
+            return my_data, customer_details
+
+        lot = init.pop()
+        try:
+            customer_details = lot.transfer.customer_details
+        except Exception:
+            pass
+
         return my_data, customer_details
 
     def get_server_erasure_hosts(self, erasures):
@@ -1093,7 +1111,7 @@ class ExportsView(View):
                 erasures[0].snapshot.version,
             )
 
-        my_data, customer_details = self.get_costum_details()
+        my_data, customer_details = self.get_costum_details(erasures)
 
         a, b = self.get_server_erasure_hosts(erasures)
         erasures_host, erasures_on_server = a, b

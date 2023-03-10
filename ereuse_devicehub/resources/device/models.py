@@ -1021,6 +1021,18 @@ class Device(Thing):
 
         return
 
+    def get_set_lots(self):
+        if self.lots:
+            return set(self.lots)
+
+        if hasattr(self, "parent") and self.parent and self.parent.lots:
+            return set(self.parent.lots)
+
+        if self.binding:
+            return self.binding.device.get_set_lots()
+
+        return set()
+
     def __lt__(self, other):
         return self.id < other.id
 
