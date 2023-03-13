@@ -841,6 +841,21 @@ class NewTransferView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
 
+class OpenTransferView(GenericMixin):
+    methods = ['GET']
+
+    def dispatch_request(self, lot_id=None):
+        lot = Lot.query.filter_by(id=lot_id).one()
+        next_url = url_for('inventory.lotdevicelist', lot_id=str(lot_id))
+
+        if hasattr(lot, 'transfer'):
+            lot.transfer.date = None
+            db.session.commit()
+            messages.success('Transfer was reopen successfully!')
+
+        return flask.redirect(next_url)
+
+
 class EditTransferView(GenericMixin):
     methods = ['POST']
     form_class = EditTransferForm
@@ -1600,4 +1615,8 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/device/erasure/<int:orphans>/',
     view_func=ErasureListView.as_view('device_erasure_list_orphans'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/opentransfer/',
+    view_func=OpenTransferView.as_view('open_transfer'),
 )
