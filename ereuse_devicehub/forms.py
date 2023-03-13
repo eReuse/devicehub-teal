@@ -141,6 +141,9 @@ class SanitizationEntityForm(FlaskForm):
         if not is_valid:
             return False
 
+        if not self.logo.data:
+            return True
+
         extensions = ["jpg", "jpeg", "png", "gif", "svg"]
         if self.logo.data.lower().split(".")[-1] not in extensions:
             txt = "Error in Url field - accepted only .PNG, .JPG and .GIF. extensions"
