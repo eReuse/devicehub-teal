@@ -1071,22 +1071,18 @@ class ExportsView(View):
         if not erasures or customer_details:
             return my_data, customer_details
 
-        init = erasures[0].device.get_set_lots()
-        for e in erasures:
-            init = init.intersection(e.device.get_set_lots())
+        lots = {erasures[0].device.get_last_incoming_lot()}
+        for e in erasures[1:]:
+            lots.add(e.device.get_last_incoming_lot())
 
-        if not len(init):
+        if len(lots) != 1:
             return my_data, customer_details
 
-        lots = sorted(list(init), key=lambda x: x.created)
-        lots.reverse()
-        for lot in lots:
-            try:
-                customer_details = lot.transfer.customer_details
-                if customer_details:
-                    return my_data, customer_details
-            except Exception:
-                continue
+        lot = lots.pop()
+        try:
+            customer_details = lot.transfer.customer_details
+        except Exception:
+            pass
 
         return my_data, customer_details
 
