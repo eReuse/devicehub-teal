@@ -9,7 +9,7 @@ from sqlalchemy import or_
 
 from ereuse_devicehub import __version__, messages
 from ereuse_devicehub.db import db
-from ereuse_devicehub.forms import LoginForm, PasswordForm
+from ereuse_devicehub.forms import LoginForm, PasswordForm, SanitizationEntityForm
 from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.user.models import User
@@ -100,10 +100,15 @@ class UserProfileView(GenericMixin):
 
     def dispatch_request(self):
         self.get_context()
+        sanitization_form = SanitizationEntityForm()
+        if g.user.sanitization_entity:
+            sanitization = g.user.sanitization_entity
+            sanitization_form = SanitizationEntityForm(obj=sanitization)
         self.context.update(
             {
                 'current_user': current_user,
                 'password_form': PasswordForm(),
+                'sanitization_form': sanitization_form,
             }
         )
 
@@ -127,7 +132,30 @@ class UserPasswordView(View):
         return flask.redirect(flask.url_for('core.user-profile'))
 
 
+class SanitizationEntityView(View):
+    methods = ['POST']
+    decorators = [login_required]
+
+    def dispatch_request(self):
+        form = SanitizationEntityForm()
+        if form.validate_on_submit():
+            form.save()
+            messages.success('Sanitization data updated successfully!')
+        else:
+            messages.error('Error modifying Sanitization data!')
+            if form.errors:
+                for k in form.errors.keys():
+                    errors = ", ".join(form.errors[k])
+                    txt = "{}: {}".format(k, errors)
+                    messages.error(txt)
+
+        return flask.redirect(flask.url_for('core.user-profile'))
+
+
 core.add_url_rule('/login/', view_func=LoginView.as_view('login'))
 core.add_url_rule('/logout/', view_func=LogoutView.as_view('logout'))
 core.add_url_rule('/profile/', view_func=UserProfileView.as_view('user-profile'))
 core.add_url_rule('/set_password/', view_func=UserPasswordView.as_view('set-password'))
+core.add_url_rule(
+    '/set_sanitization/', view_func=SanitizationEntityView.as_view('set-sanitization')
+)

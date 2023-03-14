@@ -187,9 +187,9 @@
                         {% endif %}
                         {{ ac.device.serial_number.upper() }}
                         {% endif %}
-                        {% if ac.device.my_partner.lots | length > 0 %}
+                        {% if ac.device.get_lots_for_template() | length > 0 %}
                         <h6 class="d-inline">
-                          {% for lot in ac.device.my_partner.get_lots_for_template() %}
+                          {% for lot in ac.device.get_lots_for_template() %}
                             <span class="badge rounded-pill bg-light text-dark">{{ lot }}</span>
                           {% endfor %}
                         </h6>

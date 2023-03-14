@@ -17,18 +17,36 @@ Excluded cases in tests
 
 """
 import math
+
 import pytest
 
-from ereuse_devicehub.resources.action.models import BenchmarkDataStorage, BenchmarkProcessor, \
-    VisualTest
-from ereuse_devicehub.resources.action.rate.v1_0 import DataStorageRate, ProcessorRate, \
-    RamRate, RateAlgorithm
-from ereuse_devicehub.resources.device.models import Desktop, HardDrive, Processor, RamModule
-from ereuse_devicehub.resources.enums import AppearanceRange, ComputerChassis, FunctionalityRange
+from ereuse_devicehub.resources.action.models import (
+    BenchmarkDataStorage,
+    BenchmarkProcessor,
+    VisualTest,
+)
+from ereuse_devicehub.resources.action.rate.v1_0 import (
+    DataStorageRate,
+    ProcessorRate,
+    RamRate,
+    RateAlgorithm,
+)
+from ereuse_devicehub.resources.device.models import (
+    Desktop,
+    HardDrive,
+    Processor,
+    RamModule,
+)
+from ereuse_devicehub.resources.enums import (
+    AppearanceRange,
+    ComputerChassis,
+    FunctionalityRange,
+)
 from tests import conftest
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_data_storage_rate():
     """Test to check if compute data storage rate have same value than
     previous score version.
@@ -65,6 +83,7 @@ def test_rate_data_storage_rate():
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_data_storage_size_is_null():
     """Test where input DataStorage.size = NULL, BenchmarkDataStorage.read_speed = 0,
     BenchmarkDataStorage.write_speed = 0 is like no DataStorage has been detected;
@@ -78,6 +97,7 @@ def test_rate_data_storage_size_is_null():
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_no_data_storage():
     """Test without data storage devices."""
 
@@ -88,6 +108,7 @@ def test_rate_no_data_storage():
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_ram_rate():
     """Test to check if compute ram rate have same value than previous
     score version only with 1 RamModule.
@@ -97,10 +118,13 @@ def test_rate_ram_rate():
 
     ram_rate = RamRate().compute([ram1])
 
-    assert math.isclose(ram_rate, 2.02, rel_tol=0.002), 'RamRate returns incorrect value(rate)'
+    assert math.isclose(
+        ram_rate, 2.02, rel_tol=0.002
+    ), 'RamRate returns incorrect value(rate)'
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_ram_rate_2modules():
     """Test to check if compute ram rate have same value than previous
     score version with 2 RamModule.
@@ -111,10 +135,13 @@ def test_rate_ram_rate_2modules():
 
     ram_rate = RamRate().compute([ram1, ram2])
 
-    assert math.isclose(ram_rate, 3.79, rel_tol=0.001), 'RamRate returns incorrect value(rate)'
+    assert math.isclose(
+        ram_rate, 3.79, rel_tol=0.001
+    ), 'RamRate returns incorrect value(rate)'
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_ram_rate_4modules():
     """Test to check if compute ram rate have same value than previous
     score version with 2 RamModule.
@@ -127,10 +154,13 @@ def test_rate_ram_rate_4modules():
 
     ram_rate = RamRate().compute([ram1, ram2, ram3, ram4])
 
-    assert math.isclose(ram_rate, 1.993, rel_tol=0.001), 'RamRate returns incorrect value(rate)'
+    assert math.isclose(
+        ram_rate, 1.993, rel_tol=0.001
+    ), 'RamRate returns incorrect value(rate)'
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_ram_module_size_is_0():
     """Test where input data RamModule.size = 0; is like no RamModule
     has been detected.
@@ -143,6 +173,7 @@ def test_rate_ram_module_size_is_0():
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_ram_speed_is_null():
     """Test where RamModule.speed is NULL (not detected) but has size."""
 
@@ -150,16 +181,21 @@ def test_rate_ram_speed_is_null():
 
     ram_rate = RamRate().compute([ram0])
 
-    assert math.isclose(ram_rate, 1.85, rel_tol=0.002), 'RamRate returns incorrect value(rate)'
+    assert math.isclose(
+        ram_rate, 1.85, rel_tol=0.002
+    ), 'RamRate returns incorrect value(rate)'
 
     ram0 = RamModule(size=1024, speed=None)
 
     ram_rate = RamRate().compute([ram0])
 
-    assert math.isclose(ram_rate, 1.25, rel_tol=0.004), 'RamRate returns incorrect value(rate)'
+    assert math.isclose(
+        ram_rate, 1.25, rel_tol=0.004
+    ), 'RamRate returns incorrect value(rate)'
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_no_ram_module():
     """Test without RamModule."""
     ram0 = RamModule()
@@ -169,6 +205,7 @@ def test_rate_no_ram_module():
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_processor_rate():
     """Test to check if compute processor rate have same value than previous
     score version only with 1 core.
@@ -184,6 +221,7 @@ def test_rate_processor_rate():
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_processor_rate_2cores():
     """Test to check if compute processor rate have same value than previous
     score version with 2 cores.
@@ -206,6 +244,7 @@ def test_rate_processor_rate_2cores():
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_processor_with_null_cores():
     """Test with processor device have null number of cores."""
     cpu = Processor(cores=None, speed=3.3)
@@ -217,6 +256,7 @@ def test_rate_processor_with_null_cores():
 
 
 @pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_rate_processor_with_null_speed():
     """Test with processor device have null speed value."""
     cpu = Processor(cores=1, speed=None)
@@ -262,12 +302,14 @@ def test_rate_computer_1193():
         data_storage,
         RamModule(size=4096, speed=1600),
         RamModule(size=2048, speed=1067),
-        cpu
+        cpu,
     }
     # Add test visual with functionality and appearance range
-    VisualTest(appearance_range=AppearanceRange.A,
-               functionality_range=FunctionalityRange.A,
-               device=pc_test)
+    VisualTest(
+        appearance_range=AppearanceRange.A,
+        functionality_range=FunctionalityRange.A,
+        device=pc_test,
+    )
 
     # Compute all components rates and general rating
     rate_pc = RateAlgorithm().compute(pc_test)
@@ -311,15 +353,13 @@ def test_rate_computer_1201():
     data_storage.actions_one.add(BenchmarkDataStorage(read_speed=158, write_speed=34.7))
     cpu = Processor(cores=2, speed=3.3)
     cpu.actions_one.add(BenchmarkProcessor(rate=26339.48))
-    pc_test.components |= {
-        data_storage,
-        RamModule(size=2048, speed=1333),
-        cpu
-    }
+    pc_test.components |= {data_storage, RamModule(size=2048, speed=1333), cpu}
     # Add test visual with functionality and appearance range
-    VisualTest(appearance_range=AppearanceRange.B,
-               functionality_range=FunctionalityRange.A,
-               device=pc_test)
+    VisualTest(
+        appearance_range=AppearanceRange.B,
+        functionality_range=FunctionalityRange.A,
+        device=pc_test,
+    )
 
     # Compute all components rates and general rating
     rate_pc = RateAlgorithm().compute(pc_test)
@@ -365,7 +405,9 @@ def test_rate_computer_multiple_ram_module():
 
     pc_test = Desktop(chassis=ComputerChassis.Tower)
     data_storage = HardDrive(size=76319)
-    data_storage.actions_one.add(BenchmarkDataStorage(read_speed=72.2, write_speed=24.3))
+    data_storage.actions_one.add(
+        BenchmarkDataStorage(read_speed=72.2, write_speed=24.3)
+    )
     cpu = Processor(cores=1, speed=1.6)
     cpu.actions_one.add(BenchmarkProcessor(rate=3192.34))
     pc_test.components |= {
@@ -374,12 +416,14 @@ def test_rate_computer_multiple_ram_module():
         RamModule(size=512, speed=800),
         RamModule(size=512, speed=667),
         RamModule(size=512, speed=533),
-        cpu
+        cpu,
     }
     # Add test visual with functionality and appearance range
-    VisualTest(appearance_range=AppearanceRange.C,
-               functionality_range=FunctionalityRange.A,
-               device=pc_test)
+    VisualTest(
+        appearance_range=AppearanceRange.C,
+        functionality_range=FunctionalityRange.A,
+        device=pc_test,
+    )
     # Compute all components rates and general rating
     rate_pc = RateAlgorithm().compute(pc_test)
 
@@ -421,18 +465,18 @@ def test_rate_computer_one_ram_module():
 
     pc_test = Desktop(chassis=ComputerChassis.Tower)
     data_storage = HardDrive(size=152587)
-    data_storage.actions_one.add(BenchmarkDataStorage(read_speed=78.1, write_speed=24.4))
+    data_storage.actions_one.add(
+        BenchmarkDataStorage(read_speed=78.1, write_speed=24.4)
+    )
     cpu = Processor(cores=2, speed=2.5)
     cpu.actions_one.add(BenchmarkProcessor(rate=9974.3))
-    pc_test.components |= {
-        data_storage,
-        RamModule(size=0, speed=None),
-        cpu
-    }
+    pc_test.components |= {data_storage, RamModule(size=0, speed=None), cpu}
     # Add test visual with functionality and appearance range
-    VisualTest(appearance_range=AppearanceRange.B,
-               functionality_range=FunctionalityRange.A,
-               device=pc_test)
+    VisualTest(
+        appearance_range=AppearanceRange.B,
+        functionality_range=FunctionalityRange.A,
+        device=pc_test,
+    )
 
     # Compute all components rates and general rating
     rate_pc = RateAlgorithm().compute(pc_test)

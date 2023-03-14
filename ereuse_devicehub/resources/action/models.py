@@ -48,17 +48,14 @@ from sqlalchemy.util import OrderedSet
 from teal.db import (
     CASCADE_OWN,
     INHERIT_COND,
-    IP,
     POLYMORPHIC_ID,
     POLYMORPHIC_ON,
     URL,
-    ResourceNotFound,
     StrictVersionType,
     check_lower,
     check_range,
 )
-from teal.enums import Country, Currency, Subdivision
-from teal.marshmallow import ValidationError
+from teal.enums import Currency
 from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
@@ -484,6 +481,9 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             return self.snapshot.device.phid()
         return ''
 
+    def get_public_name(self):
+        return "Basic"
+
     def __str__(self) -> str:
         return '{} on {}.'.format(self.severity, self.date_str)
 
@@ -513,11 +513,31 @@ class EraseSectors(EraseBasic):
 
     method = 'Badblocks'
 
+    def get_public_name(self):
+        steps_random = 0
+        steps_zeros = 0
+        for s in self.steps:
+            if s.type == 'StepRandom':
+                steps_random += 1
+            if s.type == 'StepZero':
+                steps_zeros += 1
+        if steps_zeros < 1:
+            return "Basic"
+        if 0 < steps_random < 3:
+            return "Baseline"
+        if steps_random > 2:
+            return "Enhanced"
+
+        return "Basic"
+
 
 class ErasePhysical(EraseBasic):
     """The act of physically destroying a data storage unit."""
 
     method = Column(DBEnum(PhysicalErasureMethod))
+
+    def get_public_name(self):
+        return "Physical"
 
 
 class Step(db.Model):
@@ -700,6 +720,19 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             hdds.append(data)
 
         return hdds
+
+    def get_new_device(self):
+
+        if not self.device:
+            return ''
+
+        snapshots = []
+        for s in self.device.actions:
+            if s == self:
+                break
+            if s.type == self.type:
+                snapshots.append(s)
+        return snapshots and 'update' or 'new_device'
 
     def __str__(self) -> str:
         return '{}. {} version {}.'.format(self.severity, self.software, self.version)
@@ -2009,7 +2042,7 @@ def update_components_action_one(target: ActionWithOneDevice, device: Device, __
         if isinstance(device, Computer):
             target.components |= device.components
     elif isinstance(device, Computer):
-        device.add_mac_to_hid()
+        device.set_hid()
 
 
 @event.listens_for(

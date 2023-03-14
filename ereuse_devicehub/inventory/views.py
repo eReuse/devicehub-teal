@@ -1,7 +1,9 @@
 import copy
 import csv
+import datetime
 import logging
 import os
+import uuid
 from io import StringIO
 from pathlib import Path
 
@@ -20,6 +22,7 @@ from ereuse_devicehub.inventory.forms import (
     AdvancedSearchForm,
     AllocateForm,
     BindingForm,
+    CustomerDetailsForm,
     DataWipeForm,
     EditTransferForm,
     FilterForm,
@@ -33,6 +36,7 @@ from ereuse_devicehub.inventory.forms import (
     TransferForm,
     UploadPlaceholderForm,
     UploadSnapshotForm,
+    UserTrustsForm,
 )
 from ereuse_devicehub.labels.forms import PrintLabelsForm
 from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
@@ -78,6 +82,7 @@ class DeviceListMixin(GenericMixin):
         form_transfer = ''
         form_delivery = ''
         form_receiver = ''
+        form_customer_details = ''
 
         if lot_id:
             lot = lots.filter(Lot.id == lot_id).one()
@@ -85,6 +90,7 @@ class DeviceListMixin(GenericMixin):
                 form_transfer = EditTransferForm(lot_id=lot.id)
                 form_delivery = NotesForm(lot_id=lot.id, type='Delivery')
                 form_receiver = NotesForm(lot_id=lot.id, type='Receiver')
+                form_customer_details = CustomerDetailsForm(lot_id=lot.id)
 
         form_new_action = NewActionForm(lot=lot_id)
         self.context.update(
@@ -96,6 +102,7 @@ class DeviceListMixin(GenericMixin):
                 'form_transfer': form_transfer,
                 'form_delivery': form_delivery,
                 'form_receiver': form_receiver,
+                'form_customer_details': form_customer_details,
                 'form_filter': form_filter,
                 'form_print_labels': PrintLabelsForm(),
                 'lot': lot,
@@ -834,6 +841,21 @@ class NewTransferView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
 
+class OpenTransferView(GenericMixin):
+    methods = ['GET']
+
+    def dispatch_request(self, lot_id=None):
+        lot = Lot.query.filter_by(id=lot_id).one()
+        next_url = url_for('inventory.lotdevicelist', lot_id=str(lot_id))
+
+        if hasattr(lot, 'transfer'):
+            lot.transfer.date = None
+            db.session.commit()
+            messages.success('Transfer was reopen successfully!')
+
+        return flask.redirect(next_url)
+
+
 class EditTransferView(GenericMixin):
     methods = ['POST']
     form_class = EditTransferForm
@@ -1038,7 +1060,7 @@ class ExportsView(View):
 
         return self.response_csv(data, "Erasures.csv")
 
-    def build_erasure_certificate(self):
+    def get_datastorages(self):
         erasures = []
         for device in self.find_devices():
             if device.placeholder and device.placeholder.binding:
@@ -1049,11 +1071,96 @@ class ExportsView(View):
             elif isinstance(device, DataStorage):
                 if device.privacy:
                     erasures.append(device.privacy)
+        return erasures
+
+    def get_costum_details(self, erasures):
+        my_data = None
+        customer_details = None
+        lot = None
+
+        if hasattr(g.user, 'sanitization_entity'):
+            my_data = g.user.sanitization_entity
+
+        customer_details = self.get_customer_details_from_request()
+
+        if not erasures or customer_details:
+            return my_data, customer_details
+
+        lots = {erasures[0].device.get_last_incoming_lot()}
+        for e in erasures[1:]:
+            lots.add(e.device.get_last_incoming_lot())
+
+        if len(lots) != 1:
+            return my_data, customer_details
+
+        lot = lots.pop()
+        try:
+            customer_details = lot.transfer.customer_details
+        except Exception:
+            pass
+
+        return my_data, customer_details
+
+    def get_customer_details_from_request(self):
+        try:
+            if len(request.referrer.split('/lot/')) < 2:
+                return
+
+            lot_id = request.referrer.split('/lot/')[-1].split('/')[0]
+            lot = Lot.query.filter_by(owner=g.user).filter_by(id=lot_id).first()
+            return lot.transfer.customer_details
+        except Exception:
+            pass
+
+    def get_server_erasure_hosts(self, erasures):
+        erasures_host = []
+        erasures_on_server = []
+        for erase in erasures:
+            try:
+                if erase.parent.binding.kangaroo:
+                    erasures_host.append(erase.parent)
+                    erasures_on_server.append(erase)
+            except Exception:
+                pass
+        return erasures_host, erasures_on_server
+
+    def build_erasure_certificate(self):
+        erasures = self.get_datastorages()
+        software = 'USODY DRIVE ERASURE'
+        if erasures and erasures[0].snapshot:
+            software += ' {}'.format(
+                erasures[0].snapshot.version,
+            )
+
+        my_data, customer_details = self.get_costum_details(erasures)
+
+        a, b = self.get_server_erasure_hosts(erasures)
+        erasures_host, erasures_on_server = a, b
+        erasures_host = set(erasures_host)
+
+        result = 'Success'
+        if "Failed" in [e.severity.get_public_name() for e in erasures]:
+            result = 'Failed'
+
+        erasures = sorted(erasures, key=lambda x: x.end_time)
+        erasures_on_server = sorted(erasures_on_server, key=lambda x: x.end_time)
+        erasures_normal = list(set(erasures) - set(erasures_on_server))
+        erasures_normal = sorted(erasures_normal, key=lambda x: x.end_time)
+        n_computers = len({x.parent for x in erasures} - erasures_host)
 
         params = {
             'title': 'Erasure Certificate',
             'erasures': tuple(erasures),
             'url_pdf': '',
+            'date_report': '{:%c}'.format(datetime.datetime.now()),
+            'uuid_report': '{}'.format(uuid.uuid4()),
+            'software': software,
+            'my_data': my_data,
+            'n_computers': n_computers,
+            'result': result,
+            'customer_details': customer_details,
+            'erasure_hosts': erasures_host,
+            'erasures_normal': erasures_normal,
         }
         return flask.render_template('inventory/erasure.html', **params)
 
@@ -1228,9 +1335,12 @@ class SnapshotListView(GenericMixin):
 
 class SnapshotDetailView(GenericMixin):
     template_name = 'inventory/snapshot_detail.html'
+    methods = ['GET', 'POST']
+    form_class = UserTrustsForm
 
     def dispatch_request(self, snapshot_uuid):
         self.snapshot_uuid = snapshot_uuid
+        form = self.form_class(snapshot_uuid)
         self.get_context()
         self.context['page_title'] = "Snapshot Detail"
         self.context['snapshots_log'] = self.get_snapshots_log()
@@ -1238,6 +1348,10 @@ class SnapshotDetailView(GenericMixin):
         self.context['snapshot_sid'] = ''
         if self.context['snapshots_log'].count():
             self.context['snapshot_sid'] = self.context['snapshots_log'][0].sid
+        self.context['form'] = form
+
+        if form.validate_on_submit():
+            form.save()
 
         return flask.render_template(self.template_name, **self.context)
 
@@ -1247,6 +1361,28 @@ class SnapshotDetailView(GenericMixin):
             .filter(SnapshotsLog.snapshot_uuid == self.snapshot_uuid)
             .order_by(SnapshotsLog.created.desc())
         )
+
+
+class CustomerDetailsView(GenericMixin):
+    methods = ['POST']
+    form_class = CustomerDetailsForm
+
+    def dispatch_request(self, lot_id):
+        self.get_context()
+        form = self.form_class(request.form, lot_id=lot_id)
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+
+        if form.validate_on_submit():
+            form.save()
+            messages.success('Customer details updated successfully!')
+            return flask.redirect(next_url)
+
+        messages.error('Customer details updated error!')
+        for k, v in form.errors.items():
+            value = ';'.join(v)
+            key = form[k].label.text
+            messages.error('Error {key}: {value}!'.format(key=key, value=value))
+        return flask.redirect(next_url)
 
 
 class DeliveryNoteView(GenericMixin):
@@ -1441,6 +1577,10 @@ devices.add_url_rule(
     view_func=EditTransferView.as_view('edit_transfer'),
 )
 devices.add_url_rule(
+    '/lot/<string:lot_id>/customerdetails/',
+    view_func=CustomerDetailsView.as_view('customer_details'),
+)
+devices.add_url_rule(
     '/lot/<string:lot_id>/deliverynote/',
     view_func=DeliveryNoteView.as_view('delivery_note'),
 )
@@ -1475,4 +1615,8 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/device/erasure/<int:orphans>/',
     view_func=ErasureListView.as_view('device_erasure_list_orphans'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/opentransfer/',
+    view_func=OpenTransferView.as_view('open_transfer'),
 )

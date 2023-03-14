@@ -1,80 +1,357 @@
-{% extends "documents/layout.html" %}
-{% block body %}
-    <div>
-        <h2>Summary</h2>
-        <table class="table table-bordered">
-            <thead>
-            <tr>
-                <th>S/N Data Storage</th>
-                <th>Type of erasure</th>
-                <th>Result</th>
-                <th>Date</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for erasure in erasures %}
-                <tr>
-                    <td>
-                        {{ erasure.device.serial_number.upper() }}
-                    </td>
-                    <td>
-                        {{ erasure.type }}
-                    </td>
-                    <td>
-                        {{ erasure.severity }}
-                    </td>
-                    <td>
-                        {{ erasure.date_str }}
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div class="page-break row">
-        <h2>Details</h2>
-        {% for erasure in erasures %}
-            <div class="col-md-6 no-page-break">
-                <h4>{{ erasure.device.__format__('t') }}</h4>
-                <dl>
-                    <dt>Data storage:</dt>
-                    <dd>{{ erasure.device.__format__('ts') }}</dd>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Data Sanitization Certificate</title>
+<meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="https://stackpath.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-+ENW/yibaokMnme+vBLnHMphUYxHs34h9lpdbSLuAwGkOKFRl4C34WkjazBtb7eT"
+          crossorigin="anonymous">
+<style type="text/css" media="all">
+  @page {
+    size: A4 portrait; /* can use also 'landscape' for orientation */
+    margin: 1.0cm 1.5cm 3.5cm 1.5cm;
+    font-family: "Source Sans Pro", Calibri, Candra, Sans serif;
 
-                    <dt>Erasure:</dt>
-                    <dd>{{ erasure.__format__('ts') }}</dd>
-                    {% if erasure.steps %}
-                        <dt>Erasure steps:</dt>
-                        <dd>
-                            <ol>
-                                {% for step in erasure.steps %}
-                                    <li>{{ step.__format__('') }}</li>
-                                {% endfor %}
-                            </ol>
-                        </dd>
-                    {% endif %}
-                </dl>
-            </div>
-        {% endfor %}
+    @top {
+      content: element(header);
+    }
+
+    @bottom {
+      content: element(footer);
+    }
+
+  }
+  body {
+    width: 100% !important;
+    height: 100%;
+    background: #fff;
+    color: black;
+    font-size: 100%;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: none; 
+  }
+
+  header {
+    position: running(header);
+    /*height: 100px;*/
+    font-size: 12px;
+    /* color: #000; */
+    font-family: Arial;
+    width: 100%;
+    /* position: relative;*/
+  }
+
+  footer {
+    position: running(footer);
+    /*height: 150px;*/
+  }
+  
+  .body_content {
+     position: relative;
+     page-break-inside: auto;
+     width: 100%;
+     /*overflow: hidden;*/
+  }
+
+  img {max-height: 150px; width: auto;}
+  .company-logo {float: left;}
+  .customer-logo {float: right;}
+  .page-break:not(section:first-of-type) {
+    page-break-before: always
+  }
+}
+</style>
+</head>
+<body>
+  <header class="page-header">
+    <div class="col" style="background-color: #d5a6bd;">
+      <p style="margin-left: 10px;">{{ date_report }}, {{ software }}</p>
     </div>
-    <div class="no-page-break">
-        <h2>Glossary</h2>
-        <dl>
-            <dt>Erase Basic</dt>
-            <dd>
-                A software-based fast non-100%-secured way of erasing data storage,
-                using <a href="https://en.wikipedia.org/wiki/Shred_(Unix)">shred</a>.
-            </dd>
-            <dt>Erase Sectors</dt>
-            <dd>
-                A secured-way of erasing data storages, checking sector-by-sector
-                the erasure, using <a href="https://en.wikipedia.org/wiki/Badblocks">badblocks</a>.
-            </dd>
-        </dl>
+  </header>
+<div class="container">
+  <div class="row">
+    <div class="col-6">
+      <img class="company-logo" src="{{ customer_details and customer_details.logo.to_text() or '' }}" />
     </div>
-    <div class="no-print">
-        <a href="{{ url_pdf }}">Click here to download the PDF.</a>
+    <div class="col-6">
+      <img class="customer-logo" src="{{ my_data and my_data.logo.to_text() }}" />
     </div>
-    <div class="print-only">
-        <a href="{{ url_for('Document.StampsView', _external=True) }}">Verify on-line the integrity of this document</a>
+  </div>
+</div>
+
+<div class="container body-content">
+  <div class="row mt-3">
+    <div class="col">
+      <h1>Data Sanitization Certificate</h1>
     </div>
-{% endblock %}
+  </div>
+  
+  <div class="row mt-3">
+    <div class="col-12">
+      <strong>Entity Information</strong>
+    </div>
+    <div class="col-12">
+      <table class="body_content">
+        <tbody>
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              Name:
+            </td>
+            <td style="width:80%;">
+              <span>{{ customer_details and customer_details.company_name or ''}}</span>
+            </td>
+          </tr>
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              Location:
+            </td>
+            <td style="width:80%;">
+              <span>{{ customer_details and customer_details.location or '' }}</span>
+            </td>
+          </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="row" style="padding-top: 20px;">
+    <div class="col-12">
+      <strong>Responsible Sanitization Entity</strong>
+    </div>
+    <div class="col-12">
+      <table class="body_content">
+        <tbody>
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              <span>Name:</span>
+            </td>
+            <td style="width:80%;">
+              <span>{{ my_data and my_data.company_name or '' }}</span>
+            </td>
+          </tr>
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              <span>Responsible Person</span>
+            </td>
+            <td style="width:80%;">
+              <span>{{ my_data and my_data.responsable_person or '' }}</span>
+            </td>
+          </tr>
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              <span>Location:</span>
+            </td>
+            <td style="width:80%;">
+              <span>{{ my_data and my_data.location or '' }}</span>
+            </td>
+          </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="row" style="padding-top: 20px;">
+    <div class="col-12">
+      <strong>Summary</strong>
+    </div>
+    <div class="col-12">
+      <table class="body_content">
+        <tbody>
+          {% if erasure_hosts %}
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              <span>SNs of sanitization server:</span>
+            </td>
+            <td style="width:80%;">
+            {% for e in erasure_hosts %}
+              {% if e.serial_number %}
+              <span>{{ e.serial_number.upper() }}</span>{% if not loop.last %},{% endif %}
+              {% endif %}
+              {% endfor %}
+            </td>
+          </tr>
+          {% endif %}
+          {% if n_computers %}
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              <span>N&deg; of computers:</span>
+            </td>
+            <td style="width:80%;">
+              <span>{{ n_computers }}</span>
+            </td>
+          </tr>
+          {% endif %}
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              <span>N&deg; of data storage unit(s):</span>
+            </td>
+            <td style="width:80%;">
+              <span>{{ erasures | length }}</span>
+            </td>
+          </tr>
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              <span>Sanitization result:</span>
+            </td>
+            <td style="width:80%;">
+              <span>{{ result }}</span>
+            </td>
+          </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="row" style="padding-top: 20px;">
+    <div class="col-12">
+      <strong>Report Details</strong>
+    </div>
+    <div class="col-12">
+      <table class="body_content">
+        <tbody>
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              <span>Report UUID:</span>
+            </td>
+            <td style="width:80%;">
+              <span>{{ uuid_report }}</span>
+            </td>
+          </tr>
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              <span>Report Date:</span>
+            </td>
+            <td style="width:80%;">
+              <span>{{ date_report }}</span>
+            </td>
+          </tr>
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              <span>Software Version:</span>
+            </td>
+            <td style="width:80%;">
+              <span>{{ software }}</span>
+            </td>
+          </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:25px;">
+    <div class="col">
+      <p>
+        I hereby declare that the data erasure process has been carried 
+        out in accordance with the instructions received.
+      </p>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:200px;">
+    <div class="col-12">
+      <table class="body_content" style="border-top: 1px solid #000;">
+        <tbody>
+          <tr style="padding-top:5px;">
+            <td style="width:50%; text-align: center;">
+              <span>Data Responsable</span>
+              <br />
+              <span>{{ my_data and my_data.responsable_person or '' }}</span>
+            </td>
+            <td style="width:50%; text-align: center;">
+              <span>Data Supervisor</span>
+              <br />
+              <span>{{ my_data and my_data.supervisor_person or '' }}</span>
+            </td>
+          </tr>
+      </table>
+    </div>
+  </div>
+
+{% if erasures %}
+  <div class="row mt-3 page-break">
+    <div class="col">
+      <h1>Summary</h1>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <table class="table" style="width: 100%; text-align: center;">
+        <thead style="border-bottom: 1px solid #000;">
+          <tr>
+            <th scope="col" style="text-align: center;">SN Storage</th>
+            <th scope="col" style="text-align: center;">SN Host</th>
+            <th scope="col" style="text-align: center;">Method</th>
+            <th scope="col" style="text-align: center;">Result</th>
+            <th scope="col" style="text-align: center;">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for erasure in erasures %}
+          <tr style="border-bottom: 1px dashed #000;">
+            <td>
+              {{ erasure.device.serial_number.upper() }}
+            </td>
+            <td>
+              {{ erasure.parent.serial_number.upper() }}
+            </td>
+            <td>
+              {{ erasure.get_public_name() }}
+            </td>
+            <td>
+              {{ erasure.severity.get_public_name() }}
+            </td>
+            <td>
+              {{ erasure.date_str }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% for erasure in erasures %}
+<div class="container mb-5 page-break">
+   <h4>{{ erasure.device.serial_number.upper() }}</h4>
+   <dl>
+     <dt>Data storage:</dt>
+     <dd>{{ erasure.device.__format__('ts') }}</dd>
+
+     {% if erasure.parent %}
+     <dt>Computer where was erase:</dt>
+  <dd>Title: {{ erasure.parent.__format__('ts') }}</dd>
+  <dd>DevicehubID: {{ erasure.parent.dhid }}</dd>
+  <dd>Hid: {{ erasure.parent.hid }}</dd>
+  <dd>Tags: {{ erasure.parent.tags }}</dd>
+
+  {% if erasure.device.parent %}
+  <dt>Computer where it resides:</dt>
+  <dd>Title: {{ erasure.device.parent.__format__('ts') }}</dd>
+  <dd>DevicehubID: {{ erasure.device.parent.dhid }}</dd>
+  <dd>Hid: {{ erasure.device.parent.hid }}</dd>
+  <dd>Tags: {{ erasure.device.parent.tags }}</dd>
+  {% endif %}
+  {% endif %}
+
+  <dt>Erasure:</dt>
+  <dd>{{ erasure.__format__('ts') }}</dd>
+  {% if erasure.steps %}
+  <dt>Erasure steps:</dt>
+   <dd>
+     <ol>
+       {% for step in erasure.steps %}
+         <li>{{ step.__format__('') }}</li>
+       {% endfor %}
+      </ol>
+    </dd>
+    {% endif %}
+  </dl>
+</div>
+{% endfor %}
+{% endif %}
+<footer class="page-header">
+<div>
+  <a href="{{ url_for('Document.StampsView', _external=True) }}">Verify on-line the integrity of this document</a>
+</div>
+</footer>
+</body>
+</html>

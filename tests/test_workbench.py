@@ -15,8 +15,8 @@ from ereuse_devicehub.resources.action.models import (
 from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag.model import Tag
-from tests.conftest import file, file_workbench, json_encode, yaml2json
 from tests import conftest
+from tests.conftest import file, file_workbench, json_encode, yaml2json
 
 
 @pytest.mark.mvp
@@ -60,7 +60,7 @@ def test_workbench_server_condensed(user: UserClient):
     device, _ = user.get(res=Device, item=db_dev.devicehub_id)
     assert device['dataStorageSize'] == 1100
     assert device['chassis'] == 'Tower'
-    assert device['hid'] == 'desktop-d1mr-d1ml-d1s-na1-s'
+    assert device['hid'] == 'desktop-d1mr-d1ml-d1s'
     assert device['graphicCardModel'] == device['components'][0]['model'] == 'gc1-1ml'
     assert device['networkSpeeds'] == [1000, 58]
     assert device['processorModel'] == device['components'][3]['model'] == 'p1-1ml'
@@ -147,10 +147,7 @@ def test_real_hp_11(user: UserClient):
     s = file('real-hp.snapshot.11')
     snapshot, _ = user.post(res=em.Snapshot, data=s)
     pc = snapshot['device']
-    assert (
-        pc['hid']
-        == 'desktop-hewlett-packard-hp_compaq_8100_elite_sff-czc0408yjg-6c:62:6d:81:22:9f'
-    )
+    assert pc['hid'] == 'desktop-hewlett-packard-hp_compaq_8100_elite_sff-czc0408yjg'
     assert pc['chassis'] == 'Tower'
     assert set(e['type'] for e in snapshot['actions']) == {
         'BenchmarkDataStorage',
@@ -192,10 +189,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert pc['model'] == '1001pxd'
     assert pc['serialNumber'] == 'b8oaas048286'
     assert pc['manufacturer'] == 'asustek computer inc.'
-    assert (
-        pc['hid']
-        == 'laptop-asustek_computer_inc-1001pxd-b8oaas048286-14:da:e9:42:f6:7c'
-    )
+    assert pc['hid'] == 'laptop-asustek_computer_inc.-1001pxd-b8oaas048286'
     assert len(pc['tags']) == 0
     assert pc['networkSpeeds'] == [
         100,
@@ -209,14 +203,14 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     wifi = components[0]
     assert (
         wifi['hid'] == 'networkadapter-qualcomm_atheros-'
-        'ar9285_wireless_network_adapter-74_2f_68_8b_fd_c8'
+        'ar9285_wireless_network_adapter-74:2f:68:8b:fd:c8'
     )
     assert wifi['serialNumber'] == '74:2f:68:8b:fd:c8'
     assert wifi['wireless']
     eth = components[1]
     assert (
         eth['hid'] == 'networkadapter-qualcomm_atheros-'
-        'ar8152_v2_0_fast_ethernet-14_da_e9_42_f6_7c'
+        'ar8152_v2.0_fast_ethernet-14:da:e9:42:f6:7c'
     )
     assert eth['speed'] == 100
     assert not eth['wireless']
@@ -225,7 +219,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert cpu['cores'] == 1
     assert cpu['threads'] == 1
     assert cpu['speed'] == 1.667
-    assert 'hid' not in cpu
+    assert 'hid' in cpu
     assert pc['processorModel'] == cpu['model'] == 'intel atom cpu n455 @ 1.66ghz'
     db_cpu = Device.query.filter_by(id=cpu['id']).one()
     cpu, _ = user.get(res=Device, item=db_cpu.devicehub_id)
@@ -287,7 +281,7 @@ def test_snapshot_real_eee_1001pxd_with_rate(user: UserClient):
     assert erase['severity'] == 'Info'
     assert hdd['privacy']['type'] == 'EraseBasic'
     mother = components[8]
-    assert mother['hid'] == 'motherboard-asustek_computer_inc-1001pxd-eee0123456789'
+    assert mother['hid'] == 'motherboard-asustek_computer_inc.-1001pxd-eee0123456789'
 
 
 @pytest.mark.mvp

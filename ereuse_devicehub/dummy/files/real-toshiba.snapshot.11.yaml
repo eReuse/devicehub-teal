@@ -131,6 +131,7 @@
     "model": "NB200"
   },
   "uuid": "918726ae-c6bc-40aa-97cf-ad80d69268f9",
+  "debug": {"lshw": {"configuration": {"uuid": "33627ef0-89a9-4659-bb29-faa936727e0b"}}},
   "closed": false,
   "type": "Snapshot"
 }

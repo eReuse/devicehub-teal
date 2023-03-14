@@ -1,11 +1,12 @@
 from uuid import uuid4
 
 from flask import current_app as app
+from flask import g
 from flask_login import UserMixin
 from sqlalchemy import BigInteger, Boolean, Column, Sequence
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import EmailType, PasswordType
-from teal.db import IntEnum
+from teal.db import CASCADE_OWN, URL, IntEnum
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import SessionType
@@ -119,3 +120,28 @@ class Session(Thing):
 
     def __str__(self) -> str:
         return '{0.token}'.format(self)
+
+
+class SanitizationEntity(Thing):
+    id = db.Column(BigInteger, primary_key=True)
+    company_name = db.Column(db.String, nullable=True)
+    location = db.Column(db.String, nullable=True)
+    # logo = db.Column(db.String, nullable=True)
+    logo = db.Column(URL(), nullable=True)
+    responsable_person = db.Column(db.String, nullable=True)
+    supervisor_person = db.Column(db.String, nullable=True)
+    user_id = db.Column(
+        db.UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        default=lambda: g.user.id,
+    )
+    user = db.relationship(
+        User,
+        backref=db.backref(
+            'sanitization_entity', lazy=True, uselist=False, cascade=CASCADE_OWN
+        ),
+        primaryjoin=user_id == User.id,
+    )
+
+    def __str__(self) -> str:
+        return '{0.company_name}'.format(self)

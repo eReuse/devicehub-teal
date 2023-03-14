@@ -1,5 +1,9 @@
 import copy
+import hashlib
+import json
+import os
 import pathlib
+import uuid
 from contextlib import suppress
 from fractions import Fraction
 from itertools import chain
@@ -8,7 +12,8 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
-from ereuse_utils.naming import HID_CONVERSION_DOC, Naming
+from ereuse_utils.naming import HID_CONVERSION_DOC
+from flask import current_app as app
 from flask import g, request
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column
@@ -181,6 +186,8 @@ class Device(Thing):
     dhid_bk = db.Column(db.CIText(), nullable=True, unique=False)
     phid_bk = db.Column(db.CIText(), nullable=True, unique=False)
     active = db.Column(Boolean, default=True)
+    family = db.Column(db.CIText())
+    chid = db.Column(db.CIText())
 
     _NON_PHYSICAL_PROPS = {
         'id',
@@ -201,6 +208,7 @@ class Device(Thing):
         'production_date',
         'variant',
         'version',
+        'family',
         'sku',
         'image',
         'allocated',
@@ -209,6 +217,11 @@ class Device(Thing):
         'active',
         'phid_bk',
         'dhid_bk',
+        'chid',
+        'user_trusts',
+        'chassis',
+        'transfer_state',
+        'receiver_id',
     }
 
     __table_args__ = (
@@ -254,16 +267,17 @@ class Device(Thing):
         """
         actions_multiple = copy.copy(self.actions_multiple)
         actions_one = copy.copy(self.actions_one)
+        actions = []
 
         for ac in actions_multiple:
             ac.real_created = ac.actions_device[0].created
+            actions.append(ac)
 
         for ac in actions_one:
             ac.real_created = ac.created
+            actions.append(ac)
 
-        return sorted(
-            chain(actions_multiple, actions_one), key=lambda x: x.real_created
-        )
+        return sorted(actions, key=lambda x: x.real_created)
 
     @property
     def problems(self):
@@ -662,6 +676,12 @@ class Device(Thing):
         return args
 
     def get_lots_for_template(self):
+        if self.binding:
+            return self.binding.device.get_lots_for_template()
+
+        if not self.lots and hasattr(self, 'parent') and self.parent:
+            return self.parent.get_lots_for_template()
+
         lots = []
         for lot in self.lots:
             if lot.is_incoming:
@@ -742,11 +762,70 @@ class Device(Thing):
 
         return ""
 
-    def set_hid(self):
-        with suppress(TypeError):
-            self.hid = Naming.hid(
-                self.type, self.manufacturer, self.model, self.serial_number
+    def get_exist_untrusted_device(self):
+        if isinstance(self, Computer):
+            if not self.system_uuid:
+                return True
+
+            return (
+                Computer.query.filter_by(
+                    hid=self.hid,
+                    user_trusts=False,
+                    owner_id=g.user.id,
+                    active=True,
+                    placeholder=None,
+                ).first()
+                or False
             )
+
+        return False
+
+    def get_from_db(self):
+        if 'property_hid' in app.blueprints.keys():
+            try:
+                from modules.device.utils import get_from_db
+
+                return get_from_db(self)
+            except Exception:
+                pass
+
+        if not self.hid:
+            return
+
+        return Device.query.filter_by(
+            hid=self.hid,
+            owner_id=g.user.id,
+            active=True,
+            placeholder=None,
+        ).first()
+
+    def set_hid(self):
+        if 'property_hid' in app.blueprints.keys():
+            try:
+                from modules.device.utils import set_hid
+
+                self.hid = set_hid(self)
+                self.set_chid()
+                return
+            except Exception:
+                pass
+
+        self.hid = "{}-{}-{}-{}".format(
+            self._clean_string(self.type),
+            self._clean_string(self.manufacturer),
+            self._clean_string(self.model),
+            self._clean_string(self.serial_number),
+        ).lower()
+        self.set_chid()
+
+    def _clean_string(self, s):
+        if not s:
+            return ''
+        return s.replace(' ', '_')
+
+    def set_chid(self):
+        if self.hid:
+            self.chid = hashlib.sha3_256(self.hid.encode()).hexdigest()
 
     def last_action_of(self, *types):
         """Gets the last action of the given types.
@@ -825,6 +904,141 @@ class Device(Thing):
             "SolidStateDrive": "bi bi-hdd",
         }
         return types.get(self.type, '')
+
+    def unreliable(self):
+        self.user_trusts = False
+        i = 0
+        snapshot1 = None
+        snapshots = {}
+
+        for ac in self.actions:
+            if ac.type == 'Snapshot':
+                if i == 0:
+                    snapshot1 = ac
+                if i > 0:
+                    snapshots[ac] = self.get_snapshot_file(ac)
+                i += 1
+
+        if not snapshot1:
+            return
+
+        self.create_new_device(snapshots.values(), user_trusts=self.user_trusts)
+        self.remove_snapshot(snapshots.keys())
+
+        return
+
+    def get_snapshot_file(self, action):
+        uuid = action.uuid
+        user = g.user.email
+        name_file = f"*_{user}_{uuid}.json"
+        tmp_snapshots = app.config['TMP_SNAPSHOTS']
+        path_dir_base = os.path.join(tmp_snapshots, user)
+
+        for _file in pathlib.Path(path_dir_base).glob(name_file):
+            with open(_file) as file_snapshot:
+                snapshot = file_snapshot.read()
+                return json.loads(snapshot)
+
+    def create_new_device(self, snapshots, user_trusts=True):
+        from ereuse_devicehub.inventory.forms import UploadSnapshotForm
+
+        new_snapshots = []
+        for snapshot in snapshots:
+            snapshot['uuid'] = str(uuid.uuid4())
+            filename = "{}.json".format(snapshot['uuid'])
+            new_snapshots.append((filename, snapshot))
+
+        form = UploadSnapshotForm()
+        form.result = {}
+        form.snapshots = new_snapshots
+        form.create_new_devices = True
+        form.save(commit=False, user_trusts=user_trusts)
+
+    def remove_snapshot(self, snapshots):
+        from ereuse_devicehub.parser.models import SnapshotsLog
+
+        for ac in snapshots:
+            for slog in SnapshotsLog.query.filter_by(snapshot=ac):
+                slog.snapshot_id = None
+                slog.snapshot_uuid = None
+            db.session.delete(ac)
+
+    def remove_devices(self, devices):
+        from ereuse_devicehub.parser.models import SnapshotsLog
+
+        for dev in devices:
+            for ac in dev.actions:
+                if ac.type != 'Snapshot':
+                    continue
+                for slog in SnapshotsLog.query.filter_by(snapshot=ac):
+                    slog.snapshot_id = None
+                    slog.snapshot_uuid = None
+
+            for c in dev.components:
+                c.parent_id = None
+
+            for tag in dev.tags:
+                tag.device_id = None
+
+            placeholder = dev.binding or dev.placeholder
+            if placeholder:
+                db.session.delete(placeholder.binding)
+                db.session.delete(placeholder.device)
+                db.session.delete(placeholder)
+
+    def reliable(self):
+        computers = Computer.query.filter_by(
+            hid=self.hid,
+            owner_id=g.user.id,
+            active=True,
+            placeholder=None,
+        ).order_by(Device.created.asc())
+
+        i = 0
+        computer1 = None
+        computers_to_remove = []
+        for d in computers:
+            if i == 0:
+                d.user_trusts = True
+                computer1 = d
+                i += 1
+                continue
+
+            computers_to_remove.append(d)
+
+        self.remove_devices(computers_to_remove)
+        if not computer1:
+            return
+
+        snapshot1 = None
+        for ac in computer1.actions_one:
+            if ac.type == 'Snapshot':
+                snapshot1 = ac
+                break
+
+        if not snapshot1:
+            return
+
+        return
+
+    def get_last_incoming_lot(self):
+        lots = list(self.lots)
+        if hasattr(self, "orphan") and self.orphan:
+            lots = list(self.lots)
+            if self.binding:
+                lots = list(self.binding.device.lots)
+
+        elif hasattr(self, "parent") and self.parent:
+            lots = list(self.parent.lots)
+            if self.parent.binding:
+                lots = list(self.parent.binding.device.lots)
+
+        lots = sorted(lots, key=lambda x: x.created)
+        lots.reverse()
+        for lot in lots:
+            if lot.is_incoming:
+                return lot
+        return None
 
     def __lt__(self, other):
         return self.id < other.id
@@ -1026,6 +1240,7 @@ class Computer(Device):
     receiver_id = db.Column(UUID(as_uuid=True), db.ForeignKey(User.id), nullable=True)
     receiver = db.relationship(User, primaryjoin=receiver_id == User.id)
     system_uuid = db.Column(UUID(as_uuid=True), nullable=True)
+    user_trusts = db.Column(Boolean(), default=True)
 
     def __init__(self, *args, **kwargs) -> None:
         if args:

@@ -1,5 +1,6 @@
 import itertools
 import json
+import uuid
 from pathlib import Path
 
 import click
@@ -113,6 +114,8 @@ class Dummy:
             for path in bar:
                 with path.open() as f:
                     snapshot = yaml.load(f)
+                    if snapshot['device']['type'] in ['Desktop', 'Laptop']:
+                        snapshot['device']['system_uuid'] = uuid.uuid4()
                 s, _ = user1.post(res=m.Snapshot, data=self.json_encode(snapshot))
                 if s.get('uuid', None) == 'ec23c11b-80b6-42cd-ac5c-73ba7acddbc4':
                     sample_pc = s['device']['id']
@@ -227,7 +230,7 @@ class Dummy:
         user1.get(res=Device, item=sample_pc_devicehub_id)  # Test
         anonymous = self.app.test_client()
         html, _ = anonymous.get(res=Device, item=sample_pc_devicehub_id, accept=ANY)
-        assert 'intel core2 duo cpu' in html
+        assert 'hewlett-packard' in html
 
         # For netbook: to preapre -> torepair -> to dispose -> disposed
         print('⭐ Done.')

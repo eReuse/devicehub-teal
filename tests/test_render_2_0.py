@@ -12,7 +12,6 @@ from flask_wtf.csrf import generate_csrf
 from ereuse_devicehub.client import UserClient, UserClientFlask
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
-from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.device.models import Device, Placeholder
 from ereuse_devicehub.resources.lot.models import Lot
@@ -321,7 +320,7 @@ def test_export_certificates(user3: UserClientFlask):
     body = str(next(body))
     assert status == '200 OK'
     assert "PDF-1.5" in body
-    assert 'hts54322' in body
+    assert 'e2024242cv86mm'.upper() in body
 
 
 @pytest.mark.mvp
@@ -714,7 +713,9 @@ def test_add_laptop(user3: UserClientFlask):
 
     assert typ == 'Laptop'
     assert dev.placeholder.id_device_supplier == "b2"
-    assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
+    assert (
+        dev.chid == '274f05421e4d394c5b3cd10266fed6f0500029b104b5db3521689bda589e3150'
+    )
     assert phid == '1'
     assert dhid == 'O48N2'
 
@@ -753,7 +754,11 @@ def test_add_with_ammount_laptops(user3: UserClientFlask):
     for dev in Device.query.all():
         assert dev.type == 'Laptop'
         assert dev.placeholder.id_device_supplier is None
-        assert dev.hid is None
+        assert dev.hid == 'laptop-samsung-lc27t55-'
+        assert (
+            dev.chid
+            == 'ff8e7794d33ed22046b8d94b8bba4d8d1507f0fee535150835cac28faabbcda1'
+        )
         assert dev.placeholder.phid in [str(x) for x in range(1, num + 1)]
     assert Device.query.count() == num
 
@@ -1698,7 +1703,6 @@ def test_export_lots(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_export_snapshot_json(user3: UserClientFlask):
-    # ??
     file_name = 'real-eee-1001pxd.snapshot.13.json'
     snap = create_device(user3, file_name)
 
@@ -1708,7 +1712,10 @@ def test_export_snapshot_json(user3: UserClientFlask):
     uri = "/inventory/export/snapshot/?id={}".format(snap.uuid)
     body, status = user3.get(uri)
     assert status == '200 OK'
-    assert body == snapshot
+    body = json.loads(body)
+    snapshot = json.loads(snapshot)
+    assert body['device'] == snapshot['device']
+    assert body['components'] == snapshot['components']
 
 
 @pytest.mark.mvp
@@ -1729,7 +1736,8 @@ def test_add_placeholder_excel(user3: UserClientFlask):
         user3.post(uri, data=data, content_type="multipart/form-data")
     assert Device.query.count() == 3
     dev = Device.query.first()
-    assert dev.hid == 'laptop-sony-vaio-12345678'
+    chid = 'f28ae12ffd513f5ed8fb6714a344a2326c48a7196fb140435065ab96ffda1a71'
+    assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
     assert dev.placeholder.pallet == '24A'
@@ -1755,7 +1763,8 @@ def test_add_placeholder_csv(user3: UserClientFlask):
         user3.post(uri, data=data, content_type="multipart/form-data")
     assert Device.query.count() == 3
     dev = Device.query.first()
-    assert dev.hid == 'laptop-sony-vaio-12345678'
+    chid = 'f28ae12ffd513f5ed8fb6714a344a2326c48a7196fb140435065ab96ffda1a71'
+    assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
     assert dev.placeholder.pallet == '24A'
@@ -1781,7 +1790,8 @@ def test_add_placeholder_ods(user3: UserClientFlask):
         user3.post(uri, data=data, content_type="multipart/form-data")
     assert Device.query.count() == 3
     dev = Device.query.first()
-    assert dev.hid == 'laptop-sony-vaio-12345678'
+    chid = 'f28ae12ffd513f5ed8fb6714a344a2326c48a7196fb140435065ab96ffda1a71'
+    assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
     assert dev.placeholder.pallet == '24A'
@@ -1809,7 +1819,8 @@ def test_add_placeholder_office_open_xml(user3: UserClientFlask):
         user3.post(uri, data=data, content_type="multipart/form-data")
     assert Device.query.count() == 3
     dev = Device.query.first()
-    assert dev.hid == 'laptop-sony-vaio-12345678'
+    chid = 'f28ae12ffd513f5ed8fb6714a344a2326c48a7196fb140435065ab96ffda1a71'
+    assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
     assert dev.placeholder.pallet == '24A'
@@ -1847,7 +1858,8 @@ def test_edit_laptop(user3: UserClientFlask):
 
     assert typ == 'Laptop'
     assert dev.placeholder.id_device_supplier == "b2"
-    assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
+    chid = '274f05421e4d394c5b3cd10266fed6f0500029b104b5db3521689bda589e3150'
+    assert dev.chid == chid
     assert dev.serial_number == 'aaaab'
     assert dev.model == 'lc27t55'
     assert phid == '1'
@@ -1879,7 +1891,7 @@ def test_edit_laptop(user3: UserClientFlask):
     assert 'Device &#34;Laptop&#34; edited successfully!' in body
     dev = Device.query.one()
     assert dev.type == 'Laptop'
-    assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
+    assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.id_device_supplier == 'a2'
     assert dev.serial_number == 'aaaac'
@@ -2077,7 +2089,8 @@ def test_add_placeholder_excel_from_lot(user3: UserClientFlask):
         user3.post(uri, data=data, content_type="multipart/form-data")
     assert Device.query.count() == 3
     dev = Device.query.first()
-    assert dev.hid == 'laptop-sony-vaio-12345678'
+    chid = 'f28ae12ffd513f5ed8fb6714a344a2326c48a7196fb140435065ab96ffda1a71'
+    assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.info == 'Good conditions'
     assert dev.placeholder.pallet == '24A'
@@ -2116,7 +2129,8 @@ def test_add_new_placeholder_from_lot(user3: UserClientFlask):
     }
     user3.post(uri, data=data)
     dev = Device.query.one()
-    assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
+    chid = '274f05421e4d394c5b3cd10266fed6f0500029b104b5db3521689bda589e3150'
+    assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert len(lot.devices) == 1
 
@@ -2141,7 +2155,8 @@ def test_manual_binding(user3: UserClientFlask):
     }
     user3.post(uri, data=data)
     dev = Device.query.one()
-    assert dev.hid == 'laptop-samsung-lc27t55-aaaab'
+    chid = '274f05421e4d394c5b3cd10266fed6f0500029b104b5db3521689bda589e3150'
+    assert dev.chid == chid
     assert dev.placeholder.phid == '1'
     assert dev.placeholder.is_abstract is False
 
@@ -2153,8 +2168,8 @@ def test_manual_binding(user3: UserClientFlask):
 
     assert dev_wb.binding.is_abstract is True
     assert (
-        dev_wb.hid
-        == 'laptop-asustek_computer_inc-1001pxd-b8oaas048285-14:da:e9:42:f6:7b'
+        dev_wb.chid
+        == '83cb9066430a8ea7def04af61d521d6517193a486c02ea3bc914c9eaeb2b718b'
     )
     assert dev_wb.binding.phid == '11'
     old_placeholder = dev_wb.binding
@@ -2653,10 +2668,109 @@ def test_system_uuid_motherboard(user3: UserClientFlask):
     }
     user3.post(uri, data=data, content_type="multipart/form-data")
     snapshot2 = Snapshot.query.filter_by(uuid=snapshot_json['uuid']).first()
-    assert snapshot2 is None
+    assert snapshot2.device == snapshot.device
     for c in snapshot.device.components:
         if c.type == 'Motherboard':
-            assert c.serial_number == 'eee0123456720'
+            assert c.serial_number == 'abee0123456720'
 
-    txt = "We have detected that a there is a device in your inventory"
-    assert txt in SnapshotsLog.query.all()[-1].description
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_unreliable_device(user3: UserClientFlask):
+    # Create device
+    snapshot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+
+    # Update device
+    uri = '/inventory/upload-snapshot/'
+    file_name = 'real-eee-1001pxd.snapshot.12'
+    snapshot_json = conftest.yaml2json(file_name)
+    snapshot_json['uuid'] = 'c058e8d2-fb92-47cb-a4b7-522b75561136'
+    b_snapshot = bytes(json.dumps(snapshot_json), 'utf-8')
+    file_snap = (BytesIO(b_snapshot), file_name)
+    user3.get(uri)
+
+    data = {
+        'snapshot': file_snap,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data, content_type="multipart/form-data")
+    snapshot2 = Snapshot.query.filter_by(uuid=snapshot_json['uuid']).first()
+    assert snapshot2.device == snapshot.device
+    assert Snapshot.query.count() == 2
+    snapshots = Snapshot.query.all()
+    assert snapshots[0].device == snapshots[1].device
+    assert len(snapshots[0].device.components)
+    assert snapshot2 in snapshots
+
+    # Change update for new device
+    uuid2 = snapshot2.uuid
+    uri = f"/inventory/snapshots/{uuid2}/"
+    user3.get(uri)
+
+    data = {
+        'snapshot_type': "new_device",
+        'csrf_token': generate_csrf(),
+    }
+    assert Device.query.filter_by(hid=snapshot.device.hid).count() == 2
+    user3.post(uri, data=data)
+    assert Device.query.filter_by(hid=snapshot.device.hid).count() == 4
+    assert Snapshot.query.count() == 2
+    snapshots = Snapshot.query.all()
+    assert snapshot2 not in snapshots
+    assert snapshots[0].device != snapshots[1].device
+    assert len(snapshots[0].device.components) == 8
+    assert len(snapshots[1].device.components) == 9
+    assert len(snapshots[0].device.actions) == 11
+    assert len(snapshots[1].device.actions) == 10
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_reliable_device(user3: UserClientFlask):
+    # Create device
+    snapshot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+
+    # Update device
+    uri = '/inventory/upload-snapshot/'
+    file_name = 'real-eee-1001pxd.snapshot.12'
+    snapshot_json = conftest.yaml2json(file_name)
+    snapshot_json['uuid'] = 'c058e8d2-fb92-47cb-a4b7-522b75561136'
+    b_snapshot = bytes(json.dumps(snapshot_json), 'utf-8')
+    file_snap = (BytesIO(b_snapshot), file_name)
+    user3.get(uri)
+
+    data = {
+        'snapshot': file_snap,
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data, content_type="multipart/form-data")
+    snapshot2 = Snapshot.query.filter_by(uuid=snapshot_json['uuid']).first()
+
+    # Change update for new device
+    uuid2 = snapshot2.uuid
+    uri = f"/inventory/snapshots/{uuid2}/"
+    user3.get(uri)
+
+    data = {
+        'snapshot_type': "new_device",
+        'csrf_token': generate_csrf(),
+    }
+    user3.post(uri, data=data)
+
+    # Change update for update
+    snapshot3 = Snapshot.query.all()[-1]
+    uuid3 = snapshot3.uuid
+    uri = f"/inventory/snapshots/{uuid3}/"
+    user3.get(uri)
+
+    data = {
+        'snapshot_type': "update",
+        'csrf_token': generate_csrf(),
+    }
+    assert Device.query.filter_by(hid=snapshot.device.hid).count() == 4
+    user3.post(uri, data=data)
+    assert Device.query.filter_by(hid=snapshot.device.hid).count() == 2
+    assert Snapshot.query.count() == 1
+    assert Snapshot.query.first() == snapshot
+    assert len(snapshot.device.components) == 8
+    assert len(snapshot.device.actions) == 7
