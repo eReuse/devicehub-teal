@@ -513,7 +513,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         result = api.generate_proof(deviceCHID, docID, docSig, issuerID, proof_type)
         from ereuse_devicehub.resources.enums import StatusCode
 
-        if result['Status'] == StatusCode.Success:
+        if result['Status'] == StatusCode.Success.value:
             timestamp = (
                 result.get('Data', {}).get('data', {}).get('timestamp', time.time())
             )

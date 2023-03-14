@@ -919,7 +919,7 @@ class Device(Thing):
         from ereuse_devicehub.resources.did.models import PROOF_ENUM, Proof
         from ereuse_devicehub.resources.enums import StatusCode
 
-        if result['Status'] == StatusCode.Success:
+        if result['Status'] == StatusCode.Success.value:
             timestamp = (
                 result.get('Data', {}).get('data', {}).get('timestamp', time.time())
             )
