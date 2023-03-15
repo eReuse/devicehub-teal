@@ -841,6 +841,21 @@ class NewTransferView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
 
+class OpenTransferView(GenericMixin):
+    methods = ['GET']
+
+    def dispatch_request(self, lot_id=None):
+        lot = Lot.query.filter_by(id=lot_id).one()
+        next_url = url_for('inventory.lotdevicelist', lot_id=str(lot_id))
+
+        if hasattr(lot, 'transfer'):
+            lot.transfer.date = None
+            db.session.commit()
+            messages.success('Transfer was reopen successfully!')
+
+        return flask.redirect(next_url)
+
+
 class EditTransferView(GenericMixin):
     methods = ['POST']
     form_class = EditTransferForm
@@ -1058,21 +1073,44 @@ class ExportsView(View):
                     erasures.append(device.privacy)
         return erasures
 
-    def get_costum_details(self):
+    def get_costum_details(self, erasures):
         my_data = None
         customer_details = None
-        if hasattr(g.user, 'sanitization_entity'):
-            if g.user.sanitization_entity:
-                my_data = list(g.user.sanitization_entity)[0]
+        lot = None
 
+        if hasattr(g.user, 'sanitization_entity'):
+            my_data = g.user.sanitization_entity
+
+        customer_details = self.get_customer_details_from_request()
+
+        if not erasures or customer_details:
+            return my_data, customer_details
+
+        lots = {erasures[0].device.get_last_incoming_lot()}
+        for e in erasures[1:]:
+            lots.add(e.device.get_last_incoming_lot())
+
+        if len(lots) != 1:
+            return my_data, customer_details
+
+        lot = lots.pop()
         try:
-            if len(request.referrer.split('/lot/')) > 1:
-                lot_id = request.referrer.split('/lot/')[-1].split('/')[0]
-                lot = Lot.query.filter_by(owner=g.user).filter_by(id=lot_id).first()
-                customer_details = lot.transfer.customer_details
+            customer_details = lot.transfer.customer_details
         except Exception:
             pass
+
         return my_data, customer_details
+
+    def get_customer_details_from_request(self):
+        try:
+            if len(request.referrer.split('/lot/')) < 2:
+                return
+
+            lot_id = request.referrer.split('/lot/')[-1].split('/')[0]
+            lot = Lot.query.filter_by(owner=g.user).filter_by(id=lot_id).first()
+            return lot.transfer.customer_details
+        except Exception:
+            pass
 
     def get_server_erasure_hosts(self, erasures):
         erasures_host = []
@@ -1094,14 +1132,21 @@ class ExportsView(View):
                 erasures[0].snapshot.version,
             )
 
-        my_data, customer_details = self.get_costum_details()
+        my_data, customer_details = self.get_costum_details(erasures)
 
         a, b = self.get_server_erasure_hosts(erasures)
         erasures_host, erasures_on_server = a, b
+        erasures_host = set(erasures_host)
 
         result = 'Success'
         if "Failed" in [e.severity.get_public_name() for e in erasures]:
             result = 'Failed'
+
+        erasures = sorted(erasures, key=lambda x: x.end_time)
+        erasures_on_server = sorted(erasures_on_server, key=lambda x: x.end_time)
+        erasures_normal = list(set(erasures) - set(erasures_on_server))
+        erasures_normal = sorted(erasures_normal, key=lambda x: x.end_time)
+        n_computers = len({x.parent for x in erasures} - erasures_host)
 
         params = {
             'title': 'Erasure Certificate',
@@ -1111,11 +1156,11 @@ class ExportsView(View):
             'uuid_report': '{}'.format(uuid.uuid4()),
             'software': software,
             'my_data': my_data,
-            'n_computers': len(set([x.parent for x in erasures])),
+            'n_computers': n_computers,
             'result': result,
             'customer_details': customer_details,
             'erasure_hosts': erasures_host,
-            'erasures_normal': list(set(erasures) - set(erasures_on_server)),
+            'erasures_normal': erasures_normal,
         }
         return flask.render_template('inventory/erasure.html', **params)
 
@@ -1570,4 +1615,8 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/device/erasure/<int:orphans>/',
     view_func=ErasureListView.as_view('device_erasure_list_orphans'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/opentransfer/',
+    view_func=OpenTransferView.as_view('open_transfer'),
 )

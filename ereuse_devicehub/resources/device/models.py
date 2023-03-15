@@ -678,6 +678,12 @@ class Device(Thing):
         return args
 
     def get_lots_for_template(self):
+        if self.binding:
+            return self.binding.device.get_lots_for_template()
+
+        if not self.lots and hasattr(self, 'parent') and self.parent:
+            return self.parent.get_lots_for_template()
+
         lots = []
         for lot in self.lots:
             if lot.is_incoming:
@@ -1055,6 +1061,25 @@ class Device(Thing):
             return
 
         return
+
+    def get_last_incoming_lot(self):
+        lots = list(self.lots)
+        if hasattr(self, "orphan") and self.orphan:
+            lots = list(self.lots)
+            if self.binding:
+                lots = list(self.binding.device.lots)
+
+        elif hasattr(self, "parent") and self.parent:
+            lots = list(self.parent.lots)
+            if self.parent.binding:
+                lots = list(self.parent.binding.device.lots)
+
+        lots = sorted(lots, key=lambda x: x.created)
+        lots.reverse()
+        for lot in lots:
+            if lot.is_incoming:
+                return lot
+        return None
 
     def __lt__(self, other):
         return self.id < other.id

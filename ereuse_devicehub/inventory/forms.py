@@ -1540,7 +1540,10 @@ class CustomerDetailsForm(FlaskForm):
     logo = URLField(
         'Logo',
         [validators.Optional()],
-        render_kw={'class': "form-control"},
+        render_kw={
+            'class': "form-control",
+            "placeholder": "Url where is the logo - acceptd only .png, .jpg, .gif, svg",
+        },
         description="Url where is the logo",
     )
 
@@ -1559,7 +1562,20 @@ class CustomerDetailsForm(FlaskForm):
 
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
-        return is_valid
+
+        if not is_valid:
+            return is_valid
+
+        if not self.logo.data:
+            return True
+
+        extensions = ["jpg", "jpeg", "png", "gif", "svg"]
+        if self.logo.data.lower().split(".")[-1] not in extensions:
+            txt = "Error in Url field - accepted only .PNG, .JPG and .GIF. extensions"
+            self.logo.errors = [txt]
+            return False
+
+        return True
 
     def save(self, commit=True):
         self.populate_obj(self._obj)
