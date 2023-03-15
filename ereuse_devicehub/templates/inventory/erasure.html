@@ -288,10 +288,10 @@
           {% for erasure in erasures %}
           <tr style="border-bottom: 1px dashed #000;">
             <td>
-              {{ erasure.device.serial_number.upper() }}
+              {{ erasure.device.serial_number and erasure.device.serial_number.upper() or '' }}
             </td>
             <td>
-              {{ erasure.parent.serial_number.upper() }}
+              {{ erasure.parent.serial_number and erasure.parent.serial_number.upper() or '' }}
             </td>
             <td>
               {{ erasure.get_public_name() }}
@@ -320,14 +320,14 @@
      <dt>Computer where was erase:</dt>
   <dd>Title: {{ erasure.parent.__format__('ts') }}</dd>
   <dd>DevicehubID: {{ erasure.parent.dhid }}</dd>
-  <dd>Hid: {{ erasure.parent.hid }}</dd>
+  <dd>Hid: {{ erasure.parent.chid }}</dd>
   <dd>Tags: {{ erasure.parent.tags }}</dd>
 
   {% if erasure.device.parent %}
   <dt>Computer where it resides:</dt>
   <dd>Title: {{ erasure.device.parent.__format__('ts') }}</dd>
   <dd>DevicehubID: {{ erasure.device.parent.dhid }}</dd>
-  <dd>Hid: {{ erasure.device.parent.hid }}</dd>
+  <dd>Hid: {{ erasure.device.parent.chid }}</dd>
   <dd>Tags: {{ erasure.device.parent.tags }}</dd>
   {% endif %}
   {% endif %}
