@@ -344,6 +344,16 @@
       </ol>
     </dd>
     {% endif %}
+  {% if erasure.device.proofs %}
+  <dt>DLT Proofs:</dt>
+    <dd>
+      <ol>
+      {% for proof in erasure.device.proofs %}
+        <li>{{ proof.type }}: {{ proof.timestamp }}</li>
+      {% endfor %}
+      </ol>
+    </dd>
+  {% endif %}
   </dl>
 </div>
 {% endfor %}
