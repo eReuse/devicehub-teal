@@ -23,6 +23,16 @@
     padding-top: 0px;
     padding-bottom: 5px;
 }
+#ApplyDeviceLots {
+    color: #993365;
+    font-weight: bold;
+}
+#ApplyDeviceLots.disabled {
+    color: #adb5bd;
+    font-weight: normal;
+    pointer-events: none;
+    background-color: #fff;
+}
 .help {
     color: #993365;
 }
