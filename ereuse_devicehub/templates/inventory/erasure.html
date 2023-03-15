@@ -320,14 +320,14 @@
      <dt>Computer where was erase:</dt>
   <dd>Title: {{ erasure.parent.__format__('ts') }}</dd>
   <dd>DevicehubID: {{ erasure.parent.dhid }}</dd>
-  <dd>Hid: {{ erasure.parent.hid }}</dd>
+  <dd>Hid: {{ erasure.parent.chid }}</dd>
   <dd>Tags: {{ erasure.parent.tags }}</dd>
 
   {% if erasure.device.parent %}
   <dt>Computer where it resides:</dt>
   <dd>Title: {{ erasure.device.parent.__format__('ts') }}</dd>
   <dd>DevicehubID: {{ erasure.device.parent.dhid }}</dd>
-  <dd>Hid: {{ erasure.device.parent.hid }}</dd>
+  <dd>Hid: {{ erasure.device.parent.chid }}</dd>
   <dd>Tags: {{ erasure.device.parent.tags }}</dd>
   {% endif %}
   {% endif %}
@@ -344,6 +344,16 @@
       </ol>
     </dd>
     {% endif %}
+  {% if erasure.device.proofs %}
+  <dt>DLT Proofs:</dt>
+    <dd>
+      <ol>
+      {% for proof in erasure.device.proofs %}
+        <li>{{ proof.type }}: {{ proof.timestamp }}</li>
+      {% endfor %}
+      </ol>
+    </dd>
+  {% endif %}
   </dl>
 </div>
 {% endfor %}
