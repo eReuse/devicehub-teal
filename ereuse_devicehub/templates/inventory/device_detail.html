@@ -85,6 +85,9 @@
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#dpps">Digital Passports</button>
             </li>
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#proofs">Proofs</button>
+            </li>
             {% endif %}
 
           </ul>
@@ -284,6 +287,7 @@
                         <h5 class="mb-1">Time Stamp</h5>
                         <small class="text-muted">{{ dpp.timestamp }}</small>
                       </div>
+                    </div>
                     <div class="col-12">
                       <p class="mb-1">
                         <a href="{{ url_for('Did.DidView', dpp=dpp.key) }}" target="_blank">{{ dpp.key }}</a><br />
@@ -293,6 +297,54 @@
                   </div>
                 </div>
               </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if placeholder.binding %}
+            <div class="tab-pane fade profile-overview" id="proofs">
+              <h5 class="card-title">Proofs</h5>
+              {% for proof in placeholder.binding.proofs %}
+              <div class="list-group col-12">
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Time Stamp</h5>
+                        <small class="text-muted">{{ proof.timestamp }}</small>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <p class="mb-1">
+                        {{ proof.type }}<br />
+                      </p>
+                      <small class="text-muted">{{ proof.created.strftime('%H:%M %d-%m-%Y') }}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+              {% for component in placeholder.binding.components %}
+              {% for proof in component.proofs %}
+              <div class="list-group col-12">
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Time Stamp</h5>
+                        <small class="text-muted">{{ proof.timestamp }}</small>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <p class="mb-1">
+                        {{ proof.type }}<br />
+                      </p>
+                      <small class="text-muted">{{ proof.created.strftime('%H:%M %d-%m-%Y') }}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
               {% endfor %}
             </div>
             {% endif %}
