@@ -8,6 +8,24 @@ ml).
 ## testing
 - [added] #414 add new vars in the settings file for wb.
 
+## [2.5.1] - 2023-03-17
+- [changed] #423 new hid.
+- [changed] #426 new version of public page of device.
+- [changed] #427 update links of terms and condotions.
+- [changed] #428 only the data storage allow syncrinize, the rest are duplicate.
+- [changed] #430 new version of erasure certificate.
+- [fixed] #416 fix dhid in snapshot logs.
+- [fixed] #419 fix settings version and template.
+- [fixed] #420 not appear all lots in the dropdown menu for select the a lot.
+- [fixed] #421 fix remove a placeholder from one old trade lot.
+- [fixed] #422 fix simple datatables.
+- [fixed] #424 fix new hid.
+- [fixed] #431 fix forms for customer details.
+- [fixed] #432 fix erasure certificate for a servers.
+- [fixed] #433 fix get the last incoming for show customer datas in certificate.
+- [fixed] #434 fix reopen transfer.
+- [fixed] #436 fix hid in erasure certificate.
+
 ## [2.5.0] - 2022-11-30
 - [added] #407 erasure section with tabs in top.
 - [added] #411 add new generic device as Other.
