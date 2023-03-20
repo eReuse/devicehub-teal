@@ -22,13 +22,13 @@
 
             <li class="nav-item">
               <a href="{{ url_for('inventory.device_erasure_list') }}" class="nav-link{% if not orphans %} active{% endif %}">
-                All hard drives
+                All drives
               </a>
             </li>
 
             <li class="nav-item">
               <a href="{{ url_for('inventory.device_erasure_list_orphans', orphans=1) }}" class="nav-link{% if orphans %} active{% endif %}">
-                Hard drives without device
+                Drives without device
               </a>
             </li>
 
