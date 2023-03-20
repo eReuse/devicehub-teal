@@ -138,7 +138,7 @@ class DocumentView(DeviceView):
         url_pdf = boltons.urlutils.URL(flask.request.url)
         url_pdf.query_params['format'] = 'PDF'
         params = {
-            'title': 'Erasure Certificate',
+            'title': 'Device Sanitization',
             'erasures': tuple(erasures()),
             'url_pdf': url_pdf.to_text(),
         }
