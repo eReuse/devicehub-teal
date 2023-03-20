@@ -280,7 +280,7 @@ class LotRow(OrderedDict):
         self['Registered in'] = format(lot.created, '%c')
         try:
             self['Description'] = lot.description
-        except:
+        except Exception:
             self['Description'] = ''
 
 
