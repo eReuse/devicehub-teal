@@ -1149,7 +1149,7 @@ class ExportsView(View):
         n_computers = len({x.parent for x in erasures} - erasures_host)
 
         params = {
-            'title': 'Erasure Certificate',
+            'title': 'Device Sanitization',
             'erasures': tuple(erasures),
             'url_pdf': '',
             'date_report': '{:%c}'.format(datetime.datetime.now()),
