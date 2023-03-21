@@ -4,7 +4,7 @@ from datetime import timedelta
 from distutils.version import StrictVersion
 from uuid import UUID
 
-import ereuse_utils
+import ereuse_devicehub.ereuse_utils
 import jwt
 from flask import current_app as app
 from flask import g, request
@@ -203,7 +203,7 @@ def decode_snapshot(data):
             data['data'],
             app.config['JWT_PASS'],
             algorithms="HS256",
-            json_encoder=ereuse_utils.JSONEncoder,
+            json_encoder=ereuse_devicehub.ereuse_utils.JSONEncoder,
         )
     except jwt.exceptions.InvalidSignatureError as err:
         txt = 'Invalid snapshot'

@@ -2,7 +2,7 @@ import csv
 import pathlib
 
 from click import argument, option
-from ereuse_utils import cli
+from ereuse_devicehub.ereuse_utils import cli
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.definitions import DeviceDef

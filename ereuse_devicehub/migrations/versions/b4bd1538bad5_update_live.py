@@ -6,7 +6,7 @@ Create Date: 2020-12-29 20:19:46.981207
 
 """
 import sqlalchemy as sa
-import teal
+from ereuse_devicehub import teal
 from alembic import context, op
 from sqlalchemy.dialects import postgresql
 

@@ -1,9 +1,9 @@
 from typing import Any, Iterable, Tuple, Type, Union
 
 from boltons.urlutils import URL
-from ereuse_utils.test import JSON
-from ereuse_utils.test import Client as EreuseUtilsClient
-from ereuse_utils.test import Res
+from ereuse_devicehub.ereuse_utils.test import JSON
+from ereuse_devicehub.ereuse_utils.test import Client as EreuseUtilsClient
+from ereuse_devicehub.ereuse_utils.test import Res
 from werkzeug.exceptions import HTTPException
 
 from ereuse_devicehub.teal.marshmallow import ValidationError

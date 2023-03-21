@@ -10,7 +10,7 @@ from alembic import op
 import sqlalchemy as sa
 import sqlalchemy_utils
 import citext
-import teal
+from ereuse_devicehub import teal
 
 
 # revision identifiers, used by Alembic.
@@ -25,6 +25,7 @@ def get_inv():
     if not INV:
         raise ValueError("Inventory value is not specified")
     return INV
+
 
 def upgrade():
     con = op.get_bind()
@@ -58,7 +59,6 @@ def upgrade():
 
         sql = f"update {get_inv()}.device set hid='{new_hid}' where id={id_dev};"
         con.execute(sql)
-
 
 
 def downgrade():

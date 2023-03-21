@@ -4,7 +4,7 @@ from typing import Callable, Iterable, Iterator, Tuple, Type, Union
 import inflection
 from anytree import PreOrderIter
 from boltons.typeutils import classproperty, issubclass
-from ereuse_utils.naming import Naming
+from ereuse_devicehub.ereuse_utils.naming import Naming
 from flask import Blueprint, current_app, g, request, url_for
 from flask.json import jsonify
 from flask.views import MethodView

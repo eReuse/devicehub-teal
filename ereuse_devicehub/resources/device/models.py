@@ -12,7 +12,7 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
-from ereuse_utils.naming import HID_CONVERSION_DOC
+from ereuse_devicehub.ereuse_utils.naming import HID_CONVERSION_DOC
 from flask import current_app as app
 from flask import g, request
 from more_itertools import unique_everseen

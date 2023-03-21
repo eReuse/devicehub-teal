@@ -1,7 +1,7 @@
 import json
 from json import JSONDecodeError
 
-from ereuse_utils import flatten_mixed
+from ereuse_devicehub.ereuse_utils import flatten_mixed
 from marshmallow import Schema as MarshmallowSchema
 from marshmallow.fields import Boolean, Field, List, Nested, Str, missing_
 from sqlalchemy import Column, between, or_

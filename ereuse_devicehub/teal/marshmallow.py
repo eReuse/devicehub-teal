@@ -4,7 +4,7 @@ from typing import Type, Union
 
 import colour
 from boltons import strutils, urlutils
-from ereuse_utils import if_none_return_none
+from ereuse_devicehub.ereuse_utils import if_none_return_none
 from flask import current_app as app
 from flask import g
 from marshmallow import utils

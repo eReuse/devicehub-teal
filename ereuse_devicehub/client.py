@@ -1,7 +1,7 @@
 from inspect import isclass
 from typing import Dict, Iterable, Type, Union
 
-from ereuse_utils.test import JSON, Res
+from ereuse_devicehub.ereuse_utils.test import JSON, Res
 from flask.testing import FlaskClient
 from flask_wtf.csrf import generate_csrf
 from werkzeug.exceptions import HTTPException

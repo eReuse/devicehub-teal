@@ -2,12 +2,12 @@ import inspect
 from typing import Dict, Type
 
 import click_spinner
-import ereuse_utils
+import ereuse_devicehub.ereuse_utils
 import flask_cors
 from anytree import Node
 from apispec import APISpec
 from click import option
-from ereuse_utils import ensure_utf8
+from ereuse_devicehub.ereuse_utils import ensure_utf8
 from flask import Flask, jsonify
 from flask.globals import _app_ctx_stack
 from flask_sqlalchemy import SQLAlchemy
@@ -284,7 +284,7 @@ class Teal(Flask):
         return jsonify(self._apidocs)
 
 
-class DumpeableHTTPException(ereuse_utils.Dumpeable):
+class DumpeableHTTPException(ereuse_devicehub.ereuse_utils.Dumpeable):
     """Exceptions that inherit this class will be able to dump
     to dicts and JSONs.
     """

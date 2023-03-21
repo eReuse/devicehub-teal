@@ -10,7 +10,7 @@ from alembic import op
 import sqlalchemy as sa
 import sqlalchemy_utils
 import citext
-import teal
+from ereuse_devicehub import teal
 
 
 # revision identifiers, used by Alembic.
@@ -26,11 +26,32 @@ def get_inv():
         raise ValueError("Inventory value is not specified")
     return INV
 
+
 def upgrade():
-    op.alter_column('test_data_storage', 'current_pending_sector_count', type_=sa.Integer(), schema=f'{get_inv()}')
-    op.alter_column('test_data_storage', 'offline_uncorrectable', type_=sa.Integer(), schema=f'{get_inv()}')
+    op.alter_column(
+        'test_data_storage',
+        'current_pending_sector_count',
+        type_=sa.Integer(),
+        schema=f'{get_inv()}',
+    )
+    op.alter_column(
+        'test_data_storage',
+        'offline_uncorrectable',
+        type_=sa.Integer(),
+        schema=f'{get_inv()}',
+    )
 
 
 def downgrade():
-    op.alter_column('test_data_storage', 'current_pending_sector_count', type_=sa.SmallInteger(), schema=f'{get_inv()}')
-    op.alter_column('test_data_storage', 'offline_uncorrectable', type_=sa.SmallInteger(), schema=f'{get_inv()}')
+    op.alter_column(
+        'test_data_storage',
+        'current_pending_sector_count',
+        type_=sa.SmallInteger(),
+        schema=f'{get_inv()}',
+    )
+    op.alter_column(
+        'test_data_storage',
+        'offline_uncorrectable',
+        type_=sa.SmallInteger(),
+        schema=f'{get_inv()}',
+    )

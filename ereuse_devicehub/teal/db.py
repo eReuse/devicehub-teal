@@ -7,7 +7,7 @@ from typing import Any, Type, Union
 
 from boltons.typeutils import classproperty
 from boltons.urlutils import URL as BoltonsUrl
-from ereuse_utils import if_none_return_none
+from ereuse_devicehub.ereuse_utils import if_none_return_none
 from flask_sqlalchemy import BaseQuery
 from flask_sqlalchemy import Model as _Model
 from flask_sqlalchemy import SignallingSession
