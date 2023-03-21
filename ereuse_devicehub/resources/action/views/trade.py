@@ -1,5 +1,4 @@
 from flask import g
-from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.models import Transfer
@@ -13,6 +12,7 @@ from ereuse_devicehub.resources.action.models import (
 )
 from ereuse_devicehub.resources.lot.views import delete_from_trade
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.marshmallow import ValidationError
 
 
 class TradeView:

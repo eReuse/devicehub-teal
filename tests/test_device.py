@@ -9,8 +9,6 @@ from ereuse_utils.test import ANY
 from flask import g
 from pytest import raises
 from sqlalchemy.util import OrderedSet
-from teal.db import ResourceNotFound
-from teal.enums import Layouts
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
@@ -34,6 +32,8 @@ from ereuse_devicehub.resources.enums import (
 )
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
+from ereuse_devicehub.teal.db import ResourceNotFound
+from ereuse_devicehub.teal.enums import Layouts
 from tests import conftest
 from tests.conftest import file, json_encode, yaml2json
 

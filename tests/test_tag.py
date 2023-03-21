@@ -6,8 +6,6 @@ from boltons.urlutils import URL
 from ereuse_utils.session import DevicehubClient
 from flask import g
 from pytest import raises
-from teal.db import DBError, MultipleResourcesFound, ResourceNotFound, UniqueViolation
-from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
@@ -23,6 +21,13 @@ from ereuse_devicehub.resources.tag.view import (
     TagNotLinked,
 )
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.db import (
+    DBError,
+    MultipleResourcesFound,
+    ResourceNotFound,
+    UniqueViolation,
+)
+from ereuse_devicehub.teal.marshmallow import ValidationError
 from tests import conftest
 from tests.conftest import json_encode, yaml2json
 

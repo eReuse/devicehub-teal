@@ -2,21 +2,22 @@ import datetime
 import uuid
 
 from flask import Response, request
-from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.deliverynote.models import Deliverynote
 from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.teal.resource import View
 
 
 class DeliverynoteView(View):
-
     def post(self):
         # Create delivery note
         dn = request.get_json()
         dlvnote = Deliverynote(**dn)
         # Create a lot
-        lot_name = dlvnote.document_id + "_" + datetime.datetime.utcnow().strftime("%Y-%m-%d")
+        lot_name = (
+            dlvnote.document_id + "_" + datetime.datetime.utcnow().strftime("%Y-%m-%d")
+        )
         new_lot = Lot(name=lot_name)
         dlvnote.lot_id = new_lot.id
         db.session.add(new_lot)

@@ -12,8 +12,6 @@ import pytest
 from boltons import urlutils
 from ereuse_utils.test import ANY
 from requests.exceptions import HTTPError
-from teal.db import DBError, UniqueViolation
-from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
@@ -42,6 +40,8 @@ from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.db import DBError, UniqueViolation
+from ereuse_devicehub.teal.marshmallow import ValidationError
 from tests import conftest
 from tests.conftest import file, file_json, json_encode, yaml2json
 

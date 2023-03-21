@@ -7,12 +7,12 @@ from sortedcontainers import SortedSet
 from sqlalchemy import BigInteger, Column, Sequence
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref
-from teal.db import CASCADE_OWN, URL
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import Severity
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.db import CASCADE_OWN, URL
 
 _sorted_documents = {
     'order_by': lambda: TradeDocument.created,

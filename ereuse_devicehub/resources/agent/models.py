@@ -10,14 +10,19 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy_utils import EmailType, PhoneNumberType
-from teal import enums
-from teal.db import INHERIT_COND, POLYMORPHIC_ID, POLYMORPHIC_ON, check_lower
-from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.inventory import Inventory
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal import enums
+from ereuse_devicehub.teal.db import (
+    INHERIT_COND,
+    POLYMORPHIC_ID,
+    POLYMORPHIC_ON,
+    check_lower,
+)
+from ereuse_devicehub.teal.marshmallow import ValidationError
 
 
 class JoinedTableMixin:

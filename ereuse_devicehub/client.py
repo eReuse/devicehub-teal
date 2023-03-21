@@ -4,11 +4,11 @@ from typing import Dict, Iterable, Type, Union
 from ereuse_utils.test import JSON, Res
 from flask.testing import FlaskClient
 from flask_wtf.csrf import generate_csrf
-from teal.client import Client as TealClient
-from teal.client import Query, Status
 from werkzeug.exceptions import HTTPException
 
 from ereuse_devicehub.resources import models, schemas
+from ereuse_devicehub.teal.client import Client as TealClient
+from ereuse_devicehub.teal.client import Query, Status
 
 ResourceLike = Union[Type[Union[models.Thing, schemas.Thing]], str]
 

@@ -3,12 +3,9 @@ from typing import Set
 
 from boltons import urlutils
 from flask import g
-from sqlalchemy import BigInteger, Column, ForeignKey, UniqueConstraint, Sequence
+from sqlalchemy import BigInteger, Column, ForeignKey, Sequence, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship, validates
-from teal.db import DB_CASCADE_SET_NULL, Query, URL
-from teal.marshmallow import ValidationError
-from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Organization
@@ -16,6 +13,9 @@ from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.utils import hashcode
+from ereuse_devicehub.teal.db import DB_CASCADE_SET_NULL, URL, Query
+from ereuse_devicehub.teal.marshmallow import ValidationError
+from ereuse_devicehub.teal.resource import url_for_resource
 
 
 class Tags(Set['Tag']):
@@ -26,51 +26,59 @@ class Tags(Set['Tag']):
         return ', '.join(format(tag, format_spec) for tag in self).strip()
 
 
-
-
 class Tag(Thing):
-    internal_id = Column(BigInteger, Sequence('tag_internal_id_seq'), unique=True, nullable=False)
+    internal_id = Column(
+        BigInteger, Sequence('tag_internal_id_seq'), unique=True, nullable=False
+    )
     internal_id.comment = """The identifier of the tag for this database. Used only
     internally for software; users should not use this.
     """
     id = Column(db.CIText(), primary_key=True)
     id.comment = """The ID of the tag."""
-    owner_id = Column(UUID(as_uuid=True),
-                      ForeignKey(User.id),
-                      primary_key=True,
-                      nullable=False,
-                      default=lambda: g.user.id)
+    owner_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey(User.id),
+        primary_key=True,
+        nullable=False,
+        default=lambda: g.user.id,
+    )
     owner = relationship(User, primaryjoin=owner_id == User.id)
-    org_id = Column(UUID(as_uuid=True),
-                    ForeignKey(Organization.id),
-                    # If we link with the Organization object this instance
-                    # will be set as persistent and added to session
-                    # which is something we don't want to enforce by default
-                    default=lambda: Organization.get_default_org_id())
-    org = relationship(Organization,
-                       backref=backref('tags', lazy=True),
-                       primaryjoin=Organization.id == org_id,
-                       collection_class=set)
+    org_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey(Organization.id),
+        # If we link with the Organization object this instance
+        # will be set as persistent and added to session
+        # which is something we don't want to enforce by default
+        default=lambda: Organization.get_default_org_id(),
+    )
+    org = relationship(
+        Organization,
+        backref=backref('tags', lazy=True),
+        primaryjoin=Organization.id == org_id,
+        collection_class=set,
+    )
     """The organization that issued the tag."""
     provider = Column(URL())
     provider.comment = """The tag provider URL. If None, the provider is
     this Devicehub.
     """
-    device_id = Column(BigInteger,
-                       # We don't want to delete the tag on device deletion, only set to null
-                       ForeignKey(Device.id, ondelete=DB_CASCADE_SET_NULL))
-    device = relationship(Device,
-                          backref=backref('tags', lazy=True, collection_class=Tags),
-                          primaryjoin=Device.id == device_id)
+    device_id = Column(
+        BigInteger,
+        # We don't want to delete the tag on device deletion, only set to null
+        ForeignKey(Device.id, ondelete=DB_CASCADE_SET_NULL),
+    )
+    device = relationship(
+        Device,
+        backref=backref('tags', lazy=True, collection_class=Tags),
+        primaryjoin=Device.id == device_id,
+    )
     """The device linked to this tag."""
     secondary = Column(db.CIText(), index=True)
     secondary.comment = """A secondary identifier for this tag.
     It has the same constraints as the main one. Only needed in special cases.
     """
 
-    __table_args__ = (
-        db.Index('device_id_index', device_id, postgresql_using='hash'),
-    )
+    __table_args__ = (db.Index('device_id_index', device_id, postgresql_using='hash'),)
 
     def __init__(self, id: str, **kwargs) -> None:
         super().__init__(id=id, **kwargs)
@@ -99,13 +107,16 @@ class Tag(Thing):
     @validates('provider')
     def use_only_domain(self, _, url: URL):
         if url.path:
-            raise ValidationError('Provider can only contain scheme and host',
-                                  field_names=['provider'])
+            raise ValidationError(
+                'Provider can only contain scheme and host', field_names=['provider']
+            )
         return url
 
     __table_args__ = (
         UniqueConstraint(id, owner_id, name='one tag id per owner'),
-        UniqueConstraint(secondary, owner_id, name='one secondary tag per organization')
+        UniqueConstraint(
+            secondary, owner_id, name='one secondary tag per organization'
+        ),
     )
 
     @property

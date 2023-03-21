@@ -2,8 +2,6 @@ from uuid import UUID
 
 import pytest
 from sqlalchemy_utils import Password
-from teal.enums import Country
-from teal.marshmallow import ValidationError
 from werkzeug.exceptions import NotFound
 
 from ereuse_devicehub import auth
@@ -13,6 +11,8 @@ from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.user import UserDef
 from ereuse_devicehub.resources.user.exceptions import WrongCredentials
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.enums import Country
+from ereuse_devicehub.teal.marshmallow import ValidationError
 from tests.conftest import app_context, create_user
 
 
@@ -24,12 +24,14 @@ def test_create_user_method_with_agent(app: Devicehub):
     This method checks that the token is correct, too.
     """
     user_def = app.resources['User']  # type: UserDef
-    u = user_def.create_user(email='foo@foo.com',
-                             password='foo',
-                             agent='Nice Person',
-                             country=Country.ES.name,
-                             telephone='+34 666 66 66 66',
-                             tax_id='1234')
+    u = user_def.create_user(
+        email='foo@foo.com',
+        password='foo',
+        agent='Nice Person',
+        country=Country.ES.name,
+        telephone='+34 666 66 66 66',
+        tax_id='1234',
+    )
     user = User.query.filter_by(id=u['id']).one()  # type: User
     assert user.email == 'foo@foo.com'
     assert isinstance(user.token, UUID)
@@ -75,9 +77,9 @@ def test_login_success(client: Client, app: Devicehub):
     """
     with app.app_context():
         create_user()
-    user, _ = client.post({'email': 'foo@foo.com', 'password': 'foo'},
-                          uri='/users/login/',
-                          status=200)
+    user, _ = client.post(
+        {'email': 'foo@foo.com', 'password': 'foo'}, uri='/users/login/', status=200
+    )
     assert user['email'] == 'foo@foo.com'
     assert UUID(auth.Auth.decode(user['token']))
     assert 'password' not in user
@@ -126,16 +128,20 @@ def test_login_failure(client: Client, app: Devicehub):
     # Wrong password
     with app.app_context():
         create_user()
-    client.post({'email': 'foo@foo.com', 'password': 'wrong pass'},
-                uri='/users/login/',
-                status=WrongCredentials)
+    client.post(
+        {'email': 'foo@foo.com', 'password': 'wrong pass'},
+        uri='/users/login/',
+        status=WrongCredentials,
+    )
     # Wrong URI
     client.post({}, uri='/wrong-uri', status=NotFound)
     # Malformed data
     client.post({}, uri='/users/login/', status=ValidationError)
-    client.post({'email': 'this is not an email', 'password': 'nope'},
-                uri='/users/login/',
-                status=ValidationError)
+    client.post(
+        {'email': 'this is not an email', 'password': 'nope'},
+        uri='/users/login/',
+        status=ValidationError,
+    )
 
 
 @pytest.mark.xfail(reason='Test not developed')

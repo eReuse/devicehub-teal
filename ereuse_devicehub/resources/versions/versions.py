@@ -1,16 +1,16 @@
-import flask
 import json
-import requests
-import teal.marshmallow
-
 from typing import Callable, Iterable, Tuple
 from urllib.parse import urlparse
-from flask import make_response, g
-from flask.json import jsonify
-from teal.resource import Resource, View
 
-from ereuse_devicehub.resources.inventory.model import Inventory
+import flask
+import requests
+from flask import g, make_response
+from flask.json import jsonify
+
+import ereuse_devicehub.teal.marshmallow
 from ereuse_devicehub import __version__
+from ereuse_devicehub.resources.inventory.model import Inventory
+from ereuse_devicehub.teal.resource import Resource, View
 
 
 def get_tag_version(app):
@@ -28,6 +28,7 @@ def get_tag_version(app):
         return json.loads(res.content)
     else:
         return {}
+
 
 class VersionView(View):
     def get(self, *args, **kwargs):
@@ -48,18 +49,31 @@ class VersionDef(Resource):
     VIEW = None  # We do not want to create default / documents endpoint
     AUTH = False
 
-    def __init__(self, app,
-                 import_name=__name__,
-                 static_folder=None,
-                 static_url_path=None,
-                 template_folder=None,
-                 url_prefix=None,
-                 subdomain=None,
-                 url_defaults=None,
-                 root_path=None,
-                 cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+    def __init__(
+        self,
+        app,
+        import_name=__name__,
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
 
         d = {'devicehub': __version__, "ereuse_tag": "0.0.0"}
         get = {'GET'}
