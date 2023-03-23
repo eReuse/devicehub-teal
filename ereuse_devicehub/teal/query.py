@@ -1,11 +1,12 @@
 import json
 from json import JSONDecodeError
 
-from ereuse_devicehub.ereuse_utils import flatten_mixed
 from marshmallow import Schema as MarshmallowSchema
 from marshmallow.fields import Boolean, Field, List, Nested, Str, missing_
 from sqlalchemy import Column, between, or_
 from webargs.flaskparser import FlaskParser
+
+from ereuse_devicehub.ereuse_utils import flatten_mixed
 
 
 class ListQuery(List):
@@ -30,8 +31,8 @@ class Between(ListQuery):
     """
 
     def _deserialize(self, value, attr, data):
-        l = super()._deserialize(value, attr, data)
-        return between(self.column, *l)
+        ldata = super()._deserialize(value, attr, data)
+        return between(self.column, *ldata)
 
 
 class Equal(Field):
@@ -62,17 +63,16 @@ class Equal(Field):
         **metadata,
     ):
         super().__init__(
-            default,
-            attribute,
-            data_key,
-            error,
-            validate,
-            required,
-            allow_none,
-            load_only,
-            dump_only,
-            missing,
-            error_messages,
+            default=default,
+            missing=missing,
+            data_key=data_key,
+            attribute=attribute,
+            validate=validate,
+            required=required,
+            allow_none=allow_none,
+            load_only=load_only,
+            dump_only=dump_only,
+            error_messages=error_messages,
             **metadata,
         )
         self.column = column
@@ -102,8 +102,8 @@ class Or(List):
     """
 
     def _deserialize(self, value, attr, data):
-        l = super()._deserialize(value, attr, data)
-        return or_(v for v in l)
+        ldata = super()._deserialize(value, attr, data)
+        return or_(v for v in ldata)
 
 
 class ILike(Str):
@@ -128,17 +128,16 @@ class ILike(Str):
         **metadata,
     ):
         super().__init__(
-            default,
-            attribute,
-            data_key,
-            error,
-            validate,
-            required,
-            allow_none,
-            load_only,
-            dump_only,
-            missing,
-            error_messages,
+            default=default,
+            missing=missing,
+            data_key=data_key,
+            attribute=attribute,
+            validate=validate,
+            required=required,
+            allow_none=allow_none,
+            load_only=load_only,
+            dump_only=dump_only,
+            error_messages=error_messages,
             **metadata,
         )
         self.column = column
@@ -172,17 +171,16 @@ class QueryField(Field):
         **metadata,
     ):
         super().__init__(
-            default,
-            attribute,
-            data_key,
-            error,
-            validate,
-            required,
-            allow_none,
-            load_only,
-            dump_only,
-            missing,
-            error_messages,
+            default=default,
+            missing=missing,
+            data_key=data_key,
+            attribute=attribute,
+            validate=validate,
+            required=required,
+            allow_none=allow_none,
+            load_only=load_only,
+            dump_only=dump_only,
+            error_messages=error_messages,
             **metadata,
         )
         self.query = query
@@ -198,7 +196,7 @@ class Join(Nested):
     def __init__(
         self, join, nested, default=missing_, exclude=tuple(), only=None, **kwargs
     ):
-        super().__init__(nested, default, exclude, only, **kwargs)
+        super().__init__(nested, default=default, exclude=exclude, only=only, **kwargs)
         self.join = join
 
     def _deserialize(self, value, attr, data):
@@ -262,7 +260,7 @@ class SortField(Boolean):
     def __init__(
         self, column: Column, truthy=Boolean.truthy, falsy=Boolean.falsy, **kwargs
     ):
-        super().__init__(truthy, falsy, **kwargs)
+        super().__init__(truthy=truthy, falsy=falsy, **kwargs)
         self.column = column
 
     def _deserialize(self, value, attr, data):

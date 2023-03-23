@@ -506,18 +506,12 @@ class WirelessAccessPoint(Networking):
 class Printer(Device):
     __doc__ = m.Printer.__doc__
 
-    wireless = Boolean(
-        required=True, missing=False, description=m.Printer.wireless.comment
-    )
-    scanning = Boolean(
-        required=True, missing=False, description=m.Printer.scanning.comment
-    )
+    wireless = Boolean(required=True, description=m.Printer.wireless.comment)
+    scanning = Boolean(required=True, description=m.Printer.scanning.comment)
     technology = EnumField(
         enums.PrinterTechnology, required=True, description=m.Printer.technology.comment
     )
-    monochrome = Boolean(
-        required=True, missing=True, description=m.Printer.monochrome.comment
-    )
+    monochrome = Boolean(required=True, description=m.Printer.monochrome.comment)
 
 
 class LabelPrinter(Printer):

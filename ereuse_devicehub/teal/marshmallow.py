@@ -4,7 +4,6 @@ from typing import Type, Union
 
 import colour
 from boltons import strutils, urlutils
-from ereuse_devicehub.ereuse_utils import if_none_return_none
 from flask import current_app as app
 from flask import g
 from marshmallow import utils
@@ -17,6 +16,7 @@ from marshmallow.validate import Validator
 from marshmallow_enum import EnumField as _EnumField
 from sqlalchemy_utils import PhoneNumber
 
+from ereuse_devicehub.ereuse_utils import if_none_return_none
 from ereuse_devicehub.teal import db as tealdb
 from ereuse_devicehub.teal.resource import Schema
 
@@ -50,30 +50,29 @@ class URL(Field):
         self,
         require_path=False,
         default=missing_,
-        attribute=None,
+        missing=missing_,
         data_key=None,
-        error=None,
+        attribute=None,
         validate=None,
         required=False,
         allow_none=None,
         load_only=False,
         dump_only=False,
-        missing=missing_,
         error_messages=None,
+        error=None,
         **metadata,
     ):
         super().__init__(
-            default,
-            attribute,
-            data_key,
-            error,
-            validate,
-            required,
-            allow_none,
-            load_only,
-            dump_only,
-            missing,
-            error_messages,
+            default=missing_,
+            missing=missing_,
+            data_key=None,
+            attribute=None,
+            validate=None,
+            required=False,
+            allow_none=None,
+            load_only=False,
+            dump_only=False,
+            error_messages=None,
             **metadata,
         )
         self.require_path = require_path
@@ -143,17 +142,16 @@ class SanitizedStr(String):
         **metadata,
     ):
         super().__init__(
-            default,
-            attribute,
-            data_key,
-            error,
-            validate,
-            required,
-            allow_none,
-            load_only,
-            dump_only,
-            missing,
-            error_messages,
+            default=missing_,
+            missing=missing_,
+            data_key=None,
+            attribute=None,
+            validate=None,
+            required=False,
+            allow_none=None,
+            load_only=False,
+            dump_only=False,
+            error_messages=None,
             **metadata,
         )
         self.lower = lower
@@ -219,7 +217,7 @@ class NestedOn(MarshmallowNested):
         self.only_query = only_query
         assert isinstance(polymorphic_on, str)
         assert isinstance(only, str) or only is None
-        super().__init__(nested, default, exclude, only, **kwargs)
+        super().__init__(nested, default=default, exclude=exclude, only=only, **kwargs)
         self.db = db
 
     def _deserialize(self, value, attr, data):
