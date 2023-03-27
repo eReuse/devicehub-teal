@@ -4,7 +4,7 @@ from io import BytesIO, StringIO
 from pathlib import Path
 
 import pytest
-import teal.marshmallow
+from ereuse_devicehub.teal.marshmallow import ValidationError
 
 from ereuse_devicehub import auth
 from ereuse_devicehub.client import Client, UserClient
@@ -90,7 +90,7 @@ def test_erasure_certificate_wrong_id(client: Client):
     client.get(
         res=documents.DocumentDef.t,
         item='erasures/this-is-not-an-id',
-        status=teal.marshmallow.ValidationError,
+        status=ValidationError,
     )
 
 
