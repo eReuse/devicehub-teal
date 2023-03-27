@@ -5,7 +5,7 @@ from usb import CLASS_MASS_STORAGE
 from ereuse_devicehub.ereuse_utils.naming import Naming
 
 
-def plugged_usbs(multiple=True) -> map or dict:
+def plugged_usbs(multiple=True) -> map or dict:  # noqa: C901
     """
     Gets the plugged-in USB Flash drives (pen-drives).
 

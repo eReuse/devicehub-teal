@@ -1,6 +1,6 @@
 import subprocess
 from contextlib import suppress
-from typing import Any, Set, TextIO
+from typing import Any, Set
 
 from ereuse_devicehub.ereuse_utils import text
 
@@ -96,9 +96,7 @@ class ProgressiveCmd:
         self.conn = conn = subprocess.Popen(
             self.cmd, universal_newlines=True, stderr=subprocess.PIPE, stdout=stdout
         )
-        self.out = (
-            conn.stdout if stdout == subprocess.PIPE else conn.stderr
-        )  # type: TextIO
+        self.out = conn.stdout if stdout == subprocess.PIPE else conn.stderr
         self._callback = callback
         self.last_update_percentage = 0
         self.percentage = 0

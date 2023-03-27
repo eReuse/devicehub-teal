@@ -192,7 +192,7 @@ class Line(tqdm):
     def error_message(self, *args):
         self._error_message = args
 
-    def close(self):
+    def close(self):  # noqa: C901
         """
         Cleanup and (if leave=False) close the progressbar.
         """

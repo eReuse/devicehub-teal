@@ -1,7 +1,7 @@
 import datetime
 from functools import wraps
 
-from flask import Response, make_response
+from flask import make_response
 
 
 def cache(expires: datetime.timedelta = None):
@@ -18,7 +18,7 @@ def cache(expires: datetime.timedelta = None):
     def cache_decorator(view):
         @wraps(view)
         def cache_func(*args, **kwargs):
-            r = make_response(view(*args, **kwargs))  # type: Response
+            r = make_response(view(*args, **kwargs))
             r.expires = datetime.datetime.now(datetime.timezone.utc) + expires
             r.cache_control.public = True
             return r

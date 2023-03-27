@@ -1,5 +1,3 @@
-from typing import Dict, Set, Type
-
 from boltons.typeutils import issubclass
 
 from ereuse_devicehub.teal.resource import Resource
@@ -12,16 +10,16 @@ class Config:
     Subclass and set here your config values.
     """
 
-    RESOURCE_DEFINITIONS = set()  # type: Set[Type[Resource]]
+    RESOURCE_DEFINITIONS = set()
     """
     A list of resource definitions to load.
     """
 
-    SQLALCHEMY_DATABASE_URI = None  # type: str
+    SQLALCHEMY_DATABASE_URI = None
     """
     The access to the main Database.
     """
-    SQLALCHEMY_BINDS = {}  # type: Dict[str, str]
+    SQLALCHEMY_BINDS = {}
     """
     Optional extra databases. See `here <http://flask-sqlalchemy.pocoo.org
     /2.3/binds/#referring-to-binds>`_ how bind your models to different
@@ -29,11 +27,11 @@ class Config:
     """
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     """
-    Disables flask-sqlalchemy notification system. 
+    Disables flask-sqlalchemy notification system.
     Save resources and hides a warning by flask-sqlalchemy itself.
-    
+
     See `this answer in Stackoverflow for more info
-    <https://stackoverflow.com/a/33790196>`_. 
+    <https://stackoverflow.com/a/33790196>`_.
     """
 
     API_DOC_CONFIG_TITLE = 'Teal'
@@ -47,7 +45,7 @@ class Config:
     API_DOC_CLASS_DISCRIMINATOR = None
     """
     Configuration options for the api docs class definitions.
-    
+
     You can pass any `schema definition <https://github.com/OAI/
     OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject>`_
     prefiex by ``API_DOC_CLASS_`` like in the example above.
@@ -57,7 +55,7 @@ class Config:
     CORS_EXPOSE_HEADERS = 'Authorization'
     CORS_ALLOW_HEADERS = 'Content-Type', 'Authorization'
     """
-    Configuration for CORS. See the options you can pass by in `Flask-Cors 
+    Configuration for CORS. See the options you can pass by in `Flask-Cors
     <https://flask-cors.corydolphin.com/en/latest/api.html#extension>`_,
     exactly in **Parameters**, like the ones above.
     """

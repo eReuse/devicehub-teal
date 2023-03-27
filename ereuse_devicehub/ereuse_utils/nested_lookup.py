@@ -1,6 +1,3 @@
-from typing import Generator
-
-
 class NestedLookup:
     @staticmethod
     def __new__(cls, document, references, operation):
@@ -38,7 +35,7 @@ class NestedLookup:
         return key_value_containing_value
 
     @staticmethod
-    def _nested_lookup(document, references, operation):
+    def _nested_lookup(document, references, operation):  # noqa: C901
         """Lookup a key in a nested document, yield a value"""
         if isinstance(document, list):
             for d in document:

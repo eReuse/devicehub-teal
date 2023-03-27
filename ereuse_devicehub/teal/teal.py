@@ -1,19 +1,19 @@
 import inspect
-from typing import Dict, Type
+from typing import Type
 
 import click_spinner
-import ereuse_devicehub.ereuse_utils
 import flask_cors
 from anytree import Node
 from apispec import APISpec
 from click import option
-from ereuse_devicehub.ereuse_utils import ensure_utf8
 from flask import Flask, jsonify
 from flask.globals import _app_ctx_stack
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import ValidationError
 from werkzeug.exceptions import HTTPException, UnprocessableEntity
 
+import ereuse_devicehub.ereuse_utils
+from ereuse_devicehub.ereuse_utils import ensure_utf8
 from ereuse_devicehub.teal.auth import Auth
 from ereuse_devicehub.teal.cli import TealCliRunner
 from ereuse_devicehub.teal.client import Client
@@ -122,17 +122,17 @@ class Teal(Flask):
 
     # noinspection PyAttributeOutsideInit
     def load_resources(self):
-        self.resources = {}  # type: Dict[str, Resource]
+        self.resources = {}
         """
         The resources definitions loaded on this App, referenced by their
         type name.
         """
-        self.tree = {}  # type: Dict[str, Node]
+        self.tree = {}
         """
-        A tree representing the hierarchy of the instances of 
+        A tree representing the hierarchy of the instances of
         ResourceDefinitions. ResourceDefinitions use these nodes to
         traverse their hierarchy.
-         
+
         Do not use the normal python class hierarchy as it is global,
         thus unreliable if you run different apps with different
         schemas (for example, an extension that is only added on the
