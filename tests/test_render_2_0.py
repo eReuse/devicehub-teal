@@ -264,16 +264,16 @@ def test_export_devices(user3: UserClientFlask):
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert (
-        fixture_csv[1][:29] == export_csv[1][:29]
+        fixture_csv[1][:32] == export_csv[1][:32]
     ), 'Computer information are not equal'
-    assert fixture_csv[1][30] == export_csv[1][30], 'Computer information are not equal'
+    assert fixture_csv[1][33] == export_csv[1][33], 'Computer information are not equal'
     assert (
-        fixture_csv[1][32:93] == export_csv[1][32:93]
+        fixture_csv[1][35:96] == export_csv[1][35:96]
     ), 'Computer information are not equal'
 
-    assert fixture_csv[1][94] == export_csv[1][94], 'Computer information are not equal'
+    assert fixture_csv[1][97] == export_csv[1][97], 'Computer information are not equal'
     assert (
-        fixture_csv[1][98:] == export_csv[1][98:]
+        fixture_csv[1][101:] == export_csv[1][101:]
     ), 'Computer information are not equal'
 
 
