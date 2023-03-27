@@ -3,14 +3,13 @@ import pathlib
 import pytest
 import requests_mock
 from boltons.urlutils import URL
-from ereuse_utils.session import DevicehubClient
 from flask import g
 from pytest import raises
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
-from ereuse_devicehub.resources.action.models import Snapshot
+from ereuse_devicehub.ereuse_utils.session import DevicehubClient
 from ereuse_devicehub.resources.agent.models import Organization
 from ereuse_devicehub.resources.device.models import Desktop, Device
 from ereuse_devicehub.resources.enums import ComputerChassis
@@ -29,7 +28,6 @@ from ereuse_devicehub.teal.db import (
 )
 from ereuse_devicehub.teal.marshmallow import ValidationError
 from tests import conftest
-from tests.conftest import json_encode, yaml2json
 
 
 @pytest.mark.mvp

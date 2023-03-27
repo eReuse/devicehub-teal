@@ -1,26 +1,22 @@
 import csv
 import hashlib
-from datetime import datetime
 from io import BytesIO, StringIO
 from pathlib import Path
 
 import pytest
 import teal.marshmallow
-from ereuse_utils.test import ANY
-from flask import url_for
-from werkzeug.exceptions import Unauthorized
 
 from ereuse_devicehub import auth
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.ereuse_utils.test import ANY
 from ereuse_devicehub.resources.action.models import Allocate, Live, Snapshot
 from ereuse_devicehub.resources.device import models as d
 from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import SessionType
 from ereuse_devicehub.resources.hash_reports import ReportHash
 from ereuse_devicehub.resources.lot.models import Lot
-from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.models import Session
 from tests import conftest

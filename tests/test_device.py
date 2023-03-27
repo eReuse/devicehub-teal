@@ -1,28 +1,21 @@
-import copy
 import datetime
 from uuid import UUID
 
 import pytest
 from colour import Color
-from ereuse_utils.naming import Naming
-from ereuse_utils.test import ANY
 from flask import g
-from pytest import raises
 from sqlalchemy.util import OrderedSet
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.ereuse_utils.test import ANY
 from ereuse_devicehub.resources.action import models as m
 from ereuse_devicehub.resources.action.models import Remove, TestConnectivity
 from ereuse_devicehub.resources.agent.models import Person
 from ereuse_devicehub.resources.device import models as d
 from ereuse_devicehub.resources.device.schemas import Device as DeviceS
-from ereuse_devicehub.resources.device.sync import (
-    MismatchBetweenTags,
-    MismatchBetweenTagsAndHid,
-    Sync,
-)
+from ereuse_devicehub.resources.device.sync import Sync
 from ereuse_devicehub.resources.enums import (
     ComputerChassis,
     DisplayTech,
@@ -32,10 +25,9 @@ from ereuse_devicehub.resources.enums import (
 )
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.user import User
-from ereuse_devicehub.teal.db import ResourceNotFound
 from ereuse_devicehub.teal.enums import Layouts
 from tests import conftest
-from tests.conftest import file, json_encode, yaml2json
+from tests.conftest import file, yaml2json
 
 
 @pytest.mark.mvp
