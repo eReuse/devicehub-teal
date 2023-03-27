@@ -37,6 +37,9 @@ class BaseDeviceRow(OrderedDict):
         self['PHID'] = ''
         self['DHID'] = ''
         self['Type'] = ''
+        self['Temporary Lots'] = ''
+        self['Incoming Lots'] = ''
+        self['Outgoing Lots'] = ''
         self['Placeholder Palet'] = ''
         self['Placeholder Id Supplier'] = ''
         self['Placeholder Info'] = ''
@@ -504,6 +507,9 @@ class DeviceRow(BaseDeviceRow):
         # Placeholder
         self['PHID'] = none2str(self.placeholder.phid)
         self['Type'] = none2str(self.device.is_abstract())
+        self['Temporary Lots'] = none2str(self.device.get_lots_from_type('temporary'))
+        self['Incoming Lots'] = none2str(self.device.get_lots_from_type('incoming'))
+        self['Outgoing Lots'] = none2str(self.device.get_lots_from_type('outgoing'))
         self['Placeholder Palet'] = none2str(self.placeholder.pallet)
         self['Placeholder Id Supplier'] = none2str(self.placeholder.id_device_supplier)
         self['Placeholder Info'] = none2str(self.placeholder.info)
