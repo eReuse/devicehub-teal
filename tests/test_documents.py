@@ -269,11 +269,11 @@ def test_export_basic_snapshot(user: UserClient):
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert (
-        fixture_csv[1][:29] == export_csv[1][:29]
+        fixture_csv[1][:32] == export_csv[1][:32]
     ), 'Computer information are not equal'
-    assert fixture_csv[1][30] == export_csv[1][30], 'Computer information are not equal'
+    assert fixture_csv[1][33] == export_csv[1][33], 'Computer information are not equal'
     assert (
-        fixture_csv[1][32:] == export_csv[1][32:]
+        fixture_csv[1][35:] == export_csv[1][35:]
     ), 'Computer information are not equal'
 
 
@@ -339,38 +339,38 @@ def test_export_extended(app: Devicehub, user: UserClient):
 
     assert fixture_csv[0] == export_csv[0], 'Headers are not equal'
     assert (
-        fixture_csv[1][:29] == export_csv[1][:29]
+        fixture_csv[1][:32] == export_csv[1][:32]
     ), 'Computer information are not equal'
-    assert fixture_csv[1][30] == export_csv[1][30], 'Computer information are not equal'
+    assert fixture_csv[1][33] == export_csv[1][33], 'Computer information are not equal'
     assert (
-        fixture_csv[1][32:93] == export_csv[1][32:93]
+        fixture_csv[1][35:93] == export_csv[1][35:93]
     ), 'Computer information are not equal'
-    assert fixture_csv[1][94] == export_csv[1][94], 'Computer information are not equal'
+    assert fixture_csv[1][97] == export_csv[1][97], 'Computer information are not equal'
     assert (
-        fixture_csv[1][97:] == export_csv[1][97:]
-    ), 'Computer information are not equal'
-    assert (
-        fixture_csv[2][:29] == export_csv[2][:29]
-    ), 'Computer information are not equal'
-    assert fixture_csv[2][30] == export_csv[2][30], 'Computer information are not equal'
-    assert (
-        fixture_csv[2][32:93] == export_csv[2][32:93]
-    ), 'Computer information are not equal'
-    assert fixture_csv[2][94] == export_csv[2][94], 'Computer information are not equal'
-    assert (
-        fixture_csv[2][97:107] == export_csv[2][97:107]
+        fixture_csv[1][100:] == export_csv[1][100:]
     ), 'Computer information are not equal'
     assert (
-        fixture_csv[2][120] == export_csv[2][120]
+        fixture_csv[2][:32] == export_csv[2][:32]
+    ), 'Computer information are not equal'
+    assert fixture_csv[2][33] == export_csv[2][33], 'Computer information are not equal'
+    assert (
+        fixture_csv[2][35:96] == export_csv[2][35:96]
+    ), 'Computer information are not equal'
+    assert fixture_csv[2][97] == export_csv[2][97], 'Computer information are not equal'
+    assert (
+        fixture_csv[2][100:110] == export_csv[2][100:110]
     ), 'Computer information are not equal'
     assert (
-        fixture_csv[2][123:144] == export_csv[2][123:144]
+        fixture_csv[2][123] == export_csv[2][123]
     ), 'Computer information are not equal'
     assert (
-        fixture_csv[2][146] == export_csv[2][146]
+        fixture_csv[2][126:147] == export_csv[2][126:147]
     ), 'Computer information are not equal'
     assert (
-        fixture_csv[2][149:] == export_csv[2][149:]
+        fixture_csv[2][149] == export_csv[2][149]
+    ), 'Computer information are not equal'
+    assert (
+        fixture_csv[2][152:] == export_csv[2][152:]
     ), 'Computer information are not equal'
 
 

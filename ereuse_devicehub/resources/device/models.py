@@ -748,6 +748,28 @@ class Device(Thing):
 
         return ''
 
+    def get_lots_from_type(self, lot_type):
+        lots_type = {
+            'temporary': lambda x: x.is_temporary,
+            'incoming': lambda x: x.is_incoming,
+            'outgoing': lambda x: x.is_outgoing,
+        }
+
+        if lot_type not in lots_type:
+            return ''
+
+        get_lots_type = lots_type[lot_type]
+
+        lots = self.lots
+        if not lots and self.binding:
+            lots = self.binding.device.lots
+
+        if lots:
+            lots = [lot.name for lot in lots if get_lots_type(lot)]
+            return ", ".join(sorted(lots))
+
+        return ''
+
     def is_status(self, action):
         from ereuse_devicehub.resources.device import states
 
