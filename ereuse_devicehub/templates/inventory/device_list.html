@@ -530,6 +530,7 @@
                     <tr>
                       <th scope="col">File</th>
                       <th scope="col" data-type="date" data-format="YYYY-MM-DD hh:mm">Uploaded on</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -545,6 +546,38 @@
                       <td>
                           {{ doc.created.strftime('%Y-%m-%d %H:%M')}}
                       </td>
+                      <td>
+                          <a href="javascript:javascript:void(0)" data-bs-toggle="modal" data-bs-target="#btnRemoveDocument{{ loop.index }}">
+                            <i class="bi bi-trash-fill"></i>
+                          </a>
+                          <div class="modal fade" id="btnRemoveDocument{{ loop.index }}" tabindex="-1" style="display: none;" aria-hidden="true">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+
+                                <div class="modal-header">
+                                  <h5 class="modal-title">Delete Document</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+
+                                  <div class="modal-body">
+                                      Are you sure that you want to delete this Document?<br />
+                                      <strong>{{ doc.file_name }}</strong>
+                                      <p class="text-danger">
+                                        This action cannot be undone.
+                                      </p>
+                                  </div>
+
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary-outline" data-bs-dismiss="modal">Cancel</button>
+                                    <a href="{{ url_for('inventory.document_del', lot_id=lot.id, doc_id=doc.id) }}" type="button" class="btn btn-danger">
+                                      Delete it!
+                                    </a>
+                                  </div>
+
+                              </div>
+                            </div>
+                          </div>
+                      </td>
                     </tr>
                     {% endfor %}
                     {% for doc in lot.trade.documents %}
@@ -558,6 +591,9 @@
                       </td>
                       <td>
                           {{ doc.created.strftime('%Y-%m-%d %H:%M')}}
+                      </td>
+                      <td>
+                          <a href="javascript:void(0)"><i class="bi bi-trash-fill"></i></a>
                       </td>
                     </tr>
                     {% endfor %}

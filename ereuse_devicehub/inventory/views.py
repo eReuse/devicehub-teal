@@ -547,6 +547,27 @@ class LotDeleteView(View):
         return flask.redirect(next_url)
 
 
+class DocumentDeleteView(View):
+    methods = ['GET']
+    decorators = [login_required]
+    template_name = 'inventory/device_list.html'
+    form_class = TradeDocumentForm
+
+    def dispatch_request(self, lot_id, doc_id):
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+        form = self.form_class(lot=lot_id, document=doc_id)
+        try:
+            form.remove()
+        except Exception as err:
+            msg = "{}".format(err)
+            messages.error(msg)
+            return flask.redirect(next_url)
+
+        msg = "Document removed successfully."
+        messages.success(msg)
+        return flask.redirect(next_url)
+
+
 class UploadSnapshotView(GenericMixin):
     methods = ['GET', 'POST']
     decorators = [login_required]
@@ -1514,6 +1535,10 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/lot/<string:lot_id>/trade-document/add/',
     view_func=NewTradeDocumentView.as_view('trade_document_add'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/document/del/<string:doc_id>',
+    view_func=DocumentDeleteView.as_view('document_del'),
 )
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule(
