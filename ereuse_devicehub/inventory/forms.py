@@ -1274,8 +1274,14 @@ class TradeDocumentForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         lot_id = kwargs.pop('lot')
+        doc_id = kwargs.pop('document', None)
         super().__init__(*args, **kwargs)
         self._lot = Lot.query.filter(Lot.id == lot_id).one()
+        self.object = None
+        if doc_id:
+            self.object = TradeDocument.query.filter_by(
+                id=doc_id, lot=self._lot, owner=g.user
+            ).one()
 
         if not self._lot.transfer:
             self.form_errors = ['Error, this lot is not a transfer lot.']
@@ -1306,6 +1312,12 @@ class TradeDocumentForm(FlaskForm):
             db.session.commit()
 
         return self._obj
+
+    def remove(self):
+        if self.object:
+            self.object.delete()
+            db.session.commit()
+        return self.object
 
 
 class TransferForm(FlaskForm):
