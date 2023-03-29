@@ -547,7 +547,12 @@
                           {{ doc.created.strftime('%Y-%m-%d %H:%M')}}
                       </td>
                       <td>
-                          <a href="javascript:javascript:void(0)" data-bs-toggle="modal" data-bs-target="#btnRemoveDocument{{ loop.index }}">
+                          <a href="javascript:javascript:void(0)" data-bs-toggle="modal" data-bs-target="#btnRemoveDocument{{ loop.index }}" title="Edit document">
+                            <i class="bi bi-pencil-square"></i>
+                          </a>
+                      </td>
+                      <td>
+                          <a href="javascript:javascript:void(0)" data-bs-toggle="modal" data-bs-target="#btnRemoveDocument{{ loop.index }}" title="Remove document">
                             <i class="bi bi-trash-fill"></i>
                           </a>
                           <div class="modal fade" id="btnRemoveDocument{{ loop.index }}" tabindex="-1" style="display: none;" aria-hidden="true">
