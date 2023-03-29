@@ -831,6 +831,28 @@ class NewTradeDocumentView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
 
+class EditTransferDocumentView(GenericMixin):
+
+    decorators = [login_required]
+    methods = ['POST', 'GET']
+    template_name = 'inventory/trade_document.html'
+    form_class = TradeDocumentForm
+    title = "Edit document"
+
+    def dispatch_request(self, lot_id, doc_id):
+        self.form = self.form_class(lot=lot_id, document=doc_id)
+        self.get_context()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success('Edit document successfully!')
+            next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+            return flask.redirect(next_url)
+
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
+
+
 class NewTransferView(GenericMixin):
     methods = ['POST', 'GET']
     template_name = 'inventory/new_transfer.html'
@@ -1533,8 +1555,12 @@ devices.add_url_rule(
     '/action/datawipe/add/', view_func=NewDataWipeView.as_view('datawipe_add')
 )
 devices.add_url_rule(
-    '/lot/<string:lot_id>/trade-document/add/',
-    view_func=NewTradeDocumentView.as_view('trade_document_add'),
+    '/lot/<string:lot_id>/transfer-document/add/',
+    view_func=NewTradeDocumentView.as_view('transfer_document_add'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/document/edit/<string:doc_id>',
+    view_func=EditTransferDocumentView.as_view('transfer_document_edit'),
 )
 devices.add_url_rule(
     '/lot/<string:lot_id>/document/del/<string:doc_id>',

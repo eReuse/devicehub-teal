@@ -73,6 +73,7 @@ def test_api_docs(client: Client):
         '/inventory/lot/transfer/{type_id}/',
         '/inventory/lot/{lot_id}/upload-snapshot/',
         '/inventory/lot/{lot_id}/customerdetails/',
+        '/inventory/lot/{lot_id}/document/edit/{doc_id}',
         '/inventory/lot/{lot_id}/document/del/{doc_id}',
         '/inventory/snapshots/{snapshot_uuid}/',
         '/inventory/snapshots/',

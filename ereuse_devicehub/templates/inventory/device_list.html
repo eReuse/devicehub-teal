@@ -517,7 +517,7 @@
               {% if lot and not lot.is_temporary %}
               <div id="trade-documents-list" class="tab-pane fade trade-documents-list">
                 <div class="btn-group dropdown ml-1 mt-1" uib-dropdown="">
-                  <a href="{{ url_for('inventory.trade_document_add', lot_id=lot.id)}}" class="btn btn-primary">
+                  <a href="{{ url_for('inventory.transfer_document_add', lot_id=lot.id)}}" class="btn btn-primary">
                     <i class="bi bi-plus"></i>
                     Add new document
                     <span class="caret"></span>
@@ -547,7 +547,7 @@
                           {{ doc.created.strftime('%Y-%m-%d %H:%M')}}
                       </td>
                       <td>
-                          <a href="javascript:javascript:void(0)" data-bs-toggle="modal" data-bs-target="#btnRemoveDocument{{ loop.index }}" title="Edit document">
+                          <a href="{{ url_for('inventory.transfer_document_edit', lot_id=lot.id, doc_id=doc.id)}}" title="Edit document">
                             <i class="bi bi-pencil-square"></i>
                           </a>
                       </td>

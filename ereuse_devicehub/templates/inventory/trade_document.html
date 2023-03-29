@@ -30,8 +30,13 @@
             {% endif %}
           </div>
 
-          <form action="{{ url_for('inventory.trade_document_add', lot_id=form._lot.id) }}" method="post"
+          {% if form._obj %}
+          <form action="{{ url_for('inventory.transfer_document_edit', lot_id=form._lot.id, doc_id=form._obj.id) }}" method="post"
                 class="row g-3 needs-validation" enctype="multipart/form-data">
+          {% else %}
+          <form action="{{ url_for('inventory.transfer_document_add', lot_id=form._lot.id) }}" method="post"
+                class="row g-3 needs-validation" enctype="multipart/form-data">
+          {% endif %}
             {{ form.csrf_token }}
             {% for field in form %}
               {% if field != form.csrf_token %}

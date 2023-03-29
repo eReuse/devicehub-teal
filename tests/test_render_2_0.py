@@ -2468,7 +2468,7 @@ def test_bug_3831_documents(user3: UserClientFlask):
     lot = Lot.query.filter_by(name=lot_name).one()
 
     lot_id = lot.id
-    uri = f'/inventory/lot/{lot_id}/trade-document/add/'
+    uri = f'/inventory/lot/{lot_id}/transfer-document/add/'
     body, status = user3.get(uri)
     txt = 'Error, this lot is not a transfer lot.'
 
@@ -2486,7 +2486,7 @@ def test_bug_3831_documents(user3: UserClientFlask):
     assert 'Incoming Lot' in body
 
     lot_id = Lot.query.all()[1].id
-    uri = f'/inventory/lot/{lot_id}/trade-document/add/'
+    uri = f'/inventory/lot/{lot_id}/transfer-document/add/'
     body, status = user3.get(uri)
 
     b_file = b'1234567890'
@@ -2502,12 +2502,12 @@ def test_bug_3831_documents(user3: UserClientFlask):
         'file': file_upload,
     }
 
-    uri = f'/inventory/lot/{lot_id}/trade-document/add/'
+    uri = f'/inventory/lot/{lot_id}/transfer-document/add/'
     body, status = user3.post(uri, data=data, content_type="multipart/form-data")
     assert status == '200 OK'
 
     # Second document
-    uri = f'/inventory/lot/{lot_id}/trade-document/add/'
+    uri = f'/inventory/lot/{lot_id}/transfer-document/add/'
     file_upload = (BytesIO(b_file), file_name)
     data['file'] = file_upload
     data['csrf_token'] = generate_csrf()
