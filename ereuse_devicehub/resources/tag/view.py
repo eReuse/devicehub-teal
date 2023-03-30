@@ -1,14 +1,16 @@
-from flask import Response, current_app as app, g, redirect, request
+from flask import Response
+from flask import current_app as app
+from flask import g, redirect, request
 from flask_sqlalchemy import Pagination
-from teal.marshmallow import ValidationError
-from teal.resource import View, url_for_resource
 
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
-from ereuse_devicehub.resources.utils import hashcode
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.tag import Tag
+from ereuse_devicehub.resources.utils import hashcode
+from ereuse_devicehub.teal.marshmallow import ValidationError
+from ereuse_devicehub.teal.resource import View, url_for_resource
 
 
 class TagView(View):
@@ -34,13 +36,19 @@ class TagView(View):
 
     @auth.Auth.requires_auth
     def find(self, args: dict):
-        tags = Tag.query.filter(Tag.is_printable_q()) \
-            .filter_by(owner=g.user) \
-            .order_by(Tag.created.desc()) \
-            .paginate(per_page=200)  # type: Pagination
+        tags = (
+            Tag.query.filter(Tag.is_printable_q())
+            .filter_by(owner=g.user)
+            .order_by(Tag.created.desc())
+            .paginate(per_page=200)
+        )  # type: Pagination
         return things_response(
             self.schema.dump(tags.items, many=True, nested=0),
-            tags.page, tags.per_page, tags.total, tags.prev_num, tags.next_num
+            tags.page,
+            tags.per_page,
+            tags.total,
+            tags.prev_num,
+            tags.next_num,
         )
 
     def _create_many_regular_tags(self, num: int):
@@ -48,7 +56,9 @@ class TagView(View):
         tags = [Tag(id=tag_id, provider=g.inventory.tag_provider) for tag_id in tags_id]
         db.session.add_all(tags)
         db.session().final_flush()
-        response = things_response(self.schema.dump(tags, many=True, nested=1), code=201)
+        response = things_response(
+            self.schema.dump(tags, many=True, nested=1), code=201
+        )
         db.session.commit()
         return response
 

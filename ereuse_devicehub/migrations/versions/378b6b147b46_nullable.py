@@ -5,12 +5,12 @@ Revises: bf600ca861a4
 Create Date: 2020-12-16 11:45:13.339624
 
 """
-from alembic import context
-from alembic import op
+import citext
 import sqlalchemy as sa
 import sqlalchemy_utils
-import citext
-import teal
+from alembic import context
+from alembic import op
+from ereuse_devicehub import teal
 
 
 # revision identifiers, used by Alembic.

@@ -9,7 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 import sqlalchemy_utils
 import citext
-import teal
+from ereuse_devicehub import teal
 ${imports if imports else ""}
 
 # revision identifiers, used by Alembic.

@@ -21,9 +21,6 @@ from marshmallow.fields import (
 )
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
-from teal.enums import Country, Currency, Subdivision
-from teal.marshmallow import IP, URL, EnumField, SanitizedStr, Version
-from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources import enums
@@ -48,6 +45,9 @@ from ereuse_devicehub.resources.tradedocument import schemas as s_document
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user import schemas as s_user
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.enums import Country, Currency, Subdivision
+from ereuse_devicehub.teal.marshmallow import IP, URL, EnumField, SanitizedStr, Version
+from ereuse_devicehub.teal.resource import Schema
 
 
 class Action(Thing):

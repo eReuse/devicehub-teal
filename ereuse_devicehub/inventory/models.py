@@ -5,11 +5,11 @@ from flask import g
 from sqlalchemy import Column, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
-from teal.db import CASCADE_OWN, URL
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.db import CASCADE_OWN, URL
 
 
 class Transfer(Thing):

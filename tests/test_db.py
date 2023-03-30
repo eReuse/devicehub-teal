@@ -2,7 +2,8 @@ import datetime
 from uuid import UUID
 
 import pytest
-from teal.db import UniqueViolation
+
+from ereuse_devicehub.teal.db import UniqueViolation
 
 
 @pytest.mark.mvp
@@ -12,9 +13,10 @@ def test_unique_violation():
             self.params = {
                 'uuid': UUID('f5efd26e-8754-46bc-87bf-fbccc39d60d9'),
                 'version': '11.0',
-                'software': 'Workbench', 'elapsed': datetime.timedelta(0, 4),
+                'software': 'Workbench',
+                'elapsed': datetime.timedelta(0, 4),
                 'expected_actions': None,
-                'id': UUID('dbdef3d8-2cac-48cb-adb8-419bc3e59687')
+                'id': UUID('dbdef3d8-2cac-48cb-adb8-419bc3e59687'),
             }
 
         def __str__(self):

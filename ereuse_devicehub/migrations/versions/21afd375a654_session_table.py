@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 import sqlalchemy as sa
 import sqlalchemy_utils
 import citext
-import teal
+from ereuse_devicehub import teal
 
 from ereuse_devicehub.resources.enums import SessionType
 

@@ -10,7 +10,7 @@ from alembic import context
 import sqlalchemy as sa
 import sqlalchemy_utils
 import citext
-import teal
+from ereuse_devicehub import teal
 
 
 # revision identifiers, used by Alembic.
@@ -26,9 +26,9 @@ def get_inv():
         raise ValueError("Inventory value is not specified")
     return INV
 
+
 def upgrade():
     con = op.get_bind()
-
 
     confirmsRevokes_sql = f"select * from {get_inv()}.action as action join {get_inv()}.confirm as confirm on action.id=confirm.id where action.type='ConfirmRevoke'"
     revokes_sql = f"select confirm.id, confirm.action_id from {get_inv()}.action as action join {get_inv()}.confirm as confirm on action.id=confirm.id where action.type='Revoke'"
@@ -40,11 +40,11 @@ def upgrade():
         revoke_id = ac.action_id
         trade_id = revokes[revoke_id]
         sql_action = f"update {get_inv()}.action set type='Revoke' where id='{ac_id}'"
-        sql_confirm = f"update {get_inv()}.confirm set action_id='{trade_id}' where id='{ac_id}'"
+        sql_confirm = (
+            f"update {get_inv()}.confirm set action_id='{trade_id}' where id='{ac_id}'"
+        )
         con.execute(sql_action)
         con.execute(sql_confirm)
-
-
 
 
 def downgrade():

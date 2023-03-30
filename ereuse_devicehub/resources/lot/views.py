@@ -9,8 +9,6 @@ from marshmallow import Schema as MarshmallowSchema
 from marshmallow import fields as f
 from sqlalchemy import or_
 from sqlalchemy.util import OrderedSet
-from teal.marshmallow import EnumField
-from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.models import Transfer
@@ -18,6 +16,8 @@ from ereuse_devicehub.query import things_response
 from ereuse_devicehub.resources.action.models import Confirm, Revoke, Trade
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.lot.models import Lot, Path
+from ereuse_devicehub.teal.marshmallow import EnumField
+from ereuse_devicehub.teal.resource import View
 
 
 class LotFormat(Enum):
@@ -79,7 +79,7 @@ class LotView(View):
         lot = Lot.query.filter_by(id=id).one()  # type: Lot
         return self.schema.jsonify(lot, nested=2)
 
-    # @teal.cache.cache(datetime.timedelta(minutes=5))
+    # @ereuse_devicehub.teal.cache.cache(datetime.timedelta(minutes=5))
     def find(self, args: dict):
         """Gets lots.
 

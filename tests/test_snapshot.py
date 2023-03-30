@@ -10,21 +10,17 @@ from uuid import uuid4
 
 import pytest
 from boltons import urlutils
-from ereuse_utils.test import ANY
-from requests.exceptions import HTTPError
-from teal.db import DBError, UniqueViolation
-from teal.marshmallow import ValidationError
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
+from ereuse_devicehub.ereuse_utils.test import ANY
 from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.resources.action.models import (
     Action,
     BenchmarkDataStorage,
     BenchmarkProcessor,
     EraseSectors,
-    EreusePrice,
     Ready,
     Snapshot,
     SnapshotRequest,
@@ -32,16 +28,12 @@ from ereuse_devicehub.resources.action.models import (
 )
 from ereuse_devicehub.resources.action.views.snapshot import save_json
 from ereuse_devicehub.resources.device import models as m
-from ereuse_devicehub.resources.device.exceptions import NeedsId
 from ereuse_devicehub.resources.device.models import Device, SolidStateDrive
-from ereuse_devicehub.resources.device.sync import (
-    MismatchBetweenProperties,
-    MismatchBetweenTagsAndHid,
-)
 from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import ComputerChassis, SnapshotSoftware
 from ereuse_devicehub.resources.tag import Tag
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.marshmallow import ValidationError
 from tests import conftest
 from tests.conftest import file, file_json, json_encode, yaml2json
 

@@ -14,11 +14,6 @@ from marshmallow import fields
 from marshmallow import fields as f
 from marshmallow import validate as v
 from sqlalchemy.util import OrderedSet
-from teal import query
-from teal.cache import cache
-from teal.db import ResourceNotFound
-from teal.marshmallow import ValidationError
-from teal.resource import View
 
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
@@ -32,6 +27,11 @@ from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.enums import SnapshotSoftware
 from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
 from ereuse_devicehub.resources.tag.model import Tag
+from ereuse_devicehub.teal import query
+from ereuse_devicehub.teal.cache import cache
+from ereuse_devicehub.teal.db import ResourceNotFound
+from ereuse_devicehub.teal.marshmallow import ValidationError
+from ereuse_devicehub.teal.resource import View
 
 
 class OfType(f.Str):

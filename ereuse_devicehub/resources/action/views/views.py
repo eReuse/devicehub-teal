@@ -4,13 +4,10 @@ from datetime import timedelta
 from distutils.version import StrictVersion
 from uuid import UUID
 
-import ereuse_utils
+import ereuse_devicehub.ereuse_utils
 import jwt
 from flask import current_app as app
 from flask import g, request
-from teal.db import ResourceNotFound
-from teal.marshmallow import ValidationError
-from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.query import things_response
@@ -35,6 +32,9 @@ from ereuse_devicehub.resources.action.views.snapshot import (
 )
 from ereuse_devicehub.resources.device.models import Computer, DataStorage, Device
 from ereuse_devicehub.resources.enums import Severity
+from ereuse_devicehub.teal.db import ResourceNotFound
+from ereuse_devicehub.teal.marshmallow import ValidationError
+from ereuse_devicehub.teal.resource import View
 
 SUPPORTED_WORKBENCH = StrictVersion('11.0')
 
@@ -203,7 +203,7 @@ def decode_snapshot(data):
             data['data'],
             app.config['JWT_PASS'],
             algorithms="HS256",
-            json_encoder=ereuse_utils.JSONEncoder,
+            json_encoder=ereuse_devicehub.ereuse_utils.JSONEncoder,
         )
     except jwt.exceptions.InvalidSignatureError as err:
         txt = 'Invalid snapshot'

@@ -1,7 +1,5 @@
 from typing import Callable, Iterable, Tuple
 
-from teal.resource import Converters, Resource
-
 from ereuse_devicehub.resources.device import schemas
 from ereuse_devicehub.resources.device.models import Manufacturer
 from ereuse_devicehub.resources.device.views import (
@@ -9,6 +7,7 @@ from ereuse_devicehub.resources.device.views import (
     DeviceView,
     ManufacturerView,
 )
+from ereuse_devicehub.teal.resource import Converters, Resource
 
 
 class DeviceDef(Resource):

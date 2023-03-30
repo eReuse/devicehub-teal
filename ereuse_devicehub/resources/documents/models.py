@@ -1,20 +1,19 @@
+from citext import CIText
 from flask import g
-from citext import CIText 
 from sortedcontainers import SortedSet
-from sqlalchemy import BigInteger, Column, Sequence, Unicode, Boolean, ForeignKey
-from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy import BigInteger, Boolean, Column, ForeignKey, Sequence, Unicode
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref
-from teal.db import CASCADE_OWN, URL
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.resources.models import Thing, STR_SM_SIZE
-
+from ereuse_devicehub.teal.db import CASCADE_OWN, URL
 
 _sorted_documents = {
     'order_by': lambda: Document.created,
-    'collection_class': SortedSet
+    'collection_class': SortedSet,
 }
 
 
@@ -30,11 +29,15 @@ class Document(Thing):
     date.comment = """The date of document, some documents need to have one date
     """
     id_document = Column(CIText(), nullable=True)
-    id_document.comment = """The id of one document like invoice so they can be linked."""
-    owner_id = db.Column(UUID(as_uuid=True),
-                         db.ForeignKey(User.id),
-                         nullable=False,
-                         default=lambda: g.user.id)
+    id_document.comment = (
+        """The id of one document like invoice so they can be linked."""
+    )
+    owner_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
     owner = db.relationship(User, primaryjoin=owner_id == User.id)
     file_name = Column(db.CIText(), nullable=False)
     file_name.comment = """This is the name of the file when user up the document."""

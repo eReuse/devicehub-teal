@@ -10,14 +10,14 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import LtreeType
 from sqlalchemy_utils.types.ltree import LQUERY
-from teal.db import CASCADE_OWN, IntEnum, UUIDLtree, check_range
-from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import create_view, db, exp, f
 from ereuse_devicehub.resources.device.models import Component, Device
 from ereuse_devicehub.resources.enums import TransferState
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.db import CASCADE_OWN, IntEnum, UUIDLtree, check_range
+from ereuse_devicehub.teal.resource import url_for_resource
 
 
 class Lot(Thing):
