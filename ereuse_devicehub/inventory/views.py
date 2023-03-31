@@ -24,6 +24,7 @@ from ereuse_devicehub.inventory.forms import (
     BindingForm,
     CustomerDetailsForm,
     DataWipeForm,
+    DeviceDocumentForm,
     EditTransferForm,
     FilterForm,
     LotForm,
@@ -568,6 +569,27 @@ class DocumentDeleteView(View):
         return flask.redirect(next_url)
 
 
+class DeviceDocumentDeleteView(View):
+    methods = ['GET']
+    decorators = [login_required]
+    template_name = 'inventory/device_list.html'
+    form_class = TradeDocumentForm
+
+    def dispatch_request(self, lot_id, doc_id):
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+        form = self.form_class(lot=lot_id, document=doc_id)
+        try:
+            form.remove()
+        except Exception as err:
+            msg = "{}".format(err)
+            messages.error(msg)
+            return flask.redirect(next_url)
+
+        msg = "Document removed successfully."
+        messages.success(msg)
+        return flask.redirect(next_url)
+
+
 class UploadSnapshotView(GenericMixin):
     methods = ['GET', 'POST']
     decorators = [login_required]
@@ -808,6 +830,27 @@ class NewTradeView(DeviceListMixin, NewActionView):
         messages.error('Action {} error!'.format(self.form.type.data))
         next_url = self.get_next_url()
         return flask.redirect(next_url)
+
+
+class NewDeviceDocumentView(GenericMixin):
+    methods = ['POST', 'GET']
+    decorators = [login_required]
+    template_name = 'inventory/device_document.html'
+    form_class = DeviceDocumentForm
+    title = "Add new document"
+
+    def dispatch_request(self, dhid):
+        self.form = self.form_class(dhid=dhid)
+        self.get_context()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success('Document created successfully!')
+            next_url = url_for('inventory.device_details', id=dhid)
+            return flask.redirect(next_url)
+
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
 
 
 class NewTradeDocumentView(GenericMixin):
@@ -1553,6 +1596,10 @@ devices.add_url_rule(
 )
 devices.add_url_rule(
     '/action/datawipe/add/', view_func=NewDataWipeView.as_view('datawipe_add')
+)
+devices.add_url_rule(
+    '/device/<string:dhid>/document/add/',
+    view_func=NewDeviceDocumentView.as_view('device_document_add'),
 )
 devices.add_url_rule(
     '/lot/<string:lot_id>/transfer-document/add/',

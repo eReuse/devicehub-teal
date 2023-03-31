@@ -66,6 +66,10 @@
             </li>
 
             <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents">Documents</button>
+            </li>
+
+            <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#lots">Lots</button>
             </li>
 
@@ -194,6 +198,80 @@
                 {% endif %}
               {% endfor %}
               </div>
+            </div>
+
+            <div class="tab-pane fade profile-overview" id="documents">
+              <div class="btn-group dropdown ml-1 mt-1" uib-dropdown="">
+                <a href="{{ url_for('inventory.device_document_add', dhid=placeholder.device.devicehub_id) }}" class="btn btn-primary">
+                  <i class="bi bi-plus"></i>
+                  Add new document
+                  <span class="caret"></span>
+                </a>
+              </div>
+
+              <h5 class="card-title">Documents</h5>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">File</th>
+                    <th scope="col" data-type="date" data-format="YYYY-MM-DD hh:mm">Uploaded on</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for doc in placeholder.documents %}
+                  <tr>
+                    <td>
+                      {% if doc.get_url() %}
+                        <a href="{{ doc.get_url() }}" target="_blank">{{ doc.file_name}}</a>
+                      {% else %}
+                        {{ doc.file_name}}
+                      {% endif %}
+                    </td>
+                    <td>
+                        {{ doc.created.strftime('%Y-%m-%d %H:%M')}}
+                    </td>
+                    <td>
+                        <a href="{# url_for('inventory.transfer_document_edit', lot_id=lot.id, doc_id=doc.id)#" title="Edit document">
+                          <i class="bi bi-pencil-square"></i>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="javascript:javascript:void(0)" data-bs-toggle="modal" data-bs-target="#btnRemoveDocument{{ loop.index }}" title="Remove document">
+                          <i class="bi bi-trash-fill"></i>
+                        </a>
+                        <div class="modal fade" id="btnRemoveDocument{{ loop.index }}" tabindex="-1" style="display: none;" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+
+                              <div class="modal-header">
+                                <h5 class="modal-title">Delete Document</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+
+                                <div class="modal-body">
+                                    Are you sure that you want to delete this Document?<br />
+                                    <strong>{{ doc.file_name }}</strong>
+                                    <p class="text-danger">
+                                      This action cannot be undone.
+                                    </p>
+                                </div>
+
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary-outline" data-bs-dismiss="modal">Cancel</button>
+                                  <a href="{# url_for('inventory.document_del', lot_id=lot.id, doc_id=doc.id) #}" type="button" class="btn btn-danger">
+                                    Delete it!
+                                  </a>
+                                </div>
+
+                            </div>
+                          </div>
+                        </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
 
             <div class="tab-pane fade profile-overview" id="status">

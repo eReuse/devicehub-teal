@@ -2,7 +2,8 @@ from uuid import uuid4
 
 from citext import CIText
 from flask import g
-from sqlalchemy import Column, Integer
+from sortedcontainers import SortedSet
+from sqlalchemy import BigInteger, Column, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from teal.db import CASCADE_OWN, URL
@@ -110,3 +111,40 @@ class TransferCustomerDetails(Thing):
         ),
         primaryjoin='TransferCustomerDetails.transfer_id == Transfer.id',
     )
+
+
+_sorted_documents = {
+    'order_by': lambda: DeviceDocument.created,
+    'collection_class': SortedSet,
+}
+
+
+class DeviceDocument(Thing):
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    type = Column(db.CIText(), nullable=True)
+    date = Column(db.DateTime, nullable=True)
+    id_document = Column(db.CIText(), nullable=True)
+    description = Column(db.CIText(), nullable=True)
+    owner_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=False,
+        default=lambda: g.user.id,
+    )
+    owner = db.relationship(User, primaryjoin=owner_id == User.id)
+    device_id = db.Column(BigInteger, db.ForeignKey('device.id'), nullable=False)
+    device = db.relationship(
+        'Device',
+        primaryjoin='DeviceDocument.device_id == Device.id',
+        backref=backref(
+            'documents', lazy=True, cascade=CASCADE_OWN, **_sorted_documents
+        ),
+    )
+    file_name = Column(db.CIText(), nullable=True)
+    file_hash = Column(db.CIText(), nullable=True)
+    url = db.Column(URL(), nullable=True)
+
+    # __table_args__ = (
+    # db.Index('document_id', id, postgresql_using='hash'),
+    # db.Index('type_doc', type, postgresql_using='hash')
+    # )

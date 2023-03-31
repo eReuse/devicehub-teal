@@ -1232,6 +1232,13 @@ class Placeholder(Thing):
             return 'Twin'
         return 'Placeholder'
 
+    @property
+    def documents(self):
+        docs = self.device.documents
+        if self.binding:
+            return docs.union(self.binding.documents)
+        return docs
+
 
 class Computer(Device):
     """A chassis with components inside that can be processed

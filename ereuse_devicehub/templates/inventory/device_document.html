@@ -1,0 +1,70 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>{{ title }}</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#TODO-lot-list">Inventory</a></li>
+      <li class="breadcrumb-item"><a href="#TODO-lot-list">Device {{ form._device.dhid }}</a></li>
+      <li class="breadcrumb-item">Document</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section profile">
+  <div class="row">
+    <div class="col-xl-4">
+
+      <div class="card">
+        <div class="card-body">
+
+          <div class="pt-4 pb-2">
+            <h5 class="card-title text-center pb-0 fs-4">{{ title }}</h5>
+            {% if form.form_errors %}
+            <p class="text-danger">
+              {% for error in form.form_errors %}
+                {{ error }}<br/>
+              {% endfor %}
+            </p>
+            {% endif %}
+          </div>
+
+          {% if form._obj or 1==2 %}
+          <form action="{{ url_for('inventory.device_document_edit', dhid=form._device.dhid, doc_id=form._obj.id) }}" method="post"
+                class="row g-3 needs-validation" enctype="multipart/form-data">
+          {% else %}
+          <form action="{{ url_for('inventory.device_document_add', dhid=form._device.dhid) }}" method="post"
+                class="row g-3 needs-validation" enctype="multipart/form-data">
+          {% endif %}
+            {{ form.csrf_token }}
+            {% for field in form %}
+              {% if field != form.csrf_token %}
+              <div>
+                {{ field.label(class_="form-label") }}
+                {{ field }}
+                <small class="text-muted">{{ field.description }}</small>
+                {% if field.errors %}
+                <p class="text-danger">
+                  {% for error in field.errors %}
+                    {{ error }}<br/>
+                  {% endfor %}
+                </p>
+                {% endif %}
+              </div>
+              {% endif %}
+            {% endfor %}
+
+            <div>
+              <a href="{{ url_for('inventory.device_details', id=form._device.dhid) }}" class="btn btn-danger">Cancel</a>
+              <button class="btn btn-primary" type="submit">Save</button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock main %}
