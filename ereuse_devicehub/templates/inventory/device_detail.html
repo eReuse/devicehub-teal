@@ -216,6 +216,7 @@
                     <th scope="col">File</th>
                     <th scope="col" data-type="date" data-format="YYYY-MM-DD hh:mm">Uploaded on</th>
                     <th></th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -232,7 +233,7 @@
                         {{ doc.created.strftime('%Y-%m-%d %H:%M')}}
                     </td>
                     <td>
-                        <a href="{# url_for('inventory.transfer_document_edit', lot_id=lot.id, doc_id=doc.id)#" title="Edit document">
+                        <a href="{{ url_for('inventory.device_document_edit', dhid=doc.device.dhid, doc_id=doc.id) }}" title="Edit document">
                           <i class="bi bi-pencil-square"></i>
                         </a>
                     </td>
@@ -259,7 +260,7 @@
 
                                 <div class="modal-footer">
                                   <button type="button" class="btn btn-secondary-outline" data-bs-dismiss="modal">Cancel</button>
-                                  <a href="{# url_for('inventory.document_del', lot_id=lot.id, doc_id=doc.id) #}" type="button" class="btn btn-danger">
+                                  <a href="{{ url_for('inventory.device_document_del', dhid=doc.device.dhid, doc_id=doc.id) }}" type="button" class="btn btn-danger">
                                     Delete it!
                                   </a>
                                 </div>

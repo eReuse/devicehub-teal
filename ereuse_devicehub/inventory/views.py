@@ -569,27 +569,6 @@ class DocumentDeleteView(View):
         return flask.redirect(next_url)
 
 
-class DeviceDocumentDeleteView(View):
-    methods = ['GET']
-    decorators = [login_required]
-    template_name = 'inventory/device_list.html'
-    form_class = TradeDocumentForm
-
-    def dispatch_request(self, lot_id, doc_id):
-        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
-        form = self.form_class(lot=lot_id, document=doc_id)
-        try:
-            form.remove()
-        except Exception as err:
-            msg = "{}".format(err)
-            messages.error(msg)
-            return flask.redirect(next_url)
-
-        msg = "Document removed successfully."
-        messages.success(msg)
-        return flask.redirect(next_url)
-
-
 class UploadSnapshotView(GenericMixin):
     methods = ['GET', 'POST']
     decorators = [login_required]
@@ -853,6 +832,48 @@ class NewDeviceDocumentView(GenericMixin):
         return flask.render_template(self.template_name, **self.context)
 
 
+class EditDeviceDocumentView(GenericMixin):
+    decorators = [login_required]
+    methods = ['POST', 'GET']
+    template_name = 'inventory/device_document.html'
+    form_class = DeviceDocumentForm
+    title = "Edit document"
+
+    def dispatch_request(self, dhid, doc_id):
+        self.form = self.form_class(dhid=dhid, document=doc_id)
+        self.get_context()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success('Edit document successfully!')
+            next_url = url_for('inventory.device_details', id=dhid)
+            return flask.redirect(next_url)
+
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
+
+
+class DeviceDocumentDeleteView(View):
+    methods = ['GET']
+    decorators = [login_required]
+    template_name = 'inventory/device_detail.html'
+    form_class = DeviceDocumentForm
+
+    def dispatch_request(self, dhid, doc_id):
+        self.form = self.form_class(dhid=dhid, document=doc_id)
+        next_url = url_for('inventory.device_details', id=dhid)
+        try:
+            self.form.remove()
+        except Exception as err:
+            msg = "{}".format(err)
+            messages.error(msg)
+            return flask.redirect(next_url)
+
+        msg = "Document removed successfully."
+        messages.success(msg)
+        return flask.redirect(next_url)
+
+
 class NewTradeDocumentView(GenericMixin):
     methods = ['POST', 'GET']
     decorators = [login_required]
@@ -875,7 +896,6 @@ class NewTradeDocumentView(GenericMixin):
 
 
 class EditTransferDocumentView(GenericMixin):
-
     decorators = [login_required]
     methods = ['POST', 'GET']
     template_name = 'inventory/trade_document.html'
@@ -1600,6 +1620,14 @@ devices.add_url_rule(
 devices.add_url_rule(
     '/device/<string:dhid>/document/add/',
     view_func=NewDeviceDocumentView.as_view('device_document_add'),
+)
+devices.add_url_rule(
+    '/device/<string:dhid>/document/edit/<string:doc_id>',
+    view_func=EditDeviceDocumentView.as_view('device_document_edit'),
+)
+devices.add_url_rule(
+    '/device/<string:dhid>/document/del/<string:doc_id>',
+    view_func=DeviceDocumentDeleteView.as_view('device_document_del'),
 )
 devices.add_url_rule(
     '/lot/<string:lot_id>/transfer-document/add/',

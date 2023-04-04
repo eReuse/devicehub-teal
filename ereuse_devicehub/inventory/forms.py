@@ -1392,7 +1392,7 @@ class DeviceDocumentForm(FlaskForm):
     def validate(self, extra_validators=None):
         is_valid = super().validate(extra_validators)
 
-        if g.user == self._device.owner:
+        if g.user != self._device.owner:
             is_valid = False
 
         return is_valid
@@ -1415,7 +1415,7 @@ class DeviceDocumentForm(FlaskForm):
 
         if not self._obj.id:
             db.session.add(self._obj)
-            self._device.documents.add(self._obj)
+            # self._device.documents.add(self._obj)
 
         if commit:
             db.session.commit()

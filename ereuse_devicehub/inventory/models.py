@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from citext import CIText
+from dateutil.tz import tzutc
 from flask import g
 from sortedcontainers import SortedSet
 from sqlalchemy import BigInteger, Column, Integer
@@ -148,3 +149,13 @@ class DeviceDocument(Thing):
     # db.Index('document_id', id, postgresql_using='hash'),
     # db.Index('type_doc', type, postgresql_using='hash')
     # )
+
+    def get_url(self) -> str:
+        if self.url:
+            return self.url.to_text()
+        return ''
+
+    def __lt__(self, other):
+        return self.created.replace(tzinfo=tzutc()) < other.created.replace(
+            tzinfo=tzutc()
+        )
