@@ -111,6 +111,15 @@ DEVICES = {
     "Other Devices": ["Other"],
 }
 
+TYPES_DOCUMENTS = [
+    ("", ""),
+    ("image", "Image"),
+    ("main_image", "Main Image"),
+    ("functionality_report", "Functionality Report"),
+    ("data_sanitization_report", "Data Sanitization Report"),
+    ("disposition_report", "Disposition Report"),
+]
+
 COMPUTERS = ['Desktop', 'Laptop', 'Server', 'Computer']
 
 MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
@@ -1352,11 +1361,12 @@ class DeviceDocumentForm(FlaskForm):
         render_kw={'class': "form-control"},
         description="Identification number of document",
     )
-    type = StringField(
+    type = SelectField(
         'Type',
         [validators.Optional()],
-        render_kw={'class': "form-control"},
-        description="Type of document",
+        choices=TYPES_DOCUMENTS,
+        default="",
+        render_kw={'class': "form-select"},
     )
     date = DateField(
         'Date',
