@@ -2468,7 +2468,7 @@ def test_bug_3831_documents(user3: UserClientFlask):
     lot = Lot.query.filter_by(name=lot_name).one()
 
     lot_id = lot.id
-    uri = f'/inventory/lot/{lot_id}/trade-document/add/'
+    uri = f'/inventory/lot/{lot_id}/transfer-document/add/'
     body, status = user3.get(uri)
     txt = 'Error, this lot is not a transfer lot.'
 
@@ -2486,7 +2486,7 @@ def test_bug_3831_documents(user3: UserClientFlask):
     assert 'Incoming Lot' in body
 
     lot_id = Lot.query.all()[1].id
-    uri = f'/inventory/lot/{lot_id}/trade-document/add/'
+    uri = f'/inventory/lot/{lot_id}/transfer-document/add/'
     body, status = user3.get(uri)
 
     b_file = b'1234567890'
@@ -2502,12 +2502,12 @@ def test_bug_3831_documents(user3: UserClientFlask):
         'file': file_upload,
     }
 
-    uri = f'/inventory/lot/{lot_id}/trade-document/add/'
+    uri = f'/inventory/lot/{lot_id}/transfer-document/add/'
     body, status = user3.post(uri, data=data, content_type="multipart/form-data")
     assert status == '200 OK'
 
     # Second document
-    uri = f'/inventory/lot/{lot_id}/trade-document/add/'
+    uri = f'/inventory/lot/{lot_id}/transfer-document/add/'
     file_upload = (BytesIO(b_file), file_name)
     data['file'] = file_upload
     data['csrf_token'] = generate_csrf()
@@ -2774,3 +2774,82 @@ def test_reliable_device(user3: UserClientFlask):
     assert Snapshot.query.first() == snapshot
     assert len(snapshot.device.components) == 8
     assert len(snapshot.device.actions) == 7
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_add_device_document(user3: UserClientFlask):
+    snapshot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    device = Device.query.filter_by(devicehub_id=snapshot.device.dhid).one()
+    uri = '/inventory/device/{}/document/add/'.format(device.dhid)
+    user3.get(uri)
+
+    name = "doc1.pdf"
+    url = "https://www.usody.com/"
+    file_name = (BytesIO(b'1234567890'), name)
+    data = {
+        'url': url,
+        'file_name': file_name,
+        'csrf_token': generate_csrf(),
+    }
+
+    user3.post(uri, data=data, content_type="multipart/form-data")
+    assert device.documents[0].file_name == name
+    assert device.documents[0].url.to_text() == url
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_edit_device_document(user3: UserClientFlask):
+    snapshot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    device = Device.query.filter_by(devicehub_id=snapshot.device.dhid).one()
+    uri = '/inventory/device/{}/document/add/'.format(device.dhid)
+    user3.get(uri)
+
+    name = "doc1.pdf"
+    url = "https://www.usody.com/"
+    file_name = (BytesIO(b'1234567890'), name)
+    data = {
+        'url': url,
+        'file_name': file_name,
+        'csrf_token': generate_csrf(),
+    }
+
+    user3.post(uri, data=data, content_type="multipart/form-data")
+
+    doc_id = str(device.documents[0].id)
+    uri = '/inventory/device/{}/document/edit/{}'.format(device.dhid, doc_id)
+    user3.get(uri)
+
+    data['url'] = "https://www.ereuse.org/"
+    data['csrf_token'] = generate_csrf()
+    data['file_name'] = (BytesIO(b'1234567890'), name)
+
+    user3.post(uri, data=data, content_type="multipart/form-data")
+    assert device.documents[0].file_name == name
+    assert device.documents[0].url.to_text() == data['url']
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_delete_device_document(user3: UserClientFlask):
+    snapshot = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    device = Device.query.filter_by(devicehub_id=snapshot.device.dhid).one()
+    uri = '/inventory/device/{}/document/add/'.format(device.dhid)
+    user3.get(uri)
+
+    name = "doc1.pdf"
+    url = "https://www.usody.com/"
+    file_name = (BytesIO(b'1234567890'), name)
+    data = {
+        'url': url,
+        'file_name': file_name,
+        'csrf_token': generate_csrf(),
+    }
+
+    user3.post(uri, data=data, content_type="multipart/form-data")
+
+    doc_id = str(device.documents[0].id)
+    uri = '/inventory/device/{}/document/del/{}'.format(device.dhid, doc_id)
+    user3.get(uri)
+    assert len(device.documents) == 0

@@ -24,6 +24,7 @@ from ereuse_devicehub.inventory.forms import (
     BindingForm,
     CustomerDetailsForm,
     DataWipeForm,
+    DeviceDocumentForm,
     EditTransferForm,
     FilterForm,
     LotForm,
@@ -547,6 +548,27 @@ class LotDeleteView(View):
         return flask.redirect(next_url)
 
 
+class DocumentDeleteView(View):
+    methods = ['GET']
+    decorators = [login_required]
+    template_name = 'inventory/device_list.html'
+    form_class = TradeDocumentForm
+
+    def dispatch_request(self, lot_id, doc_id):
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+        form = self.form_class(lot=lot_id, document=doc_id)
+        try:
+            form.remove()
+        except Exception as err:
+            msg = "{}".format(err)
+            messages.error(msg)
+            return flask.redirect(next_url)
+
+        msg = "Document removed successfully."
+        messages.success(msg)
+        return flask.redirect(next_url)
+
+
 class UploadSnapshotView(GenericMixin):
     methods = ['GET', 'POST']
     decorators = [login_required]
@@ -789,6 +811,69 @@ class NewTradeView(DeviceListMixin, NewActionView):
         return flask.redirect(next_url)
 
 
+class NewDeviceDocumentView(GenericMixin):
+    methods = ['POST', 'GET']
+    decorators = [login_required]
+    template_name = 'inventory/device_document.html'
+    form_class = DeviceDocumentForm
+    title = "Add new document"
+
+    def dispatch_request(self, dhid):
+        self.form = self.form_class(dhid=dhid)
+        self.get_context()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success('Document created successfully!')
+            next_url = url_for('inventory.device_details', id=dhid)
+            return flask.redirect(next_url)
+
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
+
+
+class EditDeviceDocumentView(GenericMixin):
+    decorators = [login_required]
+    methods = ['POST', 'GET']
+    template_name = 'inventory/device_document.html'
+    form_class = DeviceDocumentForm
+    title = "Edit document"
+
+    def dispatch_request(self, dhid, doc_id):
+        self.form = self.form_class(dhid=dhid, document=doc_id)
+        self.get_context()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success('Edit document successfully!')
+            next_url = url_for('inventory.device_details', id=dhid)
+            return flask.redirect(next_url)
+
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
+
+
+class DeviceDocumentDeleteView(View):
+    methods = ['GET']
+    decorators = [login_required]
+    template_name = 'inventory/device_detail.html'
+    form_class = DeviceDocumentForm
+
+    def dispatch_request(self, dhid, doc_id):
+        self.form = self.form_class(dhid=dhid, document=doc_id)
+        next_url = url_for('inventory.device_details', id=dhid)
+        try:
+            self.form.remove()
+        except Exception as err:
+            msg = "{}".format(err)
+            messages.error(msg)
+            return flask.redirect(next_url)
+
+        msg = "Document removed successfully."
+        messages.success(msg)
+        return flask.redirect(next_url)
+
+
 class NewTradeDocumentView(GenericMixin):
     methods = ['POST', 'GET']
     decorators = [login_required]
@@ -803,6 +888,27 @@ class NewTradeDocumentView(GenericMixin):
         if self.form.validate_on_submit():
             self.form.save()
             messages.success('Document created successfully!')
+            next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+            return flask.redirect(next_url)
+
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
+
+
+class EditTransferDocumentView(GenericMixin):
+    decorators = [login_required]
+    methods = ['POST', 'GET']
+    template_name = 'inventory/trade_document.html'
+    form_class = TradeDocumentForm
+    title = "Edit document"
+
+    def dispatch_request(self, lot_id, doc_id):
+        self.form = self.form_class(lot=lot_id, document=doc_id)
+        self.get_context()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success('Edit document successfully!')
             next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
             return flask.redirect(next_url)
 
@@ -1512,8 +1618,28 @@ devices.add_url_rule(
     '/action/datawipe/add/', view_func=NewDataWipeView.as_view('datawipe_add')
 )
 devices.add_url_rule(
-    '/lot/<string:lot_id>/trade-document/add/',
-    view_func=NewTradeDocumentView.as_view('trade_document_add'),
+    '/device/<string:dhid>/document/add/',
+    view_func=NewDeviceDocumentView.as_view('device_document_add'),
+)
+devices.add_url_rule(
+    '/device/<string:dhid>/document/edit/<string:doc_id>',
+    view_func=EditDeviceDocumentView.as_view('device_document_edit'),
+)
+devices.add_url_rule(
+    '/device/<string:dhid>/document/del/<string:doc_id>',
+    view_func=DeviceDocumentDeleteView.as_view('device_document_del'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/transfer-document/add/',
+    view_func=NewTradeDocumentView.as_view('transfer_document_add'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/document/edit/<string:doc_id>',
+    view_func=EditTransferDocumentView.as_view('transfer_document_edit'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/document/del/<string:doc_id>',
+    view_func=DocumentDeleteView.as_view('document_del'),
 )
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule(
