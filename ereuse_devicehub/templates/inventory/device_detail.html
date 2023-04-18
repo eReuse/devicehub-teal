@@ -214,6 +214,8 @@
                 <thead>
                   <tr>
                     <th scope="col">File</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Description</th>
                     <th scope="col" data-type="date" data-format="YYYY-MM-DD hh:mm">Uploaded on</th>
                     <th></th>
                     <th></th>
@@ -230,8 +232,16 @@
                       {% endif %}
                     </td>
                     <td>
-                        {{ doc.created.strftime('%Y-%m-%d %H:%M')}}
+                        {{ doc.type }}
+                    </td>                    
+                    <td>
+                        {% if doc.description %}
+                        {{ doc.description|truncate(30, True) }}
+                        {% endif %}
                     </td>
+                    <td>
+                        {{ doc.created.strftime('%Y-%m-%d %H:%M') }}
+                    </td>                    
                     <td>
                         <a href="{{ url_for('inventory.device_document_edit', dhid=doc.device.dhid, doc_id=doc.id) }}" title="Edit document">
                           <i class="bi bi-pencil-square"></i>
