@@ -235,7 +235,9 @@
                         {{ doc.type }}
                     </td>                    
                     <td>
+                        {% if doc.description %}
                         {{ doc.description|truncate(30, True) }}
+                        {% endif %}
                     </td>
                     <td>
                         {{ doc.created.strftime('%Y-%m-%d %H:%M') }}
