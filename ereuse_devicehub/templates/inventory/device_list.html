@@ -529,6 +529,7 @@
                   <thead>
                     <tr>
                       <th scope="col">File</th>
+                      <th scope="col">Description</th>
                       <th scope="col" data-type="date" data-format="YYYY-MM-DD hh:mm">Uploaded on</th>
                       <th></th>
                     </tr>
@@ -542,6 +543,11 @@
                         {% else %}
                           {{ doc.file_name}}
                         {% endif %}
+                      </td>
+                      <td>
+                          {% if doc.description %}
+                          {{ doc.description|truncate(30, True) }}
+                          {% endif %}
                       </td>
                       <td>
                           {{ doc.created.strftime('%Y-%m-%d %H:%M')}}

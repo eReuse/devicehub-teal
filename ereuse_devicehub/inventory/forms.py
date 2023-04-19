@@ -1293,6 +1293,8 @@ class TradeDocumentForm(FlaskForm):
             ).one()
         kwargs['obj'] = self._obj
 
+        if self._obj:
+            self.file_name.args = ()
         super().__init__(*args, **kwargs)
 
         if self._obj:
@@ -1313,6 +1315,10 @@ class TradeDocumentForm(FlaskForm):
     def save(self, commit=True):
         file_name = ''
         file_hash = ''
+        if self._obj:
+            file_name = self._obj.file_name
+            file_hash = self._obj.file_hash
+
         if self.file_name.data:
             file_name = self.file_name.data.filename
             file_hash = insert_hash(self.file_name.data.read(), commit=False)
@@ -1393,6 +1399,8 @@ class DeviceDocumentForm(FlaskForm):
             ).one()
         kwargs['obj'] = self._obj
 
+        if self._obj:
+            self.file_name.args = ()
         super().__init__(*args, **kwargs)
 
         if self._obj:
@@ -1410,6 +1418,10 @@ class DeviceDocumentForm(FlaskForm):
     def save(self, commit=True):
         file_name = ''
         file_hash = ''
+        if self._obj:
+            file_name = self._obj.file_name
+            file_hash = self._obj.file_hash
+
         if self.file_name.data:
             file_name = self.file_name.data.filename
             file_hash = insert_hash(self.file_name.data.read(), commit=False)
