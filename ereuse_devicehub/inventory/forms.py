@@ -1293,7 +1293,9 @@ class TradeDocumentForm(FlaskForm):
             ).one()
         kwargs['obj'] = self._obj
 
-        if self._obj:
+        if not self.file_name.args:
+            self.file_name.args = ("File", [validators.DataRequired()])
+        if doc_id:
             self.file_name.args = ()
         super().__init__(*args, **kwargs)
 
@@ -1399,7 +1401,9 @@ class DeviceDocumentForm(FlaskForm):
             ).one()
         kwargs['obj'] = self._obj
 
-        if self._obj:
+        if not self.file_name.args:
+            self.file_name.args = ("File", [validators.DataRequired()])
+        if doc_id:
             self.file_name.args = ()
         super().__init__(*args, **kwargs)
 
