@@ -6,7 +6,6 @@ from datetime import datetime
 from pathlib import Path
 
 import boltons.urlutils
-import ereuse_utils
 import jwt
 import pytest
 import yaml
@@ -14,6 +13,7 @@ from decouple import config
 from psycopg2 import IntegrityError
 from sqlalchemy.exc import ProgrammingError
 
+from ereuse_devicehub import ereuse_utils
 from ereuse_devicehub.api.views import api
 from ereuse_devicehub.client import Client, UserClient, UserClientFlask
 from ereuse_devicehub.config import DevicehubConfig

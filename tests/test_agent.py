@@ -3,25 +3,32 @@ from uuid import UUID
 import pytest
 from marshmallow import ValidationError
 from sqlalchemy_utils import PhoneNumber
-from teal.db import UniqueViolation, DBError
-from teal.enums import Country
 
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.agent import OrganizationDef, models, schemas
-from ereuse_devicehub.resources.agent.models import Membership, Organization, Person, System
+from ereuse_devicehub.resources.agent.models import (
+    Membership,
+    Organization,
+    Person,
+    System,
+)
+from ereuse_devicehub.teal.db import DBError, UniqueViolation
+from ereuse_devicehub.teal.enums import Country
 from tests.conftest import app_context, create_user
 
 
 @pytest.mark.usefixtures(app_context.__name__)
 def test_agent():
     """Tests creating an person."""
-    person = Person(name='Timmy',
-                    tax_id='xyz',
-                    country=Country.ES,
-                    telephone=PhoneNumber('+34666666666'),
-                    email='foo@bar.com')
+    person = Person(
+        name='Timmy',
+        tax_id='xyz',
+        country=Country.ES,
+        telephone=PhoneNumber('+34666666666'),
+        email='foo@bar.com',
+    )
     db.session.add(person)
     db.session.commit()
 
@@ -36,8 +43,7 @@ def test_agent():
 @pytest.mark.usefixtures(app_context.__name__)
 def test_system():
     """Tests creating a system."""
-    system = System(name='Workbench',
-                    email='hello@ereuse.org')
+    system = System(name='Workbench', email='hello@ereuse.org')
     db.session.add(system)
     db.session.commit()
 
@@ -49,10 +55,9 @@ def test_system():
 @pytest.mark.usefixtures(app_context.__name__)
 def test_organization():
     """Tests creating an organization."""
-    org = Organization(name='ACME',
-                       tax_id='xyz',
-                       country=Country.ES,
-                       email='contact@acme.com')
+    org = Organization(
+        name='ACME', tax_id='xyz', country=Country.ES, email='contact@acme.com'
+    )
     db.session.add(org)
     db.session.commit()
 

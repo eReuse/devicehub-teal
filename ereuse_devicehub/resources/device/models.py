@@ -12,7 +12,7 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
-from ereuse_utils.naming import HID_CONVERSION_DOC
+from ereuse_devicehub.ereuse_utils.naming import HID_CONVERSION_DOC
 from flask import current_app as app
 from flask import g, request
 from more_itertools import unique_everseen
@@ -35,19 +35,6 @@ from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
-from teal.db import (
-    CASCADE_DEL,
-    POLYMORPHIC_ID,
-    POLYMORPHIC_ON,
-    URL,
-    IntEnum,
-    ResourceNotFound,
-    check_lower,
-    check_range,
-)
-from teal.enums import Layouts
-from teal.marshmallow import ValidationError
-from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.metrics import Metrics
@@ -70,6 +57,19 @@ from ereuse_devicehub.resources.models import (
 )
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.utils import hashcode
+from ereuse_devicehub.teal.db import (
+    CASCADE_DEL,
+    POLYMORPHIC_ID,
+    POLYMORPHIC_ON,
+    URL,
+    IntEnum,
+    ResourceNotFound,
+    check_lower,
+    check_range,
+)
+from ereuse_devicehub.teal.enums import Layouts
+from ereuse_devicehub.teal.marshmallow import ValidationError
+from ereuse_devicehub.teal.resource import url_for_resource
 
 
 def create_code(context):

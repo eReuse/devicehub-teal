@@ -6,12 +6,12 @@ from flask_login import UserMixin
 from sqlalchemy import BigInteger, Boolean, Column, Sequence
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import EmailType, PasswordType
-from teal.db import CASCADE_OWN, URL, IntEnum
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.enums import SessionType
 from ereuse_devicehub.resources.inventory.model import Inventory
 from ereuse_devicehub.resources.models import STR_SIZE, Thing
+from ereuse_devicehub.teal.db import CASCADE_OWN, URL, IntEnum
 
 
 class User(UserMixin, Thing):

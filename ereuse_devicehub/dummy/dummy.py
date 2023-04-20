@@ -5,10 +5,10 @@ from pathlib import Path
 
 import click
 import click_spinner
-import ereuse_utils.cli
 import jwt
 import yaml
-from ereuse_utils.test import ANY
+from ereuse_devicehub.ereuse_utils.test import ANY
+from ereuse_devicehub import ereuse_utils
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db

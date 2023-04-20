@@ -1,9 +1,9 @@
 from sqlalchemy.exc import DataError
-from teal.auth import TokenAuth
-from teal.db import ResourceNotFound
 from werkzeug.exceptions import Unauthorized
 
-from ereuse_devicehub.resources.user.models import User, Session
+from ereuse_devicehub.resources.user.models import Session, User
+from ereuse_devicehub.teal.auth import TokenAuth
+from ereuse_devicehub.teal.db import ResourceNotFound
 
 
 class Auth(TokenAuth):

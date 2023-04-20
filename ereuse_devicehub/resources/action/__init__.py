@@ -1,11 +1,14 @@
 from typing import Callable, Iterable, Tuple
 
-from teal.resource import Converters, Resource
-
 from ereuse_devicehub.resources.action import schemas
-from ereuse_devicehub.resources.action.views.views import (ActionView, AllocateView, DeallocateView,
-                                                     LiveView)
+from ereuse_devicehub.resources.action.views.views import (
+    ActionView,
+    AllocateView,
+    DeallocateView,
+    LiveView,
+)
 from ereuse_devicehub.resources.device.sync import Sync
+from ereuse_devicehub.teal.resource import Converters, Resource
 
 
 class ActionDef(Resource):
@@ -169,13 +172,32 @@ class SnapshotDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Snapshot
 
-    def __init__(self, app, import_name=__name__.split('.')[0], static_folder=None,
-                 static_url_path=None,
-                 template_folder=None, url_prefix=None, subdomain=None, url_defaults=None,
-                 root_path=None, cli_commands: Iterable[Tuple[Callable, str or None]] = tuple()):
+    def __init__(
+        self,
+        app,
+        import_name=__name__.split('.')[0],
+        static_folder=None,
+        static_url_path=None,
+        template_folder=None,
+        url_prefix=None,
+        subdomain=None,
+        url_defaults=None,
+        root_path=None,
+        cli_commands: Iterable[Tuple[Callable, str or None]] = tuple(),
+    ):
         url_prefix = '/{}'.format(ActionDef.resource)
-        super().__init__(app, import_name, static_folder, static_url_path, template_folder,
-                         url_prefix, subdomain, url_defaults, root_path, cli_commands)
+        super().__init__(
+            app,
+            import_name,
+            static_folder,
+            static_url_path,
+            template_folder,
+            url_prefix,
+            subdomain,
+            url_defaults,
+            root_path,
+            cli_commands,
+        )
         self.sync = Sync()
 
 

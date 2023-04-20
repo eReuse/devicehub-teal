@@ -19,7 +19,6 @@ from typing import Optional, Set, Union
 from uuid import uuid4
 
 import inflection
-import teal.db
 from boltons import urlutils
 from citext import CIText
 from dateutil.tz import tzutc
@@ -45,19 +44,8 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy.orm.events import AttributeEvents as Events
 from sqlalchemy.util import OrderedSet
-from teal.db import (
-    CASCADE_OWN,
-    INHERIT_COND,
-    POLYMORPHIC_ID,
-    POLYMORPHIC_ON,
-    URL,
-    StrictVersionType,
-    check_lower,
-    check_range,
-)
-from teal.enums import Currency
-from teal.resource import url_for_resource
 
+import ereuse_devicehub.teal.db
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Agent
 from ereuse_devicehub.resources.device.metrics import TradeMetrics
@@ -88,6 +76,18 @@ from ereuse_devicehub.resources.enums import (
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.db import (
+    CASCADE_OWN,
+    INHERIT_COND,
+    POLYMORPHIC_ID,
+    POLYMORPHIC_ON,
+    URL,
+    StrictVersionType,
+    check_lower,
+    check_range,
+)
+from ereuse_devicehub.teal.enums import Currency
+from ereuse_devicehub.teal.resource import url_for_resource
 
 
 class JoinedTableMixin:
@@ -119,7 +119,11 @@ class Action(Thing):
     name.comment = """A name or title for the action. Used when searching
     for actions.
     """
-    severity = Column(teal.db.IntEnum(Severity), default=Severity.Info, nullable=False)
+    severity = Column(
+        ereuse_devicehub.teal.db.IntEnum(Severity),
+        default=Severity.Info,
+        nullable=False,
+    )
     severity.comment = Severity.__doc__
     closed = Column(Boolean, default=True, nullable=False)
     closed.comment = """Whether the author has finished the action.
@@ -548,7 +552,11 @@ class Step(db.Model):
     )
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
     num = Column(SmallInteger, primary_key=True)
-    severity = Column(teal.db.IntEnum(Severity), default=Severity.Info, nullable=False)
+    severity = Column(
+        ereuse_devicehub.teal.db.IntEnum(Severity),
+        default=Severity.Info,
+        nullable=False,
+    )
     start_time = Column(db.TIMESTAMP(timezone=True), nullable=False)
     start_time.comment = Action.start_time.comment
     end_time = Column(

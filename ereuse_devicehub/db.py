@@ -4,7 +4,8 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import expression
 from sqlalchemy_utils import view
-from teal.db import SchemaSQLAlchemy, SchemaSession
+
+from ereuse_devicehub.teal.db import SchemaSession, SchemaSQLAlchemy
 
 
 class DhSession(SchemaSession):
@@ -23,6 +24,7 @@ class DhSession(SchemaSession):
         #   flush, all the new / dirty interesting things in a variable
         #   until DeviceSearch is executed
         from ereuse_devicehub.resources.device.search import DeviceSearch
+
         DeviceSearch.update_modified_devices(session=self)
 
 
@@ -31,6 +33,7 @@ class SQLAlchemy(SchemaSQLAlchemy):
     schema of the database, as it is in the `search_path`
     defined in teal.
     """
+
     # todo add here all types of columns used so we don't have to
     #   manually import them all the time
     UUID = postgresql.UUID
@@ -60,7 +63,9 @@ def create_view(name, selectable):
     # We need to ensure views are created / destroyed before / after
     # SchemaSQLAlchemy's listeners execute
     # That is why insert=True in 'after_create'
-    event.listen(db.metadata, 'after_create', view.CreateView(name, selectable), insert=True)
+    event.listen(
+        db.metadata, 'after_create', view.CreateView(name, selectable), insert=True
+    )
     event.listen(db.metadata, 'before_drop', view.DropView(name))
     return table
 

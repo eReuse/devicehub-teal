@@ -4,10 +4,10 @@ from typing import Any
 from marshmallow import post_load
 from marshmallow.fields import DateTime, List, String
 from marshmallow.schema import SchemaMeta
-from teal.marshmallow import URL
-from teal.resource import Schema
 
 from ereuse_devicehub.resources import models as m
+from ereuse_devicehub.teal.marshmallow import URL
+from ereuse_devicehub.teal.resource import Schema
 
 
 class UnitCodes(Enum):
@@ -38,8 +38,8 @@ class UnitCodes(Enum):
 # Then the directive in our docs/config.py file reads these variables
 # generating the documentation.
 
-class Meta(type):
 
+class Meta(type):
     def __new__(cls, *args, **kw) -> Any:
         base_name = args[1][0].__name__
         y = super().__new__(cls, *args, **kw)
@@ -47,7 +47,7 @@ class Meta(type):
         return y
 
 
-SchemaMeta.__bases__ = Meta,
+SchemaMeta.__bases__ = (Meta,)
 
 
 @classmethod
@@ -70,9 +70,7 @@ value.
 
 class Thing(Schema):
     type = String(description=_type_description)
-    same_as = List(URL(dump_only=True),
-                   dump_only=True,
-                   data_key='sameAs')
+    same_as = List(URL(dump_only=True), dump_only=True, data_key='sameAs')
     updated = DateTime('iso', dump_only=True, description=m.Thing.updated.comment)
     created = DateTime('iso', dump_only=True, description=m.Thing.created.comment)
 
