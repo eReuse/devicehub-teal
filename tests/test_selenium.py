@@ -27,7 +27,7 @@ class TestSelenium:
         # login
         self.driver.find_element(By.ID, "yourEmail").click()
         self.driver.implicitly_wait(3)
-        self.driver.find_element(By.ID, "yourPassword").send_keys("1234")
+        self.driver.find_element(By.ID, "id_password").send_keys("1234")
         self.driver.find_element(By.ID, "yourEmail").send_keys("user@dhub.com")
         self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
         self.driver.implicitly_wait(3)
@@ -104,7 +104,9 @@ class TestSelenium:
         # logout
         # self.driver.find_element(By.CSS_SELECTOR, ".d-md-block:nth-child(2)").click()
         self.driver.find_element(By.CSS_SELECTOR, ".d-md-block:nth-child(2)").click()
-        self.driver.find_element(By.CSS_SELECTOR, "li:nth-child(9) > .dropdown-item > span").click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, "li:nth-child(9) > .dropdown-item > span"
+        ).click()
         # self.driver.find_element(By.CSS_SELECTOR, ".d-md-block").click()
         # self.driver.implicitly_wait(3)
         # self.driver.find_element(By.LINK_TEXT, "Sign Out").click()
