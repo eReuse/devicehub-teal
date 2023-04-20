@@ -6,7 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## testing
+
+## [2.5.2] - 2023-04-20
 - [added] #414 add new vars in the settings file for wb.
+- [added] #440 add lots in export devices.
+- [added] #441 allow remove documents.
+- [added] #442 allow edit documents.
+- [added] #443 add documents to devices.
+- [added] #444 add new columns in list of documents.
+- [changed] #439 move teal as internal module.
+- [fixed] #437 replace names erasure by sanitization in templates.
 
 ## [2.5.1] - 2023-03-17
 - [changed] #423 new hid.
