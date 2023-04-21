@@ -468,8 +468,6 @@ class NewDeviceForm(FlaskForm):
         if self._obj.placeholder.is_abstract:
             self.type.render_kw = disabled
             self.amount.render_kw = disabled
-            # self.id_device_supplier.render_kw = disabled
-            self.pallet.render_kw = disabled
             self.info.render_kw = disabled
             self.components.render_kw = disabled
             self.serial_number.render_kw = disabled
@@ -683,6 +681,14 @@ class NewDeviceForm(FlaskForm):
             ):
                 self._obj.set_functionality(self.functionality.data)
 
+        else:
+            self._obj.placeholder.id_device_supplier = (
+                self.id_device_supplier.data or None
+            )
+            self._obj.placeholder.id_device_internal = (
+                self.id_device_internal.data or None
+            )
+            self._obj.placeholder.pallet = self.pallet.data or None
         placeholder_log = PlaceholdersLog(
             type="Update", source='Web form', placeholder=self._obj.placeholder
         )
