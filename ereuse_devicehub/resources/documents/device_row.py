@@ -40,8 +40,9 @@ class BaseDeviceRow(OrderedDict):
         self['Temporary Lots'] = ''
         self['Incoming Lots'] = ''
         self['Outgoing Lots'] = ''
-        self['Placeholder Palet'] = ''
+        self['Placeholder Pallet'] = ''
         self['Placeholder Id Supplier'] = ''
+        self['Placeholder Id Internal'] = ''
         self['Placeholder Info'] = ''
         self['Placeholder Components'] = ''
         self['Placeholder Type'] = ''
@@ -266,7 +267,7 @@ class BaseDeviceRow(OrderedDict):
 
 
 class DeviceRow(BaseDeviceRow):
-    def __init__(self, device: d.Device, document_ids: dict) -> None:
+    def __init__(self, device: d.Device, document_ids: dict) -> None:  # noqa: C901
         super().__init__()
         self.placeholder = device.binding or device.placeholder
         self.device = self.placeholder.binding or self.placeholder.device
@@ -510,8 +511,9 @@ class DeviceRow(BaseDeviceRow):
         self['Temporary Lots'] = none2str(self.device.get_lots_from_type('temporary'))
         self['Incoming Lots'] = none2str(self.device.get_lots_from_type('incoming'))
         self['Outgoing Lots'] = none2str(self.device.get_lots_from_type('outgoing'))
-        self['Placeholder Palet'] = none2str(self.placeholder.pallet)
+        self['Placeholder Pallet'] = none2str(self.placeholder.pallet)
         self['Placeholder Id Supplier'] = none2str(self.placeholder.id_device_supplier)
+        self['Placeholder Id Internal'] = none2str(self.placeholder.id_device_internal)
         self['Placeholder Info'] = none2str(self.placeholder.info)
         self['Placeholder Components'] = none2str(self.placeholder.components)
         self['Placeholder Type'] = none2str(self.placeholder.device.type)
