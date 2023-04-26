@@ -396,3 +396,15 @@ class LotParent(db.Model):
         .select_from(Path)
         .where(i > 0),
     )
+
+
+class ShareLot(Thing):
+    id = db.Column(UUID(as_uuid=True), primary_key=True)
+    lot_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(Lot.id), nullable=False)
+    lot = db.relationship(Lot, primaryjoin=lot_id == Lot.id)
+    user_to_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=True,
+    )
+    user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
