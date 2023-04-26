@@ -19,6 +19,7 @@
 
   <!-- JS Files -->
   <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
   <!-- Vendor CSS Files -->
   <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -40,8 +41,27 @@
 <body>
 
 <main>
+<nav class="header-nav ms-auto">
+  <ul class="d-flex align-items-right">
+    <li class="nav-item">
+        {% if user.is_anonymous %}
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#validateModal">Validate</button>
+        {% else %}
+        <button class="btn btn-primary" id="buttonRol" data-bs-toggle="modal" data-bs-target="#rolsModal">Select your rol</button>
+        {% endif %}
+    </li>
+  </ul>
+  {{ rol }}
+</nav>
 
 <section class="container mt-3">
+      <div class="row">
+        <div class="col">
+          {% if not rol and rols %}
+            <button class="btn btn-primary">Select a Rol</button>
+          {% endif %}
+        </div>
+      </div>
   <div class="row">
 
       <div class="col">
@@ -215,6 +235,70 @@
     </div>
   </div>
 </div>
+
+{% if user.is_anonymous %}
+<div class="modal fade" id="validateModal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Validate as <span id="title-action"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <a class="btn btn-primary" type="button" 
+          href="{{ url_for('core.login') }}?next={{ device_real.url.to_text() }}">
+          User of system
+        </a> <br />
+        <a class="btn btn-primary mt-3" type="button" href="#">
+          User with Metamax Wallet
+        </a>
+      </div>
+
+      <div class="modal-footer"></div>
+
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="modal fade" id="rolsModal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <form action="{{ device_real.url.to_text() }}" method="get">
+      <div class="modal-header">
+        <h5 class="modal-title">Select your Rol <span id="title-action"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+          <select name="rol">
+            {% for k, v in rols %}
+            <option value="{{ k }}" {% if v==rol %}selected=selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-primary" value="Send" />
+      </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endif %}
 </body>
+
+<!-- Custom Code -->
+{% if not user.is_anonymous and not rol %}
+<script>
+  $(document).ready(() => {
+    $("#buttonRol").click();
+  });
+</script>
+{% endif %}
 
 </html>
