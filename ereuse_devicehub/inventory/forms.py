@@ -70,7 +70,7 @@ from ereuse_devicehub.resources.device.models import (
 from ereuse_devicehub.resources.documents.models import DataWipeDocument
 from ereuse_devicehub.resources.enums import Severity
 from ereuse_devicehub.resources.hash_reports import insert_hash
-from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.lot.models import Lot, ShareLot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.models import User
@@ -160,11 +160,14 @@ class FilterForm(FlaskForm):
         '', choices=DEVICES, default="All Computers", render_kw={'class': "form-select"}
     )
 
-    def __init__(self, lots, lot_id, *args, **kwargs):
+    def __init__(self, lots, lot, lot_id, *args, **kwargs):
         self.all_devices = kwargs.pop('all_devices', False)
         super().__init__(*args, **kwargs)
         self.lots = lots
+        self.lot = lot
         self.lot_id = lot_id
+        if self.lot_id and not self.lot:
+            self.lot = self.lots.filter(Lot.id == self.lot_id).one()
         self._get_types()
 
     def _get_types(self):
@@ -175,8 +178,7 @@ class FilterForm(FlaskForm):
             self.filter.data = self.device_type
 
     def filter_from_lots(self):
-        if self.lot_id:
-            self.lot = self.lots.filter(Lot.id == self.lot_id).one()
+        if self.lot:
             device_ids = (d.id for d in self.lot.devices)
             self.devices = Device.query.filter(Device.id.in_(device_ids)).filter(
                 Device.binding == None  # noqa: E711
@@ -256,7 +258,8 @@ class LotForm(FlaskForm):
         return self.id
 
     def remove(self):
-        if self.instance and not self.instance.trade:
+        shared = ShareLot.query.filter_by(lot=self.instance).first()
+        if self.instance and not self.instance.trade and not shared:
             self.instance.delete()
             db.session.commit()
         return self.instance

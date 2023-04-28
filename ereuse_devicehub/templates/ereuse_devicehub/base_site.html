@@ -276,7 +276,28 @@
             {% endif %}
             {% endfor %}
           </ul>
+    </li>
+    {% if share_lots.all() %}
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#share-lots-nav" data-bs-toggle="collapse" href="javascript:void()">
+      <i class="bi bi-share-fill"></i><span>Shared with me</span><i
+            class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      {% if lot.is_shared %}
+      <ul id="share-lots-nav" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
+      {% else %}
+      <ul id="share-lots-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+      {% endif %}
+      {% for lot in share_lots %}
+      <li>
+        <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.lot_id) }}">
+          <i class="bi bi-circle"></i><span>{{ lot.lot.name }}</span>
+        </a>
+       </li>
+      {% endfor %}
+      </ul>
     </li><!-- End Temporal Lots Nav -->
+    {% endif %}
 
   </ul>
 
