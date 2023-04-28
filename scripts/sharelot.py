@@ -10,7 +10,6 @@ from ereuse_devicehub.resources.user.models import User
 
 
 def main():
-    # import pdb; pdb.set_trace()
     schema = config('DB_SCHEMA')
     app = Devicehub(inventory=schema)
     app.app_context().push()
