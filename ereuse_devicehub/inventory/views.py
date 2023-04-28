@@ -1014,11 +1014,11 @@ class ExportsView(View):
         return export_ids[export_id]()
 
     def find_devices(self):
+        # import pdb; pdb.set_trace()
         sql = """
-            select lot_device.device_id as id from
-                {schema}.share_lot as share
-                join {schema}.lot_device as lot_device on
-                    share.lot_id=lot_device.lot_id
+            select lot_device.device_id as id from {schema}.share_lot as share
+                inner join {schema}.lot_device as lot_device
+                    on share.lot_id=lot_device.lot_id
                 where share.user_to_id='{user_id}'
         """.format(
             schema=app.config.get('SCHEMA'), user_id=g.user.id

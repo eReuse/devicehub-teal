@@ -67,6 +67,7 @@ def _app(config: TestConfig) -> Devicehub:
     app.register_blueprint(workbench)
     app.config["SQLALCHEMY_RECORD_QUERIES"] = True
     app.config['PROFILE'] = True
+    app.config['SCHEMA'] = 'test'
     # app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
     mail = Mail(app)
     app.mail = mail
