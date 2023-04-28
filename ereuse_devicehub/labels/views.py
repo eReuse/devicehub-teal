@@ -8,7 +8,7 @@ from requests.exceptions import ConnectionError
 
 from ereuse_devicehub import __version__, messages
 from ereuse_devicehub.labels.forms import PrintLabelsForm, TagForm, TagUnnamedForm
-from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.lot.models import Lot, ShareLot
 from ereuse_devicehub.resources.tag.model import Tag
 
 labels = Blueprint('labels', __name__, url_prefix='/labels')
@@ -23,6 +23,7 @@ class TagListView(View):
 
     def dispatch_request(self):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        share_lots = ShareLot.query.filter_by(user_to_id=current_user.id)
         tags = Tag.query.filter(Tag.owner_id == current_user.id).order_by(
             Tag.created.desc()
         )
@@ -31,6 +32,7 @@ class TagListView(View):
             'tags': tags,
             'page_title': 'Unique Identifiers Management',
             'version': __version__,
+            'share_lots': share_lots,
         }
         return flask.render_template(self.template_name, **context)
 
@@ -42,7 +44,13 @@ class TagAddView(View):
 
     def dispatch_request(self):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
-        context = {'page_title': 'New Tag', 'lots': lots, 'version': __version__}
+        share_lots = ShareLot.query.filter_by(user_to_id=current_user.id)
+        context = {
+            'page_title': 'New Tag',
+            'lots': lots,
+            'version': __version__,
+            'share_lots': share_lots,
+        }
         form = TagForm()
         if form.validate_on_submit():
             form.save()
@@ -59,10 +67,12 @@ class TagAddUnnamedView(View):
 
     def dispatch_request(self):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        share_lots = ShareLot.query.filter_by(user_to_id=current_user.id)
         context = {
             'page_title': 'New Unnamed Tag',
             'lots': lots,
             'version': __version__,
+            'share_lots': share_lots,
         }
         form = TagUnnamedForm()
         if form.validate_on_submit():
@@ -94,11 +104,13 @@ class PrintLabelsView(View):
 
     def dispatch_request(self):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        share_lots = ShareLot.query.filter_by(user_to_id=current_user.id)
         context = {
             'lots': lots,
             'page_title': self.title,
             'version': __version__,
             'referrer': request.referrer,
+            'share_lots': share_lots,
         }
 
         form = PrintLabelsForm()
@@ -123,6 +135,7 @@ class LabelDetailView(View):
 
     def dispatch_request(self, id):
         lots = Lot.query.filter(Lot.owner_id == current_user.id)
+        share_lots = ShareLot.query.filter_by(user_to_id=current_user.id)
         tag = (
             Tag.query.filter(Tag.owner_id == current_user.id).filter(Tag.id == id).one()
         )
@@ -131,6 +144,7 @@ class LabelDetailView(View):
             'page_title': self.title,
             'version': __version__,
             'referrer': request.referrer,
+            'share_lots': share_lots,
         }
 
         devices = []

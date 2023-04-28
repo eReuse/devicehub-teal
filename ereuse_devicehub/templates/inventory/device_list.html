@@ -21,6 +21,9 @@
       {% elif lot.is_outgoing %}
       <li class="breadcrumb-item active">Outgoing Lot</li>
       <li class="breadcrumb-item active">{{ lot.name }}</li>
+      {% elif lot.is_shared %}
+      <li class="breadcrumb-item active">Shared with me</li>
+      <li class="breadcrumb-item active">{{ lot.name }}</li>
       {% endif %}
     </ol>
   </nav>
@@ -39,7 +42,9 @@
           <div class="d-flex align-items-center justify-content-between row">
             <div class="col-sm-12 col-md-5">
               <h3>
-                <a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">{{ lot.name }}</a>
+                <a href="{{ url_for('inventory.lot_edit', id=lot.id) }}">
+                {{ lot.name }} {% if lot.is_shared %}<i class="bi bi-arrow-right"></i> {{ lot.owner.email }}{% endif %}
+                </a>
               </h3>
             </div>
 
@@ -54,10 +59,12 @@
                       Create Incoming Lot
                     </a>
                 {% endif %}
+                {% if not lot.is_shared %}
                 <a class="text-danger" href="javascript:removeLot()">
                   <i class="bi bi-trash"></i> Delete Lot
                 </a>
                 <span class="d-none" id="activeRemoveLotModal" data-bs-toggle="modal" data-bs-target="#btnRemoveLots"></span>
+                {% endif %}
               {% endif %}
             </div>
           </div>
@@ -72,7 +79,7 @@
               <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#devices-list">Devices</button>
             </li>
 
-            {% if lot and not lot.is_temporary %}
+            {% if lot and not lot.is_temporary and not lot.is_shared %}
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#trade-documents-list">Documents</button>
             </li>
@@ -106,6 +113,7 @@
           <div class="tab-content pt-1">
             <div id="devices-list" class="tab-pane fade devices-list active show">
               <label class="btn btn-primary " for="SelectAllBTN"><input type="checkbox" id="SelectAllBTN" autocomplete="off"></label>
+              {% if not lot or not lot.is_shared %}
               <div class="btn-group dropdown ml-1">
                 <button id="btnLots" type="button" onclick="processSelectedDevices()" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="bi bi-folder2"></i>
@@ -329,6 +337,24 @@
                   </li>
                 </ul>
               </div>
+              {% endif %}
+              {% if lot and lot.is_shared %}
+              <div class="btn-group dropdown m-1" uib-dropdown="">
+                <button id="btnExport" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-reply"></i>
+                    Exports
+                </button>
+                <span class="d-none" id="exportAlertModal" data-bs-toggle="modal" data-bs-target="#exportErrorModal"></span>
+                <ul class="dropdown-menu" aria-labelledby="btnExport">
+                  <li>
+                    <a href="javascript:export_file('devices')" class="dropdown-item">
+                      <i class="bi bi-file-spreadsheet"></i>
+                      Devices Spreadsheet
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              {% endif %}
 
               <div id="select-devices-info" class="alert alert-info mb-0 mt-3 d-none" role="alert">
                 If this text is showing is because there are an error
@@ -514,7 +540,7 @@
 
                 </div>
               </div>
-              {% if lot and not lot.is_temporary %}
+              {% if lot and not lot.is_temporary and not lot.is_shared %}
               <div id="trade-documents-list" class="tab-pane fade trade-documents-list">
                 <div class="btn-group dropdown ml-1 mt-1" uib-dropdown="">
                   <a href="{{ url_for('inventory.transfer_document_add', lot_id=lot.id)}}" class="btn btn-primary">

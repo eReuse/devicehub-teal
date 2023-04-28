@@ -14,6 +14,7 @@ from flask import current_app as app
 from flask import g, make_response, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
+from sqlalchemy import or_
 from werkzeug.exceptions import NotFound
 
 from ereuse_devicehub import messages
@@ -51,7 +52,7 @@ from ereuse_devicehub.resources.device.models import (
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
 from ereuse_devicehub.resources.enums import SnapshotSoftware
 from ereuse_devicehub.resources.hash_reports import insert_hash
-from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.lot.models import Lot, ShareLot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.views import GenericMixin
 
@@ -73,19 +74,25 @@ class DeviceListMixin(GenericMixin):
         per_page = int(request.args.get('per_page', PER_PAGE))
         filter = request.args.get('filter', "All+Computers")
 
+        lot = None
+
+        share_lots = self.context['share_lots']
+        share_lot = share_lots.filter_by(lot_id=lot_id).first()
+        if share_lot:
+            lot = share_lot.lot
+
         lots = self.context['lots']
-        form_filter = FilterForm(lots, lot_id, all_devices=all_devices)
+        form_filter = FilterForm(lots, lot, lot_id, all_devices=all_devices)
         devices = form_filter.search().paginate(page=page, per_page=per_page)
         devices.first = per_page * devices.page - per_page + 1
         devices.last = len(devices.items) + devices.first - 1
 
-        lot = None
         form_transfer = ''
         form_delivery = ''
         form_receiver = ''
         form_customer_details = ''
 
-        if lot_id:
+        if lot_id and not lot:
             lot = lots.filter(Lot.id == lot_id).one()
             if not lot.is_temporary and lot.transfer:
                 form_transfer = EditTransferForm(lot_id=lot.id)
@@ -111,6 +118,7 @@ class DeviceListMixin(GenericMixin):
                 'list_devices': self.get_selected_devices(form_new_action),
                 'all_devices': all_devices,
                 'filter': filter,
+                'share_lots': share_lots,
             }
         )
 
@@ -537,8 +545,9 @@ class LotDeleteView(View):
 
     def dispatch_request(self, id):
         form = LotForm(id=id)
-        if form.instance.trade:
-            msg = "Sorry, the lot cannot be deleted because have a trade action "
+        shared = ShareLot.query.filter_by(lot=form.instance).first()
+        if form.instance.trade or shared:
+            msg = "Sorry, the lot cannot be deleted because this lot is share"
             messages.error(msg)
             next_url = url_for('inventory.lotdevicelist', lot_id=id)
             return flask.redirect(next_url)
@@ -1005,9 +1014,21 @@ class ExportsView(View):
         return export_ids[export_id]()
 
     def find_devices(self):
+        # import pdb; pdb.set_trace()
+        sql = """
+            select lot_device.device_id as id from {schema}.share_lot as share
+                inner join {schema}.lot_device as lot_device
+                    on share.lot_id=lot_device.lot_id
+                where share.user_to_id='{user_id}'
+        """.format(
+            schema=app.config.get('SCHEMA'), user_id=g.user.id
+        )
+
+        shared = (x[0] for x in db.session.execute(sql))
+
         args = request.args.get('ids')
         ids = args.split(',') if args else []
-        query = Device.query.filter(Device.owner == g.user)
+        query = Device.query.filter(or_(Device.owner == g.user, Device.id.in_(shared)))
         return query.filter(Device.devicehub_id.in_(ids))
 
     def response_csv(self, data, name):

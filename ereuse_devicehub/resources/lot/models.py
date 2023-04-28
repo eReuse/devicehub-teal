@@ -124,7 +124,10 @@ class Lot(Thing):
 
     @property
     def is_temporary(self):
-        return not bool(self.trade) and not bool(self.transfer)
+        trade = bool(self.trade)
+        transfer = bool(self.transfer)
+        owner = self.owner == g.user
+        return not trade and not transfer and owner
 
     @property
     def is_incoming(self):
@@ -142,6 +145,19 @@ class Lot(Thing):
         if self.transfer:
             return self.transfer.user_from == g.user
 
+        return False
+
+    @property
+    def is_shared(self):
+        try:
+            self.shared
+        except Exception:
+            self.shared = ShareLot.query.filter_by(
+                lot_id=self.id, user_to=g.user
+            ).first()
+
+        if self.shared:
+            return True
         return False
 
     @classmethod
@@ -396,3 +412,15 @@ class LotParent(db.Model):
         .select_from(Path)
         .where(i > 0),
     )
+
+
+class ShareLot(Thing):
+    id = db.Column(UUID(as_uuid=True), primary_key=True)
+    lot_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey(Lot.id), nullable=False)
+    lot = db.relationship(Lot, primaryjoin=lot_id == Lot.id)
+    user_to_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey(User.id),
+        nullable=True,
+    )
+    user_to = db.relationship(User, primaryjoin=user_to_id == User.id)
