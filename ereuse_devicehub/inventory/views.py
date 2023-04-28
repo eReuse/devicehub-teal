@@ -1021,7 +1021,7 @@ class ExportsView(View):
                     share.lot_id=lot_device.lot_id
                 where share.user_to_id='{user_id}'
         """.format(
-            schema='dbtest', user_id=g.user.id
+            schema=app.config.get('SCHEMA'), user_id=g.user.id
         )
 
         shared = (x[0] for x in db.session.execute(sql))
