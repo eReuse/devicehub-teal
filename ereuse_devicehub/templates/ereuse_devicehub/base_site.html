@@ -193,7 +193,7 @@
         {% else %}
         <a class="nav-link collapsed" data-bs-target="#incoming-lots-nav" data-bs-toggle="collapse" href="#">
           {% endif %}
-          <i class="bi bi-arrow-down-right"></i><span>Incoming Lots</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-arrow-down-right"></i><span>Incoming</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         {% if lot and lot.is_incoming %}
         <ul id="incoming-lots-nav" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
@@ -223,7 +223,7 @@
         {% else %}
         <a class="nav-link collapsed" data-bs-target="#outgoing-lots-nav" data-bs-toggle="collapse" href="#">
           {% endif %}
-          <i class="bi bi-arrow-up-right"></i><span>Outgoing Lots</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-arrow-up-right"></i><span>Outgoing</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         {% if lot and lot.is_outgoing %}
         <ul id="outgoing-lots-nav" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
@@ -253,7 +253,7 @@
         {% else %}
         <a class="nav-link collapsed" data-bs-target="#temporal-lots-nav" data-bs-toggle="collapse" href="#">
           {% endif %}
-          <i class="bi bi-layout-text-window-reverse"></i><span>Temporary Lots</span><i
+          <i class="bi bi-layout-text-window-reverse"></i><span>Temporary</span><i
             class="bi bi-chevron-down ms-auto"></i>
         </a>
         {% if lot and lot.is_temporary %}

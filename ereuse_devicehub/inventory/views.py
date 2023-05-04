@@ -1323,12 +1323,18 @@ class ExportsView(View):
                 'Receiver Note Date',
                 'Receiver Note Units',
                 'Receiver Note Weight',
+                'Customer Company Name',
+                'Customer Location',
             ]
         )
 
-        for lot in Lot.query.filter_by(owner=g.user):
+        all_lots = set(Lot.query.filter_by(owner=g.user).all())
+        share_lots = [s.lot for s in ShareLot.query.filter_by(user_to=g.user)]
+        all_lots = all_lots.union(share_lots)
+        for lot in all_lots:
             delivery_note = lot.transfer and lot.transfer.delivery_note or ''
             receiver_note = lot.transfer and lot.transfer.receiver_note or ''
+            customer = lot.transfer and lot.transfer.customer_details or ''
             wb_devs = 0
             placeholders = 0
 
@@ -1341,10 +1347,13 @@ class ExportsView(View):
                 elif snapshots[-1].software in [SnapshotSoftware.Workbench]:
                     wb_devs += 1
 
+            type_lot = lot.type_transfer()
+            if lot in share_lots:
+                type_lot = "Shared"
             row = [
                 lot.id,
                 lot.name,
-                lot.type_transfer(),
+                type_lot,
                 lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
                 lot.transfer and lot.transfer.code or '',
                 lot.transfer and lot.transfer.date or '',
@@ -1362,6 +1371,8 @@ class ExportsView(View):
                 receiver_note and receiver_note.date or '',
                 receiver_note and receiver_note.units or '',
                 receiver_note and receiver_note.weight or '',
+                customer and customer.company_name or '',
+                customer and customer.location or '',
             ]
             cw.writerow(row)
 
@@ -1391,11 +1402,14 @@ class ExportsView(View):
 
         for dev in self.find_devices():
             for lot in dev.lots:
+                type_lot = lot.type_transfer()
+                if lot.is_shared:
+                    type_lot = "Shared"
                 row = [
                     dev.devicehub_id,
                     lot.id,
                     lot.name,
-                    lot.type_transfer(),
+                    type_lot,
                     lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
                     lot.transfer and lot.transfer.code or '',
                     lot.transfer and lot.transfer.date or '',
