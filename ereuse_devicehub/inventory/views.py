@@ -1014,7 +1014,6 @@ class ExportsView(View):
         return export_ids[export_id]()
 
     def find_devices(self):
-        # import pdb; pdb.set_trace()
         sql = """
             select lot_device.device_id as id from {schema}.share_lot as share
                 inner join {schema}.lot_device as lot_device
