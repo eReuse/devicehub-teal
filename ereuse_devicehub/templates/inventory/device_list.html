@@ -352,12 +352,6 @@
                       Devices Spreadsheet
                     </a>
                   </li>
-                  <li>
-                    <a href="javascript:export_file('devices_lots')" class="dropdown-item">
-                      <i class="bi bi-file-spreadsheet"></i>
-                      Devices Lots Spreadsheet
-                    </a>
-                  </li>
                 </ul>
               </div>
               {% endif %}
@@ -374,7 +368,7 @@
                     {% endfor %}
                     <input type="hidden" class="d-none" value="1" name="page" />
                     <input type="hidden" class="d-none" value="{{ devices.per_page }}" name="per_page" />
-                    <input type="submit" class="ms-2 btn btn-primary" value="Filter" />
+                    <input type="submit" id="submit_filter" class="d-none ms-2 btn btn-primary" value="Filter" />
                   </div>
                 </form>
 

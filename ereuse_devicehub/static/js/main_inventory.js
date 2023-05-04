@@ -16,6 +16,9 @@ $(document).ready(() => {
     };
     select_shift();
     // $('#selectLot').selectpicker();
+    $("#filter").on("change", () => {
+      $("#submit_filter").click();
+    });
 })
 
 class TableController {
