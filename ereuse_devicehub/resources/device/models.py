@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+import logging
 import os
 import pathlib
 import uuid
@@ -12,7 +13,6 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
-from ereuse_devicehub.ereuse_utils.naming import HID_CONVERSION_DOC
 from flask import current_app as app
 from flask import g, request
 from more_itertools import unique_everseen
@@ -37,6 +37,7 @@ from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.ereuse_utils.naming import HID_CONVERSION_DOC
 from ereuse_devicehub.resources.device.metrics import Metrics
 from ereuse_devicehub.resources.enums import (
     BatteryTechnology,
@@ -70,6 +71,8 @@ from ereuse_devicehub.teal.db import (
 from ereuse_devicehub.teal.enums import Layouts
 from ereuse_devicehub.teal.marshmallow import ValidationError
 from ereuse_devicehub.teal.resource import url_for_resource
+
+logger = logging.getLogger(__name__)
 
 
 def create_code(context):
@@ -805,7 +808,7 @@ class Device(Thing):
     def get_from_db(self):
         if 'property_hid' in app.blueprints.keys():
             try:
-                from modules.device.utils import get_from_db
+                from ereuse_devicehub.modules.device.utils import get_from_db
 
                 return get_from_db(self)
             except Exception:
@@ -824,13 +827,13 @@ class Device(Thing):
     def set_hid(self):
         if 'property_hid' in app.blueprints.keys():
             try:
-                from modules.device.utils import set_hid
+                from ereuse_devicehub.modules.device.utils import set_hid
 
                 self.hid = set_hid(self)
                 self.set_chid()
                 return
-            except Exception:
-                pass
+            except Exception as err:
+                logger.error(err)
 
         self.hid = "{}-{}-{}-{}".format(
             self._clean_string(self.type),
