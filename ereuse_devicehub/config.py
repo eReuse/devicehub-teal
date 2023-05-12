@@ -97,3 +97,9 @@ class DevicehubConfig(Config):
     MAIL_DEFAULT_SENDER = config('MAIL_DEFAULT_SENDER', '')
     API_DLT = config('API_DLT', None)
     API_DLT_TOKEN = config('API_DLT_TOKEN', None)
+
+    """Definition of oauth jwt details."""
+    OAUTH2_JWT_ENABLED = config('OAUTH2_JWT_ENABLED', False)
+    OAUTH2_JWT_ISS = config('OAUTH2_JWT_ISS', '')
+    OAUTH2_JWT_KEY = config('OAUTH2_JWT_KEY', None)
+    OAUTH2_JWT_ALG = config('OAUTH2_JWT_ALG', 'HS256')

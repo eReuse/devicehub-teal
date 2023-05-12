@@ -41,6 +41,9 @@ class User(UserMixin, Thing):
 
     # todo set restriction that user has, at least, one active db
 
+    def get_user_id(self):
+        return self.id
+
     def __init__(
         self, email, password=None, inventories=None, active=True, phantom=False
     ) -> None:
