@@ -104,11 +104,13 @@ class UserProfileView(GenericMixin):
         if g.user.sanitization_entity:
             sanitization = g.user.sanitization_entity
             sanitization_form = SanitizationEntityForm(obj=sanitization)
+        oidc = 'oidc' in app.blueprints.keys()
         self.context.update(
             {
                 'current_user': current_user,
                 'password_form': PasswordForm(),
                 'sanitization_form': sanitization_form,
+                'oidc': oidc,
             }
         )
 

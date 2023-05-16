@@ -39,6 +39,11 @@
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-sanitization-entity">Sanitization Entity</button>
             </li>
+            {% if oidc %}
+            <li class="nav-item">
+              <a href="{{ url_for('oidc.create_client') }}" class="nav-link">OpenID Connect</a>
+            </li>
+            {% endif %}
           </ul>
           <div class="tab-content pt-2">
 
