@@ -53,6 +53,7 @@
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#validateModal">Validate</button>
                 {% else %}
                 <button class="btn btn-primary" id="buttonRol" data-bs-toggle="modal" data-bs-target="#rolsModal">Select your rol</button>
+                <a class="btn btn-primary" href="{{ url_for('core.logout') }}">Logout</a>
                 {% endif %}
             </li>
           </ul>
