@@ -2,7 +2,7 @@ import flask
 from decouple import config
 from flask import Blueprint
 from flask import current_app as app
-from flask import g
+from flask import g, session
 from flask.views import View
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import or_
@@ -64,6 +64,8 @@ class LoginView(View):
 
 class LogoutView(View):
     def dispatch_request(self):
+        session_vars = ['token_dlt', 'rols']
+        [session.pop(i, '') for i in session_vars]
         logout_user()
         return flask.redirect(flask.url_for('core.login'))
 

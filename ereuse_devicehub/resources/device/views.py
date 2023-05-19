@@ -1,7 +1,4 @@
 import datetime
-import uuid
-from itertools import filterfalse
-
 import flask
 import marshmallow
 from ereuseapi.methods import API
@@ -10,14 +7,12 @@ from flask import current_app as app
 from flask import g, render_template, request, session
 from flask.json import jsonify
 from flask_sqlalchemy import Pagination
-from marshmallow import Schema as MarshmallowSchema
 from marshmallow import fields
 from marshmallow import fields as f
 from marshmallow import validate as v
 from sqlalchemy.util import OrderedSet
 from teal import query
 from teal.cache import cache
-from teal.db import ResourceNotFound
 from teal.marshmallow import ValidationError
 from teal.resource import View
 
@@ -30,7 +25,6 @@ from ereuse_devicehub.resources.action.models import Trade
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.device.models import Computer, Device, Manufacturer
 from ereuse_devicehub.resources.device.search import DeviceSearch
-from ereuse_devicehub.resources.enums import SnapshotSoftware
 from ereuse_devicehub.resources.lot.models import LotDeviceDescendants
 from ereuse_devicehub.resources.tag.model import Tag
 
@@ -138,8 +132,12 @@ class DeviceView(View):
             return self.one_private(id)
 
     def get_rols(self):
-        if not g.user.is_authenticated:
+        rols = session.get('rols')
+        if not g.user.is_authenticated and not rols:
             return []
+
+        if rols:
+            return [(k, k) for k in rols]
 
         if 'trublo' not in app.blueprints.keys():
             return []
@@ -184,8 +182,10 @@ class DeviceView(View):
         placeholder = device.binding or device.placeholder
         device_abstract = placeholder and placeholder.binding or device
         device_real = placeholder and placeholder.device or device
+        oidc = 'oidc' in app.blueprints.keys()
         return render_template(
             'devices/layout.html',
+            oidc=oidc,
             placeholder=placeholder,
             device=device,
             device_abstract=device_abstract,
