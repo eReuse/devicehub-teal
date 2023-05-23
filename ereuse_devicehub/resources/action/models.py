@@ -544,6 +544,24 @@ class ErasePhysical(EraseBasic):
         return "Physical"
 
 
+class EraseDataWipe(EraseBasic):
+    """The device has been selected for insert one proof of erease disk."""
+
+    id = Column(UUID(as_uuid=True), ForeignKey(EraseBasic.id), primary_key=True)
+    document_comment = """The user that gets the device due this deal."""
+    document_id = db.Column(
+        BigInteger, db.ForeignKey('data_wipe_document.id'), nullable=False
+    )
+    document = db.relationship(
+        'DataWipeDocument',
+        backref=backref('erase_actions', lazy=True, cascade=CASCADE_OWN),
+        primaryjoin='EraseDataWipe.document_id == DataWipeDocument.id',
+    )
+
+    def get_public_name(self):
+        return "EraseDataWipe"
+
+
 class Step(db.Model):
     erasure_id = Column(
         UUID(as_uuid=True),
@@ -1539,6 +1557,7 @@ class ToPrepare(ActionWithMultipleDevices):
 
 
 class DataWipe(JoinedTableMixin, ActionWithMultipleDevices):
+    # class DataWipe(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """The device has been selected for insert one proof of erease disk."""
 
     document_comment = """The user that gets the device due this deal."""

@@ -1176,9 +1176,9 @@ class ExportsView(View):
             row = [
                 ac.device.serial_number.upper(),
                 ac.device.dhid,
-                ac.snapshot.uuid,
+                ac.snapshot.uuid if ac.snapshot else '',
                 ac.type,
-                ac.get_phid(),
+                ac.parent.phid() if ac.parent else '',
                 ac.severity,
                 ac.created.strftime('%Y-%m-%d %H:%M:%S'),
             ]
