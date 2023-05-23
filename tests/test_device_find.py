@@ -1,40 +1,46 @@
-import pytest
 import uuid
-from teal.utils import compiled
+
+import pytest
 
 from ereuse_devicehub.client import UserClient
 from ereuse_devicehub.db import db
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.resources.action.models import Snapshot
-from ereuse_devicehub.resources.device.models import Desktop, Device, GraphicCard, Laptop, Server, \
-    SolidStateDrive
+from ereuse_devicehub.resources.device.models import (
+    Desktop,
+    Device,
+    GraphicCard,
+    Laptop,
+    Server,
+    SolidStateDrive,
+)
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.device.views import Filters, Sorting
 from ereuse_devicehub.resources.enums import ComputerChassis
 from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.teal.utils import compiled
 from tests import conftest
-from tests.conftest import file, yaml2json, json_encode
+from tests.conftest import file, json_encode, yaml2json
 
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_device_filters():
     schema = Filters()
-    q = schema.load({
-        'type': ['Computer', 'Laptop'],
-        'manufacturer': 'Dell',
-        'rating': {
-            'rating': [3, 6],
-            'appearance': [2, 4]
-        },
-        'tag': {
-            'id': ['bcn-', 'activa-02']
+    q = schema.load(
+        {
+            'type': ['Computer', 'Laptop'],
+            'manufacturer': 'Dell',
+            'rating': {'rating': [3, 6], 'appearance': [2, 4]},
+            'tag': {'id': ['bcn-', 'activa-02']},
         }
-    })
+    )
     s, params = compiled(Device, q)
     # Order between query clauses can change
-    assert '(device.type IN (%(type_1)s, %(type_2)s, %(type_3)s, %(type_4)s) ' \
-           'OR device.type IN (%(type_5)s))' in s
+    assert (
+        '(device.type IN (%(type_1)s, %(type_2)s, %(type_3)s, %(type_4)s) '
+        'OR device.type IN (%(type_5)s))' in s
+    )
     assert 'device.manufacturer ILIKE %(manufacturer_1)s' in s
     assert 'rate.rating BETWEEN %(rating_1)s AND %(rating_2)s' in s
     assert 'rate.appearance BETWEEN %(appearance_1)s AND %(appearance_2)s' in s
@@ -42,11 +48,33 @@ def test_device_filters():
 
     # type_x can be assigned at different values
     # ex: type_1 can be 'Desktop' in one execution but the next one 'Laptop'
-    assert set(params.keys()) == {'id_2', 'appearance_1', 'type_1', 'type_4', 'rating_2', 'type_5',
-                                  'type_3', 'type_2', 'appearance_2', 'id_1', 'rating_1',
-                                  'manufacturer_1'}
-    assert set(params.values()) == {2.0, 'Laptop', 4.0, 3.0, 6.0, 'Desktop', 'activa-02%',
-                                    'Server', 'Dell%', 'Computer', 'bcn-%'}
+    assert set(params.keys()) == {
+        'id_2',
+        'appearance_1',
+        'type_1',
+        'type_4',
+        'rating_2',
+        'type_5',
+        'type_3',
+        'type_2',
+        'appearance_2',
+        'id_1',
+        'rating_1',
+        'manufacturer_1',
+    }
+    assert set(params.values()) == {
+        2.0,
+        'Laptop',
+        4.0,
+        3.0,
+        6.0,
+        'Desktop',
+        'activa-02%',
+        'Server',
+        'Dell%',
+        'Computer',
+        'bcn-%',
+    }
 
 
 @pytest.mark.usefixtures(conftest.app_context.__name__)
@@ -70,22 +98,30 @@ def device_query_dummy(app: Devicehub):
     """
     with app.app_context():
         devices = (  # The order matters ;-)
-            Desktop(serial_number='1',
-                    model='ml1',
-                    manufacturer='mr1',
-                    chassis=ComputerChassis.Tower),
-            Desktop(serial_number='2',
-                    model='ml2',
-                    manufacturer='mr2',
-                    chassis=ComputerChassis.Microtower),
-            Laptop(serial_number='3',
-                   model='ml3',
-                   manufacturer='mr3',
-                   chassis=ComputerChassis.Detachable),
-            Server(serial_number='4',
-                   model='ml4',
-                   manufacturer='mr4',
-                   chassis=ComputerChassis.Tower),
+            Desktop(
+                serial_number='1',
+                model='ml1',
+                manufacturer='mr1',
+                chassis=ComputerChassis.Tower,
+            ),
+            Desktop(
+                serial_number='2',
+                model='ml2',
+                manufacturer='mr2',
+                chassis=ComputerChassis.Microtower,
+            ),
+            Laptop(
+                serial_number='3',
+                model='ml3',
+                manufacturer='mr3',
+                chassis=ComputerChassis.Detachable,
+            ),
+            Server(
+                serial_number='4',
+                model='ml4',
+                manufacturer='mr4',
+                chassis=ComputerChassis.Tower,
+            ),
         )
         devices[0].components.add(
             GraphicCard(serial_number='1-gc', model='s1ml', manufacturer='s1mr')
@@ -116,10 +152,13 @@ def test_device_query_filter_type(user: UserClient):
 
 @pytest.mark.usefixtures(device_query_dummy.__name__)
 def test_device_query_filter_sort(user: UserClient):
-    i, _ = user.get(res=Device, query=[
-        ('sort', {'created': Sorting.DESCENDING}),
-        ('filter', {'type': ['Computer']})
-    ])
+    i, _ = user.get(
+        res=Device,
+        query=[
+            ('sort', {'created': Sorting.DESCENDING}),
+            ('filter', {'type': ['Computer']}),
+        ],
+    )
     assert ('4', '3', '2', '1') == tuple(d['serialNumber'] for d in i['items'])
 
 
@@ -128,46 +167,49 @@ def test_device_query_filter_lots(user: UserClient):
     parent, _ = user.post({'name': 'Parent'}, res=Lot)
     child, _ = user.post({'name': 'Child'}, res=Lot)
 
-    i, _ = user.get(res=Device, query=[
-        ('filter', {'lot': {'id': [parent['id']]}})
-    ])
+    i, _ = user.get(res=Device, query=[('filter', {'lot': {'id': [parent['id']]}})])
     assert not i['items'], 'No devices in lot'
 
-    parent, _ = user.post({},
-                          res=Lot,
-                          item='{}/children'.format(parent['id']),
-                          query=[('id', child['id'])])
-    i, _ = user.get(res=Device, query=[
-        ('filter', {'type': ['Computer']})
-    ])
+    parent, _ = user.post(
+        {},
+        res=Lot,
+        item='{}/children'.format(parent['id']),
+        query=[('id', child['id'])],
+    )
+    i, _ = user.get(res=Device, query=[('filter', {'type': ['Computer']})])
     assert ('1', '2', '3', '4') == tuple(d['serialNumber'] for d in i['items'])
-    parent, _ = user.post({},
-                          res=Lot,
-                          item='{}/devices'.format(parent['id']),
-                          query=[('id', d['id']) for d in i['items'][:2]])
-    child, _ = user.post({},
-                         res=Lot,
-                         item='{}/devices'.format(child['id']),
-                         query=[('id', d['id']) for d in i['items'][2:]])
-    i, _ = user.get(res=Device, query=[
-        ('filter', {'lot': {'id': [parent['id']]}})
-    ])
+    parent, _ = user.post(
+        {},
+        res=Lot,
+        item='{}/devices'.format(parent['id']),
+        query=[('id', d['id']) for d in i['items'][:2]],
+    )
+    child, _ = user.post(
+        {},
+        res=Lot,
+        item='{}/devices'.format(child['id']),
+        query=[('id', d['id']) for d in i['items'][2:]],
+    )
+    i, _ = user.get(res=Device, query=[('filter', {'lot': {'id': [parent['id']]}})])
     assert ('1', '2', '3', '4', '1-gc', '2-ssd', '4-ssd') == tuple(
         x['serialNumber'] for x in i['items']
-    ), 'The parent lot contains 2 items plus indirectly the other ' \
-       '2 from the child lot, with all their 2 components'
+    ), (
+        'The parent lot contains 2 items plus indirectly the other '
+        '2 from the child lot, with all their 2 components'
+    )
 
-    i, _ = user.get(res=Device, query=[
-        ('filter', {'type': ['Computer'], 'lot': {'id': [parent['id']]}}),
-    ])
+    i, _ = user.get(
+        res=Device,
+        query=[
+            ('filter', {'type': ['Computer'], 'lot': {'id': [parent['id']]}}),
+        ],
+    )
     assert ('1', '2', '3', '4') == tuple(x['serialNumber'] for x in i['items'])
-    s, _ = user.get(res=Device, query=[
-        ('filter', {'lot': {'id': [child['id']]}})
-    ])
+    s, _ = user.get(res=Device, query=[('filter', {'lot': {'id': [child['id']]}})])
     assert ('3', '4', '4-ssd') == tuple(x['serialNumber'] for x in s['items'])
-    s, _ = user.get(res=Device, query=[
-        ('filter', {'lot': {'id': [child['id'], parent['id']]}})
-    ])
+    s, _ = user.get(
+        res=Device, query=[('filter', {'lot': {'id': [child['id'], parent['id']]}})]
+    )
     assert ('1', '2', '3', '4', '1-gc', '2-ssd', '4-ssd') == tuple(
         x['serialNumber'] for x in s['items']
     ), 'Adding both lots is redundant in this case and we have the 4 elements.'

@@ -172,7 +172,7 @@
                   <li>
                     <a href="javascript:export_file('certificates')" class="dropdown-item">
                       <i class="bi bi-eraser-fill"></i>
-                      Erasure Certificate
+                      Device Sanitization
                     </a>
                   </li>
                 </ul>
@@ -254,7 +254,7 @@
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="btnSnapshot">
                   <li>
-                    <a href="{{ url_for('inventory.trade_document_add', lot_id=lot.id)}}" class="dropdown-item">
+                    <a href="{{ url_for('inventory.transfer_document_add', lot_id=lot.id)}}" class="dropdown-item">
                       <i class="bi bi-plus"></i>
                       Add new document
                       <span class="caret"></span>

@@ -73,7 +73,7 @@
           </li>
           <li>
             <a class="dropdown-item d-flex align-items-center" href="{{ url_for('inventory.device_erasure_list') }}">
-              <i class="bi bi-tag"></i><span>Data Storage Erasures</span>
+              <i class="bi bi-eraser-fill"></i><span>Drives Sanitization</span>
             </a>
           </li>
         </ul>
@@ -193,7 +193,7 @@
         {% else %}
         <a class="nav-link collapsed" data-bs-target="#incoming-lots-nav" data-bs-toggle="collapse" href="#">
           {% endif %}
-          <i class="bi bi-arrow-down-right"></i><span>Incoming Lots</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-arrow-down-right"></i><span>Incoming</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         {% if lot and lot.is_incoming %}
         <ul id="incoming-lots-nav" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
@@ -223,7 +223,7 @@
         {% else %}
         <a class="nav-link collapsed" data-bs-target="#outgoing-lots-nav" data-bs-toggle="collapse" href="#">
           {% endif %}
-          <i class="bi bi-arrow-up-right"></i><span>Outgoing Lots</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-arrow-up-right"></i><span>Outgoing</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         {% if lot and lot.is_outgoing %}
         <ul id="outgoing-lots-nav" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
@@ -253,7 +253,7 @@
         {% else %}
         <a class="nav-link collapsed" data-bs-target="#temporal-lots-nav" data-bs-toggle="collapse" href="#">
           {% endif %}
-          <i class="bi bi-layout-text-window-reverse"></i><span>Temporary Lots</span><i
+          <i class="bi bi-layout-text-window-reverse"></i><span>Temporary</span><i
             class="bi bi-chevron-down ms-auto"></i>
         </a>
         {% if lot and lot.is_temporary %}
@@ -276,7 +276,28 @@
             {% endif %}
             {% endfor %}
           </ul>
+    </li>
+    {% if share_lots.all() %}
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#share-lots-nav" data-bs-toggle="collapse" href="javascript:void()">
+      <i class="bi bi-share-fill"></i><span>Shared with me</span><i
+            class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      {% if lot and lot.is_shared %}
+      <ul id="share-lots-nav" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
+      {% else %}
+      <ul id="share-lots-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+      {% endif %}
+      {% for lot in share_lots %}
+      <li>
+        <a href="{{ url_for('inventory.lotdevicelist', lot_id=lot.lot_id) }}">
+          <i class="bi bi-circle"></i><span>{{ lot.lot.name }}</span>
+        </a>
+       </li>
+      {% endfor %}
+      </ul>
     </li><!-- End Temporal Lots Nav -->
+    {% endif %}
 
   </ul>
 

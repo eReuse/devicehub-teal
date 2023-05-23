@@ -14,6 +14,7 @@ from flask import current_app as app
 from flask import g, make_response, request, url_for
 from flask.views import View
 from flask_login import current_user, login_required
+from sqlalchemy import or_
 from werkzeug.exceptions import NotFound
 
 from ereuse_devicehub import messages
@@ -24,6 +25,7 @@ from ereuse_devicehub.inventory.forms import (
     BindingForm,
     CustomerDetailsForm,
     DataWipeForm,
+    DeviceDocumentForm,
     EditTransferForm,
     FilterForm,
     LotForm,
@@ -50,7 +52,7 @@ from ereuse_devicehub.resources.device.models import (
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
 from ereuse_devicehub.resources.enums import SnapshotSoftware
 from ereuse_devicehub.resources.hash_reports import insert_hash
-from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.lot.models import Lot, ShareLot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.views import GenericMixin
 
@@ -72,19 +74,25 @@ class DeviceListMixin(GenericMixin):
         per_page = int(request.args.get('per_page', PER_PAGE))
         filter = request.args.get('filter', "All+Computers")
 
+        lot = None
+
+        share_lots = self.context['share_lots']
+        share_lot = share_lots.filter_by(lot_id=lot_id).first()
+        if share_lot:
+            lot = share_lot.lot
+
         lots = self.context['lots']
-        form_filter = FilterForm(lots, lot_id, all_devices=all_devices)
+        form_filter = FilterForm(lots, lot, lot_id, all_devices=all_devices)
         devices = form_filter.search().paginate(page=page, per_page=per_page)
         devices.first = per_page * devices.page - per_page + 1
         devices.last = len(devices.items) + devices.first - 1
 
-        lot = None
         form_transfer = ''
         form_delivery = ''
         form_receiver = ''
         form_customer_details = ''
 
-        if lot_id:
+        if lot_id and not lot:
             lot = lots.filter(Lot.id == lot_id).one()
             if not lot.is_temporary and lot.transfer:
                 form_transfer = EditTransferForm(lot_id=lot.id)
@@ -110,6 +118,7 @@ class DeviceListMixin(GenericMixin):
                 'list_devices': self.get_selected_devices(form_new_action),
                 'all_devices': all_devices,
                 'filter': filter,
+                'share_lots': share_lots,
             }
         )
 
@@ -536,14 +545,36 @@ class LotDeleteView(View):
 
     def dispatch_request(self, id):
         form = LotForm(id=id)
-        if form.instance.trade:
-            msg = "Sorry, the lot cannot be deleted because have a trade action "
+        shared = ShareLot.query.filter_by(lot=form.instance).first()
+        if form.instance.trade or shared:
+            msg = "Sorry, the lot cannot be deleted because this lot is share"
             messages.error(msg)
             next_url = url_for('inventory.lotdevicelist', lot_id=id)
             return flask.redirect(next_url)
 
         form.remove()
         next_url = url_for('inventory.devicelist')
+        return flask.redirect(next_url)
+
+
+class DocumentDeleteView(View):
+    methods = ['GET']
+    decorators = [login_required]
+    template_name = 'inventory/device_list.html'
+    form_class = TradeDocumentForm
+
+    def dispatch_request(self, lot_id, doc_id):
+        next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+        form = self.form_class(lot=lot_id, document=doc_id)
+        try:
+            form.remove()
+        except Exception as err:
+            msg = "{}".format(err)
+            messages.error(msg)
+            return flask.redirect(next_url)
+
+        msg = "Document removed successfully."
+        messages.success(msg)
         return flask.redirect(next_url)
 
 
@@ -789,6 +820,69 @@ class NewTradeView(DeviceListMixin, NewActionView):
         return flask.redirect(next_url)
 
 
+class NewDeviceDocumentView(GenericMixin):
+    methods = ['POST', 'GET']
+    decorators = [login_required]
+    template_name = 'inventory/device_document.html'
+    form_class = DeviceDocumentForm
+    title = "Add new document"
+
+    def dispatch_request(self, dhid):
+        self.form = self.form_class(dhid=dhid)
+        self.get_context()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success('Document created successfully!')
+            next_url = url_for('inventory.device_details', id=dhid)
+            return flask.redirect(next_url)
+
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
+
+
+class EditDeviceDocumentView(GenericMixin):
+    decorators = [login_required]
+    methods = ['POST', 'GET']
+    template_name = 'inventory/device_document.html'
+    form_class = DeviceDocumentForm
+    title = "Edit document"
+
+    def dispatch_request(self, dhid, doc_id):
+        self.form = self.form_class(dhid=dhid, document=doc_id)
+        self.get_context()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success('Edit document successfully!')
+            next_url = url_for('inventory.device_details', id=dhid)
+            return flask.redirect(next_url)
+
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
+
+
+class DeviceDocumentDeleteView(View):
+    methods = ['GET']
+    decorators = [login_required]
+    template_name = 'inventory/device_detail.html'
+    form_class = DeviceDocumentForm
+
+    def dispatch_request(self, dhid, doc_id):
+        self.form = self.form_class(dhid=dhid, document=doc_id)
+        next_url = url_for('inventory.device_details', id=dhid)
+        try:
+            self.form.remove()
+        except Exception as err:
+            msg = "{}".format(err)
+            messages.error(msg)
+            return flask.redirect(next_url)
+
+        msg = "Document removed successfully."
+        messages.success(msg)
+        return flask.redirect(next_url)
+
+
 class NewTradeDocumentView(GenericMixin):
     methods = ['POST', 'GET']
     decorators = [login_required]
@@ -803,6 +897,27 @@ class NewTradeDocumentView(GenericMixin):
         if self.form.validate_on_submit():
             self.form.save()
             messages.success('Document created successfully!')
+            next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
+            return flask.redirect(next_url)
+
+        self.context.update({'form': self.form, 'title': self.title})
+        return flask.render_template(self.template_name, **self.context)
+
+
+class EditTransferDocumentView(GenericMixin):
+    decorators = [login_required]
+    methods = ['POST', 'GET']
+    template_name = 'inventory/trade_document.html'
+    form_class = TradeDocumentForm
+    title = "Edit document"
+
+    def dispatch_request(self, lot_id, doc_id):
+        self.form = self.form_class(lot=lot_id, document=doc_id)
+        self.get_context()
+
+        if self.form.validate_on_submit():
+            self.form.save()
+            messages.success('Edit document successfully!')
             next_url = url_for('inventory.lotdevicelist', lot_id=lot_id)
             return flask.redirect(next_url)
 
@@ -899,9 +1014,20 @@ class ExportsView(View):
         return export_ids[export_id]()
 
     def find_devices(self):
+        sql = """
+            select lot_device.device_id as id from {schema}.share_lot as share
+                inner join {schema}.lot_device as lot_device
+                    on share.lot_id=lot_device.lot_id
+                where share.user_to_id='{user_id}'
+        """.format(
+            schema=app.config.get('SCHEMA'), user_id=g.user.id
+        )
+
+        shared = (x[0] for x in db.session.execute(sql))
+
         args = request.args.get('ids')
         ids = args.split(',') if args else []
-        query = Device.query.filter(Device.owner == g.user)
+        query = Device.query.filter(or_(Device.owner == g.user, Device.id.in_(shared)))
         return query.filter(Device.devicehub_id.in_(ids))
 
     def response_csv(self, data, name):
@@ -1149,7 +1275,7 @@ class ExportsView(View):
         n_computers = len({x.parent for x in erasures} - erasures_host)
 
         params = {
-            'title': 'Erasure Certificate',
+            'title': 'Device Sanitization',
             'erasures': tuple(erasures),
             'url_pdf': '',
             'date_report': '{:%c}'.format(datetime.datetime.now()),
@@ -1196,12 +1322,18 @@ class ExportsView(View):
                 'Receiver Note Date',
                 'Receiver Note Units',
                 'Receiver Note Weight',
+                'Customer Company Name',
+                'Customer Location',
             ]
         )
 
-        for lot in Lot.query.filter_by(owner=g.user):
+        all_lots = set(Lot.query.filter_by(owner=g.user).all())
+        share_lots = [s.lot for s in ShareLot.query.filter_by(user_to=g.user)]
+        all_lots = all_lots.union(share_lots)
+        for lot in all_lots:
             delivery_note = lot.transfer and lot.transfer.delivery_note or ''
             receiver_note = lot.transfer and lot.transfer.receiver_note or ''
+            customer = lot.transfer and lot.transfer.customer_details or ''
             wb_devs = 0
             placeholders = 0
 
@@ -1214,10 +1346,13 @@ class ExportsView(View):
                 elif snapshots[-1].software in [SnapshotSoftware.Workbench]:
                     wb_devs += 1
 
+            type_lot = lot.type_transfer()
+            if lot in share_lots:
+                type_lot = "Shared"
             row = [
                 lot.id,
                 lot.name,
-                lot.type_transfer(),
+                type_lot,
                 lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
                 lot.transfer and lot.transfer.code or '',
                 lot.transfer and lot.transfer.date or '',
@@ -1235,6 +1370,8 @@ class ExportsView(View):
                 receiver_note and receiver_note.date or '',
                 receiver_note and receiver_note.units or '',
                 receiver_note and receiver_note.weight or '',
+                customer and customer.company_name or '',
+                customer and customer.location or '',
             ]
             cw.writerow(row)
 
@@ -1264,11 +1401,14 @@ class ExportsView(View):
 
         for dev in self.find_devices():
             for lot in dev.lots:
+                type_lot = lot.type_transfer()
+                if lot.is_shared:
+                    type_lot = "Shared"
                 row = [
                     dev.devicehub_id,
                     lot.id,
                     lot.name,
-                    lot.type_transfer(),
+                    type_lot,
                     lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
                     lot.transfer and lot.transfer.code or '',
                     lot.transfer and lot.transfer.date or '',
@@ -1512,8 +1652,28 @@ devices.add_url_rule(
     '/action/datawipe/add/', view_func=NewDataWipeView.as_view('datawipe_add')
 )
 devices.add_url_rule(
-    '/lot/<string:lot_id>/trade-document/add/',
-    view_func=NewTradeDocumentView.as_view('trade_document_add'),
+    '/device/<string:dhid>/document/add/',
+    view_func=NewDeviceDocumentView.as_view('device_document_add'),
+)
+devices.add_url_rule(
+    '/device/<string:dhid>/document/edit/<string:doc_id>',
+    view_func=EditDeviceDocumentView.as_view('device_document_edit'),
+)
+devices.add_url_rule(
+    '/device/<string:dhid>/document/del/<string:doc_id>',
+    view_func=DeviceDocumentDeleteView.as_view('device_document_del'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/transfer-document/add/',
+    view_func=NewTradeDocumentView.as_view('transfer_document_add'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/document/edit/<string:doc_id>',
+    view_func=EditTransferDocumentView.as_view('transfer_document_edit'),
+)
+devices.add_url_rule(
+    '/lot/<string:lot_id>/document/del/<string:doc_id>',
+    view_func=DocumentDeleteView.as_view('document_del'),
 )
 devices.add_url_rule('/device/', view_func=DeviceListView.as_view('devicelist'))
 devices.add_url_rule(

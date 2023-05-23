@@ -32,6 +32,7 @@ from wtforms.fields import FormField
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.models import (
     DeliveryNote,
+    DeviceDocument,
     ReceiverNote,
     Transfer,
     TransferCustomerDetails,
@@ -69,7 +70,7 @@ from ereuse_devicehub.resources.device.models import (
 from ereuse_devicehub.resources.documents.models import DataWipeDocument
 from ereuse_devicehub.resources.enums import Severity
 from ereuse_devicehub.resources.hash_reports import insert_hash
-from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.lot.models import Lot, ShareLot
 from ereuse_devicehub.resources.tag.model import Tag
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.models import User
@@ -109,6 +110,15 @@ DEVICES = {
     ],
     "Other Devices": ["Other"],
 }
+
+TYPES_DOCUMENTS = [
+    ("", ""),
+    ("image", "Image"),
+    ("main_image", "Main Image"),
+    ("functionality_report", "Functionality Report"),
+    ("data_sanitization_report", "Data Sanitization Report"),
+    ("disposition_report", "Disposition Report"),
+]
 
 COMPUTERS = ['Desktop', 'Laptop', 'Server', 'Computer']
 
@@ -150,11 +160,14 @@ class FilterForm(FlaskForm):
         '', choices=DEVICES, default="All Computers", render_kw={'class': "form-select"}
     )
 
-    def __init__(self, lots, lot_id, *args, **kwargs):
+    def __init__(self, lots, lot, lot_id, *args, **kwargs):
         self.all_devices = kwargs.pop('all_devices', False)
         super().__init__(*args, **kwargs)
         self.lots = lots
+        self.lot = lot
         self.lot_id = lot_id
+        if self.lot_id and not self.lot:
+            self.lot = self.lots.filter(Lot.id == self.lot_id).one()
         self._get_types()
 
     def _get_types(self):
@@ -165,8 +178,7 @@ class FilterForm(FlaskForm):
             self.filter.data = self.device_type
 
     def filter_from_lots(self):
-        if self.lot_id:
-            self.lot = self.lots.filter(Lot.id == self.lot_id).one()
+        if self.lot:
             device_ids = (d.id for d in self.lot.devices)
             self.devices = Device.query.filter(Device.id.in_(device_ids)).filter(
                 Device.binding == None  # noqa: E711
@@ -246,7 +258,8 @@ class LotForm(FlaskForm):
         return self.id
 
     def remove(self):
-        if self.instance and not self.instance.trade:
+        shared = ShareLot.query.filter_by(lot=self.instance).first()
+        if self.instance and not self.instance.trade and not shared:
             self.instance.delete()
             db.session.commit()
         return self.instance
@@ -459,8 +472,6 @@ class NewDeviceForm(FlaskForm):
         if self._obj.placeholder.is_abstract:
             self.type.render_kw = disabled
             self.amount.render_kw = disabled
-            # self.id_device_supplier.render_kw = disabled
-            self.pallet.render_kw = disabled
             self.info.render_kw = disabled
             self.components.render_kw = disabled
             self.serial_number.render_kw = disabled
@@ -674,6 +685,14 @@ class NewDeviceForm(FlaskForm):
             ):
                 self._obj.set_functionality(self.functionality.data)
 
+        else:
+            self._obj.placeholder.id_device_supplier = (
+                self.id_device_supplier.data or None
+            )
+            self._obj.placeholder.id_device_internal = (
+                self.id_device_internal.data or None
+            )
+            self._obj.placeholder.pallet = self.pallet.data or None
         placeholder_log = PlaceholdersLog(
             type="Update", source='Web form', placeholder=self._obj.placeholder
         )
@@ -1275,8 +1294,24 @@ class TradeDocumentForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         lot_id = kwargs.pop('lot')
-        super().__init__(*args, **kwargs)
+        doc_id = kwargs.pop('document', None)
         self._lot = Lot.query.filter(Lot.id == lot_id).one()
+        self._obj = None
+        if doc_id:
+            self._obj = TradeDocument.query.filter_by(
+                id=doc_id, lot=self._lot, owner=g.user
+            ).one()
+        kwargs['obj'] = self._obj
+
+        if not self.file_name.args:
+            self.file_name.args = ("File", [validators.DataRequired()])
+        if doc_id:
+            self.file_name.args = ()
+        super().__init__(*args, **kwargs)
+
+        if self._obj:
+            if isinstance(self.url.data, URL):
+                self.url.data = self.url.data.to_text()
 
         if not self._lot.transfer:
             self.form_errors = ['Error, this lot is not a transfer lot.']
@@ -1292,20 +1327,141 @@ class TradeDocumentForm(FlaskForm):
     def save(self, commit=True):
         file_name = ''
         file_hash = ''
+        if self._obj:
+            file_name = self._obj.file_name
+            file_hash = self._obj.file_hash
+
         if self.file_name.data:
             file_name = self.file_name.data.filename
             file_hash = insert_hash(self.file_name.data.read(), commit=False)
 
         self.url.data = URL(self.url.data)
-        self._obj = TradeDocument(lot_id=self._lot.id)
+        if not self._obj:
+            self._obj = TradeDocument(lot_id=self._lot.id)
+
         self.populate_obj(self._obj)
+
         self._obj.file_name = file_name
         self._obj.file_hash = file_hash
-        db.session.add(self._obj)
-        self._lot.documents.add(self._obj)
+
+        if not self._obj.id:
+            db.session.add(self._obj)
+            self._lot.documents.add(self._obj)
+
         if commit:
             db.session.commit()
 
+        return self._obj
+
+    def remove(self):
+        if self._obj:
+            self._obj.delete()
+            db.session.commit()
+        return self._obj
+
+
+class DeviceDocumentForm(FlaskForm):
+    url = URLField(
+        'Url',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="Url where the document resides",
+    )
+    description = StringField(
+        'Description',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="",
+    )
+    id_document = StringField(
+        'Document Id',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="Identification number of document",
+    )
+    type = SelectField(
+        'Type',
+        [validators.Optional()],
+        choices=TYPES_DOCUMENTS,
+        default="",
+        render_kw={'class': "form-select"},
+    )
+    date = DateField(
+        'Date',
+        [validators.Optional()],
+        render_kw={'class': "form-control"},
+        description="",
+    )
+    file_name = FileField(
+        'File',
+        [validators.DataRequired()],
+        render_kw={'class': "form-control"},
+        description="""This file is not stored on our servers, it is only used to
+                                  generate a digital signature and obtain the name of the file.""",
+    )
+
+    def __init__(self, *args, **kwargs):
+        id = kwargs.pop('dhid')
+        doc_id = kwargs.pop('document', None)
+        self._device = Device.query.filter(Device.devicehub_id == id).first()
+        self._obj = None
+        if doc_id:
+            self._obj = DeviceDocument.query.filter_by(
+                id=doc_id, device=self._device, owner=g.user
+            ).one()
+        kwargs['obj'] = self._obj
+
+        if not self.file_name.args:
+            self.file_name.args = ("File", [validators.DataRequired()])
+        if doc_id:
+            self.file_name.args = ()
+        super().__init__(*args, **kwargs)
+
+        if self._obj:
+            if isinstance(self.url.data, URL):
+                self.url.data = self.url.data.to_text()
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+
+        if g.user != self._device.owner:
+            is_valid = False
+
+        return is_valid
+
+    def save(self, commit=True):
+        file_name = ''
+        file_hash = ''
+        if self._obj:
+            file_name = self._obj.file_name
+            file_hash = self._obj.file_hash
+
+        if self.file_name.data:
+            file_name = self.file_name.data.filename
+            file_hash = insert_hash(self.file_name.data.read(), commit=False)
+
+        self.url.data = URL(self.url.data)
+        if not self._obj:
+            self._obj = DeviceDocument(device_id=self._device.id)
+
+        self.populate_obj(self._obj)
+
+        self._obj.file_name = file_name
+        self._obj.file_hash = file_hash
+
+        if not self._obj.id:
+            db.session.add(self._obj)
+            # self._device.documents.add(self._obj)
+
+        if commit:
+            db.session.commit()
+
+        return self._obj
+
+    def remove(self):
+        if self._obj:
+            self._obj.delete()
+            db.session.commit()
         return self._obj
 
 

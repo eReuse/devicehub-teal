@@ -30,6 +30,10 @@ $(document).ready(() => {
 
   ;
   select_shift(); // $('#selectLot').selectpicker();
+
+  $("#filter").on("change", () => {
+    $("#submit_filter").click();
+  });
 });
 
 class TableController {
@@ -211,8 +215,8 @@ function removeLot() {
 }
 
 function select_shift() {
-  const chkboxes = $('.deviceSelect');
-  var lastChecked = null;
+  const chkboxes = $(".deviceSelect");
+  let lastChecked = null;
   chkboxes.click(function (e) {
     if (!lastChecked) {
       lastChecked = this;
@@ -324,16 +328,15 @@ function export_file(type_file) {
 
 function export_actions_erasure(type_file) {
   const actions = TableController.getSelectedDevices();
-  const actions_id = $.map(actions, (x) => $(x).attr("data-action-erasure")).join(",");
+  const actions_id = $.map(actions, x => $(x).attr("data-action-erasure")).join(",");
 
   if (actions_id) {
-    const url = `/inventory/export/${type_file}/?ids=${actions_id}`;
+    const url = "/inventory/export/".concat(type_file, "/?ids=").concat(actions_id);
     window.location.href = url;
   } else {
     $("#exportAlertModal").click();
   }
 }
-
 
 class lotsSearcher {
   static enable() {
@@ -663,19 +666,14 @@ async function processSelectedDevices() {
 
       return lot;
     });
-
     listHTML.html("");
     const lot_temporary = lots.filter(lot => !lot.transfer && !lot.trade);
     appendMenu(lot_temporary, listHTML, templateLot, selectedDevices, actions, "Temporary");
-
     const lot_incoming = lots.filter(lot => lot.transfer && lot.transfer == "Incoming");
     appendMenu(lot_incoming, listHTML, templateLot, selectedDevices, actions, "Incoming");
-
     const lot_outgoing = lots.filter(lot => lot.transfer && lot.transfer == "Outgoing");
     appendMenu(lot_outgoing, listHTML, templateLot, selectedDevices, actions, "Outgoing");
-
     lotsSearcher.enable();
-
   } catch (error) {
     console.log(error);
     listHTML.html("<li style=\"color: red; text-align: center\">Error feching devices and lots<br>(see console for more details)</li>");
@@ -689,6 +687,6 @@ function appendMenu(lots, listHTML, templateLot, selectedDevices, actions, title
   lotsList.push(lots.filter(lot => lot.state == "false").sort((a, b) => a.name.localeCompare(b.name)));
   lotsList = lotsList.flat(); // flat array
 
-  listHTML.append(`<li style="color: black; text-align: center">${  title  }<hr /></li>`);
+  listHTML.append("<li style=\"color: black; text-align: center\">".concat(title, "<hr /></li>"));
   lotsList.forEach(lot => templateLot(lot, selectedDevices, listHTML, actions));
 }

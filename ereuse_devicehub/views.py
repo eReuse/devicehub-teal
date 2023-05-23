@@ -11,7 +11,7 @@ from ereuse_devicehub import __version__, messages
 from ereuse_devicehub.db import db
 from ereuse_devicehub.forms import LoginForm, PasswordForm, SanitizationEntityForm
 from ereuse_devicehub.resources.action.models import Trade
-from ereuse_devicehub.resources.lot.models import Lot
+from ereuse_devicehub.resources.lot.models import Lot, ShareLot
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.utils import is_safe_url
 
@@ -91,6 +91,7 @@ class GenericMixin(View):
         self.context = {
             'lots': self.get_lots(),
             'version': __version__,
+            'share_lots': ShareLot.query.filter_by(user_to=g.user),
         }
 
         return self.context

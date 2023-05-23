@@ -2,10 +2,6 @@ from distutils.version import StrictVersion
 from itertools import chain
 
 from decouple import config
-from teal.auth import TokenAuth
-from teal.config import Config
-from teal.enums import Currency
-from teal.utils import import_resource
 
 from ereuse_devicehub.resources import (
     action,
@@ -24,6 +20,10 @@ from ereuse_devicehub.resources.licences import licences
 from ereuse_devicehub.resources.metric import definitions as metric_def
 from ereuse_devicehub.resources.tradedocument import definitions as tradedocument
 from ereuse_devicehub.resources.versions import versions
+from ereuse_devicehub.teal.auth import TokenAuth
+from ereuse_devicehub.teal.config import Config
+from ereuse_devicehub.teal.enums import Currency
+from ereuse_devicehub.teal.utils import import_resource
 
 
 class DevicehubConfig(Config):

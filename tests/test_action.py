@@ -14,7 +14,6 @@ from flask import current_app as app
 from flask import g
 from pytest import raises
 from sqlalchemy.util import OrderedSet
-from teal.enums import Currency
 
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.db import db
@@ -39,6 +38,7 @@ from ereuse_devicehub.resources.enums import (
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.enums import Currency
 from tests import conftest
 from tests.conftest import create_user, file, json_encode, yaml2json
 

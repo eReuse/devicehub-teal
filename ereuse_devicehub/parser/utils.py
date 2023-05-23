@@ -5,7 +5,7 @@ import struct
 from contextlib import contextmanager
 from enum import Enum
 
-from ereuse_utils import Dumpeable
+from ereuse_devicehub.ereuse_utils import Dumpeable
 
 
 class Severity(Enum):

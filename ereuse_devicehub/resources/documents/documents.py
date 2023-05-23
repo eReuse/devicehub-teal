@@ -11,14 +11,12 @@ from typing import Callable, Iterable, Tuple
 import boltons
 import flask
 import flask_weasyprint
-import teal.marshmallow
 from boltons import urlutils
 from flask import current_app as app
 from flask import g, make_response, request
 from flask.json import jsonify
-from teal.cache import cache
-from teal.resource import Resource, View
 
+import ereuse_devicehub.teal.marshmallow
 from ereuse_devicehub import auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.action import models as evs
@@ -37,6 +35,8 @@ from ereuse_devicehub.resources.hash_reports import ReportHash, insert_hash, ver
 from ereuse_devicehub.resources.lot import LotView
 from ereuse_devicehub.resources.lot.models import Lot
 from ereuse_devicehub.resources.user.models import Session
+from ereuse_devicehub.teal.cache import cache
+from ereuse_devicehub.teal.resource import Resource, View
 
 
 class Format(enum.Enum):
@@ -46,7 +46,7 @@ class Format(enum.Enum):
 
 class DocumentView(DeviceView):
     class FindArgs(DeviceView.FindArgs):
-        format = teal.marshmallow.EnumField(Format, missing=None)
+        format = ereuse_devicehub.teal.marshmallow.EnumField(Format, missing=None)
 
     def get(self, id):
         """Get a collection of resources or a specific one.
@@ -71,7 +71,7 @@ class DocumentView(DeviceView):
 
         if not ids and not id:
             msg = 'Document must be an ID or UUID.'
-            raise teal.marshmallow.ValidationError(msg)
+            raise ereuse_devicehub.teal.marshmallow.ValidationError(msg)
 
         if id:
             try:
@@ -81,7 +81,7 @@ class DocumentView(DeviceView):
                     ids.append(int(id))
                 except ValueError:
                     msg = 'Document must be an ID or UUID.'
-                    raise teal.marshmallow.ValidationError(msg)
+                    raise ereuse_devicehub.teal.marshmallow.ValidationError(msg)
                 else:
                     query = devs.Device.query.filter(Device.id.in_(ids))
             else:
@@ -98,7 +98,7 @@ class DocumentView(DeviceView):
         #         try:
         #             id = int(id)
         #         except ValueError:
-        #             raise teal.marshmallow.ValidationError('Document must be an ID or UUID.')
+        #             raise ereuse_devicehub.teal.marshmallow.ValidationError('Document must be an ID or UUID.')
         #         else:
         #             query = devs.Device.query.filter_by(id=id)
         #     else:
@@ -138,7 +138,7 @@ class DocumentView(DeviceView):
         url_pdf = boltons.urlutils.URL(flask.request.url)
         url_pdf.query_params['format'] = 'PDF'
         params = {
-            'title': 'Erasure Certificate',
+            'title': 'Device Sanitization',
             'erasures': tuple(erasures()),
             'url_pdf': url_pdf.to_text(),
         }
@@ -280,7 +280,7 @@ class LotRow(OrderedDict):
         self['Registered in'] = format(lot.created, '%c')
         try:
             self['Description'] = lot.description
-        except:
+        except Exception:
             self['Description'] = ''
 
 

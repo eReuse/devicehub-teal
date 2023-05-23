@@ -2,11 +2,11 @@ from uuid import UUID, uuid4
 
 from flask import g, request
 from flask.json import jsonify
-from teal.resource import View
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.user.exceptions import WrongCredentials
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.resource import View
 
 
 class UserView(View):
@@ -19,7 +19,9 @@ def login():
     user_s = g.resource_def.SCHEMA(only=('email', 'password'))  # type: UserS
     # noinspection PyArgumentList
     u = request.get_json(schema=user_s)
-    user = User.query.filter_by(email=u['email'], active=True, phantom=False).one_or_none()
+    user = User.query.filter_by(
+        email=u['email'], active=True, phantom=False
+    ).one_or_none()
     if user and user.password == u['password']:
         schema_with_token = g.resource_def.SCHEMA(exclude=set())
         return schema_with_token.jsonify(user)

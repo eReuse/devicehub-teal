@@ -6,7 +6,34 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ml).
 
 ## testing
+
+## [2.5.2] - 2023-04-20
 - [added] #414 add new vars in the settings file for wb.
+- [added] #440 add lots in export devices.
+- [added] #441 allow remove documents.
+- [added] #442 allow edit documents.
+- [added] #443 add documents to devices.
+- [added] #444 add new columns in list of documents.
+- [changed] #439 move teal as internal module.
+- [fixed] #437 replace names erasure by sanitization in templates.
+
+## [2.5.1] - 2023-03-17
+- [changed] #423 new hid.
+- [changed] #426 new version of public page of device.
+- [changed] #427 update links of terms and condotions.
+- [changed] #428 only the data storage allow syncrinize, the rest are duplicate.
+- [changed] #430 new version of erasure certificate.
+- [fixed] #416 fix dhid in snapshot logs.
+- [fixed] #419 fix settings version and template.
+- [fixed] #420 not appear all lots in the dropdown menu for select the a lot.
+- [fixed] #421 fix remove a placeholder from one old trade lot.
+- [fixed] #422 fix simple datatables.
+- [fixed] #424 fix new hid.
+- [fixed] #431 fix forms for customer details.
+- [fixed] #432 fix erasure certificate for a servers.
+- [fixed] #433 fix get the last incoming for show customer datas in certificate.
+- [fixed] #434 fix reopen transfer.
+- [fixed] #436 fix hid in erasure certificate.
 
 ## [2.5.0] - 2022-11-30
 - [added] #407 erasure section with tabs in top.

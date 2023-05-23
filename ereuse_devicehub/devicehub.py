@@ -5,13 +5,11 @@ from typing import Type
 import boltons.urlutils
 import click
 import click_spinner
-import ereuse_utils.cli
-from ereuse_utils.session import DevicehubClient
+import ereuse_devicehub.ereuse_utils.cli
+from ereuse_devicehub.ereuse_utils.session import DevicehubClient
 from flask import _app_ctx_stack, g
 from flask_login import LoginManager, current_user
 from flask_sqlalchemy import SQLAlchemy
-from teal.db import ResourceNotFound, SchemaSQLAlchemy
-from teal.teal import Teal
 
 from ereuse_devicehub.auth import Auth
 from ereuse_devicehub.client import Client, UserClient
@@ -24,6 +22,8 @@ from ereuse_devicehub.dummy.dummy import Dummy
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.inventory import Inventory, InventoryDef
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.db import ResourceNotFound, SchemaSQLAlchemy
+from ereuse_devicehub.teal.teal import Teal
 from ereuse_devicehub.templating import Environment
 
 
@@ -122,7 +122,7 @@ class Devicehub(Teal):
     @click.option(
         '--tag-url',
         '-tu',
-        type=ereuse_utils.cli.URL(scheme=True, host=True, path=False),
+        type=ereuse_devicehub.ereuse_utils.cli.URL(scheme=True, host=True, path=False),
         default='http://example.com',
         help='The base url (scheme and host) of the tag provider.',
     )

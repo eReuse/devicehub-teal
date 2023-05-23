@@ -7,8 +7,8 @@ from math import hypot
 from typing import Iterator, List, Optional, TypeVar
 
 import dateutil.parser
-from ereuse_utils import getter, text
-from ereuse_utils.nested_lookup import (
+from ereuse_devicehub.ereuse_utils import getter, text
+from ereuse_devicehub.ereuse_utils.nested_lookup import (
     get_nested_dicts_with_key_containing_value,
     get_nested_dicts_with_key_value,
 )

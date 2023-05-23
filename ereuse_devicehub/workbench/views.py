@@ -23,7 +23,7 @@ class SettingsView(GenericMixin):
     decorators = [login_required]
     methods = ['GET', 'POST']
     template_name = 'workbench/settings.html'
-    page_title = "Snapshots"
+    page_title = "Setup"
 
     def dispatch_request(self):
         self.get_context()

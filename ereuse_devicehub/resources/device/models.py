@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+import logging
 import os
 import pathlib
 import time
@@ -13,7 +14,6 @@ from typing import Dict, List, Set
 
 from boltons import urlutils
 from citext import CIText
-from ereuse_utils.naming import HID_CONVERSION_DOC
 from ereuseapi.methods import API
 from flask import current_app as app
 from flask import g, request, session
@@ -37,21 +37,9 @@ from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
 from stdnum import imei, meid
-from teal.db import (
-    CASCADE_DEL,
-    POLYMORPHIC_ID,
-    POLYMORPHIC_ON,
-    URL,
-    IntEnum,
-    ResourceNotFound,
-    check_lower,
-    check_range,
-)
-from teal.enums import Layouts
-from teal.marshmallow import ValidationError
-from teal.resource import url_for_resource
 
 from ereuse_devicehub.db import db
+from ereuse_devicehub.ereuse_utils.naming import HID_CONVERSION_DOC
 from ereuse_devicehub.resources.device.metrics import Metrics
 from ereuse_devicehub.resources.enums import (
     BatteryTechnology,
@@ -72,6 +60,21 @@ from ereuse_devicehub.resources.models import (
 )
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.resources.utils import hashcode
+from ereuse_devicehub.teal.db import (
+    CASCADE_DEL,
+    POLYMORPHIC_ID,
+    POLYMORPHIC_ON,
+    URL,
+    IntEnum,
+    ResourceNotFound,
+    check_lower,
+    check_range,
+)
+from ereuse_devicehub.teal.enums import Layouts
+from ereuse_devicehub.teal.marshmallow import ValidationError
+from ereuse_devicehub.teal.resource import url_for_resource
+
+logger = logging.getLogger(__name__)
 
 
 def create_code(context):
@@ -750,6 +753,28 @@ class Device(Thing):
 
         return ''
 
+    def get_lots_from_type(self, lot_type):
+        lots_type = {
+            'temporary': lambda x: x.is_temporary,
+            'incoming': lambda x: x.is_incoming,
+            'outgoing': lambda x: x.is_outgoing,
+        }
+
+        if lot_type not in lots_type:
+            return ''
+
+        get_lots_type = lots_type[lot_type]
+
+        lots = self.lots
+        if not lots and self.binding:
+            lots = self.binding.device.lots
+
+        if lots:
+            lots = [lot.name for lot in lots if get_lots_type(lot)]
+            return ", ".join(sorted(lots))
+
+        return ''
+
     def is_status(self, action):
         from ereuse_devicehub.resources.device import states
 
@@ -785,7 +810,7 @@ class Device(Thing):
     def get_from_db(self):
         if 'property_hid' in app.blueprints.keys():
             try:
-                from modules.device.utils import get_from_db
+                from ereuse_devicehub.modules.device.utils import get_from_db
 
                 return get_from_db(self)
             except Exception:
@@ -804,13 +829,13 @@ class Device(Thing):
     def set_hid(self):
         if 'property_hid' in app.blueprints.keys():
             try:
-                from modules.device.utils import set_hid
+                from ereuse_devicehub.modules.device.utils import set_hid
 
                 self.hid = set_hid(self)
                 self.set_chid()
                 return
-            except Exception:
-                pass
+            except Exception as err:
+                logger.error(err)
 
         self.hid = "{}-{}-{}-{}".format(
             self._clean_string(self.type),
@@ -1250,6 +1275,13 @@ class Placeholder(Thing):
         if self.binding:
             return 'Twin'
         return 'Placeholder'
+
+    @property
+    def documents(self):
+        docs = self.device.documents
+        if self.binding:
+            return docs.union(self.binding.documents)
+        return docs
 
 
 class Computer(Device):

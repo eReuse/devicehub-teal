@@ -7,9 +7,10 @@ Create Date: 2023-02-13 18:01:00.092527
 """
 import citext
 import sqlalchemy as sa
-import teal
 from alembic import context, op
 from sqlalchemy.dialects import postgresql
+
+from ereuse_devicehub import teal
 
 # revision identifiers, used by Alembic.
 revision = '4f33137586dd'

@@ -17,9 +17,6 @@ from marshmallow.fields import (
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
 from stdnum import imei, meid
-from teal.enums import Layouts
-from teal.marshmallow import URL, EnumField, SanitizedStr, ValidationError
-from teal.resource import Schema
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources import enums
@@ -27,6 +24,14 @@ from ereuse_devicehub.resources.device import models as m
 from ereuse_devicehub.resources.device import states
 from ereuse_devicehub.resources.models import STR_BIG_SIZE, STR_SIZE
 from ereuse_devicehub.resources.schemas import Thing, UnitCodes
+from ereuse_devicehub.teal.enums import Layouts
+from ereuse_devicehub.teal.marshmallow import (
+    URL,
+    EnumField,
+    SanitizedStr,
+    ValidationError,
+)
+from ereuse_devicehub.teal.resource import Schema
 
 
 class Device(Thing):
