@@ -51,3 +51,5 @@ Werkzeug>=2.0.3
 
 # ereuse-utils dependency
 inflection==0.5.1
+
+-i https://test.pypi.org/simple/ ereuseapitest

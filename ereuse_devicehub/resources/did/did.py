@@ -1,28 +1,14 @@
-import csv
-import datetime
-import enum
 import json
-import time
-import uuid
-from collections import OrderedDict
-from io import StringIO
 from typing import Callable, Iterable, Tuple
 
-import boltons
 import flask
-import flask_weasyprint
-import teal.marshmallow
 from boltons import urlutils
-from flask import current_app as app
-from flask import g, make_response, request
+from flask import request
 from flask.json import jsonify
-from teal.cache import cache
-from teal.resource import Resource, View
 
-from ereuse_devicehub import auth
-from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.did.models import Dpp
+from ereuse_devicehub.teal.resource import Resource, View
 
 
 class DidView(View):
@@ -125,7 +111,7 @@ class DidDef(Resource):
             cli_commands,
         )
 
-        view = DidView.as_view('main', definition=self, auth=app.auth)
+        # view = DidView.as_view('main', definition=self, auth=app.auth)
 
         # if self.AUTH:
         #     view = app.auth.requires_auth(view)

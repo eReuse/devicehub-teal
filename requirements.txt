@@ -4,6 +4,8 @@
 #
 #    pip-compile
 #
+--index-url https://test.pypi.org/simple/
+
 alembic==1.4.2
     # via -r requirements.in
 anytree==2.8.0
