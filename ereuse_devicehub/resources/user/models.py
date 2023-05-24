@@ -106,7 +106,7 @@ class User(UserMixin, Thing):
 
         from ereuseapi.methods import register_user
 
-        from modules.trublo.utils import encrypt
+        from ereuse_devicehub.modules.trublo.utils import encrypt
 
         api_dlt = app.config.get('API_DLT')
         data = register_user(api_dlt)
@@ -119,7 +119,7 @@ class User(UserMixin, Thing):
         if 'trublo' not in app.blueprints.keys():
             return {}
 
-        from modules.trublo.utils import decrypt
+        from ereuse_devicehub.modules.trublo.utils import decrypt
 
         if not self.api_keys_dlt:
             return {}
@@ -131,7 +131,7 @@ class User(UserMixin, Thing):
         if 'trublo' not in app.blueprints.keys():
             return
 
-        from modules.trublo.utils import encrypt
+        from ereuse_devicehub.modules.trublo.utils import encrypt
 
         data = json.dumps(data)
         self.api_keys_dlt = encrypt(password, data)
