@@ -5,12 +5,12 @@ from sqlalchemy import BigInteger, Column, ForeignKey, Sequence, Unicode
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.util import OrderedSet
-from teal.db import CASCADE_OWN
 
 from ereuse_devicehub.resources.action.models import ActionStatus, Snapshot
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
+from ereuse_devicehub.teal.db import CASCADE_OWN
 
 PROOF_ENUM = {
     'Register': 'Register',
