@@ -23,6 +23,32 @@ def get_inv():
     return INV
 
 
+def upgrade_data():
+    con = op.get_bind()
+
+    sql = f"select * from {get_inv()}.data_wipe;"
+    for d in con.execute(sql):
+        document_id = d.document_id
+        author_id = d.author_id
+        name = d.name
+        device_id = d.device_id
+        description = d.description
+        start_time = d.start_time
+        end_time = d.end_time
+        severity = d.severity
+
+        sql = f"""insert into {get_inv()}.erase_data_wipe 
+            (name, description, start_time, end_time, severity, device_id, 
+            author_id, document_id)
+            values
+            ({name}, {description}, {start_time}, {end_time}, {severity}, 
+            {device_id}, {author_id}, {document_id});
+        """
+        con.execute(sql)
+
+    con.execute(sql)
+
+
 def upgrade():
     op.create_table(
         'erase_data_wipe',
