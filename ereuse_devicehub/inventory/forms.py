@@ -1074,6 +1074,8 @@ class DataWipeForm(ActionFormMixin):
         Model = db.Model._decl_class_registry.data[self.type.data]()
         self.instance = Model()
         devices = self.devices.data
+        if not self.document.success.data:
+            self.severity.data = Severity.Error.name
         severity = self.severity.data
         self.devices.data = self._devices
         self.severity.data = Severity[self.severity.data]

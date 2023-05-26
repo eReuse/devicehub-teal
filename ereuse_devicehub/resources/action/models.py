@@ -483,6 +483,8 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         """
         if self.snapshot:
             return self.snapshot.device.phid()
+        if self.parent:
+            return self.parent.phid()
         return ''
 
     def get_public_name(self):
