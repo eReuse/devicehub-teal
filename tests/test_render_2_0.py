@@ -1377,6 +1377,34 @@ def test_action_datawipe(user3: UserClientFlask):
 
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
+def test_action_erasedatawipe(user3: UserClientFlask):
+    snap = create_device(user3, 'real-eee-1001pxd.snapshot.12.json')
+    dev = snap.device
+    uri = '/inventory/device/'
+    user3.get(uri)
+
+    b_file = b'1234567890'
+    file_name = "my_file.doc"
+    file_upload = (BytesIO(b_file), file_name)
+
+    data = {
+        'csrf_token': generate_csrf(),
+        'type': "EraseDataWipe",
+        'severity': "Info",
+        'devices': "{}".format(dev.binding.device.id),
+        'document-file_name': file_upload,
+    }
+
+    uri = '/inventory/action/datawipe/add/'
+    body, status = user3.post(uri, data=data, content_type="multipart/form-data")
+    assert status == '200 OK'
+    assert dev.binding.device.actions[-1].type == 'EraseDataWipe'
+    assert 'Action &#34;EraseDataWipe&#34; created successfully!' in body
+    assert dev.binding.device.devicehub_id in body
+
+
+@pytest.mark.mvp
+@pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_wb_settings(user3: UserClientFlask):
     uri = '/workbench/'
     body, status = user3.get(uri)

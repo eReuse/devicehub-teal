@@ -1176,9 +1176,9 @@ class ExportsView(View):
             row = [
                 ac.device.serial_number.upper(),
                 ac.device.dhid,
-                ac.snapshot.uuid,
+                ac.snapshot.uuid if ac.snapshot else '',
                 ac.type,
-                ac.get_phid(),
+                ac.parent.phid() if ac.parent else '',
                 ac.severity,
                 ac.created.strftime('%Y-%m-%d %H:%M:%S'),
             ]
@@ -1192,11 +1192,12 @@ class ExportsView(View):
             if device.placeholder and device.placeholder.binding:
                 device = device.placeholder.binding
             if isinstance(device, Computer):
-                for privacy in device.privacy:
-                    erasures.append(privacy)
+                for ac in device.last_erase_action:
+                    erasures.append(ac)
             elif isinstance(device, DataStorage):
-                if device.privacy:
-                    erasures.append(device.privacy)
+                ac = device.last_erase_action
+                if ac:
+                    erasures.append(ac)
         return erasures
 
     def get_costum_details(self, erasures):
@@ -1264,9 +1265,14 @@ class ExportsView(View):
         erasures_host, erasures_on_server = a, b
         erasures_host = set(erasures_host)
 
-        result = 'Success'
-        if "Failed" in [e.severity.get_public_name() for e in erasures]:
-            result = 'Failed'
+        result_success = 0
+        result_failed = 0
+        for e in erasures:
+            result = e.severity.get_public_name()
+            if "Failed" == result:
+                result_failed += 1
+            if "Success" == result:
+                result_success += 1
 
         erasures = sorted(erasures, key=lambda x: x.end_time)
         erasures_on_server = sorted(erasures_on_server, key=lambda x: x.end_time)
@@ -1283,7 +1289,8 @@ class ExportsView(View):
             'software': software,
             'my_data': my_data,
             'n_computers': n_computers,
-            'result': result,
+            'result_success': result_success,
+            'result_failed': result_failed,
             'customer_details': customer_details,
             'erasure_hosts': erasures_host,
             'erasures_normal': erasures_normal,
