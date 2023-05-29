@@ -66,8 +66,9 @@ class LogoutView(View):
     def dispatch_request(self):
         session_vars = ['token_dlt', 'rols']
         [session.pop(i, '') for i in session_vars]
+        next_url = flask.request.args.get('next')
         logout_user()
-        return flask.redirect(flask.url_for('core.login'))
+        return flask.redirect(next_url or flask.url_for('core.login'))
 
 
 class GenericMixin(View):
