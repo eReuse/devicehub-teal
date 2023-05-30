@@ -825,7 +825,8 @@ class Device(Thing):
         ).first()
 
     def set_hid(self):
-        if 'property_hid' in app.blueprints.keys():
+        is_component = isinstance(self, Component)
+        if 'property_hid' in app.blueprints.keys() and not is_component:
             try:
                 from ereuse_devicehub.modules.device.utils import set_hid
 
