@@ -134,13 +134,14 @@
     </div>
   </div>
   {% if not demo %}
+  {# WB V14.4 #}
   <div class="row">
     <div class="col">
       <div class="card">
         <div class="card-body">
 
           <div class="pt-8 pb-2">
-            <h5 class="card-title pb-0 fs-4">Usody Data Erasure v14</h5>
+            <h5 class="card-title pb-0 fs-4">Usody Data Erasure v14.4</h5>
             <p class="mb-5">
               A certified data erasure software to irreversibly removing data sored on hard drives.<br />
               <small>Desktops, Servers and Laptops.</small>
@@ -226,6 +227,82 @@
       </div>
     </div>
   </div>
+
+  {# WB V14.2 #}
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-body">
+
+          <div class="pt-8 pb-2">
+            <h5 class="card-title pb-0 fs-4">Usody Data Erasure v14.2</h5>
+            <p class="mb-5">
+              A certified data erasure software to irreversibly removing data sored on hard drives.<br />
+              <small>Desktops, Servers and Laptops.</small>
+            </p>
+
+            <div class="row">
+              <div class="col-2">
+                <a href="{{ iso_erease.url }}{{ iso_erease.iso }}" class="btn btn-primary" style="max-width: 200px;">
+                  Download ISO
+                </a>
+              </div>
+              <div class="col-3">
+                <p class="small">
+                  Download Checksum: <a class="help" href="{{ iso_erease.url }}SHA512SUM">SHA512SUM</a> |
+                  <a href="https://help.usody.com/es/setup/setup-pendrive/" target="_blank" class="help">Help</a>
+                </p>
+              </div>
+              <div class="col"></div>
+            </div>
+
+            <div class="row mt-3">
+              <div class="col-3">
+                <div class="border mr-2 p-2">
+                  <h5>Basic Erasure</h5>
+                  <p>
+                    Settings for basic data erasure using shred Linux command.
+                    A software-based fast non-100%-secured way of erasing data storage.
+                  </p>              
+                  <p>
+                    Performs <strong>1</strong> pass overwriting one round using all zeros. 
+                    Compliant with <strong>NIST SP-800-88</strong>.
+                  </p>
+                  <a href="{{ url_for('workbench.settings') }}?opt=erease_basic" 
+                  class="btn btn-primary" 
+                  style="width: 100%;">
+                  Download settings file
+                  </a>
+                </div>
+              </div>
+
+              <div class="col-3">
+                <div class="border mr-2 p-2">
+                  <h5>Baseline Secure Erasure</h5>
+                  <p>
+                    Settings for advanced data erasure using badblocks Linux software.
+                    A secured-way of erasing data storages, erase hidden areas, checking the erase sector by sector.
+                  </p>  
+                  <p>
+                    Performs <strong>1</strong> pass overwriting each sector with zeros and a final verification.
+                    Compliant with <strong>HMG Infosec Standard 5 Baseline</strong>.
+                  </p>              
+                  <a href="{{ url_for('workbench.settings') }}?opt=baseline_erease"
+                  class="btn btn-primary" 
+                  style="width: 100%;">
+                  Download settings file
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  
   {% endif %}
 
 </section>

@@ -64,6 +64,7 @@ class SettingsView(GenericMixin):
         }
         # if is a v14 version
         # TODO when not use more v14, we can remove this if
+        template = 'workbench/wbSettings_BM.ini'
         if 'erease' in self.opt:
             url = "https://{}/actions/".format(app.config['API_HOST'])
             self.wbContext['url'] = url
@@ -72,14 +73,13 @@ class SettingsView(GenericMixin):
             self.wbContext['schema'] = app.config['SCHEMA']
 
             if self.opt == 'erease_basic':
-                self.wbContext['erease_basic'] = True
-            if self.opt in ['baseline_erease', 'enhanced_erease']:
-                self.wbContext['baseline_erease'] = True
-                self.wbContext['erase_steps'] = 1
+                template = 'workbench/wbSettings_BE.ini'
+            if self.opt == 'baseline_erease':
+                template = 'workbench/wbSettings_BSE.ini'
             if self.opt == 'enhanced_erease':
-                self.wbContext['erase_steps'] = 3
+                template = 'workbench/wbSettings_ESE.ini'
 
-        data = flask.render_template('workbench/wbSettings.ini', **self.wbContext)
+        data = flask.render_template(template, **self.wbContext)
         return self.response_download(data)
 
     def response_download(self, data):
