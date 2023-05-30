@@ -52,6 +52,7 @@ from ereuse_devicehub.resources.device.models import (
     Cellphone,
     Computer,
     ComputerMonitor,
+    DataStorage,
     Desktop,
     Device,
     Keyboard,
@@ -852,7 +853,13 @@ class NewActionForm(ActionFormMixin):
         if not is_valid:
             return False
 
-        if self.type.data in ['Allocate', 'Deallocate', 'Trade', 'DataWipe']:
+        if self.type.data in [
+            'Allocate',
+            'Deallocate',
+            'Trade',
+            'DataWipe',
+            'EraseDataWipe',
+        ]:
             return False
 
         return True
@@ -1068,15 +1075,26 @@ class DataWipeForm(ActionFormMixin):
         Model = db.Model._decl_class_registry.data[self.type.data]()
         self.instance = Model()
         devices = self.devices.data
+        if not self.document.success.data:
+            self.severity.data = Severity.Error.name
         severity = self.severity.data
         self.devices.data = self._devices
         self.severity.data = Severity[self.severity.data]
 
         document = copy.copy(self.document)
         del self.document
-        self.populate_obj(self.instance)
-        self.instance.document = document.form._obj
-        db.session.add(self.instance)
+        for dev in self._devices:
+            ac = None
+            for hd in dev.components:
+                if not isinstance(hd, DataStorage):
+                    continue
+                ac = Model()
+                self.populate_obj(ac)
+                ac.parent = dev
+                ac.device = hd
+                ac.device_id = hd.id
+                ac.document = document.form._obj
+                db.session.add(ac)
         db.session.commit()
 
         self.devices.data = devices

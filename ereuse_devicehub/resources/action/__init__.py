@@ -246,6 +246,11 @@ class DataWipeDef(ActionDef):
     SCHEMA = schemas.DataWipe
 
 
+class EraseDataWipe(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.EraseDataWipe
+
+
 class AllocateDef(ActionDef):
     VIEW = AllocateView
     SCHEMA = schemas.Allocate

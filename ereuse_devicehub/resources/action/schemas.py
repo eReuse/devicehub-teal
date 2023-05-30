@@ -45,8 +45,8 @@ from ereuse_devicehub.resources.tradedocument import schemas as s_document
 from ereuse_devicehub.resources.tradedocument.models import TradeDocument
 from ereuse_devicehub.resources.user import schemas as s_user
 from ereuse_devicehub.resources.user.models import User
-from ereuse_devicehub.teal.enums import Country, Currency, Subdivision
-from ereuse_devicehub.teal.marshmallow import IP, URL, EnumField, SanitizedStr, Version
+from ereuse_devicehub.teal.enums import Currency
+from ereuse_devicehub.teal.marshmallow import URL, EnumField, SanitizedStr, Version
 from ereuse_devicehub.teal.resource import Schema
 
 
@@ -588,6 +588,11 @@ class DataWipe(ActionWithMultipleDevicesCheckingOwner):
     document = NestedOn(s_generic_document.DataWipeDocument, only_query='id')
 
 
+class EraseDataWipe(ActionWithMultipleDevicesCheckingOwner):
+    __doc__ = m.DataWipe.__doc__
+    document = NestedOn(s_generic_document.DataWipeDocument, only_query='id')
+
+
 class Live(ActionWithOneDevice):
     __doc__ = m.Live.__doc__
     """
@@ -808,12 +813,12 @@ class Trade(ActionWithMultipleDevices):
 
     @pre_load
     def adding_devices(self, data: dict):
-        if not 'devices' in data.keys():
+        if 'devices' not in data.keys():
             data['devices'] = []
 
     @validates_schema
     def validate_lot(self, data: dict):
-        if not g.user.email in [data['user_from_email'], data['user_to_email']]:
+        if g.user.email not in [data['user_from_email'], data['user_to_email']]:
             txt = "you need to be one of the users of involved in the Trade"
             raise ValidationError(txt)
 
@@ -879,7 +884,7 @@ class Trade(ActionWithMultipleDevices):
             txt = "you need one user for to do a trade"
             raise ValidationError(txt)
 
-        if not g.user.email in [user_from, user_to]:
+        if g.user.email not in [user_from, user_to]:
             txt = "you need to be one of participate of the action"
             raise ValidationError(txt)
 

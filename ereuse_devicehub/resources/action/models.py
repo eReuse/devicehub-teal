@@ -489,6 +489,8 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         """
         if self.snapshot:
             return self.snapshot.device.phid()
+        if self.parent:
+            return self.parent.phid()
         return ''
 
     def register_proof(self):
@@ -588,6 +590,45 @@ class ErasePhysical(EraseBasic):
 
     def get_public_name(self):
         return "Physical"
+
+
+class EraseDataWipe(EraseBasic):
+    """The device has been selected for insert one proof of erease disk."""
+
+    id = Column(UUID(as_uuid=True), ForeignKey(EraseBasic.id), primary_key=True)
+    document_comment = """The user that gets the device due this deal."""
+    document_id = db.Column(
+        BigInteger, db.ForeignKey('data_wipe_document.id'), nullable=False
+    )
+    document = db.relationship(
+        'DataWipeDocument',
+        backref=backref('erase_actions', lazy=True, cascade=CASCADE_OWN),
+        primaryjoin='EraseDataWipe.document_id == DataWipeDocument.id',
+    )
+
+    def get_public_name(self):
+        return "EraseDataWipe"
+
+    def __format__(self, format_spec: str) -> str:
+        v = ''
+        if 't' in format_spec:
+            v += '{} {}.'.format(self.type, self.severity)
+        if 's' in format_spec:
+            if not self.document:
+                v += 'On {}'.format(self.date_str)
+                return v
+            software = self.document.software or ''
+            url = self.document.url or ''
+            v += 'Software: {}, {}. '.format(software, url)
+            v += 'On {}'.format(self.date_str)
+        return v
+
+    @property
+    def date_str(self):
+        day = self.created
+        if self.document:
+            day = self.document.date or self.end_time or self.created
+        return '{:%c}'.format(day)
 
 
 class Step(db.Model):
@@ -1670,6 +1711,7 @@ class ToPrepare(ActionWithMultipleDevices):
 
 
 class DataWipe(JoinedTableMixin, ActionWithMultipleDevices):
+    # class DataWipe(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """The device has been selected for insert one proof of erease disk."""
 
     document_comment = """The user that gets the device due this deal."""

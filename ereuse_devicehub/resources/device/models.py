@@ -827,7 +827,8 @@ class Device(Thing):
         ).first()
 
     def set_hid(self):
-        if 'property_hid' in app.blueprints.keys():
+        is_component = isinstance(self, Component)
+        if 'property_hid' in app.blueprints.keys() and not is_component:
             try:
                 from ereuse_devicehub.modules.device.utils import set_hid
 
@@ -1397,6 +1398,22 @@ class Computer(Device):
         )
 
     @property
+    def last_erase_action(self):
+        components = self.components
+        if self.placeholder and self.placeholder.binding:
+            components = self.placeholder.binding.components
+
+        return set(
+            ac
+            for ac in (
+                hdd.last_erase_action
+                for hdd in components
+                if isinstance(hdd, DataStorage)
+            )
+            if ac
+        )
+
+    @property
     def external_document_erasure(self):
         """Returns the external ``DataStorage`` proof of erasure."""
         from ereuse_devicehub.resources.action.models import DataWipe
@@ -1609,11 +1626,39 @@ class DataStorage(JoinedComponentTableMixin, Component):
             ev = None
         return ev
 
+    @property
+    def last_erase_action(self):
+        erase_auto = None
+        erase_manual = None
+
+        if self.binding:
+            erase_auto = self.privacy
+            erase_manual = self.binding.device.privacy
+        if self.placeholder:
+            erase_manual = self.privacy
+            if self.placeholder.binding:
+                erase_auto = self.placeholder.binding.privacy
+
+        if erase_auto and erase_manual:
+            return (
+                erase_auto
+                if erase_auto.created > erase_manual.created
+                else erase_manual
+            )
+        if erase_manual:
+            return erase_manual
+        if erase_auto:
+            return erase_auto
+        return None
+
     def __format__(self, format_spec):
         v = super().__format__(format_spec)
         if 's' in format_spec:
             v += ' – {} GB'.format(self.size // 1000 if self.size else '?')
         return v
+
+    def get_size(self):
+        return '{} GB'.format(self.size // 1000 if self.size else '?')
 
     @property
     def external_document_erasure(self):
