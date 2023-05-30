@@ -34,7 +34,8 @@ class SettingsView(GenericMixin):
                 'demo': g.user.email == app.config['EMAIL_DEMO'],
                 'iso_demo': isos['demo'],
                 'iso_register': isos['register'],
-                'iso_erease': isos['erease'],
+                'iso_erease2': isos['erease2'],
+                'iso_erease4': isos['erease4'],
                 'form': form_kangaroo,
             }
         )
