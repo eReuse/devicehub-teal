@@ -378,11 +378,6 @@
      </ol>
   </dd>
   {% endif %}
-  {% if erasure.type == 'EraseDataWipe' %}
-    <br />
-    <dt>Software:</dt>
-    <dd>{{ erasure.document and erasure.document.software or ''}}</dd>
-  {% endif %}
   {% if erasure.device.proofs %}
   <dt>DLT Proofs:</dt>
     <dd>

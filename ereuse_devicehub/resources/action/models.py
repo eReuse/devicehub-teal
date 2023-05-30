@@ -563,6 +563,27 @@ class EraseDataWipe(EraseBasic):
     def get_public_name(self):
         return "EraseDataWipe"
 
+    def __format__(self, format_spec: str) -> str:
+        v = ''
+        if 't' in format_spec:
+            v += '{} {}.'.format(self.type, self.severity)
+        if 's' in format_spec:
+            if not self.document:
+                v += 'On {}'.format(self.date_str)
+                return v
+            software = self.document.software or ''
+            url = self.document.url or ''
+            v += 'Software: {}, {}. '.format(software, url)
+            v += 'On {}'.format(self.date_str)
+        return v
+
+    @property
+    def date_str(self):
+        day = self.created
+        if self.document:
+            day = self.document.date or self.end_time or self.created
+        return '{:%c}'.format(day)
+
 
 class Step(db.Model):
     erasure_id = Column(
