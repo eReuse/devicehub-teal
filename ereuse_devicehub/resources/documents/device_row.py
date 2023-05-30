@@ -429,11 +429,14 @@ class DeviceRow(BaseDeviceRow):
 
         self['{} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
 
-        component_actions = sorted(component.actions, key=lambda x: x.created)
+        component_actions = [ac for ac in component.actions]
+        if component.binding:
+            component_actions.extend(component.binding.device.actions)
+        component_actions = sorted(component_actions, key=lambda x: x.created)
         erasures = [
             a
             for a in component_actions
-            if a.type in ['EraseBasic', 'EraseSectors', 'DataWipe']
+            if a.type in ['EraseBasic', 'EraseSectors', 'DataWipe', 'EraseDataWipe']
         ]
         erasure = erasures[-1] if erasures else None
         if not erasure:
@@ -441,7 +444,7 @@ class DeviceRow(BaseDeviceRow):
             serial_number = none2str(component.serial_number)
             self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
             self['Erasure {} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
-        elif hasattr(erasure, 'type') and erasure.type == 'DataWipe':
+        elif hasattr(erasure, 'type') and erasure.type in ['DataWipe', 'EraseDataWipe']:
             self['Erasure {} {}'.format(ctype, i)] = none2str(component.chid)
             serial_number = none2str(component.serial_number)
             self['Erasure {} {} Serial Number'.format(ctype, i)] = serial_number
