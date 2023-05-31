@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Device {{ device_real.dhid }} - Usody</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="{{ url_for('static', filename='img/favicon.png') }}" rel="icon">
+  <link href="{{ url_for('static', filename='img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- JS Files -->
+  <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+  <!-- Vendor CSS Files -->
+  <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+
+
+  <!-- Template Main CSS File -->
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/devicehub.css') }}" rel="stylesheet">
+
+  <!-- =======================================================
+  * Template Name: NiceAdmin - v2.2.0
+  * Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+</head>
+
+<body>
+
+<main>
+
+<section class="container mt-3">
+  <div class="row">
+
+      <div class="col">
+        <nav class="header-nav ms-auto">
+          <ul class="d-flex align-items-right">
+            <li class="nav-item">
+                {% if not rols and user.is_anonymous %}
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#validateModal">Validate</button>
+                {% else %}
+                <button class="btn btn-primary" id="buttonRol" data-bs-toggle="modal" data-bs-target="#rolsModal">Select your rol</button>
+                <a class="btn btn-primary" href="{{ url_for('core.logout') }}?next={{ path }}">Logout</a>
+                {% endif %}
+            </li>
+          </ul>
+          {% if rol %}
+            <br />Actual Rol: {{ rol }}
+          {% endif %}
+        </nav>
+        <div class="col-xl-12">
+
+          <div class="card">
+            <div class="card-body">
+              <h3 class="nav-link mt-5" style="color: #993365">{{ device_real.type }} - {{ device_real.verbose_name }}</h3>
+              <div class="row">
+                <div class="col-6">
+                  <h5 class="card-title">Basic</h5>
+                  <div class="row">
+                    <div class="col">
+                      Usody Identifier (DHID)
+                    </div>
+                    <div class="col">
+                      {{ device_real.dhid }}
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      Inventory Identifier (PHID)
+                    </div>
+                    <div class="col">
+                      {{ device_real.phid() }}
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      Type
+                    </div>
+                    <div class="col">
+                      {{ device_real.type or '- not detected -' }}
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      Manufacturer
+                    </div>
+                    <div class="col">
+                      {{ device_real.manufacturer or '- not detected -' }}
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      Model
+                    </div>
+                    <div class="col">
+                      {{ device_real.model or '- not detected -' }}
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      Part Number
+                    </div>
+                    <div class="col">
+                      {{ device_real.part_number or '- not detected -' }}
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      Serial Number
+                    </div>
+                    <div class="col">
+                     - anonymized - 
+                    </div>
+                  </div>
+                </div>
+                <div class="col-1">
+                </div>
+                <div class="col-5">
+                  <h5 class="card-title">Status</h5>
+                  <div class="row">
+                    <div class="col">
+                      <div class="label"><b>Physical</b></div>
+                      <div>{{ device_real.physical_status and device.physical_status.type or '- not status -' }}</div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      <div class="label"><b>Lifecycle</b></div>
+                      <div>{{ device_real.status and device_real.status.type or '- not status -' }}</div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      <div class="label"><b>Allocation</b></div>
+                      <div>
+                        {% if device_real.allocated %}
+                          Allocated
+                        {% else %}
+                          Not allocated
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-6">
+                  <h5 class="card-title">Components</h5>
+                  <div class="row">
+                    {% if placeholder.binding %}
+                    <div class="list-group col">
+                      {% for component in placeholder.binding.components|sort(attribute='type') %}
+                      <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                          <h5 class="mb-1">{{ component.type }}</h5>
+                          <small class="text-muted">{{ component.created.strftime('%H:%M %d-%m-%Y') }}</small>
+                        </div>
+                        <p class="mb-1">
+                          {{ component.manufacturer or '- not detected -' }}<br />
+                          {{ component.model or '- not detected -' }}<br />
+                        </p>
+                        <small class="text-muted">
+                          {% if component.type in ['RamModule', 'HardDrive', 'SolidStateDrive'] %}
+                            {{ component.size }}MB
+                          {% endif %}
+                        </small>
+                      </div>
+                      {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="list-group col">
+                      <div class="list-group-item">
+                        - not detected -
+                      </div>
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-6">
+                  <h5 class="card-title">Repair history</h5>
+                  <div class="row">
+                    <div class="list-group col">
+                      {% for action in placeholder.actions %}
+                      <div class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ action.type }} {{ action.severity }}
+                        <small class="text-muted">{{ action.created.strftime('%H:%M %d-%m-%Y') }}</small>
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+</section>
+
+</main>
+<!-- ======= Footer ======= -->
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <footer class="footer">
+        <div class="copyright">
+          &copy; Copyright <strong><span>Usody</span></strong>. All Rights Reserved
+        </div>
+        <div class="credits">
+          <a href="https://help.usody.com/en/" target="_blank">Help</a> | 
+          <a href="https://www.usody.com/legal/privacy-policy" target="_blank">Privacy</a> | 
+          <a href="https://www.usody.com/legal/terms" target="_blank">Terms</a>
+        </div>
+        <div class="credits">
+          DeviceHub
+        </div>
+      </footer><!-- End Footer -->
+    </div>
+  </div>
+</div>
+
+{% if user.is_anonymous and not rols %}
+<div class="modal fade" id="validateModal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Validate as <span id="title-action"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <a class="btn btn-primary" type="button" 
+          href="{{ url_for('core.login') }}?next={{ path }}">
+          User of system
+        </a>
+        {% if oidc %}
+        <br />
+        <a class="btn btn-primary mt-3" type="button" href="{{ url_for('oidc.login_other_inventory') }}?next={{ device_real.url.to_text() }}">
+          User of other inventory
+        </a>
+        {% endif %}
+      </div>
+
+      <div class="modal-footer"></div>
+
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="modal fade" id="rolsModal" tabindex="-1" style="display: none;" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <form action="{{ device_real.url.to_text() }}" method="get">
+      <div class="modal-header">
+        <h5 class="modal-title">Select your Rol <span id="title-action"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+          <select name="rol">
+            {% for k, v in rols %}
+            <option value="{{ k }}" {% if v==rol %}selected=selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-primary" value="Send" />
+      </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endif %}
+</body>
+
+<!-- Custom Code -->
+{% if not user.is_anonymous and not rol %}
+<script>
+  $(document).ready(() => {
+    $("#buttonRol").click();
+  });
+</script>
+{% endif %}
+
+</html>

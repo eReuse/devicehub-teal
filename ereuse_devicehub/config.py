@@ -13,6 +13,7 @@ from ereuse_devicehub.resources import (
     user,
 )
 from ereuse_devicehub.resources.device import definitions
+from ereuse_devicehub.resources.did import did
 from ereuse_devicehub.resources.documents import documents
 from ereuse_devicehub.resources.enums import PriceSoftware
 from ereuse_devicehub.resources.licences import licences
@@ -32,6 +33,7 @@ class DevicehubConfig(Config):
             import_resource(action),
             import_resource(user),
             import_resource(tag),
+            import_resource(did),
             import_resource(agent),
             import_resource(lot),
             import_resource(deliverynote),
