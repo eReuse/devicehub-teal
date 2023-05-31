@@ -365,16 +365,16 @@ class ErasureStandards(Enum):
     """Software erasure standards."""
 
     HMG_IS5 = 'British HMG Infosec Standard 5 (HMG IS5)'
-    """`British HMG Infosec Standard 5 (HMG IS5) 
+    """`British HMG Infosec Standard 5 (HMG IS5)
     <https://en.wikipedia.org/wiki/Infosec_Standard_5>`_.
-    
+
     In order to follow this standard, an erasure must have the
     following steps:
-    
+
     1. A first step writing zeroes to the data-storage units.
     2. A second step erasing with random data, verifying the erasure
        success in each hard-drive sector.
-    
+
     And be an :class:`ereuse_devicehub.resources.action.models.EraseSectors`.
     """
 
@@ -394,6 +394,13 @@ class ErasureStandards(Enum):
                     isinstance(step, actions.StepRandom) for step in other_steps
                 ):
                     standards.add(cls.HMG_IS5)
+
+                if len(other_steps) == 2:
+                    step1 = isinstance(first_step, actions.StepRandom)
+                    step2 = isinstance(other_steps[0], actions.StepZero)
+                    step3 = isinstance(other_steps[1], actions.StepRandom)
+                    if step1 and step2 and step3:
+                        standards.add(cls.HMG_IS5)
         return standards
 
 
