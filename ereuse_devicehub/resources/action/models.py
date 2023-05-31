@@ -501,7 +501,8 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             v += '. '
         if 's' in format_spec:
             if self.standards:
-                std = 'with standards {}'.format(self.standards)
+                standard = ','.join([x.value for x in self.standards])
+                std = 'with standards {}'.format(standard)
             else:
                 std = 'no standard'
             v += 'Method used: {}, {}. '.format(self.method, std)
@@ -527,14 +528,15 @@ class EraseSectors(EraseBasic):
                 steps_random += 1
             if s.type == 'StepZero':
                 steps_zeros += 1
-        if steps_zeros < 1:
+
+        if steps_zeros == 0 and steps_random == 1:
             return "Basic"
-        if 0 < steps_random < 3:
+        if steps_zeros == 1 and steps_random == 1:
             return "Baseline"
-        if steps_random > 2:
+        if steps_zeros == 1 and steps_random == 2:
             return "Enhanced"
 
-        return "Basic"
+        return "Custom"
 
 
 class ErasePhysical(EraseBasic):
