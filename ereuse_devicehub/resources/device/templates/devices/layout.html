@@ -241,7 +241,7 @@
 
       <div class="modal-body">
         <a class="btn btn-primary" type="button" 
-          href="{{ url_for('core.login') }}?next={{ device_real.url.to_text() }}">
+          href="{# url_for('core.login') #}?next={{ device_real.url.to_text() }}">
           User of system
         </a>
         {% if oidc %}
