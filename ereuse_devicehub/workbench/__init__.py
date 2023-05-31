@@ -12,7 +12,7 @@ isos = {
         'url': 'https://releases.usody.com/v14.2/',
     },
     "erease4": {
-        'iso': "USODY_14.4.0.iso",
+        'iso': "USODY_14.4.2.iso",
         'url': 'https://releases.usody.com/v14.4/',
     },
 }
