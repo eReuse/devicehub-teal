@@ -2,6 +2,7 @@ import json
 from uuid import uuid4
 
 from citext import CIText
+from ereuseapi.methods import API
 from flask import current_app as app
 from flask import g, session
 from flask_login import UserMixin
@@ -140,8 +141,6 @@ class User(UserMixin, Thing):
         if 'trublo' not in app.blueprints.keys():
             return
 
-        from ereuseapi.methods import API
-
         if not api_token:
             api_token = session.get('token_dlt', '.')
         target_user = api_token.split(".")[0]
@@ -154,6 +153,33 @@ class User(UserMixin, Thing):
 
         result = apiUser1.issue_credential("Operator", target_user)
         return result
+
+    def get_rols(self):
+        if session.get('rols'):
+            return session.get('rols')
+
+        if 'trublo' not in app.blueprints.keys():
+            return []
+
+        if not session.get('token_dlt'):
+            return []
+
+        token_dlt = session.get('token_dlt')
+        api_dlt = app.config.get('API_DLT')
+        if not token_dlt or not api_dlt:
+            return []
+
+        api = API(api_dlt, token_dlt, "ethereum")
+
+        result = api.check_user_roles()
+        if result.get('Status') != 200:
+            return []
+
+        if 'Success' not in result.get('Data', {}).get('status'):
+            return []
+
+        rols = result.get('Data', {}).get('data', {})
+        return [(k, k) for k, v in rols.items() if v]
 
 
 class UserInventory(db.Model):

@@ -74,6 +74,7 @@ class LoginForm(FlaskForm):
                 user.get_dlt_keys(self.password.data).get('data', {}).get('api_token')
             )
             session['token_dlt'] = token_dlt
+            session['rols'] = user.get_rols()
 
         return user.is_active
 
