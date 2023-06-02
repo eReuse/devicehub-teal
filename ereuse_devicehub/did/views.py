@@ -4,7 +4,7 @@ import flask
 from ereuseapi.methods import API
 from flask import Blueprint
 from flask import current_app as app
-from flask import g, redirect, render_template, request, session
+from flask import g, render_template, request, session
 from flask.json import jsonify
 from flask.views import View
 
@@ -20,6 +20,8 @@ class DidView(View):
     template_name = 'did/layout.html'
 
     def dispatch_request(self, id_dpp):
+        self.dpp = None
+        self.device = None
         self.get_ids(id_dpp)
 
         # import pdb; pdb.set_trace()
@@ -28,10 +30,16 @@ class DidView(View):
             'oidc': 'oidc' in app.blueprints.keys(),
             'user': g.user,
             'path': request.path,
+            'last_dpp': None,
+            'before_dpp': None,
+            'rols': [],
+            'rol': None,
         }
         self.get_rols()
         self.get_rol()
         self.get_device()
+        self.get_last_dpp()
+        self.get_before_dpp()
 
         if 'json' in request.headers['Accept']:
             return jsonify(self.get_result())
@@ -52,7 +60,7 @@ class DidView(View):
             return []
 
         if rols:
-            return [(k, k) for k in rols]
+            self.context['rols'] = rols
 
         if 'trublo' not in app.blueprints.keys():
             return []
@@ -87,9 +95,13 @@ class DidView(View):
     def get_device(self):
         if self.id_dpp:
             self.dpp = Dpp.query.filter_by(key=self.id_dpp).one()
-        device = Device.query.filter_by(chid=self.chid, active=True).first()
+            device = self.dpp.device
+        else:
+            device = Device.query.filter_by(chid=self.chid, active=True).first()
+
         if not device:
             return flask.abort(404)
+
         abstract = None
         if device.placeholder:
             abstract = device.placeholder.binding
@@ -98,6 +110,9 @@ class DidView(View):
         device_abstract = placeholder and placeholder.binding or device
         device_real = placeholder and placeholder.device or device
         self.device = device_abstract
+        components = self.device.components
+        if self.dpp:
+            components = self.dpp.snapshot.components
 
         self.context.update(
             {
@@ -106,20 +121,29 @@ class DidView(View):
                 'device_abstract': device_abstract,
                 'device_real': device_real,
                 'abstract': abstract,
+                'components': components,
             }
         )
 
-    def get_last_dpp(self, dpp):
-        dpps = [
-            act.dpp[0] for act in dpp.device.actions if act.t == 'Snapshot' and act.dpp
-        ]
-        last_dpp = ''
-        for d in dpps:
-            if d.key == dpp.key:
-                return last_dpp
-            last_dpp = d.key
+    def get_last_dpp(self):
+        dpps = sorted(self.device.dpps, key=lambda x: x.created)
+        self.context['last_dpp'] = dpps and dpps[-1] or ''
+        return self.context['last_dpp']
 
-        return last_dpp
+    def get_before_dpp(self):
+        if not self.dpp:
+            self.context['before_dpp'] = ''
+            return ''
+
+        dpps = sorted(self.device.dpps, key=lambda x: x.created)
+        before_dpp = ''
+        for dpp in dpps:
+            if dpp == self.dpp:
+                break
+            before_dpp = dpp
+
+        self.context['before_dpp'] = before_dpp
+        return before_dpp
 
     def get_result(self):
         data = {
@@ -130,7 +154,7 @@ class DidView(View):
 
         if self.dpp:
             data['hardware'] = json.loads(self.dpp.snapshot.json_hw)
-            last_dpp = self.get_last_dpp(self.id_dpp)
+            last_dpp = self.get_last_dpp()
             url_last = ''
             if last_dpp:
                 url_last = 'http://did.ereuse.org/{did}'.format(did=last_dpp)

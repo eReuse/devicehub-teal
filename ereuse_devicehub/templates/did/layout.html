@@ -67,8 +67,40 @@
             <div class="card-body">
               <h3 class="nav-link mt-5" style="color: #993365">{{ device_real.type }} - {{ device_real.verbose_name }}</h3>
               <div class="row">
-                <div class="col-6">
+                <div class="col-12">
                   <h5 class="card-title">Basic</h5>
+                  <div class="row">
+                    <div class="col">
+                      Device Identifier (CHID):
+                    </div>
+                    <div class="col">
+                      <a href="{{ url_for('did.did', id_dpp=device_abstract.chid) }}">{{ device_abstract.chid }}</a>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      Last Digital Passport (Last Dpp):
+                    </div>
+                    <div class="col">
+                      {% if last_dpp %}
+                      <a href="{{ url_for('did.did', id_dpp=last_dpp.key) }}">{{ last_dpp.key }}</a>
+                      {% else %}
+                      - not detected -
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      Before Digital Passport (Before Dpp):
+                    </div>
+                    <div class="col">
+                      {% if before_dpp %}
+                      <a href="{{ url_for('did.did', id_dpp=before_dpp.key) }}">{{ before_dpp.key }}</a>
+                      {% else %}
+                      - not detected -
+                      {% endif %}
+                    </div>
+                  </div>
                   <div class="row">
                     <div class="col">
                       Usody Identifier (DHID)
@@ -122,55 +154,33 @@
                       Serial Number
                     </div>
                     <div class="col">
-                     - anonymized - 
-                    </div>
-                  </div>
-                </div>
-                <div class="col-1">
-                </div>
-                <div class="col-5">
-                  <h5 class="card-title">Status</h5>
-                  <div class="row">
-                    <div class="col">
-                      <div class="label"><b>Physical</b></div>
-                      <div>{{ device_real.physical_status and device.physical_status.type or '- not status -' }}</div>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col">
-                      <div class="label"><b>Lifecycle</b></div>
-                      <div>{{ device_real.status and device_real.status.type or '- not status -' }}</div>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col">
-                      <div class="label"><b>Allocation</b></div>
-                      <div>
-                        {% if device_real.allocated %}
-                          Allocated
-                        {% else %}
-                          Not allocated
-                        {% endif %}
-                      </div>
+                     {% if rol %}
+                       {{ device_abstract.serial_number and device_abstract.serial_number.upper() or '- not detected -' }}
+                     {% else %}
+                       - anonymized - 
+                     {% endif %}
                     </div>
                   </div>
                 </div>
               </div>
               <div class="row mt-3">
-                <div class="col-6">
+                <div class="col-12">
                   <h5 class="card-title">Components</h5>
                   <div class="row">
-                    {% if placeholder.binding %}
+                    {% if components %}
                     <div class="list-group col">
-                      {% for component in placeholder.binding.components|sort(attribute='type') %}
+                      {% for component in components|sort(attribute='type') %}
                       <div class="list-group-item">
                         <div class="d-flex w-100 justify-content-between">
                           <h5 class="mb-1">{{ component.type }}</h5>
                           <small class="text-muted">{{ component.created.strftime('%H:%M %d-%m-%Y') }}</small>
                         </div>
                         <p class="mb-1">
-                          {{ component.manufacturer or '- not detected -' }}<br />
-                          {{ component.model or '- not detected -' }}<br />
+                          Manufacturer: {{ component.manufacturer or '- not detected -' }}<br />
+                          Model: {{ component.model or '- not detected -' }}<br />
+                          {% if rol %}
+                            Serial: {{ component.serial_number and component.serial_number.upper() or '- not detected -' }}
+                          {% endif %}
                         </p>
                         <small class="text-muted">
                           {% if component.type in ['RamModule', 'HardDrive', 'SolidStateDrive'] %}
@@ -187,19 +197,6 @@
                       </div>
                     </div>
                     {% endif %}
-                  </div>
-                </div>
-                <div class="col-6">
-                  <h5 class="card-title">Repair history</h5>
-                  <div class="row">
-                    <div class="list-group col">
-                      {% for action in placeholder.actions %}
-                      <div class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ action.type }} {{ action.severity }}
-                        <small class="text-muted">{{ action.created.strftime('%H:%M %d-%m-%Y') }}</small>
-                      </div>
-                      {% endfor %}
-                    </div>
                   </div>
                 </div>
               </div>
