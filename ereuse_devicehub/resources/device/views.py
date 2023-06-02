@@ -133,43 +133,7 @@ class DeviceView(View):
         else:
             return self.one_private(id)
 
-    def get_rols(self):
-        rols = session.get('rols')
-        if not g.user.is_authenticated and not rols:
-            return []
-
-        if rols:
-            return [(k, k) for k in rols]
-
-        if 'dpp' not in app.blueprints.keys():
-            return []
-
-        if not session.get('token_dlt'):
-            return []
-
-        token_dlt = session.get('token_dlt')
-        api_dlt = app.config.get('API_DLT')
-        if not token_dlt or not api_dlt:
-            return []
-
-        api = API(api_dlt, token_dlt, "ethereum")
-
-        result = api.check_user_roles()
-        if result.get('Status') != 200:
-            return []
-
-        if 'Success' not in result.get('Data', {}).get('status'):
-            return []
-
-        rols = result.get('Data', {}).get('data', {})
-        return [(k, k) for k, v in rols.items() if v]
-
     def one_public(self, id: int):
-        rols = self.get_rols()
-        # rols = [("isOperator", "isOperator"), ("Inspector", "Inspector"), ("Recicler", "Recicler")]
-        rol = len(rols) == 1 and rols[0][0] or None
-        if 'rol' in request.args:
-            rol = dict(rols).get(request.args.get('rol'))
         devices = Device.query.filter_by(devicehub_id=id, active=True).all()
         if not devices:
             devices = [Device.query.filter_by(dhid_bk=id, active=True).one()]
@@ -184,18 +148,14 @@ class DeviceView(View):
         placeholder = device.binding or device.placeholder
         device_abstract = placeholder and placeholder.binding or device
         device_real = placeholder and placeholder.device or device
-        oidc = 'oidc' in app.blueprints.keys()
         return render_template(
             'devices/layout.html',
-            oidc=oidc,
             placeholder=placeholder,
             device=device,
             device_abstract=device_abstract,
             device_real=device_real,
             states=states,
             abstract=abstract,
-            rols=rols,
-            rol=rol,
             user=g.user,
         )
 
