@@ -246,7 +246,7 @@
         </a>
         {% if oidc %}
         <br />
-        <a class="btn btn-primary mt-3" type="button" href="{{ url_for('oidc.login_other_inventory') }}?next={{ device_real.url.to_text() }}">
+        <a class="btn btn-primary mt-3" type="button" href="{{ url_for('oidc.login_other_inventory') }}?next={{ path }}">
           User of other inventory
         </a>
         {% endif %}

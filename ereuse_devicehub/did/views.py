@@ -24,7 +24,6 @@ class DidView(View):
         self.device = None
         self.get_ids(id_dpp)
 
-        # import pdb; pdb.set_trace()
         self.context = {
             'version': __version__,
             'oidc': 'oidc' in app.blueprints.keys(),
@@ -102,10 +101,6 @@ class DidView(View):
         if not device:
             return flask.abort(404)
 
-        abstract = None
-        if device.placeholder:
-            abstract = device.placeholder.binding
-
         placeholder = device.binding or device.placeholder
         device_abstract = placeholder and placeholder.binding or device
         device_real = placeholder and placeholder.device or device
@@ -120,7 +115,6 @@ class DidView(View):
                 'device': self.device,
                 'device_abstract': device_abstract,
                 'device_real': device_real,
-                'abstract': abstract,
                 'components': components,
             }
         )
