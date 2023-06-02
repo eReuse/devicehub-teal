@@ -141,7 +141,7 @@ class DeviceView(View):
         if rols:
             return [(k, k) for k in rols]
 
-        if 'trublo' not in app.blueprints.keys():
+        if 'dpp' not in app.blueprints.keys():
             return []
 
         if not session.get('token_dlt'):

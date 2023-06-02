@@ -69,7 +69,7 @@ class LoginForm(FlaskForm):
         if not user.is_active:
             self.form_errors.append(self.error_messages['inactive'])
 
-        if 'trublo' in app.blueprints.keys():
+        if 'dpp' in app.blueprints.keys():
             token_dlt = (
                 user.get_dlt_keys(self.password.data).get('data', {}).get('api_token')
             )
@@ -111,7 +111,7 @@ class PasswordForm(FlaskForm):
         return True
 
     def save(self, commit=True):
-        if 'trublo' not in app.blueprints.keys():
+        if 'dpp' not in app.blueprints.keys():
             keys_dlt = g.user.get_dlt_keys(self.password.data)
             g.user.reset_dlt_keys(self.newpassword.data, keys_dlt)
 

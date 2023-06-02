@@ -102,12 +102,12 @@ class User(UserMixin, Thing):
         return self.password == password
 
     def set_new_dlt_keys(self, password):
-        if 'trublo' not in app.blueprints.keys():
+        if 'dpp' not in app.blueprints.keys():
             return
 
         from ereuseapi.methods import register_user
 
-        from ereuse_devicehub.modules.trublo.utils import encrypt
+        from ereuse_devicehub.modules.dpp.utils import encrypt
 
         api_dlt = app.config.get('API_DLT')
         data = register_user(api_dlt)
@@ -117,10 +117,10 @@ class User(UserMixin, Thing):
         return api_token
 
     def get_dlt_keys(self, password):
-        if 'trublo' not in app.blueprints.keys():
+        if 'dpp' not in app.blueprints.keys():
             return {}
 
-        from ereuse_devicehub.modules.trublo.utils import decrypt
+        from ereuse_devicehub.modules.dpp.utils import decrypt
 
         if not self.api_keys_dlt:
             return {}
@@ -129,16 +129,16 @@ class User(UserMixin, Thing):
         return json.loads(data)
 
     def reset_dlt_keys(self, password, data):
-        if 'trublo' not in app.blueprints.keys():
+        if 'dpp' not in app.blueprints.keys():
             return
 
-        from ereuse_devicehub.modules.trublo.utils import encrypt
+        from ereuse_devicehub.modules.dpp.utils import encrypt
 
         data = json.dumps(data)
         self.api_keys_dlt = encrypt(password, data)
 
     def allow_permitions(self, api_token=None):
-        if 'trublo' not in app.blueprints.keys():
+        if 'dpp' not in app.blueprints.keys():
             return
 
         if not api_token:
@@ -158,7 +158,7 @@ class User(UserMixin, Thing):
         if session.get('rols'):
             return session.get('rols')
 
-        if 'trublo' not in app.blueprints.keys():
+        if 'dpp' not in app.blueprints.keys():
             return []
 
         if not session.get('token_dlt'):

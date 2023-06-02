@@ -62,7 +62,7 @@ class DidView(View):
         if rols:
             self.context['rols'] = rols
 
-        if 'trublo' not in app.blueprints.keys():
+        if 'dpp' not in app.blueprints.keys():
             return []
 
         if not session.get('token_dlt'):

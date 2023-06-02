@@ -496,7 +496,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     def register_proof(self):
         """This method is used for register a proof of erasure en dlt"""
 
-        if 'trublo' not in app.blueprints.keys() or not self.snapshot:
+        if 'dpp' not in app.blueprints.keys() or not self.snapshot:
             return
 
         if not session.get('token_dlt'):
@@ -875,7 +875,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         return snapshots and 'update' or 'new_device'
 
     def register_passport_dlt(self):
-        if 'trublo' not in app.blueprints.keys() or not self.device.hid:
+        if 'dpp' not in app.blueprints.keys() or not self.device.hid:
             return
 
         from ereuse_devicehub.resources.did.models import Dpp

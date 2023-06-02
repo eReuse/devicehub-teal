@@ -934,7 +934,7 @@ class Device(Thing):
         return types.get(self.type, '')
 
     def register_dlt(self):
-        if 'trublo' not in app.blueprints.keys() or not self.hid:
+        if 'dpp' not in app.blueprints.keys() or not self.hid:
             return
 
         if not session.get('token_dlt'):
