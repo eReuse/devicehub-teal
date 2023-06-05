@@ -972,6 +972,9 @@ class Device(Thing):
             if isinstance(c, DataStorage):
                 c.register_dlt()
 
+        if app.config('ID_FEDERATED'):
+            api.add_service(self.chid, 'devicehub', app.config('ID_FEDERATED'), '', '')
+
     def unreliable(self):
         self.user_trusts = False
         i = 0
