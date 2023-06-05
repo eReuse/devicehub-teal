@@ -40,10 +40,18 @@ class DidView(View):
         self.get_last_dpp()
         self.get_before_dpp()
 
-        if 'json' in request.headers['Accept']:
+        if self.accept_json():
             return jsonify(self.get_result())
 
         return render_template(self.template_name, **self.context)
+
+    def accept_json(self):
+        if 'json' in request.headers.get('Accept', []):
+            return True
+        if "application/json" in request.headers.get("Content-Type", []):
+            return True
+
+        return False
 
     def get_ids(self, id_dpp):
         self.id_dpp = None
@@ -151,7 +159,9 @@ class DidView(View):
             last_dpp = self.get_last_dpp()
             url_last = ''
             if last_dpp:
-                url_last = 'http://did.ereuse.org/{did}'.format(did=last_dpp)
+                url_last = 'https://{host}/{did}'.format(
+                    did=last_dpp, host=app.config.get('HOST')
+                )
             data['url_last'] = url_last
             return result
 
