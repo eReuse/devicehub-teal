@@ -160,7 +160,7 @@ class DidView(View):
             url_last = ''
             if last_dpp:
                 url_last = 'https://{host}/{did}'.format(
-                    did=last_dpp, host=app.config.get('HOST')
+                    did=last_dpp.key, host=app.config.get('HOST')
                 )
             data['url_last'] = url_last
             return result
