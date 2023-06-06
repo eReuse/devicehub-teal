@@ -972,11 +972,11 @@ class Device(Thing):
             if isinstance(c, DataStorage):
                 c.register_dlt()
 
-        if app.config('ID_FEDERATED'):
+        if app.config.get('ID_FEDERATED'):
             api.add_service(
                 self.chid,
                 'DeviceHub',
-                app.config('ID_FEDERATED'),
+                app.config.get('ID_FEDERATED'),
                 'Inventory service',
                 'Inv',
             )
