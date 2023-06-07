@@ -520,10 +520,10 @@ class NewDeviceForm(FlaskForm):
             self.depth.errors = txt
             is_valid = False
 
-        if self.imei.data and self.amount.data == 1:
-            if not 13 < len(str(self.imei.data)) < 17:
-                self.imei.errors = error
-                is_valid = False
+        # if self.imei.data and self.amount.data == 1:
+        #     if not 13 < len(str(self.imei.data)) < 17:
+        #         self.imei.errors = error
+        #         is_valid = False
 
         if self.meid.data and self.amount.data == 1:
             meid = self.meid.data

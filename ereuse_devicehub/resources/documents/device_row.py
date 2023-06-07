@@ -264,6 +264,7 @@ class BaseDeviceRow(OrderedDict):
         self['Data Storage Rate'] = ''
         self['Data Storage Range'] = ''
         self['Benchmark RamSysbench (points)'] = ''
+        self['IMEI'] = ''
 
 
 class DeviceRow(BaseDeviceRow):
@@ -339,6 +340,9 @@ class DeviceRow(BaseDeviceRow):
             self['Benchmark RamSysbench (points)'] = none2str(benchram.rate)
 
         self.get_placeholder_datas()
+
+        if isinstance(device, d.Mobile):
+            self['IMEI'] = device.imei or ''
 
     def components(self):
         """Function to get all components information of a device."""

@@ -2239,7 +2239,6 @@ def test_manual_binding(user3: UserClientFlask):
 @pytest.mark.mvp
 @pytest.mark.usefixtures(conftest.app_context.__name__)
 def test_edit_and_binding(user3: UserClientFlask):
-    # TODO
     uri = '/inventory/device/add/'
     user3.get(uri)
 
