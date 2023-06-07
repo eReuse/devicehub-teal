@@ -34,7 +34,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import ColumnProperty, backref, relationship, validates
 from sqlalchemy.util import OrderedSet
 from sqlalchemy_utils import ColorType
-from stdnum import imei, meid
+from stdnum import meid
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.ereuse_utils.naming import HID_CONVERSION_DOC
@@ -1478,11 +1478,11 @@ class Mobile(Device):
     )
     display_size.comment = """The total size of the device screen"""
 
-    @validates('imei')
-    def validate_imei(self, _, value: int):
-        if value and not imei.is_valid(str(value)):
-            raise ValidationError('{} is not a valid imei.'.format(value))
-        return value
+    # @validates('imei')
+    # def validate_imei(self, _, value: int):
+    #     if value and not imei.is_valid(str(value)):
+    #         raise ValidationError('{} is not a valid imei.'.format(value))
+    #     return value
 
     @validates('meid')
     def validate_meid(self, _, value: str):

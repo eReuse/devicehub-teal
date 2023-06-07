@@ -16,7 +16,7 @@ from marshmallow.fields import (
 )
 from marshmallow.validate import Length, OneOf, Range
 from sqlalchemy.util import OrderedSet
-from stdnum import imei, meid
+from stdnum import meid
 
 from ereuse_devicehub.marshmallow import NestedOn
 from ereuse_devicehub.resources import enums
@@ -301,11 +301,11 @@ class Mobile(Device):
         description=m.Mobile.display_size.comment,
     )
 
-    @pre_load
-    def convert_check_imei(self, data):
-        if data.get('imei', None):
-            data['imei'] = int(imei.validate(data['imei']))
-        return data
+    # @pre_load
+    # def convert_check_imei(self, data):
+    #     if data.get('imei', None):
+    #         data['imei'] = int(imei.validate(data['imei']))
+    #     return data
 
     @pre_load
     def convert_check_meid(self, data: dict):
