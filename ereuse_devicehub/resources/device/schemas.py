@@ -301,11 +301,12 @@ class Mobile(Device):
         description=m.Mobile.display_size.comment,
     )
 
-    # @pre_load
-    # def convert_check_imei(self, data):
-    #     if data.get('imei', None):
-    #         data['imei'] = int(imei.validate(data['imei']))
-    #     return data
+    @pre_load
+    def convert_check_imei(self, data):
+        if data.get('imei', None):
+            # data['imei'] = int(imei.validate(data['imei']))
+            data['imei'] = int(data['imei'].replace("-", ""))
+        return data
 
     @pre_load
     def convert_check_meid(self, data: dict):
