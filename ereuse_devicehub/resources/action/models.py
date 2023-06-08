@@ -504,6 +504,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
         token_dlt = session.get('token_dlt')
         api_dlt = app.config.get('API_DLT')
+        dh_instance = app.config.get('ID_FEDERATED', 'dh1')
         if not token_dlt or not api_dlt:
             return
 
@@ -514,7 +515,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         deviceCHID = self.device.chid
         docSig = hashlib.sha3_256(self.snapshot.json_wb.encode('utf-8')).hexdigest()
         docID = "{}".format(self.snapshot.uuid or '')
-        issuerID = "dh1:{user}".format(user=g.user.id)
+        issuerID = "{dh}:{user}".format(dh=dh_instance, user=g.user.id)
         proof_type = PROOF_ENUM['Erase']
         result = api.generate_proof(deviceCHID, docID, docSig, issuerID, proof_type)
         from ereuse_devicehub.resources.enums import StatusCode
@@ -891,13 +892,14 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
         token_dlt = session.get('token_dlt')
         api_dlt = app.config.get('API_DLT')
+        dh_instance = app.config.get('ID_FEDERATED', 'dh1')
         if not token_dlt or not api_dlt:
             return
 
         api = API(api_dlt, token_dlt, "ethereum")
         docSig = hashlib.sha3_256(self.json_wb.encode('utf-8')).hexdigest()
         docID = "{}".format(self.uuid or '')
-        issuerID = "dh1:{user}".format(user=g.user.id)
+        issuerID = "{dh}:{user}".format(dh=dh_instance, user=g.user.id)
 
         result = api.issue_passport(dpp, docID, docSig, issuerID)
 
