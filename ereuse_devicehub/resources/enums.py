@@ -394,6 +394,13 @@ class ErasureStandards(Enum):
                     isinstance(step, actions.StepRandom) for step in other_steps
                 ):
                     standards.add(cls.HMG_IS5)
+
+                if len(other_steps) == 2:
+                    step1 = isinstance(first_step, actions.StepRandom)
+                    step2 = isinstance(other_steps[0], actions.StepZero)
+                    step3 = isinstance(other_steps[1], actions.StepRandom)
+                    if step1 and step2 and step3:
+                        standards.add(cls.HMG_IS5)
         return standards
 
 
