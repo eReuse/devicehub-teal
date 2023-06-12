@@ -334,7 +334,7 @@
           <tr style="border-bottom: 1px dashed #000;">
             {% if erasure.device.is_mobile() %}
             <td>
-              {{ (erasure.device.imei or '') }}
+              IMEI:{{ (erasure.device.imei or '') }}
             </td>
             <td>
             </td>
@@ -376,7 +376,7 @@
     <dd>Model: {{ erasure.device.model }}</dd>
     <dd>IMEI: {{ (erasure.device.imei or '') }}</dd>
     <dd>DHID: {{ erasure.device.dhid }}</dd>
-    <dd>Size: {{ erasure.device.get_size() or '' }}</dd>
+    <dd>Size: {{ erasure.device.get_size() or '?' }} GB</dd>
   {% else %}
   <h4>{{ (erasure.device.serial_number or '').upper() }}</h4>
   <dl>
