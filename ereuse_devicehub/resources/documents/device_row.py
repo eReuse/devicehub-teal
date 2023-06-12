@@ -343,6 +343,7 @@ class DeviceRow(BaseDeviceRow):
 
         if isinstance(device, d.Mobile):
             self['IMEI'] = device.imei or ''
+            self.get_erasure_datawipe_mobile(device)
 
     def components(self):
         """Function to get all components information of a device."""
@@ -417,6 +418,24 @@ class DeviceRow(BaseDeviceRow):
         self['{} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
         self['{} {} Speed (MHz)'.format(ctype, i)] = none2str(component.speed)
 
+    def get_erasure_datawipe_mobile(self, device):
+        actions = sorted(device.actions)
+        erasures = [a for a in actions if a.type == 'EraseDataWipe']
+        erasure = erasures[-1] if erasures else None
+        if erasure:
+            self['Erasure DataStorage 1'] = none2str(device.chid)
+            serial_number = none2str(device.imei)
+            storage_size = none2str(device.data_storage_size)
+            self['Erasure DataStorage 1 Serial Number'] = serial_number
+            self['Erasure DataStorage 1 Size (MB)'] = storage_size
+            self['Erasure DataStorage 1 Software'] = erasure.document.software
+            self['Erasure DataStorage 1 Result'] = get_result(erasure)
+            self['Erasure DataStorage 1 Type'] = erasure.type
+            self['Erasure DataStorage 1 Date'] = format(erasure.document.date or '')
+            self['Erasure DataStorage 1 Certificate URL'] = (
+                erasure.document.url and erasure.document.url.to_text() or ''
+            )
+
     def get_datastorage(self, ctype, i, component):
         """Particular fields for component DataStorage.
         A DataStorage can be HardDrive or SolidStateDrive.
@@ -455,6 +474,10 @@ class DeviceRow(BaseDeviceRow):
             self['Erasure {} {} Size (MB)'.format(ctype, i)] = none2str(component.size)
             self['Erasure {} {} Software'.format(ctype, i)] = erasure.document.software
             self['Erasure {} {} Result'.format(ctype, i)] = get_result(erasure)
+            self['Erasure {} {} Type'.format(ctype, i)] = erasure.type
+            self['Erasure {} {} Date'.format(ctype, i)] = format(
+                erasure.document.date or ''
+            )
             self['Erasure {} {} Certificate URL'.format(ctype, i)] = (
                 erasure.document.url and erasure.document.url.to_text() or ''
             )

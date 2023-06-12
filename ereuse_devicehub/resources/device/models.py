@@ -1066,6 +1066,9 @@ class Device(Thing):
                 return lot
         return None
 
+    def is_mobile(self):
+        return isinstance(self, Mobile)
+
     def __lt__(self, other):
         return self.id < other.id
 
@@ -1375,11 +1378,11 @@ class Computer(Device):
     @property
     def external_document_erasure(self):
         """Returns the external ``DataStorage`` proof of erasure."""
-        from ereuse_devicehub.resources.action.models import DataWipe
+        from ereuse_devicehub.resources.action.models import EraseDataWipe
 
         urls = set()
         try:
-            ev = self.last_action_of(DataWipe)
+            ev = self.last_action_of(EraseDataWipe)
             urls.add(ev.document.url.to_text())
         except LookupError:
             pass
@@ -1489,6 +1492,48 @@ class Mobile(Device):
         if value and not meid.is_valid(value):
             raise ValidationError('{} is not a valid meid.'.format(value))
         return value
+
+    @property
+    def last_erase_action(self):
+        erase_auto = None
+        erase_manual = None
+
+        if self.binding:
+            erase_auto = self.privacy
+            erase_manual = self.binding.device.privacy
+        if self.placeholder:
+            erase_manual = self.privacy
+            if self.placeholder.binding:
+                erase_auto = self.placeholder.binding.privacy
+
+        if erase_auto and erase_manual:
+            return (
+                erase_auto
+                if erase_auto.created > erase_manual.created
+                else erase_manual
+            )
+        if erase_manual:
+            return erase_manual
+        if erase_auto:
+            return erase_auto
+        return None
+
+    @property
+    def privacy(self):
+        """Returns the privacy compliance state of the data storage.
+
+        This is, the last erasure performed to the data storage.
+        """
+        from ereuse_devicehub.resources.action.models import EraseBasic
+
+        try:
+            ev = self.last_action_of(EraseBasic)
+        except LookupError:
+            ev = None
+        return ev
+
+    def get_size(self):
+        return self.data_storage_size
 
 
 class Smartphone(Mobile):

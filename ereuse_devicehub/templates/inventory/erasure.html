@@ -209,6 +209,16 @@
             </td>
           </tr>
           {% endif %}
+          {% if n_mobiles %}
+          <tr style="padding-top:5px;">
+            <td style="width:20%;">
+              <span>N&deg; of mobiles:</span>
+            </td>
+            <td style="width:80%;">
+              <span>{{ n_mobiles }}</span>
+            </td>
+          </tr>
+          {% endif %}
           <tr style="padding-top:5px;">
             <td style="width:20%;">
               <span>N&deg; of data storage unit(s):</span>
@@ -322,12 +332,20 @@
         <tbody>
           {% for erasure in erasures %}
           <tr style="border-bottom: 1px dashed #000;">
+            {% if erasure.device.is_mobile() %}
+            <td>
+              {{ (erasure.device.imei or '') }}
+            </td>
+            <td>
+            </td>
+            {% else %}
             <td>
               {{ (erasure.device.serial_number or '').upper() }}
             </td>
             <td>
               {{ (erasure.parent.serial_number or '').upper() }}
             </td>
+            {% endif %}
             <td>
               {{ erasure.get_public_name() }}
             </td>
@@ -351,12 +369,21 @@
      <h3>Technical Details</h3>
    </div>
   {% endif %}
+  {% if erasure.device.is_mobile() %}
+  <h4>{{ (erasure.device.imei or '') }}</h4>
+  <dl>
+    <dt>Mobile Drive:</dt>
+    <dd>Model: {{ erasure.device.model }}</dd>
+    <dd>IMEI: {{ (erasure.device.imei or '') }}</dd>
+    <dd>DHID: {{ erasure.device.dhid }}</dd>
+    <dd>Size: {{ erasure.device.get_size() or '' }}</dd>
+  {% else %}
   <h4>{{ (erasure.device.serial_number or '').upper() }}</h4>
   <dl>
     <dt>Storage Drive:</dt>
     <dd>Model: {{ erasure.device.model }}</dd>
     <dd>SN: {{ (erasure.device.serial_number or '').upper() }}</dd>
-    <dd>Size: {{ erasure.device.get_size()}}</dd>
+    <dd>Size: {{ erasure.device.get_size() or '' }}</dd>
     {% if erasure.parent %}
     <br />
     <dt>Computer Host:</dt>
@@ -364,6 +391,7 @@
     <dd>SN: {{ (erasure.parent.serial_number or '').upper() }}</dd>
     <dd>DHID: {{ erasure.parent.dhid }}</dd>
     {% endif %}
+  {% endif %}
 
   <br />
   <dt>Erasure:</dt>
