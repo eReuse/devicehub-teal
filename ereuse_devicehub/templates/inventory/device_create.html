@@ -62,6 +62,12 @@
                           <option value="Cellphone"
                           {% if form.type.data == 'Cellphone' %} selected="selected"{% endif %}>Cellphone</option>
                         </optgroup>
+                        <optgroup label="Data Storage">
+                          <option value="HardDrive"
+                          {% if form.type.data == 'HardDrive' %} selected="selected"{% endif %}>HardDrive</option>
+                          <option value="SolidStateDrive"
+                          {% if form.type.data == 'SolidStateDrive' %} selected="selected"{% endif %}>SolidStateDrive</option>
+                        </optgroup>
                         <optgroup label="Computer Accessory">
                           <option value="Mouse"
                           {% if form.type.data == 'Mouse' %} selected="selected"{% endif %}>Mouse</option>
@@ -152,7 +158,7 @@
                       {% endif %}
                     </div>
 
-                    <div class="form-group mb-2">
+                    <div id="components2" class="from-group mb-2">
                       <label for="label" class="form-label">{{ form.components.label }}</label>
                       {{ form.components(class_="form-control") }}
                       <small class="text-muted form-text">Description of components</small>
@@ -428,6 +434,19 @@
                       {% if form.meid.errors %}
                       <p class="text-danger">
                         {% for error in form.meid.errors %}
+                          {{ error }}<br/>
+                        {% endfor %}
+                      </p>
+                      {% endif %}
+                    </div>
+
+                    <div id="data_storage_size" class="from-group mb-2">
+                      <label for="data_storage_size" class="form-label">{{ form.data_storage_size.label }}</label>
+                      {{ form.data_storage_size(class_="form-control") }}
+                      <small class="text-muted form-text">Size in GB.</small>
+                      {% if form.data_storage_size.errors %}
+                      <p class="text-danger">
+                        {% for error in form.data_storage_size.errors %}
                           {{ error }}<br/>
                         {% endfor %}
                       </p>
