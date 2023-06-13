@@ -55,9 +55,11 @@ from ereuse_devicehub.resources.device.models import (
     DataStorage,
     Desktop,
     Device,
+    HardDrive,
     Keyboard,
     Laptop,
     MemoryCardReader,
+    Mobile,
     Monitor,
     Mouse,
     Other,
@@ -65,6 +67,7 @@ from ereuse_devicehub.resources.device.models import (
     Projector,
     Server,
     Smartphone,
+    SolidStateDrive,
     Tablet,
     TelevisionSet,
 )
@@ -100,7 +103,7 @@ DEVICES = {
     "Drives & Storage": [
         "All DataStorage",
         "HardDrive",
-        "SolidStageDrive",
+        "SolidStateDrive",
     ],
     "Accessories": [
         "All Accessories",
@@ -128,6 +131,7 @@ MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
 STORAGE = ["HardDrive", "SolidStateDrive"]
 ACCESSORIES = ["Mouse", "MemoryCardReader", "SAI", "Keyboard"]
 OTHERS = ["Other"]
+DATASTORAGE = ['HardDrive', 'SolidStateDrive']
 
 
 class AdvancedSearchForm(FlaskForm):
@@ -202,7 +206,7 @@ class FilterForm(FlaskForm):
 
         # Generic Filters
         if "All Devices" == self.device_type:
-            filter_type = COMPUTERS + MONITORS + MOBILE + OTHERS
+            filter_type = COMPUTERS + MONITORS + MOBILE + DATASTORAGE + OTHERS
 
         elif "All Computers" == self.device_type:
             filter_type = COMPUTERS
@@ -399,6 +403,7 @@ class NewDeviceForm(FlaskForm):
     sku = StringField('SKU', [validators.Optional()])
     image = URLField('Image', [validators.Optional(), validators.URL()])
     imei = IntegerField('IMEI', [validators.Optional()])
+    data_storage_size = FloatField('Storage Size', [validators.Optional()])
     meid = StringField('MEID', [validators.Optional()])
     resolution = IntegerField('Resolution width', [validators.Optional()])
     screen = FloatField('Screen size', [validators.Optional()])
@@ -418,6 +423,8 @@ class NewDeviceForm(FlaskForm):
             "Smartphone": Smartphone,
             "Tablet": Tablet,
             "Cellphone": Cellphone,
+            "HardDrive": HardDrive,
+            "SolidStateDrive": SolidStateDrive,
             "ComputerMonitor": ComputerMonitor,
             "Monitor": Monitor,
             "TelevisionSet": TelevisionSet,
@@ -429,7 +436,7 @@ class NewDeviceForm(FlaskForm):
             "Other": Other,
         }
 
-    def reset_from_obj(self):
+    def reset_from_obj(self):  # noqa: C901
         if not self._obj:
             return
         disabled = {'disabled': "disabled"}
@@ -466,9 +473,13 @@ class NewDeviceForm(FlaskForm):
         if self._obj.type in ['Smartphone', 'Tablet', 'Cellphone']:
             self.imei.data = self._obj.imei
             self.meid.data = self._obj.meid
+            self.data_storage_size.data = self._obj.data_storage_size
         if self._obj.type == 'ComputerMonitor':
             self.resolution.data = self._obj.resolution_width
             self.screen.data = self._obj.size
+        if self._obj.type in ['HardDrive', 'SolidStateDrive']:
+            if self._obj.size:
+                self.data_storage_size.data = self._obj.size / 1000
 
         if self._obj.placeholder.is_abstract:
             self.type.render_kw = disabled
@@ -493,6 +504,9 @@ class NewDeviceForm(FlaskForm):
             if self._obj.type in ['Smartphone', 'Tablet', 'Cellphone']:
                 self.imei.render_kw = disabled
                 self.meid.render_kw = disabled
+                self.data_storage_size.render_kw = disabled
+            if self._obj.type in ['HardDrive', 'SolidStateDrive']:
+                self.data_storage_size.render_kw = disabled
             if self._obj.type == 'ComputerMonitor':
                 self.resolution.render_kw = disabled
                 self.screen.render_kw = disabled
@@ -605,6 +619,11 @@ class NewDeviceForm(FlaskForm):
         if self.type.data in ['Smartphone', 'Tablet', 'Cellphone']:
             device.imei = self.imei.data
             device.meid = self.meid.data
+            device.data_storage_size = self.data_storage_size.data
+
+        if self.type.data in ['HardDrive', 'SolidStateDrive']:
+            if self.data_storage_size.data:
+                device.size = self.data_storage_size.data * 1000
 
         device.image = URL(self.image.data)
 
@@ -673,6 +692,11 @@ class NewDeviceForm(FlaskForm):
             if self._obj.type in ['Smartphone', 'Tablet', 'Cellphone']:
                 self._obj.imei = self.imei.data
                 self._obj.meid = self.meid.data
+                self._obj.data_storage_size = self.data_storage_size.data
+
+            if self.type.data in ['HardDrive', 'SolidStateDrive']:
+                if self.data_storage_size.data:
+                    self._obj.size = self.data_storage_size.data * 1000
 
             if (
                 self.appearance.data
@@ -1085,6 +1109,14 @@ class DataWipeForm(ActionFormMixin):
         del self.document
         for dev in self._devices:
             ac = None
+            if isinstance(dev, Mobile) or isinstance(dev, DataStorage):
+                ac = Model()
+                self.populate_obj(ac)
+                ac.device_id = dev.id
+                ac.document = document.form._obj
+                db.session.add(ac)
+                continue
+
             for hd in dev.components:
                 if not isinstance(hd, DataStorage):
                     continue

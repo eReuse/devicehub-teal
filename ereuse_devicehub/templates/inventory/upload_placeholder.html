@@ -56,6 +56,12 @@
                         <option value="Cellphone"
                         {% if form.type.data == 'Cellphone' %} selected="selected"{% endif %}>Cellphone</option>
                       </optgroup>
+                      <optgroup label="Data Storage">
+                        <option value="HardDrive"
+                        {% if form.type.data == 'HardDrive' %} selected="selected"{% endif %}>HardDrive</option>
+                        <option value="SolidStateDrive"
+                        {% if form.type.data == 'SolidStateDrive' %} selected="selected"{% endif %}>SolidStateDrive</option>
+                      </optgroup>
                       <optgroup label="Computer Accessory">
                         <option value="Mouse"
                         {% if form.type.data == 'Mouse' %} selected="selected"{% endif %}>Mouse</option>

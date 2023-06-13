@@ -1,28 +1,44 @@
 $(document).ready(() => {
-   $("#type").on("change", deviceInputs);
-   $("#amount").on("change", amountInputs);
+   $("#type").on("change", deviceInputs2);
+   $("#amount").on("change", deviceInputs2);
+   deviceInputs2()
+})
+
+function deviceInputs2() {
    deviceInputs();
    amountInputs();
-})
+}
 
 function deviceInputs() {
     if ($("#type").val() == "ComputerMonitor") {
         $("#screen").show();
         $("#resolution").show();
+        $("#components2").hide();
         $("#imei").hide();
         $("#meid").hide();
+        $("#data_storage_size").hide();
     } else if (["Smartphone", "Cellphone", "Tablet"].includes($("#type").val())) {
         $("#screen").hide();
         $("#resolution").hide();
+        $("#components2").hide();
         $("#imei").show();
         $("#meid").show();
+        $("#data_storage_size").show();
+    } else if (["HardDrive", "SolidStateDrive"].includes($("#type").val())) {
+        $("#screen").hide();
+        $("#resolution").hide();
+        $("#components2").hide();
+        $("#imei").hide();
+        $("#meid").hide();
+        $("#data_storage_size").show();
     } else {
         $("#screen").hide();
         $("#resolution").hide();
         $("#imei").hide();
         $("#meid").hide();
+        $("#data_storage_size").hide();
+        $("#components2").show();
     };
-    amountInputs();
 }
 
 function amountInputs() {
@@ -35,6 +51,7 @@ function amountInputs() {
         $("#Sku").hide();
         $("#imei").hide();
         $("#meid").hide();
+        $("#data_storage_size").hide();
     } else {
         $("#Phid").show();
         $("#Id_device_supplier").show();
@@ -42,6 +59,5 @@ function amountInputs() {
         $("#Serial_number").show();
         $("#Part_number").show();
         $("#Sku").show();
-        deviceInputs();
     };
 }

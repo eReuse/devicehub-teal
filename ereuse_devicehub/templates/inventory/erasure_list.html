@@ -162,6 +162,7 @@
                   </thead>
                   <tbody>
                     {% for ac in erasure.items %}
+                    {% if not ac.device.is_mobile() %}
                     <tr>
                       <td>
                           <input type="checkbox" class="deviceSelect" data="{{ ac.device.my_partner.id }}"
@@ -227,6 +228,7 @@
                         </a>
                       </td>
                     </tr>
+                    {% endif %}
                     {% endfor %}
                   </tbody>
                 </table>

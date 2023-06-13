@@ -47,6 +47,7 @@ from ereuse_devicehub.resources.device.models import (
     Computer,
     DataStorage,
     Device,
+    Mobile,
     Placeholder,
 )
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
@@ -1198,6 +1199,10 @@ class ExportsView(View):
                 ac = device.last_erase_action
                 if ac:
                     erasures.append(ac)
+            elif isinstance(device, Mobile):
+                ac = device.last_erase_action
+                if ac:
+                    erasures.append(ac)
         return erasures
 
     def get_costum_details(self, erasures):
@@ -1241,15 +1246,19 @@ class ExportsView(View):
 
     def get_server_erasure_hosts(self, erasures):
         erasures_host = []
+        erasures_mobile = []
         erasures_on_server = []
         for erase in erasures:
             try:
+                if isinstance(erase.device, Mobile):
+                    erasures_mobile.append(erase.device)
+                    continue
                 if erase.parent.binding.kangaroo:
                     erasures_host.append(erase.parent)
                     erasures_on_server.append(erase)
             except Exception:
                 pass
-        return erasures_host, erasures_on_server
+        return erasures_host, erasures_on_server, erasures_mobile
 
     def build_erasure_certificate(self):
         erasures = self.get_datastorages()
@@ -1261,9 +1270,10 @@ class ExportsView(View):
 
         my_data, customer_details = self.get_costum_details(erasures)
 
-        a, b = self.get_server_erasure_hosts(erasures)
-        erasures_host, erasures_on_server = a, b
+        a, b, c = self.get_server_erasure_hosts(erasures)
+        erasures_host, erasures_on_server, erasures_mobile = a, b, c
         erasures_host = set(erasures_host)
+        erasures_mobile = set(erasures_mobile)
 
         result_success = 0
         result_failed = 0
@@ -1278,7 +1288,8 @@ class ExportsView(View):
         erasures_on_server = sorted(erasures_on_server, key=lambda x: x.end_time)
         erasures_normal = list(set(erasures) - set(erasures_on_server))
         erasures_normal = sorted(erasures_normal, key=lambda x: x.end_time)
-        n_computers = len({x.parent for x in erasures} - erasures_host)
+        n_computers = len({x.parent for x in erasures if x.parent} - erasures_host)
+        n_mobiles = len(erasures_mobile)
 
         params = {
             'title': 'Device Sanitization',
@@ -1289,10 +1300,12 @@ class ExportsView(View):
             'software': software,
             'my_data': my_data,
             'n_computers': n_computers,
+            'n_mobiles': n_mobiles,
             'result_success': result_success,
             'result_failed': result_failed,
             'customer_details': customer_details,
             'erasure_hosts': erasures_host,
+            'erasure_mobiles': erasures_mobile,
             'erasures_normal': erasures_normal,
         }
         return flask.render_template('inventory/erasure.html', **params)
