@@ -24,7 +24,7 @@
     padding-bottom: 5px;
 }
 #ApplyDeviceLots {
-    color: #993365;
+    color: #007bc0;
     font-weight: bold;
 }
 #ApplyDeviceLots.disabled {
@@ -34,7 +34,7 @@
     background-color: #fff;
 }
 .help {
-    color: #993365;
+    color: #007bc0;
 }
 .doTransfer {
     margin-top: -8px; 
