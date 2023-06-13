@@ -345,6 +345,9 @@ class DeviceRow(BaseDeviceRow):
             self['IMEI'] = device.imei or ''
             self.get_erasure_datawipe_mobile(device)
 
+        if isinstance(device, d.DataStorage):
+            self.get_erasure_datawipe_mobile(device)
+
     def components(self):
         """Function to get all components information of a device."""
         assert isinstance(self.device, d.Computer)
@@ -424,8 +427,16 @@ class DeviceRow(BaseDeviceRow):
         erasure = erasures[-1] if erasures else None
         if erasure:
             self['Erasure DataStorage 1'] = none2str(device.chid)
-            serial_number = none2str(device.imei)
-            storage_size = none2str(device.data_storage_size)
+            if isinstance(device, d.Mobile):
+                serial_number = none2str(device.imei)
+                size = device.data_storage_size
+                size = size * 1000 if size else 0
+                storage_size = none2str(size)
+
+            if isinstance(device, d.DataStorage):
+                serial_number = none2str(device.serial_number)
+                storage_size = none2str(device.size)
+
             self['Erasure DataStorage 1 Serial Number'] = serial_number
             self['Erasure DataStorage 1 Size (MB)'] = storage_size
             self['Erasure DataStorage 1 Software'] = erasure.document.software
