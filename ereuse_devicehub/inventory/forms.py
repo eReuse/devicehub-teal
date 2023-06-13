@@ -622,7 +622,7 @@ class NewDeviceForm(FlaskForm):
 
         if self.type.data in ['HardDrive', 'SolidStateDrive']:
             if self.data_storage_size.data:
-                self._obj.size = self.data_storage_size.data * 1000
+                device.size = self.data_storage_size.data * 1000
 
         device.image = URL(self.image.data)
 
