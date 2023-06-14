@@ -29,6 +29,7 @@ from wtforms import (
 )
 from wtforms.fields import FormField
 
+from ereuse_devicehub import messages
 from ereuse_devicehub.db import db
 from ereuse_devicehub.inventory.models import (
     DeliveryNote,
@@ -1091,6 +1092,21 @@ class DataWipeDocumentForm(Form):
 
 class DataWipeForm(ActionFormMixin):
     document = FormField(DataWipeDocumentForm)
+
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators)
+        if not is_valid:
+            return False
+
+        txt = "Error: Only Data Sanitization actions are "
+        txt += "allowed on Placeholders that are of the Data Storage type."
+        for dev in self._devices:
+            if dev.is_abstract() == 'Placeholder':
+                if not (isinstance(dev, DataStorage) or isinstance(dev, Mobile)):
+                    messages.error(txt)
+                    return False
+
+        return is_valid
 
     def save(self):
         self.document.form.save(commit=False)
