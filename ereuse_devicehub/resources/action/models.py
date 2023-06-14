@@ -615,7 +615,7 @@ class EraseDataWipe(EraseBasic):
     def __format__(self, format_spec: str) -> str:
         v = ''
         if 't' in format_spec:
-            v += '{} {}.'.format(self.type, self.severity)
+            v += '{} {}. '.format(self.type, self.severity.get_public_name())
         if 's' in format_spec:
             if not self.document:
                 v += 'On {}'.format(self.date_str)

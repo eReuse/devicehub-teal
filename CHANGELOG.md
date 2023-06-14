@@ -7,6 +7,22 @@ ml).
 
 ## testing
 
+## [2.5.3] - 2023-05-13
+- [added] #450 add new datawipe in csv.
+- [changed] #447 Share a lot between 2 users, one is owner the other is read only.
+- [changed] #448 enhancements in export lots.
+- [changed] #449 remove button of submit in filter of list of devices.
+- [changed] #452 New version of settings for workbench.
+- [fixed] #445 required File for new documents bat optional for edit document.
+- [fixed] #446 Fix id_supplier and id_internal in export devices.
+- [fixed] #451 fix new datawipe in certificate erasure.
+- [fixed] #453 fix value method in certificate erasure.
+- [fixed] #454 remove validation of email for placeholders type mobile.
+- [fixed] #455 add placeholders in csv metrics and pdf certificate.
+- [fixed] #456 upload placeholders with type datastorage.
+- [fixed] #457 change format erase datawipe.
+- [fixed] #458 not datawipe for placeholders computers.
+
 ## [2.5.2] - 2023-04-20
 - [added] #414 add new vars in the settings file for wb.
 - [added] #440 add lots in export devices.
