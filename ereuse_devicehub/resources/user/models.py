@@ -33,6 +33,7 @@ class User(UserMixin, Thing):
     active = Column(Boolean, default=True, nullable=False)
     phantom = Column(Boolean, default=False, nullable=False)
     api_keys_dlt = Column(CIText(), nullable=True)
+    rols_dlt = Column(CIText(), nullable=True)
     inventories = db.relationship(
         Inventory,
         backref=db.backref('users', lazy=True, collection_class=set),
