@@ -20,6 +20,8 @@ ml).
 - [fixed] #454 remove validation of email for placeholders type mobile.
 - [fixed] #455 add placeholders in csv metrics and pdf certificate.
 - [fixed] #456 upload placeholders with type datastorage.
+- [fixed] #457 change format erase datawipe.
+- [fixed] #458 not datawipe for placeholders computers.
 
 ## [2.5.2] - 2023-04-20
 - [added] #414 add new vars in the settings file for wb.
