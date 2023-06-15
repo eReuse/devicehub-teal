@@ -1,6 +1,5 @@
 from uuid import uuid4
 
-import click
 from boltons.urlutils import URL
 
 from ereuse_devicehub.db import db
