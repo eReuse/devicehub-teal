@@ -12,6 +12,8 @@ from flask_sqlalchemy import SQLAlchemy
 import ereuse_devicehub.ereuse_utils.cli
 from ereuse_devicehub.auth import Auth
 from ereuse_devicehub.client import Client, UserClient
+from ereuse_devicehub.commands.adduser import AddUser
+from ereuse_devicehub.commands.initdatas import InitDatas
 
 # from ereuse_devicehub.commands.reports import Report
 from ereuse_devicehub.commands.users import GetToken
@@ -30,6 +32,21 @@ try:
     from ereuse_devicehub.modules.commands.sync_dlt import GetMembers
 except Exception:
     GetMembers = None
+
+try:
+    from ereuse_devicehub.modules.dpp.commands.register_user_dlt import RegisterUserDlt
+except Exception:
+    RegisterUserDlt = None
+
+try:
+    from ereuse_devicehub.modules.oidc.commands.add_member import AddMember
+except Exception:
+    AddMember = None
+
+try:
+    from ereuse_devicehub.modules.oidc.commands.add_member import AddClientOidc
+except Exception:
+    AddClientOidc = None
 
 
 class Devicehub(Teal):
@@ -78,8 +95,17 @@ class Devicehub(Teal):
         self.dummy = Dummy(self)
         # self.report = Report(self)
         self.get_token = GetToken(self)
+        self.initdata = InitDatas(self)
+        self.adduser = AddUser(self)
+
         if GetMembers:
             self.get_members = GetMembers(self)
+        if RegisterUserDlt:
+            self.register_user_dlt = RegisterUserDlt(self)
+        if AddMember:
+            self.register_user_dlt = AddMember(self)
+        if AddClientOidc:
+            self.register_user_dlt = AddClientOidc(self)
 
         @self.cli.group(
             short_help='Inventory management.',

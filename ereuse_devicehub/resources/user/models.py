@@ -138,7 +138,7 @@ class User(UserMixin, Thing):
         data = json.dumps(data)
         self.api_keys_dlt = encrypt(password, data)
 
-    def allow_permitions(self, api_token=None):
+    def allow_permitions(self, api_token=None, rols="Operator"):
         if 'dpp' not in app.blueprints.keys():
             return
 
@@ -152,22 +152,25 @@ class User(UserMixin, Thing):
 
         apiUser1 = API(api_dlt, keyUser1, "ethereum")
 
-        result = apiUser1.issue_credential("Operator", target_user)
+        for rol in rols.split(","):
+            result = apiUser1.issue_credential(rol.strip(), target_user)
         return result
 
-    def get_rols(self):
-        if session.get('rols'):
-            return session.get('rols')
+    def get_rols_dlt(self):
+        return json.loads(self.rols_dlt)
+
+    def get_rols(self, token_dlt=None):
 
         if 'dpp' not in app.blueprints.keys():
             return []
 
-        if not session.get('token_dlt'):
-            return []
+        if not token_dlt:
+            token_dlt = session.get('token_dlt')
+            if not token_dlt:
+                return []
 
-        token_dlt = session.get('token_dlt')
         api_dlt = app.config.get('API_DLT')
-        if not token_dlt or not api_dlt:
+        if not api_dlt:
             return []
 
         api = API(api_dlt, token_dlt, "ethereum")
