@@ -31,6 +31,21 @@ try:
 except Exception:
     GetMembers = None
 
+try:
+    from ereuse_devicehub.modules.dpp.commands.register_user_dlt import RegisterUserDlt
+except Exception:
+    RegisterUserDlt = None
+
+try:
+    from ereuse_devicehub.modules.oidc.commands.add_member import AddMember
+except Exception:
+    AddMember = None
+
+try:
+    from ereuse_devicehub.modules.oidc.commands.add_member import AddClientOidc
+except Exception:
+    AddClientOidc = None
+
 
 class Devicehub(Teal):
     test_client_class = Client
@@ -80,6 +95,12 @@ class Devicehub(Teal):
         self.get_token = GetToken(self)
         if GetMembers:
             self.get_members = GetMembers(self)
+        if RegisterUserDlt:
+            self.register_user_dlt = RegisterUserDlt(self)
+        if AddMember:
+            self.register_user_dlt = AddMember(self)
+        if AddClientOidc:
+            self.register_user_dlt = AddClientOidc(self)
 
         @self.cli.group(
             short_help='Inventory management.',
