@@ -5,20 +5,21 @@ from typing import Type
 import boltons.urlutils
 import click
 import click_spinner
-import ereuse_devicehub.ereuse_utils.cli
-from ereuse_devicehub.ereuse_utils.session import DevicehubClient
 from flask import _app_ctx_stack, g
 from flask_login import LoginManager, current_user
 from flask_sqlalchemy import SQLAlchemy
 
+import ereuse_devicehub.ereuse_utils.cli
 from ereuse_devicehub.auth import Auth
 from ereuse_devicehub.client import Client, UserClient
+from ereuse_devicehub.commands.initdatas import InitDatas
 
 # from ereuse_devicehub.commands.reports import Report
 from ereuse_devicehub.commands.users import GetToken
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.db import db
 from ereuse_devicehub.dummy.dummy import Dummy
+from ereuse_devicehub.ereuse_utils.session import DevicehubClient
 from ereuse_devicehub.resources.device.search import DeviceSearch
 from ereuse_devicehub.resources.inventory import Inventory, InventoryDef
 from ereuse_devicehub.resources.user.models import User
@@ -73,6 +74,7 @@ class Devicehub(Teal):
         self.dummy = Dummy(self)
         # self.report = Report(self)
         self.get_token = GetToken(self)
+        self.initdata = InitDatas(self)
 
         @self.cli.group(
             short_help='Inventory management.',
