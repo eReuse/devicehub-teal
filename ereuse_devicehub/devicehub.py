@@ -12,6 +12,8 @@ from flask_sqlalchemy import SQLAlchemy
 import ereuse_devicehub.ereuse_utils.cli
 from ereuse_devicehub.auth import Auth
 from ereuse_devicehub.client import Client, UserClient
+from ereuse_devicehub.commands.adduser import AddUser
+from ereuse_devicehub.commands.initdatas import InitDatas
 
 # from ereuse_devicehub.commands.reports import Report
 from ereuse_devicehub.commands.users import GetToken
@@ -93,6 +95,9 @@ class Devicehub(Teal):
         self.dummy = Dummy(self)
         # self.report = Report(self)
         self.get_token = GetToken(self)
+        self.initdata = InitDatas(self)
+        self.adduser = AddUser(self)
+
         if GetMembers:
             self.get_members = GetMembers(self)
         if RegisterUserDlt:
