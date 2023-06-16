@@ -1,0 +1,39 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+<div class="pagetitle">
+  <h1>{{ title }}</h1>
+</div>
+
+<section class="section profile">
+  <div class="row">
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-body">
+          <div class="pt-4 pb-2">
+            <h5 class="card-title text-center pb-0 fs-4">{{ title }}</h5>
+            <p>{{grant.client.client_name}} is requesting:
+            <strong>{{ grant.request.scope }}</strong>
+            </p>
+          </div>
+          <form action="" method="post" class="row g-3 needs-validation" novalidate>
+            {{ form.csrf_token }}
+            {% for field in form %}
+              {% if field != form.csrf_token %}
+                <div class="col-12">
+                  {{ field.label(class_="form-label") }}
+                  {{ field }}
+                </div>
+              {% endif %}
+            {% endfor %}
+
+            <div>
+              <a href="{{ url_for('core.user-profile') }}" class="btn btn-danger">Cancel</a>
+              <button class="btn btn-primary" type="submit">Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

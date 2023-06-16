@@ -1,0 +1,72 @@
+{% extends "ereuse_devicehub/base.html" %}
+{% block page_title %}{{ title }} - {{ page_title }}{% endblock %}
+{% block body %}
+
+<main id="main" class="main">
+  {% block messages %}
+  {% for level, message in get_flashed_messages(with_categories=true) %}
+  <div class="alert alert-{{ level}} alert-dismissible fade show" role="alert">
+    {% if '_message_icon' in session %}
+    <i class="bi bi-{{ session['_message_icon'][level]}} me-1"></i>
+    {% else %}
+    <!-- fallback if 3rd party libraries (e.g. flask_login.login_required) -->
+    <i class="bi bi-info-circle me-1"></i>
+    {% endif %}
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endfor %}
+  {% endblock %}
+  <section class="section profile">
+    <div class="row">
+      <div class="col-xl-9">
+        <div class="card">
+          <div class="card-body">
+            <div class="pagetitle">
+              <h1>{{ title }}</h1>
+            </div>
+            <form action="" method="post" class="row g-3 needs-validation" novalidate>
+              {{ form.csrf_token }}
+              {% for field in form %}
+                {% if field != form.csrf_token %}
+                  <div class="col-12">
+                    {{ field.label(class_="form-label") }}
+                    {{ field }}
+                  </div>
+                {% endif %}
+              {% endfor %}
+
+              <div>
+                <a href="{{ next }}" class="btn btn-danger">Cancel</a>
+                <button class="btn btn-primary" type="submit">Submit</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ======= Footer ======= -->
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <footer class="footer">
+        <div class="copyright">
+          &copy; Copyright <strong><span>Usody</span></strong>. All Rights Reserved
+        </div>
+        <div class="credits">
+          <a href="https://help.usody.com/en/" target="_blank">Help</a> | 
+          <a href="https://www.usody.com/legal/privacy-policy" target="_blank">Privacy</a> | 
+          <a href="https://www.usody.com/legal/terms" target="_blank">Terms</a>
+        </div>
+        <div class="credits">
+          DeviceHub
+        </div>
+      </footer><!-- End Footer -->
+    </div>
+  </div>
+</div>
+
+{% endblock body %}

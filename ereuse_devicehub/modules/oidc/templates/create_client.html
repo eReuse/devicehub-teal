@@ -1,0 +1,48 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+<div class="pagetitle">
+  <h1>{{ title }}</h1>
+</div>
+
+<section class="section profile">
+  <div class="row">
+    <div class="col-xl-6">
+      <div class="card">
+        {% if form.client %}
+        <div class="card-body">
+          <label class="form-label"><strong>Client_id:</strong></label>
+          <span class="form-control border-0">{{ form.client.client_id }}</span><br />
+          <label class="form-label"><strong>Client_secret:</strong></label>
+          <span class="form-control border-0">{{ form.client.client_secret }}</span>
+        </div>
+        {% endif %}
+        <div class="card-body">
+          <form action="" method="post" class="row g-3 needs-validation" novalidate>
+            {{ form.csrf_token }}
+            {% for field in form %}
+              {% if field != form.csrf_token %}
+                <div class="col-12">
+                  {{ field.label(class_="form-label") }}
+                  {{ field }}
+                  {% if field.errors %}
+                  <p class="text-danger">
+                    {% for error in field.errors %}
+                      {{ error }}<br/>
+                    {% endfor %}
+                  </p>
+                  {% endif %}
+                </div>
+              {% endif %}
+            {% endfor %}
+
+            <div>
+              <a href="{{ referrer }}" class="btn btn-danger">Cancel</a>
+              <button class="btn btn-primary" type="submit">Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
