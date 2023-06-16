@@ -510,7 +510,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
         api = API(api_dlt, token_dlt, "ethereum")
 
-        from ereuse_devicehub.resources.did.models import PROOF_ENUM, Proof
+        from ereuse_devicehub.modules.dpp.models import PROOF_ENUM, Proof
 
         deviceCHID = self.device.chid
         docSig = hashlib.sha3_256(self.snapshot.json_wb.encode('utf-8')).hexdigest()
@@ -881,7 +881,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         if 'dpp' not in app.blueprints.keys() or not self.device.hid:
             return
 
-        from ereuse_devicehub.resources.did.models import Dpp
+        from ereuse_devicehub.modules.dpp.models import Dpp
 
         dpp = "{chid}:{phid}".format(chid=self.device.chid, phid=self.phid_dpp)
         if Dpp.query.filter_by(key=dpp).all():

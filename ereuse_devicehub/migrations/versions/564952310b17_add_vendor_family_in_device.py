@@ -1,7 +1,7 @@
 """add vendor family in device
 
 Revision ID: 564952310b17
-Revises: 4b7f77f121bf
+Revises: af038a8a388c
 Create Date: 2022-11-14 13:12:22.916848
 
 """
@@ -11,7 +11,7 @@ from alembic import context, op
 
 # revision identifiers, used by Alembic.
 revision = '564952310b17'
-down_revision = '4b7f77f121bf'
+down_revision = 'af038a8a388c'
 branch_labels = None
 depends_on = None
 

@@ -1,7 +1,7 @@
 """add digital passport dpp
 
 Revision ID: 8334535d56fa
-Revises: 93daff872771
+Revises: 4b7f77f121bf
 Create Date: 2023-01-19 12:01:54.102326
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '8334535d56fa'
-down_revision = '93daff872771'
+down_revision = '4b7f77f121bf'
 branch_labels = None
 depends_on = None
 

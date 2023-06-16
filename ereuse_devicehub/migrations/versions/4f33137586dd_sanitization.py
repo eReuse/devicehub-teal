@@ -1,7 +1,7 @@
 """sanitization
 
 Revision ID: 4f33137586dd
-Revises: 8334535d56fa
+Revises: 93daff872771
 Create Date: 2023-02-13 18:01:00.092527
 
 """
@@ -14,7 +14,7 @@ from ereuse_devicehub import teal
 
 # revision identifiers, used by Alembic.
 revision = '4f33137586dd'
-down_revision = '8334535d56fa'
+down_revision = '93daff872771'
 branch_labels = None
 depends_on = None
 

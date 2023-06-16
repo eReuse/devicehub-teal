@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.util import OrderedSet
 
-from ereuse_devicehub.resources.action.models import ActionStatus, Snapshot
+from ereuse_devicehub.resources.action.models import Snapshot
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
@@ -58,15 +58,6 @@ class Proof(Thing):
         backref=backref('proofs', lazy=True),
         collection_class=OrderedSet,
         primaryjoin=Snapshot.id == snapshot_id,
-    )
-
-    action_status_id = Column(
-        UUID(as_uuid=True), ForeignKey(ActionStatus.id), nullable=True
-    )
-    action_status = relationship(
-        ActionStatus,
-        backref=backref('proofs', lazy=True),
-        primaryjoin=ActionStatus.id == action_status_id,
     )
 
 

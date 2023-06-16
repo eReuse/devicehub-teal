@@ -948,7 +948,7 @@ class Device(Thing):
         api = API(api_dlt, token_dlt, "ethereum")
 
         result = api.register_device(self.chid)
-        from ereuse_devicehub.resources.did.models import PROOF_ENUM, Proof
+        from ereuse_devicehub.modules.dpp.models import PROOF_ENUM, Proof
         from ereuse_devicehub.resources.enums import StatusCode
 
         if result['Status'] == StatusCode.Success.value:

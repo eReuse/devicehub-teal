@@ -9,10 +9,10 @@ from flask.json import jsonify
 from flask.views import View
 
 from ereuse_devicehub import __version__
+from ereuse_devicehub.modules.dpp.models import Dpp
 from ereuse_devicehub.resources.device.models import Device
-from ereuse_devicehub.resources.did.models import Dpp
 
-did = Blueprint('did', __name__, url_prefix='/did')
+did = Blueprint('did', __name__, url_prefix='/did', template_folder='templates')
 
 
 class DidView(View):
