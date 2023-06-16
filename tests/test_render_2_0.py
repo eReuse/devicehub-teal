@@ -531,7 +531,7 @@ def test_add_monitor(user3: UserClientFlask):
     assert dev.placeholder.id_device_supplier == "b2"
     assert dev.hid == 'monitor-samsung-lc27t55-aaaab'
     assert phid == '1'
-    assert dhid == 'O48N2'
+    assert dhid == '93652'
 
     txt = f'Device &#34;{typ}&#34; placeholder with PHID {phid} and DHID {dhid} '
     txt += 'created successfully'
@@ -571,7 +571,7 @@ def test_update_monitor(user3: UserClientFlask):
     assert dev.placeholder.id_device_supplier == "b2"
     assert dev.hid == 'monitor-samsung-lc27t55-aaaab'
     assert phid == '1'
-    assert dhid == 'O48N2'
+    assert dhid == '93652'
     assert dev.model == 'lc27t55'
     assert dev.depth == 0.1
     assert dev.placeholder.pallet == "l34"
@@ -640,7 +640,7 @@ def test_add_2_monitor(user3: UserClientFlask):
     assert dev.placeholder.id_device_supplier == "b1"
     assert dev.hid == 'monitor-samsung-lc27t55-aaaab'
     assert phid == '1'
-    assert dhid == 'O48N2'
+    assert dhid == '93652'
     assert dev.model == 'lc27t55'
     assert dev.placeholder.pallet == "l34"
 
@@ -717,7 +717,7 @@ def test_add_laptop(user3: UserClientFlask):
         dev.chid == '274f05421e4d394c5b3cd10266fed6f0500029b104b5db3521689bda589e3150'
     )
     assert phid == '1'
-    assert dhid == 'O48N2'
+    assert dhid == '93652'
 
     txt = f'Device &#34;{typ}&#34; placeholder with PHID {phid} and DHID {dhid} '
     txt += 'created successfully'
@@ -1891,7 +1891,7 @@ def test_edit_laptop(user3: UserClientFlask):
     assert dev.serial_number == 'aaaab'
     assert dev.model == 'lc27t55'
     assert phid == '1'
-    assert dhid == 'O48N2'
+    assert dhid == '93652'
 
     txt = f'Device &#34;{typ}&#34; placeholder with PHID {phid} and DHID {dhid} '
     txt += 'created successfully'
