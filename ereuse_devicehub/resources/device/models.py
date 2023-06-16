@@ -78,8 +78,8 @@ logger = logging.getLogger(__name__)
 
 
 def create_code(context):
-    _id = Device.query.order_by(Device.id.desc()).first() or 3
-    if not _id == 3:
+    _id = Device.query.order_by(Device.id.desc()).first() or 1
+    if not _id == 1:
         _id = _id.id + 1
     return hashcode.encode(_id)
 
