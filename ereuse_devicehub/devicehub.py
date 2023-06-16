@@ -29,7 +29,7 @@ from ereuse_devicehub.teal.teal import Teal
 from ereuse_devicehub.templating import Environment
 
 try:
-    from ereuse_devicehub.modules.commands.sync_dlt import GetMembers
+    from ereuse_devicehub.modules.oidc.commands.sync_dlt import GetMembers
 except Exception:
     GetMembers = None
 
@@ -44,9 +44,14 @@ except Exception:
     AddMember = None
 
 try:
-    from ereuse_devicehub.modules.oidc.commands.add_member import AddClientOidc
+    from ereuse_devicehub.modules.oidc.commands.client_member import AddClientOidc
 except Exception:
     AddClientOidc = None
+
+try:
+    from ereuse_devicehub.modules.oidc.commands.insert_member_in_dlt import InsertMember
+except Exception:
+    InsertMembe = None
 
 
 class Devicehub(Teal):
@@ -106,6 +111,8 @@ class Devicehub(Teal):
             self.register_user_dlt = AddMember(self)
         if AddClientOidc:
             self.register_user_dlt = AddClientOidc(self)
+        if InsertMember:
+            self.register_user_dlt = InsertMember(self)
 
         @self.cli.group(
             short_help='Inventory management.',
