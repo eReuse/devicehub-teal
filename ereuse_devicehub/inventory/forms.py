@@ -702,25 +702,7 @@ class NewDeviceForm(FlaskForm):
                 if self.data_storage_size.data:
                     self._obj.size = self.data_storage_size.data * 1000
 
-            if not self._obj.appearance() or not self._obj.functionality():
-                visual_test = VisualTest(
-                    appearance_range=self.appearance.data,
-                    functionality_range=self.functionality.data,
-                    device=self._obj,
-                )
-                db.session.add(visual_test)
-            else:
-                if (
-                    self.appearance.data
-                    and self.appearance.data != self._obj.appearance().name
-                ):
-                    self._obj.set_appearance(self.appearance.data)
-
-                if (
-                    self.functionality.data
-                    and self.functionality.data != self._obj.functionality().name
-                ):
-                    self._obj.set_functionality(self.functionality.data)
+            self.edit_visual_test(self._obj)
 
         else:
             self._obj.placeholder.id_device_supplier = (
@@ -730,10 +712,32 @@ class NewDeviceForm(FlaskForm):
                 self.id_device_internal.data or None
             )
             self._obj.placeholder.pallet = self.pallet.data or None
+
+            pl_dev = self._obj.placeholder.device
+            self.edit_visual_test(pl_dev)
+
         placeholder_log = PlaceholdersLog(
             type="Update", source='Web form', placeholder=self._obj.placeholder
         )
         db.session.add(placeholder_log)
+
+    def edit_visual_test(self, dev):
+        if not dev.appearance() or not dev.functionality():
+            visual_test = VisualTest(
+                appearance_range=self.appearance.data,
+                functionality_range=self.functionality.data,
+                device=dev,
+            )
+            db.session.add(visual_test)
+        else:
+            if self.appearance.data and self.appearance.data != dev.appearance().name:
+                dev.set_appearance(self.appearance.data)
+
+            if (
+                self.functionality.data
+                and self.functionality.data != dev.functionality().name
+            ):
+                dev.set_functionality(self.functionality.data)
 
 
 class TagDeviceForm(FlaskForm):
