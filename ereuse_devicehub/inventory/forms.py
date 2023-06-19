@@ -41,7 +41,7 @@ from ereuse_devicehub.inventory.models import (
 from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
-from ereuse_devicehub.resources.action.models import Snapshot, Trade
+from ereuse_devicehub.resources.action.models import Snapshot, Trade, VisualTest
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
 from ereuse_devicehub.resources.action.views.snapshot import (
     SnapshotMixin,
@@ -480,6 +480,10 @@ class NewDeviceForm(FlaskForm):
         if self._obj.type in ['HardDrive', 'SolidStateDrive']:
             if self._obj.size:
                 self.data_storage_size.data = self._obj.size / 1000
+        if self._obj.appearance():
+            self.appearance.data = self._obj.appearance().name
+        if self._obj.functionality():
+            self.functionality.data = self._obj.functionality().name
 
         if self._obj.placeholder.is_abstract:
             self.type.render_kw = disabled
@@ -698,17 +702,25 @@ class NewDeviceForm(FlaskForm):
                 if self.data_storage_size.data:
                     self._obj.size = self.data_storage_size.data * 1000
 
-            if (
-                self.appearance.data
-                and self.appearance.data != self._obj.appearance().name
-            ):
-                self._obj.set_appearance(self.appearance.data)
+            if not self._obj.appearance() or not self._obj.functionality():
+                visual_test = VisualTest(
+                    appearance_range=self.appearance.data,
+                    functionality_range=self.functionality.data,
+                    device=self._obj,
+                )
+                db.session.add(visual_test)
+            else:
+                if (
+                    self.appearance.data
+                    and self.appearance.data != self._obj.appearance().name
+                ):
+                    self._obj.set_appearance(self.appearance.data)
 
-            if (
-                self.functionality.data
-                and self.functionality.data != self._obj.functionality().name
-            ):
-                self._obj.set_functionality(self.functionality.data)
+                if (
+                    self.functionality.data
+                    and self.functionality.data != self._obj.functionality().name
+                ):
+                    self._obj.set_functionality(self.functionality.data)
 
         else:
             self._obj.placeholder.id_device_supplier = (
