@@ -52,7 +52,7 @@
                 {% if not rols and user.is_anonymous %}
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#validateModal">Validate</button>
                 {% else %}
-                <button class="btn btn-primary" id="buttonRol" data-bs-toggle="modal" data-bs-target="#rolsModal">Select your rol</button>
+                <button class="btn btn-primary" id="buttonRol" data-bs-toggle="modal" data-bs-target="#rolsModal">Select your role</button>
                 <a class="btn btn-primary" href="{{ url_for('core.logout') }}?next={{ path }}">Logout</a>
                 {% endif %}
             </li>
