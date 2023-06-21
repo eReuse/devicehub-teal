@@ -121,11 +121,15 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         schema=f'{get_inv()}',
     )
+    op.execute(f"CREATE SEQUENCE {get_inv()}.proof_seq START 1;")
+    op.execute(f"CREATE SEQUENCE {get_inv()}.dpp_seq START 1;")
 
 
 def downgrade():
     op.drop_table('dpp', schema=f'{get_inv()}')
     op.drop_table('proof', schema=f'{get_inv()}')
+    op.execute(f"DROP SEQUENCE {get_inv()}.proof_seq;")
+    op.execute(f"DROP SEQUENCE {get_inv()}.dpp_seq;")
     # op.drop_index(op.f('ix_proof_created'), table_name='proof', schema=f'{get_inv()}')
     # op.drop_index(op.f('ix_proof_timestamp'), table_name='proof', schema=f'{get_inv()}')
     op.drop_column('snapshot', 'phid_dpp', schema=f'{get_inv()}')
