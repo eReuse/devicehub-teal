@@ -513,7 +513,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         from ereuse_devicehub.modules.dpp.models import PROOF_ENUM, Proof
 
         deviceCHID = self.device.chid
-        docSig = hashlib.sha3_256(self.snapshot.json_wb.encode('utf-8')).hexdigest()
+        docSig = self.snapshot.phid_dpp
         docID = "{}".format(self.snapshot.uuid or '')
         issuerID = "{dh}:{user}".format(dh=dh_instance, user=g.user.id)
         proof_type = PROOF_ENUM['Erase']
@@ -897,7 +897,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             return
 
         api = API(api_dlt, token_dlt, "ethereum")
-        docSig = hashlib.sha3_256(self.json_wb.encode('utf-8')).hexdigest()
+        docSig = self.phid_dpp
         docID = "{}".format(self.uuid or '')
         issuerID = "{dh}:{user}".format(dh=dh_instance, user=g.user.id)
 

@@ -23,13 +23,13 @@ _sorted_proofs = {'order_by': lambda: Proof.created, 'collection_class': SortedS
 
 
 class Proof(Thing):
-    id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
+    id = Column(BigInteger, Sequence('proof_seq'), primary_key=True)
     id.comment = """The identifier of the device for this database. Used only
                     internally for software; users should not use this."""
     documentId = Column(CIText(), nullable=True)
-    documentId.comment = "is the hash of snapshot.json_wb"
+    documentId.comment = "is the uuid of snapshot"
     documentSignature = Column(CIText(), nullable=True)
-    documentSignature.comment = "is the snapshot.json_wb with the signature of the user"
+    documentSignature.comment = "is the snapshot.json_hw with the signature of the user"
     timestamp = Column(BigInteger, nullable=False)
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
 
@@ -69,13 +69,13 @@ class Dpp(Thing):
 
     """
 
-    id = Column(BigInteger, Sequence('device_seq'), primary_key=True)
+    id = Column(BigInteger, Sequence('dpp_seq'), primary_key=True)
     key = Column(CIText(), nullable=False)
     key.comment = "chid:phid, (chid it's in device and phid it's in the snapshot)"
     documentId = Column(CIText(), nullable=True)
-    documentId.comment = "is the hash of snapshot.json_wb"
+    documentId.comment = "is the uuid of snapshot"
     documentSignature = Column(CIText(), nullable=True)
-    documentSignature.comment = "is the snapshot.json_wb with the signature of the user"
+    documentSignature.comment = "is the snapshot.json_hw with the signature of the user"
     timestamp = Column(BigInteger, nullable=False)
 
     issuer_id = Column(
