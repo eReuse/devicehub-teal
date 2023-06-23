@@ -31,6 +31,7 @@ DUMMY_JWT_CONFIG = {
 
 
 def exists_nonce(nonce, req):
+    return False
     exists = OAuth2AuthorizationCode.query.filter_by(
         client_id=req.client_id, nonce=nonce
     ).first()
