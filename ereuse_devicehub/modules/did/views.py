@@ -17,7 +17,7 @@ did = Blueprint('did', __name__, url_prefix='/did', template_folder='templates')
 
 class DidView(View):
     methods = ['GET', 'POST']
-    template_name = 'did/layout.html'
+    template_name = 'anonymous.html'
 
     def dispatch_request(self, id_dpp):
         self.dpp = None
@@ -42,8 +42,20 @@ class DidView(View):
 
         if self.accept_json():
             return jsonify(self.get_result())
+        self.get_template()
 
         return render_template(self.template_name, **self.context)
+
+    def get_template(self):
+        rol = self.context.get('rol')
+        if not rol:
+            return
+
+        tlmp = {
+            "isOperator": "operator.html",
+            "isVerifier": "verifier.html",
+        }
+        self.template_name = tlmp.get(rol, self.template_name)
 
     def accept_json(self):
         if 'json' in request.headers.get('Accept', []):

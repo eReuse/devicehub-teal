@@ -16,7 +16,7 @@ from boltons import urlutils
 from citext import CIText
 from ereuseapi.methods import API
 from flask import current_app as app
-from flask import g, request, session
+from flask import g, request, session, url_for
 from more_itertools import unique_everseen
 from sqlalchemy import BigInteger, Boolean, Column
 from sqlalchemy import Enum as DBEnum
@@ -354,6 +354,12 @@ class Device(Thing):
     def public_link(self) -> str:
         host_url = request.host_url.strip('/')
         return "{}{}".format(host_url, self.url.to_text())
+
+    @property
+    def chid_link(self) -> str:
+        host_url = request.host_url.strip('/')
+        url = url_for('did.did', id_dpp=self.chid)
+        return "{}{}".format(host_url, url)
 
     @property
     def url(self) -> urlutils.URL:

@@ -159,6 +159,12 @@ class User(UserMixin, Thing):
     def get_rols_dlt(self):
         return json.loads(self.rols_dlt)
 
+    def set_rols_dlt(self, token_dlt=None):
+        rols = self.get_rols(self, token_dlt=token_dlt)
+        if rols:
+            self.rols_dlt = json.dumps(rols)
+        return rols
+
     def get_rols(self, token_dlt=None):
 
         if 'dpp' not in app.blueprints.keys():
