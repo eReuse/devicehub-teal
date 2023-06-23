@@ -39,7 +39,7 @@ def exists_nonce(nonce, req):
 
 def generate_user_info(user, scope):
     if 'rols' in scope:
-        rols = user.get_rols_dlt()
+        rols = user.rols_dlt and user.get_rols_dlt() or []
         return UserInfo(rols=rols, sub=str(user.id), name=user.email)
     return UserInfo(sub=str(user.id), name=user.email)
 
