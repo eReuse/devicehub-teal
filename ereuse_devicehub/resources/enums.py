@@ -15,6 +15,7 @@ class SnapshotSoftware(Enum):
     Web = 'Web'
     DesktopApp = 'DesktopApp'
     WorkbenchDesktop = 'WorkbenchDesktop'
+    UsodyOS = 'UsodyOS'
 
     def __str__(self):
         return self.name

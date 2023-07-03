@@ -5,13 +5,24 @@ from marshmallow.fields import Dict, List, Nested, String
 
 from ereuse_devicehub.resources.schemas import Thing
 
+# from marshmallow_enum import EnumField
+
 
 class Snapshot_lite_data(MarshmallowSchema):
-    dmidecode = String(required=True)
-    hwinfo = String(required=True)
-    smart = List(Dict(), required=True)
+    hwmd_version = String(required=True)
     lshw = Dict(required=True)
+    dmidecode = String(required=True)
     lspci = String(required=True)
+    hwinfo = String(required=True)
+    smart = List(Dict(), required=False)
+
+
+class Test(MarshmallowSchema):
+    type = String(required=True)
+
+
+class Sanitize(MarshmallowSchema):
+    type = String(required=True)
 
 
 class Snapshot_lite(Thing):
@@ -19,11 +30,18 @@ class Snapshot_lite(Thing):
     version = String(required=True)
     schema_api = String(required=True)
     software = String(required=True)
+    # software = EnumField(
+    #     SnapshotSoftware,
+    #     required=True,
+    #     description='The software that generated this Snapshot.',
+    # )
     sid = String(required=True)
     type = String(required=True)
     timestamp = String(required=True)
     settings_version = String(required=False)
-    data = Nested(Snapshot_lite_data, required=True)
+    hwmd = Nested(Snapshot_lite_data, required=True)
+    tests = Nested(Test, many=True, collection_class=list, required=False)
+    sanitize = Nested(Sanitize, many=True, collection_class=list, required=False)
 
     @validates_schema
     def validate_workbench_version(self, data: dict):

@@ -18,25 +18,28 @@ logger = logging.getLogger(__name__)
 class ParseSnapshot:
     def __init__(self, snapshot, default="n/a"):
         self.default = default
-        self.dmidecode_raw = snapshot["data"]["dmidecode"]
-        self.smart_raw = snapshot["data"]["smart"]
-        self.hwinfo_raw = snapshot["data"]["hwinfo"]
+        self.dmidecode_raw = snapshot["hwmd"]["dmidecode"]
+        self.smart_raw = snapshot["hwmd"]["smart"]
+        self.hwinfo_raw = snapshot["hwmd"]["hwinfo"]
+        self.lshw_raw = snapshot["hwmd"]["lshw"]
+        self.lscpi_raw = snapshot["hwmd"]["lspci"]
         self.device = {"actions": []}
         self.components = []
 
         self.dmi = DMIParse(self.dmidecode_raw)
         self.smart = self.loads(self.smart_raw)
+        self.lshw = self.loads(self.lshw_raw)
         self.hwinfo = self.parse_hwinfo()
 
         self.set_basic_datas()
         self.set_components()
         self.snapshot_json = {
             "device": self.device,
-            "software": "Workbench",
+            "software": "UsodyOS",
             "components": self.components,
             "uuid": snapshot['uuid'],
             "type": snapshot['type'],
-            "version": "14.0.0",
+            "version": "1.0.0",
             "endTime": snapshot["timestamp"],
             "elapsed": 1,
             "sid": snapshot["sid"],
@@ -46,6 +49,7 @@ class ParseSnapshot:
         return Snapshot().load(self.snapshot_json)
 
     def set_basic_datas(self):
+        # import pdb; pdb.set_trace()
         self.device['manufacturer'] = self.dmi.manufacturer()
         self.device['model'] = self.dmi.model()
         self.device['serialNumber'] = self.dmi.serial_number()
@@ -321,10 +325,10 @@ class ParseSnapshotLsHw:
         self.uuid = snapshot.get("uuid")
         self.sid = snapshot.get("sid")
         self.version = str(snapshot.get("version"))
-        self.dmidecode_raw = snapshot["data"]["dmidecode"]
-        self.smart = snapshot["data"]["smart"]
-        self.hwinfo_raw = snapshot["data"]["hwinfo"]
-        self.lshw = snapshot["data"]["lshw"]
+        self.dmidecode_raw = snapshot["hwmd"]["dmidecode"]
+        self.smart = snapshot["hwmd"]["smart"]
+        self.hwinfo_raw = snapshot["hwmd"]["hwinfo"]
+        self.lshw = snapshot["hwmd"]["lshw"]
         self.device = {"actions": []}
         self.components = []
         self.components_obj = []

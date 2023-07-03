@@ -1,4 +1,5 @@
 import json
+import logging
 from binascii import Error as asciiError
 
 from flask import Blueprint
@@ -20,6 +21,8 @@ from ereuse_devicehub.resources.action.views.snapshot import (
     save_json,
 )
 from ereuse_devicehub.resources.enums import Severity
+
+logger = logging.getLogger(__name__)
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
@@ -55,7 +58,19 @@ class InventoryView(LoginMixin, SnapshotMixin):
         if type(snapshot_json) == Response:
             return snapshot_json
 
-        self.snapshot_json = ParseSnapshotLsHw(snapshot_json).get_snapshot()
+        try:
+            self.snapshot_json = ParseSnapshotLsHw(snapshot_json).get_snapshot()
+            raise 1 == 2
+        except Exception as err:
+            logger.error("Error: {} \n{}\n".format(err, self.snapshot_json))
+
+            self.response = jsonify(
+                {
+                    'error': err,
+                }
+            )
+            self.response.status_code = 500
+            return self.response
 
         snapshot = self.build()
         snapshot.device.set_hid()
