@@ -39,7 +39,7 @@ from ereuse_devicehub.inventory.models import (
     TransferCustomerDetails,
 )
 from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
-from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
+from ereuse_devicehub.parser.parser import ParseSnapshot, ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
@@ -315,18 +315,12 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
 
         return True
 
-    def is_wb_lite_snapshot(self, version: str) -> bool:
-        is_lite = False
-        if version in app.config['SCHEMA_WORKBENCH']:
-            is_lite = True
-
-        return is_lite
-
     def save(self, commit=True, user_trusts=True):
         if any([x == 'Error' for x in self.result.values()]):
             return
         schema = SnapshotSchema()
         schema_lite = Snapshot_lite()
+        schemas_hwmd = {'1.0.0': Snapshot_lite()}
         devices = []
         self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
         for filename, snapshot_json in self.snapshots:
@@ -336,9 +330,16 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
             self.uuid = snapshot_json.get('uuid')
             self.sid = snapshot_json.get('sid')
 
-            if self.is_wb_lite_snapshot(self.version):
+            if snapshot_json.get('hwmd'):
+                schema_api = snapshot_json.get('schema_api')
+                schema_lite = schemas_hwmd.get(schema_api)
+                if not schema_lite:
+                    txt = "Error: No there are schema_api in the snapshot {}"
+                    txt = txt.format(self.uuid)
+                    raise txt
+
                 self.snapshot_json = schema_lite.load(snapshot_json)
-                snapshot_json = ParseSnapshotLsHw(self.snapshot_json).snapshot_json
+                snapshot_json = ParseSnapshot(self.snapshot_json).snapshot_json
             else:
                 self.version = snapshot_json.get('version')
                 system_uuid = self.get_uuid(debug)

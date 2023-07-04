@@ -31,7 +31,7 @@ class ParseSnapshot:
         self.lshw = self.loads(self.lshw_raw)
         self.hwinfo = self.parse_hwinfo()
 
-        self.set_basic_datas()
+        self.set_computer()
         self.set_components()
         self.snapshot_json = {
             "device": self.device,
@@ -48,8 +48,10 @@ class ParseSnapshot:
     def get_snapshot(self):
         return Snapshot().load(self.snapshot_json)
 
-    def set_basic_datas(self):
-        # import pdb; pdb.set_trace()
+    def set_computer(self):
+        import pdb
+
+        pdb.set_trace()
         self.device['manufacturer'] = self.dmi.manufacturer()
         self.device['model'] = self.dmi.model()
         self.device['serialNumber'] = self.dmi.serial_number()
@@ -57,6 +59,8 @@ class ParseSnapshot:
         self.device['sku'] = self.get_sku()
         self.device['version'] = self.get_version()
         self.device['system_uuid'] = self.get_uuid()
+        self.device['family'] = self.get_family()
+        self.device['chassis'] = self.get_chassis_dh()
 
     def set_components(self):
         self.get_cpu()
@@ -66,8 +70,10 @@ class ParseSnapshot:
         self.get_networks()
 
     def get_cpu(self):
-        # TODO @cayop generation, brand and address not exist in dmidecode
         for cpu in self.dmi.get('Processor'):
+            serial = cpu.get('Serial Number')
+            if serial == 'Not Specified' or not serial:
+                serial = cpu.get('ID')
             self.components.append(
                 {
                     "actions": [],
@@ -77,12 +83,20 @@ class ParseSnapshot:
                     "model": cpu.get('Version'),
                     "threads": int(cpu.get('Thread Count', 1)),
                     "manufacturer": cpu.get('Manufacturer'),
-                    "serialNumber": cpu.get('Serial Number'),
-                    "generation": cpu.get('Generation'),
-                    "brand": cpu.get('Brand'),
-                    "address": cpu.get('Address'),
+                    "serialNumber": serial,
+                    "generation": None,
+                    "brand": cpu.get('Family'),
+                    "address": self.get_cpu_address(cpu),
                 }
             )
+
+    def get_cpu_address(self, cpu):
+        default = 64
+        for ch in self.lshw.get('children', []):
+            for c in ch.get('children', []):
+                if c['class'] == 'processor':
+                    return c.get('width', default)
+        return default
 
     def get_ram(self):
         # TODO @cayop format and model not exist in dmidecode
@@ -199,10 +213,13 @@ class ParseSnapshot:
         return self.dmi.get("System")[0].get("Version", self.default)
 
     def get_uuid(self):
-        return self.dmi.get("System")[0].get("UUID", self.default)
+        return self.dmi.get("System")[0].get("UUID", '')
+
+    def get_family(self):
+        return self.dmi.get("System")[0].get("Family", '')
 
     def get_chassis(self):
-        return self.dmi.get("Chassis")[0].get("Type", self.default)
+        return self.dmi.get("Chassis")[0].get("Type", '_virtual')
 
     def get_type(self):
         chassis_type = self.get_chassis()
@@ -238,6 +255,31 @@ class ParseSnapshot:
             'Computer': ['_virtual'],
         }
         for k, v in CHASSIS_TYPE.items():
+            if lower_type in v:
+                return k
+        return self.default
+
+    def get_chassis_dh(self):
+        CHASSIS_DH = {
+            'Tower': {'desktop', 'low-profile', 'tower', 'server'},
+            'Docking': {'docking'},
+            'AllInOne': {'all-in-one'},
+            'Microtower': {'mini-tower', 'space-saving', 'mini'},
+            'PizzaBox': {'pizzabox'},
+            'Lunchbox': {'lunchbox'},
+            'Stick': {'stick'},
+            'Netbook': {'notebook', 'sub-notebook'},
+            'Handheld': {'handheld'},
+            'Laptop': {'portable', 'laptop'},
+            'Convertible': {'convertible'},
+            'Detachable': {'detachable'},
+            'Tablet': {'tablet'},
+            'Virtual': {'_virtual'},
+        }
+
+        chassis = self.get_chassis()
+        lower_type = chassis.lower()
+        for k, v in CHASSIS_DH.items():
             if lower_type in v:
                 return k
         return self.default
@@ -317,6 +359,21 @@ class ParseSnapshot:
         if isinstance(x, str):
             return json.loads(x)
         return x
+
+    def errors(self, txt=None, severity=Severity.Error):
+        if not txt:
+            return self._errors
+
+        logger.error(txt)
+        self._errors.append(txt)
+        error = SnapshotsLog(
+            description=txt,
+            snapshot_uuid=self.uuid,
+            severity=severity,
+            sid=self.sid,
+            version=self.version,
+        )
+        error.save()
 
 
 class ParseSnapshotLsHw:
