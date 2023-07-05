@@ -1,6 +1,7 @@
 import json
 
 import flask
+import requests
 from ereuseapi.methods import API
 from flask import Blueprint
 from flask import current_app as app
@@ -182,6 +183,29 @@ class DidView(View):
             rr = {'dpp': d.key, 'hardware': json.loads(d.snapshot.json_hw)}
             dpps.append(rr)
         return {'data': dpps}
+
+    def get_manuals(self):
+        self.params = "{} {}".format(self.device.manufacturer, self.model)
+        manuals = {'ifixit': {}, 'icecat': {}}
+        manuals['ifixit'] = self.request_manuals('ifixit')
+        manuals['icecat'] = self.request_manuals('icecat')
+        return manuals
+
+    def request_manuals(self, prefix):
+        url = app.config('URL_MANUALS')
+        if not url:
+            return {}
+
+        res = requests.post(url + "/" + prefix, self.params)
+        if res.status_code > 299:
+            return {}
+
+        try:
+            response = res.json()
+        except Exception:
+            response = {}
+
+        return response
 
 
 did.add_url_rule('/<string:id_dpp>', view_func=DidView.as_view('did'))
