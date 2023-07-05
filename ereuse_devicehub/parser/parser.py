@@ -49,9 +49,6 @@ class ParseSnapshot:
         return Snapshot().load(self.snapshot_json)
 
     def set_computer(self):
-        import pdb
-
-        pdb.set_trace()
         self.device['manufacturer'] = self.dmi.manufacturer()
         self.device['model'] = self.dmi.model()
         self.device['serialNumber'] = self.dmi.serial_number()
@@ -73,7 +70,7 @@ class ParseSnapshot:
         for cpu in self.dmi.get('Processor'):
             serial = cpu.get('Serial Number')
             if serial == 'Not Specified' or not serial:
-                serial = cpu.get('ID')
+                serial = cpu.get('ID').replace(' ', '')
             self.components.append(
                 {
                     "actions": [],
@@ -98,8 +95,14 @@ class ParseSnapshot:
                     return c.get('width', default)
         return default
 
+    def get_ram_model(self, ram):
+        for ch in self.lshw.get('children', []):
+            for c in ch.get('children', []):
+                if c['class'] == 'memory':
+                    if c.get('serial') == ram.get('Serial Number'):
+                        return c.get('Vendor')
+
     def get_ram(self):
-        # TODO @cayop format and model not exist in dmidecode
         for ram in self.dmi.get("Memory Device"):
             self.components.append(
                 {
@@ -110,13 +113,15 @@ class ParseSnapshot:
                     "manufacturer": ram.get("Manufacturer", self.default),
                     "serialNumber": ram.get("Serial Number", self.default),
                     "interface": self.get_ram_type(ram),
-                    "format": self.get_ram_format(ram),
-                    "model": ram.get("Part Number", self.default),
+                    "format": ram.get("Form Factor", "DIMM"),
+                    "partNumber": ram.get("Part Number", self.default),
+                    "model": self.get_ram_model(ram),
                 }
             )
 
     def get_mother_board(self):
         # TODO @cayop model, not exist in dmidecode
+        # import pdb; pdb.set_trace()
         for moder_board in self.dmi.get("Baseboard"):
             self.components.append(
                 {
@@ -185,7 +190,12 @@ class ParseSnapshot:
         return slots
 
     def get_ram_size(self, ram):
-        size = ram.get("Size", "0")
+        memory = ram.get("Size", "0")
+        memory = memory.split(' ')
+        if len(memory) > 1:
+            size = int(memory[0])
+            units = memory[1]
+            return base2.Quantity(size, units).to('MiB').m
         return int(size.split(" ")[0])
 
     def get_ram_speed(self, ram):
@@ -197,10 +207,6 @@ class ParseSnapshot:
         for t in TYPES:
             if t in ram.get("Type", "DDR"):
                 return t
-
-    def get_ram_format(self, ram):
-        channel = ram.get("Locator", "DIMM")
-        return 'SODIMM' if 'SODIMM' in channel else 'DIMM'
 
     def get_cpu_speed(self, cpu):
         speed = cpu.get('Max Speed', "0")

@@ -1747,7 +1747,7 @@ class Processor(JoinedComponentTableMixin, Component):
 class RamModule(JoinedComponentTableMixin, Component):
     """A stick of RAM."""
 
-    size = Column(SmallInteger, check_range('size', min=128, max=17000))
+    size = Column(SmallInteger, check_range('size', min=128, max=70000))
     size.comment = """The capacity of the RAM stick."""
     speed = Column(SmallInteger, check_range('speed', min=100, max=10000))
     interface = Column(DBEnum(RamInterface))
