@@ -1,5 +1,3 @@
-import json
-
 import flask
 from ereuseapi.methods import API
 from flask import Blueprint
@@ -161,13 +159,14 @@ class DidView(View):
 
     def get_result(self):
         data = {
-            'hardware': {},
+            'document': {},
             'dpp': self.id_dpp,
+            'algorithm': "sha3_256",
         }
         result = {'data': data}
 
         if self.dpp:
-            data['hardware'] = json.loads(self.dpp.snapshot.json_hw)
+            data['document'] = self.dpp.snapshot.json_hw
             last_dpp = self.get_last_dpp()
             url_last = ''
             if last_dpp:
@@ -179,7 +178,11 @@ class DidView(View):
 
         dpps = []
         for d in self.device.dpps:
-            rr = {'dpp': d.key, 'hardware': json.loads(d.snapshot.json_hw)}
+            rr = {
+                'dpp': d.key,
+                'document': d.snapshot.json_hw,
+                'algorithm': "sha3_256",
+            }
             dpps.append(rr)
         return {'data': dpps}
 
