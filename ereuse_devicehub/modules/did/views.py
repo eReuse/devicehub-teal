@@ -1,3 +1,5 @@
+import json
+
 import flask
 import requests
 from ereuseapi.methods import API
@@ -191,7 +193,7 @@ class DidView(View):
     def get_manuals(self):
         params = {
             "manufacturer": 'HP' or self.device.manufacturer,
-            "model": self.device.model,
+            "model": 'Pavilion dv6000' or self.device.model,
         }
         self.params = json.dumps(params)
         manuals = {'ifixit': {}, 'icecat': {}}

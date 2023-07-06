@@ -223,6 +223,27 @@
                   </div>
                 </div>
               </div>
+              <div class="row">
+                <div class="col-12">
+                  <h5 class="card-title">Repair manuals</h5>
+                  <div class="row">
+                    <div class="list-group col">
+                      {% for m in manuals.ifixit %}
+                      <div class="list-group-item d-flex align-items-center">
+                        {% if m.image %}
+                          <img style="max-width: 100px; margin-right: 15px;" src="{{ m.image }}" />
+                        {% endif %}
+                        {% if m.url %}
+                          <a href="{{ m.url }}" target="_blank">{{ m.title }}</a><br />
+                        {% else %}
+                          {{ m.title }}<br />
+                        {% endif %}
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
