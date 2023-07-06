@@ -65,6 +65,9 @@
 
           <div class="card">
             <div class="card-body">
+            {% for m in manuals.ifixit %}
+              {{ m }}<br />
+            {% endfor %}
               <h3 class="nav-link mt-5" style="color: #993365">{{ device_real.type }} - {{ device_real.verbose_name }}</h3>
               <div class="row">
                 <div class="col-12">

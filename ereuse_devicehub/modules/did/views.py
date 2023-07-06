@@ -40,6 +40,7 @@ class DidView(View):
         self.get_device()
         self.get_last_dpp()
         self.get_before_dpp()
+        self.get_manuals()
 
         if self.accept_json():
             return jsonify(self.get_result())
@@ -185,14 +186,19 @@ class DidView(View):
         return {'data': dpps}
 
     def get_manuals(self):
-        self.params = "{} {}".format(self.device.manufacturer, self.model)
+        params = {
+            "manufacturer": 'HP' or self.device.manufacturer,
+            "model": self.device.model,
+        }
+        self.params = json.dumps(params)
         manuals = {'ifixit': {}, 'icecat': {}}
         manuals['ifixit'] = self.request_manuals('ifixit')
         manuals['icecat'] = self.request_manuals('icecat')
-        return manuals
+        # import pdb; pdb.set_trace()
+        self.context['manuals'] = manuals
 
     def request_manuals(self, prefix):
-        url = app.config('URL_MANUALS')
+        url = app.config['URL_MANUALS']
         if not url:
             return {}
 
