@@ -68,7 +68,21 @@
               <h3 class="nav-link mt-5" style="color: #993365">{{ device_real.type }} - {{ device_real.verbose_name }}</h3>
               <div class="row">
                 <div class="col-12">
-                  <h5 class="card-title">Basic</h5>
+                  <h5 class="card-title">Details</h5>
+                  {% if manuals.details %}
+                  <div class="row">
+                    <div class="col">
+                      {% if manuals.details.logo %}
+                        <img style="max-width: 50px; margin-right: 15px;" src="{{ manuals.details.logo }}" />
+                      {% endif %}
+                    </div>
+                    <div class="col">
+                      {% if manuals.details.image %}
+                        <img style="width: 100px;" src="{{ manuals.details.image }}" />
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% endif %}
                   <div class="row">
                     <div class="col">
                       Type
@@ -148,7 +162,7 @@
                 </div>
               </div>
               <div class="row mt-3">
-                <div class="col-5">
+                <div class="col-6">
                   <h5 class="card-title">Status</h5>
                   <div class="row">
                     <div class="col">
@@ -174,6 +188,51 @@
                       </div>
                     </div>
                   </div>
+                </div>
+                <div class="col-6">
+                  {% if manuals.icecat %}
+                  <h5 class="card-title">Icecat data sheet</h5>
+                    <div class="row">
+                      <div class="col-12 list-group-item d-flex align-items-center">
+                        {% if manuals.details.logo %}
+                          <img style="max-width: 50px; margin-right: 15px;" src="{{ manuals.details.logo }}" />
+                        {% endif %}
+                        {% if manuals.details.image %}
+                          <img style="max-width: 100px; margin-right: 15px;" src="{{ manuals.details.image }}" />
+                        {% endif %}
+                        {% if manuals.details.pdf %}
+                          <a href="{{ manuals.details.pdf }}" target="_blank">{{ manuals.details.title }}</a><br />
+                        {% else %}
+                          {{ manuals.details.title }}<br />
+                        {% endif %}
+                      </div>
+                      <div class="col-12 accordion-item">
+                        <h5 class="card-title accordion-header">
+                          <button class="accordion-button collapsed" data-bs-target="#manuals-icecat" type="button"
+                            data-bs-toggle="collapse" aria-expanded="false">
+                            More examples
+                          </button>
+                        </h5>
+                        <div id="manuals-icecat" class="row accordion-collapse collapse">
+                          <div class="accordion-body">
+                            {% for m in manuals.icecat %}
+                            <div class="list-group-item d-flex align-items-center">
+                              {% if m.logo %}
+                                <img style="max-width: 50px; margin-right: 15px;" src="{{ m.logo }}" />
+                              {% endif %}
+                              {% if m.pdf %}
+                                <a href="{{ m.pdf }}" target="_blank">{{ m.title }}</a><br />
+                              {% else %}
+                                {{ m.title }}<br />
+                              {% endif %}
+                            </div>
+                            {% endfor %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  {% endif %}
+                </div>
               </div>
               <div class="row mt-3">
                 <div class="col-6">
@@ -223,10 +282,16 @@
                   </div>
                 </div>
               </div>
+              {% if manuals.ifixit %}
               <div class="row">
-                <div class="col-12">
-                  <h5 class="card-title">Repair manuals</h5>
-                  <div class="row">
+                <div class="col-12 accordion-item">
+                  <h5 class="card-title accordion-header">
+                    <button class="accordion-button collapsed" data-bs-target="#manuals-repair" type="button"
+                      data-bs-toggle="collapse" aria-expanded="false">
+                      Repair manuals
+                    </button>
+                  </h5>
+                  <div id="manuals-repair" class="row accordion-collapse collapse">
                     <div class="list-group col">
                       {% for m in manuals.ifixit %}
                       <div class="list-group-item d-flex align-items-center">
@@ -244,6 +309,7 @@
                   </div>
                 </div>
               </div>
+              {% endif %}
             </div>
           </div>
         </div>

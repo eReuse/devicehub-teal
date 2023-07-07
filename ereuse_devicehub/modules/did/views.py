@@ -192,14 +192,15 @@ class DidView(View):
 
     def get_manuals(self):
         params = {
-            "manufacturer": 'HP' or self.device.manufacturer,
-            "model": 'Pavilion dv6000' or self.device.model,
+            "manufacturer": self.device.manufacturer,
+            "model": self.device.model,
         }
         self.params = json.dumps(params)
-        manuals = {'ifixit': {}, 'icecat': {}}
+        manuals = {'ifixit': [], 'icecat': [], 'details': {}}
         manuals['ifixit'] = self.request_manuals('ifixit')
         manuals['icecat'] = self.request_manuals('icecat')
-        # import pdb; pdb.set_trace()
+        if manuals['icecat']:
+            manuals['details'] = manuals['icecat'][0]
         self.context['manuals'] = manuals
 
     def request_manuals(self, prefix):
