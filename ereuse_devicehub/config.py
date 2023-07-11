@@ -1,4 +1,4 @@
-from distutils.version import StrictVersion
+from distutils.version import LooseVersion
 from itertools import chain
 
 from decouple import config
@@ -59,7 +59,7 @@ class DevicehubConfig(Config):
     SCHEMA = config('SCHEMA', 'dbtest')
     HOST = config('HOST', 'localhost')
     API_HOST = config('API_HOST', 'localhost')
-    MIN_WORKBENCH = StrictVersion('11.0a1')  # type: StrictVersion
+    MIN_WORKBENCH = LooseVersion('11.0a1')
     """The minimum version of ereuse.org workbench that this devicehub
     accepts. we recommend not changing this value.
     """
@@ -75,7 +75,7 @@ class DevicehubConfig(Config):
     API_DOC_CLASS_DISCRIMINATOR = 'type'
 
     PRICE_SOFTWARE = PriceSoftware.Ereuse
-    PRICE_VERSION = StrictVersion('1.0')
+    PRICE_VERSION = LooseVersion('1.0')
     PRICE_CURRENCY = Currency.EUR
     """Official versions."""
 
