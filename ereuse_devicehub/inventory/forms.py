@@ -39,7 +39,7 @@ from ereuse_devicehub.inventory.models import (
     TransferCustomerDetails,
 )
 from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
-from ereuse_devicehub.parser.parser import ParseSnapshot
+from ereuse_devicehub.parser.parser import ParseSnapshot, ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
@@ -340,6 +340,7 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
 
                 self.snapshot_json = schema_lite.load(snapshot_json)
                 snapshot_json = ParseSnapshot(self.snapshot_json).snapshot_json
+                # snapshot_json = ParseSnapshotLsHw(self.snapshot_json).snapshot_json
             else:
                 self.version = snapshot_json.get('version')
                 system_uuid = self.get_uuid(debug)
@@ -348,6 +349,7 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
                 self.get_fields_extra(debug, snapshot_json)
 
             try:
+                # import pdb; pdb.set_trace()
                 snapshot_json = schema.load(snapshot_json)
                 response = self.build(
                     snapshot_json, create_new_device=self.create_new_devices
