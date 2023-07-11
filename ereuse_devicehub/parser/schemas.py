@@ -36,7 +36,6 @@ class Snapshot_lite(Thing):
     #     description='The software that generated this Snapshot.',
     # )
     sid = String(required=True)
-    type = String(required=True)
     timestamp = String(required=True)
     settings_version = String(required=False)
     hwmd = Nested(Snapshot_lite_data, required=True)

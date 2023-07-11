@@ -70,9 +70,12 @@ class SnapshotMixin:
             snapshot_json = self.snapshot_json
         device = snapshot_json.pop('device')  # type: Computer
         components = None
-        if snapshot_json['software'] == (
-            SnapshotSoftware.Workbench or SnapshotSoftware.WorkbenchAndroid
-        ):
+        software = [
+            SnapshotSoftware.Workbench,
+            SnapshotSoftware.WorkbenchAndroid,
+            SnapshotSoftware.UsodyOS,
+        ]
+        if snapshot_json['software'] in software:
             components = snapshot_json.pop('components', None)
         snapshot = Snapshot(**snapshot_json)
 

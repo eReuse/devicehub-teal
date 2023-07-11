@@ -39,7 +39,7 @@ from ereuse_devicehub.inventory.models import (
     TransferCustomerDetails,
 )
 from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
-from ereuse_devicehub.parser.parser import ParseSnapshot, ParseSnapshotLsHw
+from ereuse_devicehub.parser.parser import ParseSnapshot
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
@@ -315,7 +315,7 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
 
         return True
 
-    def save(self, commit=True, user_trusts=True):
+    def save(self, commit=True, user_trusts=True):  # noqa: C901
         if any([x == 'Error' for x in self.result.values()]):
             return
         schema = SnapshotSchema()

@@ -469,9 +469,12 @@ class Snapshot(ActionWithOneDevice):
 
     @validates_schema
     def validate_components_only_workbench(self, data: dict):
-        if (data['software'] != SnapshotSoftware.Workbench) and (
-            data['software'] != SnapshotSoftware.WorkbenchAndroid
-        ):
+        software = [
+            SnapshotSoftware.Workbench,
+            SnapshotSoftware.WorkbenchAndroid,
+            SnapshotSoftware.UsodyOS,
+        ]
+        if data['software'] not in software:
             if data.get('components', None) is not None:
                 raise ValidationError(
                     'Only Workbench can add component info', field_names=['components']
@@ -481,7 +484,11 @@ class Snapshot(ActionWithOneDevice):
     def validate_only_workbench_fields(self, data: dict):
         """Ensures workbench has ``elapsed`` and ``uuid`` and no others."""
         # todo test
-        if data['software'] == SnapshotSoftware.Workbench:
+        software = [
+            SnapshotSoftware.Workbench,
+            SnapshotSoftware.UsodyOS,
+        ]
+        if data['software'] in software:
             if not data.get('uuid', None):
                 raise ValidationError(
                     'Snapshots from Workbench and WorkbenchAndroid must have uuid',

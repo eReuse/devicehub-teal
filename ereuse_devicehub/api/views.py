@@ -13,7 +13,7 @@ from werkzeug.exceptions import Unauthorized
 from ereuse_devicehub.auth import Auth
 from ereuse_devicehub.db import db
 from ereuse_devicehub.parser.models import SnapshotsLog
-from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
+from ereuse_devicehub.parser.parser import ParseSnapshot
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.views.snapshot import (
     SnapshotMixin,
@@ -59,7 +59,7 @@ class InventoryView(LoginMixin, SnapshotMixin):
             return snapshot_json
 
         try:
-            self.snapshot_json = ParseSnapshotLsHw(snapshot_json).get_snapshot()
+            self.snapshot_json = ParseSnapshot(snapshot_json).get_snapshot()
             raise 1 == 2
         except Exception as err:
             logger.error("Error: {} \n{}\n".format(err, self.snapshot_json))

@@ -1,10 +1,9 @@
 import ipaddress
-from distutils.version import StrictVersion
+from distutils.version import LooseVersion
 from typing import Type, Union
 
 import colour
 from boltons import strutils, urlutils
-from ereuse_devicehub.ereuse_utils import if_none_return_none
 from flask import current_app as app
 from flask import g
 from marshmallow import utils
@@ -17,6 +16,7 @@ from marshmallow.validate import Validator
 from marshmallow_enum import EnumField as _EnumField
 from sqlalchemy_utils import PhoneNumber
 
+from ereuse_devicehub.ereuse_utils import if_none_return_none
 from ereuse_devicehub.teal import db as tealdb
 from ereuse_devicehub.teal.resource import Schema
 
@@ -30,7 +30,7 @@ class Version(Field):
 
     @if_none_return_none
     def _deserialize(self, value, attr, data):
-        return StrictVersion(value)
+        return LooseVersion(value)
 
 
 class Color(Field):
