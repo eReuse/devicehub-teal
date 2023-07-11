@@ -158,10 +158,12 @@ class DidView(View):
         return before_dpp
 
     def get_result(self):
+        components = []
         data = {
             'document': {},
             'dpp': self.id_dpp,
             'algorithm': "sha3_256",
+            'components': components,
         }
         result = {'data': data}
 
@@ -174,6 +176,9 @@ class DidView(View):
                     did=last_dpp.key, host=app.config.get('HOST')
                 )
             data['url_last'] = url_last
+
+            for c in self.dpp.snapshot.components:
+                components.append({c.type: c.chid})
             return result
 
         dpps = []
