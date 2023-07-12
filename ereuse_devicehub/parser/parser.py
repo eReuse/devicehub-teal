@@ -1,13 +1,15 @@
 import json
 import logging
 import uuid
+from datetime import datetime
 
 import numpy
 from dmidecode import DMIParse
 from flask import request
 from marshmallow.exceptions import ValidationError
 
-from ereuse_devicehub.parser import base2
+from ereuse_devicehub.ereuse_utils.nested_lookup import get_nested_dicts_with_key_value
+from ereuse_devicehub.parser import base2, unit
 from ereuse_devicehub.parser.computer import Computer
 from ereuse_devicehub.parser.models import SnapshotsLog
 from ereuse_devicehub.resources.action.schemas import Snapshot
@@ -103,7 +105,7 @@ class ParseSnapshot:
                     "speed": self.get_ram_speed(ram),
                     "manufacturer": ram.get("Manufacturer", self.default),
                     "serialNumber": ram.get("Serial Number", self.default),
-                    "interface": self.get_ram_type(ram),
+                    "interface": ram.get("Type", "DDR"),
                     "format": ram.get("Form Factor", "DIMM"),
                     "model": ram.get("Part Number", self.default),
                 }
@@ -131,19 +133,28 @@ class ParseSnapshot:
             )
 
     def get_graphic(self):
-        for ch in self.lshw.get('children', []):
-            for c in ch.get('children', []):
-                if c['class'] != 'display':
-                    continue
-                self.components.append(
-                    {
-                        "actions": [],
-                        "type": "GraphicCard",
-                        "manufacturer": c.get("vendor", self.default),
-                        "model": c.get("product", self.default),
-                        "serialNumber": c.get("serial", self.default),
-                    }
-                )
+        nodes = get_nested_dicts_with_key_value(self.lshw, 'class', 'display')
+        for c in nodes:
+            if not c['configuration'].get('driver', None):
+                continue
+
+            self.components.append(
+                {
+                    "actions": [],
+                    "type": "GraphicCard",
+                    "memory": self.get_memory_video(c),
+                    "manufacturer": c.get("vendor", self.default),
+                    "model": c.get("product", self.default),
+                    "serialNumber": c.get("serial", self.default),
+                }
+            )
+
+    def get_memory_video(self, c):
+        # get info of lspci
+        # pci_id = c['businfo'].split('@')[1]
+        # lspci.get(pci_id) | grep size
+        # lspci -v -s 00:02.0
+        return None
 
     def get_data_storage(self):
         for sm in self.smart:
@@ -170,41 +181,39 @@ class ParseSnapshot:
             )
 
     def get_networks(self):
-        for ch in self.lshw.get('children', []):
-            for c in ch.get('children', []):
-                if c['class'] == 'networks':
-                    capacity = c.get('capacity')
-                    units = c.get('units')
-                    speed = None
-                    if capacity and units:
-                        speed = base2.unit.Quantity(capacity, units).to('Mbit/s').m
-                    wireless = bool(c.get('configuration', {}).get('wireless', False))
-                    self.components.append(
-                        {
-                            "actions": [],
-                            "type": "NetworkAdapter",
-                            "model": c.get('product'),
-                            "manufacturer": c.get('vendor'),
-                            "serialNumber": c.get('serial'),
-                            "speed": speed,
-                            "variant": c.get('version', 1),
-                            "wireless": wireless,
-                        }
-                    )
+        nodes = get_nested_dicts_with_key_value(self.lshw, 'class', 'network')
+        for c in nodes:
+            capacity = c.get('capacity')
+            units = c.get('units')
+            speed = None
+            if capacity and units:
+                speed = unit.Quantity(capacity, units).to('Mbit/s').m
+            wireless = bool(c.get('configuration', {}).get('wireless', False))
+            self.components.append(
+                {
+                    "actions": [],
+                    "type": "NetworkAdapter",
+                    "model": c.get('product'),
+                    "manufacturer": c.get('vendor'),
+                    "serialNumber": c.get('serial'),
+                    "speed": speed,
+                    "variant": c.get('version', 1),
+                    "wireless": wireless,
+                }
+            )
 
     def get_sound_card(self):
-        for ch in self.lshw.get('children', []):
-            for c in ch.get('children', []):
-                if c['class'] == 'multimedia':
-                    self.components.append(
-                        {
-                            "actions": [],
-                            "type": "SoundCard",
-                            "model": c.get('product'),
-                            "manufacturer": c.get('vendor'),
-                            "serialNumber": c.get('serial'),
-                        }
-                    )
+        nodes = get_nested_dicts_with_key_value(self.lshw, 'class', 'multimedia')
+        for c in nodes:
+            self.components.append(
+                {
+                    "actions": [],
+                    "type": "SoundCard",
+                    "model": c.get('product'),
+                    "manufacturer": c.get('vendor'),
+                    "serialNumber": c.get('serial'),
+                }
+            )
 
     def get_display(self):  # noqa: C901
         TECHS = 'CRT', 'TFT', 'LED', 'PDP', 'LCD', 'OLED', 'AMOLED'
@@ -212,6 +221,7 @@ class ParseSnapshot:
         for c in self.monitors:
             resolution_width, resolution_height = (None,) * 2
             refresh, serial, model, manufacturer, size = (None,) * 5
+            year, week, production_date = (None,) * 3
 
             for x in c:
                 if "Vendor: " in x:
@@ -231,10 +241,20 @@ class ParseSnapshot:
                         refresh = int(float(x.split(',')[-1].strip()[:-3]))
                     except Exception:
                         pass
+                if 'Year of Manufacture' in x:
+                    year = x.split(': ')[1]
+
+                if 'Week of Manufacture' in x:
+                    week = x.split(': ')[1]
 
                 if "Size: " in x:
                     size = self.get_size_monitor(x)
             technology = next((t for t in TECHS if t in c[0]), None)
+
+            if year and week:
+                d = '{} {} 0'.format(year, week)
+                production_date = datetime.strptime(d, '%Y %W %w').isoformat()
+
             self.components.append(
                 {
                     "actions": [],
@@ -243,10 +263,11 @@ class ParseSnapshot:
                     "manufacturer": manufacturer,
                     "serialNumber": serial,
                     'size': size,
-                    'resolution_width': resolution_width,
-                    'resolution_height': resolution_height,
+                    'resolutionWidth': resolution_width,
+                    'resolutionHeight': resolution_height,
+                    "productionDate": production_date,
                     'technology': technology,
-                    'refresh_rate': refresh,
+                    'refreshRate': refresh,
                 }
             )
 
@@ -351,12 +372,6 @@ class ParseSnapshot:
     def get_ram_speed(self, ram):
         size = ram.get("Speed", "0")
         return int(size.split(" ")[0])
-
-    def get_ram_type(self, ram):
-        TYPES = {'ddr', 'sdram', 'sodimm'}
-        for t in TYPES:
-            if t in ram.get("Type", "DDR"):
-                return t
 
     def get_cpu_speed(self, cpu):
         speed = cpu.get('Max Speed', "0")
@@ -665,7 +680,7 @@ class ParseSnapshotLsHw:
 
             self.components.append(
                 {
-                    "actions": [self.get_test_data_storage(sm)],
+                    "actions": [],
                     "type": self.get_data_storage_type(sm),
                     "model": model,
                     "manufacturer": manufacturer,
