@@ -740,7 +740,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     """
 
     uuid = Column(UUID(as_uuid=True), unique=True)
-    version = Column(StrictVersionType(STR_SM_SIZE), nullable=False)
+    version = Column(Unicode(STR_SM_SIZE), nullable=False)
     software = Column(DBEnum(SnapshotSoftware), nullable=False)
     elapsed = Column(Interval)
     elapsed.comment = """For Snapshots made with Workbench, the total amount

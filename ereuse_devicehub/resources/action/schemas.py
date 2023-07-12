@@ -442,7 +442,7 @@ class Snapshot(ActionWithOneDevice):
         required=True,
         description='The software that generated this Snapshot.',
     )
-    version = Version(required=True, description='The version of the software.')
+    version = String(required=True, description='The version of the software.')
     actions = NestedOn(Action, many=True, dump_only=True)
     elapsed = TimeDelta(precision=TimeDelta.SECONDS)
     components = NestedOn(
