@@ -26,6 +26,7 @@ class ParseSnapshot:
         self.hwinfo_raw = snapshot["hwmd"]["hwinfo"]
         self.lshw_raw = snapshot["hwmd"]["lshw"]
         self.lscpi_raw = snapshot["hwmd"]["lspci"]
+        self.sanitize_raw = snapshot["sanitize"]
         self.device = {"actions": []}
         self.components = []
         self.monitors = []
@@ -72,6 +73,7 @@ class ParseSnapshot:
         self.get_data_storage()
         self.get_display()
         self.get_sound_card()
+        self.get_networks()
         self.get_networks()
 
     def get_cpu(self):
@@ -169,7 +171,7 @@ class ParseSnapshot:
 
             self.components.append(
                 {
-                    "actions": [],
+                    "actions": self.sanitize(sm),
                     "type": self.get_data_storage_type(sm),
                     "model": model,
                     "manufacturer": manufacturer,
@@ -179,6 +181,41 @@ class ParseSnapshot:
                     "interface": self.get_data_storage_interface(sm),
                 }
             )
+
+    def sanitize(self, disk):
+        disk_sanitize = None
+        for d in self.sanitize_raw:
+            s = d.get('device_info', {}).get('export_data', {})
+            s = s.get('block', {}).get('serial')
+            if s == disk.get('serial_number'):
+                disk_sanitize = d
+                break
+        if not disk_sanitize:
+            return []
+
+        steps = []
+        erase = {
+            'type': 'EraseBasic',
+            'severity': disk_sanitize['severity'].name,
+            'steps': steps,
+            'startTime': None,
+            'endTime': None,
+        }
+
+        for step in disk_sanitize.get('steps', []):
+            steps.append(
+                {
+                    'severity': step['severity'].name,
+                    'startTime': step['start_time'].isoformat(),
+                    'endTime': step['end_time'].isoformat(),
+                    'type': 'StepRandom',
+                }
+            )
+
+            erase['endTime'] = step['end_time'].isoformat()
+            if not erase['startTime']:
+                erase['startTime'] = step['start_time'].isoformat()
+        return [erase]
 
     def get_networks(self):
         nodes = get_nested_dicts_with_key_value(self.lshw, 'class', 'network')

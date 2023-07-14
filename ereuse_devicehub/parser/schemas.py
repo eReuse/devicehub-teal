@@ -1,8 +1,12 @@
+from datetime import datetime
+
 from flask import current_app as app
 from marshmallow import Schema as MarshmallowSchema
-from marshmallow import ValidationError, validates_schema
-from marshmallow.fields import Dict, List, Nested, String
+from marshmallow import ValidationError, pre_load, validates_schema
+from marshmallow.fields import DateTime, Dict, Integer, List, Nested, String
+from marshmallow_enum import EnumField
 
+from ereuse_devicehub.resources.enums import Severity, SnapshotSoftware
 from ereuse_devicehub.resources.schemas import Thing
 
 # from marshmallow_enum import EnumField
@@ -21,20 +25,51 @@ class Test(MarshmallowSchema):
     type = String(required=True)
 
 
+class Steps(MarshmallowSchema):
+    num = Integer(data_key='step', required=True)
+    start_time = DateTime(data_key='date_init', required=True)
+    end_time = DateTime(data_key='date_end', required=True)
+    severity = EnumField(Severity)
+
+    @pre_load
+    def preload_datas(self, data: dict):
+        data['severity'] = Severity.Info.name
+
+        if not data.pop('success', False):
+            data['severity'] = Severity.Error.name
+        data.pop('duration', None)
+        data.pop('commands', None)
+
+        if data.get('date_init'):
+            data['date_init'] = datetime.fromtimestamp(data['date_init']).isoformat()
+            data['date_end'] = datetime.fromtimestamp(data['date_end']).isoformat()
+
+
 class Sanitize(MarshmallowSchema):
-    type = String(required=True)
+    steps = Nested(Steps, many=True, required=True, data_key='erasure_steps')
+    validation = Dict()
+    device_info = Dict()
+    method = Dict(required=True)
+    sanitize_version = String()
+    severity = EnumField(Severity, required=True)
+
+    @pre_load
+    def preload_datas(self, data: dict):
+        data['severity'] = Severity.Info.name
+
+        if not data.pop('result', False):
+            data['severity'] = Severity.Error.name
 
 
 class Snapshot_lite(Thing):
     uuid = String(required=True)
     version = String(required=True)
     schema_api = String(required=True)
-    software = String(required=True)
-    # software = EnumField(
-    #     SnapshotSoftware,
-    #     required=True,
-    #     description='The software that generated this Snapshot.',
-    # )
+    software = EnumField(
+        SnapshotSoftware,
+        required=True,
+        description='The software that generated this Snapshot.',
+    )
     sid = String(required=True)
     timestamp = String(required=True)
     settings_version = String(required=False)
