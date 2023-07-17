@@ -282,6 +282,65 @@
                   </div>
                 </div>
               </div>
+              {% if manuals.laer %}
+              <div class="row mt-3">
+                <div class="col-12">
+                  <h5 class="card-title">Recycled Content</h5>
+		    
+                  <div class="row mb-3">
+                    <div class="col-sm-2">
+                      Metal
+                    </div>
+                    <div class="col-sm-10">
+                			<div class="progress">
+		  
+                			  <div class="progress-bar"
+                			       role="progressbar"
+                			       style="width: {{ manuals.laer.0.metal }}%"
+                			       aria-valuenow="{{ manuals.laer.0.metal }}"
+                			       aria-valuemin="0"
+                			       aria-valuemax="100">{{ manuals.laer.0.metal }}%
+                			  </div>
+                      </div>
+                    </div>
+             	    </div>
+                  <div class="row mb-3">
+                    <div class="col-sm-2">
+                      Plastic post Consumer
+                    </div>
+                    <div class="col-sm-10">
+                			<div class="progress">
+                			  <div class="progress-bar"
+                			       role="progressbar"
+                			       style="width: {{ manuals.laer.0.plastic_post_consumer }}%"
+                			       aria-valuenow="{{ manuals.laer.0.plastic_post_consumer }}"
+                			       aria-valuemin="0"
+                			       aria-valuemax="100">{{ manuals.laer.0.plastic_post_consumer }}%
+                			  </div>
+              			  </div>
+              			</div>
+             	    </div>
+                  <div class="row mb-3">
+                    <div class="col-sm-2">
+                      Plastic post Industry
+                    </div>
+                    <div class="col-sm-10">
+                			<div class="progress">
+                			  <div class="progress-bar"
+                			       role="progressbar"
+                			       style="width: {{ manuals.laer.0.plastic_post_industry }}%"
+                			       aria-valuenow="{{ manuals.laer.0.plastic_post_industry }}"
+                			       aria-valuemin="0"
+                			       aria-valuemax="100">{{ manuals.laer.0.plastic_post_industry }}%
+                			  </div>
+              			  </div>
+                    </div>
+             	    </div>
+           	    </div>
+         	    </div>
+              {% endif %}
+
+
               {% if manuals.ifixit %}
               <div class="row">
                 <div class="col-12 accordion-item">

@@ -1,4 +1,5 @@
 import json
+import logging
 
 import flask
 import requests
@@ -12,6 +13,9 @@ from flask.views import View
 from ereuse_devicehub import __version__
 from ereuse_devicehub.modules.dpp.models import Dpp
 from ereuse_devicehub.resources.device.models import Device
+
+logger = logging.getLogger(__name__)
+
 
 did = Blueprint('did', __name__, url_prefix='/did', template_folder='templates')
 
@@ -196,16 +200,26 @@ class DidView(View):
         return {'data': dpps}
 
     def get_manuals(self):
-        params = {
-            "manufacturer": self.device.manufacturer,
-            "model": self.device.model,
+        manuals = {
+            'ifixit': [],
+            'icecat': [],
+            'details': {},
+            'laer': [],
         }
-        self.params = json.dumps(params)
-        manuals = {'ifixit': [], 'icecat': [], 'details': {}}
-        manuals['ifixit'] = self.request_manuals('ifixit')
-        manuals['icecat'] = self.request_manuals('icecat')
-        if manuals['icecat']:
-            manuals['details'] = manuals['icecat'][0]
+        try:
+            params = {
+                "manufacturer": self.device.manufacturer,
+                "model": self.device.model,
+            }
+            self.params = json.dumps(params)
+            manuals['ifixit'] = self.request_manuals('ifixit')
+            manuals['icecat'] = self.request_manuals('icecat')
+            manuals['laer'] = self.request_manuals('laer')
+            if manuals['icecat']:
+                manuals['details'] = manuals['icecat'][0]
+        except Exception as err:
+            logger.error("Error: {}".format(err))
+
         self.context['manuals'] = manuals
 
     def request_manuals(self, prefix):
