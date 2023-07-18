@@ -329,6 +329,7 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
             self.version = snapshot_json.get('schema_api')
             self.uuid = snapshot_json.get('uuid')
             self.sid = snapshot_json.get('sid')
+            # import pdb; pdb.set_trace()
 
             if snapshot_json.get('hwmd'):
                 schema_api = snapshot_json.get('schema_api')

@@ -27,21 +27,23 @@ class Test(MarshmallowSchema):
 
 class Steps(MarshmallowSchema):
     num = Integer(data_key='step', required=True)
-    start_time = DateTime(data_key='date_init', required=True)
-    end_time = DateTime(data_key='date_end', required=True)
+    start_time = DateTime(data_key='date_init', required=False)
+    end_time = DateTime(data_key='date_end', required=False)
     severity = EnumField(Severity)
 
     @pre_load
     def preload_datas(self, data: dict):
         data['severity'] = Severity.Info.name
-
-        if not data.pop('success', False):
-            data['severity'] = Severity.Error.name
         data.pop('duration', None)
         data.pop('commands', None)
 
+        if not data.pop('success', False):
+            data['severity'] = Severity.Error.name
+
         if data.get('date_init'):
             data['date_init'] = datetime.fromtimestamp(data['date_init']).isoformat()
+
+        if data.get('date_end'):
             data['date_end'] = datetime.fromtimestamp(data['date_end']).isoformat()
 
 
