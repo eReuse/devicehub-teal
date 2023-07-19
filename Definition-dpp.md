@@ -6,7 +6,7 @@
   We call the set of these values Documents.
   Here we define these values.
   
-# Chid
+## Chid
 The chid is the part of dpp that defines a device, be it a computer,
 a hard drive, etc. The chid is the most important part of a dpp since
 anyone who comes across a device should be able to play it.
@@ -25,13 +25,14 @@ So:
 
 For example:
 ```
-HardDrive-Seagate-ST500LT0121DG15-S3P9A81F
+harddrive-seagate-st500lt0121dg15-s3p9a81f
+
 ```
 
 In computer types this combination is not perfect and **can lead to collisions**.
 That is why we need a value that is reliable and comes from the manufacturer.
 
-# Phid
+## Phid
 The values of the phid do not have to be reproducible. For this reason, each inventory can establish its own values and its order as a document.
 It is important that each inventory store the document in string so that it can reproduce exactly the document that was hashed. So a document can be verifiable.
 
