@@ -16,11 +16,14 @@ The chid is made up of four values:
    * manufacturer
    * model
    * serial_number
+
 type represents the device type according to the devicehub.
 
 These values are always represented in lowercase.
 These values have to be ordered and concatenated with the character "-"
+
 So:
+
    {type}-{manufacturer}-{model}-{serial_number}
 
 For example:
