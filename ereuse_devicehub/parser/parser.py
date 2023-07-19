@@ -74,7 +74,6 @@ class ParseSnapshot:
         self.get_display()
         self.get_sound_card()
         self.get_networks()
-        self.get_networks()
 
     def get_cpu(self):
         for cpu in self.dmi.get('Processor'):
@@ -99,6 +98,11 @@ class ParseSnapshot:
 
     def get_ram(self):
         for ram in self.dmi.get("Memory Device"):
+            if ram.get('size') == 'No Module Installed':
+                continue
+            if not ram.get("Speed"):
+                continue
+
             self.components.append(
                 {
                     "actions": [],
@@ -184,6 +188,7 @@ class ParseSnapshot:
 
     def sanitize(self, disk):
         disk_sanitize = None
+        # import pdb; pdb.set_trace()
         for d in self.sanitize_raw:
             s = d.get('device_info', {}).get('export_data', {})
             s = s.get('block', {}).get('serial')
@@ -194,8 +199,15 @@ class ParseSnapshot:
             return []
 
         steps = []
+        step_type = 'EraseBasic'
+        if disk.get('name') == 'Baseline Cryptographic':
+            step_type = 'EraseCrypto'
+
+        if disk.get('type') == 'EraseCrypto':
+            step_type = 'EraseCrypto'
+
         erase = {
-            'type': 'EraseBasic',
+            'type': step_type,
             'severity': disk_sanitize['severity'].name,
             'steps': steps,
             'startTime': None,
@@ -398,13 +410,17 @@ class ParseSnapshot:
         return slots
 
     def get_ram_size(self, ram):
-        memory = ram.get("Size", "0")
-        memory = memory.split(' ')
-        if len(memory) > 1:
-            size = int(memory[0])
-            units = memory[1]
-            return base2.Quantity(size, units).to('MiB').m
-        return int(size.split(" ")[0])
+        try:
+            memory = ram.get("Size", "0")
+            memory = memory.split(' ')
+            if len(memory) > 1:
+                size = int(memory[0])
+                units = memory[1]
+                return base2.Quantity(size, units).to('MiB').m
+            return int(size.split(" ")[0])
+        except Exception as err:
+            logger.error("get_ram_size error: {}".format(err))
+            return 0
 
     def get_ram_speed(self, ram):
         size = ram.get("Speed", "0")
@@ -631,6 +647,11 @@ class ParseSnapshotLsHw:
 
     def get_ram(self):
         for ram in self.dmi.get("Memory Device"):
+            if ram.get('size') == 'No Module Installed':
+                continue
+            if not ram.get("Speed"):
+                continue
+
             self.components.append(
                 {
                     "actions": [],

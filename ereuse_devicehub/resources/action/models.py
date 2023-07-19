@@ -523,11 +523,14 @@ class EraseSectors(EraseBasic):
     def get_public_name(self):
         steps_random = 0
         steps_zeros = 0
+        steps_encrypted = 0
         for s in self.steps:
             if s.type == 'StepRandom':
                 steps_random += 1
             if s.type == 'StepZero':
                 steps_zeros += 1
+            if s.type == 'StepEncrypted':
+                steps_encrypted += 1
 
         if steps_zeros == 0 and steps_random == 1:
             return "Basic"
@@ -648,6 +651,10 @@ class StepZero(Step):
 
 
 class StepRandom(Step):
+    pass
+
+
+class StepEncrypted(Step):
     pass
 
 

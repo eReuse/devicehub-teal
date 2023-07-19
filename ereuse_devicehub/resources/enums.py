@@ -379,6 +379,14 @@ class ErasureStandards(Enum):
     And be an :class:`ereuse_devicehub.resources.action.models.EraseSectors`.
     """
 
+    NIST = "Infosec HGM Baseline"
+    """Method for securely erasing data in compliance with HMG Infosec Standard 5
+    guidelines includes a single step of a random write process on the full disk.
+    This process overwrites all data with a randomized pattern, ensuring that
+    it cannot be recovered. Built-in validation confirms that the data has been
+    written correctly, and a final validation confirms that all data has been deleted.
+    """
+
     def __str__(self):
         return self.value
 

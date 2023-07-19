@@ -33,6 +33,7 @@ class Steps(MarshmallowSchema):
 
     @pre_load
     def preload_datas(self, data: dict):
+        # import pdb; pdb.set_trace()
         data['severity'] = Severity.Info.name
         data.pop('duration', None)
         data.pop('commands', None)
@@ -45,6 +46,8 @@ class Steps(MarshmallowSchema):
 
         if data.get('date_end'):
             data['date_end'] = datetime.fromtimestamp(data['date_end']).isoformat()
+        else:
+            data['date_end'] = data['date_init']
 
 
 class Sanitize(MarshmallowSchema):
