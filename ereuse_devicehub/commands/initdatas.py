@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from boltons.urlutils import URL
+from decouple import config
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.agent.models import Person
@@ -13,6 +14,9 @@ class InitDatas:
         super().__init__()
         self.app = app
         self.schema = app.config.get('DB_SCHEMA')
+        self.email = config('EMAIL_DEMO')
+        self.name = self.email.split('@')[0] if self.email else None
+        self.password = config('PASSWORD_DEMO')
         self.app.cli.command(
             'initdata', short_help='Save a minimum structure of datas.'
         )(self.run)
@@ -29,12 +33,9 @@ class InitDatas:
         db.session.add(inv)
         db.session.commit()
 
-        email = 'user@dhub.com'
-        password = '1234'
-        name = 'user'
+        if self.email:
+            user = User(email=self.email, password=self.password)
+            user.individuals.add(Person(name=self.name))
+            db.session.add(user)
 
-        user = User(email=email, password=password)
-        user.individuals.add(Person(name=name))
-        db.session.add(user)
-
-        db.session.commit()
+            db.session.commit()
