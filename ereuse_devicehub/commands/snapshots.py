@@ -4,9 +4,11 @@ import json
 
 # from uuid import uuid4
 from io import BytesIO
+from os import listdir
+from os import remove as remove_file
+from os.path import isfile, join
 from pathlib import Path
 
-import click
 from decouple import config
 from flask.testing import FlaskClient
 from flask_wtf.csrf import generate_csrf
@@ -30,17 +32,19 @@ class UploadSnapshots:
         self.schema = app.config.get('DB_SCHEMA')
         self.app.cli.command('snapshot', short_help='Upload snapshots.')(self.run)
 
-    @click.argument('file_snapshot')
-    def run(self, file_snapshot):
+    def run(self):
         """Run command."""
-        self.file_snapshot = file_snapshot
-        self.snapshot_json = None
         self.json_wb = None
+        self.onlyfiles = []
 
         with self.app.app_context():
             self.get_user()
-            self.open_snapshot()
-            self.build_snapshot()
+            self.get_files()
+            for f in self.onlyfiles:
+                self.file_snapshot = f
+                self.open_snapshot()
+                self.build_snapshot()
+                self.remove_files()
 
     def get_user(self):
         """Get datamodel of user."""
@@ -58,6 +62,11 @@ class UploadSnapshots:
         }
         self.client.post('/login/', data=data, follow_redirects=True)
 
+    def remove_files(self):
+        """Open snapshot file."""
+        for f in self.onlyfiles:
+            remove_file(Path(__file__).parent.joinpath('snapshot_files').joinpath(f))
+
     def open_snapshot(self):
         """Open snapshot file."""
         with Path(__file__).parent.joinpath('snapshot_files').joinpath(
@@ -71,7 +80,7 @@ class UploadSnapshots:
         """Build the devices of snapshot."""
         uri = '/inventory/upload-snapshot/'
 
-        if not self.snapshot_json:
+        if not self.json_wb:
             return
 
         self.client.get(uri)
@@ -79,4 +88,15 @@ class UploadSnapshots:
             'snapshot': self.file_snap,
             'csrf_token': generate_csrf(),
         }
+
         self.client.post(uri, data=data, content_type="multipart/form-data")
+
+    def get_files(self):
+        """Read snaoshot_files dir."""
+        mypath = Path(__file__).parent.joinpath('snapshot_files')
+        for f in listdir(mypath):
+            if not isfile(join(mypath, f)):
+                continue
+            if not f[-5:] == ".json":
+                continue
+            self.onlyfiles.append(f)
