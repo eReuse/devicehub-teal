@@ -15,8 +15,7 @@ from ereuse_devicehub.resources.user.models import User
 
 
 class UploadSnapshots:
-    """
-    Command.
+    """Command.
 
     This command allow upload all snapshots than exist
     in the directory snapshots_upload.
@@ -62,7 +61,7 @@ class UploadSnapshots:
     def open_snapshot(self):
         """Open snapshot file."""
         with Path(__file__).parent.joinpath('snapshot_files').joinpath(
-            self.file_snapshot
+            self.file_snapshot,
         ).open() as file_snapshot:
             self.json_wb = json.loads(file_snapshot.read())
             b_snapshot = bytes(json.dumps(self.json_wb), 'utf-8')
