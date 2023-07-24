@@ -485,7 +485,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
     def get_phid(self):
         """This method is used for get the phid of the computer when the action
         was created. Usefull for get the phid of the computer were a hdd was
-        Ereased
+        Ereased.
         """
         if self.snapshot:
             return self.snapshot.device.phid()
@@ -494,7 +494,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         return ''
 
     def register_proof(self):
-        """This method is used for register a proof of erasure en dlt"""
+        """This method is used for register a proof of erasure en dlt."""
 
         if 'dpp' not in app.blueprints.keys() or not self.snapshot:
             return
@@ -514,10 +514,19 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
         deviceCHID = self.device.chid
         docSig = self.snapshot.phid_dpp
+        docHash = docSig
+        docHashAlgorithm = 'sha3_256'
         docID = "{}".format(self.snapshot.uuid or '')
         issuerID = "{dh}:{user}".format(dh=dh_instance, user=g.user.id)
         proof_type = PROOF_ENUM['Erase']
-        result = api.generate_proof(deviceCHID, docID, docSig, issuerID, proof_type)
+        result = api.generate_proof(
+            deviceCHID,
+            docHashAlgorithm,
+            docHash,
+            proof_type,
+            dh_instance,
+        )
+
         from ereuse_devicehub.resources.enums import StatusCode
 
         if result['Status'] == StatusCode.Success.value:
