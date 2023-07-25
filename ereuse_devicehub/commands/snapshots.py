@@ -9,7 +9,7 @@ from os import remove as remove_file
 from os.path import isfile, join
 from pathlib import Path
 
-from decouple import config
+import click
 from flask.testing import FlaskClient
 from flask_wtf.csrf import generate_csrf
 
@@ -32,8 +32,12 @@ class UploadSnapshots:
         self.schema = app.config.get('DB_SCHEMA')
         self.app.cli.command('snapshot', short_help='Upload snapshots.')(self.run)
 
-    def run(self):
+    @click.argument('email')
+    @click.argument('password')
+    def run(self, email, password=None):
         """Run command."""
+        self.email = email
+        self.password = password
         self.json_wb = None
         self.onlyfiles = []
 
@@ -48,8 +52,6 @@ class UploadSnapshots:
 
     def get_user(self):
         """Get datamodel of user."""
-        self.email = config('EMAIL_DEMO')
-        self.password = config('PASSWORD_DEMO')
         self.user = User.query.filter_by(email=self.email).one()
         self.client = FlaskClient(self.app, use_cookies=True)
         self.client.get('/login/')
