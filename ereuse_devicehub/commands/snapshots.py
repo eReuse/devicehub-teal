@@ -41,14 +41,13 @@ class UploadSnapshots:
         self.json_wb = None
         self.onlyfiles = []
 
-        with self.app.app_context():
-            self.get_user()
-            self.get_files()
-            for f in self.onlyfiles:
-                self.file_snapshot = f
-                self.open_snapshot()
-                self.build_snapshot()
-                self.remove_files()
+        self.get_user()
+        self.get_files()
+        for f in self.onlyfiles:
+            self.file_snapshot = f
+            self.open_snapshot()
+            self.build_snapshot()
+        self.remove_files()
 
     def get_user(self):
         """Get datamodel of user."""
