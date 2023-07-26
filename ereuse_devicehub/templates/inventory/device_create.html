@@ -79,6 +79,8 @@
                           {% if form.type.data == 'Keyboard' %} selected="selected"{% endif %}>Keyboard</option>
                         </optgroup>
                         <optgroup label="Other Type of Device">
+                          <option value="SolarPanel"
+                          {% if form.type.data == 'SolarPanel' %} selected="selected"{% endif %}>Solar Panel</option>
                           <option value="Other"
                           {% if form.type.data == 'Other' %} selected="selected"{% endif %}>Other</option>
                         </optgroup>

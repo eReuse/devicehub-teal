@@ -476,7 +476,8 @@ class Device(Thing):
         """The trading state, or None if no Trade action has
         ever been performed to this device. This extract the posibilities for to do.
         This method is performed for show in the web.
-        If you need to do one simple and generic response you can put simple=True for that."""
+        If you need to do one simple and generic response you can put simple=True for that.
+        """
         if not hasattr(lot, 'trade'):
             return
 
@@ -1983,6 +1984,14 @@ def create_code_tag(mapper, connection, device):
 class Other(Device):
     """
     Used for put in there all devices than not have actualy a class
+    """
+
+    id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)
+
+
+class SolarPanel(Device):
+    """
+    Used solar panels devices.
     """
 
     id = Column(BigInteger, ForeignKey(Device.id), primary_key=True)

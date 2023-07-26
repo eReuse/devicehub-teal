@@ -41,7 +41,7 @@ from ereuse_devicehub.inventory.models import (
 from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
-from ereuse_devicehub.resources.action.models import Snapshot, Trade
+from ereuse_devicehub.resources.action.models import Snapshot, Trade, VisualTest
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
 from ereuse_devicehub.resources.action.views.snapshot import (
     SnapshotMixin,
@@ -68,6 +68,7 @@ from ereuse_devicehub.resources.device.models import (
     Projector,
     Server,
     Smartphone,
+    SolarPanel,
     SolidStateDrive,
     Tablet,
     TelevisionSet,
@@ -113,7 +114,7 @@ DEVICES = {
         "SAI",
         "Keyboard",
     ],
-    "Other Devices": ["Other"],
+    "Other Devices": ["SolarPanel", "Other"],
 }
 
 TYPES_DOCUMENTS = [
@@ -131,7 +132,7 @@ MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
 MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
 STORAGE = ["HardDrive", "SolidStateDrive"]
 ACCESSORIES = ["Mouse", "MemoryCardReader", "SAI", "Keyboard"]
-OTHERS = ["Other"]
+OTHERS = ["Other", "SolarPanel"]
 DATASTORAGE = ['HardDrive', 'SolidStateDrive']
 
 
@@ -433,6 +434,7 @@ class NewDeviceForm(FlaskForm):
             "Keyboard": Keyboard,
             "SAI": SAI,
             "MemoryCardReader": MemoryCardReader,
+            "SolarPanel": SolarPanel,
             "Other": Other,
         }
 
@@ -480,6 +482,10 @@ class NewDeviceForm(FlaskForm):
         if self._obj.type in ['HardDrive', 'SolidStateDrive']:
             if self._obj.size:
                 self.data_storage_size.data = self._obj.size / 1000
+        if self._obj.appearance():
+            self.appearance.data = self._obj.appearance().name
+        if self._obj.functionality():
+            self.functionality.data = self._obj.functionality().name
 
         if self._obj.placeholder.is_abstract:
             self.type.render_kw = disabled
@@ -698,17 +704,7 @@ class NewDeviceForm(FlaskForm):
                 if self.data_storage_size.data:
                     self._obj.size = self.data_storage_size.data * 1000
 
-            if (
-                self.appearance.data
-                and self.appearance.data != self._obj.appearance().name
-            ):
-                self._obj.set_appearance(self.appearance.data)
-
-            if (
-                self.functionality.data
-                and self.functionality.data != self._obj.functionality().name
-            ):
-                self._obj.set_functionality(self.functionality.data)
+            self.edit_visual_test(self._obj)
 
         else:
             self._obj.placeholder.id_device_supplier = (
@@ -718,10 +714,32 @@ class NewDeviceForm(FlaskForm):
                 self.id_device_internal.data or None
             )
             self._obj.placeholder.pallet = self.pallet.data or None
+
+            pl_dev = self._obj.placeholder.device
+            self.edit_visual_test(pl_dev)
+
         placeholder_log = PlaceholdersLog(
             type="Update", source='Web form', placeholder=self._obj.placeholder
         )
         db.session.add(placeholder_log)
+
+    def edit_visual_test(self, dev):
+        if not dev.appearance() or not dev.functionality():
+            visual_test = VisualTest(
+                appearance_range=self.appearance.data,
+                functionality_range=self.functionality.data,
+                device=dev,
+            )
+            db.session.add(visual_test)
+        else:
+            if self.appearance.data and self.appearance.data != dev.appearance().name:
+                dev.set_appearance(self.appearance.data)
+
+            if (
+                self.functionality.data
+                and self.functionality.data != dev.functionality().name
+            ):
+                dev.set_functionality(self.functionality.data)
 
 
 class TagDeviceForm(FlaskForm):
@@ -1211,7 +1229,6 @@ class TradeForm(ActionFormMixin):
             or email_to == email_from
             or g.user.email not in [email_from, email_to]
         ):
-
             errors = ["If you want confirm, you need a correct email"]
             self.user_to.errors = errors
             self.user_from.errors = errors
@@ -1917,7 +1934,6 @@ class UploadPlaceholderForm(FlaskForm):
         return True
 
     def save(self, commit=True):
-
         for device, placeholder_log in self.placeholders:
             db.session.add(device)
             db.session.add(placeholder_log)
@@ -1946,7 +1962,6 @@ class EditPlaceholderForm(FlaskForm):
         return True
 
     def save(self, commit=True):
-
         for device in self.placeholders:
             db.session.add(device)
 
