@@ -160,7 +160,7 @@ def test_metrics_action_status(user: UserClient, user2: UserClient):
     head += '"Status Supplier – Created Date";"Status Receiver – Created Date";"Trade-Weight";'
     head += '"Action-Create";"Allocate-Start";"Allocate-User-Code";"Allocate-NumUsers";'
     head += '"UsageTimeAllocate";"Type";"LiveCreate";"UsageTimeHdd"\n'
-    body = '"O48N2";"adebcc5506213fac43cd8473a9c81bcf0cadaed9cb98b2eae651e377a3533c5a";'
+    body = '"93652";"adebcc5506213fac43cd8473a9c81bcf0cadaed9cb98b2eae651e377a3533c5a";'
     body += '"";"Status";"";"foo@foo.com";"Receiver";"";"";"Use";"";"'
     assert head in csv_str
     assert body in csv_str
@@ -207,7 +207,7 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
         query=[('filter', {'type': ['Computer'], 'ids': devices_id})],
     )
 
-    body1_lenovo = '"O48N2";"adebcc5506213fac43cd8473a9c81bcf0cadaed9cb98b2eae651e377a3533c5a";"";"Trade";"foo@foo.com";'
+    body1_lenovo = '"93652";"adebcc5506213fac43cd8473a9c81bcf0cadaed9cb98b2eae651e377a3533c5a";"";"Trade";"foo@foo.com";'
     body1_lenovo += '"foo2@foo.com";"Supplier";"NeedConfirmation";"Use";"";'
     body2_lenovo = ';"";"0";"0";"Trade";"0";"0"\n'
 
@@ -232,7 +232,7 @@ def test_complet_metrics_with_trade(user: UserClient, user2: UserClient):
         query=[('filter', {'type': ['Computer'], 'ids': devices_id})],
     )
 
-    body1_lenovo = '"O48N2";"adebcc5506213fac43cd8473a9c81bcf0cadaed9cb98b2eae651e377a3533c5a";"";"Trade";"foo@foo.com";'
+    body1_lenovo = '"93652";"adebcc5506213fac43cd8473a9c81bcf0cadaed9cb98b2eae651e377a3533c5a";"";"Trade";"foo@foo.com";'
     body1_lenovo += '"foo2@foo.com";"Supplier";"NeedConfirmation";"Use";"Use";'
     body2_lenovo = ';"";"0";"0";"Trade";"0";"0"\n'
     body2_acer = ';"";"0";"0";"Trade";"0";"4692.0"\n'

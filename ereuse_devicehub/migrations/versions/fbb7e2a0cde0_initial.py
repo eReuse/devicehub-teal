@@ -8,12 +8,11 @@ Create Date: 2020-05-07 10:04:40.269511
 import citext
 import sqlalchemy as sa
 import sqlalchemy_utils
-from ereuse_devicehub import teal
-from alembic import context
-from alembic import op
+from alembic import context, op
 from sqlalchemy.dialects import postgresql
 
-from ereuse_devicehub.resources.enums import TransferState, Severity
+from ereuse_devicehub import teal
+from ereuse_devicehub.resources.enums import Severity, TransferState
 
 # revision identifiers, used by Alembic.
 revision = 'fbb7e2a0cde0'
@@ -348,6 +347,7 @@ def upgrade():
         postgresql_using='hash',
         schema=f'{get_inv()}',
     )
+    op.execute(f"CREATE SEQUENCE {get_inv()}.device_seq START 1;")
     op.create_table(
         'agent',
         sa.Column(
