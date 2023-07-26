@@ -26,7 +26,7 @@ class ParseSnapshot:
         self.hwinfo_raw = snapshot["hwmd"]["hwinfo"]
         self.lshw_raw = snapshot["hwmd"]["lshw"]
         self.lscpi_raw = snapshot["hwmd"]["lspci"]
-        self.sanitize_raw = snapshot["sanitize"]
+        self.sanitize_raw = snapshot.get("sanitize", [])
         self.device = {"actions": []}
         self.components = []
         self.monitors = []
@@ -725,7 +725,6 @@ class ParseSnapshotLsHw:
         return dmi_uuid
 
     def get_data_storage(self):
-
         for sm in self.smart:
             if sm.get('smartctl', {}).get('exit_status') == 1:
                 continue
