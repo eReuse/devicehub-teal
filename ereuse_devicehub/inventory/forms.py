@@ -68,6 +68,7 @@ from ereuse_devicehub.resources.device.models import (
     Projector,
     Server,
     Smartphone,
+    SolarPanel,
     SolidStateDrive,
     Tablet,
     TelevisionSet,
@@ -113,7 +114,7 @@ DEVICES = {
         "SAI",
         "Keyboard",
     ],
-    "Other Devices": ["Other"],
+    "Other Devices": ["SolarPanel", "Other"],
 }
 
 TYPES_DOCUMENTS = [
@@ -131,7 +132,7 @@ MONITORS = ["ComputerMonitor", "Monitor", "TelevisionSet", "Projector"]
 MOBILE = ["Mobile", "Tablet", "Smartphone", "Cellphone"]
 STORAGE = ["HardDrive", "SolidStateDrive"]
 ACCESSORIES = ["Mouse", "MemoryCardReader", "SAI", "Keyboard"]
-OTHERS = ["Other"]
+OTHERS = ["Other", "SolarPanel"]
 DATASTORAGE = ['HardDrive', 'SolidStateDrive']
 
 
@@ -433,6 +434,7 @@ class NewDeviceForm(FlaskForm):
             "Keyboard": Keyboard,
             "SAI": SAI,
             "MemoryCardReader": MemoryCardReader,
+            "SolarPanel": SolarPanel,
             "Other": Other,
         }
 
@@ -1227,7 +1229,6 @@ class TradeForm(ActionFormMixin):
             or email_to == email_from
             or g.user.email not in [email_from, email_to]
         ):
-
             errors = ["If you want confirm, you need a correct email"]
             self.user_to.errors = errors
             self.user_from.errors = errors
@@ -1933,7 +1934,6 @@ class UploadPlaceholderForm(FlaskForm):
         return True
 
     def save(self, commit=True):
-
         for device, placeholder_log in self.placeholders:
             db.session.add(device)
             db.session.add(placeholder_log)
@@ -1962,7 +1962,6 @@ class EditPlaceholderForm(FlaskForm):
         return True
 
     def save(self, commit=True):
-
         for device in self.placeholders:
             db.session.add(device)
 

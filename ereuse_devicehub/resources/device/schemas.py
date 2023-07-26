@@ -590,5 +590,9 @@ class Racket(Recreation):
     pass
 
 
+class SolarPanel(Device):
+    pass
+
+
 class Other(Device):
     pass
