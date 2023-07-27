@@ -43,3 +43,14 @@
 .printLabelForm {
     margin-left: 10px;
 }
+.bi-solar-panel {
+    background-image: url("/static/img/solar-panel.png");
+    background-repeat:no-repeat;
+    background-size: cover;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-right: 5px;
+    line-height: 17px;
+    font-size: 15px;
+    vertical-align: middle;
+}

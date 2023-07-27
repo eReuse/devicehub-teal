@@ -929,6 +929,7 @@ class Device(Thing):
             "Cellphone": "bi bi-telephone",
             "HardDrive": "bi bi-hdd-stack",
             "SolidStateDrive": "bi bi-hdd",
+            "SolarPanel": "bi-solar-panel",
         }
         return types.get(self.type, '')
 
