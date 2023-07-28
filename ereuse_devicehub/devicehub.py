@@ -13,6 +13,7 @@ import ereuse_devicehub.ereuse_utils.cli
 from ereuse_devicehub.auth import Auth
 from ereuse_devicehub.client import Client, UserClient
 from ereuse_devicehub.commands.adduser import AddUser
+from ereuse_devicehub.commands.check_install import CheckInstall
 from ereuse_devicehub.commands.initdatas import InitDatas
 from ereuse_devicehub.commands.snapshots import UploadSnapshots
 
@@ -104,6 +105,7 @@ class Devicehub(Teal):
         self.initdata = InitDatas(self)
         self.adduser = AddUser(self)
         self.uploadsnapshots = UploadSnapshots(self)
+        self.checkinstall = CheckInstall(self)
 
         if GetMembers:
             self.get_members = GetMembers(self)
