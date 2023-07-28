@@ -132,3 +132,7 @@ tmp/
 .env*
 bin/
 env*
+examples/create-db2.sh
+package-lock.json
+snapshots/
+modules/
