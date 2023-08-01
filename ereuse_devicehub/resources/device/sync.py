@@ -92,9 +92,20 @@ class Sync:
             # We only want to perform Add/Remove to not new components
             actions = self.add_remove(db_device, not_new_components)
             db_device.components = db_components
+            self.clean_parent_orphans_components(db_device)
 
         self.create_placeholder(db_device)
         return db_device, actions
+
+    def clean_parent_orphans_components(self, device):
+        all_components = Component.query.filter_by(parent_id=device.id)
+        for _c in all_components:
+            if _c not in device.components:
+                _c.parent = None
+                if _c.binding:
+                    _c.binding.device.parent = None
+                if _c.placeholder and _c.placeholder.binding:
+                    _c.placeholder.binding.parent = None
 
     def execute_register_component(self, component: Component):
         """Synchronizes one component to the DB.
