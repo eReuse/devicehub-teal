@@ -67,18 +67,10 @@ class Device(Thing):
         validate=Range(1, 100), description=m.Device.generation.comment
     )
     version = SanitizedStr(description=m.Device.version)
-    weight = Float(
-        validate=Range(0.1, 5), unit=UnitCodes.kgm, description=m.Device.weight.comment
-    )
-    width = Float(
-        validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.width.comment
-    )
-    height = Float(
-        validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.height.comment
-    )
-    depth = Float(
-        validate=Range(0.1, 5), unit=UnitCodes.m, description=m.Device.depth.comment
-    )
+    weight = Float(unit=UnitCodes.kgm, description=m.Device.weight.comment)
+    width = Float(unit=UnitCodes.m, description=m.Device.width.comment)
+    height = Float(unit=UnitCodes.m, description=m.Device.height.comment)
+    depth = Float(unit=UnitCodes.m, description=m.Device.depth.comment)
     # TODO TimeOut 2. Comment actions and lots if there are time out.
     actions = NestedOn(
         'Action', many=True, dump_only=True, description=m.Device.actions.__doc__

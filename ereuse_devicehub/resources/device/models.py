@@ -150,13 +150,13 @@ class Device(Thing):
     generation.comment = """The generation of the device."""
     version = db.Column(db.CIText())
     version.comment = """The version code of this device, like v1 or A001."""
-    weight = Column(Float(decimal_return_scale=4), check_range('weight', 0.1, 5))
+    weight = Column(Float(decimal_return_scale=4))
     weight.comment = """The weight of the device in Kg."""
-    width = Column(Float(decimal_return_scale=4), check_range('width', 0.1, 5))
+    width = Column(Float(decimal_return_scale=4))
     width.comment = """The width of the device in meters."""
-    height = Column(Float(decimal_return_scale=4), check_range('height', 0.1, 5))
+    height = Column(Float(decimal_return_scale=4))
     height.comment = """The height of the device in meters."""
-    depth = Column(Float(decimal_return_scale=4), check_range('depth', 0.1, 5))
+    depth = Column(Float(decimal_return_scale=4))
     depth.comment = """The depth of the device in meters."""
     color = Column(ColorType)
     color.comment = """The predominant color of the device."""
