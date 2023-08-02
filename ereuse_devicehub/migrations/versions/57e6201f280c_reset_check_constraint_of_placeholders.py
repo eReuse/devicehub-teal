@@ -23,18 +23,29 @@ def get_inv():
 
 
 def upgrade():
-    op.drop_constraint(
-        'device_depth_check', "device", type_="check", schema=f'{get_inv()}'
-    )
-    op.drop_constraint(
-        'device_height_check', "device", type_="check", schema=f'{get_inv()}'
-    )
-    op.drop_constraint(
-        'device_width_check', "device", type_="check", schema=f'{get_inv()}'
-    )
-    op.drop_constraint(
-        'device_weight_check', "device", type_="check", schema=f'{get_inv()}'
-    )
+    sql = "select constraint_name from information_schema.table_constraints "
+    sql += "where table_name='device' and constraint_type='CHECK';"
+    con = op.get_bind()
+    constraints = []
+    for c in con.execute(sql):
+        constraints.append(c.constraint_name)
+    if 'device_depth_check' in constraints:
+        op.drop_constraint(
+            'device_depth_check', "device", type_="check", schema=f'{get_inv()}'
+        )
+    if 'device_height_check' in constraints:
+        op.drop_constraint(
+            'device_height_check', "device", type_="check", schema=f'{get_inv()}'
+        )
+    if 'device_width_check' in constraints:
+        op.drop_constraint(
+            'device_width_check', "device", type_="check", schema=f'{get_inv()}'
+        )
+    if 'device_weight_check' in constraints:
+        op.drop_constraint(
+            'device_weight_check', "device", type_="check", schema=f'{get_inv()}'
+        )
+
     op.create_check_constraint(
         "device_depth_check",
         "device",

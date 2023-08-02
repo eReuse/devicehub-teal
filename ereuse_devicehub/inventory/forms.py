@@ -521,22 +521,22 @@ class NewDeviceForm(FlaskForm):
         error = ["Not a correct value"]
         is_valid = super().validate(extra_validators)
 
-        if self.weight.data and not (0.1 <= self.weight.data):
+        if self.weight.data and not (0.1 <= self.weight.data) or self.weight.data == 0:
             txt = ["Supported values greater than 0.1"]
             self.weight.errors = txt
             is_valid = False
 
-        if self.height.data and not (0.1 <= self.height.data):
+        if self.height.data and not (0.1 <= self.height.data) or self.height.data == 0:
             txt = ["Supported values greater than 0.1"]
             self.height.errors = txt
             is_valid = False
 
-        if self.width.data and not (0.1 <= self.width.data):
+        if self.width.data and not (0.1 <= self.width.data) or self.width.data == 0:
             txt = ["Supported values greater than 0.1"]
             self.width.errors = txt
             is_valid = False
 
-        if self.depth.data and not (0.1 <= self.depth.data):
+        if self.depth.data and not (0.1 <= self.depth.data) or self.depth.data == 0:
             txt = ["Supported values greater than 0.1"]
             self.depth.errors = txt
             is_valid = False
