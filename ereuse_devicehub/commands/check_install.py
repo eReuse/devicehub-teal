@@ -11,7 +11,7 @@ from ereuse_devicehub.resources.user.models import User
 class CheckInstall:
     """Command.
 
-    This command check if the instalation was ok and the
+    This command check if the installation was ok and the
     integration with the api of DLT was ok too.
 
     """
@@ -39,11 +39,11 @@ class CheckInstall:
             self.check_user()
             self.check_snapshot()
         except Exception:
-            txt = "There was an Error in the instalation!"
+            txt = "There was an Error in the installation!"
             print("\n" + self.FAIL + txt + self.ENDC)
             return
 
-        txt = "The instalation is OK!"
+        txt = "The installation is OK!"
         print("\n" + self.OKGREEN + txt + self.ENDC)
 
     def check_user(self):
@@ -84,7 +84,7 @@ class CheckInstall:
 
         self.device = self.snapshot.device
 
-        txt = "Generate datas to build the dpp"
+        txt = "Generate DPP                   "
         try:
             assert self.device.chid is not None
             assert self.snapshot.json_wb is not None
@@ -95,7 +95,7 @@ class CheckInstall:
 
         self.print_ok(txt)
 
-        txt = "Register Dpp in the DLT        "
+        txt = "Register DPP in the DLT        "
         try:
             assert len(self.device.dpps) > 0
             dpp = self.device.dpps[0]
