@@ -30,40 +30,96 @@ class CheckInstall:
 
         self.email = email
         self.password = password
-        OKGREEN = '\033[92m'
-        # WARNING = '\033[93m'
-        FAIL = '\033[91m'
-        ENDC = '\033[0m'
+        self.OKGREEN = '\033[92m'
+        # self.WARNING = '\033[93m'
+        self.FAIL = '\033[91m'
+        self.ENDC = '\033[0m'
+        print("\n")
         try:
             self.check_user()
             self.check_snapshot()
         except Exception:
-            print("\n" + FAIL + "There was an Error in the instalation!" + ENDC)
+            txt = "There was an Error in the instalation!"
+            print("\n" + self.FAIL + txt + self.ENDC)
             return
-        print("\n" + OKGREEN + "The instalation is OK!" + ENDC)
+
+        txt = "The instalation is OK!"
+        print("\n" + self.OKGREEN + txt + self.ENDC)
 
     def check_user(self):
         """Get datamodel of user."""
         self.user = User.query.filter_by(email=self.email).first()
-        assert self.user.api_keys_dlt is not None
-        token_dlt = self.user.get_dlt_keys(self.password)
-        assert token_dlt.get('data', {}).get('eth_pub_key') is not None
+
+        txt = "Register user to the DLT       "
+        try:
+            assert self.user.api_keys_dlt is not None
+            token_dlt = self.user.get_dlt_keys(self.password)
+            assert token_dlt.get('data', {}).get('eth_pub_key') is not None
+        except Exception:
+            self.print_fail(txt)
+            raise (txt)
+
+        self.print_ok(txt)
+
         api_token = token_dlt.get('data', {}).get('api_token')
-        rols = self.user.get_rols(api_token)
-        assert self.user.rols_dlt is not None
-        assert self.user.rols_dlt != []
-        assert self.user.rols_dlt == json.dumps([x for x, y in rols])
+
+        txt = "Register user roles in the DLT "
+        try:
+            rols = self.user.get_rols(api_token)
+            assert self.user.rols_dlt is not None
+            assert self.user.rols_dlt != []
+            assert self.user.rols_dlt == json.dumps([x for x, y in rols])
+        except Exception:
+            self.print_fail(txt)
+            raise (txt)
+
+        self.print_ok(txt)
 
     def check_snapshot(self):
-        # import pdb
-
-        # pdb.set_trace()
         self.snapshot = Snapshot.query.filter_by(author=self.user).first()
+        if not self.snapshot:
+            txt = "Impossible register snapshot   "
+            self.print_fail(txt)
+            raise (txt)
+
         self.device = self.snapshot.device
-        assert self.snapshot.json_wb is not None
-        assert len(self.device.dpps) == 1
-        assert len(self.device.proofs) == 1
-        assert self.device.chid is not None
-        assert self.snapshot.phid_dpp is not None
-        assert len(self.snapshot.dpp) == 1
-        assert len(self.snapshot.proofs) == 2
+
+        txt = "Generate datas to build the dpp"
+        try:
+            assert self.device.chid is not None
+            assert self.snapshot.json_wb is not None
+            assert self.snapshot.phid_dpp is not None
+        except Exception:
+            self.print_fail(txt)
+            raise (txt)
+
+        self.print_ok(txt)
+
+        txt = "Register Dpp in the DLT        "
+        try:
+            assert len(self.device.dpps) > 0
+            dpp = self.device.dpps[0]
+            assert type(dpp.timestamp) == int
+            assert dpp in self.snapshot.dpp
+            assert dpp.documentId == str(self.snapshot.uuid)
+            # if 'Device already exists' in DLT before
+            #   device.proofs == 0
+            #   Snapshot.proof == 1 [erase]
+
+            # if Device is new in DLT before
+            #   device.proofs == 1
+            #   Snapshot.proof == 1 or 2 [Register, erase]
+
+            assert len(self.device.proofs) in [0, 1]
+            assert len(self.snapshot.proofs) in [0, 1, 2]
+        except Exception:
+            self.print_fail(txt)
+            raise (txt)
+
+        self.print_ok(txt)
+
+    def print_ok(self, msg):
+        print(msg + self.OKGREEN + " OK!" + self.ENDC)
+
+    def print_fail(self, msg):
+        print(msg + self.FAIL + " FAIL!" + self.ENDC)
