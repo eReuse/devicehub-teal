@@ -7,6 +7,12 @@ ml).
 
 ## testing
 
+## [2.5.4] - 2023-08-7
+- [added] #460 new device Solar Panel
+- [fixed] #459 Deploy without Dummy
+- [fixed] #461 Fix some behavior of orphans components (DataStorage)
+- [fixed] #462 Remove constraints in weight in placeholder
+
 ## [2.5.3] - 2023-05-13
 - [added] #450 add new datawipe in csv.
 - [changed] #447 Share a lot between 2 users, one is owner the other is read only.
