@@ -340,6 +340,115 @@
          	    </div>
               {% endif %}
 
+              {% if manuals.energystar %}
+              <div class="row mt-3">
+                <div class="col-12">
+                  <h5 class="card-title">Energy spent</h5>
+		    
+                  {% if manuals.energystar.long_idle_watts %}
+                  <div class="row mb-3">
+                    <div class="col-sm-10">
+                      Consumption when inactivity power function is activated (watts)
+                    </div>
+                    <div class="col-sm-2">
+                      {{ manuals.energystar.long_idle_watts }}
+                    </div>
+             	    </div>
+                  {% endif %}
+
+                  {% if manuals.energystar.short_idle_watts %}
+                  <div class="row mb-3">
+                    <div class="col-sm-10">
+                      Consumption when inactivity power function is not activated (watts)
+                    </div>
+                    <div class="col-sm-2">
+                      {{ manuals.energystar.short_idle_watts }}
+                    </div>
+             	    </div>
+                  {% endif %}
+
+                  {% if manuals.energystar.sleep_mode_watts %}
+                  <div class="row mb-3">
+                    <div class="col-sm-10">
+                      sleep_mode_watts
+                      Consumption when computer goes into sleep mode (watts)
+                    </div>
+                    <div class="col-sm-2">
+                      {{ manuals.energystar.sleep_mode_watts }}
+                    </div>
+             	    </div>
+                  {% endif %}
+
+                  {% if manuals.energystar.off_mode_watts %}
+                  <div class="row mb-3">
+                    <div class="col-sm-10">
+                      Consumption when the computer is off (watts)
+                    </div>
+                    <div class="col-sm-2">
+                      {{ manuals.energystar.off_mode_watts }}
+                    </div>
+             	    </div>
+                  {% endif %}
+
+                  {% if manuals.energystar.tec_allowance_kwh %}
+                  <div class="row mb-3">
+                    <div class="col-sm-10">
+                      Power allocation for normal operation (kwh)
+                    </div>
+                    <div class="col-sm-2">
+                      {{ manuals.energystar.tec_allowance_kwh }}
+                    </div>
+             	    </div>
+                  {% endif %}
+
+                  {% if manuals.energystar.tec_of_model_kwh %}
+                  <div class="row mb-3">
+                    <div class="col-sm-10">
+                       Consumption of the model configuration (kwh)
+                    </div>
+                    <div class="col-sm-2">
+                      {{ manuals.energystar.tec_of_model_kwh }}
+                    </div>
+             	    </div>
+                  {% endif %}
+
+                  {% if manuals.energystar.tec_requirement_kwh %}
+                  <div class="row mb-3">
+                    <div class="col-sm-10">
+                      Energy allowance provided (kwh)
+                    </div>
+                    <div class="col-sm-2">
+                      {{ manuals.energystar.tec_requirement_kwh }}
+                    </div>
+             	    </div>
+                  {% endif %}
+
+                  {% if manuals.energystar.work_off_mode_watts %}
+                  <div class="row mb-3">
+                    <div class="col-sm-10">
+                      The lowest power mode which cannot be switched off (watts)
+                    </div>
+                    <div class="col-sm-2">
+                      {{ manuals.energystar.work_off_mode_watts }}
+                    </div>
+             	    </div>
+                  {% endif %}
+
+                  {% if manuals.energystar.work_weighted_power_of_model_watts %}
+                  <div class="row mb-3">
+                    <div class="col-sm-10">
+                      Weighted energy consumption from all its states (watts)
+                    </div>
+                    <div class="col-sm-2">
+                      {{ manuals.energystar.work_weighted_power_of_model_watts }}
+                    </div>
+             	    </div>
+                  {% endif %}
+
+           	    </div>
+         	    </div>
+              {% endif %}
+
 
               {% if manuals.ifixit %}
               <div class="row">
