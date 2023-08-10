@@ -79,7 +79,6 @@ class AuthorizeView(GenericMixin):
             if not form.consent.data:
                 return redirect(url_for('core.user-profile'))
 
-            # import pdb; pdb.set_trace()
             return authorization.create_authorization_response(grant_user=g.user)
 
         try:
@@ -148,7 +147,6 @@ class AllowCodeView(GenericMixin):
     discovery = {}
 
     def dispatch_request(self):
-        # import pdb.set_trace()
         self.code = request.args.get('code')
         self.oidc = session.get('oidc')
         if not self.code or not self.oidc:
@@ -184,7 +182,6 @@ class AllowCodeView(GenericMixin):
         return self.discovery
 
     def get_token(self):
-
         data = {'grant_type': 'authorization_code', 'code': self.code}
         url = self.member.domain + '/oauth/token'
         url = self.get_discovery().get('token_endpoint', url)
