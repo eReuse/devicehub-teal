@@ -205,6 +205,7 @@ class DidView(View):
             'icecat': [],
             'details': {},
             'laer': [],
+            'energystar': {},
         }
         try:
             params = {
@@ -215,12 +216,54 @@ class DidView(View):
             manuals['ifixit'] = self.request_manuals('ifixit')
             manuals['icecat'] = self.request_manuals('icecat')
             manuals['laer'] = self.request_manuals('laer')
+            manuals['energystar'] = self.request_manuals('energystar') or {}
             if manuals['icecat']:
                 manuals['details'] = manuals['icecat'][0]
         except Exception as err:
             logger.error("Error: {}".format(err))
 
         self.context['manuals'] = manuals
+        self.parse_energystar()
+
+    def parse_energystar(self):
+        if not self.context.get('manuals', {}).get('energystar'):
+            return
+
+        # Defined in:
+        # https://dev.socrata.com/foundry/data.energystar.gov/j7nq-iepp
+
+        energy_types = [
+            'functional_adder_allowances_kwh',
+            'tec_allowance_kwh',
+            'long_idle_watts',
+            'short_idle_watts',
+            'off_mode_watts',
+            'sleep_mode_watts',
+            'tec_of_model_kwh',
+            'tec_requirement_kwh',
+            'work_off_mode_watts',
+            'work_weighted_power_of_model_watts',
+        ]
+        energy = {}
+        for field in energy_types:
+            energy[field] = []
+
+        for e in self.context['manuals']['energystar']:
+            for field in energy_types:
+                for k, v in e.items():
+                    if not v:
+                        continue
+                    if field in k:
+                        energy[field].append(v)
+
+        for k, v in energy.items():
+            if not v:
+                energy[k] = 0
+                continue
+            tt = sum([float(i) for i in v])
+            energy[k] = round(tt / len(v), 2)
+
+        self.context['manuals']['energystar'] = energy
 
     def request_manuals(self, prefix):
         url = app.config['URL_MANUALS']
