@@ -237,7 +237,11 @@
                 <span class="d-none" id="exportAlertModal" data-bs-toggle="modal" data-bs-target="#exportErrorModal"></span>
                 <ul class="dropdown-menu" aria-labelledby="btnExport">
                   <li>
-                    <a href="javascript:export_file('devices')" class="dropdown-item">
+                    {% if lot and lot.get_closed() %}
+                    <a href="javascript:export_file('devices', '{{ lot.id }}')" class="dropdown-item">o
+                    {% else %}
+                    <a href="javascript:export_file('devices')" class="dropdown-item">{{ lot.get_closed() }}
+                    {% endif %}
                       <i class="bi bi-file-spreadsheet"></i>
                       Devices Spreadsheet
                     </a>
@@ -347,7 +351,11 @@
                 <span class="d-none" id="exportAlertModal" data-bs-toggle="modal" data-bs-target="#exportErrorModal"></span>
                 <ul class="dropdown-menu" aria-labelledby="btnExport">
                   <li>
+                    {% if lot.get_closed() %}
+                    <a href="javascript:export_file('devices', '{{ lot.id }}')" class="dropdown-item">
+                    {% else %}
                     <a href="javascript:export_file('devices')" class="dropdown-item">
+                    {% endif %}
                       <i class="bi bi-file-spreadsheet"></i>
                       Devices Spreadsheet
                     </a>
@@ -440,7 +448,7 @@
                                />
                       </td>
                       <td>
-                        <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
+                        <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}{% if lot and lot.get_closed() %}?date={{ lot.get_closed() }}{% endif %}">
                         {% if dev.get_type_logo() %}
                         <i class="{{ dev.get_type_logo() }}" title="{{ dev.type }}"></i>
                         {% endif %}
@@ -455,7 +463,7 @@
                         {% endif %}
                       </td>
                       <td>
-                        <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}">
+                        <a href="{{ url_for('inventory.device_details', id=dev.devicehub_id)}}{% if lot and lot.get_closed() %}?date={{ lot.get_closed() }}{% endif %}">
                           {{ dev.devicehub_id }}
                         </a>
                       </td>
@@ -471,11 +479,27 @@
                          {% if not loop.last %},{% endif %}
                         {% endfor %}
                       </td>
-                      <td>{% if dev.status %}{{ dev.status.type }}{% endif %}</td>
-                      <td>{% if dev.allocated_status %}{{ dev.allocated_status.type }}{% endif %}</td>
-                      <td>{% if dev.physical_status %}{{ dev.physical_status.type }}{% endif %}</td>
+                      {% if lot and lot.get_closed() %}
+                      <td>{% if dev.status(lot.transfer.date) %}{{ dev.status(lot.transfer.date).type }}{% endif %}</td>
+                      <td>
+                          {% if dev.allocated_status(lot.transfer.date) %}
+                            {{ dev.allocated_status(lot.transfer.date).type }}
+                          {% endif %}
+                      </td>
+                      <td>
+                        {% if dev.physical_status(lot.transfer.date) %}
+                          {{ dev.physical_status(lot.transfer.date).type }}
+                        {% endif %}
+                      </td>
                       <td>{{ dev.get_updated.strftime('%Y-%m-%d %H:%M:%S')}}</td>
                       <td>{{ dev.created.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                      {% else %}
+                      <td>{% if dev.status() %}{{ dev.status().type }}{% endif %}</td>
+                      <td>{% if dev.allocated_status() %}{{ dev.allocated_status().type }}{% endif %}</td>
+                      <td>{% if dev.physical_status() %}{{ dev.physical_status().type }}{% endif %}</td>
+                      <td>{{ dev.get_updated.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                      <td>{{ dev.created.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                      {% endif %}
                       <td>
                         <a href="{{ dev.public_link }}" target="_blank">
                           <i class="bi bi-box-arrow-up-right"></i>

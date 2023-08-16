@@ -301,11 +301,11 @@ class DeviceRow(BaseDeviceRow):
         self['Registered (process)'] = software
         self['Updated in (software)'] = device.updated
 
-        if device.physical_status:
-            self['Physical state'] = device.physical_status.type
+        if device.physical_status():
+            self['Physical state'] = device.physical_status().type
 
-        if device.allocated_status:
-            self['Allocate state'] = device.allocated_status.type
+        if device.allocated_status():
+            self['Allocate state'] = device.allocated_status().type
 
         try:
             self['Lifecycle state'] = device.last_action_of(*states.Status.actions()).t
@@ -590,11 +590,11 @@ class StockRow(OrderedDict):
         self['Registered in'] = format(device.created, '%c')
         self['Physical state'] = ''
         if device.physical_status:
-            self['Physical state'] = device.physical_status.type
+            self['Physical state'] = device.physical_status().type
 
         self['Allocate state'] = ''
-        if device.allocated_status:
-            self['Allocate state'] = device.allocated_status.type
+        if device.allocated_status():
+            self['Allocate state'] = device.allocated_status().type
 
         try:
             self['Lifecycle state'] = device.last_action_of(*states.Trading.actions()).t

@@ -182,6 +182,15 @@ class Lot(Thing):
             return 'Incoming'
         return ''
 
+    def get_closed(self):
+        if not self.transfer:
+            return
+
+        if not self.transfer.closed:
+            return
+
+        return self.transfer.date.strftime("%Y-%m-%d_00_00")
+
     def add_children(self, *children):
         """Add children lots to this lot.
 

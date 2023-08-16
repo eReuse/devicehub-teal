@@ -3,6 +3,7 @@ import csv
 import datetime
 import logging
 import os
+import re
 import uuid
 from io import StringIO
 from pathlib import Path
@@ -225,6 +226,13 @@ class DeviceDetailView(GenericMixin):
         placeholder = device.binding or device.placeholder
         if not placeholder:
             return NotFound()
+
+        date = request.args.get('date', "")
+        pattern = r'(\d{4})-(\d{2})-(\d{2})_(\d{2})_(\d{2})'
+        if re.match(pattern, date):
+            placeholder.device.close_device(date)
+            if placeholder.binding:
+                placeholder.binding.close_device(date)
 
         self.context.update(
             {

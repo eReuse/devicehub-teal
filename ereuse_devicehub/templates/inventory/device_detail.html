@@ -334,7 +334,7 @@
               {% if placeholder.binding %}
               <h5 class="card-title">Components Snapshot</h5>
               <div class="list-group col-6">
-                {% for component in placeholder.binding.components|sort(attribute='type') %}
+                {% for component in placeholder.binding.get_components()|sort(attribute='type') %}
                 <div class="list-group-item">
                   <div class="d-flex w-100 justify-content-between">
                     <h5 class="mb-1">{{ component.type }}</h5>
