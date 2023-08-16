@@ -238,9 +238,9 @@
                 <ul class="dropdown-menu" aria-labelledby="btnExport">
                   <li>
                     {% if lot and lot.get_closed() %}
-                    <a href="javascript:export_file('devices', '{{ lot.id }}')" class="dropdown-item">o
+                    <a href="javascript:export_file('devices', '{{ lot.id }}')" class="dropdown-item">
                     {% else %}
-                    <a href="javascript:export_file('devices')" class="dropdown-item">{{ lot.get_closed() }}
+                    <a href="javascript:export_file('devices')" class="dropdown-item">
                     {% endif %}
                       <i class="bi bi-file-spreadsheet"></i>
                       Devices Spreadsheet

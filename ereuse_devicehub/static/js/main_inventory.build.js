@@ -319,13 +319,12 @@ function export_file(type_file, lot_id) {
   const devices_id = $.map(devices, x => $(x).attr("data-device-dhid")).join(",");
 
   if (devices_id) {
-    var url = "/inventory/export/"
-      .concat(type_file, "/?ids=")
-      .concat(devices_id);
+    var url = "/inventory/export/".concat(type_file, "/?ids=").concat(devices_id);
 
-    if (lot_id == undefined) {
-       url = url.concat("&lot_id=", lot_id);
+    if (lot_id) {
+      url = url.concat("&lot_id=", lot_id);
     }
+
     window.location.href = url;
   } else {
     $("#exportAlertModal").click();
