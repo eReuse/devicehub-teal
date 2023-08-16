@@ -111,12 +111,14 @@ class PasswordForm(FlaskForm):
         return True
 
     def save(self, commit=True):
-        if 'dpp' not in app.blueprints.keys():
+        if 'dpp' in app.blueprints.keys():
             keys_dlt = g.user.get_dlt_keys(self.password.data)
             g.user.reset_dlt_keys(self.newpassword.data, keys_dlt)
 
             token_dlt = (
-                g.user.get_dlt_keys(self.password.data).get('data', {}).get('api_token')
+                g.user.get_dlt_keys(self.newpassword.data)
+                .get('data', {})
+                .get('api_token')
             )
             session['token_dlt'] = token_dlt
 
@@ -129,7 +131,6 @@ class PasswordForm(FlaskForm):
 
 
 class SanitizationEntityForm(FlaskForm):
-
     logo = URLField(
         'Logo',
         [validators.Optional(), validators.URL()],
