@@ -246,6 +246,14 @@
                       Devices Spreadsheet
                     </a>
                   </li>
+                  {% if lot and lot.get_closed() %}
+                  <li>
+                    <a href="javascript:export_file('compare_devices', '{{ lot.id }}')" class="dropdown-item">
+                      <i class="bi bi-file-spreadsheet"></i>
+                      Compare Devices Spreadsheet
+                    </a>
+                  </li>
+                  {% endif %}
                   <li>
                     {% if not all_devices %}
                     <span class="dropdown-item" style="color: #999ea4;">

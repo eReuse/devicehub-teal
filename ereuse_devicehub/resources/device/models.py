@@ -1337,6 +1337,47 @@ class Placeholder(Thing):
             return docs.union(self.binding.documents)
         return docs
 
+    def compare_status(self):
+        close = None
+        if self.device._date_close:
+            close = self.device._date_close
+        if self.binding and self.binding._date_close:
+            close = self.binding._date_close
+        if not close:
+            return "Actual"
+
+        lots = [lot for lot in self.device.lots]
+        lots.reverse()
+
+        for lot in lots:
+            if lot.transfer and lot.transefer.date:
+                date = lot.transefer.date.replace(tzinfo=close.tzinfo)
+
+    def compare_date(self):
+        if self.binding and self.binding._date_close:
+            return self.binding._date_close
+
+        if self.device._date_close:
+            return self.device._date_close
+
+        return datetime.datetime.now()
+
+    def physical_status(self, closed=None):
+        if self.binding and self.binding._date_close:
+            date = self.binding._date_close
+            state = self.binding.physical_status(closed=date)
+            if state:
+                return state
+
+            state = self.device.physical_status(closed=date)
+            if state:
+                return state
+        if self.device._date_close:
+            date = self.device._date_close
+            state = self.device.physical_status(closed=date)
+            if state:
+                return state
+
 
 class Computer(Device):
     """A chassis with components inside that can be processed
