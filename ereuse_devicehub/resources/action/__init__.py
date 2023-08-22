@@ -216,6 +216,11 @@ class ReadyDef(ActionDef):
     SCHEMA = schemas.Ready
 
 
+class EWasteDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.EWaste
+
+
 class RecyclingDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Recycling

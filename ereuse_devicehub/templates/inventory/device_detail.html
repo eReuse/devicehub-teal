@@ -390,10 +390,9 @@
             </div>
             {% endif %}
 
-            {% if placeholder.binding %}
             <div class="tab-pane fade profile-overview" id="proofs">
               <h5 class="card-title">Proofs</h5>
-              {% for proof in placeholder.binding.proofs %}
+              {% for proof in placeholder.proofs %}
               <div class="list-group col-12">
                 <div class="list-group-item d-flex justify-content-between align-items-center">
                   <div class="row">
@@ -436,7 +435,6 @@
               {% endfor %}
               {% endfor %}
             </div>
-            {% endif %}
 
         </div>
       </div>

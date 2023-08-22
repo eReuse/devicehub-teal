@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.util import OrderedSet
 
-from ereuse_devicehub.resources.action.models import Snapshot
+from ereuse_devicehub.resources.action.models import Action, Snapshot
 from ereuse_devicehub.resources.device.models import Device
 from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
@@ -17,6 +17,7 @@ PROOF_ENUM = {
     'IssueDPP': 'IssueDPP',
     'proof_of_recycling': 'proof_of_recycling',
     'Erase': 'Erase',
+    'EWaste': 'EWaste',
 }
 
 _sorted_proofs = {'order_by': lambda: Proof.created, 'collection_class': SortedSet}
@@ -30,6 +31,7 @@ class Proof(Thing):
     documentId.comment = "is the uuid of snapshot"
     documentSignature = Column(CIText(), nullable=True)
     documentSignature.comment = "is the snapshot.json_hw with the signature of the user"
+    normalizeDoc = Column(CIText(), nullable=True)
     timestamp = Column(BigInteger, nullable=False)
     type = Column(Unicode(STR_SM_SIZE), nullable=False)
 
@@ -52,12 +54,12 @@ class Proof(Thing):
         primaryjoin=Device.id == device_id,
     )
 
-    snapshot_id = Column(UUID(as_uuid=True), ForeignKey(Snapshot.id), nullable=True)
-    snapshot = relationship(
-        Snapshot,
+    action_id = Column(UUID(as_uuid=True), ForeignKey(Action.id), nullable=True)
+    action = relationship(
+        Action,
         backref=backref('proofs', lazy=True),
         collection_class=OrderedSet,
-        primaryjoin=Snapshot.id == snapshot_id,
+        primaryjoin=Action.id == action_id,
     )
 
 

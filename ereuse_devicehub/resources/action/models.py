@@ -493,9 +493,7 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             return self.parent.phid()
         return ''
 
-    def register_proof(self):
-        """This method is used for register a proof of erasure en dlt."""
-
+    def connect_api(self):
         if 'dpp' not in app.blueprints.keys() or not self.snapshot:
             return
 
@@ -504,21 +502,25 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
         token_dlt = session.get('token_dlt')
         api_dlt = app.config.get('API_DLT')
-        dh_instance = app.config.get('ID_FEDERATED', 'dh1')
         if not token_dlt or not api_dlt:
             return
 
-        api = API(api_dlt, token_dlt, "ethereum")
+        return API(api_dlt, token_dlt, "ethereum")
 
-        from ereuse_devicehub.modules.dpp.models import PROOF_ENUM, Proof
+    def register_proof(self):
+        """This method is used for register a proof of erasure en dlt."""
+        from ereuse_devicehub.modules.dpp.models import PROOF_ENUM
 
         deviceCHID = self.device.chid
-        docSig = self.snapshot.phid_dpp
-        docHash = docSig
+        docHash = self.snapshot.phid_dpp
         docHashAlgorithm = 'sha3_256'
-        docID = "{}".format(self.snapshot.uuid or '')
-        issuerID = "{dh}:{user}".format(dh=dh_instance, user=g.user.id)
         proof_type = PROOF_ENUM['Erase']
+        dh_instance = app.config.get('ID_FEDERATED', 'dh1')
+
+        api = self.connect_api()
+        if not api:
+            return
+
         result = api.generate_proof(
             deviceCHID,
             docHashAlgorithm,
@@ -527,16 +529,21 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
             dh_instance,
         )
 
+        self.register_erase_proof(result)
+
+    def register_erase_proof(self, result):
+        from ereuse_devicehub.modules.dpp.models import PROOF_ENUM, Proof
         from ereuse_devicehub.resources.enums import StatusCode
 
         if result['Status'] == StatusCode.Success.value:
-            timestamp = (
-                result.get('Data', {}).get('data', {}).get('timestamp', time.time())
-            )
+            timestamp = result.get('Data', {}).get('data', {}).get('timestamp')
+            if not timestamp:
+                return
+
             d = {
                 "type": PROOF_ENUM['Erase'],
                 "device": self.device,
-                "snapshot": self.snapshot,
+                "action": self.snapshot,
                 "timestamp": timestamp,
                 "issuer_id": g.user.id,
             }
@@ -874,7 +881,6 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         return hdds
 
     def get_new_device(self):
-
         if not self.device:
             return ''
 
@@ -983,7 +989,7 @@ class BenchmarkDataStorage(Benchmark):
     write_speed = Column(Float(decimal_return_scale=2), nullable=False)
 
     def __str__(self) -> str:
-        return 'Read: {0:.2f} MB/s, write: {0:.2f} MB/s'.format(
+        return 'Read: {0:.2f} MB/s, write: {0:.2f} MB/s'.format(  # noqa: F523
             self.read_speed, self.write_speed
         )
 
@@ -1709,6 +1715,72 @@ class Ready(ActionWithMultipleDevices):
     Users usually require devices with this action before shipping them
     to costumers.
     """
+
+
+class EWaste(ActionWithMultipleDevices):
+    """The device is declared as e-waste, this device is not allow use more.
+
+    Any people can declared as e-waste one device.
+    """
+
+    def register_proof(self, doc):
+        """This method is used for register a proof of erasure en dlt."""
+
+        if 'dpp' not in app.blueprints.keys():
+            return
+
+        if not session.get('token_dlt'):
+            return
+
+        if not doc:
+            return
+
+        self.doc = doc
+        token_dlt = session.get('token_dlt')
+        api_dlt = app.config.get('API_DLT')
+        dh_instance = app.config.get('ID_FEDERATED', 'dh1')
+        if not token_dlt or not api_dlt:
+            return
+
+        api = API(api_dlt, token_dlt, "ethereum")
+
+        from ereuse_devicehub.modules.dpp.models import PROOF_ENUM, Proof
+        from ereuse_devicehub.resources.enums import StatusCode
+
+        for device in self.devices:
+            deviceCHID = device.chid
+            docHash = self.generateDocSig()
+            docHashAlgorithm = 'sha3_256'
+            proof_type = PROOF_ENUM['EWaste']
+            result = api.generate_proof(
+                deviceCHID,
+                docHashAlgorithm,
+                docHash,
+                proof_type,
+                dh_instance,
+            )
+
+            if result['Status'] == StatusCode.Success.value:
+                timestamp = result.get('Data', {}).get('data', {}).get('timestamp')
+
+                if not timestamp:
+                    return
+
+                d = {
+                    "type": PROOF_ENUM['EWaste'],
+                    "device": device,
+                    "action": self,
+                    "timestamp": timestamp,
+                    "issuer_id": g.user.id,
+                    "normalizeDoc": self.doc,
+                }
+                proof = Proof(**d)
+                db.session.add(proof)
+
+    def generateDocSig(self):
+        if not self.doc:
+            return
+        return hashlib.sha3_256(self.doc.encode('utf-8')).hexdigest()
 
 
 class ToPrepare(ActionWithMultipleDevices):

@@ -42,6 +42,7 @@ from ereuse_devicehub.parser.models import PlaceholdersLog, SnapshotsLog
 from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
+from ereuse_devicehub.resources.action.schemas import EWaste as EWasteSchema
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
 from ereuse_devicehub.resources.action.views.snapshot import (
     SnapshotMixin,
@@ -856,6 +857,12 @@ class ActionFormMixin(FlaskForm):
 
         self.populate_obj(self.instance)
         db.session.add(self.instance)
+
+        if self.instance.type == 'EWaste':
+            ewaste = EWasteSchema().dump(self.instance)
+            doc = "{}".format(ewaste)
+            self.instance.register_proof(doc)
+
         db.session.commit()
 
         self.devices.data = devices
@@ -1212,7 +1219,6 @@ class TradeForm(ActionFormMixin):
             or email_to == email_from
             or g.user.email not in [email_from, email_to]
         ):
-
             errors = ["If you want confirm, you need a correct email"]
             self.user_to.errors = errors
             self.user_from.errors = errors
@@ -1918,7 +1924,6 @@ class UploadPlaceholderForm(FlaskForm):
         return True
 
     def save(self, commit=True):
-
         for device, placeholder_log in self.placeholders:
             db.session.add(device)
             db.session.add(placeholder_log)
@@ -1947,7 +1952,6 @@ class EditPlaceholderForm(FlaskForm):
         return True
 
     def save(self, commit=True):
-
         for device in self.placeholders:
             db.session.add(device)
 

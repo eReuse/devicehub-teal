@@ -4,7 +4,6 @@ import json
 import logging
 import os
 import pathlib
-import time
 import uuid
 from contextlib import suppress
 from fractions import Fraction
@@ -484,7 +483,8 @@ class Device(Thing):
         """The trading state, or None if no Trade action has
         ever been performed to this device. This extract the posibilities for to do.
         This method is performed for show in the web.
-        If you need to do one simple and generic response you can put simple=True for that."""
+        If you need to do one simple and generic response you can put simple=True for that.
+        """
         if not hasattr(lot, 'trade'):
             return
 
@@ -939,7 +939,7 @@ class Device(Thing):
         }
         return types.get(self.type, '')
 
-    def register_dlt(self):
+    def connect_api(self):
         if 'dpp' not in app.blueprints.keys() or not self.hid:
             return
 
@@ -951,20 +951,43 @@ class Device(Thing):
         if not token_dlt or not api_dlt:
             return
 
-        api = API(api_dlt, token_dlt, "ethereum")
+        return API(api_dlt, token_dlt, "ethereum")
+
+    def register_dlt(self):
+        api = self.connect_api()
+        if not api:
+            return
 
         result = api.register_device(self.chid)
+        self.register_proof(result)
+
+        if app.config.get('ID_FEDERATED'):
+            api.add_service(
+                self.chid,
+                'DeviceHub',
+                app.config.get('ID_FEDERATED'),
+                'Inventory service',
+                'Inv',
+            )
+
+    def register_proof(self, result):
         from ereuse_devicehub.modules.dpp.models import PROOF_ENUM, Proof
         from ereuse_devicehub.resources.enums import StatusCode
 
         if result['Status'] == StatusCode.Success.value:
-            timestamp = (
-                result.get('Data', {}).get('data', {}).get('timestamp', time.time())
-            )
+            timestamp = result.get('Data', {}).get('data', {}).get('timestamp')
+
+            if not timestamp:
+                return
+
+            snapshot = [x for x in self.actions if x.t == 'Snapshot']
+            if not snapshot:
+                return
+
             d = {
                 "type": PROOF_ENUM['Register'],
                 "device": self,
-                "snapshot": [x for x in self.actions if x.t == 'Snapshot'][0],
+                "actions": snapshot[0],
                 "timestamp": timestamp,
                 "issuer_id": g.user.id,
             }
@@ -977,15 +1000,6 @@ class Device(Thing):
         for c in self.components:
             if isinstance(c, DataStorage):
                 c.register_dlt()
-
-        if app.config.get('ID_FEDERATED'):
-            api.add_service(
-                self.chid,
-                'DeviceHub',
-                app.config.get('ID_FEDERATED'),
-                'Inventory service',
-                'Inv',
-            )
 
     def unreliable(self):
         self.user_trusts = False
@@ -1301,6 +1315,14 @@ class Placeholder(Thing):
         if self.binding:
             return docs.union(self.binding.documents)
         return docs
+
+    @property
+    def proofs(self):
+        proofs = [p for p in self.device.proofs]
+        if self.binding:
+            proofs.extend([p for p in self.binding.proofs])
+        proofs.sort(key=lambda x: x.created, reverse=True)
+        return proofs
 
 
 class Computer(Device):

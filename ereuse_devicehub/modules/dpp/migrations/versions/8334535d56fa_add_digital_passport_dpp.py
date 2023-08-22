@@ -45,13 +45,14 @@ def upgrade():
         sa.Column('type', sa.Unicode(), nullable=False),
         sa.Column('documentId', citext.CIText(), nullable=True),
         sa.Column('documentSignature', citext.CIText(), nullable=True),
+        sa.Column('normalizeDoc', citext.CIText(), nullable=True),
         sa.Column('timestamp', sa.BigInteger(), nullable=False),
         sa.Column('device_id', sa.BigInteger(), nullable=False),
-        sa.Column('snapshot_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('action_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('issuer_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.ForeignKeyConstraint(
-            ['snapshot_id'],
-            [f'{get_inv()}.snapshot.id'],
+            ['action_id'],
+            [f'{get_inv()}.action.id'],
         ),
         sa.ForeignKeyConstraint(
             ['device_id'],

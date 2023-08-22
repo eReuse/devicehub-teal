@@ -523,6 +523,10 @@ class Ready(ActionWithMultipleDevicesCheckingOwner):
     __doc__ = m.Ready.__doc__
 
 
+class EWaste(ActionWithMultipleDevicesCheckingOwner):
+    __doc__ = m.EWaste.__doc__
+
+
 class ActionStatus(Action):
     rol_user = NestedOn(s_user.User, dump_only=True, exclude=('token',))
     devices = NestedOn(
