@@ -42,7 +42,11 @@ def generate_user_info(user, scope):
     if 'rols' in scope:
         rols = user.rols_dlt and user.get_rols_dlt() or []
         return UserInfo(rols=rols, sub=str(user.id), name=user.email)
-    return UserInfo(sub=str(user.id), name=user.email)
+    return UserInfo(
+        sub=str(user.id), 
+        username=user.email.split('@')[0],
+        email=user.email
+    )
 
 
 def create_authorization_code(client, grant_user, request):
