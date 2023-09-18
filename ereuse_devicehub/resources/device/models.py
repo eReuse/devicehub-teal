@@ -987,7 +987,7 @@ class Device(Thing):
             d = {
                 "type": PROOF_ENUM['Register'],
                 "device": self,
-                "actions": snapshot[0],
+                "action": snapshot[0],
                 "timestamp": timestamp,
                 "issuer_id": g.user.id,
             }
