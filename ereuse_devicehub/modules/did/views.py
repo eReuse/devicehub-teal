@@ -168,6 +168,7 @@ class DidView(View):
     def get_result(self):
         components = []
         data = {
+            '@context': ['https://ereuse.org/dpp0.json'],
             'document': {},
             'dpp': self.id_dpp,
             'algorithm': "sha3_256",
