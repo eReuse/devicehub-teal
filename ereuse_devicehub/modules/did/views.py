@@ -200,7 +200,10 @@ class DidView(View):
                 'algorithm': "sha3_256",
             }
             dpps.append(rr)
-        return {'data': dpps}
+        return {
+            '@context': ['https://ereuse.org/dpp0.json'],
+            'data': dpps,
+        }
 
     def get_manuals(self):
         manuals = {
