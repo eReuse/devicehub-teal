@@ -20,11 +20,12 @@ docker_build:
 
 docker_publish:
 	docker push ${devicehub_image}
+	docker push ${postgres_image}
 
 .PHONY: docker
 docker:
 	$(MAKE) docker_build
-	#$(MAKE) docker_publish
+	$(MAKE) docker_publish
 	@printf "\nimage: ${devicehub_image}\n"
 	@printf "\nimage: ${postgres_image}\n"
 	@printf "\ndocker images built and published\n"

@@ -4,7 +4,7 @@ services:
   devicehub:
     init: true
     # TODO
-    image: dkr-dsg.ac.upc.edu/devicehub/devicehub:dpp__0fb4fa5b
+    image: dkr-dsg.ac.upc.edu/devicehub/devicehub:dpp_docker__eafcac09
     #build .
     environment:
       - DB_USER=${DB_USER}
@@ -28,7 +28,7 @@ services:
       - ${SNAPSHOTS_PATH}:/mnt/snapshots:ro
 
   postgres:
-    image: dkr-dsg.ac.upc.edu/devicehub/postgres:dpp__0fb4fa5b
+    image: dkr-dsg.ac.upc.edu/devicehub/postgres:dpp_docker__eafcac09
     # 4. To create the database.
     # 5. Give permissions to the corresponding users in the database.
     #   extra src https://github.com/docker-library/docs/blob/master/postgres/README.md#environment-variables
