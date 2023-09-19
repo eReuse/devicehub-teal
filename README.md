@@ -9,14 +9,26 @@ Devicehub is built with [Teal](https://github.com/ereuse/teal) and [Flask](http:
 # Installing
 The requirements are:
 
--  Python 3.7.3 or higher. In debian 10 is `# apt install python3`.
+0. Required
+-  python3.9
 -  [PostgreSQL 11 or higher](https://www.postgresql.org/download/).
 -  Weasyprint [dependencie](http://weasyprint.readthedocs.io/en/stable/install.html)
 
-Install Devicehub with *pip*: `pip3 install -U -r requirements.txt -e .`
+1. Generate a clone of the repository.
+```
+    git clone git@github.com:eReuse/devicehub-teal.git
+    cd devicehub-teal
+```
 
-# Running
-Create a PostgreSQL database called *devicehub* by running [create-db](examples/create-db.sh):
+2. Create a virtual environment and install Devicehub with *pip*.
+```
+    python3.9 -m venv env
+    source env/bin/activate
+    pip3 install -U -r requirements.txt -e .
+    pip3 install Authlib==1.2.1
+```
+
+3. Create a PostgreSQL database called *devicehub* by running [create-db](examples/create-db.sh):
 
 -  In Linux, execute the following two commands (adapt them to your distro):
 
@@ -30,98 +42,74 @@ Configure project using environment file (you can use provided example as quicks
 $ cp examples/env.example .env
 ```
 
-Using the `dh` tool for set up with one or multiple inventories.
-Create the tables in the database by executing:
-
-```bash
-$  export dhi=dbtest;  dh inv add --common --name dbtest
+4. Running alembic from oidc module.y
+```
+    alembic -x inventory=dbtest upgrade head
 ```
 
-Finally, run the app:
+5. Running alembic from oidc module.y
+```
+    cd ereuse_devicehub/modules/oidc
+    alembic -x inventory=dbtest upgrade head
+```
+
+6. Running alembic from dpp module.
+```
+    cd ereuse_devicehub/modules/dpp/
+    alembic -x inventory=dbtest upgrade head
+```
+
+7. Add a suitable app.py file.
+```
+      cp examples/app.py .
+```
+
+8. Generate a minimal data structure.
+```
+      flask initdata
+```
+	
+9. Add a new server to the 'api resolver' to be able to integrate it into the federation.
+    The domain name for this new server has to be unique. When installing two instances their domain name must differ: e.g. dpp.mydomain1.cxm, dpp.mydomain2.cxm.
+    If your domain is dpp.mydomain.cxm: 
+```
+    	flask dlt_insert_members http://dpp.mydomain.cxm
+```
+
+    modify the .env file as indicated in point 3.
+    Add the corresponding 'DH' in ID_FEDERATED.
+    example: ID_FEDERATED='DH10'
+
+10. Do a rsync api resolve.
+```
+  	  flask dlt_rsync_members
+```
+
+11. Register a new user in devicehub.
+```
+  	  flask adduser email@cxm.cxm password
+```
+
+12. Register a new user to the DLT.
+```
+  	  flask dlt_register_user email@cxm.cxm password Operator
+```
+
+13. Finally, run the app:
 
 ```bash
-$ export dhi=dbtest;dh run --debugger
+$ flask run --debugger
 ```
 
 The error ‘bdist_wheel’ can happen when you work with a *virtual environment*.
 To fix it, install in the *virtual environment* wheel
 package. `pip3 install wheel`
 
-## Multiple instances
-
-Devicehub can run as a single inventory or with multiple inventories, each inventory being an instance of the `devicehub`. To add a new inventory  execute:
-```bash
-$ export dhi=dbtest;  dh inv add --name dbtest
-```
-
-Note: The `dh` command is like `flask`, but it allows you to create and delete instances, and interface to them directly.
-
-
 # Testing
 
 1. `git clone` this project.
 2. Create a database for testing executing `create-db.sh` like the normal installation but changing the first parameter from `devicehub` to `dh_test`: `create-db.sh dh_test dhub` and password `ereuse`.
 3. Execute at the root folder of the project `python3 setup.py test`.
-
-
-# Migrations
-
-At this stage, migration files are created manually.
-Set up the database:
-
-```bash
-$ sudo su - postgres
-$ bash $PATH_TO_DEVIHUBTEAL/examples/create-db.sh devicehub dhub
-```
-
-Initialize the database:
-
-```bash
-$ export dhi=dbtest; dh inv add --common --name dbtest
-```
-
-This command will create the schemas, tables in the specified database.
-Then we need to stamp the initial migration.
-
-```bash
-$ alembic stamp head
-```
-
-
-This command will set the revision **fbb7e2a0cde0_initial**  as our initial migration.
-For more info in migration stamping please see https://alembic.sqlalchemy.org/en/latest/cookbook.html
-
-
-Whenever a change needed eg to create a new schema, alter an existing table, column or perform any
-operation on tables, create a new revision file:
-
-```bash
-$ alembic revision -m "A table change"
-```
-
-This command will create a new revision file with name `<revision_id>_a_table_change`.
-Edit the generated file with the necessary operations to perform the migration:
-
-```bash
-$ alembic edit <revision_id>
-```
-
-Apply migrations using:
-
-```bash
-$ alembic -x inventory=dbtest upgrade head
-```
-Then to go back to previous db version:
-
-```bash
-$ alembic -x inventory=dbtest downgrade <revision_id>
-```
-
-To see a full list of migrations use
-
-```bash
-$ alembic history
-```
 
 # Upgrade a deployment
 
@@ -135,10 +123,48 @@ $ alembic -x inventory=dbtest upgrade head
 ```
 
 If all migrations pass successfully, then it is necessary restart the devicehub.
-Normaly you can use a little script for restart.
+Normaly you can use a little script for restart or run.
 ```
-# sh gunicorn_api.sh
+# systemctl stop gunicorn_devicehub.socket
+# systemctl stop gunicorn_devicehub.service
+# systemctl start gunicorn_devicehub.service
 ```
+
+# OpenId Connect: 
+We want to interconnect two devicehub instances already installed. One has a set of devices (OIDC client), the other has a set of users (OIDC identity server). Let's assume their domains are: dpp.mydomain1.cxm, dpp.mydomain2.cxm
+20. In order to connect the two devicehub instances, it is necessary:
+	* 20.1. Register a user in the devicehub instance acting as OIDC identity server.
+	* 20.2. Fill in the openid connect form.
+	* 20.3. Add in the OIDC client inventory the data of client_id, client_secret.
+	
+  For 20.1. This can be achieved on the terminal on the devicehub instance acting as OIDC identity server.
+	```
+  	  flask adduser email@cxm.cxm password
+	```
+	
+	* 20.2. This is an example of how to fill in the form.
+
+	In the web interface of the OIDC identity service, click on the profile of the just added user, select "My Profile" and click on "OpenID Connect":
+	Then we can go to the "OpenID Connect" panel and fill out the form:
+
+	The important thing about this form is:
+	  * "Client URL" The URL of the OIDC Client instance, as registered in point 12. dpp.mydomain1.cxm in our example.
+	  * "Allowed Scope" has to have these three words:
+	  ```
+	    openid profile rols
+	  ```
+    * "Redirect URIs" it has to be the URL that was put in "Client URL" plus "/allow_code"
+	  * "Allowed Grant Types" has to be "authorization_code"
+	  * "Allowed Response Types" has to be "code"
+	  * "Token Endpoint Auth Method" has to be "Client Secret Basic"
+
+	After clicking on "Submit" the "OpenID Connect" tab of the user profile should now include details for "client_id" and "client_secret".
+
+	* 20.3. In the OIDC client inventory run: (in our example: url_domain is dpp.mydomain2.cxm, client_id and client_secret as resulting from the previous step)
+	```
+	  flask add_client_oidc url_domain client_id client_secret
+	```
+	After this step, both servers must be connected. Opening one DPP page on dpp.mydomain1.cxm (OIDC Client) the user can choose to authenticate using dpp.mydomain2.cxm (OIDC Server).
 
 ## Generating the docs
 
