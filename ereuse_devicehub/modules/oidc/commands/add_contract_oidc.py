@@ -65,14 +65,21 @@ class AddContractOidc:
             logger.error(txt)
             return
         if self.member.client_id and self.member.client_secret:
-            result = ", ".join([self.member.client_id, self.member.client_secret])
+            result = {
+                "client_id": self.member.client_id,
+                "client_secret": self.member.client_secret
+            }
             print(result)
             return result
 
-        result = ", ".join(self.save())
+        result = self.save()
+        result = {
+            "client_id": result[0],
+            "client_secret": result[1]
+        }
         print(result)
         return result
-        
+
 
     def save(self):
         client_id = gen_salt(24)
