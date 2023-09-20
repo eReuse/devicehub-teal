@@ -55,6 +55,11 @@ try:
 except Exception:
     InsertMembe = None
 
+try:
+    from ereuse_devicehub.modules.oidc.commands.add_contract_oidc import AddContractOidc
+except Exception:
+    AddContractOidc = None
+
 
 class Devicehub(Teal):
     test_client_class = Client
@@ -110,13 +115,16 @@ class Devicehub(Teal):
         if GetMembers:
             self.get_members = GetMembers(self)
         if RegisterUserDlt:
-            self.register_user_dlt = RegisterUserDlt(self)
+            self.dlt_register_user = RegisterUserDlt(self)
         if AddMember:
-            self.register_user_dlt = AddMember(self)
+            self.dlt_insert_members = AddMember(self)
         if AddClientOidc:
-            self.register_user_dlt = AddClientOidc(self)
+            self.add_client_oidc = AddClientOidc(self)
         if InsertMember:
-            self.register_user_dlt = InsertMember(self)
+            self.dlt_insert_members = InsertMember(self)
+
+        if AddContractOidc:
+            self.add_contract_oidc = AddContractOidc(self)
 
         @self.cli.group(
             short_help='Inventory management.',
