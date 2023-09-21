@@ -3,7 +3,7 @@ services:
 
   devicehub-id-server:
     init: true
-    image: dkr-dsg.ac.upc.edu/devicehub/devicehub:dpp_docker__54511e1b
+    image: dkr-dsg.ac.upc.edu/devicehub/devicehub:dpp_docker__37069ff5
     environment:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -46,7 +46,7 @@ services:
 
   devicehub-id-client:
     init: true
-    image: dkr-dsg.ac.upc.edu/devicehub/devicehub:dpp_docker__54511e1b
+    image: dkr-dsg.ac.upc.edu/devicehub/devicehub:dpp_docker__37069ff5
     environment:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
