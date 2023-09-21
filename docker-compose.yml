@@ -3,7 +3,7 @@ services:
 
   devicehub-id-server:
     init: true
-    image: dkr-dsg.ac.upc.edu/devicehub/devicehub:dpp_docker__37069ff5
+    image: dkr-dsg.ac.upc.edu/ereuse/devicehub:dpp_docker__2c4b0006
     environment:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -29,7 +29,7 @@ services:
       - shared:/shared:rw
 
   postgres-id-server:
-    image: dkr-dsg.ac.upc.edu/devicehub/postgres:dpp_docker__eafcac09
+    image: dkr-dsg.ac.upc.edu/ereuse/postgres:dpp_docker__2c4b0006
     # 4. To create the database.
     # 5. Give permissions to the corresponding users in the database.
     #   extra src https://github.com/docker-library/docs/blob/master/postgres/README.md#environment-variables
@@ -46,7 +46,7 @@ services:
 
   devicehub-id-client:
     init: true
-    image: dkr-dsg.ac.upc.edu/devicehub/devicehub:dpp_docker__37069ff5
+    image: dkr-dsg.ac.upc.edu/ereuse/devicehub:dpp_docker__2c4b0006
     environment:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -72,7 +72,7 @@ services:
       - shared:/shared:ro
 
   postgres-id-client:
-    image: dkr-dsg.ac.upc.edu/devicehub/postgres:dpp_docker__eafcac09
+    image: dkr-dsg.ac.upc.edu/ereuse/postgres:dpp_docker__2c4b0006
     # 4. To create the database.
     # 5. Give permissions to the corresponding users in the database.
     #   extra src https://github.com/docker-library/docs/blob/master/postgres/README.md#environment-variables
