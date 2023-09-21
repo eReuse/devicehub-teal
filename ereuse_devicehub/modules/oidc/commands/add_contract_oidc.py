@@ -25,32 +25,31 @@ class AddContractOidc:
     @click.argument('client_uri')
     @click.argument('scope', required=False, default="openid profile rols")
     @click.argument('redirect_uris', required=False)
-    @click.argument('grant_types', required=False, default="authorization_code")
-    @click.argument('response_types', required=False, default="code")
+    @click.argument('grant_types', required=False, default=["authorization_code"])
+    @click.argument('response_types', required=False, default=["code"])
     @click.argument('token_endpoint_auth_method', required=False, default="client_secret_basic")
     def run(
             self,
             email,
-            client_name, 
-            client_uri, 
-            scope, 
+            client_name,
+            client_uri,
+            scope,
             redirect_uris,
             grant_types,
-            response_types, 
+            response_types,
             token_endpoint_auth_method):
 
-        self.email = email,
-        self.client_name = client_name, 
-        self.client_uri = client_uri, 
-        self.scope = scope, 
-        self.redirect_uris = redirect_uris,
-        self.grant_types = grant_types,
-        self.response_types = response_types, 
+        self.email = email
+        self.client_name = client_name
+        self.client_uri = client_uri
+        self.scope = scope
+        self.redirect_uris = redirect_uris
+        self.grant_types = grant_types
+        self.response_types = response_types
         self.token_endpoint_auth_method = token_endpoint_auth_method
 
         if not self.redirect_uris:
-            self.redirect_uris = "{}/allow_code".format(client_uri)
-
+            self.redirect_uris = ["{}/allow_code".format(client_uri)]
 
         self.member = MemberFederated.query.filter_by(domain=client_uri).first()
         self.user = User.query.filter_by(email=email).one()
