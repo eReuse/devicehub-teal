@@ -1,4 +1,4 @@
-
+import json
 import click
 import logging
 import time
@@ -68,7 +68,7 @@ class AddContractOidc:
                 "client_id": self.member.client_id,
                 "client_secret": self.member.client_secret
             }
-            print(result)
+            print(json.dumps(result))
             return result
 
         result = self.save()
@@ -76,7 +76,7 @@ class AddContractOidc:
             "client_id": result[0],
             "client_secret": result[1]
         }
-        print(result)
+        print(json.dumps(result))
         return result
 
 
