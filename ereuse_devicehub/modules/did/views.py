@@ -172,6 +172,7 @@ class DidView(View):
             'dpp': self.id_dpp,
             'algorithm': "sha3_256",
             'components': components,
+            'manufacturer DPP': '',
         }
         result = {
             '@context': ['https://ereuse.org/dpp0.json'],
@@ -198,6 +199,7 @@ class DidView(View):
                 'dpp': d.key,
                 'document': d.snapshot.json_hw,
                 'algorithm': "sha3_256",
+                'manufacturer DPP': '',
             }
             dpps.append(rr)
         return {
