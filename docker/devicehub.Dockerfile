@@ -24,6 +24,8 @@ RUN pip install alembic==1.8.1    anytree==2.8.0    apispec==0.39.0    atomicwri
 RUN pip install -i https://test.pypi.org/simple/ ereuseapitest==0.0.8
 
 COPY . .
+# this operation might be overriding inside container another app.py you would have
+COPY examples/app.py .
 RUN pip install -e .
 
 COPY docker/devicehub.entrypoint.sh .
