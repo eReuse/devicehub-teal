@@ -19,6 +19,8 @@ class GetMembers:
             print("Error: you need a entry var API_RESOLVER in .env")
             return
 
+        api = api.strip("/")
+
         url = api + '/getAll'
         res = requests.get(url)
         if res.status_code != 200:

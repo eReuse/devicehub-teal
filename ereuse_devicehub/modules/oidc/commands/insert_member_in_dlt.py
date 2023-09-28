@@ -21,6 +21,9 @@ class InsertMember:
             print("Error: you need a entry var API_RESOLVER in .env")
             return
 
+        api = api.strip("/")
+        domain = domain.strip("/")
+
         data = {"url": domain}
         url = api + '/registerURL'
         res = requests.post(url, json=data)
