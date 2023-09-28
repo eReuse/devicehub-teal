@@ -1,16 +1,16 @@
 # Devicehub
 
-Devicehub is a distributed IT Asset Management System focused in reusing devices, created under the project [eReuse.org](https://www.ereuse.org)
+Devicehub is a distributed IT Asset Management System focused on reusing digital devices, created under the project [eReuse.org](https://www.ereuse.org)
 
 This README explains how to install and use Devicehub. [The documentation](http://devicehub.ereuse.org) explains the concepts and the API.
 
 Devicehub is built with [Teal](https://github.com/ereuse/teal) and [Flask](http://flask.pocoo.org).
 
 # Installing
-Please visit the [Manual Installation](README_MANUAL_INSTALLATION.md) for understand how you can install locally or deploy in a server.
+Please visit the [Manual Installation](README_MANUAL_INSTALLATION.md) to understand the detailed steps to install it locally or deploy it on a server.
 
 # Docker
-You have a docker compose file for to do a automated deployment. In the next steps we can see as run and use.
+There is a Docker compose file for an automated deployment. In the next steps, we can see how to run and use it.
 
 1. Download the sources:
 ```
@@ -18,11 +18,13 @@ You have a docker compose file for to do a automated deployment. In the next ste
   cd devicehub-teal
 ```
 
-2. You need decide one dir in your system for share documents between your system and the dockers.
-For us only as example we use "/tmp/dhub/" and need create it:
+2. You need to decide on one directory in your system for sharing documents between your system and the dockers.
+As an example we use "/tmp/dhub/" and need to create it:
 ```
   mkdir /tmp/dhub
 ```
+
+3. If you want to initialize your DeviceHub instance with sample device snapshop you can copy your snapshots, copy your snapshots in this directory. If you don't have any snapshots copy one of the example directory. Otherwise, the device inventory of your DeviceHub instance will be empty and ready to add new devices. To register new devices, the [workbench software](https://github.com/eReuse/workbench) can be run on a device to generate a hardware snapshot that can be uploaded to your DeviceHub instance.
 
 3. Copy your snapshots in this directory. If you don't have any snapshots copy one of the example directory.
 ```
@@ -30,11 +32,11 @@ For us only as example we use "/tmp/dhub/" and need create it:
 ```
 
 4. Modify the file with environment variables in the file .env You can see one example in examples/env
-If you don't have one please copy the examples/env file and modify the basic vars
+If you don't have one, please copy the examples/env file and modify the basic vars
 ```
   cp examples/env.example .env
 ```
-You can use this parameters for default as a test, but you need add values in this three variables:
+You can use these parameters for default as a test, but you need to add values in these three variables:
 ```
   API_DLT
   API_DLT_TOKEN
@@ -45,9 +47,17 @@ You can use this parameters for default as a test, but you need add values in th
 ```
   docker compose up
 ```
-For stop the docker you can use Ctl+c and if you run again "compose up" you maintain the datas and infrastructure.
+To stop the dockers you can use Ctl+C, and if you run again "compose up" you'll maintain the data and infrastructure.
 
-6. If you want down the volumens and remove the datas, you can use:
+In the screen you can see all the process of install. If there are any problem you can see this errors in the screen.
+
+If the last line you see one text like this, *exited whit code*:
+```
+  devicehub-teal-devicehub-id-client-1 exited with code 1
+```
+Then the install went wrong.
+
+6. If you want to down the volumes and remove the data, you can use:
 ```
   docker compose down -v
 ```
@@ -57,20 +67,20 @@ For stop the docker you can use Ctl+c and if you run again "compose up" you main
   docker run -it --entrypoint= ${target_docker_image} bash
 ```
 
-If you want to enter a shell on already running container:
+If you want to enter a shell on an already running container:
 ```
   docker exec -it ${target_docker_image} bash
 ```
 
-For to know the valid value for ${target_docker_image} you can use:
+To know the valid value for ${target_docker_image} you can use:
 ```
   docker ps
 ```
 
-8. This are the details for use this implementation:
+8. These are the details for use in this implementation:
 
-  *devicehub with port 5000* is the identity provider of oidc and have user *user5000@example.com*
+  *devicehub with port 5000* is the identity provider of OIDC and have user *user5000@example.com*
 
-  *devicehub with port 5001* is the client identity of oidc and have user *user5001@example.com*
+  *devicehub with port 5001* is the client identity of OIDC and have user *user5001@example.com*
 
-  You can change this values in the file *.env*
+  You can change these values in the *.env* file
