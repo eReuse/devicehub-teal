@@ -42,6 +42,7 @@ You can use these parameters for default as a test, but you need to add values i
   API_DLT_TOKEN
   API_RESOLVER
 ```
+You can use that .env as a default for a test deployment, but these variables need to be initialized. These values should come from a deployed [API_DLT connector](https://gitlab.com/dsg-upc/ereuse-dpp) service instance.
 
 5. run the dockers:
 ```
@@ -56,6 +57,14 @@ If the last line you see one text like this, *exited whit code*:
   devicehub-teal-devicehub-id-client-1 exited with code 1
 ```
 Then the install went wrong.
+
+If the deployment was end-to-end successful (two running Devicehub instances successfully connected to the DLT backend selected in the .env file), you can see this text in the last lines:
+```
+  devicehub-teal-devicehub-id-client-1  |  * Running on http://172.28.0.2:5000/ (Press CTRL+C to quit)
+  devicehub-teal-devicehub-id-server-1  |  * Running on all addresses.
+  devicehub-teal-devicehub-id-server-1  |    WARNING: This is a development server. Do not use it in a production deployment.
+  devicehub-teal-devicehub-id-server-1  |  * Running on http://172.28.0.5:5000/ (Press CTRL+C to quit)
+```
 
 6. If you want to down the volumes and remove the data, you can use:
 ```
