@@ -88,8 +88,14 @@ To know the valid value for ${target_docker_image} you can use:
 
 8. These are the details for use in this implementation:
 
-  *devicehub with port 5000* is the identity provider of OIDC and have user *user5000@example.com*
+  *devicehub with port 5000* (http://localhost:5000) is the identity provider of OIDC and have user *user5000@example.com*
 
-  *devicehub with port 5001* is the client identity of OIDC and have user *user5001@example.com*
+  *devicehub with port 5001* (http://localhost:5001) is the client identity of OIDC and have user *user5001@example.com*
 
   You can change these values in the *.env* file
+
+9. If you want use Workbench for this instances you need go to
+```
+  http://localhost:5001/workbench/
+```
+with the user demo and next download the settings and ISO files. Follow the instructions that appear on the [help](https://help.usody.com/en/setup/setup-pendrive/) page.
