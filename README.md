@@ -68,7 +68,9 @@ For to know the valid value for ${target_docker_image} you can use:
 ```
 
 8. This are the details for use this implementation:
+```
   *devicehub with port 5000* is the identity provider of oidc and have user *user5000@example.com*
   *devicehub with port 5001* is the client identity of oidc and have user *user5001@example.com*
+```
 
   You can change this values in the file *.env*
