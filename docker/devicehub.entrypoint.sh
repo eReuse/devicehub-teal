@@ -73,7 +73,8 @@ handle_federated_id() {
 
         # devicehub host and id federated checker
 
-        EXPECTED_ID_FEDERATED="$(curl -s "${API_RESOLVER}/getAll" \
+        # //getAll queries are not accepted by this service, so we remove them
+        EXPECTED_ID_FEDERATED="$(curl -s "${API_RESOLVER%/}/getAll" \
                 | jq -r '.url | to_entries | .[] | select(.value == "'"${DEVICEHUB_HOST}"'") | .key' \
                 | head -n 1)"
 
@@ -93,7 +94,7 @@ handle_federated_id() {
         fi
 
         # not needed, but reserved
-        # EXPECTED_DEVICEHUB_HOST="$(curl -s "${API_RESOLVER}/getAll" \
+        # EXPECTED_DEVICEHUB_HOST="$(curl -s "${API_RESOLVER%/}/getAll" \
         #         | jq -r '.url | to_entries | .[] | select(.key == "'"${ID_FEDERATED}"'") | .value' \
         #         | head -n 1)"
         # if [ ! "${EXPECTED_DEVICEHUB_HOST}" = "${DEVICEHUB_HOST}" ]; then
