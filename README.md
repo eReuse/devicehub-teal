@@ -16,24 +16,23 @@ There is a Docker compose file for an automated deployment. The next steps descr
 
 1. Download the sources:
 ```
-  git clone https://github.com/eReuse/devicehub-teal.git
+  git clone https://github.com/eReuse/devicehub-teal.git -b dpp
   cd devicehub-teal
 ```
 
-2. You need to decide on one directory in your system for sharing documents between your system and the dockers.
-As an example we use "/tmp/dhub/" and need to create it:
+2. If you want to initialize your DeviceHub instance with a sample device snapshot you can copy it into that directory. 
 ```
-  mkdir /tmp/dhub
-```
-
-3. If you want to initialize your DeviceHub instance with a sample device snapshot you can copy it into that directory. 
-```
-  cp examples/snapshot01.json /tmp/dhub
+  cp snapshot01.json examples/snapshots/
 ```
 
- Otherwise, the device inventory of your DeviceHub instance will be empty and ready to add new devices. To register new devices, the [workbench software](https://github.com/eReuse/workbench) can be run on a device to generate a hardware snapshot that can be uploaded to your DeviceHub instance.
+ Otherwise, the device inventory of your DeviceHub instance will be empty and ready to add new devices. For that you need to change the var to 'n' in the **.env** file
+```
+  IMPORT_SNAPSHOTS='n'
+```
 
-4. Modify the environment variables in the file .env You can find one example in examples/env.example.
+To register new devices, the [workbench software](https://github.com/eReuse/workbench) can be run on a device to generate a hardware snapshot that can be uploaded to your DeviceHub instance.
+
+3. Modify the environment variables in the file .env You can find one example in examples/env.example.
 If you don't have any, you can copy that example and modify the basic vars
 ```
   cp examples/env.example .env
@@ -46,7 +45,7 @@ You can use these parameters as default for a local test, but default values may
 ```
 These values should come from an already operational [API_DLT connector](https://gitlab.com/dsg-upc/ereuse-dpp) service instance.
 
-5. Run the docker containers:
+4. Run the docker containers:
 ```
   docker compose up
 ```
@@ -70,7 +69,7 @@ If the deployment was end-to-end successful (two running Devicehub instances suc
 
 That means the two Devicehub instances are running in their containers, that can be reached as http://localhost:5000/ and http://localhost:5001/
 
-6. To shut down the services and remove the corresponding data, you can use:
+5. To shut down the services and remove the corresponding data, you can use:
 ```
   docker compose down -v
 ```
@@ -90,15 +89,15 @@ To know the valid value for ${target_docker_image} you can use:
   docker ps
 ```
 
-8. These are the details for use in this implementation:
+6. These are the details for use in this implementation:
 
-  *Devicehub with port 5000* (http://localhost:5000) is the identity provider of OIDC and have user *user5000@example.com*
+  Devicehub with url (http://localhost:5000) is the identity provider of OIDC and have user defined in **.env** file with SERVER_ID_EMAIL_DEMO var.
 
-  *Devicehub with port 5001* (http://localhost:5001) is the client identity of OIDC and have user *user5001@example.com*
+  Devicehub with url (http://localhost:5001) is the client identity of OIDC and have user defined in **.env** file with SERVER_ID_EMAIL_DEMO var.
 
   You can change these values in the *.env* file
 
-9. If you want to use Workbench for these DeviceHub instances you need to go to
+7. If you want to use Workbench for these DeviceHub instances you need to go to
 ```
   http://localhost:5001/workbench/
 ```
