@@ -1,16 +1,18 @@
 # Devicehub
 
-Devicehub is a distributed IT Asset Management System focused on reusing digital devices, created under the project [eReuse.org](https://www.ereuse.org)
+Devicehub is a distributed IT Asset Management System focused on reusing digital devices, created under the [eReuse.org](https://www.ereuse.org) initiative.
 
-This README explains how to install and use Devicehub. [The documentation](http://devicehub.ereuse.org) explains the concepts and the API.
+This README explains how to install and use Devicehub. [The documentation](http://devicehub.ereuse.org) explains the concepts, usage and the API.
 
-Devicehub is built with [Teal](https://github.com/ereuse/teal) and [Flask](http://flask.pocoo.org).
+Devicehub is built with [Teal](https://github.com/ereuse/teal) and [Flask](http://flask.pocoo.org). 
+
+Devicehub relies on the existence of an [API_DLT connector](https://gitlab.com/dsg-upc/ereuse-dpp) verifiable data registry service, where certain operations are recorded to keep an external track record (ledger).
 
 # Installing
-Please visit the [Manual Installation](README_MANUAL_INSTALLATION.md) to understand the detailed steps to install it locally or deploy it on a server.
+Please visit the [Manual Installation](README_MANUAL_INSTALLATION.md) instructions to understand the detailed steps to install it locally or deploy it on a server.
 
 # Docker
-There is a Docker compose file for an automated deployment. In the next steps, we can see how to run and use it.
+There is a Docker compose file for an automated deployment. The next steps describe how to run and use it.
 
 1. Download the sources:
 ```
@@ -24,39 +26,39 @@ As an example we use "/tmp/dhub/" and need to create it:
   mkdir /tmp/dhub
 ```
 
-3. If you want to initialize your DeviceHub instance with sample device snapshop you can copy your snapshots, copy your snapshots in this directory. If you don't have any snapshots copy one of the example directory. Otherwise, the device inventory of your DeviceHub instance will be empty and ready to add new devices. To register new devices, the [workbench software](https://github.com/eReuse/workbench) can be run on a device to generate a hardware snapshot that can be uploaded to your DeviceHub instance.
-
-3. Copy your snapshots in this directory. If you don't have any snapshots copy one of the example directory.
+3. If you want to initialize your DeviceHub instance with a sample device snapshot you can copy it into that directory. 
 ```
   cp examples/snapshot01.json /tmp/dhub
 ```
 
-4. Modify the file with environment variables in the file .env You can see one example in examples/env
-If you don't have one, please copy the examples/env file and modify the basic vars
+ Otherwise, the device inventory of your DeviceHub instance will be empty and ready to add new devices. To register new devices, the [workbench software](https://github.com/eReuse/workbench) can be run on a device to generate a hardware snapshot that can be uploaded to your DeviceHub instance.
+
+4. Modify the environment variables in the file .env You can find one example in examples/env.example.
+If you don't have any, you can copy that example and modify the basic vars
 ```
   cp examples/env.example .env
 ```
-You can use these parameters for default as a test, but you need to add values in these three variables:
+You can use these parameters as default for a local test, but default values may not be suitable for an internet-exposed service for security reasons. However, these three variables need to be initialized:
 ```
   API_DLT
   API_DLT_TOKEN
   API_RESOLVER
 ```
-You can use that .env as a default for a test deployment, but these variables need to be initialized. These values should come from a deployed [API_DLT connector](https://gitlab.com/dsg-upc/ereuse-dpp) service instance.
+These values should come from an already operational [API_DLT connector](https://gitlab.com/dsg-upc/ereuse-dpp) service instance.
 
-5. run the dockers:
+5. Run the docker containers:
 ```
   docker compose up
 ```
-To stop the dockers you can use Ctl+C, and if you run again "compose up" you'll maintain the data and infrastructure.
+To stop these docker containers you can use Ctl+C, and if you run again "compose up" you'll maintain the data and infrastructure state.
 
-In the screen you can see all the process of install. If there are any problem you can see this errors in the screen.
+On the terminal screen, you can follow the installation steps. If there are any problems, error messages will appear here. The appearance of several warnings is normal and can be ignored.
 
 If the last line you see one text like this, *exited whit code*:
 ```
   devicehub-teal-devicehub-id-client-1 exited with code 1
 ```
-Then the install went wrong.
+means the installation failed.
 
 If the deployment was end-to-end successful (two running Devicehub instances successfully connected to the DLT backend selected in the .env file), you can see this text in the last lines:
 ```
@@ -66,17 +68,20 @@ If the deployment was end-to-end successful (two running Devicehub instances suc
   devicehub-teal-devicehub-id-server-1  |  * Running on http://172.28.0.5:5000/ (Press CTRL+C to quit)
 ```
 
-6. If you want to down the volumes and remove the data, you can use:
+That means the two Devicehub instances are running in their containers, that can be reached as http://localhost:5000/ and http://localhost:5001/
+
+6. To shut down the services and remove the corresponding data, you can use:
 ```
   docker compose down -v
 ```
 
-7. If you want to enter a shell inside a new container:
+If you want to enter a shell inside a container:
+If you want to enter a shell inside a **new instance of the container**:
 ```
   docker run -it --entrypoint= ${target_docker_image} bash
 ```
 
-If you want to enter a shell on an already running container:
+If you want to enter a shell on an **already running container**:
 ```
   docker exec -it ${target_docker_image} bash
 ```
@@ -88,14 +93,14 @@ To know the valid value for ${target_docker_image} you can use:
 
 8. These are the details for use in this implementation:
 
-  *devicehub with port 5000* (http://localhost:5000) is the identity provider of OIDC and have user *user5000@example.com*
+  *Devicehub with port 5000* (http://localhost:5000) is the identity provider of OIDC and have user *user5000@example.com*
 
-  *devicehub with port 5001* (http://localhost:5001) is the client identity of OIDC and have user *user5001@example.com*
+  *Devicehub with port 5001* (http://localhost:5001) is the client identity of OIDC and have user *user5001@example.com*
 
   You can change these values in the *.env* file
 
-9. If you want use Workbench for this instances you need go to
+9. If you want to use Workbench for these DeviceHub instances you need to go to
 ```
   http://localhost:5001/workbench/
 ```
-with the user demo and next download the settings and ISO files. Follow the instructions that appear on the [help](https://help.usody.com/en/setup/setup-pendrive/) page.
+with the demo user and then download the settings and ISO files. Follow the instructions that appear on the [help](https://help.usody.com/en/setup/setup-pendrive/) page.
