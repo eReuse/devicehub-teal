@@ -32,3 +32,17 @@ docker:
 	$(MAKE) docker_build
 	$(MAKE) docker_publish
 	@printf "\ndocker images published\n"
+
+# manage 2 kinds of deployments with docker compose
+
+dc_up_devicehub:
+	docker compose -f docker-compose_devicehub.yml up || true
+
+dc_down_devicehub:
+	docker compose -f docker-compose_devicehub.yml down -v || true
+
+dc_up_devicehub_dpp:
+	docker compose -f docker-compose_devicehub-dpp.yml up || true
+
+dc_down_devicehub_dpp:
+	docker compose -f docker-compose_devicehub-dpp.yml down -v || true

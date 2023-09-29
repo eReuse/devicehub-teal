@@ -7,16 +7,24 @@ set -x
 
 # 3. Generate an environment .env file.
 gen_env_vars() {
-        # generate config using env vars from docker
-        cat > .env <<END
-DB_USER='${DB_USER}'
-DB_PASSWORD='${DB_PASSWORD}'
-DB_HOST='${DB_HOST}'
-DB_DATABASE='${DB_DATABASE}'
+        # specific dpp env vars
+        if [ "${DPP_MODULE}" = 'y' ]; then
+                dpp_env_vars="$(cat <<END
 API_DLT='${API_DLT}'
 API_DLT_TOKEN='${API_DLT_TOKEN}'
 API_RESOLVER='${API_RESOLVER}'
 ID_FEDERATED='${ID_FEDERATED}'
+END
+)"
+        fi
+
+        # generate config using env vars from docker
+        cat > .env <<END
+${dpp_env_vars:-}
+DB_USER='${DB_USER}'
+DB_PASSWORD='${DB_PASSWORD}'
+DB_HOST='${DB_HOST}'
+DB_DATABASE='${DB_DATABASE}'
 URL_MANUALS='${URL_MANUALS}'
 
 HOST='${HOST}'
@@ -145,33 +153,48 @@ config_oidc() {
         fi
 }
 
+config_dpp_part1() {
+        # 12. Add a new server to the 'api resolver'
+        handle_federated_id
+
+        # 13. Do a rsync api resolve
+        flask dlt_rsync_members
+
+        # 14. Register a new user to the DLT
+        flask dlt_register_user "${EMAIL_DEMO}" ${PASSWORD_DEMO} Operator
+}
+
+config_dpp_part2() {
+        # 16.
+        flask check_install "${EMAIL_DEMO}" ${PASSWORD_DEMO}
+        # 20. config server or client ID
+        config_oidc
+}
+
 config_phase() {
         init_flagfile='/already_configured'
         if [ ! -f "${init_flagfile}" ]; then
                 # 7, 8, 9, 11
                 init_data
 
-                # 12. Add a new server to the 'api resolver'
-                handle_federated_id
-
-                # 13. Do a rsync api resolve
-                flask dlt_rsync_members
-
-                # 14. Register a new user to the DLT
-                flask dlt_register_user "${EMAIL_DEMO}" ${PASSWORD_DEMO} Operator
+                if [ "${DPP_MODULE}" = 'y' ]; then
+                        # 12, 13, 14
+                        config_dpp_part1
+                fi
 
                 # non DL user (only for the inventory)
                 #   flask adduser user2@dhub.com ${PASSWORD_DEMO}
 
                 # # 15. Add inventory snapshots for user "${EMAIL_DEMO}".
-                cp /mnt/snapshots/snapshot*.json ereuse_devicehub/commands/snapshot_files
-                /usr/bin/time flask snapshot "${EMAIL_DEMO}" ${PASSWORD_DEMO}
+                if [ "${IMPORT_SNAPSHOTS}" = 'y' ]; then
+                        cp /mnt/snapshots/snapshot*.json ereuse_devicehub/commands/snapshot_files
+                        /usr/bin/time flask snapshot "${EMAIL_DEMO}" ${PASSWORD_DEMO}
+                fi
 
-                # # 16.
-                flask check_install "${EMAIL_DEMO}" ${PASSWORD_DEMO}
-
-                # config server or client ID
-                config_oidc
+                if [ "${DPP_MODULE}" = 'y' ]; then
+                        # 16, 20
+                        config_dpp_part2
+                fi
 
                 # remain next command as the last operation for this if conditional
                 touch "${init_flagfile}"
