@@ -75,7 +75,6 @@ That means the two Devicehub instances are running in their containers, that can
   docker compose down -v
 ```
 
-If you want to enter a shell inside a container:
 If you want to enter a shell inside a **new instance of the container**:
 ```
   docker run -it --entrypoint= ${target_docker_image} bash
