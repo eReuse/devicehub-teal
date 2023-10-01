@@ -1050,7 +1050,7 @@ def test_action_deallocate(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert dev.binding.device.allocated_status.type == 'Allocate'
+    assert dev.binding.device.allocated_status().type == 'Allocate'
 
     data = {
         'csrf_token': generate_csrf(),
@@ -1063,7 +1063,7 @@ def test_action_deallocate(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.binding.device.allocated_status.type == 'Deallocate'
+    assert dev.binding.device.allocated_status().type == 'Deallocate'
     assert 'Action &#34;Deallocate&#34; created successfully!' in body
     assert dev.binding.device.devicehub_id in body
 
@@ -1089,7 +1089,7 @@ def test_action_deallocate_error(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert dev.binding.device.allocated_status.type == 'Allocate'
+    assert dev.binding.device.allocated_status().type == 'Allocate'
 
     data = {
         'csrf_token': generate_csrf(),
@@ -1102,7 +1102,7 @@ def test_action_deallocate_error(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.binding.device.allocated_status.type != 'Deallocate'
+    assert dev.binding.device.allocated_status().type != 'Deallocate'
     assert 'Action Deallocate error!' in body
     assert 'Error, some of this devices are actually deallocate' in body
 
@@ -1128,7 +1128,7 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
     uri = '/inventory/action/allocate/add/'
 
     user3.post(uri, data=data)
-    assert dev.binding.device.allocated_status.type == 'Allocate'
+    assert dev.binding.device.allocated_status().type == 'Allocate'
     assert len(dev.binding.device.actions) == 1
 
     data = {
@@ -1142,7 +1142,7 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
     }
     body, status = user3.post(uri, data=data)
     assert status == '200 OK'
-    assert dev.binding.device.allocated_status.type == 'Deallocate'
+    assert dev.binding.device.allocated_status().type == 'Deallocate'
     assert len(dev.binding.device.actions) == 2
 
     # is not possible to do an allocate between an allocate and an deallocate
@@ -1157,7 +1157,7 @@ def test_action_allocate_deallocate_error(user3: UserClientFlask):
     }
 
     user3.post(uri, data=data)
-    assert dev.binding.device.allocated_status.type == 'Deallocate'
+    assert dev.binding.device.allocated_status().type == 'Deallocate'
 
     data = {
         'csrf_token': generate_csrf(),

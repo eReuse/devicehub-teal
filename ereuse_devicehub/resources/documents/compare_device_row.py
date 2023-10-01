@@ -37,6 +37,8 @@ class BaseDeviceRow(OrderedDict):
         self['PHID'] = ''
         self['DHID'] = ''
         self['Type'] = ''
+        self['Compare Status'] = ''
+        self['Physical State'] = ''
         self['Temporary Lots'] = ''
         self['Incoming Lots'] = ''
         self['Outgoing Lots'] = ''
@@ -44,6 +46,8 @@ class BaseDeviceRow(OrderedDict):
         self['Placeholder Id Supplier'] = ''
         self['Placeholder Id Internal'] = ''
         self['Placeholder Info'] = ''
+        self['Appearance'] = ''
+        self['Functionality'] = ''
         self['Placeholder Components'] = ''
         self['Placeholder Type'] = ''
         self['Placeholder Serial Number'] = ''
@@ -558,12 +562,17 @@ class DeviceRow(BaseDeviceRow):
         # Placeholder
         self['PHID'] = none2str(self.placeholder.phid)
         self['Type'] = none2str(self.device.is_abstract())
+        self['Compare Status'] = none2str(self.placeholder.compare_status())
+        self['Compare Date'] = none2str(self.placeholder.compare_date())
+        self['Physical State'] = none2str(self.placeholder.device.physical_state())
         self['Temporary Lots'] = none2str(self.device.get_lots_from_type('temporary'))
         self['Incoming Lots'] = none2str(self.device.get_lots_from_type('incoming'))
         self['Outgoing Lots'] = none2str(self.device.get_lots_from_type('outgoing'))
         self['Placeholder Pallet'] = none2str(self.placeholder.pallet)
         self['Placeholder Id Supplier'] = none2str(self.placeholder.id_device_supplier)
         self['Placeholder Id Internal'] = none2str(self.placeholder.id_device_internal)
+        self['Appearance'] = none2str(self.placeholder.device.appearance)
+        self['Functionality'] = none2str(self.placeholder.functionality)
         self['Placeholder Info'] = none2str(self.placeholder.info)
         self['Placeholder Components'] = none2str(self.placeholder.components)
         self['Placeholder Type'] = none2str(self.placeholder.device.type)
@@ -591,7 +600,7 @@ class StockRow(OrderedDict):
         self['Manufacturer'] = none2str(device.manufacturer)
         self['Registered in'] = format(device.created, '%c')
         self['Physical state'] = ''
-        if device.physical_status():
+        if device.physical_status:
             self['Physical state'] = device.physical_status().type
 
         self['Allocate state'] = ''

@@ -330,9 +330,9 @@
                          {% if not loop.last %},{% endif %}
                         {% endfor %}
                       </td>
-                      <td>{% if dev.status %}{{ dev.status.type }}{% endif %}</td>
-                      <td>{% if dev.allocated_status %}{{ dev.allocated_status.type }}{% endif %}</td>
-                      <td>{% if dev.physical_status %}{{ dev.physical_status.type }}{% endif %}</td>
+                      <td>{% if dev.status() %}{{ dev.status().type }}{% endif %}</td>
+                      <td>{% if dev.allocated_status() %}{{ dev.allocated_status().type }}{% endif %}</td>
+                      <td>{% if dev.physical_status() %}{{ dev.physical_status().type }}{% endif %}</td>
                       <td>{{ dev.updated.strftime('%Y-%m-%d %H:%M:%S')}}</td>
                       <td>{{ dev.created.strftime('%Y-%m-%d %H:%M:%S')}}</td>
                       <td>

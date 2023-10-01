@@ -3,6 +3,7 @@ import csv
 import datetime
 import logging
 import os
+import re
 import uuid
 from io import StringIO
 from pathlib import Path
@@ -225,6 +226,13 @@ class DeviceDetailView(GenericMixin):
         placeholder = device.binding or device.placeholder
         if not placeholder:
             return NotFound()
+
+        date = request.args.get('date', "")
+        pattern = r'(\d{4})-(\d{2})-(\d{2})_(\d{2})_(\d{2})'
+        if re.match(pattern, date):
+            placeholder.device.close_device(date)
+            if placeholder.binding:
+                placeholder.binding.close_device(date)
 
         self.context.update(
             {
@@ -1002,6 +1010,7 @@ class ExportsView(View):
         export_ids = {
             'metrics': self.metrics,
             'devices': self.devices_list,
+            'compare_devices': self.compare_devices_list,
             'actions_erasures': self.actions_erasures,
             'certificates': self.erasure,
             'lots': self.lots_export,
@@ -1052,7 +1061,17 @@ class ExportsView(View):
         )
         first = True
 
+        lot_id = request.args.get('lot_id')
+        lot = Lot.query.filter_by(id=lot_id).first()
+        date_close = None
+        if lot and lot.get_closed():
+            date_close = lot.get_closed()
+
         for device in self.find_devices():
+            if date_close:
+                device.close_device(date_close)
+                if device.placeholder and device.placeholder.binding:
+                    device.placeholder.binding.close_device(date_close)
             d = DeviceRow(device, {})
             if first:
                 cw.writerow(d.keys())
@@ -1060,6 +1079,46 @@ class ExportsView(View):
             cw.writerow(d.values())
 
         return self.response_csv(data, "export.csv")
+
+    def compare_devices_list(self):
+        """Get device query and put information in csv format."""
+        data = StringIO()
+        cw = csv.writer(
+            data,
+            delimiter=';',
+            lineterminator="\n",
+            quotechar='"',
+            quoting=csv.QUOTE_ALL,
+        )
+        first = True
+
+        lot_id = request.args.get('lot_id')
+        lot = Lot.query.filter_by(id=lot_id).first()
+        date_close = None
+        if lot and lot.get_closed():
+            date_close = lot.get_closed()
+
+        for device in self.find_devices():
+            if date_close:
+                device.close_device(date_close)
+                if device.placeholder and device.placeholder.binding:
+                    device.placeholder.binding.close_device(date_close)
+                d = DeviceRow(device, {})
+                if first:
+                    cw.writerow(d.keys())
+                    first = False
+                cw.writerow(d.values())
+                device.open_device()
+                if device.placeholder and device.placeholder.binding:
+                    device.placeholder.binding.open_device()
+
+            d = DeviceRow(device, {})
+            if first:
+                cw.writerow(d.keys())
+                first = False
+            cw.writerow(d.values())
+
+        return self.response_csv(data, "compare_export.csv")
 
     def obada_standard_export(self):
         """Get device information for Obada Standard."""

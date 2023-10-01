@@ -415,15 +415,15 @@ def test_history_status_actions(user: UserClient, user2: UserClient):
     action, _ = user.post(action, res=models.Action)
 
     assert str(device.actions[-1].id) == action['id']
-    assert action['id'] == str(device.status.id)
-    assert device.status.t == models.Recycling.t
+    assert action['id'] == str(device.status().id)
+    assert device.status().t == models.Recycling.t
     assert [action['id']] == [str(ac.id) for ac in device.history_status]
 
     # Case 2
     action2 = {'type': models.Refurbish.t, 'devices': [device.id]}
     action2, _ = user.post(action2, res=models.Action)
-    assert action2['id'] == str(device.status.id)
-    assert device.status.t == models.Refurbish.t
+    assert action2['id'] == str(device.status().id)
+    assert device.status().t == models.Refurbish.t
     assert [action2['id']] == [str(ac.id) for ac in device.history_status]
 
     # Case 3
@@ -446,8 +446,8 @@ def test_history_status_actions(user: UserClient, user2: UserClient):
     user.post(res=models.Action, data=request_post)
     action3 = {'type': models.Use.t, 'devices': [device.id]}
     action3, _ = user.post(action3, res=models.Action)
-    assert action3['id'] == str(device.status.id)
-    assert device.status.t == models.Use.t
+    assert action3['id'] == str(device.status().id)
+    assert device.status().t == models.Use.t
     assert [action2['id'], action3['id']] == [
         str(ac.id) for ac in device.history_status
     ]
@@ -493,8 +493,8 @@ def test_use_changing_owner(user: UserClient, user2: UserClient):
     # Adding action Use
     action3 = {'type': models.Use.t, 'devices': [device.id]}
     action3, _ = user.post(action3, res=models.Action)
-    assert action3['id'] == str(device.status.id)
-    assert device.status.t == models.Use.t
+    assert action3['id'] == str(device.status().id)
+    assert device.status().t == models.Use.t
     assert device.owner.email == user2.email
 
 

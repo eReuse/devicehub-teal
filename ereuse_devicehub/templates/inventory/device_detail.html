@@ -290,24 +290,24 @@
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Physical State</div>
                 <div class="col-lg-9 col-md-8">
-                    {% if placeholder.device.physical_status %}
-                    {{ placeholder.device.physical_status.type }}
+                    {% if placeholder.device.physical_status() %}
+                    {{ placeholder.device.physical_status().type }}
                     {% endif %}
                 </div>
               </div>
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Lifecycle State</div>
                 <div class="col-lg-9 col-md-8">
-                    {% if placeholder.device.status %}
-                    {{ placeholder.device.status.type }}
+                    {% if placeholder.device.status() %}
+                    {{ placeholder.device.status().type }}
                     {% endif %}
                 </div>
               </div>
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Allocated State</div>
                 <div class="col-lg-9 col-md-8">
-                    {% if placeholder.device.allocated_status %}
-                    {{ placeholder.device.allocated_status.type }}
+                    {% if placeholder.device.allocated_status() %}
+                    {{ placeholder.device.allocated_status().type }}
                     {% endif %}
                 </div>
               </div>
@@ -334,7 +334,7 @@
               {% if placeholder.binding %}
               <h5 class="card-title">Components Snapshot</h5>
               <div class="list-group col-6">
-                {% for component in placeholder.binding.components|sort(attribute='type') %}
+                {% for component in placeholder.binding.get_components()|sort(attribute='type') %}
                 <div class="list-group-item">
                   <div class="d-flex w-100 justify-content-between">
                     <h5 class="mb-1">{{ component.type }}</h5>

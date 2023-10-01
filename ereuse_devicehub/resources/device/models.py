@@ -6,6 +6,7 @@ import os
 import pathlib
 import uuid
 from contextlib import suppress
+from datetime import datetime
 from fractions import Fraction
 from itertools import chain
 from operator import attrgetter
@@ -227,6 +228,8 @@ class Device(Thing):
         'receiver_id',
     }
 
+    _date_close = None
+
     __table_args__ = (
         db.Index('device_id', id, postgresql_using='hash'),
         db.Index('type_index', type, postgresql_using='hash'),
@@ -383,8 +386,7 @@ class Device(Thing):
         with suppress(LookupError, ValueError):
             return self.last_action_of(*states.Trading.actions())
 
-    @property
-    def allocated_status(self):
+    def allocated_status(self, closed=None):
         """Show the actual status of device.
         The status depend of one of this 3 actions:
             - Allocate
@@ -393,11 +395,18 @@ class Device(Thing):
         """
         from ereuse_devicehub.resources.device import states
 
-        with suppress(LookupError, ValueError):
-            return self.last_action_of(*states.Usage.actions())
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        for e in reversed(actions):
+            if not isinstance(e, tuple(states.Usage.actions())):
+                continue
+            if closed:
+                if e.created < closed:
+                    return e
+            else:
+                return e
 
-    @property
-    def physical_status(self):
+    def physical_status(self, closed=None):
         """Show the actual status of device for this owner.
         The status depend of one of this 4 actions:
             - ToPrepare
@@ -408,11 +417,18 @@ class Device(Thing):
         """
         from ereuse_devicehub.resources.device import states
 
-        with suppress(LookupError, ValueError):
-            return self.last_action_of(*states.Physical.actions())
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        for e in reversed(actions):
+            if not isinstance(e, tuple(states.Physical.actions())):
+                continue
+            if closed:
+                if e.created < closed:
+                    return e
+            else:
+                return e
 
-    @property
-    def status(self):
+    def status(self, closed=None):
         """Show the actual status of device for this owner.
         The status depend of one of this 4 actions:
             - Use
@@ -422,8 +438,16 @@ class Device(Thing):
         """
         from ereuse_devicehub.resources.device import states
 
-        with suppress(LookupError, ValueError):
-            return self.last_action_of(*states.Status.actions())
+        actions = copy.copy(self.actions)
+        actions.sort(key=lambda x: x.created)
+        for e in reversed(actions):
+            if not isinstance(e, tuple(states.Status.actions())):
+                continue
+            if closed:
+                if e.created < closed:
+                    return e
+            else:
+                return e
 
     @property
     def history_status(self):
@@ -1071,6 +1095,71 @@ class Device(Thing):
     def is_mobile(self):
         return isinstance(self, Mobile)
 
+    def close_device(self, date, normalize="%Y-%m-%d_%H_%M"):
+        if isinstance(date, datetime):
+            self._date_close = date
+
+        if isinstance(date, str):
+            try:
+                self._date_close = datetime.strptime(date, normalize)
+            except Exception as err:
+                logger.error(err)
+                txt = "Date: {} normalize: {}".format(date, normalize)
+                logger.error(txt)
+                return
+
+        if isinstance(date, int):
+            self._date_close = datetime.datetime.fromtimestamp(date)
+
+        self._date_close = self._date_close.replace(tzinfo=self.created.tzinfo)
+
+    def open_device(self):
+        self._date_close = None
+
+    def get_close_device(self):
+        return self._date_close
+
+    def get_components(self):
+        if not isinstance(self, Computer):
+            return []
+
+        if not self._date_close:
+            return self.components
+
+        snapshot = self.get_snapshot_close()
+        if not snapshot:
+            return []
+
+        return snapshot.components
+
+    def get_actions(self):
+        if not self._date_close:
+            return self.actions
+
+        snapshot = self.get_snapshot_close()
+        if not snapshot:
+            return []
+
+        actions = []
+        for x in self.actions:
+            if x.created <= snapshot.created or x in snapshot.actions:
+                actions.append(x)
+        return actions
+
+    def get_snapshot_close(self):
+        snapshots = [x for x in self.actions if x.type == 'Snapshot']
+        snapshots = sorted(snapshots, key=lambda x: x.created, reverse=True)
+
+        if not snapshots:
+            return
+
+        if not self._date_close:
+            return snapshots[0]
+
+        for x in snapshots:
+            if x.created < self._date_close:
+                return x
+
     def __lt__(self, other):
         return self.id < other.id
 
@@ -1224,10 +1313,10 @@ class Placeholder(Thing):
 
     @property
     def actions(self):
-        actions = list(self.device.actions) or []
+        actions = list(self.device.get_actions()) or []
 
         if self.binding:
-            actions.extend(list(self.binding.actions))
+            actions.extend(list(self.binding.get_actions()))
 
         actions = sorted(actions, key=lambda x: x.created)
         actions.reverse()
@@ -1247,6 +1336,47 @@ class Placeholder(Thing):
         if self.binding:
             return docs.union(self.binding.documents)
         return docs
+
+    def compare_status(self):
+        close = None
+        if self.device._date_close:
+            close = self.device._date_close
+        if self.binding and self.binding._date_close:
+            close = self.binding._date_close
+        if not close:
+            return "Actual"
+
+        lots = [lot for lot in self.device.lots]
+        lots.reverse()
+
+        for lot in lots:
+            if lot.transfer and lot.transefer.date:
+                date = lot.transefer.date.replace(tzinfo=close.tzinfo)
+
+    def compare_date(self):
+        if self.binding and self.binding._date_close:
+            return self.binding._date_close
+
+        if self.device._date_close:
+            return self.device._date_close
+
+        return datetime.datetime.now()
+
+    def physical_status(self, closed=None):
+        if self.binding and self.binding._date_close:
+            date = self.binding._date_close
+            state = self.binding.physical_status(closed=date)
+            if state:
+                return state
+
+            state = self.device.physical_status(closed=date)
+            if state:
+                return state
+        if self.device._date_close:
+            date = self.device._date_close
+            state = self.device.physical_status(closed=date)
+            if state:
+                return state
 
 
 class Computer(Device):
