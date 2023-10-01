@@ -1114,7 +1114,7 @@ class Device(Thing):
         self._date_close = self._date_close.replace(tzinfo=self.created.tzinfo)
 
     def open_device(self):
-        self._data_close = None
+        self._date_close = None
 
     def get_close_device(self):
         return self._date_close

@@ -1070,6 +1070,8 @@ class ExportsView(View):
         for device in self.find_devices():
             if date_close:
                 device.close_device(date_close)
+                if device.placeholder and device.placeholder.binding:
+                    device.placeholder.binding.close_device(date_close)
             d = DeviceRow(device, {})
             if first:
                 cw.writerow(d.keys())
@@ -1099,12 +1101,16 @@ class ExportsView(View):
         for device in self.find_devices():
             if date_close:
                 device.close_device(date_close)
+                if device.placeholder and device.placeholder.binding:
+                    device.placeholder.binding.close_device(date_close)
                 d = DeviceRow(device, {})
                 if first:
                     cw.writerow(d.keys())
                     first = False
                 cw.writerow(d.values())
                 device.open_device()
+                if device.placeholder and device.placeholder.binding:
+                    device.placeholder.binding.open_device()
 
             d = DeviceRow(device, {})
             if first:
