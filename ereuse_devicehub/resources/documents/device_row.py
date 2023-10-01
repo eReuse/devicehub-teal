@@ -591,7 +591,7 @@ class StockRow(OrderedDict):
         self['Manufacturer'] = none2str(device.manufacturer)
         self['Registered in'] = format(device.created, '%c')
         self['Physical state'] = ''
-        if device.physical_status:
+        if device.physical_status():
             self['Physical state'] = device.physical_status().type
 
         self['Allocate state'] = ''
