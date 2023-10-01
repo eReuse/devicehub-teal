@@ -290,24 +290,24 @@
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Physical State</div>
                 <div class="col-lg-9 col-md-8">
-                    {% if placeholder.device.physical_status %}
-                    {{ placeholder.device.physical_status.type }}
+                    {% if placeholder.device.physical_status() %}
+                    {{ placeholder.device.physical_status().type }}
                     {% endif %}
                 </div>
               </div>
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Lifecycle State</div>
                 <div class="col-lg-9 col-md-8">
-                    {% if placeholder.device.status %}
-                    {{ placeholder.device.status.type }}
+                    {% if placeholder.device.status() %}
+                    {{ placeholder.device.status().type }}
                     {% endif %}
                 </div>
               </div>
               <div class="row">
                 <div class="col-lg-3 col-md-4 label">Allocated State</div>
                 <div class="col-lg-9 col-md-8">
-                    {% if placeholder.device.allocated_status %}
-                    {{ placeholder.device.allocated_status.type }}
+                    {% if placeholder.device.allocated_status() %}
+                    {{ placeholder.device.allocated_status().type }}
                     {% endif %}
                 </div>
               </div>
