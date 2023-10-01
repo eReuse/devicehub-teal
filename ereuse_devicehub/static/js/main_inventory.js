@@ -304,7 +304,7 @@ function export_file(type_file, lot_id) {
     const devices = TableController.getSelectedDevices();
     const devices_id = $.map(devices, (x) => $(x).attr("data-device-dhid")).join(",");
     if (devices_id) {
-        var url = "/inventory/export/"
+        let url = "/inventory/export/"
           .concat(type_file, "/?ids=")
           .concat(devices_id);
 
