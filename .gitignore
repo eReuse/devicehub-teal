@@ -135,4 +135,8 @@ env*
 examples/create-db2.sh
 package-lock.json
 snapshots/
+!examples/snapshots
 modules/
+
+# emacs
+*~

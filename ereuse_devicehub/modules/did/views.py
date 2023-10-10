@@ -11,7 +11,7 @@ from flask.json import jsonify
 from flask.views import View
 
 from ereuse_devicehub import __version__
-from ereuse_devicehub.modules.dpp.models import Dpp
+from ereuse_devicehub.modules.dpp.models import Dpp, ALGORITHM
 from ereuse_devicehub.resources.device.models import Device
 
 logger = logging.getLogger(__name__)
@@ -170,8 +170,9 @@ class DidView(View):
         data = {
             'document': {},
             'dpp': self.id_dpp,
-            'algorithm': "sha3_256",
+            'algorithm': ALGORITHM,
             'components': components,
+            'manufacturer DPP': '',
         }
         result = {
             '@context': ['https://ereuse.org/dpp0.json'],
@@ -197,7 +198,8 @@ class DidView(View):
             rr = {
                 'dpp': d.key,
                 'document': d.snapshot.json_hw,
-                'algorithm': "sha3_256",
+                'algorithm': ALGORITHM,
+                'manufacturer DPP': '',
             }
             dpps.append(rr)
         return {

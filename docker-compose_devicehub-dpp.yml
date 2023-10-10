@@ -1,0 +1,99 @@
+version: "3.9"
+services:
+
+  devicehub-id-server:
+    init: true
+    image: dkr-dsg.ac.upc.edu/ereuse/devicehub:dpp__bcb4c696
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=postgres-id-server
+      - DB_DATABASE=${DB_DATABASE}
+      - HOST=${HOST}
+      - EMAIL_DEMO=${SERVER_ID_EMAIL_DEMO}
+      - PASSWORD_DEMO=${PASSWORD_DEMO}
+      - JWT_PASS=${JWT_PASS}
+      - SECRET_KEY=${SECRET_KEY}
+      - API_DLT=${API_DLT}
+      - API_RESOLVER=${API_RESOLVER}
+      - API_DLT_TOKEN=${API_DLT_TOKEN}
+      - DEVICEHUB_HOST=${SERVER_ID_DEVICEHUB_HOST}
+      - ID_FEDERATED=${SERVER_ID_FEDERATED}
+      - URL_MANUALS=${URL_MANUALS}
+      - ID_SERVICE=${SERVER_ID_SERVICE}
+      - AUTHORIZED_CLIENT_URL=${CLIENT_ID_DEVICEHUB_HOST}
+      - DPP_MODULE=y
+      - IMPORT_SNAPSHOTS=${IMPORT_SNAPSHOTS}
+    ports:
+      - 5000:5000
+    volumes:
+      - ${SNAPSHOTS_PATH:-./examples/snapshots}:/mnt/snapshots:ro
+      - shared:/shared:rw
+
+  postgres-id-server:
+    image: dkr-dsg.ac.upc.edu/ereuse/postgres:dpp__bcb4c696
+    # 4. To create the database.
+    # 5. Give permissions to the corresponding users in the database.
+    #   extra src https://github.com/docker-library/docs/blob/master/postgres/README.md#environment-variables
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_DATABASE}
+    # DEBUG
+    #ports:
+    #  - 5432:5432
+    # TODO persistence
+    #volumes:
+    #  - pg_data:/var/lib/postgresql/data
+
+  devicehub-id-client:
+    init: true
+    image: dkr-dsg.ac.upc.edu/ereuse/devicehub:dpp__bcb4c696
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=postgres-id-client
+      - DB_DATABASE=${DB_DATABASE}
+      - HOST=${HOST}
+      - EMAIL_DEMO=${CLIENT_ID_EMAIL_DEMO}
+      - PASSWORD_DEMO=${PASSWORD_DEMO}
+      - JWT_PASS=${JWT_PASS}
+      - SECRET_KEY=${SECRET_KEY}
+      - API_DLT=${API_DLT}
+      - API_RESOLVER=${API_RESOLVER}
+      - API_DLT_TOKEN=${API_DLT_TOKEN}
+      - DEVICEHUB_HOST=${CLIENT_ID_DEVICEHUB_HOST}
+      - SERVER_ID_HOST=${SERVER_ID_DEVICEHUB_HOST}
+      - ID_FEDERATED=${CLIENT_ID_FEDERATED}
+      - URL_MANUALS=${URL_MANUALS}
+      - ID_SERVICE=${CLIENT_ID_SERVICE}
+      - DPP_MODULE=y
+      - IMPORT_SNAPSHOTS=${IMPORT_SNAPSHOTS}
+    ports:
+      - 5001:5000
+    volumes:
+      - ${SNAPSHOTS_PATH:-./examples/snapshots}:/mnt/snapshots:ro
+      - shared:/shared:ro
+
+  postgres-id-client:
+    image: dkr-dsg.ac.upc.edu/ereuse/postgres:dpp__bcb4c696
+    # 4. To create the database.
+    # 5. Give permissions to the corresponding users in the database.
+    #   extra src https://github.com/docker-library/docs/blob/master/postgres/README.md#environment-variables
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_DATABASE}
+    # DEBUG
+    #ports:
+    #  - 5432:5432
+    # TODO persistence
+    #volumes:
+    #  - pg_data:/var/lib/postgresql/data
+
+
+    # TODO https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
+    #nginx
+
+volumes:
+  shared:

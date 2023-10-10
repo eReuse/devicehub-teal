@@ -105,3 +105,6 @@ class DevicehubConfig(Config):
     OAUTH2_JWT_ISS = config('OAUTH2_JWT_ISS', '')
     OAUTH2_JWT_KEY = config('OAUTH2_JWT_KEY', None)
     OAUTH2_JWT_ALG = config('OAUTH2_JWT_ALG', 'HS256')
+
+    if API_DLT:
+        API_DLT = API_DLT.strip("/")

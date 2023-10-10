@@ -983,13 +983,17 @@ class Device(Thing):
             snapshot = [x for x in self.actions if x.t == 'Snapshot']
             if not snapshot:
                 return
+            snapshot = snapshot[0]
 
             d = {
                 "type": PROOF_ENUM['Register'],
                 "device": self,
-                "action": snapshot[0],
+                "action": snapshot,
                 "timestamp": timestamp,
                 "issuer_id": g.user.id,
+                "documentId": snapshot.id,
+                "documentSignature": snapshot.phid_dpp,
+                "normalizeDoc": snapshot.json_hw,
             }
             proof = Proof(**d)
             db.session.add(proof)

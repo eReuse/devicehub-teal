@@ -12,6 +12,10 @@ from ereuse_devicehub.resources.models import STR_SM_SIZE, Thing
 from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.teal.db import CASCADE_OWN
 
+
+ALGORITHM = "sha3_256"
+
+
 PROOF_ENUM = {
     'Register': 'Register',
     'IssueDPP': 'IssueDPP',
@@ -20,7 +24,11 @@ PROOF_ENUM = {
     'EWaste': 'EWaste',
 }
 
-_sorted_proofs = {'order_by': lambda: Proof.created, 'collection_class': SortedSet}
+
+_sorted_proofs = {
+    'order_by': lambda: Proof.created,
+    'collection_class': SortedSet
+}
 
 
 class Proof(Thing):

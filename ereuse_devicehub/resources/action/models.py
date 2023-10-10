@@ -509,11 +509,11 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
     def register_proof(self):
         """This method is used for register a proof of erasure en dlt."""
-        from ereuse_devicehub.modules.dpp.models import PROOF_ENUM
+        from ereuse_devicehub.modules.dpp.models import PROOF_ENUM, ALGORITHM
 
         deviceCHID = self.device.chid
         docHash = self.snapshot.phid_dpp
-        docHashAlgorithm = 'sha3_256'
+        docHashAlgorithm = ALGORITHM
         proof_type = PROOF_ENUM['Erase']
         dh_instance = app.config.get('ID_FEDERATED', 'dh1')
 
@@ -544,8 +544,11 @@ class EraseBasic(JoinedWithOneDeviceMixin, ActionWithOneDevice):
                 "type": PROOF_ENUM['Erase'],
                 "device": self.device,
                 "action": self.snapshot,
+                "documentId": self.snapshot.id,
                 "timestamp": timestamp,
                 "issuer_id": g.user.id,
+                "documentSignature": self.snapshot.phid_dpp,
+                "normalizeDoc": self.snapshot.json_hw,
             }
             proof = Proof(**d)
             db.session.add(proof)
@@ -1744,13 +1747,17 @@ class EWaste(ActionWithMultipleDevices):
 
         api = API(api_dlt, token_dlt, "ethereum")
 
-        from ereuse_devicehub.modules.dpp.models import PROOF_ENUM, Proof
+        from ereuse_devicehub.modules.dpp.models import (
+            PROOF_ENUM,
+            Proof,
+            ALGORITHM
+        )
         from ereuse_devicehub.resources.enums import StatusCode
 
         for device in self.devices:
             deviceCHID = device.chid
             docHash = self.generateDocSig()
-            docHashAlgorithm = 'sha3_256'
+            docHashAlgorithm = ALGORITHM
             proof_type = PROOF_ENUM['EWaste']
             result = api.generate_proof(
                 deviceCHID,
@@ -1770,8 +1777,10 @@ class EWaste(ActionWithMultipleDevices):
                     "type": PROOF_ENUM['EWaste'],
                     "device": device,
                     "action": self,
+                    "documentId": self.id,
                     "timestamp": timestamp,
                     "issuer_id": g.user.id,
+                    "documentSignature": docHash,
                     "normalizeDoc": self.doc,
                 }
                 proof = Proof(**d)
