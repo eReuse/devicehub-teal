@@ -13,7 +13,7 @@ from ereuse_devicehub.resources.user.models import User
 from ereuse_devicehub.teal.db import CASCADE_OWN
 
 
-ALGORITHM = "sha3_256"
+ALGORITHM = "sha3-256"
 
 
 PROOF_ENUM = {
