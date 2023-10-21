@@ -1,6 +1,6 @@
 # Devicehub
 
-Devicehub is a distributed IT Asset Management System focused in reusing devices, created under the project [eReuse.org](https://www.ereuse.org)
+Devicehub is a distributed IT Asset Management System focused in reusing devices, created under Usody Circularity S.L. [usody.com](https://www.usody.com)
 
 This README explains how to install and use Devicehub. [The documentation](http://devicehub.ereuse.org) explains the concepts and the API.
 
