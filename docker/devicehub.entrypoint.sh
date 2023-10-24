@@ -172,7 +172,7 @@ config_dpp_part2() {
 }
 
 config_phase() {
-        init_flagfile='/already_configured'
+        init_flagfile='docker__already_configured'
         if [ ! -f "${init_flagfile}" ]; then
                 # 7, 8, 9, 11
                 init_data
@@ -211,10 +211,12 @@ main() {
 
         # 17. Use gunicorn
         #   thanks https://akira3030.github.io/formacion/articulos/python-flask-gunicorn-docker.html
-        # TODO meanwhile no nginx (step 19), gunicorn cannot serve static files, then we prefer development server
-        #gunicorn --access-logfile - --error-logfile - --workers 4 -b :5000 app:app
-        #   alternative: run development server
-        flask run --host=0.0.0.0 --port 5000
+        if [ "${DEPLOYMENT:-}" = "PROD" ]; then
+                gunicorn --access-logfile - --error-logfile - --workers 4 -b :5000 app:app
+        else
+                # run development server
+                FLASK_DEBUG=1 flask run --host=0.0.0.0 --port 5000
+        fi
 
         # DEBUG
         #sleep infinity

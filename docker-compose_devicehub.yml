@@ -19,11 +19,13 @@ services:
       - AUTHORIZED_CLIENT_URL=${CLIENT_ID_DEVICEHUB_HOST}
       - DPP_MODULE=n
       - IMPORT_SNAPSHOTS=${IMPORT_SNAPSHOTS}
+      - DEPLOYMENT=${DEPLOYMENT}
     ports:
       - 5000:5000
     volumes:
       - ${SNAPSHOTS_PATH:-./examples/snapshots}:/mnt/snapshots:ro
       - shared:/shared:rw
+      - app:/opt/devicehub:rw
 
   postgres:
     image: dkr-dsg.ac.upc.edu/ereuse/postgres:dpp__bcb4c696
@@ -34,15 +36,20 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_DB=${DB_DATABASE}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
     # DEBUG
     #ports:
     #  - 5432:5432
-    # TODO persistence
-    #volumes:
-    #  - pg_data:/var/lib/postgresql/data
 
-    # TODO https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
-    #nginx
+  nginx:
+    image: nginx
+    ports:
+      - 8080:8080
+    volumes:
+      - ./docker/nginx-devicehub.nginx.conf:/etc/nginx/nginx.conf:ro
 
 volumes:
   shared:
+  pg_data:
+  app:

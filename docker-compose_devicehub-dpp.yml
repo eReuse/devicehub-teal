@@ -29,6 +29,7 @@ services:
     volumes:
       - ${SNAPSHOTS_PATH:-./examples/snapshots}:/mnt/snapshots:ro
       - shared:/shared:rw
+      - app_id_server:/opt/devicehub:rw
 
   postgres-id-server:
     image: dkr-dsg.ac.upc.edu/ereuse/postgres:dpp__bcb4c696
@@ -74,6 +75,7 @@ services:
     volumes:
       - ${SNAPSHOTS_PATH:-./examples/snapshots}:/mnt/snapshots:ro
       - shared:/shared:ro
+      - app_id_client:/opt/devicehub:rw
 
   postgres-id-client:
     image: dkr-dsg.ac.upc.edu/ereuse/postgres:dpp__bcb4c696
@@ -97,3 +99,5 @@ services:
 
 volumes:
   shared:
+  app_id_client:
+  app_id_server:
