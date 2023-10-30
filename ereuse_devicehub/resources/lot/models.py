@@ -189,7 +189,7 @@ class Lot(Thing):
         if not self.transfer.closed:
             return
 
-        return self.transfer.date.strftime("%Y-%m-%d_00_00")
+        return self.transfer.date.strftime("%Y-%m-%d_23_59")
 
     def add_children(self, *children):
         """Add children lots to this lot.
