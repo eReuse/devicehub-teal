@@ -6,8 +6,6 @@ This README explains how to install and use Devicehub. [The documentation](http:
 
 Devicehub is built with [Teal](https://github.com/ereuse/teal) and [Flask](http://flask.pocoo.org). 
 
-Devicehub relies on the existence of an [API_DLT connector](https://gitlab.com/dsg-upc/ereuse-dpp) verifiable data registry service, where certain operations are recorded to keep an external track record (ledger).
-
 # Installing
 Please visit the [Manual Installation](README.md) instructions to understand the detailed steps to install it locally or deploy it on a server.
 
@@ -16,7 +14,7 @@ There is a Docker compose file for an automated deployment. The next steps descr
 
 1. Download the sources:
 ```
-  git clone https://github.com/eReuse/devicehub-teal.git -b dpp
+  git clone https://github.com/eReuse/devicehub-teal.git
   cd devicehub-teal
 ```
 
@@ -34,7 +32,7 @@ If the last line you see one text like this, *exited whit code*:
 ```
 means the installation failed.
 
-If the deployment was end-to-end successful (two running Devicehub instances successfully connected to the DLT backend selected in the .env file), you can see this text in the last lines:
+If the deployment was end-to-end successful you can see this text in the last lines:
 ```
   dhub-devicehub-1  |  * Running on all addresses.
   dhub-devicehub-1  |    WARNING: This is a development server. Do not use it in a production deployment.
