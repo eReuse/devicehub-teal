@@ -6,6 +6,9 @@ This README explains how to install and use Devicehub. [The documentation](http:
 
 Devicehub is built with [Teal](https://github.com/ereuse/teal) and [Flask](http://flask.pocoo.org).
 
+# Using docker
+Please visit the [Manual Installation with docker](README_docker.md) instructions to understand the detailed steps to install it.
+
 # Installing
 The requirements are:
 
