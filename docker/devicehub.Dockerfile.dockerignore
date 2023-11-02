@@ -1,0 +1,12 @@
+.git
+.env
+# TODO need to comment it to copy the entrypoint
+#docker
+Makefile
+
+# Emacs backup files
+*~
+.\#*
+# Vim swap files
+*.swp
+*.swo
