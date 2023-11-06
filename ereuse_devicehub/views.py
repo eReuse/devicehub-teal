@@ -64,7 +64,14 @@ class LoginView(View):
 
 class LogoutView(View):
     def dispatch_request(self):
-        session_vars = ['token_dlt', 'rols', 'oidc']
+        session_vars = [
+            'token_dlt',
+            'eth_pub_key',
+            'rols',
+            'oidc',
+            'iota_abac_did',
+            'iota_abac_attributes',
+        ]
         [session.pop(i, '') for i in session_vars]
         next_url = flask.request.args.get('next')
         logout_user()

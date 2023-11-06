@@ -195,7 +195,7 @@ class User(UserMixin, Thing):
     def _call_abac(self, path):
         abac_tk = app.config.get('ABAC_TOKEN')
         abac_coockie = app.config.get('ABAC_COOKIE')
-        eth_pub_key = app.config.get('ABAC_USER')
+        eth_pub_key = session.get('eth_pub_key')
         abac_path = path
         if not (abac_tk and eth_pub_key and abac_path):
             return ''
@@ -210,15 +210,26 @@ class User(UserMixin, Thing):
 
     def get_abac_did(self):
         try:
+            if session.get('iota_abac_did'):
+                return session.get('iota_abac_did')
+
             r = self._call_abac('did')
             if not r or not r.status_code == 200:
                 return ''
-            return r.json().get('did', '')
+            did = r.json().get('did', '').strip()
+            if not did:
+                return ''
+
+            session['iota_abac_did'] = did
+            return did
         except Exception:
             return ''
 
     def get_abac_attributes(self):
         try:
+            if session.get('iota_abac_attributes'):
+                return session.get('iota_abac_attributes')
+
             r = self._call_abac('attributes')
             if not r or not r.status_code == 200:
                 return {}
@@ -228,11 +239,12 @@ class User(UserMixin, Thing):
             result = {}
             for j in data:
                 k = j.get('attributeURI', '').split('/')[-1].split("#")[-1]
-                v = j.get('attributeValue', '')
+                v = j.get('attributeValue', '').strip()
                 if not (k and v):
                     continue
                 result[k] = v
 
+            session['iota_abac_attributes'] = result
             return result
 
         except Exception:

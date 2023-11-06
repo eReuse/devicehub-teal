@@ -70,10 +70,11 @@ class LoginForm(FlaskForm):
             self.form_errors.append(self.error_messages['inactive'])
 
         if 'dpp' in app.blueprints.keys():
-            token_dlt = (
-                user.get_dlt_keys(self.password.data).get('data', {}).get('api_token')
-            )
+            dlt_keys = user.get_dlt_keys(self.password.data).get('data', {})
+            token_dlt = dlt_keys.get('api_token')
+            eth_pub_key = dlt_keys.get('eth_pub_key')
             session['token_dlt'] = token_dlt
+            session['eth_pub_key'] = eth_pub_key
             session['rols'] = user.get_rols()
 
         return user.is_active
