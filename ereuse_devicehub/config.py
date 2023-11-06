@@ -99,6 +99,9 @@ class DevicehubConfig(Config):
     API_DLT_TOKEN = config('API_DLT_TOKEN', None)
     ID_FEDERATED = config('ID_FEDERATED', None)
     URL_MANUALS = config('URL_MANUALS', None)
+    ABAC_TOKEN = config('ABAC_TOKEN', None)
+    ABAC_COOKIE = config('ABAC_COOKIE', None)
+    ABAC_USER = config('ABAC_USER', None)
 
     """Definition of oauth jwt details."""
     OAUTH2_JWT_ENABLED = config('OAUTH2_JWT_ENABLED', False)

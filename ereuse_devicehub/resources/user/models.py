@@ -1,4 +1,5 @@
 import json
+import requests
 from uuid import uuid4
 
 from citext import CIText
@@ -190,6 +191,53 @@ class User(UserMixin, Thing):
 
         rols = result.get('Data', {}).get('data', {})
         return [(k, k) for k, v in rols.items() if v]
+
+    def _call_abac(self, path):
+        abac_tk = app.config.get('ABAC_TOKEN')
+        abac_coockie = app.config.get('ABAC_COOKIE')
+        eth_pub_key = app.config.get('ABAC_USER')
+        abac_path = path
+        if not (abac_tk and eth_pub_key and abac_path):
+            return ''
+
+        header = {
+            'Authorization': f'Bearer {abac_tk}',
+            'Cookie': abac_coockie
+        }
+        domain = 'https://abac-oracle.stable.iota-ec.net/accounts/'
+        url = f'{domain}{eth_pub_key}/{abac_path}'
+        return requests.get(url, headers=header)
+
+    def get_abac_did(self):
+        try:
+            r = self._call_abac('did')
+            if not r or not r.status_code == 200:
+                return ''
+            return r.json().get('did', '')
+        except Exception:
+            return ''
+
+    def get_abac_attributes(self):
+        try:
+            r = self._call_abac('attributes')
+            if not r or not r.status_code == 200:
+                return {}
+            data = r.json()
+            if not data:
+                return {}
+            result = {}
+            for j in data:
+                k = j.get('attributeURI', '').split('/')[-1].split("#")[-1]
+                v = j.get('attributeValue', '')
+                if not (k and v):
+                    continue
+                result[k] = v
+
+            return result
+
+        except Exception:
+            return {}
+
 
 
 class UserInventory(db.Model):

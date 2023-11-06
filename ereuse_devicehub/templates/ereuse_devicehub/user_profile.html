@@ -44,6 +44,9 @@
               <a href="{{ url_for('oidc.create_client') }}" class="nav-link">OpenID Connect</a>
             </li>
             {% endif %}
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#id_abac_attrs">Identity Attributes</button>
+            </li>
           </ul>
           <div class="tab-content pt-2">
 
@@ -101,6 +104,23 @@
                   <button type="submit" class="btn btn-primary">Change sanitization data</button>
                 </div>
               </form><!-- End Sanitization Certificate datas Form -->
+            </div>
+
+            <div class="tab-pane fade pt-3" id="id_abac_attrs">
+              <div class="row mb-3">
+                <label class="col-md-4 col-lg-3 col-form-label">Did</label>
+                <div class="col-md-8 col-lg-9">
+                  {{ current_user.get_abac_did() }}
+                </div>
+              </div>
+              {% for k, v in current_user.get_abac_attributes().items() %}
+              <div class="row mb-3">
+                <label class="col-md-4 col-lg-3 col-form-label">{{ k }}</label>
+                <div class="col-md-8 col-lg-9">
+                  {{ v }}
+                </div>
+              </div>
+              {% endfor %}
             </div>
 
           </div><!-- End Bordered Tabs -->
