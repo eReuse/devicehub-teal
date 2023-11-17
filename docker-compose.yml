@@ -3,8 +3,11 @@ services:
 
   devicehub:
     init: true
-    image: dkr-dsg.ac.upc.edu/ereuse/devicehub:testing_docker__f42b2d09
+    container_name: devicehub
+    build:
+      dockerfile: docker/devicehub.Dockerfile
     environment:
+      - FLASK_DEBUG=${FLASK_DEBUG}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=postgres
@@ -20,11 +23,15 @@ services:
     ports:
       - 5000:5000
     volumes:
+      - . :/opt/devicehub:rw
       - shared:/shared:rw
-      - app:/opt/devicehub:rw
+    depends_on:
+      - postgres
 
   postgres:
-    image: dkr-dsg.ac.upc.edu/ereuse/postgres:testing_docker__f42b2d09
+    container_name: postgres_devicehub
+    build: 
+      dockerfile: docker/postgres.Dockerfile
     # 4. To create the database.
     # 5. Give permissions to the corresponding users in the database.
     #   extra src https://github.com/docker-library/docs/blob/master/postgres/README.md#environment-variables
@@ -35,10 +42,11 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     # DEBUG
-    #ports:
-    #  - 5432:5432
+    ports:
+      - 5432:5432
 
   nginx:
+    container_name: devicehub_web
     image: nginx
     ports:
       - 8080:8080
@@ -46,6 +54,6 @@ services:
       - ./docker/nginx-devicehub.nginx.conf:/etc/nginx/nginx.conf:ro
 
 volumes:
-  shared:
+  shared: 
   pg_data:
-  app:
+

@@ -16,6 +16,12 @@ RUN apt update && apt-get install --no-install-recommends -y \
 
 WORKDIR /opt/devicehub
 
+RUN echo asdasd
+RUN echo ls -la /opt/devicehub
+
+RUN pip install -e .
+
+
 # this is exactly the same as examples/pip_install.sh except the last command
 #   to improve the docker layer builds, it has been separated
 RUN pip install --upgrade pip
@@ -23,10 +29,10 @@ RUN pip install alembic==1.8.1    anytree==2.8.0    apispec==0.39.0    atomicwri
 
 RUN pip install -i https://test.pypi.org/simple/ ereuseapitest==0.0.8
 
-COPY . .
 # this operation might be overriding inside container another app.py you would have
 COPY examples/app.py .
-RUN pip install -e .
+#RUN pip install -e .
 
 COPY docker/devicehub.entrypoint.sh .
+
 ENTRYPOINT sh ./devicehub.entrypoint.sh
