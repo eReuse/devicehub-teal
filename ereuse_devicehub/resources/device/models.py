@@ -5,6 +5,7 @@ import logging
 import os
 import pathlib
 import uuid
+import psycopg2
 from contextlib import suppress
 from datetime import datetime
 from fractions import Fraction
@@ -1101,7 +1102,11 @@ class Device(Thing):
 
         if isinstance(date, str):
             try:
-                self._date_close = datetime.strptime(date, normalize)
+                self._date_close = datetime.strptime(date, normalize).replace(
+                    tzinfo=psycopg2.tz.FixedOffsetTimezone(offset=60, name=None)
+                )
+                if self._date_close < self.created:
+                    self._date_close = self.created.replace(hour=23, minute=59)
             except Exception as err:
                 logger.error(err)
                 txt = "Date: {} normalize: {}".format(date, normalize)
