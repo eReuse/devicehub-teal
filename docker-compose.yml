@@ -5,6 +5,7 @@ services:
     init: true
     container_name: devicehub
     build:
+      context: .
       dockerfile: docker/devicehub.Dockerfile
     environment:
       - FLASK_DEBUG=${FLASK_DEBUG}
@@ -23,7 +24,7 @@ services:
     ports:
       - 5000:5000
     volumes:
-      - . :/opt/devicehub:rw
+      - app:/opt/devicehub:rw
       - shared:/shared:rw
     depends_on:
       - postgres
@@ -31,6 +32,7 @@ services:
   postgres:
     container_name: postgres_devicehub
     build: 
+      context: .
       dockerfile: docker/postgres.Dockerfile
     # 4. To create the database.
     # 5. Give permissions to the corresponding users in the database.
@@ -56,4 +58,5 @@ services:
 volumes:
   shared: 
   pg_data:
+  app:
 
