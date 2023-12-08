@@ -1,5 +1,6 @@
 import json
 import logging
+import base64
 
 import requests
 from authlib.integrations.flask_oauth2 import current_token
@@ -221,8 +222,19 @@ class AllowCodeOidc4vpView(GenericMixin):
     discovery = {}
 
     def dispatch_request(self):
-        self.code = request.args.get('code')
-        self.oidc = session.get('oidc')
+        self.vp_token = request.values.get("vp_token")
+        # pv= self.vp_token.split(".")
+        # token = json.loads(base64.b64decode(pv[1]).decode())
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer WALLET_INX_EBSI_PLUGIN_TOKEN'
+        }
+        data = json.dumps({
+            "type": "VerificationRequest",
+            "jwtCredential": self.vp_token
+        })
+        result = requests.post(WALLET_INX_EBSI_PLUGIN_URL, headers=headers, json=data)
+
         return jsonify({"result": "ok"})
         # if not self.code or not self.oidc:
         #     return self.redirect()
