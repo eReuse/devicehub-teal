@@ -223,17 +223,30 @@ class AllowCodeOidc4vpView(GenericMixin):
 
     def dispatch_request(self):
         self.vp_token = request.values.get("vp_token")
-        # pv= self.vp_token.split(".")
-        # token = json.loads(base64.b64decode(pv[1]).decode())
+        pv = self.vp_token.split(".")
+        token = json.loads(base64.b64decode(pv[1]).decode())
         headers = {
             'Content-Type': 'application/json',
             'Authorization': f'Bearer WALLET_INX_EBSI_PLUGIN_TOKEN'
         }
+        vcredential = token.get('vp', {}).get("verifiableCredential")
+        if not vcredential:
+            return
+
         data = json.dumps({
             "type": "VerificationRequest",
-            "jwtCredential": self.vp_token
+            "jwtCredential": vcredential
         })
-        result = requests.post(WALLET_INX_EBSI_PLUGIN_URL, headers=headers, json=data)
+        result = requests.post(WALLET_INX_EBSI_PLUGIN_URL, headers=headers, data=data)
+        if result.status_code != 200:
+            return
+
+        vps = json.loads(result.text)
+        if not vps.get('verified'):
+            return
+        roles = vps['credential']['credentialSubject'].get('role')
+        if not roles:
+            return
 
         return jsonify({"result": "ok"})
         # if not self.code or not self.oidc:
