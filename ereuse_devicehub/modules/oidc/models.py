@@ -4,10 +4,15 @@ from authlib.integrations.sqla_oauth2 import (
     OAuth2TokenMixin,
 )
 from flask import g
+from werkzeug.security import gen_salt
 
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
+
+
+def gen_code():
+    return gen_salt(24)
 
 
 class MemberFederated(Thing):
@@ -74,3 +79,11 @@ class OAuth2Token(Thing, OAuth2TokenMixin):
         db.ForeignKey('member_federated.dlt_id_provider', ondelete='CASCADE'),
     )
     member = db.relationship('MemberFederated')
+
+
+class Code2Roles(Thing):
+    __tablename__ = 'code_roles'
+
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(40), default=gen_code, nullable=False)
+    roles = db.Column(db.String(40), unique=False, nullable=False)

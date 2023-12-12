@@ -110,3 +110,5 @@ class DevicehubConfig(Config):
 
     if API_DLT:
         API_DLT = API_DLT.strip("/")
+    WALLET_INX_EBSI_PLUGIN_TOKEN = config('WALLET_INX_EBSI_PLUGIN_TOKEN', None)
+    WALLET_INX_EBSI_PLUGIN_URL = config('WALLET_INX_EBSI_PLUGIN_URL', None)

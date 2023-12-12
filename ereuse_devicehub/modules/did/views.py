@@ -60,6 +60,8 @@ class DidView(View):
         tlmp = {
             "isOperator": "operator.html",
             "isVerifier": "verifier.html",
+            "operator": "operator.html",
+            "verifier": "verifier.html",
         }
         self.template_name = tlmp.get(rol, self.template_name)
 

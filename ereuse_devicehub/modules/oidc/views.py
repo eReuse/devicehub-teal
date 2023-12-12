@@ -14,16 +14,22 @@ from flask import (
     request,
     session,
     url_for,
+    current_app as app
 )
 from flask_login import login_required
 
 from ereuse_devicehub import __version__, messages
+from ereuse_devicehub.db import db
 from ereuse_devicehub.modules.oidc.forms import (
     AuthorizeForm,
     CreateClientForm,
     ListInventoryForm,
 )
-from ereuse_devicehub.modules.oidc.models import MemberFederated, OAuth2Client
+from ereuse_devicehub.modules.oidc.models import (
+    MemberFederated,
+    OAuth2Client,
+    Code2Roles
+)
 from ereuse_devicehub.modules.oidc.oauth2 import (
     authorization,
     generate_user_info,
@@ -124,20 +130,19 @@ class SelectInventoryView(GenericMixin):
     title = "Select an Inventory"
 
     def dispatch_request(self):
-        form = ListInventoryForm()
-        if form.validate_on_submit():
-            return redirect(form.save(), code=302)
+        host = app.config.get('HOST', '').strip("/")
+        url = "https://ebsi-pcp-wallet-ui.vercel.app/oid4vp?"
+        url += f"client_id=https://{host}&"
+        url += "presentation_definition_uri=https%3A%2F%2Fiotaledger.github.io"
+        url += "%2Febsi-stardust-components%2Fpublic%2Fpresentation-definition-ex1.json&"
+        url += f"response_uri=https://{host}/allow_code_oidc4vp"
+        url += "&state=1700822573400&response_type=vp_token&response_mode=direct_post"
+        url += "&nonce=DybC3A%3D%3D"
 
         next = request.args.get('next', '#')
-        context = {
-            'next': next,
-            'form': form,
-            'title': self.title,
-            'user': g.user,
-            'grant': '',
-            'version': __version__,
-        }
-        return render_template(self.template_name, **context)
+        session['next_url'] = next
+
+        return redirect(url, code=302)
 
 
 class AllowCodeView(GenericMixin):
@@ -222,95 +227,91 @@ class AllowCodeOidc4vpView(GenericMixin):
     discovery = {}
 
     def dispatch_request(self):
+        vcredential = self.get_credential()
+        if not vcredential:
+            return jsonify({"error": "No there are credentials"})
+
+        roles = self.verify(vcredential)
+        if not roles:
+            return jsonify({"error": "No there are roles"})
+
+        uri = self.get_response_uri(roles)
+
+        return jsonify({"redirect_uri": uri})
+
+    def get_credential(self):
         self.vp_token = request.values.get("vp_token")
         pv = self.vp_token.split(".")
         token = json.loads(base64.b64decode(pv[1]).decode())
+        return token.get('vp', {}).get("verifiableCredential")
+
+    def verify(self, vcredential):
+        WALLET_INX_EBSI_PLUGIN_TOKEN = app.config.get(
+            'WALLET_INX_EBSI_PLUGIN_TOKEN'
+        )
+        WALLET_INX_EBSI_PLUGIN_URL = app.config.get(
+            'WALLET_INX_EBSI_PLUGIN_URL'
+        )
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer WALLET_INX_EBSI_PLUGIN_TOKEN'
+            'Authorization': f'Bearer {WALLET_INX_EBSI_PLUGIN_TOKEN}'
         }
-        vcredential = token.get('vp', {}).get("verifiableCredential")
-        if not vcredential:
-            return
-
         data = json.dumps({
             "type": "VerificationRequest",
             "jwtCredential": vcredential
         })
-        result = requests.post(WALLET_INX_EBSI_PLUGIN_URL, headers=headers, data=data)
+        result = requests.post(
+            WALLET_INX_EBSI_PLUGIN_URL,
+            headers=headers,
+            data=data
+        )
+
         if result.status_code != 200:
             return
 
         vps = json.loads(result.text)
         if not vps.get('verified'):
             return
-        roles = vps['credential']['credentialSubject'].get('role')
-        if not roles:
-            return
 
-        return jsonify({"result": "ok"})
-        # if not self.code or not self.oidc:
-        #     return self.redirect()
+        return vps['credential']['credentialSubject'].get('role')
 
-        # self.member = MemberFederated.query.filter(
-        #     MemberFederated.dlt_id_provider == self.oidc,
-        #     MemberFederated.client_id.isnot(None),
-        #     MemberFederated.client_secret.isnot(None),
-        # ).first()
+    def get_response_uri(selfi, roles):
+        code = Code2Roles(roles=roles)
+        db.session.add(code)
+        db.session.commit()
 
-        # if not self.member:
-        #     return self.redirect()
+        url = "https://{host}/allow_code_oidc4vp2?code={code}".format(
+            host=app.config.get('HOST'),
+            code=code.code
+        )
+        return url
 
-        # self.get_token()
-        # if 'error' in self.token:
-        #     messages.error(self.token.get('error', ''))
-        #     return self.redirect()
 
-        # self.get_user_info()
-        # return self.redirect()
+class AllowCodeOidc4vp2View(GenericMixin):
+    methods = ['GET', 'POST']
 
-    def get_discovery(self):
-        if self.discovery:
-            return self.discovery
+    def dispatch_request(self):
+        self.code = request.args.get('code')
+        if not self.code:
+            return self.redirect()
 
-        try:
-            url_well_known = self.member.domain + '.well-known/openid-configuration'
-            self.discovery = requests.get(url_well_known).json()
-        except Exception:
-            self.discovery = {'code': 404}
+        self.get_user_info()
 
-        return self.discovery
-
-    def get_token(self):
-        data = {'grant_type': 'authorization_code', 'code': self.code}
-        url = self.member.domain + '/oauth/token'
-        url = self.get_discovery().get('token_endpoint', url)
-
-        auth = (self.member.client_id, self.member.client_secret)
-        msg = requests.post(url, data=data, auth=auth)
-        self.token = json.loads(msg.text)
+        return self.redirect()
 
     def redirect(self):
         url = session.get('next_url') or '/login'
         return redirect(url)
 
     def get_user_info(self):
-        if self.userinfo:
-            return self.userinfo
-        if 'access_token' not in self.token:
+        code = Code2Roles.query.filter(code=self.code).first()
+
+        if not code:
             return
 
-        url = self.member.domain + '/oauth/userinfo'
-        url = self.get_discovery().get('userinfo_endpoint', url)
-        access_token = self.token['access_token']
-        token_type = self.token.get('token_type', 'Bearer')
-        headers = {"Authorization": f"{token_type} {access_token}"}
-
-        msg = requests.get(url, headers=headers)
-        self.userinfo = json.loads(msg.text)
-        rols = self.userinfo.get('rols', [])
-        session['rols'] = [(k, k) for k in rols]
-        return self.userinfo
+        session['rols'] = [(k.strip(), k.strip()) for k in code.roles.split(",")]
+        db.session.delete(code)
+        db.session.commit()
 
 
 ##########
@@ -320,6 +321,7 @@ oidc.add_url_rule('/create_client', view_func=CreateClientView.as_view('create_c
 oidc.add_url_rule('/oauth/authorize', view_func=AuthorizeView.as_view('autorize_oidc'))
 oidc.add_url_rule('/allow_code', view_func=AllowCodeView.as_view('allow_code'))
 oidc.add_url_rule('/allow_code_oidc4vp', view_func=AllowCodeOidc4vpView.as_view('allow_code_oidc4vp'))
+oidc.add_url_rule('/allow_code_oidc4vp2', view_func=AllowCodeOidc4vp2View.as_view('allow_code_oidc4vp2'))
 oidc.add_url_rule('/oauth/token', view_func=IssueTokenView.as_view('oauth_issue_token'))
 oidc.add_url_rule(
     '/oauth/userinfo', view_func=OauthProfileView.as_view('oauth_user_info')
