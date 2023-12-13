@@ -17,6 +17,7 @@ from flask import (
     current_app as app
 )
 from flask_login import login_required
+from flask.views import View
 
 from ereuse_devicehub import __version__, messages
 from ereuse_devicehub.db import db
@@ -287,7 +288,7 @@ class AllowCodeOidc4vpView(GenericMixin):
         return url
 
 
-class AllowCodeOidc4vp2View(GenericMixin):
+class AllowCodeOidc4vp2View(View):
     methods = ['GET', 'POST']
 
     def dispatch_request(self):
