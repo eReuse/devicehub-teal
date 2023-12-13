@@ -300,7 +300,7 @@ class AllowCodeOidc4vp2View(GenericMixin):
         return self.redirect()
 
     def redirect(self):
-        url = session.get('next_url') or '/login'
+        url = session.pop('next_url', '/login')
         return redirect(url)
 
     def get_user_info(self):
