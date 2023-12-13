@@ -305,7 +305,7 @@ class AllowCodeOidc4vp2View(View):
         return redirect(url)
 
     def get_user_info(self):
-        code = Code2Roles.query.filter(code=self.code).first()
+        code = Code2Roles.query.filter_by(code=self.code).first()
 
         if not code:
             return
