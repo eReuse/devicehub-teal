@@ -43,6 +43,7 @@ def upgrade():
         ),
         sa.Column('code', citext.CIText(), nullable=False),
         sa.Column('roles', citext.CIText(), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
         schema=f'{get_inv()}',
     )
     op.execute(f"CREATE SEQUENCE {get_inv()}.code_roles_seq;")
