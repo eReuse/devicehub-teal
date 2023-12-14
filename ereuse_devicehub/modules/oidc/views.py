@@ -260,7 +260,7 @@ class AllowCodeOidc4vpView(GenericMixin):
         }
         data = json.dumps({
             "type": "VerificationRequest",
-            "jwtCredential": vcredential
+            "jwtCredential": vcredential[0]
         })
         result = requests.post(
             WALLET_INX_EBSI_PLUGIN_URL,
