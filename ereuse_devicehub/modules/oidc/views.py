@@ -258,24 +258,32 @@ class AllowCodeOidc4vpView(GenericMixin):
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {WALLET_INX_EBSI_PLUGIN_TOKEN}'
         }
-        data = json.dumps({
-            "type": "VerificationRequest",
-            "jwtCredential": vcredential[0]
-        })
-        result = requests.post(
-            WALLET_INX_EBSI_PLUGIN_URL,
-            headers=headers,
-            data=data
-        )
+        for v in vcredential:
+            data = json.dumps({
+                "type": "VerificationRequest",
+                "jwtCredential": vcredential[0]
+            })
+            result = requests.post(
+                WALLET_INX_EBSI_PLUGIN_URL,
+                headers=headers,
+                data=data
+            )
+            if result.status_code != 200:
+                return
 
-        if result.status_code != 200:
-            return
+            vps = json.loads(result.text)
+            try:
+                roles = vps['credential']['credentialSubject'].get('role')
+            except Exception:
+                roles = None
 
-        vps = json.loads(result.text)
+            if roles:
+                break
+
         if not vps.get('verified'):
             return
 
-        return vps['credential']['credentialSubject'].get('role')
+        return roles
 
     def get_response_uri(selfi, roles):
         code = Code2Roles(roles=roles)
