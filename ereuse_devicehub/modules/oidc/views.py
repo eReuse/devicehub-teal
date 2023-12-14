@@ -136,7 +136,7 @@ class SelectInventoryView(GenericMixin):
         url += f"client_id=https://{host}&"
         url += "presentation_definition_uri=https://iotaledger.github.io"
         # url += "/ebsi-stardust-components/public/presentation-definition-ex1.json"
-        url += "/ebsi-stardust-components/public//presentation-definition-ereuse.json"
+        url += "/ebsi-stardust-components/public//presentation-definition-ereuse.json&"
         url += f"response_uri=https://{host}/allow_code_oidc4vp"
         url += "&state=1700822573400&response_type=vp_token&response_mode=direct_post"
         url += "&nonce=DybC3A=="
