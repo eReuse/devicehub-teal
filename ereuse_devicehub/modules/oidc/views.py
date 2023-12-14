@@ -134,11 +134,12 @@ class SelectInventoryView(GenericMixin):
         host = app.config.get('HOST', '').strip("/")
         url = "https://ebsi-pcp-wallet-ui.vercel.app/oid4vp?"
         url += f"client_id=https://{host}&"
-        url += "presentation_definition_uri=https%3A%2F%2Fiotaledger.github.io"
-        url += "%2Febsi-stardust-components%2Fpublic%2Fpresentation-definition-ex1.json&"
+        url += "presentation_definition_uri=https://iotaledger.github.io"
+        # url += "/ebsi-stardust-components/public/presentation-definition-ex1.json"
+        url += "/ebsi-stardust-components/public//presentation-definition-ereuse.json"
         url += f"response_uri=https://{host}/allow_code_oidc4vp"
         url += "&state=1700822573400&response_type=vp_token&response_mode=direct_post"
-        url += "&nonce=DybC3A%3D%3D"
+        url += "&nonce=DybC3A=="
 
         next = request.args.get('next', '#')
         session['next_url'] = next
