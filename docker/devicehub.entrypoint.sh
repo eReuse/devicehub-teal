@@ -161,7 +161,7 @@ config_dpp_part1() {
         flask dlt_rsync_members
 
         # 14. Register a new user to the DLT
-        flask dlt_register_user "${EMAIL_DEMO}" ${PASSWORD_DEMO} Operator
+        #flask dlt_register_user "${EMAIL_DEMO}" ${PASSWORD_DEMO} Operator
 }
 
 config_dpp_part2() {
