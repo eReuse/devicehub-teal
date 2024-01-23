@@ -2,7 +2,7 @@ import json
 
 import click
 
-from flask import current_app as app
+from flask import g, current_app as app
 from ereuseapi.methods import register_user
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.user.models import User
@@ -59,10 +59,14 @@ class RegisterUserDlt:
         user.api_keys_dlt = encrypt(password, data_eth)
 
         try:
-            attributes = user.get_abac_attributes()
-            roles = attributes.get("role", ["Operator"])
+            # TODO Not works
+            with app.app_context():
+                ses = g.get('session', None)
+                ses["eth_pub_key"] = eth_pub_key
+                attributes = user.get_abac_attributes()
+                roles = attributes.get("role", ["Operator"])
         except Exception:
-            roles ["Operator"]
+            roles = ["Operator"]
 
         user.rols_dlt = json.dumps(roles)
 
