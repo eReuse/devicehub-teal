@@ -33,21 +33,23 @@ class RegisterUserDlt:
         email = data.get("email")
         name = email.split('@')[0]
         password = data.get("password")
+        api_dlt = app.config.get('API_DLT')
         eth_priv_key = data.get("eth_priv_key")
         eth_pub_key = data.get("eth_pub_key")
+
         user = User.query.filter_by(email=email).first()
-        import pdb; pdb.set_trace()
 
         if not user:
             user = User(email=email, password=password)
             user.individuals.add(Person(name=name))
 
-        api_dlt = app.config.get('API_DLT')
+
         try:
             response = register_user(api_dlt, eth_priv_key)
             api_token = response.get('data', {}).get('api_token')
         except Exception:
             api_token = ""
+
         ethereum = {
             "eth_pub_key": eth_pub_key,
             "eth_priv_key": eth_priv_key,
