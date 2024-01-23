@@ -195,16 +195,17 @@ class User(UserMixin, Thing):
     def _call_abac(self, path):
         abac_tk = app.config.get('ABAC_TOKEN')
         abac_coockie = app.config.get('ABAC_COOKIE')
+        domain = app.config.get('ABAC_URL')
         eth_pub_key = session.get('eth_pub_key')
+
         abac_path = path
-        if not (abac_tk and eth_pub_key and abac_path):
+        if not (abac_tk and eth_pub_key and abac_path and domain):
             return ''
 
         header = {
             'Authorization': f'Bearer {abac_tk}',
             'Cookie': abac_coockie
         }
-        domain = 'https://abac-oracle.stable.iota-ec.net/accounts/'
         url = f'{domain}{eth_pub_key}/{abac_path}'
         return requests.get(url, headers=header)
 
