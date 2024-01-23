@@ -2,7 +2,8 @@ project := dkr-dsg.ac.upc.edu/ereuse
 
 branch := `git branch --show-current`
 commit := `git log -1 --format=%h`
-tag := ${branch}__${commit}
+#tag := ${branch}__${commit}
+tag := latest
 
 # docker images
 devicehub_image := ${project}/devicehub:${tag}
