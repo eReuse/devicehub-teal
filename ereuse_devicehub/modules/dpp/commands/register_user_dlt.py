@@ -43,9 +43,9 @@ class RegisterUserDlt:
             user = User(email=email, password=password)
             user.individuals.add(Person(name=name))
 
-
+        # import pdb; pdb.set_trace()
         try:
-            response = register_user(api_dlt, eth_priv_key)
+            response = register_user(api_dlt, privateKey=eth_priv_key[2:])
             api_token = response.get('data', {}).get('api_token')
         except Exception:
             api_token = ""
@@ -70,5 +70,5 @@ class RegisterUserDlt:
 
         user.rols_dlt = json.dumps(roles)
 
-        if not user.id:
-            db.session.add(user)
+        # if not user.id:
+        db.session.add(user)
