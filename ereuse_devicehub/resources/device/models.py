@@ -954,11 +954,24 @@ class Device(Thing):
         return API(api_dlt, token_dlt, "ethereum")
 
     def register_dlt(self):
+        if not app.config.get('ID_FEDERATED'):
+            return
+
         api = self.connect_api()
         if not api:
             return
 
-        result = api.register_device(self.chid)
+        snapshot = [x for x in self.actions if x.t == 'Snapshot']
+        if not snapshot:
+            return
+        snapshot = snapshot[0]
+        from ereuse_devicehub.modules.dpp.models import ALGORITHM
+        result = api.register_device(
+            self.chid,
+            ALGORITHM,
+            snapshot.phid_dpp,
+            app.config.get('ID_FEDERATED')
+        )
         self.register_proof(result)
 
         if app.config.get('ID_FEDERATED'):

@@ -899,7 +899,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         if 'dpp' not in app.blueprints.keys() or not self.device.hid:
             return
 
-        from ereuse_devicehub.modules.dpp.models import Dpp
+        from ereuse_devicehub.modules.dpp.models import Dpp, ALGORITHM
 
         dpp = "{chid}:{phid}".format(chid=self.device.chid, phid=self.phid_dpp)
         if Dpp.query.filter_by(key=dpp).all():
@@ -916,15 +916,14 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
         api = API(api_dlt, token_dlt, "ethereum")
         docSig = self.phid_dpp
-        docID = "{}".format(self.uuid or '')
-        issuerID = "{dh}:{user}".format(dh=dh_instance, user=g.user.id)
 
-        result = api.issue_passport(dpp, docID, docSig, issuerID)
+        result = api.issue_passport(dpp, ALGORITHM, docSig, dh_instance)
 
         if result['Status'] is not StatusCode.Success.value:
             return
 
         timestamp = result['Data'].get('data', {}).get('timestamp', time.time())
+        docID = "{}".format(self.uuid or '')
         d_issue = {
             "device_id": self.device.id,
             "snapshot": self,
