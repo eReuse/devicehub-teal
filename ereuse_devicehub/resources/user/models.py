@@ -181,7 +181,7 @@ class User(UserMixin, Thing):
             return []
 
         self.get_abac_did()
-        role = session.get('iota_abac_attributes', {}).get('role', [])
+        role = session.get('iota_abac_attributes', {}).get('role', '')
         return [(x.strip(), x.strip()) for x in role.split(",")]
 
     def _call_abac(self, path):
