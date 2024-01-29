@@ -43,7 +43,6 @@ class RegisterUserDlt:
             user = User(email=email, password=password)
             user.individuals.add(Person(name=name))
 
-        # import pdb; pdb.set_trace()
         try:
             response = register_user(api_dlt, privateKey=eth_priv_key[2:])
             api_token = response.get('data', {}).get('api_token')

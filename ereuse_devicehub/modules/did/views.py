@@ -95,22 +95,10 @@ class DidView(View):
         if not session.get('token_dlt'):
             return []
 
-        token_dlt = session.get('token_dlt')
-        api_dlt = app.config.get('API_DLT')
-        if not token_dlt or not api_dlt:
+        role = session.get('iota_abac_attributes', {}).get('role', '')
+        if not role:
             return []
-
-        api = API(api_dlt, token_dlt, "ethereum")
-
-        result = api.check_user_roles()
-        if result.get('Status') != 200:
-            return []
-
-        if 'Success' not in result.get('Data', {}).get('status'):
-            return []
-
-        rols = result.get('Data', {}).get('data', {})
-        self.context['rols'] = [(k, k) for k, v in rols.items() if v]
+        self.context['rols'] = [(x.strip(), x.strip()) for x in role.split(",")]
 
     def get_rol(self):
         rols = self.context.get('rols', [])

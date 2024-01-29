@@ -180,21 +180,13 @@ class User(UserMixin, Thing):
         if not api_dlt:
             return []
 
-        api = API(api_dlt, token_dlt, "ethereum")
-
-        result = api.check_user_roles()
-        if result.get('Status') != 200:
-            return []
-
-        if 'Success' not in result.get('Data', {}).get('status'):
-            return []
-
-        rols = result.get('Data', {}).get('data', {})
-        return [(k, k) for k, v in rols.items() if v]
+        self.get_abac_did()
+        role = session.get('iota_abac_attributes', {}).get('role', [])
+        return [(x.strip(), x.strip()) for x in role.split(",")]
 
     def _call_abac(self, path):
         abac_tk = app.config.get('ABAC_TOKEN')
-        abac_coockie = app.config.get('ABAC_COOKIE')
+        # abac_coockie = app.config.get('ABAC_COOKIE')
         domain = app.config.get('ABAC_URL')
         eth_pub_key = session.get('eth_pub_key')
 
@@ -204,7 +196,7 @@ class User(UserMixin, Thing):
 
         header = {
             'Authorization': f'Bearer {abac_tk}',
-            'Cookie': abac_coockie
+            # 'Cookie': abac_coockie
         }
         url = f'{domain}{eth_pub_key}/{abac_path}'
         return requests.get(url, headers=header)

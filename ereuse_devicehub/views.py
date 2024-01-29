@@ -28,6 +28,10 @@ class LoginView(View):
     template_name = 'ereuse_devicehub/user_login.html'
 
     def dispatch_request(self):
+        if session.get('_user_id'):
+            next_url = flask.request.args.get('next')
+            return flask.redirect(next_url or flask.url_for('inventory.devicelist'))
+
         form = LoginForm()
         if form.validate_on_submit():
             # Login and validate the user.
