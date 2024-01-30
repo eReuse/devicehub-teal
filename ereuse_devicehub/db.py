@@ -72,7 +72,6 @@ def create_view(name, selectable):
 
 db = SQLAlchemy(
     session_options={'autoflush': False},
-    engine_options={"pool_size": 5, "max_overflow": 10}
 )
 f = db.func
 exp = expression
