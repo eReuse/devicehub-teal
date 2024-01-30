@@ -240,9 +240,10 @@ class SQLAlchemy(FlaskSQLAlchemy):
         metadata=None,
         query_class=BaseQuery,
         model_class=Model,
+        engine_options=None,
     ):
         super().__init__(
-            app, use_native_unicode, session_options, metadata, query_class, model_class
+            app, use_native_unicode, session_options, metadata, query_class, model_class, engine_options
         )
 
     def create_session(self, options):
@@ -266,9 +267,10 @@ class SchemaSQLAlchemy(SQLAlchemy):
         metadata=None,
         query_class=Query,
         model_class=Model,
+        engine_options=None,
     ):
         super().__init__(
-            app, use_native_unicode, session_options, metadata, query_class, model_class
+            app, use_native_unicode, session_options, metadata, query_class, model_class, engine_options
         )
         # The following listeners set psql's search_path to the correct
         # schema and create the schemas accordingly
