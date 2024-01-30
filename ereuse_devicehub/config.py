@@ -52,12 +52,20 @@ class DevicehubConfig(Config):
     DB_HOST = config('DB_HOST', 'localhost')
     DB_DATABASE = config('DB_DATABASE', 'devicehub')
     DB_SCHEMA = config('DB_SCHEMA', 'dbtest')
+
     SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{pw}@{host}/{db}'.format(
         user=DB_USER,
         pw=DB_PASSWORD,
         host=DB_HOST,
         db=DB_DATABASE,
     )  # type: str
+
+    SQLALCHEMY_POOL_SIZE = config("SQLALCHEMY_POOL_SIZE", 10)
+    SQLALCHEMY_MAX_OVERFLOW = config("SQLALCHEMY_MAX_OVERFLOW", 20)
+    SQLALCHEMY_TRACK_MODIFICATIONS = config("SQLALCHEMY_TRACK_MODIFICATIONS", False)
+    SQLALCHEMY_POOL_TIMEOUT = config("SQLALCHEMY_POOL_TIMEOUT", 0)
+    SQLALCHEMY_POOL_RECYCLE = config("SQLALCHEMY_POOL_RECYCLE", 3600)
+
     SCHEMA = config('SCHEMA', 'dbtest')
     HOST = config('HOST', 'localhost')
     API_HOST = config('API_HOST', 'localhost')
