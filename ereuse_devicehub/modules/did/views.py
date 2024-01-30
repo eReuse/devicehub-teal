@@ -44,10 +44,11 @@ class DidView(View):
         self.get_device()
         self.get_last_dpp()
         self.get_before_dpp()
-        self.get_manuals()
 
         if self.accept_json():
             return jsonify(self.get_result())
+
+        self.get_manuals()
         self.get_template()
 
         return render_template(self.template_name, **self.context)
