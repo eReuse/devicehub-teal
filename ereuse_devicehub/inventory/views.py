@@ -3,16 +3,17 @@ import csv
 import datetime
 import logging
 import os
+import pandas as pd
 import re
 import uuid
-from io import StringIO
+from io import StringIO, BytesIO
 from pathlib import Path
 
 import flask
 import flask_weasyprint
 from flask import Blueprint
 from flask import current_app as app
-from flask import g, make_response, request, url_for
+from flask import g, make_response, request, url_for, send_file
 from flask.views import View
 from flask_login import current_user, login_required
 from sqlalchemy import or_
@@ -1050,6 +1051,37 @@ class ExportsView(View):
         return output
 
     def devices_list(self):
+        """Get device query and put information in xls format."""
+        
+        l_devs = []
+        for device in self.find_devices():
+            d = DeviceRow(device, {})
+            l_devs.append(d)
+        return self.download_xls(l_devs, 'export.xlsx')
+
+    def download_xls(self, rows, filename):
+        df = pd.DataFrame(rows)
+        for f in df.keys():
+            df[f] = df[f].to_string()
+
+        output = BytesIO()
+        df.to_excel(output, index=False, sheet_name='Page1', engine='xlsxwriter')
+        output.seek(0)
+
+        output2 = BytesIO()
+        df.to_excel(output2, index=False, sheet_name='Page1', engine='xlsxwriter')
+        output2.seek(0)
+
+
+        insert_hash(output2.read())
+        return send_file(
+            output,
+            as_attachment=True,
+            attachment_filename=filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+
+    def devices_list2(self):
         """Get device query and put information in csv format."""
         data = StringIO()
         cw = csv.writer(
