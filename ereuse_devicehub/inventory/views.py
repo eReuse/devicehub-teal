@@ -1113,6 +1113,30 @@ class ExportsView(View):
         return self.response_csv(data, "export.csv")
 
     def compare_devices_list(self):
+        lot_id = request.args.get('lot_id')
+        lot = Lot.query.filter_by(id=lot_id).first()
+        date_close = None
+        if lot and lot.get_closed():
+            date_close = lot.get_closed()
+
+        l_devs = []
+        for device in self.find_devices():
+            if date_close:
+                device.close_device(date_close)
+                if device.placeholder and device.placeholder.binding:
+                    device.placeholder.binding.close_device(date_close)
+                d = DeviceRow(device, {})
+                l_devs.append(d)
+                device.open_device()
+                if device.placeholder and device.placeholder.binding:
+                    device.placeholder.binding.open_device()
+
+            d = DeviceRow(device, {})
+            l_devs.append(d)
+
+        return self.download_xls(d, "compare_export.xls")
+
+    def compare_devices_list2(self):
         """Get device query and put information in csv format."""
         data = StringIO()
         cw = csv.writer(
@@ -1488,7 +1512,7 @@ class ExportsView(View):
 
         return self.response_csv(data, "lots_export.csv")
 
-    def devices_lots_export(self):
+    def devices_lots_export2(self):
         data = StringIO()
         cw = csv.writer(
             data,
@@ -1530,6 +1554,30 @@ class ExportsView(View):
 
         return self.response_csv(
             data, "Devices_Incoming_and_Outgoing_Lots_Spreadsheet.csv"
+        )
+
+    def devices_lots_export(self):
+        l_devs = []
+        for dev in self.find_devices():
+            for lot in dev.lots:
+                type_lot = lot.type_transfer()
+                if lot.is_shared:
+                    type_lot = "Shared"
+                row = {
+                    'DHID': dev.devicehub_id,
+                    'Lot Id': lot.id,
+                    'Lot Name': lot.name,
+                    'Lot Type': type_lot,
+                    'Transfer Status': lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
+                    'Transfer Code': lot.transfer and lot.transfer.code or '',
+                    'Transfer Date': lot.transfer and lot.transfer.date or '',
+                    'Transfer Creation Date': lot.transfer and lot.transfer.created or '',
+                    'Transfer Update Date': lot.transfer and lot.transfer.updated or '',
+                }
+                l_devs.append(row)
+
+        return self.download_xls(
+            l_devs, "Devices_Incoming_and_Outgoing_Lots_Spreadsheet.xls"
         )
 
     def snapshot(self):
