@@ -140,22 +140,25 @@ class User(UserMixin, Thing):
         self.api_keys_dlt = encrypt(password, data)
 
     def allow_permitions(self, api_token=None, rols="Operator"):
-        if 'dpp' not in app.blueprints.keys():
-            return
+        # Is discontinued over IOTA branch
+        return
+        
+        # if 'dpp' not in app.blueprints.keys():
+        #     return
 
-        if not api_token:
-            api_token = session.get('token_dlt', '.')
-        target_user = api_token.split(".")[0]
-        keyUser1 = app.config.get('API_DLT_TOKEN')
-        api_dlt = app.config.get('API_DLT')
-        if not keyUser1 or not api_dlt:
-            return
+        # if not api_token:
+        #     api_token = session.get('token_dlt', '.')
+        # target_user = api_token.split(".")[0]
+        # keyUser1 = app.config.get('API_DLT_TOKEN')
+        # api_dlt = app.config.get('API_DLT')
+        # if not keyUser1 or not api_dlt:
+        #     return
 
-        apiUser1 = API(api_dlt, keyUser1, "ethereum")
+        # apiUser1 = API(api_dlt, keyUser1, "ethereum")
 
-        for rol in rols.split(","):
-            result = apiUser1.issue_credential(rol.strip(), target_user)
-        return result
+        # for rol in rols.split(","):
+        #     result = apiUser1.issue_credential(rol.strip(), target_user)
+        # return result
 
     def get_rols_dlt(self):
         return json.loads(self.rols_dlt)
