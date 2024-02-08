@@ -841,6 +841,9 @@ class ActionFormMixin(FlaskForm):
         if not self._devices:
             return False
 
+        if len(devices) > 1 and self.type.data == 'EWaste':
+            return False
+
         return True
 
     def generic_validation(self, extra_validators=None):

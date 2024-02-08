@@ -902,6 +902,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         from ereuse_devicehub.modules.dpp.models import Dpp, ALGORITHM
 
         dpp = "{chid}:{phid}".format(chid=self.device.chid, phid=self.phid_dpp)
+        # '54f431688524825f00d6fb786d5211e642e3d4564187f9ad23627ec9d313f17c'
         if Dpp.query.filter_by(key=dpp).all():
             return
 
@@ -1785,10 +1786,49 @@ class EWaste(ActionWithMultipleDevices):
                 proof = Proof(**d)
                 db.session.add(proof)
 
+        self.create_snapshot()
+
     def generateDocSig(self):
         if not self.doc:
             return
         return hashlib.sha3_256(self.doc.encode('utf-8')).hexdigest()
+
+    def create_snapshot(self):
+        for device in self.devices:
+            dev = device.placeholder.binding
+            hw = self.create_json_hw(dev)
+            phid = hashlib.sha3_256(hw.encode('utf-8')).hexdigest()
+            version = self.last_snap.version
+            software = self.last_snap.software
+
+            snap = Snapshot(
+                author=dev.owner,
+                uuid=uuid4(),
+                device=dev,
+                json_hw = hw,
+                phid_dpp = phid,
+                version = version,
+                software = software
+            )
+            db.session.add(snap)
+            snap.register_passport_dlt()
+            self.snapshot = snap
+
+    def create_json_hw(self, device):
+        hw = self.get_json_hw(device)
+        hw['e-waste'] = True
+        return json.dumps(hw)
+
+    def get_json_hw(self, device):
+        self.last_snap = None
+        try:
+            self.last_snap = device.last_action_of(Snapshot)
+        except Exception:
+            return {}
+
+        if self.last_snap.json_hw:
+            return json.loads(self.last_snap.json_hw)
+        return {}
 
 
 class ToPrepare(ActionWithMultipleDevices):
