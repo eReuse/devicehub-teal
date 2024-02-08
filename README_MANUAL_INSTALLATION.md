@@ -16,7 +16,7 @@ The requirements are:
 
 1. Generate a clone of the repository.
 ```
-    git clone git@github.com:eReuse/devicehub-teal.git
+    git clone git@github.com:eReuse/devicehub-teal.git -b oidc4vp
     cd devicehub-teal
 ```
 
@@ -24,8 +24,7 @@ The requirements are:
 ```
     python3.9 -m venv env
     source env/bin/activate
-    pip3 install -U -r requirements.txt -e .
-    pip3 install Authlib==1.2.1
+    sh examples/pip_install.sh
 ```
 
 3. Create a PostgreSQL database called *devicehub* by running [create-db](examples/create-db.sh):
@@ -42,12 +41,12 @@ Configure project using environment file (you can use provided example as quicks
 $ cp examples/env.example .env
 ```
 
-4. Running alembic from oidc module.y
+4. Running alembic from oidc module.
 ```
     alembic -x inventory=dbtest upgrade head
 ```
 
-5. Running alembic from oidc module.y
+5. Running alembic from oidc module.
 ```
     cd ereuse_devicehub/modules/oidc
     alembic -x inventory=dbtest upgrade head
@@ -87,13 +86,14 @@ $ cp examples/env.example .env
 
 11. Register a new user in devicehub.
 ```
-  	  flask adduser email@cxm.cxm password
+  	  flask adduser email@example.org password
 ```
 
 12. Register a new user to the DLT.
 ```
-  	  flask dlt_register_user email@cxm.cxm password Operator
+  	  flask dlt_register_user examples/users_devicehub.json
 ```
+You need define your users in the file **users_devicehub.json**
 
 13. Finally, run the app:
 
@@ -139,7 +139,7 @@ We want to interconnect two devicehub instances already installed. One has a set
 	
   For 20.1. This can be achieved on the terminal on the devicehub instance acting as OIDC identity server.
 	```
-  	  flask adduser email@cxm.cxm password
+  	  flask adduser email@example.org password
 	```
 	
 	* 20.2. This is an example of how to fill in the form.

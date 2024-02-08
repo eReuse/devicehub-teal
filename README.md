@@ -16,7 +16,7 @@ There is a Docker compose file for an automated deployment. The next steps descr
 
 1. Download the sources:
 ```
-  git clone https://github.com/eReuse/devicehub-teal.git -b dpp
+  git clone https://github.com/eReuse/devicehub-teal.git -b oidc4vp
   cd devicehub-teal
 ```
 
@@ -42,8 +42,18 @@ You can use these parameters as default for a local test, but default values may
   API_DLT
   API_DLT_TOKEN
   API_RESOLVER
+  ABAC_TOKEN
+  ABAC_USER
+  ABAC_URL
 ```
 These values should come from an already operational [API_DLT connector](https://gitlab.com/dsg-upc/ereuse-dpp) service instance.
+
+If you want to use oidc4vp you need set the vars:
+```
+  SERVER_ID_FEDERATED
+  CLIENT_ID_FEDERATED
+```
+You can see the [manual install step 9]('https://github.com/eReuse/devicehub-teal/blob/oidc4vp/README_MANUAL_INSTALLATION.md#installing') for get more detail.
 
 4. Run the docker containers:
 ```
