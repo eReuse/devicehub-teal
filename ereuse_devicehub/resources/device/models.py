@@ -1291,7 +1291,7 @@ class Placeholder(Thing):
     device = db.relationship(
         Device,
         backref=backref(
-            'placeholder', lazy=True, cascade="all, delete-orphan", uselist=False
+            'placeholder', lazy=False, cascade="all, delete-orphan", uselist=False
         ),
         primaryjoin=device_id == Device.id,
     )
@@ -1304,7 +1304,7 @@ class Placeholder(Thing):
     )
     binding = db.relationship(
         Device,
-        backref=backref('binding', lazy=True, uselist=False),
+        backref=backref('binding', lazy=False, uselist=False),
         primaryjoin=binding_id == Device.id,
     )
     binding_id.comment = "binding placeholder with workbench device"
@@ -1695,7 +1695,7 @@ class Component(Device):
         Computer,
         backref=backref(
             'components',
-            lazy=True,
+            lazy=False,
             cascade=CASCADE_DEL,
             order_by=lambda: Component.id,
             collection_class=OrderedSet,
