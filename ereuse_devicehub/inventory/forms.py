@@ -43,6 +43,7 @@ from ereuse_devicehub.parser.parser import ParseSnapshotLsHw
 from ereuse_devicehub.parser.schemas import Snapshot_lite
 from ereuse_devicehub.resources.action.models import Snapshot, Trade
 from ereuse_devicehub.resources.action.schemas import EWaste as EWasteSchema
+from ereuse_devicehub.resources.action.schemas import Recycled as RecycledSchema
 from ereuse_devicehub.resources.action.schemas import Snapshot as SnapshotSchema
 from ereuse_devicehub.resources.action.views.snapshot import (
     SnapshotMixin,
@@ -864,6 +865,11 @@ class ActionFormMixin(FlaskForm):
         if self.instance.type == 'EWaste':
             ewaste = EWasteSchema().dump(self.instance)
             doc = "{}".format(ewaste)
+            self.instance.register_proof(doc)
+
+        if self.instance.type == 'Recycled':
+            recycled = RecycledSchema().dump(self.instance)
+            doc = "{}".format(recycled)
             self.instance.register_proof(doc)
 
         db.session.commit()

@@ -22,6 +22,7 @@ PROOF_ENUM = {
     'proof_of_recycling': 'proof_of_recycling',
     'Erase': 'Erase',
     'EWaste': 'EWaste',
+    'Recycled': 'Device_recycled',
 }
 
 

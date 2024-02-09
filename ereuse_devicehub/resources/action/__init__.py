@@ -221,6 +221,11 @@ class EWasteDef(ActionDef):
     SCHEMA = schemas.EWaste
 
 
+class RecycledDef(ActionDef):
+    VIEW = None
+    SCHEMA = schemas.Recycled
+
+
 class RecyclingDef(ActionDef):
     VIEW = None
     SCHEMA = schemas.Recycling

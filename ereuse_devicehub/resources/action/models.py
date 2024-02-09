@@ -1720,6 +1720,74 @@ class Ready(ActionWithMultipleDevices):
     """
 
 
+class Recycled(ActionWithMultipleDevices):
+
+    def register_proof(self, doc):
+        """This method is used for register a proof of erasure en dlt."""
+
+        if 'dpp' not in app.blueprints.keys():
+            return
+
+        if not session.get('token_dlt'):
+            return
+
+        if not doc:
+            return
+
+        self.doc = doc
+        token_dlt = session.get('token_dlt')
+        api_dlt = app.config.get('API_DLT')
+        dh_instance = app.config.get('ID_FEDERATED', 'dh1')
+        if not token_dlt or not api_dlt:
+            return
+
+        api = API(api_dlt, token_dlt, "ethereum")
+
+        from ereuse_devicehub.modules.dpp.models import (
+            PROOF_ENUM,
+            Proof,
+            ALGORITHM
+        )
+        from ereuse_devicehub.resources.enums import StatusCode
+
+        for device in self.devices:
+            deviceCHID = device.chid
+            docHash = self.generateDocSig()
+            docHashAlgorithm = ALGORITHM
+            proof_type = PROOF_ENUM['Recycled']
+            result = api.generate_proof(
+                deviceCHID,
+                docHashAlgorithm,
+                docHash,
+                proof_type,
+                dh_instance,
+            )
+
+            if result['Status'] == StatusCode.Success.value:
+                timestamp = result.get('Data', {}).get('data', {}).get('timestamp')
+
+                if not timestamp:
+                    return
+
+                d = {
+                    "type": PROOF_ENUM['Recycled'],
+                    "device": device,
+                    "action": self,
+                    "documentId": self.id,
+                    "timestamp": timestamp,
+                    "issuer_id": g.user.id,
+                    "documentSignature": docHash,
+                    "normalizeDoc": self.doc,
+                }
+                proof = Proof(**d)
+                db.session.add(proof)
+
+    def generateDocSig(self):
+        if not self.doc:
+            return
+        return hashlib.sha3_256(self.doc.encode('utf-8')).hexdigest()
+
+
 class EWaste(ActionWithMultipleDevices):
     """The device is declared as e-waste, this device is not allow use more.
 

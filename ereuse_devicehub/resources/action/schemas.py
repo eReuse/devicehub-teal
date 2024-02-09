@@ -527,6 +527,10 @@ class EWaste(ActionWithMultipleDevicesCheckingOwner):
     __doc__ = m.EWaste.__doc__
 
 
+class Recycled(ActionWithMultipleDevicesCheckingOwner):
+    __doc__ = m.Recycled.__doc__
+
+
 class ActionStatus(Action):
     rol_user = NestedOn(s_user.User, dump_only=True, exclude=('token',))
     devices = NestedOn(
