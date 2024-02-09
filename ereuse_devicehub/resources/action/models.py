@@ -2241,7 +2241,8 @@ class Trade(JoinedTableMixin, ActionWithMultipleTradeDocuments):
     )
     lot = relationship(
         'Lot',
-        backref=backref('trade', lazy=True, uselist=False, cascade=CASCADE_OWN),
+        backref=backref('trade', lazy=False, uselist=False, cascade=CASCADE_OWN),
+        # backref=backref('trade', lazy=True, uselist=False, cascade=CASCADE_OWN),
         primaryjoin='Trade.lot_id == Lot.id',
     )
 
