@@ -56,6 +56,13 @@ class DevicehubConfig(Config):
         host=DB_HOST,
         db=DB_DATABASE,
     )  # type: str
+    
+    SQLALCHEMY_POOL_SIZE = int(config("SQLALCHEMY_POOL_SIZE", 10))
+    SQLALCHEMY_MAX_OVERFLOW = int(config("SQLALCHEMY_MAX_OVERFLOW", 20))
+    SQLALCHEMY_TRACK_MODIFICATIONS = bool(config("SQLALCHEMY_TRACK_MODIFICATIONS", False))
+    SQLALCHEMY_POOL_TIMEOUT = int(config("SQLALCHEMY_POOL_TIMEOUT", 0))
+    SQLALCHEMY_POOL_RECYCLE = int(config("SQLALCHEMY_POOL_RECYCLE", 3600))
+
     SCHEMA = config('SCHEMA', 'dbtest')
     HOST = config('HOST', 'localhost')
     API_HOST = config('API_HOST', 'localhost')
