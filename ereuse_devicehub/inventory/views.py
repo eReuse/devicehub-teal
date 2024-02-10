@@ -1050,19 +1050,10 @@ class ExportsView(View):
         output.headers['Content-type'] = 'text/csv'
         return output
 
-    def devices_list(self):
-        """Get device query and put information in xls format."""
-        
-        l_devs = []
-        for device in self.find_devices():
-            d = DeviceRow(device, {})
-            l_devs.append(d)
-        return self.download_xls(l_devs, 'export.xlsx')
-
     def download_xls(self, rows, filename):
         df = pd.DataFrame(rows)
-        for f in df.keys():
-            df[f] = df[f].to_string()
+        for col in df.select_dtypes(include='datetime64[ns, UTC]').columns:
+            df[col] = df[col].dt.tz_convert(None)
 
         output = BytesIO()
         df.to_excel(output, index=False, sheet_name='Page1', engine='xlsxwriter')
@@ -1081,21 +1072,17 @@ class ExportsView(View):
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
 
-    def devices_list2(self):
-        """Get device query and put information in csv format."""
-        data = StringIO()
-        cw = csv.writer(
-            data,
-            delimiter=';',
-            lineterminator="\n",
-            quotechar='"',
-            quoting=csv.QUOTE_ALL,
-        )
-        first = True
-
+    def devices_list(self):
+        """Get device query and put information in xls format."""
+        
         lot_id = request.args.get('lot_id')
-        lot = Lot.query.filter_by(id=lot_id).first()
         date_close = None
+        lot = None
+        l_devs = []
+
+        if lot_id:
+            lot = Lot.query.filter_by(id=lot_id).first()
+
         if lot and lot.get_closed():
             date_close = lot.get_closed()
 
@@ -1104,22 +1091,22 @@ class ExportsView(View):
                 device.close_device(date_close)
                 if device.placeholder and device.placeholder.binding:
                     device.placeholder.binding.close_device(date_close)
-            d = DeviceRow(device, {})
-            if first:
-                cw.writerow(d.keys())
-                first = False
-            cw.writerow(d.values())
-
-        return self.response_csv(data, "export.csv")
+            d = dict(DeviceRow(device, {}))
+            l_devs.append(d)
+        return self.download_xls(l_devs, 'export.xlsx')
 
     def compare_devices_list(self):
         lot_id = request.args.get('lot_id')
-        lot = Lot.query.filter_by(id=lot_id).first()
         date_close = None
+        lot = None
+        l_devs = []
+
+        if lot_id:
+            lot = Lot.query.filter_by(id=lot_id).first()
+
         if lot and lot.get_closed():
             date_close = lot.get_closed()
 
-        l_devs = []
         for device in self.find_devices():
             if date_close:
                 device.close_device(date_close)
@@ -1134,47 +1121,7 @@ class ExportsView(View):
             d = DeviceRow(device, {})
             l_devs.append(d)
 
-        return self.download_xls(d, "compare_export.xls")
-
-    def compare_devices_list2(self):
-        """Get device query and put information in csv format."""
-        data = StringIO()
-        cw = csv.writer(
-            data,
-            delimiter=';',
-            lineterminator="\n",
-            quotechar='"',
-            quoting=csv.QUOTE_ALL,
-        )
-        first = True
-
-        lot_id = request.args.get('lot_id')
-        lot = Lot.query.filter_by(id=lot_id).first()
-        date_close = None
-        if lot and lot.get_closed():
-            date_close = lot.get_closed()
-
-        for device in self.find_devices():
-            if date_close:
-                device.close_device(date_close)
-                if device.placeholder and device.placeholder.binding:
-                    device.placeholder.binding.close_device(date_close)
-                d = DeviceRow(device, {})
-                if first:
-                    cw.writerow(d.keys())
-                    first = False
-                cw.writerow(d.values())
-                device.open_device()
-                if device.placeholder and device.placeholder.binding:
-                    device.placeholder.binding.open_device()
-
-            d = DeviceRow(device, {})
-            if first:
-                cw.writerow(d.keys())
-                first = False
-            cw.writerow(d.values())
-
-        return self.response_csv(data, "compare_export.csv")
+        return self.download_xls(l_devs, "compare_export.xlsx")
 
     def obada_standard_export(self):
         """Get device information for Obada Standard."""
@@ -1205,26 +1152,17 @@ class ExportsView(View):
         return self.response_csv(data, "obada_standard.csv")
 
     def metrics(self):
-        """Get device query and put information in csv format."""
-        data = StringIO()
-        cw = csv.writer(
-            data,
-            delimiter=';',
-            lineterminator="\n",
-            quotechar='"',
-            quoting=csv.QUOTE_ALL,
-        )
-        first = True
+        """Get device query and put information in xls format."""
+
         devs_id = []
+        l_devs = []
+
         # Get the allocate info
         for device in self.find_devices():
             devs_id.append(device.id)
             for allocate in device.get_metrics():
                 d = ActionRow(allocate)
-                if first:
-                    cw.writerow(d.keys())
-                    first = False
-                cw.writerow(d.values())
+                l_devs.append(d)
 
         # Get the trade info
         query_trade = Trade.query.filter(
@@ -1242,12 +1180,9 @@ class ExportsView(View):
             data_rows = trade.get_metrics()
             for row in data_rows:
                 d = ActionRow(row)
-                if first:
-                    cw.writerow(d.keys())
-                    first = False
-                cw.writerow(d.values())
+                l_devs.append(d)
 
-        return self.response_csv(data, "actions_export.csv")
+        return self.download_xls(l_devs, "actions_export.xlsx")
 
     def erasure(self):
         template = self.build_erasure_certificate()
@@ -1259,27 +1194,8 @@ class ExportsView(View):
         return res
 
     def actions_erasures(self):
-        data = StringIO()
-        cw = csv.writer(
-            data,
-            delimiter=';',
-            lineterminator="\n",
-            quotechar='"',
-            quoting=csv.QUOTE_ALL,
-        )
 
-        cw.writerow(
-            [
-                'Data Storage Serial',
-                'DHID',
-                'Snapshot ID',
-                'Type of Erasure',
-                'PHID Erasure Host',
-                'Result',
-                'Time',
-            ]
-        )
-
+        l_devs = []
         args = request.args.get('ids')
         ids = args.split(',') if args else []
         ids = [id.strip() for id in ids]
@@ -1289,18 +1205,18 @@ class ExportsView(View):
         query = query.order_by(EraseBasic.created.desc())
 
         for ac in query:
-            row = [
-                ac.device.serial_number.upper(),
-                ac.device.dhid,
-                ac.snapshot.uuid if ac.snapshot else '',
-                ac.type,
-                ac.parent.phid() if ac.parent else '',
-                ac.severity,
-                ac.created.strftime('%Y-%m-%d %H:%M:%S'),
-            ]
-            cw.writerow(row)
+            row = {
+                'Data Storage Serial': ac.device.serial_number.upper(),
+                'DHID': ac.device.dhid,
+                'Snapshot ID': ac.snapshot.uuid if ac.snapshot else '',
+                'Type of Erasure': ac.type,
+                'PHID Erasure Host': ac.parent.phid() if ac.parent else '',
+                'Result': ac.severity,
+                'Time': ac.created.strftime('%Y-%m-%d %H:%M:%S'),
+            }
+            l_devs.append(row)
 
-        return self.response_csv(data, "Erasures.csv")
+        return self.download_xls(l_devs, "Erasures.xlsx")
 
     def get_datastorages(self):
         erasures = []
@@ -1426,45 +1342,11 @@ class ExportsView(View):
         return flask.render_template('inventory/erasure.html', **params)
 
     def lots_export(self):
-        data = StringIO()
-        cw = csv.writer(
-            data,
-            delimiter=';',
-            lineterminator="\n",
-            quotechar='"',
-            quoting=csv.QUOTE_ALL,
-        )
-
-        cw.writerow(
-            [
-                'Lot Id',
-                'Lot Name',
-                'Lot Type',
-                'Transfer Status',
-                'Transfer Code',
-                'Transfer Date',
-                'Transfer Creation Date',
-                'Transfer Update Date',
-                'Transfer Description',
-                'Devices Number',
-                'Devices Snapshots',
-                'Devices Placeholders',
-                'Delivery Note Number',
-                'Delivery Note Date',
-                'Delivery Note Units',
-                'Delivery Note Weight',
-                'Receiver Note Number',
-                'Receiver Note Date',
-                'Receiver Note Units',
-                'Receiver Note Weight',
-                'Customer Company Name',
-                'Customer Location',
-            ]
-        )
-
+        l_devs = []
         all_lots = set(Lot.query.filter_by(owner=g.user).all())
         share_lots = [s.lot for s in ShareLot.query.filter_by(user_to=g.user)]
         all_lots = all_lots.union(share_lots)
+
         for lot in all_lots:
             delivery_note = lot.transfer and lot.transfer.delivery_note or ''
             receiver_note = lot.transfer and lot.transfer.receiver_note or ''
@@ -1484,77 +1366,34 @@ class ExportsView(View):
             type_lot = lot.type_transfer()
             if lot in share_lots:
                 type_lot = "Shared"
-            row = [
-                lot.id,
-                lot.name,
-                type_lot,
-                lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
-                lot.transfer and lot.transfer.code or '',
-                lot.transfer and lot.transfer.date or '',
-                lot.transfer and lot.transfer.created or '',
-                lot.transfer and lot.transfer.updated or '',
-                lot.transfer and lot.transfer.description or '',
-                len(lot.devices),
-                wb_devs,
-                placeholders,
-                delivery_note and delivery_note.number or '',
-                delivery_note and delivery_note.date or '',
-                delivery_note and delivery_note.units or '',
-                delivery_note and delivery_note.weight or '',
-                receiver_note and receiver_note.number or '',
-                receiver_note and receiver_note.date or '',
-                receiver_note and receiver_note.units or '',
-                receiver_note and receiver_note.weight or '',
-                customer and customer.company_name or '',
-                customer and customer.location or '',
-            ]
-            cw.writerow(row)
 
-        return self.response_csv(data, "lots_export.csv")
+            row = {
+                'Lot Id': lot.id,
+                'Lot Name': lot.name,
+                'Lot Type': type_lot,
+                'Transfer Status': lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
+                'Transfer Code': lot.transfer and lot.transfer.code or '',
+                'Transfer Date': lot.transfer and lot.transfer.date and lot.transfer.date.replace(tzinfo=None) or '',
+                'Transfer Creation Date': lot.transfer and lot.transfer.created.replace(tzinfo=None) or '',
+                'Transfer Update Date': lot.transfer and lot.transfer.updated.replace(tzinfo=None) or '',
+                'Transfer Description': lot.transfer and lot.transfer.description or '',
+                'Devices Number': len(lot.devices),
+                'Devices Snapshots': wb_devs,
+                'Devices Placeholders': placeholders,
+                'Delivery Note Number': delivery_note and delivery_note.number or '',
+                'Delivery Note Date': delivery_note and delivery_note.date and delivery_note.date.replace(tzinfo=None) or '',
+                'Delivery Note Units': delivery_note and delivery_note.units or '',
+                'Delivery Note Weight': delivery_note and delivery_note.weight or '',
+                'Receiver Note Number': receiver_note and receiver_note.number or '',
+                'Receiver Note Date': receiver_note and receiver_note.date and receiver_note.date.replace(tzinfo=None) or '',
+                'Receiver Note Units': receiver_note and receiver_note.units or '',
+                'Receiver Note Weight': receiver_note and receiver_note.weight or '',
+                'Customer Company Name': customer and customer.company_name or '',
+                'Customer Location': customer and customer.location or '',
+            }
+            l_devs.append(row)
 
-    def devices_lots_export2(self):
-        data = StringIO()
-        cw = csv.writer(
-            data,
-            delimiter=';',
-            lineterminator="\n",
-            quotechar='"',
-            quoting=csv.QUOTE_ALL,
-        )
-        head = [
-            'DHID',
-            'Lot Id',
-            'Lot Name',
-            'Lot Type',
-            'Transfer Status',
-            'Transfer Code',
-            'Transfer Date',
-            'Transfer Creation Date',
-            'Transfer Update Date',
-        ]
-        cw.writerow(head)
-
-        for dev in self.find_devices():
-            for lot in dev.lots:
-                type_lot = lot.type_transfer()
-                if lot.is_shared:
-                    type_lot = "Shared"
-                row = [
-                    dev.devicehub_id,
-                    lot.id,
-                    lot.name,
-                    type_lot,
-                    lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
-                    lot.transfer and lot.transfer.code or '',
-                    lot.transfer and lot.transfer.date or '',
-                    lot.transfer and lot.transfer.created or '',
-                    lot.transfer and lot.transfer.updated or '',
-                ]
-                cw.writerow(row)
-
-        return self.response_csv(
-            data, "Devices_Incoming_and_Outgoing_Lots_Spreadsheet.csv"
-        )
+        return self.download_xls(l_devs, "lots_export.xlsx")
 
     def devices_lots_export(self):
         l_devs = []
@@ -1570,14 +1409,14 @@ class ExportsView(View):
                     'Lot Type': type_lot,
                     'Transfer Status': lot.transfer and (lot.transfer.closed and 'Closed' or 'Open') or '',
                     'Transfer Code': lot.transfer and lot.transfer.code or '',
-                    'Transfer Date': lot.transfer and lot.transfer.date or '',
-                    'Transfer Creation Date': lot.transfer and lot.transfer.created or '',
-                    'Transfer Update Date': lot.transfer and lot.transfer.updated or '',
-                }
+                    'Transfer Date': lot.transfer and lot.transfer.date and lot.transfer.date.replace(tzinfo=None) or '',
+                    'Transfer Creation Date': lot.transfer and lot.transfer.created.replace(tzinfo=None) or '',
+                    'Transfer Update Date': lot.transfer and lot.transfer.updated.replace(tzinfo=None) or '',
+                    }
                 l_devs.append(row)
 
         return self.download_xls(
-            l_devs, "Devices_Incoming_and_Outgoing_Lots_Spreadsheet.xls"
+            l_devs, "Devices_Incoming_and_Outgoing_Lots_Spreadsheet.xlsx"
         )
 
     def snapshot(self):
