@@ -67,6 +67,7 @@ init_data() {
         # 11. Generate a minimal data structure.
         #   TODO it has some errors (?)
         flask initdata || true
+        #flask dlt_register_user /opt/devicehub/examples/users_devicehub.json || true
 }
 
 big_error() {
@@ -166,7 +167,8 @@ config_dpp_part1() {
 
 config_dpp_part2() {
         # 16.
-        flask check_install "${EMAIL_DEMO}" ${PASSWORD_DEMO}
+        #   commented because this fails with wrong DLT credentials
+        #flask check_install "${EMAIL_DEMO}" "${PASSWORD_DEMO}"
         # 20. config server or client ID
         config_oidc
 }
@@ -187,7 +189,8 @@ config_phase() {
 
                 # # 15. Add inventory snapshots for user "${EMAIL_DEMO}".
                 if [ "${IMPORT_SNAPSHOTS}" = 'y' ]; then
-                        cp /mnt/snapshots/snapshot*.json ereuse_devicehub/commands/snapshot_files
+                        mkdir -p ereuse_devicehub/commands/snapshot_files
+                        cp /mnt/snapshots/snapshot*.json ereuse_devicehub/commands/snapshot_files/
                         /usr/bin/time flask snapshot "${EMAIL_DEMO}" ${PASSWORD_DEMO}
                 fi
 

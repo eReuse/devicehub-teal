@@ -55,9 +55,9 @@ If you want to use oidc4vp you need set the vars:
 ```
 You can see the [manual install step 9]('https://github.com/eReuse/devicehub-teal/blob/oidc4vp/README_MANUAL_INSTALLATION.md#installing') for get more detail.
 
-4. Run the docker containers:
+4. Build and run the docker containers:
 ```
-  docker compose up
+  ./launcher.sh
 ```
 To stop these docker containers you can use Ctl+C, and if you run again "compose up" you'll maintain the data and infrastructure state.
 
@@ -78,6 +78,17 @@ If the deployment was end-to-end successful (two running Devicehub instances suc
 ```
 
 That means the two Devicehub instances are running in their containers, that can be reached as http://localhost:5000/ and http://localhost:5001/
+
+Once the devicehub instances are running, you might want to register a user bind to the DLT with the following commands (here, assumes you want to execute it on devicehub-id-client, you might also want to do it in devicehub-id-server). Change the variables accordingly
+
+```
+  FILE=my_users_devicehub.json
+  DOCKER_SERVICE=devicehub-id-server
+  docker compose cp /path/to/${FILE} ${DOCKER_SERVICE}:/tmp/
+  docker compose exec ${DOCKER_SERVICE} flask dlt_register_user /tmp/${FILE}
+```
+
+**my_users_devicehub.json** is a custom file which is similar to the one provided in `examples/users_devicehub.json`
 
 5. To shut down the services and remove the corresponding data, you can use:
 ```
