@@ -40,7 +40,7 @@ Configure project using environment file (you can use provided example as quicks
 ```bash
 $ cp examples/env.example .env
 ```
-You can use these parameters as default for a local test, but default values may not be suitable for an internet-exposed service for security reasons. However, these three variables need to be initialized:
+You can use these parameters as default for a local test, but default values may not be suitable for an internet-exposed service for security reasons. However, these six variables need to be initialized:
 ```
   API_DLT
   API_DLT_TOKEN
