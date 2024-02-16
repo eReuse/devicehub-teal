@@ -57,7 +57,7 @@ class RegisterUserDlt:
         data_eth = json.dumps(ethereum)
         user.api_keys_dlt = encrypt(password, data_eth)
 
-        lroles = []
+        roles = []
         try:
             # TODO Not works
             with app.app_context():
@@ -66,8 +66,7 @@ class RegisterUserDlt:
                 attributes = user.get_abac_attributes()
                 for c in attributes:
                     if 'role' in c.get('attributeURI'):
-                        lrole.append(c.get('attributeValue'))
-                roles = ",".join(lrole)
+                        roles.append(c.get('attributeValue'))
         except Exception:
             roles = ["Operator"]
 
