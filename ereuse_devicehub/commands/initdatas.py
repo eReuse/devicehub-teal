@@ -33,9 +33,9 @@ class InitDatas:
         db.session.add(inv)
         db.session.commit()
 
-        if self.email:
-            user = User(email=self.email, password=self.password)
-            user.individuals.add(Person(name=self.name))
-            db.session.add(user)
+        # if self.email:
+        #     user = User(email=self.email, password=self.password)
+        #     user.individuals.add(Person(name=self.name))
+        #     db.session.add(user)
 
-            db.session.commit()
+        #     db.session.commit()
