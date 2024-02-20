@@ -12,7 +12,7 @@ Devicehub relies on the existence of an [API_DLT connector](https://gitlab.com/d
 Please visit the [Manual Installation](README_MANUAL_INSTALLATION.md) instructions to understand the detailed steps to install it locally or deploy it on a server. However, we recommend the following Docker deployment process.
 
 # Docker
-There is a Docker compose file for an automated deployment. The following steps describe how to run and use it.
+There is a Docker compose file for an automated deployment. Two instances of DeviceHub will be deployed. The following steps describe how to run and use it.
 
 1. Download the sources:
 ```
@@ -20,7 +20,7 @@ There is a Docker compose file for an automated deployment. The following steps 
   cd devicehub-teal
 ```
 
-2. If you want to initialise your DeviceHub instance with sample device snapshots, copy it/them into that directory. e.g.
+2. If you want to initialise one of DeviceHub instances (running on port 5000) with sample device snapshots, copy it/them into that directory. e.g.
 ```
   cp snapshot01.json examples/snapshots/
 ```
@@ -30,7 +30,7 @@ There is a Docker compose file for an automated deployment. The following steps 
   IMPORT_SNAPSHOTS='n'
 ```
 
-To register new devices, the [workbench software](https://github.com/eReuse/workbench) can be run on a device to generate its hardware snapshot that can be uploaded to your DeviceHub instance.
+To register new devices, the [workbench software](https://github.com/eReuse/workbench) can be run on a device to generate its hardware snapshot that can be uploaded to one of the two DeviceHub instance.
 
 3. Setup the environment variables in the .env file.  You can find one example in examples/env.example.
 If you don't have any, you can copy that example and modify the basic vars
@@ -45,15 +45,12 @@ You can use these parameters as default for a local test, but default values may
   ABAC_TOKEN
   ABAC_USER
   ABAC_URL
-```
-These values should come from an already operational [API_DLT connector](https://gitlab.com/dsg-upc/ereuse-dpp) service instance.
-
-If you want to use OIDC4VP, you need to set the vars:
-```
   SERVER_ID_FEDERATED
   CLIENT_ID_FEDERATED
 ```
-You can see the [manual install step 9]('https://github.com/eReuse/devicehub-teal/blob/oidc4vp/README_MANUAL_INSTALLATION.md#installing') for more details.
+The first six values should come from an already operational [API_DLT connector](https://gitlab.com/dsg-upc/ereuse-dpp) service instance.
+
+For the last two values check [manual install step 9]('https://github.com/eReuse/devicehub-teal/blob/oidc4vp/README_MANUAL_INSTALLATION.md#installing') for more details.
 
 4. Build and run the docker containers:
 ```
