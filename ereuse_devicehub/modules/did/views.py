@@ -62,7 +62,9 @@ class DidView(View):
             "isOperator": "operator.html",
             "isVerifier": "verifier.html",
             "operator": "operator.html",
+            "Operator": "operator.html",
             "verifier": "verifier.html",
+            "Verifier": "verifier.html",
         }
         self.template_name = tlmp.get(rol, self.template_name)
 
@@ -87,7 +89,7 @@ class DidView(View):
         if not g.user.is_authenticated and not rols:
             return []
 
-        if rols:
+        if rols and rols != [('', '')]:
             self.context['rols'] = rols
 
         if 'dpp' not in app.blueprints.keys():
@@ -96,7 +98,13 @@ class DidView(View):
         if not session.get('token_dlt'):
             return []
 
+        _role = g.user.get_rols_dlt()
         role = session.get('iota_abac_attributes', {}).get('role', '')
+
+        if not role and _role:
+            self.context['rols'] = [(x, x) for x in _role
+            return
+
         if not role:
             return []
         self.context['rols'] = [(x.strip(), x.strip()) for x in role.split(",")]
