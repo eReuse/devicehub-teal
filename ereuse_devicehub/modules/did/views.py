@@ -102,7 +102,7 @@ class DidView(View):
         role = session.get('iota_abac_attributes', {}).get('role', '')
 
         if not role and _role:
-            self.context['rols'] = [(x, x) for x in _role
+            self.context['rols'] = [(x, x) for x in _role]
             return
 
         if not role:
