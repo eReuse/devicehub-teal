@@ -1,4 +1,5 @@
 import json
+import requests
 
 import click
 
@@ -11,7 +12,7 @@ from ereuse_devicehub.modules.dpp.utils import encrypt
 
 
 class RegisterUserDlt:
-    #  "Operator", "Verifier" or "Witness"
+    #  "operator", "verifier" or "witness"
 
     def __init__(self, app) -> None:
         super().__init__()
@@ -27,7 +28,7 @@ class RegisterUserDlt:
         for d in dataset:
             self.add_user(d)
 
-        db.session.commit()
+            db.session.commit()
 
     def add_user(self, data):
         email = data.get("email")
@@ -59,18 +60,28 @@ class RegisterUserDlt:
 
         roles = []
         try:
-            # TODO Not works
-            with app.app_context():
-                ses = g.get('session', None)
-                ses["eth_pub_key"] = eth_pub_key
-                attributes = user.get_abac_attributes()
-                for c in attributes:
-                    if 'role' in c.get('attributeURI'):
-                        roles.append(c.get('attributeValue'))
+            abac_tk = app.config.get('ABAC_TOKEN')
+            domain = app.config.get('ABAC_URL')
+            eth_pub_key = eth_pub_key
+
+            header = {
+                'Authorization': f'Bearer {abac_tk}',
+            }
+            url = f'{domain}{eth_pub_key}/attributes'
+            r = requests.get(url, headers=header)
+            attributes = {}
+            for j in r.json():
+                k = j.get('attributeURI', '').split('/')[-1].split("#")[-1]
+                v = j.get('attributeValue', '').strip()
+                if not (k and v):
+                    continue
+                attributes[k] = v
+
+            if attributes.get('role'):
+                roles.append(attributes.get('role'))
         except Exception:
-            roles = ["Operator"]
+            roles = ["operator"]
 
         user.rols_dlt = json.dumps(roles)
 
-        # if not user.id:
         db.session.add(user)
