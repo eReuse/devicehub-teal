@@ -5,6 +5,7 @@ import logging
 import os
 import pathlib
 import uuid
+import psycopg2
 from contextlib import suppress
 from datetime import datetime
 from fractions import Fraction
@@ -1101,7 +1102,11 @@ class Device(Thing):
 
         if isinstance(date, str):
             try:
-                self._date_close = datetime.strptime(date, normalize)
+                self._date_close = datetime.strptime(date, normalize).replace(
+                    tzinfo=psycopg2.tz.FixedOffsetTimezone(offset=60, name=None)
+                )
+                if self._date_close < self.created:
+                    self._date_close = self.created.replace(hour=23, minute=59)
             except Exception as err:
                 logger.error(err)
                 txt = "Date: {} normalize: {}".format(date, normalize)
@@ -1286,7 +1291,7 @@ class Placeholder(Thing):
     device = db.relationship(
         Device,
         backref=backref(
-            'placeholder', lazy=True, cascade="all, delete-orphan", uselist=False
+            'placeholder', lazy=False, cascade="all, delete-orphan", uselist=False
         ),
         primaryjoin=device_id == Device.id,
     )
@@ -1299,7 +1304,7 @@ class Placeholder(Thing):
     )
     binding = db.relationship(
         Device,
-        backref=backref('binding', lazy=True, uselist=False),
+        backref=backref('binding', lazy=False, uselist=False),
         primaryjoin=binding_id == Device.id,
     )
     binding_id.comment = "binding placeholder with workbench device"
@@ -1690,7 +1695,7 @@ class Component(Device):
         Computer,
         backref=backref(
             'components',
-            lazy=True,
+            lazy=False,
             cascade=CASCADE_DEL,
             order_by=lambda: Component.id,
             collection_class=OrderedSet,

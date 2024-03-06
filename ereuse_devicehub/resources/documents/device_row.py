@@ -297,9 +297,9 @@ class DeviceRow(BaseDeviceRow):
         self['Device Serial Number'] = none2str(device.serial_number)
         self['Device Model'] = none2str(device.model)
         self['Device Manufacturer'] = none2str(device.manufacturer)
-        self['Registered in'] = format(device.created, '%c')
+        self['Registered in'] = format(device.created.replace(tzinfo=None), '%c')
         self['Registered (process)'] = software
-        self['Updated in (software)'] = device.updated
+        self['Updated in (software)'] = device.updated.replace(tzinfo=None)
 
         if device.physical_status():
             self['Physical state'] = device.physical_status().type
@@ -451,7 +451,9 @@ class DeviceRow(BaseDeviceRow):
         self['Erasure DataStorage 1 Result'] = get_result(erasure)
         self['Erasure DataStorage 1 Type'] = erasure.type
         self['Erasure DataStorage 1 Software'] = erasure.document.software
-        self['Erasure DataStorage 1 Date'] = format(erasure.document.date or '')
+        self['Erasure DataStorage 1 Date'] = format(
+            erasure.document.date and erasure.document.date.replace(tzinfo=None) or ''
+        )
         self['Erasure DataStorage 1 Certificate URL'] = (
             erasure.document.url and erasure.document.url.to_text() or ''
         )
@@ -496,7 +498,7 @@ class DeviceRow(BaseDeviceRow):
             self['Erasure {} {} Result'.format(ctype, i)] = get_result(erasure)
             self['Erasure {} {} Type'.format(ctype, i)] = erasure.type
             self['Erasure {} {} Date'.format(ctype, i)] = format(
-                erasure.document.date or ''
+                erasure.document.date and erasure.document.date.replace(tzinfo=None) or ''
             )
             self['Erasure {} {} Certificate URL'.format(ctype, i)] = (
                 erasure.document.url and erasure.document.url.to_text() or ''
@@ -589,7 +591,7 @@ class StockRow(OrderedDict):
         self['Serial Number'] = none2str(device.serial_number)
         self['Model'] = none2str(device.model)
         self['Manufacturer'] = none2str(device.manufacturer)
-        self['Registered in'] = format(device.created, '%c')
+        self['Registered in'] = format(device.created.replace(tzinfo=None), '%c')
         self['Physical state'] = ''
         if device.physical_status():
             self['Physical state'] = device.physical_status().type
@@ -664,11 +666,11 @@ class ActionRow(OrderedDict):
         self['Status Supplier – Created Date'] = allocate['status_supplier_created']
         self['Status Receiver – Created Date'] = allocate['status_receiver_created']
         self['Trade-Weight'] = allocate['trade_weight']
-        self['Action-Create'] = allocate['created']
+        self['Action-Create'] = allocate['created'] and allocate['created'].replace(tzinfo=None) or ''
         self['Allocate-Start'] = allocate['start']
         self['Allocate-User-Code'] = allocate['finalUserCode']
         self['Allocate-NumUsers'] = allocate['numEndUsers']
         self['UsageTimeAllocate'] = allocate['usageTimeAllocate']
         self['Type'] = allocate['type']
-        self['LiveCreate'] = allocate['liveCreate']
+        self['LiveCreate'] = allocate['liveCreate'] and allocate['liveCreate'].replace(tzinfo=None) or ''
         self['UsageTimeHdd'] = allocate['usageTimeHdd']

@@ -198,3 +198,4 @@ wtforms==3.0.1
     # via flask-wtf
 xlrd==2.0.1
     # via -r requirements.in
+xlsxwriter==3.1.9
