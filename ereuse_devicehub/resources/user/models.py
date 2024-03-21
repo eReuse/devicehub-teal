@@ -155,7 +155,7 @@ class User(UserMixin, Thing):
     def get_rols_dlt(self):
         if not self.rols_dlt:
             return []
-        return json.loads(self.rols_dlt, [])
+        return json.loads(self.rols_dlt)
 
     def set_rols_dlt(self, token_dlt=None):
         rols = self.get_rols(self, token_dlt=token_dlt)
