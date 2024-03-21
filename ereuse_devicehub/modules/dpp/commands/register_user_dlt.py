@@ -23,7 +23,6 @@ class RegisterUserDlt:
 
     @click.argument('dataset_file')
     def run(self, dataset_file):
-        # import pdb; pdb.set_trace()
         with open(dataset_file) as f:
             dataset = json.loads(f.read())
 
