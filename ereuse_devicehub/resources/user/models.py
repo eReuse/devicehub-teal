@@ -102,16 +102,12 @@ class User(UserMixin, Thing):
         # take advantage of SQL Alchemy PasswordType to verify password
         return self.password == password
 
-    def set_new_dlt_keys(self, password):
+    def set_new_dlt_keys(self, data, password):
         if 'dpp' not in app.blueprints.keys():
-            return
-
-        from ereuseapi.methods import register_user
+            return ''
 
         from ereuse_devicehub.modules.dpp.utils import encrypt
 
-        api_dlt = app.config.get('API_DLT')
-        data = register_user(api_dlt)
         api_token = data.get('data', {}).get('api_token')
         data = json.dumps(data)
         self.api_keys_dlt = encrypt(password, data)
@@ -157,7 +153,9 @@ class User(UserMixin, Thing):
         return result
 
     def get_rols_dlt(self):
-        return json.loads(self.rols_dlt)
+        if not self.rols_dlt:
+            return []
+        return json.loads(self.rols_dlt, [])
 
     def set_rols_dlt(self, token_dlt=None):
         rols = self.get_rols(self, token_dlt=token_dlt)
