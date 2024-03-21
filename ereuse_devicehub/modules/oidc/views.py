@@ -209,7 +209,7 @@ class AllowCodeView(GenericMixin):
         msg = requests.get(url, headers=headers)
         self.userinfo = json.loads(msg.text)
         rols = self.userinfo.get('rols', [])
-        session['rols'] = [(k, k) for k in rols]
+        session['rols'] = rols
         return self.userinfo
 
 
