@@ -132,16 +132,18 @@ class SelectInventoryView(GenericMixin):
 
     def dispatch_request(self):
         host = app.config.get('HOST', '').strip("/")
-        url = "https://ebsi-pcp-wallet-ui.vercel.app/oid4vp?"
-        url += f"client_id=https://{host}&"
-        url += "presentation_definition_uri=https://iotaledger.github.io"
-        # url += "/ebsi-stardust-components/public/presentation-definition-ex1.json"
-        url += "/ebsi-stardust-components/public//presentation-definition-ereuse.json&"
-        url += f"response_uri=https://{host}/allow_code_oidc4vp"
-        url += "&state=1700822573400&response_type=vp_token&response_mode=direct_post"
-        url += "&nonce=DybC3A=="
-
         next = request.args.get('next', '#')
+        # url = "https://ebsi-pcp-wallet-ui.vercel.app/oid4vp?"
+        # url += f"client_id=https://{host}&"
+        # url += "presentation_definition_uri=https://iotaledger.github.io"
+        # url += "/ebsi-stardust-components/public/presentation-definition-ex1.json"
+        # url += "/ebsi-stardust-components/public//presentation-definition-ereuse.json&"
+        # url += f"response_uri=https://{host}/allow_code_oidc4vp"
+        # url += "&state=1700822573400&response_type=vp_token&response_mode=direct_post"
+        url = app.config.get('VERIFY_URL')
+        url += f"?response_uri=http://{host}:5000/allow_code_oidc4vp"
+        url += '&presentation_definition=["EOperatorClaim"]'
+
         session['next_url'] = next
 
         return redirect(url, code=302)
@@ -230,10 +232,11 @@ class AllowCodeOidc4vpView(GenericMixin):
 
     def dispatch_request(self):
         vcredential = self.get_credential()
+        import pdb; pdb.set_trace()
         if not vcredential:
             return jsonify({"error": "No there are credentials"})
 
-        roles = self.verify(vcredential)
+        roles = self.get_roles(vcredential)
         if not roles:
             return jsonify({"error": "No there are roles"})
 
@@ -242,47 +245,19 @@ class AllowCodeOidc4vpView(GenericMixin):
         return jsonify({"redirect_uri": uri})
 
     def get_credential(self):
-        self.vp_token = request.values.get("vp_token")
-        pv = self.vp_token.split(".")
-        token = json.loads(base64.b64decode(pv[1]).decode())
-        return token.get('vp', {}).get("verifiableCredential")
+        pv = request.values.get("vp_token")
+        self.code = request.values.get("code")
+        token = json.loads(base64.b64decode(pv).decode())
+        return token.get("verifiableCredential")
 
-    def verify(self, vcredential):
-        WALLET_INX_EBSI_PLUGIN_TOKEN = app.config.get(
-            'WALLET_INX_EBSI_PLUGIN_TOKEN'
-        )
-        WALLET_INX_EBSI_PLUGIN_URL = app.config.get(
-            'WALLET_INX_EBSI_PLUGIN_URL'
-        )
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {WALLET_INX_EBSI_PLUGIN_TOKEN}'
-        }
-        for v in vcredential:
-            data = json.dumps({
-                "type": "VerificationRequest",
-                "jwtCredential": v
-            })
-            result = requests.post(
-                WALLET_INX_EBSI_PLUGIN_URL,
-                headers=headers,
-                data=data
-            )
-            if result.status_code != 200:
-                return
-
-            vps = json.loads(result.text)
-            try:
-                roles = vps['credential']['credentialSubject'].get('role')
-            except Exception:
-                roles = None
-
-            if roles:
-                break
-
-        if not vps.get('verified'):
-            return
-
+    def get_roles(self, vps):
+        try:
+            for vp in vps:
+                roles = vp.get('credentialSubject', {}).get('role')
+                if roles:
+                    return roles
+        except Exception:
+            roles = None
         return roles
 
     def get_response_uri(selfi, roles):
@@ -290,7 +265,7 @@ class AllowCodeOidc4vpView(GenericMixin):
         db.session.add(code)
         db.session.commit()
 
-        url = "https://{host}/allow_code_oidc4vp2?code={code}".format(
+        url = "http://{host}/allow_code_oidc4vp2?code={code}".format(
             host=app.config.get('HOST'),
             code=code.code
         )
@@ -314,6 +289,7 @@ class AllowCodeOidc4vp2View(View):
         return redirect(url)
 
     def get_user_info(self):
+        import pdb; pdb.set_trace()
         code = Code2Roles.query.filter_by(code=self.code).first()
 
         if not code:
