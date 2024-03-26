@@ -232,7 +232,6 @@ class AllowCodeOidc4vpView(GenericMixin):
 
     def dispatch_request(self):
         vcredential = self.get_credential()
-        import pdb; pdb.set_trace()
         if not vcredential:
             return jsonify({"error": "No there are credentials"})
 
@@ -265,7 +264,7 @@ class AllowCodeOidc4vpView(GenericMixin):
         db.session.add(code)
         db.session.commit()
 
-        url = "http://{host}/allow_code_oidc4vp2?code={code}".format(
+        url = "http://{host}:5000/allow_code_oidc4vp2?code={code}".format(
             host=app.config.get('HOST'),
             code=code.code
         )
@@ -289,7 +288,6 @@ class AllowCodeOidc4vp2View(View):
         return redirect(url)
 
     def get_user_info(self):
-        import pdb; pdb.set_trace()
         code = Code2Roles.query.filter_by(code=self.code).first()
 
         if not code:
