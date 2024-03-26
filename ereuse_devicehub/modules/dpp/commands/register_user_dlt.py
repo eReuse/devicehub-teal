@@ -3,6 +3,7 @@ import requests
 
 import click
 
+from ereuseapi.methods import API
 from flask import g, current_app as app
 from ereuseapi.methods import register_user
 from ereuse_devicehub.db import db
@@ -34,9 +35,7 @@ class RegisterUserDlt:
         email = data.get("email")
         name = email.split('@')[0]
         password = data.get("password")
-        api_dlt = app.config.get('API_DLT')
-        eth_priv_key = data.get("eth_priv_key")
-        eth_pub_key = data.get("eth_pub_key")
+        ethereum = {"data": data.get("data")}
 
         user = User.query.filter_by(email=email).first()
 
@@ -44,43 +43,19 @@ class RegisterUserDlt:
             user = User(email=email, password=password)
             user.individuals.add(Person(name=name))
 
-        try:
-            response = register_user(api_dlt, privateKey=eth_priv_key[2:])
-            api_token = response.get('data', {}).get('api_token')
-        except Exception:
-            api_token = ""
-
-        ethereum = {
-            "eth_pub_key": eth_pub_key,
-            "eth_priv_key": eth_priv_key,
-            "api_token": api_token
-        }
         data_eth = json.dumps(ethereum)
         user.api_keys_dlt = encrypt(password, data_eth)
 
         roles = []
-        try:
-            abac_tk = app.config.get('ABAC_TOKEN')
-            domain = app.config.get('ABAC_URL')
-            eth_pub_key = eth_pub_key
+        token_dlt = ethereum["data"]["api_token"]
+        api_dlt = app.config.get('API_DLT')
+        api = API(api_dlt, token_dlt, "ethereum")
+        result = api.check_user_roles()
 
-            header = {
-                'Authorization': f'Bearer {abac_tk}',
-            }
-            url = f'{domain}{eth_pub_key}/attributes'
-            r = requests.get(url, headers=header)
-            attributes = {}
-            for j in r.json():
-                k = j.get('attributeURI', '').split('/')[-1].split("#")[-1]
-                v = j.get('attributeValue', '').strip()
-                if not (k and v):
-                    continue
-                attributes[k] = v
-
-            if attributes.get('role'):
-                roles.append(attributes.get('role'))
-        except Exception:
-            roles = ["operator"]
+        if result.get('Status') == 200:
+            if 'Success' in result.get('Data', {}).get('status'):
+                rols = result.get('Data', {}).get('data', {})
+                roles = [(k, k) for k, v in rols.items() if v]
 
         user.rols_dlt = json.dumps(roles)
 

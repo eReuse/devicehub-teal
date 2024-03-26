@@ -101,13 +101,10 @@ class DidView(View):
         _role = g.user.get_rols_dlt()
         role = session.get('iota_abac_attributes', {}).get('role', '')
 
-        if not role and _role:
-            self.context['rols'] = [(x, x) for x in _role]
-            return
-
-        if not role:
+        if not _role:
             return []
-        self.context['rols'] = [(x.strip(), x.strip()) for x in role.split(",")]
+        self.context['rols'] = _role
+        return _role
 
     def get_rol(self):
         rols = self.context.get('rols', [])
