@@ -6,6 +6,7 @@ from authlib.integrations.sqla_oauth2 import (
 from flask import g
 from werkzeug.security import gen_salt
 
+from flask import current_app
 from ereuse_devicehub.db import db
 from ereuse_devicehub.resources.models import Thing
 from ereuse_devicehub.resources.user.models import User
@@ -81,8 +82,8 @@ class OAuth2Token(Thing, OAuth2TokenMixin):
     member = db.relationship('MemberFederated')
 
 
-class Code2Roles(Thing):
-    __tablename__ = 'code_roles'
+class CodeRoles(Thing):
+    # __tablename__ = 'code_roles'
 
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(40), default=gen_code, nullable=False)

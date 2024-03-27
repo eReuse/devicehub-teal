@@ -29,7 +29,7 @@ from ereuse_devicehub.modules.oidc.forms import (
 from ereuse_devicehub.modules.oidc.models import (
     MemberFederated,
     OAuth2Client,
-    Code2Roles
+    CodeRoles
 )
 from ereuse_devicehub.modules.oidc.oauth2 import (
     authorization,
@@ -260,7 +260,7 @@ class AllowCodeOidc4vpView(GenericMixin):
         return roles
 
     def get_response_uri(selfi, roles):
-        code = Code2Roles(roles=roles)
+        code = CodeRoles(roles=roles)
         db.session.add(code)
         db.session.commit()
 
@@ -288,7 +288,7 @@ class AllowCodeOidc4vp2View(View):
         return redirect(url)
 
     def get_user_info(self):
-        code = Code2Roles.query.filter_by(code=self.code).first()
+        code = CodeRoles.query.filter_by(code=self.code).first()
 
         if not code:
             return

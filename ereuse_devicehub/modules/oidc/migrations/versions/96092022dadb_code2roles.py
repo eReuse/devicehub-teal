@@ -49,6 +49,30 @@ def upgrade():
     op.execute(f"CREATE SEQUENCE {get_inv()}.code_roles_seq;")
 
 
+    op.create_table(
+        'code_roles',
+        sa.Column('id', sa.BigInteger(), nullable=False),
+        sa.Column(
+            'updated',
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text('CURRENT_TIMESTAMP'),
+            nullable=False,
+        ),
+        sa.Column(
+            'created',
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text('CURRENT_TIMESTAMP'),
+            nullable=False,
+        ),
+        sa.Column('code', citext.CIText(), nullable=False),
+        sa.Column('roles', citext.CIText(), nullable=False),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.execute(f"CREATE SEQUENCE code_roles_seq;")
+
+
 def downgrade():
     op.drop_table('code_roles', schema=f'{get_inv()}')
     op.execute(f"DROP SEQUENCE {get_inv()}.code_roles_seq;")
+    op.drop_table('code_roles')
+    op.execute(f"DROP SEQUENCE code_roles_seq;")
