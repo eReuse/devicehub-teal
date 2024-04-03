@@ -28,5 +28,5 @@ COPY . .
 COPY examples/app.py .
 RUN pip install -e .
 
-COPY docker/devicehub.entrypoint.sh .
-ENTRYPOINT sh ./devicehub.entrypoint.sh
+COPY docker/devicehub.entrypoint.sh /
+ENTRYPOINT sh /devicehub.entrypoint.sh
