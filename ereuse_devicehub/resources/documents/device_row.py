@@ -674,3 +674,47 @@ class ActionRow(OrderedDict):
         self['Type'] = allocate['type']
         self['LiveCreate'] = allocate['liveCreate'] and allocate['liveCreate'].replace(tzinfo=None) or ''
         self['UsageTimeHdd'] = allocate['usageTimeHdd']
+
+
+class ImpactRow(OrderedDict):
+    """General information about Impact reporto."""
+
+    def __init__(self, device):
+        """General information about Impact reporto."""
+        super().__init__()
+        self.device = device.placeholder.binding
+        self['DHID'] = device.devicehub_id
+        self['Production date'] = self.device.production_date or ''
+        self['Time of use in hours'] = self.get_lifetime()
+
+    def get_lifetime(self):
+        snapshots = [ac for ac in self.device.actions if ac.type == "Snapshot"]
+        if not snapshots:
+            return
+
+        snapshot1 = snapshots[0]
+        snapshot2 = snapshots[-1]
+        if snapshot1 == snapshot2:
+            return
+
+        d1 = self.get_disk_time(snapshot1)
+        d2 = self.get_disk_time(snapshot2)
+        delta = []
+        for k, v in d1.items():
+            if d2.get(k):
+                delta.append((d2[k] - v).total_seconds())
+
+        if delta:
+            # 1 hour == 3600 seg
+            return sum(delta)/len(delta) / 3600
+
+        return 0
+
+    def get_disk_time(self, snapshot):
+        disks = {}
+        for a in snapshot.actions:
+            if a.type == 'TestDataStorage':
+                disks[a.device.serial_number] = a.lifetime
+
+        return disks
+

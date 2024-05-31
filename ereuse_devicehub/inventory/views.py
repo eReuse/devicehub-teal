@@ -53,6 +53,7 @@ from ereuse_devicehub.resources.device.models import (
     Placeholder,
 )
 from ereuse_devicehub.resources.documents.device_row import ActionRow, DeviceRow
+from ereuse_devicehub.resources.documents.device_row import ImpactRow 
 from ereuse_devicehub.resources.enums import SnapshotSoftware
 from ereuse_devicehub.resources.hash_reports import insert_hash
 from ereuse_devicehub.resources.lot.models import Lot, ShareLot
@@ -1018,6 +1019,7 @@ class ExportsView(View):
             'devices_lots': self.devices_lots_export,
             'obada_standard': self.obada_standard_export,
             'snapshot': self.snapshot,
+            'impact': self.impact,
         }
 
         if export_id not in export_ids:
@@ -1183,6 +1185,18 @@ class ExportsView(View):
                 l_devs.append(d)
 
         return self.download_xls(l_devs, "actions_export.xlsx")
+
+    def impact(self):
+        """Get device query and put information in xls format."""
+
+        l_devs = []
+
+        # Get the allocate info
+        for device in self.find_devices():
+            d = ImpactRow(device)
+            l_devs.append(d)
+
+        return self.download_xls(l_devs, "impact_export.xlsx")
 
     def erasure(self):
         template = self.build_erasure_certificate()
