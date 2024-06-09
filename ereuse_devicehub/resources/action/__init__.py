@@ -38,6 +38,11 @@ class EraseSectorsDef(EraseBasicDef):
     SCHEMA = schemas.EraseSectors
 
 
+class EraseCryptoDef(EraseBasicDef):
+    VIEW = None
+    SCHEMA = schemas.EraseCrypto
+
+
 class ErasePhysicalDef(EraseBasicDef):
     VIEW = None
     SCHEMA = schemas.ErasePhysical

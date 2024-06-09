@@ -539,6 +539,36 @@ class EraseSectors(EraseBasic):
         return "Custom"
 
 
+class EraseCrypto(EraseBasic):
+    """Method for securely erasing data in compliance with HMG Infosec Standard 5 guidelines
+    includes a single step of a random write process on the full disk.
+    This process overwrites all data with a randomized pattern, ensuring that it cannot be
+    recovered. Built-in validation confirms that the data has been written correctly, and a
+    final validation confirms that all data has been deleted.
+    """
+
+    method = "Baseline Cryptographic"
+    standard = "NIST, Infosec HGM Baseline"
+
+    def get_public_name(self):
+        return "Baseline Cryptographic"
+
+    def __format__(self, format_spec: str) -> str:
+        v = ''
+        if 't' in format_spec:
+            v += '{} {}'.format(self.type, self.severity)
+        if 't' in format_spec and 's' in format_spec:
+            v += '. '
+        if 's' in format_spec:
+            std = 'with standard {}'.format(self.standard)
+            v += 'Method used: {}, {}. '.format(self.method, std)
+            if self.end_time and self.start_time:
+                v += '{} elapsed. '.format(self.elapsed)
+
+            v += 'On {}'.format(self.date_str)
+        return v
+
+
 class ErasePhysical(EraseBasic):
     """The act of physically destroying a data storage unit."""
 

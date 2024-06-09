@@ -213,6 +213,10 @@ class EraseSectors(EraseBasic):
     __doc__ = m.EraseSectors.__doc__
 
 
+class EraseCrypto(EraseBasic):
+    __doc__ = m.EraseCrypto.__doc__
+
+
 class ErasePhysical(EraseBasic):
     __doc__ = m.ErasePhysical.__doc__
     method = EnumField(PhysicalErasureMethod, description=PhysicalErasureMethod.__doc__)
@@ -442,7 +446,7 @@ class Snapshot(ActionWithOneDevice):
         required=True,
         description='The software that generated this Snapshot.',
     )
-    version = Version(required=True, description='The version of the software.')
+    version = String(required=True, description='The version of the software.')
     actions = NestedOn(Action, many=True, dump_only=True)
     elapsed = TimeDelta(precision=TimeDelta.SECONDS)
     components = NestedOn(

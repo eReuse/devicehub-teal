@@ -23,7 +23,8 @@ class Snapshot_lite(Thing):
     type = String(required=True)
     timestamp = String(required=True)
     settings_version = String(required=False)
-    data = Nested(Snapshot_lite_data, required=True)
+    hwmd = Nested(Snapshot_lite_data, required=True)
+    sanitize = List(Dict(), required=False)
 
     @validates_schema
     def validate_workbench_version(self, data: dict):
