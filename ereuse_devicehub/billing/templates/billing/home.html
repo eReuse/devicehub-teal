@@ -1,0 +1,38 @@
+{% extends "ereuse_devicehub/base_site.html" %}
+{% block main %}
+
+<div class="pagetitle">
+  <h1>Billing</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item active">{{ page_title }}</li>
+    </ol>
+  </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+  Current usage
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Year</th>
+        <th scope="col">Month</th>
+        <th scope="col">Snapshot (register)</th>
+        <th scope="col">Snapshot (update)</th>
+        <th scope="col">Drives Erasure (uniques)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">{{ current_month_usage.year }}</th>
+        <th scope="row">{{ current_month_usage.month }}</th>
+        <td>{{ current_month_usage.snapshot_register }}</td>
+        <td>{{ current_month_usage.snapshot_update }}</td>
+        <td>{{ current_month_usage.drives_erasure }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+</section>
+{% endblock main %}
