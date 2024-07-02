@@ -3,7 +3,11 @@ services:
 
   devicehub:
     init: true
-    image: dkr-dsg.ac.upc.edu/ereuse/devicehub:testing_docker__f42b2d09
+    container_name: devicehub
+    build:
+      context: .
+      dockerfile: docker/devicehub.Dockerfile
+    #image: dkr-dsg.ac.upc.edu/ereuse/devicehub:testing_docker__f42b2d09
     environment:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -24,7 +28,11 @@ services:
       - app:/opt/devicehub:rw
 
   postgres:
-    image: dkr-dsg.ac.upc.edu/ereuse/postgres:testing_docker__f42b2d09
+    #image: dkr-dsg.ac.upc.edu/ereuse/postgres:testing_docker__f42b2d09
+    container_name: postgres_devicehub
+    build: 
+      context: .
+      dockerfile: docker/postgres.Dockerfile
     # 4. To create the database.
     # 5. Give permissions to the corresponding users in the database.
     #   extra src https://github.com/docker-library/docs/blob/master/postgres/README.md#environment-variables
@@ -37,6 +45,8 @@ services:
     # DEBUG
     #ports:
     #  - 5432:5432
+
+
 
   nginx:
     image: nginx
