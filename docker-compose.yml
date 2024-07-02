@@ -46,7 +46,34 @@ services:
     #ports:
     #  - 5432:5432
 
+  backup:
+    image: postgres:15.4-bookworm
+    container_name: postgres_backup
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+      - BACKUP_PATH=${BACKUP_PATH}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ${BACKUP_PATH}:/backups
+    command: >
+      bash -c "
+        until pg_isready -h postgres -U $$POSTGRES_USER; do
+          echo 'Waiting for postgres...'
+          sleep 2
+        done
 
+        while true; do
+          PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h postgres -U $$POSTGRES_USER -Fc $$POSTGRES_DB > $$BACKUP_PATH/$$(date +%Y-%m-%d-%H-%M-%S).dump
+          echo ""Backup done at $$(date +%Y-%m-%d_%H:%M:%S)""
+          
+          #delete all but the most recent 4 backups
+          ls -1 $$BACKUP_PATH/*.dump | head -n -4 | xargs rm -f
+          sleep 86400
+        done"
 
   nginx:
     image: nginx
