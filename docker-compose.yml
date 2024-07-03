@@ -61,18 +61,15 @@ services:
       - ${BACKUP_PATH}:/backups
     command: >
       bash -c "
-        until pg_isready -h postgres -U $$POSTGRES_USER; do
-          echo 'Waiting for postgres...'
-          sleep 2
-        done
-
         while true; do
+          # Backup every day
+          sleep 86400
           PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h postgres -U $$POSTGRES_USER -Fc $$POSTGRES_DB > $$BACKUP_PATH/$$(date +%Y-%m-%d-%H-%M-%S).dump
           echo ""Backup done at $$(date +%Y-%m-%d_%H:%M:%S)""
           
           #delete all but the most recent 4 backups
           ls -1 $$BACKUP_PATH/*.dump | head -n -4 | xargs rm -f
-          sleep 86400
+          
         done"
 
   nginx:
