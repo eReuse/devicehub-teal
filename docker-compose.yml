@@ -3,7 +3,11 @@ services:
 
   devicehub:
     init: true
-    image: dkr-dsg.ac.upc.edu/ereuse/devicehub:testing_docker__f42b2d09
+    container_name: devicehub
+    build:
+      context: .
+      dockerfile: docker/devicehub.Dockerfile
+    #image: dkr-dsg.ac.upc.edu/ereuse/devicehub:testing_docker__f42b2d09
     environment:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -24,7 +28,11 @@ services:
       - app:/opt/devicehub:rw
 
   postgres:
-    image: dkr-dsg.ac.upc.edu/ereuse/postgres:testing_docker__f42b2d09
+    #image: dkr-dsg.ac.upc.edu/ereuse/postgres:testing_docker__f42b2d09
+    container_name: postgres_devicehub
+    build: 
+      context: .
+      dockerfile: docker/postgres.Dockerfile
     # 4. To create the database.
     # 5. Give permissions to the corresponding users in the database.
     #   extra src https://github.com/docker-library/docs/blob/master/postgres/README.md#environment-variables
@@ -37,6 +45,32 @@ services:
     # DEBUG
     #ports:
     #  - 5432:5432
+
+  backup:
+    image: postgres:15.4-bookworm
+    container_name: postgres_backup
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+      - BACKUP_PATH=${BACKUP_PATH}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ${BACKUP_PATH}:/backups
+    command: >
+      bash -c "
+        while true; do
+          # Backup every day
+          sleep 86400
+          PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h postgres -U $$POSTGRES_USER -Fc $$POSTGRES_DB > $$BACKUP_PATH/$$(date +%Y-%m-%d-%H-%M-%S).dump
+          echo ""Backup done at $$(date +%Y-%m-%d_%H:%M:%S)""
+          
+          #delete all but the most recent 4 backups
+          ls -1 $$BACKUP_PATH/*.dump | head -n -4 | xargs rm -f
+          
+        done"
 
   nginx:
     image: nginx

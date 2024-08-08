@@ -295,18 +295,18 @@ class UploadSnapshotForm(SnapshotMixin, FlaskForm):
             self.result[filename] = 'Not processed'
             d = d.stream.read()
             if not d:
-                self.result[filename] = 'Error this snapshot is empty'
+                self.result[filename] = 'Error, this snapshot is empty'
                 continue
 
             try:
                 d_json = json.loads(d)
             except JSONDecodeError:
-                self.result[filename] = 'Error this snapshot is not a json'
+                self.result[filename] = 'Error, this snapshot is not a json'
                 continue
 
             uuid_snapshot = d_json.get('uuid')
             if Snapshot.query.filter(Snapshot.uuid == uuid_snapshot).all():
-                self.result[filename] = 'Error this snapshot exist'
+                self.result[filename] = 'Error, this snapshot already exists'
                 continue
 
             self.snapshots.append((filename, d_json))
@@ -941,11 +941,11 @@ class AllocateForm(ActionFormMixin):
         end_time = self.end_time.data
 
         if not start_time:
-            self.start_time.errors = ['Not a valid date value.!']
+            self.start_time.errors = ['Not a valid date value!']
             return False
 
         if start_time > datetime.datetime.now().date():
-            self.start_time.errors = ['Not a valid date value.!']
+            self.start_time.errors = ['Not a valid date value!']
             return False
 
         if start_time and end_time and end_time < start_time:
@@ -966,7 +966,7 @@ class AllocateForm(ActionFormMixin):
         return True
 
     def check_allocate(self):
-        txt = "You need deallocate before allocate this device again"
+        txt = "You need to deallocate before allocating this device again"
         for device in self._devices:
             # |  Allo  -  Deallo  |  Allo  -  Deallo  |
 
@@ -1009,7 +1009,7 @@ class AllocateForm(ActionFormMixin):
         return True
 
     def check_deallocate(self):
-        txt = "Error, some of this devices are actually deallocate"
+        txt = "Error, some of these devices are actually deallocated"
         for device in self._devices:
             allocates = [
                 ac for ac in device.actions if ac.type in ['Allocate', 'Deallocate']
@@ -1059,18 +1059,18 @@ class AllocateForm(ActionFormMixin):
 
 class DataWipeDocumentForm(Form):
     date = DateField(
-        'Date', [validators.Optional()], description="Date when was data wipe"
+        'Date', [validators.Optional()], description="Date when the data was wiped"
     )
     url = URLField(
-        'Url', [validators.Optional()], description="Url where the document resides"
+        'Url', [validators.Optional()], description="Url where the document is located"
     )
     success = BooleanField(
-        'Success', [validators.Optional()], description="The erase was success or not?"
+        'Success', [validators.Optional()], description="Was the erasure successful or not?"
     )
     software = StringField(
         'Software',
         [validators.Optional()],
-        description="Which software has you use for erase the disks",
+        description="Which software have you used for disk erasure?",
     )
     id_document = StringField(
         'Document Id',
@@ -1193,7 +1193,7 @@ class TradeForm(ActionFormMixin):
     code = StringField(
         'Code',
         [validators.Optional()],
-        description="If you don't need confirm, you need put a code for trace the user in the statistics.",
+        description="If you don't need a confirmation, you should enter a code to trace the user in the statistics.",
     )
 
     def __init__(self, *args, **kwargs):
@@ -1348,7 +1348,7 @@ class TradeDocumentForm(FlaskForm):
         'Url',
         [validators.Optional()],
         render_kw={'class': "form-control"},
-        description="Url where the document resides",
+        description="Url where the document is located",
     )
     description = StringField(
         'Description',
@@ -1360,7 +1360,7 @@ class TradeDocumentForm(FlaskForm):
         'Document Id',
         [validators.Optional()],
         render_kw={'class': "form-control"},
-        description="Identification number of document",
+        description="Identification number of the document",
     )
     date = DateField(
         'Date',
@@ -1449,7 +1449,7 @@ class DeviceDocumentForm(FlaskForm):
         'Url',
         [validators.Optional()],
         render_kw={'class': "form-control"},
-        description="Url where the document resides",
+        description="Url where the document is located",
     )
     description = StringField(
         'Description',
@@ -1461,7 +1461,7 @@ class DeviceDocumentForm(FlaskForm):
         'Document Id',
         [validators.Optional()],
         render_kw={'class': "form-control"},
-        description="Identification number of document",
+        description="Identification number of the document",
     )
     type = SelectField(
         'Type',
@@ -1554,13 +1554,13 @@ class TransferForm(FlaskForm):
         'Lot Name',
         [validators.DataRequired()],
         render_kw={'class': "form-control"},
-        description="You need put a lot name",
+        description="Enter the name of the lot",
     )
     code = StringField(
         'Code',
         [validators.DataRequired()],
         render_kw={'class': "form-control"},
-        description="You need put a code for transfer the external user",
+        description="Enter a code for transfer to the external user",
     )
     description = TextAreaField(
         'Description',
@@ -1660,13 +1660,13 @@ class NotesForm(FlaskForm):
         'Date',
         [validators.Optional()],
         render_kw={'class': "form-control"},
-        description="""Date when the transfer was do it""",
+        description="""Date when the transfer was dome""",
     )
     units = IntegerField(
         'Units',
         [validators.Optional()],
         render_kw={'class': "form-control"},
-        description="Number of units",
+        description="Total number of units",
     )
     weight = IntegerField(
         'Weight',
@@ -1688,9 +1688,9 @@ class NotesForm(FlaskForm):
                 if not self._obj:
                     self._obj = DeliveryNote(transfer_id=self._tmp_lot.transfer.id)
 
-                self.date.description = """Date when the delivery was do it."""
+                self.date.description = """Date when the delivery was done."""
                 self.number.description = (
-                    """You can put a number for tracer of delivery note."""
+                    """Enter a number to track the delivery note."""
                 )
 
             if self.type == 'Receiver':
@@ -1698,9 +1698,9 @@ class NotesForm(FlaskForm):
                 if not self._obj:
                     self._obj = ReceiverNote(transfer_id=self._tmp_lot.transfer.id)
 
-                self.date.description = """Date when the receipt was do it."""
+                self.date.description = """Date when the receipt was created."""
                 self.number.description = (
-                    """You can put a number for tracer of receiber note."""
+                    """Enter a number to track the receiver note."""
                 )
 
             if self.is_editable():
@@ -1769,22 +1769,22 @@ class CustomerDetailsForm(FlaskForm):
         'Company name',
         [validators.Optional()],
         render_kw={'class': "form-control"},
-        description="Name of the company",
+        description="Enter the name of the company",
     )
     location = StringField(
         'Location',
         [validators.Optional()],
         render_kw={'class': "form-control"},
-        description="""Location where is the company""",
+        description="""Enter the location of the company""",
     )
     logo = URLField(
         'Logo',
         [validators.Optional()],
         render_kw={
             'class': "form-control",
-            "placeholder": "Url where is the logo - acceptd only .png, .jpg, .gif, svg",
+            "placeholder": "Url - accepted only .png, .jpg, .gif and .svg",
         },
-        description="Url where is the logo",
+        description="Url where the logo located",
     )
 
     def __init__(self, *args, **kwargs):
@@ -1811,7 +1811,7 @@ class CustomerDetailsForm(FlaskForm):
 
         extensions = ["jpg", "jpeg", "png", "gif", "svg"]
         if self.logo.data.lower().split(".")[-1] not in extensions:
-            txt = "Error in Url field - accepted only .PNG, .JPG and .GIF. extensions"
+            txt = "Error in Url field - accepted only .PNG, .JPG and .GIF and .SVG extensions"
             self.logo.errors = [txt]
             return False
 
@@ -1861,7 +1861,7 @@ class UploadPlaceholderForm(FlaskForm):
             try:
                 data = pd.read_excel(_file).fillna('').to_dict()
             except ValueError:
-                txt = ["File don't have a correct format"]
+                txt = ["File doesn't have a correct format"]
                 self.placeholder_file.errors = txt
                 return False
 
@@ -1985,7 +1985,7 @@ class BindingForm(FlaskForm):
         is_valid = super().validate(extra_validators)
 
         if not is_valid:
-            txt = "This placeholder not exist."
+            txt = "This placeholder doesn't exist."
             self.phid.errors = [txt]
             return False
 
@@ -2000,12 +2000,12 @@ class BindingForm(FlaskForm):
             ).first()
 
         if not self.placeholder:
-            txt = "This placeholder not exist."
+            txt = "This placeholder doesn't exist."
             self.phid.errors = [txt]
             return False
 
         if self.placeholder.status not in ['Snapshot', 'Placeholder']:
-            txt = "This placeholder have a binding with other device. "
+            txt = "This placeholder has a binding with other device. "
             txt += "Before you need to do an unbinding with this other device."
             self.phid.errors = [txt]
             return False
