@@ -102,48 +102,12 @@ class User(UserMixin, Thing):
         # take advantage of SQL Alchemy PasswordType to verify password
         return self.password == password
 
-    # def set_new_dlt_keys(self, data, password):
-    #     if 'dpp' not in app.blueprints.keys():
-    #         return ''
-
-    #     from ereuse_devicehub.modules.dpp.utils import encrypt
-
-    #     api_token = data.get('data', {}).get('api_token')
-    #     data = json.dumps(data)
-    #     self.api_keys_dlt = encrypt(password, data)
-    #     return api_token
-
-    # def get_dlt_keys(self, password):
-    #     if 'dpp' not in app.blueprints.keys():
-    #         return {}
-
-    #     from ereuse_devicehub.modules.dpp.utils import decrypt
-
-    #     if not self.api_keys_dlt:
-    #         return {}
-
-    #     data = decrypt(password, self.api_keys_dlt)
-    #     return json.loads(data)
-
-    # def reset_dlt_keys(self, password, data):
-    #     if 'dpp' not in app.blueprints.keys():
-    #         return
-
-    #     from ereuse_devicehub.modules.dpp.utils import encrypt
-
-    #     data = json.dumps(data)
-    #     self.api_keys_dlt = encrypt(password, data)
-
-    def set_new_dlt_keys(self, password):
+    def set_new_dlt_keys(self, data, password):
         if 'dpp' not in app.blueprints.keys():
-            return
-
-        from ereuseapi.methods import register_user
+            return ''
 
         from ereuse_devicehub.modules.dpp.utils import encrypt
 
-        api_dlt = app.config.get('API_DLT')
-        data = register_user(api_dlt)
         api_token = data.get('data', {}).get('api_token')
         data = json.dumps(data)
         self.api_keys_dlt = encrypt(password, data)
@@ -169,6 +133,43 @@ class User(UserMixin, Thing):
 
         data = json.dumps(data)
         self.api_keys_dlt = encrypt(password, data)
+
+    # # ==
+    # def set_new_dlt_keys(self, password):
+    #     if 'dpp' not in app.blueprints.keys():
+    #         return
+
+    #     from ereuseapi.methods import register_user
+
+    #     from ereuse_devicehub.modules.dpp.utils import encrypt
+
+    #     api_dlt = app.config.get('API_DLT')
+    #     data = register_user(api_dlt)
+    #     api_token = data.get('data', {}).get('api_token')
+    #     data = json.dumps(data)
+    #     self.api_keys_dlt = encrypt(password, data)
+    #     return api_token
+
+    # def get_dlt_keys(self, password):
+    #     if 'dpp' not in app.blueprints.keys():
+    #         return {}
+
+    #     from ereuse_devicehub.modules.dpp.utils import decrypt
+
+    #     if not self.api_keys_dlt:
+    #         return {}
+
+    #     data = decrypt(password, self.api_keys_dlt)
+    #     return json.loads(data)
+
+    # def reset_dlt_keys(self, password, data):
+    #     if 'dpp' not in app.blueprints.keys():
+    #         return
+
+    #     from ereuse_devicehub.modules.dpp.utils import encrypt
+
+    #     data = json.dumps(data)
+    #     self.api_keys_dlt = encrypt(password, data)
         
     def allow_permitions(self, api_token=None, rols="Operator"):
         if 'dpp' not in app.blueprints.keys():
