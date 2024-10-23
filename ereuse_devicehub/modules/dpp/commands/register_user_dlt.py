@@ -35,6 +35,7 @@ class RegisterUserDlt:
         name = email.split('@')[0]
         password = data.get("password")
         ethereum = {"data": data.get("api_token")}
+        api_token = data.get("api_token")
 
         user = User.query.filter_by(email=email).first()
 
@@ -46,7 +47,7 @@ class RegisterUserDlt:
         user.api_keys_dlt = encrypt(password, data_eth)
 
         roles = []
-        token_dlt = ethereum["data"]["api_token"]
+        token_dlt = api_token
         api_dlt = app.config.get('API_DLT')
         api = API(api_dlt, token_dlt, "ethereum")
         result = api.check_user_roles()
