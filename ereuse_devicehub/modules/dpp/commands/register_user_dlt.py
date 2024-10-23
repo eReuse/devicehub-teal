@@ -26,10 +26,9 @@ class RegisterUserDlt:
         with open(dataset_file) as f:
             dataset = json.loads(f.read())
 
-        for d in dataset:
-            self.add_user(d)
+        self.add_user(dataset)
 
-            db.session.commit()
+        db.session.commit()
 
     def add_user(self, data):
         email = data.get("email")
