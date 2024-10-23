@@ -34,8 +34,8 @@ class RegisterUserDlt:
         email = data.get("email")
         name = email.split('@')[0]
         password = data.get("password")
-        ethereum = {"data": data.get("api_token")}
         api_token = data.get("api_token")
+        ethereum = {"data": {"api_token": api_token}}
 
         user = User.query.filter_by(email=email).first()
 
