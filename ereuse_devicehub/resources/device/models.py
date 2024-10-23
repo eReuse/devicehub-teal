@@ -968,10 +968,13 @@ class Device(Thing):
         from ereuse_devicehub.modules.dpp.models import ALGORITHM
         result = api.register_device(
             self.chid,
-            ALGORITHM,
-            snapshot.phid_dpp,
-            app.config.get('ID_FEDERATED')
         )
+        # result = api.register_device(
+        #     self.chid,
+        #     ALGORITHM,
+        #     snapshot.phid_dpp,
+        #     app.config.get('ID_FEDERATED')
+        # )
         self.register_proof(result)
 
         if app.config.get('ID_FEDERATED'):
