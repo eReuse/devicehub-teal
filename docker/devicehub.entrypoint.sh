@@ -231,7 +231,7 @@ config_phase() {
 
 		# # 15. Add inventory snapshots for user "${EMAIL_DEMO}".
 		if [ "${IMPORT_SNAPSHOTS}" = 'y' ]; then
-			cp /mnt/snapshots/snapshot*.json ereuse_devicehub/commands/snapshot_files
+			cp /mnt/snapshots/*.json ereuse_devicehub/commands/snapshot_files
 			/usr/bin/time flask snapshot "${EMAIL_DEMO}" ${PASSWORD_DEMO}
 		fi
 
