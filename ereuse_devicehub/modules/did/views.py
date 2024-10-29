@@ -274,6 +274,48 @@ class DidView(View):
         self.context['manuals']['energystar'] = energy
 
     def request_manuals(self, prefix):
+        #TODO reimplement manuals service
+        response = {
+            "laer": [{"metal": 40, "plastic_post_consumer": 27, "plastic_post_industry": 34}],
+            "energystar": {
+                "long_idle_watts": 240, 
+                "short_idle_watts": 120, 
+                "sleep_mode_watts": 30, 
+                "off_mode_watts": 3, 
+                "tec_allowance_kwh": 180,
+                "tec_of_model_kwh": 150,
+                "tec_requirement_kwh": 220,
+                "work_off_mode_watts": 70,
+                "work_weighted_power_of_model_watts": 240
+            },
+            "ifixit": [
+                {
+                    "image": "https://guide-images.cdn.ifixit.com/igi/156EpI4YdQeVfVPa.medium",
+                    "url": "https://es.ifixit.com/Gu%C3%ADa/HP+ProBook+450+G4+Back+Panel+Replacement/171196?lang=en",
+                    "title": "HP ProBook 450 G4 Back Panel Replacement"
+                },
+                {
+                    "image": "https://guide-images.cdn.ifixit.com/igi/usTIqCKpuxVWC3Ix.140x105",
+                    "url": "https://es.ifixit.com/Gu%C3%ADa/HP+ProBook+450+G4+Display+Assembly+Replacement/171101?lang=en",
+                    "title": "Display Assembly Replacement"
+                }
+            ],
+            "details": {
+                "logo": "https://images.icecat.biz/img/brand/thumb/1_cf8603f6de7b4c4d8ac4f5f0ef439a05.jpg",
+                "image": "https://guide-images.cdn.ifixit.com/igi/Q2nYjTIQfG6GaI5B.standard",
+                "title": "HP ProBook 450"
+            },
+            "icecat": [
+                {
+                    "logo": "https://images.icecat.biz/img/brand/thumb/1_cf8603f6de7b4c4d8ac4f5f0ef439a05.jpg",
+                    "pdf": "https://icecat.biz/rest/product-pdf?productId=32951710&lang=en",
+                    "title": "HP ProBook 450 G3"
+                }
+            ]
+        }
+        return response
+        #####
+        
         url = app.config['URL_MANUALS']
         if not url:
             return {}
