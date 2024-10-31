@@ -277,7 +277,8 @@ class DidView(View):
         #TODO reimplement manuals service
         response = {
             "laer": [{"metal": 40, "plastic_post_consumer": 27, "plastic_post_industry": 34}],
-            "energystar": {
+            "energystar": [{
+                'functional_adder_allowances_kwh': 180,
                 "long_idle_watts": 240, 
                 "short_idle_watts": 120, 
                 "sleep_mode_watts": 30, 
@@ -287,7 +288,7 @@ class DidView(View):
                 "tec_requirement_kwh": 220,
                 "work_off_mode_watts": 70,
                 "work_weighted_power_of_model_watts": 240
-            },
+            }],
             "ifixit": [
                 {
                     "image": "https://guide-images.cdn.ifixit.com/igi/156EpI4YdQeVfVPa.medium",
@@ -300,20 +301,16 @@ class DidView(View):
                     "title": "Display Assembly Replacement"
                 }
             ],
-            "details": {
-                "logo": "https://images.icecat.biz/img/brand/thumb/1_cf8603f6de7b4c4d8ac4f5f0ef439a05.jpg",
-                "image": "https://guide-images.cdn.ifixit.com/igi/Q2nYjTIQfG6GaI5B.standard",
-                "title": "HP ProBook 450"
-            },
             "icecat": [
                 {
                     "logo": "https://images.icecat.biz/img/brand/thumb/1_cf8603f6de7b4c4d8ac4f5f0ef439a05.jpg",
+                    "image": "https://guide-images.cdn.ifixit.com/igi/Q2nYjTIQfG6GaI5B.standard",
                     "pdf": "https://icecat.biz/rest/product-pdf?productId=32951710&lang=en",
                     "title": "HP ProBook 450 G3"
                 }
             ]
         }
-        return response
+        return response.get(prefix, {})
         #####
         
         url = app.config['URL_MANUALS']
