@@ -27,6 +27,7 @@ app.register_blueprint(workbench)
 app.register_blueprint(did)
 app.register_blueprint(dpp)
 app.register_blueprint(oidc)
+app.config['PERMANENT_SESSION_LIFETIME'] = 300
 
 
 config_oauth(app)
