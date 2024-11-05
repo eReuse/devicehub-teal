@@ -919,12 +919,13 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
         if not token_dlt or not api_dlt:
             return
 
-        api = API(api_dlt, token_dlt, "ethereum")
+
         docSig = self.phid_dpp
         
         cny_a = 1
         while cny_a:
             try:
+                api = API(api_dlt, token_dlt, "ethereum")
                 result = api.issue_passport(dpp, ALGORITHM, docSig, dh_instance)
                 cny_a = 0
             except Exception as err:
