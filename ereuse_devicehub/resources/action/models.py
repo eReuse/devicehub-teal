@@ -14,6 +14,8 @@ import copy
 import hashlib
 import json
 import time
+import logging
+
 from collections import Iterable
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
@@ -94,6 +96,9 @@ from ereuse_devicehub.teal.db import (
 )
 from ereuse_devicehub.teal.enums import Currency
 from ereuse_devicehub.teal.resource import url_for_resource
+
+
+logger = logging.getLogger(__name__)
 
 
 class JoinedTableMixin:
@@ -916,8 +921,16 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
 
         api = API(api_dlt, token_dlt, "ethereum")
         docSig = self.phid_dpp
-
-        result = api.issue_passport(dpp, ALGORITHM, docSig, dh_instance)
+        
+        cny_a = 1
+        while cny_a:
+            try:
+                result = api.issue_passport(dpp, ALGORITHM, docSig, dh_instance)
+                cny_a = 0
+            except Exception:
+                logger.error("API ISSUE passport return: %s", result)
+                time.sleep(5)
+        logger.info("API ISSUE passport return: %s", result)
 
         if result['Status'] is not StatusCode.Success.value:
             return

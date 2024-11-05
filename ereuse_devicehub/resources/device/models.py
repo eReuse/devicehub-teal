@@ -981,8 +981,9 @@ class Device(Thing):
                 assert result['Data']['data']['timestamp']
                 cny_a = 0
             except Exception:
-                logger.error("API return: %s", result)
-                time.sleep(5)
+                if result.get("Data") != "Device already exists":
+                    logger.error("API return: %s", result)
+                    time.sleep(5)
 
         self.register_proof(result)
 
