@@ -90,7 +90,7 @@ class UploadSnapshots:
             'csrf_token': generate_csrf(),
         }
 
-        self.client.post(uri, data=data, content_type="multipart/form-data")
+        self.client.post(uri, data=data, content_type="multipart/form-data", timeout=300)
 
     def get_files(self):
         """Read snaoshot_files dir."""
