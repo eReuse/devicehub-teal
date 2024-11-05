@@ -983,7 +983,7 @@ class Device(Thing):
             except Exception:
                 if result.get("Data") != "Device already exists":
                     logger.error("API return: %s", result)
-                    time.sleep(5)
+                    time.sleep(10)
 
         self.register_proof(result)
 
@@ -1000,7 +1000,7 @@ class Device(Thing):
                     )
                     cny = 0
                 except Exception:
-                    time.sleep(5)
+                    time.sleep(10)
 
     def register_proof(self, result):
         from ereuse_devicehub.modules.dpp.models import PROOF_ENUM, Proof

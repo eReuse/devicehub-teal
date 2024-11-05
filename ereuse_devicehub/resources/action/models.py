@@ -929,7 +929,7 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
                 cny_a = 0
             except Exception as err:
                 logger.error("ERROR API issue passport return: %s", err)
-                time.sleep(5)
+                time.sleep(10)
 
         if result['Status'] is not StatusCode.Success.value:
             return
