@@ -90,6 +90,7 @@ class UploadSnapshots:
             'csrf_token': generate_csrf(),
         }
 
+        self.get_user()
         self.client.post(uri, data=data, content_type="multipart/form-data")
 
     def get_files(self):
@@ -102,29 +103,30 @@ class UploadSnapshots:
                 continue
             self.onlyfiles.append(f)
 
-    #     def save(self, commit=True, user_trusts=True):
-    #     if any([x == 'Error' for x in self.result.values()]):
-    #         return
+    # def save(self, snapshot):
+    #     """Save snaoshot in dlt."""
+
     #     schema = SnapshotSchema()
     #     schema_lite = Snapshot_lite()
     #     devices = []
     #     self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
     #     for filename, snapshot_json in self.snapshots:
-    #         self.json_wb = copy.copy(snapshot_json)
+    #         json_wb = copy.copy(snapshot_json)
     #         path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
     #         debug = snapshot_json.pop('debug', None)
-    #         self.version = snapshot_json.get('schema_api')
-    #         self.uuid = snapshot_json.get('uuid')
-    #         self.sid = snapshot_json.get('sid')
+    #         version = snapshot_json.get('schema_api')
+    #         uuid = snapshot_json.get('uuid')
+    #         sid = snapshot_json.get('sid')
 
     #         if self.is_wb_lite_snapshot(self.version):
-    #             self.snapshot_json = schema_lite.load(snapshot_json)
+    #             snapshot_json = schema_lite.load(snapshot_json)
     #             snapshot_json = ParseSnapshotLsHw(self.snapshot_json).snapshot_json
     #         else:
-    #             self.version = snapshot_json.get('version')
+    #             version = snapshot_json.get('version')
     #             system_uuid = self.get_uuid(debug)
     #             if system_uuid:
     #                 snapshot_json['device']['system_uuid'] = system_uuid
+    #             # TODO
     #             self.get_fields_extra(debug, snapshot_json)
 
     #         try:
@@ -133,9 +135,6 @@ class UploadSnapshots:
     #                 snapshot_json, create_new_device=self.create_new_devices
     #             )
     #         except ValidationError as err:
-    #             txt = "{}".format(err)
-    #             self.errors(txt=txt)
-    #             self.result[filename] = 'Error'
     #             continue
 
     #         if isinstance(response.device, Computer):
