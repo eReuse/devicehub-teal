@@ -92,15 +92,15 @@ class UploadSnapshots:
 
         self.client.post(uri, data=data, content_type="multipart/form-data")
 
-    # def get_files(self):
-    #     """Read snaoshot_files dir."""
-    #     mypath = Path(__file__).parent.joinpath('snapshot_files')
-    #     for f in listdir(mypath):
-    #         if not isfile(join(mypath, f)):
-    #             continue
-    #         if not f[-5:] == ".json":
-    #             continue
-    #         self.onlyfiles.append(f)
+    def get_files(self):
+        """Read snaoshot_files dir."""
+        mypath = Path(__file__).parent.joinpath('snapshot_files')
+        for f in listdir(mypath):
+            if not isfile(join(mypath, f)):
+                continue
+            if not f[-5:] == ".json":
+                continue
+            self.onlyfiles.append(f)
 
     #     def save(self, commit=True, user_trusts=True):
     #     if any([x == 'Error' for x in self.result.values()]):
