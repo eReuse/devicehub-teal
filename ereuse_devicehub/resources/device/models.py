@@ -984,6 +984,9 @@ class Device(Thing):
                 if result.get("Data") != "Device already exists":
                     logger.error("API return: %s", result)
                     time.sleep(10)
+                else:
+                    cny_a = 0
+
 
         self.register_proof(result)
 
