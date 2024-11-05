@@ -928,9 +928,9 @@ class Snapshot(JoinedWithOneDeviceMixin, ActionWithOneDevice):
                 result = api.issue_passport(dpp, ALGORITHM, docSig, dh_instance)
                 cny_a = 0
             except Exception:
-                logger.error("API ISSUE passport return: %s", result)
+                logger.error("ERROR API issue passport return: %s", result)
                 time.sleep(5)
-        logger.info("API ISSUE passport return: %s", result)
+        logger.info("INFO API issue passport return: %s", result)
 
         if result['Status'] is not StatusCode.Success.value:
             return
