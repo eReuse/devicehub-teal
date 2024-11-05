@@ -1,6 +1,5 @@
 """This command is used for up one snapshot."""
 
-import time
 import json
 
 # from uuid import uuid4
@@ -48,7 +47,6 @@ class UploadSnapshots:
             self.file_snapshot = f
             self.open_snapshot()
             self.build_snapshot()
-            time.sleep(5)
         self.remove_files()
 
     def get_user(self):
@@ -92,13 +90,7 @@ class UploadSnapshots:
             'csrf_token': generate_csrf(),
         }
 
-        cny = 1
-        while cny:
-            try:
-                self.client.post(uri, data=data, content_type="multipart/form-data")
-                cny = 0
-            except Exception:
-                time.sleep(5)
+        self.client.post(uri, data=data, content_type="multipart/form-data")
 
     def get_files(self):
         """Read snaoshot_files dir."""

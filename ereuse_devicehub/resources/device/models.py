@@ -1,4 +1,5 @@
 import copy
+import time
 import hashlib
 import json
 import logging
@@ -966,22 +967,39 @@ class Device(Thing):
             return
         snapshot = snapshot[0]
         from ereuse_devicehub.modules.dpp.models import ALGORITHM
-        result = api.register_device(
-            self.chid,
-            ALGORITHM,
-            snapshot.phid_dpp,
-            app.config.get('ID_FEDERATED')
-        )
+        from ereuse_devicehub.resources.enums import StatusCode
+        cny_a = 1
+        while cny_a:
+            result = api.register_device(
+                self.chid,
+                ALGORITHM,
+                snapshot.phid_dpp,
+                app.config.get('ID_FEDERATED')
+            )
+            try:
+                assert result['Status'] == StatusCode.Success.value
+                assert result['Data']['data']['timestamp']
+                cny_a = 0
+            except Exception:
+                logger.error("API return: %s", result)
+                time.sleep(5)
+
         self.register_proof(result)
 
         if app.config.get('ID_FEDERATED'):
-            api.add_service(
-                self.chid,
-                'DeviceHub',
-                app.config.get('ID_FEDERATED'),
-                'Inventory service',
-                'Inv',
-            )
+            cny = 1
+            while cny:
+                try:
+                    api.add_service(
+                        self.chid,
+                        'DeviceHub',
+                        app.config.get('ID_FEDERATED'),
+                        'Inventory service',
+                        'Inv',
+                    )
+                    cny = 0
+                except Exception:
+                    time.sleep(5)
 
     def register_proof(self, result):
         from ereuse_devicehub.modules.dpp.models import PROOF_ENUM, Proof
