@@ -970,6 +970,7 @@ class Device(Thing):
         from ereuse_devicehub.resources.enums import StatusCode
         cny_a = 1
         while cny_a:
+            api = self.connect_api()
             result = api.register_device(
                 self.chid,
                 ALGORITHM,
