@@ -13,6 +13,7 @@ import click
 from flask.testing import FlaskClient
 from flask_wtf.csrf import generate_csrf
 
+from ereuse_devicehub.resources.action.views.snapshot import SnapshotMixin
 from ereuse_devicehub.resources.user.models import User
 
 
@@ -90,7 +91,6 @@ class UploadSnapshots:
             'csrf_token': generate_csrf(),
         }
 
-        self.get_user()
         self.client.post(uri, data=data, content_type="multipart/form-data")
 
     def get_files(self):
@@ -111,18 +111,14 @@ class UploadSnapshots:
     #     devices = []
     #     self.tmp_snapshots = app.config['TMP_SNAPSHOTS']
     #     for filename, snapshot_json in self.snapshots:
-    #         json_wb = copy.copy(snapshot_json)
-    #         path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
+    #         #path_snapshot = save_json(snapshot_json, self.tmp_snapshots, g.user.email)
     #         debug = snapshot_json.pop('debug', None)
     #         version = snapshot_json.get('schema_api')
-    #         uuid = snapshot_json.get('uuid')
-    #         sid = snapshot_json.get('sid')
 
-    #         if self.is_wb_lite_snapshot(self.version):
+    #         if self.is_wb_lite_snapshot(version):
     #             snapshot_json = schema_lite.load(snapshot_json)
-    #             snapshot_json = ParseSnapshotLsHw(self.snapshot_json).snapshot_json
+    #             snapshot_json = ParseSnapshotLsHw(snapshot_json).snapshot_json
     #         else:
-    #             version = snapshot_json.get('version')
     #             system_uuid = self.get_uuid(debug)
     #             if system_uuid:
     #                 snapshot_json['device']['system_uuid'] = system_uuid
@@ -132,24 +128,16 @@ class UploadSnapshots:
     #         try:
     #             snapshot_json = schema.load(snapshot_json)
     #             response = self.build(
-    #                 snapshot_json, create_new_device=self.create_new_devices
+    #                 snapshot_json, create_new_device=True
     #             )
-    #         except ValidationError as err:
+    #         except Exception:
     #             continue
 
-    #         if isinstance(response.device, Computer):
-    #             response.device.user_trusts = user_trusts
+    #         response.device.user_trusts = True
     #         db.session.add(response)
-    #         devices.append(response.device.binding.device)
 
-    #         if hasattr(response, 'type'):
-    #             self.result[filename] = 'Ok'
-    #             self.errors(txt="Ok", severity=Severity.Info, snapshot=response)
-    #         else:
-    #             self.result[filename] = 'Error'
+    #         #move_json(self.tmp_snapshots, path_snapshot, g.user.email)
 
-    #         move_json(self.tmp_snapshots, path_snapshot, g.user.email)
 
-    #     if commit:
-    #         db.session.commit()
-    #     return self.result, devices
+    #     db.session.commit()
+
