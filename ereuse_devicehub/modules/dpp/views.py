@@ -10,7 +10,7 @@ dpp = Blueprint('dpp', __name__, url_prefix='/', template_folder='templates')
 class ProofView(View):
     methods = ['GET']
 
-    def dispatch_request(selfi, proof_id):
+    def dispatch_request(self, proof_id):
         proof = Proof.query.filter_by(timestamp=proof_id).first()
 
         if not proof:
