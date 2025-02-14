@@ -7,6 +7,7 @@ Use this as a starting point.
 from decouple import config
 
 from ereuse_devicehub.api.views import api
+from ereuse_devicehub.billing.views import billing
 from ereuse_devicehub.config import DevicehubConfig
 from ereuse_devicehub.devicehub import Devicehub
 from ereuse_devicehub.inventory.views import devices
@@ -44,6 +45,7 @@ app.register_blueprint(devices)
 app.register_blueprint(labels)
 app.register_blueprint(api)
 app.register_blueprint(workbench)
+app.register_blueprint(billing)
 
 mail = Mail(app)
 app.mail = mail
